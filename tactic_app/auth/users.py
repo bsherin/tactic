@@ -34,7 +34,7 @@ class User(UserMixin):
         username = user_dict["username"]
         password = user_dict["password"]
         password_hash = generate_password_hash(password)
-        new_user_dict = {"username": username, "password_hash": password_hash}
+        new_user_dict = {"username": username, "password_hash": password_hash, "data_collections": [], "projects": []}
         db.user_collection.insert_one(new_user_dict)
         return User.get_user_by_username(username)
 
@@ -43,9 +43,19 @@ class User(UserMixin):
         # Note that I have to convert this to a string for login_manager to be happy.
         return str(db.user_collection.find_one({"username": self.username})["_id"])
 
-
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
 
     def get_user_dict(self):
         return {"username": self.username, "password_hash": self.password_hash}
+
+    @property
+    def data_collections(self):
+        return db.user_collection.find_one({"username": self.username})["data_collections"]
+
+    def add_collection(self, collection_name):
+        collection_list = self.data_collections
+        if not (collection_name in collection_list):
+            collection_list.append(collection_name)
+            db.user_collection.update_one({"username": "bsherin99"},{'$set': {'data_collections': collection_list}})
+        return

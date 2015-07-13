@@ -1,7 +1,12 @@
 {% extends "base.html" %}
+
+{% block title %}Tactic{% endblock %}
+
+{% block page_content %}
 Hello,
 {% if current_user.is_authenticated() %}
     {{ current_user.username }}
 {% else %}
     Stranger
 {% endif %}!
+{% endblock %}
