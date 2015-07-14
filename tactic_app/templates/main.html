@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Tactic - Main{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{url_for('static', filename='css/table.css')}}">
+    <style>
+{#        #table-panel {overflow-y:scroll}#}
+    </style>
+{% endblock %}
+
+{% block page_content %}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-xs-10">
+            <div id="main-panel" class="panel panel-default">
+                <div class="panel-heading">
+                    <h4 id="data-title"></h4>
+                </div>
+                <div id="table-panel">
+                    <table id="table-area" class="table table-condensed">
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-2"></div>
+    </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+    <script src="{{url_for('static', filename='js/table.js')}}"></script>
+    <script>
+        var collection_name = "{{ collection_name }}";
+    </script>
+    <script>
+        window.onload = start_post_load
+        window.onresize = resize_table_area
+    </script>
+{% endblock %}

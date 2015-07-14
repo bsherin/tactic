@@ -1,0 +1,52 @@
+
+table {
+	width: 100%;
+}
+
+thead {
+  display: block;
+}
+
+
+tbody {
+    display: block;
+    overflow-y: scroll;
+    overflow-x: scroll;
+}
+
+tr {
+    display: block;
+    height: auto;
+}
+td {
+  display: inline-block;
+  max-width: 300px
+
+}
+
+
+.table-editable {
+  position: relative;
+}
+.glyphicon {
+    font-size: 20px;
+  }
+
+.table-remove {
+  color: #700;
+  cursor: pointer;
+}
+
+.table-up, .table-down {
+  color: #007;
+  cursor: pointer;
+}
+
+.table-add {
+  color: #070;
+  cursor: pointer;
+  position: absolute;
+  top: 8px;
+  right: 0;
+
+}
