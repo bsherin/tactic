@@ -1,17 +1,37 @@
 
-table {
-	width: 100%;
+#main-panel {
+    margin: 25px;
+}
+
+#table-wrapper {
+    overflow-x: scroll;
+    margin: 0px;
+    padding: 0px;
+}
+
+#table-area {
+    display: block;
+    /*width: 1000px;*/
+    /*table-layout: fixed;*/
+}
+
+table, th, td {
+    /*border: 1px solid black;*/
+}
+
+th:hover {
+
 }
 
 thead {
-  display: block;
+    background: #ddd;
+    display: block;
 }
 
 
 tbody {
     display: block;
     overflow-y: scroll;
-    overflow-x: scroll;
 }
 
 tr {
@@ -19,14 +39,29 @@ tr {
     height: auto;
 }
 td {
-  display: inline-block;
-  max-width: 300px
+    /*display: inline-block;*/
+    max-width: 700px;
+    padding: 5px 10px;
 
 }
+td, th {
+    vertical-align: top;
+    color: #000;
+}
 
+th {
+    /*display: inline-block;*/
+    padding: 5px 10px;
+}
 
-.glyphicon {
-    font-size: 20px;
+/*th:hover:after{*/
+    /*content: ">"*/
+/*}*/
+
+.header-glyphicon {
+    font-size: 10px;
+    color: #700;
+    cursor: pointer;
   }
 
 .table-remove {

@@ -50,12 +50,19 @@ class User(UserMixin):
         return {"username": self.username, "password_hash": self.password_hash}
 
     @property
+    def my_record(self):
+        return db.user_collection.find_one({"username": self.username})
+
+    @property
     def data_collections(self):
+        rec = self.my_record
+        if "data_collections" not in rec:
+            db.user_collection.update_one({"username": self.username},{'$set': {'data_collections': []}})
         return db.user_collection.find_one({"username": self.username})["data_collections"]
 
     def add_collection(self, collection_name):
         collection_list = self.data_collections
         if not (collection_name in collection_list):
             collection_list.append(collection_name)
-            db.user_collection.update_one({"username": "bsherin99"},{'$set': {'data_collections': collection_list}})
+            db.user_collection.update_one({"username": self.username},{'$set': {'data_collections': collection_list}})
         return

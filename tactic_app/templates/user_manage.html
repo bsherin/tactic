@@ -3,21 +3,23 @@
 {% block title %}Tactic - Project Management{% endblock %}
 
 {% block page_content %}
-<h2>{{ current_user.username }}</h2>
-    <div>
-    <h4>My Collections</h4>
-    <select multiple>
-            {% for collection in current_user.data_collections %}
-                <option value='{{collection}}'\> {{collection}}</option>
-            {% endfor %}
-    </select>
-    <span style="display: inline-block">
-        <button style="display: block">Upload Folder</button>
-        <button style="display: block">Add Document</button>
-        <form style="display: block" action="add_file_as_collection" method="post" enctype="multipart/form-data">
-            <input style="display: inline" type="submit" value="Add File as Collection">
-            <input style="display: inline" t type="file" name="file">
-        </form>
-    </span>
+    <div class="container-fluid">
+    <h2>{{ current_user.username }}</h2>
+        <div>
+            <h4>My Collections</h4>
+            <select multiple>
+                    {% for collection in current_user.data_collections %}
+                        <option value='{{collection}}'\> {{collection}}</option>
+                    {% endfor %}
+            </select>
+            <span style="display: inline-block">
+                <button style="display: block">Upload Folder</button>
+                <button style="display: block">Add Document</button>
+                <form style="display: block" action="add_file_as_collection" method="post" enctype="multipart/form-data">
+                    <input style="display: inline" type="submit" value="Add File as Collection">
+                    <input style="display: inline" t type="file" name="file">
+                </form>
+            </span>
+        </div>
     </div>
 {% endblock %}
