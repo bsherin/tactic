@@ -3,6 +3,10 @@
     margin: 25px;
 }
 
+.menus {
+    margin-left: 25px;
+}
+
 #table-wrapper {
     overflow-x: scroll;
     margin: 0px;
@@ -15,19 +19,10 @@
     /*table-layout: fixed;*/
 }
 
-table, th, td {
-    /*border: 1px solid black;*/
-}
-
-th:hover {
-
-}
-
 thead {
-    background: #ddd;
+    background-color: #ddd;
     display: block;
 }
-
 
 tbody {
     display: block;
@@ -51,6 +46,9 @@ td, th {
 
 th {
     /*display: inline-block;*/
+    cursor: pointer;
+    font-weight: normal;
+    font-size: 15px;
     padding: 5px 10px;
 }
 
@@ -59,7 +57,7 @@ th {
 /*}*/
 
 .header-glyphicon {
-    font-size: 10px;
+    font-size: 15px;
     color: #700;
     cursor: pointer;
   }

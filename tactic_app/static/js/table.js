@@ -5,7 +5,9 @@
 // a fraction of the containing panel
 MAX_BIGFIELD_FRACTION = .25;
 SHOW_ALL_HEADER_ROWS = true;
-ADDED_HEADER_WIDTH = 30;
+ADDED_HEADER_WIDTH = 35;
+HEADER_SELECT_COLOR = "#9d9d9d";
+HEADER_NORMAL_COLOR = "#ddd"
 
 header0bject = {
     name: "placeholder",
@@ -13,6 +15,7 @@ header0bject = {
     span: 0,
     depth: 0,
     child_list: [],
+    hidden: false,
     shift_child_left: function (child_id) {
         var i;
         var the_child;
@@ -34,22 +37,20 @@ header0bject = {
     shift_child_right: function (child_id) {
         var i;
         var the_child;
-        for (i = 0; i < this.child_list.length; ++i) {
+        // Note that we don't check the last one
+        // on the list because that one can't move to the right
+        for (i = 0; i < (this.child_list.length - 1); ++i) {
             if (this.child_list[i].id == child_id) {
-                if (i == 0){
-                    return;
-                }
-                else {
-                    the_child = this.child_list[i];
-                    this.child_list.splice(i,1)
-                    this.child_list.splice(i + 1, 0, the_child)
-                    return
-                }
+                the_child = this.child_list[i];
+                this.child_list.splice(i,1)
+                this.child_list.splice(i + 1, 0, the_child)
+                return
             }
         }
-
+        return
     },
     find_parent_of_id: function (child_id) {
+        var i;
         for (i = 0; i < this.child_list.length; ++i) {
             if (this.child_list[i].id == child_id) {
                 return this;
@@ -62,23 +63,107 @@ header0bject = {
             }
         }
         return null
+    },
+    find_struct_by_id: function (child_id) {
+        var i;
+        for (i = 0; i < this.child_list.length; ++i) {
+            if (this.child_list[i].id == child_id) {
+                return this.child_list[i];
+            }
+        }
+        for (i = 0; i < this.child_list.length; ++i) {
+            result = this.child_list[i].find_struct_by_id(child_id)
+            if (result != null){
+                return result
+            }
+        }
+        return null
+    },
+    unhide_all: function() {
+        this.hidden = false;
+        for (var i = 0; i < this.child_list.length; ++i) {
+            this.child_list[i].unhide_all();
+        }
     }
 }
+
+$('#menu-shift-left').click(function(e) {
+    the_id = tableObject.selected_header
+    if (the_id != null){
+        tableObject.selected_header = null;
+        var parent_struct = tableObject.header_struct.find_parent_of_id(the_id);
+        parent_struct.shift_child_left(the_id);
+        tableObject.build_table();
+    }
+    e.preventDefault();// prevent the default anchor functionality
+});
+
+$('#menu-shift-right').click(function(e) {
+    the_id = tableObject.selected_header
+    if (the_id != null){
+        tableObject.selected_header = null;
+        var parent_struct = tableObject.header_struct.find_parent_of_id(the_id);
+        parent_struct.shift_child_right(the_id);
+        tableObject.build_table();
+    }
+    e.preventDefault();// prevent the default anchor functionality
+});
+
+$('#menu-hide').click(function(e) {
+    the_id = tableObject.selected_header
+    if (the_id != null){
+        tableObject.selected_header = null;
+        var my_struct = tableObject.header_struct.find_struct_by_id(the_id);
+        my_struct.hidden = true;
+        tableObject.build_table();
+    }
+    e.preventDefault();// prevent the default anchor functionality
+});
+
+$('#menu-unhide').click(function(e) {
+    tableObject.header_struct.unhide_all();
+    tableObject.build_table();
+    e.preventDefault();// prevent the default anchor functionality
+});
+
+function click_header(el) {
+    var the_id = $(el).attr("id");
+    if (the_id === tableObject.selected_header) {
+        $(el).css('background-color', HEADER_NORMAL_COLOR);
+        tableObject.selected_header = null
+    }
+    else {
+        if (tableObject.selected_header != null) {
+            $("#" + tableObject.selected_header).css('background-color', HEADER_NORMAL_COLOR)
+        }
+        $(el).css('background-color', HEADER_SELECT_COLOR);
+        tableObject.selected_header = the_id
+    }
+}
+
 
 function click_left (clicked_element) {
     var $hcell = $(clicked_element).parents('th');
     var the_id = $hcell.attr("id");
-    var parent_struct = tableObject.header_struct.find_parent_of_id(the_id)
-    parent_struct.shift_child_left(the_id)
-    tableObject.build_table()
+    var parent_struct = tableObject.header_struct.find_parent_of_id(the_id);
+    parent_struct.shift_child_left(the_id);
+    tableObject.build_table();
 }
 
 function click_right (clicked_element) {
     var $hcell = $(clicked_element).parents('th');
     var the_id = $hcell.attr("id");
-    var parent_struct = tableObject.header_struct.find_parent_of_id(the_id)
-    parent_struct.shift_child_right(the_id)
+    var parent_struct = tableObject.header_struct.find_parent_of_id(the_id);
+    parent_struct.shift_child_right(the_id);
     tableObject.build_table()
+}
+
+function hide_column (clicked_element) {
+    var $hcell = $(clicked_element).parents('th');
+    var the_id = $hcell.attr("id");
+    var my_struct = tableObject.header_struct.find_struct_by_id(the_id);
+    my_struct.hidden = true;
+    tableObject.build_table();
 }
 
 function start_post_load() {
@@ -97,8 +182,9 @@ var header_save = null
 
 function mouse_enter_header(el) {
     header_save = el.innerHTML
-    new_html = "<span class='glyphicon header-glyphicon glyphicon-chevron-left' onclick=click_left(this)></span>" +
-        header_save + "<span class='glyphicon header-glyphicon glyphicon-chevron-right' onclick=click_right(this)>></span>"
+    new_html = "<span class='glyphicon header-glyphicon glyphicon-arrow-left' onclick=click_left(this)></span>" +
+        header_save + "<span class='glyphicon header-glyphicon glyphicon-arrow-right' onclick=click_right(this)></span>" +
+            "<span class='glyphicon header-glyphicon glyphicon-remove' onclick=hide_column(this)></span>"
 
     $(el).html(new_html)
 }
@@ -115,6 +201,7 @@ var tableObject = {
     doc_list: null,
     column_widths: null,
     big_fields: null, // Right now I don't think this is used for anything.
+    selected_header: null,
 
     load_data: function (data_object){
             this.collection_name = data_object["collection_name"]
@@ -221,14 +308,20 @@ var tableObject = {
     build_header_html_for_depth: function (hstruct, depth) {
             var res = "";
             var i;
-            var th_template = "<th colspan='{{span}}' id='{{id}}' onmouseenter='mouse_enter_header(this)' onmouseleave='mouse_leave_header(this)'>" +
+            //var th_template = "<th colspan='{{span}}' id='{{id}}' onmouseenter='mouse_enter_header(this)' onmouseleave='mouse_leave_header(this)'>" +
+            //    "{{the_text}}" +
+            //    "</th>"
+
+            var th_template = "<th colspan='{{span}}' id='{{id}}' onclick='click_header(this)'>" +
                 "{{the_text}}" +
                 "</th>"
             if (hstruct.depth == depth){
-                res = Mustache.to_html(th_template, {"span": hstruct.span, "the_text": hstruct.name, "id": String(hstruct.id)})
+                res = Mustache.to_html(th_template, {"span": hstruct.span, "the_text": hstruct.name.toLowerCase(), "id": String(hstruct.id)})
             }
             for (i = 0; i < hstruct.child_list.length; ++i){
-                res = res + this.build_header_html_for_depth(hstruct.child_list[i], depth)
+                if (hstruct.child_list[i].hidden == false) {
+                    res = res + this.build_header_html_for_depth(hstruct.child_list[i], depth)
+                }
             }
             return res
         },
@@ -239,9 +332,12 @@ var tableObject = {
             newsofar.push(me)
             if (hstruct.child_list.length == 0) {
                 this.signature_list.push(newsofar)
+                return
             }
             for (i = 0; i < hstruct.child_list.length; ++i) {
-                this.build_signature_list(hstruct.child_list[i], newsofar)
+                if (hstruct.child_list[i].hidden == false) {
+                    this.build_signature_list(hstruct.child_list[i], newsofar)
+                }
             }
             return
         },

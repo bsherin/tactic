@@ -12,8 +12,24 @@
 {% block page_content %}
     <div class="container-fluid">
     <div class="row">
+        <div class="col-xs-12">
+            <div class="dropdown menus">
+              <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                Column Commands
+                <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                <li><a id="menu-shift-left" href="#">Shift Left</a></li>
+                <li><a id="menu-shift-right" href="#">Shift Right</a></li>
+                <li><a id="menu-hide" href="#">Hide Column</a></li>
+                  <li><a id="menu-unhide" href="#">Unhide All</a></li>
+              </ul>
+            </div>
+        </div>
+    </div>
+    <div class="row">
         <div class="col-xs-10">
-            <div id="main-panel" class="panel panel-default">
+            <div id="main-panel" draggable="true" class="panel panel-default">
                 <div class="panel-heading">
                     <h4 id="data-title"></h4>
                 </div>
@@ -24,7 +40,7 @@
             </div>
         </div>
         <div class="col-xs-2">
-            <div id="tile-div">bitty text</div>
+            <div id="tile-div" draggable="true" ondragstart="drag(event)">bitty text</div>
         </div>
     </div>
 </div>
@@ -41,5 +57,9 @@
         window.onresize = resize_stub
     </script>
     <script>
-</script>
+        function drag(ev) {
+    ev.dataTransfer.setData("Text", ev.target.id);
+}
+
+    </script>
 {% endblock %}
