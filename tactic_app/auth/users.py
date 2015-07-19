@@ -60,9 +60,23 @@ class User(UserMixin):
             db.user_collection.update_one({"username": self.username},{'$set': {'data_collections': []}})
         return db.user_collection.find_one({"username": self.username})["data_collections"]
 
+    @property
+    def projects(self):
+        rec = self.my_record
+        if "projects" not in rec:
+            db.user_collection.update_one({"username": self.username},{'$set': {'projects': []}})
+        return db.user_collection.find_one({"username": self.username})["projects"]
+
     def add_collection(self, collection_name):
         collection_list = self.data_collections
         if not (collection_name in collection_list):
             collection_list.append(collection_name)
             db.user_collection.update_one({"username": self.username},{'$set': {'data_collections': collection_list}})
+        return
+
+    def add_project(self, project_name, header_struct):
+        project_list = self.projects
+        if not (project_name in project_list):
+            project_list.append(project_name)
+            db.user_collection.update_one({"username": self.username},{'$set': {'projects': project_list}})
         return

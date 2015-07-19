@@ -2,3 +2,12 @@
 .button-group {
     display: inline-block;
 }
+
+.radio-stack {
+    width: 50px;
+}
+
+.stacked-button {
+   margin-bottom: 10px;
+    display: block;
+}

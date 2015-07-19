@@ -2,24 +2,65 @@
 
 {% block title %}Tactic - Project Management{% endblock %}
 
+{% block styles %}
+    <link rel="stylesheet" href="{{url_for('static', filename='css/tactic.css')}}">
+{% endblock %}
+
 {% block page_content %}
     <div class="container-fluid">
-    <h2>{{ current_user.username }}</h2>
-        <div>
-            <h4>My Collections</h4>
-            <select multiple>
+        <div class="row">
+            <div class="col-xs-2">
+                <h1>{{ current_user.username }}</h1>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-2">
+                <h4>My Collections</h4>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-2">
+                <div class="btn-group-vertical" id="collection-selector" data-toggle="buttons">
                     {% for collection in current_user.data_collections %}
-                        <option value='{{collection}}'\> {{collection}}</option>
+                        <label class="btn btn-default" display="block">
+                            <input type="radio"  value="{{ collection }}"/> {{ collection }}
+                        </label>
                     {% endfor %}
-            </select>
-            <span style="display: inline-block">
-                <button style="display: block">Upload Folder</button>
-                <button style="display: block">Add Document</button>
-                <form style="display: block" action="add_file_as_collection" method="post" enctype="multipart/form-data">
-                    <input style="display: inline" type="submit" value="Add File as Collection">
-                    <input style="display: inline" t type="file" name="file">
+                </div>
+            </div>
+{#            <select multiple>#}
+{#                    {% for collection in current_user.data_collections %}#}
+{#                        <option value='{{collection}}'\> {{collection}}</option>#}
+{#                    {% endfor %}#}
+{#            </select>#}
+            <div class="col-xs-5 ">
+                <button class="btn btn-primary stacked-button" onclick="load_selected_collection()">Load selected collection</button>
+                <button class="btn btn-primary stacked-button">Upload Folder</button>
+                <button class="btn btn-primary stacked-button">Add Document</button>
+                <form action="add_file_as_collection" method="post" enctype="multipart/form-data">
+                    <input class="btn btn-primary stacked-button" style="display: inline" type="submit" value="Add File as Collection">
+                    <input class="btn btn-default stacked-button" style="display: inline" type="file" name="file">
                 </form>
-            </span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-2">
+                <h4>My Projects</h4>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-2">
+                <div class="btn-group-vertical" id="collection-selector" data-toggle="buttons">
+                    {% for project in current_user.projects %}
+                        <label class="btn btn-default" display="block">
+                            <input type="radio"  value="{{ project }}"/> {{ project }}
+                        </label>
+                    {% endfor %}
+                </div>
+            </div>
         </div>
     </div>
+{% endblock %}
+{% block scripts %}
+    <script src="{{url_for('static', filename='js/user_manage.js')}}"></script>
 {% endblock %}

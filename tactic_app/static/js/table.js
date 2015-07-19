@@ -87,111 +87,6 @@ header0bject = {
     }
 }
 
-$('#menu-shift-left').click(function(e) {
-    the_id = tableObject.selected_header
-    if (the_id != null){
-        tableObject.selected_header = null;
-        var parent_struct = tableObject.header_struct.find_parent_of_id(the_id);
-        parent_struct.shift_child_left(the_id);
-        tableObject.build_table();
-    }
-    e.preventDefault();// prevent the default anchor functionality
-});
-
-$('#menu-shift-right').click(function(e) {
-    the_id = tableObject.selected_header
-    if (the_id != null){
-        tableObject.selected_header = null;
-        var parent_struct = tableObject.header_struct.find_parent_of_id(the_id);
-        parent_struct.shift_child_right(the_id);
-        tableObject.build_table();
-    }
-    e.preventDefault();// prevent the default anchor functionality
-});
-
-$('#menu-hide').click(function(e) {
-    the_id = tableObject.selected_header
-    if (the_id != null){
-        tableObject.selected_header = null;
-        var my_struct = tableObject.header_struct.find_struct_by_id(the_id);
-        my_struct.hidden = true;
-        tableObject.build_table();
-    }
-    e.preventDefault();// prevent the default anchor functionality
-});
-
-$('#menu-unhide').click(function(e) {
-    tableObject.header_struct.unhide_all();
-    tableObject.build_table();
-    e.preventDefault();// prevent the default anchor functionality
-});
-
-function click_header(el) {
-    var the_id = $(el).attr("id");
-    if (the_id === tableObject.selected_header) {
-        $(el).css('background-color', HEADER_NORMAL_COLOR);
-        tableObject.selected_header = null
-    }
-    else {
-        if (tableObject.selected_header != null) {
-            $("#" + tableObject.selected_header).css('background-color', HEADER_NORMAL_COLOR)
-        }
-        $(el).css('background-color', HEADER_SELECT_COLOR);
-        tableObject.selected_header = the_id
-    }
-}
-
-
-function click_left (clicked_element) {
-    var $hcell = $(clicked_element).parents('th');
-    var the_id = $hcell.attr("id");
-    var parent_struct = tableObject.header_struct.find_parent_of_id(the_id);
-    parent_struct.shift_child_left(the_id);
-    tableObject.build_table();
-}
-
-function click_right (clicked_element) {
-    var $hcell = $(clicked_element).parents('th');
-    var the_id = $hcell.attr("id");
-    var parent_struct = tableObject.header_struct.find_parent_of_id(the_id);
-    parent_struct.shift_child_right(the_id);
-    tableObject.build_table()
-}
-
-function hide_column (clicked_element) {
-    var $hcell = $(clicked_element).parents('th');
-    var the_id = $hcell.attr("id");
-    var my_struct = tableObject.header_struct.find_struct_by_id(the_id);
-    my_struct.hidden = true;
-    tableObject.build_table();
-}
-
-function start_post_load() {
-    $.getJSON("/grab_data/" + String(collection_name), load_stub);
-}
-
-function load_stub(data_object) {
-    tableObject.load_data(data_object)
-}
-
-function resize_stub(data_object) {
-    tableObject.resize_table_area()
-}
-
-var header_save = null
-
-function mouse_enter_header(el) {
-    header_save = el.innerHTML
-    new_html = "<span class='glyphicon header-glyphicon glyphicon-arrow-left' onclick=click_left(this)></span>" +
-        header_save + "<span class='glyphicon header-glyphicon glyphicon-arrow-right' onclick=click_right(this)></span>" +
-            "<span class='glyphicon header-glyphicon glyphicon-remove' onclick=hide_column(this)></span>"
-
-    $(el).html(new_html)
-}
-function mouse_leave_header(el) {
-    $(el).html(header_save)
-}
-
 var tableObject = {
     table_id: "table-area",
     next_header_id: 0,
@@ -444,3 +339,39 @@ var tableObject = {
         $(clicked_element).parents('tr').detach();
     }
 }
+
+
+//function click_left (clicked_element) {
+//    var $hcell = $(clicked_element).parents('th');
+//    var the_id = $hcell.attr("id");
+//    var parent_struct = tableObject.header_struct.find_parent_of_id(the_id);
+//    parent_struct.shift_child_left(the_id);
+//    tableObject.build_table();
+//}
+//
+//function click_right (clicked_element) {
+//    var $hcell = $(clicked_element).parents('th');
+//    var the_id = $hcell.attr("id");
+//    var parent_struct = tableObject.header_struct.find_parent_of_id(the_id);
+//    parent_struct.shift_child_right(the_id);
+//    tableObject.build_table()
+//}
+//
+//function hide_column (clicked_element) {
+//    var $hcell = $(clicked_element).parents('th');
+//    var the_id = $hcell.attr("id");
+//    var my_struct = tableObject.header_struct.find_struct_by_id(the_id);
+//    my_struct.hidden = true;
+//    tableObject.build_table();
+//}
+//function mouse_enter_header(el) {
+//    header_save = el.innerHTML
+//    new_html = "<span class='glyphicon header-glyphicon glyphicon-arrow-left' onclick=click_left(this)></span>" +
+//        header_save + "<span class='glyphicon header-glyphicon glyphicon-arrow-right' onclick=click_right(this)></span>" +
+//            "<span class='glyphicon header-glyphicon glyphicon-remove' onclick=hide_column(this)></span>"
+//
+//    $(el).html(new_html)
+//}
+//function mouse_leave_header(el) {
+//    $(el).html(header_save)
+//}

@@ -41,3 +41,4 @@ def convert_lists_to_dicts(a_dict):
 
 def put_docs_in_collection(collection_name, dict_list):
     return db[collection_name].insert_many(dict_list)
+
