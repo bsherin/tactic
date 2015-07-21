@@ -35,8 +35,7 @@
 {#            </select>#}
             <div class="col-xs-5 ">
                 <button class="btn btn-primary stacked-button" onclick="load_selected_collection()">Load selected collection</button>
-                <button class="btn btn-primary stacked-button">Upload Folder</button>
-                <button class="btn btn-primary stacked-button">Add Document</button>
+                <button class="btn btn-primary stacked-button" onclick="delete_selected_collection()">Delete selected collection</button>
                 <form action="add_file_as_collection" method="post" enctype="multipart/form-data">
                     <input class="btn btn-primary stacked-button" style="display: inline" type="submit" value="Add File as Collection">
                     <input class="btn btn-default stacked-button" style="display: inline" type="file" name="file">
@@ -50,13 +49,17 @@
         </div>
         <div class="row">
             <div class="col-xs-2">
-                <div class="btn-group-vertical" id="collection-selector" data-toggle="buttons">
-                    {% for project in current_user.projects %}
+                <div class="btn-group-vertical" id="project-selector" data-toggle="buttons">
+                    {% for project in current_user.project_names %}
                         <label class="btn btn-default" display="block">
                             <input type="radio"  value="{{ project }}"/> {{ project }}
                         </label>
                     {% endfor %}
                 </div>
+            </div>
+            <div class="col-xs-5 ">
+                <button class="btn btn-primary stacked-button" onclick="load_selected_project()">Load selected project</button>
+                <button class="btn btn-primary stacked-button" onclick="delete_selected_project()">Delete selected project</button>
             </div>
         </div>
     </div>

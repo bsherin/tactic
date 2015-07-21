@@ -1,5 +1,5 @@
 __author__ = 'bls910'
-
+import re
 from flask.ext.login import UserMixin
 from tactic_app import login_manager, db
 from bson.objectid import ObjectId
@@ -29,6 +29,14 @@ class User(UserMixin):
         else:
             return User(result)
 
+    def create_collection_meta_data(self, collection_type):
+        result = {
+            "username": self.username,
+            "user_id": self.get_id(),
+            "collection_type": collection_type
+        }
+        return result
+
     @staticmethod
     def create_new(user_dict):
         username = user_dict["username"]
@@ -50,33 +58,53 @@ class User(UserMixin):
         return {"username": self.username, "password_hash": self.password_hash}
 
     @property
+    def project_collection_name(self):
+        return '{}.projects'.format(self.username)
+
+    @property
     def my_record(self):
         return db.user_collection.find_one({"username": self.username})
 
     @property
     def data_collections(self):
-        rec = self.my_record
-        if "data_collections" not in rec:
-            db.user_collection.update_one({"username": self.username},{'$set': {'data_collections': []}})
-        return db.user_collection.find_one({"username": self.username})["data_collections"]
+        cnames = db.collection_names()
+        string_start =self.username + ".data_collection."
+        my_collection_names = []
+        for cname in cnames:
+            m = re.search(string_start + "(.*)", cname)
+            if m:
+                my_collection_names.append(m.group(1))
+        return my_collection_names
+
+
+    def full_collection_name(self, cname):
+        return self.username + ".data_collection." + cname
 
     @property
-    def projects(self):
-        rec = self.my_record
-        if "projects" not in rec:
-            db.user_collection.update_one({"username": self.username},{'$set': {'projects': []}})
-        return db.user_collection.find_one({"username": self.username})["projects"]
+    def project_names(self):
+        if self.project_collection_name not in db.collection_names():
+            db.create_collection(self.project_collection_name)
+            return []
+        my_project_names = []
+        for doc in db[self.project_collection_name].find():
+            my_project_names.append(doc["project_name"])
+        return my_project_names
 
-    def add_collection(self, collection_name):
-        collection_list = self.data_collections
-        if not (collection_name in collection_list):
-            collection_list.append(collection_name)
-            db.user_collection.update_one({"username": self.username},{'$set': {'data_collections': collection_list}})
-        return
+        # rec = self.my_record
+        # if "projects" not in rec:
+        #     db.user_collection.update_one({"username": self.username},{'$set': {'projects': []}})
+        # return db.user_collection.find_one({"username": self.username})["projects"]
 
-    def add_project(self, project_name, header_struct):
-        project_list = self.projects
-        if not (project_name in project_list):
-            project_list.append(project_name)
-            db.user_collection.update_one({"username": self.username},{'$set': {'projects': project_list}})
-        return
+    # def add_collection(self, collection_name):
+    #     collection_list = self.data_collections
+    #     if not (collection_name in collection_list):
+    #         collection_list.append(collection_name)
+    #         db.user_collection.update_one({"username": self.username},{'$set': {'data_collections': collection_list}})
+    #     return
+
+    # def add_project(self, project_name, header_struct):
+    #     project_list = self.projects
+    #     if not (project_name in project_list):
+    #         project_list.append(project_name)
+    #         db.user_collection.update_one({"username": self.username},{'$set': {'projects': project_list}})
+    #     return

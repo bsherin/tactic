@@ -9,63 +9,33 @@
     </style>
 {% endblock %}
 
+{% block navbar %}
+<li class="dropdown">
+    <a href="#" class="dropdown-toggle" id="command-menu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Column<span class="caret"></span></a>
+        <ul class="dropdown-menu" aria-labelledby="command-menu">
+            <li class="disabled"><a class="column-menu-item require-column-select" id="menu-shift-left" href="#">Shift Left</a></li>
+            <li class="disabled"><a class="column-menu-item require-column-select" id="menu-shift-right" href="#">Shift Right</a></li>
+            <li class="disabled"><a class="column-menu-item require-column-select" id="menu-hide" href="#">Hide Column</a></li>
+            <li><a class="column-menu-item" id="menu-unhide" href="#">Unhide All</a></li>
+    </ul>
+</li>
+<li class="dropdown">
+    <a href="#" class="dropdown-toggle" id="project-menu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    Project<span class="caret"></span></a>
+    <ul class="dropdown-menu" aria-labelledby="project-menu">
+        <li><a class="project-menu-item" id="menu-save-as" href="#">Save As...</a></li>
+        <li><a class="project-menu-item" id="menu-save" href="#">Save</a></li>
+    </ul>
+</li>
+{% endblock %}
 {% block page_content %}
     <!-- Button trigger modal -->
 
 <!-- Modal  to save the project-->
-<div class="modal fade" id="save-project-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">Save Project</h4>
-      </div>
-      <div class="modal-body">
-          <form>
-              <div class="form-group">
-                <label for="recipient-name" class="control-label">Project Name</label>
-                <input type="text" class="form-control" id="project-name-modal-field">
-              </div>
-          </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-primary" onclick="save_project_as()">Save</button>
-      </div>
-    </div>
-  </div>
-</div>
+    <div id="modal-area"></div>
+
     <div class="container-fluid">
     <div id="flashzone"></div>
-    <div class="row">
-        <div class="col-xs-12">
-            <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#save-project-modal">
-              Save Project
-            </button>
-            <span class="dropdown menus">
-              <button class="btn btn-default dropdown-toggle" type="button" id="command-menu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                Column
-                <span class="caret"></span>
-              </button>
-              <ul class="dropdown-menu" aria-labelledby="command-menu">
-                <li><a class="column-menu-item" id="menu-shift-left" href="#">Shift Left</a></li>
-                <li><a class="column-menu-item" id="menu-shift-right" href="#">Shift Right</a></li>
-                <li><a class="column-menu-item" id="menu-hide" href="#">Hide Column</a></li>
-                  <li><a class="column-menu-item" id="menu-unhide" href="#">Unhide All</a></li>
-              </ul>
-            </span>
-            <span class="dropdown menus">
-              <button class="btn btn-default dropdown-toggle" type="button" id="project-menu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                Project
-                <span class="caret"></span>
-              </button>
-              <ul class="dropdown-menu" aria-labelledby="project-menu">
-                <li><a class="project-menu-item" id="menu-save-as" href="#">Save As...</a></li>
-                <li><a class="project-menu-item" id="menu-save" href="#">Save</a></li>
-              </ul>
-            </span>
-        </div>
-    </div>
     <div class="row">
         <div class="col-xs-10">
             <div id="main-panel" draggable="true" class="panel panel-default">
@@ -91,16 +61,11 @@
     <script src="{{url_for('static', filename='js/main_aux.js')}}"></script>
     <script src="{{url_for('static', filename='js/table.js')}}"></script>
     <script>
-        var collection_name = "{{ collection_name }}";
+        var _collection_name = "{{collection_name}}";
+        var _project_name = "{{project_name}}";
     </script>
     <script>
         window.onload = start_post_load;
         window.onresize = resize_stub
-    </script>
-    <script>
-        function drag(ev) {
-    ev.dataTransfer.setData("Text", ev.target.id);
-}
-
     </script>
 {% endblock %}

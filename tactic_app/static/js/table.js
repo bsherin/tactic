@@ -8,6 +8,8 @@ SHOW_ALL_HEADER_ROWS = true;
 ADDED_HEADER_WIDTH = 35;
 HEADER_SELECT_COLOR = "#9d9d9d";
 HEADER_NORMAL_COLOR = "#ddd"
+TABLE_SELECT_COLOR = "#e0e0e0";
+TABLE_NORMAL_COLOR = "#ffffff";
 
 header0bject = {
     name: "placeholder",
@@ -15,7 +17,7 @@ header0bject = {
     span: 0,
     depth: 0,
     child_list: [],
-    hidden: false,
+    hidden: null,
     shift_child_left: function (child_id) {
         var i;
         var the_child;
@@ -79,12 +81,7 @@ header0bject = {
         }
         return null
     },
-    unhide_all: function() {
-        this.hidden = false;
-        for (var i = 0; i < this.child_list.length; ++i) {
-            this.child_list[i].unhide_all();
-        }
-    }
+
 }
 
 var tableObject = {
@@ -97,15 +94,24 @@ var tableObject = {
     column_widths: null,
     big_fields: null, // Right now I don't think this is used for anything.
     selected_header: null,
+    hidden_list: [],
 
     load_data: function (data_object){
-            this.collection_name = data_object["collection_name"]
+            this.collection_name = _collection_name
             this.doc_list = data_object["the_rows"]
-
             var sample_row = this.doc_list[0];
-            this.header_struct = this.find_headers(this.collection_name, sample_row);
+            if (data_object.hasOwnProperty("header_struct")) {
+                this.header_struct = data_object["header_struct"];
+                this.hidden_list = data_object["hidden_list"]
+                this.rebuild_header_struct(this.header_struct)
+            }
+            else {
+                this.header_struct = this.find_headers(this.collection_name, sample_row);
+                disable_menu_item("menu-save")
+            }
             this.build_table()
         },
+
     build_table: function() {
             this.signature_list = [];
             this.build_signature_list(this.header_struct, []);
@@ -135,7 +141,10 @@ var tableObject = {
                 row_html= row_html + end_columns;
                 body_html = body_html + row_html;
             }
-            ta.append("<tbody>" + body_html + "</body>")
+            ta.append("<tbody>" + body_html + "</body>");
+            for (i = 0; i < this.hidden_list.length; ++i) {
+                $(".header" + this.hidden_list[i]).css("display", "none");
+            }
     },
     resize_table_area: function() {
             $(document).ready(function () {
@@ -161,6 +170,7 @@ var tableObject = {
                     new_header_object.id = this.next_header_id;
                     this.next_header_id += 1;
                     new_header_object.child_list = [];
+                    new_header_object.hidden = false;
                     return new_header_object;
                 }
                 case Object: {
@@ -179,6 +189,7 @@ var tableObject = {
                     depth = 1 + Math.max.apply(null, depth_list)
                     new_header_object.depth = depth;
                     new_header_object.child_list = working_list;
+                    new_header_object.hidden = false;
                     return new_header_object;
                 }
             }
@@ -191,7 +202,7 @@ var tableObject = {
             if (SHOW_ALL_HEADER_ROWS) {
                 for (depth = (hstruct.depth - 1); depth >= 0; --depth) {
                     res = res + "<tr>"
-                    res = res + this.build_header_html_for_depth(hstruct, depth)
+                    res = res + this.build_header_html_for_depth(hstruct, depth, "")
                     res = res + "</tr>"
                 }
             }
@@ -200,39 +211,45 @@ var tableObject = {
             }
             return res
         },
-    build_header_html_for_depth: function (hstruct, depth) {
+    build_header_html_for_depth: function (hstruct, depth, class_text) {
             var res = "";
             var i;
             //var th_template = "<th colspan='{{span}}' id='{{id}}' onmouseenter='mouse_enter_header(this)' onmouseleave='mouse_leave_header(this)'>" +
             //    "{{the_text}}" +
             //    "</th>"
 
-            var th_template = "<th colspan='{{span}}' id='{{id}}' onclick='click_header(this)'>" +
+            var th_template = "<th colspan='{{span}}' id='{{id}}' class='{{class_text}}' onclick='click_header(this)'>" +
                 "{{the_text}}" +
                 "</th>"
+            class_text = class_text + "header" + hstruct.id +" "
             if (hstruct.depth == depth){
-                res = Mustache.to_html(th_template, {"span": hstruct.span, "the_text": hstruct.name.toLowerCase(), "id": String(hstruct.id)})
+                res = Mustache.to_html(th_template, {
+                    "span": hstruct.span,
+                    "the_text": hstruct.name.toLowerCase(),
+                    "id": String(hstruct.id),
+                    "class_text": class_text})
             }
             for (i = 0; i < hstruct.child_list.length; ++i){
-                if (hstruct.child_list[i].hidden == false) {
-                    res = res + this.build_header_html_for_depth(hstruct.child_list[i], depth)
-                }
+                res = res + this.build_header_html_for_depth(hstruct.child_list[i], depth, class_text)
             }
             return res
         },
+    rebuild_header_struct: function(hstruct) {
+        hstruct.__proto__ = header0bject
+        for (var i = 0; i < hstruct.child_list.length; ++i) {
+            this.rebuild_header_struct(hstruct.child_list[i])
+        }
+    },
     build_signature_list: function (hstruct, sofar) {
-            var me = hstruct.name
             var i;
             var newsofar = sofar.slice(0)
-            newsofar.push(me)
+            newsofar.push([hstruct.name, "header" + hstruct.id])
             if (hstruct.child_list.length == 0) {
                 this.signature_list.push(newsofar)
                 return
             }
             for (i = 0; i < hstruct.child_list.length; ++i) {
-                if (hstruct.child_list[i].hidden == false) {
-                    this.build_signature_list(hstruct.child_list[i], newsofar)
-                }
+                this.build_signature_list(hstruct.child_list[i], newsofar)
             }
             return
         },
@@ -242,16 +259,18 @@ var tableObject = {
             var sig;
             var current;
             res = ""
-            var td_template = "<td contenteditable='true'>{{the_text}}</td>"
+            var td_template = "<td contenteditable='true' class='{{class_text}}'>{{the_text}}</td>"
             for (i = 0; i < this.signature_list.length; ++i) {
                 sig = this.signature_list[i];
                 current = row_dict;
                 // Note the loop below starts at 1 because my signature list has an extra
                 // root node listed at the start
+                id_text = ""
                 for (j = 1; j < sig.length; ++j) {
-                    current = current[sig[j]]
+                    current = current[sig[j][0]]
+                    id_text = id_text + sig[j][1] + " "
                 }
-                res = res + Mustache.to_html(td_template, {"the_text": current})
+                res = res + Mustache.to_html(td_template, {"the_text": current, "class_text": id_text.trim()})
             }
             return res
         },

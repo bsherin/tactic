@@ -12,20 +12,20 @@
       <title>{% block title %}Tactic{% endblock %}</title>
   </head>
   <body>
-  {% block navbar %}
-    <div class="navbar navbar-inverse" role="navigation">
+    <div class="navbar navbar-default" role="navigation">
         <div class="container-fluid">
             <div class="navbar-header">
                 <a class="navbar-brand" href="/">Tactic</a>
             </div>
-
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     <li><a href="/">Home</a></li>
+                    {% block navbar %}
+                    {% endblock %}
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                     {% if current_user.is_authenticated() %}
-                        <li><a href="{{ url_for('user_manage') }}">Manage User</a><</li>
+                        <li><a href="{{ url_for('user_manage') }}">Manage User</a></li>
                     <li><a href="{{ url_for('logout') }}">Sign Out</a></li>
                     {% else %}
                     <li><a href="{{ url_for('login') }}">Sign In</a></li>
@@ -34,7 +34,7 @@
             </div>
         </div>
     </div>
-  {% endblock %}
+
   {% block page_content %}{% endblock %}
     <script src="static/js/jquery.js"></script>
     <script src="static/js/bootstrap.min.js"></script>
