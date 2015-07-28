@@ -3,7 +3,7 @@
 {% block title %}Tactic - Main{% endblock %}
 
 {% block styles %}
-    <link rel="stylesheet" href="{{url_for('static', filename='css/table.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/table.css')}}">
     <style>
 {#        #table-panel {overflow-y:scroll}#}
     </style>
@@ -29,8 +29,6 @@
 </li>
 {% endblock %}
 {% block page_content %}
-    <!-- Button trigger modal -->
-
 <!-- Modal  to save the project-->
     <div id="modal-area"></div>
 
@@ -52,14 +50,19 @@
             <div id="tile-div" draggable="true" ondragstart="drag(event)">bitty text</div>
         </div>
     </div>
+    <div class="row">
+        <div class="col-xs-10">
+            <div id="status-area"></div>
+        </div>
+    </div>
 </div>
 
 {% endblock %}
 {% block scripts %}
-    <script src="{{url_for('static', filename='js/store.min.js')}}"></script>
-    <script src="{{url_for('static', filename='js/utilities.js')}}"></script>
-    <script src="{{url_for('static', filename='js/main_aux.js')}}"></script>
-    <script src="{{url_for('static', filename='js/table.js')}}"></script>
+    <script src="{{url_for('static', filename='js/socket.io.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/utilities.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/main.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/table.js')}}"></script>
     <script>
         var _collection_name = "{{collection_name}}";
         var _project_name = "{{project_name}}";

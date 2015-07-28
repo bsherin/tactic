@@ -2,6 +2,7 @@ from flask import Flask
 from pymongo import MongoClient
 from flask.ext.login import LoginManager
 from flask.ext.bootstrap import Bootstrap
+from flask.ext.socketio import SocketIO
 
 client = MongoClient()
 db = client.tacticdb
@@ -15,3 +16,4 @@ app.config.from_object('config')
 
 login_manager.init_app(app)
 bootstrap = Bootstrap(app)
+socketio=SocketIO(app)

@@ -6,7 +6,7 @@
       <meta http-equiv="X-UA-Compatible" content="IE=edge">
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap.min.css')}}">
-      <link rel="stylesheet" href="{{url_for('static', filename='css/tactic.css')}}">
+      <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/tactic.css')}}">
       {% block head %}{% endblock %}
       {% block styles %}{% endblock %}
       <title>{% block title %}Tactic{% endblock %}</title>
@@ -36,6 +36,9 @@
     </div>
 
   {% block page_content %}{% endblock %}
+    <script type=text/javascript>
+        $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+    </script>
     <script src="static/js/jquery.js"></script>
     <script src="static/js/bootstrap.min.js"></script>
     <script src="static/js/mustache.js"></script>

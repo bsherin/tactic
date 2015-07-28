@@ -1,0 +1,95 @@
+
+#main-panel {
+    margin: 25px;
+}
+
+.alert {
+    height: 30px;
+    font-size: 12px;
+    padding: 5px;
+    margin-left: 25px;
+    margin-right: 25px;
+}
+
+.menus {
+    margin-left: 25px;
+}
+
+#table-wrapper {
+    overflow-x: scroll;
+    margin: 0px;
+    padding: 0px;
+}
+
+#table-area {
+    display: block;
+    /*width: 1000px;*/
+    /*table-layout: fixed;*/
+}
+
+.hiding_column {
+    display: inline-block;
+    overflow: hidden;
+}
+
+thead {
+    background-color: #ddd;
+    display: block;
+}
+
+tbody {
+    display: block;
+    overflow-y: scroll;
+}
+
+tr {
+    display: block;
+    height: auto;
+}
+td {
+    /*display: inline-block;*/
+    max-width: 700px;
+    padding: 5px 10px;
+
+}
+td, th {
+    vertical-align: top;
+    color: #000;
+}
+
+th {
+    /*display: inline-block;*/
+    cursor: pointer;
+    font-weight: normal;
+    font-size: 15px;
+    padding: 5px 10px;
+}
+
+/*th:hover:after{*/
+    /*content: ">"*/
+/*}*/
+
+.header-glyphicon {
+    font-size: 15px;
+    color: #700;
+    cursor: pointer;
+  }
+
+.table-remove {
+  color: #700;
+  cursor: pointer;
+}
+
+.table-up, .table-down {
+  color: #007;
+  cursor: pointer;
+}
+
+.table-add {
+  color: #070;
+  cursor: pointer;
+  position: absolute;
+  top: 8px;
+  right: 0;
+
+}
