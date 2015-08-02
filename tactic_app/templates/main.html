@@ -3,6 +3,7 @@
 {% block title %}Tactic - Main{% endblock %}
 
 {% block styles %}
+    <link rel="stylesheet" href="{{url_for('static', filename='css/jquery-ui.min.css')}}">
     <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/table.css')}}">
     <style>
 {#        #table-panel {overflow-y:scroll}#}
@@ -27,6 +28,15 @@
         <li><a class="project-menu-item" id="menu-save" href="#">Save</a></li>
     </ul>
 </li>
+<li class="dropdown">
+    <a href="#" class="dropdown-toggle" id="tile-menu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    Create Tile<span class="caret"></span></a>
+    <ul class="dropdown-menu" aria-labelledby="tile-menu">
+        {% for tile_type in tile_types%}
+        <li><a class="tile-menu-item" id="{{tile_type}}" href="#">{{tile_type}}</a></li>
+        {% endfor %}
+    </ul>
+</li>
 {% endblock %}
 {% block page_content %}
 <!-- Modal  to save the project-->
@@ -35,8 +45,8 @@
     <div class="container-fluid">
     <div id="flashzone"></div>
     <div class="row">
-        <div class="col-xs-10">
-            <div id="main-panel" draggable="true" class="panel panel-default">
+        <div class="col-xs-9">
+            <div id="main-panel" class="panel panel-default">
                 <div class="panel-heading">
                     <h4 id="data-title"></h4>
                 </div>
@@ -46,8 +56,11 @@
                 </div>
             </div>
         </div>
-        <div class="col-xs-2">
-            <div id="tile-div" draggable="true" ondragstart="drag(event)">bitty text</div>
+        <div class="col-xs-3">
+            <div  class="panel panel-default" id="tile-area">
+                <div class="panel-body" id="tile-div">
+                </div>
+            </div>
         </div>
     </div>
     <div class="row">
@@ -59,8 +72,10 @@
 
 {% endblock %}
 {% block scripts %}
+    <script src="{{url_for('static', filename='js/jquery.flip.js')}}"></script>
     <script src="{{url_for('static', filename='js/socket.io.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/utilities.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/main_menus.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/main.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/table.js')}}"></script>
     <script>
@@ -68,6 +83,7 @@
         var _project_name = "{{project_name}}";
     </script>
     <script>
+        var tile_types = {{tile_types}}
         window.onload = start_post_load;
         window.onresize = resize_stub
     </script>

@@ -1,14 +1,15 @@
 __author__ = 'bls910'
 
-from flask import render_template, request
+from flask import render_template, request, make_response
 from tactic_app import app, db, socketio
 from tactic_app.file_handling import convert_multi_doc_file_to_dict_list
 from flask_login import current_user
 from flask_socketio import join_room
+from tactic_app.tiles import tile_classes
 
 @app.route('/user_manage')
 def user_manage():
-    return render_template('user_manage.html')
+    return render_template('user_manage/user_manage.html')
 
 def build_data_collection_name(collection_name):
     return '{}.data_collection.{}'.format(current_user.username, collection_name)
@@ -23,7 +24,7 @@ def add_file_as_collection():
     put_docs_in_collection(build_data_collection_name(collection_name), dict_list)
     socketio.emit('update-collection-list', namespace='/user_manage', room=current_user.get_id())
     # current_user.add_collection(collection_name)
-    return
+    return make_response("", 204)
 
 @app.route('/delete_project/<project_name>', methods=['post'])
 def delete_project(project_name):
@@ -34,11 +35,11 @@ def delete_project(project_name):
 
 @app.route('/update_projects')
 def update_projects():
-    return render_template("project_list.html")
+    return render_template("user_manage/project_list.html")
 
 @app.route('/update_collections')
 def update_collections():
-    return render_template("collection_list.html")
+    return render_template("user_manage/collection_list.html")
 
 @app.route('/delete_collection/<collection_name>', methods=['post'])
 def delete_collection(collection_name):
@@ -49,13 +50,16 @@ def delete_collection(collection_name):
 @app.route('/main/<collection_name>', methods=['get'])
 def main(collection_name):
     cname=build_data_collection_name(collection_name)
-    return render_template("main.html", collection_name=cname, project_name='');
+    return render_template("main.html", collection_name=cname, project_name='', tile_types=tile_classes.keys())
 
 @app.route('/main_project/<project_name>', methods=['get'])
 def main_project(project_name):
     project_dict = db[current_user.project_collection_name].find_one({"project_name": project_name})
     cname = project_dict["data_collection_name"]
-    return render_template("main.html", collection_name=cname, project_name=project_name);
+    return render_template("main.html",
+                           collection_name=cname,
+                           project_name=project_name,
+                           tile_types=tile_classes.keys())
 
 @socketio.on('connect', namespace='/user_manage')
 def connected_msg():

@@ -1,0 +1,12 @@
+{% import "bootstrap/wtf.html" as wtf %}
+<div class='panel panel-info tile-panel' id='tile_id_{{tile_id}}'>
+    <div class='panel-heading tile-panel-heading'>
+        <button type='button' class='close' onclick=closeMe('{{tile_id}}')><span>&times;</span></button>
+        <button type='button' class='close' onclick=flipMe('{{tile_id}}')><span>ff</span></button>
+        {{tile_name}}
+    </div>
+     <div class='panel-body tile-body' id='tile_body_{{tile_id}}'>
+         <div>Just some text</div>
+         </div>
+     </div>
+ </div>

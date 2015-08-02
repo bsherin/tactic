@@ -1,0 +1,5 @@
+{% for collection in current_user.data_collections %}
+    <label class="btn btn-default" display="block">
+        <input type="radio"  value="{{ collection }}"/> {{ collection }}
+    </label>
+{% endfor %}

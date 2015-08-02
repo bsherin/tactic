@@ -1,5 +1,8 @@
-__author__ = 'bls910'
-import re
+
+# This module contains the User class machinery required by flask-login
+
+import re, sys
+import pymongo
 from flask.ext.login import UserMixin
 from tactic_app import login_manager, db
 from bson.objectid import ObjectId
@@ -11,6 +14,7 @@ def load_user(userid):
     # This expects that userid will be a string
     # If it's an ObjectId, rather than a string, I get an error likely having to do with login_manager
     result = db.user_collection.find_one({"_id": ObjectId(userid)})
+
     if result is None:
         return None
     else:
@@ -76,7 +80,6 @@ class User(UserMixin):
                 my_collection_names.append(m.group(1))
         return my_collection_names
 
-
     def full_collection_name(self, cname):
         return self.username + ".data_collection." + cname
 
@@ -89,22 +92,3 @@ class User(UserMixin):
         for doc in db[self.project_collection_name].find():
             my_project_names.append(doc["project_name"])
         return my_project_names
-
-        # rec = self.my_record
-        # if "projects" not in rec:
-        #     db.user_collection.update_one({"username": self.username},{'$set': {'projects': []}})
-        # return db.user_collection.find_one({"username": self.username})["projects"]
-
-    # def add_collection(self, collection_name):
-    #     collection_list = self.data_collections
-    #     if not (collection_name in collection_list):
-    #         collection_list.append(collection_name)
-    #         db.user_collection.update_one({"username": self.username},{'$set': {'data_collections': collection_list}})
-    #     return
-
-    # def add_project(self, project_name, header_struct):
-    #     project_list = self.projects
-    #     if not (project_name in project_list):
-    #         project_list.append(project_name)
-    #         db.user_collection.update_one({"username": self.username},{'$set': {'projects': project_list}})
-    #     return

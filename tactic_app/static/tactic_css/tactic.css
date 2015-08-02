@@ -8,6 +8,20 @@
 }
 
 .stacked-button {
-   margin-bottom: 10px;
+    margin-bottom: 10px;
     display: block;
+}
+
+.tile-panel {
+    height: 300px;
+    overflow: scroll;
+}
+
+.tile-area {
+    margin: 0px;
+    overflow: scroll;
+}
+
+.tile-panel {
+    cursor: move;
 }
