@@ -6,6 +6,8 @@ from tactic_app.file_handling import convert_multi_doc_file_to_dict_list
 from flask_login import current_user
 from flask_socketio import join_room
 
+current_main_id = 0
+
 @app.route('/user_manage')
 def user_manage():
     return render_template('user_manage/user_manage.html')
@@ -48,17 +50,26 @@ def delete_collection(collection_name):
 
 @app.route('/main/<collection_name>', methods=['get'])
 def main(collection_name):
+    global current_main_id
+    main_id = "main_id" + str(current_main_id)
+    current_main_id += 1
     cname=build_data_collection_name(collection_name)
-    return render_template("main.html", collection_name=cname, project_name='')
+    return render_template("main.html",
+                           collection_name=cname,
+                           project_name='',
+                           main_id=main_id)
 
 @app.route('/main_project/<project_name>', methods=['get'])
 def main_project(project_name):
+    global current_main_id
+    main_id = "main_id" + str(current_main_id)
+    current_main_id += 1
     project_dict = db[current_user.project_collection_name].find_one({"project_name": project_name})
     cname = project_dict["data_collection_name"]
     return render_template("main.html",
                            collection_name=cname,
                            project_name=project_name,
-                           tile_types=tile_classes.keys())
+                           main_id=main_id)
 
 @socketio.on('connect', namespace='/user_manage')
 def connected_msg():

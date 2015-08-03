@@ -4,6 +4,7 @@ from wtforms import StringField, PasswordField, BooleanField, SubmitField
 
 tile_classes = {}
 tile_instances = {}
+select_tile_instances = {}
 current_tile_id = 0
 
 # Decorator function used to register runnable analyses in analysis_dict
@@ -16,11 +17,13 @@ class TileBase(object):
     def __init__(self):
         global current_tile_id
         self.tile_id = "tile_" + str(current_tile_id)
+        tile_instances[self.tile_id] = self
         current_tile_id += 1
 
 class SelectionTile(TileBase):
     def __init__(self):
         TileBase.__init__(self)
+        select_tile_instances[self.tile_id] = self
 
     def render_content(self, selected_text):
         return selected_text

@@ -4,7 +4,7 @@ from flask import render_template, request, jsonify
 from flask_login import current_user
 from flask_socketio import join_room
 import json
-from tactic_app.tiles import tile_classes
+from tactic_app.tiles import tile_classes, select_tile_instances
 
 # The main window should join a room associated with the user
 @socketio.on('connect', namespace='/main')
@@ -13,7 +13,7 @@ def connected_msg():
 
 @socketio.on('join', namespace='/main')
 def on_join(data):
-    room=data["user_id"]
+    room=data["room"]
     join_room(room)
     print "user joined room " + room
 
@@ -72,3 +72,12 @@ def build_data_dict(collection_name):
     result["collection_name"] = collection_name
     return result
 
+@app.route('/text_selected', methods=['get', 'post'])
+def text_selected():
+    the_text = request.json["the_text"]
+    main_id = request.json["main_id"]
+    for tile_id, tile_instance in select_tile_instances.items():
+        tile_instance.selected_text = the_text
+        socketio.emit("update-tile", {"tile_id": str(tile_id)}, namespace='/main')
+        # socketio.emit('update-collection-list', namespace='/user_manage', room=current_user.get_id())
+    return jsonify({"success": True})

@@ -11,7 +11,6 @@ from wtforms import StringField, PasswordField, BooleanField, SubmitField
 def create_tile(tile_type):
     new_tile = tile_classes[tile_type]()
     tile_id = new_tile.tile_id
-    tile_instances[tile_id] = new_tile
     tile_body = new_tile.render_content()
     result = render_template("tile.html", tile_id=tile_id,
                            tile_name=tile_type,
@@ -28,3 +27,9 @@ def submit_options(tile_id):
         "tile_id": tile_id
     })
 
+@app.route('/get_tile_content/<tile_id>', methods=['GET', 'POST'])
+def get_tile_content(tile_id):
+    return jsonify({
+        "html": tile_instances[tile_id].render_content(),
+        "tile_id": tile_id
+    })

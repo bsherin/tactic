@@ -1,4 +1,8 @@
-__author__ = 'bls910'
+
+function initiate_tile_refresh(tile_id) {
+    $.getJSON($SCRIPT_ROOT + "/get_tile_content/" + String(tile_id), refreshTileContent)
+}
+
 function closeMe(tile_id){
     $('#tile_id_' + tile_id).remove();
 }
@@ -12,7 +16,7 @@ function submitOptions(tile_id){
     $("#tile_id_" + tile_id + " input").each(function () {
             data[$(this).attr('id')] = $(this).val()
         }
-    )
+    );
     $.ajax({
         url: $SCRIPT_ROOT + "/submit_options/" + tile_id,
         contentType : 'application/json',

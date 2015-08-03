@@ -10,6 +10,7 @@ HEADER_SELECT_COLOR = "#9d9d9d";
 HEADER_NORMAL_COLOR = "#ddd"
 TABLE_SELECT_COLOR = "#e0e0e0";
 TABLE_NORMAL_COLOR = "#ffffff";
+MAX_HEIGHT = 300;
 
 function click_header(el) {
     var the_id = $(el).attr("id");
@@ -22,6 +23,17 @@ function click_header(el) {
         }
         select_header(the_id);
     }
+}
+
+function text_select(e) {
+    var the_text = document.getSelection().toString();
+    var the_dict = {"the_text": the_text, "main_id": main_id};
+    $.ajax({
+        url: $SCRIPT_ROOT + "/text_selected",
+        contentType : 'application/json',
+        type : 'POST',
+        data: JSON.stringify(the_dict),
+    });
 }
 
 function deselect_header(the_id) {
@@ -136,8 +148,8 @@ var tableObject = {
                 this.header_struct = this.find_headers(this.collection_name, sample_row);
                 menus["Project"].disable_menu_item('menu-save')
             }
-            this.build_table()
-        },
+            this.build_table();
+    },
 
     build_table: function() {
             this.signature_list = [];
@@ -286,7 +298,7 @@ var tableObject = {
             var sig;
             var current;
             res = ""
-            var td_template = "<td contenteditable='true' class='{{class_text}}'>{{the_text}}</td>"
+            var td_template = "<td contenteditable='true' onmouseup='text_select(event)' class='{{class_text}}')>{{the_text}}</td>"
             for (i = 0; i < this.signature_list.length; ++i) {
                 sig = this.signature_list[i];
                 current = row_dict;

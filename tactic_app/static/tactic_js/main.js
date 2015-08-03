@@ -1,3 +1,5 @@
+var socket;
+
 function start_post_load() {
     $.getJSON($SCRIPT_ROOT + "/get_additional_params", function (data){
         tile_types = data.tile_types;
@@ -17,7 +19,12 @@ function start_post_load() {
         forceHelperSize: true
     });
     socket = io.connect('http://'+document.domain + ':' + location.port  + '/main');
-    socket.emit('join', {"user_id":  user_id});
+    socket.emit('join', {"room":  user_id});
+    socket.emit('join', {"room":  main_id});
+    //socket.on('update_tile', initiate_tile_refresh);
+    socket.on('update-tile', function(data) {
+        initiate_tile_refresh(data["tile_id"])
+    });
 }
 
 function load_stub(data_object) {
