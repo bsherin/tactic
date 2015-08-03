@@ -5,43 +5,10 @@
 {% block styles %}
     <link rel="stylesheet" href="{{url_for('static', filename='css/jquery-ui.min.css')}}">
     <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/table.css')}}">
-    <style>
-{#        #table-panel {overflow-y:scroll}#}
-    </style>
 {% endblock %}
 
-{% block navbar %}
-<li class="dropdown">
-    <a href="#" class="dropdown-toggle" id="command-menu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Column<span class="caret"></span></a>
-        <ul class="dropdown-menu" aria-labelledby="command-menu">
-            <li class="disabled"><a class="column-menu-item require-column-select" id="menu-shift-left" href="#">Shift Left</a></li>
-            <li class="disabled"><a class="column-menu-item require-column-select" id="menu-shift-right" href="#">Shift Right</a></li>
-            <li class="disabled"><a class="column-menu-item require-column-select" id="menu-hide" href="#">Hide Column</a></li>
-            <li><a class="column-menu-item" id="menu-unhide" href="#">Unhide All</a></li>
-    </ul>
-</li>
-<li class="dropdown">
-    <a href="#" class="dropdown-toggle" id="project-menu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-    Project<span class="caret"></span></a>
-    <ul class="dropdown-menu" aria-labelledby="project-menu">
-        <li><a class="project-menu-item" id="menu-save-as" href="#">Save As...</a></li>
-        <li><a class="project-menu-item" id="menu-save" href="#">Save</a></li>
-    </ul>
-</li>
-<li class="dropdown">
-    <a href="#" class="dropdown-toggle" id="tile-menu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-    Create Tile<span class="caret"></span></a>
-    <ul class="dropdown-menu" aria-labelledby="tile-menu">
-        {% for tile_type in tile_types%}
-        <li><a class="tile-menu-item" id="{{tile_type}}" href="#">{{tile_type}}</a></li>
-        {% endfor %}
-    </ul>
-</li>
-{% endblock %}
 {% block page_content %}
-<!-- Modal  to save the project-->
     <div id="modal-area"></div>
-
     <div class="container-fluid">
     <div id="flashzone"></div>
     <div class="row">
@@ -76,15 +43,13 @@
     <script src="{{url_for('static', filename='js/socket.io.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/utilities.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/main_menus.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/tiles.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/main.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/table.js')}}"></script>
     <script>
-        var _collection_name = "{{collection_name}}";
-        var _project_name = "{{project_name}}";
-    </script>
-    <script>
-        var tile_types = {{tile_types}}
-        window.onload = start_post_load;
-        window.onresize = resize_stub
+    var _collection_name = "{{collection_name}}";
+    var _project_name = "{{project_name}}";
+    window.onload = start_post_load;
+    window.onresize = resize_stub
     </script>
 {% endblock %}

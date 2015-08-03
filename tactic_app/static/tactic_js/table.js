@@ -11,6 +11,33 @@ HEADER_NORMAL_COLOR = "#ddd"
 TABLE_SELECT_COLOR = "#e0e0e0";
 TABLE_NORMAL_COLOR = "#ffffff";
 
+function click_header(el) {
+    var the_id = $(el).attr("id");
+    if (the_id === tableObject.selected_header) {
+        deselect_header(the_id);
+    }
+    else {
+        if (tableObject.selected_header != null) {
+            deselect_header(tableObject.selected_header)
+        }
+        select_header(the_id);
+    }
+}
+
+function deselect_header(the_id) {
+    $(".header" + the_id).css('background-color', TABLE_NORMAL_COLOR);
+    $("#" + the_id).css('background-color', HEADER_NORMAL_COLOR);
+    tableObject.selected_header = null
+    disable_require_column_select()
+}
+
+function select_header(the_id) {
+    $(".header" + the_id).css('background-color', TABLE_SELECT_COLOR)
+    $("#" + the_id) .css('background-color', HEADER_SELECT_COLOR);
+    tableObject.selected_header = the_id
+    enable_require_column_select()
+}
+
 header0bject = {
     name: "placeholder",
     id: null,
@@ -107,7 +134,7 @@ var tableObject = {
             }
             else {
                 this.header_struct = this.find_headers(this.collection_name, sample_row);
-                disable_menu_item("menu-save")
+                menus["Project"].disable_menu_item('menu-save')
             }
             this.build_table()
         },

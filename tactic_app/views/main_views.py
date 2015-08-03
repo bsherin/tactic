@@ -4,6 +4,7 @@ from flask import render_template, request, jsonify
 from flask_login import current_user
 from flask_socketio import join_room
 import json
+from tactic_app.tiles import tile_classes
 
 # The main window should join a room associated with the user
 @socketio.on('connect', namespace='/main')
@@ -53,6 +54,11 @@ def grab_project_data(project_name):
     result = build_data_dict(data_collection_name)
     result["header_struct"] = project_dict["header_struct"]
     result["hidden_list"] = project_dict["hidden_list"]
+    return jsonify(result)
+
+@app.route('/get_additional_params', methods=['GET'])
+def get_additional_params():
+    result = {"tile_types": tile_classes.keys()};
     return jsonify(result)
 
 def build_data_dict(collection_name):
