@@ -3,10 +3,9 @@ __author__ = 'bls910'
 from flask import render_template, request, make_response
 from tactic_app import app, db, socketio
 from tactic_app.file_handling import convert_multi_doc_file_to_dict_list
+from tactic_app.main import create_new_mainwindow
 from flask_login import current_user
 from flask_socketio import join_room
-
-current_main_id = 0
 
 @app.route('/user_manage')
 def user_manage():
@@ -50,10 +49,8 @@ def delete_collection(collection_name):
 
 @app.route('/main/<collection_name>', methods=['get'])
 def main(collection_name):
-    global current_main_id
-    main_id = "main_id" + str(current_main_id)
-    current_main_id += 1
     cname=build_data_collection_name(collection_name)
+    main_id = create_new_mainwindow(cname, '')
     return render_template("main.html",
                            collection_name=cname,
                            project_name='',
@@ -61,11 +58,9 @@ def main(collection_name):
 
 @app.route('/main_project/<project_name>', methods=['get'])
 def main_project(project_name):
-    global current_main_id
-    main_id = "main_id" + str(current_main_id)
-    current_main_id += 1
     project_dict = db[current_user.project_collection_name].find_one({"project_name": project_name})
     cname = project_dict["data_collection_name"]
+    main_id = create_new_mainwindow(cname, project_name)
     return render_template("main.html",
                            collection_name=cname,
                            project_name=project_name,

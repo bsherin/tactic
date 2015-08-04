@@ -21,9 +21,11 @@ function start_post_load() {
     socket = io.connect('http://'+document.domain + ':' + location.port  + '/main');
     socket.emit('join', {"room":  user_id});
     socket.emit('join', {"room":  main_id});
-    //socket.on('update_tile', initiate_tile_refresh);
     socket.on('update-tile', function(data) {
         initiate_tile_refresh(data["tile_id"])
+    });
+    socket.on('push-direct-update', function(data) {
+        refreshTileContent(data)
     });
 }
 

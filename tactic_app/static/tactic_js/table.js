@@ -27,13 +27,8 @@ function click_header(el) {
 
 function text_select(e) {
     var the_text = document.getSelection().toString();
-    var the_dict = {"the_text": the_text, "main_id": main_id};
-    $.ajax({
-        url: $SCRIPT_ROOT + "/text_selected",
-        contentType : 'application/json',
-        type : 'POST',
-        data: JSON.stringify(the_dict),
-    });
+    var the_dict = {"selected_text": the_text};
+    create_tile_relevant_event("text_select", the_dict)
 }
 
 function deselect_header(the_id) {

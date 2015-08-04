@@ -13,7 +13,7 @@
 }
 
 .tile-panel {
-    height: 300px;
+    height: 265px;
     overflow: scroll;
 }
 
@@ -24,4 +24,20 @@
 
 .tile-panel {
     cursor: move;
+}
+
+.back {
+    background-color: #f7f7f7;
+    padding: 20px;
+    margin: 0px;
+}
+
+.front {
+    background-color: #dff0d8;
+    padding: 20px;
+    margin: 0px;
+}
+
+.tile-body {
+    padding: 0px;
 }

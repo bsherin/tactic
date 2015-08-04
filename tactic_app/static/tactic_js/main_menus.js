@@ -116,14 +116,8 @@ function project_command(menu_id) {
 }
 
 function tile_command(menu_id) {
-    $.getJSON($SCRIPT_ROOT + "/create_tile/" + String(menu_id), function (data) {
-        $("#tile-div").append(data.html);
-        $("#tile_body_" + data.tile_id).flip({
-            "trigger": "manual",
-            "autoSize": false
-        });
-        $("#tile_id_" + data.tile_id).resizable({handles: "se"})
-    })
+    create_new_tile(menu_id)
+
 }
 
 function disable_require_column_select(){

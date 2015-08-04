@@ -4,7 +4,7 @@ from flask import render_template, request, jsonify
 from flask_login import current_user
 from flask_socketio import join_room
 import json
-from tactic_app.tiles import tile_classes, select_tile_instances
+from tactic_app.tiles import tile_classes
 
 # The main window should join a room associated with the user
 @socketio.on('connect', namespace='/main')
@@ -26,7 +26,6 @@ def save_as_modal():
 
 @app.route('/save_new_project', methods=['POST'])
 def save_new_project():
-    # data_dict = json.loads(request.args["the_data"])
     data_dict = request.json
     db[current_user.project_collection_name].insert_one(data_dict)
     socketio.emit('update-project-list', namespace='/user_manage', room=current_user.get_id())
@@ -34,7 +33,6 @@ def save_new_project():
 
 @app.route('/update_project', methods=['POST'])
 def update_project():
-    # data_dict = json.loads(request.args["the_data"])
     data_dict = request.json
     db[current_user.project_collection_name].update_one({"project_name": data_dict["project_name"]},
                                                         {'$set': data_dict})
@@ -72,12 +70,3 @@ def build_data_dict(collection_name):
     result["collection_name"] = collection_name
     return result
 
-@app.route('/text_selected', methods=['get', 'post'])
-def text_selected():
-    the_text = request.json["the_text"]
-    main_id = request.json["main_id"]
-    for tile_id, tile_instance in select_tile_instances.items():
-        tile_instance.selected_text = the_text
-        socketio.emit("update-tile", {"tile_id": str(tile_id)}, namespace='/main')
-        # socketio.emit('update-collection-list', namespace='/user_manage', room=current_user.get_id())
-    return jsonify({"success": True})
