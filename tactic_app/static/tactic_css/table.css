@@ -27,13 +27,18 @@
     /*table-layout: fixed;*/
 }
 
+table, th, td {
+    border: 1px solid #9d9d9d;
+    border-collapse: separate;
+}
+
 .hiding_column {
     display: inline-block;
     overflow: hidden;
 }
 
 thead {
-    background-color: #ddd;
+    /*background-color: #c9e2b3;*/
     display: block;
 }
 
@@ -64,6 +69,7 @@ th {
     font-weight: normal;
     font-size: 15px;
     padding: 5px 10px;
+    overflow:hidden
 }
 
 /*th:hover:after{*/

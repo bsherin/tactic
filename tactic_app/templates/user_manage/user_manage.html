@@ -8,59 +8,68 @@
 
 {% block page_content %}
     <div class="container-fluid">
-        <div class="row">
-            <div class="col-xs-2">
-                <h1>{{ current_user.username }}</h1>
-            </div>
+        <div class="page-header">
+            <h1>{{ current_user.username }}</h1>
         </div>
         <div class="row">
-            <div class="col-xs-2">
-                <h4>My Collections</h4>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-xs-2">
-                <div class="btn-group-vertical" id="collection-selector" data-toggle="buttons">
-                    {% for collection in current_user.data_collections %}
-                        <label class="btn btn-default" display="block">
-                            <input type="radio"  value="{{ collection }}"/> {{ collection }}
-                        </label>
-                    {% endfor %}
+            <div class="col-xs-6">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <h2>My Collections</h2>
+                    </div>
+                </div>
+                <div class="row" style="margin-top: 10px">
+                    <div class="col-xs-12">
+                        <form action="add_file_as_collection" method="post" enctype="multipart/form-data">
+                            <input class="btn btn-warning stacked-button" style="display: inline" type="submit" value="Add File">
+                            <input class="btn btn-default stacked-button" id="file-inputter" style="display: inline" type="file" name="file">
+                        </form>
+                    </div>
+                </div>
+                <div class="row" style="margin-top: 25px">
+                    <div class="col-xs-12">
+                        <div style="display: inline-block; vertical-align:top">
+                            <button class="btn btn-primary stacked-button" onclick="load_selected_collection()">Load collection</button>
+                            <button class="btn btn-primary stacked-button" onclick="delete_selected_collection()">Delete collection</button>
+                            <button class="btn btn-primary stacked-button" onclick="duplicate_selected_collection()">Duplicate collection</button>
+                        </div>
+                        <div style="display: inline-block; vertical-align: top; margin-left: 10px">
+                            <h5 style="text-align:center; margin-top: 0px">Collections</h5>
+                            <div class="btn-group-vertical" id="collection-selector" data-toggle="buttons">
+                                {% for collection in current_user.data_collections %}
+                                    <label class="btn btn-default">
+                                        <input type="radio"  value="{{ collection }}"/> {{ collection }}
+                                    </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-{#            <select multiple>#}
-{#                    {% for collection in current_user.data_collections %}#}
-{#                        <option value='{{collection}}'\> {{collection}}</option>#}
-{#                    {% endfor %}#}
-{#            </select>#}
-            <div class="col-xs-5 ">
-                <button class="btn btn-primary stacked-button" onclick="load_selected_collection()">Load selected collection</button>
-                <button class="btn btn-primary stacked-button" onclick="delete_selected_collection()">Delete selected collection</button>
-                <button class="btn btn-primary stacked-button" onclick="duplicate_selected_collection()">Duplicate selected collection</button>
-                <form action="add_file_as_collection" method="post" enctype="multipart/form-data">
-                    <input class="btn btn-primary stacked-button" style="display: inline" type="submit" value="Add File as Collection">
-                    <input class="btn btn-default stacked-button" id="file-inputter" style="display: inline" type="file" name="file">
-                </form>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-xs-2">
-                <h4>My Projects</h4>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-xs-2">
-                <div class="btn-group-vertical" id="project-selector" data-toggle="buttons">
-                    {% for project in current_user.project_names %}
-                        <label class="btn btn-default" display="block">
-                            <input type="radio"  value="{{ project }}"/> {{ project }}
-                        </label>
-                    {% endfor %}
+            <div class="col-xs-6">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <h2>My Projects</h2>
+                    </div>
                 </div>
-            </div>
-            <div class="col-xs-5 ">
-                <button class="btn btn-primary stacked-button" onclick="load_selected_project()">Load selected project</button>
-                <button class="btn btn-primary stacked-button" onclick="delete_selected_project()">Delete selected project</button>
+                <div class="row" style="margin-top: 10px">
+                    <div class="col-xs-12">
+                        <div style="display: inline-block; vertical-align:top">
+                            <button class="btn btn-primary stacked-button" onclick="load_selected_project()">Load project</button>
+                            <button class="btn btn-primary stacked-button" onclick="delete_selected_project()">Delete project</button>
+                        </div>
+                        <div style="display: inline-block; vertical-align: top; margin-left: 10px">
+                            <h5 style="text-align:center; margin-top: 0px">Projects</h5>
+                            <div class="btn-group-vertical" id="project-selector" data-toggle="buttons">
+                                {% for project in current_user.project_names %}
+                                    <label class="btn btn-default">
+                                        <input type="radio"  value="{{ project }}"/> {{ project }}
+                                    </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -69,7 +78,7 @@
     <script src="{{url_for('static', filename='js/socket.io.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/user_manage.js')}}"></script>
     <script>
-        var user_id = "{{current_user.get_id()}}"
+        var user_id = "{{current_user.get_id()}}";
         window.onload = start_post_load;
     </script>
 {% endblock %}

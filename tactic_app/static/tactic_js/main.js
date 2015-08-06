@@ -30,7 +30,7 @@ function start_post_load() {
 }
 
 function load_stub(data_object) {
-    tableObject.load_data(data_object)
+    tableObject.load_data(data_object);
 }
 
 function resize_stub(data_object) {

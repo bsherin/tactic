@@ -18,18 +18,21 @@ function create_new_tile(menu_id) {
             });
             $("#tile_id_" + data.tile_id).resizable({
                 handles: "se",
-                resize: resize_tile_area})
+                resize: resize_tile_area
+            });
         }
     })
 }
 
 function resize_tile_area(event, ui) {
-    var header_element = ui.element.children(".panel-heading")[0]
-    var hheight = $(header_element).outerHeight()
-    var front_element = ui.element.find(".front")[0]
-    $(front_element).outerHeight(ui.size.height - hheight)
-    var back_element = ui.element.find(".back")[0]
-    $(back_element).outerHeight(ui.size.height - hheight)
+    var header_element = ui.element.children(".panel-heading")[0];
+    var hheight = $(header_element).outerHeight();
+    var front_element = ui.element.find(".front")[0];
+    $(front_element).outerHeight(ui.size.height - hheight);
+    $(front_element).outerWidth(ui.size.width);
+    var back_element = ui.element.find(".back")[0];
+    $(back_element).outerHeight(ui.size.height - hheight);
+    $(back_element).outerWidth(ui.size.width)
 }
 
 function create_tile_relevant_event(event_name, data_dict){

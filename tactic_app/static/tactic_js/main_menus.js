@@ -95,7 +95,7 @@ function column_command(menu_id) {
             }
         }
     }
-    if (menu_id == "menu-unhide") {
+    if (menu_id == "unhide") {
         tableObject.hidden_list = [];
         tableObject.build_table();
     }

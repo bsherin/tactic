@@ -7,9 +7,10 @@ MAX_BIGFIELD_FRACTION = .25;
 SHOW_ALL_HEADER_ROWS = true;
 ADDED_HEADER_WIDTH = 35;
 HEADER_SELECT_COLOR = "#9d9d9d";
-HEADER_NORMAL_COLOR = "#ddd"
+HEADER_NORMAL_COLOR = "#c9e2b3";
 TABLE_SELECT_COLOR = "#e0e0e0";
 TABLE_NORMAL_COLOR = "#ffffff";
+TABLE_BORDER_STYLE = "1px solid #9d9d9d;"
 MAX_HEIGHT = 300;
 
 function click_header(el) {
@@ -25,6 +26,71 @@ function click_header(el) {
     }
 }
 
+function true_col_index(el) {
+    var cell_index = el.cellIndex;
+    var sib_collection = el.parentElement.children
+    ind = 0;
+    for (var i = 0; i < cell_index; ++i) {
+        ind = ind + sib_collection[i].colSpan
+    }
+    return ind
+}
+
+function find_super_headers(el) {
+    var the_row = el.parentElement.rowIndex;
+    var true_col = true_col_index(el);
+    var header_rows = $("thead").children()
+    var super_headers = []
+
+    var the_th, hrow, ths, i, j, tc_index;
+    for (i = (the_row - 1); i >= 0; --i){
+        hrow = header_rows[i];
+        ths = $(hrow).children();
+        for (j = 0; j < ths.length ; ++j) {
+            the_th = ths[j];
+            tc_index = true_col_index(the_th)
+            if ((tc_index <= true_col) && ((tc_index + the_th.colSpan - 1) >= true_col)) {
+                super_headers.push(the_th)
+                break;
+            }
+        }
+    }
+    return super_headers
+}
+
+function find_sub_headers(el) {
+    var the_row = el.parentElement.rowIndex;
+    var true_col = true_col_index(el);
+    var cspan = el.colSpan
+    var header_rows = $("thead").children()
+    var sub_headers = []
+    var the_th, hrow, ths, i, j, tch
+    for (i = the_row + 1; i < header_rows.length; ++i){
+        hrow = header_rows[i];
+        ths = $(hrow).children();
+        for (j = 0; j < ths.length ; ++j) {
+            the_th = ths[j];
+            tch = true_col_index(the_th)
+            if ((tch >= true_col) && (tch < (true_col + el.colSpan))){
+                sub_headers.push(the_th)
+            }
+        }
+    }
+    return sub_headers
+}
+
+function resize_from_sub_headers (el_list) {
+    for (var i = 0; i < el_list.length; ++i) {
+        var total_width = 0;
+        var el = el_list[i];
+        var slist = $(el).data("sub_headers")
+        for (var j = 0; j < slist.length; ++j) {
+            total_width += $(slist[j]).outerWidth()
+        }
+        $(el).outerWidth(total_width)
+    }
+}
+
 function text_select(e) {
     var the_text = document.getSelection().toString();
     var the_dict = {"selected_text": the_text};
@@ -32,8 +98,10 @@ function text_select(e) {
 }
 
 function deselect_header(the_id) {
-    $(".header" + the_id).css('background-color', TABLE_NORMAL_COLOR);
-    $("#" + the_id).css('background-color', HEADER_NORMAL_COLOR);
+    $("tbody .header" + the_id).css('background-color', TABLE_NORMAL_COLOR);
+    $("tbody .header" + the_id).css('border', TABLE_BORDER_STYLE);
+    $("thead .header" + the_id).css('background-color', HEADER_NORMAL_COLOR);
+    $("thead .header" + the_id).css('border', TABLE_BORDER_STYLE);
     tableObject.selected_header = null
     disable_require_column_select()
 }
@@ -146,12 +214,29 @@ var tableObject = {
             this.build_table();
     },
 
+    label_super_headers: function() {
+        $("th").each(function(index){
+            var shs = find_super_headers(this)
+            $(this).data("super_headers", shs)
+        })
+    },
+
+    label_sub_headers: function() {
+        $("th").each(function(index){
+            var shs = find_sub_headers(this)
+            $(this).data("sub_headers", shs)
+        })
+    },
+
+
     build_table: function() {
             this.signature_list = [];
             this.build_signature_list(this.header_struct, []);
             this.create_all_html();
             this.resize_table_area();
             this.freeze_header(this.table_id);
+            this.label_super_headers()
+            this.label_sub_headers()
         },
     create_all_html: function (){
             var header_html = "<thead>" + this.get_header_html(this.header_struct) + "</thead>";
@@ -179,6 +264,18 @@ var tableObject = {
             for (i = 0; i < this.hidden_list.length; ++i) {
                 $(".header" + this.hidden_list[i]).css("display", "none");
             }
+            $("thead").css('background-color', HEADER_NORMAL_COLOR);
+            $(".can-resize").resizable({
+                handles: "e",
+                resize: this.resize_whole_column
+            })
+
+    },
+    resize_whole_column: function (event, ui) {
+        var header_element = ui.element;
+        var h_class = "header" + header_element.attr("id");
+        $("." + h_class).outerWidth(ui.size.width);
+        resize_from_sub_headers(ui.element.data("super_headers"))
     },
     resize_table_area: function() {
             $(document).ready(function () {
@@ -231,42 +328,73 @@ var tableObject = {
     get_header_html: function (hstruct) {
             var depth;
             var res = "";
+            var res_object;
+            var total_span;
+            var i;
 
             //Here we start with depth - 1 because we don't want to print the table title.
+            var ncols = this.signature_list.length + 2;
             if (SHOW_ALL_HEADER_ROWS) {
                 for (depth = (hstruct.depth - 1); depth >= 0; --depth) {
-                    res = res + "<tr>"
-                    res = res + this.build_header_html_for_depth(hstruct, depth, "")
-                    res = res + "</tr>"
+                    res_object = this.build_header_html_for_depth(hstruct, depth, "");
+                    var new_html = res_object.html;
+                    total_span = res_object.total_span;
+                    for (i = total_span; i < ncols; ++i) {
+                        new_html += "<th colspan='1'> </th>"
+                    }
+                    res = res + "<tr>" + new_html + "</tr>"
                 }
             }
             else {
-                res = "<tr>" + this.build_header_html_for_depth(hstruct, 0, "") + "</tr>"
+                res_object = this.build_header_html_for_depth(hstruct, 0, "")
+                new_html = res_object.html;
+                total_span = res.total_span;
+                for (i = total_span; i < ncols; ++i) {
+                    new_html += "<th colspan='1'> </th>"
+                }
+                res = res + "<tr>" + new_html + "</tr>";
             }
             return res
         },
     build_header_html_for_depth: function (hstruct, depth, class_text) {
             var res = "";
             var i;
-            //var th_template = "<th colspan='{{span}}' id='{{id}}' onmouseenter='mouse_enter_header(this)' onmouseleave='mouse_leave_header(this)'>" +
-            //    "{{the_text}}" +
-            //    "</th>"
-
             var th_template = "<th colspan='{{span}}' id='{{id}}' class='{{class_text}}' onclick='click_header(this)'>" +
+                "{{the_text}}" +
+                "</th>"
+            var th_template_resize = "<th colspan='{{span}}' id='{{id}}' class='{{class_text}} can-resize' onclick='click_header(this)'>" +
                 "{{the_text}}" +
                 "</th>"
             class_text = class_text + "header" + hstruct.id +" "
             if (hstruct.depth == depth){
-                res = Mustache.to_html(th_template, {
-                    "span": hstruct.span,
-                    "the_text": hstruct.name.toLowerCase(),
-                    "id": String(hstruct.id),
-                    "class_text": class_text})
+                if (hstruct.span == 1) {
+                    res = Mustache.to_html(th_template_resize, {
+                        "span": hstruct.span,
+                        "the_text": hstruct.name.toLowerCase(),
+                        "id": String(hstruct.id),
+                        "class_text": class_text
+                    })
+                }
+                else {
+                    res = Mustache.to_html(th_template, {
+                        "span": hstruct.span,
+                        "the_text": hstruct.name.toLowerCase(),
+                        "id": String(hstruct.id),
+                        "class_text": class_text
+                    })
+                }
+                var total_span = hstruct.span;
+            }
+            else {
+                var total_span = 0
             }
             for (i = 0; i < hstruct.child_list.length; ++i){
-                res = res + this.build_header_html_for_depth(hstruct.child_list[i], depth, class_text)
+                var res_object = this.build_header_html_for_depth(hstruct.child_list[i], depth, class_text)
+                res = res + res_object.html
+                total_span += res_object.total_span
+                //res = res + this.build_header_html_for_depth(hstruct.child_list[i], depth, class_text, total_span)
             }
-            return res
+            return {"html": res, "total_span":total_span}
         },
     rebuild_header_struct: function(hstruct) {
         hstruct.__proto__ = header0bject
@@ -359,13 +487,21 @@ var tableObject = {
 
             // Set all column widths
             var i;
-            var new_width
+            var new_width;
+            var the_row;
+            var ncols;
+            var c;
+            var the_child;
+            var new_width;
+            var the_colspan;
+            var entry_counter;
             for (r = 0; r < all_rows.length; ++r) {
-                the_row = all_rows[r]
-                ncols = the_row.cells.length
-                c = 0
+                the_row = all_rows[r];
+                ncols = this.signature_list.length + 2; // We add 2 for the 2 extra columns added at the end
+                c = 0;
+                entry_counter = 0;
                 while (c < ncols){
-                    the_child = the_row.cells[c];
+                    the_child = the_row.cells[entry_counter];
                     the_colspan = the_child.colSpan;
                     new_width = 0;
                     for (i = 0; i < the_colspan; ++i){
@@ -376,6 +512,7 @@ var tableObject = {
                     //    the_child.style.minWidth = MIN_BIGFIELD_WIDTH
                     //}
                     c = c + the_colspan
+                    entry_counter += 1
                 }
             }
     },
