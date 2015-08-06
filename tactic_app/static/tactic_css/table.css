@@ -3,6 +3,10 @@
     margin: 5px;
 }
 
+.ui-resizable-e {
+    width: 15px;
+}
+
 .alert {
     height: 30px;
     font-size: 12px;
