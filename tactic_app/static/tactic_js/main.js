@@ -7,10 +7,10 @@ function start_post_load() {
         render_menus();
     });
     if (_project_name == "") {
-        $.getJSON($SCRIPT_ROOT + "/grab_data/" + String(_collection_name), load_stub);
+        $.getJSON($SCRIPT_ROOT + "/grab_data/" + String(main_id), load_stub);
     }
     else {
-        $.getJSON($SCRIPT_ROOT + "/grab_project_data/" + String(_project_name), load_stub)
+        $.getJSON($SCRIPT_ROOT + "/grab_project_data/" + String(main_id), load_stub)
     }
     $("#tile-div").sortable({
         handle: '.panel-heading',
@@ -25,7 +25,16 @@ function start_post_load() {
         initiate_tile_refresh(data["tile_id"])
     });
     socket.on('push-direct-update', function(data) {
-        refreshTileContent(data)
+        refreshTileContent(data);
+    });
+    socket.on('show-front', function(data) {
+        showFront(data);
+    });
+    socket.on('start-spinner', function(data) {
+        startSpinner(data);
+    });
+    socket.on('stop-spinner', function(data) {
+        stopSpinner(data);
     });
 }
 

@@ -14,7 +14,10 @@
 
 .tile-panel {
     height: 265px;
-    overflow: scroll;
+}
+
+.tile-panel-heading {
+    cursor: move;
 }
 
 .tile-area {
@@ -22,8 +25,14 @@
     overflow: scroll;
 }
 
-.tile-panel {
-    cursor: move;
+#spin-place {
+    position: relative;
+}
+
+#tile-display-area {
+    overflow: scroll;
+    padding: 0;
+    margin: 15px 15px 15px 15px;
 }
 
 .back {
@@ -34,7 +43,7 @@
 
 .front {
     background-color: #dff0d8;
-    padding: 20px;
+    padding: 0px;
     margin: 0px;
 }
 

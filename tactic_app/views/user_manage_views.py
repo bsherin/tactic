@@ -50,7 +50,7 @@ def delete_collection(collection_name):
 @app.route('/main/<collection_name>', methods=['get'])
 def main(collection_name):
     cname=build_data_collection_name(collection_name)
-    main_id = create_new_mainwindow(cname, '')
+    main_id = create_new_mainwindow(cname)
     return render_template("main.html",
                            collection_name=cname,
                            project_name='',

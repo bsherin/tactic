@@ -228,7 +228,6 @@ var tableObject = {
         })
     },
 
-
     build_table: function() {
             this.signature_list = [];
             this.build_signature_list(this.header_struct, []);
@@ -276,6 +275,7 @@ var tableObject = {
         var h_class = "header" + header_element.attr("id");
         $("." + h_class).outerWidth(ui.size.width);
         resize_from_sub_headers(ui.element.data("super_headers"))
+        this.column_widths[ui.element.cellIndex] = ui.element.offsetWidth;
     },
     resize_table_area: function() {
             $(document).ready(function () {
@@ -358,7 +358,7 @@ var tableObject = {
         },
     build_header_html_for_depth: function (hstruct, depth, class_text) {
             var res = "";
-            var i;
+            var i, total_span;
             var th_template = "<th colspan='{{span}}' id='{{id}}' class='{{class_text}}' onclick='click_header(this)'>" +
                 "{{the_text}}" +
                 "</th>"
@@ -383,10 +383,10 @@ var tableObject = {
                         "class_text": class_text
                     })
                 }
-                var total_span = hstruct.span;
+                total_span = hstruct.span;
             }
             else {
-                var total_span = 0
+                total_span = 0
             }
             for (i = 0; i < hstruct.child_list.length; ++i){
                 var res_object = this.build_header_html_for_depth(hstruct.child_list[i], depth, class_text)
@@ -488,11 +488,8 @@ var tableObject = {
             // Set all column widths
             var i;
             var new_width;
-            var the_row;
-            var ncols;
             var c;
             var the_child;
-            var new_width;
             var the_colspan;
             var entry_counter;
             for (r = 0; r < all_rows.length; ++r) {

@@ -31,7 +31,7 @@
     /*table-layout: fixed;*/
 }
 
-table, th, td {
+#table-area, #table-area th, #table-area td {
     border: 1px solid #9d9d9d;
     border-collapse: separate;
 }
@@ -41,21 +41,21 @@ table, th, td {
     overflow: hidden;
 }
 
-thead {
+#table-area thead {
     /*background-color: #c9e2b3;*/
     display: block;
 }
 
-tbody {
+#table-area tbody {
     display: block;
     overflow-y: scroll;
 }
 
-tr {
+#table-area tr {
     display: block;
     height: auto;
 }
-td {
+#table-area td {
     /*display: inline-block;*/
     max-width: 700px;
     padding: 5px 10px;
