@@ -1,7 +1,7 @@
 <div class='panel panel-info tile-panel' id='tile_id_{{tile_id}}'>
     <div class='panel-heading tile-panel-heading'>
-        <button type='button' class='close' onclick=closeMe('{{tile_id}}')><span>&times;</span></button>
-        <button type='button' class='notclose' onclick=flipMe('{{tile_id}}')><span style="font-size:12px" class="glyphicon glyphicon-repeat"></span></button>
+        <button type='button' class='close' onclick=tile_dict['{{tile_id}}'].closeMe()><span>&times;</span></button>
+        <button type='button' class='notclose' onclick=tile_dict['{{tile_id}}'].flipMe()><span style="font-size:12px" class="glyphicon glyphicon-repeat"></span></button>
         {{tile_name}}
         <span id="spin-place"></span>
     </div>
@@ -11,7 +11,7 @@
          <form>
             {{form_text | safe}}
          </form>
-         <button class='btn btn-primary' onclick=submitOptions("{{tile_id}}")>Submit</button>
+         <button class='btn btn-primary' onclick=tile_dict['{{tile_id}}'].submitOptions()>Submit</button>
          </div>
      </div>
  </div>

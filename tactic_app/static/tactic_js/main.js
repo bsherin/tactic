@@ -1,7 +1,7 @@
 var socket;
 
 function start_post_load() {
-    $.getJSON($SCRIPT_ROOT + "/get_additional_params", function (data){
+    $.getJSON($SCRIPT_ROOT + "/get_additional_params", function (data) {
         tile_types = data.tile_types;
         build_menu_objects();
         render_menus();
@@ -18,26 +18,13 @@ function start_post_load() {
         revert: 'invalid',
         forceHelperSize: true
     });
-    socket = io.connect('http://'+document.domain + ':' + location.port  + '/main');
-    socket.emit('join', {"room":  user_id});
-    socket.emit('join', {"room":  main_id});
-    socket.on('update-tile', function(data) {
-        initiate_tile_refresh(data["tile_id"])
-    });
-    socket.on('push-direct-update', function(data) {
-        refreshTileContent(data);
-    });
-    socket.on('show-front', function(data) {
-        showFront(data);
-    });
-    socket.on('start-spinner', function(data) {
-        startSpinner(data);
-    });
-    socket.on('stop-spinner', function(data) {
-        stopSpinner(data);
+    socket = io.connect('http://' + document.domain + ':' + location.port + '/main');
+    socket.emit('join', {"room": user_id});
+    socket.emit('join', {"room": main_id});
+    socket.on('tile-message', function (data) {
+        tile_dict[data.tile_id][data.message](data)
     });
 }
-
 function load_stub(data_object) {
     tableObject.load_data(data_object);
 }

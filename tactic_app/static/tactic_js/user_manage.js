@@ -25,7 +25,6 @@ function load_selected_collection() {
 function delete_selected_collection() {
     var collection_name = $('#collection-selector > .btn.active').text().trim();
     $.post($SCRIPT_ROOT + "/delete_collection/" + String(collection_name))
-    //$("#collection-selector").load($SCRIPT_ROOT + "/delete_collection/" + String(collection_name))
 }
 
 function load_selected_project() {
@@ -36,5 +35,4 @@ function load_selected_project() {
 function delete_selected_project() {
     var project_name = $('#project-selector > .btn.active').text().trim();
     $.post($SCRIPT_ROOT + "/delete_project/" + String(project_name))
-    //$("#project-selector").load($SCRIPT_ROOT + "/delete_project/" + String(project_name))
 }

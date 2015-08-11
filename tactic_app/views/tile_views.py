@@ -45,11 +45,6 @@ def submit_options(tile_id):
     data_dict = request.json
     main_id = request.json["main_id"]
     mainwindow_instances[main_id].tile_instances[tile_id].post_event({"event_name": "UpdateOptions", "data": data_dict})
-    # mainwindow_instances[main_id].tile_instances[tile_id].post_event({"event_name": "RefreshTile", "data": {}})
-    # return jsonify({
-    #     "html": mainwindow_instances[main_id].tile_instances[tile_id].render_content(),
-    #     "tile_id": tile_id
-    # })
     return jsonify({"success": True})
 
 @app.route('/get_tile_content/<tile_id>', methods=['GET', 'POST'])

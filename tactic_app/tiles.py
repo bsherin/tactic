@@ -63,20 +63,35 @@ class TileBase(threading.Thread):
         return
 
     def initiate_update(self):
-        socketio.emit("update-tile", {"tile_id": str(self.tile_id)}, namespace='/main', room=self.main_id)
+        socketio.emit("tile-message",
+              {"tile_id": str(self.tile_id), "message": "initiateTileRefresh"},
+              namespace='/main', room=self.main_id)
 
     def show_front(self):
-        socketio.emit("show-front", {"tile_id": str(self.tile_id)}, namespace='/main', room=self.main_id)
+        socketio.emit("tile-message",
+                      {"tile_id": str(self.tile_id), "message": "showFront"},
+                      namespace='/main', room=self.main_id)
 
     def push_direct_update(self):
         new_html = self.render_content()
-        socketio.emit("push-direct-update", {"tile_id": str(self.tile_id), "html": new_html}, namespace='/main', room=self.main_id)
+        socketio.emit("tile-message",
+                      {"tile_id": str(self.tile_id), "message": "refreshTileContent", "html": new_html},
+                      namespace='/main', room=self.main_id)
 
     def start_spinner(self):
-        socketio.emit("start-spinner", {"tile_id": str(self.tile_id)}, namespace='/main', room=self.main_id)
+        # socketio.emit("start-spinner", {"tile_id": str(self.tile_id)}, namespace='/main', room=self.main_id)
+        socketio.emit("tile-message",
+                      {"tile_id": str(self.tile_id), "message": "startSpinner"},
+                      namespace='/main', room=self.main_id)
 
     def stop_spinner(self):
-        socketio.emit("stop-spinner", {"tile_id": str(self.tile_id)}, namespace='/main', room=self.main_id)
+        # socketio.emit("stop-spinner", {"tile_id": str(self.tile_id)}, namespace='/main', room=self.main_id)
+        socketio.emit("tile-message",
+              {"tile_id": str(self.tile_id), "message": "stopSpinner"},
+              namespace='/main', room=self.main_id)
+
+    def render_content(self):
+        print "not implemented"
 
 class SelectionTile(TileBase):
     def __init__(self, main_id, tile_id):

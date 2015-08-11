@@ -1,5 +1,7 @@
 
-var spinner_dict = {};
+
+var tile_dict = {}
+
 function create_new_tile(menu_id) {
     data_dict = {};
     data_dict["main_id"] = main_id;
@@ -21,10 +23,23 @@ function create_new_tile(menu_id) {
                 handles: "se",
                 resize: resize_tile_area
             });
+            new_tile_object = Object.create(tile_object);
+            new_tile_object.tile_id = data.tile_id;
+            tile_dict[data.tile_id] = new_tile_object;
             do_resize(data.tile_id);
-            initiate_tile_refresh(data.tile_id);
+            new_tile_object.initiateTileRefresh();
         }
     })
+}
+
+function create_tile_relevant_event(event_name, data_dict){
+    data_dict["main_id"] = main_id;
+    $.ajax({
+        url: $SCRIPT_ROOT + "/tile_relevant_event/" + event_name,
+        contentType : 'application/json',
+        type : 'POST',
+        data: JSON.stringify(data_dict)
+    });
 }
 
 function resize_tile_area(event, ui) {
@@ -51,72 +66,68 @@ function do_resize(tile_id){
     resize_tile_area(null, ui);
 }
 
-function create_tile_relevant_event(event_name, data_dict){
-    data_dict["main_id"] = main_id
-    $.ajax({
-        url: $SCRIPT_ROOT + "/tile_relevant_event/" + event_name,
-        contentType : 'application/json',
-        type : 'POST',
-        data: JSON.stringify(data_dict)
-    });
+function refresh_tile_content(data){
+    tile_dict[data.tile_id].refreshTileContent(data)
 }
 
-function initiate_tile_refresh(tile_id) {
-    data_dict["main_id"] = main_id
-    $.ajax({
-        url: $SCRIPT_ROOT + "/get_tile_content/" + String(tile_id),
-        contentType : 'application/json',
-        type : 'POST',
-        data: JSON.stringify(data_dict),
-        success: refreshTileContent
-    });
-}
+var tile_object = {
+    tile_id: null,
+    spinner: null,
+    full_selector: function() {
+        return "#tile_id_" + this.tile_id;
+    },
+    initiateTileRefresh: function () {
+        data_dict["main_id"] = main_id;
+        $.ajax({
+            url: $SCRIPT_ROOT + "/get_tile_content/" + String(this.tile_id),
+            contentType : 'application/json',
+            type : 'POST',
+            data: JSON.stringify(data_dict),
+            success: refresh_tile_content
+        });
+    },
+    submitOptions: function (){
+        var data = {};
+        data["main_id"] = main_id;
+        $(this.full_selector() + " input").each(function () {
+                data[$(this).attr('id')] = $(this).val()
+            }
+        );
+        $(this.full_selector() + " select :selected").each(function () {
+                data[$(this).parent().attr('id')] = $(this).text()
+            }
+        );
+        $.ajax({
+            url: $SCRIPT_ROOT + "/submit_options/" + this.tile_id,
+            contentType : 'application/json',
+            type : 'POST',
+            async: false,
+            data: JSON.stringify(data),
+            dataType: 'json'
+        });
+    },
+    refreshTileContent: function (data) {
+        $(this.full_selector() + " #tile-display-area").html(data["html"]);
+        this.showFront()
+    },
+    startSpinner: function() {
+        this.spinner = new Spinner({scale: 0.4, left:"15px"}).spin();
+        $(this.full_selector() + " #spin-place").html(this.spinner.el);
+    },
 
-function submitOptions(tile_id){
-    var data = {};
-    data["main_id"] = main_id;
-    $("#tile_id_" + tile_id + " input").each(function () {
-            data[$(this).attr('id')] = $(this).val()
-        }
-    );
-    $("#tile_id_" + tile_id + " select :selected").each(function () {
-            data[$(this).parent().attr('id')] = $(this).text()
-        }
-    );
-    $.ajax({
-        url: $SCRIPT_ROOT + "/submit_options/" + tile_id,
-        contentType : 'application/json',
-        type : 'POST',
-        async: false,
-        data: JSON.stringify(data),
-        dataType: 'json',
-    });
-}
+    stopSpinner: function () {
+        this.spinner.stop();
+        this.spinner = null
+    },
 
-function refreshTileContent(data) {
-    $("#tile_id_" + data.tile_id + " #tile-display-area").html(data["html"])
-    $("#tile_body_" + data.tile_id).flip(false)
-}
+    closeMe: function(){
+        $(this.full_selector()).remove();
+    },
 
-function startSpinner(data) {
-    var spinner = new Spinner({scale: 0.4, left:"15px"}).spin();
-    spinner_dict[data.tile_id] = spinner;
-    $("#tile_id_" + data.tile_id + " #spin-place").html(spinner.el);
-}
-
-function stopSpinner(data) {
-    spinner_dict[data.tile_id].stop()
-    delete spinner_dict[data.tile_id]
-}
-
-function closeMe(tile_id){
-    $('#tile_id_' + tile_id).remove();
-}
-
-function flipMe(tile_id){
-    $("#tile_body_" + tile_id).flip('toggle');
-}
-
-function showFront(data){
-    $("#tile_body_" + data.tile_id).flip(false);
-}
+    flipMe: function (){
+        $("#tile_body_" + this.tile_id).flip('toggle');
+    },
+    showFront: function (){
+        $("#tile_body_" + this.tile_id).flip(false);
+    }
+};
