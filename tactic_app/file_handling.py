@@ -1,5 +1,6 @@
 __author__ = 'bls910'
 import copy
+import re
 import xmltodict
 from tactic_app import db
 
@@ -25,6 +26,17 @@ def convert_multi_doc_file_to_dict_list(the_file):
     for a_dict in list_of_dicts:
         new_list_of_dicts.append(convert_lists_to_dicts(a_dict))
     return (collection_name, new_list_of_dicts)
+
+def load_a_list(the_file):
+    raw_list = the_file.readlines()
+    fixed_list = []
+
+    # the next loop is to get rid of weird characters that tend to appera
+    # the second line in the loop might not be needed anymore.
+    for w in raw_list:
+        w  = "".join([x for x in w if (x.isalnum() or x == "\'" or x =="-")])
+        fixed_list.append(re.sub(r'\s+$', '', w))
+    return fixed_list
 
 def convert_lists_to_dicts(a_dict):
     new_dict = {}

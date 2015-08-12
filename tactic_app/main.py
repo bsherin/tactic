@@ -14,13 +14,14 @@ def create_new_mainwindow(collection_name, project_name=None):
     return mw.main_id
 
 class mainWindow(object):
-    def __init__(self, collection_name, project_name=None):
+    def __init__(self, user_id, collection_name, project_name=None):
         global current_main_id
         self.tile_instances = {}
         self.current_tile_id = 0
         self.collection_name = collection_name # This isn't used yet.
         self.project_name = project_name # This isn't used yet.
         self.main_id = str(current_main_id)
+        self.user_id = user_id
         self.data_dict = self.build_data_dict()
         if project_name is not None:
             self.project_dict = db[current_user.project_collection_name].find_one({"project_name": project_name})

@@ -31,6 +31,7 @@ function load_stub(data_object) {
 
 function resize_stub(data_object) {
     tableObject.resize_table_area()
+    $("#tile-area").height(window.innerHeight - 80 - $("#tile-area").offset().top);
 }
 
 function save_project() {

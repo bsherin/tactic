@@ -8,6 +8,7 @@ from tactic_app import socketio
 from shared_dicts import mainwindow_instances
 from vector_space import Vocabulary
 from shared_dicts import tile_classes, tokenizer_dict
+from users import load_user
 
 
 # Decorator function used to register runnable analyses in analysis_dict
@@ -92,6 +93,15 @@ class TileBase(threading.Thread):
 
     def render_content(self):
         print "not implemented"
+
+    @property
+    def current_user(self):
+        user_id = mainwindow_instances[self.main_id].user_id
+        current_user = load_user(user_id)
+        return current_user
+
+    def get_user_list(self, the_list):
+        return self.current_user.get_list(the_list)
 
 class SelectionTile(TileBase):
     def __init__(self, main_id, tile_id):
@@ -179,12 +189,15 @@ class ColumnSourceTile(TileBase):
 
 @tile_class
 class VocabularyDisplayTile(ColumnSourceTile):
-    options = ColumnSourceTile.options + [{"name": "tokenizer", "type": "tokenizer_select", "placeholder": ""}]
+    options = ColumnSourceTile.options + [
+        {"name": "tokenizer", "type": "tokenizer_select", "placeholder": ""},
+        {"name": "stop_list", "type": "list_select", "placeholder": ""}]
 
     def __init__(self, main_id, tile_id):
         ColumnSourceTile.__init__(self, main_id, tile_id)
         self.tokenizer_func = None
         self.vocab = None
+        self.stop_list = None
 
     def tokenize_rows(self, the_rows, the_tokenizer):
         tokenized_rows = []
@@ -211,7 +224,7 @@ class VocabularyDisplayTile(ColumnSourceTile):
             return "No column source selected."
         raw_rows = self.load_raw_column(self.column_source)
         tokenized_rows = self.tokenize_rows(raw_rows, self.tokenizer_func)
-        self.vocab = Vocabulary(tokenized_rows)
+        self.vocab = Vocabulary(tokenized_rows, self.stop_list)
         self.vdata_table = self.vocab.vocab_data_table()
         the_html = self.build_html_table_from_data_list(self.vdata_table)
 
@@ -223,6 +236,7 @@ class VocabularyDisplayTile(ColumnSourceTile):
     def update_options(self, form_data):
         self.column_source = form_data["column_source"];
         self.tokenizer_func = form_data["tokenizer"];
+        self.stop_list = self.get_user_list(form_data["stop_list"])
         self.post_event("ShowFront");
         self.post_event("StartSpinner");
         self.post_event("RefreshTile");

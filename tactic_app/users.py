@@ -66,6 +66,10 @@ class User(UserMixin):
         return '{}.projects'.format(self.username)
 
     @property
+    def list_collection_name(self):
+        return '{}.lists'.format(self.username)
+
+    @property
     def my_record(self):
         return db.user_collection.find_one({"username": self.username})
 
@@ -92,3 +96,17 @@ class User(UserMixin):
         for doc in db[self.project_collection_name].find():
             my_project_names.append(doc["project_name"])
         return my_project_names
+
+    @property
+    def list_names(self):
+        if self.list_collection_name not in db.collection_names():
+            db.create_collection(self.list_collection_name)
+            return []
+        my_list_names = []
+        for doc in db[self.list_collection_name].find():
+            my_list_names.append(doc["list_name"])
+        return my_list_names
+
+    def get_list(self, list_name):
+        list_dict = db[self.list_collection_name].find_one({"list_name": list_name})
+        return list_dict["the_list"]

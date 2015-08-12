@@ -22,13 +22,13 @@ class Vocabulary(object):
     # self _df_dict/_log_df_dict (document frequencies)
     # self._vocab_index (A dictionary where the words are the keys and the entries are the position of the word in _list_vocab)
     
-    def __init__(self, doc_list, stop_list_path = 'stoplist.txt', go_list_path = 'golist.txt'):
+    def __init__(self, doc_list, stop_list = [], go_list = [], lower_case=True):
         global debug_now
-        # myprint("initializing vocabulary")
-        # self.read_stop_list(stop_list_path)
-        # self.read_go_list(go_list_path)
-        self._stop_list = set([])
-        self._go_list = set([])
+        if lower_case:
+            stop_list = [w.lower() for w in stop_list]
+            go_list = [w.lower() for w in go_list]
+        self._stop_list = set(stop_list)
+        self._go_list = set(go_list)
         all_text = []
         for doc in doc_list:
             all_text += doc
@@ -85,16 +85,6 @@ class Vocabulary(object):
         for w in sub_vocab:
             the_table += [[w, self._df_dict[w], self._cf_dict[w]]]
         return the_table
-    
-    def read_stop_list(self, stop_list_name):
-        stop_list_slashn = open(stop_list_name).readlines()
-        self._stop_list = set([w[:len(w)-1] for w in stop_list_slashn])
-        return
-    
-    def read_go_list(self, go_list_name):
-        go_list_slashn = open(go_list_name).readlines()
-        self._go_list = set([w[:len(w)-1] for w in go_list_slashn])
-        return
 
 class TDMatrix(object):
     def __init__(self, doc_list, ws, normalize_contributions_to_training = False, row_entropy_weighting = False):

@@ -66,6 +66,7 @@ function do_resize(tile_id){
     resize_tile_area(null, ui);
 }
 
+// This is needed just because of one callback in tile_object
 function refresh_tile_content(data){
     tile_dict[data.tile_id].refreshTileContent(data)
 }

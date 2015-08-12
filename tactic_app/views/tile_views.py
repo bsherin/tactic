@@ -1,7 +1,8 @@
 __author__ = 'bls910'
 
-from flask import render_template, request, jsonify, make_response
-from tactic_app import app, socketio
+from flask import render_template, request, jsonify
+from flask_login import current_user
+from tactic_app import app
 from tactic_app.shared_dicts import mainwindow_instances
 from tactic_app.shared_dicts import tokenizer_dict
 
@@ -30,6 +31,12 @@ def create_tile(tile_type):
             the_template = input_start_template + select_base_template
             form_html += the_template.format(option["name"])
             for choice in tokenizer_dict.keys():
+                form_html += select_option_template.format(choice)
+            form_html += '</select></div>'
+        elif option["type"] == "list_select":
+            the_template = input_start_template + select_base_template
+            form_html += the_template.format(option["name"])
+            for choice in current_user.list_names:
                 form_html += select_option_template.format(choice)
             form_html += '</select></div>'
         else:

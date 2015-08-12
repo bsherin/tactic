@@ -15,7 +15,9 @@ def tokenizer(tfunc):
     return tfunc
 
 @tokenizer
-def my_tokenize(text, stem_text=False, alpha_only = False):
+def my_tokenize(text, stem_text=False, alpha_only=False, lower_case=True):
+    if lower_case:
+        text = text.lower()
     punctuation_class = r"([\.\-\/&\";:\(\)\?\!\]\[\{\}\*#])"
     # Separate most punctuation at end of words
 

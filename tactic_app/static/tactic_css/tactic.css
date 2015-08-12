@@ -20,7 +20,7 @@
     cursor: move;
 }
 
-.tile-area {
+#tile-area {
     margin: 0px;
     overflow: scroll;
 }
@@ -39,6 +39,7 @@
     background-color: #f7f7f7;
     padding: 20px;
     margin: 0px;
+    overflow: scroll
 }
 
 .front {
