@@ -86,11 +86,11 @@ function column_command(menu_id) {
             }
             case "hide":
             {
-                ;
                 deselect_header(the_id);
                 col_class = ".header" + the_id;
                 $(col_class).fadeOut();
                 tableObject.hidden_list.push(the_id);
+                resize_from_sub_headers($("#" + the_id).data("super_headers"))
                 break;
             }
         }

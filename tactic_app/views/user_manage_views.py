@@ -83,6 +83,14 @@ def delete_collection(collection_name):
     socketio.emit('update-collection-list', namespace='/user_manage', room=current_user.get_id())
     # return render_template("collection_list.html")
 
+@app.route('/duplicate_collection', methods=['post'])
+def duplicate_collection():
+    collection_to_copy = current_user.full_collection_name(request.json['collection_to_copy'])
+    new_collection_name = current_user.full_collection_name(request.json['new_collection_name'])
+    for doc in db[collection_to_copy].find():
+        db[new_collection_name].insert_one(doc)
+    socketio.emit('update-collection-list', namespace='/user_manage', room=current_user.get_id())
+
 @app.route('/main/<collection_name>', methods=['get'])
 def main(collection_name):
     cname=build_data_collection_name(collection_name)

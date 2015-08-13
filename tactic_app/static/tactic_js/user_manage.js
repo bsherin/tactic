@@ -80,6 +80,11 @@ function show_duplicate_list_modal() {
     $('#duplicate-list-modal').modal();
 }
 
+function show_duplicate_collection_modal() {
+    $('#duplicate-collection-modal').modal();
+}
+
+
 function create_duplicate_list() {
     var list_to_copy = $('#list-selector > .btn.active').text().trim();
     var new_list_name = $("#list-name-modal-field").val();
@@ -96,4 +101,22 @@ function create_duplicate_list() {
         dataType: 'json',
     });
     $('#duplicate-list-modal').modal('hide')
+}
+
+function create_duplicate_collection() {
+    var collection_to_copy = $('#collection-selector > .btn.active').text().trim();
+    var new_collection_name = $("#collection-name-modal-field").val();
+    var result_dict = {
+        "new_collection_name": new_collection_name,
+        "collection_to_copy": collection_to_copy,
+    };
+    $.ajax({
+        url: $SCRIPT_ROOT + "/duplicate_collection",
+        contentType : 'application/json',
+        type : 'POST',
+        async: true,
+        data: JSON.stringify(result_dict),
+        dataType: 'json',
+    });
+    $('#duplicate-collection-modal').modal('hide')
 }

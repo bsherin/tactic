@@ -85,9 +85,17 @@ function resize_from_sub_headers (el_list) {
         var el = el_list[i];
         var slist = $(el).data("sub_headers")
         for (var j = 0; j < slist.length; ++j) {
-            total_width += $(slist[j]).outerWidth()
+            sub_id = $(slist[j]).attr("id")
+            if ($.inArray(sub_id, tableObject.hidden_list) == -1) {
+                total_width += $(slist[j]).outerWidth()
+            }
         }
-        $(el).outerWidth(total_width)
+        if (total_width === 0) {
+            $(el).fadeOut();
+        }
+        else {
+            $(el).outerWidth(total_width)
+        }
     }
 }
 
@@ -275,7 +283,7 @@ var tableObject = {
         var h_class = "header" + header_element.attr("id");
         $("." + h_class).outerWidth(ui.size.width);
         resize_from_sub_headers(ui.element.data("super_headers"))
-        this.column_widths[ui.element.cellIndex] = ui.element.offsetWidth;
+        tableObject.column_widths[ui.element[0].cellIndex] = ui.element[0].offsetWidth;
     },
     resize_table_area: function() {
             $(document).ready(function () {

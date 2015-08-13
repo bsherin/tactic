@@ -10,6 +10,12 @@
 .stacked-button {
     margin-bottom: 10px;
     display: block;
+    width: 150px;
+}
+
+.file-selector {
+    margin-bottom: 10px;
+    display: block;
 }
 
 .tile-panel {
