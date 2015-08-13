@@ -77,8 +77,3 @@ function save_as_success(data_object) {
     doFlash(data_object)
 }
 
-function show_the_modal() {
-    $('#save-project-modal').modal();
-}
-
-

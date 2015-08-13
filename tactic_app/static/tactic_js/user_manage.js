@@ -70,3 +70,30 @@ function delete_selected_list() {
     var list_name = $('#list-selector > .btn.active').text().trim();
     $.post($SCRIPT_ROOT + "/delete_list/" + String(list_name))
 }
+
+function view_selected_list() {
+    var list_name = $('#list-selector > .btn.active').text().trim();
+    window.open($SCRIPT_ROOT + "/view_list/" + String(list_name))
+}
+
+function show_duplicate_list_modal() {
+    $('#duplicate-list-modal').modal();
+}
+
+function create_duplicate_list() {
+    var list_to_copy = $('#list-selector > .btn.active').text().trim();
+    var new_list_name = $("#list-name-modal-field").val();
+    var result_dict = {
+        "new_list_name": new_list_name,
+        "list_to_copy": list_to_copy,
+    };
+    $.ajax({
+        url: $SCRIPT_ROOT + "/create_duplicate_list",
+        contentType : 'application/json',
+        type : 'POST',
+        async: true,
+        data: JSON.stringify(result_dict),
+        dataType: 'json',
+    });
+    $('#duplicate-list-modal').modal('hide')
+}

@@ -20,9 +20,6 @@ def on_join(data):
 
 # Views for creating and saving a new project
 # As well as for updating an existing project.
-@app.route('/save_as_modal', methods=['get'])
-def save_as_modal():
-    return render_template("modals/save_as_modal.html")
 
 @app.route('/save_new_project', methods=['POST'])
 def save_new_project():

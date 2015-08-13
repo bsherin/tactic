@@ -12,6 +12,9 @@
 {% endblock %}
 
 {% block page_content %}
+    <div id="modal-area">
+    {% include 'modals/duplicate_list_modal.html' %}
+    </div>
     <div class="container-fluid">
         <div class="page-header">
             <h1>{{ current_user.username }}</h1>
@@ -66,9 +69,9 @@
                 <div class="row indent-row" style="margin-top: 25px">
                     <div class="col-xs-12">
                         <div style="display: inline-block; vertical-align:top">
-                            <button class="btn btn-primary stacked-button" onclick="view_selected_list()">Load list</button>
+                            <button class="btn btn-primary stacked-button" onclick="view_selected_list()">View list</button>
                             <button class="btn btn-primary stacked-button" onclick="delete_selected_list()">Delete list</button>
-                            <button class="btn btn-primary stacked-button" onclick="duplicate_selected_list()">Duplicate list</button>
+                            <button class="btn btn-primary stacked-button" onclick="show_duplicate_list_modal()">Duplicate list</button>
                         </div>
                         <div style="display: inline-block; vertical-align: top; margin-left: 10px">
                             <h5 style="text-align:center; margin-top: 0px">Lists</h5>

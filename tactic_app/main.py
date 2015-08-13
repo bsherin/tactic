@@ -8,8 +8,8 @@ from shared_dicts import mainwindow_instances
 from shared_dicts import tile_classes
 current_main_id = 0
 
-def create_new_mainwindow(collection_name, project_name=None):
-    mw = mainWindow(collection_name, project_name)
+def create_new_mainwindow(user_id, collection_name=None, project_name=None):
+    mw = mainWindow(user_id, collection_name, project_name)
     mainwindow_instances[mw.main_id] = mw
     return mw.main_id
 

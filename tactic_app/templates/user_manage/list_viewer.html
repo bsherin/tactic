@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}List viewer{% endblock %}
+
+{% block page_content %}
+    <div class="container-fluid">
+        <div class="page-header">
+            <h1>{{list_name}}</h1>
+        </div>
+        <div class="row">
+            <div class="col-xs-12">
+                <table>
+                    <tbody class="table">
+                    {% for w in the_list %}
+                        <tr><td>{{w}}</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{%  endblock %}

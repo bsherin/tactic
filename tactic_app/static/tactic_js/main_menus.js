@@ -105,7 +105,7 @@ function project_command(menu_id) {
     switch (menu_id) {
         case "save-as":
         {
-            $("#modal-area").load($SCRIPT_ROOT + "/save_as_modal", show_the_modal);
+            $('#save-project-modal').modal();
             break;
         }
         case "save":

@@ -8,7 +8,9 @@
 {% endblock %}
 
 {% block page_content %}
-    <div id="modal-area"></div>
+    <div id="modal-area">
+    {% include 'modals/save_as_modal.html' %}
+    </div>
     <div class="container-fluid">
     <div id="flashzone"></div>
     <div class="row">

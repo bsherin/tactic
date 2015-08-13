@@ -1,6 +1,6 @@
 __author__ = 'bls910'
 
-from flask import render_template, request, make_response, redirect, url_for
+from flask import render_template, request, make_response, redirect, url_for, jsonify
 from tactic_app import app, db, socketio
 from tactic_app.file_handling import convert_multi_doc_file_to_dict_list, load_a_list;
 from tactic_app.main import create_new_mainwindow
@@ -48,6 +48,13 @@ def delete_list(list_name):
     socketio.emit('update-list-list', namespace='/user_manage', room=current_user.get_id())
     return
 
+@app.route('/view_list/<list_name>', methods=['get'])
+def view_list(list_name):
+    the_list = current_user.get_list(list_name)
+    return render_template("user_manage/list_viewer.html",
+                           list_name=list_name,
+                           the_list=the_list)
+
 @app.route('/update_projects')
 def update_projects():
     return render_template("user_manage/project_list.html")
@@ -55,6 +62,16 @@ def update_projects():
 @app.route('/update_lists')
 def update_lists():
     return render_template("user_manage/list_list.html")
+
+@app.route('/create_duplicate_list', methods=['post'])
+def create_duplicate_list():
+    list_to_copy = request.json['list_to_copy']
+    new_list_name = request.json['new_list_name']
+    old_list_dict = db[current_user.list_collection_name].find_one({"list_name": list_to_copy})
+    new_list_dict = {"list_name": new_list_name, "the_list": old_list_dict["the_list"]}
+    db[current_user.list_collection_name].insert_one(new_list_dict)
+    socketio.emit('update-list-list', namespace='/user_manage', room=current_user.get_id())
+    return jsonify({"success": True})
 
 @app.route('/update_collections')
 def update_collections():
@@ -69,7 +86,7 @@ def delete_collection(collection_name):
 @app.route('/main/<collection_name>', methods=['get'])
 def main(collection_name):
     cname=build_data_collection_name(collection_name)
-    main_id = create_new_mainwindow(current_user.get_id(), cname)
+    main_id = create_new_mainwindow(current_user.get_id(), collection_name=cname)
     return render_template("main.html",
                            collection_name=cname,
                            project_name='',
