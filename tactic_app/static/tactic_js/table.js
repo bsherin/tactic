@@ -99,10 +99,40 @@ function resize_from_sub_headers (el_list) {
     }
 }
 
+function resize_whole_column(event, ui) {
+    var header_element = ui.element;
+    var h_class = "header" + header_element.attr("id");
+    $("." + h_class).outerWidth(ui.size.width);
+    resize_from_sub_headers(ui.element.data("super_headers"))
+    tableObject.column_widths[ui.element[0].cellIndex] = ui.element[0].offsetWidth;
+}
+
 function text_select(e) {
     var the_text = document.getSelection().toString();
-    var the_dict = {"selected_text": the_text};
-    create_tile_relevant_event("text_select", the_dict)
+    var the_dict;
+    if (the_text.length > 0) {
+        the_dict = {"selected_text": the_text};
+        create_tile_relevant_event("text_select", the_dict)
+    }
+}
+
+function handle_cell_change () {
+    var current_content = $(this).html();
+    var rindex = this.parentElement.rowIndex - tableObject.header_rows;
+    var cindex = this.cellIndex;
+    var sig = tableObject.signature_list[cindex];
+    //var old_content = tableObject.get_cell_value_from_sig(tableObject.doc_list[rindex], sig);
+    var old_content = tableObject.table_array[rindex][cindex];
+    if (current_content != old_content) {
+        tableObject.table_array[rindex][cindex] = current_content;
+        tableObject.update_doc_list(rindex, sig, current_content)
+        data_dict = {
+            "row_index": rindex,
+            "signature": sig,
+            "old_content": old_content,
+            "new_content": current_content}
+        create_tile_relevant_event("CellChange", data_dict)
+    }
 }
 
 function deselect_header(the_id) {
@@ -116,7 +146,7 @@ function deselect_header(the_id) {
 
 function select_header(the_id) {
     $(".header" + the_id).css('background-color', TABLE_SELECT_COLOR)
-    $("#" + the_id) .css('background-color', HEADER_SELECT_COLOR);
+    $("#" + the_id).css('background-color', HEADER_SELECT_COLOR);
     tableObject.selected_header = the_id
     enable_require_column_select()
 }
@@ -200,9 +230,15 @@ var tableObject = {
     header_struct: null,
     signature_list: [],
     collection_name: null,
+
+    // doc_list and table_array are two different represenations of the content of the table
+    // doc_list is used when the table is refreshed from scratch. So it has to be kept
+    // updated. table_array is just a little easier to use.
+
     doc_list: null,
+    table_array: [],
+
     column_widths: null,
-    big_fields: null, // Right now I don't think this is used for anything.
     selected_header: null,
     hidden_list: [],
 
@@ -211,9 +247,8 @@ var tableObject = {
             this.doc_list = data_object["the_rows"]
             var sample_row = this.doc_list[0];
             if (data_object.hasOwnProperty("header_struct")) {
-                this.header_struct = data_object["header_struct"];
-                this.hidden_list = data_object["hidden_list"]
-                this.rebuild_header_struct(this.header_struct)
+                this.header_struct = this.rebuild_header_struct(data_object["header_struct"])
+                this.hidden_list = data_object["hidden_list"];
             }
             else {
                 this.header_struct = this.find_headers(this.collection_name, sample_row);
@@ -222,29 +257,37 @@ var tableObject = {
             this.build_table();
     },
 
-    label_super_headers: function() {
-        $("th").each(function(index){
-            var shs = find_super_headers(this)
-            $(this).data("super_headers", shs)
-        })
-    },
-
-    label_sub_headers: function() {
-        $("th").each(function(index){
-            var shs = find_sub_headers(this)
-            $(this).data("sub_headers", shs)
-        })
-    },
-
     build_table: function() {
-            this.signature_list = [];
-            this.build_signature_list(this.header_struct, []);
-            this.create_all_html();
-            this.resize_table_area();
-            this.freeze_header(this.table_id);
-            this.label_super_headers()
-            this.label_sub_headers()
-        },
+        this.signature_list = this.build_signature_list(this.header_struct, []);
+        this.table_array = this.build_table_array();
+        this.create_all_html();
+        this.resize_table_area();
+        this.column_widths = this.freeze_header(this.table_id);
+        this.label_super_headers()
+        this.label_sub_headers()
+        this.header_rows = $("thead").children().length;
+        $('#table-area td').blur(handle_cell_change)
+    },
+
+    build_table_array: function(){
+        var i, j, k, sig, current;
+        table_array = [];
+        for (i = 0; i < this.doc_list.length; ++i) {
+            table_array.push([]);
+            for (j = 0; j < this.signature_list.length; ++j) {
+                sig = this.signature_list[j];
+                current = this.doc_list[i];
+                // Note the loop below starts at 1 because my signature list has an extra
+                // root node listed at the start
+                for (k = 1; k < sig.length; ++k) {
+                    current = current[sig[k][0]]
+                }
+                table_array[i].push(current)
+            }
+        }
+        return table_array
+    },
+
     create_all_html: function (){
             var header_html = "<thead>" + this.get_header_html(this.header_struct) + "</thead>";
             var end_columns = "<td>" +
@@ -261,9 +304,9 @@ var tableObject = {
             var row_html;
             var body_html = "";
             var i;
-            for (i = 0; i < this.doc_list.length; ++i) {
+            for (i = 0; i < this.table_array.length; ++i) {
                 row_html = "<tr>";
-                row_html = row_html + this.get_row_html(this.doc_list[i]);
+                row_html = row_html + this.get_row_html(i);
                 row_html= row_html + end_columns;
                 body_html = body_html + row_html;
             }
@@ -274,17 +317,25 @@ var tableObject = {
             $("thead").css('background-color', HEADER_NORMAL_COLOR);
             $(".can-resize").resizable({
                 handles: "e",
-                resize: this.resize_whole_column
+                resize: resize_whole_column
             })
+    },
 
+    label_super_headers: function() {
+        $("th").each(function(index){
+            var shs = find_super_headers(this)
+            $(this).data("super_headers", shs)
+        })
     },
-    resize_whole_column: function (event, ui) {
-        var header_element = ui.element;
-        var h_class = "header" + header_element.attr("id");
-        $("." + h_class).outerWidth(ui.size.width);
-        resize_from_sub_headers(ui.element.data("super_headers"))
-        tableObject.column_widths[ui.element[0].cellIndex] = ui.element[0].offsetWidth;
+
+    label_sub_headers: function() {
+        $("th").each(function(index){
+            var shs = find_sub_headers(this)
+            $(this).data("sub_headers", shs)
+        })
     },
+
+
     resize_table_area: function() {
             $(document).ready(function () {
                 $("tbody").height(window.innerHeight - 80 - $("tbody").offset().top);
@@ -405,54 +456,85 @@ var tableObject = {
             return {"html": res, "total_span":total_span}
         },
     rebuild_header_struct: function(hstruct) {
-        hstruct.__proto__ = header0bject
-        for (var i = 0; i < hstruct.child_list.length; ++i) {
-            this.rebuild_header_struct(hstruct.child_list[i])
+        //hstruct.__proto__ = header0bject
+        var true_hstruct = Object.create(header0bject)
+        for (var prop in hstruct) {
+            if (!hstruct.hasOwnProperty(prop)) continue;
+            true_hstruct[prop] = hstruct[prop]
         }
+
+        for (var i = 0; i < hstruct.child_list.length; ++i) {
+            true_hstruct.child_list[i] = this.rebuild_header_struct(hstruct.child_list[i])
+        }
+        return true_hstruct
     },
     build_signature_list: function (hstruct, sofar) {
-            var i;
-            var newsofar = sofar.slice(0)
-            newsofar.push([hstruct.name, "header" + hstruct.id])
-            if (hstruct.child_list.length == 0) {
-                this.signature_list.push(newsofar)
-                return
-            }
-            for (i = 0; i < hstruct.child_list.length; ++i) {
-                this.build_signature_list(hstruct.child_list[i], newsofar)
-            }
-            return
-        },
-    get_row_html: function (row_dict) {
+        var i;
+        var result = [];
+        var newsofar = sofar.slice(0)
+        newsofar.push([hstruct.name, "header" + hstruct.id])
+        if (hstruct.child_list.length == 0) {
+            return [newsofar]
+        }
+        for (i = 0; i < hstruct.child_list.length; ++i) {
+            result = result.concat(this.build_signature_list(hstruct.child_list[i], newsofar))
+        }
+        return result
+    },
+
+    get_row_html: function (row_index) {
             var i;
             var j;
             var sig;
             var current;
-            res = ""
+            var res = ""
             var td_template = "<td contenteditable='true' onmouseup='text_select(event)' class='{{class_text}}')>{{the_text}}</td>"
-            for (i = 0; i < this.signature_list.length; ++i) {
+            // Note the loop below starts at 1 because my signature list has an extra
+            // root node listed at the start
+            class_text = [];
+
+            for (i = 0; i < this.table_array[row_index].length; ++i) {
                 sig = this.signature_list[i];
-                current = row_dict;
-                // Note the loop below starts at 1 because my signature list has an extra
-                // root node listed at the start
-                id_text = ""
+                current = this.table_array[row_index][i]
+                var id_text = ""
                 for (j = 1; j < sig.length; ++j) {
-                    current = current[sig[j][0]]
-                    id_text = id_text + sig[j][1] + " "
+                        id_text = id_text + sig[j][1] + " "
                 }
                 res = res + Mustache.to_html(td_template, {"the_text": current, "class_text": id_text.trim()})
             }
             return res
         },
+
+    get_cell_value_from_sig: function(row_dict, sig) {
+        var current = row_dict;
+        // Note the loop below starts at 1 because my signature list has an extra
+        // root node listed at the start
+        for (var j = 1; j < sig.length; ++j) {
+            current = current[sig[j][0]]
+        }
+        return current
+    },
+
+    update_doc_list: function (row_index, sig, new_content){
+        var the_row = this.doc_list[row_index]
+        var result = the_row
+        for (var j = 1; j < (sig.length - 1); ++j) {
+            field = sig[j]
+            result = result[field[0]]
+        }
+        result[sig[sig.length - 1][0]] = new_content
+
+    },
+
     freeze_header: function (table_id) {
             tidstr = "#" + this.table_id
             var ncols = $(tidstr).find("tbody tr:first td").length
             var all_rows = $(tidstr).find("tr")
-            this.column_widths = [];
-            this.big_fields = []
+            column_widths = [];
+            //this.big_fields = []
             for (c = 0; c < ncols; ++c){
-                this.column_widths.push(0);
-                this.big_fields.push(0)
+                column_widths.push(0);
+                //this.big_fields.push(0)
             }
             var the_row;
             var the_width;
@@ -477,18 +559,18 @@ var tableObject = {
                         if (the_width > max_field_width) {
                             the_width = max_field_width
                         }
-                        if (the_text.length > 100) {
-                            this.big_fields[c] = 1
-                        }
-                       if (the_width > this.column_widths[c]){
-                            this.column_widths[c] = the_width
+                        //if (the_text.length > 100) {
+                        //    this.big_fields[c] = 1
+                        //}
+                       if (the_width > column_widths[c]){
+                           column_widths[c] = the_width
                         }
                     }
                 }
             }
 
             var total = 0;
-            $.each(this.column_widths, function() {
+            $.each(column_widths, function() {
                 total += this;
             })
             $("#" + this.table_id).width(String(total));
@@ -510,7 +592,7 @@ var tableObject = {
                     the_colspan = the_child.colSpan;
                     new_width = 0;
                     for (i = 0; i < the_colspan; ++i){
-                        new_width = new_width + this.column_widths[c + i]
+                        new_width = new_width + column_widths[c + i]
                     }
                     the_child.style.width = String(new_width) + "px";
                     //if ((the_colspan == 1) && (big_fields[c] == 1)){
@@ -520,6 +602,7 @@ var tableObject = {
                     entry_counter += 1
                 }
             }
+        return column_widths
     },
     rowup: function (clicked_element) {
           var $row = $(clicked_element).parents('tr');
@@ -534,39 +617,3 @@ var tableObject = {
         $(clicked_element).parents('tr').detach();
     }
 }
-
-
-//function click_left (clicked_element) {
-//    var $hcell = $(clicked_element).parents('th');
-//    var the_id = $hcell.attr("id");
-//    var parent_struct = tableObject.header_struct.find_parent_of_id(the_id);
-//    parent_struct.shift_child_left(the_id);
-//    tableObject.build_table();
-//}
-//
-//function click_right (clicked_element) {
-//    var $hcell = $(clicked_element).parents('th');
-//    var the_id = $hcell.attr("id");
-//    var parent_struct = tableObject.header_struct.find_parent_of_id(the_id);
-//    parent_struct.shift_child_right(the_id);
-//    tableObject.build_table()
-//}
-//
-//function hide_column (clicked_element) {
-//    var $hcell = $(clicked_element).parents('th');
-//    var the_id = $hcell.attr("id");
-//    var my_struct = tableObject.header_struct.find_struct_by_id(the_id);
-//    my_struct.hidden = true;
-//    tableObject.build_table();
-//}
-//function mouse_enter_header(el) {
-//    header_save = el.innerHTML
-//    new_html = "<span class='glyphicon header-glyphicon glyphicon-arrow-left' onclick=click_left(this)></span>" +
-//        header_save + "<span class='glyphicon header-glyphicon glyphicon-arrow-right' onclick=click_right(this)></span>" +
-//            "<span class='glyphicon header-glyphicon glyphicon-remove' onclick=hide_column(this)></span>"
-//
-//    $(el).html(new_html)
-//}
-//function mouse_leave_header(el) {
-//    $(el).html(header_save)
-//}

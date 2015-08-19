@@ -67,6 +67,12 @@ td, th {
     color: #000;
 }
 
+td:focus {
+    outline:none;
+    border-color:#9ecaed;
+    box-shadow:0 0 15px #9ecaed;
+}
+
 th {
     /*display: inline-block;*/
     cursor: pointer;

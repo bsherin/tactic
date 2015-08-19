@@ -54,7 +54,7 @@ class Vocabulary(object):
                 if fd[w] > 0:
                     count += 1
             self._df_dict[w] = count
-            self._log_df_dict[w] = mylog(count) # store this just for speed later
+            # self._log_df_dict[w] = mylog(count) # store this just for speed later
         
         i = 0
         self._vocab_index = {}
@@ -67,7 +67,50 @@ class Vocabulary(object):
         
         # Move words in the go_list to the start of sorted_list_vocab if they are in there at all.
         # This will cause these to be included in the top words used by feature extractors even if they are rare.
-        
+
+        for w in self._go_list:
+            if w in self._set_vocab:
+                self._sorted_list_vocab.remove(w)
+                self._sorted_list_vocab = [w] + self._sorted_list_vocab
+        return
+
+    def update_vocabulary(self, old_tokenized, new_tokenized):
+        old_set = set(old_tokenized)
+        new_set = set(new_tokenized)
+        old_fd = FreqDist(old_tokenized)
+        new_fd = FreqDist(new_tokenized)
+        new_set_vocab = self._set_vocab
+        for w in self._set_vocab:
+            if w in new_set:
+                if w in old_set:
+                    self._cf_dict[w] += new_fd[w] - old_fd[w]
+                else:
+                    self._cf_dict[w] += new_fd[w]
+                    self._df_dict[w] += 1
+            elif w in old_set:
+                self._df_dict[w] -= 1
+                self._cf_dict[w] -= old_fd[w]
+                if self._cf_dict == 0:
+                    new_set_vocab = new_set_vocab.difference(set([w]))
+                    del self._cf_dict[w]
+                    del self._df_dict[w]
+
+        for w in new_fd:
+            if not (w in self._set_vocab):
+                self._cf_dict[w] = new_fd[w]
+                self._df_dict[w] = 1
+                new_set_vocab = new_set_vocab.union(set([w]))
+        self._set_vocab = new_set_vocab
+        self._list_vocab = sorted(self._set_vocab, lambda x, y:self._cf_dict[y] - self._cf_dict[x])
+
+        i = 0
+        self._vocab_index = {}
+        for w in self._list_vocab:
+            self._vocab_index[w]=i
+            i = i + 1
+
+        self._sorted_list_vocab = copy.copy(self._list_vocab)
+        self._sorted_list_vocab.sort(key = lambda x: -1 * self._cf_dict[x])
         for w in self._go_list:
             if w in self._set_vocab:
                 self._sorted_list_vocab.remove(w)

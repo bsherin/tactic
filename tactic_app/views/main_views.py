@@ -6,6 +6,7 @@ from flask_socketio import join_room
 import json
 from tactic_app.shared_dicts import tile_classes
 from tactic_app.shared_dicts import mainwindow_instances
+from tactic_app.main import mainWindow
 
 # The main window should join a room associated with the user
 @socketio.on('connect', namespace='/main')
@@ -54,4 +55,14 @@ def get_additional_params():
     result = {"tile_types": tile_classes.keys()};
     return jsonify(result)
 
-
+@app.route('/tile_relevant_event/<event_name>', methods=['get', 'post'])
+def tile_relevant_event(event_name):
+    data_dict = request.json
+    main_id = request.json["main_id"]
+    mwindow = mainwindow_instances[main_id]
+    for tile_id, tile_instance in mwindow.tile_instances.items():
+        if event_name in tile_instance.update_events:
+            tile_instance.post_event({"event_name": event_name, "data": data_dict})
+    if event_name in mwindow.update_events:
+        mwindow.post_event({"event_name": event_name, "data": data_dict})
+    return jsonify({"success": True})

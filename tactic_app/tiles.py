@@ -18,7 +18,7 @@ def tile_class(tclass):
 
 class TileBase(threading.Thread):
     def __init__(self, main_id, tile_id):
-        self._stopevent = threading.Event( )
+        self._stopevent = threading.Event()
         self._sleepperiod = .2
         threading.Thread.__init__(self)
         global current_tile_id
@@ -73,8 +73,9 @@ class TileBase(threading.Thread):
                       {"tile_id": str(self.tile_id), "message": "showFront"},
                       namespace='/main', room=self.main_id)
 
-    def push_direct_update(self):
-        new_html = self.render_content()
+    def push_direct_update(self, new_html=None):
+        if new_html == None:
+            new_html = self.render_content()
         socketio.emit("tile-message",
                       {"tile_id": str(self.tile_id), "message": "refreshTileContent", "html": new_html},
                       namespace='/main', room=self.main_id)
@@ -178,7 +179,7 @@ class ColumnSourceTile(TileBase):
     def __init__(self, main_id, tile_id):
         TileBase.__init__(self, main_id, tile_id)
         self.column_source = None
-        self.update_events = ["RefreshTile", "UpdateOptions"]
+        self.update_events = ["RefreshTile", "UpdateOptions", "ColumnChange"]
 
     def render_content(self):
         return "Column selected is {}".format(self.column_source)
@@ -195,6 +196,7 @@ class VocabularyDisplayTile(ColumnSourceTile):
 
     def __init__(self, main_id, tile_id):
         ColumnSourceTile.__init__(self, main_id, tile_id)
+        self.update_events.append("CellChange")
         self.tokenizer_func = None
         self.vocab = None
         self.stop_list = None
@@ -219,6 +221,19 @@ class VocabularyDisplayTile(ColumnSourceTile):
         the_html += "</tbody></table>"
         return the_html
 
+    def handle_event(self, event_name, data=None):
+        if event_name == "CellChange":
+            # data will have the keys row_index, column_idex, signature, old_content, new_content
+            old_tokenized = tokenizer_dict[self.tokenizer_func](data["old_content"])
+            new_tokenized = tokenizer_dict[self.tokenizer_func](data["new_content"])
+            self.vocab.update_vocabulary(old_tokenized, new_tokenized)
+            self.vdata_table = self.vocab.vocab_data_table()
+            the_html = self.build_html_table_from_data_list(self.vdata_table)
+            self.push_direct_update(the_html)
+            return
+        else:
+            ColumnSourceTile.handle_event(self, event_name, data)
+
     def render_content(self):
         if self.column_source == None:
             return "No column source selected."
@@ -227,7 +242,6 @@ class VocabularyDisplayTile(ColumnSourceTile):
         self.vocab = Vocabulary(tokenized_rows, self.stop_list)
         self.vdata_table = self.vocab.vocab_data_table()
         the_html = self.build_html_table_from_data_list(self.vdata_table)
-
         return the_html
 
     def load_raw_column(self, column_signature):

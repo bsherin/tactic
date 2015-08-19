@@ -62,11 +62,3 @@ def get_tile_content(tile_id):
         "tile_id": tile_id
     })
 
-@app.route('/tile_relevant_event/<event_name>', methods=['get', 'post'])
-def tile_relevant_event(event_name):
-    data_dict = request.json
-    main_id = request.json["main_id"]
-    for tile_id, tile_instance in mainwindow_instances[main_id].tile_instances.items():
-        if event_name in tile_instance.update_events:
-            tile_instance.post_event({"event_name": event_name, "data": data_dict})
-    return jsonify({"success": True})

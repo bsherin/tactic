@@ -32,7 +32,7 @@ function create_new_tile(menu_id) {
     })
 }
 
-function create_tile_relevant_event(event_name, data_dict){
+function create_tile_relevant_event(event_name, data_dict) {
     data_dict["main_id"] = main_id;
     $.ajax({
         url: $SCRIPT_ROOT + "/tile_relevant_event/" + event_name,
