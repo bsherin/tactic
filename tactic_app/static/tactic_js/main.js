@@ -10,7 +10,7 @@ function start_post_load() {
         $.getJSON($SCRIPT_ROOT + "/grab_data/" + String(main_id), load_stub);
     }
     else {
-        $.getJSON($SCRIPT_ROOT + "/grab_project_data/" + String(main_id), load_stub)
+        $.getJSON($SCRIPT_ROOT + "/grab_project_data/" + String(main_id), load_project_stub)
     }
     $("#tile-div").sortable({
         handle: '.panel-heading',
@@ -29,6 +29,14 @@ function load_stub(data_object) {
     tableObject.load_data(data_object);
 }
 
+function load_project_stub(data_object) {
+    tableObject.load_data(data_object);
+    var tile_ids = data_object.tile_ids;
+    for (var i = 0; i < tile_ids.length; ++i) {
+        create_tile_from_save(tile_ids[i])
+    }
+}
+
 function resize_stub(data_object) {
     tableObject.resize_table_area()
     $("#tile-area").height(window.innerHeight - 80 - $("#tile-area").offset().top);
@@ -36,8 +44,9 @@ function resize_stub(data_object) {
 
 function save_project() {
     var result_dict = {
-        "project_name": _project_name,
-        "data_collection_name": _collection_name,
+        //"project_name": _project_name,
+        //"data_collection_name": _collection_name,
+        "main_id": main_id,
         "hidden_list": tableObject.hidden_list,
         "header_struct": tableObject.header_struct
     };
@@ -56,7 +65,8 @@ function save_project_as() {
     _project_name = $("#project-name-modal-field").val();
     var result_dict = {
         "project_name": _project_name,
-        "data_collection_name": _collection_name,
+        //"data_collection_name": _collection_name,
+        "main_id": main_id,
         "hidden_list": tableObject.hidden_list,
         "header_struct": tableObject.header_struct
     };

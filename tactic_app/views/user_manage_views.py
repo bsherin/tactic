@@ -3,7 +3,7 @@ __author__ = 'bls910'
 from flask import render_template, request, make_response, redirect, url_for, jsonify
 from tactic_app import app, db, socketio
 from tactic_app.file_handling import convert_multi_doc_file_to_dict_list, load_a_list;
-from tactic_app.main import create_new_mainwindow
+from tactic_app.main import create_new_mainwindow, create_new_mainwindow_from_project
 from flask_login import current_user
 from flask_socketio import join_room
 
@@ -103,10 +103,10 @@ def main(collection_name):
 @app.route('/main_project/<project_name>', methods=['get'])
 def main_project(project_name):
     project_dict = db[current_user.project_collection_name].find_one({"project_name": project_name})
-    cname = project_dict["data_collection_name"]
-    main_id = create_new_mainwindow(current_user.get_id(), cname, project_name)
+    # cname = project_dict["collection_name"]
+    main_id = create_new_mainwindow_from_project(project_dict)
     return render_template("main.html",
-                           collection_name=cname,
+                           collection_name=project_dict["collection_name"],
                            project_name=project_name,
                            main_id=main_id)
 

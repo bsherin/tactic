@@ -25,13 +25,27 @@ class TileBase(threading.Thread):
         self.update_events = ["RefreshTile", "UpdateOptions", "ShowFront"]
         self.tile_id = tile_id
         self.main_id = main_id
-        self.my_q = Queue.Queue(0)
+        self._my_q = Queue.Queue(0)
+        self.current_html = None
+        self.tile_type = self.__class__.__name__
         return
+
+    def compile_save_dict(self):
+        result = {}
+        for (attr, val) in self.__dict__.items():
+            if not ((attr.startswith("_")) or (attr == "additionalInfo") or (str(type(val)) == "<type 'instance'>")):
+                result[attr] = val
+        result["tile_type"] = type(self).__name__
+        result.update(self.cache_dicts())
+        return result
+
+    def cache_dicts(self):
+        return {}
 
     def run(self):
         while not self._stopevent.isSet( ):
-            if (not self.my_q.empty()):
-                q_item = self.my_q.get()
+            if (not self._my_q.empty()):
+                q_item = self._my_q.get()
                 if type(q_item) == dict:
                     self.handle_event(q_item["event_name"], q_item["data"])
                 else:
@@ -48,7 +62,7 @@ class TileBase(threading.Thread):
         return
 
     def post_event(self, item):
-        self.my_q.put(item)
+        self._my_q.put(item)
 
     def handle_event(self, event_name, data=None):
         if event_name == "RefreshTile":
@@ -76,6 +90,7 @@ class TileBase(threading.Thread):
     def push_direct_update(self, new_html=None):
         if new_html == None:
             new_html = self.render_content()
+        self.current_html = new_html
         socketio.emit("tile-message",
                       {"tile_id": str(self.tile_id), "message": "refreshTileContent", "html": new_html},
                       namespace='/main', room=self.main_id)
@@ -109,6 +124,7 @@ class SelectionTile(TileBase):
         TileBase.__init__(self, main_id, tile_id)
         self.update_events.append("text_select")
         self.selected_text = ""
+        self.tile_type = self.__class__.__name__
         return
 
     def update_data(self, data):
@@ -140,6 +156,7 @@ class SimpleSelectionTile(SelectionTile):
         SelectionTile.__init__(self, main_id, tile_id)
         self.extra_text = "placeholder text"
         self.selected_text = "no selection"
+        self.tile_type = self.__class__.__name__
 
     def render_content(self):
         return "{} {}".format(self.extra_text, self.selected_text)
@@ -158,6 +175,7 @@ class WordnetSelectionTile(SelectionTile):
         SelectionTile.__init__(self, main_id, tile_id)
         self.selected_text = "no selection"
         self.to_show = 5
+        self.tile_type = self.__class__.__name__
 
     def render_content(self):
         res = wn.synsets(self.selected_text)[:self.to_show]
@@ -180,6 +198,7 @@ class ColumnSourceTile(TileBase):
         TileBase.__init__(self, main_id, tile_id)
         self.column_source = None
         self.update_events = ["RefreshTile", "UpdateOptions", "ColumnChange"]
+        self.tile_type = self.__class__.__name__
 
     def render_content(self):
         return "Column selected is {}".format(self.column_source)
@@ -198,8 +217,9 @@ class VocabularyDisplayTile(ColumnSourceTile):
         ColumnSourceTile.__init__(self, main_id, tile_id)
         self.update_events.append("CellChange")
         self.tokenizer_func = None
-        self.vocab = None
+        self._vocab = None
         self.stop_list = None
+        self.tile_type = self.__class__.__name__
 
     def tokenize_rows(self, the_rows, the_tokenizer):
         tokenized_rows = []
@@ -224,13 +244,25 @@ class VocabularyDisplayTile(ColumnSourceTile):
     def handle_event(self, event_name, data=None):
         if event_name == "CellChange":
             # data will have the keys row_index, column_idex, signature, old_content, new_content
-            old_tokenized = tokenizer_dict[self.tokenizer_func](data["old_content"])
-            new_tokenized = tokenizer_dict[self.tokenizer_func](data["new_content"])
-            self.vocab.update_vocabulary(old_tokenized, new_tokenized)
-            self.vdata_table = self.vocab.vocab_data_table()
-            the_html = self.build_html_table_from_data_list(self.vdata_table)
-            self.push_direct_update(the_html)
-            return
+            if self._vocab is None:
+                if self.column_source == None:
+                    self.push_direct_update("No column source selected.")
+                    return
+                raw_rows = self.load_raw_column(self.column_source)
+                raw_rows[data["row_index"]] = data["new_content"]
+                tokenized_rows = self.tokenize_rows(raw_rows, self.tokenizer_func)
+                self._vocab = Vocabulary(tokenized_rows, self.stop_list)
+                self.vdata_table = self._vocab.vocab_data_table()
+                the_html = self.build_html_table_from_data_list(self.vdata_table)
+                return self.push_direct_update(the_html)
+            else:
+                old_tokenized = tokenizer_dict[self.tokenizer_func](data["old_content"])
+                new_tokenized = tokenizer_dict[self.tokenizer_func](data["new_content"])
+                self._vocab.update_vocabulary(old_tokenized, new_tokenized)
+                self.vdata_table = self._vocab.vocab_data_table()
+                the_html = self.build_html_table_from_data_list(self.vdata_table)
+                self.push_direct_update(the_html)
+                return
         else:
             ColumnSourceTile.handle_event(self, event_name, data)
 
@@ -239,8 +271,8 @@ class VocabularyDisplayTile(ColumnSourceTile):
             return "No column source selected."
         raw_rows = self.load_raw_column(self.column_source)
         tokenized_rows = self.tokenize_rows(raw_rows, self.tokenizer_func)
-        self.vocab = Vocabulary(tokenized_rows, self.stop_list)
-        self.vdata_table = self.vocab.vocab_data_table()
+        self._vocab = Vocabulary(tokenized_rows, self.stop_list)
+        self.vdata_table = self._vocab.vocab_data_table()
         the_html = self.build_html_table_from_data_list(self.vdata_table)
         return the_html
 

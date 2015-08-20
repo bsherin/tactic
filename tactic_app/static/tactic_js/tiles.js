@@ -32,6 +32,37 @@ function create_new_tile(menu_id) {
     })
 }
 
+function create_tile_from_save(tile_id) {
+    data_dict = {};
+    data_dict["tile_id"] = tile_id;
+    data_dict["main_id"] = main_id;
+    $.ajax({
+        url: $SCRIPT_ROOT + "/create_tile_from_save/" + String(tile_id),
+        contentType : 'application/json',
+        type : 'POST',
+        data: JSON.stringify(data_dict),
+        dataType: 'json',
+        success: function (data) {
+            $("#tile-div").append(data.html);
+            $("#tile_body_" + data.tile_id).flip({
+                "trigger": "manual",
+                "autoSize": false,
+                "forceWidth": true,
+                "forceHeight": true
+            });
+            $("#tile_id_" + data.tile_id).resizable({
+                handles: "se",
+                resize: resize_tile_area
+            });
+            new_tile_object = Object.create(tile_object);
+            new_tile_object.tile_id = data.tile_id;
+            tile_dict[data.tile_id] = new_tile_object;
+            do_resize(data.tile_id);
+            new_tile_object.initiateTileRefresh();
+        }
+    })
+}
+
 function create_tile_relevant_event(event_name, data_dict) {
     data_dict["main_id"] = main_id;
     $.ajax({
@@ -123,6 +154,16 @@ var tile_object = {
 
     closeMe: function(){
         $(this.full_selector()).remove();
+        data_dict["main_id"] = main_id;
+        $.ajax({
+            url: $SCRIPT_ROOT + "/remove_tile/" + this.tile_id,
+            contentType : 'application/json',
+            type : 'POST',
+            async: false,
+            data: JSON.stringify(data_dict),
+            dataType: 'json'
+        });
+
     },
 
     flipMe: function (){

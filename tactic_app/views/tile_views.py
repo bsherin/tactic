@@ -47,6 +47,40 @@ def create_tile(tile_type):
                            form_text=form_html)
     return jsonify({"html":result, "tile_id": tile_id})
 
+@app.route('/create_tile_from_save/<tile_id>', methods=['GET','POST'])
+def create_tile_from_save(tile_id):
+    main_id = request.json["main_id"]
+    # new_tile = mainwindow_instances[main_id].create_tile(tile_type)
+    # tile_id = new_tile.tile_id
+    tile_instance = mainwindow_instances[main_id].tile_instances[tile_id]
+    form_html = ""
+    for option in tile_instance.options:
+        if option["type"] == "column_select":
+            the_template = input_start_template + select_base_template
+            form_html += the_template.format(option["name"])
+            for choice in mainwindow_instances[main_id].ordered_sig_dict.keys():
+                form_html += select_option_template.format(choice)
+            form_html += '</select></div>'
+        elif option["type"] == "tokenizer_select":
+            the_template = input_start_template + select_base_template
+            form_html += the_template.format(option["name"])
+            for choice in tokenizer_dict.keys():
+                form_html += select_option_template.format(choice)
+            form_html += '</select></div>'
+        elif option["type"] == "list_select":
+            the_template = input_start_template + select_base_template
+            form_html += the_template.format(option["name"])
+            for choice in current_user.list_names:
+                form_html += select_option_template.format(choice)
+            form_html += '</select></div>'
+        else:
+            the_template = input_start_template + basic_input_template
+            form_html += the_template.format(option["name"], option["type"], option["placeholder"])
+    result = render_template("tile.html", tile_id=tile_id,
+                           tile_name=tile_instance.tile_type,
+                           form_text=form_html)
+    return jsonify({"html":result, "tile_id": tile_id})
+
 @app.route('/submit_options/<tile_id>', methods=['GET', 'POST'])
 def submit_options(tile_id):
     data_dict = request.json
@@ -62,3 +96,8 @@ def get_tile_content(tile_id):
         "tile_id": tile_id
     })
 
+@app.route('/remove_tile/<tile_id>', methods=['POST'])
+def remove_tile(tile_id):
+    main_id = request.json["main_id"]
+    mainwindow_instances[main_id].post_event({"event_name": "RemoveTile", "data": tile_id})
+    return jsonify({"success": True})

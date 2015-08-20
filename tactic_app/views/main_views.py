@@ -1,12 +1,10 @@
 __author__ = 'bls910'
 from tactic_app import app, db, socketio
-from flask import render_template, request, jsonify
+from flask import request, jsonify
 from flask_login import current_user
 from flask_socketio import join_room
-import json
 from tactic_app.shared_dicts import tile_classes
 from tactic_app.shared_dicts import mainwindow_instances
-from tactic_app.main import mainWindow
 
 # The main window should join a room associated with the user
 @socketio.on('connect', namespace='/main')
@@ -25,15 +23,27 @@ def on_join(data):
 @app.route('/save_new_project', methods=['POST'])
 def save_new_project():
     data_dict = request.json
-    db[current_user.project_collection_name].insert_one(data_dict)
+    mainwindow_dict = mainwindow_instances[data_dict['main_id']].compile_save_dict()
+    combined_dict = mainwindow_dict.copy()
+
+    # It's important that data_dict is added on top of mainwindow dict
+    # because it has the updated version of project_name
+    combined_dict.update(data_dict)
+    mainwindow_instances[data_dict['main_id']].project_name = data_dict["project_name"]
+    db[current_user.project_collection_name].insert_one(combined_dict)
     socketio.emit('update-project-list', namespace='/user_manage', room=current_user.get_id())
     return jsonify({"success": True, "message": "Project Successfully Saved"})
 
 @app.route('/update_project', methods=['POST'])
 def update_project():
     data_dict = request.json
-    db[current_user.project_collection_name].update_one({"project_name": data_dict["project_name"]},
-                                                        {'$set': data_dict})
+
+    # Here's it's important that we do mainwindow before data_dict
+    # bcause the new information is coming from data_dict (notably new header_struct and hidden_list)
+    combined_dict = mainwindow_instances[data_dict['main_id']].compile_save_dict().copy()
+    combined_dict.update(data_dict)
+    db[current_user.project_collection_name].update_one({"project_name": combined_dict["project_name"]},
+                                                        {'$set': combined_dict})
     return jsonify({"success": True, "message": "Project Successfully Saved"})
 
 # Views for reading data from the database and
@@ -46,8 +56,9 @@ def grab_data(main_id):
 @app.route('/grab_project_data/<main_id>', methods=['get'])
 def grab_project_data(main_id):
     result = mainwindow_instances[main_id].data_dict
-    result["header_struct"] = mainwindow_instances[main_id].project_dict["header_struct"]
-    result["hidden_list"] = mainwindow_instances[main_id].project_dict["hidden_list"]
+    result["header_struct"] = mainwindow_instances[main_id].header_struct
+    result["hidden_list"] = mainwindow_instances[main_id].hidden_list
+    result["tile_ids"] = mainwindow_instances[main_id].tile_instances.keys()
     return jsonify(result)
 
 @app.route('/get_additional_params', methods=['GET'])

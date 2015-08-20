@@ -11,29 +11,41 @@ from shared_dicts import mainwindow_instances
 from shared_dicts import tile_classes
 current_main_id = 0
 
-def create_new_mainwindow(user_id, collection_name=None, project_name=None):
-    mw = mainWindow(user_id, collection_name, project_name)
+def create_new_mainwindow(user_id, collection_name):
+    mw = mainWindow(user_id, collection_name)
+    mainwindow_instances[mw.main_id] = mw
+    mw.start()
+    return mw.main_id
+
+def create_new_mainwindow_from_project(project_dict):
+    mw = mainWindow(project_dict["user_id"], project_dict["collection_name"])
+    for (key, val) in project_dict.items():
+        if not(key == "tile_instances"):
+            mw.__dict__[key] = val
+    tile_dict = project_dict["tile_instances"]
+    for (handle, tile_instance) in tile_dict.items():
+        mw.create_tile_from_save(tile_instance, handle)
     mainwindow_instances[mw.main_id] = mw
     mw.start()
     return mw.main_id
 
 class mainWindow(threading.Thread):
-    def __init__(self, user_id, collection_name, project_name=None):
+    def __init__(self, user_id, collection_name):
         global current_main_id
         self._stopevent = threading.Event()
         self._sleepperiod = .2
         threading.Thread.__init__(self)
-        self.my_q = Queue.Queue(0)
+        self._my_q = Queue.Queue(0)
         self.update_events = ["CellChange"]
         self.tile_instances = {}
         self.current_tile_id = 0
         self.collection_name = collection_name # This isn't used yet.
-        self.project_name = project_name # This isn't used yet.
+        # self.project_name = project_name # This isn't used yet.
         self.main_id = str(current_main_id)
         self.user_id = user_id
         (self.data_dict, self.id_list) = self.build_data_dict()
-        if project_name is not None:
-            self.project_dict = db[current_user.project_collection_name].find_one({"project_name": project_name})
+        # if project_name is not None:
+        #     self.project_dict = db[current_user.project_collection_name].find_one({"project_name": project_name})
         self.signature_list = self.build_signature_list()
         self.ordered_sig_dict = OrderedDict()
         for it in self.signature_list:
@@ -47,27 +59,40 @@ class mainWindow(threading.Thread):
 
     def run(self):
         while not self._stopevent.isSet( ):
-            if (not self.my_q.empty()):
-                q_item = self.my_q.get()
+            if (not self._my_q.empty()):
+                q_item = self._my_q.get()
                 if type(q_item) == dict:
                     self.handle_event(q_item["event_name"], q_item["data"])
                 else:
                     self.handle_event(q_item)
             self._stopevent.wait(self._sleepperiod)
 
+    def compile_save_dict(self):
+        result = {}
+        for (attr, val) in mainwindow_instances['0'].__dict__.items():
+            if not ((attr.startswith("_")) or (attr == "tile_instances") or (str(type(val)) == "<type 'instance'>")):
+                result[attr] = val
+        tile_instance_saves = {}
+        for (tile_handle, tile_instance) in self.tile_instances.items():
+            tile_instance_saves[tile_handle] = tile_instance.compile_save_dict()
+        result["tile_instances"] = tile_instance_saves
+        return result
+
     def join(self, timeout=None):
         """ Stop the thread and wait for it to end. """
-        self._stopevent.set( )
+        self._stopevent.set()
         threading.Thread.join(self, timeout)
 
     def handle_event(self, event_name, data=None):
         if event_name == "CellChange":
             self.set_row_column_data(data["row_index"], data["signature"], data["new_content"])
             self.change_list.append(data["row_index"])
+        elif event_name == "RemoveTile":
+            del self.tile_instances[data]
         return
 
     def post_event(self, item):
-        self.my_q.put(item)
+        self._my_q.put(item)
 
     def create_tile(self, tile_type):
         new_id = "tile_id_" + str(self.current_tile_id)
@@ -76,6 +101,13 @@ class mainWindow(threading.Thread):
         new_tile.start()
         self.current_tile_id += 1
         return new_tile
+
+    def create_tile_from_save(self, tile_save, id):
+        new_tile = tile_classes[tile_save["tile_type"]](self.main_id, id)
+        for (key, val) in tile_save.items():
+            new_tile.__dict__[key] = val
+        self.tile_instances[id] = new_tile
+        new_tile.start()
 
     def build_signature_list(self):
         ddict = self.data_dict["the_rows"][0]
