@@ -48,7 +48,8 @@ function save_project() {
         //"data_collection_name": _collection_name,
         "main_id": main_id,
         "hidden_list": tableObject.hidden_list,
-        "header_struct": tableObject.header_struct
+        "header_struct": tableObject.header_struct,
+        "next_header_id": tableObject.next_header_id
     };
     $.ajax({
         url: $SCRIPT_ROOT + "/update_project",
@@ -68,7 +69,8 @@ function save_project_as() {
         //"data_collection_name": _collection_name,
         "main_id": main_id,
         "hidden_list": tableObject.hidden_list,
-        "header_struct": tableObject.header_struct
+        "header_struct": tableObject.header_struct,
+        "next_header_id": tableObject.next_header_id
     };
     $.ajax({
         url: $SCRIPT_ROOT + "/save_new_project",
@@ -81,6 +83,37 @@ function save_project_as() {
     });
     $('#save-project-modal').modal('hide')
 }
+
+function create_column() {
+    var column_name = $("#column-name-modal-field").val();
+    // First: fix the header struct
+    var new_header_object = Object.create(header0bject)
+    new_header_object.name = column_name;
+    new_header_object.span = 1;
+    new_header_object.depth = 0;
+    new_header_object.id = tableObject.next_header_id;
+    tableObject.next_header_id += 1;
+    new_header_object.child_list = [];
+    new_header_object.hidden = false;
+    tableObject.header_struct.child_list.push(new_header_object)
+    // Then rebuild the table
+    tableObject.build_table()
+
+    // Then change the current data_dict back on the server
+    var data_dict = {"column_name": column_name,
+                    "main_id": main_id};
+    $.ajax({
+        url: $SCRIPT_ROOT + "/create_column",
+        contentType : 'application/json',
+        type : 'POST',
+        async: true,
+        data: JSON.stringify(data_dict),
+        dataType: 'json',
+    });
+    $('#add-column-modal').modal('hide')
+}
+
+
 
 function save_as_success(data_object) {
     menus["Project"].enable_menu_item("menu-save");

@@ -59,6 +59,7 @@ def grab_project_data(main_id):
     result["header_struct"] = mainwindow_instances[main_id].header_struct
     result["hidden_list"] = mainwindow_instances[main_id].hidden_list
     result["tile_ids"] = mainwindow_instances[main_id].tile_instances.keys()
+    result["next_header_id"] = mainwindow_instances[main_id].next_header_id
     return jsonify(result)
 
 @app.route('/get_additional_params', methods=['GET'])
@@ -77,3 +78,10 @@ def tile_relevant_event(event_name):
     if event_name in mwindow.update_events:
         mwindow.post_event({"event_name": event_name, "data": data_dict})
     return jsonify({"success": True})
+
+@app.route('/create_column', methods=['get', 'post'])
+def create_column():
+    data_dict = request.json
+    main_id = data_dict["main_id"]
+    column_name = data_dict["column_name"]
+    mainwindow_instances[main_id].add_blank_column(column_name)

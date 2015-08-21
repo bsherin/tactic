@@ -246,6 +246,9 @@ var tableObject = {
             this.collection_name = _collection_name
             this.doc_list = data_object["the_rows"]
             var sample_row = this.doc_list[0];
+            if (data_object.hasOwnProperty("next_header_id")){
+                this.next_header_id = data_object["next_header_id"]
+            }
             if (data_object.hasOwnProperty("header_struct")) {
                 this.header_struct = this.rebuild_header_struct(data_object["header_struct"])
                 this.hidden_list = data_object["hidden_list"];

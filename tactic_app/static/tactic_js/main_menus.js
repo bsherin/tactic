@@ -95,9 +95,12 @@ function column_command(menu_id) {
             }
         }
     }
-    if (menu_id == "unhide") {
+    else if (menu_id == "unhide") {
         tableObject.hidden_list = [];
         tableObject.build_table();
+    }
+    else if (menu_id == "add-column") {
+        $('#add-column-modal').modal();
     }
 };
 
@@ -132,7 +135,7 @@ function build_menu_objects() {
     // Create the column_menu object
     column_menu = Object.create(menu_object);
     column_menu.menu_name = "Column";
-    column_menu.options = ["shift-left", "shift-right", "hide", "unhide"];
+    column_menu.options = ["shift-left", "shift-right", "hide", "unhide", "add-column"];
     column_menu.perform_menu_item = column_command;
     menus[column_menu.menu_name] = column_menu;
     column_menu.add_options_to_index();

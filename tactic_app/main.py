@@ -40,12 +40,10 @@ class mainWindow(threading.Thread):
         self.tile_instances = {}
         self.current_tile_id = 0
         self.collection_name = collection_name # This isn't used yet.
-        # self.project_name = project_name # This isn't used yet.
         self.main_id = str(current_main_id)
         self.user_id = user_id
         (self.data_dict, self.id_list) = self.build_data_dict()
-        # if project_name is not None:
-        #     self.project_dict = db[current_user.project_collection_name].find_one({"project_name": project_name})
+
         self.signature_list = self.build_signature_list()
         self.ordered_sig_dict = OrderedDict()
         for it in self.signature_list:
@@ -66,6 +64,10 @@ class mainWindow(threading.Thread):
                 else:
                     self.handle_event(q_item)
             self._stopevent.wait(self._sleepperiod)
+
+    def add_blank_column(self, column_name):
+        for doc in self.data_dict["the_rows"]:
+            doc[column_name] = ""
 
     def compile_save_dict(self):
         result = {}
