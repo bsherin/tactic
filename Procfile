@@ -1,0 +1,1 @@
+web: python tactic_run.py
