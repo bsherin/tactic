@@ -8,20 +8,6 @@ var column_menu;
 var project_menu;
 var tile_menu;
 
-function render_menus() {
-    for (var m in menus) {
-        if (menus.hasOwnProperty(m)) {
-            $("#menu-area").append(menus[m].render_menu())
-        }
-    };
-    $(".menu-item").click(function(e) {
-        var item_id = e.currentTarget.id;
-        var menu_name = menu_item_index[item_id]
-        menus[menu_name].perform_menu_item(item_id)
-        e.preventDefault()
-    });
-    disable_require_column_select()
-}
 
 // This is the menu_object base prototype
 var menu_object = {
@@ -63,6 +49,49 @@ var menu_object = {
             $("#" + item_id).closest('li').removeClass("disabled")
         }
     };
+
+function build_and_render_menu_objects() {
+    // Create the column_menu object
+    column_menu = Object.create(menu_object);
+    column_menu.menu_name = "Column";
+    column_menu.options = ["shift-left", "shift-right", "hide", "unhide", "add-column"];
+    column_menu.perform_menu_item = column_command;
+    menus[column_menu.menu_name] = column_menu;
+    column_menu.add_options_to_index();
+
+    // Create the project_menu object
+    project_menu = Object.create(menu_object);
+    project_menu.menu_name = "Project";
+    project_menu.options = ["save-as", "save"];
+    project_menu.perform_menu_item = project_command;
+    menus[project_menu.menu_name] = project_menu;
+    project_menu.add_options_to_index();
+
+    // Create the project_menu object
+    tile_menu = Object.create(menu_object);
+    tile_menu.menu_name = "Tile";
+    tile_menu.perform_menu_item = tile_command;
+    menus[tile_menu.menu_name] = tile_menu;
+    tile_menu.options = tile_types;
+    tile_menu.add_options_to_index();
+    render_menus()
+    function render_menus() {
+        for (var m in menus) {
+            if (menus.hasOwnProperty(m)) {
+                $("#menu-area").append(menus[m].render_menu())
+            }
+        };
+        $(".menu-item").click(function(e) {
+            var item_id = e.currentTarget.id;
+            var menu_name = menu_item_index[item_id]
+            menus[menu_name].perform_menu_item(item_id)
+            e.preventDefault()
+        });
+        disable_require_column_select()
+    }
+}
+
+
 
 function column_command(menu_id) {
     var the_id = tableObject.selected_header;
@@ -131,29 +160,81 @@ function enable_require_column_select(){
     column_menu.enable_items(["shift-left", "shift-right", "hide"])
 }
 
-function build_menu_objects() {
-    // Create the column_menu object
-    column_menu = Object.create(menu_object);
-    column_menu.menu_name = "Column";
-    column_menu.options = ["shift-left", "shift-right", "hide", "unhide", "add-column"];
-    column_menu.perform_menu_item = column_command;
-    menus[column_menu.menu_name] = column_menu;
-    column_menu.add_options_to_index();
-
-    // Create the project_menu object
-    project_menu = Object.create(menu_object);
-    project_menu.menu_name = "Project";
-    project_menu.options = ["save-as", "save"];
-    project_menu.perform_menu_item = project_command;
-    menus[project_menu.menu_name] = project_menu;
-    project_menu.add_options_to_index();
-
-    // Create the project_menu object
-    tile_menu = Object.create(menu_object);
-    tile_menu.menu_name = "Tile";
-    tile_menu.perform_menu_item = tile_command;
-    menus[tile_menu.menu_name] = tile_menu;
-    tile_menu.options = tile_types;
-    tile_menu.add_options_to_index();
+function save_project() {
+    var result_dict = {
+        //"project_name": _project_name,
+        //"data_collection_name": _collection_name,
+        "main_id": main_id,
+        "hidden_list": tableObject.hidden_list,
+        "header_struct": tableObject.header_struct,
+        "next_header_id": tableObject.next_header_id
+    };
+    $.ajax({
+        url: $SCRIPT_ROOT + "/update_project",
+        contentType : 'application/json',
+        type : 'POST',
+        async: false,
+        data: JSON.stringify(result_dict),
+        dataType: 'json',
+        success: doFlash
+    });
 }
+
+function save_project_as() {
+    _project_name = $("#project-name-modal-field").val();
+    var result_dict = {
+        "project_name": _project_name,
+        //"data_collection_name": _collection_name,
+        "main_id": main_id,
+        "hidden_list": tableObject.hidden_list,
+        "header_struct": tableObject.header_struct,
+        "next_header_id": tableObject.next_header_id
+    };
+    $.ajax({
+        url: $SCRIPT_ROOT + "/save_new_project",
+        contentType : 'application/json',
+        type : 'POST',
+        async: true,
+        data: JSON.stringify(result_dict),
+        dataType: 'json',
+        success: save_as_success
+    });
+    $('#save-project-modal').modal('hide')
+}
+
+function create_column() {
+    var column_name = $("#column-name-modal-field").val();
+    // First: fix the header struct
+    var new_header_object = Object.create(header0bject)
+    new_header_object.name = column_name;
+    new_header_object.span = 1;
+    new_header_object.depth = 0;
+    new_header_object.id = tableObject.next_header_id;
+    tableObject.next_header_id += 1;
+    new_header_object.child_list = [];
+    new_header_object.hidden = false;
+    tableObject.header_struct.child_list.push(new_header_object)
+    // Then rebuild the table
+    tableObject.build_table()
+
+    // Then change the current data_dict back on the server
+    var data_dict = {"column_name": column_name,
+                    "main_id": main_id};
+    $.ajax({
+        url: $SCRIPT_ROOT + "/post_create_column_event",
+        contentType : 'application/json',
+        type : 'POST',
+        async: true,
+        data: JSON.stringify(data_dict),
+        dataType: 'json',
+    });
+    $('#add-column-modal').modal('hide')
+}
+
+
+function save_as_success(data_object) {
+    menus["Project"].enable_menu_item("menu-save");
+    doFlash(data_object)
+}
+
 

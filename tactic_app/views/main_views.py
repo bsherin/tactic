@@ -5,6 +5,7 @@ from flask_login import current_user
 from flask_socketio import join_room
 from tactic_app.shared_dicts import tile_classes
 from tactic_app.shared_dicts import mainwindow_instances
+from user_manage_views import render_project_list
 
 # The main window should join a room associated with the user
 @socketio.on('connect', namespace='/main')
@@ -31,7 +32,7 @@ def save_new_project():
     combined_dict.update(data_dict)
     mainwindow_instances[data_dict['main_id']].project_name = data_dict["project_name"]
     db[current_user.project_collection_name].insert_one(combined_dict)
-    socketio.emit('update-project-list', namespace='/user_manage', room=current_user.get_id())
+    socketio.emit('update-project-list', {"html": render_project_list()}, namespace='/user_manage', room=current_user.get_id())
     return jsonify({"success": True, "message": "Project Successfully Saved"})
 
 @app.route('/update_project', methods=['POST'])
@@ -67,8 +68,8 @@ def get_additional_params():
     result = {"tile_types": tile_classes.keys()};
     return jsonify(result)
 
-@app.route('/tile_relevant_event/<event_name>', methods=['get', 'post'])
-def tile_relevant_event(event_name):
+@app.route('/distribute_events/<event_name>', methods=['get', 'post'])
+def distribute_events(event_name):
     data_dict = request.json
     main_id = request.json["main_id"]
     mwindow = mainwindow_instances[main_id]
@@ -79,9 +80,8 @@ def tile_relevant_event(event_name):
         mwindow.post_event({"event_name": event_name, "data": data_dict})
     return jsonify({"success": True})
 
-@app.route('/create_column', methods=['get', 'post'])
-def create_column():
+@app.route('/post_create_column_event', methods=['get', 'post'])
+def post_create_column_event():
     data_dict = request.json
     main_id = data_dict["main_id"]
-    column_name = data_dict["column_name"]
-    mainwindow_instances[main_id].add_blank_column(column_name)
+    mainwindow_instances[main_id].post_event({"event_name": "CreateColumn", "data": data_dict})

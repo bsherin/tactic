@@ -1,12 +1,19 @@
 
 # This module contains the User class machinery required by flask-login
 
-import re, sys
-import pymongo
+import re
 from flask.ext.login import UserMixin
+from flask_login import current_user
 from tactic_app import login_manager, db
 from bson.objectid import ObjectId
 from werkzeug.security import generate_password_hash, check_password_hash
+
+
+def build_data_collection_name(collection_name):
+    return '{}.data_collection.{}'.format(current_user.username, collection_name)
+
+def put_docs_in_collection(collection_name, dict_list):
+    return db[collection_name].insert_many(dict_list)
 
 
 @login_manager.user_loader

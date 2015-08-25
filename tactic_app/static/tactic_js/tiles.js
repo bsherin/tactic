@@ -6,7 +6,7 @@ function create_new_tile(menu_id) {
     data_dict = {};
     data_dict["main_id"] = main_id;
     $.ajax({
-        url: $SCRIPT_ROOT + "/create_tile/" + String(menu_id),
+        url: $SCRIPT_ROOT + "/create_tile_request/" + String(menu_id),
         contentType : 'application/json',
         type : 'POST',
         data: JSON.stringify(data_dict),
@@ -27,17 +27,24 @@ function create_new_tile(menu_id) {
             new_tile_object.tile_id = data.tile_id;
             tile_dict[data.tile_id] = new_tile_object;
             do_resize(data.tile_id);
-            new_tile_object.initiateTileRefresh();
+            //new_tile_object.initiateTileRefresh();
+            data_dict.tile_id = data.tile_id
+            $.ajax({
+                url: $SCRIPT_ROOT + "/refreshtile_event_request/" + String(data_dict.tile_id),
+                contentType : 'application/json',
+                type : 'POST',
+                data: JSON.stringify(data_dict)
+            });
         }
     })
 }
 
 function create_tile_from_save(tile_id) {
-    data_dict = {};
+    var data_dict = {};
     data_dict["tile_id"] = tile_id;
     data_dict["main_id"] = main_id;
     $.ajax({
-        url: $SCRIPT_ROOT + "/create_tile_from_save/" + String(tile_id),
+        url: $SCRIPT_ROOT + "/create_tile_from_save_request/" + String(tile_id),
         contentType : 'application/json',
         type : 'POST',
         data: JSON.stringify(data_dict),
@@ -58,15 +65,21 @@ function create_tile_from_save(tile_id) {
             new_tile_object.tile_id = data.tile_id;
             tile_dict[data.tile_id] = new_tile_object;
             do_resize(data.tile_id);
-            new_tile_object.initiateTileRefresh();
+            //new_tile_object.initiateTileRefresh();
+            $.ajax({
+                url: $SCRIPT_ROOT + "/refreshtilefromsave_event_request/" + String(data_dict.tile_id),
+                contentType : 'application/json',
+                type : 'POST',
+                data: JSON.stringify(data_dict),
+            });
         }
     })
 }
 
-function create_tile_relevant_event(event_name, data_dict) {
+function broadcast_event_to_server(event_name, data_dict) {
     data_dict["main_id"] = main_id;
     $.ajax({
-        url: $SCRIPT_ROOT + "/tile_relevant_event/" + event_name,
+        url: $SCRIPT_ROOT + "/distribute_events/" + event_name,
         contentType : 'application/json',
         type : 'POST',
         data: JSON.stringify(data_dict)
@@ -97,26 +110,12 @@ function do_resize(tile_id){
     resize_tile_area(null, ui);
 }
 
-// This is needed just because of one callback in tile_object
-function refresh_tile_content(data){
-    tile_dict[data.tile_id].refreshTileContent(data)
-}
 
 var tile_object = {
     tile_id: null,
     spinner: null,
     full_selector: function() {
         return "#tile_id_" + this.tile_id;
-    },
-    initiateTileRefresh: function () {
-        data_dict["main_id"] = main_id;
-        $.ajax({
-            url: $SCRIPT_ROOT + "/get_tile_content/" + String(this.tile_id),
-            contentType : 'application/json',
-            type : 'POST',
-            data: JSON.stringify(data_dict),
-            success: refresh_tile_content
-        });
     },
     submitOptions: function (){
         var data = {};
@@ -138,7 +137,7 @@ var tile_object = {
             dataType: 'json'
         });
     },
-    refreshTileContent: function (data) {
+    displayTileContent: function (data) {
         $(this.full_selector() + " #tile-display-area").html(data["html"]);
         this.showFront()
     },

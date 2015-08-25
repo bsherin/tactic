@@ -3,6 +3,7 @@ __author__ = 'bls910'
 import Queue
 import threading
 from nltk.corpus import wordnet as wn
+from flask_login import current_user
 
 from tactic_app import socketio
 from shared_dicts import mainwindow_instances
@@ -17,6 +18,14 @@ def tile_class(tclass):
     return tclass
 
 class TileBase(threading.Thread):
+    options = []
+    input_start_template = '<div class="form-group">' \
+                     '<label>{0}</label>'
+    basic_input_template = '<input type="{1}" class="form-control" id="{0}" placeholder="{2}">' \
+                     '</div>'
+    select_base_template = '<select class="form-control" id="{0}">'
+    select_option_template = '<option value="{0}">{0}</option>'
+
     def __init__(self, main_id, tile_id):
         self._stopevent = threading.Event()
         self._sleepperiod = .2
@@ -29,18 +38,6 @@ class TileBase(threading.Thread):
         self.current_html = None
         self.tile_type = self.__class__.__name__
         return
-
-    def compile_save_dict(self):
-        result = {}
-        for (attr, val) in self.__dict__.items():
-            if not ((attr.startswith("_")) or (attr == "additionalInfo") or (str(type(val)) == "<type 'instance'>")):
-                result[attr] = val
-        result["tile_type"] = type(self).__name__
-        result.update(self.cache_dicts())
-        return result
-
-    def cache_dicts(self):
-        return {}
 
     def run(self):
         while not self._stopevent.isSet( ):
@@ -57,30 +54,31 @@ class TileBase(threading.Thread):
         self._stopevent.set( )
         threading.Thread.join(self, timeout)
 
-    def update_data(self, data):
-        print "update data not implemented"
-        return
-
     def post_event(self, item):
         self._my_q.put(item)
+
 
     def handle_event(self, event_name, data=None):
         if event_name == "RefreshTile":
             self.push_direct_update()
-        if event_name == "UpdateOptions":
+        elif event_name == "RefreshTileFromSave":
+            self.push_direct_update(self.current_html)
+        elif event_name == "UpdateOptions":
             self.update_options(data)
-        if event_name =="ShowFront":
+        elif event_name =="ShowFront":
             self.show_front()
-        if event_name=="StartSpinner":
+        elif event_name=="StartSpinner":
             self.start_spinner()
-        if event_name=="StopSpinner":
+        elif event_name=="StopSpinner":
             self.stop_spinner()
         return
 
-    def initiate_update(self):
-        socketio.emit("tile-message",
-              {"tile_id": str(self.tile_id), "message": "initiateTileRefresh"},
-              namespace='/main', room=self.main_id)
+    def update_data(self, data):
+        print "update data not implemented"
+        return
+
+    def update_options(self, form_data):
+        return
 
     def show_front(self):
         socketio.emit("tile-message",
@@ -92,7 +90,7 @@ class TileBase(threading.Thread):
             new_html = self.render_content()
         self.current_html = new_html
         socketio.emit("tile-message",
-                      {"tile_id": str(self.tile_id), "message": "refreshTileContent", "html": new_html},
+                      {"tile_id": str(self.tile_id), "message": "displayTileContent", "html": new_html},
                       namespace='/main', room=self.main_id)
 
     def start_spinner(self):
@@ -110,6 +108,24 @@ class TileBase(threading.Thread):
     def render_content(self):
         print "not implemented"
 
+    def compile_save_dict(self):
+        result = {}
+        for (attr, val) in self.__dict__.items():
+            if not ((attr.startswith("_")) or (attr == "additionalInfo") or (str(type(val)) == "<type 'instance'>")):
+                result[attr] = val
+        result["tile_type"] = type(self).__name__
+        result.update(self.cache_dicts())
+        return result
+
+    def cache_dicts(self):
+        return {}
+
+    # Not currently used
+    # def initiate_update(self):
+    #     socketio.emit("tile-message",
+    #           {"tile_id": str(self.tile_id), "message": "initiateTileRefresh"},
+    #           namespace='/main', room=self.main_id)
+
     @property
     def current_user(self):
         user_id = mainwindow_instances[self.main_id].user_id
@@ -118,6 +134,32 @@ class TileBase(threading.Thread):
 
     def get_user_list(self, the_list):
         return self.current_user.get_list(the_list)
+
+    def create_form_html(self):
+        form_html = ""
+        for option in self.options:
+            if option["type"] == "column_select":
+                the_template = self.input_start_template + self.select_base_template
+                form_html += the_template.format(option["name"])
+                for choice in mainwindow_instances[self.main_id].ordered_sig_dict.keys():
+                    form_html += self.select_option_template.format(choice)
+                form_html += '</select></div>'
+            elif option["type"] == "tokenizer_select":
+                the_template = self.input_start_template + self.select_base_template
+                form_html += the_template.format(option["name"])
+                for choice in tokenizer_dict.keys():
+                    form_html += self.select_option_template.format(choice)
+                form_html += '</select></div>'
+            elif option["type"] == "list_select":
+                the_template = self.input_start_template + self.select_base_template
+                form_html += the_template.format(option["name"])
+                for choice in current_user.list_names:
+                    form_html += self.select_option_template.format(choice)
+                form_html += '</select></div>'
+            else:
+                the_template = self.input_start_template + self.basic_input_template
+                form_html += the_template.format(option["name"], option["type"], option["placeholder"])
+        return form_html
 
 class SelectionTile(TileBase):
     def __init__(self, main_id, tile_id):
@@ -139,11 +181,6 @@ class SelectionTile(TileBase):
 
     def render_content(self):
         return self.selected_text
-
-    def update_options(self, form_data):
-        return
-
-
 
 @tile_class
 class SimpleSelectionTile(SelectionTile):
@@ -205,7 +242,8 @@ class ColumnSourceTile(TileBase):
 
     def update_options(self, form_data):
         self.column_source = form_data["column_source"]
-        self.push_direct_update()
+        self.post_event("RefreshTile")
+        # self.push_direct_update()
 
 @tile_class
 class VocabularyDisplayTile(ColumnSourceTile):

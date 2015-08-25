@@ -112,7 +112,7 @@ function text_select(e) {
     var the_dict;
     if (the_text.length > 0) {
         the_dict = {"selected_text": the_text};
-        create_tile_relevant_event("text_select", the_dict)
+        broadcast_event_to_server("text_select", the_dict)
     }
 }
 
@@ -131,7 +131,7 @@ function handle_cell_change () {
             "signature": sig,
             "old_content": old_content,
             "new_content": current_content}
-        create_tile_relevant_event("CellChange", data_dict)
+        broadcast_event_to_server("CellChange", data_dict)
     }
 }
 
@@ -243,21 +243,33 @@ var tableObject = {
     hidden_list: [],
 
     load_data: function (data_object){
-            this.collection_name = _collection_name
-            this.doc_list = data_object["the_rows"]
-            var sample_row = this.doc_list[0];
-            if (data_object.hasOwnProperty("next_header_id")){
-                this.next_header_id = data_object["next_header_id"]
+        this.collection_name = _collection_name
+        this.doc_list = data_object["the_rows"]
+        var sample_row = this.doc_list[0];
+        if (data_object.hasOwnProperty("next_header_id")){
+            this.next_header_id = data_object["next_header_id"]
+        }
+        if (data_object.hasOwnProperty("header_struct")) {
+            this.header_struct = rebuild_header_struct(data_object["header_struct"])
+            this.hidden_list = data_object["hidden_list"];
+        }
+        else {
+            this.header_struct = this.find_headers(this.collection_name, sample_row);
+            menus["Project"].disable_menu_item('menu-save')
+        }
+        this.build_table();
+        function rebuild_header_struct(hstruct) {
+            var true_hstruct = Object.create(header0bject)
+            for (var prop in hstruct) {
+                if (!hstruct.hasOwnProperty(prop)) continue;
+                true_hstruct[prop] = hstruct[prop]
             }
-            if (data_object.hasOwnProperty("header_struct")) {
-                this.header_struct = this.rebuild_header_struct(data_object["header_struct"])
-                this.hidden_list = data_object["hidden_list"];
+
+            for (var i = 0; i < hstruct.child_list.length; ++i) {
+                true_hstruct.child_list[i] = rebuild_header_struct(hstruct.child_list[i])
             }
-            else {
-                this.header_struct = this.find_headers(this.collection_name, sample_row);
-                menus["Project"].disable_menu_item('menu-save')
-            }
-            this.build_table();
+            return true_hstruct
+        }
     },
 
     build_table: function() {
@@ -458,19 +470,7 @@ var tableObject = {
             }
             return {"html": res, "total_span":total_span}
         },
-    rebuild_header_struct: function(hstruct) {
-        //hstruct.__proto__ = header0bject
-        var true_hstruct = Object.create(header0bject)
-        for (var prop in hstruct) {
-            if (!hstruct.hasOwnProperty(prop)) continue;
-            true_hstruct[prop] = hstruct[prop]
-        }
 
-        for (var i = 0; i < hstruct.child_list.length; ++i) {
-            true_hstruct.child_list[i] = this.rebuild_header_struct(hstruct.child_list[i])
-        }
-        return true_hstruct
-    },
     build_signature_list: function (hstruct, sofar) {
         var i;
         var result = [];
@@ -508,6 +508,7 @@ var tableObject = {
             return res
         },
 
+    //This is no longer used.
     get_cell_value_from_sig: function(row_dict, sig) {
         var current = row_dict;
         // Note the loop below starts at 1 because my signature list has an extra

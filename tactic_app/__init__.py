@@ -4,7 +4,7 @@
 
 from flask import Flask
 import pymongo
-import sys, os
+import sys
 from pymongo import MongoClient
 from flask.ext.login import LoginManager
 from flask.ext.bootstrap import Bootstrap
