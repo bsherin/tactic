@@ -26,59 +26,6 @@ function click_header(el) {
     }
 }
 
-function true_col_index(el) {
-    var cell_index = el.cellIndex;
-    var sib_collection = el.parentElement.children
-    ind = 0;
-    for (var i = 0; i < cell_index; ++i) {
-        ind = ind + sib_collection[i].colSpan
-    }
-    return ind
-}
-
-function find_super_headers(el) {
-    var the_row = el.parentElement.rowIndex;
-    var true_col = true_col_index(el);
-    var header_rows = $("thead").children()
-    var super_headers = []
-
-    var the_th, hrow, ths, i, j, tc_index;
-    for (i = (the_row - 1); i >= 0; --i){
-        hrow = header_rows[i];
-        ths = $(hrow).children();
-        for (j = 0; j < ths.length ; ++j) {
-            the_th = ths[j];
-            tc_index = true_col_index(the_th)
-            if ((tc_index <= true_col) && ((tc_index + the_th.colSpan - 1) >= true_col)) {
-                super_headers.push(the_th)
-                break;
-            }
-        }
-    }
-    return super_headers
-}
-
-function find_sub_headers(el) {
-    var the_row = el.parentElement.rowIndex;
-    var true_col = true_col_index(el);
-    var cspan = el.colSpan
-    var header_rows = $("thead").children()
-    var sub_headers = []
-    var the_th, hrow, ths, i, j, tch
-    for (i = the_row + 1; i < header_rows.length; ++i){
-        hrow = header_rows[i];
-        ths = $(hrow).children();
-        for (j = 0; j < ths.length ; ++j) {
-            the_th = ths[j];
-            tch = true_col_index(the_th)
-            if ((tch >= true_col) && (tch < (true_col + el.colSpan))){
-                sub_headers.push(the_th)
-            }
-        }
-    }
-    return sub_headers
-}
-
 function resize_from_sub_headers (el_list) {
     for (var i = 0; i < el_list.length; ++i) {
         var total_width = 0;
@@ -278,10 +225,77 @@ var tableObject = {
         this.create_all_html();
         this.resize_table_area();
         this.column_widths = this.freeze_header(this.table_id);
-        this.label_super_headers()
-        this.label_sub_headers()
+        label_super_headers();
+        label_sub_headers();
         this.header_rows = $("thead").children().length;
         $('#table-area td').blur(handle_cell_change)
+
+        function true_col_index(el) {
+            var cell_index = el.cellIndex;
+            var sib_collection = el.parentElement.children
+            ind = 0;
+            for (var i = 0; i < cell_index; ++i) {
+                ind = ind + sib_collection[i].colSpan
+            }
+            return ind
+        }
+
+        function label_super_headers () {
+            $("th").each(function(index){
+                var shs = find_super_headers(this)
+                $(this).data("super_headers", shs)
+            })
+            function find_super_headers(el) {
+                var the_row = el.parentElement.rowIndex;
+                var true_col = true_col_index(el);
+                var header_rows = $("thead").children()
+                var super_headers = []
+
+                var the_th, hrow, ths, i, j, tc_index;
+                for (i = (the_row - 1); i >= 0; --i){
+                    hrow = header_rows[i];
+                    ths = $(hrow).children();
+                    for (j = 0; j < ths.length ; ++j) {
+                        the_th = ths[j];
+                        tc_index = true_col_index(the_th)
+                        if ((tc_index <= true_col) && ((tc_index + the_th.colSpan - 1) >= true_col)) {
+                            super_headers.push(the_th)
+                            break;
+                        }
+                    }
+                }
+                return super_headers
+            }
+        }
+
+        function label_sub_headers () {
+            $("th").each(function(index){
+                var shs = find_sub_headers(this)
+                $(this).data("sub_headers", shs)
+            });
+
+            function find_sub_headers (el) {
+                var the_row = el.parentElement.rowIndex;
+                var true_col = true_col_index(el);
+                var cspan = el.colSpan
+                var header_rows = $("thead").children()
+                var sub_headers = []
+                var the_th, hrow, ths, i, j, tch
+                for (i = the_row + 1; i < header_rows.length; ++i){
+                    hrow = header_rows[i];
+                    ths = $(hrow).children();
+                    for (j = 0; j < ths.length ; ++j) {
+                        the_th = ths[j];
+                        tch = true_col_index(the_th)
+                        if ((tch >= true_col) && (tch < (true_col + el.colSpan))){
+                            sub_headers.push(the_th)
+                        }
+                    }
+                }
+                return sub_headers
+            }
+
+        }
     },
 
     build_table_array: function(){
@@ -336,19 +350,6 @@ var tableObject = {
             })
     },
 
-    label_super_headers: function() {
-        $("th").each(function(index){
-            var shs = find_super_headers(this)
-            $(this).data("super_headers", shs)
-        })
-    },
-
-    label_sub_headers: function() {
-        $("th").each(function(index){
-            var shs = find_sub_headers(this)
-            $(this).data("sub_headers", shs)
-        })
-    },
 
 
     resize_table_area: function() {
