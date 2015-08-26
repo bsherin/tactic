@@ -11,6 +11,7 @@ from tactic_app import app
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    print "entering login view"
     form = LoginForm()
     if form.validate_on_submit():
         user = User.get_user_by_username(form.username.data)

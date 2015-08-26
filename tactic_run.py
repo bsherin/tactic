@@ -14,5 +14,7 @@ from tactic_app import tiles, tokenizers
 from tactic_app import socketio
 
 # app.run(debug=True)
+
+print "about to execute socketio.run"
 socketio.run(app)
 # socketio.run(app, host='0.0.0.0') # Get iP address for this machine and add :5000

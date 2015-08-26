@@ -15,21 +15,27 @@ print "entering init"
 MONGOLAB_URI = "mongodb://heroku_4ncbq1zd:g5gpcb378o4rqnidof6m3dcp4r@ds035563.mongolab.com:35563/heroku_4ncbq1zd"
 
 try:
+    print "getting client"
     # client = MongoClient("localhost", serverSelectionTimeoutMS=10)
     client = MongoClient(host=MONGOLAB_URI)
+    print "getting server_info"
     client.server_info() # force connection on a request as the
                          # connect=True parameter of MongoClient seems
                          # to be useless here
     # db = client.tacticdb
+    print "getting db"
     db = client.heroku_4ncbq1zd
 
+    "print creating login stuff"
     login_manager = LoginManager()
     login_manager.session_protection = 'strong'
     login_manager.login_view = 'auth.login'
 
+    "print creating app and confiruting"
     app = Flask(__name__)
     app.config.from_object('config')
 
+    "print starting login_manager, bootstratp, socketio"
     login_manager.init_app(app)
     bootstrap = Bootstrap(app)
     socketio=SocketIO(app)
