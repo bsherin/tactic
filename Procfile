@@ -1,1 +1,1 @@
-web: python tactic_run.py
+web: gunicorn --worker-class socketio.sgunicorn.GeventSocketIOWorker tactic_run:app
