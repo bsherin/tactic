@@ -2,6 +2,8 @@ __author__ = 'bls910'
 
 import Queue
 import threading
+import nltk
+nltk.data.path.append('./nltk_data/')
 from nltk.corpus import wordnet as wn
 from flask_login import current_user
 
