@@ -10,9 +10,11 @@ from flask.ext.login import LoginManager
 from flask.ext.bootstrap import Bootstrap
 from flask.ext.socketio import SocketIO
 
+MONGOLAB_URI = "mongodb://heroku_4ncbq1zd:g5gpcb378o4rqnidof6m3dcp4r@ds035563.mongolab.com:35563/heroku_4ncbq1zd"
 
 try:
-    client = MongoClient("localhost", serverSelectionTimeoutMS=10)
+    # client = MongoClient("localhost", serverSelectionTimeoutMS=10)
+    client = MongoClient(host=MONGOLAB_URI, serverSelectionTimeoutMS=10)
     client.server_info() # force connection on a request as the
                          # connect=True parameter of MongoClient seems
                          # to be useless here
