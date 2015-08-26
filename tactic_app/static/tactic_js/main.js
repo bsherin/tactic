@@ -17,6 +17,7 @@ function start_post_load() {
             for (var i = 0; i < tile_ids.length; ++i) {
                 create_tile_from_save(tile_ids[i])
             }
+            menus["Project"].enable_menu_item("save");
         })
     }
     $("#tile-div").sortable({

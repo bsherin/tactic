@@ -88,10 +88,10 @@ function build_and_render_menu_objects() {
             e.preventDefault()
         });
         disable_require_column_select()
+        project_menu.disable_items(["save"])
+
     }
 }
-
-
 
 function column_command(menu_id) {
     var the_id = tableObject.selected_header;
@@ -149,7 +149,6 @@ function project_command(menu_id) {
 
 function tile_command(menu_id) {
     create_new_tile(menu_id)
-
 }
 
 function disable_require_column_select(){
@@ -233,7 +232,7 @@ function create_column() {
 
 
 function save_as_success(data_object) {
-    menus["Project"].enable_menu_item("menu-save");
+    menus["Project"].enable_menu_item("save");
     doFlash(data_object)
 }
 

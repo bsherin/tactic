@@ -38,7 +38,9 @@ def submit_options(tile_id):
 @app.route('/refreshtile_event_request/<tile_id>', methods=['GET', 'POST'])
 def refreshtile_event_request(tile_id):
     main_id = request.json["main_id"]
+    mainwindow_instances[main_id ].tile_instances[tile_id].post_event("StartSpinner")
     mainwindow_instances[main_id ].tile_instances[tile_id].post_event("RefreshTile")
+    mainwindow_instances[main_id ].tile_instances[tile_id].post_event("StopSpinner")
     return jsonify({"success": True})
 
 

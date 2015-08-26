@@ -78,7 +78,7 @@ class mainWindow(threading.Thread):
 
     def compile_save_dict(self):
         result = {}
-        for (attr, val) in mainwindow_instances['0'].__dict__.items():
+        for (attr, val) in self.__dict__.items():
             if not ((attr.startswith("_")) or (attr == "tile_instances") or (str(type(val)) == "<type 'instance'>")):
                 result[attr] = val
         tile_instance_saves = {}

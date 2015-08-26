@@ -57,6 +57,11 @@ class TileBase(threading.Thread):
     def post_event(self, item):
         self._my_q.put(item)
 
+    def spin_and_refresh(self):
+        self.post_event("StartSpinner")
+        self.post_event("RefreshTile")
+        self.post_event("StopSpinner")
+
 
     def handle_event(self, event_name, data=None):
         if event_name == "RefreshTile":
@@ -200,7 +205,7 @@ class SimpleSelectionTile(SelectionTile):
 
     def update_options(self, form_data):
         self.extra_text = form_data["extra_text"]
-        self.post_event("RefreshTile")
+        self.spin_and_refresh()
 
 @tile_class
 class WordnetSelectionTile(SelectionTile):
@@ -221,6 +226,7 @@ class WordnetSelectionTile(SelectionTile):
     def update_options(self, form_data):
         self.to_show = int(form_data["number_to_show"])
         self.post_event("ShowFront")
+        self.spin_and_refresh()
         return
 
 @tile_class
@@ -242,7 +248,8 @@ class ColumnSourceTile(TileBase):
 
     def update_options(self, form_data):
         self.column_source = form_data["column_source"]
-        self.post_event("RefreshTile")
+        self.post_event("ShowFront")
+        self.spin_and_refresh()
         # self.push_direct_update()
 
 @tile_class
@@ -322,6 +329,4 @@ class VocabularyDisplayTile(ColumnSourceTile):
         self.tokenizer_func = form_data["tokenizer"];
         self.stop_list = self.get_user_list(form_data["stop_list"])
         self.post_event("ShowFront");
-        self.post_event("StartSpinner");
-        self.post_event("RefreshTile");
-        self.post_event("StopSpinner");
+        self.spin_and_refresh()

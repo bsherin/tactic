@@ -65,6 +65,12 @@ function text_select(e) {
 
 function handle_cell_change () {
     var current_content = $(this).html();
+
+    //Get rid fo the extra br tags that appear
+    // First just get rid of the one at the end
+    current_content = current_content.replace(/\<br\>$/, "");
+    // Now turn any brs in the middle into newlines
+    current_content = current_content.replace(/\<br\>/g, "\n");
     var rindex = this.parentElement.rowIndex - tableObject.header_rows;
     var cindex = this.cellIndex;
     var sig = tableObject.signature_list[cindex];

@@ -60,5 +60,8 @@
         tableObject.resize_table_area()
         $("#tile-area").height(window.innerHeight - 80 - $("#tile-area").offset().top);
     }
+    window.onbeforeunload = function(e) {
+        return "Any unsaved changes will be lost."
+    }
     </script>
 {% endblock %}
