@@ -3,7 +3,9 @@ __author__ = 'bls910'
 import Queue
 import threading
 import nltk
-nltk.data.path.append('./nltk_data/')
+# I want nltk to only search here so that I can see
+# what behavior on remote will be like.
+nltk.data.path = ['./nltk_data/']
 from nltk.corpus import wordnet as wn
 from flask_login import current_user
 
