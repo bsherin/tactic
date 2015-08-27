@@ -73,6 +73,10 @@ td:focus {
     box-shadow:0 0 15px #9ecaed;
 }
 
+td {
+    font-size: 10pt;
+}
+
 th {
     /*display: inline-block;*/
     cursor: pointer;

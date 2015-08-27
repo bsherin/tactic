@@ -33,7 +33,7 @@ def save_new_project():
     mainwindow_instances[data_dict['main_id']].project_name = data_dict["project_name"]
     db[current_user.project_collection_name].insert_one(combined_dict)
     socketio.emit('update-project-list', {"html": render_project_list()}, namespace='/user_manage', room=current_user.get_id())
-    return jsonify({"success": True, "message": "Project Successfully Saved"})
+    return jsonify({"project_name": data_dict["project_name"], "success": True, "message": "Project Successfully Saved"})
 
 @app.route('/update_project', methods=['POST'])
 def update_project():

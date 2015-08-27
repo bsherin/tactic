@@ -233,6 +233,8 @@ function create_column() {
 
 function save_as_success(data_object) {
     menus["Project"].enable_menu_item("save");
+    tableObject.project_name = data_object["project_name"]
+    tableObject.set_table_title()
     doFlash(data_object)
 }
 

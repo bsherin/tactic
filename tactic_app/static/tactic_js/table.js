@@ -196,8 +196,10 @@ var tableObject = {
     hidden_list: [],
 
     load_data: function (data_object){
-        this.collection_name = _collection_name
-        this.doc_list = data_object["the_rows"]
+        this.collection_name = _collection_name;
+        this.project_name = _project_name;
+        this.short_collection_name = _collection_name.replace(/^.*?\.data_collection\./, "");
+        this.doc_list = data_object["the_rows"];
         var sample_row = this.doc_list[0];
         if (data_object.hasOwnProperty("next_header_id")){
             this.next_header_id = data_object["next_header_id"]
@@ -212,7 +214,7 @@ var tableObject = {
         }
         this.build_table();
         function rebuild_header_struct(hstruct) {
-            var true_hstruct = Object.create(header0bject)
+            var true_hstruct = Object.create(header0bject);
             for (var prop in hstruct) {
                 if (!hstruct.hasOwnProperty(prop)) continue;
                 true_hstruct[prop] = hstruct[prop]
@@ -333,7 +335,7 @@ var tableObject = {
                 "<span class='table-down glyphicon glyphicon-arrow-down' onclick=tableObject.rowdown(this)></span>" +
                 "</td> " +
                 "</tr>";
-            $("#data-title").html(this.header_struct.name)
+            this.set_table_title(this.project_name)
             ta = $("#" + this.table_id);
             ta.html(header_html);
             var row_html;
@@ -356,7 +358,10 @@ var tableObject = {
             })
     },
 
-
+    set_table_title: function (){
+        the_html = "<span style='text-align:left;'>Project: " + this.project_name + "<span style='float:right;'>Collection: " + this.short_collection_name + "</span></span>"
+        $("#data-title").html(the_html);
+    },
 
     resize_table_area: function() {
             $(document).ready(function () {
