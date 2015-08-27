@@ -210,7 +210,7 @@ var tableObject = {
         }
         else {
             this.header_struct = this.find_headers(this.collection_name, sample_row);
-            menus["Project"].disable_menu_item('menu-save')
+            menus["Project"].disable_menu_item('save')
         }
         this.build_table();
         function rebuild_header_struct(hstruct) {
@@ -503,7 +503,7 @@ var tableObject = {
             var sig;
             var current;
             var res = ""
-            var td_template = "<td contenteditable='true' onmouseup='text_select(event)' class='{{class_text}}')>{{the_text}}</td>"
+            var td_template = "<td contenteditable='true' onmouseup='text_select(event)' class='{{class_text}} mousetrap')>{{the_text}}</td>"
             // Note the loop below starts at 1 because my signature list has an extra
             // root node listed at the start
             class_text = [];
