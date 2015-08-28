@@ -92,7 +92,9 @@ function doSearch(t) {
     console.log("do search on " + t);
     var data_dict = {"text_to_find": t};
     broadcast_event_to_server("DehighlightTable", data_dict);
-    broadcast_event_to_server("SearchTable", data_dict);
+    if (t !== "") {
+        broadcast_event_to_server("SearchTable", data_dict);
+    }
 }
 
 function deselect_header(the_id) {

@@ -129,6 +129,8 @@ class mainWindow(threading.Thread):
         row_index = 0;
         for the_row in self.data_dict["the_rows"]:
             for sig in self.signature_list:
+                if type(sig) != list:
+                    sig = [sig]
                 cdata = self._get_data_for_signature(the_row, sig);
                 if cdata is None:
                     continue
