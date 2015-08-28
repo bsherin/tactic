@@ -264,7 +264,7 @@ class VocabularyDisplayTile(ColumnSourceTile):
 
     def __init__(self, main_id, tile_id):
         ColumnSourceTile.__init__(self, main_id, tile_id)
-        self.update_events.append("CellChange")
+        self.update_events += ("CellChange", "TileWordClick")
         self.tokenizer_func = None
         self._vocab = None
         self.stop_list = None
@@ -285,7 +285,7 @@ class VocabularyDisplayTile(ColumnSourceTile):
         for r in data_list[1:]:
             the_html += "<tr>"
             for c in r:
-                the_html += "<td>{0}</td>".format(c)
+                the_html += "<td class='word-clickable'>{0}</td>".format(c)
             the_html += "</tr>"
         the_html += "</tbody></table>"
         return the_html
@@ -312,6 +312,12 @@ class VocabularyDisplayTile(ColumnSourceTile):
                 the_html = self.build_html_table_from_data_list(self.vdata_table)
                 self.push_direct_update(the_html)
                 return
+        elif event_name == "TileWordClick":
+            if data["tile_id"] == self.tile_id:
+                data_dict = {"event_name": "SearchTable", "data": {"text_to_find": data["clicked_text"]}}
+                mainwindow_instances[self.main_id].post_event("DehighlightTable")
+                mainwindow_instances[self.main_id].post_event(data_dict);
+                print data["clicked_text"]
         else:
             ColumnSourceTile.handle_event(self, event_name, data)
 

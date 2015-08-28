@@ -19,10 +19,13 @@ function create_new_tile(menu_id) {
                 "forceWidth": true,
                 "forceHeight": true
             });
-            $("#tile_id_" + data.tile_id).resizable({
+            new_tile_elem = $("#tile_id_" + data.tile_id)
+            new_tile_elem.resizable({
                 handles: "se",
                 resize: resize_tile_area
             });
+            jQuery.data(new_tile_elem[0],"my_tile_id", data.tile_id)
+            listen_for_clicks();
             new_tile_object = Object.create(tile_object);
             new_tile_object.tile_id = data.tile_id;
             tile_dict[data.tile_id] = new_tile_object;
@@ -37,6 +40,35 @@ function create_new_tile(menu_id) {
             });
         }
     })
+}
+
+function listen_for_clicks() {
+  $(".front").on('click', '.word-clickable', function(e) {
+      var tile_id = jQuery.data(e, "my_tile_id");
+      var s = window.getSelection();
+    var range = s.getRangeAt(0);
+    var node = s.anchorNode;
+    while ((range.toString().indexOf(' ') !== 0) && (range.startOffset !== 0)) {
+      range.setStart(node, (range.startOffset - 1));
+    }
+    var nlen = node.textContent.length;
+    if (range.startOffset !== 0) {
+      range.setStart(node, range.startOffset + 1);
+    }
+
+    do {
+      range.setEnd(node, range.endOffset + 1);
+
+    } while (range.toString().indexOf(' ') == -1 &&
+      range.toString().trim() !== '' &&
+      range.endOffset < nlen);
+    var str = range.toString().trim();
+      var data_dict = {};
+      var p = $(e.target).closest(".tile-panel")[0]
+      data_dict["tile_id"] = $(p).data("my_tile_id");
+      data_dict["clicked_text"] = str;
+      broadcast_event_to_server("TileWordClick", data_dict)
+  });
 }
 
 function create_tile_from_save(tile_id) {

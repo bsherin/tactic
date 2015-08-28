@@ -19,7 +19,7 @@ var menu_object = {
     '{{menu_name}}<span class="caret"></span></a>' +
     '<ul class="dropdown-menu">' +
     '{{#options}}' +
-    '<li><a class="menu-item" id="{{option_name}}" href="#"><span style="float:left;">{{option_name}}</span><<span style="float:right;">{{key_text}}</span></a></li>' +
+    '<li><a class="menu-item" id="{{option_name}}" href="#"><span style="float:left;">{{option_name}}</span><span style="float:right;">{{key_text}}</span></a></li>' +
     '{{/options}}</li>',
     render_menu: function () {
         var self = this;
