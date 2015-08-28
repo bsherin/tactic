@@ -88,6 +88,13 @@ function handle_cell_change () {
     }
 }
 
+function doSearch(t) {
+    console.log("do search on " + t);
+    var data_dict = {"text_to_find": t};
+    broadcast_event_to_server("DehighlightTable", data_dict);
+    broadcast_event_to_server("SearchTable", data_dict);
+}
+
 function deselect_header(the_id) {
     $("tbody .header" + the_id).css('background-color', TABLE_NORMAL_COLOR);
     $("tbody .header" + the_id).css('border', TABLE_BORDER_STYLE);
@@ -194,6 +201,66 @@ var tableObject = {
     column_widths: null,
     selected_header: null,
     hidden_list: [],
+
+    get_cell_value_from_sig: function(row_index, sig) {
+        var current = row_dict;
+        // Note the loop below starts at 1 because my signature list has an extra
+        // root node listed at the start
+        for (var j = 1; j < sig.length; ++j) {
+            current = current[sig[j][0]]
+        }
+        return current
+    },
+
+    highlightTxtInCell: function(data_object) {
+        var rindex = data_object.row_index;
+        var sig = data_object.signature;
+        var text_to_find = data_object.text_to_find;
+        var cindex = this.getCellIndexFromSignature(data_object.signature);
+        try {
+            var el = this.getCellElementByRowColIndex(rindex, cindex);
+            var regex = new RegExp(text_to_find, "gi");
+            el.innerHTML = el.innerHTML.replace(regex, function (matched) {
+                    return "<span class=\"highlight \">" + matched + "</span>";
+                });
+            //$(el).addClass("has-highlights")
+        }
+        catch(err) {
+            console.log(err.message + " row index " + rindex + "_col_index_ " + cindex)
+        }
+
+    },
+
+    dehighlightTxtInCell: function(data_object) {
+        var rindex = data_object.row_index;
+        var sig = data_object.signature;
+        var cindex = this.getCellIndexFromSignature(data_object.signature);
+        try {
+            var el = this.getCellElementByRowColIndex(rindex, cindex);
+            el.innerHTML = el.innerHTML.replace(/<\/?span[^>]*>/g, "");
+            //$(el).addClass("has-highlights")
+        }
+        catch (err) {
+            console.log(err.message + " row index " + rindex + "_col_index_ " + cindex)
+        }
+    },
+
+    getCellIndexFromSignature: function(sig){
+        for (var c = 0; c < this.signature_list.length; ++c) {
+            var asig = this.signature_list[c];
+            for (var i = 1; i < asig.length; ++i) {
+                if (sig[i - 1] != asig[i][0]) break;
+            }
+            if (i == asig.length) {
+                return c
+            }
+        }
+        return -1
+    },
+
+    getCellElementByRowColIndex: function(rindex, cindex) {
+        return $("#table-area tbody")[0].rows[rindex].cells[cindex]
+    },
 
     load_data: function (data_object){
         this.collection_name = _collection_name;
@@ -503,7 +570,7 @@ var tableObject = {
             var sig;
             var current;
             var res = ""
-            var td_template = "<td contenteditable='true' onmouseup='text_select(event)' class='{{class_text}} mousetrap')>{{the_text}}</td>"
+            var td_template = "<td contenteditable='true' onmouseup='text_select(event)' class='{{class_text}} searchit mousetrap')>{{the_text}}</td>"
             // Note the loop below starts at 1 because my signature list has an extra
             // root node listed at the start
             class_text = [];
@@ -521,15 +588,7 @@ var tableObject = {
         },
 
     //This is no longer used.
-    get_cell_value_from_sig: function(row_dict, sig) {
-        var current = row_dict;
-        // Note the loop below starts at 1 because my signature list has an extra
-        // root node listed at the start
-        for (var j = 1; j < sig.length; ++j) {
-            current = current[sig[j][0]]
-        }
-        return current
-    },
+
 
     update_doc_list: function (row_index, sig, new_content){
         var the_row = this.doc_list[row_index]

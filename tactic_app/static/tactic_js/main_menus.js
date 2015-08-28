@@ -7,48 +7,118 @@ var menu_item_index = {};
 var column_menu;
 var project_menu;
 var tile_menu;
-
+var mousetrap = new Mousetrap();
 
 // This is the menu_object base prototype
 var menu_object = {
     menu_name: "",
     options: [],
+    shortcuts: {},
     menu_template: '<li class="dropdown">' +
-        '<a href="#" class="dropdown-toggle" id="{{menu_name}}-menu" data-toggle="dropdown">' +
-        '{{menu_name}}<span class="caret"></span></a>' +
-        '<ul class="dropdown-menu">' +
-        '{{#options}}' +
-        '<li><a class="menu-item" id="{{.}}" href="#">{{.}}</a></li>' +
-        '{{/options}}</li>',
+    '<a href="#" class="dropdown-toggle" id="{{menu_name}}-menu" data-toggle="dropdown">' +
+    '{{menu_name}}<span class="caret"></span></a>' +
+    '<ul class="dropdown-menu">' +
+    '{{#options}}' +
+    '<li><a class="menu-item" id="{{option_name}}" href="#"><span style="float:left;">{{option_name}}</span><<span style="float:right;">{{key_text}}</span></a></li>' +
+    '{{/options}}</li>',
     render_menu: function () {
-        res = Mustache.to_html(this.menu_template, {
-                    "menu_name": this.menu_name,
-                    "options": this.options});
+        var self = this;
+        var options_list = create_options_list();
+        var res = Mustache.to_html(this.menu_template, {
+            "menu_name": this.menu_name ,
+            "options": options_list
+        });
         return res
+
+        function create_options_list() {
+            var result = [];
+            var scuts = menus[self.menu_name].shortcuts
+            for (var i = 0; i < self.options.length; ++i) {
+                var opt = self.options[i]
+                if (scuts.hasOwnProperty(opt)){
+                    var key_text = scuts[opt].keys[0]
+                }
+                else {
+                    var key_text = ""
+                }
+                result.push({"option_name": opt, "key_text": key_text})
+            }
+            return result
+        }
     },
     add_options_to_index: function () {
-        for (var i = 0; i< this.options.length; ++i){
+        for (var i = 0; i < this.options.length; ++i) {
             menu_item_index[this.options[i]] = this.menu_name
         }
     },
-    disable_items: function(disable_list) {
-        for (var i = 0; i< disable_list.length; ++i){
+    disable_items: function (disable_list) {
+        for (var i = 0; i < disable_list.length; ++i) {
             this.disable_menu_item(disable_list[i])
         }
     },
-    enable_items: function(enable_list) {
-        for (var i = 0; i< enable_list.length; ++i){
+    enable_items: function (enable_list) {
+        for (var i = 0; i < enable_list.length; ++i) {
             this.enable_menu_item(enable_list[i])
         }
     },
-    perform_menu_item: function(menu_id) {},
+    perform_menu_item: function (menu_id) {
+    },
     disable_menu_item: function (item_id) {
-            $("#" + item_id).closest('li').addClass("disabled")
-        },
-    enable_menu_item: function(item_id) {
-            $("#" + item_id).closest('li').removeClass("disabled")
+        $("#" + item_id).closest('li').addClass("disabled");
+        var menu = menus[menu_item_index[item_id]];
+        if (menu.shortcuts.hasOwnProperty(item_id)) {
+            var scut = menu.shortcuts[item_id]
+            mousetrap.unbind(scut.keys);
+            if (scut.hasOwnProperty("fallthrough")) {
+                mousetrap.bind(scut.keys, function (e) {
+                    scut.fallthrough()
+                    e.preventDefault()
+                })
+            }
         }
-    };
+    },
+    enable_menu_item: function (item_id) {
+        $("#" + item_id).closest('li').removeClass("disabled");
+        var menu = menus[menu_item_index[item_id]];
+        if (menu.shortcuts.hasOwnProperty(item_id)) {
+            var scut = menu.shortcuts[item_id];
+            //mousetrap.unbind(scut.keys);
+            mousetrap.bind(scut.keys, function (e) {
+                scut.command();
+                e.preventDefault()
+            })
+        }
+    }
+}
+
+function bind_to_keys(shortcuts) {
+    for (option in shortcuts) {
+        if (!shortcuts.hasOwnProperty()) continue;
+        mousetrap.bind(option.keys, function(e) {
+            option.command()
+            e.preventDefault()
+        });
+    }
+    mousetrap.bind(['command+s', 'ctrl+s'], function(e) {
+        save_project();
+        e.preventDefault()
+    })
+}
+
+function dehighlight_table_text() {
+    //$('.highlight').removeClass('highlight');
+    $('.has-highlights').each(function(index) {
+        this.innerHTML = this.innerHTML.replace(/<\/?span[^>]*>/g, "");
+        $(this).removeClass('has-highlights')
+    })
+}
+
+mousetrap.bind("esc", function() {
+    if (tableObject.selected_header != null) {
+        deselect_header(tableObject.selected_header)
+    }
+    broadcast_event_to_server("DehighlightTable", {});
+})
 
 function build_and_render_menu_objects() {
     // Create the column_menu object
@@ -66,6 +136,15 @@ function build_and_render_menu_objects() {
     project_menu.perform_menu_item = project_command;
     menus[project_menu.menu_name] = project_menu;
     project_menu.add_options_to_index();
+    project_menu.shortcuts = {
+        "save": {"keys": ['ctrl+s', 'command+s'],
+                "command": save_project,
+                "fallthrough": function () {
+                    $('#save-project-modal').modal()
+                }
+        }
+    }
+    bind_to_keys(project_menu.shortcuts);
 
     // Create the project_menu object
     tile_menu = Object.create(menu_object);
@@ -229,7 +308,6 @@ function create_column() {
     });
     $('#add-column-modal').modal('hide')
 }
-
 
 function save_as_success(data_object) {
     menus["Project"].enable_menu_item("save");

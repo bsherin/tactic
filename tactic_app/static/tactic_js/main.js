@@ -32,6 +32,9 @@ function start_post_load() {
     socket.on('tile-message', function (data) {
         tile_dict[data.tile_id][data.message](data)
     });
+    socket.on('table-message', function (data) {
+        tableObject[data.message](data)
+    });
 }
 
 

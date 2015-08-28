@@ -3,6 +3,10 @@
     display: inline-block;
 }
 
+.highlight {
+    background: yellow;
+}
+
 .radio-stack {
     width: 50px;
 }

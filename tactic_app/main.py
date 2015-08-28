@@ -9,6 +9,7 @@ import copy
 from collections import OrderedDict
 from shared_dicts import mainwindow_instances
 from shared_dicts import tile_classes
+from tactic_app import socketio
 current_main_id = 0
 
 def create_new_mainwindow(user_id, collection_name):
@@ -36,7 +37,7 @@ class mainWindow(threading.Thread):
         self._sleepperiod = .2
         threading.Thread.__init__(self)
         self._my_q = Queue.Queue(0)
-        self.update_events = ["CellChange", "CreateColumn"]
+        self.update_events = ["CellChange", "CreateColumn", "SearchTable", "DehighlightTable"]
         self.tile_instances = {}
         self.current_tile_id = 0
         self.collection_name = collection_name # This isn't used yet.
@@ -53,6 +54,7 @@ class mainWindow(threading.Thread):
             self.ordered_sig_dict[the_key] = it
         current_main_id += 1
         self.change_list = []
+        self.cells_with_highlights = []
 
     def add_blank_column(self, column_name):
         for doc in self.data_dict["the_rows"]:
@@ -117,7 +119,32 @@ class mainWindow(threading.Thread):
             del self.tile_instances[data]
         elif event_name == "CreateColumn":
             self.add_blank_column(data["column_name"])
+        elif event_name == "SearchTable":
+            self.highlight_table_text(data["text_to_find"])
+        elif event_name == "DehighlightTable":
+            self.dehighlight_all_table_text()
         return
+
+    def highlight_table_text(self, txt):
+        row_index = 0;
+        for the_row in self.data_dict["the_rows"]:
+            for sig in self.signature_list:
+                cdata = self._get_data_for_signature(the_row, sig);
+                if cdata is None:
+                    continue
+                if txt in cdata:
+                    socketio.emit("table-message",
+                      {"message": "highlightTxtInCell", "row_index": row_index, "signature": sig, "text_to_find": txt},
+                      namespace='/main', room=self.main_id)
+                    self.cells_with_highlights.append([row_index, sig])
+            row_index += 1
+
+    def dehighlight_all_table_text(self):
+        for hcell in self.cells_with_highlights:
+            socketio.emit("table-message",
+                  {"message": "dehighlightTxtInCell", "row_index": hcell[0], "signature": hcell[1]},
+                  namespace='/main', room=self.main_id)
+        self.cells_with_highlights = []
 
     def _build_signature_list(self):
         ddict = self.data_dict["the_rows"][0]
@@ -153,6 +180,8 @@ class mainWindow(threading.Thread):
         return (result, id_list)
 
     def _get_data_for_signature(self, row, signature):
+        if type(signature) is not list:
+            return row[signature]
         result = row
         for field in signature:
             result = result[field]

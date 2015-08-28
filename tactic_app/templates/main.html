@@ -32,7 +32,15 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-xs-10">
+        <div class="col-xs-9">
+            <div class="input-group" style="width: 30%">
+              <input type="text" id="search" class="form-control input-sm" aria-label="...">
+              <div class="input-group-btn">
+                <input class="btn btn-default input-sm" type="button" onmousedown="doSearch(document.getElementById('search').value)" value="Find">
+              </div>
+            </div>
+        </div>
+        <div class="col-xs-9">
             <div id="status-area"></div>
         </div>
     </div>
@@ -43,6 +51,7 @@
     <script src="{{url_for('static', filename='js/jquery.flip.js')}}"></script>
     <script src="{{url_for('static', filename='js/socket.io.js')}}"></script>
     <script src="{{url_for('static', filename='js/spin.js')}}"></script>
+    <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/utilities.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/main_menus.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/tiles.js')}}"></script>
