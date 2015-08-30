@@ -14,6 +14,7 @@ from shared_dicts import mainwindow_instances
 from vector_space import Vocabulary
 from shared_dicts import tile_classes, tokenizer_dict
 from users import load_user
+from views.main_views import distribute_event
 
 
 # Decorator function used to register runnable analyses in analysis_dict
@@ -58,8 +59,8 @@ class TileBase(threading.Thread):
         self._stopevent.set( )
         threading.Thread.join(self, timeout)
 
-    def post_event(self, item):
-        self._my_q.put(item)
+    def post_event(self, event_name, data=None):
+        self._my_q.put({"event_name": event_name, "data": data})
 
     def spin_and_refresh(self):
         self.post_event("StartSpinner")
@@ -82,38 +83,30 @@ class TileBase(threading.Thread):
             self.stop_spinner()
         return
 
-    def update_data(self, data):
-        print "update data not implemented"
-        return
+    def emit_tile_message(self, message, data={}):
+        data["message"] = message
+        data["tile_id"] = self.tile_id
+        socketio.emit("tile-message", data, namespace='/main', room=self.main_id)
 
     def update_options(self, form_data):
         return
 
     def show_front(self):
-        socketio.emit("tile-message",
-                      {"tile_id": str(self.tile_id), "message": "showFront"},
-                      namespace='/main', room=self.main_id)
+        self.emit_tile_message("showFront")
 
     def push_direct_update(self, new_html=None):
         if new_html == None:
             new_html = self.render_content()
         self.current_html = new_html
-        socketio.emit("tile-message",
-                      {"tile_id": str(self.tile_id), "message": "displayTileContent", "html": new_html},
-                      namespace='/main', room=self.main_id)
+        self.emit_tile_message("displayTileContent", {"html": new_html})
 
     def start_spinner(self):
         # socketio.emit("start-spinner", {"tile_id": str(self.tile_id)}, namespace='/main', room=self.main_id)
-        socketio.emit("tile-message",
-                      {"tile_id": str(self.tile_id), "message": "startSpinner"},
-                      namespace='/main', room=self.main_id)
+        self.emit_tile_message("startSpinner")
 
     def stop_spinner(self):
         # socketio.emit("stop-spinner", {"tile_id": str(self.tile_id)}, namespace='/main', room=self.main_id)
-        socketio.emit("tile-message",
-              {"tile_id": str(self.tile_id), "message": "stopSpinner"},
-              namespace='/main', room=self.main_id)
-
+        self.emit_tile_message("stopSpinner")
     def render_content(self):
         print "not implemented"
 
@@ -178,13 +171,9 @@ class SelectionTile(TileBase):
         self.tile_type = self.__class__.__name__
         return
 
-    def update_data(self, data):
-        self.selected_text = data["selected_text"]
-        return
-
     def handle_event(self, event_name, data=None):
         if event_name == "text_select":
-            self.update_data(data);
+            self.selected_text = data["selected_text"]
             self.push_direct_update()
         TileBase.handle_event(self, event_name, data)
 
@@ -244,7 +233,7 @@ class ColumnSourceTile(TileBase):
     def __init__(self, main_id, tile_id):
         TileBase.__init__(self, main_id, tile_id)
         self.column_source = None
-        self.update_events = ["RefreshTile", "UpdateOptions", "ColumnChange"]
+        self.update_events = ["RefreshTile", "UpdateOptions"]
         self.tile_type = self.__class__.__name__
 
     def render_content(self):
@@ -292,6 +281,9 @@ class VocabularyDisplayTile(ColumnSourceTile):
 
     def handle_event(self, event_name, data=None):
         if event_name == "CellChange":
+            sig_string = mainwindow_instances[self.main_id].get_sig_string_from_sig(data["signature"])
+            if not (sig_string == self.column_source):
+                return
             # data will have the keys row_index, column_idex, signature, old_content, new_content
             if self._vocab is None:
                 if self.column_source == None:
@@ -313,11 +305,12 @@ class VocabularyDisplayTile(ColumnSourceTile):
                 self.push_direct_update(the_html)
                 return
         elif event_name == "TileWordClick":
-            if data["tile_id"] == self.tile_id:
-                data_dict = {"event_name": "SearchTable", "data": {"text_to_find": data["clicked_text"]}}
-                mainwindow_instances[self.main_id].post_event("DehighlightTable")
-                mainwindow_instances[self.main_id].post_event(data_dict);
-                print data["clicked_text"]
+            # data_dict = {"event_name": "SearchTable", "data": {"text_to_find": data["clicked_text"]}}
+            distribute_event("DehighlightTable", self.main_id, {})
+            distribute_event("SearchTable", self.main_id, {"text_to_find": data["clicked_text"]})
+            # mainwindow_instances[self.main_id].post_event("DehighlightTable")
+            # mainwindow_instances[self.main_id].post_event(data_dict);
+            print data["clicked_text"]
         else:
             ColumnSourceTile.handle_event(self, event_name, data)
 

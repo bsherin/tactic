@@ -32,7 +32,7 @@ def create_tile_from_save_request(tile_id):
 def submit_options(tile_id):
     data_dict = request.json
     main_id = request.json["main_id"]
-    mainwindow_instances[main_id].tile_instances[tile_id].post_event({"event_name": "UpdateOptions", "data": data_dict})
+    mainwindow_instances[main_id].tile_instances[tile_id].post_event( "UpdateOptions", data_dict)
     return jsonify({"success": True})
 
 @app.route('/refreshtile_event_request/<tile_id>', methods=['GET', 'POST'])
@@ -53,5 +53,5 @@ def refreshtilefromsave_event_request(tile_id):
 @app.route('/remove_tile/<tile_id>', methods=['POST'])
 def remove_tile(tile_id):
     main_id = request.json["main_id"]
-    mainwindow_instances[main_id].post_event({"event_name": "RemoveTile", "data": tile_id})
+    mainwindow_instances[main_id].post_event("RemoveTile", {"tile_id": tile_id})
     return jsonify({"success": True})

@@ -299,7 +299,7 @@ function create_column() {
     var data_dict = {"column_name": column_name,
                     "main_id": main_id};
     $.ajax({
-        url: $SCRIPT_ROOT + "/post_create_column_event",
+        url: $SCRIPT_ROOT + "/distribute_events/CreateColumn",
         contentType : 'application/json',
         type : 'POST',
         async: true,

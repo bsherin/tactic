@@ -34,7 +34,7 @@ class mainWindow(threading.Thread):
     def __init__(self, user_id, collection_name):
         global current_main_id
         self._stopevent = threading.Event()
-        self._sleepperiod = .2
+        self._sleepperiod = .1
         threading.Thread.__init__(self)
         self._my_q = Queue.Queue(0)
         self.update_events = ["CellChange", "CreateColumn", "SearchTable", "DehighlightTable"]
@@ -47,21 +47,23 @@ class mainWindow(threading.Thread):
         self.signature_list = self._build_signature_list()
         self.ordered_sig_dict = OrderedDict()
         for it in self.signature_list:
-            if type(it) == str or type(it) == unicode:
-                the_key = it
-            else:
-                the_key = "-".join(it)
-            self.ordered_sig_dict[the_key] = it
+            self.ordered_sig_dict[self.get_sig_string_from_sig(it)] = it
         current_main_id += 1
         self.change_list = []
         self.cells_with_highlights = []
+
+    def get_sig_string_from_sig(self, sig):
+        if type(sig) == str or type(sig) == unicode:
+            return sig
+        else:
+            return "-".join(sig)
 
     def add_blank_column(self, column_name):
         for doc in self.data_dict["the_rows"]:
             doc[column_name] = ""
 
-    def post_event(self, item):
-        self._my_q.put(item)
+    def post_event(self, event_name, data=None):
+        self._my_q.put({"event_name": event_name, "data": data})
 
     def create_tile_instance_in_mainwindow(self, tile_type):
         new_id = "tile_id_" + str(self.current_tile_id)
@@ -100,10 +102,7 @@ class mainWindow(threading.Thread):
         while not self._stopevent.isSet( ):
             if (not self._my_q.empty()):
                 q_item = self._my_q.get()
-                if type(q_item) == dict:
-                    self._handle_event(q_item["event_name"], q_item["data"])
-                else:
-                    self._handle_event(q_item)
+                self._handle_event(q_item["event_name"], q_item["data"])
             self._stopevent.wait(self._sleepperiod)
 
     def join(self, timeout=None):
@@ -111,12 +110,16 @@ class mainWindow(threading.Thread):
         self._stopevent.set()
         threading.Thread.join(self, timeout)
 
+    def emit_table_message(self, message, data={}):
+        data["message"] = message
+        socketio.emit("table-message", data, namespace='/main', room=self.main_id)
+
     def _handle_event(self, event_name, data=None):
         if event_name == "CellChange":
             self._set_row_column_data(data["row_index"], data["signature"], data["new_content"])
             self.change_list.append(data["row_index"])
         elif event_name == "RemoveTile":
-            del self.tile_instances[data]
+            del self.tile_instances[data["tile_id"]]
         elif event_name == "CreateColumn":
             self.add_blank_column(data["column_name"])
         elif event_name == "SearchTable":
@@ -135,17 +138,15 @@ class mainWindow(threading.Thread):
                 if cdata is None:
                     continue
                 if txt in cdata:
-                    socketio.emit("table-message",
-                      {"message": "highlightTxtInCell", "row_index": row_index, "signature": sig, "text_to_find": txt},
-                      namespace='/main', room=self.main_id)
+                    self.emit_table_message("highlightTxtInCell",
+                      {"row_index": row_index, "signature": sig, "text_to_find": txt})
                     self.cells_with_highlights.append([row_index, sig])
             row_index += 1
 
     def dehighlight_all_table_text(self):
         for hcell in self.cells_with_highlights:
-            socketio.emit("table-message",
-                  {"message": "dehighlightTxtInCell", "row_index": hcell[0], "signature": hcell[1]},
-                  namespace='/main', room=self.main_id)
+            self.emit_table_message("dehighlightTxtInCell",
+                                    {"row_index": hcell[0], "signature": hcell[1]})
         self.cells_with_highlights = []
 
     def _build_signature_list(self):
@@ -192,7 +193,7 @@ class mainWindow(threading.Thread):
     def _set_row_column_data(self, row_index, sig, new_content):
         the_row = self.data_dict["the_rows"][row_index]
         result = the_row
-        for field in sig[1:-1]:
-            result = result[field[0]]
-        result[sig[-1][0]] = new_content
+        for field in sig[0:-1]:
+            result = result[field]
+        result[sig[-1]] = new_content
 

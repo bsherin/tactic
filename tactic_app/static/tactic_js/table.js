@@ -77,11 +77,15 @@ function handle_cell_change () {
     //var old_content = tableObject.get_cell_value_from_sig(tableObject.doc_list[rindex], sig);
     var old_content = tableObject.table_array[rindex][cindex];
     if (current_content != old_content) {
+        shorter_sig = []
+        for (var i = 1; i < sig.length; ++i) {
+            shorter_sig.push(sig[i][0])
+        }
         tableObject.table_array[rindex][cindex] = current_content;
-        tableObject.update_doc_list(rindex, sig, current_content)
+        tableObject.update_doc_list(rindex, shorter_sig, current_content)
         data_dict = {
             "row_index": rindex,
-            "signature": sig,
+            "signature": shorter_sig,
             "old_content": old_content,
             "new_content": current_content}
         broadcast_event_to_server("CellChange", data_dict)
@@ -589,17 +593,14 @@ var tableObject = {
             return res
         },
 
-    //This is no longer used.
-
-
     update_doc_list: function (row_index, sig, new_content){
         var the_row = this.doc_list[row_index]
         var result = the_row
-        for (var j = 1; j < (sig.length - 1); ++j) {
+        for (var j = 0; j < (sig.length - 1); ++j) {
             field = sig[j]
-            result = result[field[0]]
+            result = result[field]
         }
-        result[sig[sig.length - 1][0]] = new_content
+        result[sig[sig.length - 1]] = new_content
 
     },
 
