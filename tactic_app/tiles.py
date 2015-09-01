@@ -22,14 +22,48 @@ def tile_class(tclass):
     tile_classes[tclass.__name__] = tclass
     return tclass
 
+class TileTemplate(threading.Thread):
+    options=[{
+        "name": "option1",
+        "type": "option1type",
+        "placeholder": "Placehold value"
+    },
+        {
+        "name": "option2",
+        "type": "option2type",
+        "placeholder": "Placeholder value"
+    }]
+    def _init__(self, main_id, tile_id):
+        TileBase.__init__(self, main_id, tile_id)
+        self.update_events.append("EventName")
+        # Any other initializations
+        return
+
+    def handle_event(self, event_name, data=None):
+        TileBase.handle_event(self, event_name, data)
+        return
+
+    def render_content(self):
+        """This should return html for the tile body.
+        Will be called on RefreshTile event"""
+        return
+
+    def update_options(self, form_data):
+                """ Called on the update_options event.
+        This is generated when the user clicks submit in the options view of the tile.
+        form_data will be a dict with keys that are the option names.
+        """
+
 class TileBase(threading.Thread):
-    options = []
     input_start_template = '<div class="form-group">' \
                      '<label>{0}</label>'
-    basic_input_template = '<input type="{1}" class="form-control" id="{0}" placeholder="{2}">' \
+    basic_input_template = '<input type="{1}" class="form-control" id="{0}">{2}' \
                      '</div>'
+    textarea_template = '<textarea type="{1}" class="form-control" id="{0}">{2}</textarea>' \
+                 '</div>'
     select_base_template = '<select class="form-control" id="{0}">'
     select_option_template = '<option value="{0}">{0}</option>'
+    select_option_selected_template = '<option value="{0}" selected>{0}</option>'
 
     def __init__(self, main_id, tile_id):
         self._stopevent = threading.Event()
@@ -67,6 +101,10 @@ class TileBase(threading.Thread):
         self.post_event("RefreshTile")
         self.post_event("StopSpinner")
 
+    @property
+    def options(self):
+        return []
+
 
     def handle_event(self, event_name, data=None):
         if event_name == "RefreshTile":
@@ -89,6 +127,7 @@ class TileBase(threading.Thread):
         socketio.emit("tile-message", data, namespace='/main', room=self.main_id)
 
     def update_options(self, form_data):
+
         return
 
     def show_front(self):
@@ -122,12 +161,6 @@ class TileBase(threading.Thread):
     def cache_dicts(self):
         return {}
 
-    # Not currently used
-    # def initiate_update(self):
-    #     socketio.emit("tile-message",
-    #           {"tile_id": str(self.tile_id), "message": "initiateTileRefresh"},
-    #           namespace='/main', room=self.main_id)
-
     @property
     def current_user(self):
         user_id = mainwindow_instances[self.main_id].user_id
@@ -144,32 +177,47 @@ class TileBase(threading.Thread):
                 the_template = self.input_start_template + self.select_base_template
                 form_html += the_template.format(option["name"])
                 for choice in mainwindow_instances[self.main_id].ordered_sig_dict.keys():
-                    form_html += self.select_option_template.format(choice)
+                    if choice == option["placeholder"]:
+                        form_html += self.select_option_selected_template.format(choice)
+                    else:
+                        form_html += self.select_option_template.format(choice)
                 form_html += '</select></div>'
             elif option["type"] == "tokenizer_select":
                 the_template = self.input_start_template + self.select_base_template
                 form_html += the_template.format(option["name"])
                 for choice in tokenizer_dict.keys():
-                    form_html += self.select_option_template.format(choice)
+                    if choice == option["placeholder"]:
+                        form_html += self.select_option_selected_template.format(choice)
+                    else:
+                        form_html += self.select_option_template.format(choice)
                 form_html += '</select></div>'
             elif option["type"] == "list_select":
                 the_template = self.input_start_template + self.select_base_template
                 form_html += the_template.format(option["name"])
                 for choice in current_user.list_names:
-                    form_html += self.select_option_template.format(choice)
+                    if choice == option["placeholder"]:
+                        form_html += self.select_option_selected_template.format(choice)
+                    else:
+                        form_html += self.select_option_template.format(choice)
                 form_html += '</select></div>'
-            else:
+            elif option["type"] == "text":
                 the_template = self.input_start_template + self.basic_input_template
                 form_html += the_template.format(option["name"], option["type"], option["placeholder"])
+            elif option["type"] == "textarea":
+                the_template = self.input_start_template + self.textarea_template
+                form_html += the_template.format(option["name"], option["type"], option["placeholder"])
+            else:
+                print "Unknown ooption type specified"
         return form_html
 
-class SelectionTile(TileBase):
+@tile_class
+class SimpleSelectionTile(TileBase):
     def __init__(self, main_id, tile_id):
         TileBase.__init__(self, main_id, tile_id)
         self.update_events.append("text_select")
-        self.selected_text = ""
+        self.extra_text = "placeholder text"
+        self.selected_text = "no selection"
         self.tile_type = self.__class__.__name__
-        return
 
     def handle_event(self, event_name, data=None):
         if event_name == "text_select":
@@ -178,39 +226,84 @@ class SelectionTile(TileBase):
         TileBase.handle_event(self, event_name, data)
 
     def render_content(self):
-        return self.selected_text
-
-@tile_class
-class SimpleSelectionTile(SelectionTile):
-    options = [{
-        "name": "extra_text",
-        "type": "text",
-        "placeholder":"no selection"
-    }]
-    def __init__(self, main_id, tile_id):
-        SelectionTile.__init__(self, main_id, tile_id)
-        self.extra_text = "placeholder text"
-        self.selected_text = "no selection"
-        self.tile_type = self.__class__.__name__
-
-    def render_content(self):
         return "{} {}".format(self.extra_text, self.selected_text)
 
     def update_options(self, form_data):
         self.extra_text = form_data["extra_text"]
         self.spin_and_refresh()
 
-@tile_class
-class WordnetSelectionTile(SelectionTile):
-    options = [{
-        "name": "number_to_show",
+    @property
+    def options(self):
+        return  [{
+        "name": "extra_text",
         "type": "text",
-        "placeholder": "5"}]
+        "placeholder":"no selection"
+        }]
+
+@tile_class
+class SimpleCoder(TileBase):
     def __init__(self, main_id, tile_id):
-        SelectionTile.__init__(self, main_id, tile_id)
+        TileBase.__init__(self, main_id, tile_id)
+        self.update_events.append("TileButtonClick")
+        self.current_text = []
+        self.destination_column = ""
+        self.tile_type = self.__class__.__name__
+
+    def handle_event(self, event_name, data=None):
+        if event_name == "TileButtonClick":
+            distribute_event("SetFocusRowCellContent", self.main_id, {"signature": self.destination_column, "new_content": data["button_value"]})
+        else:
+            TileBase.handle_event(self, event_name, data)
+
+    @property
+    def options(self):
+        txtstr = ""
+        for txt in self.current_text:
+            txtstr += "\n" + txt
+        return [{
+        "name": "the_text",
+        "type": "textarea",
+        "placeholder": txtstr
+        },
+        {
+        "name": "destination_column",
+        "type": "column_select",
+        "placeholder": self.destination_column
+        }]
+
+    def render_content(self):
+        the_html = ""
+        for r in self.current_text:
+            the_html += "<button value='{0}'>{0}</button>".format(r)
+        return the_html
+
+    def update_options(self, form_data):
+        self.current_text = form_data["the_text"]
+        self.destination_column = form_data["destination_column"]
+        self.spin_and_refresh()
+
+@tile_class
+class WordnetSelectionTile(TileBase):
+    def __init__(self, main_id, tile_id):
+        TileBase.__init__(self, main_id, tile_id)
+        self.update_events.append("text_select")
         self.selected_text = "no selection"
         self.to_show = 5
         self.tile_type = self.__class__.__name__
+
+    @property
+    def options(self):
+        return  [{
+        "name": "number_to_show",
+        "type": "text",
+        "placeholder":"5"
+        }]
+
+    def handle_event(self, event_name, data=None):
+        if event_name == "text_select":
+            self.selected_text = data["selected_text"]
+            self.push_direct_update()
+        TileBase.handle_event(self, event_name, data)
 
     def render_content(self):
         res = wn.synsets(self.selected_text)[:self.to_show]
@@ -223,41 +316,23 @@ class WordnetSelectionTile(SelectionTile):
         return
 
 @tile_class
-class ColumnSourceTile(TileBase):
-    options=[{
-        "name": "column_source",
-        "type": "column_select",
-        "placeholder": ""
-    }]
-
+class VocabularyDisplayTile(TileBase):
     def __init__(self, main_id, tile_id):
         TileBase.__init__(self, main_id, tile_id)
         self.column_source = None
-        self.update_events = ["RefreshTile", "UpdateOptions"]
-        self.tile_type = self.__class__.__name__
-
-    def render_content(self):
-        return "Column selected is {}".format(self.column_source)
-
-    def update_options(self, form_data):
-        self.column_source = form_data["column_source"]
-        self.post_event("ShowFront")
-        self.spin_and_refresh()
-        # self.push_direct_update()
-
-@tile_class
-class VocabularyDisplayTile(ColumnSourceTile):
-    options = ColumnSourceTile.options + [
-        {"name": "tokenizer", "type": "tokenizer_select", "placeholder": ""},
-        {"name": "stop_list", "type": "list_select", "placeholder": ""}]
-
-    def __init__(self, main_id, tile_id):
-        ColumnSourceTile.__init__(self, main_id, tile_id)
-        self.update_events += ("CellChange", "TileWordClick")
+        self.update_events += ["CellChange", "TileWordClick"]
         self.tokenizer_func = None
         self._vocab = None
         self.stop_list = None
         self.tile_type = self.__class__.__name__
+
+    @property
+    def options(self):
+        return  [
+        {"name": "column_source", "type": "column_select", "placeholder": ""},
+        {"name": "tokenizer", "type": "tokenizer_select", "placeholder": ""},
+        {"name": "stop_list", "type": "list_select", "placeholder": ""}
+        ]
 
     def tokenize_rows(self, the_rows, the_tokenizer):
         tokenized_rows = []
@@ -305,14 +380,11 @@ class VocabularyDisplayTile(ColumnSourceTile):
                 self.push_direct_update(the_html)
                 return
         elif event_name == "TileWordClick":
-            # data_dict = {"event_name": "SearchTable", "data": {"text_to_find": data["clicked_text"]}}
             distribute_event("DehighlightTable", self.main_id, {})
             distribute_event("SearchTable", self.main_id, {"text_to_find": data["clicked_text"]})
-            # mainwindow_instances[self.main_id].post_event("DehighlightTable")
-            # mainwindow_instances[self.main_id].post_event(data_dict);
             print data["clicked_text"]
         else:
-            ColumnSourceTile.handle_event(self, event_name, data)
+            TileBase.handle_event(self, event_name, data)
 
     def render_content(self):
         if self.column_source == None:

@@ -26,6 +26,18 @@ function click_header(el) {
     }
 }
 
+function listen_for_focus() {
+  $("#table-area").on('focus', 'td', function(e) {
+      //var row_index = e.target.closest("tr").rowIndex - tableObject.header_rows
+      row_index = $(this).closest("tr")[0].rowIndex - tableObject.header_rows
+      var old_row = $("#table-area tbody")[0].childNodes[tableObject.active_row]
+      $(old_row).removeClass("selected-row")
+      var new_row = $("#table-area tbody")[0].childNodes[row_index]
+      $(new_row).addClass("selected-row")
+      tableObject.active_row = row_index
+      })
+}
+
 function resize_from_sub_headers (el_list) {
     for (var i = 0; i < el_list.length; ++i) {
         var total_width = 0;
@@ -102,17 +114,21 @@ function doSearch(t) {
 }
 
 function deselect_header(the_id) {
-    $("tbody .header" + the_id).css('background-color', TABLE_NORMAL_COLOR);
-    $("tbody .header" + the_id).css('border', TABLE_BORDER_STYLE);
-    $("thead .header" + the_id).css('background-color', HEADER_NORMAL_COLOR);
-    $("thead .header" + the_id).css('border', TABLE_BORDER_STYLE);
+    //$("tbody .header" + the_id).css('background-color', TABLE_NORMAL_COLOR);
+    $("tbody .header" + the_id).removeClass("selected-column");
+    //$("tbody .header" + the_id).css('border', TABLE_BORDER_STYLE);
+    $("thead .header" + the_id).removeClass("selected-header");
+    //$("thead .header" + the_id).css('background-color', HEADER_NORMAL_COLOR);
+    //$("thead .header" + the_id).css('border', TABLE_BORDER_STYLE);
     tableObject.selected_header = null
     disable_require_column_select()
 }
 
 function select_header(the_id) {
-    $(".header" + the_id).css('background-color', TABLE_SELECT_COLOR)
-    $("#" + the_id).css('background-color', HEADER_SELECT_COLOR);
+    //$(".header" + the_id).css('background-color', TABLE_SELECT_COLOR)
+    //$("#" + the_id).css('background-color', HEADER_SELECT_COLOR);
+    $("tbody .header" + the_id).addClass("selected-column")
+    $("thead .header" + the_id).addClass("selected-header");
     tableObject.selected_header = the_id
     enable_require_column_select()
 }
@@ -218,6 +234,8 @@ var tableObject = {
         return current
     },
 
+
+
     highlightTxtInCell: function(data_object) {
         var rindex = data_object.row_index;
         var sig = data_object.signature;
@@ -251,7 +269,32 @@ var tableObject = {
         }
     },
 
+    setFocusRowCellContent: function(data) {
+        if (this.active_row == null) {
+            return
+        }
+        data["row_index"] = this.active_row
+        this.setCellContent(data)
+    },
+
+    setCellContent: function(data) {
+        var signature = data["signature"]
+        var new_content = data["new_content"]
+        var row_index = data["row_index"]
+        var cell_index = this.getCellIndexFromSignature(signature);
+        if (cell_index == -1) {
+            console.log("invalid signature")
+            return
+        }
+        var td_element = $("#table-area tbody")[0].rows[row_index].cells[cell_index];
+        $(td_element).html(new_content)
+        handle_cell_change.call(td_element)
+    },
+
     getCellIndexFromSignature: function(sig){
+        if (typeof(sig) == "string") {
+            sig = [sig]
+        }
         for (var c = 0; c < this.signature_list.length; ++c) {
             var asig = this.signature_list[c];
             for (var i = 1; i < asig.length; ++i) {
@@ -286,6 +329,8 @@ var tableObject = {
             menus["Project"].disable_menu_item('save')
         }
         this.build_table();
+        this.active_row = null;
+        listen_for_focus()
         function rebuild_header_struct(hstruct) {
             var true_hstruct = Object.create(header0bject);
             for (var prop in hstruct) {

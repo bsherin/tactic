@@ -43,32 +43,40 @@ function create_new_tile(menu_id) {
 }
 
 function listen_for_clicks() {
-  $(".front").on('click', '.word-clickable', function(e) {
-      var tile_id = jQuery.data(e, "my_tile_id");
-      var s = window.getSelection();
-    var range = s.getRangeAt(0);
-    var node = s.anchorNode;
-    while ((range.toString().indexOf(' ') !== 0) && (range.startOffset !== 0)) {
-      range.setStart(node, (range.startOffset - 1));
-    }
-    var nlen = node.textContent.length;
-    if (range.startOffset !== 0) {
-      range.setStart(node, range.startOffset + 1);
-    }
+    $(".front").on('click', '.word-clickable', function(e) {
+        var tile_id = jQuery.data(e, "my_tile_id");
+        var s = window.getSelection();
+        var range = s.getRangeAt(0);
+        var node = s.anchorNode;
+        while ((range.toString().indexOf(' ') !== 0) && (range.startOffset !== 0)) {
+          range.setStart(node, (range.startOffset - 1));
+        }
+        var nlen = node.textContent.length;
+        if (range.startOffset !== 0) {
+          range.setStart(node, range.startOffset + 1);
+        }
 
-    do {
-      range.setEnd(node, range.endOffset + 1);
+        do {
+          range.setEnd(node, range.endOffset + 1);
 
-    } while (range.toString().indexOf(' ') == -1 &&
-      range.toString().trim() !== '' &&
-      range.endOffset < nlen);
-    var str = range.toString().trim();
-      var data_dict = {};
-      var p = $(e.target).closest(".tile-panel")[0]
-      data_dict["tile_id"] = $(p).data("my_tile_id");
-      data_dict["clicked_text"] = str;
-      broadcast_event_to_server("TileWordClick", data_dict)
-  });
+        } while (range.toString().indexOf(' ') == -1 &&
+          range.toString().trim() !== '' &&
+          range.endOffset < nlen);
+
+        var str = range.toString().trim();
+          var data_dict = {};
+          var p = $(e.target).closest(".tile-panel")[0];
+          data_dict["tile_id"] = $(p).data("my_tile_id");
+          data_dict["clicked_text"] = str;
+          broadcast_event_to_server("TileWordClick", data_dict)
+    });
+    $(".front").on('click', 'button', function(e) {
+        var p = $(e.target).closest(".tile-panel")[0];
+        var data = {}
+        data["tile_id"] = $(p).data("my_tile_id");
+        data["button_value"] = e.target.value
+        broadcast_event_to_server("TileButtonClick", data)
+    });
 }
 
 function create_tile_from_save(tile_id) {
@@ -97,6 +105,7 @@ function create_tile_from_save(tile_id) {
             new_tile_object.tile_id = data.tile_id;
             tile_dict[data.tile_id] = new_tile_object;
             do_resize(data.tile_id);
+            listen_for_clicks();
             //new_tile_object.initiateTileRefresh();
             $.ajax({
                 url: $SCRIPT_ROOT + "/refreshtilefromsave_event_request/" + String(data_dict.tile_id),
@@ -152,12 +161,21 @@ var tile_object = {
     submitOptions: function (){
         var data = {};
         data["main_id"] = main_id;
-        $(this.full_selector() + " input").each(function () {
+        $(this.full_selector() + " .back input").each(function () {
                 data[$(this).attr('id')] = $(this).val()
             }
         );
-        $(this.full_selector() + " select :selected").each(function () {
+        $(this.full_selector() + " .back select :selected").each(function () {
                 data[$(this).parent().attr('id')] = $(this).text()
+            }
+        );
+        $(this.full_selector() + " .back textarea").each(function () {
+                lines = $(this).val().split(/\n/);
+                clean_lines = []
+                for (l = 0; l < lines.length; ++l){
+                    clean_lines.push($.trim(lines[l]))
+                }
+                data[$(this).attr('id')] = clean_lines
             }
         );
         $.ajax({

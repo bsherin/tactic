@@ -37,7 +37,8 @@ class mainWindow(threading.Thread):
         self._sleepperiod = .1
         threading.Thread.__init__(self)
         self._my_q = Queue.Queue(0)
-        self.update_events = ["CellChange", "CreateColumn", "SearchTable", "DehighlightTable"]
+        self.update_events = ["CellChange", "CreateColumn", "SearchTable",
+                              "DehighlightTable", "SetFocusRowCellContent", "SetCellContent"]
         self.tile_instances = {}
         self.current_tile_id = 0
         self.collection_name = collection_name # This isn't used yet.
@@ -61,6 +62,12 @@ class mainWindow(threading.Thread):
     def add_blank_column(self, column_name):
         for doc in self.data_dict["the_rows"]:
             doc[column_name] = ""
+
+        # We have to rebuild the signature list and dicts to include the new column
+        self.signature_list = self._build_signature_list()
+        self.ordered_sig_dict = OrderedDict()
+        for it in self.signature_list:
+            self.ordered_sig_dict[self.get_sig_string_from_sig(it)] = it
 
     def post_event(self, event_name, data=None):
         self._my_q.put({"event_name": event_name, "data": data})
@@ -126,7 +133,21 @@ class mainWindow(threading.Thread):
             self.highlight_table_text(data["text_to_find"])
         elif event_name == "DehighlightTable":
             self.dehighlight_all_table_text()
+        elif event_name == "SetFocusRowCellContent":
+            self._set_focus_cell_content(data["signature"], data["new_content"])
+        elif event_name == "SetCellContent":
+            self._set_cell_content(data["row_index"], data["signature"], data["new_content"])
         return
+
+    def _set_focus_cell_content(self, signature_string, new_content):
+        signature = self.ordered_sig_dict[signature_string]
+        self.emit_table_message("setFocusRowCellContent",
+                        {"signature": signature, "new_content": new_content})
+
+    def _set_cell_content(self, row_index, signature_string, new_content):
+        signature = self.ordered_sig_dict[signature_string]
+        self.emit_table_message("setFocusRowCellContent",
+                        {"row_index": row_index, "signature": signature, "new_content": new_content})
 
     def highlight_table_text(self, txt):
         row_index = 0;

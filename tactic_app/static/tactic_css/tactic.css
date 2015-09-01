@@ -46,14 +46,14 @@
 }
 
 .back {
-    background-color: #f7f7f7;
+    /*background-color: #f7f7f7;*/
     padding: 20px;
     margin: 0px;
     overflow: scroll
 }
 
 .front {
-    background-color: #dff0d8;
+    /*background-color: #dff0d8;*/
     padding: 0px;
     margin: 0px;
 }

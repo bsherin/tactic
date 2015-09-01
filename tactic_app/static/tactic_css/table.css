@@ -62,6 +62,8 @@
 
 }
 
+.column_select
+
 td, th {
     vertical-align: top;
     color: #000;
@@ -104,6 +106,21 @@ th {
 .table-up, .table-down {
   color: #007;
   cursor: pointer;
+}
+
+.selected-header {
+    background-color: #9d9d9d;
+}
+
+.selected-column {
+    background-color: #e0e0e0;
+}
+
+.selected-row {
+    /*outline: black solid thick;*/
+    /*background: #dddddd;*/
+    border-color:#9ecaed;
+    box-shadow:0 0 15px #9ecaed;
 }
 
 .table-add {
