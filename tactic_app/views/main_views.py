@@ -1,6 +1,6 @@
 __author__ = 'bls910'
 from tactic_app import app, db, socketio
-from flask import request, jsonify
+from flask import request, jsonify, render_template
 from flask_login import current_user
 from flask_socketio import join_room
 from tactic_app.shared_dicts import tile_classes
@@ -61,6 +61,8 @@ def grab_project_data(main_id):
     result["hidden_list"] = mainwindow_instances[main_id].hidden_list
     result["tile_ids"] = mainwindow_instances[main_id].tile_instances.keys()
     result["next_header_id"] = mainwindow_instances[main_id].next_header_id
+    result["column_widths"] = mainwindow_instances[main_id].column_widths
+    result["table_width"] = mainwindow_instances[main_id].table_width
     return jsonify(result)
 
 @app.route('/get_additional_params', methods=['GET'])
@@ -91,3 +93,24 @@ def distribute_event(event_name, main_id, data_dict=None, tile_id=None):
                 tile_instance.post_event(event_name, data_dict)
     if event_name in mwindow.update_events:
         mwindow.post_event(event_name, data_dict)
+
+@app.route('/create_tile_request/<tile_type>', methods=['GET','POST'])
+def create_tile_request(tile_type):
+    main_id = request.json["main_id"]
+    new_tile = mainwindow_instances[main_id].create_tile_instance_in_mainwindow(tile_type)
+    tile_id = new_tile.tile_id
+    form_html = new_tile.create_form_html()
+    result = render_template("tile.html", tile_id=tile_id,
+                           tile_name=tile_type,
+                           form_text=form_html)
+    return jsonify({"html":result, "tile_id": tile_id})
+
+@app.route('/create_tile_from_save_request/<tile_id>', methods=['GET','POST'])
+def create_tile_from_save_request(tile_id):
+    main_id = request.json["main_id"]
+    tile_instance = mainwindow_instances[main_id].tile_instances[tile_id]
+    form_html = tile_instance.create_form_html()
+    result = render_template("tile.html", tile_id=tile_id,
+                           tile_name=tile_instance.tile_type,
+                           form_text=form_html)
+    return jsonify({"html":result, "tile_id": tile_id})

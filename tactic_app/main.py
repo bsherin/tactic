@@ -37,8 +37,8 @@ class mainWindow(threading.Thread):
         self._sleepperiod = .1
         threading.Thread.__init__(self)
         self._my_q = Queue.Queue(0)
-        self.update_events = ["CellChange", "CreateColumn", "SearchTable",
-                              "DehighlightTable", "SetFocusRowCellContent", "SetCellContent"]
+        self.update_events = ["CellChange", "CreateColumn", "SearchTable", "SaveColumnWidths",
+                              "DehighlightTable", "SetFocusRowCellContent", "SetCellContent", "RemoveTile"]
         self.tile_instances = {}
         self.current_tile_id = 0
         self.collection_name = collection_name # This isn't used yet.
@@ -137,6 +137,9 @@ class mainWindow(threading.Thread):
             self._set_focus_cell_content(data["signature"], data["new_content"])
         elif event_name == "SetCellContent":
             self._set_cell_content(data["row_index"], data["signature"], data["new_content"])
+        elif event_name == "SaveColumnWidths":
+            self.column_widths = data["column_widths"]
+            self.table_width = data["table_width"]
         return
 
     def _set_focus_cell_content(self, signature_string, new_content):

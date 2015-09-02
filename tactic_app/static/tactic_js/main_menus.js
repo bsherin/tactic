@@ -105,13 +105,14 @@ function bind_to_keys(shortcuts) {
     })
 }
 
-function dehighlight_table_text() {
-    //$('.highlight').removeClass('highlight');
-    $('.has-highlights').each(function(index) {
-        this.innerHTML = this.innerHTML.replace(/<\/?span[^>]*>/g, "");
-        $(this).removeClass('has-highlights')
-    })
-}
+//This isn't used, I think
+//function dehighlight_table_text() {
+//    //$('.highlight').removeClass('highlight');
+//    $('.has-highlights').each(function(index) {
+//        this.innerHTML = this.innerHTML.replace(/<\/?span[^>]*>/g, "");
+//        $(this).removeClass('has-highlights')
+//    })
+//}
 
 mousetrap.bind("esc", function() {
     if (tableObject.selected_header != null) {

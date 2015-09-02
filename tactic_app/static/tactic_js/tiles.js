@@ -3,7 +3,7 @@
 var tile_dict = {}
 
 function create_new_tile(menu_id) {
-    data_dict = {};
+    var data_dict = {};
     data_dict["main_id"] = main_id;
     $.ajax({
         url: $SCRIPT_ROOT + "/create_tile_request/" + String(menu_id),
@@ -19,7 +19,7 @@ function create_new_tile(menu_id) {
                 "forceWidth": true,
                 "forceHeight": true
             });
-            new_tile_elem = $("#tile_id_" + data.tile_id)
+            var new_tile_elem = $("#tile_id_" + data.tile_id)
             new_tile_elem.resizable({
                 handles: "se",
                 resize: resize_tile_area
@@ -32,14 +32,15 @@ function create_new_tile(menu_id) {
             do_resize(data.tile_id);
             //new_tile_object.initiateTileRefresh();
             data_dict.tile_id = data.tile_id
-            $.ajax({
-                url: $SCRIPT_ROOT + "/refreshtile_event_request/" + String(data_dict.tile_id),
-                contentType : 'application/json',
-                type : 'POST',
-                data: JSON.stringify(data_dict)
-            });
+            spin_and_refresh(data_dict.tile_id)
         }
     })
+}
+
+function spin_and_refresh(tile_id) {
+    broadcast_event_to_server("StartSpinner", {"tile_id": tile_id})
+    broadcast_event_to_server("RefreshTile", {"tile_id": tile_id})
+    broadcast_event_to_server("StopSpinner", {"tile_id": tile_id})
 }
 
 function listen_for_clicks() {
@@ -107,12 +108,7 @@ function create_tile_from_save(tile_id) {
             do_resize(data.tile_id);
             listen_for_clicks();
             //new_tile_object.initiateTileRefresh();
-            $.ajax({
-                url: $SCRIPT_ROOT + "/refreshtilefromsave_event_request/" + String(data_dict.tile_id),
-                contentType : 'application/json',
-                type : 'POST',
-                data: JSON.stringify(data_dict),
-            });
+            broadcast_event_to_server("RefreshTileFromSave", {"tile_id": data.tile_id})
         }
     })
 }
@@ -178,14 +174,8 @@ var tile_object = {
                 data[$(this).attr('id')] = clean_lines
             }
         );
-        $.ajax({
-            url: $SCRIPT_ROOT + "/submit_options/" + this.tile_id,
-            contentType : 'application/json',
-            type : 'POST',
-            async: false,
-            data: JSON.stringify(data),
-            dataType: 'json'
-        });
+        data["tile_id"] = this.tile_id
+        broadcast_event_to_server("UpdateOptions", data)
     },
     displayTileContent: function (data) {
         $(this.full_selector() + " #tile-display-area").html(data["html"]);
@@ -203,16 +193,10 @@ var tile_object = {
 
     closeMe: function(){
         $(this.full_selector()).remove();
+        var data_dict = {}
         data_dict["main_id"] = main_id;
-        $.ajax({
-            url: $SCRIPT_ROOT + "/remove_tile/" + this.tile_id,
-            contentType : 'application/json',
-            type : 'POST',
-            async: false,
-            data: JSON.stringify(data_dict),
-            dataType: 'json'
-        });
-
+        data_dict["tile_id"] = this.tile_id
+        broadcast_event_to_server("RemoveTile", data_dict)
     },
 
     flipMe: function (){

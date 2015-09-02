@@ -3,7 +3,7 @@
  */
 // This controls how wide the widest field can be as
 // a fraction of the containing panel
-MAX_BIGFIELD_FRACTION = .25;
+MAX_BIGFIELD_FRACTION = 1;
 SHOW_ALL_HEADER_ROWS = true;
 ADDED_HEADER_WIDTH = 35;
 HEADER_SELECT_COLOR = "#9d9d9d";
@@ -46,23 +46,46 @@ function resize_from_sub_headers (el_list) {
         for (var j = 0; j < slist.length; ++j) {
             sub_id = $(slist[j]).attr("id")
             if ($.inArray(sub_id, tableObject.hidden_list) == -1) {
-                total_width += $(slist[j]).outerWidth()
+                total_width += $(slist[j]).innerWidth()
             }
         }
         if (total_width === 0) {
             $(el).fadeOut();
         }
         else {
-            $(el).outerWidth(total_width)
+            $(el).innerWidth(total_width)
         }
     }
 }
 
+function save_column_widths () {
+    var col_cells = $("#table-area tbody tr:first td");
+    var result = [];
+    for (var i = 0; i < col_cells.length; ++i) {
+        result.push(col_cells[i].offsetWidth)
+    }
+    var table_area_width = $("#table-area").width()
+    broadcast_event_to_server("SaveColumnWidths", {"column_widths": result, "table_width": table_area_width})
+}
+
 function resize_whole_column(event, ui) {
+    new_width = ui.size.width
     var header_element = ui.element;
     var h_class = "header" + header_element.attr("id");
-    $("." + h_class).outerWidth(ui.size.width);
+    $("." + h_class).innerWidth(new_width);
+    $("." + h_class).css("maxWidth", ui.size.width);
     resize_from_sub_headers(ui.element.data("super_headers"))
+    tableObject.column_widths[ui.element[0].cellIndex] = ui.element[0].offsetWidth;
+}
+
+function resize_whole_column_from_cell(event, ui) {
+    var cellIndex = ui.element[0].cellIndex
+    var header_row_element = $("#table-area thead tr")[tableObject.header_rows - 1]
+    var header_element = $(header_row_element.children[cellIndex])
+    var h_class = "header" + header_element.attr("id");
+    $("." + h_class).innerWidth(ui.size.width);
+    $("." + h_class).css("maxWidth", ui.size.width);
+    resize_from_sub_headers(header_element.data("super_headers"))
     tableObject.column_widths[ui.element[0].cellIndex] = ui.element[0].offsetWidth;
 }
 
@@ -152,11 +175,11 @@ header0bject = {
                     the_child = this.child_list[i];
                     this.child_list.splice(i,1)
                     this.child_list.splice(i - 1, 0, the_child)
+                    save_column_widths()
                     return
                 }
             }
         }
-
     },
     shift_child_right: function (child_id) {
         var i;
@@ -168,6 +191,7 @@ header0bject = {
                 the_child = this.child_list[i];
                 this.child_list.splice(i,1)
                 this.child_list.splice(i + 1, 0, the_child)
+                save_column_widths()
                 return
             }
         }
@@ -328,7 +352,14 @@ var tableObject = {
             this.header_struct = this.find_headers(this.collection_name, sample_row);
             menus["Project"].disable_menu_item('save')
         }
-        this.build_table();
+        if (data_object.hasOwnProperty("column_widths")){
+            this.column_widths = data_object["column_widths"]
+            this.table_width = data_object["table_width"]
+        }
+        else {
+            this.column_widths = null
+        }
+        this.build_table(this.column__widths);
         this.active_row = null;
         listen_for_focus()
         function rebuild_header_struct(hstruct) {
@@ -350,7 +381,8 @@ var tableObject = {
         this.table_array = this.build_table_array();
         this.create_all_html();
         this.resize_table_area();
-        this.column_widths = this.freeze_header(this.table_id);
+        this.freeze_header(this.table_id);
+        broadcast_event_to_server("SaveColumnWidths", {"column_widths": this.column_widths, "table_width": this.table_width})
         label_super_headers();
         label_sub_headers();
         this.header_rows = $("thead").children().length;
@@ -462,7 +494,7 @@ var tableObject = {
             for (i = 0; i < this.table_array.length; ++i) {
                 row_html = "<tr>";
                 row_html = row_html + this.get_row_html(i);
-                row_html= row_html + end_columns;
+                //row_html= row_html + end_columns;
                 body_html = body_html + row_html;
             }
             ta.append("<tbody>" + body_html + "</body>");
@@ -472,9 +504,23 @@ var tableObject = {
             $("thead").css('background-color', HEADER_NORMAL_COLOR);
             $(".can-resize").resizable({
                 handles: "e",
-                resize: resize_whole_column
+                resize: resize_whole_column,
+                stop: save_column_widths
             })
+            $(".can-resize-cell").resizable({
+                handles: "e",
+                resize: resize_whole_column_from_cell,
+                stop: save_column_widths
+
+            })
+            $("#table-area").resizable({
+                handles: "e",
+                stop: save_column_widths
+            })
+
     },
+
+
 
     set_table_title: function (){
         the_html = "<span style='text-align:left;'>Project: " + this.project_name + "<span style='float:right;'>Collection: " + this.short_collection_name + "</span></span>"
@@ -537,7 +583,7 @@ var tableObject = {
             var i;
 
             //Here we start with depth - 1 because we don't want to print the table title.
-            var ncols = this.signature_list.length + 2;
+            var ncols = this.signature_list.length; // This line was changed to not include extra two columns
             if (SHOW_ALL_HEADER_ROWS) {
                 for (depth = (hstruct.depth - 1); depth >= 0; --depth) {
                     res_object = this.build_header_html_for_depth(hstruct, depth, "");
@@ -621,7 +667,7 @@ var tableObject = {
             var sig;
             var current;
             var res = ""
-            var td_template = "<td contenteditable='true' onmouseup='text_select(event)' class='{{class_text}} searchit mousetrap')>{{the_text}}</td>"
+            var td_template = "<td contenteditable='true' onmouseup='text_select(event)' class='{{class_text}} can-resize-cell searchit mousetrap')>{{the_text}}</td>"
             // Note the loop below starts at 1 because my signature list has an extra
             // root node listed at the start
             class_text = [];
@@ -655,49 +701,55 @@ var tableObject = {
             var all_rows = $(tidstr).find("tr")
             column_widths = [];
             //this.big_fields = []
-            for (c = 0; c < ncols; ++c){
-                column_widths.push(0);
-                //this.big_fields.push(0)
-            }
+
             var the_row;
             var the_width;
             var the_text;
+            var the_child;
 
             var panel_width = $("#main-panel").width()
             var max_field_width = panel_width * MAX_BIGFIELD_FRACTION;
 
-            // Get the max width of each column
-            for (var r = 0; r < all_rows.length; ++r) {
-                the_row = all_rows[r]
-                ncols = the_row.cells.length
+            if (this.column_widths === null) {
+                for (c = 0; c < ncols; ++c) {
+                    column_widths.push(0);
+                    //this.big_fields.push(0)
+                }
+                // Get the max width of each column
+                for (var r = 0; r < all_rows.length; ++r) {
+                    the_row = all_rows[r]
+                    ncols = the_row.cells.length
 
-                for (c = 0; c < ncols; ++c){
-                    the_child = the_row.cells[c];
-                    the_width = the_child.offsetWidth + ADDED_HEADER_WIDTH;
-                    the_text = the_child.innerHTML;
+                    for (c = 0; c < ncols; ++c) {
+                        the_child = the_row.cells[c];
+                        the_width = the_child.offsetWidth + ADDED_HEADER_WIDTH;
+                        the_text = the_child.innerHTML;
 
-                    the_colspan = the_child.colSpan;
+                        the_colspan = the_child.colSpan;
 
-                    if (the_colspan == 1){
-                        if (the_width > max_field_width) {
-                            the_width = max_field_width
-                        }
-                        //if (the_text.length > 100) {
-                        //    this.big_fields[c] = 1
-                        //}
-                       if (the_width > column_widths[c]){
-                           column_widths[c] = the_width
+                        if (the_colspan == 1) {
+                            if (the_width > max_field_width) {
+                                the_width = max_field_width
+                            }
+                            //if (the_text.length > 100) {
+                            //    this.big_fields[c] = 1
+                            //}
+                            if (the_width > column_widths[c]) {
+                                column_widths[c] = the_width
+                            }
                         }
                     }
                 }
+                this.column_widths = column_widths
+                var total = 0;
+                $.each(this.column_widths, function() {
+                    total += this;
+                })
+                this.table_width = total
+                $("#" + this.table_id).width(String(total));
             }
 
-            var total = 0;
-            $.each(column_widths, function() {
-                total += this;
-            })
-            $("#" + this.table_id).width(String(total));
-
+            $("#" + this.table_id).width(String(this.table_width))
             // Set all column widths
             var i;
             var new_width;
@@ -707,7 +759,7 @@ var tableObject = {
             var entry_counter;
             for (r = 0; r < all_rows.length; ++r) {
                 the_row = all_rows[r];
-                ncols = this.signature_list.length + 2; // We add 2 for the 2 extra columns added at the end
+                ncols = this.signature_list.length; // We need to add two if I add the extra columns
                 c = 0;
                 entry_counter = 0;
                 while (c < ncols){
@@ -715,9 +767,10 @@ var tableObject = {
                     the_colspan = the_child.colSpan;
                     new_width = 0;
                     for (i = 0; i < the_colspan; ++i){
-                        new_width = new_width + column_widths[c + i]
+                        new_width = new_width + this.column_widths[c + i]
                     }
                     the_child.style.width = String(new_width) + "px";
+                    the_child.style.maxWidth = String(new_width) + "px";
                     //if ((the_colspan == 1) && (big_fields[c] == 1)){
                     //    the_child.style.minWidth = MIN_BIGFIELD_WIDTH
                     //}
@@ -725,7 +778,8 @@ var tableObject = {
                     entry_counter += 1
                 }
             }
-        return column_widths
+
+        return
     },
     rowup: function (clicked_element) {
           var $row = $(clicked_element).parents('tr');

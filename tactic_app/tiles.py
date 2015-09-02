@@ -70,7 +70,7 @@ class TileBase(threading.Thread):
         self._sleepperiod = .2
         threading.Thread.__init__(self)
         global current_tile_id
-        self.update_events = ["RefreshTile", "UpdateOptions", "ShowFront"]
+        self.update_events = ["RefreshTile", "UpdateOptions", "ShowFront", "StartSpinner", "StopSpinner", "RefreshTileFromSave"]
         self.tile_id = tile_id
         self.main_id = main_id
         self._my_q = Queue.Queue(0)
