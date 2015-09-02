@@ -1,8 +1,10 @@
 __author__ = 'bls910'
 
+import os
+import pymongo
 from flask import render_template, request, make_response, redirect, url_for, jsonify
 from tactic_app import app, db, socketio
-from tactic_app.file_handling import convert_multi_doc_file_to_dict_list, load_a_list;
+from tactic_app.file_handling import read_xml_file_to_dict_list, read_csv_file_to_dict_list, load_a_list;
 from tactic_app.main import create_new_mainwindow, create_new_mainwindow_from_project
 from tactic_app.users import put_docs_in_collection, build_data_collection_name
 from flask_login import current_user
@@ -67,12 +69,22 @@ def add_list():
     socketio.emit('update-list-list', {"html": render_list_list()}, namespace='/user_manage', room=current_user.get_id())
     return make_response("", 204)
 
-@app.route('/add_file_as_collection', methods=['POST', 'GET'])
-def add_file_as_collection():
+@app.route('/load_single_file', methods=['POST', 'GET'])
+def load_single_file():
     file = request.files['file']
-    (collection_name, dict_list) = convert_multi_doc_file_to_dict_list(file)
-    put_docs_in_collection(build_data_collection_name(collection_name), dict_list)
-    socketio.emit('update-collection-list', {"html": render_collection_list()}, namespace='/user_manage', room=current_user.get_id())
+    filename, file_extension = os.path.splitext(file.filename)
+    if file_extension == ".xml":
+        (collection_name, dict_list) = read_xml_file_to_dict_list(file)
+    elif file_extension == ".csv":
+        (collection_name, dict_list) = read_csv_file_to_dict_list(file)
+    else:
+        print "not a valid file type"
+        return redirect(url_for(user_manage))
+    try:
+        put_docs_in_collection(build_data_collection_name(collection_name), dict_list)
+        socketio.emit('update-collection-list', {"html": render_collection_list()}, namespace='/user_manage', room=current_user.get_id())
+    except pymongo.errors.InvalidStringData:
+        print "Strings in documents must be valid UTF-8"
     # current_user.add_collection(collection_name)
     return redirect(url_for(user_manage))
 

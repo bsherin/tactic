@@ -31,7 +31,7 @@ $('#list-load-form').submit(function(e) {
 
 $('#collection-load-form').submit(function(e) {
     $.ajax( {
-      url: $SCRIPT_ROOT + '/add_file_as_collection',
+      url: $SCRIPT_ROOT + '/load_single_file',
       type: 'POST',
       data: new FormData( this ),
       processData: false,
@@ -40,17 +40,6 @@ $('#collection-load-form').submit(function(e) {
     e.preventDefault();
   } );
 
-//function update_project_list() {
-//    $("#project-selector").load($SCRIPT_ROOT + "/update_projects")
-//}
-//
-//function update_collection_list() {
-//    $("#collection-selector").load($SCRIPT_ROOT + "/update_collections")
-//}
-//
-//function update_list_list() {
-//    $("#list-selector").load($SCRIPT_ROOT + "/update_lists")
-//}
 
 function view_selected_list() {
     var list_name = $('#list-selector > .btn.active').text().trim();

@@ -57,9 +57,9 @@ class TileTemplate(threading.Thread):
 class TileBase(threading.Thread):
     input_start_template = '<div class="form-group">' \
                      '<label>{0}</label>'
-    basic_input_template = '<input type="{1}" class="form-control" id="{0}">{2}' \
+    basic_input_template = '<input type="{1}" class="form-control" id="{0}" value="{2}"></input>' \
                      '</div>'
-    textarea_template = '<textarea type="{1}" class="form-control" id="{0}">{2}</textarea>' \
+    textarea_template = '<textarea type="{1}" class="form-control" id="{0}" value="{2}"></textarea>' \
                  '</div>'
     select_base_template = '<select class="form-control" id="{0}">'
     select_option_template = '<option value="{0}">{0}</option>'
@@ -234,11 +234,9 @@ class SimpleSelectionTile(TileBase):
 
     @property
     def options(self):
-        return  [{
-        "name": "extra_text",
-        "type": "text",
-        "placeholder":"no selection"
-        }]
+        return  [
+            {"name": "extra_text", "type": "text", "placeholder": "no selection"}
+        ]
 
 @tile_class
 class SimpleCoder(TileBase):
@@ -293,11 +291,9 @@ class WordnetSelectionTile(TileBase):
 
     @property
     def options(self):
-        return  [{
-        "name": "number_to_show",
-        "type": "text",
-        "placeholder":"5"
-        }]
+        return  [
+            {"name": "number_to_show", "type": "text","placeholder": self.to_show}
+        ]
 
     def handle_event(self, event_name, data=None):
         if event_name == "text_select":
@@ -329,9 +325,9 @@ class VocabularyDisplayTile(TileBase):
     @property
     def options(self):
         return  [
-        {"name": "column_source", "type": "column_select", "placeholder": ""},
-        {"name": "tokenizer", "type": "tokenizer_select", "placeholder": ""},
-        {"name": "stop_list", "type": "list_select", "placeholder": ""}
+        {"name": "column_source", "type": "column_select", "placeholder": self.column_source},
+        {"name": "tokenizer", "type": "tokenizer_select", "placeholder": self.tokenizer_func},
+        {"name": "stop_list", "type": "list_select", "placeholder": self.stop_list}
         ]
 
     def tokenize_rows(self, the_rows, the_tokenizer):
@@ -400,8 +396,87 @@ class VocabularyDisplayTile(TileBase):
         return mainwindow_instances[self.main_id].get_column_data(column_signature)
 
     def update_options(self, form_data):
-        self.column_source = form_data["column_source"];
+        self.text_source = form_data["column_source"];
+        self.code_source = None
         self.tokenizer_func = form_data["tokenizer"];
         self.stop_list = self.get_user_list(form_data["stop_list"])
+        self.post_event("ShowFront");
+        self.spin_and_refresh()
+
+@tile_class
+class NaiveBayesTile(TileBase):
+    def __init__(self, main_id, tile_id):
+        TileBase.__init__(self, main_id, tile_id)
+        self.text_source = ""
+        self.code_source = ""
+        self.code_dest = ""
+        self.stop_list = ""
+        self.tokenizer_func = ""
+        self._vocab = None
+        self._classifer = None
+        self.update_events += ["CellChange"]
+        self.tile_type = self.__class__.__name__
+
+    @property
+    def options(self):
+        return  [
+        {"name": "text_source", "type": "column_select", "placeholder": self.text_source},
+        {"name": "code_source", "type": "column_select", "placeholder": self.code_source},
+        {"name": "code_destination", "type": "column_select", "placeholder": self.code_dest},
+        {"name": "tokenizer", "type": "tokenizer_select", "placeholder": self.tokenizer_func},
+        {"name": "stop_list", "type": "list_select", "placeholder": self.stop_list}
+        ]
+
+    def tokenize_rows(self, the_rows, the_tokenizer):
+        tokenized_rows = []
+        for raw_row in the_rows:
+            if raw_row != None:
+                tokenized_rows.append(tokenizer_dict[the_tokenizer](raw_row))
+        return tokenized_rows
+
+
+    def render_content(self):
+        if self.text_source is "":
+            return "No text source selected."
+        raw_text_rows = self.load_raw_column(self.text_source)
+        tokenized_rows = self.tokenize_rows(raw_text_rows, self.tokenizer_func)
+        code_rows = self.load_raw_column(self.code_source)
+        self._vocab = Vocabulary(tokenized_rows, self.stop_list)
+
+        reduced_vocab = self._vocab._sorted_list_vocab[:50]
+        labeled_featuresets = []
+        r = 0
+        for instance in tokenized_rows:
+            new_fs = {}
+            if not (code_rows[r] == ""):
+                for w in reduced_vocab:
+                    new_fs[w] = w in instance
+                labeled_featuresets.append((new_fs, code_rows[r]))
+            r += 1
+        self._classifier = nltk.NaiveBayesClassifier.train(labeled_featuresets)
+        accuracy = nltk.classify.accuracy(self._classifier, labeled_featuresets)
+        r = 0
+        autocodes = []
+        for lfset in labeled_featuresets:
+            autocode = self._classifier.classify(lfset[0])
+            autocodes.append(autocode)
+            distribute_event("SetCellContent", self.main_id, {"row_index":r, "signature": self.code_dest, "new_content": str(autocode)})
+            r += 1
+        cm = nltk.ConfusionMatrix(code_rows, autocodes)
+
+        html_output = "accuracy is " + str(round(accuracy, 2))
+        html_output += '<pre>'+ cm.pretty_format() + '</pre>'
+
+        return html_output
+
+    def load_raw_column(self, column_signature):
+        return mainwindow_instances[self.main_id].get_column_data(column_signature)
+
+    def update_options(self, form_data):
+        self.text_source = form_data["text_source"];
+        self.code_source = form_data["code_source"];
+        self.tokenizer_func = form_data["tokenizer"];
+        self.stop_list = self.get_user_list(form_data["stop_list"])
+        self.code_dest = form_data["code_destination"]
         self.post_event("ShowFront");
         self.spin_and_refresh()

@@ -1,10 +1,11 @@
 __author__ = 'bls910'
 import copy
 import re
+import csv
+import os
 import xmltodict
-from tactic_app import db
 
-def convert_multi_doc_file_to_dict_list(the_file):
+def read_xml_file_to_dict_list(the_file):
     raw_xml = the_file.read()
     parsed_xml = xmltodict.parse(raw_xml)
 
@@ -37,6 +38,16 @@ def load_a_list(the_file):
         w  = "".join([x for x in w if (x.isalnum() or x == "\'" or x =="-")])
         fixed_list.append(re.sub(r'\s+$', '', w))
     return fixed_list
+
+def read_csv_file_to_dict_list(csvfile):
+    dialect = csv.Sniffer().sniff(csvfile.read(1024))
+    csvfile.seek(0)
+    reader = csv.DictReader(csvfile, dialect=dialect)
+    filename, file_extension = os.path.splitext(csvfile.filename)
+    new_list_of_dicts = []
+    for row in reader:
+        new_list_of_dicts.append(row)
+    return (filename, new_list_of_dicts)
 
 def convert_lists_to_dicts(a_dict):
     new_dict = {}

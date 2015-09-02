@@ -146,7 +146,7 @@ class mainWindow(threading.Thread):
 
     def _set_cell_content(self, row_index, signature_string, new_content):
         signature = self.ordered_sig_dict[signature_string]
-        self.emit_table_message("setFocusRowCellContent",
+        self.emit_table_message("setCellContent",
                         {"row_index": row_index, "signature": signature, "new_content": new_content})
 
     def highlight_table_text(self, txt):

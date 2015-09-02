@@ -11,6 +11,14 @@
     width: 50px;
 }
 
+button.notclose {
+  -webkit-appearance: none;
+  padding: 0;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+}
+
 .stacked-button {
     margin-bottom: 10px;
     display: block;
@@ -20,6 +28,10 @@
 .file-selector {
     margin-bottom: 10px;
     display: block;
+}
+
+.monospace {
+    font-family: monospace
 }
 
 .tile-panel {
