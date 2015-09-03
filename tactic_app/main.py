@@ -72,9 +72,9 @@ class mainWindow(threading.Thread):
     def post_event(self, event_name, data=None):
         self._my_q.put({"event_name": event_name, "data": data})
 
-    def create_tile_instance_in_mainwindow(self, tile_type):
+    def create_tile_instance_in_mainwindow(self, tile_type, tile_name = None):
         new_id = "tile_id_" + str(self.current_tile_id)
-        new_tile = tile_classes[tile_type](self.main_id, new_id)
+        new_tile = tile_classes[tile_type](self.main_id, new_id, tile_name)
         self.tile_instances[new_id] = new_tile
         new_tile.start()
         self.current_tile_id += 1

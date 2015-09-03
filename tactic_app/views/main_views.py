@@ -97,11 +97,12 @@ def distribute_event(event_name, main_id, data_dict=None, tile_id=None):
 @app.route('/create_tile_request/<tile_type>', methods=['GET','POST'])
 def create_tile_request(tile_type):
     main_id = request.json["main_id"]
-    new_tile = mainwindow_instances[main_id].create_tile_instance_in_mainwindow(tile_type)
+    tile_name = request.json["tile_name"]
+    new_tile = mainwindow_instances[main_id].create_tile_instance_in_mainwindow(tile_type, tile_name)
     tile_id = new_tile.tile_id
     form_html = new_tile.create_form_html()
     result = render_template("tile.html", tile_id=tile_id,
-                           tile_name=tile_type,
+                           tile_name=new_tile.tile_name,
                            form_text=form_html)
     return jsonify({"html":result, "tile_id": tile_id})
 
@@ -111,6 +112,6 @@ def create_tile_from_save_request(tile_id):
     tile_instance = mainwindow_instances[main_id].tile_instances[tile_id]
     form_html = tile_instance.create_form_html()
     result = render_template("tile.html", tile_id=tile_id,
-                           tile_name=tile_instance.tile_type,
+                           tile_name=tile_instance.tile_name,
                            form_text=form_html)
     return jsonify({"html":result, "tile_id": tile_id})

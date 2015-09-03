@@ -33,8 +33,8 @@ class TileTemplate(threading.Thread):
         "type": "option2type",
         "placeholder": "Placeholder value"
     }]
-    def _init__(self, main_id, tile_id):
-        TileBase.__init__(self, main_id, tile_id)
+    def _init__(self, main_id, tile_id, tile_name=None):
+        TileBase.__init__(self, main_id, tile_id, tile_name)
         self.update_events.append("EventName")
         # Any other initializations
         return
@@ -65,7 +65,7 @@ class TileBase(threading.Thread):
     select_option_template = '<option value="{0}">{0}</option>'
     select_option_selected_template = '<option value="{0}" selected>{0}</option>'
 
-    def __init__(self, main_id, tile_id):
+    def __init__(self, main_id, tile_id, tile_name=None):
         self._stopevent = threading.Event()
         self._sleepperiod = .2
         threading.Thread.__init__(self)
@@ -76,6 +76,10 @@ class TileBase(threading.Thread):
         self._my_q = Queue.Queue(0)
         self.current_html = None
         self.tile_type = self.__class__.__name__
+        if tile_name is None:
+            self.tile_name = self.tile_type
+        else:
+            self.tile_name = tile_name
         return
 
     def run(self):
@@ -212,8 +216,8 @@ class TileBase(threading.Thread):
 
 @tile_class
 class SimpleSelectionTile(TileBase):
-    def __init__(self, main_id, tile_id):
-        TileBase.__init__(self, main_id, tile_id)
+    def __init__(self, main_id, tile_id, tile_name=None):
+        TileBase.__init__(self, main_id, tile_id, tile_name)
         self.update_events.append("text_select")
         self.extra_text = "placeholder text"
         self.selected_text = "no selection"
@@ -240,8 +244,8 @@ class SimpleSelectionTile(TileBase):
 
 @tile_class
 class SimpleCoder(TileBase):
-    def __init__(self, main_id, tile_id):
-        TileBase.__init__(self, main_id, tile_id)
+    def __init__(self, main_id, tile_id, tile_name=None):
+        TileBase.__init__(self, main_id, tile_id, tile_name)
         self.update_events.append("TileButtonClick")
         self.current_text = []
         self.destination_column = ""
@@ -282,8 +286,8 @@ class SimpleCoder(TileBase):
 
 @tile_class
 class WordnetSelectionTile(TileBase):
-    def __init__(self, main_id, tile_id):
-        TileBase.__init__(self, main_id, tile_id)
+    def __init__(self, main_id, tile_id, tile_name=None):
+        TileBase.__init__(self, main_id, tile_id, tile_name)
         self.update_events.append("text_select")
         self.selected_text = "no selection"
         self.to_show = 5
@@ -313,8 +317,8 @@ class WordnetSelectionTile(TileBase):
 
 @tile_class
 class VocabularyDisplayTile(TileBase):
-    def __init__(self, main_id, tile_id):
-        TileBase.__init__(self, main_id, tile_id)
+    def __init__(self, main_id, tile_id, tile_name):
+        TileBase.__init__(self, main_id, tile_id, tile_name=None)
         self.column_source = None
         self.update_events += ["CellChange", "TileWordClick"]
         self.tokenizer_func = None
@@ -404,8 +408,8 @@ class VocabularyDisplayTile(TileBase):
 
 @tile_class
 class NaiveBayesTile(TileBase):
-    def __init__(self, main_id, tile_id):
-        TileBase.__init__(self, main_id, tile_id)
+    def __init__(self, main_id, tile_id, tile_name=None):
+        TileBase.__init__(self, main_id, tile_id, tile_name)
         self.text_source = ""
         self.code_source = ""
         self.code_dest = ""

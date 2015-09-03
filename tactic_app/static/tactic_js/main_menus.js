@@ -228,7 +228,9 @@ function project_command(menu_id) {
 }
 
 function tile_command(menu_id) {
-    create_new_tile(menu_id)
+    $("#name-tile-modal #name-tile-modal-field").val(menu_id)
+    $("#name-tile-modal #tile-type").html(menu_id)
+    $("#name-tile-modal").modal()
 }
 
 function disable_require_column_select(){

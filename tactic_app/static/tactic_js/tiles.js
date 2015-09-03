@@ -4,9 +4,12 @@ var tile_dict = {}
 
 function create_new_tile(menu_id) {
     var data_dict = {};
+    tile_name = $("#name-tile-modal #name-tile-modal-field").val()
+    tile_type = $("#name-tile-modal #tile-type").html()
     data_dict["main_id"] = main_id;
+    data_dict["tile_name"] = tile_name;
     $.ajax({
-        url: $SCRIPT_ROOT + "/create_tile_request/" + String(menu_id),
+        url: $SCRIPT_ROOT + "/create_tile_request/" + String(tile_type),
         contentType : 'application/json',
         type : 'POST',
         data: JSON.stringify(data_dict),
@@ -36,6 +39,7 @@ function create_new_tile(menu_id) {
             spin_and_refresh(data_dict.tile_id)
         }
     })
+    $('#name-tile-modal').modal('hide')
 }
 
 function spin_and_refresh(tile_id) {
