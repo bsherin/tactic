@@ -396,8 +396,7 @@ class VocabularyDisplayTile(TileBase):
         return mainwindow_instances[self.main_id].get_column_data(column_signature)
 
     def update_options(self, form_data):
-        self.text_source = form_data["column_source"];
-        self.code_source = None
+        self.column_source = form_data["column_source"];
         self.tokenizer_func = form_data["tokenizer"];
         self.stop_list = self.get_user_list(form_data["stop_list"])
         self.post_event("ShowFront");

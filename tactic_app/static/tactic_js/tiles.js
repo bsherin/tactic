@@ -26,6 +26,7 @@ function create_new_tile(menu_id) {
             });
             jQuery.data(new_tile_elem[0],"my_tile_id", data.tile_id)
             listen_for_clicks();
+            $("#tile_id_" + data.tile_id).find(".triangle-right").hide()
             new_tile_object = Object.create(tile_object);
             new_tile_object.tile_id = data.tile_id;
             tile_dict[data.tile_id] = new_tile_object;
@@ -107,6 +108,7 @@ function create_tile_from_save(tile_id) {
             tile_dict[data.tile_id] = new_tile_object;
             do_resize(data.tile_id);
             listen_for_clicks();
+            $("#tile_id_" + data.tile_id).find(".triangle-right").hide()
             //new_tile_object.initiateTileRefresh();
             broadcast_event_to_server("RefreshTileFromSave", {"tile_id": data.tile_id})
         }
@@ -192,11 +194,48 @@ var tile_object = {
     },
 
     closeMe: function(){
-        $(this.full_selector()).remove();
-        var data_dict = {}
-        data_dict["main_id"] = main_id;
-        data_dict["tile_id"] = this.tile_id
-        broadcast_event_to_server("RemoveTile", data_dict)
+        var my_tile_id = this.tile_id
+        $(this.full_selector()).fadeOut("slow", function () {
+            //var tile_id = $(this).attr("id")
+            $(this).remove();
+            var data_dict = {}
+            data_dict["main_id"] = main_id;
+            data_dict["tile_id"] = my_tile_id
+            broadcast_event_to_server("RemoveTile", data_dict)
+        });
+    },
+
+    shrinkMe: function (){
+        el = $(this.full_selector())
+        el.find(".tile-body").fadeOut();
+        el.slideToggle({
+            "duration": "medium",
+            "step": function (now, tween) {
+                if (tween.prop == "height") {
+                    hheight = $(tween.elem).children(".panel-heading").outerHeight()
+                    if (now <= hheight){
+                        $(tween.elem).stop()
+
+                    }
+                }
+            }
+        })
+        el.resizable('destroy');
+        el.find(".triangle-bottom").hide();
+        el.find(".triangle-right").show();
+    },
+    expandMe: function (){
+        el = $(this.full_selector())
+        el = $(this.full_selector()).slideToggle({
+            "duration": "medium",
+        })
+        el = $(this.full_selector()).find(".triangle-right").hide();
+        el = $(this.full_selector()).find(".triangle-bottom").show();
+        el = $(this.full_selector()).find(".tile-body").fadeIn();
+        el = $(this.full_selector()).resizable({
+                handles: "se",
+                resize: resize_tile_area
+            });
     },
 
     flipMe: function (){
