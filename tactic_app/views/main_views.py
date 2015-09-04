@@ -1,6 +1,6 @@
 __author__ = 'bls910'
 from tactic_app import app, db, socketio
-from flask import request, jsonify, render_template
+from flask import request, jsonify, render_template, send_file, url_for
 from flask_login import current_user
 from flask_socketio import join_room
 from tactic_app.shared_dicts import tile_classes
@@ -94,12 +94,18 @@ def distribute_event(event_name, main_id, data_dict=None, tile_id=None):
     if event_name in mwindow.update_events:
         mwindow.post_event(event_name, data_dict)
 
+@app.route('/figure_source/<main_id>/<tile_id>/<figure_name>', methods=['GET','POST'])
+def figure_source(main_id, tile_id, figure_name):
+    img = mainwindow_instances[main_id].tile_instances[tile_id].images[figure_name]
+    return send_file(img, mimetype='image/png')
+
 @app.route('/create_tile_request/<tile_type>', methods=['GET','POST'])
 def create_tile_request(tile_type):
     main_id = request.json["main_id"]
     tile_name = request.json["tile_name"]
     new_tile = mainwindow_instances[main_id].create_tile_instance_in_mainwindow(tile_type, tile_name)
     tile_id = new_tile.tile_id
+    new_tile.figure_url = url_for("figure_source", main_id=main_id, tile_id=tile_id, figure_name="X")[:-1]
     form_html = new_tile.create_form_html()
     result = render_template("tile.html", tile_id=tile_id,
                            tile_name=new_tile.tile_name,
@@ -110,6 +116,7 @@ def create_tile_request(tile_type):
 def create_tile_from_save_request(tile_id):
     main_id = request.json["main_id"]
     tile_instance = mainwindow_instances[main_id].tile_instances[tile_id]
+    tile_instance.base_figure_url = url_for(figure_source)
     form_html = tile_instance.create_form_html()
     result = render_template("tile.html", tile_id=tile_id,
                            tile_name=tile_instance.tile_name,

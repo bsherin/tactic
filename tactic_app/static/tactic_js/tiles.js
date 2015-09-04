@@ -85,6 +85,13 @@ function listen_for_clicks() {
     });
 }
 
+function showZoomedImage(el) {
+    src = el.src
+    image_string = "<img class='output-plot' src='" + src +  "' lt='Image Placeholder'>"
+    $("#image-modal .modal-body").html(image_string)
+    $("#image-modal").modal()
+}
+
 function create_tile_from_save(tile_id) {
     var data_dict = {};
     data_dict["tile_id"] = tile_id;
@@ -117,16 +124,6 @@ function create_tile_from_save(tile_id) {
             broadcast_event_to_server("RefreshTileFromSave", {"tile_id": data.tile_id})
         }
     })
-}
-
-function broadcast_event_to_server(event_name, data_dict) {
-    data_dict["main_id"] = main_id;
-    $.ajax({
-        url: $SCRIPT_ROOT + "/distribute_events/" + event_name,
-        contentType : 'application/json',
-        type : 'POST',
-        data: JSON.stringify(data_dict)
-    });
 }
 
 function resize_tile_area(event, ui) {

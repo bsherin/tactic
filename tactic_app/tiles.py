@@ -8,13 +8,15 @@ import nltk
 nltk.data.path = ['./nltk_data/']
 from nltk.corpus import wordnet as wn
 from flask_login import current_user
+from flask import url_for
+from matplotlib_utilities import GraphList, convert_figure_to_img
 
-from tactic_app import socketio
+from tactic_app import socketio, app
 from shared_dicts import mainwindow_instances
 from vector_space import Vocabulary
 from shared_dicts import tile_classes, tokenizer_dict
 from users import load_user
-from views.main_views import distribute_event
+from views.main_views import distribute_event, figure_source
 
 
 # Decorator function used to register runnable analyses in analysis_dict
@@ -76,6 +78,8 @@ class TileBase(threading.Thread):
         self._my_q = Queue.Queue(0)
         self.current_html = None
         self.tile_type = self.__class__.__name__
+        self.figure_url = ''
+        self.images = {}
         if tile_name is None:
             self.tile_name = self.tile_type
         else:
@@ -174,6 +178,12 @@ class TileBase(threading.Thread):
     def get_user_list(self, the_list):
         return self.current_user.get_list(the_list)
 
+    def create_figure_html(self, figname):
+        fig_url = self.figure_url + figname
+        image_string = "<img class='output-plot' src='{}' onclick=showZoomedImage(this) lt='Image Placeholder'>"
+        the_html = image_string.format(fig_url)
+        return the_html
+
     def create_form_html(self):
         form_html = ""
         for option in self.options:
@@ -211,7 +221,7 @@ class TileBase(threading.Thread):
                 the_template = self.input_start_template + self.textarea_template
                 form_html += the_template.format(option["name"], option["type"], option["placeholder"])
             else:
-                print "Unknown ooption type specified"
+                print "Unknown option type specified"
         return form_html
 
 @tile_class
@@ -405,6 +415,29 @@ class VocabularyDisplayTile(TileBase):
         self.stop_list = self.get_user_list(form_data["stop_list"])
         self.post_event("ShowFront");
         self.spin_and_refresh()
+
+@tile_class
+class VocabularyPlotClass(VocabularyDisplayTile):
+    def __init__(self, main_id, tile_id, tile_name):
+        VocabularyDisplayTile.__init__(self, main_id, tile_id, tile_name=None)
+
+    def render_content (self):
+        if self.column_source == None:
+            return "No column source selected."
+        N = 20
+        raw_rows = self.load_raw_column(self.column_source)
+        tokenized_rows = self.tokenize_rows(raw_rows, self.tokenizer_func)
+        self._vocab = Vocabulary(tokenized_rows, self.stop_list)
+        self.vdata_table = self._vocab.vocab_data_table()
+        word_list = []
+        amount_list = []
+        for entry in self.vdata_table[1:N + 1]:
+            word_list.append(entry[0])
+            amount_list.append(entry[2])
+        fig = GraphList(amount_list, word_list)
+        self.images["vocab_plot"] = convert_figure_to_img(fig)
+
+        return self.create_figure_html("vocab_plot")
 
 @tile_class
 class NaiveBayesTile(TileBase):

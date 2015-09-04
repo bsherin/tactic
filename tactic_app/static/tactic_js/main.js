@@ -7,11 +7,14 @@ function start_post_load() {
     });
     if (_project_name == "") {
         $.getJSON($SCRIPT_ROOT + "/grab_data/" + String(main_id), function (data) {
+            $("#outer-container").css("display", "block");
             tableObject.load_data(data)
+            $("#outer-container").css("display", "block")
         })
     }
     else {
         $.getJSON($SCRIPT_ROOT + "/grab_project_data/" + String(main_id), function(data) {
+            $("#outer-container").css("display", "block");
             tableObject.load_data(data);
             var tile_ids = data.tile_ids;
             for (var i = 0; i < tile_ids.length; ++i) {
@@ -37,4 +40,12 @@ function start_post_load() {
     });
 }
 
-
+function broadcast_event_to_server(event_name, data_dict) {
+    data_dict["main_id"] = main_id;
+    $.ajax({
+        url: $SCRIPT_ROOT + "/distribute_events/" + event_name,
+        contentType : 'application/json',
+        type : 'POST',
+        data: JSON.stringify(data_dict)
+    });
+}

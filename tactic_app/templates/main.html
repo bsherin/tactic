@@ -12,44 +12,35 @@
     {% include 'modals/save_as_modal.html' %}
     {% include 'modals/create_column_modal.html' %}
     {% include 'modals/name_tile_modal.html' %}
+        {% include 'modals/show_image_modal.html' %}
     </div>
-    <div class="container-fluid">
-    <div class="row">
-        <div class="col-xs-9">
+    <div id="outer-container" align="center" style="display: none">
+        <div class="grid-left" align="left">
             <div id="status-area"></div>
         </div>
-    </div>
 
-    <div class="row">
-        <div class="col-xs-9">
+        <div class="grid-left" align="left">
             <div id="main-panel" class="panel panel-default">
-                <div class="panel-heading" id="data-title"></div>
+                <div class="panel-heading" id="data-title" style="padding-top: 5px; padding-bottom: 5px"></div>
                 <div id="table-wrapper" class="panel-body">
                     <table id="table-area" >
                     </table>
                 </div>
             </div>
-        </div>
-        <div class="col-xs-3">
-            <div  class="panel panel-default" id="tile-area">
-                <div class="panel-body" id="tile-div">
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-xs-9">
-            <div class="input-group" style="width: 30%">
+            <div class="input-group"">
               <input type="text" id="search" class="form-control input-sm" aria-label="...">
               <div class="input-group-btn">
                 <input class="btn btn-default input-sm" type="button" onmousedown="doSearch(document.getElementById('search').value)" value="Find">
               </div>
             </div>
         </div>
-
+        <div class="grid-right" align="left">
+            <div  class="panel panel-default" id="tile-area">
+                <div class="panel-body" id="tile-div">
+                </div>
+            </div>
+        </div>
     </div>
-</div>
-
 {% endblock %}
 {% block scripts %}
     <script src="{{url_for('static', filename='js/jquery.flip.js')}}"></script>

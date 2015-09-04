@@ -12,6 +12,8 @@ TABLE_SELECT_COLOR = "#e0e0e0";
 TABLE_NORMAL_COLOR = "#ffffff";
 TABLE_BORDER_STYLE = "1px solid #9d9d9d;"
 MAX_HEIGHT = 300;
+MARGIN_SIZE = 5;
+INITIAL_LEFT_FRACTION = .69
 
 function click_header(el) {
     var the_id = $(el).attr("id");
@@ -87,6 +89,11 @@ function resize_whole_column_from_cell(event, ui) {
     $("." + h_class).css("maxWidth", ui.size.width);
     resize_from_sub_headers(header_element.data("super_headers"))
     tableObject.column_widths[ui.element[0].cellIndex] = ui.element[0].offsetWidth;
+}
+
+function resize_grid_areas(event, ui) {
+    tableObject.left_fraction = ui.size.width / (window.innerWidth - 2 * MARGIN_SIZE - 20);
+    tableObject.resize_table_area()
 }
 
 function text_select(e) {
@@ -336,6 +343,7 @@ var tableObject = {
     },
 
     load_data: function (data_object){
+        this.left_fraction = INITIAL_LEFT_FRACTION;
         this.collection_name = _collection_name;
         this.project_name = _project_name;
         this.short_collection_name = _collection_name.replace(/^.*?\.data_collection\./, "");
@@ -517,10 +525,12 @@ var tableObject = {
                 handles: "e",
                 stop: save_column_widths
             })
+            $("#main-panel").resizable({
+                handles: "e",
+                resize: resize_grid_areas
+            })
 
     },
-
-
 
     set_table_title: function (){
         the_html = "<span style='text-align:left;'>Project: " + this.project_name + "<span style='float:right;'>Collection: " + this.short_collection_name + "</span></span>"
@@ -528,9 +538,13 @@ var tableObject = {
     },
 
     resize_table_area: function() {
-            $(document).ready(function () {
-                $("tbody").height(window.innerHeight - 80 - $("tbody").offset().top);
-            })
+                $("#outer-container").css({"margin-left": String(MARGIN_SIZE) + "px"})
+                $("#outer-container").css({"margin-right": String(MARGIN_SIZE) + "px"})
+                $("#outer-container").css({"margin-top": "0px", "margin-bottom": "0px"})
+                var usable_width = window.innerWidth - 2 * MARGIN_SIZE - 10
+                $(".grid-left").width(usable_width * this.left_fraction)
+                $(".grid-right").width(usable_width * (1 - this.left_fraction))
+                $("tbody").height(window.innerHeight - 80 - $("tbody").offset().top)
     },
     find_headers: function (the_key, the_value) {
             var span = 0;
