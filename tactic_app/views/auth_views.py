@@ -18,7 +18,7 @@ def login():
 @app.before_request
 def beforeRequest():
     requestUrl = request.url
-    http = 'http://tacticapp' in requestUrl
+    http = 'http://tactictext' in requestUrl
     if http == True:
         secureUrl = requestUrl.replace('http','https')
         return redirect(secureUrl)
