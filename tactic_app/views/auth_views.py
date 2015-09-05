@@ -1,32 +1,39 @@
 __author__ = 'bls910'
-from flask import render_template, redirect, request, url_for, flash
+from flask import render_template, redirect, request, url_for, flash, jsonify
 from flask.ext.login import login_user, login_required, logout_user
+from flask_login import current_user
 
 from tactic_app.users import User
 from flask.ext.wtf import Form
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
-from wtforms.validators import Required, Length,Regexp, EqualTo
-from tactic_app import app
+from wtforms.validators import Required, Length, Regexp, EqualTo
+from tactic_app import app, socketio
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     print "entering login view"
-    form = LoginForm()
-    if form.validate_on_submit():
-        user = User.get_user_by_username(form.username.data)
-        if user is not None and user.verify_password(form.password.data):
-            login_user(user, form.remember_me.data)
-            return redirect(request.args.get('next') or url_for('user_manage'))
-        flash('Invalid username or password.')
-    return render_template('auth/login.html', form=form)
+    return render_template('auth/login.html')
+
+@app.route('/attempt_login', methods=['GET', 'POST'])
+def attempt_login():
+    data = request.json
+    result_dict = {}
+    user = User.get_user_by_username(data["username"])
+    if user is not None and user.verify_password(data["password"]):
+        login_user(user)
+        result_dict["logged_in"] = "yes"
+    else:
+        result_dict["logged_in"] = "no"
+    return jsonify(result_dict)
 
 @app.route('/logout')
 @login_required
 def logout():
+    socketio.emit('close-user-windows', {}, namespace='/user_manage', room=current_user.get_id())
+    socketio.emit('close-user-windows', {}, namespace='/main', room=current_user.get_id())
     logout_user()
-    flash('You have been logged out.')
-    return redirect(url_for('login'))
+    return render_template('auth/login.html')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -34,7 +41,7 @@ def register():
     if form.validate_on_submit():
         new_user = User.create_new({"username": form.username.data,
                     "password": form.password.data})
-        flash('You can now login.')
+        flash('You can now log in.')
         return redirect(url_for('login'))
     return render_template('auth/register.html', form=form)
 

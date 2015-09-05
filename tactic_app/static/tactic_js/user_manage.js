@@ -14,6 +14,9 @@ function start_post_load() {
     socket.on('update-list-list', function(data) {
         $("#list-selector").html(data.html)
     });
+    socket.on('close-user-windows', function(data){
+        window.close()
+    })
 }
 
 // We want to catch the submit for the various file uploaders to

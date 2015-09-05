@@ -10,7 +10,11 @@ from flask.ext.login import LoginManager
 from flask.ext.bootstrap import Bootstrap
 from flask.ext.socketio import SocketIO
 
+
 print "entering new init"
+from flask_wtf.csrf import CsrfProtect
+
+csrf = CsrfProtect()
 
 
 try:
@@ -38,6 +42,8 @@ try:
     login_manager.init_app(app)
     bootstrap = Bootstrap(app)
     socketio=SocketIO(app)
+    csrf.init_app(app)
+
 
 except pymongo.errors.ServerSelectionTimeoutError as err:
     print("There's a problem with the mongo server. Probably it's not running. ", err)

@@ -8,8 +8,22 @@
 <div class="page-header">
     <h1>Login</h1>
 </div>
+<div id="message-area"></div>
 <div class="col-md-4">
-    {{ wtf.quick_form(form, id="login-form") }}
+<form action="" id="login-form" method="post" class="form" role="form">
+    <div class="form-group  required"><label class="control-label" for="username">Username</label>
+        <input class="form-control" id="username" name="username" required type="text" value="">
+  </div>
+<div class="form-group  required"><label class="control-label" for="password">Password</label>
+    <input class="form-control" id="password" name="password" required type="password" value="">
+  </div>
+    <div class="checkbox">
+      <label>
+        <input id="remember_me" name="remember_me" type="checkbox" value="y"> Keep me logged in
+      </label>
+    </div>
+    <input class="btn btn-default" id="submit" name="submit" onclick="submit_login_info()" value="Log In">
+</form>
 </div>
 <p>
     New user?
@@ -18,4 +32,7 @@
     </a>
 </p>
     </div>
+{% endblock %}
+{% block scripts %}
+    <script src="{{url_for('static', filename='js/socket.io.js')}}"></script>
 {% endblock %}

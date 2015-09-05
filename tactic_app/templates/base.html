@@ -26,7 +26,7 @@
                 <ul class="nav navbar-nav navbar-right">
                     {% if current_user.is_authenticated() %}
                         <li><a href="{{ url_for('user_manage') }}">Manage User</a></li>
-                    <li><a href="{{ url_for('logout') }}">Sign Out</a></li>
+                    <li><a href="" onclick="return doSignOut();">Sign Out</a></li>
                     {% else %}
                     <li><a href="{{ url_for('login') }}">Sign In</a></li>
                     {% endif %}
@@ -44,6 +44,17 @@
 {#    <script src="static/js/jquery.ui.touch-punch.js"></script>#}
     <script src="static/js/bootstrap.min.js"></script>
     <script src="static/js/mustache.js"></script>
+    <script src="{{url_for('static', filename='tactic_js/auth.js')}}"></script>
+    <script type="text/javascript">
+        var csrftoken = "{{ csrf_token() }}"
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken)
+                }
+            }
+        })
+    </script>
   {% block scripts %}
   {% endblock %}
   </body>

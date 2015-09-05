@@ -38,6 +38,9 @@ function start_post_load() {
     socket.on('table-message', function (data) {
         tableObject[data.message](data)
     });
+    socket.on('close-user-windows', function(data){
+        window.close()
+    })
 }
 
 function broadcast_event_to_server(event_name, data_dict) {
