@@ -57,13 +57,13 @@ class TileTemplate(threading.Thread):
         """
 
 class TileBase(threading.Thread):
-    input_start_template = '<div class="form-group">' \
+    input_start_template = '<div class="form-group form-group-sm"">' \
                      '<label>{0}</label>'
-    basic_input_template = '<input type="{1}" class="form-control" id="{0}" value="{2}"></input>' \
+    basic_input_template = '<input type="{1}" class="form-control input-sm" id="{0}" value="{2}"></input>' \
                      '</div>'
-    textarea_template = '<textarea type="{1}" class="form-control" id="{0}" value="{2}"></textarea>' \
+    textarea_template = '<textarea type="{1}" class="form-control input-sm" id="{0}" value="{2}"></textarea>' \
                  '</div>'
-    select_base_template = '<select class="form-control" id="{0}">'
+    select_base_template = '<select class="form-control input-sm" id="{0}">'
     select_option_template = '<option value="{0}">{0}</option>'
     select_option_selected_template = '<option value="{0}" selected>{0}</option>'
 
