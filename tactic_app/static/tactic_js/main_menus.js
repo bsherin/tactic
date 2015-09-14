@@ -154,6 +154,15 @@ function build_and_render_menu_objects() {
     menus[tile_menu.menu_name] = tile_menu;
     tile_menu.options = tile_types;
     tile_menu.add_options_to_index();
+
+    // Create the project_menu object
+    user_tile_menu = Object.create(menu_object);
+    user_tile_menu.menu_name = "User Tile";
+    user_tile_menu.perform_menu_item = tile_command;
+    menus[user_tile_menu.menu_name] = user_tile_menu;
+    user_tile_menu.options = user_tile_types;
+    user_tile_menu.add_options_to_index();
+
     render_menus()
     function render_menus() {
         for (var m in menus) {
@@ -180,7 +189,7 @@ function column_command(menu_id) {
             case "shift-left":
             {
                 deselect_header(the_id)
-                var parent_struct = tableObject.header_struct.find_parent_of_id(the_id);
+                var parent_struct = tableObject.current_spec.header_struct.find_parent_of_id(the_id);
                 parent_struct.shift_child_left(the_id);
                 tableObject.build_table();
                 break;
@@ -188,7 +197,7 @@ function column_command(menu_id) {
             case "shift-right":
             {
                 deselect_header(the_id)
-                var parent_struct = tableObject.header_struct.find_parent_of_id(the_id);
+                var parent_struct = tableObject.current_spec.header_struct.find_parent_of_id(the_id);
                 parent_struct.shift_child_right(the_id);
                 tableObject.build_table();
                 break;
@@ -198,14 +207,14 @@ function column_command(menu_id) {
                 deselect_header(the_id);
                 col_class = ".header" + the_id;
                 $(col_class).fadeOut();
-                tableObject.hidden_list.push(the_id);
+                tableObject.current_spec.hidden_list.push(the_id);
                 resize_from_sub_headers($("#" + the_id).data("super_headers"))
                 break;
             }
         }
     }
     else if (menu_id == "unhide") {
-        tableObject.hidden_list = [];
+        tableObject.current_spec.hidden_list = [];
         tableObject.build_table();
     }
     else if (menu_id == "add-column") {
@@ -243,12 +252,8 @@ function enable_require_column_select(){
 
 function save_project() {
     var result_dict = {
-        //"project_name": _project_name,
-        //"data_collection_name": _collection_name,
-        "main_id": main_id,
-        "hidden_list": tableObject.hidden_list,
-        "header_struct": tableObject.header_struct,
-        "next_header_id": tableObject.next_header_id
+        "main_id": main_id
+        //"tablespec_dict": tablespec_dict
     };
     $.ajax({
         url: $SCRIPT_ROOT + "/update_project",
@@ -265,11 +270,8 @@ function save_project_as() {
     _project_name = $("#project-name-modal-field").val();
     var result_dict = {
         "project_name": _project_name,
-        //"data_collection_name": _collection_name,
-        "main_id": main_id,
-        "hidden_list": tableObject.hidden_list,
-        "header_struct": tableObject.header_struct,
-        "next_header_id": tableObject.next_header_id
+        "main_id": main_id
+        //"tablespec_dict": tablespec_dict
     };
     $.ajax({
         url: $SCRIPT_ROOT + "/save_new_project",
@@ -293,8 +295,7 @@ function create_column() {
     new_header_object.id = tableObject.next_header_id;
     tableObject.next_header_id += 1;
     new_header_object.child_list = [];
-    new_header_object.hidden = false;
-    tableObject.header_struct.child_list.push(new_header_object)
+    tableObject.current_spec.header_struct.child_list.push(new_header_object)
     // Then rebuild the table
     tableObject.build_table()
 
@@ -315,7 +316,9 @@ function create_column() {
 function save_as_success(data_object) {
     menus["Project"].enable_menu_item("save");
     tableObject.project_name = data_object["project_name"]
-    tableObject.set_table_title()
+    //tableObject.set_table_title()
+    $("#project-name").html(tableObject.project_name)
+    data_object.alert_type = "alert-success"
     doFlash(data_object)
 }
 

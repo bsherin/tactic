@@ -7,13 +7,18 @@ from tactic_app.users import User
 from flask.ext.wtf import Form
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import Required, Length, Regexp, EqualTo
-from tactic_app import app, socketio
+from tactic_app import app, socketio, csrf
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     print "entering login view"
-    return render_template('auth/login.html')
+    return render_template('auth/login.html', after_register="no", message="", alert_type="")
+
+@app.route('/login_after_register', methods=['GET', 'POST'])
+def login_after_register():
+    print "entering login view"
+    return render_template('auth/login.html', show_message="yes", message="You can now log in.", alert_type="alert-success")
 
 @app.route('/attempt_login', methods=['GET', 'POST'])
 def attempt_login():
@@ -21,10 +26,10 @@ def attempt_login():
     result_dict = {}
     user = User.get_user_by_username(data["username"])
     if user is not None and user.verify_password(data["password"]):
-        login_user(user)
-        result_dict["logged_in"] = "yes"
+        login_user(user, remember=data["remember_me"])
+        result_dict["logged_in"] = True
     else:
-        result_dict["logged_in"] = "no"
+        result_dict["logged_in"] = False
     return jsonify(result_dict)
 
 @app.route('/logout')
@@ -33,17 +38,21 @@ def logout():
     socketio.emit('close-user-windows', {}, namespace='/user_manage', room=current_user.get_id())
     socketio.emit('close-user-windows', {}, namespace='/main', room=current_user.get_id())
     logout_user()
-    return render_template('auth/login.html')
+    return render_template('auth/login.html', show_message="yes", message="You have been logged out.", alert_type="alert-info")
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    form = RegistrationForm()
-    if form.validate_on_submit():
-        new_user = User.create_new({"username": form.username.data,
-                    "password": form.password.data})
-        flash('You can now log in.')
-        return redirect(url_for('login'))
-    return render_template('auth/register.html', form=form)
+    return render_template('auth/register.html')
+
+@app.route('/attempt_register',methods=['GET', 'POST'])
+def attempt_register():
+    data = request.json
+    result_dict = User.create_new({"username": data["username"], "password": data["password"]})
+    return jsonify(result_dict)
+
+@csrf.error_handler
+def csrf_error(reason):
+    return login('auth/login.html', show_message="yes", message=reason), 400
 
 class LoginForm(Form):
     username = StringField('Username', validators=[Required(), Length(1, 64)])
@@ -62,3 +71,4 @@ class RegistrationForm(Form):
     def validate_username(self, field):
         if User.get_user_by_username(field.data):
             raise ValidationError('Username already in use.')
+

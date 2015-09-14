@@ -4,10 +4,14 @@ import re
 import csv
 import os
 import xmltodict
+from xml.parsers.expat import ExpatError
 
 def read_xml_file_to_dict_list(the_file):
     raw_xml = the_file.read()
-    parsed_xml = xmltodict.parse(raw_xml)
+    try:
+        parsed_xml = xmltodict.parse(raw_xml)
+    except ExpatError as e:
+        return (None, e)
 
     # Assume we are getting a dict of the form:
     # {"collection_name": {"some_tag": [list of dicts]}
@@ -42,11 +46,14 @@ def load_a_list(the_file):
 def read_csv_file_to_dict_list(csvfile):
     dialect = csv.Sniffer().sniff(csvfile.read(1024))
     csvfile.seek(0)
-    reader = csv.DictReader(csvfile, dialect=dialect)
-    filename, file_extension = os.path.splitext(csvfile.filename)
-    new_list_of_dicts = []
-    for row in reader:
-        new_list_of_dicts.append(row)
+    try:
+        reader = csv.DictReader(csvfile, dialect=dialect)
+        filename, file_extension = os.path.splitext(csvfile.filename)
+        new_list_of_dicts = []
+        for row in reader:
+            new_list_of_dicts.append(row)
+    except csv.Error as e:
+        return (None, e)
     return (filename, new_list_of_dicts)
 
 def convert_lists_to_dicts(a_dict):

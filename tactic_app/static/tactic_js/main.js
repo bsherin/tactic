@@ -1,28 +1,45 @@
 var socket;
 
 function start_post_load() {
+    //spinner = new Spinner({scale: 1.0}).spin();
+    //$("#loading-message").html(spinner.el);
+    $("#outer-container").css({"margin-left": String(MARGIN_SIZE) + "px"});
+    $("#outer-container").css({"margin-right": String(MARGIN_SIZE) + "px"});
+    $("#outer-container").css({"margin-top": "0px", "margin-bottom": "0px"});
     $.getJSON($SCRIPT_ROOT + "/get_additional_params", function (data) {
         tile_types = data.tile_types;
+        user_tile_types = data.user_tile_types;
         build_and_render_menu_objects();
     });
-    if (_project_name == "") {
-        $.getJSON($SCRIPT_ROOT + "/grab_data/" + String(main_id), function (data) {
-            $("#outer-container").css("display", "block");
-            tableObject.load_data(data)
-            $("#outer-container").css("display", "block")
-        })
+    if (_project_name != "") {
+        $.getJSON($SCRIPT_ROOT + "/grab_project_data/" + String(main_id) + "/" + String(doc_names[0]), function(data) {
+                $("#loading-message").css("display", "none");
+                $("#reload-message").css("display", "none");
+                $("#outer-container").css("display", "block");
+                $("#table-area").css("display", "block");
+                tablespec_dict = data.tablespec_dict;
+                tableObject.initialize_table(data);
+                var tile_ids = data.tile_ids;
+                for (var i = 0; i < tile_ids.length; ++i) {
+                    create_tile_from_save(tile_ids[i])
+                }
+                menus["Project"].enable_menu_item("save");
+                set_visible_doc(doc_names[0])
+            })
     }
     else {
-        $.getJSON($SCRIPT_ROOT + "/grab_project_data/" + String(main_id), function(data) {
+        $.getJSON($SCRIPT_ROOT + "/grab_data/" + String(main_id) + "/" + String(doc_names[0]), function (data) {
+            $("#loading-message").css("display", "none");
+            $("#reload-message").css("display", "none");
             $("#outer-container").css("display", "block");
-            tableObject.load_data(data);
-            var tile_ids = data.tile_ids;
-            for (var i = 0; i < tile_ids.length; ++i) {
-                create_tile_from_save(tile_ids[i])
-            }
-            menus["Project"].enable_menu_item("save");
+            $("#table-area").css("display", "block");
+            tablespec_dict = {};
+            tableObject.initialize_table(data)
+            set_visible_doc(doc_names[0])
         })
     }
+
+
     $("#tile-div").sortable({
         handle: '.panel-heading',
         tolerance: 'pointer',
@@ -43,8 +60,28 @@ function start_post_load() {
     })
 }
 
+function set_visible_doc(doc_name) {
+    $.getJSON($SCRIPT_ROOT + "/set_visible_doc/" + String(main_id) + "/" + String(doc_name))
+}
+
+function change_doc(el) {
+    $("#table-area").css("display", "none");
+    $("#reload-message").css("display", "block");
+    doc_name = $(el).val()
+    $.getJSON($SCRIPT_ROOT + "/grab_data/" + String(main_id) + "/" + String(doc_name), function (data) {
+            $("#loading-message").css("display", "none");
+            $("#reload-message").css("display", "none");
+            $("#outer-container").css("display", "block");
+            $("#table-area").css("display", "block");
+            tableObject.initialize_table(data)
+            set_visible_doc(doc_name)
+        })
+}
+
 function broadcast_event_to_server(event_name, data_dict) {
-    data_dict["main_id"] = main_id;
+    data_dict.main_id = main_id;
+    data_dict.doc_name = tableObject.current_spec.doc_name;
+    data_dict.active_row_index = tableObject.active_row;
     $.ajax({
         url: $SCRIPT_ROOT + "/distribute_events/" + event_name,
         contentType : 'application/json',

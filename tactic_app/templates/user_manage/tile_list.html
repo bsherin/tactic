@@ -1,0 +1,5 @@
+{% for tile_name in current_user.tile_names %}
+    <label class="btn btn-default" display="block">
+        <input type="radio"  value="{{ tile_name }}"/> {{ tile_name }}
+    </label>
+{% endfor %}

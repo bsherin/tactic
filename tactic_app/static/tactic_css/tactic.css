@@ -1,6 +1,7 @@
 
-.button-group {
-    display: inline-block;
+.user-button-group {
+    height: 200px;
+    overflow: scroll;
 }
 
 .highlight {
@@ -99,6 +100,6 @@ button.notclose {
     padding: 0px;
 }
 
-.tile-panel, .front, .back{
+.tile-panel, .front,““‘ .back{
     border: 1px solid #BCE8F1;
 }

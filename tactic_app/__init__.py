@@ -16,7 +16,6 @@ from flask_wtf.csrf import CsrfProtect
 
 csrf = CsrfProtect()
 
-
 try:
     print "getting client"
     # client = MongoClient("localhost", serverSelectionTimeoutMS=10)
@@ -45,6 +44,6 @@ try:
     csrf.init_app(app)
 
 
-except pymongo.errors.ServerSelectionTimeoutError as err:
-    print("There's a problem with the mongo server. Probably it's not running. ", err)
+except pymongo.errors.PyMongoError as err:
+    print("There's a problem with the PyMongo database. ", err)
     sys.exit()

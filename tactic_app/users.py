@@ -51,11 +51,17 @@ class User(UserMixin):
     @staticmethod
     def create_new(user_dict):
         username = user_dict["username"]
+        if len(username) < 4:
+            return {"success": False, "message": "Usernames must be at least 4 characters.", "username": username}
         password = user_dict["password"]
+        if len(password) < 4:
+            return {"success": False, "message": "Passwords must be at least 4 characters.", "username": username}
+        if db.user_collection.find_one({"username": username}) is not None:
+            return {"success": False, "message": "That username is taken.", "username": username}
         password_hash = generate_password_hash(password)
-        new_user_dict = {"username": username, "password_hash": password_hash, "data_collections": [], "projects": []}
+        new_user_dict = {"username": username, "password_hash": password_hash}
         db.user_collection.insert_one(new_user_dict)
-        return User.get_user_by_username(username)
+        return {"success": True, "message": "", "username": username}
 
     # get_id is required by login_manager
     def get_id(self):
@@ -75,6 +81,10 @@ class User(UserMixin):
     @property
     def list_collection_name(self):
         return '{}.lists'.format(self.username)
+
+    @property
+    def tile_collection_name(self):
+        return '{}.tiles'.format(self.username)
 
     @property
     def my_record(self):
@@ -114,6 +124,20 @@ class User(UserMixin):
             my_list_names.append(doc["list_name"])
         return my_list_names
 
+    @property
+    def tile_names(self):
+        if self.tile_collection_name not in db.collection_names():
+            db.create_collection(self.tile_collection_name)
+            return []
+        my_tile_names = []
+        for doc in db[self.tile_collection_name].find():
+            my_tile_names.append(doc["tile_name"])
+        return my_tile_names
+
     def get_list(self, list_name):
         list_dict = db[self.list_collection_name].find_one({"list_name": list_name})
         return list_dict["the_list"]
+
+    def get_tile(self, tile_name):
+        tile_dict = db[self.tile_collection_name].find_one({"tile_name": tile_name})
+        return tile_dict["the_tile"]

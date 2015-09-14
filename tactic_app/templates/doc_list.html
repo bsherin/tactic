@@ -1,0 +1,10 @@
+<form class="form-inline">
+  <div class="form-group">
+    <label for="doc-selector">{{short_collection_name}}</label>
+    <select id="doc-selector" class="form-control">
+        {% for dname in doc_names %}
+            <option>{{ dname }}</option>
+        {% endfor %}
+    </select>
+    </div>
+</form>

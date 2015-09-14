@@ -3,8 +3,9 @@ from tactic_app import app, db, socketio
 from flask import request, jsonify, render_template, send_file, url_for
 from flask_login import current_user
 from flask_socketio import join_room
-from tactic_app.shared_dicts import tile_classes
+from tactic_app.shared_dicts import tile_classes, user_tiles
 from tactic_app.shared_dicts import mainwindow_instances
+from tactic_app.main import distribute_event
 from user_manage_views import render_project_list
 
 # The main window should join a room associated with the user
@@ -50,25 +51,24 @@ def update_project():
 # Views for reading data from the database and
 # passing back to the client.
 
-@app.route('/grab_data/<main_id>', methods=['get'])
-def grab_data(main_id):
-    return jsonify(mainwindow_instances[main_id].data_dict)
+@app.route('/grab_data/<main_id>/<doc_name>', methods=['get'])
+def grab_data(main_id, doc_name):
+    return jsonify({"doc_name": doc_name, "data_rows": mainwindow_instances[main_id].doc_dict[doc_name].data_rows})
 
-@app.route('/grab_project_data/<main_id>', methods=['get'])
-def grab_project_data(main_id):
-    result = mainwindow_instances[main_id].data_dict
-    result["header_struct"] = mainwindow_instances[main_id].header_struct
-    result["hidden_list"] = mainwindow_instances[main_id].hidden_list
-    result["tile_ids"] = mainwindow_instances[main_id].tile_instances.keys()
-    result["next_header_id"] = mainwindow_instances[main_id].next_header_id
-    result["column_widths"] = mainwindow_instances[main_id].column_widths
-    result["table_width"] = mainwindow_instances[main_id].table_width
-    return jsonify(result)
+@app.route('/grab_project_data/<main_id>/<doc_name>', methods=['get'])
+def grab_project_data(main_id, doc_name):
+    mw = mainwindow_instances[main_id]
+    return jsonify({"doc_name": doc_name, "tile_ids": mw.tile_ids, "data_rows": mw.doc_dict[doc_name].data_rows, "tablespec_dict": mw.tablespec_dict()})
 
 @app.route('/get_additional_params', methods=['GET'])
 def get_additional_params():
-    result = {"tile_types": tile_classes.keys()};
+    result = {"tile_types": tile_classes.keys(), "user_tile_types": user_tiles[current_user.username].keys()};
     return jsonify(result)
+
+@app.route('/set_visible_doc/<main_id>/<doc_name>', methods=['get'])
+def set_visible_doc(main_id, doc_name):
+    mainwindow_instances[main_id].visible_doc_name = doc_name
+    return jsonify({"success": True})
 
 @app.route('/distribute_events/<event_name>', methods=['get', 'post'])
 def distribute_events_stub(event_name):
@@ -80,19 +80,6 @@ def distribute_events_stub(event_name):
         tile_id = None
     distribute_event(event_name, main_id, data_dict, tile_id)
     return jsonify({"success": True})
-
-def distribute_event(event_name, main_id, data_dict=None, tile_id=None):
-    mwindow = mainwindow_instances[main_id]
-    if tile_id is not None:
-        tile_instance = mwindow.tile_instances[tile_id]
-        if event_name in tile_instance.update_events:
-            tile_instance.post_event(event_name, data_dict)
-    else:
-        for tile_id, tile_instance in mwindow.tile_instances.items():
-            if event_name in tile_instance.update_events:
-                tile_instance.post_event(event_name, data_dict)
-    if event_name in mwindow.update_events:
-        mwindow.post_event(event_name, data_dict)
 
 @app.route('/figure_source/<main_id>/<tile_id>/<figure_name>', methods=['GET','POST'])
 def figure_source(main_id, tile_id, figure_name):
@@ -116,7 +103,7 @@ def create_tile_request(tile_type):
 def create_tile_from_save_request(tile_id):
     main_id = request.json["main_id"]
     tile_instance = mainwindow_instances[main_id].tile_instances[tile_id]
-    tile_instance.base_figure_url = url_for(figure_source)
+    tile_instance.figure_url = url_for("figure_source", main_id=main_id, tile_id=tile_id, figure_name="X")[:-1]
     form_html = tile_instance.create_form_html()
     result = render_template("tile.html", tile_id=tile_id,
                            tile_name=tile_instance.tile_name,

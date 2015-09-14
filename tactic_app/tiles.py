@@ -14,15 +14,26 @@ from matplotlib_utilities import GraphList, convert_figure_to_img
 from tactic_app import socketio, app
 from shared_dicts import mainwindow_instances
 from vector_space import Vocabulary
-from shared_dicts import tile_classes, tokenizer_dict
+from shared_dicts import tile_classes, user_tiles, tokenizer_dict
 from users import load_user
-from views.main_views import distribute_event, figure_source
-
+# from views.main_views import figure_source
+from tactic_app.main import distribute_event
 
 # Decorator function used to register runnable analyses in analysis_dict
 def tile_class(tclass):
     tile_classes[tclass.__name__] = tclass
     return tclass
+
+def user_tile(tclass):
+    uname = current_user.username
+    if not (uname in user_tiles):
+        user_tiles[uname] = {}
+    user_tiles[uname][tclass.__name__] = tclass
+    return tclass
+
+def create_user_tile(tile_code):
+    exec(tile_code)
+    return
 
 class TileTemplate(threading.Thread):
     options=[{
@@ -113,6 +124,17 @@ class TileBase(threading.Thread):
     def options(self):
         return []
 
+    def load_data_dict(self, column_signature):
+        return mainwindow_instances[self.main_id].get_column_data(column_signature)
+
+    def dict_to_list(self, the_dict):
+        result = []
+        for it in the_dict.values():
+            result += it
+        return result
+
+    def load_raw_column(self, column_signature):
+        return self.dict_to_list(self.load_data_dict(column_signature))
 
     def handle_event(self, event_name, data=None):
         if event_name == "RefreshTile":
@@ -190,7 +212,8 @@ class TileBase(threading.Thread):
             if option["type"] == "column_select":
                 the_template = self.input_start_template + self.select_base_template
                 form_html += the_template.format(option["name"])
-                for choice in mainwindow_instances[self.main_id].ordered_sig_dict.keys():
+                current_doc = mainwindow_instances[self.main_id].doc_dict[mainwindow_instances[self.main_id].visible_doc_name]
+                for choice in current_doc.ordered_sig_dict.keys():
                     if choice == option["placeholder"]:
                         form_html += self.select_option_selected_template.format(choice)
                     else:
@@ -224,33 +247,33 @@ class TileBase(threading.Thread):
                 print "Unknown option type specified"
         return form_html
 
-@tile_class
-class SimpleSelectionTile(TileBase):
-    def __init__(self, main_id, tile_id, tile_name=None):
-        TileBase.__init__(self, main_id, tile_id, tile_name)
-        self.update_events.append("text_select")
-        self.extra_text = "placeholder text"
-        self.selected_text = "no selection"
-        self.tile_type = self.__class__.__name__
-
-    def handle_event(self, event_name, data=None):
-        if event_name == "text_select":
-            self.selected_text = data["selected_text"]
-            self.push_direct_update()
-        TileBase.handle_event(self, event_name, data)
-
-    def render_content(self):
-        return "{} {}".format(self.extra_text, self.selected_text)
-
-    def update_options(self, form_data):
-        self.extra_text = form_data["extra_text"]
-        self.spin_and_refresh()
-
-    @property
-    def options(self):
-        return  [
-            {"name": "extra_text", "type": "text", "placeholder": "no selection"}
-        ]
+# @tile_class
+# class SimpleSelectionTile(TileBase):
+#     def __init__(self, main_id, tile_id, tile_name=None):
+#         TileBase.__init__(self, main_id, tile_id, tile_name)
+#         self.update_events.append("text_select")
+#         self.extra_text = "placeholder text"
+#         self.selected_text = "no selection"
+#         self.tile_type = self.__class__.__name__
+#
+#     def handle_event(self, event_name, data=None):
+#         if event_name == "text_select":
+#             self.selected_text = data["selected_text"]
+#             self.push_direct_update()
+#         TileBase.handle_event(self, event_name, data)
+#
+#     def render_content(self):
+#         return "{} {}".format(self.extra_text, self.selected_text)
+#
+#     def update_options(self, form_data):
+#         self.extra_text = form_data["extra_text"]
+#         self.spin_and_refresh()
+#
+#     @property
+#     def options(self):
+#         return  [
+#             {"name": "extra_text", "type": "text", "placeholder": "no selection"}
+#         ]
 
 @tile_class
 class SimpleCoder(TileBase):
@@ -263,7 +286,10 @@ class SimpleCoder(TileBase):
 
     def handle_event(self, event_name, data=None):
         if event_name == "TileButtonClick":
-            distribute_event("SetFocusRowCellContent", self.main_id, {"signature": self.destination_column, "new_content": data["button_value"]})
+            active_row_index = data["active_row_index"]
+            doc_name = data["doc_name"]
+            distribute_event("SetCellContent", self.main_id,
+                             {"row_index": active_row_index, "doc_name": doc_name, "signature": self.destination_column, "new_content": data["button_value"]})
         else:
             TileBase.handle_event(self, event_name, data)
 
@@ -406,8 +432,7 @@ class VocabularyDisplayTile(TileBase):
         the_html = self.build_html_table_from_data_list(self.vdata_table)
         return the_html
 
-    def load_raw_column(self, column_signature):
-        return mainwindow_instances[self.main_id].get_column_data(column_signature)
+
 
     def update_options(self, form_data):
         self.column_source = form_data["column_source"];
@@ -470,43 +495,54 @@ class NaiveBayesTile(TileBase):
                 tokenized_rows.append(tokenizer_dict[the_tokenizer](raw_row))
         return tokenized_rows
 
+    def tokenize_docs(self, text_dict, tokenizer):
+        result = {}
+        for (name, doc) in text_dict.items():
+            result[name] = self.tokenize_rows(doc, tokenizer)
+        return result
 
     def render_content(self):
         if self.text_source is "":
             return "No text source selected."
-        raw_text_rows = self.load_raw_column(self.text_source)
-        tokenized_rows = self.tokenize_rows(raw_text_rows, self.tokenizer_func)
-        code_rows = self.load_raw_column(self.code_source)
-        self._vocab = Vocabulary(tokenized_rows, self.stop_list)
+        raw_text_dict = self.load_data_dict(self.text_source)
+        tokenized_rows_dict = self.tokenize_docs(raw_text_dict, self.tokenizer_func)
+        combined_text_rows = self.dict_to_list(tokenized_rows_dict)
+        code_rows_dict = self.load_data_dict(self.code_source)
+        combined_code_rows = self.dict_to_list(code_rows_dict)
+        self._vocab = Vocabulary(combined_text_rows, self.stop_list)
 
         reduced_vocab = self._vocab._sorted_list_vocab[:50]
-        labeled_featuresets = []
-        r = 0
-        for instance in tokenized_rows:
-            new_fs = {}
-            if not (code_rows[r] == ""):
-                for w in reduced_vocab:
-                    new_fs[w] = w in instance
-                labeled_featuresets.append((new_fs, code_rows[r]))
-            r += 1
-        self._classifier = nltk.NaiveBayesClassifier.train(labeled_featuresets)
-        accuracy = nltk.classify.accuracy(self._classifier, labeled_featuresets)
-        r = 0
-        autocodes = []
-        for lfset in labeled_featuresets:
-            autocode = self._classifier.classify(lfset[0])
-            autocodes.append(autocode)
-            distribute_event("SetCellContent", self.main_id, {"row_index":r, "signature": self.code_dest, "new_content": str(autocode)})
-            r += 1
-        cm = nltk.ConfusionMatrix(code_rows, autocodes)
+        labeled_featuresets_dict = {}
+        for (dname, doc) in tokenized_rows_dict.items():
+            r = 0
+            labeled_featuresets_dict[dname] = []
+            for instance in doc:
+                new_fs = {}
+                if not (code_rows_dict[dname][r] == ""):
+                    for w in reduced_vocab:
+                        new_fs[w] = w in instance
+                    labeled_featuresets_dict[dname].append((new_fs, code_rows_dict[dname][r]))
+                r += 1
+        combined_featuresets = self.dict_to_list(labeled_featuresets_dict)
+        self._classifier = nltk.NaiveBayesClassifier.train(combined_featuresets)
+        accuracy = nltk.classify.accuracy(self._classifier, combined_featuresets)
+
+        autocodes_dict = {}
+        for (dname, doc) in labeled_featuresets_dict.items():
+            r = 0
+            autocodes_dict[dname] = []
+            for lfset in doc:
+                autocode = self._classifier.classify(lfset[0])
+                autocodes_dict[dname].append(autocode)
+                distribute_event("SetCellContent", self.main_id, {"doc_name": dname, "row_index":r, "signature": self.code_dest, "new_content": str(autocode)})
+                r += 1
+        cm = nltk.ConfusionMatrix(self.dict_to_list(code_rows_dict),
+                                  self.dict_to_list(autocodes_dict))
 
         html_output = "accuracy is " + str(round(accuracy, 2))
         html_output += '<pre>'+ cm.pretty_format() + '</pre>'
 
         return html_output
-
-    def load_raw_column(self, column_signature):
-        return mainwindow_instances[self.main_id].get_column_data(column_signature)
 
     def update_options(self, form_data):
         self.text_source = form_data["text_source"];

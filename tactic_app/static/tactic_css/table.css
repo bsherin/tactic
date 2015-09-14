@@ -31,6 +31,12 @@
     /*table-layout: fixed;*/
 }
 
+#doc-selector {
+    font-size: 12px;
+    height: 25px;
+    padding: 0;
+}
+
 #table-area, #table-area th, #table-area td {
     border: 1px solid #9d9d9d;
     border-collapse: separate;
@@ -42,7 +48,7 @@
 }
 
 #table-area thead {
-    /*background-color: #c9e2b3;*/
+    background-color: #c9e2b3;
     display: block;
 }
 
@@ -118,9 +124,9 @@ th {
 
 .selected-row {
     /*outline: black solid thick;*/
-    /*background: #dddddd;*/
-    border-color:#9ecaed;
-    box-shadow:0 0 15px #9ecaed;
+    background: #dddddd;
+    /*border-color:#9ecaed;*/
+    /*box-shadow:0 0 15px #9ecaed;*/
 }
 
 .table-add {

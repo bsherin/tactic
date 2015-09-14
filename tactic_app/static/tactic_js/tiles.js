@@ -150,6 +150,8 @@ function do_resize(tile_id){
     resize_tile_area(null, ui);
 }
 
+//spinner_html = '<span class="loader-small"><span class="loader-inner-small"></span></span>'
+spinner_html = '<span class="loader-small"></span>'
 
 var tile_object = {
     tile_id: null,
@@ -185,13 +187,15 @@ var tile_object = {
         this.showFront()
     },
     startSpinner: function() {
-        this.spinner = new Spinner({scale: 0.4, left:"15px"}).spin();
-        $(this.full_selector() + " #spin-place").html(this.spinner.el);
+        //this.spinner = new Spinner({scale: 0.4, left:"15px"}).spin();
+        //$(this.full_selector() + " #spin-place").html(this.spinner.el);
+        $(this.full_selector() + " #spin-place").html(spinner_html);
     },
 
     stopSpinner: function () {
-        this.spinner.stop();
-        this.spinner = null
+        //this.spinner.stop();
+        //this.spinner = null
+        $(this.full_selector() + " #spin-place").html("");
     },
 
     closeMe: function(){
