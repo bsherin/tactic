@@ -7,48 +7,26 @@ from tactic_app import db
 from flask_login import current_user
 import copy
 import pymongo
+import sys
 
 from collections import OrderedDict
-from shared_dicts import mainwindow_instances
+from shared_dicts import mainwindow_instances, distribute_event
 from shared_dicts import tile_classes, user_tiles
+from tiles import TileBase
 from tactic_app import socketio
 current_main_id = 0
 
-def distribute_event(event_name, main_id, data_dict=None, tile_id=None):
-    mwindow = mainwindow_instances[main_id]
-    if tile_id is not None:
-        tile_instance = mwindow.tile_instances[tile_id]
-        if event_name in tile_instance.update_events:
-            tile_instance.post_event(event_name, data_dict)
-    else:
-        for tile_id, tile_instance in mwindow.tile_instances.items():
-            if event_name in tile_instance.update_events:
-                tile_instance.post_event(event_name, data_dict)
-    if event_name in mwindow.update_events:
-        mwindow.post_event(event_name, data_dict)
-
 def create_new_mainwindow(user_id, collection_name):
     mw = mainWindow(user_id, collection_name)
-    mainwindow_instances[mw.main_id] = mw
+    mainwindow_instances[mw._main_id] = mw
     mw.start()
-    return mw.main_id
+    return mw._main_id
 
 def create_new_mainwindow_from_project(project_dict):
-    doc_dict = {}
-    for (handle, doc_instance) in project_dict["doc_info_instances"].items():
-        doc_dict[handle] = docInfo(doc_instance["name"], doc_instance["data_rows"])
-        doc_dict[handle].table_spec = doc_instance["table_spec"]
-    mw = mainWindow(project_dict["user_id"], project_dict["collection_name"], doc_dict)
-    for (key, val) in project_dict.items():
-        if not((key == "tile_instances") or (key == "doc_info_instances")):
-            mw.__dict__[key] = val
-    tile_dict = project_dict["tile_instances"]
-    for (handle, tile_instance) in tile_dict.items():
-        mw.create_tile_from_save(tile_instance, handle)
-    # mw.doc_dict = doc_dict
-    mainwindow_instances[mw.main_id] = mw
+    mw = mainWindow.recreate_from_save(project_dict)
+    mainwindow_instances[mw._main_id] = mw
     mw.start()
-    return mw.main_id
+    return mw._main_id
 
 class docInfo():
     def __init__(self, name, data_rows):
@@ -104,31 +82,83 @@ class docInfo():
         return result
 
     def compile_save_dict(self):
-        return ({"name": self.name, "data_rows": self.data_rows, "table_spec": self.table_spec})
+        return ({"name": self.name, "data_rows": self.data_rows, "table_spec": self.table_spec, "my_class_for_recreate": "docInfo"})
+
+    @staticmethod
+    def recreate_from_save(save_dict):
+        new_instance = docInfo(save_dict["name"], save_dict["data_rows"])
+        new_instance.table_spec = save_dict["table_spec"]
+        return new_instance
 
 class mainWindow(threading.Thread):
+    save_attrs = ["short_collection_name", "collection_name", "current_tile_id", "user_id", "doc_dict", "tile_instances", "project_name", "loaded_modules"]
+    update_events = ["CellChange", "CreateColumn", "SearchTable", "SaveTableSpec",
+                    "DehighlightTable", "SetFocusRowCellContent", "SetCellContent", "RemoveTile"]
     def __init__(self, user_id, collection_name, doc_dict=None):
         global current_main_id
         self._stopevent = threading.Event()
         self._sleepperiod = .1
         threading.Thread.__init__(self)
         self._my_q = Queue.Queue(0)
-        self.update_events = ["CellChange", "CreateColumn", "SearchTable", "SaveTableSpec",
-                              "DehighlightTable", "SetFocusRowCellContent", "SetCellContent", "RemoveTile"]
+
+        # These are the main attributes that define a project state
         self.tile_instances = {}
-        self.current_tile_id = 0
         self.collection_name = collection_name
-        self.short_collection_name = re.sub("^.*?\.data_collection\.", "", collection_name) # This isn't used yet.
-        self.main_id = str(current_main_id)
+        self.short_collection_name = re.sub("^.*?\.data_collection\.", "", collection_name)
         self.user_id = user_id
+        self.project_name = None
         if doc_dict is None:
             self.doc_dict = self._build_doc_dict()
         else:
             self.doc_dict = doc_dict
+
+        # These are working attributes that will change whenever the project is instantiated.
+        self.current_tile_id = 0
+        self._main_id = str(current_main_id)
         current_main_id += 1
-        self.change_list = []
-        self.visible_doc_name = None
+        self._change_list = []
+        self._visible_doc_name = None
+
         # self.cells_with_highlights = []
+
+    def compile_save_dict(self):
+        result = {}
+        for attr in self.save_attrs:
+            attr_val = getattr(self, attr)
+            if hasattr(attr_val, "compile_save_dict"):
+                result[attr] = attr_val.compile_save_dict()
+            elif ((type(attr_val) == dict) and (len(attr_val) > 0) and hasattr(attr_val.values()[0], "compile_save_dict")):
+                res = {}
+                for (key, val) in attr_val.items():
+                    res[key] = val.compile_save_dict()
+                result[attr] = res
+            else:
+                result[attr] = attr_val
+        return result
+
+    @staticmethod
+    def recreate_from_save(save_dict):
+        new_instance = mainWindow(save_dict["user_id"], save_dict["collection_name"])
+        for (attr, attr_val) in save_dict.items():
+            if type(attr_val) == dict and ("my_class_for_recreate" in attr_val):
+                cls  = getattr(sys.modules[__name__], attr_val["my_class_for_recreate"])
+                setattr(new_instance, attr, cls.recreate_from_save(attr_val))
+            elif ((type(attr_val) == dict) and (len(attr_val) > 0) and ("my_class_for_recreate" in attr_val.values()[0])):
+                cls_name =  attr_val.values()[0]["my_class_for_recreate"]
+                cls  = getattr(sys.modules[__name__], attr_val.values()[0]["my_class_for_recreate"])
+                res = {}
+                for (key, val) in attr_val.items():
+                    res[key] = cls.recreate_from_save(val)
+                setattr(new_instance, attr, res)
+            else:
+                setattr(new_instance, attr, attr_val)
+
+        # I need one patch here. Each tile needs to know the main_id of the mainwindow it's
+        # embedded in.
+        for tile in new_instance.tile_instances.values():
+            tile.main_id = new_instance._main_id
+            tile.start()
+        return new_instance
 
     @property
     def doc_names(self):
@@ -140,7 +170,6 @@ class mainWindow(threading.Thread):
             if docinfo.table_spec: # This will be false if table_spec == {}
                 tdict[key] = docinfo.table_spec
         return tdict
-
 
     @property
     def tile_ids(self):
@@ -165,38 +194,21 @@ class mainWindow(threading.Thread):
     def create_tile_instance_in_mainwindow(self, tile_type, tile_name = None):
         new_id = "tile_id_" + str(self.current_tile_id)
         # The user version of a tile should take precedence if both exist
-        if tile_type in user_tiles[current_user.username]:
-            new_tile = user_tiles[current_user.username][tile_type](self.main_id, new_id, tile_name)
+        if (current_user.username in user_tiles) and (tile_type in user_tiles[current_user.username]):
+            new_tile = user_tiles[current_user.username][tile_type](self._main_id, new_id, tile_name)
         else:
-            new_tile = tile_classes[tile_type](self.main_id, new_id, tile_name)
+            new_tile = tile_classes[tile_type](self._main_id, new_id, tile_name)
         self.tile_instances[new_id] = new_tile
         new_tile.start()
         self.current_tile_id += 1
         return new_tile
 
     def create_tile_from_save(self, tile_save, id):
-        new_tile = tile_classes[tile_save["tile_type"]](self.main_id, id)
+        new_tile = tile_classes[tile_save["tile_type"]](self._main_id, id)
         for (key, val) in tile_save.items():
             new_tile.__dict__[key] = val
         self.tile_instances[id] = new_tile
         new_tile.start()
-
-    def compile_save_dict(self):
-        result = {}
-        for (attr, val) in self.__dict__.items():
-            if not ((attr.startswith("_")) or (attr == "tile_instances")
-                    or (attr == "doc_dict") or (str(type(val)) == "<type 'instance'>")):
-                result[attr] = val
-        tile_instance_saves = {}
-        for (tile_handle, tile_instance) in self.tile_instances.items():
-            tile_instance_saves[tile_handle] = tile_instance.compile_save_dict()
-        result["tile_instances"] = tile_instance_saves
-        doc_info_saves = {}
-        for (doc_handle, doc_instance) in self.doc_dict.items():
-            doc_info_saves[doc_handle] = doc_instance.compile_save_dict()
-        result["doc_info_instances"] = doc_info_saves
-
-        return result
 
     def get_column_data(self, signature):
         result = {}
@@ -225,12 +237,12 @@ class mainWindow(threading.Thread):
 
     def emit_table_message(self, message, data={}):
         data["message"] = message
-        socketio.emit("table-message", data, namespace='/main', room=self.main_id)
+        socketio.emit("table-message", data, namespace='/main', room=self._main_id)
 
     def _handle_event(self, event_name, data=None):
         if event_name == "CellChange":
             self._set_row_column_data(data["doc_name"], data["row_index"], data["signature"], data["new_content"])
-            self.change_list.append(data["row_index"])
+            self._change_list.append(data["row_index"])
         elif event_name == "RemoveTile":
             del self.tile_instances[data["tile_id"]]
         elif event_name == "CreateColumn":
@@ -253,13 +265,13 @@ class mainWindow(threading.Thread):
         if (new_content != old_content):
             signature = doc.ordered_sig_dict[signature_string]
             data = {"doc_name": doc_name, "row_index": row_index, "signature": signature, "new_content": new_content}
-            distribute_event("CellChange", self.main_id, data)
-            if doc_name == self.visible_doc_name:
+            distribute_event("CellChange", self._main_id, data)
+            if doc_name == self._visible_doc_name:
                 self.emit_table_message("setCellContent", data)
 
     def highlight_table_text(self, txt):
         row_index = 0;
-        dinfo = self.doc_dict[self.visible_doc_name]
+        dinfo = self.doc_dict[self._visible_doc_name]
         for the_row in dinfo.data_rows:
             for sig in dinfo.signature_list:
                 if type(sig) != list:
@@ -310,9 +322,13 @@ class mainWindow(threading.Thread):
     def _set_row_column_data(self, doc_name, row_index, sig, new_content):
         the_row = self.doc_dict[doc_name].data_rows[row_index]
         result = the_row
+        if type(sig) is not list:
+            result[sig] = new_content
+            return
         for field in sig[0:-1]:
             if not field in result:
                 result[field] = {}
             result = result[field]
         result[sig[-1]] = new_content
+        return
 

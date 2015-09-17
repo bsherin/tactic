@@ -4,8 +4,7 @@ from flask import request, jsonify, render_template, send_file, url_for
 from flask_login import current_user
 from flask_socketio import join_room
 from tactic_app.shared_dicts import tile_classes, user_tiles
-from tactic_app.shared_dicts import mainwindow_instances
-from tactic_app.main import distribute_event
+from tactic_app.shared_dicts import mainwindow_instances, distribute_event
 from user_manage_views import render_project_list
 
 # The main window should join a room associated with the user
@@ -25,27 +24,20 @@ def on_join(data):
 @app.route('/save_new_project', methods=['POST'])
 def save_new_project():
     data_dict = request.json
-    mainwindow_dict = mainwindow_instances[data_dict['main_id']].compile_save_dict()
-    combined_dict = mainwindow_dict.copy()
-
-    # It's important that data_dict is added on top of mainwindow dict
-    # because it has the updated version of project_name
-    combined_dict.update(data_dict)
     mainwindow_instances[data_dict['main_id']].project_name = data_dict["project_name"]
-    db[current_user.project_collection_name].insert_one(combined_dict)
+    save_dict = mainwindow_instances[data_dict['main_id']].compile_save_dict()
+
+    db[current_user.project_collection_name].insert_one(save_dict)
     socketio.emit('update-project-list', {"html": render_project_list()}, namespace='/user_manage', room=current_user.get_id())
     return jsonify({"project_name": data_dict["project_name"], "success": True, "message": "Project Successfully Saved"})
 
 @app.route('/update_project', methods=['POST'])
 def update_project():
     data_dict = request.json
+    save_dict = mainwindow_instances[data_dict['main_id']].compile_save_dict()
 
-    # Here's it's important that we do mainwindow before data_dict
-    # bcause the new information is coming from data_dict (notably new header_struct and hidden_list)
-    combined_dict = mainwindow_instances[data_dict['main_id']].compile_save_dict().copy()
-    combined_dict.update(data_dict)
-    db[current_user.project_collection_name].update_one({"project_name": combined_dict["project_name"]},
-                                                        {'$set': combined_dict})
+    db[current_user.project_collection_name].update_one({"project_name": save_dict["project_name"]},
+                                                        {'$set': save_dict})
     return jsonify({"success": True, "message": "Project Successfully Saved"})
 
 # Views for reading data from the database and
@@ -62,12 +54,16 @@ def grab_project_data(main_id, doc_name):
 
 @app.route('/get_additional_params', methods=['GET'])
 def get_additional_params():
-    result = {"tile_types": tile_classes.keys(), "user_tile_types": user_tiles[current_user.username].keys()};
+    if current_user.username in user_tiles:
+        utiles = user_tiles[current_user.username].keys()
+    else:
+        utiles = []
+    result = {"tile_types": tile_classes.keys(), "user_tile_types": utiles};
     return jsonify(result)
 
 @app.route('/set_visible_doc/<main_id>/<doc_name>', methods=['get'])
 def set_visible_doc(main_id, doc_name):
-    mainwindow_instances[main_id].visible_doc_name = doc_name
+    mainwindow_instances[main_id]._visible_doc_name = doc_name
     return jsonify({"success": True})
 
 @app.route('/distribute_events/<event_name>', methods=['get', 'post'])

@@ -19,12 +19,13 @@ function start_post_load() {
                 $("#table-area").css("display", "block");
                 tablespec_dict = data.tablespec_dict;
                 tableObject.initialize_table(data);
+                set_visible_doc(doc_names[0]) // It's important that this is done before creating the tiles
                 var tile_ids = data.tile_ids;
                 for (var i = 0; i < tile_ids.length; ++i) {
                     create_tile_from_save(tile_ids[i])
                 }
                 menus["Project"].enable_menu_item("save");
-                set_visible_doc(doc_names[0])
+
             })
     }
     else {

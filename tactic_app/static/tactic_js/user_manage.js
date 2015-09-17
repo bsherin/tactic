@@ -14,8 +14,11 @@ function start_post_load() {
     socket.on('update-list-list', function(data) {
         $("#list-selector").html(data.html)
     });
-    socket.on('update-tile-list', function(data) {
+    socket.on('update-tile-module-list', function(data) {
         $("#tile-selector").html(data.html)
+    });
+    socket.on('update-loaded-tile-list', function(data) {
+        $("#loaded-tile-list").html(data.html)
     });
     socket.on('close-user-windows', function(data){
         window.close()
@@ -37,7 +40,7 @@ $('#list-load-form').submit(function(e) {
 
 $('#tile-load-form').submit(function(e) {
     $.ajax( {
-      url: $SCRIPT_ROOT + '/add_tile',
+      url: $SCRIPT_ROOT + '/add_tile_module',
       type: 'POST',
       data: new FormData( this ),
       processData: false,
@@ -81,13 +84,13 @@ function view_selected_list() {
     window.open($SCRIPT_ROOT + "/view_list/" + String(list_name))
 }
 
-function load_selected_tile() {
-    var tile_name = $('#tile-selector > .btn.active').text().trim();
-    if (tile_name == "") {
-        doFlash({"message": "Select a tile first.", "alert_type": "alert-info"})
+function load_selected_tile_module() {
+    var tile_module_name = $('#tile-selector > .btn.active').text().trim();
+    if (tile_module_name == "") {
+        doFlash({"message": "Select a tile module first.", "alert_type": "alert-info"})
         return
     }
-    $.getJSON($SCRIPT_ROOT + '/load_tile/' + tile_name)
+    $.getJSON($SCRIPT_ROOT + '/load_tile_module/' + tile_module_name)
 }
 
 function load_selected_collection() {
@@ -134,13 +137,13 @@ function delete_selected_list() {
     $.post($SCRIPT_ROOT + "/delete_list/" + String(list_name))
 }
 
-function delete_selected_tile() {
-    var tile_name = $('#tile-selector > .btn.active').text().trim();
-    if (tile_name == "") {
+function delete_selected_tile_module() {
+    var tile_module_name = $('#tile-selector > .btn.active').text().trim();
+    if (tile_module_name == "") {
         doFlash({"message": "Select a tile first.", "alert_type": "alert-info"})
         return
     }
-    $.post($SCRIPT_ROOT + "/delete_tile/" + String(tile_name))
+    $.post($SCRIPT_ROOT + "/delete_tile_module/" + String(tile_module_name))
 }
 
 function show_duplicate_list_modal() {

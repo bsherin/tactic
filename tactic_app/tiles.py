@@ -12,12 +12,11 @@ from flask import url_for
 from matplotlib_utilities import GraphList, convert_figure_to_img
 
 from tactic_app import socketio, app
-from shared_dicts import mainwindow_instances
+from shared_dicts import mainwindow_instances, distribute_event
 from vector_space import Vocabulary
 from shared_dicts import tile_classes, user_tiles, tokenizer_dict
 from users import load_user
 # from views.main_views import figure_source
-from tactic_app.main import distribute_event
 
 # Decorator function used to register runnable analyses in analysis_dict
 def tile_class(tclass):
@@ -31,7 +30,7 @@ def user_tile(tclass):
     user_tiles[uname][tclass.__name__] = tclass
     return tclass
 
-def create_user_tile(tile_code):
+def create_user_tiles(tile_code):
     exec(tile_code)
     return
 
@@ -68,11 +67,12 @@ class TileTemplate(threading.Thread):
         """
 
 class TileBase(threading.Thread):
+    save_attrs = ["update_events", "current_html", "tile_id", "tile_type", "images", "tile_name"]
     input_start_template = '<div class="form-group form-group-sm"">' \
                      '<label>{0}</label>'
     basic_input_template = '<input type="{1}" class="form-control input-sm" id="{0}" value="{2}"></input>' \
                      '</div>'
-    textarea_template = '<textarea type="{1}" class="form-control input-sm" id="{0}" value="{2}"></textarea>' \
+    textarea_template = '<textarea type="{1}" class="form-control input-sm" id="{0}" value="{2}">{2}</textarea>' \
                  '</div>'
     select_base_template = '<select class="form-control input-sm" id="{0}">'
     select_option_template = '<option value="{0}">{0}</option>'
@@ -82,19 +82,24 @@ class TileBase(threading.Thread):
         self._stopevent = threading.Event()
         self._sleepperiod = .2
         threading.Thread.__init__(self)
-        global current_tile_id
-        self.update_events = ["RefreshTile", "UpdateOptions", "ShowFront", "StartSpinner", "StopSpinner", "RefreshTileFromSave"]
-        self.tile_id = tile_id
-        self.main_id = main_id
         self._my_q = Queue.Queue(0)
-        self.current_html = None
-        self.tile_type = self.__class__.__name__
-        self.figure_url = ''
+
+        # These define the state of a tile and should be saved
+        self.update_events = ["RefreshTile", "UpdateOptions", "ShowFront", "StartSpinner", "StopSpinner", "RefreshTileFromSave"]
         self.images = {}
+
+        self.tile_type = self.__class__.__name__
         if tile_name is None:
             self.tile_name = self.tile_type
         else:
             self.tile_name = tile_name
+
+        self.current_html = None
+
+        # These will differ each time the tile is instantiated.
+        self.tile_id = tile_id
+        self.main_id = main_id
+        self.figure_url = ''
         return
 
     def run(self):
@@ -170,26 +175,63 @@ class TileBase(threading.Thread):
         self.emit_tile_message("displayTileContent", {"html": new_html})
 
     def start_spinner(self):
-        # socketio.emit("start-spinner", {"tile_id": str(self.tile_id)}, namespace='/main', room=self.main_id)
         self.emit_tile_message("startSpinner")
 
     def stop_spinner(self):
-        # socketio.emit("stop-spinner", {"tile_id": str(self.tile_id)}, namespace='/main', room=self.main_id)
         self.emit_tile_message("stopSpinner")
+
     def render_content(self):
         print "not implemented"
 
+    # def compile_save_dict(self):
+    #     result = {}
+    #     for (attr, val) in self.__dict__.items():
+    #         if not ((attr.startswith("_")) or (attr == "additionalInfo") or (str(type(val)) == "<type 'instance'>")):
+    #             result[attr] = val
+    #     result["tile_type"] = type(self).__name__
+    #     result.update(self.cache_dicts())
+    #     return result
+
     def compile_save_dict(self):
         result = {}
-        for (attr, val) in self.__dict__.items():
-            if not ((attr.startswith("_")) or (attr == "additionalInfo") or (str(type(val)) == "<type 'instance'>")):
-                result[attr] = val
-        result["tile_type"] = type(self).__name__
-        result.update(self.cache_dicts())
+        result["my_class_for_recreate"] = "TileBase"
+        for attr in self.save_attrs:
+            attr_val = getattr(self, attr)
+            if hasattr(attr_val, "compile_save_dict"):
+                result[attr] = attr_val.compile_save_dict()
+            elif ((type(attr_val) == dict) and (len(attr_val) > 0) and hasattr(attr_val.values()[0], "compile_save_dict")):
+                res = {}
+                for (key, val) in attr_val.items():
+                    res[key] = val.compile_save_dict()
+                result[attr] = res
+            else:
+                result[attr] = attr_val
         return result
 
-    def cache_dicts(self):
-        return {}
+    @staticmethod
+    def recreate_from_save(save_dict):
+        tile_type  = save_dict["tile_type"]
+        if tile_type in tile_classes:
+            tile_cls = tile_classes[tile_type]
+        elif tile_type in user_tiles[current_user.username]:
+            tile_cls = user_tiles[current_user.username][tile_type]
+        else:
+            print "missing tile type"
+            return {}
+        new_instance = tile_cls(-1, save_dict["tile_id"], save_dict["tile_name"])
+        for (attr, attr_val) in save_dict.items():
+            if type(attr_val) == dict and hasattr(attr_val, "recreate_from_save"):
+                cls  = getattr(sys.modules[__name__], attr_val["my_class_for_recreate"])
+                setattr(new_instance, attr, cls.recreate_from_save(attr_val))
+            elif ((type(attr_val) == dict) and (len(attr_val) > 0) and hasattr(attr_val.values()[0], "recreate_from_save")):
+                cls  = getattr(sys.modules[__name__], attr_val.values()[0]["my_class_for_recreate"])
+                res = {}
+                for (key, val) in attr_val.items():
+                    res[key] = cls.recreate_from_save(val)
+                setattr(new_instance, attr, res)
+            else:
+                setattr(new_instance, attr, attr_val)
+        return new_instance
 
     @property
     def current_user(self):
@@ -212,7 +254,8 @@ class TileBase(threading.Thread):
             if option["type"] == "column_select":
                 the_template = self.input_start_template + self.select_base_template
                 form_html += the_template.format(option["name"])
-                current_doc = mainwindow_instances[self.main_id].doc_dict[mainwindow_instances[self.main_id].visible_doc_name]
+                current_doc_name = mainwindow_instances[self.main_id]._visible_doc_name
+                current_doc = mainwindow_instances[self.main_id].doc_dict[current_doc_name]
                 for choice in current_doc.ordered_sig_dict.keys():
                     if choice == option["placeholder"]:
                         form_html += self.select_option_selected_template.format(choice)
@@ -277,6 +320,7 @@ class TileBase(threading.Thread):
 
 @tile_class
 class SimpleCoder(TileBase):
+    save_attrs = TileBase.save_attrs + ["current_text", "destination_column"]
     def __init__(self, main_id, tile_id, tile_name=None):
         TileBase.__init__(self, main_id, tile_id, tile_name)
         self.update_events.append("TileButtonClick")
@@ -322,6 +366,7 @@ class SimpleCoder(TileBase):
 
 @tile_class
 class WordnetSelectionTile(TileBase):
+    save_attrs = TileBase.save_attrs + ["to_show"]
     def __init__(self, main_id, tile_id, tile_name=None):
         TileBase.__init__(self, main_id, tile_id, tile_name)
         self.update_events.append("text_select")
@@ -353,6 +398,7 @@ class WordnetSelectionTile(TileBase):
 
 @tile_class
 class VocabularyDisplayTile(TileBase):
+    save_attrs = TileBase.save_attrs + ["column_source", "tokenizer_func", "stop_list"]
     def __init__(self, main_id, tile_id, tile_name):
         TileBase.__init__(self, main_id, tile_id, tile_name=None)
         self.column_source = None
@@ -443,6 +489,7 @@ class VocabularyDisplayTile(TileBase):
 
 @tile_class
 class VocabularyPlotClass(VocabularyDisplayTile):
+    save_attrs = TileBase.save_attrs + ["column_source", "tokenizer_func", "stop_list"]
     def __init__(self, main_id, tile_id, tile_name):
         VocabularyDisplayTile.__init__(self, main_id, tile_id, tile_name=None)
 
@@ -461,11 +508,11 @@ class VocabularyPlotClass(VocabularyDisplayTile):
             amount_list.append(entry[2])
         fig = GraphList(amount_list, word_list)
         self.images["vocab_plot"] = convert_figure_to_img(fig)
-
         return self.create_figure_html("vocab_plot")
 
 @tile_class
 class NaiveBayesTile(TileBase):
+    save_attrs = TileBase.save_attrs + ["text_source", "code_source", "code_dest", "column_source", "tokenizer_func", "stop_list"]
     def __init__(self, main_id, tile_id, tile_name=None):
         TileBase.__init__(self, main_id, tile_id, tile_name)
         self.text_source = ""

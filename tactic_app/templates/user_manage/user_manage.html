@@ -113,7 +113,7 @@
                         </div>
                     </div>
                 </div>
-                            <div class="row" style="margin-top: 40px">
+                <div class="row" style="margin-top: 40px">
                     <div class="col-xs-12">
                         <h2>My Tiles</h2>
                     </div>
@@ -129,17 +129,27 @@
                 <div class="row indent-row" style="margin-top: 25px">
                     <div class="col-xs-12">
                         <div style="display: inline-block; vertical-align:top">
-                            <button class="btn btn-primary stacked-button" onclick="load_selected_tile()">Load tile</button>
-                            <button class="btn btn-primary stacked-button" onclick="delete_selected_tile()">Delete tile</button>
+                            <button class="btn btn-primary stacked-button" onclick="load_selected_tile_module()">Load tile Module</button>
+                            <button class="btn btn-primary stacked-button" onclick="delete_selected_tile_module()">Delete tile Module</button>
                         </div>
                         <div style="display: inline-block; vertical-align: top; margin-left: 10px">
-                            <h5 style="text-align:center; margin-top: 0px">Tiles</h5>
+                            <h5 style="text-align:center; margin-top: 0px">Tile Modules</h5>
                             <div class="btn-group-vertical user-button-group" id="tile-selector" data-toggle="buttons">
-                                {% for tile_name in current_user.tile_names %}
+                                {% for tile_module_name in current_user.tile_module_names %}
                                     <label class="btn btn-default">
-                                        <input type="radio"  value="{{ tile_name }}"/> {{ tile_name }}
+                                        <input type="radio"  value="{{ tile_module_name }}"/> {{ tile_module_name }}
                                     </label>
                                 {% endfor %}
+                            </div>
+                        </div>
+                        <div style="display: inline-block; vertical-align: top; margin-left: 10px">
+                            <h5 style="text-align:center; margin-top: 0px">Loaded Tiles</h5>
+                            <div id="loaded-tile-list">
+                                <ul>
+                                    {% for tile_name in user_tile_name_list %}
+                                        <li>{{tile_name}}</li>
+                                    {% endfor %}
+                                </ul>
                             </div>
                         </div>
                     </div>

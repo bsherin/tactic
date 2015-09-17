@@ -7,6 +7,7 @@ from tactic_app.users import User
 from flask.ext.wtf import Form
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import Required, Length, Regexp, EqualTo
+from tactic_app.shared_dicts import user_tiles, loaded_user_modules
 from tactic_app import app, socketio, csrf
 
 @app.route('/', methods=['GET', 'POST'])
@@ -37,6 +38,10 @@ def attempt_login():
 def logout():
     socketio.emit('close-user-windows', {}, namespace='/user_manage', room=current_user.get_id())
     socketio.emit('close-user-windows', {}, namespace='/main', room=current_user.get_id())
+    if current_user.username in user_tiles:
+        del user_tiles[current_user.username]
+    if current_user.username in loaded_user_modules:
+        del loaded_user_modules[current_user.username]
     logout_user()
     return render_template('auth/login.html', show_message="yes", message="You have been logged out.", alert_type="alert-info")
 

@@ -7,14 +7,18 @@ from tactic_app import app, db, socketio
 from tactic_app.file_handling import read_xml_file_to_dict_list, read_csv_file_to_dict_list, load_a_list;
 from tactic_app.main import create_new_mainwindow, create_new_mainwindow_from_project, mainwindow_instances
 from tactic_app.users import put_docs_in_collection, build_data_collection_name
-from tactic_app.tiles import create_user_tile
+from tactic_app.tiles import create_user_tiles
+from tactic_app.shared_dicts import user_tiles, loaded_user_modules
 from flask_login import current_user
 from flask_socketio import join_room
 
 @app.route('/user_manage')
 def user_manage():
-    return render_template('user_manage/user_manage.html')
-
+    if current_user.username in user_tiles:
+        user_tile_name_list = user_tiles[current_user.username].keys()
+    else:
+        user_tile_name_list = []
+    return render_template('user_manage/user_manage.html', user_tile_name_list=user_tile_name_list)
 
 @app.route('/main/<collection_name>', methods=['get'])
 def main(collection_name):
@@ -22,6 +26,11 @@ def main(collection_name):
     main_id = create_new_mainwindow(current_user.get_id(), collection_name=cname)
     doc_names = mainwindow_instances[main_id].doc_names
     short_collection_name = mainwindow_instances[main_id].short_collection_name
+    if current_user.username not in loaded_user_modules:
+        loaded_user_modules[current_user.username] = set([])
+
+    # the loaded_modules must be a list to be easily saved to pymongo
+    mainwindow_instances[main_id].loaded_modules = list(loaded_user_modules[current_user.username])
     return render_template("main.html",
                            collection_name=cname,
                            project_name='',
@@ -32,10 +41,20 @@ def main(collection_name):
 @app.route('/main_project/<project_name>', methods=['get'])
 def main_project(project_name):
     project_dict = db[current_user.project_collection_name].find_one({"project_name": project_name})
-    # cname = project_dict["collection_name"]
+    if current_user.username not in loaded_user_modules:
+        loaded_user_modules[current_user.username] = set([])
+    for module in project_dict["loaded_modules"]:
+        if module not in loaded_user_modules[current_user.username]:
+            load_tile_module(module)
     main_id = create_new_mainwindow_from_project(project_dict)
     doc_names = mainwindow_instances[main_id].doc_names
     short_collection_name = mainwindow_instances[main_id].short_collection_name
+
+    # We want to do this in case there were some additional modules loaded
+
+
+    # the loaded_modules must be a list to be easily saved to pymongo
+    mainwindow_instances[main_id].loaded_modules = list(loaded_user_modules[current_user.username])
     return render_template("main.html",
                            collection_name=project_dict["collection_name"],
                            project_name=project_name,
@@ -50,11 +69,24 @@ def view_list(list_name):
                            list_name=list_name,
                            the_list=the_list)
 
-@app.route('/load_tile/<tile_name>', methods=['get', 'post'])
-def load_tile(tile_name):
-    the_tile = current_user.get_tile(tile_name)
-    create_user_tile(the_tile)
-    return jsonify({"success": True})
+@app.route('/load_tile_module/<tile_module_name>', methods=['get', 'post'])
+def load_tile_module(tile_module_name):
+    tile_module = current_user.get_tile_module(tile_module_name)
+    create_user_tiles(tile_module)
+    if current_user.username not in loaded_user_modules:
+        loaded_user_modules[current_user.username] = set([])
+    loaded_user_modules[current_user.username].add(tile_module_name)
+    socketio.emit('update-loaded-tile-list', {"html": render_loaded_tile_list(),
+                                            "user_tile_name_list": user_tiles[current_user.username].keys()},
+                                         namespace='/user_manage', room=current_user.get_id())
+    socketio.emit('update-loaded-tile-list', {"html": render_loaded_tile_list(),
+                                        "user_tile_name_list": user_tiles[current_user.username].keys()},
+                                     namespace='/main', room=current_user.get_id())
+    return make_response("", 204)
+
+
+def render_loaded_tile_list():
+    return render_template("user_manage/loaded_tile_list.html", user_tile_name_list=user_tiles[current_user.username].keys())
 
 def render_project_list():
     return render_template("user_manage/project_list.html")
@@ -65,8 +97,8 @@ def render_collection_list():
 def render_list_list():
     return render_template("user_manage/list_list.html")
 
-def render_tile_list():
-    return render_template("user_manage/tile_list.html")
+def render_tile_module_list():
+    return render_template("user_manage/tile_module_list.html")
 
 @app.route('/create_duplicate_list', methods=['post'])
 def create_duplicate_list():
@@ -87,13 +119,13 @@ def add_list():
     socketio.emit('update-list-list', {"html": render_list_list()}, namespace='/user_manage', room=current_user.get_id())
     return make_response("", 204)
 
-@app.route('/add_tile', methods=['POST', 'GET'])
-def add_tile():
+@app.route('/add_tile_module', methods=['POST', 'GET'])
+def add_tile_module():
     f = request.files['file']
-    the_tile = f.read()
-    data_dict = {"tile_name": f.filename, "the_tile": the_tile}
+    the_module = f.read()
+    data_dict = {"tile_module_name": f.filename, "tile_module": the_module}
     db[current_user.tile_collection_name].insert_one(data_dict)
-    socketio.emit('update-tile-list', {"html": render_tile_list()}, namespace='/user_manage', room=current_user.get_id())
+    socketio.emit('update-tile-module-list', {"html": render_tile_module_list()}, namespace='/user_manage', room=current_user.get_id())
     return make_response("", 204)
 
 @app.route('/load_single_file', methods=['POST', 'GET'])
@@ -155,10 +187,10 @@ def delete_list(list_name):
     socketio.emit('update-list-list', {"html": render_list_list()}, namespace='/user_manage', room=current_user.get_id())
     return jsonify({"success": True})
 
-@app.route('/delete_tile/<tile_name>', methods=['post'])
-def delete_tile(tile_name):
-    db[current_user.tile_collection_name].delete_one({"tile_name": tile_name})
-    socketio.emit('update-tile-list', {"html": render_tile_list()}, namespace='/user_manage', room=current_user.get_id())
+@app.route('/delete_tile_module/<tile_module_name>', methods=['post'])
+def delete_tile_module(tile_module_name):
+    db[current_user.tile_collection_name].delete_one({"tile_module_name": tile_module_name})
+    socketio.emit('update-tile-module-list', {"html": render_tile_module_list()}, namespace='/user_manage', room=current_user.get_id())
     return jsonify({"success": True})
 
 @app.route('/delete_collection/<collection_name>', methods=['post'])

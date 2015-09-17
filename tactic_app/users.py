@@ -8,7 +8,6 @@ from tactic_app import login_manager, db
 from bson.objectid import ObjectId
 from werkzeug.security import generate_password_hash, check_password_hash
 
-
 def build_data_collection_name(collection_name):
     return '{}.data_collection.{}'.format(current_user.username, collection_name)
 
@@ -125,19 +124,19 @@ class User(UserMixin):
         return my_list_names
 
     @property
-    def tile_names(self):
+    def tile_module_names(self):
         if self.tile_collection_name not in db.collection_names():
             db.create_collection(self.tile_collection_name)
             return []
         my_tile_names = []
         for doc in db[self.tile_collection_name].find():
-            my_tile_names.append(doc["tile_name"])
+            my_tile_names.append(doc["tile_module_name"])
         return my_tile_names
 
     def get_list(self, list_name):
         list_dict = db[self.list_collection_name].find_one({"list_name": list_name})
         return list_dict["the_list"]
 
-    def get_tile(self, tile_name):
-        tile_dict = db[self.tile_collection_name].find_one({"tile_name": tile_name})
-        return tile_dict["the_tile"]
+    def get_tile_module(self, tile_module_name):
+        tile_dict = db[self.tile_collection_name].find_one({"tile_module_name": tile_module_name})
+        return tile_dict["tile_module"]

@@ -51,6 +51,13 @@ var menu_object = {
             menu_item_index[this.options[i]] = this.menu_name
         }
     },
+
+    remove_options_from_index: function() {
+        for (var i = 0; i < this.options.length; ++i) {
+            delete menu_item_index[this.options[i]]
+        }
+    },
+
     disable_items: function (disable_list) {
         for (var i = 0; i < disable_list.length; ++i) {
             this.disable_menu_item(disable_list[i])
@@ -163,6 +170,17 @@ function build_and_render_menu_objects() {
     user_tile_menu.options = user_tile_types;
     user_tile_menu.add_options_to_index();
 
+    socket.on('update-loaded-tile-list', function(data) {
+        //This fires if the user loads a new tile
+        user_tile_menu.remove_options_from_index()
+        user_tile_menu.options = data['user_tile_name_list']
+        user_tile_menu.add_options_to_index()
+
+        // remove all menus and re-render
+        $("#menu-area .dropdown").remove();
+        render_menus()
+    });
+
     render_menus()
     function render_menus() {
         for (var m in menus) {
@@ -181,6 +199,8 @@ function build_and_render_menu_objects() {
 
     }
 }
+
+
 
 function column_command(menu_id) {
     var the_id = tableObject.selected_header;
