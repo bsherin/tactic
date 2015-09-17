@@ -56,6 +56,10 @@ def grab_project_data(main_id, doc_name):
 def get_menu_template():
     return send_file("templates/menu_template.html")
 
+@app.route('/get_table_templates', methods=['get'])
+def get_table_templates():
+    return send_file("templates/table_templates.html")
+
 @app.route('/get_additional_params', methods=['GET'])
 def get_additional_params():
     if current_user.username in user_tiles:

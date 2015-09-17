@@ -15,6 +15,17 @@ MAX_HEIGHT = 300;
 MARGIN_SIZE = 5;
 INITIAL_LEFT_FRACTION = .69
 
+var td_template;
+var th_template;
+var th_template_resize;
+
+$.get($SCRIPT_ROOT + "/get_table_templates", function(template){
+    td_template = $(template).filter('#td-template').html();
+    th_template = $(template).filter('#th-template').html();
+    th_template_resize = $(template).filter('#th-template-resize').html();
+})
+
+
 function click_header(el) {
     var the_id = $(el).attr("id");
     if (the_id === tableObject.selected_header) {
@@ -30,7 +41,6 @@ function click_header(el) {
 
 function listen_for_focus() {
   $("#table-area").on('focus', 'td', function(e) {
-      //var row_index = e.target.closest("tr").rowIndex - tableObject.header_rows
       row_index = $(this).closest("tr")[0].rowIndex - tableObject.header_rows
       var old_row = $("#table-area tbody")[0].childNodes[tableObject.active_row]
       $(old_row).removeClass("selected-row")
@@ -93,8 +103,7 @@ function handle_cell_change () {
     current_content = current_content.replace(/\<br\>/g, "\n");
     var rindex = this.parentElement.rowIndex - tableObject.header_rows;
     var cindex = this.cellIndex;
-    var sig = tableObject.signature_list[cindex];
-    //var old_content = tableObject.get_cell_value_from_sig(tableObject.doc_list[rindex], sig);
+    var sig = tableObject.signature_list[cindex];;
     var old_content = tableObject.table_array[rindex][cindex];
     if (current_content != old_content) {
         shorter_sig = []
@@ -123,19 +132,14 @@ function doSearch(t) {
 }
 
 function deselect_header(the_id) {
-    //$("tbody .header" + the_id).css('background-color', TABLE_NORMAL_COLOR);
     $("tbody .header" + the_id).removeClass("selected-column");
-    //$("tbody .header" + the_id).css('border', TABLE_BORDER_STYLE);
     $("thead .header" + the_id).removeClass("selected-header");
-    //$("thead .header" + the_id).css('background-color', HEADER_NORMAL_COLOR);
-    //$("thead .header" + the_id).css('border', TABLE_BORDER_STYLE);
     tableObject.selected_header = null
     disable_require_column_select()
 }
 
 function select_header(the_id) {
-    //$(".header" + the_id).css('background-color', TABLE_SELECT_COLOR)
-    //$("#" + the_id).css('background-color', HEADER_SELECT_COLOR);
+
     $("tbody .header" + the_id).addClass("selected-column")
     $("thead .header" + the_id).addClass("selected-header");
     tableObject.selected_header = the_id
@@ -157,7 +161,7 @@ header0bject = {
     span: 0,
     depth: 0,
     child_list: [],
-    //hidden: null,
+
     shift_child_left: function (child_id) {
         var i;
         var the_child;
@@ -191,7 +195,6 @@ header0bject = {
                 the_child = this.child_list[i];
                 this.child_list.splice(i,1)
                 this.child_list.splice(i + 1, 0, the_child)
-                //save_column_widths()
                 child_width = tableObject.current_spec.column_widths[i]
                 tableObject.current_spec.column_widths.splice(i, 1)
                 tableObject.current_spec.column_widths.splice(i + 1, 0, child_width)
@@ -300,7 +303,6 @@ var tableObject = {
             $(".header" + this.current_spec.hidden_list[i]).css("display", "none");
         }
         $("#project-name").html(this.project_name)
-        //this.set_table_title(this.project_name, this.short_collection_name)
         this.setup_resize_listeners();
         this.resize_table_area();
         this.freeze_header(this.table_id);
@@ -400,7 +402,6 @@ var tableObject = {
                     return "<span class=\"highlight \">" + matched + "</span>";
                 });
             this.highlighted_cells.push({"row_index": rindex, "signature":sig})
-            //$(el).addClass("has-highlights")
         }
         catch(err) {
             console.log(err.message + " row index " + rindex + "_col_index_ " + cindex)
@@ -422,7 +423,6 @@ var tableObject = {
         try {
             var el = this.getCellElementByRowColIndex(rindex, cindex);
             el.innerHTML = el.innerHTML.replace(/<\/?span[^>]*>/g, "");
-            //$(el).addClass("has-highlights")
         }
         catch (err) {
             console.log(err.message + " row index " + rindex + "_col_index_ " + cindex)
@@ -468,7 +468,6 @@ var tableObject = {
 
     setup_resize_listeners: function() {
         self = this;
-        //$("thead").css('background-color', HEADER_NORMAL_COLOR);
         $(".can-resize").resizable({
             handles: "e",
             resize: handle_resize,
@@ -527,17 +526,8 @@ var tableObject = {
     },
 
     create_all_html: function (table_id, table_array, header_struct, hidden_list, signature_list){
-        //This method uses the table_array, the header_struct and signature list to construct all of the
-        // table html
+        //This method uses the table_array, the header_struct and signature list to construct all of the table html
         var header_html = "<thead>" + this.get_header_html(header_struct) + "</thead>";
-        var end_columns = "<td>" +
-            "<span class='table-remove glyphicon glyphicon-remove'onclick=tableObject.rowremove(this) ></span>" +
-            "</td>" +
-            "<td>" +
-            "<span class='table-up glyphicon glyphicon-arrow-up' onclick=tableObject.rowup(this)></span> " +
-            "<span class='table-down glyphicon glyphicon-arrow-down' onclick=tableObject.rowdown(this)></span>" +
-            "</td> " +
-            "</tr>";
         html_result = header_html
         var row_html;
         var body_html = "";
@@ -545,7 +535,6 @@ var tableObject = {
         for (i = 0; i < table_array.length; ++i) {
             row_html = "<tr>";
             row_html = row_html + get_row_html(i, table_array, signature_list);
-            //row_html= row_html + end_columns;
             body_html = body_html + row_html;
         }
         html_result += "<tbody>" + body_html + "</body>";
@@ -557,9 +546,6 @@ var tableObject = {
             var sig;
             var current;
             var res = ""
-            var td_template = "<td contenteditable='true' onmouseup='text_select(event)' class='{{class_text}} searchit mousetrap can-resize')>{{the_text}}</td>"
-            // Note the loop below starts at 1 because my signature list has an extra
-            // root node listed at the start
             class_text = [];
 
             for (i = 0; i < table_array[row_index].length; ++i) {
@@ -574,11 +560,6 @@ var tableObject = {
             return res
         }
     },
-
-    //set_table_title: function (project_name, short_collection_name){
-    //    //the_html = "<span style='text-align:left;'>Project: " + project_name + "<span style='float:right;'>Collection: " + short_collection_name + "</span></span>"
-    //    $("#project-name").html(project_name);
-    //},
 
     resize_table_area: function() {
         var usable_width = window.innerWidth - 2 * MARGIN_SIZE - 10
@@ -607,7 +588,6 @@ var tableObject = {
                     new_header_object.id = this.next_header_id;
                     this.next_header_id += 1;
                     new_header_object.child_list = [];
-                    //new_header_object.hidden = false;
                     return new_header_object;
                 }
                 case Object: {
@@ -626,7 +606,6 @@ var tableObject = {
                     depth = 1 + Math.max.apply(null, depth_list)
                     new_header_object.depth = depth;
                     new_header_object.child_list = working_list;
-                    //new_header_object.hidden = false;
                     return new_header_object;
                 }
             }
@@ -665,12 +644,6 @@ var tableObject = {
     build_header_html_for_depth: function (hstruct, depth, class_text) {
             var res = "";
             var i, total_span;
-            var th_template = "<th colspan='{{span}}' id='{{id}}' class='{{class_text}}' onclick='click_header(this)'>" +
-                "{{the_text}}" +
-                "</th>"
-            var th_template_resize = "<th colspan='{{span}}' id='{{id}}' class='{{class_text}} can-resize' onclick='click_header(this)'>" +
-                "{{the_text}}" +
-                "</th>"
             class_text = class_text + "header" + hstruct.id +" "
             if (hstruct.depth == depth){
                 if (hstruct.span == 1) {
@@ -698,7 +671,6 @@ var tableObject = {
                 var res_object = this.build_header_html_for_depth(hstruct.child_list[i], depth, class_text)
                 res = res + res_object.html
                 total_span += res_object.total_span
-                //res = res + this.build_header_html_for_depth(hstruct.child_list[i], depth, class_text, total_span)
             }
             return {"html": res, "total_span":total_span}
         },
