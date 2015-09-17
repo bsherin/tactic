@@ -52,6 +52,10 @@ def grab_project_data(main_id, doc_name):
     mw = mainwindow_instances[main_id]
     return jsonify({"doc_name": doc_name, "tile_ids": mw.tile_ids, "data_rows": mw.doc_dict[doc_name].data_rows, "tablespec_dict": mw.tablespec_dict()})
 
+@app.route('/get_menu_template', methods=['get'])
+def get_menu_template():
+    return send_file("templates/menu_template.html")
+
 @app.route('/get_additional_params', methods=['GET'])
 def get_additional_params():
     if current_user.username in user_tiles:

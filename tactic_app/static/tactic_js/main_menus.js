@@ -8,23 +8,20 @@ var column_menu;
 var project_menu;
 var tile_menu;
 var mousetrap = new Mousetrap();
+var menu_template;
+$.get($SCRIPT_ROOT + "/get_menu_template", function(template){
+    menu_template = $(template).filter('#menu-template').html();
+})
 
 // This is the menu_object base prototype
 var menu_object = {
     menu_name: "",
     options: [],
     shortcuts: {},
-    menu_template: '<li class="dropdown">' +
-    '<a href="#" class="dropdown-toggle" id="{{menu_name}}-menu" data-toggle="dropdown">' +
-    '{{menu_name}}<span class="caret"></span></a>' +
-    '<ul class="dropdown-menu">' +
-    '{{#options}}' +
-    '<li><a class="menu-item" id="{{option_name}}" href="#"><span style="float:left;">{{option_name}}</span><span style="float:right;">{{key_text}}</span></a></li>' +
-    '{{/options}}</li>',
     render_menu: function () {
         var self = this;
         var options_list = create_options_list();
-        var res = Mustache.to_html(this.menu_template, {
+        var res = Mustache.to_html(menu_template, {
             "menu_name": this.menu_name ,
             "options": options_list
         });
@@ -46,6 +43,7 @@ var menu_object = {
             return result
         }
     },
+
     add_options_to_index: function () {
         for (var i = 0; i < this.options.length; ++i) {
             menu_item_index[this.options[i]] = this.menu_name
@@ -112,14 +110,6 @@ function bind_to_keys(shortcuts) {
     })
 }
 
-//This isn't used, I think
-//function dehighlight_table_text() {
-//    //$('.highlight').removeClass('highlight');
-//    $('.has-highlights').each(function(index) {
-//        this.innerHTML = this.innerHTML.replace(/<\/?span[^>]*>/g, "");
-//        $(this).removeClass('has-highlights')
-//    })
-//}
 
 mousetrap.bind("esc", function() {
     if (tableObject.selected_header != null) {
