@@ -98,7 +98,7 @@ class mainWindow(threading.Thread):
     def __init__(self, user_id, collection_name, doc_dict=None):
         global current_main_id
         self._stopevent = threading.Event()
-        self._sleepperiod = .1
+        self._sleepperiod = .01
         threading.Thread.__init__(self)
         self._my_q = Queue.Queue(0)
 
@@ -272,21 +272,28 @@ class mainWindow(threading.Thread):
             print "About to emit colorTxtInCell"
             self.emit_table_message("colorTxtInCell", data)
         elif event_name == "SetCellContent":
-            self._set_cell_content(data["doc_name"], data["row_index"], data["signature"], data["new_content"])
+            self._set_cell_content(data["doc_name"], data["row_index"], data["signature"], data["new_content"], data["cellchange"])
         elif event_name == "SaveTableSpec":
             new_spec = data["tablespec"]
             self.doc_dict[new_spec["doc_name"]].table_spec = new_spec
         return
 
 
-    def _set_cell_content(self, doc_name, row_index, signature_string, new_content):
+    def _set_cell_content(self, doc_name, row_index, signature_string, new_content, cellchange=True):
         doc = self.doc_dict[doc_name]
         the_row = doc.data_rows[row_index]
         old_content = doc._get_data_for_signature(the_row, doc.ordered_sig_dict[signature_string])
         if (new_content != old_content):
             signature = doc.ordered_sig_dict[signature_string]
             data = {"doc_name": doc_name, "row_index": row_index, "signature": signature, "new_content": new_content}
-            distribute_event("CellChange", self._main_id, data)
+
+            # If cellchange is True then we use a CellChange event to handle any updates.
+            # Otherwise just change things right here.
+            if cellchange:
+                distribute_event("CellChange", self._main_id, data)
+            else:
+                self._set_row_column_data(doc_name, row_index, signature, new_content)
+                self._change_list.append(row_index)
             if doc_name == self._visible_doc_name:
                 self.emit_table_message("setCellContent", data)
 

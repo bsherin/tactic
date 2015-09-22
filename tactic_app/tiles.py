@@ -82,7 +82,7 @@ class TileBase(threading.Thread):
 
     def __init__(self, main_id, tile_id, tile_name=None):
         self._stopevent = threading.Event()
-        self._sleepperiod = .2
+        self._sleepperiod = .05
         threading.Thread.__init__(self)
         self._my_q = Queue.Queue(0)
 
@@ -353,7 +353,7 @@ class SimpleCoder(TileBase):
             active_row_index = data["active_row_index"]
             doc_name = data["doc_name"]
             distribute_event("SetCellContent", self.main_id,
-                             {"row_index": active_row_index, "doc_name": doc_name, "signature": self.destination_column, "new_content": data["button_value"]})
+                             {"row_index": active_row_index, "doc_name": doc_name, "signature": self.destination_column, "new_content": data["button_value"], "cellchange": True})
         else:
             TileBase.handle_event(self, event_name, data)
 
@@ -548,7 +548,7 @@ class VocabularyImportAndPlot(TileBase):
 class VocabularyPlot(VocabularyTable):
     save_attrs = TileBase.save_attrs + ["column_source", "tokenizer_func", "stop_list"]
     def __init__(self, main_id, tile_id, tile_name=None):
-        VocabularyDisplayTile.__init__(self, main_id, tile_id, tile_name)
+        VocabularyTable.__init__(self, main_id, tile_id, tile_name)
 
     def render_content (self):
         if self.column_source == None:
