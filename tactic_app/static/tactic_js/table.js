@@ -134,6 +134,7 @@ function doSearch(t) {
     if (t !== "") {
         broadcast_event_to_server("SearchTable", data_dict);
     }
+    return false
 }
 
 function deselect_header(the_id) {
@@ -612,7 +613,7 @@ var tableObject = {
         var usable_width = window.innerWidth - 2 * MARGIN_SIZE - 10
         $(".grid-left").width(usable_width * this.left_fraction)
         $(".grid-right").width(usable_width * (1 - this.left_fraction))
-        $("tbody").height(window.innerHeight - 80 - $("tbody").offset().top)
+        $("tbody").height(window.innerHeight - 30 - $("tbody").offset().top)
         $("#main-panel").width("") // We do this so that this will resize when the window is resized.
     },
 

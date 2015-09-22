@@ -212,28 +212,33 @@ var tile_object = {
 
     shrinkMe: function (){
         el = $(this.full_selector())
+        this.saved_size = el.outerHeight()
         el.find(".tile-body").fadeOut();
-        el.slideToggle({
-            "duration": "medium",
-            "step": function (now, tween) {
-                if (tween.prop == "height") {
-                    hheight = $(tween.elem).children(".panel-heading").outerHeight()
-                    if (now <= hheight){
-                        $(tween.elem).stop()
+        var hheight = el.find(".tile-panel-heading").outerHeight()
+        el.outerHeight(hheight)
 
-                    }
-                }
-            }
-        })
+        //el.slideToggle({
+        //    "duration": "medium",
+        //    "step": function (now, tween) {
+        //        if (tween.prop == "height") {
+        //            var hheight = $(tween.elem).children(".panel-heading").outerHeight()
+        //            if (now <= hheight){
+        //                $(tween.elem).stop()
+        //
+        //            }
+        //        }
+        //    }
+        //})
         el.resizable('destroy');
         el.find(".triangle-bottom").hide();
         el.find(".triangle-right").show();
     },
     expandMe: function (){
         el = $(this.full_selector())
-        el = $(this.full_selector()).slideToggle({
-            "duration": "medium",
-        })
+        el.outerHeight(this.saved_size)
+        //el = $(this.full_selector()).slideToggle({
+        //    "duration": "medium",
+        //})
         el = $(this.full_selector()).find(".triangle-right").hide();
         el = $(this.full_selector()).find(".triangle-bottom").show();
         el = $(this.full_selector()).find(".tile-body").fadeIn();

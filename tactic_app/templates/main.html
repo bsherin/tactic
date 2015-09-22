@@ -38,9 +38,17 @@
                             </select>
                         </span>
                     </form>
+
                     <span style="font-size: 12px; font-weight: bold;"> Project: <span id="project-name">{{project_name}}</span></span>
+                    <form class="form-inline" style="display:inline; float:right">
+                        <span class="form-group">
+                          <input type="text" id="search" class="form-control input-small" placeholder="Search">
+                        </span>
+                        <button class="btn btn-default input-sm" onclick="return doSearch(document.getElementById('search').value)" value="Find">Find</button>
+                   </form>
                     <span id="table-spin-place" style="margin:7px"></span>
                 </div>
+
                 <div id="table-wrapper" class="panel-body">
                     <div id="reload-message" style="display: none">
                         <span class="loader"><span class="loader-inner"></span></span>
@@ -48,13 +56,7 @@
                     <table id="table-area" >
                     </table>
                 </div>
-            </div>
-            <div class="input-group"">
-              <input type="text" id="search" class="form-control input-sm" aria-label="...">
-              <div class="input-group-btn">
-                <input class="btn btn-default input-sm" type="button" onmousedown="doSearch(document.getElementById('search').value)" value="Find">
-              </div>
-            </div>
+             </div>
         </div>
         <div class="grid-right" align="left">
             <div  class="panel panel-default" id="tile-area">
@@ -82,7 +84,7 @@
     window.onload = start_post_load;
     window.onresize = function () {
         tableObject.resize_table_area()
-        $("#tile-area").height(window.innerHeight - 80 - $("#tile-area").offset().top);
+        $("#tile-area").height(window.innerHeight - 20 - $("#tile-area").offset().top);
     }
     window.onbeforeunload = function(e) {
         return "Any unsaved changes will be lost."

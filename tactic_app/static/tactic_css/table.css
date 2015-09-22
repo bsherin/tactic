@@ -31,10 +31,10 @@
     /*table-layout: fixed;*/
 }
 
-#doc-selector {
+#doc-selector, #search {
     font-size: 12px;
     height: 25px;
-    padding: 0;
+    padding: 2px;
 }
 
 #table-area, #table-area th, #table-area td {
@@ -68,7 +68,6 @@
 
 }
 
-.column_select
 
 td, th {
     vertical-align: top;

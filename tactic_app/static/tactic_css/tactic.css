@@ -40,6 +40,8 @@ button.notclose {
     cursor: pointer
 }
 
+
+
 .stacked-button {
     margin-bottom: 10px;
     display: block;
@@ -57,10 +59,16 @@ button.notclose {
 
 .tile-panel {
     height: 265px;
+    margin: 7px;
 }
 
 .tile-panel-heading {
     cursor: move;
+    padding: 5px 7px;
+}
+
+#tile-div {
+    padding: 5px;
 }
 
 .output-plot {
@@ -70,6 +78,7 @@ button.notclose {
 
 #tile-area {
     margin: 0px;
+    border: 0px;
     overflow: scroll;
 }
 
