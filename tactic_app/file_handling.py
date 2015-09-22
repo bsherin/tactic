@@ -52,9 +52,12 @@ def read_csv_file_to_dict_list(csvfile):
         new_list_of_dicts = []
         for row in reader:
             new_list_of_dicts.append(row)
+        csvfile.seek(0)
+        reader2 = csv.reader(csvfile)
+        header_list = reader2.next()
     except csv.Error as e:
-        return (None, e)
-    return (filename, new_list_of_dicts)
+        return (None, e, None)
+    return (filename, new_list_of_dicts, header_list)
 
 def convert_lists_to_dicts(a_dict):
     new_dict = {}

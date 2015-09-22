@@ -9,13 +9,14 @@ nltk.data.path = ['./nltk_data/']
 from nltk.corpus import wordnet as wn
 from flask_login import current_user
 from flask import url_for
-from matplotlib_utilities import GraphList, convert_figure_to_img
+from matplotlib_utilities import GraphList, convert_figure_to_img, ColorMapper
 
 from tactic_app import socketio, app
 from shared_dicts import mainwindow_instances, distribute_event
 from vector_space import Vocabulary
 from shared_dicts import tile_classes, user_tiles, tokenizer_dict
 from users import load_user
+
 # from views.main_views import figure_source
 
 # Decorator function used to register runnable analyses in analysis_dict
@@ -67,6 +68,7 @@ class TileTemplate(threading.Thread):
         """
 
 class TileBase(threading.Thread):
+    exports = {}
     save_attrs = ["update_events", "current_html", "tile_id", "tile_type", "images", "tile_name"]
     input_start_template = '<div class="form-group form-group-sm"">' \
                      '<label>{0}</label>'
@@ -85,7 +87,7 @@ class TileBase(threading.Thread):
         self._my_q = Queue.Queue(0)
 
         # These define the state of a tile and should be saved
-        self.update_events = ["RefreshTile", "UpdateOptions", "ShowFront", "StartSpinner", "StopSpinner", "RefreshTileFromSave"]
+        self.update_events = ["RefreshTile", "UpdateOptions", "ShowFront", "StartSpinner", "StopSpinner", "RefreshTileFromSave", "RebuildTileForms"]
         self.images = {}
 
         self.tile_type = self.__class__.__name__
@@ -111,6 +113,8 @@ class TileBase(threading.Thread):
                 else:
                     self.handle_event(q_item)
             self._stopevent.wait(self._sleepperiod)
+
+
 
     def join(self, timeout=None):
         """ Stop the thread and wait for it to end. """
@@ -154,6 +158,9 @@ class TileBase(threading.Thread):
             self.start_spinner()
         elif event_name=="StopSpinner":
             self.stop_spinner()
+        elif event_name=="RebuildTileForms":
+            form_html = self.create_form_html()
+            self.emit_tile_message("displayFormContent", {"html": form_html})
         return
 
     def emit_tile_message(self, message, data={}):
@@ -182,15 +189,6 @@ class TileBase(threading.Thread):
 
     def render_content(self):
         print "not implemented"
-
-    # def compile_save_dict(self):
-    #     result = {}
-    #     for (attr, val) in self.__dict__.items():
-    #         if not ((attr.startswith("_")) or (attr == "additionalInfo") or (str(type(val)) == "<type 'instance'>")):
-    #             result[attr] = val
-    #     result["tile_type"] = type(self).__name__
-    #     result.update(self.cache_dicts())
-    #     return result
 
     def compile_save_dict(self):
         result = {}
@@ -248,6 +246,19 @@ class TileBase(threading.Thread):
         the_html = image_string.format(fig_url)
         return the_html
 
+    def get_current_pipe_list(self):
+        pipe_list = []
+        for tile_entry in mainwindow_instances[self.main_id]._pipe_dict.values():
+            pipe_list += tile_entry.keys()
+        return pipe_list
+
+    def get_pipe_value(self, pipe_key):
+        mw = mainwindow_instances[self.main_id]
+        for (tile_id, tile_entry) in mainwindow_instances[self.main_id]._pipe_dict.items():
+            if pipe_key in tile_entry:
+                return getattr(mw.tile_instances[tile_id], tile_entry[pipe_key])
+        return None
+
     def create_form_html(self):
         form_html = ""
         for option in self.options:
@@ -271,10 +282,19 @@ class TileBase(threading.Thread):
                     else:
                         form_html += self.select_option_template.format(choice)
                 form_html += '</select></div>'
+            elif option["type"] == "pipe_select":
+                the_template = self.input_start_template + self.select_base_template
+                form_html += the_template.format(option["name"])
+                for choice in self.get_current_pipe_list():
+                    if choice == option["placeholder"]:
+                        form_html += self.select_option_selected_template.format(choice)
+                    else:
+                        form_html += self.select_option_template.format(choice)
+                form_html += '</select></div>'
             elif option["type"] == "list_select":
                 the_template = self.input_start_template + self.select_base_template
                 form_html += the_template.format(option["name"])
-                for choice in current_user.list_names:
+                for choice in self.current_user.list_names:
                     if choice == option["placeholder"]:
                         form_html += self.select_option_selected_template.format(choice)
                     else:
@@ -397,10 +417,11 @@ class WordnetSelectionTile(TileBase):
         return
 
 @tile_class
-class VocabularyDisplayTile(TileBase):
+class VocabularyTable(TileBase):
+    exports = ["vocabulary"]
     save_attrs = TileBase.save_attrs + ["column_source", "tokenizer_func", "stop_list"]
-    def __init__(self, main_id, tile_id, tile_name):
-        TileBase.__init__(self, main_id, tile_id, tile_name=None)
+    def __init__(self, main_id, tile_id, tile_name=None):
+        TileBase.__init__(self, main_id, tile_id, tile_name)
         self.column_source = None
         self.update_events += ["CellChange", "TileWordClick"]
         self.tokenizer_func = None
@@ -415,6 +436,10 @@ class VocabularyDisplayTile(TileBase):
         {"name": "tokenizer", "type": "tokenizer_select", "placeholder": self.tokenizer_func},
         {"name": "stop_list", "type": "list_select", "placeholder": self.stop_list}
         ]
+
+    @property
+    def vocabulary(self):
+        return self._vocab
 
     def tokenize_rows(self, the_rows, the_tokenizer):
         tokenized_rows = []
@@ -478,8 +503,6 @@ class VocabularyDisplayTile(TileBase):
         the_html = self.build_html_table_from_data_list(self.vdata_table)
         return the_html
 
-
-
     def update_options(self, form_data):
         self.column_source = form_data["column_source"];
         self.tokenizer_func = form_data["tokenizer"];
@@ -488,10 +511,44 @@ class VocabularyDisplayTile(TileBase):
         self.spin_and_refresh()
 
 @tile_class
-class VocabularyPlotClass(VocabularyDisplayTile):
+class VocabularyImportAndPlot(TileBase):
+    save_attrs = TileBase.save_attrs + ["vocab_source"]
+
+    def __init__(self, main_id, tile_id, tile_name=None):
+        TileBase.__init__(self, main_id, tile_id, tile_name)
+        self.vocab_source = None
+
+    @property
+    def options(self):
+        return  [
+            {"name": "vocab_source", "type": "pipe_select", "placeholder": self.vocab_source}
+        ]
+
+    def render_content (self):
+        if self.vocab_source == None:
+            return "No vocab source selected."
+        N = 20
+        self._vocab = self.get_pipe_value(self.vocab_source)
+        self.vdata_table = self._vocab.vocab_data_table()
+        word_list = []
+        amount_list = []
+        for entry in self.vdata_table[1:N + 1]:
+            word_list.append(entry[0])
+            amount_list.append(entry[2])
+        fig = GraphList(amount_list, word_list)
+        self.images["vocab_plot"] = convert_figure_to_img(fig)
+        return self.create_figure_html("vocab_plot")
+
+    def update_options(self, form_data):
+        self.vocab_source = form_data["vocab_source"]
+        self.post_event("ShowFront");
+        self.spin_and_refresh();
+
+@tile_class
+class VocabularyPlot(VocabularyTable):
     save_attrs = TileBase.save_attrs + ["column_source", "tokenizer_func", "stop_list"]
-    def __init__(self, main_id, tile_id, tile_name):
-        VocabularyDisplayTile.__init__(self, main_id, tile_id, tile_name=None)
+    def __init__(self, main_id, tile_id, tile_name=None):
+        VocabularyDisplayTile.__init__(self, main_id, tile_id, tile_name)
 
     def render_content (self):
         if self.column_source == None:
@@ -511,8 +568,8 @@ class VocabularyPlotClass(VocabularyDisplayTile):
         return self.create_figure_html("vocab_plot")
 
 @tile_class
-class NaiveBayesTile(TileBase):
-    save_attrs = TileBase.save_attrs + ["text_source", "code_source", "code_dest", "column_source", "tokenizer_func", "stop_list"]
+class NaiveBayes(TileBase):
+    save_attrs = TileBase.save_attrs + ["text_source", "code_source", "code_dest", "tokenizer_func", "stop_list"]
     def __init__(self, main_id, tile_id, tile_name=None):
         TileBase.__init__(self, main_id, tile_id, tile_name)
         self.text_source = ""
@@ -522,8 +579,10 @@ class NaiveBayesTile(TileBase):
         self.tokenizer_func = ""
         self._vocab = None
         self._classifer = None
-        self.update_events += ["CellChange"]
+        self.update_events += ["CellChange", "TileButtonClick"]
         self.tile_type = self.__class__.__name__
+        self.tokenized_rows_dict = {}
+        self.autocodes_dict = {}
 
     @property
     def options(self):
@@ -534,6 +593,31 @@ class NaiveBayesTile(TileBase):
         {"name": "tokenizer", "type": "tokenizer_select", "placeholder": self.tokenizer_func},
         {"name": "stop_list", "type": "list_select", "placeholder": self.stop_list}
         ]
+
+    def handle_event(self, event_name, data=None):
+        if event_name == "TileButtonClick":
+            active_row_index = data["active_row_index"]
+            doc_name = data["doc_name"]
+            self.color_cell(doc_name, active_row_index)
+        else:
+            TileBase.handle_event(self, event_name, data)
+
+    def color_cell(self, doc_name, row_index):
+        print "entering color_cell"
+        autocode = self.autocodes_dict[doc_name][row_index]
+        txt = self.tokenized_rows_dict[doc_name][row_index]
+        reduced_vocab = self._vocab._sorted_list_vocab[:50]
+        res = {}
+        for w in set(txt):
+            if w in reduced_vocab:
+                res[w] = self._classifier._feature_probdist[autocode, w].logprob(True)
+        cmap = ColorMapper(max(res.values()), min(res.values()))
+        cell_color_dict = {}
+        for w in res:
+            cell_color_dict[w] = cmap.color_from_val(res[w])
+
+        print "about to distribute event ColorTextInCell"
+        distribute_event("ColorTextInCell", self.main_id, {"doc_name": doc_name, "row_index": row_index, "signature": self.text_source, "token_text": txt, "color_dict": cell_color_dict})
 
     def tokenize_rows(self, the_rows, the_tokenizer):
         tokenized_rows = []
@@ -552,15 +636,15 @@ class NaiveBayesTile(TileBase):
         if self.text_source is "":
             return "No text source selected."
         raw_text_dict = self.load_data_dict(self.text_source)
-        tokenized_rows_dict = self.tokenize_docs(raw_text_dict, self.tokenizer_func)
-        combined_text_rows = self.dict_to_list(tokenized_rows_dict)
+        self.tokenized_rows_dict = self.tokenize_docs(raw_text_dict, self.tokenizer_func)
+        combined_text_rows = self.dict_to_list(self.tokenized_rows_dict)
         code_rows_dict = self.load_data_dict(self.code_source)
         combined_code_rows = self.dict_to_list(code_rows_dict)
         self._vocab = Vocabulary(combined_text_rows, self.stop_list)
 
         reduced_vocab = self._vocab._sorted_list_vocab[:50]
         labeled_featuresets_dict = {}
-        for (dname, doc) in tokenized_rows_dict.items():
+        for (dname, doc) in self.tokenized_rows_dict.items():
             r = 0
             labeled_featuresets_dict[dname] = []
             for instance in doc:
@@ -574,21 +658,22 @@ class NaiveBayesTile(TileBase):
         self._classifier = nltk.NaiveBayesClassifier.train(combined_featuresets)
         accuracy = nltk.classify.accuracy(self._classifier, combined_featuresets)
 
-        autocodes_dict = {}
+        self.autocodes_dict = {}
         for (dname, doc) in labeled_featuresets_dict.items():
             r = 0
-            autocodes_dict[dname] = []
+            self.autocodes_dict[dname] = []
             for lfset in doc:
                 autocode = self._classifier.classify(lfset[0])
-                autocodes_dict[dname].append(autocode)
-                distribute_event("SetCellContent", self.main_id, {"doc_name": dname, "row_index":r, "signature": self.code_dest, "new_content": str(autocode)})
+                self.autocodes_dict[dname].append(autocode)
+                distribute_event("SetCellContent", self.main_id,
+                                 {"doc_name": dname, "row_index":r, "signature": self.code_dest, "new_content": str(autocode), "cellchange": False})
                 r += 1
         cm = nltk.ConfusionMatrix(self.dict_to_list(code_rows_dict),
-                                  self.dict_to_list(autocodes_dict))
+                                  self.dict_to_list(self.autocodes_dict))
 
         html_output = "accuracy is " + str(round(accuracy, 2))
         html_output += '<pre>'+ cm.pretty_format() + '</pre>'
-
+        html_output += "<button value='Color'>Color Text</button>"
         return html_output
 
     def update_options(self, form_data):
@@ -599,3 +684,5 @@ class NaiveBayesTile(TileBase):
         self.code_dest = form_data["code_destination"]
         self.post_event("ShowFront");
         self.spin_and_refresh()
+
+

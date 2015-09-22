@@ -128,26 +128,26 @@ def add_tile_module():
     socketio.emit('update-tile-module-list', {"html": render_tile_module_list()}, namespace='/user_manage', room=current_user.get_id())
     return make_response("", 204)
 
-@app.route('/load_single_file', methods=['POST', 'GET'])
-def load_single_file():
-    file = request.files['file']
-    filename, file_extension = os.path.splitext(file.filename)
-    if file_extension == ".xml":
-        (collection_name, dict_list) = read_xml_file_to_dict_list(file)
-    elif file_extension == ".csv":
-        (collection_name, dict_list) = read_csv_file_to_dict_list(file)
-    else:
-        return jsonify({"message": "Not a valid file extension", "alert_type": "alert-danger"})
-    if collection_name is None: # then dict_list contains an error object
-        e = dict_list # For clarity
-        return jsonify({"message": e.message, "alert_type": "alert-danger"})
-    try:
-        put_docs_in_collection(build_data_collection_name(collection_name), dict_list)
-        socketio.emit('update-collection-list', {"html": render_collection_list()}, namespace='/user_manage', room=current_user.get_id())
-    except pymongo.errors.InvalidStringData:
-        print "Strings in documents must be valid UTF-8"
-    # current_user.add_collection(collection_name)
-    return jsonify({"message":"File successfully loaded", "alert_type": "alert-success"})
+# @app.route('/load_single_file', methods=['POST', 'GET'])
+# def load_single_file():
+#     file = request.files['file']
+#     filename, file_extension = os.path.splitext(file.filename)
+#     if file_extension == ".xml":
+#         (collection_name, dict_list) = read_xml_file_to_dict_list(file)
+#     elif file_extension == ".csv":
+#         (collection_name, dict_list) = read_csv_file_to_dict_list(file)
+#     else:
+#         return jsonify({"message": "Not a valid file extension", "alert_type": "alert-danger"})
+#     if collection_name is None: # then dict_list contains an error object
+#         e = dict_list # For clarity
+#         return jsonify({"message": e.message, "alert_type": "alert-danger"})
+#     try:
+#         put_docs_in_collection(build_data_collection_name(collection_name), dict_list)
+#         socketio.emit('update-collection-list', {"html": render_collection_list()}, namespace='/user_manage', room=current_user.get_id())
+#     except pymongo.errors.InvalidStringData:
+#         print "Strings in documents must be valid UTF-8"
+#     # current_user.add_collection(collection_name)
+#     return jsonify({"message":"File successfully loaded", "alert_type": "alert-success"})
 
 @app.route('/load_files/<collection_name>', methods=['POST', 'GET'])
 def load_files(collection_name):
@@ -158,8 +158,9 @@ def load_files(collection_name):
         filename, file_extension = os.path.splitext(file.filename)
         if file_extension == ".xml":
             (success, dict_list) = read_xml_file_to_dict_list(file)
+            header_list = []
         elif file_extension == ".csv":
-            (success, dict_list) = read_csv_file_to_dict_list(file)
+            (success, dict_list, header_list) = read_csv_file_to_dict_list(file)
         else:
             return jsonify({"message": "Not a valid file extension " + file_extension, "alert_type": "alert-danger"})
         if not success: # then dict_list contains an error object
@@ -167,7 +168,7 @@ def load_files(collection_name):
             return jsonify({"message": e.message, "alert_type": "alert-danger"})
 
         try:
-            db[full_collection_name].insert_one({"name": filename, "data_rows": dict_list})
+            db[full_collection_name].insert_one({"name": filename, "data_rows": dict_list, "header_list": header_list})
         except pymongo.errors.InvalidStringData:
             print "Strings in documents must be valid UTF-8"
 

@@ -21,3 +21,4 @@ function doFlash(data) {
 
     $("#status-area").html(result)
 }
+

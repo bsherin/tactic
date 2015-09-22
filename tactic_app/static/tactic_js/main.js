@@ -26,6 +26,9 @@ function start_post_load() {
                 }
                 menus["Project"].enable_menu_item("save");
 
+                // This is necessary in case the existence of any tiles requires changes to tile forms
+                // It's a bit of a kluge since all of the forms will have been created once already
+                broadcast_event_to_server("RebuildTileForms", {})
             })
     }
     else {
@@ -51,9 +54,11 @@ function start_post_load() {
     socket.emit('join', {"room": user_id});
     socket.emit('join', {"room": main_id});
     socket.on('tile-message', function (data) {
+        // console.log("received tile message " + data.message);
         tile_dict[data.tile_id][data.message](data)
     });
     socket.on('table-message', function (data) {
+        // console.log("received table message " + data.message);
         tableObject[data.message](data)
     });
     socket.on('close-user-windows', function(data){
@@ -90,3 +95,6 @@ function broadcast_event_to_server(event_name, data_dict) {
         data: JSON.stringify(data_dict)
     });
 }
+
+spinner_html = '<span class="loader-small"></span>'
+

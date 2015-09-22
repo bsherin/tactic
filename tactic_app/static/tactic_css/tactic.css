@@ -84,14 +84,12 @@ button.notclose {
 }
 
 .back {
-    background-color: white;
     padding: 20px;
     margin: 0px;
     overflow: scroll
 }
 
 .front {
-    background-color: white;
     padding: 0px;
     margin: 0px;
 }
@@ -100,6 +98,12 @@ button.notclose {
     padding: 0px;
 }
 
-.tile-panel, .front,““‘ .back{
-    border: 1px solid #BCE8F1;
+/*.tile-panel, .front,““‘ .back{*/
+    /*border: 1px solid #BCE8F1;*/
+/*}*/
+
+.tile-panel {
+    border: 2px solid #BCE8F1;
+    background-color: white;
 }
+

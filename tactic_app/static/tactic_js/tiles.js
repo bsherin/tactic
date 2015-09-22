@@ -150,9 +150,6 @@ function do_resize(tile_id){
     resize_tile_area(null, ui);
 }
 
-//spinner_html = '<span class="loader-small"><span class="loader-inner-small"></span></span>'
-spinner_html = '<span class="loader-small"></span>'
-
 var tile_object = {
     tile_id: null,
     spinner: null,
@@ -185,6 +182,9 @@ var tile_object = {
     displayTileContent: function (data) {
         $(this.full_selector() + " #tile-display-area").html(data["html"]);
         this.showFront()
+    },
+    displayFormContent: function (data) {
+        $(this.full_selector() + " #form-display-area").html(data["html"]);
     },
     startSpinner: function() {
         //this.spinner = new Spinner({scale: 0.4, left:"15px"}).spin();

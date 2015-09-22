@@ -10,7 +10,7 @@
      <div class='panel-body tile-body' id='tile_body_{{tile_id}}'>
          <div class="front"><div id="tile-display-area"></div></div>
          <div class="back">
-         <form>
+         <form id="form-display-area">
             {{form_text | safe}}
          </form>
          <button class='btn btn-primary' onclick=tile_dict['{{tile_id}}'].submitOptions()>Submit</button>

@@ -45,7 +45,7 @@ def update_project():
 
 @app.route('/grab_data/<main_id>/<doc_name>', methods=['get'])
 def grab_data(main_id, doc_name):
-    return jsonify({"doc_name": doc_name, "data_rows": mainwindow_instances[main_id].doc_dict[doc_name].data_rows})
+    return jsonify({"doc_name": doc_name, "data_rows": mainwindow_instances[main_id].doc_dict[doc_name].data_rows, "header_list": mainwindow_instances[main_id].doc_dict[doc_name].header_list})
 
 @app.route('/grab_project_data/<main_id>/<doc_name>', methods=['get'])
 def grab_project_data(main_id, doc_name):

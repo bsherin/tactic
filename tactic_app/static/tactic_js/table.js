@@ -25,7 +25,6 @@ $.get($SCRIPT_ROOT + "/get_table_templates", function(template){
     th_template_resize = $(template).filter('#th-template-resize').html();
 })
 
-
 function click_header(el) {
     var the_id = $(el).attr("id");
     if (the_id === tableObject.selected_header) {
@@ -91,16 +90,22 @@ function text_select(e) {
     }
 }
 
+
+
 function handle_cell_change () {
     // This is called when the user directly edits a cell.
     // It is assumed that this points to the DOM element that was changed.
     var current_content = $(this).html();
 
-    //Get rid fo the extra br tags that appear
-    // First just get rid of the one at the end
-    current_content = current_content.replace(/\<br\>$/, "");
-    // Now turn any brs in the middle into newlines
-    current_content = current_content.replace(/\<br\>/g, "\n");
+    // turn any brs in the middle into newlines
+    var rexp = new RegExp("\<br\>([\\w\\s])", "g")
+    current_content = current_content.replace(rexp, "\\n")
+
+    // get rid of any other tags and trim
+    rexp = new RegExp("\<.*?\>", "g")
+    current_content = current_content.replace(rexp, " ")
+    current_content = current_content.trim()
+
     var rindex = this.parentElement.rowIndex - tableObject.header_rows;
     var cindex = this.cellIndex;
     var sig = tableObject.signature_list[cindex];;
@@ -271,7 +276,8 @@ var tableObject = {
             this.current_spec.next_header_id = 0
             tablespec_dict[this.current_doc_name] = this.current_spec;
             var sample_row = this.data_rows[0];
-            this.current_spec.header_struct = this.find_headers(this.collection_name, sample_row);
+            this.current_spec.header_struct = this.find_headers(this.collection_name, sample_row, data_object["header_list"]);
+
             menus["Project"].disable_menu_item('save')
         }
         else {
@@ -309,7 +315,7 @@ var tableObject = {
         broadcast_event_to_server("SaveTableSpec", {"tablespec": this.current_spec})
         label_super_headers();
         label_sub_headers();
-        this.header_rows = $("thead").children().length;
+        this.header_rows = $("#table-area thead").children().length;
         $('#table-area td').blur(handle_cell_change)
 
         function true_col_index(el) {
@@ -408,6 +414,39 @@ var tableObject = {
         }
 
     },
+
+    colorTxtInCell: function(data_object) {
+        console.log("entering colorTxtInCell")
+        var rindex = data_object.row_index;
+        var sig = data_object.signature;
+        var token_text = data_object.token_text;
+        var color_dict = data_object.color_dict;
+        var cindex = this.getCellIndexFromSignature(data_object.signature);
+
+        var result = "";
+
+        try {
+            var el = this.getCellElementByRowColIndex(rindex, cindex);
+            for (var i = 0; i < token_text.length; ++i) {
+                w = token_text[i]
+                if (color_dict.hasOwnProperty(w)) {
+                    result = result + "<span style='background-color: " + color_dict[w] + "' > " + w + "</span>";
+                }
+                else {
+                    result = result + " " + w
+                }
+            }
+            result = result.trim()
+            el.innerHTML = result;
+            this.highlighted_cells.push({"row_index": rindex, "signature":sig})
+        }
+        catch(err) {
+            console.log(err.message + " row index " + rindex + "_col_index_ " + cindex)
+        }
+
+    },
+
+
     dehiglightAllCells: function() {
         self = this;
         this.highlighted_cells.forEach(function(c){
@@ -427,6 +466,14 @@ var tableObject = {
         catch (err) {
             console.log(err.message + " row index " + rindex + "_col_index_ " + cindex)
         }
+    },
+
+    startTableSpinner: function () {
+        $("#table-spin-place").html(spinner_html);
+    },
+
+    stopTableSpinner: function () {
+        $("#table-spin-place").html("");
     },
 
     setCellContent: function(data) {
@@ -566,9 +613,10 @@ var tableObject = {
         $(".grid-left").width(usable_width * this.left_fraction)
         $(".grid-right").width(usable_width * (1 - this.left_fraction))
         $("tbody").height(window.innerHeight - 80 - $("tbody").offset().top)
+        $("#main-panel").width("") // We do this so that this will resize when the window is resized.
     },
 
-    find_headers: function (the_key, the_value) {
+    find_headers: function (the_key, the_value, header_list) {
         // Side effects: This modifies this.next_header_id
             var span = 0;
             var depth_list = [];
@@ -591,14 +639,25 @@ var tableObject = {
                     return new_header_object;
                 }
                 case Object: {
-                    for (i in the_value) {
-                        if (the_value.hasOwnProperty(i)) {
-                            result = this.find_headers(i, the_value[i])
+                    if (header_list.length > 0) {
+                        for (var i = 0; i < header_list.length; ++i) {
+                            result = this.find_headers(header_list[i], the_value[i], [])
                             span += result.span
                             depth_list.push(result.depth)
                             working_list.push(result)
                         }
                     }
+                    else {
+                        for (var i in the_value) {
+                            if (the_value.hasOwnProperty(i)) {
+                                result = this.find_headers(i, the_value[i], [])
+                                span += result.span
+                                depth_list.push(result.depth)
+                                working_list.push(result)
+                            }
+                        }
+                    }
+
                     new_header_object.name = the_key;
                     new_header_object.span = span;
                     new_header_object.id = this.next_header_id;

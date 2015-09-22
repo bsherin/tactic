@@ -48,7 +48,7 @@
 }
 
 #table-area thead {
-    background-color: #c9e2b3;
+    background-color: rgba(128, 128, 128, 0.39);
     display: block;
 }
 
