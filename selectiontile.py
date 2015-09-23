@@ -2,13 +2,13 @@
 class SimpleSelectionTile(TileBase):
     def __init__(self, main_id, tile_id, tile_name=None):
         TileBase.__init__(self, main_id, tile_id, tile_name)
-        self.update_events.append("text_select")
+        self.update_events.append("TextSelect")
         self.extra_text = "placeholder text"
         self.selected_text = "no selection"
         self.tile_type = self.__class__.__name__
 
     def handle_event(self, event_name, data=None):
-        if event_name == "text_select":
+        if event_name == "TextSelect":
             self.selected_text = data["selected_text"]
             self.push_direct_update()
         TileBase.handle_event(self, event_name, data)

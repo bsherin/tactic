@@ -114,8 +114,6 @@ class TileBase(threading.Thread):
                     self.handle_event(q_item)
             self._stopevent.wait(self._sleepperiod)
 
-
-
     def join(self, timeout=None):
         """ Stop the thread and wait for it to end. """
         self._stopevent.set( )
@@ -389,7 +387,7 @@ class WordnetSelectionTile(TileBase):
     save_attrs = TileBase.save_attrs + ["to_show"]
     def __init__(self, main_id, tile_id, tile_name=None):
         TileBase.__init__(self, main_id, tile_id, tile_name)
-        self.update_events.append("text_select")
+        self.update_events.append("TextSelect")
         self.selected_text = "no selection"
         self.to_show = 5
         self.tile_type = self.__class__.__name__
@@ -401,7 +399,7 @@ class WordnetSelectionTile(TileBase):
         ]
 
     def handle_event(self, event_name, data=None):
-        if event_name == "text_select":
+        if event_name == "TextSelect":
             self.selected_text = data["selected_text"]
             self.push_direct_update()
         TileBase.handle_event(self, event_name, data)
@@ -567,9 +565,9 @@ class VocabularyPlot(VocabularyTable):
         self.images["vocab_plot"] = convert_figure_to_img(fig)
         return self.create_figure_html("vocab_plot")
 
-@tile_class
-class NaiveBayes(TileBase):
+class AbstractClassifier(TileBase):
     save_attrs = TileBase.save_attrs + ["text_source", "code_source", "code_dest", "tokenizer_func", "stop_list"]
+    classifier_class = None
     def __init__(self, main_id, tile_id, tile_name=None):
         TileBase.__init__(self, main_id, tile_id, tile_name)
         self.text_source = ""
@@ -593,31 +591,6 @@ class NaiveBayes(TileBase):
         {"name": "tokenizer", "type": "tokenizer_select", "placeholder": self.tokenizer_func},
         {"name": "stop_list", "type": "list_select", "placeholder": self.stop_list}
         ]
-
-    def handle_event(self, event_name, data=None):
-        if event_name == "TileButtonClick":
-            active_row_index = data["active_row_index"]
-            doc_name = data["doc_name"]
-            self.color_cell(doc_name, active_row_index)
-        else:
-            TileBase.handle_event(self, event_name, data)
-
-    def color_cell(self, doc_name, row_index):
-        print "entering color_cell"
-        autocode = self.autocodes_dict[doc_name][row_index]
-        txt = self.tokenized_rows_dict[doc_name][row_index]
-        reduced_vocab = self._vocab._sorted_list_vocab[:50]
-        res = {}
-        for w in set(txt):
-            if w in reduced_vocab:
-                res[w] = self._classifier._feature_probdist[autocode, w].logprob(True)
-        cmap = ColorMapper(max(res.values()), min(res.values()))
-        cell_color_dict = {}
-        for w in res:
-            cell_color_dict[w] = cmap.color_from_val(res[w])
-
-        print "about to distribute event ColorTextInCell"
-        distribute_event("ColorTextInCell", self.main_id, {"doc_name": doc_name, "row_index": row_index, "signature": self.text_source, "token_text": txt, "color_dict": cell_color_dict})
 
     def tokenize_rows(self, the_rows, the_tokenizer):
         tokenized_rows = []
@@ -655,7 +628,7 @@ class NaiveBayes(TileBase):
                     labeled_featuresets_dict[dname].append((new_fs, code_rows_dict[dname][r]))
                 r += 1
         combined_featuresets = self.dict_to_list(labeled_featuresets_dict)
-        self._classifier = nltk.NaiveBayesClassifier.train(combined_featuresets)
+        self._classifier = self.classifier_class.train(combined_featuresets)
         accuracy = nltk.classify.accuracy(self._classifier, combined_featuresets)
 
         self.autocodes_dict = {}
@@ -673,7 +646,7 @@ class NaiveBayes(TileBase):
 
         html_output = "accuracy is " + str(round(accuracy, 2))
         html_output += '<pre>'+ cm.pretty_format() + '</pre>'
-        html_output += "<button value='Color'>Color Text</button>"
+        # html_output += "<button value='Color'>Color Text</button>"
         return html_output
 
     def update_options(self, form_data):
@@ -684,5 +657,46 @@ class NaiveBayes(TileBase):
         self.code_dest = form_data["code_destination"]
         self.post_event("ShowFront");
         self.spin_and_refresh()
+
+@tile_class
+class NaiveBayes(AbstractClassifier):
+    classifier_class = nltk.NaiveBayesClassifier
+
+    def render_content(self):
+        if self.text_source is "":
+            return "No text source selected."
+        html_output = AbstractClassifier.render_content(self)
+        html_output += "<button value='Color'>Color Text</button>"
+        return html_output
+
+    def handle_event(self, event_name, data=None):
+        if event_name == "TileButtonClick":
+            active_row_index = data["active_row_index"]
+            doc_name = data["doc_name"]
+            self.color_cell(doc_name, active_row_index)
+        else:
+            AbstractClassifier.handle_event(self, event_name, data)
+
+    def color_cell(self, doc_name, row_index):
+        print "entering color_cell"
+        autocode = self.autocodes_dict[doc_name][row_index]
+        txt = self.tokenized_rows_dict[doc_name][row_index]
+        reduced_vocab = self._vocab._sorted_list_vocab[:50]
+        res = {}
+        for w in set(txt):
+            if w in reduced_vocab:
+                res[w] = self._classifier._feature_probdist[autocode, w].logprob(True)
+        cmap = ColorMapper(max(res.values()), min(res.values()))
+        cell_color_dict = {}
+        for w in res:
+            cell_color_dict[w] = cmap.color_from_val(res[w])
+
+        print "about to distribute event ColorTextInCell"
+        distribute_event("ColorTextInCell", self.main_id, {"doc_name": doc_name, "row_index": row_index, "signature": self.text_source, "token_text": txt, "color_dict": cell_color_dict})
+
+@tile_class
+class DecisionTree(AbstractClassifier):
+    classifier_class = nltk.DecisionTreeClassifier
+
 
 

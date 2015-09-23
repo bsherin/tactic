@@ -86,7 +86,7 @@ function text_select(e) {
     var the_dict;
     if (the_text.length > 0) {
         the_dict = {"selected_text": the_text};
-        broadcast_event_to_server("text_select", the_dict)
+        broadcast_event_to_server("TextSelect", the_dict)
     }
 }
 

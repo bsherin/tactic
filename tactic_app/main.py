@@ -191,6 +191,7 @@ class mainWindow(threading.Thread):
 
     def add_blank_column(self, column_name):
         for doc in self.doc_dict.values():
+            doc.header_list.append(column_name)
             for r in doc.data_rows:
                 r[column_name] = ""
             # We have to rebuild the signature list and dicts to include the new column

@@ -298,14 +298,20 @@ function save_project_as() {
 function create_column() {
     var column_name = $("#column-name-modal-field").val();
     // First: fix the header struct
-    var new_header_object = Object.create(header0bject)
-    new_header_object.name = column_name;
-    new_header_object.span = 1;
-    new_header_object.depth = 0;
-    new_header_object.id = tableObject.next_header_id;
-    tableObject.next_header_id += 1;
-    new_header_object.child_list = [];
-    tableObject.current_spec.header_struct.child_list.push(new_header_object)
+
+    for (var doc in tablespec_dict) {
+        if (tablespec_dict.hasOwnProperty(doc)) {
+            var new_header_object = Object.create(header0bject)
+            new_header_object.name = column_name;
+            new_header_object.span = 1;
+            new_header_object.depth = 0;
+            new_header_object.id = tableObject.next_header_id;
+            tableObject.next_header_id += 1;
+            new_header_object.child_list = [];
+            tablespec_dict[doc].header_struct.child_list.push(new_header_object)
+        }
+    }
+
     // Then rebuild the table
     tableObject.build_table()
 
