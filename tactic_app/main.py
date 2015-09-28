@@ -94,7 +94,7 @@ class docInfo():
 class mainWindow(threading.Thread):
     save_attrs = ["short_collection_name", "collection_name", "current_tile_id", "user_id", "doc_dict", "tile_instances", "project_name", "loaded_modules"]
     update_events = ["CellChange", "CreateColumn", "SearchTable", "SaveTableSpec",
-                    "DehighlightTable", "SetFocusRowCellContent", "SetCellContent", "RemoveTile", "ColorTextInCell"]
+                    "DehighlightTable", "SetCellContent", "RemoveTile", "ColorTextInCell"]
     def __init__(self, user_id, collection_name, doc_dict=None):
         global current_main_id
         self._stopevent = threading.Event()
@@ -286,7 +286,7 @@ class mainWindow(threading.Thread):
         old_content = doc._get_data_for_signature(the_row, doc.ordered_sig_dict[signature_string])
         if (new_content != old_content):
             signature = doc.ordered_sig_dict[signature_string]
-            data = {"doc_name": doc_name, "row_index": row_index, "signature": signature, "new_content": new_content}
+            data = {"doc_name": doc_name, "row_index": row_index, "signature": signature, "new_content": new_content, "old_content": old_content}
 
             # If cellchange is True then we use a CellChange event to handle any updates.
             # Otherwise just change things right here.

@@ -10,7 +10,7 @@ class SimpleSelectionTile(TileBase):
     def handle_event(self, event_name, data=None):
         if event_name == "TextSelect":
             self.selected_text = data["selected_text"]
-            self.push_direct_update()
+            self.refresh_tile_now()
         TileBase.handle_event(self, event_name, data)
 
     def render_content(self):

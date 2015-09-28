@@ -130,7 +130,7 @@ function build_and_render_menu_objects() {
     // Create the project_menu object
     project_menu = Object.create(menu_object);
     project_menu.menu_name = "Project";
-    project_menu.options = ["save-as", "save"];
+    project_menu.options = ["save-as", "save", "export-data"];
     project_menu.perform_menu_item = project_command;
     menus[project_menu.menu_name] = project_menu;
     project_menu.add_options_to_index();
@@ -190,8 +190,6 @@ function build_and_render_menu_objects() {
     }
 }
 
-
-
 function column_command(menu_id) {
     var the_id = tableObject.selected_header;
     if (the_id != null) {
@@ -243,6 +241,10 @@ function project_command(menu_id) {
         {
             save_project();
         }
+        case "export-data":
+        {
+            $('#export-data-modal').modal();
+        }
     }
 }
 
@@ -274,6 +276,24 @@ function save_project() {
         dataType: 'json',
         success: doFlash
     });
+}
+
+function export_data_table() {
+    var export_name = $("#export-name-modal-field").val();
+    var result_dict = {
+        "export_name": export_name,
+        "main_id": main_id,
+    }
+    $.ajax({
+        url: $SCRIPT_ROOT + "/export_data",
+        contentType : 'application/json',
+        type : 'POST',
+        async: true,
+        data: JSON.stringify(result_dict),
+        dataType: 'json',
+        success: doFlash
+    });
+    $('#export-data-modal').modal('hide')
 }
 
 function save_project_as() {

@@ -5,6 +5,7 @@ tile_classes = {}
 user_tiles = {}
 tokenizer_dict = {}
 loaded_user_modules = {}
+weight_functions = {}
 
 def distribute_event(event_name, main_id, data_dict=None, tile_id=None):
     mwindow = mainwindow_instances[main_id]

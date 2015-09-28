@@ -46,17 +46,36 @@ def load_a_list(the_file):
 def read_csv_file_to_dict_list(csvfile):
     dialect = csv.Sniffer().sniff(csvfile.read(1024))
     csvfile.seek(0)
+    i = 0
     try:
         reader = csv.DictReader(csvfile, dialect=dialect)
         filename, file_extension = os.path.splitext(csvfile.filename)
         new_list_of_dicts = []
         for row in reader:
+            row["id"] = filename + "_" + str(i)
             new_list_of_dicts.append(row)
+            i += 1
         csvfile.seek(0)
         reader2 = csv.reader(csvfile)
         header_list = reader2.next()
+        header_list = ["id"] + header_list
     except csv.Error as e:
         return (None, e, None)
+    return (filename, new_list_of_dicts, header_list)
+
+def utf_solver(txt):
+    return txt.decode("utf-8", 'ignore').encode("ascii", "ignore")
+
+def read_txt_file_to_dict_list(txtfile):
+    filename, file_extension = os.path.splitext(txtfile.filename)
+    lines = txtfile.readlines()
+    new_list_of_dicts = []
+    i = 0
+    for l in lines:
+        new_list_of_dicts.append({"number": filename + "_" + str(i), "text": utf_solver(l)})
+        i = i + 1
+
+    header_list = ["number", "text"]
     return (filename, new_list_of_dicts, header_list)
 
 def convert_lists_to_dicts(a_dict):

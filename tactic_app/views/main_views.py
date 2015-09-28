@@ -5,7 +5,8 @@ from flask_login import current_user
 from flask_socketio import join_room
 from tactic_app.shared_dicts import tile_classes, user_tiles
 from tactic_app.shared_dicts import mainwindow_instances, distribute_event
-from user_manage_views import render_project_list
+from user_manage_views import render_project_list, render_collection_list
+from tactic_app.users import build_data_collection_name
 
 # The main window should join a room associated with the user
 @socketio.on('connect', namespace='/main')
@@ -39,6 +40,16 @@ def update_project():
     db[current_user.project_collection_name].update_one({"project_name": save_dict["project_name"]},
                                                         {'$set': save_dict})
     return jsonify({"success": True, "message": "Project Successfully Saved"})
+
+@app.route('/export_data', methods=['POST'])
+def export_data():
+    data_dict = request.json
+    doc_dict = mainwindow_instances[data_dict['main_id']].doc_dict
+    full_collection_name = build_data_collection_name(data_dict['export_name'])
+    for docinfo in doc_dict.values():
+        db[full_collection_name].insert_one({"name": docinfo.name, "data_rows": docinfo.data_rows, "header_list": docinfo.header_list})
+    socketio.emit('update-collection-list', {"html": render_collection_list()}, namespace='/user_manage', room=current_user.get_id())
+    return jsonify({"success": True, "message": "Data Successfully Exported"})
 
 # Views for reading data from the database and
 # passing back to the client.

@@ -14,8 +14,10 @@ from matplotlib_utilities import GraphList, convert_figure_to_img, ColorMapper
 from tactic_app import socketio, app
 from shared_dicts import mainwindow_instances, distribute_event
 from vector_space import Vocabulary
-from shared_dicts import tile_classes, user_tiles, tokenizer_dict
+from shared_dicts import tile_classes, user_tiles, tokenizer_dict, weight_functions
 from users import load_user
+from tactic_app.clusterer_classes import CentroidClusterer
+import numpy
 
 # from views.main_views import figure_source
 
@@ -23,6 +25,10 @@ from users import load_user
 def tile_class(tclass):
     tile_classes[tclass.__name__] = tclass
     return tclass
+
+def weight_function(wfunc):
+    weight_functions[wfunc.__name__] = wfunc
+    return wfunc
 
 def user_tile(tclass):
     uname = current_user.username
@@ -34,38 +40,6 @@ def user_tile(tclass):
 def create_user_tiles(tile_code):
     exec(tile_code)
     return
-
-class TileTemplate(threading.Thread):
-    options=[{
-        "name": "option1",
-        "type": "option1type",
-        "placeholder": "Placehold value"
-    },
-        {
-        "name": "option2",
-        "type": "option2type",
-        "placeholder": "Placeholder value"
-    }]
-    def _init__(self, main_id, tile_id, tile_name=None):
-        TileBase.__init__(self, main_id, tile_id, tile_name)
-        self.update_events.append("EventName")
-        # Any other initializations
-        return
-
-    def handle_event(self, event_name, data=None):
-        TileBase.handle_event(self, event_name, data)
-        return
-
-    def render_content(self):
-        """This should return html for the tile body.
-        Will be called on RefreshTile event"""
-        return
-
-    def update_options(self, form_data):
-                """ Called on the update_options event.
-        This is generated when the user clicks submit in the options view of the tile.
-        form_data will be a dict with keys that are the option names.
-        """
 
 class TileBase(threading.Thread):
     exports = {}
@@ -145,9 +119,9 @@ class TileBase(threading.Thread):
 
     def handle_event(self, event_name, data=None):
         if event_name == "RefreshTile":
-            self.push_direct_update()
+            self.refresh_tile_now()
         elif event_name == "RefreshTileFromSave":
-            self.push_direct_update(self.current_html)
+            self.refresh_tile_now(self.current_html)
         elif event_name == "UpdateOptions":
             self.update_options(data)
         elif event_name =="ShowFront":
@@ -159,6 +133,9 @@ class TileBase(threading.Thread):
         elif event_name=="RebuildTileForms":
             form_html = self.create_form_html()
             self.emit_tile_message("displayFormContent", {"html": form_html})
+        elif event_name == "TileWordClick":
+            distribute_event("DehighlightTable", self.main_id, {})
+            distribute_event("SearchTable", self.main_id, {"text_to_find": data["clicked_text"]})
         return
 
     def emit_tile_message(self, message, data={}):
@@ -173,7 +150,7 @@ class TileBase(threading.Thread):
     def show_front(self):
         self.emit_tile_message("showFront")
 
-    def push_direct_update(self, new_html=None):
+    def refresh_tile_now(self, new_html=None):
         if new_html == None:
             new_html = self.render_content()
         self.current_html = new_html
@@ -257,6 +234,19 @@ class TileBase(threading.Thread):
                 return getattr(mw.tile_instances[tile_id], tile_entry[pipe_key])
         return None
 
+    def build_html_table_from_data_list(self, data_list):
+        the_html = "<table><thead><tr>"
+        for c in data_list[0]:
+            the_html += "<th>{0}</th>".format(c)
+        the_html += "</tr><tbody>"
+        for r in data_list[1:]:
+            the_html += "<tr>"
+            for c in r:
+                the_html += "<td class='word-clickable'>{0}</td>".format(c)
+            the_html += "</tr>"
+        the_html += "</tbody></table>"
+        return the_html
+
     def create_form_html(self):
         form_html = ""
         for option in self.options:
@@ -275,6 +265,16 @@ class TileBase(threading.Thread):
                 the_template = self.input_start_template + self.select_base_template
                 form_html += the_template.format(option["name"])
                 for choice in tokenizer_dict.keys():
+                    if choice == option["placeholder"]:
+                        form_html += self.select_option_selected_template.format(choice)
+                    else:
+                        form_html += self.select_option_template.format(choice)
+                form_html += '</select></div>'
+
+            elif option["type"] == "weight_function_select":
+                the_template = self.input_start_template + self.select_base_template
+                form_html += the_template.format(option["name"])
+                for choice in weight_functions.keys():
                     if choice == option["placeholder"]:
                         form_html += self.select_option_selected_template.format(choice)
                     else:
@@ -307,34 +307,6 @@ class TileBase(threading.Thread):
             else:
                 print "Unknown option type specified"
         return form_html
-
-# @tile_class
-# class SimpleSelectionTile(TileBase):
-#     def __init__(self, main_id, tile_id, tile_name=None):
-#         TileBase.__init__(self, main_id, tile_id, tile_name)
-#         self.update_events.append("text_select")
-#         self.extra_text = "placeholder text"
-#         self.selected_text = "no selection"
-#         self.tile_type = self.__class__.__name__
-#
-#     def handle_event(self, event_name, data=None):
-#         if event_name == "text_select":
-#             self.selected_text = data["selected_text"]
-#             self.push_direct_update()
-#         TileBase.handle_event(self, event_name, data)
-#
-#     def render_content(self):
-#         return "{} {}".format(self.extra_text, self.selected_text)
-#
-#     def update_options(self, form_data):
-#         self.extra_text = form_data["extra_text"]
-#         self.spin_and_refresh()
-#
-#     @property
-#     def options(self):
-#         return  [
-#             {"name": "extra_text", "type": "text", "placeholder": "no selection"}
-#         ]
 
 @tile_class
 class SimpleCoder(TileBase):
@@ -401,7 +373,7 @@ class WordnetSelectionTile(TileBase):
     def handle_event(self, event_name, data=None):
         if event_name == "TextSelect":
             self.selected_text = data["selected_text"]
-            self.push_direct_update()
+            self.refresh_tile_now()
         TileBase.handle_event(self, event_name, data)
 
     def render_content(self):
@@ -446,19 +418,6 @@ class VocabularyTable(TileBase):
                 tokenized_rows.append(tokenizer_dict[the_tokenizer](raw_row))
         return tokenized_rows
 
-    def build_html_table_from_data_list(self, data_list):
-        the_html = "<table><thead><tr>"
-        for c in data_list[0]:
-            the_html += "<th>{0}</th>".format(c)
-        the_html += "</tr><tbody>"
-        for r in data_list[1:]:
-            the_html += "<tr>"
-            for c in r:
-                the_html += "<td class='word-clickable'>{0}</td>".format(c)
-            the_html += "</tr>"
-        the_html += "</tbody></table>"
-        return the_html
-
     def handle_event(self, event_name, data=None):
         if event_name == "CellChange":
             sig_string = mainwindow_instances[self.main_id].get_sig_string_from_sig(data["signature"])
@@ -467,7 +426,7 @@ class VocabularyTable(TileBase):
             # data will have the keys row_index, column_idex, signature, old_content, new_content
             if self._vocab is None:
                 if self.column_source == None:
-                    self.push_direct_update("No column source selected.")
+                    self.refresh_tile_now("No column source selected.")
                     return
                 raw_rows = self.load_raw_column(self.column_source)
                 raw_rows[data["row_index"]] = data["new_content"]
@@ -475,19 +434,18 @@ class VocabularyTable(TileBase):
                 self._vocab = Vocabulary(tokenized_rows, self.stop_list)
                 self.vdata_table = self._vocab.vocab_data_table()
                 the_html = self.build_html_table_from_data_list(self.vdata_table)
-                return self.push_direct_update(the_html)
+                return self.refresh_tile_now(the_html)
             else:
                 old_tokenized = tokenizer_dict[self.tokenizer_func](data["old_content"])
                 new_tokenized = tokenizer_dict[self.tokenizer_func](data["new_content"])
                 self._vocab.update_vocabulary(old_tokenized, new_tokenized)
                 self.vdata_table = self._vocab.vocab_data_table()
                 the_html = self.build_html_table_from_data_list(self.vdata_table)
-                self.push_direct_update(the_html)
+                self.refresh_tile_now(the_html)
                 return
         elif event_name == "TileWordClick":
             distribute_event("DehighlightTable", self.main_id, {})
             distribute_event("SearchTable", self.main_id, {"text_to_find": data["clicked_text"]})
-            print data["clicked_text"]
         else:
             TileBase.handle_event(self, event_name, data)
 
@@ -698,5 +656,171 @@ class NaiveBayes(AbstractClassifier):
 class DecisionTree(AbstractClassifier):
     classifier_class = nltk.DecisionTreeClassifier
 
+@tile_class
+class OrthogonalizingClusterer(TileBase):
+    save_attrs = TileBase.save_attrs + ["text_source", "number_of_clusters", "code_dest", "tokenizer_func", "stop_list"]
+    classifier_class = None
+    def __init__(self, main_id, tile_id, tile_name=None):
+        TileBase.__init__(self, main_id, tile_id, tile_name)
+        self.text_source = ""
+        self.code_dest = ""
+        self.stop_list = ""
+        self.tokenizer_func = ""
+        self._vocab = None
+        self._classifer = None
+        self.update_events += ["CellChange", "TileButtonClick", "TileWordClick"]
+        self.tile_type = self.__class__.__name__
+        self.tokenized_rows_dict = {}
+        self.names_source = ""
+        self.number_of_clusters = 5
+        self.autocodes_dict = {}
+        self.centroids = []
+        self.vocab_size = 50
+        self.weight_function = ""
+
+    @property
+    def options(self):
+        return  [
+        {"name": "text_source", "type": "column_select", "placeholder": self.text_source},
+        {"name": "number_of_clusters", "type": "text", "placeholder": self.number_of_clusters},
+        {"name": "names_source", "type": "column_select", "placeholder": self.names_source},
+        {"name": "code_destination", "type": "column_select", "placeholder": self.code_dest},
+        {"name": "tokenizer", "type": "tokenizer_select", "placeholder": self.tokenizer_func},
+        {"name": "weight_function", "type": "weight_function_select", "placeholder": self.weight_function},
+        {"name": "stop_list", "type": "list_select", "placeholder": self.stop_list},
+        {"name": "vocab_size", "type": "text", "placeholder": self.vocab_size},
+        ]
+
+    @staticmethod
+    def norm_vec(vec):
+        mag = numpy.dot(vec, vec)
+        if mag == 0:
+            return vec
+        else:
+            return(vec / numpy.sqrt(mag))
+
+    @staticmethod
+    def orthogonalize(doc_vectors):
+        total_v = numpy.zeros(len(doc_vectors[0]))
+        for v in doc_vectors:
+                total_v = total_v + v
+        total_v = OrthogonalizingClusterer.norm_vec(total_v)
+        new_doc_vectors = []
+        for v in doc_vectors:
+            new_doc_vectors.append(OrthogonalizingClusterer.norm_vec(v - numpy.dot(v, total_v) * total_v))
+        return new_doc_vectors
+
+    def top_words_from_centroid(self, vocab_list, n, to_print=10):
+        result = [["word", "weight"]]
+        sc = list(numpy.argsort(self.centroids[n]))
+        sc.reverse()
+        for i in range(to_print):
+            result.append([vocab_list[sc[i]], round(self.centroids[n][sc[i]], 4)])
+        return result
+
+    def tokenize_rows(self, the_rows, the_tokenizer):
+        tokenized_rows = []
+        for raw_row in the_rows:
+            if raw_row != None:
+                tokenized_rows.append(tokenizer_dict[the_tokenizer](raw_row))
+        return tokenized_rows
+
+    def tokenize_docs(self, text_dict, tokenizer):
+        result = {}
+        for (name, doc) in text_dict.items():
+            result[name] = self.tokenize_rows(doc, tokenizer)
+        return result
+
+    def get_group_number(self, name, groups):
+        r = 0
+        for g in groups:
+            if name in g:
+                return r + 1
+            r += 1
+        return 0
+
+    def render_content(self):
+        if self.text_source is "":
+            return "No text source selected."
+        raw_text_dict = self.load_data_dict(self.text_source)
+        self.tokenized_rows_dict = self.tokenize_docs(raw_text_dict, self.tokenizer_func)
+        combined_text_rows = self.dict_to_list(self.tokenized_rows_dict)
+        self._vocab = Vocabulary(combined_text_rows, self.stop_list)
+
+        reduced_vocab = self._vocab._sorted_list_vocab[:self.vocab_size]
+
+        doc_vectors = []
+        for r in combined_text_rows:
+            r_vector = self.norm_vec([weight_functions[self.weight_function](r.count(word), self._vocab._df_dict[word], self._vocab._cf_dict[word]) for word in reduced_vocab])
+            doc_vectors.append(r_vector)
+
+        new_vectors = self.orthogonalize(doc_vectors)
+        name_dict = self.load_data_dict(self.names_source)
+        combined_names = self.dict_to_list(name_dict)
+
+        self.clusterer = CentroidClusterer(vector_names = combined_names, normalise = False)
+        self.clusterer.cluster(new_vectors, trace = True)
+        self.clusterer.update_clusters(self.number_of_clusters)
+        self.centroids = self.clusterer._centroids
+        groups = self.clusterer._name_dendogram.groups(self.number_of_clusters)
+
+        the_html = ""
+        # data_table = [["cluster", "members"]]
+        # i = 1
+        # for g in groups:
+        #     data_table.append([str(i), g])
+        #     i += 1
+        # the_html = self.build_html_table_from_data_list(data_table)
+        #
+        # the_html += "<br>"
+
+        for i in range(self.number_of_clusters):
+            the_html += str(i + 1) + "<br>"
+            the_html += self.build_html_table_from_data_list(self.top_words_from_centroid(reduced_vocab, i, 10))
+
+        for (dname, names) in name_dict.items():
+            r = 0
+            self.autocodes_dict[dname] = []
+            for name in names:
+                autocode = self.get_group_number(name, groups)
+                self.autocodes_dict[dname].append(autocode)
+                distribute_event("SetCellContent", self.main_id,
+                                {"doc_name": dname, "row_index":r, "signature": self.code_dest, "new_content": str(autocode), "cellchange": False})
+                r += 1
+
+        return the_html
+
+    def update_options(self, form_data):
+        self.text_source = form_data["text_source"]
+        self.names_source = form_data["names_source"]
+        self.number_of_clusters = int(form_data["number_of_clusters"])
+        self.vocab_size = int(form_data["vocab_size"])
+        self.tokenizer_func = form_data["tokenizer"];
+        self.weight_function = form_data["weight_function"]
+        self.stop_list = self.get_user_list(form_data["stop_list"])
+        self.code_dest = form_data["code_destination"]
+        self.post_event("ShowFront");
+        self.spin_and_refresh()
 
 
+# Here are some assorted weighting functions
+
+@weight_function
+def pure_tf(tf, df, cf):
+    return tf
+
+@weight_function
+def tf(tf, df, cf):
+    if tf == 0:
+        result = 0
+    else:
+        result = (1 + numpy.log(tf))
+    return result
+
+@weight_function
+def tfidf(tf, df, cf):
+    if tf == 0 or df == 0:
+        result = 0
+    else:
+        result = (1 + numpy.log(tf)) / df
+    return result

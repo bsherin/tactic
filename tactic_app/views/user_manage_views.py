@@ -4,7 +4,7 @@ import os
 import pymongo
 from flask import render_template, request, make_response, redirect, url_for, jsonify
 from tactic_app import app, db, socketio
-from tactic_app.file_handling import read_xml_file_to_dict_list, read_csv_file_to_dict_list, load_a_list;
+from tactic_app.file_handling import read_xml_file_to_dict_list, read_csv_file_to_dict_list, read_txt_file_to_dict_list, load_a_list;
 from tactic_app.main import create_new_mainwindow, create_new_mainwindow_from_project, mainwindow_instances
 from tactic_app.users import put_docs_in_collection, build_data_collection_name
 from tactic_app.tiles import create_user_tiles
@@ -161,6 +161,8 @@ def load_files(collection_name):
             header_list = []
         elif file_extension == ".csv":
             (success, dict_list, header_list) = read_csv_file_to_dict_list(file)
+        elif file_extension ==".txt":
+            (success, dict_list, header_list) = read_txt_file_to_dict_list(file)
         else:
             return jsonify({"message": "Not a valid file extension " + file_extension, "alert_type": "alert-danger"})
         if not success: # then dict_list contains an error object

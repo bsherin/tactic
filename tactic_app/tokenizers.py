@@ -73,6 +73,10 @@ def my_tokenize(text, stem_text=False, alpha_only=False, lower_case=True):
         split_text = return_alpha_only(split_text)
     return split_text
 
+@tokenizer
+def my_alpha_only(text):
+    return my_tokenize(text, alpha_only=True)
+
 def lower_all(ltext):
     return [w.lower() for w in ltext]
 
