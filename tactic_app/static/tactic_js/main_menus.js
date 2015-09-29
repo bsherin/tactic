@@ -240,6 +240,7 @@ function project_command(menu_id) {
         case "save":
         {
             save_project();
+            break;
         }
         case "export-data":
         {

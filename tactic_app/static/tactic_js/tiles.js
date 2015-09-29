@@ -249,9 +249,23 @@ var tile_object = {
     },
 
     flipMe: function (){
-        $("#tile_body_" + this.tile_id).flip('toggle');
+        if ($("#tile_body_" + this.tile_id + " .back")[0].style.display == "none") {
+            this.showBack();
+        }
+        else {
+            this.showFront();
+        }
     },
     showFront: function (){
+        $("#tile_body_" + this.tile_id + " .front").fadeIn()
         $("#tile_body_" + this.tile_id).flip(false);
+        $("#tile_body_" + this.tile_id + " .back").fadeOut()
+
+    },
+    showBack: function (){
+        $("#tile_body_" + this.tile_id + " .back").fadeIn()
+        $("#tile_body_" + this.tile_id).flip(true);
+        $("#tile_body_" + this.tile_id + " .front").fadeOut()
+
     }
 };
