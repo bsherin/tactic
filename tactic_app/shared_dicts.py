@@ -1,5 +1,5 @@
 __author__ = 'bls910'
-
+# just a comment
 mainwindow_instances = {}
 tile_classes = {}
 user_tiles = {}
