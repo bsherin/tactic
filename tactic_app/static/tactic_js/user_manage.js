@@ -84,6 +84,15 @@ function view_selected_list() {
     window.open($SCRIPT_ROOT + "/view_list/" + String(list_name))
 }
 
+function view_selected_module() {
+    var list_name = $('#tile-selector > .btn.active').text().trim();
+    if (list_name == "") {
+        doFlash({"message": "Selection a tile first.", "alert_type": "alert-info"})
+        return
+    }
+    window.open($SCRIPT_ROOT + "/view_module/" + String(list_name))
+}
+
 function load_selected_tile_module() {
     var tile_module_name = $('#tile-selector > .btn.active').text().trim();
     if (tile_module_name == "") {

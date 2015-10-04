@@ -69,6 +69,15 @@ def view_list(list_name):
                            list_name=list_name,
                            the_list=the_list)
 
+@app.route('/view_module/<module_name>', methods=['get'])
+def view_module(module_name):
+    # the_list = current_user.get_list(list_name)
+    module_code = current_user.get_tile_module(module_name)
+    return render_template("user_manage/module_viewer.html",
+                           module_name=module_name,
+                           module_code=module_code)
+
+
 @app.route('/load_tile_module/<tile_module_name>', methods=['get', 'post'])
 def load_tile_module(tile_module_name):
     tile_module = current_user.get_tile_module(tile_module_name)
@@ -210,6 +219,15 @@ def duplicate_collection():
         db[new_collection_name].insert_one(doc)
     socketio.emit('update-collection-list', {"html": render_collection_list()}, namespace='/user_manage', room=current_user.get_id())
     return jsonify({"success": True})
+
+@app.route('/update_module', methods=['post'])
+def update_module():
+    data_dict = request.json
+    module_name = data_dict["module_name"]
+    module_code = data_dict["new_code"]
+    db[current_user.tile_collection_name].update_one({"tile_module_name": module_name},
+                                                        {'$set': {"tile_module": module_code}})
+    return jsonify({"success": True, "message": "Module Successfully Saved", "alert_type": "alert-success"})
 
 @socketio.on('connect', namespace='/user_manage')
 def connected_msg():
