@@ -1,0 +1,49 @@
+<script id="resource-module-template" type="text/html">
+    <div class="row" style="margin-top: 40px">
+        <div class="col-xs-12">
+            <h2>{{res_type}}s</h2>
+        </div>
+    </div>
+    {{#show_add}}
+    <div class="row indent-row" style="margin-top: 10px">
+        <div class="col-xs-12">
+            <form action="" method="post" target="_self" id="add-{{res_type}}-form" enctype="multipart/form-data">
+                <input class="btn btn-warning stacked-button" style="display: inline" type="submit" value="Add File">
+                <input class="btn btn-default file-selector" id="file-inputter" style="display: inline" type="file" name="file" {{#show_multiple}}multiple{{/show_multiple}}>
+            </form>
+        </div>
+    </div>
+    {{/show_add}}
+    <div class="row indent-row" style="margin-top: 25px">
+        <div class="col-xs-12">
+            <div class="btn-group" role="group">
+                {{#show_view}}
+              <button type="button" id="view-{{res_type}}-button" class="btn btn-info">View</button>
+                {{/show_view}}
+                {{#show_load}}
+                <button type="button" id="load-{{res_type}}-button" class="btn btn-default btn-info">Load</button>
+                {{/show_load}}
+                {{#show_delete}}
+              <button type="button" id="delete-{{res_type}}-button" class="btn btn-default btn-info">Delete</button>
+                {{/show_delete}}
+                {{#show_duplicate}}
+              <button type="button" id="duplicate-{{res_type}}-button" class="btn btn-default btn-info">Duplicate</button>
+                {{/show_duplicate}}
+            </div>
+        </div>
+    </div>
+    <div class="row indent-row" style="margin-top: 25px">
+        <div class="col-xs-12">
+            <div style="display: inline-block" class="btn-group-vertical user-button-group" id="{{res_type}}-selector" data-toggle="buttons">
+            </div>
+            {{#show_loaded_list}}
+            <div style="display: inline-block; vertical-align: top; margin-left: 10px">
+                <h5 style="text-align:center; margin-top: 0px">Loaded {{res_type}}s</h5>
+                <div id="loaded-{{res_type}}-list">
+                </div>
+            </div>
+            {{/show_loaded_list}}
+        </div>
+    </div>
+
+</script>

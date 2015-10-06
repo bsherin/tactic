@@ -2,45 +2,7 @@
 
 var tile_dict = {}
 
-function create_new_tile(menu_id) {
-    var data_dict = {};
-    tile_name = $("#name-tile-modal #name-tile-modal-field").val()
-    tile_type = $("#name-tile-modal #tile-type").html()
-    data_dict["main_id"] = main_id;
-    data_dict["tile_name"] = tile_name;
-    $.ajax({
-        url: $SCRIPT_ROOT + "/create_tile_request/" + String(tile_type),
-        contentType : 'application/json',
-        type : 'POST',
-        data: JSON.stringify(data_dict),
-        dataType: 'json',
-        success: function (data) {
-            $("#tile-div").append(data.html);
-            $("#tile_body_" + data.tile_id).flip({
-                "trigger": "manual",
-                "autoSize": false,
-                "forceWidth": true,
-                "forceHeight": true
-            });
-            var new_tile_elem = $("#tile_id_" + data.tile_id)
-            new_tile_elem.resizable({
-                handles: "se",
-                resize: resize_tile_area
-            });
-            jQuery.data(new_tile_elem[0],"my_tile_id", data.tile_id)
-            listen_for_clicks();
-            $("#tile_id_" + data.tile_id).find(".triangle-right").hide()
-            new_tile_object = Object.create(tile_object);
-            new_tile_object.tile_id = data.tile_id;
-            tile_dict[data.tile_id] = new_tile_object;
-            do_resize(data.tile_id);
-            //new_tile_object.initiateTileRefresh();
-            data_dict.tile_id = data.tile_id
-            spin_and_refresh(data_dict.tile_id)
-        }
-    })
-    $('#name-tile-modal').modal('hide')
-}
+
 
 function spin_and_refresh(tile_id) {
     broadcast_event_to_server("StartSpinner", {"tile_id": tile_id})

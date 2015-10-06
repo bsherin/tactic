@@ -1,22 +1,24 @@
-<div class="modal fade" id="export-data-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+<script id="modal-template" type="text/html">
+<div class="modal fade" id="modal-dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title">Export Data</h4>
+        <h4 class="modal-title">{{modal_title}}</h4>
       </div>
       <div class="modal-body">
           <form>
               <div class="form-group">
-                <label for="recipient-name" class="control-label">Data Collection Name</label>
-                <input type="text" class="form-control" id="export-name-modal-field">
+                <label for="recipient-name" class="control-label">{{field_title}}</label>
+                <input type="text" class="form-control" id="modal-text-input-field">
               </div>
           </form>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-primary" onclick="export_data_table()">Export</button>
+        <button type="button" id="modal-submit-button" class="btn btn-primary">Submit</button>
       </div>
     </div>
   </div>
 </div>
+</script>

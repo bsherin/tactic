@@ -2,7 +2,7 @@ __author__ = 'bls910'
 
 import os
 import pymongo
-from flask import render_template, request, make_response, redirect, url_for, jsonify
+from flask import render_template, request, make_response, redirect, url_for, jsonify, send_file
 from tactic_app import app, db, socketio
 from tactic_app.file_handling import read_xml_file_to_dict_list, read_csv_file_to_dict_list, read_txt_file_to_dict_list, load_a_list;
 from tactic_app.main import create_new_mainwindow, create_new_mainwindow_from_project, mainwindow_instances
@@ -111,13 +111,29 @@ def render_tile_module_list():
 
 @app.route('/create_duplicate_list', methods=['post'])
 def create_duplicate_list():
-    list_to_copy = request.json['list_to_copy']
-    new_list_name = request.json['new_list_name']
+    list_to_copy = request.json['res_to_copy']
+    new_list_name = request.json['new_res_name']
     old_list_dict = db[current_user.list_collection_name].find_one({"list_name": list_to_copy})
     new_list_dict = {"list_name": new_list_name, "the_list": old_list_dict["the_list"]}
     db[current_user.list_collection_name].insert_one(new_list_dict)
     socketio.emit('update-list-list', {"html": render_list_list()}, namespace='/user_manage', room=current_user.get_id())
     return jsonify({"success": True})
+
+@app.route('/request_update_list_list', methods=['GET'])
+def request_update_list_list():
+    return render_list_list()
+
+@app.route('/request_update_collection_list', methods=['GET'])
+def request_update_collection_list():
+    return render_collection_list()
+
+@app.route('/request_update_project_list', methods=['GET'])
+def request_update_project_list():
+    return render_project_list()
+
+@app.route('/request_update_tile_list', methods=['GET'])
+def request_update_tile_list():
+    return render_tile_module_list()
 
 @app.route('/add_list', methods=['POST', 'GET'])
 def add_list():
@@ -136,27 +152,6 @@ def add_tile_module():
     db[current_user.tile_collection_name].insert_one(data_dict)
     socketio.emit('update-tile-module-list', {"html": render_tile_module_list()}, namespace='/user_manage', room=current_user.get_id())
     return make_response("", 204)
-
-# @app.route('/load_single_file', methods=['POST', 'GET'])
-# def load_single_file():
-#     file = request.files['file']
-#     filename, file_extension = os.path.splitext(file.filename)
-#     if file_extension == ".xml":
-#         (collection_name, dict_list) = read_xml_file_to_dict_list(file)
-#     elif file_extension == ".csv":
-#         (collection_name, dict_list) = read_csv_file_to_dict_list(file)
-#     else:
-#         return jsonify({"message": "Not a valid file extension", "alert_type": "alert-danger"})
-#     if collection_name is None: # then dict_list contains an error object
-#         e = dict_list # For clarity
-#         return jsonify({"message": e.message, "alert_type": "alert-danger"})
-#     try:
-#         put_docs_in_collection(build_data_collection_name(collection_name), dict_list)
-#         socketio.emit('update-collection-list', {"html": render_collection_list()}, namespace='/user_manage', room=current_user.get_id())
-#     except pymongo.errors.InvalidStringData:
-#         print "Strings in documents must be valid UTF-8"
-#     # current_user.add_collection(collection_name)
-#     return jsonify({"message":"File successfully loaded", "alert_type": "alert-success"})
 
 @app.route('/load_files/<collection_name>', methods=['POST', 'GET'])
 def load_files(collection_name):
@@ -213,8 +208,8 @@ def delete_collection(collection_name):
 
 @app.route('/duplicate_collection', methods=['post'])
 def duplicate_collection():
-    collection_to_copy = current_user.full_collection_name(request.json['collection_to_copy'])
-    new_collection_name = current_user.full_collection_name(request.json['new_collection_name'])
+    collection_to_copy = current_user.full_collection_name(request.json['res_to_copy'])
+    new_collection_name = current_user.full_collection_name(request.json['new_res_name'])
     for doc in db[collection_to_copy].find():
         db[new_collection_name].insert_one(doc)
     socketio.emit('update-collection-list', {"html": render_collection_list()}, namespace='/user_manage', room=current_user.get_id())
@@ -228,6 +223,14 @@ def update_module():
     db[current_user.tile_collection_name].update_one({"tile_module_name": module_name},
                                                         {'$set': {"tile_module": module_code}})
     return jsonify({"success": True, "message": "Module Successfully Saved", "alert_type": "alert-success"})
+
+@app.route('/get_modal_template', methods=['get'])
+def get_modal_template():
+    return send_file("templates/modal_text_request_template.html")
+
+@app.route('/get_resource_module_template', methods=['get'])
+def get_resource_module_template():
+    return send_file("templates/resource_module_template.html")
 
 @socketio.on('connect', namespace='/user_manage')
 def connected_msg():

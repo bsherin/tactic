@@ -138,7 +138,7 @@ function build_and_render_menu_objects() {
         "save": {"keys": ['ctrl+s', 'command+s'],
                 "command": save_project,
                 "fallthrough": function () {
-                    $('#save-project-modal').modal()
+                    saveProjectAs()
                 }
         }
     }
@@ -226,15 +226,74 @@ function column_command(menu_id) {
         tableObject.build_table();
     }
     else if (menu_id == "add-column") {
-        $('#add-column-modal').modal();
+        createColumn()
     }
 };
+
+function createColumn() {
+    showModal("Create Columnm", "New Column Name", function (new_name) {
+            column_name = new_name;
+            for (var doc in tablespec_dict) {
+                if (tablespec_dict.hasOwnProperty(doc)) {
+                    var new_header_object = Object.create(header0bject)
+                    new_header_object.name = column_name;
+                    new_header_object.span = 1;
+                    new_header_object.depth = 0;
+                    new_header_object.id = tableObject.next_header_id;
+                    tableObject.next_header_id += 1;
+                    new_header_object.child_list = [];
+                    tablespec_dict[doc].header_struct.child_list.push(new_header_object)
+                }
+            }
+
+            // Then rebuild the table
+            tableObject.build_table()
+
+            // Then change the current data_dict back on the server
+            var data_dict = {"column_name": column_name,
+                            "main_id": main_id};
+            $.ajax({
+                url: $SCRIPT_ROOT + "/distribute_events/CreateColumn",
+                contentType : 'application/json',
+                type : 'POST',
+                async: true,
+                data: JSON.stringify(data_dict),
+                dataType: 'json',
+            });
+    })
+}
+
+function saveProjectAs() {
+    showModal("Save Project As", "New Project Name", function (new_name) {
+            var result_dict = {
+            "project_name": new_name,
+            "main_id": main_id
+            };
+            $.ajax({
+                    url: $SCRIPT_ROOT + "/save_new_project",
+                    contentType : 'application/json',
+                    type : 'POST',
+                    async: true,
+                    data: JSON.stringify(result_dict),
+                    dataType: 'json',
+                    success: save_as_success
+            });
+            function save_as_success(data_object) {
+                menus["Project"].enable_menu_item("save");
+                tableObject.project_name = data_object["project_name"]
+                //tableObject.set_table_title()
+                $("#project-name").html(tableObject.project_name)
+                data_object.alert_type = "alert-success"
+                doFlash(data_object)
+            }
+    })
+}
 
 function project_command(menu_id) {
     switch (menu_id) {
         case "save-as":
         {
-            $('#save-project-modal').modal();
+            saveProjectAs();
             break;
         }
         case "save":
@@ -244,15 +303,70 @@ function project_command(menu_id) {
         }
         case "export-data":
         {
-            $('#export-data-modal').modal();
+            exportDataTable()
         }
     }
 }
 
+function exportDataTable() {
+    showModal("Export Data", "New Collection Name", function (new_name) {
+            var result_dict = {
+                "export_name": new_name,
+                "main_id": main_id,
+            }
+            $.ajax({
+                url: $SCRIPT_ROOT + "/export_data",
+                contentType : 'application/json',
+                type : 'POST',
+                async: true,
+                data: JSON.stringify(result_dict),
+                dataType: 'json',
+                success: doFlash
+            });
+    })
+}
+
 function tile_command(menu_id) {
-    $("#name-tile-modal #name-tile-modal-field").val(menu_id)
-    $("#name-tile-modal #tile-type").html(menu_id)
-    $("#name-tile-modal").modal()
+
+    showModal("Create " + menu_id, "New Tile Name", createNewTile, menu_id)
+
+    function createNewTile(tile_name) {
+        var data_dict = {};
+        tile_type = menu_id;
+        data_dict["main_id"] = main_id;
+        data_dict["tile_name"] = tile_name;
+        $.ajax({
+            url: $SCRIPT_ROOT + "/create_tile_request/" + String(tile_type),
+            contentType : 'application/json',
+            type : 'POST',
+            data: JSON.stringify(data_dict),
+            dataType: 'json',
+            success: function (data) {
+                $("#tile-div").append(data.html);
+                $("#tile_body_" + data.tile_id).flip({
+                    "trigger": "manual",
+                    "autoSize": false,
+                    "forceWidth": true,
+                    "forceHeight": true
+                });
+                var new_tile_elem = $("#tile_id_" + data.tile_id)
+                new_tile_elem.resizable({
+                    handles: "se",
+                    resize: resize_tile_area
+                });
+                jQuery.data(new_tile_elem[0],"my_tile_id", data.tile_id)
+                listen_for_clicks();
+                $("#tile_id_" + data.tile_id).find(".triangle-right").hide()
+                new_tile_object = Object.create(tile_object);
+                new_tile_object.tile_id = data.tile_id;
+                tile_dict[data.tile_id] = new_tile_object;
+                do_resize(data.tile_id);
+                //new_tile_object.initiateTileRefresh();
+                data_dict.tile_id = data.tile_id
+                spin_and_refresh(data_dict.tile_id)
+            }
+        })
+    }
 }
 
 function disable_require_column_select(){
@@ -277,86 +391,6 @@ function save_project() {
         dataType: 'json',
         success: doFlash
     });
-}
-
-function export_data_table() {
-    var export_name = $("#export-name-modal-field").val();
-    var result_dict = {
-        "export_name": export_name,
-        "main_id": main_id,
-    }
-    $.ajax({
-        url: $SCRIPT_ROOT + "/export_data",
-        contentType : 'application/json',
-        type : 'POST',
-        async: true,
-        data: JSON.stringify(result_dict),
-        dataType: 'json',
-        success: doFlash
-    });
-    $('#export-data-modal').modal('hide')
-}
-
-function save_project_as() {
-    _project_name = $("#project-name-modal-field").val();
-    var result_dict = {
-        "project_name": _project_name,
-        "main_id": main_id
-        //"tablespec_dict": tablespec_dict
-    };
-    $.ajax({
-        url: $SCRIPT_ROOT + "/save_new_project",
-        contentType : 'application/json',
-        type : 'POST',
-        async: true,
-        data: JSON.stringify(result_dict),
-        dataType: 'json',
-        success: save_as_success
-    });
-    $('#save-project-modal').modal('hide')
-}
-
-function create_column() {
-    var column_name = $("#column-name-modal-field").val();
-    // First: fix the header struct
-
-    for (var doc in tablespec_dict) {
-        if (tablespec_dict.hasOwnProperty(doc)) {
-            var new_header_object = Object.create(header0bject)
-            new_header_object.name = column_name;
-            new_header_object.span = 1;
-            new_header_object.depth = 0;
-            new_header_object.id = tableObject.next_header_id;
-            tableObject.next_header_id += 1;
-            new_header_object.child_list = [];
-            tablespec_dict[doc].header_struct.child_list.push(new_header_object)
-        }
-    }
-
-    // Then rebuild the table
-    tableObject.build_table()
-
-    // Then change the current data_dict back on the server
-    var data_dict = {"column_name": column_name,
-                    "main_id": main_id};
-    $.ajax({
-        url: $SCRIPT_ROOT + "/distribute_events/CreateColumn",
-        contentType : 'application/json',
-        type : 'POST',
-        async: true,
-        data: JSON.stringify(data_dict),
-        dataType: 'json',
-    });
-    $('#add-column-modal').modal('hide')
-}
-
-function save_as_success(data_object) {
-    menus["Project"].enable_menu_item("save");
-    tableObject.project_name = data_object["project_name"]
-    //tableObject.set_table_title()
-    $("#project-name").html(tableObject.project_name)
-    data_object.alert_type = "alert-success"
-    doFlash(data_object)
 }
 
 

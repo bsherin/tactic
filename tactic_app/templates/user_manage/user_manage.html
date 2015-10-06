@@ -13,9 +13,6 @@
 
 {% block page_content %}
     <div id="modal-area">
-    {% include 'modals/duplicate_list_modal.html' %}
-    {% include 'modals/duplicate_collection_modal.html' %}
-    {% include 'modals/name_collection_modal.html' %}
     </div>
     <div class="container">
         <div class="page-header">
@@ -24,137 +21,12 @@
         <div class="row">
             <div id="status-area"></div>
             <div class="col-xs-6">
-                <div class="row">
-                    <div class="col-xs-12">
-                        <h2>My Collections</h2>
-                    </div>
-                </div>
-                <div class="row indent-row" style="margin-top: 10px">
-                    <div class="col-xs-12">
-                        <form action="" method="post" id="collection-load-form" enctype="multipart/form-data">
-                            <input class="btn btn-warning stacked-button" style="display: inline" type="submit" value="Add File">
-                            <input class="btn btn-default file-selector" id="file-inputter" style="display: inline" type="file" name="file" multiple>
-                        </form>
-                    </div>
-                </div>
-                <div class="row indent-row" style="margin-top: 25px">
-                    <div class="col-xs-12">
-                        <div style="display: inline-block; vertical-align:top">
-                            <button class="btn btn-primary stacked-button" onclick="load_selected_collection()">Load collection</button>
-                            <button class="btn btn-primary stacked-button" onclick="delete_selected_collection()">Delete collection</button>
-                            <button class="btn btn-primary stacked-button" onclick="show_duplicate_collection_modal()">Duplicate collection</button>
-                        </div>
-                        <div style="display: inline-block; vertical-align: top; margin-left: 10px">
-                            <h5 style="text-align:center; margin-top: 0px">Collections</h5>
-                            <div class="btn-group-vertical user-button-group" id="collection-selector" data-toggle="buttons">
-                                {% for collection in current_user.data_collections %}
-                                    <label class="btn btn-default">
-                                        <input type="radio"  value="{{ collection }}"/> {{ collection }}
-                                    </label>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row" style="margin-top: 40px">
-                    <div class="col-xs-12">
-                        <h2>My Lists</h2>
-                    </div>
-                </div>
-                <div class="row indent-row" style="margin-top: 10px">
-                    <div class="col-xs-12">
-                        <form action="" method="post" target="_self" id="list-load-form" enctype="multipart/form-data">
-                            <input class="btn btn-warning stacked-button" style="display: inline" type="submit" value="Add File">
-                            <input class="btn btn-default file-selector" id="file-inputter" style="display: inline" type="file" name="file">
-                        </form>
-                    </div>
-                </div>
-                <div class="row indent-row" style="margin-top: 25px">
-                    <div class="col-xs-12">
-                        <div style="display: inline-block; vertical-align:top">
-                            <button class="btn btn-primary stacked-button" onclick="view_selected_list()">View list</button>
-                            <button class="btn btn-primary stacked-button" onclick="delete_selected_list()">Delete list</button>
-                            <button class="btn btn-primary stacked-button" onclick="show_duplicate_list_modal()">Duplicate list</button>
-                        </div>
-                        <div style="display: inline-block; vertical-align: top; margin-left: 10px">
-                            <h5 style="text-align:center; margin-top: 0px">Lists</h5>
-                            <div class="btn-group-vertical user-button-group" id="list-selector" data-toggle="buttons">
-                                {% for list_name in current_user.list_names %}
-                                    <label class="btn btn-default">
-                                        <input type="radio"  value="{{ list_name }}"/> {{ list_name }}
-                                    </label>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <div id="collection-module"></div>
+                <div id="list-module"></div>
             </div>
             <div class="col-xs-6" style="">
-                <div class="row">
-                    <div class="col-xs-12">
-                        <h2>My Projects</h2>
-                    </div>
-                </div>
-                <div class="row" style="margin-top: 10px">
-                    <div class="col-xs-12">
-                        <div style="display: inline-block; vertical-align:top">
-                            <button class="btn btn-primary stacked-button" onclick="load_selected_project()">Load project</button>
-                            <button class="btn btn-primary stacked-button" onclick="delete_selected_project()">Delete project</button>
-                        </div>
-                        <div style="display: inline-block; vertical-align: top; margin-left: 10px">
-                            <h5 style="text-align:center; margin-top: 0px">Projects</h5>
-                            <div class="btn-group-vertical user-button-group" id="project-selector" data-toggle="buttons">
-                                {% for project in current_user.project_names %}
-                                    <label class="btn btn-default">
-                                        <input type="radio"  value="{{ project }}"/> {{ project }}
-                                    </label>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row" style="margin-top: 40px">
-                    <div class="col-xs-12">
-                        <h2>My Tiles</h2>
-                    </div>
-                </div>
-                <div class="row indent-row" style="margin-top: 10px">
-                    <div class="col-xs-12">
-                        <form action="" method="post" target="_self" id="tile-load-form" enctype="multipart/form-data">
-                            <input class="btn btn-warning stacked-button" style="display: inline" type="submit" value="Add File">
-                            <input class="btn btn-default file-selector" id="file-inputter" style="display: inline" type="file" name="file">
-                        </form>
-                    </div>
-                </div>
-                <div class="row indent-row" style="margin-top: 25px">
-                    <div class="col-xs-12">
-                        <div style="display: inline-block; vertical-align:top">
-                            <button class="btn btn-primary stacked-button" onclick="view_selected_module()">View/Edit module</button>
-                            <button class="btn btn-primary stacked-button" onclick="load_selected_tile_module()">Load tile Module</button>
-                            <button class="btn btn-primary stacked-button" onclick="delete_selected_tile_module()">Delete tile Module</button>
-                        </div>
-                        <div style="display: inline-block; vertical-align: top; margin-left: 10px">
-                            <h5 style="text-align:center; margin-top: 0px">Tile Modules</h5>
-                            <div class="btn-group-vertical user-button-group" id="tile-selector" data-toggle="buttons">
-                                {% for tile_module_name in current_user.tile_module_names %}
-                                    <label class="btn btn-default">
-                                        <input type="radio"  value="{{ tile_module_name }}"/> {{ tile_module_name }}
-                                    </label>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        <div style="display: inline-block; vertical-align: top; margin-left: 10px">
-                            <h5 style="text-align:center; margin-top: 0px">Loaded Tiles</h5>
-                            <div id="loaded-tile-list">
-                                <ul>
-                                    {% for tile_name in user_tile_name_list %}
-                                        <li>{{tile_name}}</li>
-                                    {% endfor %}
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <div id="project-module"></div>
+                <div id="tile-module"></div>
             </div>
         </div>
     </div>
