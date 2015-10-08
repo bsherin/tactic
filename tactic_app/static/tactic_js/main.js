@@ -1,5 +1,6 @@
 var socket;
 
+
 function start_post_load() {
     //spinner = new Spinner({scale: 1.0}).spin();
     //$("#loading-message").html(spinner.el);

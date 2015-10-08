@@ -7,6 +7,25 @@
     width: 15px;
 }
 
+.scaling-style{
+    width: 0px !important;
+    height: 0px !important;
+    transition-propert: width, height;
+    -webkit-transition-propert: width, height;
+    -moz-transition-property: width, height;
+    -webkit-transition-duration: 3s;
+    -moz-transition-duration: 3s;
+    -ms-transition-duration: 3s;
+    -o-transition-duration: 3s;
+    transition-duration: 3s;
+}
+
+
+#table-icon {
+    display:none;
+    margin: 10px;
+}
+
 .alert {
     height: 30px;
     font-size: 12px;

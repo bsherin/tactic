@@ -16,14 +16,12 @@
     </div>
 {#    <div id="loading-message" class="loader" style="line-height: 200px" align="center"></div>#}
     <div id="outer-container" align="center" style="display: none">
-        <div class="grid-left" align="left">
-            <div id="status-area"></div>
-        </div>
-
+        <div id="status-area"></div>
         <div class="grid-left" align="left">
 
             <div id="main-panel" class="panel panel-default">
                 <div class="panel-heading" id="data-title" style="padding-top: 5px; padding-bottom: 5px">
+                <button type='button' class='notclose' onclick="tableObject.shrinkTable()"><span style="font-size:15px" class="glyphicon glyphicon-th"></span></button>
                     <form class="form-inline" style="display:inline">
                       <span class="form-group input-sm">
                         <label for="doc-selector">{{short_collection_name}}: </label>
@@ -54,6 +52,7 @@
                 </div>
              </div>
         </div>
+        <button type='button' id="table-icon" class="btn btn-info" onclick="tableObject.expandTable()"><span style="font-size:15px" class="glyphicon glyphicon-th-list"></span></button>
         <div class="grid-right" align="left">
             <div  class="panel panel-default" id="tile-area">
                 <div class="panel-body" id="tile-div">
