@@ -39,8 +39,14 @@ button.notclose {
   padding: 0;
   cursor: pointer;
   background: transparent;
+    opacity: .5;
   border: 0;
 }
+
+button.notclose:hover {
+    opacity: .8;
+}
+
 
 .tile-body img {
     cursor: pointer
@@ -66,6 +72,12 @@ button.notclose {
 .tile-panel {
     height: 265px;
     margin: 7px;
+    border: 2px solid #BCE8F1;
+    background-color: white;
+}
+
+.tile-panel-float {
+    float: left;
 }
 
 .tile-panel-heading {
@@ -117,8 +129,4 @@ button.notclose {
     /*border: 1px solid #BCE8F1;*/
 /*}*/
 
-.tile-panel {
-    border: 2px solid #BCE8F1;
-    background-color: white;
-}
 

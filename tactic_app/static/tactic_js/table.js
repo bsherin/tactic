@@ -264,6 +264,7 @@ var tableObject = {
     initialize_table: function (data_object){
         this.highlighted_cells = []
         this.left_fraction = INITIAL_LEFT_FRACTION;
+        this.left_fraction_save = this.left_fraction;
         this.collection_name = _collection_name;
         this.project_name = _project_name;
         this.short_collection_name = _collection_name.replace(/^.*?\.data_collection\./, "");
@@ -414,6 +415,24 @@ var tableObject = {
             console.log(err.message + " row index " + rindex + "_col_index_ " + cindex)
         }
 
+    },
+
+    shrinkTable: function() {
+        this.left_fraction_save = this.left_fraction;
+        this.left_fraction = .05;
+        //$(".grid-left")[0].classList.add("scaling-style");
+        $(".grid-left").css("display", "none");
+        $("#table-icon").css("display", "inline");
+        this.resize_table_area();
+        $(".tile-panel").addClass("tile-panel-float")
+    },
+
+    expandTable: function() {
+        this.left_fraction = this.left_fraction_save;
+        $("#table-icon").css("display", "none");
+        $(".grid-left").css("display", "inline-block");
+        this.resize_table_area();
+        $(".tile-panel").removeClass("tile-panel-float")
     },
 
     colorTxtInCell: function(data_object) {
@@ -610,9 +629,12 @@ var tableObject = {
     },
 
     resize_table_area: function() {
-        var usable_width = window.innerWidth - 2 * MARGIN_SIZE - 10
-        $(".grid-left").width(usable_width * this.left_fraction)
+        var usable_width = window.innerWidth - 2 * MARGIN_SIZE - 10;
+        if (!(this.left_fraction == 0)) {
+            $(".grid-left").width(usable_width * this.left_fraction);
+        }
         $(".grid-right").width(usable_width * (1 - this.left_fraction))
+        $("#status-area").width(usable_width)
         $("#table-area tbody").height(window.innerHeight - 30 - $("#table-area tbody").offset().top)
         $("#main-panel").width("") // We do this so that this will resize when the window is resized.
     },
