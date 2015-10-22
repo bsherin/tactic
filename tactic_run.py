@@ -22,10 +22,3 @@ from tactic_app import socketio
 # socketio.run(app)
 # socketio.run(app, host='0.0.0.0') # Get iP address for this machine and add :5000
 
-@app.before_request
-def beforeRequest():
-    requestUrl = request.url
-    https = 'https' in requestUrl
-    if https == False:
-        secureUrl = requestUrl.replace('http','https')
-        return redirect(secureUrl)
