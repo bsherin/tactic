@@ -17,6 +17,7 @@ from flask_wtf.csrf import CsrfProtect
 csrf = CsrfProtect()
 
 def redirect_to_ssl():
+    print "entering redirect"
     requestUrl = request.url
     https = 'https' in requestUrl
     if https == False:
@@ -47,6 +48,7 @@ try:
     app.config.from_object('config')
 
     if 'DYNO' in os.environ:
+        print ("establishing redirect function")
         app.before_request(redirect_to_ssl)
 
     "print starting login_manager, bootstratp, socketio"
