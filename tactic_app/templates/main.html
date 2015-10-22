@@ -2,6 +2,10 @@
 
 {% block title %}Tactic - Main{% endblock %}
 
+{% block head %}
+{#    <script src='//cameratag.com/api/v6/js/cameratag.js' type='text/javascript'></script>#}
+{% endblock %}
+
 {% block styles %}
     <link rel="stylesheet" href="{{url_for('static', filename='css/jquery-ui.min.css')}}">
     <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/loader.css')}}">
@@ -9,6 +13,9 @@
 {% endblock %}
 
 {% block page_content %}
+{#    <camera id="MyFirstCamera" data-app-id="a-2ed02e70-5579-0133-03fb-22000b109ea8" style="width:500px; height:200px; display:block"></camera>#}
+{#    <video id='MyPlayer1' data-uuid='a-2ed02e70-5579-0133-03fb-22000b109ea8'></video>#}
+{#    <video id='rando' data-uuid='["v-bbfdac4a-5a46-4a4b-a87a-4d912fbd692e"]'></video>#}
     <div id="modal-area">
     </div>
     <div id="loading-message">

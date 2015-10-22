@@ -144,10 +144,14 @@ var tile_object = {
     displayTileContent: function (data) {
         $(this.full_selector() + " #tile-display-area").html(data["html"]);
         this.showFront()
+        //CameraTag.setup()
     },
     displayFormContent: function (data) {
         $(this.full_selector() + " #form-display-area").html(data["html"]);
     },
+    //cameraTagSetup: function (data) {
+    //    CameraTag.setup();
+    //},
     startSpinner: function() {
         //this.spinner = new Spinner({scale: 0.4, left:"15px"}).spin();
         //$(this.full_selector() + " #spin-place").html(this.spinner.el);

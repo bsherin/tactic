@@ -1,10 +1,17 @@
-<script id="td-template" type="text/html">
-    <td contenteditable='true' onmouseup='text_select(event)' class='{{class_text}} searchit mousetrap can-resize')>{{the_text}}</td>
+<script id="header-template" type="text/html">
+    <thead>
+        <tr>
+            {{#headers}}
+                <th id='{{header}}' class='header can-resize column-{{header}}'>{{header}}</th>
+            {{/headers}}
+        </tr>
+    </thead>
 </script>
-<script id="th-template" type="text/html">
-    <th colspan='{{span}}' id='{{id}}' class='{{class_text}}' onclick='click_header(this)'>{{the_text}}</th>
-</script>
-<script id="th-template-resize" type="text/html">
-    <th colspan='{{span}}' id='{{id}}' class='{{class_text}} can-resize' onclick='click_header(this)'>{{the_text}}</th>
+<script id="body-template" type="text/html">
+    <tr>
+        {{#cells}}
+            <td contenteditable='true' id='row-{{rownumber}}-col-{{header}}' class='searchit can-resize column-{{header}}'>{{value}}</td>
+        {{/cells}}
+    </tr>
 </script>
 

@@ -52,6 +52,8 @@ class User(UserMixin):
         username = user_dict["username"]
         if len(username) < 4:
             return {"success": False, "message": "Usernames must be at least 4 characters.", "username": username}
+        if "." in username:
+            return {"success": False, "message": "Usernames cannot contain a period.", "username": username}
         password = user_dict["password"]
         if len(password) < 4:
             return {"success": False, "message": "Passwords must be at least 4 characters.", "username": username}

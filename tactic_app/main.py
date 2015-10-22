@@ -32,55 +32,8 @@ class docInfo():
     def __init__(self, name, data_rows, header_list=None):
         self.name = name
         self.data_rows = data_rows
-        self.signature_list = self._build_signature_list()
         self.header_list = header_list
-        self.ordered_sig_dict = OrderedDict()
-        for it in self.signature_list:
-            self.ordered_sig_dict[self.get_sig_string_from_sig(it)] = it
         self.table_spec = {}
-
-    def _build_signature_list(self):
-        ddict = self.data_rows[0]
-        result = []
-        for (the_key, the_item) in ddict.items():
-            if type(the_item) != dict:
-                result.append(the_key)
-            else:
-                result += self._build_sig_step(the_item, [the_key])
-        return result
-
-    def rebuild_vars(self):
-        self.signature_list = self._build_signature_list()
-        self.ordered_sig_dict = OrderedDict()
-        for it in self.signature_list:
-            self.ordered_sig_dict[self.get_sig_string_from_sig(it)] = it
-
-    def _build_sig_step(self, ddict, sofar):
-        result = []
-        for (the_key, the_item) in ddict.items():
-            newsofar = copy.deepcopy(sofar)
-            newsofar.append(the_key)
-            if type(the_item) == dict:
-                newsofar.append(self._build_sig_step(the_item, newsofar))
-            result.append(newsofar)
-        return result
-
-    def get_sig_string_from_sig(self, sig):
-        if type(sig) == str or type(sig) == unicode:
-            return sig
-        else:
-            return "-".join(sig)
-
-    @staticmethod
-    def _get_data_for_signature(row, signature):
-        if type(signature) is not list:
-            return row[signature]
-        result = row
-        for field in signature:
-            if not field in result:
-                return ""
-            result = result[field]
-        return result
 
     def compile_save_dict(self):
         return ({"name": self.name, "data_rows": self.data_rows, "table_spec": self.table_spec, "my_class_for_recreate": "docInfo", "header_list": self.header_list})
@@ -183,19 +136,11 @@ class mainWindow(threading.Thread):
     def tile_ids(self):
         return self.tile_instances.keys()
 
-    def get_sig_string_from_sig(self, sig):
-        if type(sig) == str or type(sig) == unicode:
-            return sig
-        else:
-            return "-".join(sig)
-
     def add_blank_column(self, column_name):
         for doc in self.doc_dict.values():
             doc.header_list.append(column_name)
             for r in doc.data_rows:
                 r[column_name] = ""
-            # We have to rebuild the signature list and dicts to include the new column
-            doc.rebuild_vars()
 
     def post_event(self, event_name, data=None):
         self._my_q.put({"event_name": event_name, "data": data})
@@ -224,17 +169,17 @@ class mainWindow(threading.Thread):
         self.current_tile_id += 1
         return new_tile
 
-    def get_column_data(self, signature):
+    def get_column_data(self, column_header):
         result = {}
         for (doc_name, doc) in self.doc_dict.items():
-            result[doc_name] = self.get_column_data_for_doc(signature, doc)
+            result[doc_name] = self.get_column_data_for_doc(column_header, doc)
         return result
 
-    def get_column_data_for_doc(self, signature, doc):
+    def get_column_data_for_doc(self, column_header, doc):
         the_rows = doc.data_rows
         result = []
         for the_row in the_rows:
-            result.append(doc._get_data_for_signature(the_row, doc.ordered_sig_dict[signature]))
+            result.append(the_row[column_header])
         return result
 
     def run(self):
@@ -258,7 +203,7 @@ class mainWindow(threading.Thread):
 
     def _handle_event(self, event_name, data=None):
         if event_name == "CellChange":
-            self._set_row_column_data(data["doc_name"], data["row_index"], data["signature"], data["new_content"])
+            self._set_row_column_data(data["doc_name"], data["row_index"], data["column_header"], data["new_content"])
             self._change_list.append(data["row_index"])
         elif event_name == "RemoveTile":
             self._delete_tile_instance(data["tile_id"])
@@ -273,27 +218,26 @@ class mainWindow(threading.Thread):
             print "About to emit colorTxtInCell"
             self.emit_table_message("colorTxtInCell", data)
         elif event_name == "SetCellContent":
-            self._set_cell_content(data["doc_name"], data["row_index"], data["signature"], data["new_content"], data["cellchange"])
+            self._set_cell_content(data["doc_name"], data["row_index"], data["column_header"], data["new_content"], data["cellchange"])
         elif event_name == "SaveTableSpec":
             new_spec = data["tablespec"]
             self.doc_dict[new_spec["doc_name"]].table_spec = new_spec
         return
 
 
-    def _set_cell_content(self, doc_name, row_index, signature_string, new_content, cellchange=True):
+    def _set_cell_content(self, doc_name, row_index, column_header, new_content, cellchange=True):
         doc = self.doc_dict[doc_name]
         the_row = doc.data_rows[row_index]
-        old_content = doc._get_data_for_signature(the_row, doc.ordered_sig_dict[signature_string])
+        old_content = the_row[column_header]
         if (new_content != old_content):
-            signature = doc.ordered_sig_dict[signature_string]
-            data = {"doc_name": doc_name, "row_index": row_index, "signature": signature, "new_content": new_content, "old_content": old_content}
+            data = {"doc_name": doc_name, "row_index": row_index, "column_header": column_header, "new_content": new_content, "old_content": old_content}
 
             # If cellchange is True then we use a CellChange event to handle any updates.
             # Otherwise just change things right here.
             if cellchange:
                 distribute_event("CellChange", self._main_id, data)
             else:
-                self._set_row_column_data(doc_name, row_index, signature, new_content)
+                self._set_row_column_data(doc_name, row_index, column_header, new_content)
                 self._change_list.append(row_index)
             if doc_name == self._visible_doc_name:
                 self.emit_table_message("setCellContent", data)
@@ -302,40 +246,17 @@ class mainWindow(threading.Thread):
         row_index = 0;
         dinfo = self.doc_dict[self._visible_doc_name]
         for the_row in dinfo.data_rows:
-            for sig in dinfo.signature_list:
-                if type(sig) != list:
-                    sig = [sig]
-                cdata = dinfo._get_data_for_signature(the_row, sig);
+            for cheader in dinfo.header_list:
+                cdata = the_row[cheader]
                 if cdata is None:
                     continue
                 if txt.lower() in cdata.lower():
                     self.emit_table_message("highlightTxtInCell",
-                      {"row_index": row_index, "signature": sig, "text_to_find": txt})
+                      {"row_index": row_index, "column_header": cheader, "text_to_find": txt})
             row_index += 1
 
     def dehighlight_all_table_text(self):
         self.emit_table_message("dehiglightAllCells")
-
-    def _build_signature_list(self):
-        ddict = self.doc_dict["data_rows"][0]
-        result = []
-        for (the_key, the_item) in ddict.items():
-            if type(the_item) != dict:
-                result.append(the_key)
-            else:
-                result += self._build_sig_step(the_item, [the_key])
-        return result
-
-    def _build_sig_step(self, ddict, sofar):
-        result = []
-        for (the_key, the_item) in ddict.items():
-            newsofar = copy.deepcopy(sofar)
-            newsofar.append(the_key)
-            if type(the_item) == dict:
-                newsofar.append(self._build_sig_step(the_item, newsofar))
-            result.append(newsofar)
-        return result
-
 
     def _build_doc_dict(self):
         result = {}
@@ -351,16 +272,7 @@ class mainWindow(threading.Thread):
             return
         return result
 
-    def _set_row_column_data(self, doc_name, row_index, sig, new_content):
-        the_row = self.doc_dict[doc_name].data_rows[row_index]
-        result = the_row
-        if type(sig) is not list:
-            result[sig] = new_content
-            return
-        for field in sig[0:-1]:
-            if not field in result:
-                result[field] = {}
-            result = result[field]
-        result[sig[-1]] = new_content
+    def _set_row_column_data(self, doc_name, row_index, column_header, new_content):
+        the_row = self.doc_dict[doc_name].data_rows[row_index][column_header] = new_content
         return
 

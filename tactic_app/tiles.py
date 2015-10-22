@@ -105,8 +105,8 @@ class TileBase(threading.Thread):
     def options(self):
         return []
 
-    def load_data_dict(self, column_signature):
-        return mainwindow_instances[self.main_id].get_column_data(column_signature)
+    def load_data_dict(self, column_header):
+        return mainwindow_instances[self.main_id].get_column_data(column_header)
 
     def dict_to_list(self, the_dict):
         result = []
@@ -114,8 +114,8 @@ class TileBase(threading.Thread):
             result += it
         return result
 
-    def load_raw_column(self, column_signature):
-        return self.dict_to_list(self.load_data_dict(column_signature))
+    def load_raw_column(self, column_header):
+        return self.dict_to_list(self.load_data_dict(column_header))
 
     def handle_event(self, event_name, data=None):
         if event_name == "RefreshTile":
@@ -255,7 +255,7 @@ class TileBase(threading.Thread):
                 form_html += the_template.format(option["name"])
                 current_doc_name = mainwindow_instances[self.main_id]._visible_doc_name
                 current_doc = mainwindow_instances[self.main_id].doc_dict[current_doc_name]
-                for choice in current_doc.ordered_sig_dict.keys():
+                for choice in current_doc.header_list:
                     if choice == option["placeholder"]:
                         form_html += self.select_option_selected_template.format(choice)
                     else:
@@ -323,7 +323,7 @@ class SimpleCoder(TileBase):
             active_row_index = data["active_row_index"]
             doc_name = data["doc_name"]
             distribute_event("SetCellContent", self.main_id,
-                             {"row_index": active_row_index, "doc_name": doc_name, "signature": self.destination_column, "new_content": data["button_value"], "cellchange": True})
+                             {"row_index": active_row_index, "doc_name": doc_name, "column_header": self.destination_column, "new_content": data["button_value"], "cellchange": True})
         else:
             TileBase.handle_event(self, event_name, data)
 
@@ -353,6 +353,19 @@ class SimpleCoder(TileBase):
         self.current_text = form_data["the_text"]
         self.destination_column = form_data["destination_column"]
         self.spin_and_refresh()
+
+
+# @tile_class
+# class VideoPlayer(TileBase):
+#
+#     def render_content(self):
+#         # vid_id = "v-bbfdac4a-5a46-4a4b-a87a-4d912fbd692e"
+#         # the_html = "<video id='rando' data-uuid='[{0}]'></video>".format(vid_id)
+#         # self.emit_tile_message("cameraTagSetup")
+#         # <video id='rando' data-uuid='["v-bbfdac4a-5a46-4a4b-a87a-4d912fbd692e"]'></video>
+#         the_html = "<video id='rando' data-uuid='[" + '"v-bbfdac4a-5a46-4a4b-a87a-4d912fbd692e"' + "]'></video>"
+#
+#         return the_html
 
 @tile_class
 class WordnetSelectionTile(TileBase):
@@ -420,10 +433,10 @@ class VocabularyTable(TileBase):
 
     def handle_event(self, event_name, data=None):
         if event_name == "CellChange":
-            sig_string = mainwindow_instances[self.main_id].get_sig_string_from_sig(data["signature"])
-            if not (sig_string == self.column_source):
+            cheader = data["column_header"]
+            if not (cheader == self.column_source):
                 return
-            # data will have the keys row_index, column_idex, signature, old_content, new_content
+            # data will have the keys row_index, column_idex, column_header, old_content, new_content
             if self._vocab is None:
                 if self.column_source == None:
                     self.refresh_tile_now("No column source selected.")
@@ -597,7 +610,7 @@ class AbstractClassifier(TileBase):
                 autocode = self._classifier.classify(lfset[0])
                 self.autocodes_dict[dname].append(autocode)
                 distribute_event("SetCellContent", self.main_id,
-                                 {"doc_name": dname, "row_index":r, "signature": self.code_dest, "new_content": str(autocode), "cellchange": False})
+                                 {"doc_name": dname, "row_index":r, "column_header": self.code_dest, "new_content": str(autocode), "cellchange": False})
                 r += 1
         cm = nltk.ConfusionMatrix(self.dict_to_list(code_rows_dict),
                                   self.dict_to_list(self.autocodes_dict))
@@ -650,7 +663,7 @@ class NaiveBayes(AbstractClassifier):
             cell_color_dict[w] = cmap.color_from_val(res[w])
 
         print "about to distribute event ColorTextInCell"
-        distribute_event("ColorTextInCell", self.main_id, {"doc_name": doc_name, "row_index": row_index, "signature": self.text_source, "token_text": txt, "color_dict": cell_color_dict})
+        distribute_event("ColorTextInCell", self.main_id, {"doc_name": doc_name, "row_index": row_index, "column_header": self.text_source, "token_text": txt, "color_dict": cell_color_dict})
 
 @tile_class
 class DecisionTree(AbstractClassifier):
@@ -785,7 +798,7 @@ class OrthogonalizingClusterer(TileBase):
                 autocode = self.get_group_number(name, groups)
                 self.autocodes_dict[dname].append(autocode)
                 distribute_event("SetCellContent", self.main_id,
-                                {"doc_name": dname, "row_index":r, "signature": self.code_dest, "new_content": str(autocode), "cellchange": False})
+                                {"doc_name": dname, "row_index":r, "column_header": self.code_dest, "new_content": str(autocode), "cellchange": False})
                 r += 1
 
         return the_html

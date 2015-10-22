@@ -3,6 +3,7 @@
 # need to be imported by other modules.
 
 from flask import Flask
+from flask_sslify import SSLify
 import pymongo
 import sys, os
 from pymongo import MongoClient
@@ -41,8 +42,9 @@ try:
     login_manager.init_app(app)
     bootstrap = Bootstrap(app)
     socketio=SocketIO(app)
+    if 'DYNO' in os.environ: # only trigger SSLify if the app is running on Heroku
+        sslify = SSLify(app)
     csrf.init_app(app)
-
 
 except pymongo.errors.PyMongoError as err:
     print("There's a problem with the PyMongo database. ", err)
