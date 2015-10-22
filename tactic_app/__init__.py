@@ -2,7 +2,7 @@
 # This module creates many of the objects that
 # need to be imported by other modules.
 
-from flask import Flask, request
+from flask import Flask, request, redirect
 import pymongo
 import sys, os
 from pymongo import MongoClient
@@ -22,6 +22,8 @@ def redirect_to_ssl():
     https = 'https' in requestUrl
     if https == False:
         secureUrl = requestUrl.replace('http','https')
+        return redirect(secureUrl)
+
 
 def print_message():
     print "got to the message"
@@ -47,9 +49,8 @@ try:
     app = Flask(__name__)
     app.config.from_object('config')
 
-    if 'DYNO' in os.environ:
-        print ("establishing redirect function")
-        app.before_request(redirect_to_ssl)
+    print ("establishing redirect function")
+    app.before_request(redirect_to_ssl)
 
     "print starting login_manager, bootstratp, socketio"
     login_manager.init_app(app)
