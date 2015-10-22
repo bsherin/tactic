@@ -16,6 +16,9 @@ function start_post_load() {
     socket.on('update-list-list', function(data) {
         $("#list-selector").html(data.html)
     });
+    socket.on('update-video-list', function(data) {
+        $("#video-selector").html(data.html)
+    });
     socket.on('update-tile-module-list', function(data) {
         $("#tile-selector").html(data.html)
     });
@@ -40,6 +43,7 @@ function start_post_load() {
         collectionManager.add_listeners();
         projectManager.add_listeners();
         tileManager.add_listeners();
+        CameraTag.setup()
     })
 }
 
@@ -185,6 +189,18 @@ project_manager_specifics = {
     delete_view: "/delete_project/",
 }
 updateObject(projectManager, project_manager_specifics);
+
+var videoManager = Object.create(resourceManager);
+
+video_manager_specifics = {
+    res_type: "video",
+    show_add: false,
+    show_view: false,
+    show_duplicate: false,
+    show_load: false,
+    delete_view: "/delete_video/",
+}
+updateObject(videoManager, video_manager_specifics);
 
 var tileManager = Object.create(resourceManager);
 

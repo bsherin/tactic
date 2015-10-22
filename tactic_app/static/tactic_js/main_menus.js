@@ -191,32 +191,29 @@ function build_and_render_menu_objects() {
 }
 
 function column_command(menu_id) {
-    var the_id = tableObject.selected_header;
-    if (the_id != null) {
+    var column_header = tableObject.selected_header;
+    if (column_header != null) {
         switch (menu_id) {
             case "shift-left":
             {
-                deselect_header(the_id)
-                var parent_struct = tableObject.current_spec.header_struct.find_parent_of_id(the_id);
-                parent_struct.shift_child_left(the_id);
+                deselect_header(column_header)
+                tableObject.current_spec.shift_column_left(column_header)
                 tableObject.build_table();
                 break;
             }
             case "shift-right":
             {
-                deselect_header(the_id)
-                var parent_struct = tableObject.current_spec.header_struct.find_parent_of_id(the_id);
-                parent_struct.shift_child_right(the_id);
+                deselect_header(column_header)
+                tableObject.current_spec.shift_column_right(column_header)
                 tableObject.build_table();
                 break;
             }
             case "hide":
             {
-                deselect_header(the_id);
-                col_class = ".header" + the_id;
+                deselect_header(column_header);
+                var col_class = ".column-" + column_header;
                 $(col_class).fadeOut();
-                tableObject.current_spec.hidden_list.push(the_id);
-                resize_from_sub_headers($("#" + the_id).data("super_headers"))
+                tableObject.current_spec.hidden_list.push(column_header);
                 break;
             }
         }
@@ -235,14 +232,7 @@ function createColumn() {
             column_name = new_name;
             for (var doc in tablespec_dict) {
                 if (tablespec_dict.hasOwnProperty(doc)) {
-                    var new_header_object = Object.create(header0bject)
-                    new_header_object.name = column_name;
-                    new_header_object.span = 1;
-                    new_header_object.depth = 0;
-                    new_header_object.id = tableObject.next_header_id;
-                    tableObject.next_header_id += 1;
-                    new_header_object.child_list = [];
-                    tablespec_dict[doc].header_struct.child_list.push(new_header_object)
+                    tablespec_dict[doc].header_list.push(column_name)
                 }
             }
 

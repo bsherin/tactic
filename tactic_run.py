@@ -7,6 +7,7 @@
 import os
 
 print "entering tactic_run"
+from flask import request, redirect
 
 from tactic_app import app
 print "imported app"
@@ -17,6 +18,7 @@ from tactic_app import socketio
 
 # app.run(debug=True)
 
-print "about to execute socketio.run"
+# print "about to execute socketio.run"
 # socketio.run(app)
 # socketio.run(app, host='0.0.0.0') # Get iP address for this machine and add :5000
+

@@ -18,7 +18,13 @@ function start_post_load() {
                 $("#reload-message").css("display", "none");
                 $("#outer-container").css("display", "block");
                 $("#table-area").css("display", "block");
-                tablespec_dict = data.tablespec_dict;
+                tablespec_dict = {};
+                for (spec in data.tablespec_dict) {
+                    if (!data.tablespec_dict.hasOwnProperty(spec)){
+                        continue;
+                    }
+                    tablespec_dict[spec] = create_tablespec(data.tablespec_dict[spec])
+                }
                 tableObject.initialize_table(data);
                 set_visible_doc(doc_names[0]) // It's important that this is done before creating the tiles
                 var tile_ids = data.tile_ids;
@@ -30,6 +36,7 @@ function start_post_load() {
                 // This is necessary in case the existence of any tiles requires changes to tile forms
                 // It's a bit of a kluge since all of the forms will have been created once already
                 broadcast_event_to_server("RebuildTileForms", {})
+                //CameraTag.setup()
             })
     }
     else {
@@ -41,6 +48,7 @@ function start_post_load() {
             tablespec_dict = {};
             tableObject.initialize_table(data)
             set_visible_doc(doc_names[0])
+            //CameraTag.setup()
         })
     }
 

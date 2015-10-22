@@ -1,7 +1,7 @@
 __author__ = 'bls910'
 from tactic_app import app, db, socketio
 from flask import request, jsonify, render_template, send_file, url_for
-from flask_login import current_user
+from flask_login import current_user, login_required
 from flask_socketio import join_room
 from tactic_app.shared_dicts import tile_classes, user_tiles
 from tactic_app.shared_dicts import mainwindow_instances, distribute_event
@@ -23,6 +23,7 @@ def on_join(data):
 # As well as for updating an existing project.
 
 @app.route('/save_new_project', methods=['POST'])
+@login_required
 def save_new_project():
     data_dict = request.json
     mainwindow_instances[data_dict['main_id']].project_name = data_dict["project_name"]
@@ -33,6 +34,7 @@ def save_new_project():
     return jsonify({"project_name": data_dict["project_name"], "success": True, "message": "Project Successfully Saved"})
 
 @app.route('/update_project', methods=['POST'])
+@login_required
 def update_project():
     data_dict = request.json
     save_dict = mainwindow_instances[data_dict['main_id']].compile_save_dict()
@@ -42,6 +44,7 @@ def update_project():
     return jsonify({"success": True, "message": "Project Successfully Saved"})
 
 @app.route('/export_data', methods=['POST'])
+@login_required
 def export_data():
     data_dict = request.json
     doc_dict = mainwindow_instances[data_dict['main_id']].doc_dict
@@ -55,23 +58,28 @@ def export_data():
 # passing back to the client.
 
 @app.route('/grab_data/<main_id>/<doc_name>', methods=['get'])
+@login_required
 def grab_data(main_id, doc_name):
     return jsonify({"doc_name": doc_name, "data_rows": mainwindow_instances[main_id].doc_dict[doc_name].data_rows, "header_list": mainwindow_instances[main_id].doc_dict[doc_name].header_list})
 
 @app.route('/grab_project_data/<main_id>/<doc_name>', methods=['get'])
+@login_required
 def grab_project_data(main_id, doc_name):
     mw = mainwindow_instances[main_id]
     return jsonify({"doc_name": doc_name, "tile_ids": mw.tile_ids, "data_rows": mw.doc_dict[doc_name].data_rows, "tablespec_dict": mw.tablespec_dict()})
 
 @app.route('/get_menu_template', methods=['get'])
+@login_required
 def get_menu_template():
     return send_file("templates/menu_template.html")
 
 @app.route('/get_table_templates', methods=['get'])
+@login_required
 def get_table_templates():
     return send_file("templates/table_templates.html")
 
 @app.route('/get_additional_params', methods=['GET'])
+@login_required
 def get_additional_params():
     if current_user.username in user_tiles:
         utiles = user_tiles[current_user.username].keys()
@@ -81,11 +89,13 @@ def get_additional_params():
     return jsonify(result)
 
 @app.route('/set_visible_doc/<main_id>/<doc_name>', methods=['get'])
+@login_required
 def set_visible_doc(main_id, doc_name):
     mainwindow_instances[main_id]._visible_doc_name = doc_name
     return jsonify({"success": True})
 
 @app.route('/distribute_events/<event_name>', methods=['get', 'post'])
+@login_required
 def distribute_events_stub(event_name):
     data_dict = request.json
     main_id = request.json["main_id"]
@@ -97,11 +107,13 @@ def distribute_events_stub(event_name):
     return jsonify({"success": True})
 
 @app.route('/figure_source/<main_id>/<tile_id>/<figure_name>', methods=['GET','POST'])
+@login_required
 def figure_source(main_id, tile_id, figure_name):
     img = mainwindow_instances[main_id].tile_instances[tile_id].images[figure_name]
     return send_file(img, mimetype='image/png')
 
 @app.route('/create_tile_request/<tile_type>', methods=['GET','POST'])
+@login_required
 def create_tile_request(tile_type):
     main_id = request.json["main_id"]
     tile_name = request.json["tile_name"]
@@ -115,6 +127,7 @@ def create_tile_request(tile_type):
     return jsonify({"html":result, "tile_id": tile_id})
 
 @app.route('/create_tile_from_save_request/<tile_id>', methods=['GET','POST'])
+@login_required
 def create_tile_from_save_request(tile_id):
     main_id = request.json["main_id"]
     tile_instance = mainwindow_instances[main_id].tile_instances[tile_id]

@@ -2,7 +2,7 @@
 # This module creates many of the objects that
 # need to be imported by other modules.
 
-from flask import Flask
+from flask import Flask, request, redirect
 import pymongo
 import sys, os
 from pymongo import MongoClient
@@ -15,6 +15,18 @@ print "entering new init"
 from flask_wtf.csrf import CsrfProtect
 
 csrf = CsrfProtect()
+
+def redirect_to_ssl():
+    print "entering redirect"
+    requestUrl = request.url
+    https = 'https' in requestUrl
+    if https == False:
+        secureUrl = requestUrl.replace('http','https')
+        return redirect(secureUrl)
+
+
+def print_message():
+    print "got to the message"
 
 try:
     print "getting client"
@@ -37,13 +49,17 @@ try:
     app = Flask(__name__)
     app.config.from_object('config')
 
+    print ("establishing redirect function")
+    app.before_request(redirect_to_ssl)
+
     "print starting login_manager, bootstratp, socketio"
     login_manager.init_app(app)
     bootstrap = Bootstrap(app)
     socketio=SocketIO(app)
     csrf.init_app(app)
 
-
 except pymongo.errors.PyMongoError as err:
     print("There's a problem with the PyMongo database. ", err)
     sys.exit()
+
+

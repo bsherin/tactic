@@ -9,10 +9,11 @@ from tactic_app.main import create_new_mainwindow, create_new_mainwindow_from_pr
 from tactic_app.users import put_docs_in_collection, build_data_collection_name
 from tactic_app.tiles import create_user_tiles
 from tactic_app.shared_dicts import user_tiles, loaded_user_modules
-from flask_login import current_user
+from flask_login import current_user, login_required
 from flask_socketio import join_room
 
 @app.route('/user_manage')
+@login_required
 def user_manage():
     if current_user.username in user_tiles:
         user_tile_name_list = user_tiles[current_user.username].keys()
@@ -21,6 +22,7 @@ def user_manage():
     return render_template('user_manage/user_manage.html', user_tile_name_list=user_tile_name_list)
 
 @app.route('/main/<collection_name>', methods=['get'])
+@login_required
 def main(collection_name):
     cname=build_data_collection_name(collection_name)
     main_id = create_new_mainwindow(current_user.get_id(), collection_name=cname)
@@ -39,6 +41,7 @@ def main(collection_name):
                            short_collection_name=short_collection_name)
 
 @app.route('/main_project/<project_name>', methods=['get'])
+@login_required
 def main_project(project_name):
     project_dict = db[current_user.project_collection_name].find_one({"project_name": project_name})
     if current_user.username not in loaded_user_modules:
@@ -63,6 +66,7 @@ def main_project(project_name):
                            short_collection_name=short_collection_name)
 
 @app.route('/view_list/<list_name>', methods=['get'])
+@login_required
 def view_list(list_name):
     the_list = current_user.get_list(list_name)
     return render_template("user_manage/list_viewer.html",
@@ -70,6 +74,7 @@ def view_list(list_name):
                            the_list=the_list)
 
 @app.route('/view_module/<module_name>', methods=['get'])
+@login_required
 def view_module(module_name):
     # the_list = current_user.get_list(list_name)
     module_code = current_user.get_tile_module(module_name)
@@ -79,6 +84,7 @@ def view_module(module_name):
 
 
 @app.route('/load_tile_module/<tile_module_name>', methods=['get', 'post'])
+@login_required
 def load_tile_module(tile_module_name):
     tile_module = current_user.get_tile_module(tile_module_name)
     create_user_tiles(tile_module)
@@ -110,6 +116,7 @@ def render_tile_module_list():
     return render_template("user_manage/tile_module_list.html")
 
 @app.route('/create_duplicate_list', methods=['post'])
+@login_required
 def create_duplicate_list():
     list_to_copy = request.json['res_to_copy']
     new_list_name = request.json['new_res_name']
@@ -120,22 +127,27 @@ def create_duplicate_list():
     return jsonify({"success": True})
 
 @app.route('/request_update_list_list', methods=['GET'])
+@login_required
 def request_update_list_list():
     return render_list_list()
 
 @app.route('/request_update_collection_list', methods=['GET'])
+@login_required
 def request_update_collection_list():
     return render_collection_list()
 
 @app.route('/request_update_project_list', methods=['GET'])
+@login_required
 def request_update_project_list():
     return render_project_list()
 
 @app.route('/request_update_tile_list', methods=['GET'])
+@login_required
 def request_update_tile_list():
     return render_tile_module_list()
 
 @app.route('/add_list', methods=['POST', 'GET'])
+@login_required
 def add_list():
     file = request.files['file']
     the_list = load_a_list(file)
@@ -145,6 +157,7 @@ def add_list():
     return make_response("", 204)
 
 @app.route('/add_tile_module', methods=['POST', 'GET'])
+@login_required
 def add_tile_module():
     f = request.files['file']
     the_module = f.read()
@@ -154,6 +167,7 @@ def add_tile_module():
     return make_response("", 204)
 
 @app.route('/load_files/<collection_name>', methods=['POST', 'GET'])
+@login_required
 def load_files(collection_name):
     file_list = request.files.getlist("file")
     full_collection_name = build_data_collection_name(collection_name)
@@ -182,6 +196,7 @@ def load_files(collection_name):
     return jsonify({"message":"Collection successfully loaded", "alert_type": "alert-success"})
 
 @app.route('/delete_project/<project_name>', methods=['post'])
+@login_required
 def delete_project(project_name):
     db[current_user.project_collection_name].delete_one({"project_name": project_name})
     socketio.emit('update-project-list', {"html": render_project_list()}, namespace='/user_manage', room=current_user.get_id())
@@ -189,24 +204,28 @@ def delete_project(project_name):
     # return render_template("project_list.html")
 
 @app.route('/delete_list/<list_name>', methods=['post'])
+@login_required
 def delete_list(list_name):
     db[current_user.list_collection_name].delete_one({"list_name": list_name})
     socketio.emit('update-list-list', {"html": render_list_list()}, namespace='/user_manage', room=current_user.get_id())
     return jsonify({"success": True})
 
 @app.route('/delete_tile_module/<tile_module_name>', methods=['post'])
+@login_required
 def delete_tile_module(tile_module_name):
     db[current_user.tile_collection_name].delete_one({"tile_module_name": tile_module_name})
     socketio.emit('update-tile-module-list', {"html": render_tile_module_list()}, namespace='/user_manage', room=current_user.get_id())
     return jsonify({"success": True})
 
 @app.route('/delete_collection/<collection_name>', methods=['post'])
+@login_required
 def delete_collection(collection_name):
     db.drop_collection(current_user.full_collection_name(collection_name))
     socketio.emit('update-collection-list', {"html": render_collection_list()}, namespace='/user_manage', room=current_user.get_id())
     return jsonify({"success": True})
 
 @app.route('/duplicate_collection', methods=['post'])
+@login_required
 def duplicate_collection():
     collection_to_copy = current_user.full_collection_name(request.json['res_to_copy'])
     new_collection_name = current_user.full_collection_name(request.json['new_res_name'])
@@ -216,6 +235,7 @@ def duplicate_collection():
     return jsonify({"success": True})
 
 @app.route('/update_module', methods=['post'])
+@login_required
 def update_module():
     data_dict = request.json
     module_name = data_dict["module_name"]
@@ -225,18 +245,22 @@ def update_module():
     return jsonify({"success": True, "message": "Module Successfully Saved", "alert_type": "alert-success"})
 
 @app.route('/get_modal_template', methods=['get'])
+@login_required
 def get_modal_template():
     return send_file("templates/modal_text_request_template.html")
 
 @app.route('/get_resource_module_template', methods=['get'])
+@login_required
 def get_resource_module_template():
     return send_file("templates/resource_module_template.html")
 
 @socketio.on('connect', namespace='/user_manage')
+@login_required
 def connected_msg():
     print"client connected"
 
 @socketio.on('join', namespace='/user_manage')
+@login_required
 def on_join(data):
     room=data["user_id"]
     join_room(room)
