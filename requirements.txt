@@ -3,6 +3,7 @@ Flask-Bootstrap==3.3.5.2
 Flask-Login==0.2.11
 Flask-SocketIO==0.6.0
 Flask-WTF==0.12
+Flask-SSLify==0.1.5
 funcsigs==0.4
 gevent==1.0.2
 gevent-socketio==0.3.6

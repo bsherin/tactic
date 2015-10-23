@@ -16,13 +16,6 @@ from flask_wtf.csrf import CsrfProtect
 
 csrf = CsrfProtect()
 
-def redirect_to_ssl():
-    print "entering redirect"
-    requestUrl = request.url
-    https = 'https' in requestUrl
-    if https == False:
-        secureUrl = requestUrl.replace('http','https')
-        return redirect(secureUrl)
 
 def print_message():
     print "got to the message"
@@ -50,6 +43,11 @@ try:
 
     # print ("establishing redirect function")
     # app.before_request(redirect_to_ssl)
+
+    if not app.config['SSL_DISABLE']:
+        print "enabling sslify"
+        from flask.ext.sslify import SSLify
+        sslify = SSLify(app)
 
     "print starting login_manager, bootstratp, socketio"
     login_manager.init_app(app)
