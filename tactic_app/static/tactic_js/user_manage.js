@@ -43,7 +43,7 @@ function start_post_load() {
         collectionManager.add_listeners();
         projectManager.add_listeners();
         tileManager.add_listeners();
-        CameraTag.setup()
+        //CameraTag.setup()
     })
 }
 
