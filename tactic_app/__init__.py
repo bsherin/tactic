@@ -22,6 +22,7 @@ def print_message():
 
 try:
     print "getting client"
+    use_ssl = os.environ.get("USE_SSL")
     # client = MongoClient("localhost", serverSelectionTimeoutMS=10)
     client = MongoClient(host=os.environ.get("MONGOLAB_URI"))
     print "getting server_info"
@@ -44,7 +45,7 @@ try:
     # print ("establishing redirect function")
     # app.before_request(redirect_to_ssl)
 
-    if not app.config['SSL_DISABLE']:
+    if use_ssl=="True":
         print "enabling sslify"
         from flask.ext.sslify import SSLify
         sslify = SSLify(app)

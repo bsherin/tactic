@@ -3,7 +3,7 @@ __author__ = 'bls910'
 import os
 import pymongo
 from flask import render_template, request, make_response, redirect, url_for, jsonify, send_file
-from tactic_app import app, db, socketio
+from tactic_app import app, db, socketio, use_ssl
 from tactic_app.file_handling import read_xml_file_to_dict_list, read_csv_file_to_dict_list, read_txt_file_to_dict_list, load_a_list;
 from tactic_app.main import create_new_mainwindow, create_new_mainwindow_from_project, mainwindow_instances
 from tactic_app.users import put_docs_in_collection, build_data_collection_name
@@ -19,7 +19,7 @@ def user_manage():
         user_tile_name_list = user_tiles[current_user.username].keys()
     else:
         user_tile_name_list = []
-    return render_template('user_manage/user_manage.html', user_tile_name_list=user_tile_name_list)
+    return render_template('user_manage/user_manage.html', user_tile_name_list=user_tile_name_list, use_ssl=str(use_ssl))
 
 @app.route('/main/<collection_name>', methods=['get'])
 @login_required
@@ -38,6 +38,7 @@ def main(collection_name):
                            project_name='',
                            main_id=main_id,
                            doc_names=doc_names,
+                           use_ssl = str(use_ssl),
                            short_collection_name=short_collection_name)
 
 @app.route('/main_project/<project_name>', methods=['get'])
@@ -63,6 +64,7 @@ def main_project(project_name):
                            project_name=project_name,
                            main_id=main_id,
                            doc_names=doc_names,
+                           use_ssl = str(use_ssl),
                            short_collection_name=short_collection_name)
 
 @app.route('/view_list/<list_name>', methods=['get'])

@@ -5,7 +5,13 @@
 var resource_module_template;
 
 function start_post_load() {
-    socket = io.connect('http://'+document.domain + ':' + location.port  + '/user_manage');
+    if (use_ssl) {
+        socket = io.connect('https://'+document.domain + ':' + location.port  + '/user_manage');
+    }
+    else {
+        socket = io.connect('http://'+document.domain + ':' + location.port  + '/user_manage');
+    }
+
     socket.emit('join', {"user_id":  user_id});
     socket.on('update-project-list', function(data) {
         $("#project-selector").html(data.html)

@@ -43,6 +43,7 @@
     <script src="{{url_for('static', filename='tactic_js/user_manage.js')}}"></script>
     <script>
         var user_id = "{{current_user.get_id()}}";
+        var use_ssl = "{{use_ssl}}"=="True";
         window.onload = start_post_load;
     </script>
 {% endblock %}
