@@ -56,6 +56,7 @@ function start_post_load() {
 var resourceManager = {
     show_add: true,
     show_multiple:false,
+    show_new: false,
     show_load: true,
     show_view: true,
     show_duplicate: true,
@@ -63,12 +64,14 @@ var resourceManager = {
     show_loaded_list: false,
     res_type: "list",
     add_view: "/add_list",
+    new_view: "",
     load_view: '',
     view_view: '/view_list/',
     duplicate_view: '/create_duplicate_list',
     delete_view: '/delete_list/',
     add_listeners: function () {
         $("#duplicate-" + this.res_type + "-button").click({"manager": this}, this.duplicate_func);
+        $("#new-" + this.res_type + "-button").click({"manager": this}, this.new_func);
         $("#add-" + this.res_type + "-form").submit({"manager": this}, this.add_func);
         $("#view-" + this.res_type + "-button").click({"manager": this}, this.view_func);
         $("#load-" + this.res_type + "-button").click({"manager": this}, this.load_func);
@@ -121,6 +124,25 @@ var resourceManager = {
             });
         })
     },
+
+    new_func: function (event) {
+        var manager = event.data.manager
+        showModal("New " + manager.res_type, "New " + manager.res_type + " Name", function (new_name) {
+            var result_dict = {
+                "new_res_name": new_name,
+            };
+
+            $.ajax({
+                url: $SCRIPT_ROOT + manager.new_view,
+                contentType: 'application/json',
+                type: 'POST',
+                async: true,
+                data: JSON.stringify(result_dict),
+                dataType: 'json',
+            });
+        })
+    },
+
     delete_func: function (event) {
         var manager = event.data.manager
         var res_name = manager.check_for_selection(manager.res_type);
@@ -212,8 +234,10 @@ var tileManager = Object.create(resourceManager);
 
 tile_manager_specifics = {
     res_type: "tile",
+    show_new: true,
     show_duplicate: false,
     show_loaded_list: true,
+    new_view: '/create_tile_module',
     add_view: '/add_tile_module',
     view_view: 'view_module/',
     load_view: "/load_tile_module/",

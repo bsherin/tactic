@@ -20,6 +20,9 @@
     transition-duration: 3s;
 }
 
+.hidden-row {
+    display: none !important;
+}
 
 #table-icon {
     display:none;

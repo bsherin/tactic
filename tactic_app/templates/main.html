@@ -16,6 +16,7 @@
 {#    <camera id="MyFirstCamera" data-app-id="a-2ed02e70-5579-0133-03fb-22000b109ea8" style="width:500px; height:200px; display:block"></camera>#}
 {#    <video id='MyPlayer1' data-uuid='a-2ed02e70-5579-0133-03fb-22000b109ea8'></video>#}
 {#    <video id='rando' data-uuid='["v-bbfdac4a-5a46-4a4b-a87a-4d912fbd692e"]'></video>#}
+    {% include 'modals/show_image_modal.html' %}
     <div id="modal-area">
     </div>
     <div id="loading-message">
@@ -25,7 +26,6 @@
     <div id="outer-container" align="center" style="display: none">
         <div id="status-area"></div>
         <div class="grid-left" align="left">
-
             <div id="main-panel" class="panel panel-default">
                 <div class="panel-heading" id="data-title" style="padding-top: 5px; padding-bottom: 5px">
                 <button type='button' class='notclose' onclick="tableObject.shrinkTable()"><span style="font-size:15px" class="glyphicon glyphicon-th"></span></button>
@@ -42,10 +42,12 @@
 
                     <span style="font-size: 12px; font-weight: bold;"> Project: <span id="project-name">{{project_name}}</span></span>
                     <form class="form-inline" style="display:inline; float:right">
-                        <span class="form-group">
-                          <input type="text" id="search" class="form-control input-small" placeholder="Search">
+                        <span class="form-group form-group-sm">
+                          <input type="text" id="search" class="form-control" placeholder="Search">
                         </span>
                         <button class="btn btn-default input-sm" onclick="return doSearch(document.getElementById('search').value)" value="Find">Find</button>
+                        <button class="btn btn-default input-sm" onclick="return doFilter(document.getElementById('search').value)" value="Filter">Filter</button>
+                        <button class="btn btn-default input-sm" onclick="return doUnfilter()" value="Unfilter">Unfilter</button>
                    </form>
                     <span id="table-spin-place" style="margin:7px"></span>
                 </div>
@@ -66,6 +68,7 @@
                 </div>
             </div>
         </div>
+        <div id="console" style="font-size: 12px"></div>
     </div>
 {% endblock %}
 {% block scripts %}

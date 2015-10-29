@@ -168,6 +168,18 @@ def add_tile_module():
     socketio.emit('update-tile-module-list', {"html": render_tile_module_list()}, namespace='/user_manage', room=current_user.get_id())
     return make_response("", 204)
 
+@app.route('/create_tile_module', methods=['POST', 'GET'])
+@login_required
+def create_tile_module():
+    new_tile_name = request.json['new_res_name']
+    mongo_dict = db["shared_tiles"].find_one({"tile_module_name": "tile_template.py"})
+    template = mongo_dict["tile_module"]
+
+    data_dict = {"tile_module_name": new_tile_name, "tile_module": template}
+    db[current_user.tile_collection_name].insert_one(data_dict)
+    socketio.emit('update-tile-module-list', {"html": render_tile_module_list()}, namespace='/user_manage', room=current_user.get_id())
+    return make_response("", 204)
+
 @app.route('/load_files/<collection_name>', methods=['POST', 'GET'])
 @login_required
 def load_files(collection_name):

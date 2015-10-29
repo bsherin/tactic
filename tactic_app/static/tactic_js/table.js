@@ -35,6 +35,21 @@ function doSearch(t) {
     return false
 }
 
+function doFilter(t) {
+    console.log("do filter on " + t);
+    var data_dict = {"text_to_find": t};
+    broadcast_event_to_server("UnfilterTable", data_dict);
+    if (t !== "") {
+        broadcast_event_to_server("FilterTable", data_dict);
+    }
+    return false
+}
+
+function doUnfilter(t) {
+    broadcast_event_to_server("UnfilterTable", {});
+    return false
+}
+
 function get_header(header_name) {
     return $("thead .column-" + header_name)
 }
@@ -62,6 +77,7 @@ tableSpec = {
     "doc_name": null,
     "header_list": null,
     "hidden_list": [],
+    "hidden_rows": [],
     "table_width": null,
     "column_widths": null,
     shift_column_left: function (column_name) {
@@ -102,6 +118,7 @@ function create_tablespec(dict) {
     spec.doc_name = dict.doc_name;
     spec.header_list = dict.header_list;
     spec.hidden_list = dict.hidden_list;
+    spec.hidden_rows = dict.hidden_rows;
     spec.table_width = dict.table_width;
     spec.column_widths = dict.column_widths;
     return spec
@@ -156,6 +173,7 @@ var tableObject = {
         for (i = 0; i < this.current_spec.hidden_list.length; ++i) {
             $("column-" + this.current_spec.hidden_list[i]).css("display", "none");
         }
+        this.hideRows(this.current_spec.hidden_rows);
         $("#project-name").html(this.project_name)
         setup_resize_listeners();
         this.resize_table_area();
@@ -463,6 +481,37 @@ var tableObject = {
             console.log(err.message + " row index " + rindex + "_col_index_ " + cindex)
         }
 
+    },
+
+    hideRows: function(hide_list) {
+        var rows = $('#table-area tbody tr');
+        for (i = 0; i < hide_list.length; ++i) {
+            var rnum = hide_list[i];
+            rows.eq(rnum).addClass("hidden-row")
+        }
+    },
+
+    consoleLog: function(data_object) {
+        $("#console").text(data_object.message_string)
+    },
+
+    setHiddenRows: function(data_object) {
+        doc_name = data_object.document;
+        hide_list = data_object.hide_list
+        tablespec_dict[doc_name].hidden_rows = hide_list
+        if (doc_name == this.current_spec.doc_name) {
+            this.hideRows(data_object.hide_list)
+        }
+    },
+
+    unfilterAllRows: function() {
+        var rows = $('#table-area tbody tr');
+        this.current_spec.hidden_rows.forEach(function(r){
+            rows.eq(r).removeClass('hidden-row')
+        });
+        tablespec_dict.forEach(function(spec){
+            spec.hidden_rows == []
+        })
     },
 
     dehiglightAllCells: function() {

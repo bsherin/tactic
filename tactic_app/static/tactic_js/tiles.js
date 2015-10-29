@@ -3,7 +3,6 @@
 var tile_dict = {}
 
 
-
 function spin_and_refresh(tile_id) {
     broadcast_event_to_server("StartSpinner", {"tile_id": tile_id})
     broadcast_event_to_server("RefreshTile", {"tile_id": tile_id})

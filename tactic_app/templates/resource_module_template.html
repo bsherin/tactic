@@ -17,6 +17,9 @@
     <div class="row indent-row" style="margin-top: 25px">
         <div class="col-xs-12">
             <div class="btn-group" role="group">
+                {{#show_new}}
+                    <button type="button" id="new-{{res_type}}-button" class="btn btn-info">New</button>
+                {{/show_new}}
                 {{#show_view}}
               <button type="button" id="view-{{res_type}}-button" class="btn btn-info">View</button>
                 {{/show_view}}

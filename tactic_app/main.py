@@ -47,7 +47,7 @@ class docInfo():
 class mainWindow(threading.Thread):
     save_attrs = ["short_collection_name", "collection_name", "current_tile_id", "user_id", "doc_dict", "tile_instances", "project_name", "loaded_modules"]
     update_events = ["CellChange", "CreateColumn", "SearchTable", "SaveTableSpec",
-                    "DehighlightTable", "SetCellContent", "RemoveTile", "ColorTextInCell"]
+                    "DehighlightTable", "SetCellContent", "RemoveTile", "ColorTextInCell", "FilterTable", "UnfilterTable", "TextSelect"]
     def __init__(self, user_id, collection_name, doc_dict=None):
         global current_main_id
         self._stopevent = threading.Event()
@@ -73,6 +73,7 @@ class mainWindow(threading.Thread):
         self._change_list = []
         self._visible_doc_name = None
         self._pipe_dict = {}
+        self.selected_text = ""
 
         # self.cells_with_highlights = []
 
@@ -170,17 +171,76 @@ class mainWindow(threading.Thread):
         return new_tile
 
     def get_column_data(self, column_header):
-        result = {}
-        for (doc_name, doc) in self.doc_dict.items():
-            result[doc_name] = self.get_column_data_for_doc(column_header, doc)
+        result = []
+        for doc_name in self.doc_dict.keys():
+            result = result + self.get_column_data_for_doc(column_header, doc_name)
         return result
 
-    def get_column_data_for_doc(self, column_header, doc):
-        the_rows = doc.data_rows
+    def get_column_data_for_doc(self, column_header, doc_name):
+        the_rows = self.doc_dict[doc_name].data_rows
         result = []
         for the_row in the_rows:
             result.append(the_row[column_header])
         return result
+
+    def get_matching_rows(self, filter_function, document_name):
+        result = []
+        if document_name is not None:
+            for r in self.doc_dict[document_name].data_rows:
+                if filter_function(r):
+                    result.append(r)
+        else:
+            for doc in self.doc_dict.keys():
+                for r in self.doc_dict[doc].data_rows:
+                    if filter_function(r):
+                        result.append(r)
+        return result
+
+    def display_matching_rows(self, filter_function, document_name=None):
+        if document_name is not None:
+            show_list = []
+            hide_list = []
+            i = 0
+            for r in self.doc_dict[document_name].data_rows:
+                if filter_function(r):
+                    show_list.append(i)
+                else:
+                    hide_list.append(i)
+                i += 1
+            self.emit_table_message("setHiddenRows", {"document": document_name, "hide_list": hide_list})
+        else:
+            for doc in self.doc_dict.keys():
+                show_list = []
+                hide_list = []
+                i = 0
+                for r in self.doc_dict[doc].data_rows:
+                    if filter_function(r):
+                        show_list.append(i)
+                    else:
+                        hide_list.append(i)
+                    i += 1
+                self.emit_table_message("setHiddenRows", {"document": doc, "hide_list": hide_list})
+        return
+
+    def apply_to_rows(self, func, document_name=None):
+        if document_name is not None:
+            i = 0
+            for r in self.doc_dict[document_name].data_rows:
+                new_r = func(r)
+                self.doc_dict[document_name].data_rows[i] = new_r
+                for c in new_r.keys():
+                    self._set_cell_content(document_name, i, c, new_r, cellchange=False)
+                i += 1
+        else:
+            for doc in self.doc_dict.keys():
+                i = 0
+                for r in self.doc_dict[doc].data_rows:
+                    new_r = func(r)
+                    self.doc_dict[doc].data_rows[i] = new_r
+                    for c in new_r.keys():
+                        self._set_cell_content(doc, i, c, new_r, cellchange=False)
+                    i += 1
+        return
 
     def run(self):
         while not self._stopevent.isSet( ):
@@ -212,13 +272,19 @@ class mainWindow(threading.Thread):
             distribute_event("RebuildTileForms", self._main_id)
         elif event_name == "SearchTable":
             self.highlight_table_text(data["text_to_find"])
+        elif event_name == "FilterTable":
+            self.filter_table_rows(data["text_to_find"])
         elif event_name == "DehighlightTable":
             self.dehighlight_all_table_text()
+        elif event_name == "UnfilterTable":
+            self.unfilter_all_rows()
         elif event_name == "ColorTextInCell":
             print "About to emit colorTxtInCell"
             self.emit_table_message("colorTxtInCell", data)
         elif event_name == "SetCellContent":
             self._set_cell_content(data["doc_name"], data["row_index"], data["column_header"], data["new_content"], data["cellchange"])
+        elif event_name == "TextSelect":
+            self.selected_text = data["selected_text"]
         elif event_name == "SaveTableSpec":
             new_spec = data["tablespec"]
             self.doc_dict[new_spec["doc_name"]].table_spec = new_spec
@@ -255,8 +321,22 @@ class mainWindow(threading.Thread):
                       {"row_index": row_index, "column_header": cheader, "text_to_find": txt})
             row_index += 1
 
+    @staticmethod
+    def txt_in_dict(txt, d):
+        for val in d.values():
+            if txt.lower() in val.lower():
+                return True
+        return False
+
+    def filter_table_rows(self, txt):
+        self.highlight_table_text(txt)
+        self.display_matching_rows(lambda r: self.txt_in_dict(txt, r))
+
     def dehighlight_all_table_text(self):
         self.emit_table_message("dehiglightAllCells")
+
+    def unfilter_all_rows(self):
+        self.emit_table_message("unfilterAllRows")
 
     def _build_doc_dict(self):
         result = {}

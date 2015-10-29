@@ -2,7 +2,6 @@
 class SimpleSelectionTile(TileBase):
     def __init__(self, main_id, tile_id, tile_name=None):
         TileBase.__init__(self, main_id, tile_id, tile_name)
-        self.update_events.append("TextSelect")
         self.extra_text = "placeholder text"
         self.selected_text = "no selection"
         self.tile_type = self.__class__.__name__
