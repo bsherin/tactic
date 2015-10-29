@@ -7,6 +7,12 @@ function start_post_load() {
     myCodeMirror = CodeMirror.fromTextArea(codearea, {
         lineNumbers: true
     });
+    myCodeMirror.setOption("extraKeys", {
+      Tab: function(cm) {
+        var spaces = Array(5).join(" ");
+        cm.replaceSelection(spaces);
+      }
+    });
 }
 
 function updateModule() {
