@@ -60,6 +60,15 @@
                     </table>
                 </div>
              </div>
+            <div id="console-panel" class="panel panel-default">
+                <div id="console-heading" class="panel-heading">
+                    <button type='button' class='notclose triangle-right' onclick=expandConsole()><span style="font-size:10px" class="glyphicon glyphicon-triangle-right"></span></button>
+                    <button type='button' class='notclose triangle-bottom' onclick=shrinkConsole()><span style="font-size:10px" class="glyphicon glyphicon-triangle-bottom"></span></button>
+                    <button type='button' class='notclose' style="float:right" onclick=tableObject.clearConsole()><span style="font-size:10px" class="glyphicon glyphicon-trash"></span></button>
+                    Console
+                </div>
+              <div id="console" class="panel-body"></div>
+            </div>
         </div>
         <button type='button' id="table-icon" class="btn btn-info" onclick="tableObject.expandTable()"><span style="font-size:15px" class="glyphicon glyphicon-th-list"></span></button>
         <div class="grid-right" align="left">
@@ -68,7 +77,8 @@
                 </div>
             </div>
         </div>
-        <div id="console" style="font-size: 12px"></div>
+
+</div>
     </div>
 {% endblock %}
 {% block scripts %}

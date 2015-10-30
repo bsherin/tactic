@@ -1,5 +1,52 @@
 var socket;
 
+function initializeConsole() {
+    saved_console_size = 50;
+    var pan = $("#console-panel");
+    $("#console-body").fadeOut();
+    var hheight = $("#console-heading").outerHeight();
+    pan.outerHeight(hheight);
+    pan.find(".triangle-bottom").hide();
+    pan.find(".triangle-right").show();
+    console_visible = false
+
+}
+
+function shrinkConsole (){
+    saved_console_size = $("#console-panel").outerHeight();
+    var pan = $("#console-panel");
+    $("#console-body").fadeOut();
+    var hheight = $("#console-heading").outerHeight();
+    pan.outerHeight(hheight);
+    pan.resizable('destroy');
+    pan.find(".triangle-bottom").hide();
+    pan.find(".triangle-right").show();
+    tableObject.resize_table_area()
+    console_visible = false
+}
+
+function expandConsole(){
+    var pan = $("#console-panel");
+    pan.outerHeight(saved_console_size);
+    //el = $(this.full_selector()).slideToggle({
+    //    "duration": "medium",
+    //})
+    pan.find(".triangle-right").hide();
+    pan.find(".triangle-bottom").show();
+    $("#console-body").fadeIn();
+    $("#console").outerHeight(pan.innerHeight()- $("#console-heading").outerHeight());
+    console_visible = true;
+    tableObject.resize_table_area();
+    pan.resizable({
+            handles: "n",
+            resize: function (event, ui) {
+                ui.position.top = 0;
+                tableObject.resize_table_area;
+                $("#console").outerHeight(ui.size.height- $("#console-heading").outerHeight())
+            }
+        });
+
+}
 
 function start_post_load() {
     //spinner = new Spinner({scale: 1.0}).spin();
@@ -7,6 +54,7 @@ function start_post_load() {
     $("#outer-container").css({"margin-left": String(MARGIN_SIZE) + "px"});
     $("#outer-container").css({"margin-right": String(MARGIN_SIZE) + "px"});
     $("#outer-container").css({"margin-top": "0px", "margin-bottom": "0px"});
+    initializeConsole();
     $.getJSON($SCRIPT_ROOT + "/get_additional_params", function (data) {
         tile_types = data.tile_types;
         user_tile_types = data.user_tile_types;

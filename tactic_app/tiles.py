@@ -3,6 +3,7 @@ __author__ = 'bls910'
 import Queue
 import threading
 import nltk
+import sys
 # I want nltk to only search here so that I can see
 # what behavior on remote will be like.
 nltk.data.path = ['./nltk_data/']
@@ -37,8 +38,11 @@ def user_tile(tclass):
     return tclass
 
 def create_user_tiles(tile_code):
-    exec(tile_code)
-    return
+    try:
+        exec(tile_code)
+    except:
+        return str(sys.exc_info()[0]) + " "  + str(sys.exc_info()[1])
+    return "success"
 
 @tile_class
 class SimpleCoder(TileBase):
@@ -107,7 +111,7 @@ class WordnetSelectionTile(TileBase):
         return "<div>Synsets are:</div><div>{}</div>".format(res)
 
     def handle_text_select(self, selected_text, doc_name, active_row_index):
-        self.selected_text = data["selected_text"]
+        self.selected_text = selected_text
         self.refresh_tile_now()
 
 @tile_class

@@ -246,7 +246,7 @@ tile_manager_specifics = {
         var manager = event.data.manager
         var res_name = manager.check_for_selection(manager.res_type);
         if (res_name == "") return;
-        $.getJSON($SCRIPT_ROOT + '/load_tile_module/' + String(res_name))
+        $.getJSON($SCRIPT_ROOT + '/load_tile_module/' + String(res_name), success=doFlash)
     }
 }
 updateObject(tileManager, tile_manager_specifics);

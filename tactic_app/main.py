@@ -170,6 +170,9 @@ class mainWindow(threading.Thread):
         self.current_tile_id += 1
         return new_tile
 
+    def print_to_console(self, message_string):
+        self.emit_table_message("consoleLog", {"message_string": message_string})
+
     def get_column_data(self, column_header):
         result = []
         for doc_name in self.doc_dict.keys():

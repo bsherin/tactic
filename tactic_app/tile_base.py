@@ -78,31 +78,34 @@ class TileBase(threading.Thread):
         return result
 
     def handle_event(self, event_name, data=None):
-        if event_name == "RefreshTile":
-            self.refresh_tile_now()
-        elif event_name == "RefreshTileFromSave":
-            self.refresh_tile_now(self.current_html)
-        elif event_name == "UpdateOptions":
-            self.update_options(data)
-        elif event_name == "CellChange":
-            self.handle_cell_change(data["column_header"], data["row_index"], data["old_content"], data["new_content"], data["doc_name"])
-        elif event_name == "TileButtonClick":
-            self.handle_button_click(data["button_value"], data["doc_name"], data["active_row_index"])
-        elif event_name == "TextSelect":
-            self.handle_text_select(data["selected_text"], data["doc_name"], data["active_row_index"])
-        elif event_name == "PipeUpdate":
-            self.handle_pipe_update(data["pipe_name"])
-        elif event_name == "TileWordClick":
-            self.handle_tile_word_click(data["clicked_text"], data["doc_name"], data["active_row_index"])
-        elif event_name =="ShowFront":
-            self.show_front()
-        elif event_name=="StartSpinner":
-            self.start_spinner()
-        elif event_name=="StopSpinner":
-            self.stop_spinner()
-        elif event_name=="RebuildTileForms":
-            form_html = self.create_form_html()
-            self.emit_tile_message("displayFormContent", {"html": form_html})
+        try:
+            if event_name == "RefreshTile":
+                self.refresh_tile_now()
+            elif event_name == "RefreshTileFromSave":
+                self.refresh_tile_now(self.current_html)
+            elif event_name == "UpdateOptions":
+                self.update_options(data)
+            elif event_name == "CellChange":
+                self.handle_cell_change(data["column_header"], data["row_index"], data["old_content"], data["new_content"], data["doc_name"])
+            elif event_name == "TileButtonClick":
+                self.handle_button_click(data["button_value"], data["doc_name"], data["active_row_index"])
+            elif event_name == "TextSelect":
+                self.handle_text_select(data["selected_text"], data["doc_name"], data["active_row_index"])
+            elif event_name == "PipeUpdate":
+                self.handle_pipe_update(data["pipe_name"])
+            elif event_name == "TileWordClick":
+                self.handle_tile_word_click(data["clicked_text"], data["doc_name"], data["active_row_index"])
+            elif event_name =="ShowFront":
+                self.show_front()
+            elif event_name=="StartSpinner":
+                self.start_spinner()
+            elif event_name=="StopSpinner":
+                self.stop_spinner()
+            elif event_name=="RebuildTileForms":
+                form_html = self.create_form_html()
+                self.emit_tile_message("displayFormContent", {"html": form_html})
+        except:
+            self.display_message(str(sys.exc_info()[0]) + " "  + str(sys.exc_info()[1]))
         return
 
     def emit_tile_message(self, message, data={}):
@@ -237,12 +240,12 @@ class TileBase(threading.Thread):
     def get_matching_rows(self, filter_function, document_name):
         return mainwindow_instances[self.main_id].get_matching_rows(filter_function, document_name)
 
-    def display_matching_rows(self, filter_function, document_name):
+    def display_matching_rows(self, filter_function, document_name=None):
         mainwindow_instances[self.main_id].display_matching_rows(filter_function, document_name)
         return
 
     def display_message(self, message_string):
-        mainwindow_instances[self.main_id].emit_table_message("consoleLog", {"message_string": message_string})
+        mainwindow_instances[self.main_id].print_to_console(message_string)
 
     def display_all_rows(self):
         mainwindow_instances[self.main_id].unfilter_all_rows()

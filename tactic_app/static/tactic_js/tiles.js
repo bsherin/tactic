@@ -181,19 +181,6 @@ var tile_object = {
         el.find(".tile-body").fadeOut();
         var hheight = el.find(".tile-panel-heading").outerHeight()
         el.outerHeight(hheight)
-
-        //el.slideToggle({
-        //    "duration": "medium",
-        //    "step": function (now, tween) {
-        //        if (tween.prop == "height") {
-        //            var hheight = $(tween.elem).children(".panel-heading").outerHeight()
-        //            if (now <= hheight){
-        //                $(tween.elem).stop()
-        //
-        //            }
-        //        }
-        //    }
-        //})
         el.resizable('destroy');
         el.find(".triangle-bottom").hide();
         el.find(".triangle-right").show();
