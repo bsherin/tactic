@@ -170,6 +170,13 @@ class mainWindow(threading.Thread):
         self.current_tile_id += 1
         return new_tile
 
+    def handle_exception(self, unique_message=None):
+        error_string = str(sys.exc_info()[0]) + " "  + str(sys.exc_info()[1])
+        if unique_message is None:
+            self.print_to_console(error_string)
+        else:
+            self.print_to_console(unique_message + " " + error_string)
+
     def print_to_console(self, message_string):
         self.emit_table_message("consoleLog", {"message_string": message_string})
 
@@ -230,18 +237,18 @@ class mainWindow(threading.Thread):
             i = 0
             for r in self.doc_dict[document_name].data_rows:
                 new_r = func(r)
-                self.doc_dict[document_name].data_rows[i] = new_r
-                for c in new_r.keys():
-                    self._set_cell_content(document_name, i, c, new_r, cellchange=False)
+                for (key, val) in new_r.items():
+                    # self.doc_dict[document_name].data_rows[i][key] = val
+                    self._set_cell_content(document_name, i, key, val, cellchange=False)
                 i += 1
         else:
             for doc in self.doc_dict.keys():
                 i = 0
                 for r in self.doc_dict[doc].data_rows:
                     new_r = func(r)
-                    self.doc_dict[doc].data_rows[i] = new_r
-                    for c in new_r.keys():
-                        self._set_cell_content(doc, i, c, new_r, cellchange=False)
+                    for (key, val) in new_r.itesm():
+                        # self.doc_dict[document_name].data_rows[i][key] = val
+                        self._set_cell_content(doc, i, key, val, cellchange=False)
                     i += 1
         return
 

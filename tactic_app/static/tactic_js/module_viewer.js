@@ -32,6 +32,10 @@ function updateModule() {
     });
 }
 
+function loadModule() {
+    $.getJSON($SCRIPT_ROOT + '/load_tile_module/' + String(module_name), success=doFlash)
+}
+
 function saveModuleAs() {
     doFlash({"message": "not implemented yet"})
 }

@@ -153,6 +153,7 @@ var tableObject = {
             this.current_spec = Object.create(tableSpec);
             this.current_spec.doc_name = this.current_doc_name;
             this.current_spec.hidden_list = [];
+            this.current_spec.hidden_rows = [];
             this.current_spec.header_list = data_object["header_list"]
             tablespec_dict[this.current_doc_name] = this.current_spec;
         }
@@ -585,7 +586,7 @@ var tableObject = {
         }
         $(".grid-right").width(usable_width * (1 - this.left_fraction))
         $("#status-area").width(usable_width)
-        $("#table-area tbody").height(window.innerHeight - $("#console-panel").outerHeight() - 30 - $("#table-area tbody").offset().top)
+        $("#table-area tbody").height(window.innerHeight - $("#console-panel").outerHeight() - 50 - $("#table-area tbody").offset().top)
         //$("#main-panel").outerHeight(window.innerHeight - $("#console-panel").outerHeight() - 50 - $("#main-panel").offset().top)
         $("#main-panel").width("") // We do this so that this will resize when the window is resized.
     },

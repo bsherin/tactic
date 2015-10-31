@@ -1,7 +1,7 @@
 var socket;
 
 function initializeConsole() {
-    saved_console_size = 50;
+    saved_console_size = 150;
     var pan = $("#console-panel");
     $("#console-body").fadeOut();
     var hheight = $("#console-heading").outerHeight();

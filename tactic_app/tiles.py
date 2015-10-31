@@ -117,7 +117,7 @@ class WordnetSelectionTile(TileBase):
 @tile_class
 class VocabularyTable(TileBase):
     exports = ["vocabulary"]
-    save_attrs = TileBase.save_attrs + ["column_source", "tokenizer_func", "stop_list"]
+    save_attrs = TileBase.save_attrs + ["column_source", "tokenizer", "stop_list"]
     def __init__(self, main_id, tile_id, tile_name=None):
         TileBase.__init__(self, main_id, tile_id, tile_name)
         self.column_source = None
@@ -211,7 +211,7 @@ class VocabularyImportAndPlot(TileBase):
 
 @tile_class
 class VocabularyPlot(VocabularyTable):
-    save_attrs = TileBase.save_attrs + ["column_source", "tokenizer_func", "stop_list"]
+    save_attrs = TileBase.save_attrs + ["column_source", "tokenizer", "stop_list"]
     def __init__(self, main_id, tile_id, tile_name=None):
         VocabularyTable.__init__(self, main_id, tile_id, tile_name)
 
@@ -233,7 +233,7 @@ class VocabularyPlot(VocabularyTable):
         return self.create_figure_html("vocab_plot")
 
 class AbstractClassifier(TileBase):
-    save_attrs = TileBase.save_attrs + ["text_source", "code_source", "code_dest", "tokenizer_func", "stop_list"]
+    save_attrs = TileBase.save_attrs + ["text_source", "code_source", "code_dest", "tokenizer", "stop_list"]
     classifier_class = None
     def __init__(self, main_id, tile_id, tile_name=None):
         TileBase.__init__(self, main_id, tile_id, tile_name)
@@ -354,7 +354,7 @@ class DecisionTree(AbstractClassifier):
 
 @tile_class
 class OrthogonalizingClusterer(TileBase):
-    save_attrs = TileBase.save_attrs + ["text_source", "number_of_clusters", "code_dest", "tokenizer_func", "stop_list"]
+    save_attrs = TileBase.save_attrs + ["text_source", "number_of_clusters", "code_dest", "tokenizer", "stop_list"]
     classifier_class = None
     def __init__(self, main_id, tile_id, tile_name=None):
         TileBase.__init__(self, main_id, tile_id, tile_name)

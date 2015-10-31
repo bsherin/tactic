@@ -80,9 +80,9 @@ class TileBase(threading.Thread):
     def handle_event(self, event_name, data=None):
         try:
             if event_name == "RefreshTile":
-                self.refresh_tile_now()
+                self.do_the_refresh()
             elif event_name == "RefreshTileFromSave":
-                self.refresh_tile_now(self.current_html)
+                self.refresh_from_save()
             elif event_name == "UpdateOptions":
                 self.update_options(data)
             elif event_name == "CellChange":
@@ -105,7 +105,7 @@ class TileBase(threading.Thread):
                 form_html = self.create_form_html()
                 self.emit_tile_message("displayFormContent", {"html": form_html})
         except:
-            self.display_message(str(sys.exc_info()[0]) + " "  + str(sys.exc_info()[1]))
+            self.display_message("error in handle_event in " + self.__class__.__name__ + " tile: " + str(sys.exc_info()[0]) + " "  + str(sys.exc_info()[1]))
         return
 
     def emit_tile_message(self, message, data={}):
@@ -152,11 +152,19 @@ class TileBase(threading.Thread):
     def get_weight_function(self, weight_function_name):
         return weight_functions[weight_function_name]
 
-    def refresh_tile_now(self, new_html=None):
-        if new_html == None:
-            new_html = self.render_content()
-        self.current_html = new_html
+    def do_the_refresh(self, new_html=None):
+        self.current_html = new_html = self.render_content()
         self.emit_tile_message("displayTileContent", {"html": new_html})
+
+    def refresh_from_save(self):
+        self.emit_tile_message("displayTileContent", {"html": self.current_html})
+
+    def refresh_tile_now(self, new_html=None):
+        if new_html is None:
+            self.post_event("RefreshTile")
+        else:
+            self.current_html = new_html
+            self.post_event("RefreshTileFromSave")
 
     def start_spinner(self):
         self.emit_tile_message("startSpinner")
