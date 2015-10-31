@@ -89,7 +89,9 @@ def view_module(module_name):
 @login_required
 def load_tile_module(tile_module_name):
     tile_module = current_user.get_tile_module(tile_module_name)
-    create_user_tiles(tile_module)
+    result = create_user_tiles(tile_module)
+    if not result == "success":
+        return jsonify({"message": result, "alert_type": "alert-warning"})
     if current_user.username not in loaded_user_modules:
         loaded_user_modules[current_user.username] = set([])
     loaded_user_modules[current_user.username].add(tile_module_name)
@@ -99,7 +101,7 @@ def load_tile_module(tile_module_name):
     socketio.emit('update-loaded-tile-list', {"html": render_loaded_tile_list(),
                                         "user_tile_name_list": user_tiles[current_user.username].keys()},
                                      namespace='/main', room=current_user.get_id())
-    return make_response("", 204)
+    return jsonify({"message": "Tile module successfully loaded", "alert_type": "alert-success"})
 
 
 def render_loaded_tile_list():

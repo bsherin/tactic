@@ -153,6 +153,7 @@ var tableObject = {
             this.current_spec = Object.create(tableSpec);
             this.current_spec.doc_name = this.current_doc_name;
             this.current_spec.hidden_list = [];
+            this.current_spec.hidden_rows = [];
             this.current_spec.header_list = data_object["header_list"]
             tablespec_dict[this.current_doc_name] = this.current_spec;
         }
@@ -492,12 +493,26 @@ var tableObject = {
     },
 
     consoleLog: function(data_object) {
-        $("#console").text(data_object.message_string)
+        if ($("#console").html() == "") {
+            $("#console").append(data_object.message_string )
+        }
+        else {
+            $("#console").append("<br>" + data_object.message_string )
+        }
+        $("#console")[0].scrollTop = $("#console")[0].scrollHeight
+    },
+
+    clearConsole: function(data_object) {
+        $("#console").html("")
+        $("#console")[0].scrollTop = $("#console")[0].scrollHeight
     },
 
     setHiddenRows: function(data_object) {
-        doc_name = data_object.document;
-        hide_list = data_object.hide_list
+        var doc_name = data_object.document;
+        if (!tablespec_dict.hasOwnProperty(doc_name)){
+            return;
+        }
+        var hide_list = data_object.hide_list
         tablespec_dict[doc_name].hidden_rows = hide_list
         if (doc_name == this.current_spec.doc_name) {
             this.hideRows(data_object.hide_list)
@@ -571,7 +586,8 @@ var tableObject = {
         }
         $(".grid-right").width(usable_width * (1 - this.left_fraction))
         $("#status-area").width(usable_width)
-        $("#table-area tbody").height(window.innerHeight - 30 - $("#table-area tbody").offset().top)
+        $("#table-area tbody").height(window.innerHeight - $("#console-panel").outerHeight() - 50 - $("#table-area tbody").offset().top)
+        //$("#main-panel").outerHeight(window.innerHeight - $("#console-panel").outerHeight() - 50 - $("#main-panel").offset().top)
         $("#main-panel").width("") // We do this so that this will resize when the window is resized.
     },
 

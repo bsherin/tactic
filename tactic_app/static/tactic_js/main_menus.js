@@ -269,12 +269,14 @@ function saveProjectAs() {
                     success: save_as_success
             });
             function save_as_success(data_object) {
-                menus["Project"].enable_menu_item("save");
-                tableObject.project_name = data_object["project_name"]
-                //tableObject.set_table_title()
-                $("#project-name").html(tableObject.project_name)
-                data_object.alert_type = "alert-success"
-                doFlash(data_object)
+                if (data_object["success"]) {
+                    menus["Project"].enable_menu_item("save");
+                    tableObject.project_name = data_object["project_name"]
+                    //tableObject.set_table_title()
+                    $("#project-name").html(tableObject.project_name)
+                    data_object.alert_type = "alert-success"
+                    doFlash(data_object)
+                }
             }
     })
 }
@@ -332,28 +334,30 @@ function tile_command(menu_id) {
             data: JSON.stringify(data_dict),
             dataType: 'json',
             success: function (data) {
-                $("#tile-div").append(data.html);
-                $("#tile_body_" + data.tile_id).flip({
-                    "trigger": "manual",
-                    "autoSize": false,
-                    "forceWidth": true,
-                    "forceHeight": true
-                });
-                var new_tile_elem = $("#tile_id_" + data.tile_id)
-                new_tile_elem.resizable({
-                    handles: "se",
-                    resize: resize_tile_area
-                });
-                jQuery.data(new_tile_elem[0],"my_tile_id", data.tile_id)
-                listen_for_clicks();
-                $("#tile_id_" + data.tile_id).find(".triangle-right").hide()
-                new_tile_object = Object.create(tile_object);
-                new_tile_object.tile_id = data.tile_id;
-                tile_dict[data.tile_id] = new_tile_object;
-                do_resize(data.tile_id);
-                //new_tile_object.initiateTileRefresh();
-                data_dict.tile_id = data.tile_id
-                spin_and_refresh(data_dict.tile_id)
+                if (data.success) {
+                    $("#tile-div").append(data.html);
+                    $("#tile_body_" + data.tile_id).flip({
+                        "trigger": "manual",
+                        "autoSize": false,
+                        "forceWidth": true,
+                        "forceHeight": true
+                    });
+                    var new_tile_elem = $("#tile_id_" + data.tile_id)
+                    new_tile_elem.resizable({
+                        handles: "se",
+                        resize: resize_tile_area
+                    });
+                    jQuery.data(new_tile_elem[0], "my_tile_id", data.tile_id)
+                    listen_for_clicks();
+                    $("#tile_id_" + data.tile_id).find(".triangle-right").hide()
+                    new_tile_object = Object.create(tile_object);
+                    new_tile_object.tile_id = data.tile_id;
+                    tile_dict[data.tile_id] = new_tile_object;
+                    do_resize(data.tile_id);
+                    //new_tile_object.initiateTileRefresh();
+                    data_dict.tile_id = data.tile_id
+                    spin_and_refresh(data_dict.tile_id)
+                }
             }
         })
     }

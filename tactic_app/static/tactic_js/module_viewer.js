@@ -7,6 +7,12 @@ function start_post_load() {
     myCodeMirror = CodeMirror.fromTextArea(codearea, {
         lineNumbers: true
     });
+    myCodeMirror.setOption("extraKeys", {
+      Tab: function(cm) {
+        var spaces = Array(5).join(" ");
+        cm.replaceSelection(spaces);
+      }
+    });
 }
 
 function updateModule() {
@@ -24,6 +30,10 @@ function updateModule() {
         dataType: 'json',
         success: doFlash
     });
+}
+
+function loadModule() {
+    $.getJSON($SCRIPT_ROOT + '/load_tile_module/' + String(module_name), success=doFlash)
 }
 
 function saveModuleAs() {

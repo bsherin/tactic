@@ -25,13 +25,17 @@ def on_join(data):
 @app.route('/save_new_project', methods=['POST'])
 @login_required
 def save_new_project():
-    data_dict = request.json
-    mainwindow_instances[data_dict['main_id']].project_name = data_dict["project_name"]
-    save_dict = mainwindow_instances[data_dict['main_id']].compile_save_dict()
+    try:
+        data_dict = request.json
+        mainwindow_instances[data_dict['main_id']].project_name = data_dict["project_name"]
+        save_dict = mainwindow_instances[data_dict['main_id']].compile_save_dict()
 
-    db[current_user.project_collection_name].insert_one(save_dict)
-    socketio.emit('update-project-list', {"html": render_project_list()}, namespace='/user_manage', room=current_user.get_id())
-    return jsonify({"project_name": data_dict["project_name"], "success": True, "message": "Project Successfully Saved"})
+        db[current_user.project_collection_name].insert_one(save_dict)
+        socketio.emit('update-project-list', {"html": render_project_list()}, namespace='/user_manage', room=current_user.get_id())
+        return jsonify({"project_name": data_dict["project_name"], "success": True, "message": "Project Successfully Saved"})
+    except:
+        mainwindow_instances[data_dict['main_id']].handle_exception("Error saving new project")
+        return jsonify({"success": False})
 
 @app.route('/update_project', methods=['POST'])
 @login_required
@@ -103,8 +107,8 @@ def distribute_events_stub(event_name):
         tile_id = request.json["tile_id"]
     else:
         tile_id = None
-    distribute_event(event_name, main_id, data_dict, tile_id)
-    return jsonify({"success": True})
+    success = distribute_event(event_name, main_id, data_dict, tile_id)
+    return jsonify({"success": success})
 
 @app.route('/figure_source/<main_id>/<tile_id>/<figure_name>', methods=['GET','POST'])
 @login_required
@@ -115,16 +119,20 @@ def figure_source(main_id, tile_id, figure_name):
 @app.route('/create_tile_request/<tile_type>', methods=['GET','POST'])
 @login_required
 def create_tile_request(tile_type):
-    main_id = request.json["main_id"]
-    tile_name = request.json["tile_name"]
-    new_tile = mainwindow_instances[main_id].create_tile_instance_in_mainwindow(tile_type, tile_name)
-    tile_id = new_tile.tile_id
-    new_tile.figure_url = url_for("figure_source", main_id=main_id, tile_id=tile_id, figure_name="X")[:-1]
-    form_html = new_tile.create_form_html()
-    result = render_template("tile.html", tile_id=tile_id,
-                           tile_name=new_tile.tile_name,
-                           form_text=form_html)
-    return jsonify({"html":result, "tile_id": tile_id})
+    try:
+        main_id = request.json["main_id"]
+        tile_name = request.json["tile_name"]
+        new_tile = mainwindow_instances[main_id].create_tile_instance_in_mainwindow(tile_type, tile_name)
+        tile_id = new_tile.tile_id
+        new_tile.figure_url = url_for("figure_source", main_id=main_id, tile_id=tile_id, figure_name="X")[:-1]
+        form_html = new_tile.create_form_html()
+        result = render_template("tile.html", tile_id=tile_id,
+                               tile_name=new_tile.tile_name,
+                               form_text=form_html)
+        return jsonify({"success": True, "html":result, "tile_id": tile_id})
+    except:
+        mainwindow_instances[main_id].handle_exception("Error creating tile.")
+        return jsonify({"success": False})
 
 @app.route('/create_tile_from_save_request/<tile_id>', methods=['GET','POST'])
 @login_required
