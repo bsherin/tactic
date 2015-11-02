@@ -5,7 +5,10 @@
 function start_post_load() {
     codearea = document.getElementById("codearea")
     myCodeMirror = CodeMirror.fromTextArea(codearea, {
-        lineNumbers: true
+        lineNumbers: true,
+        matchBrackets: true,
+        autoCloseBrackets: true,
+        indentUnit: 4
     });
     myCodeMirror.setOption("extraKeys", {
       Tab: function(cm) {
