@@ -10,6 +10,7 @@
     font-size: 12px;
 }
 
+
 #console-heading {
     font-size: 12px;
     padding-top: 2px;
@@ -28,6 +29,16 @@
 
 .radio-stack {
     width: 50px;
+}
+
+.resource-module {
+    border: .25px solid rgb(240, 173, 78);
+    padding: 20px;
+    margin: 10px
+}
+
+.resource-module h2 {
+    margin-top:0px;
 }
 
 .grid-left {

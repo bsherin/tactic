@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/tactic.css')}}">
     <style>
         .indent-row {
-            margin-left: 10px
+            margin-left: 5px
         }
     </style>
 {% endblock %}
@@ -19,19 +19,19 @@
     <div id="modal-area">
     </div>
     <div class="container">
-        <div class="page-header">
+        <div class="page-header" style="margin-top: 5px">
             <h1>{{ current_user.username }}</h1>
         </div>
         <div class="row">
             <div id="status-area"></div>
-            <div class="col-xs-6">
-                <div id="collection-module"></div>
-                <div id="list-module"></div>
+            <div class="col-xs-6" style="margin: 0px; padding: 0px">
+                <div class="resource-module" id="collection-module"></div>
+                <div class="resource-module" id="list-module"></div>
             </div>
-            <div class="col-xs-6" style="">
-                <div id="project-module"></div>
-                <div id="tile-module"></div>
-                <div id="video-module"></div>
+            <div class="col-xs-6" style="margin: 0px; padding: 0px">
+                <div class="resource-module" id="project-module"></div>
+                <div class="resource-module" id="tile-module"></div>
+{#                <div class="resource-module" id="video-module"></div>#}
 {#                <camera id="MyFirstCamera" data-app-id="a-2ed02e70-5579-0133-03fb-22000b109ea8"></camera>#}
             </div>
         </div>
@@ -40,6 +40,7 @@
 {% block scripts %}
     <script src="{{url_for('static', filename='js/socket.io.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/utilities.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/resource_manager.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/user_manage.js')}}"></script>
     <script>
         var user_id = "{{current_user.get_id()}}";

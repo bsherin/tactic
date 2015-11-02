@@ -21,6 +21,10 @@ def user_manage():
         user_tile_name_list = []
     return render_template('user_manage/user_manage.html', user_tile_name_list=user_tile_name_list, use_ssl=str(use_ssl))
 
+@app.route("/doc_manager")
+def doc_manager():
+    return render_template("doc_editor.html", use_ssl=str(use_ssl))
+
 @app.route('/main/<collection_name>', methods=['get'])
 @login_required
 def main(collection_name):
@@ -84,7 +88,6 @@ def view_module(module_name):
                            module_name=module_name,
                            module_code=module_code)
 
-
 @app.route('/load_tile_module/<tile_module_name>', methods=['get', 'post'])
 @login_required
 def load_tile_module(tile_module_name):
@@ -119,6 +122,12 @@ def render_list_list():
 def render_tile_module_list():
     return render_template("user_manage/tile_module_list.html")
 
+def render_doc_list():
+    doc_names = []
+    for doc in db["documentation"].find():
+        doc_names.append(doc["name"])
+    return render_template("user_manage/doc_list.html", doc_names=doc_names)
+
 @app.route('/create_duplicate_list', methods=['post'])
 @login_required
 def create_duplicate_list():
@@ -129,6 +138,10 @@ def create_duplicate_list():
     db[current_user.list_collection_name].insert_one(new_list_dict)
     socketio.emit('update-list-list', {"html": render_list_list()}, namespace='/user_manage', room=current_user.get_id())
     return jsonify({"success": True})
+
+@app.route('/request_update_doc_list', methods=['GET'])
+def request_update_doc_list():
+    return render_doc_list()
 
 @app.route('/request_update_list_list', methods=['GET'])
 @login_required
@@ -150,6 +163,11 @@ def request_update_project_list():
 def request_update_tile_list():
     return render_tile_module_list()
 
+@app.route('/request_update_loaded_tile_list', methods=['GET'])
+@login_required
+def request_update_loaded_tile_list():
+    return render_loaded_tile_list()
+
 @app.route('/add_list', methods=['POST', 'GET'])
 @login_required
 def add_list():
@@ -159,6 +177,11 @@ def add_list():
     db[current_user.list_collection_name].insert_one(data_dict)
     socketio.emit('update-list-list', {"html": render_list_list()}, namespace='/user_manage', room=current_user.get_id())
     return make_response("", 204)
+
+@app.route('/get_doc_markdown/<doc_name>', methods=['get'])
+def get_doc_markdown(doc_name):
+    mdown = db["documentation"].find({"name": doc_name}).next()["text"]
+    return jsonify({"success": True, "doc_text": mdown})
 
 @app.route('/add_tile_module', methods=['POST', 'GET'])
 @login_required
