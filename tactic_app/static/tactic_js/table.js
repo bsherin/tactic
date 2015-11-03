@@ -524,9 +524,10 @@ var tableObject = {
         this.current_spec.hidden_rows.forEach(function(r){
             rows.eq(r).removeClass('hidden-row')
         });
-        tablespec_dict.forEach(function(spec){
-            spec.hidden_rows == []
-        })
+        for (var spec in tablespec_dict) {
+            if (!tablespec_dict.hasOwnProperty(spec)) continue;
+            tablespec_dict[spec].hidden_rows = []
+        }
     },
 
     dehiglightAllCells: function() {

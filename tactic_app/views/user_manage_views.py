@@ -1,6 +1,6 @@
 __author__ = 'bls910'
 
-import os
+import os, sys
 import pymongo
 from flask import render_template, request, make_response, redirect, url_for, jsonify, send_file
 from tactic_app import app, db, socketio, use_ssl
@@ -91,20 +91,25 @@ def view_module(module_name):
 @app.route('/load_tile_module/<tile_module_name>', methods=['get', 'post'])
 @login_required
 def load_tile_module(tile_module_name):
-    tile_module = current_user.get_tile_module(tile_module_name)
-    result = create_user_tiles(tile_module)
-    if not result == "success":
-        return jsonify({"message": result, "alert_type": "alert-warning"})
-    if current_user.username not in loaded_user_modules:
-        loaded_user_modules[current_user.username] = set([])
-    loaded_user_modules[current_user.username].add(tile_module_name)
-    socketio.emit('update-loaded-tile-list', {"html": render_loaded_tile_list(),
+    try:
+        tile_module = current_user.get_tile_module(tile_module_name)
+        result = create_user_tiles(tile_module)
+        if not result == "success":
+            return jsonify({"message": result, "alert_type": "alert-warning"})
+        if current_user.username not in loaded_user_modules:
+            loaded_user_modules[current_user.username] = set([])
+        loaded_user_modules[current_user.username].add(tile_module_name)
+        socketio.emit('update-loaded-tile-list', {"html": render_loaded_tile_list(),
+                                                "user_tile_name_list": user_tiles[current_user.username].keys()},
+                                             namespace='/user_manage', room=current_user.get_id())
+        socketio.emit('update-loaded-tile-list', {"html": render_loaded_tile_list(),
                                             "user_tile_name_list": user_tiles[current_user.username].keys()},
-                                         namespace='/user_manage', room=current_user.get_id())
-    socketio.emit('update-loaded-tile-list', {"html": render_loaded_tile_list(),
-                                        "user_tile_name_list": user_tiles[current_user.username].keys()},
-                                     namespace='/main', room=current_user.get_id())
-    return jsonify({"message": "Tile module successfully loaded", "alert_type": "alert-success"})
+                                         namespace='/main', room=current_user.get_id())
+        return jsonify({"message": "Tile module successfully loaded", "alert_type": "alert-success"})
+    except:
+        error_string = "Error loading tile: " + str(sys.exc_info()[0]) + " "  + str(sys.exc_info()[1])
+        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+
 
 
 def render_loaded_tile_list():
@@ -182,6 +187,26 @@ def add_list():
 def get_doc_markdown(doc_name):
     mdown = db["documentation"].find({"name": doc_name}).next()["text"]
     return jsonify({"success": True, "doc_text": mdown})
+
+@app.route('/save_doc', methods=['get', 'post'])
+def save_doc():
+    doc_name = request.json['res_name']
+    doc_markdown = request.json['doc_markdown']
+    db["documentation"].update_one({"name": doc_name}, {'$set': {"text": doc_markdown}})
+    return jsonify({"success": True, "message": "Documentation updated."})
+
+@app.route('/new_doc', methods=['get', 'post'])
+def new_doc():
+    doc_name = request.json['new_res_name']
+    db["documentation"].insert_one({"name": doc_name, "text": ""})
+    socketio.emit('update-doc-list', {"html": render_doc_list()}, namespace='/doc_manage')
+    return jsonify({"success": True, "message": "Documentation created."})
+
+@app.route('/delete_doc/<doc_name>', methods=['post'])
+def delete_doc(doc_name):
+    db["documentation"].delete_one({"name": doc_name})
+    socketio.emit('update-doc-list', {"html": render_doc_list()}, namespace='/doc_manage')
+    return jsonify({"success": True})
 
 @app.route('/add_tile_module', methods=['POST', 'GET'])
 @login_required
@@ -298,7 +323,12 @@ def get_resource_module_template():
 def connected_msg():
     print"client connected"
 
-@socketio.on('join', namespace='/user_manage')
+@socketio.on('connect', namespace='/doc_manage')
+@login_required
+def doc_connected_msg():
+    print"client connected to doc manage"
+
+@socketio.on('join', namespace='/doc_manage')
 @login_required
 def on_join(data):
     room=data["user_id"]

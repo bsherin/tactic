@@ -354,7 +354,7 @@ class DecisionTree(AbstractClassifier):
 
 @tile_class
 class OrthogonalizingClusterer(TileBase):
-    save_attrs = TileBase.save_attrs + ["text_source", "number_of_clusters", "code_dest", "tokenizer", "stop_list"]
+    save_attrs = TileBase.save_attrs + ["text_source", "number_of_clusters", "code_destination", "tokenizer", "stop_list"]
     classifier_class = None
     def __init__(self, main_id, tile_id, tile_name=None):
         TileBase.__init__(self, main_id, tile_id, tile_name)
@@ -440,15 +440,18 @@ class OrthogonalizingClusterer(TileBase):
         raw_text_dict = self.get_column_data_dict(self.text_source)
         self.tokenized_rows_dict = self.tokenize_docs(raw_text_dict, self.tokenizer)
         combined_text_rows = self.dict_to_list(self.tokenized_rows_dict)
+        self.display_message("building vocabulary")
         self._vocab = Vocabulary(combined_text_rows, self.get_user_list(self.stop_list))
 
         reduced_vocab = self._vocab._sorted_list_vocab[:self.vocab_size]
 
+        self.display_message("building doc vectors")
         doc_vectors = []
         for r in combined_text_rows:
             r_vector = self.norm_vec([self.get_weight_function(self.weight_function)(r.count(word), self._vocab._df_dict[word], self._vocab._cf_dict[word]) for word in reduced_vocab])
             doc_vectors.append(r_vector)
 
+        self.display_message("orthogonalizing")
         new_vectors = self.orthogonalize(doc_vectors)
         name_dict = self.get_column_data_dict(self.names_source)
         combined_names = self.dict_to_list(name_dict)
