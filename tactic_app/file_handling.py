@@ -55,14 +55,17 @@ def make_fieldnames_unique(flist):
     return new_list
 
 def read_csv_file_to_dict_list(csvfile):
-    dialect = csv.Sniffer().sniff(csvfile.read(1024))
+    # try:
+    #     dialect = csv.Sniffer().sniff(csvfile.read(1024))
+    # except:
+    #     dialect = "excel"
     csvfile.seek(0)
     i = 0
     try:
         reader = csv.reader(csvfile)
         header_list = reader.next()
         header_list = make_fieldnames_unique(header_list)
-        reader = csv.DictReader(csvfile, dialect=dialect, fieldnames=header_list)
+        reader = csv.DictReader(csvfile, dialect="excel", fieldnames=header_list)
         filename, file_extension = os.path.splitext(csvfile.filename)
         new_list_of_dicts = []
         for row in reader:

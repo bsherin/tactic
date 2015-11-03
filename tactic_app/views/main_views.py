@@ -1,4 +1,5 @@
 __author__ = 'bls910'
+import sys
 from tactic_app import app, db, socketio
 from flask import request, jsonify, render_template, send_file, url_for
 from flask_login import current_user, login_required
@@ -131,7 +132,8 @@ def create_tile_request(tile_type):
                                form_text=form_html)
         return jsonify({"success": True, "html":result, "tile_id": tile_id})
     except:
-        mainwindow_instances[main_id].handle_exception("Error creating tile.")
+        error_string = str(sys.exc_info()[0]) + " "  + str(sys.exc_info()[1])
+        mainwindow_instances[main_id].handle_exception("Error creating tile")
         return jsonify({"success": False})
 
 @app.route('/create_tile_from_save_request/<tile_id>', methods=['GET','POST'])

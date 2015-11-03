@@ -206,6 +206,9 @@ class mainWindow(threading.Thread):
                         result.append(r)
         return result
 
+    def unfilter_all_rows(self):
+        self.emit_table_message("unfilterAllRows")
+
     def display_matching_rows(self, filter_function, document_name=None):
         if document_name is not None:
             show_list = []
@@ -345,8 +348,7 @@ class mainWindow(threading.Thread):
     def dehighlight_all_table_text(self):
         self.emit_table_message("dehiglightAllCells")
 
-    def unfilter_all_rows(self):
-        self.emit_table_message("unfilterAllRows")
+
 
     def _build_doc_dict(self):
         result = {}
