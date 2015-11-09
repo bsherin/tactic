@@ -135,7 +135,6 @@ var tableObject = {
     // updated. table_array is just a little easier to use.
 
     data_rows: null,
-    table_array: [],
     selected_header: null,
     highlighted_cells: [],
 
@@ -152,7 +151,7 @@ var tableObject = {
         if (!tablespec_dict.hasOwnProperty(this.current_doc_name)) {
             this.current_spec = Object.create(tableSpec);
             this.current_spec.doc_name = this.current_doc_name;
-            this.current_spec.hidden_list = [];
+            this.current_spec.hidden_list = ["__filename__"];
             this.current_spec.hidden_rows = [];
             this.current_spec.header_list = data_object["header_list"]
             tablespec_dict[this.current_doc_name] = this.current_spec;
@@ -168,8 +167,8 @@ var tableObject = {
 
     build_table: function() {
         var self = this;
-        this.table_array = build_table_array(this.data_rows, this.current_spec.header_list);
-        html_result = create_all_html(this.table_id, this.table_array, this.current_spec.hidden_list, this.current_spec.header_list);
+        //this.table_array = build_table_array(this.data_rows, this.current_spec.header_list);
+        html_result = create_all_html(this.table_id, this.data_rows, this.current_spec.hidden_list, this.current_spec.header_list);
         $("#" + this.table_id).html(html_result);
         for (i = 0; i < this.current_spec.hidden_list.length; ++i) {
             $("column-" + this.current_spec.hidden_list[i]).css("display", "none");
@@ -217,20 +216,20 @@ var tableObject = {
             }
         })
 
-        function build_table_array(doc_list, header_list){
-            var i, j, k, current;
-            table_array = [];
-            for (i = 0; i < doc_list.length; ++i) {
-                table_array.push([]);
-                for (j = 0; j < header_list.length; ++j) {
-                    header = header_list[j];
-                    current = doc_list[i][header];
-                    table_array[i].push(current)
-                }
-            }
-            return table_array
-        }
-        function create_all_html (table_id, table_array, hidden_list, header_list) {
+        //function build_table_array(doc_list, header_list){
+        //    var i, j, k, current;
+        //    table_array = [];
+        //    for (i = 0; i < doc_list.length; ++i) {
+        //        table_array.push([]);
+        //        for (j = 0; j < header_list.length; ++j) {
+        //            header = header_list[j];
+        //            current = doc_list[i][header];
+        //            table_array[i].push(current)
+        //        }
+        //    }
+        //    return table_array
+        //}
+        function create_all_html (table_id, data_rows, hidden_list, header_list) {
             //This method constructs all of the table html
 
             headers = []
@@ -241,13 +240,14 @@ var tableObject = {
 
             var body_html = "";
 
-            for (i = 0; i < table_array.length; ++i) {
+            for (i = 0; i < data_rows.length; ++i) {
 
                 cell_list = []
                 for (var c = 0; c < header_list.length; ++c) {
-                    cell_list.push({"rownumber": String(i), "header": header_list[c], "value": table_array[i][c]})
+                    cell_list.push({"rownumber": String(i), "header": header_list[c], "value": data_rows[i][header_list[c]]})
                 }
                 row_html = Mustache.to_html(body_template, {
+                    "row_id": data_rows[i]["__id__"].toString(),
                     "cells": cell_list
                 })
                 body_html = body_html + row_html;
@@ -322,11 +322,11 @@ var tableObject = {
             var rindex = this.parentElement.rowIndex - 1
             var cindex = this.cellIndex;
             var column_header = self.current_spec.header_list[cindex];;
-            var old_content = self.table_array[rindex][cindex];
+            var old_content = self.data_rows[rindex][column_header]
             if (current_content != old_content) {
                 shorter_sig = []
-                self.table_array[rindex][cindex] = current_content;
-                self.update_doc_list(rindex, column_header, current_content)
+                //self.table_array[rindex][cindex] = current_content;
+                this.data_rows[rindex][column_header] = current_content;
                 data_dict = {
                     "row_index": rindex,
                     "column_header": column_header,
@@ -565,7 +565,7 @@ var tableObject = {
         //there is a change in a cell in the visible document
         var cheader = data.column_header
         var new_content = data.new_content
-        var row_index = data.row_index
+        var row_index = data.id
         var cell_index = this.current_spec.header_list.indexOf(cheader)
         if (cell_index == -1) {
             console.log("invalid signature")
@@ -573,7 +573,7 @@ var tableObject = {
         }
         var td_element = $("#table-area tbody")[0].rows[row_index].cells[cell_index];
         $(td_element).html(new_content)
-        this.table_array[row_index][cell_index] = new_content
+        this.data_rows[row_index][cheader]= new_content
     },
 
     getCellElementByRowColIndex: function(rindex, cindex) {
@@ -590,10 +590,6 @@ var tableObject = {
         $("#table-area tbody").height(window.innerHeight - $("#console-panel").outerHeight() - 50 - $("#table-area tbody").offset().top)
         //$("#main-panel").outerHeight(window.innerHeight - $("#console-panel").outerHeight() - 50 - $("#main-panel").offset().top)
         $("#main-panel").width("") // We do this so that this will resize when the window is resized.
-    },
-
-    update_doc_list: function (row_index, column_header, new_content){
-        this.data_rows[row_index][column_header] = new_content;
     },
 
 

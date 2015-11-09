@@ -1,7 +1,5 @@
 
-
 var tile_dict = {}
-
 
 function spin_and_refresh(tile_id) {
     broadcast_event_to_server("StartSpinner", {"tile_id": tile_id})
@@ -64,6 +62,8 @@ function create_tile_from_save(tile_id) {
         data: JSON.stringify(data_dict),
         dataType: 'json',
         success: function (data) {
+            new_tile_object = Object.create(tile_object);
+            new_tile_object.tile_id = data.tile_id;
             $("#tile-div").append(data.html);
             $("#tile_body_" + data.tile_id).flip({
                 "trigger": "manual",
@@ -73,12 +73,15 @@ function create_tile_from_save(tile_id) {
             });
             $("#tile_id_" + data.tile_id).resizable({
                 handles: "se",
-                resize: resize_tile_area
+                resize: resize_tile_area,
+                stop: function () {
+                    new_tile_object.broadcastTileSize(new_tile_object)
+                }
             });
-            new_tile_object = Object.create(tile_object);
-            new_tile_object.tile_id = data.tile_id;
+
             tile_dict[data.tile_id] = new_tile_object;
             do_resize(data.tile_id);
+            new_tile_object.broadcastTileSize(new_tile_object);
             listen_for_clicks();
             $("#tile_id_" + data.tile_id).find(".triangle-right").hide()
             //new_tile_object.initiateTileRefresh();
@@ -140,6 +143,12 @@ var tile_object = {
         data["tile_id"] = this.tile_id
         broadcast_event_to_server("UpdateOptions", data)
     },
+    broadcastTileSize: function(self) {
+        var w = $(self.full_selector() + " #tile-display-area").width();
+        var h = $(self.full_selector() + " #tile-display-area").height();
+        var data_dict = {"tile_id": self.tile_id, "width": w, "height": h};
+        broadcast_event_to_server("TileSizeChange", data_dict)
+    },
     displayTileContent: function (data) {
         $(this.full_selector() + " #tile-display-area").html(data["html"]);
         this.showFront()
@@ -152,21 +161,16 @@ var tile_object = {
     //    CameraTag.setup();
     //},
     startSpinner: function() {
-        //this.spinner = new Spinner({scale: 0.4, left:"15px"}).spin();
-        //$(this.full_selector() + " #spin-place").html(this.spinner.el);
         $(this.full_selector() + " #spin-place").html(spinner_html);
     },
 
     stopSpinner: function () {
-        //this.spinner.stop();
-        //this.spinner = null
         $(this.full_selector() + " #spin-place").html("");
     },
 
     closeMe: function(){
         var my_tile_id = this.tile_id
         $(this.full_selector()).fadeOut("slow", function () {
-            //var tile_id = $(this).attr("id")
             $(this).remove();
             var data_dict = {}
             data_dict["main_id"] = main_id;
@@ -194,9 +198,13 @@ var tile_object = {
         el = $(this.full_selector()).find(".triangle-right").hide();
         el = $(this.full_selector()).find(".triangle-bottom").show();
         el = $(this.full_selector()).find(".tile-body").fadeIn();
+        var self = this;
         el = $(this.full_selector()).resizable({
                 handles: "se",
-                resize: resize_tile_area
+                resize: resize_tile_area,
+                stop: function () {
+                    self.broadcastTileSize(self)
+                }
             });
     },
 

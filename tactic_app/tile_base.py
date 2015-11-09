@@ -2,6 +2,7 @@ import Queue
 import threading
 
 from flask_login import current_user
+from flask import url_for
 from tactic_app import socketio
 from shared_dicts import mainwindow_instances, distribute_event
 from shared_dicts import tile_classes, user_tiles, tokenizer_dict, weight_functions
@@ -28,7 +29,6 @@ class TileBase(threading.Thread):
         self._my_q = Queue.Queue(0)
 
         # These define the state of a tile and should be saved
-        self.images = {}
 
         self.tile_type = self.__class__.__name__
         if tile_name is None:
@@ -41,7 +41,12 @@ class TileBase(threading.Thread):
         # These will differ each time the tile is instantiated.
         self.tile_id = tile_id
         self.main_id = main_id
-        self.figure_url = ''
+        self.figure_id = 0
+        self.width = ""
+        self.height = ""
+        self.img_dict = {}
+        self.current_fig_id = 0
+        self.base_figure_url = url_for("figure_source", main_id=main_id, tile_id=tile_id, figure_name="X")[:-1]
         return
 
     def run(self):
@@ -81,12 +86,16 @@ class TileBase(threading.Thread):
         try:
             if event_name == "RefreshTile":
                 self.do_the_refresh()
+            elif event_name == "TileSizeChange":
+                self.width = data["width"]
+                self.height = data["height"]
+                self.handle_size_change();
             elif event_name == "RefreshTileFromSave":
                 self.refresh_from_save()
             elif event_name == "UpdateOptions":
                 self.update_options(data)
             elif event_name == "CellChange":
-                self.handle_cell_change(data["column_header"], data["row_index"], data["old_content"], data["new_content"], data["doc_name"])
+                self.handle_cell_change(data["column_header"], data["id"], data["old_content"], data["new_content"], data["doc_name"])
             elif event_name == "TileButtonClick":
                 self.handle_button_click(data["button_value"], data["doc_name"], data["active_row_index"])
             elif event_name == "TextSelect":
@@ -106,6 +115,9 @@ class TileBase(threading.Thread):
                 self.emit_tile_message("displayFormContent", {"html": form_html})
         except:
             self.display_message("error in handle_event in " + self.__class__.__name__ + " tile: " + str(sys.exc_info()[0]) + " "  + str(sys.exc_info()[1]))
+        return
+
+    def handle_size_change(self):
         return
 
     def emit_tile_message(self, message, data={}):
@@ -153,7 +165,9 @@ class TileBase(threading.Thread):
         return weight_functions[weight_function_name]
 
     def do_the_refresh(self, new_html=None):
-        self.current_html = new_html = self.render_content()
+        if new_html is None:
+            new_html = self.render_content()
+        self.current_html = new_html
         self.emit_tile_message("displayTileContent", {"html": new_html})
 
     def refresh_from_save(self):
@@ -219,17 +233,26 @@ class TileBase(threading.Thread):
     def get_document_names(self):
         return mainwindow_instances[self.main_id].doc_names
 
+    def get_current_document_name(self):
+        return mainwindow_instances[self.main_id]._visible_doc_name
+
     def get_column_names(self, document_name):
         return mainwindow_instances[self.main_id].doc_dict[document_name].header_list
 
     def get_number_rows(self, document_name):
-        return len(mainwindow_instances[self.main_id].doc_dict[document_name].data_rows)
+        return len(mainwindow_instances[self.main_id].doc_dict[document_name].data_rows.keys())
+
+    def get_document_data(self, document_name):
+        return mainwindow_instances[self.main_id].doc_dict[document_name].data_rows_int_keys
+
+    def get_document_data_as_list(self, document_name):
+        return mainwindow_instances[self.main_id].doc_dict[document_name].sorted_data_rows
 
     def get_row(self, document_name, row_number):
-        return mainwindow_instances[self.main_id].doc_dict[document_name].data_rows[row_number]
+        return mainwindow_instances[self.main_id].doc_dict[document_name].sorted_data_rows[row_number]
 
     def get_cell(self, document_name, row_number, column_name):
-        return mainwindow_instances[self.main_id].doc_dict[document_name].data_rows[row_number][column_name]
+        return mainwindow_instances[self.main_id].doc_dict[document_name].sorted_data_rows[int(row_number)][column_name]
 
     def get_column_data(self, column_name, document_name=None):
         result = []
@@ -279,6 +302,15 @@ class TileBase(threading.Thread):
         for rnum in range(len(data_list)):
             self.set_cell(document_name, rnum, column_name, data_list[rnum], cellchange)
 
+    def create_figure_html(self, fig):
+        figname = str(self.current_fig_id)
+        self.current_fig_id += 1
+        self.img_dict[figname] = fig.img
+        fig_url = self.base_figure_url + figname
+        image_string = "<img class='output-plot' src='{}' onclick=showZoomedImage(this) lt='Image Placeholder'>"
+        the_html = image_string.format(fig_url)
+        return the_html
+
     @property
     def current_user(self):
         user_id = mainwindow_instances[self.main_id].user_id
@@ -295,11 +327,6 @@ class TileBase(threading.Thread):
                 return getattr(mw.tile_instances[tile_id], tile_entry[pipe_key])
         return None
 
-    def create_figure_html(self, figname):
-        fig_url = self.figure_url + figname
-        image_string = "<img class='output-plot' src='{}' onclick=showZoomedImage(this) lt='Image Placeholder'>"
-        the_html = image_string.format(fig_url)
-        return the_html
 
     def get_current_pipe_list(self):
         pipe_list = []

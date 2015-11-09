@@ -8,7 +8,7 @@
     </thead>
 </script>
 <script id="body-template" type="text/html">
-    <tr>
+    <tr id="{{row_id}}">
         {{#cells}}
             <td contenteditable='true' id='row-{{rownumber}}-col-{{header}}' class='searchit can-resize column-{{header}}'>{{value}}</td>
         {{/cells}}

@@ -10,7 +10,8 @@ nltk.data.path = ['./nltk_data/']
 from nltk.corpus import wordnet as wn
 from flask_login import current_user
 from flask import url_for
-from matplotlib_utilities import GraphList, convert_figure_to_img, ColorMapper
+from matplotlib_utilities import GraphList, ColorMapper, FigureCanvas
+# import mpld3
 
 from tactic_app import socketio, app
 from tile_base import TileBase
@@ -57,38 +58,26 @@ class SimpleCoder(TileBase):
         return
 
     @property
-    def options(self):
+    def options (self):
         txtstr = ""
         for txt in self.current_text:
             txtstr += "\n" + txt
         return [{
-        "name": "current_text",
-        "type": "textarea",
-        "placeholder": txtstr
+            "name": "current_text",
+            "type": "textarea",
+            "placeholder": txtstr
         },
-        {
-        "name": "destination_column",
-        "type": "column_select",
-        "placeholder": self.destination_column
-        }]
+            {
+                "name": "destination_column",
+                "type": "column_select",
+                "placeholder": self.destination_column
+            }]
 
-    def render_content(self):
+    def render_content (self):
         the_html = ""
         for r in self.current_text:
-            the_html += "<button value='{0}'>{0}</button>".format(r)
+            the_html += "<button value='{0}'>{0}</button>".format (r)
         return the_html
-
-# @tile_class
-# class VideoPlayer(TileBase):
-#
-#     def render_content(self):
-#         # vid_id = "v-bbfdac4a-5a46-4a4b-a87a-4d912fbd692e"
-#         # the_html = "<video id='rando' data-uuid='[{0}]'></video>".format(vid_id)
-#         # self.emit_tile_message("cameraTagSetup")
-#         # <video id='rando' data-uuid='["v-bbfdac4a-5a46-4a4b-a87a-4d912fbd692e"]'></video>
-#         the_html = "<video id='rando' data-uuid='[" + '"v-bbfdac4a-5a46-4a4b-a87a-4d912fbd692e"' + "]'></video>"
-#
-#         return the_html
 
 @tile_class
 class WordnetSelectionTile(TileBase):
@@ -116,7 +105,7 @@ class WordnetSelectionTile(TileBase):
 
 @tile_class
 class VocabularyTable(TileBase):
-    exports = ["vocabulary"]
+    exports = ["cf_data", "df_data"]
     save_attrs = TileBase.save_attrs + ["column_source", "tokenizer", "stop_list"]
     def __init__(self, main_id, tile_id, tile_name=None):
         TileBase.__init__(self, main_id, tile_id, tile_name)
@@ -134,8 +123,26 @@ class VocabularyTable(TileBase):
         ]
 
     @property
-    def vocabulary(self):
-        return self._vocab
+    def cf_data(self):
+        self.vdata_table = self._vocab.vocab_data_table()
+        word_list = []
+        amount_list = []
+        for entry in self.vdata_table:
+            word_list.append(entry[0])
+            amount_list.append(entry[2])
+        data_dict = {"value_list": amount_list[1:], "xlabels": word_list[1:]}
+        return data_dict
+
+    @property
+    def df_data(self):
+        self.vdata_table = self._vocab.vocab_data_table()
+        word_list = []
+        amount_list = []
+        for entry in self.vdata_table:
+            word_list.append(entry[0])
+            amount_list.append(entry[1])
+        data_dict = {"value_list": amount_list[1:], "xlabels": word_list[1:]}
+        return data_dict
 
     def tokenize_rows(self, the_rows, the_tokenizer):
         tokenized_rows = []
@@ -181,39 +188,54 @@ class VocabularyTable(TileBase):
         return the_html
 
 @tile_class
-class VocabularyImportAndPlot(TileBase):
-    save_attrs = TileBase.save_attrs + ["vocab_source"]
-
+class ListPlotter(TileBase):
+    save_attrs = TileBase.save_attrs + ["data_source"]
     def __init__(self, main_id, tile_id, tile_name=None):
         TileBase.__init__(self, main_id, tile_id, tile_name)
-        self.vocab_source = None
+        self.data_source = None
+        self.N = 20
 
     @property
     def options(self):
         return  [
-            {"name": "vocab_source", "type": "pipe_select", "placeholder": self.vocab_source}
+            {"name": "data_source", "type": "pipe_select", "placeholder": self.data_source},
+            {"name": "N", "type": "int", "placeholder": self.N}
         ]
 
+    def handle_size_change(self):
+        if self.data_source is None:
+            return
+        data_dict = self.get_pipe_value(self.data_source)
+        data_dict["value_list"] = data_dict["value_list"][:self.N]
+        fig = GraphList(data_dict, self.width, self.height)
+        new_html = self.create_figure_html(fig)
+        self.refresh_tile_now(new_html)
+        return
+
     def render_content (self):
-        if self.vocab_source == None:
+        if self.data_source == None:
             return "No vocab source selected."
-        N = 20
-        self._vocab = self.get_pipe_value(self.vocab_source)
-        self.vdata_table = self._vocab.vocab_data_table()
-        word_list = []
-        amount_list = []
-        for entry in self.vdata_table[1:N + 1]:
-            word_list.append(entry[0])
-            amount_list.append(entry[2])
-        fig = GraphList(amount_list, word_list)
-        self.images["vocab_plot"] = convert_figure_to_img(fig)
-        return self.create_figure_html("vocab_plot")
+        data_dict = self.get_pipe_value(self.data_source)
+        data_dict["value_list"] = data_dict["value_list"][:self.N]
+        fig = GraphList(data_dict, self.width, self.height)
+        return self.create_figure_html(fig)
 
 @tile_class
 class VocabularyPlot(VocabularyTable):
     save_attrs = TileBase.save_attrs + ["column_source", "tokenizer", "stop_list"]
     def __init__(self, main_id, tile_id, tile_name=None):
         VocabularyTable.__init__(self, main_id, tile_id, tile_name)
+        self.amount_list = None
+        self.word_list = None
+
+    def handle_size_change(self):
+        if self.amount_list is None:
+            return
+        data_dict = {"value_list": self.amount_list, "xlabels": self.word_list}
+        fig = GraphList(data_dict, self.width, self.height)
+        new_html = self.create_figure_html(fig)
+        self.refresh_tile_now(new_html)
+        return
 
     def render_content (self):
         if self.column_source == None:
@@ -228,9 +250,11 @@ class VocabularyPlot(VocabularyTable):
         for entry in self.vdata_table[1:N + 1]:
             word_list.append(entry[0])
             amount_list.append(entry[2])
-        fig = GraphList(amount_list, word_list)
-        self.images["vocab_plot"] = convert_figure_to_img(fig)
-        return self.create_figure_html("vocab_plot")
+        data_dict = {"value_list": amount_list, "xlabels": word_list}
+        fig = GraphList(data_dict, self.width, self.height)
+        self.amount_list = amount_list
+        self.word_list = word_list
+        return self.create_figure_html(fig)
 
 class AbstractClassifier(TileBase):
     save_attrs = TileBase.save_attrs + ["text_source", "code_source", "code_dest", "tokenizer", "stop_list"]

@@ -3,29 +3,44 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 import StringIO
 
+class MplFigure(Figure):
+    def __init__ (self, data, width, height, title=None, dpi=80):
+        Figure.__init__(self, figsize=(width / dpi, height / 80), dpi=dpi)
+        self.width = width
+        self.height = height
+        self.title = title
+        self.dpi = dpi
+        self.data = data
+        self.draw_plot()
+        self.img = self.convert_figure_to_img()
 
-class GraphList(Figure):
-    def __init__ (self, value_list, xlabels=None, title=None):
-        Figure.__init__(self, figsize=(12, 5))
+    def draw_plot(self):
+        print "draw_plot not implemented"
+        return
+
+    def convert_figure_to_img(self):
+        canvas=FigureCanvas(self) # This does seem to be necessary or savefig won't work.
+        img = StringIO.StringIO()
+        self.savefig(img)
+        img.seek(0)
+        return img
+
+class GraphList(MplFigure):
+    def draw_plot(self):
+        value_list = self.data["value_list"]
+        xlabels = self.data["xlabels"]
         ax = self.add_subplot(111)
-        self.subplots_adjust(left=.05, bottom=.15, right=.98, top=.95)
+        # self.subplots_adjust(left=.05, bottom=.15, right=.98, top=.95)
         ax.grid(True)
         x = range(1, len(value_list) + 1)
         ax.plot(x, value_list, 'bo')
         if xlabels is not None:
             ax.set_xticks(x)
             ax.set_xticklabels(xlabels, rotation='vertical')
-        if title is not None:
-            ax.set_title(title, fontsize=10)
-
-
-def convert_figure_to_img(fig):
-    canvas=FigureCanvas(fig) # This does seem to be necessary or savefig won't work.
-    img = StringIO.StringIO()
-    fig.savefig(img)
-    img.seek(0)
-    return img
-
+        if self.title is not None:
+            ax.set_title(self.title, fontsize=10)
+        self.tight_layout()
+        return
 
 class ColorMapper():
     def __init__ (self, top_val, bottom_val):
