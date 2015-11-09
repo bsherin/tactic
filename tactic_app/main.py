@@ -86,7 +86,7 @@ class mainWindow(threading.Thread):
         self._main_id = str(current_main_id)
         current_main_id += 1
         self._change_list = []
-        self._visible_doc_name = None
+        self.visible_doc_name = None
         self._pipe_dict = {}
         self.selected_text = ""
 
@@ -307,7 +307,6 @@ class mainWindow(threading.Thread):
         elif event_name == "UnfilterTable":
             self.unfilter_all_rows()
         elif event_name == "ColorTextInCell":
-            print "About to emit colorTxtInCell"
             self.emit_table_message("colorTxtInCell", data)
         elif event_name == "SetCellContent":
             self._set_cell_content(data["doc_name"], data["id"], data["column_header"], data["new_content"], data["cellchange"])
@@ -317,7 +316,6 @@ class mainWindow(threading.Thread):
             new_spec = data["tablespec"]
             self.doc_dict[new_spec["doc_name"]].table_spec = new_spec
         return
-
 
     def _set_cell_content(self, doc_name, id, column_header, new_content, cellchange=True):
         doc = self.doc_dict[doc_name]
@@ -333,12 +331,12 @@ class mainWindow(threading.Thread):
             else:
                 self._set_row_column_data(doc_name, id, column_header, new_content)
                 self._change_list.append(id)
-            if doc_name == self._visible_doc_name:
+            if doc_name == self.visible_doc_name:
                 self.emit_table_message("setCellContent", data)
 
     def highlight_table_text(self, txt):
         row_index = 0;
-        dinfo = self.doc_dict[self._visible_doc_name]
+        dinfo = self.doc_dict[self.visible_doc_name]
         for the_row in dinfo.sorted_data_rows:
             for cheader in dinfo.header_list:
                 cdata = the_row[cheader]
@@ -362,8 +360,6 @@ class mainWindow(threading.Thread):
 
     def dehighlight_all_table_text(self):
         self.emit_table_message("dehiglightAllCells")
-
-
 
     def _build_doc_dict(self):
         result = {}

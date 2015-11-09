@@ -96,8 +96,8 @@ function resize_tile_area(event, ui) {
     var front_element = ui.element.find(".front")[0];
     $(front_element).outerHeight(ui.size.height - hheight);
     $(front_element).outerWidth(ui.size.width);
-    var display_area = ui.element.find("#tile-display-area");
-    the_margin = $("#tile-display-area").css("margin-left").replace("px", "")
+    var display_area = ui.element.find(".tile-display-area");
+    the_margin = $(".tile-display-area").css("margin-left").replace("px", "")
     $(display_area).outerHeight(ui.size.height - hheight - the_margin * 2);
     $(display_area).outerWidth(ui.size.width - the_margin * 2);
     var back_element = ui.element.find(".back")[0];
@@ -144,13 +144,13 @@ var tile_object = {
         broadcast_event_to_server("UpdateOptions", data)
     },
     broadcastTileSize: function(self) {
-        var w = $(self.full_selector() + " #tile-display-area").width();
-        var h = $(self.full_selector() + " #tile-display-area").height();
+        var w = $(self.full_selector() + " .tile-display-area").width();
+        var h = $(self.full_selector() + " .tile-display-area").height();
         var data_dict = {"tile_id": self.tile_id, "width": w, "height": h};
         broadcast_event_to_server("TileSizeChange", data_dict)
     },
     displayTileContent: function (data) {
-        $(this.full_selector() + " #tile-display-area").html(data["html"]);
+        $(this.full_selector() + " .tile-display-area").html(data["html"]);
         this.showFront()
         //CameraTag.setup()
     },

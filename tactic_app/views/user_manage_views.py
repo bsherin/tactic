@@ -4,6 +4,7 @@ import os, sys
 import pymongo
 from flask import render_template, request, make_response, redirect, url_for, jsonify, send_file
 from flask_login import login_required, current_user
+from flask_socketio import join_room
 from tactic_app import app, db, socketio, use_ssl
 from tactic_app.file_handling import read_csv_file_to_dict, read_txt_file_to_dict, load_a_list;
 from tactic_app.main import create_new_mainwindow, create_new_mainwindow_from_project, mainwindow_instances

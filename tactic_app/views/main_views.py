@@ -96,7 +96,7 @@ def get_additional_params():
 @app.route('/set_visible_doc/<main_id>/<doc_name>', methods=['get'])
 @login_required
 def set_visible_doc(main_id, doc_name):
-    mainwindow_instances[main_id]._visible_doc_name = doc_name
+    mainwindow_instances[main_id].visible_doc_name = doc_name
     return jsonify({"success": True})
 
 @app.route('/distribute_events/<event_name>', methods=['get', 'post'])
