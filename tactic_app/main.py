@@ -38,6 +38,21 @@ class docInfo():
     def compile_save_dict(self):
         return ({"name": self.name, "data_rows": self.data_rows, "table_spec": self.table_spec, "my_class_for_recreate": "docInfo", "header_list": self.header_list})
 
+    @property
+    def sorted_data_rows(self):
+        result = []
+        sorted_int_keys = sorted([int(key) for key in self.data_rows.keys()])
+        for r in sorted_int_keys:
+            result.append(self.data_rows[str(r)])
+        return result
+
+    @property
+    def data_rows_int_keys(self):
+        result = {}
+        for (key, val) in self.data_rows.items():
+            result[int(key)] = val
+        return result
+
     @staticmethod
     def recreate_from_save(save_dict):
         new_instance = docInfo(save_dict["name"], save_dict["data_rows"], save_dict["header_list"])
@@ -71,7 +86,7 @@ class mainWindow(threading.Thread):
         self._main_id = str(current_main_id)
         current_main_id += 1
         self._change_list = []
-        self._visible_doc_name = None
+        self.visible_doc_name = None
         self._pipe_dict = {}
         self.selected_text = ""
 
@@ -140,7 +155,7 @@ class mainWindow(threading.Thread):
     def add_blank_column(self, column_name):
         for doc in self.doc_dict.values():
             doc.header_list.append(column_name)
-            for r in doc.data_rows:
+            for r in doc.data_rows.values():
                 r[column_name] = ""
 
     def post_event(self, event_name, data=None):
@@ -187,7 +202,7 @@ class mainWindow(threading.Thread):
         return result
 
     def get_column_data_for_doc(self, column_header, doc_name):
-        the_rows = self.doc_dict[doc_name].data_rows
+        the_rows = self.doc_dict[doc_name].sorted_data_rows
         result = []
         for the_row in the_rows:
             result.append(the_row[column_header])
@@ -196,12 +211,12 @@ class mainWindow(threading.Thread):
     def get_matching_rows(self, filter_function, document_name):
         result = []
         if document_name is not None:
-            for r in self.doc_dict[document_name].data_rows:
+            for r in self.doc_dict[document_name].sorted_data_rows:
                 if filter_function(r):
                     result.append(r)
         else:
             for doc in self.doc_dict.keys():
-                for r in self.doc_dict[doc].data_rows:
+                for r in self.doc_dict[doc].sorted_data_rows:
                     if filter_function(r):
                         result.append(r)
         return result
@@ -214,7 +229,7 @@ class mainWindow(threading.Thread):
             show_list = []
             hide_list = []
             i = 0
-            for r in self.doc_dict[document_name].data_rows:
+            for r in self.doc_dict[document_name].sorted_data_rows:
                 if filter_function(r):
                     show_list.append(i)
                 else:
@@ -226,7 +241,7 @@ class mainWindow(threading.Thread):
                 show_list = []
                 hide_list = []
                 i = 0
-                for r in self.doc_dict[doc].data_rows:
+                for r in self.doc_dict[doc].sorted_data_rows:
                     if filter_function(r):
                         show_list.append(i)
                     else:
@@ -238,7 +253,7 @@ class mainWindow(threading.Thread):
     def apply_to_rows(self, func, document_name=None):
         if document_name is not None:
             i = 0
-            for r in self.doc_dict[document_name].data_rows:
+            for r in self.doc_dict[document_name].sorted_data_rows:
                 new_r = func(r)
                 for (key, val) in new_r.items():
                     # self.doc_dict[document_name].data_rows[i][key] = val
@@ -247,7 +262,7 @@ class mainWindow(threading.Thread):
         else:
             for doc in self.doc_dict.keys():
                 i = 0
-                for r in self.doc_dict[doc].data_rows:
+                for r in self.doc_dict[doc].sorted_data_rows:
                     new_r = func(r)
                     for (key, val) in new_r.itesm():
                         # self.doc_dict[document_name].data_rows[i][key] = val
@@ -276,8 +291,8 @@ class mainWindow(threading.Thread):
 
     def _handle_event(self, event_name, data=None):
         if event_name == "CellChange":
-            self._set_row_column_data(data["doc_name"], data["row_index"], data["column_header"], data["new_content"])
-            self._change_list.append(data["row_index"])
+            self._set_row_column_data(data["doc_name"], data["id"], data["column_header"], data["new_content"])
+            self._change_list.append(data["id"])
         elif event_name == "RemoveTile":
             self._delete_tile_instance(data["tile_id"])
         elif event_name == "CreateColumn":
@@ -292,10 +307,9 @@ class mainWindow(threading.Thread):
         elif event_name == "UnfilterTable":
             self.unfilter_all_rows()
         elif event_name == "ColorTextInCell":
-            print "About to emit colorTxtInCell"
             self.emit_table_message("colorTxtInCell", data)
         elif event_name == "SetCellContent":
-            self._set_cell_content(data["doc_name"], data["row_index"], data["column_header"], data["new_content"], data["cellchange"])
+            self._set_cell_content(data["doc_name"], data["id"], data["column_header"], data["new_content"], data["cellchange"])
         elif event_name == "TextSelect":
             self.selected_text = data["selected_text"]
         elif event_name == "SaveTableSpec":
@@ -303,28 +317,27 @@ class mainWindow(threading.Thread):
             self.doc_dict[new_spec["doc_name"]].table_spec = new_spec
         return
 
-
-    def _set_cell_content(self, doc_name, row_index, column_header, new_content, cellchange=True):
+    def _set_cell_content(self, doc_name, id, column_header, new_content, cellchange=True):
         doc = self.doc_dict[doc_name]
-        the_row = doc.data_rows[row_index]
+        the_row = doc.data_rows[str(id)]
         old_content = the_row[column_header]
         if (new_content != old_content):
-            data = {"doc_name": doc_name, "row_index": row_index, "column_header": column_header, "new_content": new_content, "old_content": old_content}
+            data = {"doc_name": doc_name, "id": id, "column_header": column_header, "new_content": new_content, "old_content": old_content}
 
             # If cellchange is True then we use a CellChange event to handle any updates.
             # Otherwise just change things right here.
             if cellchange:
                 distribute_event("CellChange", self._main_id, data)
             else:
-                self._set_row_column_data(doc_name, row_index, column_header, new_content)
-                self._change_list.append(row_index)
-            if doc_name == self._visible_doc_name:
+                self._set_row_column_data(doc_name, id, column_header, new_content)
+                self._change_list.append(id)
+            if doc_name == self.visible_doc_name:
                 self.emit_table_message("setCellContent", data)
 
     def highlight_table_text(self, txt):
         row_index = 0;
-        dinfo = self.doc_dict[self._visible_doc_name]
-        for the_row in dinfo.data_rows:
+        dinfo = self.doc_dict[self.visible_doc_name]
+        for the_row in dinfo.sorted_data_rows:
             for cheader in dinfo.header_list:
                 cdata = the_row[cheader]
                 if cdata is None:
@@ -348,8 +361,6 @@ class mainWindow(threading.Thread):
     def dehighlight_all_table_text(self):
         self.emit_table_message("dehiglightAllCells")
 
-
-
     def _build_doc_dict(self):
         result = {}
         try:
@@ -364,7 +375,7 @@ class mainWindow(threading.Thread):
             return
         return result
 
-    def _set_row_column_data(self, doc_name, row_index, column_header, new_content):
-        the_row = self.doc_dict[doc_name].data_rows[row_index][column_header] = new_content
+    def _set_row_column_data(self, doc_name, id, column_header, new_content):
+        the_row = self.doc_dict[doc_name].data_rows[str(id)][column_header] = new_content
         return
 

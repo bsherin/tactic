@@ -65,13 +65,13 @@ def export_data():
 @app.route('/grab_data/<main_id>/<doc_name>', methods=['get'])
 @login_required
 def grab_data(main_id, doc_name):
-    return jsonify({"doc_name": doc_name, "data_rows": mainwindow_instances[main_id].doc_dict[doc_name].data_rows, "header_list": mainwindow_instances[main_id].doc_dict[doc_name].header_list})
+    return jsonify({"doc_name": doc_name, "data_rows": mainwindow_instances[main_id].doc_dict[doc_name].sorted_data_rows, "header_list": mainwindow_instances[main_id].doc_dict[doc_name].header_list})
 
 @app.route('/grab_project_data/<main_id>/<doc_name>', methods=['get'])
 @login_required
 def grab_project_data(main_id, doc_name):
     mw = mainwindow_instances[main_id]
-    return jsonify({"doc_name": doc_name, "tile_ids": mw.tile_ids, "data_rows": mw.doc_dict[doc_name].data_rows, "tablespec_dict": mw.tablespec_dict()})
+    return jsonify({"doc_name": doc_name, "tile_ids": mw.tile_ids, "data_rows": mw.doc_dict[doc_name].sorted_data_rows, "tablespec_dict": mw.tablespec_dict()})
 
 @app.route('/get_menu_template', methods=['get'])
 @login_required
@@ -96,7 +96,7 @@ def get_additional_params():
 @app.route('/set_visible_doc/<main_id>/<doc_name>', methods=['get'])
 @login_required
 def set_visible_doc(main_id, doc_name):
-    mainwindow_instances[main_id]._visible_doc_name = doc_name
+    mainwindow_instances[main_id].visible_doc_name = doc_name
     return jsonify({"success": True})
 
 @app.route('/distribute_events/<event_name>', methods=['get', 'post'])
@@ -114,7 +114,7 @@ def distribute_events_stub(event_name):
 @app.route('/figure_source/<main_id>/<tile_id>/<figure_name>', methods=['GET','POST'])
 @login_required
 def figure_source(main_id, tile_id, figure_name):
-    img = mainwindow_instances[main_id].tile_instances[tile_id].images[figure_name]
+    img = mainwindow_instances[main_id].tile_instances[tile_id].img_dict[figure_name]
     return send_file(img, mimetype='image/png')
 
 @app.route('/create_tile_request/<tile_type>', methods=['GET','POST'])
@@ -125,7 +125,6 @@ def create_tile_request(tile_type):
         tile_name = request.json["tile_name"]
         new_tile = mainwindow_instances[main_id].create_tile_instance_in_mainwindow(tile_type, tile_name)
         tile_id = new_tile.tile_id
-        new_tile.figure_url = url_for("figure_source", main_id=main_id, tile_id=tile_id, figure_name="X")[:-1]
         form_html = new_tile.create_form_html()
         result = render_template("tile.html", tile_id=tile_id,
                                tile_name=new_tile.tile_name,

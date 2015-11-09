@@ -219,7 +219,7 @@ function column_command(menu_id) {
         }
     }
     else if (menu_id == "unhide") {
-        tableObject.current_spec.hidden_list = [];
+        tableObject.current_spec.hidden_list = ["__filename__"];
         tableObject.build_table();
     }
     else if (menu_id == "add-column") {
@@ -335,6 +335,8 @@ function tile_command(menu_id) {
             dataType: 'json',
             success: function (data) {
                 if (data.success) {
+                    new_tile_object = Object.create(tile_object);
+                    new_tile_object.tile_id = data.tile_id;
                     $("#tile-div").append(data.html);
                     $("#tile_body_" + data.tile_id).flip({
                         "trigger": "manual",
@@ -345,16 +347,18 @@ function tile_command(menu_id) {
                     var new_tile_elem = $("#tile_id_" + data.tile_id)
                     new_tile_elem.resizable({
                         handles: "se",
-                        resize: resize_tile_area
+                        resize: resize_tile_area,
+                        stop: function () {
+                            new_tile_object.broadcastTileSize(new_tile_object)
+                        }
                     });
                     jQuery.data(new_tile_elem[0], "my_tile_id", data.tile_id)
                     listen_for_clicks();
                     $("#tile_id_" + data.tile_id).find(".triangle-right").hide()
-                    new_tile_object = Object.create(tile_object);
-                    new_tile_object.tile_id = data.tile_id;
+
                     tile_dict[data.tile_id] = new_tile_object;
                     do_resize(data.tile_id);
-                    //new_tile_object.initiateTileRefresh();
+                    new_tile_object.broadcastTileSize(new_tile_object);
                     data_dict.tile_id = data.tile_id
                     spin_and_refresh(data_dict.tile_id)
                 }

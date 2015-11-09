@@ -54,7 +54,7 @@ def make_fieldnames_unique(flist):
         new_list.append(fname)
     return new_list
 
-def read_csv_file_to_dict_list(csvfile):
+def read_csv_file_to_dict(csvfile):
     # try:
     #     dialect = csv.Sniffer().sniff(csvfile.read(1024))
     # except:
@@ -67,32 +67,33 @@ def read_csv_file_to_dict_list(csvfile):
         header_list = make_fieldnames_unique(header_list)
         reader = csv.DictReader(csvfile, dialect="excel", fieldnames=header_list)
         filename, file_extension = os.path.splitext(csvfile.filename)
-        new_list_of_dicts = []
+        result_dict = {}
         for row in reader:
-            row["id"] = filename + "_" + str(i)
-            new_list_of_dicts.append(row)
+            row["__filename__"] = filename
+            row["__id__"] = i
+            result_dict[str(i)] = row
             i += 1
         csvfile.seek(0)
-        header_list = ["id"] + header_list
+        header_list = ["__id__", "__filename__"] + header_list
 
     except csv.Error as e:
         return (None, e, None)
-    return (filename, new_list_of_dicts, header_list)
+    return (filename, result_dict, header_list)
 
 def utf_solver(txt):
     return txt.decode("utf-8", 'ignore').encode("ascii", "ignore")
 
-def read_txt_file_to_dict_list(txtfile):
+def read_txt_file_to_dict(txtfile):
     filename, file_extension = os.path.splitext(txtfile.filename)
     lines = txtfile.readlines()
-    new_list_of_dicts = []
+    result_dict = {}
     i = 0
     for l in lines:
-        new_list_of_dicts.append({"number": filename + "_" + str(i), "text": utf_solver(l)})
+        result_dict[i]({"__id__": i, "__filename__": filename, "text": utf_solver(l)})
         i = i + 1
 
-    header_list = ["number", "text"]
-    return (filename, new_list_of_dicts, header_list)
+    header_list = ["__id__", "__filename__", "text"]
+    return (filename, result_dict, header_list)
 
 def convert_lists_to_dicts(a_dict):
     new_dict = {}

@@ -3,14 +3,15 @@ __author__ = 'bls910'
 import os, sys
 import pymongo
 from flask import render_template, request, make_response, redirect, url_for, jsonify, send_file
+from flask_login import login_required, current_user
+from flask_socketio import join_room
 from tactic_app import app, db, socketio, use_ssl
-from tactic_app.file_handling import read_xml_file_to_dict_list, read_csv_file_to_dict_list, read_txt_file_to_dict_list, load_a_list;
+from tactic_app.file_handling import read_csv_file_to_dict, read_txt_file_to_dict, load_a_list;
 from tactic_app.main import create_new_mainwindow, create_new_mainwindow_from_project, mainwindow_instances
 from tactic_app.users import put_docs_in_collection, build_data_collection_name
 from tactic_app.tiles import create_user_tiles
 from tactic_app.shared_dicts import user_tiles, loaded_user_modules
-from flask_login import current_user, login_required
-from flask_socketio import join_room
+
 
 @app.route('/user_manage')
 @login_required
@@ -21,9 +22,6 @@ def user_manage():
         user_tile_name_list = []
     return render_template('user_manage/user_manage.html', user_tile_name_list=user_tile_name_list, use_ssl=str(use_ssl))
 
-@app.route("/doc_manager")
-def doc_manager():
-    return render_template("doc_editor.html", use_ssl=str(use_ssl))
 
 @app.route('/main/<collection_name>', methods=['get'])
 @login_required
@@ -127,12 +125,6 @@ def render_list_list():
 def render_tile_module_list():
     return render_template("user_manage/tile_module_list.html")
 
-def render_doc_list():
-    doc_names = []
-    for doc in db["documentation"].find():
-        doc_names.append(doc["name"])
-    return render_template("user_manage/doc_list.html", doc_names=doc_names)
-
 @app.route('/create_duplicate_list', methods=['post'])
 @login_required
 def create_duplicate_list():
@@ -143,10 +135,6 @@ def create_duplicate_list():
     db[current_user.list_collection_name].insert_one(new_list_dict)
     socketio.emit('update-list-list', {"html": render_list_list()}, namespace='/user_manage', room=current_user.get_id())
     return jsonify({"success": True})
-
-@app.route('/request_update_doc_list', methods=['GET'])
-def request_update_doc_list():
-    return render_doc_list()
 
 @app.route('/request_update_list_list', methods=['GET'])
 @login_required
@@ -183,30 +171,6 @@ def add_list():
     socketio.emit('update-list-list', {"html": render_list_list()}, namespace='/user_manage', room=current_user.get_id())
     return make_response("", 204)
 
-@app.route('/get_doc_markdown/<doc_name>', methods=['get'])
-def get_doc_markdown(doc_name):
-    mdown = db["documentation"].find({"name": doc_name}).next()["text"]
-    return jsonify({"success": True, "doc_text": mdown})
-
-@app.route('/save_doc', methods=['get', 'post'])
-def save_doc():
-    doc_name = request.json['res_name']
-    doc_markdown = request.json['doc_markdown']
-    db["documentation"].update_one({"name": doc_name}, {'$set': {"text": doc_markdown}})
-    return jsonify({"success": True, "message": "Documentation updated."})
-
-@app.route('/new_doc', methods=['get', 'post'])
-def new_doc():
-    doc_name = request.json['new_res_name']
-    db["documentation"].insert_one({"name": doc_name, "text": ""})
-    socketio.emit('update-doc-list', {"html": render_doc_list()}, namespace='/doc_manage')
-    return jsonify({"success": True, "message": "Documentation created."})
-
-@app.route('/delete_doc/<doc_name>', methods=['post'])
-def delete_doc(doc_name):
-    db["documentation"].delete_one({"name": doc_name})
-    socketio.emit('update-doc-list', {"html": render_doc_list()}, namespace='/doc_manage')
-    return jsonify({"success": True})
 
 @app.route('/add_tile_module', methods=['POST', 'GET'])
 @login_required
@@ -238,13 +202,13 @@ def load_files(collection_name):
 
     for file in file_list:
         filename, file_extension = os.path.splitext(file.filename)
-        if file_extension == ".xml":
-            (success, dict_list) = read_xml_file_to_dict_list(file)
-            header_list = []
-        elif file_extension == ".csv":
-            (success, dict_list, header_list) = read_csv_file_to_dict_list(file)
+        # if file_extension == ".xml":
+        #     (success, dict_list) = read_xml_file_to_dict_list(file)
+        #     header_list = []
+        if file_extension == ".csv":
+            (success, result_dict, header_list) = read_csv_file_to_dict(file)
         elif file_extension ==".txt":
-            (success, dict_list, header_list) = read_txt_file_to_dict_list(file)
+            (success, result_dict, header_list) = read_txt_file_to_dict_list(file)
         else:
             return jsonify({"message": "Not a valid file extension " + file_extension, "alert_type": "alert-danger"})
         if not success: # then dict_list contains an error object
@@ -252,7 +216,7 @@ def load_files(collection_name):
             return jsonify({"message": e.message, "alert_type": "alert-danger"})
 
         try:
-            db[full_collection_name].insert_one({"name": filename, "data_rows": dict_list, "header_list": header_list})
+            db[full_collection_name].insert_one({"name": filename, "data_rows": result_dict, "header_list": header_list})
         except pymongo.errors.InvalidStringData:
             print "Strings in documents must be valid UTF-8"
 
@@ -323,12 +287,8 @@ def get_resource_module_template():
 def connected_msg():
     print"client connected"
 
-@socketio.on('connect', namespace='/doc_manage')
-@login_required
-def doc_connected_msg():
-    print"client connected to doc manage"
 
-@socketio.on('join', namespace='/doc_manage')
+@socketio.on('join', namespace='/user_manage')
 @login_required
 def on_join(data):
     room=data["user_id"]

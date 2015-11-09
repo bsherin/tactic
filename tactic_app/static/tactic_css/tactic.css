@@ -10,7 +10,6 @@
     font-size: 12px;
 }
 
-
 #console-heading {
     font-size: 12px;
     padding-top: 2px;
@@ -76,7 +75,6 @@ button.notclose:hover {
 }
 
 
-
 .stacked-button {
     margin-bottom: 10px;
     display: block;
@@ -117,17 +115,17 @@ button.notclose:hover {
     max-height: 100%
 }
 
+#spin-place {
+    position: relative;
+}
+
 #tile-area {
     margin: 0px;
     border: 0px;
     overflow: scroll;
 }
 
-#spin-place {
-    position: relative;
-}
-
-#tile-display-area {
+.tile-display-area {
     overflow: scroll;
     padding: 0;
     margin: 15px 15px 15px 15px;
@@ -147,9 +145,5 @@ button.notclose:hover {
 .tile-body {
     padding: 0px;
 }
-
-/*.tile-panel, .front,““‘ .back{*/
-    /*border: 1px solid #BCE8F1;*/
-/*}*/
 
 

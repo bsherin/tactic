@@ -55,11 +55,21 @@ function start_post_load() {
     $("#outer-container").css({"margin-right": String(MARGIN_SIZE) + "px"});
     $("#outer-container").css({"margin-top": "0px", "margin-bottom": "0px"});
     initializeConsole();
+    if (use_ssl) {
+        socket = io.connect('https://' + document.domain + ':' + location.port + '/main');
+    }
+    else {
+        socket = io.connect('http://' + document.domain + ':' + location.port + '/main');
+    }
     $.getJSON($SCRIPT_ROOT + "/get_additional_params", function (data) {
         tile_types = data.tile_types;
         user_tile_types = data.user_tile_types;
         build_and_render_menu_objects();
-    });
+        continue_loading()
+    })
+}
+
+function continue_loading() {
     if (_project_name != "") {
         $.getJSON($SCRIPT_ROOT + "/grab_project_data/" + String(main_id) + "/" + String(doc_names[0]), function(data) {
                 $("#loading-message").css("display", "none");
@@ -100,19 +110,12 @@ function start_post_load() {
         })
     }
 
-
     $("#tile-div").sortable({
         handle: '.panel-heading',
         tolerance: 'pointer',
         revert: 'invalid',
         forceHelperSize: true
     });
-    if (use_ssl) {
-        socket = io.connect('https://' + document.domain + ':' + location.port + '/main');
-    }
-    else {
-        socket = io.connect('http://' + document.domain + ':' + location.port + '/main');
-    }
 
     socket.emit('join', {"room": user_id});
     socket.emit('join', {"room": main_id});

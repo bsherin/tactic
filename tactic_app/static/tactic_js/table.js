@@ -93,7 +93,6 @@ tableSpec = {
                     var column_width = this.column_widths[i]
                     this.column_widths.splice(i, 1)
                     this.column_widths.splice(i - 1, 0, column_width)
-                    //broadcast_event_to_server("SaveTableSpec", {"tablespec": tableObject.current_spec})
                 }
             }
         }
@@ -107,7 +106,6 @@ tableSpec = {
                 var column_width = this.column_widths[i]
                 this.column_widths.splice(i, 1)
                 this.column_widths.splice(i + 1, 0, column_width)
-                //broadcast_event_to_server("SaveTableSpec", {"tablespec": tableObject.current_spec})
             }
         }
     }
@@ -124,18 +122,12 @@ function create_tablespec(dict) {
     return spec
 }
 
-tablespec_dict = {};
+var tablespec_dict = {};
 
 var tableObject = {
     table_id: "table-area",
     collection_name: null,
-
-    // data_rows and table_array are two different represenations of the content of the table
-    // data_rows is used when the table is refreshed from scratch. So it has to be kept
-    // updated. table_array is just a little easier to use.
-
     data_rows: null,
-    table_array: [],
     selected_header: null,
     highlighted_cells: [],
 
@@ -145,14 +137,14 @@ var tableObject = {
         this.left_fraction_save = this.left_fraction;
         this.collection_name = _collection_name;
         this.project_name = _project_name;
-        this.short_collection_name = _collection_name.replace(/^.*?\.data_collection\./, "");
+        //this.short_collection_name = _collection_name.replace(/^.*?\.data_collection\./, "");
         this.data_rows = data_object["data_rows"];
         this.current_doc_name = data_object["doc_name"]
 
         if (!tablespec_dict.hasOwnProperty(this.current_doc_name)) {
             this.current_spec = Object.create(tableSpec);
             this.current_spec.doc_name = this.current_doc_name;
-            this.current_spec.hidden_list = [];
+            this.current_spec.hidden_list = ["__filename__"];
             this.current_spec.hidden_rows = [];
             this.current_spec.header_list = data_object["header_list"]
             tablespec_dict[this.current_doc_name] = this.current_spec;
@@ -168,8 +160,7 @@ var tableObject = {
 
     build_table: function() {
         var self = this;
-        this.table_array = build_table_array(this.data_rows, this.current_spec.header_list);
-        html_result = create_all_html(this.table_id, this.table_array, this.current_spec.hidden_list, this.current_spec.header_list);
+        html_result = create_all_html(this.table_id, this.data_rows, this.current_spec.hidden_list, this.current_spec.header_list);
         $("#" + this.table_id).html(html_result);
         for (i = 0; i < this.current_spec.hidden_list.length; ++i) {
             $("column-" + this.current_spec.hidden_list[i]).css("display", "none");
@@ -217,20 +208,7 @@ var tableObject = {
             }
         })
 
-        function build_table_array(doc_list, header_list){
-            var i, j, k, current;
-            table_array = [];
-            for (i = 0; i < doc_list.length; ++i) {
-                table_array.push([]);
-                for (j = 0; j < header_list.length; ++j) {
-                    header = header_list[j];
-                    current = doc_list[i][header];
-                    table_array[i].push(current)
-                }
-            }
-            return table_array
-        }
-        function create_all_html (table_id, table_array, hidden_list, header_list) {
+        function create_all_html (table_id, data_rows, hidden_list, header_list) {
             //This method constructs all of the table html
 
             headers = []
@@ -241,13 +219,14 @@ var tableObject = {
 
             var body_html = "";
 
-            for (i = 0; i < table_array.length; ++i) {
+            for (i = 0; i < data_rows.length; ++i) {
 
                 cell_list = []
                 for (var c = 0; c < header_list.length; ++c) {
-                    cell_list.push({"rownumber": String(i), "header": header_list[c], "value": table_array[i][c]})
+                    cell_list.push({"rownumber": String(i), "header": header_list[c], "value": data_rows[i][header_list[c]]})
                 }
                 row_html = Mustache.to_html(body_template, {
+                    "row_id": data_rows[i]["__id__"].toString(),
                     "cells": cell_list
                 })
                 body_html = body_html + row_html;
@@ -294,7 +273,7 @@ var tableObject = {
             }
         }
 
-        function save_column_widths () {
+        function save_column_widths() {
             var col_cells = $("#table-area tbody tr:first td");
             var result = [];
             for (var i = 0; i < col_cells.length; ++i) {
@@ -322,11 +301,11 @@ var tableObject = {
             var rindex = this.parentElement.rowIndex - 1
             var cindex = this.cellIndex;
             var column_header = self.current_spec.header_list[cindex];;
-            var old_content = self.table_array[rindex][cindex];
+            var old_content = self.data_rows[rindex][column_header]
             if (current_content != old_content) {
                 shorter_sig = []
-                self.table_array[rindex][cindex] = current_content;
-                self.update_doc_list(rindex, column_header, current_content)
+                //self.table_array[rindex][cindex] = current_content;
+                this.data_rows[rindex][column_header] = current_content;
                 data_dict = {
                     "row_index": rindex,
                     "column_header": column_header,
@@ -406,9 +385,6 @@ var tableObject = {
                 new_width = this.current_spec.column_widths[c];
                 the_child.style.width = String(new_width) + "px";
                 the_child.style.maxWidth = String(new_width) + "px";
-                //if ((the_colspan == 1) && (big_fields[c] == 1)){
-                //    the_child.style.minWidth = MIN_BIGFIELD_WIDTH
-                //}
                 c += 1
             }
         }
@@ -416,24 +392,45 @@ var tableObject = {
         return
     },
 
-    highlightTxtInCell: function(data_object) {
+    resize_table_area: function () {
+        var usable_width = window.innerWidth - 2 * MARGIN_SIZE - 10;
+        if (!(this.left_fraction == 0)) {
+            $(".grid-left").width(usable_width * this.left_fraction);
+        }
+        $(".grid-right").width(usable_width * (1 - this.left_fraction))
+        $("#status-area").width(usable_width)
+        $("#table-area tbody").height(window.innerHeight - $("#console-panel").outerHeight() - 50 - $("#table-area tbody").offset().top)
+        //$("#main-panel").outerHeight(window.innerHeight - $("#console-panel").outerHeight() - 50 - $("#main-panel").offset().top)
+        $("#main-panel").width("") // We do this so that this will resize when the window is resized.
+    },
+
+    hideRows: function(hide_list) {
+        var rows = $('#table-area tbody tr');
+        for (i = 0; i < hide_list.length; ++i) {
+            var rnum = hide_list[i];
+            rows.eq(rnum).addClass("hidden-row")
+        }
+    },
+
+    getCellElementByRowColIndex: function(rindex, cindex) {
+        return $("#table-area tbody")[0].rows[rindex].cells[cindex]
+    },
+
+    dehighlightTxtInCell: function(data_object) {
         var rindex = data_object.row_index;
         var cheader = data_object.column_header;
-        var text_to_find = data_object.text_to_find;
         var cindex = this.current_spec.header_list.indexOf(cheader)
         try {
             var el = this.getCellElementByRowColIndex(rindex, cindex);
-            var regex = new RegExp(text_to_find, "gi");
-            el.innerHTML = el.innerHTML.replace(regex, function (matched) {
-                    return "<span class=\"highlight \">" + matched + "</span>";
-                });
-            this.highlighted_cells.push({"row_index": rindex, "column_header": cheader})
+            el.innerHTML = el.innerHTML.replace(/<\/?span[^>]*>/g, "");
         }
-        catch(err) {
+        catch (err) {
             console.log(err.message + " row index " + rindex + "_col_index_ " + cindex)
         }
-
     },
+
+
+    /* shrinkTable and expandTable are called from html inline */
 
     shrinkTable: function() {
         this.left_fraction_save = this.left_fraction;
@@ -453,8 +450,44 @@ var tableObject = {
         $(".tile-panel").removeClass("tile-panel-float")
     },
 
+    /* The commands below will be called by the server with emit_table_message */
+
+    setCellContent: function(data) {
+        //It is assumed that this is called on the currently visible document only.
+        //It will be called by the server, when the server wants to tell the client
+        //there is a change in a cell in the visible document
+        var cheader = data.column_header
+        var new_content = data.new_content
+        var row_index = data.id
+        var cell_index = this.current_spec.header_list.indexOf(cheader)
+        if (cell_index == -1) {
+            console.log("invalid signature")
+            return
+        }
+        var td_element = $("#table-area tbody")[0].rows[row_index].cells[cell_index];
+        $(td_element).html(new_content)
+        this.data_rows[row_index][cheader]= new_content
+    },
+
+    highlightTxtInCell: function(data_object) {
+        var rindex = data_object.row_index;
+        var cheader = data_object.column_header;
+        var text_to_find = data_object.text_to_find;
+        var cindex = this.current_spec.header_list.indexOf(cheader)
+        try {
+            var el = this.getCellElementByRowColIndex(rindex, cindex);
+            var regex = new RegExp(text_to_find, "gi");
+            el.innerHTML = el.innerHTML.replace(regex, function (matched) {
+                    return "<span class=\"highlight \">" + matched + "</span>";
+                });
+            this.highlighted_cells.push({"row_index": rindex, "column_header": cheader})
+        }
+        catch(err) {
+            console.log(err.message + " row index " + rindex + "_col_index_ " + cindex)
+        }
+    },
+
     colorTxtInCell: function(data_object) {
-        console.log("entering colorTxtInCell")
         var rindex = data_object.row_index;
         var cheader = data_object.column_header;
         var token_text = data_object.token_text;
@@ -480,15 +513,6 @@ var tableObject = {
         }
         catch(err) {
             console.log(err.message + " row index " + rindex + "_col_index_ " + cindex)
-        }
-
-    },
-
-    hideRows: function(hide_list) {
-        var rows = $('#table-area tbody tr');
-        for (i = 0; i < hide_list.length; ++i) {
-            var rnum = hide_list[i];
-            rows.eq(rnum).addClass("hidden-row")
         }
     },
 
@@ -538,19 +562,6 @@ var tableObject = {
         this.highlighted_cells = []
     },
 
-    dehighlightTxtInCell: function(data_object) {
-        var rindex = data_object.row_index;
-        var cheader = data_object.column_header;
-        var cindex = this.current_spec.header_list.indexOf(cheader)
-        try {
-            var el = this.getCellElementByRowColIndex(rindex, cindex);
-            el.innerHTML = el.innerHTML.replace(/<\/?span[^>]*>/g, "");
-        }
-        catch (err) {
-            console.log(err.message + " row index " + rindex + "_col_index_ " + cindex)
-        }
-    },
-
     startTableSpinner: function () {
         $("#table-spin-place").html(spinner_html);
     },
@@ -558,44 +569,6 @@ var tableObject = {
     stopTableSpinner: function () {
         $("#table-spin-place").html("");
     },
-
-    setCellContent: function(data) {
-        //It is assumed that this is called on the currently visible document only.
-        //It will be called by the server, when the server wants to tell the client
-        //there is a change in a cell in the visible document
-        var cheader = data.column_header
-        var new_content = data.new_content
-        var row_index = data.row_index
-        var cell_index = this.current_spec.header_list.indexOf(cheader)
-        if (cell_index == -1) {
-            console.log("invalid signature")
-            return
-        }
-        var td_element = $("#table-area tbody")[0].rows[row_index].cells[cell_index];
-        $(td_element).html(new_content)
-        this.table_array[row_index][cell_index] = new_content
-    },
-
-    getCellElementByRowColIndex: function(rindex, cindex) {
-        return $("#table-area tbody")[0].rows[rindex].cells[cindex]
-    },
-
-    resize_table_area: function () {
-        var usable_width = window.innerWidth - 2 * MARGIN_SIZE - 10;
-        if (!(this.left_fraction == 0)) {
-            $(".grid-left").width(usable_width * this.left_fraction);
-        }
-        $(".grid-right").width(usable_width * (1 - this.left_fraction))
-        $("#status-area").width(usable_width)
-        $("#table-area tbody").height(window.innerHeight - $("#console-panel").outerHeight() - 50 - $("#table-area tbody").offset().top)
-        //$("#main-panel").outerHeight(window.innerHeight - $("#console-panel").outerHeight() - 50 - $("#main-panel").offset().top)
-        $("#main-panel").width("") // We do this so that this will resize when the window is resized.
-    },
-
-    update_doc_list: function (row_index, column_header, new_content){
-        this.data_rows[row_index][column_header] = new_content;
-    },
-
 
     rowup: function (clicked_element) {
           var $row = $(clicked_element).parents('tr');
