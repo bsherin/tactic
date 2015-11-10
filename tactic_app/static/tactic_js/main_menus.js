@@ -324,7 +324,7 @@ function tile_command(menu_id) {
 
     function createNewTile(tile_name) {
         var data_dict = {};
-        tile_type = menu_id;
+        var tile_type = menu_id;
         data_dict["main_id"] = main_id;
         data_dict["tile_name"] = tile_name;
         $.ajax({
@@ -335,7 +335,7 @@ function tile_command(menu_id) {
             dataType: 'json',
             success: function (data) {
                 if (data.success) {
-                    new_tile_object = Object.create(tile_object);
+                    var new_tile_object = Object.create(tile_object);
                     new_tile_object.tile_id = data.tile_id;
                     $("#tile-div").append(data.html);
                     $("#tile_body_" + data.tile_id).flip({

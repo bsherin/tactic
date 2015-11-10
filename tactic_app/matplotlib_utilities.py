@@ -49,7 +49,8 @@ class ColorMapper():
         self.val_range = top_val - bottom_val
         self.mid_point = self.bottom_val + self.val_range / 2.0
 
-    def rgb_to_hex(self, rgb):
+    @staticmethod
+    def rgb_to_hex(rgb):
         return '#%02x%02x%02x' % rgb
 
     def rgb_color_from_val(self, val):

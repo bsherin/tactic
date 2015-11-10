@@ -4,6 +4,7 @@ import Queue
 import threading
 import nltk
 import sys
+import copy
 # I want nltk to only search here so that I can see
 # what behavior on remote will be like.
 nltk.data.path = ['./nltk_data/']
@@ -16,7 +17,6 @@ from matplotlib_utilities import GraphList, ColorMapper, FigureCanvas
 from tactic_app import socketio, app
 from tile_base import TileBase
 from shared_dicts import mainwindow_instances, distribute_event
-from vector_space import Vocabulary
 from shared_dicts import tile_classes, user_tiles, tokenizer_dict, weight_functions
 from users import load_user
 from tactic_app.clusterer_classes import CentroidClusterer
@@ -104,38 +104,30 @@ class WordnetSelectionTile(TileBase):
         self.refresh_tile_now()
 
 @tile_class
-class VocabularyTable(TileBase):
-    exports = ["cf_data", "df_data"]
+class WordFreqDist(TileBase):
     save_attrs = TileBase.save_attrs + ["column_source", "tokenizer", "stop_list"]
+    exports = ["cf_data"]
+
     def __init__(self, main_id, tile_id, tile_name=None):
         TileBase.__init__(self, main_id, tile_id, tile_name)
         self.column_source = None
         self.tokenizer = None
-        self._vocab = None
         self.stop_list = None
+        self.fdist = None
+        return
 
     @property
     def options(self):
+        # options provides the specification for the options that appear on the back of the tile
+        # there are 6 types: text, textarea, column_select, tokenizer_select, list_select, pipe_select
         return  [
         {"name": "column_source", "type": "column_select", "placeholder": self.column_source},
         {"name": "tokenizer", "type": "tokenizer_select", "placeholder": self.tokenizer},
         {"name": "stop_list", "type": "list_select", "placeholder": self.stop_list}
-        ]
+    ]
 
     @property
     def cf_data(self):
-        self.vdata_table = self._vocab.vocab_data_table()
-        word_list = []
-        amount_list = []
-        for entry in self.vdata_table:
-            word_list.append(entry[0])
-            amount_list.append(entry[2])
-        data_dict = {"value_list": amount_list[1:], "xlabels": word_list[1:]}
-        return data_dict
-
-    @property
-    def df_data(self):
-        self.vdata_table = self._vocab.vocab_data_table()
         word_list = []
         amount_list = []
         for entry in self.vdata_table:
@@ -151,39 +143,20 @@ class VocabularyTable(TileBase):
                 tokenized_rows.append(self.get_tokenizer(self.tokenizer)(raw_row))
         return tokenized_rows
 
-    def handle_cell_change(self, cheader, row_index, old_content, new_content, doc_name):
-        if not (cheader == self.column_source):
-            return
-        if self._vocab is None:
-            if self.column_source == None:
-                self.refresh_tile_now("No column source selected.")
-                return
-            slist = self.get_user_list(self.stop_list)
-            raw_rows = self.get_column_data(self.column_source)
-            raw_rows[row_index] = new_content
-            tokenized_rows = self.tokenize_rows(raw_rows, self.tokenizer)
-            self._vocab = Vocabulary(tokenized_rows, slist)
-            self.vdata_table = self._vocab.vocab_data_table()
-            the_html = self.build_html_table_from_data_list(self.vdata_table)
-            return self.refresh_tile_now(the_html)
-        else:
-            old_tokenized = self.get_tokenizer(self.tokenizer)(old_content)
-            new_tokenized = self.get_tokenizer(self.tokenizer)(new_contet)
-            self._vocab.update_vocabulary(old_tokenized, new_tokenized)
-            self.vdata_table = self._vocab.vocab_data_table()
-            the_html = self.build_html_table_from_data_list(self.vdata_table)
-            self.refresh_tile_now(the_html)
-            return
-
-
     def render_content(self):
         if self.column_source == None:
             return "No column source selected."
         slist = self.get_user_list(self.stop_list)
+        slist_set = set(slist)
         raw_rows = self.get_column_data(self.column_source)
         tokenized_rows = self.tokenize_rows(raw_rows, self.tokenizer)
-        self._vocab = Vocabulary(tokenized_rows, slist)
-        self.vdata_table = self._vocab.vocab_data_table()
+        self.fdist = nltk.FreqDist()
+        for row in tokenized_rows:
+            for w in row:
+                if not (w in slist_set):
+                    self.fdist[w] += 1
+        self.vdata_table = self.fdist.most_common(50)
+        self.vdata_table = [("word", "cf")] + self.vdata_table
         the_html = self.build_html_table_from_data_list(self.vdata_table)
         return the_html
 
@@ -220,42 +193,6 @@ class ListPlotter(TileBase):
         fig = GraphList(data_dict, self.width, self.height)
         return self.create_figure_html(fig)
 
-@tile_class
-class VocabularyPlot(VocabularyTable):
-    save_attrs = TileBase.save_attrs + ["column_source", "tokenizer", "stop_list"]
-    def __init__(self, main_id, tile_id, tile_name=None):
-        VocabularyTable.__init__(self, main_id, tile_id, tile_name)
-        self.amount_list = None
-        self.word_list = None
-
-    def handle_size_change(self):
-        if self.amount_list is None:
-            return
-        data_dict = {"value_list": self.amount_list, "xlabels": self.word_list}
-        fig = GraphList(data_dict, self.width, self.height)
-        new_html = self.create_figure_html(fig)
-        self.refresh_tile_now(new_html)
-        return
-
-    def render_content (self):
-        if self.column_source == None:
-            return "No column source selected."
-        N = 20
-        raw_rows = self.get_column_data(self.column_source)
-        tokenized_rows = self.tokenize_rows(raw_rows, self.tokenizer)
-        self._vocab = Vocabulary(tokenized_rows, self.get_user_list(self.stop_list))
-        self.vdata_table = self._vocab.vocab_data_table()
-        word_list = []
-        amount_list = []
-        for entry in self.vdata_table[1:N + 1]:
-            word_list.append(entry[0])
-            amount_list.append(entry[2])
-        data_dict = {"value_list": amount_list, "xlabels": word_list}
-        fig = GraphList(data_dict, self.width, self.height)
-        self.amount_list = amount_list
-        self.word_list = word_list
-        return self.create_figure_html(fig)
-
 class AbstractClassifier(TileBase):
     save_attrs = TileBase.save_attrs + ["text_source", "code_source", "code_dest", "tokenizer", "stop_list"]
     classifier_class = None
@@ -271,6 +208,7 @@ class AbstractClassifier(TileBase):
         self.tile_type = self.__class__.__name__
         self.tokenized_rows_dict = {}
         self.autocodes_dict = {}
+        self.vocab_size = 50
 
     @property
     def options(self):
@@ -279,7 +217,8 @@ class AbstractClassifier(TileBase):
         {"name": "code_source", "type": "column_select", "placeholder": self.code_source},
         {"name": "code_destination", "type": "column_select", "placeholder": self.code_destination},
         {"name": "tokenizer", "type": "tokenizer_select", "placeholder": self.tokenizer},
-        {"name": "stop_list", "type": "list_select", "placeholder": self.stop_list}
+        {"name": "stop_list", "type": "list_select", "placeholder": self.stop_list},
+        {"name": "vocab_size", "type": "int", "placeholder": 50}
         ]
 
     def tokenize_rows(self, the_rows, the_tokenizer):
@@ -295,6 +234,21 @@ class AbstractClassifier(TileBase):
             result[name] = self.tokenize_rows(doc, tokenizer)
         return result
 
+    def create_word_fdist(self, tokenized_rows, slist):
+        fdist = nltk.FreqDist()
+        slist_set = set(slist)
+        for row in tokenized_rows:
+            for w in row:
+                if not (w in slist_set):
+                    fdist[w] += 1
+        return fdist
+
+    def get_most_common(self, fdist, num):
+        result = []
+        for entry in fdist.most_common(num):
+            result.append(entry[0])
+        return result
+
     def render_content(self):
         if self.text_source is "":
             return "No text source selected."
@@ -303,9 +257,10 @@ class AbstractClassifier(TileBase):
         combined_text_rows = self.dict_to_list(self.tokenized_rows_dict)
         code_rows_dict = self.get_column_data_dict(self.code_source)
         combined_code_rows = self.dict_to_list(code_rows_dict)
-        self._vocab = Vocabulary(combined_text_rows, self.get_user_list(self.stop_list))
 
-        reduced_vocab = self._vocab._sorted_list_vocab[:50]
+        self.fdist = self.create_word_fdist(combined_text_rows, self.get_user_list(self.stop_list))
+
+        reduced_vocab = self.get_most_common(self.fdist, self.vocab_size)
         labeled_featuresets_dict = {}
         for (dname, doc) in self.tokenized_rows_dict.items():
             r = 0
@@ -329,8 +284,6 @@ class AbstractClassifier(TileBase):
                 autocode = self._classifier.classify(lfset[0])
                 self.autocodes_dict[dname].append(autocode)
                 self.set_cell(dname, r, self.code_destination, str(autocode), cellchange=False)
-                # distribute_event("SetCellContent", self.main_id,
-                #                  {"doc_name": dname, "row_index":r, "column_header": self.code_dest, "new_content": str(autocode), "cellchange": False})
                 r += 1
         cm = nltk.ConfusionMatrix(self.dict_to_list(code_rows_dict),
                                   self.dict_to_list(self.autocodes_dict))
@@ -351,7 +304,6 @@ class NaiveBayes(AbstractClassifier):
         html_output += "<button value='Color'>Color Text</button>"
         return html_output
 
-
     def handle_button_click(self, value, doc_name, active_row_index):
         self.color_cell(doc_name, active_row_index)
 
@@ -359,7 +311,7 @@ class NaiveBayes(AbstractClassifier):
         print "entering color_cell"
         autocode = self.autocodes_dict[doc_name][row_index]
         txt = self.tokenized_rows_dict[doc_name][row_index]
-        reduced_vocab = self._vocab._sorted_list_vocab[:50]
+        reduced_vocab = self.get_most_common(self.fdist, self.vocab_size)
         res = {}
         for w in set(txt):
             if w in reduced_vocab:
@@ -369,8 +321,7 @@ class NaiveBayes(AbstractClassifier):
         for w in res:
             cell_color_dict[w] = cmap.color_from_val(res[w])
 
-        print "about to distribute event ColorTextInCell"
-        distribute_event("ColorTextInCell", self.main_id, {"doc_name": doc_name, "row_index": row_index, "column_header": self.text_source, "token_text": txt, "color_dict": cell_color_dict})
+        self.color_cell_text(doc_name, row_index, self.text_source, txt, cell_color_dict)
 
 @tile_class
 class DecisionTree(AbstractClassifier):
@@ -437,6 +388,12 @@ class OrthogonalizingClusterer(TileBase):
             result.append([vocab_list[sc[i]], round(self.centroids[n][sc[i]], 4)])
         return result
 
+    def get_most_common(self, fdist, num):
+        result = []
+        for entry in fdist.most_common(num):
+            result.append(entry[0])
+        return result
+
     def tokenize_rows(self, the_rows, the_tokenizer):
         tokenized_rows = []
         for raw_row in the_rows:
@@ -458,6 +415,25 @@ class OrthogonalizingClusterer(TileBase):
             r += 1
         return 0
 
+    def create_word_cfdist(self, tokenized_rows, slist):
+        fdist = nltk.FreqDist()
+        slist_set = set(slist)
+        for row in tokenized_rows:
+            for w in row:
+                if not (w in slist_set):
+                    fdist[w] += 1
+        return fdist
+
+    def create_word_dfdist(self, tokenized_rows, slist):
+        fdist = nltk.FreqDist()
+        slist_set = set(slist)
+        for row in tokenized_rows:
+            lsrow = list(set(row))
+            for w in lsrow:
+                if not (w in slist_set):
+                    fdist[w] += 1
+        return fdist
+
     def render_content(self):
         if self.text_source is "":
             return "No text source selected."
@@ -465,14 +441,16 @@ class OrthogonalizingClusterer(TileBase):
         self.tokenized_rows_dict = self.tokenize_docs(raw_text_dict, self.tokenizer)
         combined_text_rows = self.dict_to_list(self.tokenized_rows_dict)
         self.display_message("building vocabulary")
-        self._vocab = Vocabulary(combined_text_rows, self.get_user_list(self.stop_list))
+        self.cfdist = self.create_word_cfdist(combined_text_rows, self.get_user_list(self.stop_list))
+        self.dfdist = self.create_word_dfdist(combined_text_rows, self.get_user_list(self.stop_list))
+        # self._vocab = Vocabulary(combined_text_rows, self.get_user_list(self.stop_list))
 
-        reduced_vocab = self._vocab._sorted_list_vocab[:self.vocab_size]
+        reduced_vocab = self.get_most_common(self.cfdist, self.vocab_size)
 
         self.display_message("building doc vectors")
         doc_vectors = []
         for r in combined_text_rows:
-            r_vector = self.norm_vec([self.get_weight_function(self.weight_function)(r.count(word), self._vocab._df_dict[word], self._vocab._cf_dict[word]) for word in reduced_vocab])
+            r_vector = self.norm_vec([self.get_weight_function(self.weight_function)(r.count(word), self.dfdist[word], self.cfdist[word]) for word in reduced_vocab])
             doc_vectors.append(r_vector)
 
         self.display_message("orthogonalizing")

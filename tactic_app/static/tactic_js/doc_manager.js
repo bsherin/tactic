@@ -24,8 +24,6 @@ function start_post_load() {
         docManager.add_listeners();
     });
     resize_to_fit();
-
-    //$("#epiceditor").height(window.innerHeight)
 }
 
 function resize_to_fit () {

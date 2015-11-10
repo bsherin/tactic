@@ -160,10 +160,10 @@ var tableObject = {
 
     build_table: function() {
         var self = this;
-        html_result = create_all_html(this.table_id, this.data_rows, this.current_spec.hidden_list, this.current_spec.header_list);
+        html_result = create_all_html(this.table_id, this.data_rows, this.current_spec.header_list);
         $("#" + this.table_id).html(html_result);
         for (i = 0; i < this.current_spec.hidden_list.length; ++i) {
-            $("column-" + this.current_spec.hidden_list[i]).css("display", "none");
+            $(".column-" + this.current_spec.hidden_list[i]).css("display", "none");
         }
         this.hideRows(this.current_spec.hidden_rows);
         $("#project-name").html(this.project_name)
@@ -208,7 +208,7 @@ var tableObject = {
             }
         })
 
-        function create_all_html (table_id, data_rows, hidden_list, header_list) {
+        function create_all_html (table_id, data_rows, header_list) {
             //This method constructs all of the table html
 
             headers = []
