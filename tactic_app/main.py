@@ -290,31 +290,35 @@ class mainWindow(threading.Thread):
         socketio.emit("table-message", data, namespace='/main', room=self._main_id)
 
     def _handle_event(self, event_name, data=None):
-        if event_name == "CellChange":
-            self._set_row_column_data(data["doc_name"], data["id"], data["column_header"], data["new_content"])
-            self._change_list.append(data["id"])
-        elif event_name == "RemoveTile":
-            self._delete_tile_instance(data["tile_id"])
-        elif event_name == "CreateColumn":
-            self.add_blank_column(data["column_name"])
-            distribute_event("RebuildTileForms", self._main_id)
-        elif event_name == "SearchTable":
-            self.highlight_table_text(data["text_to_find"])
-        elif event_name == "FilterTable":
-            self.filter_table_rows(data["text_to_find"])
-        elif event_name == "DehighlightTable":
-            self.dehighlight_all_table_text()
-        elif event_name == "UnfilterTable":
-            self.unfilter_all_rows()
-        elif event_name == "ColorTextInCell":
-            self.emit_table_message("colorTxtInCell", data)
-        elif event_name == "SetCellContent":
-            self._set_cell_content(data["doc_name"], data["id"], data["column_header"], data["new_content"], data["cellchange"])
-        elif event_name == "TextSelect":
-            self.selected_text = data["selected_text"]
-        elif event_name == "SaveTableSpec":
-            new_spec = data["tablespec"]
-            self.doc_dict[new_spec["doc_name"]].table_spec = new_spec
+        try:
+            if event_name == "CellChange":
+                self._set_row_column_data(data["doc_name"], data["id"], data["column_header"], data["new_content"])
+                self._change_list.append(data["id"])
+            elif event_name == "RemoveTile":
+                self._delete_tile_instance(data["tile_id"])
+            elif event_name == "CreateColumn":
+                self.add_blank_column(data["column_name"])
+                distribute_event("RebuildTileForms", self._main_id)
+            elif event_name == "SearchTable":
+                self.highlight_table_text(data["text_to_find"])
+            elif event_name == "FilterTable":
+                self.filter_table_rows(data["text_to_find"])
+            elif event_name == "DehighlightTable":
+                self.dehighlight_all_table_text()
+            elif event_name == "UnfilterTable":
+                self.unfilter_all_rows()
+            elif event_name == "ColorTextInCell":
+                self.emit_table_message("colorTxtInCell", data)
+            elif event_name == "SetCellContent":
+                self._set_cell_content(data["doc_name"], data["id"], data["column_header"], data["new_content"], data["cellchange"])
+            elif event_name == "TextSelect":
+                self.selected_text = data["selected_text"]
+            elif event_name == "SaveTableSpec":
+                new_spec = data["tablespec"]
+                self.doc_dict[new_spec["doc_name"]].table_spec = new_spec
+        except:
+            self.display_message("error in handle_event  " + self.__class__.__name__ +
+                                 str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
         return
 
     def _set_cell_content(self, doc_name, id, column_header, new_content, cellchange=True):
@@ -342,7 +346,7 @@ class mainWindow(threading.Thread):
                 cdata = the_row[cheader]
                 if cdata is None:
                     continue
-                if txt.lower() in cdata.lower():
+                if str(txt).lower() in str(cdata).lower():
                     self.emit_table_message("highlightTxtInCell",
                       {"row_index": row_index, "column_header": cheader, "text_to_find": txt})
             row_index += 1

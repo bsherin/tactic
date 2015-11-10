@@ -17,7 +17,6 @@ from matplotlib_utilities import GraphList, ColorMapper, FigureCanvas
 from tactic_app import socketio, app
 from tile_base import TileBase
 from shared_dicts import mainwindow_instances, distribute_event
-from vector_space import Vocabulary
 from shared_dicts import tile_classes, user_tiles, tokenizer_dict, weight_functions
 from users import load_user
 from tactic_app.clusterer_classes import CentroidClusterer
@@ -389,6 +388,12 @@ class OrthogonalizingClusterer(TileBase):
             result.append([vocab_list[sc[i]], round(self.centroids[n][sc[i]], 4)])
         return result
 
+    def get_most_common(self, fdist, num):
+        result = []
+        for entry in fdist.most_common(num):
+            result.append(entry[0])
+        return result
+
     def tokenize_rows(self, the_rows, the_tokenizer):
         tokenized_rows = []
         for raw_row in the_rows:
@@ -410,6 +415,25 @@ class OrthogonalizingClusterer(TileBase):
             r += 1
         return 0
 
+    def create_word_cfdist(self, tokenized_rows, slist):
+        fdist = nltk.FreqDist()
+        slist_set = set(slist)
+        for row in tokenized_rows:
+            for w in row:
+                if not (w in slist_set):
+                    fdist[w] += 1
+        return fdist
+
+    def create_word_dfdist(self, tokenized_rows, slist):
+        fdist = nltk.FreqDist()
+        slist_set = set(slist)
+        for row in tokenized_rows:
+            lsrow = list(set(row))
+            for w in lsrow:
+                if not (w in slist_set):
+                    fdist[w] += 1
+        return fdist
+
     def render_content(self):
         if self.text_source is "":
             return "No text source selected."
@@ -417,14 +441,16 @@ class OrthogonalizingClusterer(TileBase):
         self.tokenized_rows_dict = self.tokenize_docs(raw_text_dict, self.tokenizer)
         combined_text_rows = self.dict_to_list(self.tokenized_rows_dict)
         self.display_message("building vocabulary")
-        self._vocab = Vocabulary(combined_text_rows, self.get_user_list(self.stop_list))
+        self.cfdist = self.create_word_cfdist(combined_text_rows, self.get_user_list(self.stop_list))
+        self.dfdist = self.create_word_dfdist(combined_text_rows, self.get_user_list(self.stop_list))
+        # self._vocab = Vocabulary(combined_text_rows, self.get_user_list(self.stop_list))
 
-        reduced_vocab = self._vocab._sorted_list_vocab[:self.vocab_size]
+        reduced_vocab = self.get_most_common(self.cfdist, self.vocab_size)
 
         self.display_message("building doc vectors")
         doc_vectors = []
         for r in combined_text_rows:
-            r_vector = self.norm_vec([self.get_weight_function(self.weight_function)(r.count(word), self._vocab._df_dict[word], self._vocab._cf_dict[word]) for word in reduced_vocab])
+            r_vector = self.norm_vec([self.get_weight_function(self.weight_function)(r.count(word), self.dfdist[word], self.cfdist[word]) for word in reduced_vocab])
             doc_vectors.append(r_vector)
 
         self.display_message("orthogonalizing")
