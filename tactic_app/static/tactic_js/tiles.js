@@ -62,7 +62,7 @@ function create_tile_from_save(tile_id) {
         data: JSON.stringify(data_dict),
         dataType: 'json',
         success: function (data) {
-            new_tile_object = Object.create(tile_object);
+            var new_tile_object = Object.create(tile_object);
             new_tile_object.tile_id = data.tile_id;
             $("#tile-div").append(data.html);
             $("#tile_body_" + data.tile_id).flip({

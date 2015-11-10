@@ -400,6 +400,10 @@ class TileBase(threading.Thread):
     def display_message(self, message_string):
         mainwindow_instances[self.main_id].print_to_console(message_string)
 
+
+    def color_cell_text(self, doc_name, row_index, column_name, color_dict):
+        distribute_event("ColorTextInCell", self.main_id, {"doc_name": doc_name, "row_index": row_index, "column_header": column_name, "token_text": color_dict.keys(), "color_dict": color_dict})
+
     def get_user_list(self, the_list):
         return self.current_user.get_list(the_list)
 
