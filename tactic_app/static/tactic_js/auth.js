@@ -2,6 +2,14 @@
  * Created by bls910 on 9/4/15.
  */
 
+
+$('.submitter-field').keypress(function(e) {
+    if (e.which == 13) {
+        submit_login_info()
+        e.preventDefault();
+    }
+});
+
 function submit_login_info() {
     var data = {};
     data.username = $("#username").val();

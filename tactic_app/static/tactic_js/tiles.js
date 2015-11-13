@@ -124,7 +124,12 @@ var tile_object = {
         var data = {};
         data["main_id"] = main_id;
         $(this.full_selector() + " .back input").each(function () {
-                data[$(this).attr('id')] = $(this).val()
+                if (this.type == "checkbox") {
+                    data[$(this).attr('id')] = this.checked
+                }
+                else {
+                    data[$(this).attr('id')] = $(this).val()
+                }
             }
         );
         $(this.full_selector() + " .back select :selected").each(function () {
@@ -140,6 +145,7 @@ var tile_object = {
                 data[$(this).attr('id')] = clean_lines
             }
         );
+
         data["tile_id"] = this.tile_id
         broadcast_event_to_server("UpdateOptions", data)
     },

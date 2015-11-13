@@ -4,6 +4,11 @@
     overflow: scroll;
 }
 
+.tile-table td {
+    padding-top: 1px !important;
+    padding-bottom: 1px !important;
+}
+
 #console {
     overflow: scroll;
     text-align: left;

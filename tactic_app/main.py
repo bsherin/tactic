@@ -8,11 +8,11 @@ from flask_login import current_user
 import copy
 import pymongo
 import sys
-
+from tile_base import TileBase # This is needed from recreating tiles from saves
 from collections import OrderedDict
+
 from shared_dicts import mainwindow_instances, distribute_event
 from shared_dicts import tile_classes, user_tiles
-from tiles import TileBase
 from tactic_app import socketio
 current_main_id = 0
 
