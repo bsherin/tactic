@@ -162,6 +162,15 @@ class TileBase(threading.Thread):
                     else:
                         form_html += self.select_option_template.format(choice)
                 form_html += '</select></div>'
+            elif option["type"] == "custom_list":
+                the_template = self.input_start_template + self.select_base_template
+                form_html += the_template.format(option["name"])
+                for choice in option["special_list"]:
+                    if choice == option["placeholder"]:
+                        form_html += self.select_option_selected_template.format(choice)
+                    else:
+                        form_html += self.select_option_template.format(choice)
+                form_html += '</select></div>'
             elif option["type"] == "textarea":
                 the_template = self.input_start_template + self.textarea_template
                 form_html += the_template.format(option["name"], option["type"], option["placeholder"])
