@@ -10,9 +10,12 @@
 }
 
 #console {
-    overflow: scroll;
     text-align: left;
     font-size: 12px;
+    overflow: scroll
+}
+
+#console-panel {
 }
 
 #console-heading {
