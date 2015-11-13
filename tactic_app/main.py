@@ -317,7 +317,7 @@ class mainWindow(threading.Thread):
                 new_spec = data["tablespec"]
                 self.doc_dict[new_spec["doc_name"]].table_spec = new_spec
         except:
-            self.display_message("error in handle_event  " + self.__class__.__name__ +
+            self.print_to_console("error in handle_event  " + self.__class__.__name__ +
                                  str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]), force_open=True)
         return
 
@@ -354,7 +354,7 @@ class mainWindow(threading.Thread):
     @staticmethod
     def txt_in_dict(txt, d):
         for val in d.values():
-            if txt.lower() in val.lower():
+            if str(txt).lower() in str(val).lower():
                 return True
         return False
 
