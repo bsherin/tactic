@@ -517,11 +517,15 @@ var tableObject = {
     },
 
     consoleLog: function(data_object) {
+        force_open = data_object.force_open
         if ($("#console").html() == "") {
             $("#console").append(data_object.message_string )
         }
         else {
             $("#console").append("<br>" + data_object.message_string )
+        }
+        if (force_open && !console_visible) {
+            expandConsole()
         }
         $("#console")[0].scrollTop = $("#console")[0].scrollHeight
     },

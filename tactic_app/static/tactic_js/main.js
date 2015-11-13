@@ -1,4 +1,5 @@
 var socket;
+var console_visible;
 
 function initializeConsole() {
     saved_console_size = 150;

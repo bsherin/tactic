@@ -108,7 +108,7 @@ class TileBase(threading.Thread):
                 self.emit_tile_message("displayFormContent", {"html": form_html})
         except:
             self.display_message("error in handle_event in " + self.__class__.__name__ + " tile: " +
-                                 str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
+                                 str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]), force_open=True)
         return
 
     def create_form_html(self):
@@ -404,8 +404,8 @@ class TileBase(threading.Thread):
     def get_selected_text(self):
         return mainwindow_instances[self.main_id].selected_text
 
-    def display_message(self, message_string):
-        mainwindow_instances[self.main_id].print_to_console(message_string)
+    def display_message(self, message_string, force_open=False):
+        mainwindow_instances[self.main_id].print_to_console(message_string, force_open)
 
 
     def color_cell_text(self, doc_name, row_index, column_name, color_dict):
