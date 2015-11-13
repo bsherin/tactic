@@ -8,10 +8,9 @@ from shared_dicts import tile_classes, user_tiles, tokenizer_dict, weight_functi
 from users import load_user
 import sys
 
-
 class TileBase(threading.Thread):
     exports = {}
-    save_attrs = ["current_html", "tile_id", "tile_type", "images", "tile_name"]
+    save_attrs = ["current_html", "tile_id", "tile_type", "tile_name"]
     input_start_template = '<div class="form-group form-group-sm"">' \
                            '<label>{0}</label>'
     basic_input_template = '<input type="{1}" class="form-control input-sm" id="{0}" value="{2}"></input>' \
@@ -21,7 +20,9 @@ class TileBase(threading.Thread):
     select_base_template = '<select class="form-control input-sm" id="{0}">'
     select_option_template = '<option value="{0}">{0}</option>'
     select_option_selected_template = '<option value="{0}" selected>{0}</option>'
-
+    boolean_template = '<div class="checkbox"><label style="font-weight: 700">'\
+                       '<input type="checkbox" id="{0}" value="{0}" {1}>{0}</label>' \
+                       '</div>'
     def __init__(self, main_id, tile_id, tile_name=None):
         self._stopevent = threading.Event()
         self._sleepperiod = .05
@@ -107,7 +108,7 @@ class TileBase(threading.Thread):
                 self.emit_tile_message("displayFormContent", {"html": form_html})
         except:
             self.display_message("error in handle_event in " + self.__class__.__name__ + " tile: " +
-                                 str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
+                                 str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]), force_open=True)
         return
 
     def create_form_html(self):
@@ -161,16 +162,31 @@ class TileBase(threading.Thread):
                     else:
                         form_html += self.select_option_template.format(choice)
                 form_html += '</select></div>'
-            elif option["type"] == "text":
-                the_template = self.input_start_template + self.basic_input_template
-                form_html += the_template.format(option["name"], option["type"], option["placeholder"])
+            elif option["type"] == "custom_list":
+                the_template = self.input_start_template + self.select_base_template
+                form_html += the_template.format(option["name"])
+                for choice in option["special_list"]:
+                    if choice == option["placeholder"]:
+                        form_html += self.select_option_selected_template.format(choice)
+                    else:
+                        form_html += self.select_option_template.format(choice)
+                form_html += '</select></div>'
             elif option["type"] == "textarea":
                 the_template = self.input_start_template + self.textarea_template
                 form_html += the_template.format(option["name"], option["type"], option["placeholder"])
-
+            elif option["type"] == "text":
+                the_template = self.input_start_template + self.basic_input_template
+                form_html += the_template.format(option["name"], option["type"], option["placeholder"])
             elif option["type"] == "int":
                 the_template = self.input_start_template + self.basic_input_template
                 form_html += the_template.format(option["name"], option["type"], str(option["placeholder"]))
+            elif option["type"] == "boolean":
+                the_template = self.boolean_template
+                if option["placeholder"]:
+                    val = "checked"
+                else:
+                    val = " '"
+                form_html += the_template.format(option["name"], val)
             else:
                 print "Unknown option type specified"
         return form_html
@@ -397,8 +413,8 @@ class TileBase(threading.Thread):
     def get_selected_text(self):
         return mainwindow_instances[self.main_id].selected_text
 
-    def display_message(self, message_string):
-        mainwindow_instances[self.main_id].print_to_console(message_string)
+    def display_message(self, message_string, force_open=False):
+        mainwindow_instances[self.main_id].print_to_console(message_string, force_open)
 
 
     def color_cell_text(self, doc_name, row_index, column_name, color_dict):
@@ -441,8 +457,11 @@ class TileBase(threading.Thread):
             result += it
         return result
 
-    def build_html_table_from_data_list(self, data_list):
-        the_html = "<table><thead><tr>"
+    def build_html_table_from_data_list(self, data_list, title=None):
+        the_html = "<table class='tile-table table table-striped table-bordered table-condensed'>"
+        if title is not None:
+            the_html += "<caption>{0}</caption>".format(title)
+        the_html += "<thead><tr>"
         for c in data_list[0]:
             the_html += "<th>{0}</th>".format(c)
         the_html += "</tr><tbody>"

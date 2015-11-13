@@ -1,9 +1,10 @@
 var socket;
+var console_visible;
 
 function initializeConsole() {
     saved_console_size = 150;
     var pan = $("#console-panel");
-    $("#console-body").fadeOut();
+    $("#console").fadeOut();
     var hheight = $("#console-heading").outerHeight();
     pan.outerHeight(hheight);
     pan.find(".triangle-bottom").hide();
@@ -15,14 +16,15 @@ function initializeConsole() {
 function shrinkConsole (){
     saved_console_size = $("#console-panel").outerHeight();
     var pan = $("#console-panel");
-    $("#console-body").fadeOut();
     var hheight = $("#console-heading").outerHeight();
-    pan.outerHeight(hheight);
-    pan.resizable('destroy');
-    pan.find(".triangle-bottom").hide();
-    pan.find(".triangle-right").show();
-    tableObject.resize_table_area()
-    console_visible = false
+    $("#console").fadeOut("fast", function () {
+        pan.outerHeight(hheight);
+        pan.resizable('destroy');
+        pan.find(".triangle-bottom").hide();
+        pan.find(".triangle-right").show();
+        tableObject.resize_table_area()
+        console_visible = false
+    });
 }
 
 function expandConsole(){
@@ -33,7 +35,7 @@ function expandConsole(){
     //})
     pan.find(".triangle-right").hide();
     pan.find(".triangle-bottom").show();
-    $("#console-body").fadeIn();
+    $("#console").fadeIn();
     $("#console").outerHeight(pan.innerHeight()- $("#console-heading").outerHeight());
     console_visible = true;
     tableObject.resize_table_area();

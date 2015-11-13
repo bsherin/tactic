@@ -4,13 +4,23 @@ from matplotlib.figure import Figure
 import StringIO
 
 class MplFigure(Figure):
-    def __init__ (self, data, width, height, title=None, dpi=80):
+    ## kwargs for mplfigure are dpi and title
+    def __init__ (self, data, width, height,  **kwargs):
+        if ("dpi" in kwargs):
+            dpi = kwargs["dpi"]
+        else:
+            dpi = 80
+        if ("title" in kwargs):
+            title = kwargs["title"]
+        else:
+            title = None
         Figure.__init__(self, figsize=(width / dpi, height / 80), dpi=dpi)
         self.width = width
         self.height = height
         self.title = title
         self.dpi = dpi
         self.data = data
+        self.kwargs = kwargs
         self.draw_plot()
         self.img = self.convert_figure_to_img()
 
@@ -27,16 +37,15 @@ class MplFigure(Figure):
 
 class GraphList(MplFigure):
     def draw_plot(self):
-        value_list = self.data["value_list"]
-        xlabels = self.data["xlabels"]
+        value_list = self.data
         ax = self.add_subplot(111)
         # self.subplots_adjust(left=.05, bottom=.15, right=.98, top=.95)
         ax.grid(True)
         x = range(1, len(value_list) + 1)
         ax.plot(x, value_list, 'bo')
-        if xlabels is not None:
+        if "xlabels" in self.kwargs:
             ax.set_xticks(x)
-            ax.set_xticklabels(xlabels, rotation='vertical')
+            ax.set_xticklabels(self.kwargs["xlabels"], rotation='vertical')
         if self.title is not None:
             ax.set_title(self.title, fontsize=10)
         self.tight_layout()

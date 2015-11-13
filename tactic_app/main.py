@@ -8,11 +8,11 @@ from flask_login import current_user
 import copy
 import pymongo
 import sys
-
+from tile_base import TileBase # This is needed from recreating tiles from saves
 from collections import OrderedDict
+
 from shared_dicts import mainwindow_instances, distribute_event
 from shared_dicts import tile_classes, user_tiles
-from tiles import TileBase
 from tactic_app import socketio
 current_main_id = 0
 
@@ -192,8 +192,8 @@ class mainWindow(threading.Thread):
         else:
             self.print_to_console(unique_message + " " + error_string)
 
-    def print_to_console(self, message_string):
-        self.emit_table_message("consoleLog", {"message_string": message_string})
+    def print_to_console(self, message_string, force_open=False):
+        self.emit_table_message("consoleLog", {"message_string": message_string, "force_open": force_open})
 
     def get_column_data(self, column_header):
         result = []
@@ -318,7 +318,7 @@ class mainWindow(threading.Thread):
                 self.doc_dict[new_spec["doc_name"]].table_spec = new_spec
         except:
             self.display_message("error in handle_event  " + self.__class__.__name__ +
-                                 str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
+                                 str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]), force_open=True)
         return
 
     def _set_cell_content(self, doc_name, id, column_header, new_content, cellchange=True):

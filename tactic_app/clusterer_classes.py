@@ -129,7 +129,6 @@ class CentroidClusterer(VectorSpaceClusterer):
         return self._num_clusters
 
     def _similarity(self, v1, v2):
-        print "othertest"
         return (numpy.dot(v1, v2))
     def __repr__(self):
         return '<Centroid Clusterer n=%d>' % self._num_clusters

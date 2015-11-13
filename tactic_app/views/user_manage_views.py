@@ -9,7 +9,7 @@ from tactic_app import app, db, socketio, use_ssl
 from tactic_app.file_handling import read_csv_file_to_dict, read_txt_file_to_dict, load_a_list;
 from tactic_app.main import create_new_mainwindow, create_new_mainwindow_from_project, mainwindow_instances
 from tactic_app.users import put_docs_in_collection, build_data_collection_name
-from tactic_app.tiles import create_user_tiles
+from tactic_app.tile_env import create_user_tiles
 from tactic_app.shared_dicts import user_tiles, loaded_user_modules
 
 
@@ -208,7 +208,7 @@ def load_files(collection_name):
         if file_extension == ".csv":
             (success, result_dict, header_list) = read_csv_file_to_dict(file)
         elif file_extension ==".txt":
-            (success, result_dict, header_list) = read_txt_file_to_dict_list(file)
+            (success, result_dict, header_list) = read_txt_file_to_dict(file)
         else:
             return jsonify({"message": "Not a valid file extension " + file_extension, "alert_type": "alert-danger"})
         if not success: # then dict_list contains an error object

@@ -13,7 +13,7 @@ from tactic_app import app
 print "imported app"
 from tactic_app import users
 from tactic_app.views import auth_views, main_views, user_manage_views, doc_views
-from tactic_app import tiles, tokenizers
+from tactic_app import basic_tiles, classifier_tiles, clustering_tiles, tokenizers
 from tactic_app import socketio
 
 # app.run(debug=True)

@@ -3,6 +3,7 @@ import copy
 import re
 import csv
 import os
+import sys
 import xmltodict
 from xml.parsers.expat import ExpatError
 
@@ -84,15 +85,19 @@ def utf_solver(txt):
     return txt.decode("utf-8", 'ignore').encode("ascii", "ignore")
 
 def read_txt_file_to_dict(txtfile):
-    filename, file_extension = os.path.splitext(txtfile.filename)
-    lines = txtfile.readlines()
-    result_dict = {}
-    i = 0
-    for l in lines:
-        result_dict[i]({"__id__": i, "__filename__": filename, "text": utf_solver(l)})
-        i = i + 1
+    try:
+        filename, file_extension = os.path.splitext(txtfile.filename)
+        lines = txtfile.readlines()
+        result_dict = {}
+        i = 0
+        for l in lines:
+            result_dict[str(i)] = {"__id__": i, "__filename__": filename, "text": utf_solver(l)}
+            i = i + 1
 
-    header_list = ["__id__", "__filename__", "text"]
+        header_list = ["__id__", "__filename__", "text"]
+    except:
+        ermsg = "Error reading text file " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+        return (None, {"message": ermsg}, None)
     return (filename, result_dict, header_list)
 
 def convert_lists_to_dicts(a_dict):

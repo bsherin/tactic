@@ -33,6 +33,9 @@ function showModal(modal_title, field_title, submit_function, default_value) {
         "field_title": field_title
     });
     $("#modal-area").html(res);
+    $('#modal-dialog').on('shown.bs.modal', function () {
+        $('#modal-text-input-field').focus();
+    });
     $("#modal-dialog").modal();
 
     if (!(default_value == undefined)) {
@@ -40,6 +43,14 @@ function showModal(modal_title, field_title, submit_function, default_value) {
     }
 
     $("#modal-submit-button").on("click", submit_handler);
+
+
+    $('.submitter-field').keypress(function(e) {
+        if (e.which == 13) {
+            submit_handler();
+            e.preventDefault();
+        }
+    });
 
     function submit_handler() {
         $("#modal-dialog").modal("hide");
