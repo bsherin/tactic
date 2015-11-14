@@ -11,7 +11,7 @@ import sys
 from tile_base import TileBase # This is needed from recreating tiles from saves
 from collections import OrderedDict
 
-from shared_dicts import mainwindow_instances, distribute_event
+from shared_dicts import mainwindow_instances, distribute_event, get_tile_class
 from shared_dicts import tile_classes, user_tiles
 from tactic_app import socketio
 current_main_id = 0
@@ -167,28 +167,10 @@ class mainWindow(threading.Thread):
             del self._pipe_dict[tile_id]
             distribute_event("RebuildTileForms", self._main_id)
 
-    def get_tile_class_from_type(self, tile_type):
-        for (category, dict) in tile_classes.items():
-            if tile_type in dict:
-                return dict[tile_type]
-        return None
-
-    def get_user_class_from_type(self, username, tile_type):
-        if not username in user_tiles:
-            return None
-        for (category, dict) in user_tiles[username].items():
-            if tile_type in dict:
-                return dict[tile_type]
-        return None
-
     def create_tile_instance_in_mainwindow(self, tile_type, tile_name = None):
         new_id = "tile_id_" + str(self.current_tile_id)
         # The user version of a tile should take precedence if both exist
-        user_tile_class = self.get_user_class_from_type(current_user.username, tile_type)
-        if user_tile_class is None:
-            new_tile = self.get_tile_class_from_type(tile_type)(self._main_id, new_id, tile_name)
-        else:
-            new_tile = user_tile_class(self._main_id, new_id, tile_name)
+        new_tile = get_tile_class(current_user.username, tile_type)(self._main_id, new_id, tile_name)
         self.tile_instances[new_id] = new_tile
         if len(new_tile.exports) > 0:
             if new_id not in self._pipe_dict:

@@ -3,9 +3,10 @@ import threading
 from flask_login import current_user
 from flask import url_for
 from tactic_app import socketio
-from shared_dicts import mainwindow_instances, distribute_event
+from shared_dicts import mainwindow_instances, distribute_event, get_tile_class
 from shared_dicts import tile_classes, user_tiles, tokenizer_dict, weight_functions
 from users import load_user
+import main
 import sys
 
 class TileBase(threading.Thread):
@@ -229,13 +230,10 @@ class TileBase(threading.Thread):
     @staticmethod
     def recreate_from_save(save_dict):
         tile_type = save_dict["tile_type"]
-        if tile_type in tile_classes:
-            tile_cls = tile_classes[tile_type]
-        elif tile_type in user_tiles[current_user.username]:
-            tile_cls = user_tiles[current_user.username][tile_type]
-        else:
-            print "missing tile type"
-            return {}
+        tile_cls = get_tile_class(current_user.username, tile_type)
+        if tile_cls is None:
+            print "Missing Tile type"
+            return None
         new_instance = tile_cls(-1, save_dict["tile_id"], save_dict["tile_name"])
         for(attr, attr_val) in save_dict.items():
             if type(attr_val) == dict and hasattr(attr_val, "recreate_from_save"):

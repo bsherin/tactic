@@ -34,7 +34,7 @@ def user_tile(tclass):
         user_tiles[uname] = {}
     if not tclass.category in user_tiles[uname]:
         user_tiles[uname][tclass.category] = {}
-    user_tiles[uname][tclass.category]["*" + tclass.__name__] = tclass
+    user_tiles[uname][tclass.category][tclass.__name__] = tclass
     return tclass
 
 def create_user_tiles(tile_code):
