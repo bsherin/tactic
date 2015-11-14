@@ -32,8 +32,22 @@ function listen_for_clicks() {
           var data_dict = {};
           var p = $(e.target).closest(".tile-panel")[0];
           data_dict["tile_id"] = $(p).data("my_tile_id");
-          data_dict["clicked_text"] = str;
+          data_dict["clicked_row"] = str;
           broadcast_event_to_server("TileWordClick", data_dict)
+    });
+    $(".front").on('click', '.row-clickable', function(e) {
+        var cells = $(this).closest("tr").children()
+        var row_vals = []
+        cells.each(function() {
+            row_vals.push($(this).text())
+        })
+        var tile_id = jQuery.data(e, "my_tile_id");
+
+        var data_dict = {};
+        var p = $(e.target).closest(".tile-panel")[0];
+        data_dict["tile_id"] = $(p).data("my_tile_id");
+        data_dict["clicked_row"] = row_vals;
+        broadcast_event_to_server("TileRowClick", data_dict)
     });
     $(".front").on('click', 'button', function(e) {
         var p = $(e.target).closest(".tile-panel")[0];

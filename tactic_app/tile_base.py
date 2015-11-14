@@ -97,6 +97,8 @@ class TileBase(threading.Thread):
                 self.handle_pipe_update(data["pipe_name"])
             elif event_name == "TileWordClick":
                 self.handle_tile_word_click(data["clicked_text"], data["doc_name"], data["active_row_index"])
+            elif event_name == "TileRowClick":
+                self.handle_tile_row_click(data["clicked_row"], data["doc_name"], data["active_row_index"])
             elif event_name == "ShowFront":
                 self.show_front()
             elif event_name == "StartSpinner":
@@ -303,6 +305,9 @@ class TileBase(threading.Thread):
     def handle_button_click(self, value, doc_name, active_row_index):
         return
 
+    def handle_tile_row_click(self, clicked_row, doc_name, active_row_index):
+        return
+
     def handle_tile_word_click(self, clicked_word, doc_name, active_row_index):
         distribute_event("DehighlightTable", self.main_id, {})
         distribute_event("SearchTable", self.main_id, {"text_to_find": clicked_word})
@@ -400,6 +405,12 @@ class TileBase(threading.Thread):
         mainwindow_instances[self.main_id].display_matching_rows(filter_function, document_name)
         return
 
+    def clear_table_highlighting(self):
+        distribute_event("DehighlightTable", self.main_id, {})
+
+    def highlight_matching_text(self, txt):
+        distribute_event("SearchTable", self.main_id, {"text_to_find": txt})
+
     def display_all_rows(self):
         mainwindow_instances[self.main_id].unfilter_all_rows()
         return
@@ -457,7 +468,7 @@ class TileBase(threading.Thread):
             result += it
         return result
 
-    def build_html_table_from_data_list(self, data_list, title=None):
+    def build_html_table_from_data_list(self, data_list, title=None, row_clickable=False):
         the_html = "<table class='tile-table table table-striped table-bordered table-condensed'>"
         if title is not None:
             the_html += "<caption>{0}</caption>".format(title)
@@ -468,7 +479,10 @@ class TileBase(threading.Thread):
         for r in data_list[1:]:
             the_html += "<tr>"
             for c in r:
-                the_html += "<td class='word-clickable'>{0}</td>".format(c)
+                if row_clickable:
+                    the_html += "<td class='row-clickable'>{0}</td>".format(c)
+                else:
+                    the_html += "<td class='word-clickable'>{0}</td>".format(c)
             the_html += "</tr>"
         the_html += "</tbody></table>"
         return the_html
