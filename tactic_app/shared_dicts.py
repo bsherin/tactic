@@ -22,3 +22,13 @@ def distribute_event(event_name, main_id, data_dict=None, tile_id=None):
     except:
         mwindow.handle_exception("Error distributing event " + event_name)
         return False
+
+def get_tile_class(username, tile_type):
+    if username in user_tiles:
+        for (category, dict) in user_tiles[username].items():
+            if tile_type in dict:
+                return dict[tile_type]
+    for (category, dict) in tile_classes.items():
+        if tile_type in dict:
+            return dict[tile_type]
+    return None

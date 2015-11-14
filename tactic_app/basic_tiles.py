@@ -142,6 +142,7 @@ class WordFreqDist(TileBase):
 
 @tile_class
 class ListPlotter(TileBase):
+    category = "plot"
     save_attrs = TileBase.save_attrs + ["data_source"]
     def __init__(self, main_id, tile_id, tile_name=None):
         TileBase.__init__(self, main_id, tile_id, tile_name)
@@ -175,6 +176,7 @@ class ListPlotter(TileBase):
 
 @tile_class
 class FreqDistPlotter(TileBase):
+    category = "plot"
     save_attrs = TileBase.save_attrs + ["data_source"]
     def __init__(self, main_id, tile_id, tile_name=None):
         TileBase.__init__(self, main_id, tile_id, tile_name)
@@ -269,6 +271,13 @@ class Collocations(TileBase):
                 tokenized_rows.append(self.get_tokenizer(self.tokenizer)(raw_row))
         return tokenized_rows
 
+    def handle_tile_row_click(self, clicked_row, doc_name, active_row_index):
+        word_pair = clicked_row[0] + " " + clicked_row[1]
+        self.clear_table_highlighting()
+        self.highlight_matching_text(word_pair)
+        self.display_matching_rows(lambda x: word_pair in x[self.column_source], self.get_current_document_name())
+        return
+
     def render_content(self):
         if self.column_source == None:
             return "No column source selected."
@@ -289,5 +298,5 @@ class Collocations(TileBase):
                                     round(finder.score_ngram(measure, trow[0], trow[1]), 2),
                                     self.bigram_fdist[trow]])
         self.vdata_table = [["w1", "w2", "score", "freq"]] + self.vdata_table
-        the_html = self.build_html_table_from_data_list(self.vdata_table, title="Collocations")
+        the_html = self.build_html_table_from_data_list(self.vdata_table, title="Collocations", row_clickable=True)
         return the_html

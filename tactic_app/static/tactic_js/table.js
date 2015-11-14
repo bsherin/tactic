@@ -305,7 +305,7 @@ var tableObject = {
             if (current_content != old_content) {
                 shorter_sig = []
                 //self.table_array[rindex][cindex] = current_content;
-                this.data_rows[rindex][column_header] = current_content;
+                self.data_rows[rindex][column_header] = current_content;
                 data_dict = {
                     "row_index": rindex,
                     "column_header": column_header,

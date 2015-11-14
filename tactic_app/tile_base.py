@@ -3,12 +3,14 @@ import threading
 from flask_login import current_user
 from flask import url_for
 from tactic_app import socketio
-from shared_dicts import mainwindow_instances, distribute_event
+from shared_dicts import mainwindow_instances, distribute_event, get_tile_class
 from shared_dicts import tile_classes, user_tiles, tokenizer_dict, weight_functions
 from users import load_user
+import main
 import sys
 
 class TileBase(threading.Thread):
+    category = "basic"
     exports = {}
     save_attrs = ["current_html", "tile_id", "tile_type", "tile_name"]
     input_start_template = '<div class="form-group form-group-sm"">' \
@@ -97,6 +99,8 @@ class TileBase(threading.Thread):
                 self.handle_pipe_update(data["pipe_name"])
             elif event_name == "TileWordClick":
                 self.handle_tile_word_click(data["clicked_text"], data["doc_name"], data["active_row_index"])
+            elif event_name == "TileRowClick":
+                self.handle_tile_row_click(data["clicked_row"], data["doc_name"], data["active_row_index"])
             elif event_name == "ShowFront":
                 self.show_front()
             elif event_name == "StartSpinner":
@@ -226,13 +230,10 @@ class TileBase(threading.Thread):
     @staticmethod
     def recreate_from_save(save_dict):
         tile_type = save_dict["tile_type"]
-        if tile_type in tile_classes:
-            tile_cls = tile_classes[tile_type]
-        elif tile_type in user_tiles[current_user.username]:
-            tile_cls = user_tiles[current_user.username][tile_type]
-        else:
-            print "missing tile type"
-            return {}
+        tile_cls = get_tile_class(current_user.username, tile_type)
+        if tile_cls is None:
+            print "Missing Tile type"
+            return None
         new_instance = tile_cls(-1, save_dict["tile_id"], save_dict["tile_name"])
         for(attr, attr_val) in save_dict.items():
             if type(attr_val) == dict and hasattr(attr_val, "recreate_from_save"):
@@ -301,6 +302,9 @@ class TileBase(threading.Thread):
         return
 
     def handle_button_click(self, value, doc_name, active_row_index):
+        return
+
+    def handle_tile_row_click(self, clicked_row, doc_name, active_row_index):
         return
 
     def handle_tile_word_click(self, clicked_word, doc_name, active_row_index):
@@ -400,6 +404,12 @@ class TileBase(threading.Thread):
         mainwindow_instances[self.main_id].display_matching_rows(filter_function, document_name)
         return
 
+    def clear_table_highlighting(self):
+        distribute_event("DehighlightTable", self.main_id, {})
+
+    def highlight_matching_text(self, txt):
+        distribute_event("SearchTable", self.main_id, {"text_to_find": txt})
+
     def display_all_rows(self):
         mainwindow_instances[self.main_id].unfilter_all_rows()
         return
@@ -457,7 +467,7 @@ class TileBase(threading.Thread):
             result += it
         return result
 
-    def build_html_table_from_data_list(self, data_list, title=None):
+    def build_html_table_from_data_list(self, data_list, title=None, row_clickable=False):
         the_html = "<table class='tile-table table table-striped table-bordered table-condensed'>"
         if title is not None:
             the_html += "<caption>{0}</caption>".format(title)
@@ -468,7 +478,10 @@ class TileBase(threading.Thread):
         for r in data_list[1:]:
             the_html += "<tr>"
             for c in r:
-                the_html += "<td class='word-clickable'>{0}</td>".format(c)
+                if row_clickable:
+                    the_html += "<td class='row-clickable'>{0}</td>".format(c)
+                else:
+                    the_html += "<td class='word-clickable'>{0}</td>".format(c)
             the_html += "</tr>"
         the_html += "</tbody></table>"
         return the_html

@@ -1,6 +1,7 @@
 from tile_env import *
 
 class AbstractClassifier(TileBase):
+    category = "classifiers"
     save_attrs = TileBase.save_attrs + ["text_source", "code_source", "code_dest", "tokenizer", "stop_list"]
     classifier_class = None
     def __init__(self, main_id, tile_id, tile_name=None):

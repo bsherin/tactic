@@ -6,12 +6,17 @@ var menus = {};
 var menu_item_index = {};
 var column_menu;
 var project_menu;
-var tile_menu;
 var mousetrap = new Mousetrap();
 var menu_template;
 $.get($SCRIPT_ROOT + "/get_menu_template", function(template){
     menu_template = $(template).filter('#menu-template').html();
 })
+
+function clear_all_menus() {
+    menus = {}
+    menu_item_index = {}
+    $("#menu-area").html(" ")
+}
 
 // This is the menu_object base prototype
 var menu_object = {
@@ -144,34 +149,21 @@ function build_and_render_menu_objects() {
     }
     bind_to_keys(project_menu.shortcuts);
 
-    // Create the project_menu object
-    tile_menu = Object.create(menu_object);
-    tile_menu.menu_name = "Tile";
-    tile_menu.perform_menu_item = tile_command;
-    menus[tile_menu.menu_name] = tile_menu;
-    tile_menu.options = tile_types;
-    tile_menu.add_options_to_index();
-
-    // Create the project_menu object
-    user_tile_menu = Object.create(menu_object);
-    user_tile_menu.menu_name = "User Tile";
-    user_tile_menu.perform_menu_item = tile_command;
-    menus[user_tile_menu.menu_name] = user_tile_menu;
-    user_tile_menu.options = user_tile_types;
-    user_tile_menu.add_options_to_index();
-
-    socket.on('update-loaded-tile-list', function(data) {
-        //This fires if the user loads a new tile
-        user_tile_menu.remove_options_from_index()
-        user_tile_menu.options = data['user_tile_name_list']
-        user_tile_menu.add_options_to_index()
-
-        // remove all menus and re-render
-        $("#menu-area .dropdown").remove();
-        render_menus()
-    });
+    // Create the tile_menus
+    for (category in tile_types) {
+        if (!tile_types.hasOwnProperty(category)) {
+            continue;
+        }
+        var new_tile_menu = Object.create(menu_object);
+        new_tile_menu.menu_name = category;
+        new_tile_menu.perform_menu_item = tile_command;
+        menus[new_tile_menu.menu_name] = new_tile_menu;
+        new_tile_menu.options = tile_types[category];
+        new_tile_menu.add_options_to_index();
+    }
 
     render_menus()
+
     function render_menus() {
         for (var m in menus) {
             if (menus.hasOwnProperty(m)) {

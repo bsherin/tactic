@@ -19,7 +19,9 @@ import numpy
 
 # Decorator function used to register runnable analyses in analysis_dict
 def tile_class(tclass):
-    tile_classes[tclass.__name__] = tclass
+    if not tclass.category in tile_classes:
+        tile_classes[tclass.category] = {}
+    tile_classes[tclass.category][tclass.__name__] = tclass
     return tclass
 
 def weight_function(wfunc):
@@ -30,7 +32,9 @@ def user_tile(tclass):
     uname = current_user.username
     if not (uname in user_tiles):
         user_tiles[uname] = {}
-    user_tiles[uname][tclass.__name__] = tclass
+    if not tclass.category in user_tiles[uname]:
+        user_tiles[uname][tclass.category] = {}
+    user_tiles[uname][tclass.category][tclass.__name__] = tclass
     return tclass
 
 def create_user_tiles(tile_code):

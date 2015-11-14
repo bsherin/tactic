@@ -11,7 +11,7 @@ import sys
 from tile_base import TileBase # This is needed from recreating tiles from saves
 from collections import OrderedDict
 
-from shared_dicts import mainwindow_instances, distribute_event
+from shared_dicts import mainwindow_instances, distribute_event, get_tile_class
 from shared_dicts import tile_classes, user_tiles
 from tactic_app import socketio
 current_main_id = 0
@@ -170,10 +170,7 @@ class mainWindow(threading.Thread):
     def create_tile_instance_in_mainwindow(self, tile_type, tile_name = None):
         new_id = "tile_id_" + str(self.current_tile_id)
         # The user version of a tile should take precedence if both exist
-        if (current_user.username in user_tiles) and (tile_type in user_tiles[current_user.username]):
-            new_tile = user_tiles[current_user.username][tile_type](self._main_id, new_id, tile_name)
-        else:
-            new_tile = tile_classes[tile_type](self._main_id, new_id, tile_name)
+        new_tile = get_tile_class(current_user.username, tile_type)(self._main_id, new_id, tile_name)
         self.tile_instances[new_id] = new_tile
         if len(new_tile.exports) > 0:
             if new_id not in self._pipe_dict:
@@ -188,9 +185,9 @@ class mainWindow(threading.Thread):
     def handle_exception(self, unique_message=None):
         error_string = str(sys.exc_info()[0]) + " "  + str(sys.exc_info()[1])
         if unique_message is None:
-            self.print_to_console(error_string)
+            self.print_to_console(error_string, force_open=True)
         else:
-            self.print_to_console(unique_message + " " + error_string)
+            self.print_to_console(unique_message + " " + error_string, force_open=True)
 
     def print_to_console(self, message_string, force_open=False):
         self.emit_table_message("consoleLog", {"message_string": message_string, "force_open": force_open})
@@ -317,7 +314,7 @@ class mainWindow(threading.Thread):
                 new_spec = data["tablespec"]
                 self.doc_dict[new_spec["doc_name"]].table_spec = new_spec
         except:
-            self.display_message("error in handle_event  " + self.__class__.__name__ +
+            self.print_to_console("error in handle_event  " + self.__class__.__name__ +
                                  str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]), force_open=True)
         return
 
@@ -354,7 +351,7 @@ class mainWindow(threading.Thread):
     @staticmethod
     def txt_in_dict(txt, d):
         for val in d.values():
-            if txt.lower() in val.lower():
+            if str(txt).lower() in str(val).lower():
                 return True
         return False
 

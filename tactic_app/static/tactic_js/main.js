@@ -63,15 +63,20 @@ function start_post_load() {
     else {
         socket = io.connect('http://' + document.domain + ':' + location.port + '/main');
     }
-    $.getJSON($SCRIPT_ROOT + "/get_additional_params", function (data) {
+    $.getJSON($SCRIPT_ROOT + "/get_tile_types", function (data) {
         tile_types = data.tile_types;
-        user_tile_types = data.user_tile_types;
         build_and_render_menu_objects();
         continue_loading()
     })
 }
 
 function continue_loading() {
+    socket.on('update-menus', function(data) {
+        $.getJSON($SCRIPT_ROOT + "/get_tile_types", function (data) {
+            tile_types = data.tile_types;
+            clear_all_menus();
+            build_and_render_menu_objects();
+        })});
     if (_project_name != "") {
         $.getJSON($SCRIPT_ROOT + "/grab_project_data/" + String(main_id) + "/" + String(doc_names[0]), function(data) {
                 $("#loading-message").css("display", "none");
