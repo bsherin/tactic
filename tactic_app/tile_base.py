@@ -9,6 +9,7 @@ from users import load_user
 import sys
 
 class TileBase(threading.Thread):
+    category = "basic"
     exports = {}
     save_attrs = ["current_html", "tile_id", "tile_type", "tile_name"]
     input_start_template = '<div class="form-group form-group-sm"">' \

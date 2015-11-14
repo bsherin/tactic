@@ -2,6 +2,7 @@ from tile_env import *
 
 @tile_class
 class CentroidCluster(TileBase):
+    category = "clustering"
     save_attrs = TileBase.save_attrs + ["text_source", "number_of_clusters", "code_destination", "tokenizer", "stop_list"]
     classifier_class = None
     def __init__(self, main_id, tile_id, tile_name=None):
@@ -164,6 +165,7 @@ class CentroidCluster(TileBase):
 
 @tile_class
 class OrthogonalizingGAACClusterer(TileBase):
+    category = "clustering"
     save_attrs = TileBase.save_attrs + ["text_source", "number_of_clusters", "code_destination", "tokenizer", "stop_list"]
     classifier_class = None
     def __init__(self, main_id, tile_id, tile_name=None):

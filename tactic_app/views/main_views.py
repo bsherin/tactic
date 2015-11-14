@@ -83,14 +83,19 @@ def get_menu_template():
 def get_table_templates():
     return send_file("templates/table_templates.html")
 
-@app.route('/get_additional_params', methods=['GET'])
+@app.route('/get_tile_types', methods=['GET'])
 @login_required
-def get_additional_params():
+def get_tile_types():
+    tile_types = {}
+    for (category, dict) in tile_classes.items():
+        tile_types[category] = dict.keys()
+
     if current_user.username in user_tiles:
-        utiles = user_tiles[current_user.username].keys()
-    else:
-        utiles = []
-    result = {"tile_types": tile_classes.keys(), "user_tile_types": utiles};
+        for (category, dict) in user_tiles[current_user.username].items():
+            if not category in tile_types:
+                tile_types[category] = []
+            tile_types[category] += dict.keys()
+    result = {"tile_types": tile_types};
     return jsonify(result)
 
 @app.route('/set_visible_doc/<main_id>/<doc_name>', methods=['get'])

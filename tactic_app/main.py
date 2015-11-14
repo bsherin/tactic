@@ -167,13 +167,28 @@ class mainWindow(threading.Thread):
             del self._pipe_dict[tile_id]
             distribute_event("RebuildTileForms", self._main_id)
 
+    def get_tile_class_from_type(self, tile_type):
+        for (category, dict) in tile_classes.items():
+            if tile_type in dict:
+                return dict[tile_type]
+        return None
+
+    def get_user_class_from_type(self, username, tile_type):
+        if not username in user_tiles:
+            return None
+        for (category, dict) in user_tiles[username].items():
+            if tile_type in dict:
+                return dict[tile_type]
+        return None
+
     def create_tile_instance_in_mainwindow(self, tile_type, tile_name = None):
         new_id = "tile_id_" + str(self.current_tile_id)
         # The user version of a tile should take precedence if both exist
-        if (current_user.username in user_tiles) and (tile_type in user_tiles[current_user.username]):
-            new_tile = user_tiles[current_user.username][tile_type](self._main_id, new_id, tile_name)
+        user_tile_class = self.get_user_class_from_type(current_user.username, tile_type)
+        if user_tile_class is None:
+            new_tile = self.get_tile_class_from_type(tile_type)(self._main_id, new_id, tile_name)
         else:
-            new_tile = tile_classes[tile_type](self._main_id, new_id, tile_name)
+            new_tile = user_tile_class(self._main_id, new_id, tile_name)
         self.tile_instances[new_id] = new_tile
         if len(new_tile.exports) > 0:
             if new_id not in self._pipe_dict:
@@ -188,9 +203,9 @@ class mainWindow(threading.Thread):
     def handle_exception(self, unique_message=None):
         error_string = str(sys.exc_info()[0]) + " "  + str(sys.exc_info()[1])
         if unique_message is None:
-            self.print_to_console(error_string)
+            self.print_to_console(error_string, force_open=True)
         else:
-            self.print_to_console(unique_message + " " + error_string)
+            self.print_to_console(unique_message + " " + error_string, force_open=True)
 
     def print_to_console(self, message_string, force_open=False):
         self.emit_table_message("consoleLog", {"message_string": message_string, "force_open": force_open})

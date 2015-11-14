@@ -142,6 +142,7 @@ class WordFreqDist(TileBase):
 
 @tile_class
 class ListPlotter(TileBase):
+    category = "plot"
     save_attrs = TileBase.save_attrs + ["data_source"]
     def __init__(self, main_id, tile_id, tile_name=None):
         TileBase.__init__(self, main_id, tile_id, tile_name)
@@ -175,6 +176,7 @@ class ListPlotter(TileBase):
 
 @tile_class
 class FreqDistPlotter(TileBase):
+    category = "plot"
     save_attrs = TileBase.save_attrs + ["data_source"]
     def __init__(self, main_id, tile_id, tile_name=None):
         TileBase.__init__(self, main_id, tile_id, tile_name)

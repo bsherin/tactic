@@ -97,12 +97,9 @@ def load_tile_module(tile_module_name):
         if current_user.username not in loaded_user_modules:
             loaded_user_modules[current_user.username] = set([])
         loaded_user_modules[current_user.username].add(tile_module_name)
-        socketio.emit('update-loaded-tile-list', {"html": render_loaded_tile_list(),
-                                                "user_tile_name_list": user_tiles[current_user.username].keys()},
+        socketio.emit('update-loaded-tile-list', {"html": render_loaded_tile_list()},
                                              namespace='/user_manage', room=current_user.get_id())
-        socketio.emit('update-loaded-tile-list', {"html": render_loaded_tile_list(),
-                                            "user_tile_name_list": user_tiles[current_user.username].keys()},
-                                         namespace='/main', room=current_user.get_id())
+        socketio.emit('update-menus', {}, namespace='/main', room=current_user.get_id())
         return jsonify({"message": "Tile module successfully loaded", "alert_type": "alert-success"})
     except:
         error_string = "Error loading tile: " + str(sys.exc_info()[0]) + " "  + str(sys.exc_info()[1])
@@ -111,7 +108,10 @@ def load_tile_module(tile_module_name):
 
 
 def render_loaded_tile_list():
-    return render_template("user_manage/loaded_tile_list.html", user_tile_name_list=user_tiles[current_user.username].keys())
+    loaded_tiles = []
+    for (category, dict) in user_tiles[current_user.username].items():
+        loaded_tiles += dict.keys()
+    return render_template("user_manage/loaded_tile_list.html", user_tile_name_list=loaded_tiles)
 
 def render_project_list():
     return render_template("user_manage/project_list.html")
