@@ -52,7 +52,7 @@ class WordnetSelectionTile(TileBase):
         ]
 
     def render_content(self):
-        res = wn.synsets(self.selected_text)[:self.number_to_show]
+        res = nltk.corpus.wordnet.synsets(self.selected_text)[:self.number_to_show]
         self.display_message("")
         return "<div>Synsets are:</div><div>{}</div>".format(res)
 

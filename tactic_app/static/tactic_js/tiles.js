@@ -202,19 +202,19 @@ var tile_object = {
     shrinkMe: function (){
         el = $(this.full_selector())
         this.saved_size = el.outerHeight()
-        el.find(".tile-body").fadeOut();
-        var hheight = el.find(".tile-panel-heading").outerHeight()
-        el.outerHeight(hheight)
-        el.resizable('destroy');
-        el.find(".triangle-bottom").hide();
-        el.find(".triangle-right").show();
+        el.find(".tile-body").fadeOut("fast", function () {
+            var hheight = el.find(".tile-panel-heading").outerHeight()
+            el.outerHeight(hheight)
+            el.resizable('destroy');
+            el.find(".triangle-bottom").hide();
+            el.find(".triangle-right").show();
+            }
+        );
+
     },
     expandMe: function (){
         el = $(this.full_selector())
         el.outerHeight(this.saved_size)
-        //el = $(this.full_selector()).slideToggle({
-        //    "duration": "medium",
-        //})
         el = $(this.full_selector()).find(".triangle-right").hide();
         el = $(this.full_selector()).find(".triangle-bottom").show();
         el = $(this.full_selector()).find(".tile-body").fadeIn();
