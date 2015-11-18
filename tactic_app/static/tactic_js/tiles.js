@@ -32,11 +32,23 @@ function listen_for_clicks() {
           var data_dict = {};
           var p = $(e.target).closest(".tile-panel")[0];
           data_dict["tile_id"] = $(p).data("my_tile_id");
-          data_dict["clicked_row"] = str;
+          data_dict["clicked_text"] = str;
           broadcast_event_to_server("TileWordClick", data_dict)
     });
+    $(".front").on('click', '.cell-clickable', function(e) {
+
+        var tile_id = jQuery.data(e, "my_tile_id");
+        var txt = $(this).text()
+
+        var data_dict = {};
+        var p = $(e.target).closest(".tile-panel")[0];
+        data_dict["tile_id"] = $(p).data("my_tile_id");
+        data_dict["clicked_cell"] = txt;
+        broadcast_event_to_server("TileCellClick", data_dict)
+    });
     $(".front").on('click', '.row-clickable', function(e) {
-        var cells = $(this).closest("tr").children()
+        //var cells = $(this).closest("tr").children()
+        var cells = $(this).children()
         var row_vals = []
         cells.each(function() {
             row_vals.push($(this).text())
@@ -75,6 +87,9 @@ function create_tile_from_save(tile_id) {
         type : 'POST',
         data: JSON.stringify(data_dict),
         dataType: 'json',
+        error: function (jqXHR, textStatus, errorThrown) {
+          console.log("Error creating tile from save: " + textStatus + " " + errorThrown)
+        },
         success: function (data) {
             var new_tile_object = Object.create(tile_object);
             new_tile_object.tile_id = data.tile_id;
