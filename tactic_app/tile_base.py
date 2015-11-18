@@ -4,10 +4,10 @@ from flask_login import current_user
 from flask import url_for
 from tactic_app import socketio
 from shared_dicts import mainwindow_instances, distribute_event, get_tile_class
-from shared_dicts import tile_classes, user_tiles, tokenizer_dict, weight_functions
+from shared_dicts import tokenizer_dict, weight_functions
 from users import load_user
-import main
 import sys
+from matplotlib_utilities import color_palette_names
 
 class TileBase(threading.Thread):
     category = "basic"
@@ -101,6 +101,8 @@ class TileBase(threading.Thread):
                 self.handle_tile_word_click(data["clicked_text"], data["doc_name"], data["active_row_index"])
             elif event_name == "TileRowClick":
                 self.handle_tile_row_click(data["clicked_row"], data["doc_name"], data["active_row_index"])
+            elif event_name == "TileCellClick":
+                self.handle_tile_cell_click(data["clicked_cell"], data["doc_name"], data["active_row_index"])
             elif event_name == "ShowFront":
                 self.show_front()
             elif event_name == "StartSpinner":
@@ -111,89 +113,103 @@ class TileBase(threading.Thread):
                 form_html = self.create_form_html()
                 self.emit_tile_message("displayFormContent", {"html": form_html})
         except:
-            self.display_message("error in handle_event in " + self.__class__.__name__ + " tile: " +
+            self.display_message("error in handle_event in " + self.__class__.__name__ + " tile: processing event " + event_name + " " +
                                  str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]), force_open=True)
         return
 
     def create_form_html(self):
-        form_html = ""
-        for option in self.options:
-            if option["type"] == "column_select":
-                the_template = self.input_start_template + self.select_base_template
-                form_html += the_template.format(option["name"])
-                current_doc_name = mainwindow_instances[self.main_id].visible_doc_name
-                current_doc = mainwindow_instances[self.main_id].doc_dict[current_doc_name]
-                for choice in current_doc.header_list:
-                    if choice == option["placeholder"]:
-                        form_html += self.select_option_selected_template.format(choice)
-                    else:
-                        form_html += self.select_option_template.format(choice)
-                form_html += '</select></div>'
-            elif option["type"] == "tokenizer_select":
-                the_template = self.input_start_template + self.select_base_template
-                form_html += the_template.format(option["name"])
-                for choice in tokenizer_dict.keys():
-                    if choice == option["placeholder"]:
-                        form_html += self.select_option_selected_template.format(choice)
-                    else:
-                        form_html += self.select_option_template.format(choice)
-                form_html += '</select></div>'
+        try:
+            form_html = ""
+            for option in self.options:
+                if option["type"] == "column_select":
+                    the_template = self.input_start_template + self.select_base_template
+                    form_html += the_template.format(option["name"])
+                    current_doc_name = mainwindow_instances[self.main_id].visible_doc_name
+                    current_doc = mainwindow_instances[self.main_id].doc_dict[current_doc_name]
+                    for choice in current_doc.header_list:
+                        if choice == option["placeholder"]:
+                            form_html += self.select_option_selected_template.format(choice)
+                        else:
+                            form_html += self.select_option_template.format(choice)
+                    form_html += '</select></div>'
+                elif option["type"] == "tokenizer_select":
+                    the_template = self.input_start_template + self.select_base_template
+                    form_html += the_template.format(option["name"])
+                    for choice in tokenizer_dict.keys():
+                        if choice == option["placeholder"]:
+                            form_html += self.select_option_selected_template.format(choice)
+                        else:
+                            form_html += self.select_option_template.format(choice)
+                    form_html += '</select></div>'
 
-            elif option["type"] == "weight_function_select":
-                the_template = self.input_start_template + self.select_base_template
-                form_html += the_template.format(option["name"])
-                for choice in weight_functions.keys():
-                    if choice == option["placeholder"]:
-                        form_html += self.select_option_selected_template.format(choice)
+                elif option["type"] == "weight_function_select":
+                    the_template = self.input_start_template + self.select_base_template
+                    form_html += the_template.format(option["name"])
+                    for choice in weight_functions.keys():
+                        if choice == option["placeholder"]:
+                            form_html += self.select_option_selected_template.format(choice)
+                        else:
+                            form_html += self.select_option_template.format(choice)
+                    form_html += '</select></div>'
+                elif option["type"] == "pipe_select":
+                    the_template = self.input_start_template + self.select_base_template
+                    form_html += the_template.format(option["name"])
+                    for choice in self.get_current_pipe_list():
+                        if choice == option["placeholder"]:
+                            form_html += self.select_option_selected_template.format(choice)
+                        else:
+                            form_html += self.select_option_template.format(choice)
+                    form_html += '</select></div>'
+                elif option["type"] == "list_select":
+                    the_template = self.input_start_template + self.select_base_template
+                    form_html += the_template.format(option["name"])
+                    for choice in self.current_user.list_names:
+                        if choice == option["placeholder"]:
+                            form_html += self.select_option_selected_template.format(choice)
+                        else:
+                            form_html += self.select_option_template.format(choice)
+                    form_html += '</select></div>'
+                elif option["type"] == "palette_select":
+                    the_template = self.input_start_template + self.select_base_template
+                    form_html += the_template.format(option["name"])
+                    for choice in color_palette_names:
+                        if choice == option["placeholder"]:
+                            form_html += self.select_option_selected_template.format(choice)
+                        else:
+                            form_html += self.select_option_template.format(choice)
+                    form_html += '</select></div>'
+                elif option["type"] == "custom_list":
+                    the_template = self.input_start_template + self.select_base_template
+                    form_html += the_template.format(option["name"])
+                    for choice in option["special_list"]:
+                        if choice == option["placeholder"]:
+                            form_html += self.select_option_selected_template.format(choice)
+                        else:
+                            form_html += self.select_option_template.format(choice)
+                    form_html += '</select></div>'
+                elif option["type"] == "textarea":
+                    the_template = self.input_start_template + self.textarea_template
+                    form_html += the_template.format(option["name"], option["type"], option["placeholder"])
+                elif option["type"] == "text":
+                    the_template = self.input_start_template + self.basic_input_template
+                    form_html += the_template.format(option["name"], option["type"], option["placeholder"])
+                elif option["type"] == "int":
+                    the_template = self.input_start_template + self.basic_input_template
+                    form_html += the_template.format(option["name"], option["type"], str(option["placeholder"]))
+                elif option["type"] == "boolean":
+                    the_template = self.boolean_template
+                    if option["placeholder"]:
+                        val = "checked"
                     else:
-                        form_html += self.select_option_template.format(choice)
-                form_html += '</select></div>'
-            elif option["type"] == "pipe_select":
-                the_template = self.input_start_template + self.select_base_template
-                form_html += the_template.format(option["name"])
-                for choice in self.get_current_pipe_list():
-                    if choice == option["placeholder"]:
-                        form_html += self.select_option_selected_template.format(choice)
-                    else:
-                        form_html += self.select_option_template.format(choice)
-                form_html += '</select></div>'
-            elif option["type"] == "list_select":
-                the_template = self.input_start_template + self.select_base_template
-                form_html += the_template.format(option["name"])
-                for choice in self.current_user.list_names:
-                    if choice == option["placeholder"]:
-                        form_html += self.select_option_selected_template.format(choice)
-                    else:
-                        form_html += self.select_option_template.format(choice)
-                form_html += '</select></div>'
-            elif option["type"] == "custom_list":
-                the_template = self.input_start_template + self.select_base_template
-                form_html += the_template.format(option["name"])
-                for choice in option["special_list"]:
-                    if choice == option["placeholder"]:
-                        form_html += self.select_option_selected_template.format(choice)
-                    else:
-                        form_html += self.select_option_template.format(choice)
-                form_html += '</select></div>'
-            elif option["type"] == "textarea":
-                the_template = self.input_start_template + self.textarea_template
-                form_html += the_template.format(option["name"], option["type"], option["placeholder"])
-            elif option["type"] == "text":
-                the_template = self.input_start_template + self.basic_input_template
-                form_html += the_template.format(option["name"], option["type"], option["placeholder"])
-            elif option["type"] == "int":
-                the_template = self.input_start_template + self.basic_input_template
-                form_html += the_template.format(option["name"], option["type"], str(option["placeholder"]))
-            elif option["type"] == "boolean":
-                the_template = self.boolean_template
-                if option["placeholder"]:
-                    val = "checked"
+                        val = " '"
+                    form_html += the_template.format(option["name"], val)
                 else:
-                    val = " '"
-                form_html += the_template.format(option["name"], val)
-            else:
-                print "Unknown option type specified"
-        return form_html
+                    print "Unknown option type specified"
+            return form_html
+        except:
+            self.display_message("error creating form for  " + self.__class__.__name__ + " tile: " + self.tile_id + " " +
+                                 str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]), force_open=True)
+            return "error"
 
     def emit_tile_message(self, message, data=None):
         if data is None:
@@ -271,13 +287,7 @@ class TileBase(threading.Thread):
 
     def update_options(self, form_data):
         for opt in self.options:
-            if opt["type"] == "list_select":
-                setattr(self, opt["name"], form_data[opt["name"]])
-            elif opt["type"] == "tokenizer":
-                setattr(self, opt["name"], form_data[opt["name"]])
-            elif opt["type"] == "pipe_select":
-                setattr(self, opt["name"], form_data[opt["name"]])
-            elif opt["type"] == "int":
+            if opt["type"] == "int":
                 setattr(self, opt["name"], int(form_data[opt["name"]]))
             else:
                 setattr(self, opt["name"], form_data[opt["name"]])
@@ -305,6 +315,11 @@ class TileBase(threading.Thread):
         return
 
     def handle_tile_row_click(self, clicked_row, doc_name, active_row_index):
+        return
+
+    def handle_tile_cell_click(self, clicked_text, doc_name, active_row_index):
+        self.clear_table_highlighting()
+        self.highlight_matching_text(clicked_text)
         return
 
     def handle_tile_word_click(self, clicked_word, doc_name, active_row_index):
@@ -383,6 +398,10 @@ class TileBase(threading.Thread):
 
     def set_cell(self, document_name, row_number, column_name, text, cellchange=True):
         mainwindow_instances[self.main_id]._set_cell_content(document_name, row_number, column_name, text, cellchange)
+        return
+
+    def set_cell_background(self, document_name, row_number, column_name, color):
+        mainwindow_instances[self.main_id]._set_cell_background(document_name, row_number, column_name, color)
         return
 
     def set_row(self, document_name, row_number, row_dictionary, cellchange=True):
@@ -471,6 +490,25 @@ class TileBase(threading.Thread):
             result += it
         return result
 
+    # def build_html_table_from_data_list(self, data_list, title=None, row_clickable=False):
+    #     the_html = "<table class='tile-table table table-striped table-bordered table-condensed'>"
+    #     if title is not None:
+    #         the_html += "<caption>{0}</caption>".format(title)
+    #     the_html += "<thead><tr>"
+    #     for c in data_list[0]:
+    #         the_html += "<th>{0}</th>".format(c)
+    #     the_html += "</tr><tbody>"
+    #     for r in data_list[1:]:
+    #         the_html += "<tr>"
+    #         for c in r:
+    #             if row_clickable:
+    #                 the_html += "<td class='row-clickable'>{0}</td>".format(c)
+    #             else:
+    #                 the_html += "<td class='word-clickable'>{0}</td>".format(c)
+    #         the_html += "</tr>"
+    #     the_html += "</tbody></table>"
+    #     return the_html
+
     def build_html_table_from_data_list(self, data_list, title=None, row_clickable=False):
         the_html = "<table class='tile-table table table-striped table-bordered table-condensed'>"
         if title is not None:
@@ -480,12 +518,15 @@ class TileBase(threading.Thread):
             the_html += "<th>{0}</th>".format(c)
         the_html += "</tr><tbody>"
         for r in data_list[1:]:
-            the_html += "<tr>"
-            for c in r:
-                if row_clickable:
-                    the_html += "<td class='row-clickable'>{0}</td>".format(c)
-                else:
-                    the_html += "<td class='word-clickable'>{0}</td>".format(c)
-            the_html += "</tr>"
+            if row_clickable:
+                the_html += "<tr class='row-clickable'>"
+                for c in r:
+                    the_html += "<td>{0}</td>".format(c)
+                the_html += "</tr>"
+            else:
+                the_html += "<tr>"
+                for c in r:
+                    the_html += "<td class='cell-clickable'>{0}</td>".format(c)
+                the_html += "</tr>"
         the_html += "</tbody></table>"
         return the_html

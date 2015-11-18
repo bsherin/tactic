@@ -26,8 +26,8 @@ def on_join(data):
 @app.route('/save_new_project', methods=['POST'])
 @login_required
 def save_new_project():
+    data_dict = request.json
     try:
-        data_dict = request.json
         mainwindow_instances[data_dict['main_id']].project_name = data_dict["project_name"]
         save_dict = mainwindow_instances[data_dict['main_id']].compile_save_dict()
 
@@ -95,10 +95,10 @@ def get_tile_types():
             if not category in tile_types:
                 tile_types[category] = []
             tile_types[category] += dict.keys()
-    result = {"tile_types": tile_types};
+    result = {"tile_types": tile_types}
     return jsonify(result)
 
-@app.route('/set_visible_doc/<main_id>/<doc_name>', methods=['get'])
+@app.route('/set_visible_doc/<main_id>/<doc_name>', methods=['get', 'post'])
 @login_required
 def set_visible_doc(main_id, doc_name):
     mainwindow_instances[main_id].visible_doc_name = doc_name
@@ -122,32 +122,42 @@ def figure_source(main_id, tile_id, figure_name):
     img = mainwindow_instances[main_id].tile_instances[tile_id].img_dict[figure_name]
     return send_file(img, mimetype='image/png')
 
+
+# noinspection PyUnresolvedReferences
 @app.route('/create_tile_request/<tile_type>', methods=['GET','POST'])
 @login_required
 def create_tile_request(tile_type):
+    main_id = request.json["main_id"]
     try:
-        main_id = request.json["main_id"]
         tile_name = request.json["tile_name"]
         new_tile = mainwindow_instances[main_id].create_tile_instance_in_mainwindow(tile_type, tile_name)
         tile_id = new_tile.tile_id
         form_html = new_tile.create_form_html()
         result = render_template("tile.html", tile_id=tile_id,
-                               tile_name=new_tile.tile_name,
-                               form_text=form_html)
+                                 tile_name=new_tile.tile_name,
+                                 form_text=form_html)
         return jsonify({"success": True, "html":result, "tile_id": tile_id})
     except:
         error_string = str(sys.exc_info()[0]) + " "  + str(sys.exc_info()[1])
         mainwindow_instances[main_id].handle_exception("Error creating tile")
         return jsonify({"success": False})
 
+
+# noinspection PyUnresolvedReferences
 @app.route('/create_tile_from_save_request/<tile_id>', methods=['GET','POST'])
 @login_required
 def create_tile_from_save_request(tile_id):
     main_id = request.json["main_id"]
-    tile_instance = mainwindow_instances[main_id].tile_instances[tile_id]
-    tile_instance.figure_url = url_for("figure_source", main_id=main_id, tile_id=tile_id, figure_name="X")[:-1]
-    form_html = tile_instance.create_form_html()
-    result = render_template("tile.html", tile_id=tile_id,
-                           tile_name=tile_instance.tile_name,
-                           form_text=form_html)
-    return jsonify({"html":result, "tile_id": tile_id})
+    try:
+        tile_instance = mainwindow_instances[main_id].tile_instances[tile_id]
+        tile_instance.figure_url = url_for("figure_source", main_id=main_id, tile_id=tile_id, figure_name="X")[:-1]
+        form_html = tile_instance.create_form_html()
+        result = render_template("tile.html", tile_id=tile_id,
+                               tile_name=tile_instance.tile_name,
+                               form_text=form_html)
+        return jsonify({"html":result, "tile_id": tile_id})
+    except:
+        error_string = str(sys.exc_info()[0]) + " "  + str(sys.exc_info()[1])
+        mainwindow_instances[main_id].handle_exception("Error creating tile from save")
+        return jsonify({"success": False})
+

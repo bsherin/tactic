@@ -6,13 +6,13 @@ import copy
 # what behavior on remote will be like.
 nltk.data.path = ['./nltk_data/']
 import numpy
-from shared_dicts import user_tiles
 from tactic_app.clusterer_classes import CentroidClusterer, OptCentroidClusterer
 from matplotlib_utilities import GraphList, ColorMapper, FigureCanvas
 
 from tile_base import TileBase
 
 def user_tile(tclass):
+    from shared_dicts import user_tiles
     from flask_login import current_user
     uname = current_user.username
     if not (uname in user_tiles):

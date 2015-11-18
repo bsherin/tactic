@@ -3,7 +3,10 @@ from tile_env import *
 @tile_class
 class CentroidCluster(TileBase):
     category = "clustering"
-    save_attrs = TileBase.save_attrs + ["text_source", "number_of_clusters", "code_destination", "tokenizer", "stop_list"]
+    save_attrs = TileBase.save_attrs + ["text_source", "number_of_clusters", "code_destination",
+                                        "tokenizer", "stop_list", "names_source",
+                                        "weight_function", "vocab_size", "orthogonalize", "palette_name"]
+    exports = ["cluster_data"]
     classifier_class = None
     def __init__(self, main_id, tile_id, tile_name=None):
         TileBase.__init__(self, main_id, tile_id, tile_name)
@@ -22,6 +25,9 @@ class CentroidCluster(TileBase):
         self.vocab_size = 50
         self.weight_function = ""
         self.orthogonalize = True
+        self.palette_name = "Paired"
+        self.clusterer = None
+        self.cluster_data = None
 
     @property
     def options(self):
@@ -35,25 +41,24 @@ class CentroidCluster(TileBase):
         {"name": "stop_list", "type": "list_select", "placeholder": self.stop_list},
         {"name": "vocab_size", "type": "int", "placeholder": str(self.vocab_size)},
         {"name": "orthogonalize", "type": "boolean", "placeholder": self.orthogonalize},
+        {"name": "palette_name", "type": "palette_select", "placeholder": self.palette_name},
         ]
 
-    @staticmethod
-    def norm_vec(vec):
+    def norm_vec(self, vec):
         mag = numpy.dot(vec, vec)
         if mag == 0:
             return vec
         else:
             return(vec / numpy.sqrt(mag))
 
-    @staticmethod
-    def orthogonalize_vectors(doc_vectors):
+    def orthogonalize_vectors(self, doc_vectors):
         total_v = numpy.zeros(len(doc_vectors[0]))
         for v in doc_vectors:
                 total_v = total_v + v
-        total_v = CentroidCluster.norm_vec(total_v)
+        total_v = self.norm_vec(total_v)
         new_doc_vectors = []
         for v in doc_vectors:
-            new_doc_vectors.append(CentroidCluster.norm_vec(v - numpy.dot(v, total_v) * total_v))
+            new_doc_vectors.append(self.norm_vec(v - numpy.dot(v, total_v) * total_v))
         return new_doc_vectors
 
     def top_words_from_centroid(self, vocab_list, n, to_print=10):
@@ -119,7 +124,6 @@ class CentroidCluster(TileBase):
         self.display_message("building vocabulary")
         self.cfdist = self.create_word_cfdist(combined_text_rows, self.get_user_list(self.stop_list))
         self.dfdist = self.create_word_dfdist(combined_text_rows, self.get_user_list(self.stop_list))
-        # self._vocab = Vocabulary(combined_text_rows, self.get_user_list(self.stop_list))
 
         reduced_vocab = self.get_most_common(self.cfdist, self.vocab_size)
 
@@ -152,19 +156,22 @@ class CentroidCluster(TileBase):
             ctitle = "Cluster " + str(i + 1)
             the_html += self.build_html_table_from_data_list(self.top_words_from_centroid(reduced_vocab, i, 10), title=ctitle)
 
+        cmapper = ColorMapper(1, self.number_of_clusters, self.palette_name)
+
         for (dname, vec_list) in row_vectors_dict.items():
             r = 0
             self.autocodes_dict[dname] = []
             for vec in vec_list:
                 autocode = self.clusterer.classify(vec)
                 self.autocodes_dict[dname].append(autocode)
-                self.set_cell(dname, r, self.code_destination, str(autocode), cellchange=False)
+                self.set_cell(dname, r, self.code_destination, str(autocode + 1), cellchange=False)
+                self.set_cell_background(dname, r, self.code_destination, cmapper.color_from_val(autocode + 1))
                 r += 1
 
+        self.cluster_data = {"clusterer": self.clusterer, "reduced_vocab": reduced_vocab, "row_vectors_dict": row_vectors_dict}
         return the_html
-
 @tile_class
-class OrthogonalizingGAACClusterer(TileBase):
+class OrthogonalizingGAACCluster(TileBase):
     category = "clustering"
     save_attrs = TileBase.save_attrs + ["text_source", "number_of_clusters", "code_destination", "tokenizer", "stop_list"]
     classifier_class = None
@@ -198,23 +205,21 @@ class OrthogonalizingGAACClusterer(TileBase):
         {"name": "vocab_size", "type": "int", "placeholder": str(self.vocab_size)},
         ]
 
-    @staticmethod
-    def norm_vec(vec):
+    def norm_vec(self, vec):
         mag = numpy.dot(vec, vec)
         if mag == 0:
             return vec
         else:
             return(vec / numpy.sqrt(mag))
 
-    @staticmethod
-    def orthogonalize(doc_vectors):
+    def orthogonalize(self, doc_vectors):
         total_v = numpy.zeros(len(doc_vectors[0]))
         for v in doc_vectors:
                 total_v = total_v + v
-        total_v = OrthogonalizingGAACClusterer.norm_vec(total_v)
+        total_v = self.norm_vec(total_v)
         new_doc_vectors = []
         for v in doc_vectors:
-            new_doc_vectors.append(OrthogonalizingGAACClusterer.norm_vec(v - numpy.dot(v, total_v) * total_v))
+            new_doc_vectors.append(self.norm_vec(v - numpy.dot(v, total_v) * total_v))
         return new_doc_vectors
 
     def top_words_from_centroid(self, vocab_list, n, to_print=10):
@@ -320,6 +325,75 @@ class OrthogonalizingGAACClusterer(TileBase):
                 r += 1
 
         return the_html
+
+@tile_class
+class ClusterViewer(TileBase):
+    # save_attrs has the variables that will be saved when a project is saved
+    save_attrs = TileBase.save_attrs + ["number_of_clusters", "cluster_data", "code_into_column", "code_destination", "palette_name"]
+    category = "clustering"
+
+    def __init__(self, main_id, tile_id, tile_name=None):
+        TileBase.__init__(self, main_id, tile_id, tile_name)
+        self.cluster_data = None
+        self.clusterer = None
+        self.number_of_clusters = 5
+        self.code_into_column = True
+        self.code_destination = None
+        self.palette_name = "Paired"
+        # Any other initializations
+        return
+
+    @property
+    def options(self):
+        return  [
+        {"name": "cluster_data", "type": "pipe_select","placeholder": self.cluster_data},
+        {"name": "number_of_clusters", "type": "int","placeholder": self.number_of_clusters},
+        {"name": "code_into_column", "type": "boolean","placeholder": self.code_into_column},
+        {"name": "code_destination", "type": "column_select","placeholder": self.code_destination},
+        {"name": "palette_name", "type": "palette_select", "placeholder": self.palette_name}
+    ]
+
+    def top_words_from_centroid(self, vocab_list, n, to_print=10):
+        result = [["word", "weight"]]
+        sc = list(numpy.argsort(self.centroids[n]))
+        sc.reverse()
+        for i in range(to_print):
+            result.append([vocab_list[sc[i]], round(self.centroids[n][sc[i]], 4)])
+        return result
+
+    def render_content(self):
+        if self.cluster_data is None:
+            return "No source selected yet."
+        cdata = self.get_pipe_value(self.cluster_data)
+        self.clusterer = cdata["clusterer"]
+        reduced_vocab = cdata["reduced_vocab"]
+        row_vectors_dict = cdata["row_vectors_dict"]
+        self.clusterer.update_clusters(self.number_of_clusters)
+        self.centroids = self.clusterer._centroids
+
+        the_html = ""
+
+        for i in range(self.number_of_clusters):
+            ctitle = "Cluster " + str(i + 1)
+            the_html += self.build_html_table_from_data_list(self.top_words_from_centroid(reduced_vocab, i, 10), title=ctitle)
+
+        self.autocodes_dict = {}
+        if self.code_into_column:
+            cmapper = ColorMapper(1, self.number_of_clusters, self.palette_name)
+
+            for (dname, vec_list) in row_vectors_dict.items():
+                r = 0
+                self.autocodes_dict[dname] = []
+                for vec in vec_list:
+                    autocode = self.clusterer.classify(vec)
+                    self.autocodes_dict[dname].append(autocode)
+                    self.set_cell(dname, r, self.code_destination, str(autocode + 1), cellchange=False)
+                    self.set_cell_background(dname, r, self.code_destination, cmapper.color_from_val(autocode + 1))
+                    r += 1
+
+        return the_html
+
+
 
 # Here are some assorted weighting functions
 

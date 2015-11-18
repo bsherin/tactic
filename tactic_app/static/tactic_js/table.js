@@ -80,6 +80,7 @@ tableSpec = {
     "hidden_rows": [],
     "table_width": null,
     "column_widths": null,
+    "bg_colors": {},
     shift_column_left: function (column_name) {
         var i;
         for (i = 0; i < this.header_list.length; ++i) {
@@ -108,6 +109,22 @@ tableSpec = {
                 this.column_widths.splice(i + 1, 0, column_width)
             }
         }
+    },
+    set_bg_color: function(rindex, cheader, bcolor) {
+        if (!this.bg_colors.hasOwnProperty(rindex)){
+            this.bg_colors[rindex] = {}
+        };
+        this.bg_colors[rindex][cheader] = bcolor;
+        broadcast_event_to_server("SaveTableSpec", {"tablespec": this})
+    },
+    color_all_bgs: function() {
+        for (var row in this.bg_colors) {
+            if (!this.bg_colors.hasOwnProperty(row)) continue;
+            for (var cheader in this.bg_colors[row]) {
+                if (!this.bg_colors[row].hasOwnProperty(cheader)) continue;
+                tableObject.colorCellBackground(row, cheader, this.bg_colors[row][cheader])
+            }
+        }
     }
 }
 
@@ -119,6 +136,7 @@ function create_tablespec(dict) {
     spec.hidden_rows = dict.hidden_rows;
     spec.table_width = dict.table_width;
     spec.column_widths = dict.column_widths;
+    spec.bg_colors = dict.bg_colors
     return spec
 }
 
@@ -142,11 +160,15 @@ var tableObject = {
         this.current_doc_name = data_object["doc_name"]
 
         if (!tablespec_dict.hasOwnProperty(this.current_doc_name)) {
-            this.current_spec = Object.create(tableSpec);
-            this.current_spec.doc_name = this.current_doc_name;
-            this.current_spec.hidden_list = ["__filename__"];
-            this.current_spec.hidden_rows = [];
-            this.current_spec.header_list = data_object["header_list"]
+            this.current_spec = create_tablespec(
+                {"doc_name": this.current_doc_name,
+                "header_list": data_object["header_list"],
+                "hidden_list": ["__filename__"],
+                "hidden_rows": [],
+                "table_width": null,
+                "column_widths": null,
+                "bg_colors": {}
+                });
             tablespec_dict[this.current_doc_name] = this.current_spec;
         }
         else {
@@ -166,6 +188,7 @@ var tableObject = {
             $(".column-" + this.current_spec.hidden_list[i]).css("display", "none");
         }
         this.hideRows(this.current_spec.hidden_rows);
+        this.current_spec.color_all_bgs();
         $("#project-name").html(this.project_name)
         setup_resize_listeners();
         this.resize_table_area();
@@ -307,7 +330,7 @@ var tableObject = {
                 //self.table_array[rindex][cindex] = current_content;
                 self.data_rows[rindex][column_header] = current_content;
                 data_dict = {
-                    "row_index": rindex,
+                    "id": rindex,
                     "column_header": column_header,
                     "old_content": old_content,
                     "new_content": current_content,
@@ -467,6 +490,42 @@ var tableObject = {
         var td_element = $("#table-area tbody")[0].rows[row_index].cells[cell_index];
         $(td_element).html(new_content)
         this.data_rows[row_index][cheader]= new_content
+    },
+
+    setCellBackground: function(data) {
+        var doc_name = data.doc_name;
+        var cheader = data.column_header;
+        var rindex = data.id;
+
+        var bcolor = data.color;
+        if (!tablespec_dict.hasOwnProperty(doc_name)){
+            tablespec_dict[doc_name] = create_tablespec(
+                {"doc_name": doc_name,
+                "header_list": data["header_list"],
+                "hidden_list": ["__filename__"],
+                "hidden_rows": [],
+                "table_width": null,
+                "column_widths": null,
+                "bg_colors": {}
+                });
+        };
+        tablespec_dict[doc_name].set_bg_color(rindex, cheader, bcolor);
+        if (doc_name == this.current_doc_name) {
+            this.colorCellBackground(rindex, cheader, bcolor)
+        }
+    },
+
+    // It is assumed that this is coloring the currently visible document.
+    colorCellBackground: function(rindex, cheader, bcolor) {
+        var cindex = this.current_spec.header_list.indexOf(cheader);
+        try {
+
+            var el = this.getCellElementByRowColIndex(rindex, cindex);
+            $(el).css("background-color", bcolor);
+        }
+        catch(err) {
+            console.log(err.message + " row index " + rindex + "_col_index_ " + cindex)
+        }
     },
 
     highlightTxtInCell: function(data_object) {

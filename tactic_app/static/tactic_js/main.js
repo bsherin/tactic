@@ -22,7 +22,7 @@ function shrinkConsole (){
         pan.resizable('destroy');
         pan.find(".triangle-bottom").hide();
         pan.find(".triangle-right").show();
-        tableObject.resize_table_area()
+        tableObject.resize_table_area();
         console_visible = false
     });
 }
@@ -30,9 +30,6 @@ function shrinkConsole (){
 function expandConsole(){
     var pan = $("#console-panel");
     pan.outerHeight(saved_console_size);
-    //el = $(this.full_selector()).slideToggle({
-    //    "duration": "medium",
-    //})
     pan.find(".triangle-right").hide();
     pan.find(".triangle-bottom").show();
     $("#console").fadeIn();
@@ -43,7 +40,7 @@ function expandConsole(){
             handles: "n",
             resize: function (event, ui) {
                 ui.position.top = 0;
-                tableObject.resize_table_area;
+                tableObject.resize_table_area();
                 $("#console").outerHeight(ui.size.height- $("#console-heading").outerHeight())
             }
         });
@@ -91,17 +88,17 @@ function continue_loading() {
                     tablespec_dict[spec] = create_tablespec(data.tablespec_dict[spec])
                 }
                 tableObject.initialize_table(data);
-                set_visible_doc(doc_names[0]) // It's important that this is done before creating the tiles
-                var tile_ids = data.tile_ids;
-                for (var i = 0; i < tile_ids.length; ++i) {
-                    create_tile_from_save(tile_ids[i])
-                }
-                menus["Project"].enable_menu_item("save");
 
-                // This is necessary in case the existence of any tiles requires changes to tile forms
-                // It's a bit of a kluge since all of the forms will have been created once already
-                broadcast_event_to_server("RebuildTileForms", {})
-                //CameraTag.setup()
+                // Note that the visible doc has to be definitely set
+                // before creating the tiles. It is needed in order to set the list of column headers
+                // in tile forms.
+                set_visible_doc(doc_names[0], function () {
+                    var tile_ids = data.tile_ids;
+                    for (var i = 0; i < tile_ids.length; ++i) {
+                        create_tile_from_save(tile_ids[i])
+                    }
+                    menus["Project"].enable_menu_item("save");
+                })
             })
     }
     else {
@@ -111,9 +108,8 @@ function continue_loading() {
             $("#outer-container").css("display", "block");
             $("#table-area").css("display", "block");
             tablespec_dict = {};
-            tableObject.initialize_table(data)
-            set_visible_doc(doc_names[0])
-            //CameraTag.setup()
+            tableObject.initialize_table(data);
+            set_visible_doc(doc_names[0], null)
         })
     }
 
@@ -139,21 +135,35 @@ function continue_loading() {
     })
 }
 
-function set_visible_doc(doc_name) {
-    $.getJSON($SCRIPT_ROOT + "/set_visible_doc/" + String(main_id) + "/" + String(doc_name))
+function set_visible_doc(doc_name, func) {
+    if (func == null) {
+        $.ajax({
+            url: $SCRIPT_ROOT + "/set_visible_doc/" + String(main_id) + "/" + String(doc_name),
+            contentType: 'application/json',
+            type: 'POST'
+        })
+    }
+    else {
+        $.ajax({
+            url: $SCRIPT_ROOT + "/set_visible_doc/" + String(main_id) + "/" + String(doc_name),
+            contentType: 'application/json',
+            type: 'POST',
+            success: func
+        })
+    }
 }
 
 function change_doc(el) {
     $("#table-area").css("display", "none");
     $("#reload-message").css("display", "block");
-    doc_name = $(el).val()
+    doc_name = $(el).val();
     $.getJSON($SCRIPT_ROOT + "/grab_data/" + String(main_id) + "/" + String(doc_name), function (data) {
             $("#loading-message").css("display", "none");
             $("#reload-message").css("display", "none");
             $("#outer-container").css("display", "block");
             $("#table-area").css("display", "block");
-            tableObject.initialize_table(data)
-            set_visible_doc(doc_name)
+            tableObject.initialize_table(data);
+            set_visible_doc(doc_name, null)
         })
 }
 
@@ -169,5 +179,5 @@ function broadcast_event_to_server(event_name, data_dict) {
     });
 }
 
-spinner_html = '<span class="loader-small"></span>'
+spinner_html = '<span class="loader-small"></span>';
 

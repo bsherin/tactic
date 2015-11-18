@@ -9,6 +9,23 @@
     padding-bottom: 1px !important;
 }
 
+.row-clickable:hover {
+    background-color: #5bc0de !important
+}
+
+.row-clickable:active {
+    background-color: #1b6d85 !important
+}
+
+td.cell-clickable:hover {
+    background-color: #5bc0de !important
+}
+
+td.cell-clickable:active {
+    background-color: #1b6d85 !important
+}
+
+
 #console {
     text-align: left;
     font-size: 12px;
