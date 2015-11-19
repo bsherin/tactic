@@ -115,7 +115,7 @@ tableSpec = {
             this.bg_colors[rindex] = {}
         };
         this.bg_colors[rindex][cheader] = bcolor;
-        broadcast_event_to_server("SaveTableSpec", {"tablespec": this})
+
     },
     color_all_bgs: function() {
         for (var row in this.bg_colors) {
@@ -193,8 +193,8 @@ var tableObject = {
         setup_resize_listeners();
         this.resize_table_area();
         this.freeze_column_widths(this.table_id);
-        broadcast_event_to_server("SaveTableSpec", {"tablespec": this.current_spec})
-        $('#table-area td').blur(handle_cell_change)
+        //broadcast_event_to_server("SaveTableSpec", {"tablespec": this.current_spec})
+         $('#table-area td').blur(handle_cell_change)
         this.active_row = null;
 
         // Listen for the cursor to be placed in row
@@ -305,7 +305,7 @@ var tableObject = {
             self.current_spec.column_widths = result;
             self.current_spec.table_width = $("#table-area").width()
 
-            broadcast_event_to_server("SaveTableSpec", {"tablespec": self.current_spec})
+            //broadcast_event_to_server("SaveTableSpec", {"tablespec": self.current_spec})
         }
         function handle_cell_change () {
             // This is called when the user directly edits a cell.

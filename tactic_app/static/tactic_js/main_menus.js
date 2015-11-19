@@ -247,9 +247,10 @@ function createColumn() {
 
 function saveProjectAs() {
     showModal("Save Project As", "New Project Name", function (new_name) {
-            var result_dict = {
-            "project_name": new_name,
-            "main_id": main_id
+                var result_dict = {
+                "project_name": new_name,
+                "main_id": main_id,
+                "tablespec_dict": tablespec_dict
             };
             $.ajax({
                     url: $SCRIPT_ROOT + "/save_new_project",
@@ -369,7 +370,8 @@ function enable_require_column_select(){
 
 function save_project() {
     var result_dict = {
-        "main_id": main_id
+        "main_id": main_id,
+        "tablespec_dict": tablespec_dict
         //"tablespec_dict": tablespec_dict
     };
     $.ajax({

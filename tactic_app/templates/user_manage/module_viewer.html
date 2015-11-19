@@ -3,7 +3,8 @@
 {% block title %}Module viewer{% endblock %}
 
 {% block styles %}
-    <link rel="stylesheet" href="{{url_for('static', filename='css/codemirror.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/codemirrorthemes/codemirror.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/codemirrorthemes/pastel-on-dark.css')}}">
     <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/tactic.css')}}">
 {% endblock %}
 
@@ -18,12 +19,15 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-xs-12">
-                <div class="btn-group" role="group" aria-label="...">
-                  <button type="button" class="btn btn-default" onclick="updateModule()">Save</button>
-                  <button type="button" class="btn btn-default" onclick="saveModuleAs()">Save as ...</button>
-                    <button type="button" class="btn btn-default" onclick="loadModule()">Load</button>
-                  <button type="button" class="btn btn-default" onclick="window.close()">Close</button>
+            <div class="btn-toolbar col-xs-12" role="toolbar" >
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-default" onclick="updateModule()">Save</button>
+                    <button type="button" class="btn btn-default" onclick="saveModuleAs()">Save as ...</button>
+                    <button type="button" class="btn btn-default" onclick="loadModule()">Save and Load</button>
+                    <button type="button" class="btn btn-default" onclick="window.close()">Close</button>
+                </div>
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-default" onclick="changeTheme()">Change Theme</button>
                 </div>
             </div>
         </div>

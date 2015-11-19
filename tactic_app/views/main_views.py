@@ -29,6 +29,10 @@ def save_new_project():
     data_dict = request.json
     try:
         mainwindow_instances[data_dict['main_id']].project_name = data_dict["project_name"]
+        tspec_dict = data_dict["tablespec_dict"]
+        for (dname, spec) in tspec_dict.items():
+            mainwindow_instances[data_dict['main_id']].doc_dict[dname].table_spec = spec
+
         save_dict = mainwindow_instances[data_dict['main_id']].compile_save_dict()
 
         db[current_user.project_collection_name].insert_one(save_dict)
@@ -42,6 +46,9 @@ def save_new_project():
 @login_required
 def update_project():
     data_dict = request.json
+    tspec_dict = data_dict["tablespec_dict"]
+    for (dname, spec) in tspec_dict.items():
+        mainwindow_instances[data_dict['main_id']].doc_dict[dname].table_spec = spec
     save_dict = mainwindow_instances[data_dict['main_id']].compile_save_dict()
 
     db[current_user.project_collection_name].update_one({"project_name": save_dict["project_name"]},

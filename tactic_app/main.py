@@ -336,7 +336,11 @@ class mainWindow(threading.Thread):
                 self.emit_table_message("setCellContent", data)
 
     def _set_cell_background(self, doc_name, id, column_header, color):
-        data = {"doc_name": doc_name, "id": id, "column_header": column_header, "color": color, "header_list": self.doc_dict[doc_name].header_list}
+        data = {"doc_name": doc_name,
+                "id": id,
+                "column_header": column_header,
+                "color": color,
+                "header_list": self.doc_dict[doc_name].header_list}
         self.emit_table_message("setCellBackground", data)
 
     def highlight_table_text(self, txt):
