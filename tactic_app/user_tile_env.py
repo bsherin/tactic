@@ -7,7 +7,7 @@ import copy
 nltk.data.path = ['./nltk_data/']
 import numpy
 from tactic_app.clusterer_classes import CentroidClusterer, OptCentroidClusterer
-from matplotlib_utilities import GraphList, ColorMapper, FigureCanvas
+from matplotlib_utilities import GraphList, ColorMapper, FigureCanvas, ArrayHeatmap
 
 from tile_base import TileBase
 

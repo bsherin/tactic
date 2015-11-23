@@ -1,8 +1,32 @@
 
+/* resource module */
 .user-button-group {
     height: 200px;
     overflow: scroll;
 }
+
+.resource-module {
+    border: .25px solid rgb(240, 173, 78);
+    padding: 20px;
+    margin: 10px
+}
+
+.resource-module h2 {
+    margin-top:0px;
+}
+
+.stacked-button {
+    margin-bottom: 10px;
+    display: block;
+    width: 150px;
+}
+
+.file-selector {
+    margin-bottom: 10px;
+    display: block;
+}
+
+/* Tile table related*/
 
 .tile-table td {
     padding-top: 1px !important;
@@ -25,14 +49,12 @@ td.cell-clickable:active {
     background-color: #1b6d85 !important
 }
 
+/* console */
 
 #console {
     text-align: left;
     font-size: 12px;
     overflow: scroll
-}
-
-#console-panel {
 }
 
 #console-heading {
@@ -41,29 +63,15 @@ td.cell-clickable:active {
     padding-bottom: 2px;
 }
 
+/* module viewer */
+
 .CodeMirror {
   border: 1px solid #eee;
   height: auto;
   width: auto
 }
 
-.highlight {
-    background: yellow;
-}
-
-.radio-stack {
-    width: 50px;
-}
-
-.resource-module {
-    border: .25px solid rgb(240, 173, 78);
-    padding: 20px;
-    margin: 10px
-}
-
-.resource-module h2 {
-    margin-top:0px;
-}
+/*main window*/
 
 .grid-left {
     display: inline-block;
@@ -81,39 +89,17 @@ td.cell-clickable:active {
     padding: 25px;
 }
 
-button.notclose {
-  -webkit-appearance: none;
-  padding: 0;
-  cursor: pointer;
-  background: transparent;
-    opacity: .5;
-  border: 0;
+#tile-div {
+    padding: 5px;
 }
 
-button.notclose:hover {
-    opacity: .8;
+#tile-area {
+    margin: 0px;
+    border: 0px;
+    overflow: scroll;
 }
 
-
-.tile-body img {
-    cursor: pointer
-}
-
-
-.stacked-button {
-    margin-bottom: 10px;
-    display: block;
-    width: 150px;
-}
-
-.file-selector {
-    margin-bottom: 10px;
-    display: block;
-}
-
-.monospace {
-    font-family: monospace
-}
+/* tile */
 
 .tile-panel {
     height: 265px;
@@ -131,23 +117,9 @@ button.notclose:hover {
     padding: 5px 7px;
 }
 
-#tile-div {
-    padding: 5px;
-}
-
-.output-plot {
-    max-width: 100%;
-    max-height: 100%
-}
 
 #spin-place {
     position: relative;
-}
-
-#tile-area {
-    margin: 0px;
-    border: 0px;
-    overflow: scroll;
 }
 
 .tile-display-area {
@@ -171,4 +143,33 @@ button.notclose:hover {
     padding: 0px;
 }
 
+.tile-body img {
+    cursor: pointer
+}
 
+.output-plot {
+    max-width: 100%;
+    max-height: 100%
+}
+
+/* Other*/
+
+.highlight {
+    background: yellow;
+}
+
+button.notclose {
+  -webkit-appearance: none;
+  padding: 0;
+  cursor: pointer;
+  background: transparent;
+    opacity: .5;
+  border: 0;
+}
+
+button.notclose:hover {
+    opacity: .8;
+}
+.monospace {
+    font-family: monospace
+}

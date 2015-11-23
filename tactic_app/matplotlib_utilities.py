@@ -4,6 +4,7 @@ from matplotlib.figure import Figure
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.colors import Normalize as mpl_Normalize
 from matplotlib.cm import get_cmap, ScalarMappable
+import numpy
 import pylab
 import StringIO
 
@@ -93,33 +94,51 @@ class ColorMapper():
     def color_from_val(self, val):
         return self.rgb_to_hex(self.scalar_map.to_rgba(val)[:3])
 
-# class ColorMapper():
-#     def __init__ (self, top_val, bottom_val, top_color=(0, 255, 0), bottom_color=(255, 0, 0)):
-#         self.top_val = top_val
-#         self.bottom_val = bottom_val
-#         self.val_width = top_val - bottom_val
-#         self.val_range = top_val - bottom_val
-#         self.bottom_color = bottom_color
-#         self.top_color = top_color
-#         self.mid_point = self.bottom_val + self.val_range / 2.0
-#
-#     @staticmethod
-#     def rgb_to_hex(rgb):
-#         return '#%02x%02x%02x' % rgb
-#
-#     def rgb_color_from_val(self, val):
-#         if val >= self.top_val:
-#             return self.top_color
-#         elif val <= self.bottom_val:
-#             return self.bottom_color
-#         else:
-#             color_list = []
-#             frac = 1.0 * (val - self.bottom_val) / self.val_width
-#             for i in range(0,3):
-#                 top = self.top_color[i]
-#                 bot = self.bottom_color[i]
-#                 color_list.append(int(frac * (top - bot) + bot))
-#             return (color_list[0], color_list[1], color_list[2])
-#
-#     def color_from_val(self, val):
-#         return self.rgb_to_hex(self.rgb_color_from_val(val))
+class ArrayHeatmap(MplFigure):
+    def draw_plot(self):
+        self.dialogs = []
+        the_array = self.data
+        palette_name = self.kwargs["palette_name"]
+        (nrows, ncols) = the_array.shape
+        ax = self.add_subplot(111)
+        if "title" in self.kwargs:
+            ax.set_title(self.kwargs["title"], fontsize=10)
+        if "value_range" is self.kwargs:
+            cax = ax.imshow(the_array, cmap=get_cmap(palette_name), aspect="auto", interpolation='nearest',
+                            vmin=self.kwargs["value_range"][0], vmax=self.kwargs["value_range"][1])
+        else:
+            cax = ax.imshow(the_array, cmap=get_cmap(palette_name), aspect="auto", interpolation='nearest')
+
+        ind = numpy.arange(ncols)
+
+        if "xticks" in self.kwargs:
+            ax.set_xticks(self.kwargs["xticks"])
+        else:
+            ax.set_xticks(ind, minor=False)
+            ax.set_xticks(ind + .5, minor=True)
+        if "xlabels" in self.kwargs:
+            ax.get_xaxis().set_ticklabels(self.kwargs["xlabels"], size="x-small", rotation="vertical")
+        else:
+            ax.get_xaxis().set_ticklabels(ind + 1, size="x-small")
+
+        ind = numpy.arange(nrows)
+
+        if "yticks" in self.kwargs:
+            ax.set_yticks(self.kwargs["yticks"])
+        else:
+            ax.set_yticks(ind, minor=False)
+            ax.set_yticks(ind + .5, minor=True)
+        if "ylabels" in self.kwargs:
+            ax.get_yaxis().set_ticklabels(self.kwargs["ylabels"], size="x-small", rotation="horizontal")
+        else:
+            ax.get_yaxis().set_ticklabels(ind + 1, size="x-small")
+
+        ax.grid(True, which='minor', linestyle='-')
+
+        cbar = self.colorbar(cax)
+        # self.subplots_adjust(left=.12, bottom=.25, right=.99, top=.95)
+        self.set_facecolor("white")
+        self.tight_layout()
+        return
+
+
