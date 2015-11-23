@@ -24,7 +24,7 @@
                     {% endblock %}
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
-                    <li><a href="{{ url_for('doc_manager') }}">Docs</a></li>
+                    <li><a href="https://github.com/bsherin/tactic/wiki">Docs</a></li>
                     {% if current_user.is_authenticated() %}
                         <li><a href="{{ url_for('user_manage') }}">Manage User</a></li>
                     <li><a href="" onclick="return doSignOut();">Sign Out</a></li>
