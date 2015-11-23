@@ -121,6 +121,7 @@ mousetrap.bind("esc", function() {
         deselect_header(tableObject.selected_header)
     }
     broadcast_event_to_server("DehighlightTable", {});
+    clearStatusArea();
 })
 
 function build_and_render_menu_objects() {

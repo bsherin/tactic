@@ -160,6 +160,15 @@ class TileBase(threading.Thread):
                         else:
                             form_html += self.select_option_template.format(choice)
                     form_html += '</select></div>'
+                elif option["type"] == "document_select":
+                    the_template = self.input_start_template + self.select_base_template
+                    form_html += the_template.format(option["name"])
+                    for choice in self.get_document_names():
+                        if choice == option["placeholder"]:
+                            form_html += self.select_option_selected_template.format(choice)
+                        else:
+                            form_html += self.select_option_template.format(choice)
+                    form_html += '</select></div>'
                 elif option["type"] == "list_select":
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(option["name"])

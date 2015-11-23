@@ -393,8 +393,6 @@ class ClusterViewer(TileBase):
 
         return the_html
 
-
-
 # Here are some assorted weighting functions
 
 @weight_function

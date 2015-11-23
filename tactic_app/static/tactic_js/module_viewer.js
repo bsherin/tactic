@@ -2,15 +2,30 @@
  * Created by bls910 on 10/4/15.
  */
 
-var current_theme = "default"
+var current_theme = "default";
+var mousetrap = new Mousetrap();
+
+mousetrap.bind("esc", function() {
+    clearStatusArea();
+});
+
+mousetrap.bind(['command+s', 'ctrl+s'], function(e) {
+    updateModule();
+    e.preventDefault()
+});
+
+mousetrap.bind(['command+l', 'ctrl+;l'], function(e) {
+    loadModule();
+    e.preventDefault()
+});
 
 function start_post_load() {
-    codearea = document.getElementById("codearea")
+    codearea = document.getElementById("codearea");
     myCodeMirror = CodeMirror.fromTextArea(codearea, {
         lineNumbers: true,
         matchBrackets: true,
         autoCloseBrackets: true,
-        indentUnit: 4,
+        indentUnit: 4
     });
     myCodeMirror.setOption("extraKeys", {
       Tab: function(cm) {
@@ -37,7 +52,7 @@ function updateModule() {
     var new_code = myCodeMirror.getValue();
     var result_dict = {
     "module_name": module_name,
-    "new_code": new_code,
+    "new_code": new_code
     };
     $.ajax({
         url: $SCRIPT_ROOT + "/update_module",
@@ -54,7 +69,7 @@ function loadModule() {
     var new_code = myCodeMirror.getValue();
     var result_dict = {
     "module_name": module_name,
-    "new_code": new_code,
+    "new_code": new_code
     };
     $.ajax({
         url: $SCRIPT_ROOT + "/update_module",

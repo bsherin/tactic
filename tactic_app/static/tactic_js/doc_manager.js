@@ -35,8 +35,8 @@ var docManager = Object.create(resourceManager);
 
 doc_manager_specifics = {
     res_type: "doc",
-    show_new: false,
     show_add: false,
+    show_load: false,
     show_duplicate: false,
     show_loaded_list: false,
     show_save: true,

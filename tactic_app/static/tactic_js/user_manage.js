@@ -3,6 +3,12 @@
  */
 
 var resource_module_template;
+var mousetrap = new Mousetrap();
+
+mousetrap.bind("esc", function() {
+    clearStatusArea();
+})
+
 
 function start_post_load() {
     if (use_ssl) {
