@@ -195,6 +195,7 @@ class OptCentroidClusterer(VectorSpaceClusterer):
         self._groups_values = None
         self._names = vector_names
         self._name_dendogram = None
+        self._reassigned_clusters = {}
 
     def array_max(self, ar):
         for i in range(ar.shape[0]):
@@ -298,6 +299,50 @@ class OptCentroidClusterer(VectorSpaceClusterer):
                 diff = vector - centroid
                 rss = rss + numpy.sqrt(numpy.vdot(diff, diff))
         return rss
+
+    def get_iteratively_reassigned_clusters(self, num_clusters, max_iterations=100, saveit=True):
+        if num_clusters in self._reassigned_clusters:
+            return self._reassigned_clusters[num_clusters]
+        self.update_clusters(num_clusters)
+        new_centroids = self._centroids
+        clusters = self._dendogram.groups(num_clusters)
+
+        for iter in range(max_iterations):
+            number_reassigned = 0
+            new_clusters = [[] for i in range(len(self._centroids))]
+            for cluster_number, cluster in enumerate(clusters):
+                for vec in cluster:
+                    dps = [numpy.dot(numpy.transpose(centroid), vec) for centroid in new_centroids]
+                    new_cluster_index = dps.index(max(dps))
+                    new_clusters[new_cluster_index].append(vec)
+                    if new_cluster_index != cluster_number:
+                        number_reassigned += 1
+            new_centroids = []
+            for cluster in new_clusters:
+                assert len(cluster) > 0
+                if self._should_normalise:
+                    centroid = self._normalise(cluster[0])
+                else:
+                    centroid = numpy.array(cluster[0])
+                for vector in cluster[1:]:
+                    if self._should_normalise:
+                        centroid += self._normalise(vector)
+                    else:
+                        centroid += vector
+                # centroid /= float(len(cluster))  # was this supposed to be some sort of normalizing?
+                norm_centroid = normalize(centroid)
+                new_centroids.append(norm_centroid)
+            print [len(cluster) for cluster in new_clusters]
+            print "Number reassigned = %i" % number_reassigned
+            if number_reassigned == 0:
+                print "Stable after %i iterations" % iter
+                break;
+            clusters = new_clusters
+
+            if saveit:
+                self._reassigned_clusters[num_clusters] = (new_centroids,[len(cluster) for cluster in new_clusters], clusters)
+
+        return (new_centroids,[len(cluster) for cluster in new_clusters], clusters)
 
     def classify_vectorspace(self, vector):
         best = None

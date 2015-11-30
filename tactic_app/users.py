@@ -100,7 +100,7 @@ class User(UserMixin):
             m = re.search(string_start + "(.*)", cname)
             if m:
                 my_collection_names.append(m.group(1))
-        return my_collection_names
+        return sorted([str(t) for t in my_collection_names], key=str.lower)
 
     def full_collection_name(self, cname):
         return self.username + ".data_collection." + cname
@@ -113,7 +113,7 @@ class User(UserMixin):
         my_project_names = []
         for doc in db[self.project_collection_name].find():
             my_project_names.append(doc["project_name"])
-        return my_project_names
+        return sorted([str(t) for t in my_project_names], key=str.lower)
 
     @property
     def list_names(self):
@@ -123,7 +123,7 @@ class User(UserMixin):
         my_list_names = []
         for doc in db[self.list_collection_name].find():
             my_list_names.append(doc["list_name"])
-        return my_list_names
+        return sorted([str(t) for t in my_list_names], key=str.lower)
 
     @property
     def tile_module_names(self):
@@ -133,7 +133,7 @@ class User(UserMixin):
         my_tile_names = []
         for doc in db[self.tile_collection_name].find():
             my_tile_names.append(doc["tile_module_name"])
-        return my_tile_names
+        return sorted([str(t) for t in my_tile_names], key=str.lower)
 
     def get_list(self, list_name):
         list_dict = db[self.list_collection_name].find_one({"list_name": list_name})

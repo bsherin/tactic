@@ -53,7 +53,6 @@ function start_post_load() {
     $("#outer-container").css({"margin-left": String(MARGIN_SIZE) + "px"});
     $("#outer-container").css({"margin-right": String(MARGIN_SIZE) + "px"});
     $("#outer-container").css({"margin-top": "0px", "margin-bottom": "0px"});
-    initializeConsole();
     if (use_ssl) {
         socket = io.connect('https://' + document.domain + ':' + location.port + '/main');
     }
@@ -131,6 +130,11 @@ function continue_loading() {
         tableObject[data.message](data)
     });
     socket.on('close-user-windows', function(data){
+        $.ajax({
+            url: $SCRIPT_ROOT + "/remove_mainwindow/" + String(main_id),
+            contentType: 'application/json',
+            type: 'POST',
+        })
         window.close()
     })
 }

@@ -141,4 +141,3 @@ class ArrayHeatmap(MplFigure):
         self.tight_layout()
         return
 
-

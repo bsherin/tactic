@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Tactic - Main{% endblock %}
+{% block title %}{{ window_title }}{% endblock %}
 
 {% block head %}
 {#    <script src='//cameratag.com/api/v6/js/cameratag.js' type='text/javascript'></script>#}
@@ -30,8 +30,8 @@
                 <div class="panel-heading" id="data-title" style="padding-top: 5px; padding-bottom: 5px">
                 <button type='button' class='notclose' onclick="tableObject.shrinkTable()"><span style="font-size:15px" class="glyphicon glyphicon-th"></span></button>
                     <form class="form-inline" style="display:inline">
-                      <span class="form-group input-sm">
-                        <label for="doc-selector">{{short_collection_name}}: </label>
+                      <span class="form-group">
+                        <label for="doc-selector" style="padding-left: 5px">{{short_collection_name}}: </label>
                             <select id="doc-selector" class="form-control" onchange="change_doc(this)">
                                 {% for dname in doc_names %}
                                     <option>{{ dname }}</option>
@@ -40,14 +40,18 @@
                         </span>
                     </form>
 
-                    <span style="font-size: 12px; font-weight: bold;"> Project: <span id="project-name">{{project_name}}</span></span>
+                    <span style="font-weight: bold; padding-left:5px"> Project: <span id="project-name" style="font-weight: normal">{{project_name}}</span></span>
                     <form class="form-inline" style="display:inline; float:right">
-                        <span class="form-group form-group-sm">
+                        <div class="input-group">
                           <input type="text" id="search" class="form-control" placeholder="Search">
-                        </span>
-                        <button class="btn btn-default input-sm" onclick="return doSearch(document.getElementById('search').value)" value="Find">Find</button>
-                        <button class="btn btn-default input-sm" onclick="return doFilter(document.getElementById('search').value)" value="Filter">Filter</button>
-                        <button class="btn btn-default input-sm" onclick="return doUnfilter()" value="Unfilter">Unfilter</button>
+                             <span class="input-group-btn">
+                                <button class="btn btn-default" type="button" onclick="return doSearch(document.getElementById('search').value)" value="Find">Find</button>
+                             </span>
+                        </div>
+                        <div class="btn-group" role="group">
+                        <button class="btn btn-default" onclick="return doFilter(document.getElementById('search').value)" value="Filter">Filter</button>
+                        <button class="btn btn-default" onclick="return doUnfilter()" value="Unfilter">Unfilter</button>
+                            </div>
                    </form>
                     <span id="table-spin-place" style="margin:7px"></span>
                 </div>
@@ -60,7 +64,17 @@
                     </table>
                 </div>
              </div>
-            <div id="console-panel" class="panel panel-default">
+            <button type='button' id="table-icon" class="btn" style="border-color: #ddd" onclick="tableObject.expandTable()"><span style="font-size:15px" class="glyphicon glyphicon-th-list"></span></button>
+
+        </div>
+
+        <div class="grid-right" align="left">
+            <div  class="panel panel-default" id="tile-area">
+                <div class="panel-body" id="tile-div">
+                </div>
+            </div>
+        </div>
+        <div id="console-panel" class="panel panel-default" style="display:block">
                 <div id="console-heading" class="panel-heading">
                     <button type='button' class='notclose triangle-right' onclick=expandConsole()><span style="font-size:12px" class="glyphicon glyphicon-triangle-right"></span></button>
                     <button type='button' class='notclose triangle-bottom' onclick=shrinkConsole()><span style="font-size:12px" class="glyphicon glyphicon-triangle-bottom"></span></button>
@@ -69,17 +83,8 @@
                 </div>
               <div id="console" class="panel-body"></div>
             </div>
-        </div>
-        <button type='button' id="table-icon" class="btn btn-info" onclick="tableObject.expandTable()"><span style="font-size:15px" class="glyphicon glyphicon-th-list"></span></button>
-        <div class="grid-right" align="left">
-            <div  class="panel panel-default" id="tile-area">
-                <div class="panel-body" id="tile-div">
-                </div>
-            </div>
-        </div>
-
 </div>
-    </div>
+
 {% endblock %}
 {% block scripts %}
     <script src="{{url_for('static', filename='js/jquery.flip.js')}}"></script>
@@ -100,7 +105,6 @@
     window.onload = start_post_load;
     window.onresize = function () {
         tableObject.resize_table_area()
-        $("#tile-area").height(window.innerHeight - 20 - $("#tile-area").offset().top);
     }
     window.onbeforeunload = function(e) {
         return "Any unsaved changes will be lost."

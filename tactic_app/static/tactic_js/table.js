@@ -14,11 +14,14 @@ MAX_HEIGHT = 300;
 MARGIN_SIZE = 5;
 INITIAL_LEFT_FRACTION = .69
 
+
 var td_template;
 var th_template;
 var th_template_resize;
 var header_template;
 var body_template;
+
+var table_is_shrunk = false
 
 $.get($SCRIPT_ROOT + "/get_table_templates", function(template){
     header_template = $(template).filter('#header-template').html();
@@ -182,6 +185,7 @@ var tableObject = {
 
     build_table: function() {
         var self = this;
+        initializeConsole();
         html_result = create_all_html(this.table_id, this.data_rows, this.current_spec.header_list);
         $("#" + this.table_id).html(html_result);
         for (i = 0; i < this.current_spec.hidden_list.length; ++i) {
@@ -422,8 +426,9 @@ var tableObject = {
         }
         $(".grid-right").width(usable_width * (1 - this.left_fraction))
         $("#status-area").width(usable_width)
-        $("#table-area tbody").height(window.innerHeight - $("#console-panel").outerHeight() - 50 - $("#table-area tbody").offset().top)
+        $("#table-area tbody").height(window.innerHeight - $("#console-panel").outerHeight() - 30 - $("#table-area tbody").offset().top)
         //$("#main-panel").outerHeight(window.innerHeight - $("#console-panel").outerHeight() - 50 - $("#main-panel").offset().top)
+        $("#tile-area").height(window.innerHeight - $("#console-panel").outerHeight() - 30 - $("#tile-area").offset().top);
         $("#main-panel").width("") // We do this so that this will resize when the window is resized.
     },
 
@@ -457,10 +462,13 @@ var tableObject = {
 
     shrinkTable: function() {
         this.left_fraction_save = this.left_fraction;
-        this.left_fraction = .05;
+
         //$(".grid-left")[0].classList.add("scaling-style");
-        $(".grid-left").css("display", "none");
-        $("#table-icon").css("display", "inline");
+        $("#main-panel").css("display", "none");
+        $("#table-icon").css("display", "block");
+        var usable_width = window.innerWidth - 2 * MARGIN_SIZE - 10;
+        this.left_fraction = ($("#table-icon").outerWidth() + MARGIN_SIZE) / usable_width;
+        table_is_shrunk = true;
         this.resize_table_area();
         $(".tile-panel").addClass("tile-panel-float")
     },
@@ -468,8 +476,9 @@ var tableObject = {
     expandTable: function() {
         this.left_fraction = this.left_fraction_save;
         $("#table-icon").css("display", "none");
-        $(".grid-left").css("display", "inline-block");
+        $("#main-panel").css("display", "block");
         this.resize_table_area();
+        table_is_shrunk = false;
         $(".tile-panel").removeClass("tile-panel-float")
     },
 

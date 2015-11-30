@@ -37,6 +37,7 @@ def main(collection_name):
     mainwindow_instances[main_id].loaded_modules = list(loaded_user_modules[current_user.username])
     return render_template("main.html",
                            collection_name=cname,
+                           window_title=short_collection_name,
                            project_name='',
                            main_id=main_id,
                            doc_names=doc_names,
@@ -64,6 +65,7 @@ def main_project(project_name):
     return render_template("main.html",
                            collection_name=project_dict["collection_name"],
                            project_name=project_name,
+                           window_title=project_name,
                            main_id=main_id,
                            doc_names=doc_names,
                            use_ssl = str(use_ssl),
@@ -192,7 +194,7 @@ def create_tile_module():
     data_dict = {"tile_module_name": new_tile_name, "tile_module": template}
     db[current_user.tile_collection_name].insert_one(data_dict)
     socketio.emit('update-tile-module-list', {"html": render_tile_module_list()}, namespace='/user_manage', room=current_user.get_id())
-    return make_response("", 204)
+    return redirect(url_for('view_module', module_name=new_tile_name))
 
 @app.route('/load_files/<collection_name>', methods=['POST', 'GET'])
 @login_required

@@ -33,6 +33,7 @@ function start_post_load() {
         cm.replaceSelection(spaces);
       }
     });
+    $(".CodeMirror").css('height', window.innerHeight - $(".CodeMirror").offset().top - 20)
 }
 
 function changeTheme() {
