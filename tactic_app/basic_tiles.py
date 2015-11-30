@@ -300,3 +300,37 @@ class Collocations(TileBase):
         self.vdata_table = [["w1", "w2", "score", "freq"]] + self.vdata_table
         the_html = self.build_html_table_from_data_list(self.vdata_table, title="Collocations", row_clickable=True)
         return the_html
+
+@tile_class
+class Heatmap(TileBase):
+    # save_attrs has the variables that will be saved when a project is saved
+    save_attrs = TileBase.save_attrs + ["array", "palette_name"]
+    category = "plot"
+
+    def __init__(self, main_id, tile_id, tile_name=None):
+        TileBase.__init__(self, main_id, tile_id, tile_name)
+        self.array_data = None
+        self.palette_name = "Paired"
+        return
+
+    @property
+    def options(self):
+        return  [
+        {"name": "array_data", "type": "pipe_select","placeholder": self.array_data},
+        {"name": "palette_name", "type": "palette_select", "placeholder": self.palette_name}
+    ]
+
+    def handle_size_change(self):
+        if self.array_data is None:
+            return
+        fig = ArrayHeatmap(self.array, self.width, self.height, palette_name=self.palette_name)
+        new_html = self.create_figure_html(fig)
+        self.refresh_tile_now(new_html)
+        return
+
+    def render_content(self):
+        if self.array_data is None:
+            return "No source selected yet."
+        self.array = self.get_pipe_value(self.array_data)
+        fig = ArrayHeatmap(self.array, self.width, self.height, palette_name=self.palette_name)
+        return self.create_figure_html(fig)

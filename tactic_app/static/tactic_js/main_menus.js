@@ -268,6 +268,7 @@ function saveProjectAs() {
                     tableObject.project_name = data_object["project_name"]
                     //tableObject.set_table_title()
                     $("#project-name").html(tableObject.project_name)
+                    $("title").html(data_object["project_name"])
                     data_object.alert_type = "alert-success"
                     doFlash(data_object)
                 }
@@ -348,7 +349,11 @@ function tile_command(menu_id) {
                     });
                     jQuery.data(new_tile_elem[0], "my_tile_id", data.tile_id)
                     listen_for_clicks();
-                    $("#tile_id_" + data.tile_id).find(".triangle-right").hide()
+                    $("#tile_id_" + data.tile_id).find(".triangle-right").hide();
+                    if (table_is_shrunk) {
+                         $("#tile_id_" + data.tile_id).addClass("tile-panel-float")
+                    }
+
 
                     tile_dict[data.tile_id] = new_tile_object;
                     do_resize(data.tile_id);

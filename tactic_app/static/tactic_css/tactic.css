@@ -3,6 +3,13 @@
 .user-button-group {
     height: 200px;
     overflow: scroll;
+
+}
+
+.user-button-group .btn-default{
+    text-align: left;
+    padding-top: 1px;
+    padding-bottom: 1px
 }
 
 .resource-module {
@@ -57,18 +64,25 @@ td.cell-clickable:active {
     overflow: scroll
 }
 
+#console-panel {
+    margin-left: 5px;
+    margin-right: 5px
+}
+
+
 #console-heading {
     font-size: 12px;
     padding-top: 2px;
     padding-bottom: 2px;
+    text-align: left
 }
 
 /* module viewer */
 
 .CodeMirror {
-  border: 1px solid #eee;
-  height: auto;
-  width: auto
+    border: 1px solid #eee;
+    height: auto;
+    width: auto;
 }
 
 /*main window*/
@@ -172,4 +186,8 @@ button.notclose:hover {
 }
 .monospace {
     font-family: monospace
+}
+
+.hide-important {
+    display: none !important
 }

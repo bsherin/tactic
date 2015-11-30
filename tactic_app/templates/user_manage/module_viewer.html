@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Module viewer{% endblock %}
+{% block title %}{{module_name}}{% endblock %}
 
 {% block styles %}
     <link rel="stylesheet" href="{{url_for('static', filename='css/codemirrorthemes/codemirror.css')}}">
@@ -27,7 +27,7 @@
                     <button type="button" class="btn btn-default" onclick="window.close()">Close</button>
                 </div>
                 <div class="btn-group" role="group">
-                    <button type="button" class="btn btn-default" onclick="changeTheme()">Change Theme</button>
+                    <button type="button" class="btn btn-default" onclick="changeTheme()">Toggle Theme</button>
                 </div>
             </div>
         </div>
@@ -55,6 +55,9 @@
         window.onload = start_post_load;
         window.onbeforeunload = function(e) {
             return "Any unsaved changes will be lost."
+        }
+        window.onresize = function () {
+            $(".CodeMirror").css('height', window.innerHeight - $(".CodeMirror").offset().top - 20)
         }
     </script>
 {% endblock %}

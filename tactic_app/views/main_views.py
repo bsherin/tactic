@@ -90,6 +90,12 @@ def get_menu_template():
 def get_table_templates():
     return send_file("templates/table_templates.html")
 
+@app.route('/remove_mainwindow/<main_id>', methods=['post'])
+@login_required
+def remove_mainwindow(main_id):
+    del mainwindow_instances[main_id]
+    return
+
 @app.route('/get_tile_types', methods=['GET'])
 @login_required
 def get_tile_types():

@@ -455,6 +455,9 @@ class TileBase(threading.Thread):
         mainwindow_instances[self.main_id].print_to_console(message_string, force_open)
 
 
+    def dm(self, message_string, force_open=False):
+        self.display_message(message_string, force_open)
+
     def color_cell_text(self, doc_name, row_index, column_name, tokenized_text, color_dict):
         distribute_event("ColorTextInCell", self.main_id, {"doc_name": doc_name,
                                                            "row_index": row_index,

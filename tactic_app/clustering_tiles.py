@@ -170,6 +170,7 @@ class CentroidCluster(TileBase):
 
         self.cluster_data = {"clusterer": self.clusterer, "reduced_vocab": reduced_vocab, "row_vectors_dict": row_vectors_dict}
         return the_html
+
 @tile_class
 class OrthogonalizingGAACCluster(TileBase):
     category = "clustering"
