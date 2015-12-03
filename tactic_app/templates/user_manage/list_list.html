@@ -1,5 +1,3 @@
 {% for list_name in current_user.list_names %}
-    <label class="btn btn-default" display="block">
-        <input type="radio"  value="{{ list_name }}"/> {{ list_name }}
-    </label>
+    <button type="radio"  class="list-group-item list-selector-button selector-button" id="list-selector-{{list_name}}" value="{{list_name}}"> {{list_name}}</button>
 {% endfor %}

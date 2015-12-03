@@ -79,7 +79,6 @@ function select_header(header_name) {
 tableSpec = {
     "doc_name": null,
     "header_list": null,
-    "hidden_list": [],
     "hidden_rows": [],
     "table_width": null,
     "column_widths": null,
@@ -135,7 +134,6 @@ function create_tablespec(dict) {
     var spec = Object.create(tableSpec);
     spec.doc_name = dict.doc_name;
     spec.header_list = dict.header_list;
-    spec.hidden_list = dict.hidden_list;
     spec.hidden_rows = dict.hidden_rows;
     spec.table_width = dict.table_width;
     spec.column_widths = dict.column_widths;
@@ -144,6 +142,7 @@ function create_tablespec(dict) {
 }
 
 var tablespec_dict = {};
+var hidden_columns_list = ["__filename__"];
 
 var tableObject = {
     table_id: "table-area",
@@ -166,7 +165,6 @@ var tableObject = {
             this.current_spec = create_tablespec(
                 {"doc_name": this.current_doc_name,
                 "header_list": data_object["header_list"],
-                "hidden_list": ["__filename__"],
                 "hidden_rows": [],
                 "table_width": null,
                 "column_widths": null,
@@ -188,8 +186,10 @@ var tableObject = {
         initializeConsole();
         html_result = create_all_html(this.table_id, this.data_rows, this.current_spec.header_list);
         $("#" + this.table_id).html(html_result);
-        for (i = 0; i < this.current_spec.hidden_list.length; ++i) {
-            $(".column-" + this.current_spec.hidden_list[i]).css("display", "none");
+        for (i = 0; i < hidden_columns_list.length; ++i) {
+            if ($.inArray(hidden_columns_list[i], this.current_spec.header_list) >= 0) {
+                $(".column-" + hidden_columns_list[i]).css("display", "none")
+            }
         }
         this.hideRows(this.current_spec.hidden_rows);
         this.current_spec.color_all_bgs();

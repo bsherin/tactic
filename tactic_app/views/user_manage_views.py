@@ -1,6 +1,6 @@
 __author__ = 'bls910'
 
-import os, sys
+import os, sys, datetime
 import pymongo
 from flask import render_template, request, make_response, redirect, url_for, jsonify, send_file
 from flask_login import login_required, current_user
@@ -10,7 +10,7 @@ from tactic_app.file_handling import read_csv_file_to_dict, read_txt_file_to_dic
 from tactic_app.main import create_new_mainwindow, create_new_mainwindow_from_project, mainwindow_instances
 from tactic_app.users import put_docs_in_collection, build_data_collection_name
 from tactic_app.user_tile_env import create_user_tiles
-from tactic_app.shared_dicts import user_tiles, loaded_user_modules
+from tactic_app.shared_dicts import user_tiles, loaded_user_modules, create_initial_metadata
 
 
 @app.route('/user_manage')
@@ -71,6 +71,87 @@ def main_project(project_name):
                            use_ssl = str(use_ssl),
                            short_collection_name=short_collection_name)
 
+@app.route('/grab_metadata', methods=['POST'])
+@login_required
+def grab_metadata():
+    try:
+        res_type = request.json["res_type"]
+        res_name = request.json["res_name"]
+        if res_type == "collection":
+            cname=build_data_collection_name(res_name)
+            mdata = db[cname].find_one({"name": "__metadata__"})
+        else:
+            if res_type == "tile":
+                doc = db[current_user.tile_collection_name].find_one({"tile_module_name": res_name})
+            elif res_type == "list":
+                doc = db[current_user.list_collection_name].find_one({"list_name": res_name})
+            elif res_type == "project":
+                doc = db[current_user.project_collection_name].find_one({"project_name": res_name})
+            if "metadata" in doc:
+                mdata = doc["metadata"]
+            else:
+                mdata = None
+        if mdata is None:
+            return jsonify({"success": False, "message": "No metadata found", "alert_type": "alert-warning"})
+        else:
+            if "datetime" in mdata:
+                datestring = mdata["datetime"].strftime("%b %d, %Y, %H:%M:%S")
+            else:
+                datestring = ""
+            return jsonify({"success": True, "datestring": datestring, "tags": mdata["tags"], "notes": mdata["notes"]})
+    except:
+        error_string = "Error getting metadata: " + str(sys.exc_info()[0]) + " "  + str(sys.exc_info()[1])
+        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+
+@app.route('/save_metadata', methods=['POST'])
+@login_required
+def save_metadata():
+    try:
+        res_type = request.json["res_type"]
+        res_name = request.json["res_name"]
+        tags = request.json["tags"]
+        notes = request.json["notes"]
+        if res_type == "collection":
+            cname=build_data_collection_name(res_name)
+            mdata = db[cname].find_one({"name": "__metadata__"})
+            if mdata is None:
+                db[cname].insert_one({"name": "__metadata__", "tags": tags, "notes": notes})
+            else:
+                db[cname].update_one({"name": "__metadata__"},
+                                            {'$set': {"tags": tags, "notes": notes}})
+        elif res_type == "tile":
+            doc = db[current_user.tile_collection_name].find_one({"tile_module_name": res_name})
+            if "metadata" in doc:
+                mdata = doc["metadata"]
+            else:
+                mdata = {}
+            mdata["tags"] = tags
+            mdata["notes"] = notes
+            db[current_user.tile_collection_name].update_one({"tile_module_name": res_name}, {'$set': {"metadata": mdata}})
+        elif res_type == "list":
+            doc = db[current_user.list_collection_name].find_one({"list_name": res_name})
+            if "metadata" in doc:
+                mdata = doc["metadata"]
+            else:
+                mdata = {}
+            mdata["tags"] = tags
+            mdata["notes"] = notes
+            db[current_user.list_collection_name].update_one({"list_name": res_name}, {'$set': {"metadata": mdata}})
+        elif res_type == "project":
+            doc = db[current_user.project_collection_name].find_one({"project_name": res_name})
+            if "metadata" in doc:
+                mdata = doc["metadata"]
+            else:
+                mdata = {}
+            mdata["tags"] = tags
+            mdata["notes"] = notes
+            db[current_user.project_collection_name].update_one({"project_name": res_name}, {'$set': {"metadata": mdata}})
+        return jsonify({"success": True, "message": "Saved metadata", "alert_type": "alert-success"})
+    except:
+        error_string = "Error saving metadata: " + str(sys.exc_info()[0]) + " "  + str(sys.exc_info()[1])
+        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+
+
 @app.route('/view_list/<list_name>', methods=['get'])
 @login_required
 def view_list(list_name):
@@ -127,13 +208,15 @@ def render_list_list():
 def render_tile_module_list():
     return render_template("user_manage/tile_module_list.html")
 
+
 @app.route('/create_duplicate_list', methods=['post'])
 @login_required
 def create_duplicate_list():
     list_to_copy = request.json['res_to_copy']
     new_list_name = request.json['new_res_name']
     old_list_dict = db[current_user.list_collection_name].find_one({"list_name": list_to_copy})
-    new_list_dict = {"list_name": new_list_name, "the_list": old_list_dict["the_list"]}
+    metadata = create_initial_metadata()
+    new_list_dict = {"list_name": new_list_name, "the_list": old_list_dict["the_list"], "metadata": metadata}
     db[current_user.list_collection_name].insert_one(new_list_dict)
     socketio.emit('update-list-list', {"html": render_list_list()}, namespace='/user_manage', room=current_user.get_id())
     return jsonify({"success": True})
@@ -179,7 +262,8 @@ def add_list():
 def add_tile_module():
     f = request.files['file']
     the_module = f.read()
-    data_dict = {"tile_module_name": f.filename, "tile_module": the_module}
+    metadata = create_initial_metadata()
+    data_dict = {"tile_module_name": f.filename, "tile_module": the_module, "metadata": metadata}
     db[current_user.tile_collection_name].insert_one(data_dict)
     socketio.emit('update-tile-module-list', {"html": render_tile_module_list()}, namespace='/user_manage', room=current_user.get_id())
     return make_response("", 204)
@@ -191,7 +275,8 @@ def create_tile_module():
     mongo_dict = db["shared_tiles"].find_one({"tile_module_name": "tile_template.py"})
     template = mongo_dict["tile_module"]
 
-    data_dict = {"tile_module_name": new_tile_name, "tile_module": template}
+    metadata = create_initial_metadata()
+    data_dict = {"tile_module_name": new_tile_name, "tile_module": template, "metadata": metadata}
     db[current_user.tile_collection_name].insert_one(data_dict)
     socketio.emit('update-tile-module-list', {"html": render_tile_module_list()}, namespace='/user_manage', room=current_user.get_id())
     return redirect(url_for('view_module', module_name=new_tile_name))
@@ -201,6 +286,12 @@ def create_tile_module():
 def load_files(collection_name):
     file_list = request.files.getlist("file")
     full_collection_name = build_data_collection_name(collection_name)
+    mdata = create_initial_metadata()
+    try:
+        db[full_collection_name].insert_one({"name": "__metadata__", "datetime": mdata})
+    except:
+        error_string = "Error creating collection: " + str(sys.exc_info()[0]) + " "  + str(sys.exc_info()[1])
+        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
     for file in file_list:
         filename, file_extension = os.path.splitext(file.filename)
@@ -219,8 +310,9 @@ def load_files(collection_name):
 
         try:
             db[full_collection_name].insert_one({"name": filename, "data_rows": result_dict, "header_list": header_list})
-        except pymongo.errors.InvalidStringData:
-            print "Strings in documents must be valid UTF-8"
+        except:
+            error_string = "Error creating collection: " + str(sys.exc_info()[0]) + " "  + str(sys.exc_info()[1])
+            return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
     socketio.emit('update-collection-list', {"html": render_collection_list()}, namespace='/user_manage', room=current_user.get_id())
     return jsonify({"message":"Collection successfully loaded", "alert_type": "alert-success"})

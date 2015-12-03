@@ -2,6 +2,7 @@
  * Created by bls910 on 11/1/15.
  */
 
+
 var resourceManager = {
     show_add: true,
     show_multiple:false,
@@ -104,14 +105,19 @@ var resourceManager = {
     },
 
     delete_func: function (event) {
-        var manager = event.data.manager
+        var manager = event.data.manager;
         var res_name = manager.check_for_selection(manager.res_type);
         if (res_name == "") return;
+        $('.' + manager.res_type + '-selector-button.active').fadeOut();
+        $("#" + manager.res_type + "-module .created").html("")
+        $("#" + manager.res_type + "-tags").html("");
+        $("#" + manager.res_type + "-notes").html("");
         $.post($SCRIPT_ROOT + manager.delete_view + String(res_name))
     },
 
     check_for_selection: function (res_type) {
-        var res_name = $('#' + res_type + '-selector > .btn.active').text().trim();
+        //var res_name = $('#' + res_type + '-selector > .btn.active').text().trim();
+        var res_name = $('.' + res_type + '-selector-button.active')[0].value
         if (res_name == "") {
             doFlash({"message": "Select a " + res_type + " first.", "alert_type": "alert-info"})
         }

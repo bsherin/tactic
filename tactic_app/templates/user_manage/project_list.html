@@ -1,5 +1,3 @@
 {% for project in current_user.project_names %}
-    <label class="btn btn-default" display="block">
-        <input type="radio"  value="{{ project }}"/> {{ project }}
-    </label>
+    <button type="radio"  class="list-group-item project-selector-button selector-button" id="project-selector-{{project}}" value="{{project}}"> {{project}}</button>
 {% endfor %}

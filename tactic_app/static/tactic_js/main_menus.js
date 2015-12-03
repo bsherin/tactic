@@ -206,13 +206,14 @@ function column_command(menu_id) {
                 deselect_header(column_header);
                 var col_class = ".column-" + column_header;
                 $(col_class).fadeOut();
-                tableObject.current_spec.hidden_list.push(column_header);
+                //tableObject.current_spec.hidden_list.push(column_header);
+                hidden_columns_list.push(column_header);
                 break;
             }
         }
     }
     else if (menu_id == "unhide") {
-        tableObject.current_spec.hidden_list = ["__filename__"];
+        hidden_columns_list = ["__filename__"];
         tableObject.build_table();
     }
     else if (menu_id == "add-column") {
@@ -251,6 +252,7 @@ function saveProjectAs() {
                 var result_dict = {
                 "project_name": new_name,
                 "main_id": main_id,
+                "hidden_columns_list": hidden_columns_list,
                 "tablespec_dict": tablespec_dict
             };
             $.ajax({
@@ -377,7 +379,8 @@ function enable_require_column_select(){
 function save_project() {
     var result_dict = {
         "main_id": main_id,
-        "tablespec_dict": tablespec_dict
+        "tablespec_dict": tablespec_dict,
+        "hidden_columns_list": hidden_columns_list
         //"tablespec_dict": tablespec_dict
     };
     $.ajax({

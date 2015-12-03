@@ -60,7 +60,8 @@ class docInfo():
         return new_instance
 
 class mainWindow(threading.Thread):
-    save_attrs = ["short_collection_name", "collection_name", "current_tile_id", "user_id", "doc_dict", "tile_instances", "project_name", "loaded_modules"]
+    save_attrs = ["short_collection_name", "collection_name", "current_tile_id",
+                  "user_id", "doc_dict", "tile_instances", "project_name", "loaded_modules", "hidden_columns_list"]
     update_events = ["CellChange", "CreateColumn", "SearchTable", "SaveTableSpec",
                     "DehighlightTable", "SetCellContent", "RemoveTile", "ColorTextInCell", "FilterTable", "UnfilterTable", "TextSelect"]
     def __init__(self, user_id, collection_name, doc_dict=None):
@@ -375,6 +376,8 @@ class mainWindow(threading.Thread):
         try:
             the_collection = db[self.collection_name]
             for f in the_collection.find():
+                if str(f["name"]) == "__metadata__":
+                    continue;
                 if "header_list" in f:
                     result[str(f["name"])] = docInfo(str(f["name"]), f["data_rows"], f["header_list"]) # Note conversion of unicode filenames to strings
                 else:
