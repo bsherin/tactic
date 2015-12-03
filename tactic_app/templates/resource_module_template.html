@@ -7,32 +7,32 @@
     <div class="row indent-row" style="margin-top: 10px">
         <div class="col-xs-12">
             <form action="" method="post" target="_self" id="add-{{res_type}}-form" enctype="multipart/form-data">
-                <input class="btn btn-success stacked-button" style="display: inline" type="submit" value="Add File">
-                <input class="btn btn-default file-selector" id="file-inputter" style="display: inline" type="file" name="file" {{#show_multiple}}multiple{{/show_multiple}}>
+                <input class="btn add-button" style="display: inline" type="submit" value="Add File">
+                <input class="btn btn-default" id="file-inputter" style="display: inline" type="file" name="file" {{#show_multiple}}multiple{{/show_multiple}}>
             </form>
         </div>
     </div>
     {{/show_add}}
     <div class="row indent-row" style="margin-top: 5px">
         <div class="col-xs-12">
-            <div class="btn-group" role="group">
+            <div class="btn-group" style= "margin-top: 5px; margin-bottom: 5px" role="group">
                 {{#show_new}}
-                    <button type="button" id="new-{{res_type}}-button" class="btn btn-success">New</button>
+                    <button type="button" id="new-{{res_type}}-button" class="btn action-button">New</button>
                 {{/show_new}}
                 {{#show_view}}
-              <button type="button" id="view-{{res_type}}-button" class="btn btn-success">View</button>
+              <button type="button" id="view-{{res_type}}-button" class="btn action-button">View</button>
                 {{/show_view}}
                 {{#show_load}}
-                <button type="button" id="load-{{res_type}}-button" class="btn btn-success">Load</button>
+                <button type="button" id="load-{{res_type}}-button" class="btn action-button">Load</button>
                 {{/show_load}}
                 {{#show_delete}}
-              <button type="button" id="delete-{{res_type}}-button" class="btn btn-success">Delete</button>
+              <button type="button" id="delete-{{res_type}}-button" class="btn action-button">Delete</button>
                 {{/show_delete}}
                 {{#show_duplicate}}
-              <button type="button" id="duplicate-{{res_type}}-button" class="btn btn-success">Duplicate</button>
+              <button type="button" id="duplicate-{{res_type}}-button" class="btn action-button">Duplicate</button>
                 {{/show_duplicate}}
                 {{#show_save}}
-              <button type="button" id="save-{{res_type}}-button" class="btn btn-success">Save</button>
+              <button type="button" id="save-{{res_type}}-button" class="btn action-button">Save</button>
                 {{/show_save}}
             </div>
         </div>
@@ -42,9 +42,9 @@
             <div style="display: inline-block; vertical-align: top; overflow-y: scroll; max-height: 100%; line-height: 1" class="list-group" id="{{res_type}}-selector" data-toggle="buttons">
             </div>
             <div style="display: inline-block; vertical-align: top; margin-left: 5px">
-                <button type="button" class="btn btn-success btn-sm save-metadata-button" style="margin-bottom: 7px" value="{{res_type}}">Save Metadata</button>
+                <button type="button" class="btn btn-sm save-metadata-button" style="margin-bottom: 7px" value="{{res_type}}">Save Metadata</button>
                 <div class="created"></div>
-                <div class="form-group">
+                <div class="form-group" style="margin-bottom: 7px">
                     <textarea type="text" class="form-control" rows="1" id="{{res_type}}-tags" placeholder="tags"></textarea>
                 </div>
                 <div class="form-group">

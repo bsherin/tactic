@@ -9,55 +9,7 @@ mousetrap.bind("esc", function() {
     clearStatusArea();
 })
 
-function selector_click(event) {
-    var re = /^(\w+?)-/
-    var res_type = re.exec($(event.target).attr("id"))[1]
-    $("." + res_type + "-selector-button").removeClass("active");
-    $(event.target).addClass("active")
-    var res_name = $('.' + res_type + '-selector-button.active')[0].value
-    var result_dict = {"res_type": res_type, "res_name": res_name}
-    $.ajax({
-            url: $SCRIPT_ROOT + "/grab_metadata",
-            contentType : 'application/json',
-            type : 'POST',
-            async: true,
-            data: JSON.stringify(result_dict),
-            dataType: 'json',
-            success: got_metadata
-    });
-    function got_metadata(data) {
-        if (data.success) {
-            $("#" + res_type + "-module .created").html(data.datestring)
-            $("#" + res_type + "-tags")[0].value = data.tags;
-            $("#" + res_type + "-notes")[0].value = data.notes;
-        }
-        else {
-            // doFlash(data)
-            $("#" + res_type + "-module .created").html("");
-            $("#" + res_type + "-tags")[0].value = "";
-            $("#" + res_type + "-tags").html("");
-            $("#" + res_type + "-notes")[0].value = "";
-            $("#" + res_type + "-notes").html("");
-        }
-    }
-}
 
-function save_metadata(event) {
-    var res_type = event.target.value
-    var res_name = $('.' + res_type + '-selector-button.active')[0].value
-    var tags = $("#" + res_type + "-tags").val();
-    var notes = $("#" + res_type + "-notes").val()
-    var result_dict = {"res_type": res_type, "res_name": res_name, "tags": tags, "notes": notes}
-        $.ajax({
-            url: $SCRIPT_ROOT + "/save_metadata",
-            contentType : 'application/json',
-            type : 'POST',
-            async: true,
-            data: JSON.stringify(result_dict),
-            dataType: 'json',
-            success: doFlash
-    });
-}
 
 function start_post_load() {
     if (use_ssl) {

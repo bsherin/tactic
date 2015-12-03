@@ -189,7 +189,6 @@ def load_tile_module(tile_module_name):
         return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
 
-
 def render_loaded_tile_list():
     loaded_tiles = []
     for (category, dict) in user_tiles[current_user.username].items():
@@ -197,16 +196,16 @@ def render_loaded_tile_list():
     return render_template("user_manage/loaded_tile_list.html", user_tile_name_list=loaded_tiles)
 
 def render_project_list():
-    return render_template("user_manage/project_list.html")
+    return render_template("user_manage/resource_list.html", res_type="project", resource_names=current_user.project_names)
 
 def render_collection_list():
-    return render_template("user_manage/collection_list.html")
+    return render_template("user_manage/resource_list.html", res_type="collection", resource_names=current_user.data_collections)
 
 def render_list_list():
-    return render_template("user_manage/list_list.html")
+    return render_template("user_manage/resource_list.html", res_type="list", resource_names=current_user.list_names)
 
 def render_tile_module_list():
-    return render_template("user_manage/tile_module_list.html")
+    return render_template("user_manage/resource_list.html", res_type="tile", resource_names=current_user.tile_module_names)
 
 
 @app.route('/create_duplicate_list', methods=['post'])

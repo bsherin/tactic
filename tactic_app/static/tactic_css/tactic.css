@@ -20,6 +20,42 @@
     margin-top:0px;
 }
 
+.resource-module .add-button {
+    color: #333;
+    background-color: #e6e6e6;
+    border-color: #adadad;
+}
+
+.resource-module .add-button:hover {
+    color: #333;
+    background-color: #f8f8f8;
+    border-color: #adadad;
+}
+
+.resource-module .action-button {
+    color: #333;
+    background-color: #e6e6e6;
+    border-color: #adadad;
+}
+
+.resource-module .action-button:hover {
+    color: #333;
+    background-color: #f8f8f8;
+    border-color: #adadad;
+}
+
+.resource-module .save-metadata-button {
+    color: #333;
+    background-color: #e6e6e6;
+    border-color: #adadad;
+}
+
+.resource-module .save-metadata-button:hover {
+    color: #333;
+    background-color: #f8f8f8;
+    border-color: #adadad;
+}
+
 .stacked-button {
     margin-bottom: 10px;
     display: block;
