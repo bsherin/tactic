@@ -79,6 +79,7 @@ function continue_loading() {
                 $("#reload-message").css("display", "none");
                 $("#outer-container").css("display", "block");
                 $("#table-area").css("display", "block");
+                hidden_columns_list = data.hidden_columns_list;
                 tablespec_dict = {};
                 for (spec in data.tablespec_dict) {
                     if (!data.tablespec_dict.hasOwnProperty(spec)){

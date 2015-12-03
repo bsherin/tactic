@@ -5,7 +5,7 @@ from flask import request, jsonify, render_template, send_file, url_for
 from flask_login import current_user, login_required
 from flask_socketio import join_room
 from tactic_app.shared_dicts import tile_classes, user_tiles
-from tactic_app.shared_dicts import mainwindow_instances, distribute_event
+from tactic_app.shared_dicts import mainwindow_instances, distribute_event, create_initial_metadata
 from user_manage_views import render_project_list, render_collection_list
 from tactic_app.users import build_data_collection_name
 
@@ -29,11 +29,13 @@ def save_new_project():
     data_dict = request.json
     try:
         mainwindow_instances[data_dict['main_id']].project_name = data_dict["project_name"]
+        mainwindow_instances[data_dict['main_id']].hidden_columns_list = data_dict["hidden_columns_list"]
         tspec_dict = data_dict["tablespec_dict"]
         for (dname, spec) in tspec_dict.items():
             mainwindow_instances[data_dict['main_id']].doc_dict[dname].table_spec = spec
 
         save_dict = mainwindow_instances[data_dict['main_id']].compile_save_dict()
+        save_dict["metadata"] = create_initial_metadata()
 
         db[current_user.project_collection_name].insert_one(save_dict)
         socketio.emit('update-project-list', {"html": render_project_list()}, namespace='/user_manage', room=current_user.get_id())
@@ -47,6 +49,7 @@ def save_new_project():
 def update_project():
     data_dict = request.json
     tspec_dict = data_dict["tablespec_dict"]
+    mainwindow_instances[data_dict['main_id']].hidden_columns_list = data_dict["hidden_columns_list"]
     for (dname, spec) in tspec_dict.items():
         mainwindow_instances[data_dict['main_id']].doc_dict[dname].table_spec = spec
     save_dict = mainwindow_instances[data_dict['main_id']].compile_save_dict()
@@ -78,7 +81,11 @@ def grab_data(main_id, doc_name):
 @login_required
 def grab_project_data(main_id, doc_name):
     mw = mainwindow_instances[main_id]
-    return jsonify({"doc_name": doc_name, "tile_ids": mw.tile_ids, "data_rows": mw.doc_dict[doc_name].sorted_data_rows, "tablespec_dict": mw.tablespec_dict()})
+    return jsonify({"doc_name": doc_name,
+                    "tile_ids": mw.tile_ids,
+                    "data_rows": mw.doc_dict[doc_name].sorted_data_rows,
+                    "hidden_columns_list": mw.hidden_columns_list,
+                    "tablespec_dict": mw.tablespec_dict()})
 
 @app.route('/get_menu_template', methods=['get'])
 @login_required

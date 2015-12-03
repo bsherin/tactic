@@ -13,13 +13,47 @@
 }
 
 .resource-module {
-    border: .25px solid rgb(240, 173, 78);
-    padding: 20px;
     margin: 10px
 }
 
 .resource-module h2 {
     margin-top:0px;
+}
+
+.resource-module .add-button {
+    color: #333;
+    background-color: #e6e6e6;
+    border-color: #adadad;
+}
+
+.resource-module .add-button:hover {
+    color: #333;
+    background-color: #f8f8f8;
+    border-color: #adadad;
+}
+
+.resource-module .action-button {
+    color: #333;
+    background-color: #e6e6e6;
+    border-color: #adadad;
+}
+
+.resource-module .action-button:hover {
+    color: #333;
+    background-color: #f8f8f8;
+    border-color: #adadad;
+}
+
+.resource-module .save-metadata-button {
+    color: #333;
+    background-color: #e6e6e6;
+    border-color: #adadad;
+}
+
+.resource-module .save-metadata-button:hover {
+    color: #333;
+    background-color: #f8f8f8;
+    border-color: #adadad;
 }
 
 .stacked-button {

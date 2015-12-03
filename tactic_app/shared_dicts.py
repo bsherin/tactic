@@ -1,5 +1,7 @@
 __author__ = 'bls910'
 
+import datetime
+
 mainwindow_instances = {}
 tile_classes = {}
 user_tiles = {}
@@ -32,3 +34,10 @@ def get_tile_class(username, tile_type):
         if tile_type in dict:
             return dict[tile_type]
     return None
+
+
+def create_initial_metadata():
+    mdata = {"datetime": datetime.datetime.today(),
+             "tags": "",
+             "notes": ""}
+    return mdata
