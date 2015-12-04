@@ -240,6 +240,19 @@ def request_update_project_list():
 def request_update_tile_list():
     return render_tile_module_list()
 
+@app.route('/search_resource', methods=['POST'])
+@login_required
+def search_resource():
+    txt = request.json["text"]
+    res_type = request.json["res_type"]
+    search_type = request.json["search_type"]
+    if search_type == "search":
+        the_list = current_user.get_resource_names(res_type, search_filter=txt)
+    else:
+        the_list = current_user.get_resource_names(res_type, tag_filter=txt)
+    the_html = render_template("user_manage/resource_list.html", res_type=res_type, resource_names=the_list)
+    return jsonify({"html": the_html})
+
 @app.route('/request_update_loaded_tile_list', methods=['GET'])
 @login_required
 def request_update_loaded_tile_list():

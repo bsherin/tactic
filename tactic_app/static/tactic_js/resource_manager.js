@@ -170,6 +170,48 @@ function selector_click(event) {
     }
 }
 
+function search_resource(event) {
+    res_type = event.target.value;
+    txt = document.getElementById(res_type + '-search').value;
+    data_dict = {"text": txt, "res_type": res_type , "search_type": "search"};
+    $.ajax({
+        url: $SCRIPT_ROOT + "/search_resource",
+        contentType : 'application/json',
+        type : 'POST',
+        async: true,
+        data: JSON.stringify(data_dict),
+        dataType: 'json',
+        success: search_success
+    });
+    function search_success(data) {
+        $("#" + res_type + "-selector").html(data.html)
+    }
+};
+
+function search_resource_tags(event) {
+    var res_type = event.target.value;
+    var txt = document.getElementById(res_type + '-search').value;
+    var data_dict = {"text": txt, "res_type": res_type , "search_type": "tags"};
+    $.ajax({
+        url: $SCRIPT_ROOT + "/search_resource",
+        contentType : 'application/json',
+        type : 'POST',
+        async: true,
+        data: JSON.stringify(data_dict),
+        dataType: 'json',
+        success: search_success
+    });
+    function search_success(data) {
+        $("#" + res_type + "-selector").html(data.html)
+    }
+};
+
+function unfilter_resource(event) {
+    var res_type = event.target.value;
+    $("#" + res_type + "-selector").load($SCRIPT_ROOT + "/request_update_" + res_type + "_list");
+};
+
+
 function save_metadata(event) {
     var res_type = event.target.value
     var res_name = $('.' + res_type + '-selector-button.active')[0].value

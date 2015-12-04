@@ -59,6 +59,9 @@ function start_post_load() {
         projectManager.add_listeners();
         tileManager.add_listeners();
         $(".resource-module").on("click", ".selector-button", selector_click)
+        $(".resource-module").on("click", ".search-resource-button", search_resource)
+        $(".resource-module").on("click", ".search-tags-button", search_resource_tags)
+        $(".resource-module").on("click", ".resource-unfilter-button", unfilter_resource)
         $(".resource-module").on("click", ".save-metadata-button", save_metadata)
         resize_window();
     })
