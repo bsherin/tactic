@@ -1,5 +1,10 @@
 
 /* resource module */
+
+.indent-row {
+    margin-left: 5px;
+    margin-bottom: 20px;
+}
 .user-button-group {
     height: 200px;
     overflow: scroll;
@@ -10,6 +15,10 @@
     text-align: left;
     padding-top: 1px;
     padding-bottom: 1px
+}
+
+.nav-tabs a {
+    outline: 0px;
 }
 
 .resource-module {
