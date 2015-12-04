@@ -1,5 +1,10 @@
 
 /* resource module */
+
+.indent-row {
+    margin-left: 5px;
+    margin-bottom: 20px;
+}
 .user-button-group {
     height: 200px;
     overflow: scroll;
@@ -12,6 +17,10 @@
     padding-bottom: 1px
 }
 
+.nav-tabs a {
+    outline: 0px;
+}
+
 .resource-module {
     margin: 10px
 }
@@ -21,8 +30,8 @@
 }
 
 .resource-module .add-button {
-    color: #333;
-    background-color: #e6e6e6;
+    color: #366c34;
+    background-color: #d9eecf;
     border-color: #adadad;
 }
 
@@ -33,8 +42,8 @@
 }
 
 .resource-module .action-button {
-    color: #333;
-    background-color: #e6e6e6;
+    color: #366c34;
+    background-color: #d9eecf;
     border-color: #adadad;
 }
 

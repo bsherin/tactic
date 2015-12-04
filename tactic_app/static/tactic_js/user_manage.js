@@ -59,21 +59,27 @@ function start_post_load() {
         projectManager.add_listeners();
         tileManager.add_listeners();
         $(".resource-module").on("click", ".selector-button", selector_click)
+        $(".resource-module").on("click", ".search-resource-button", search_resource)
+        $(".resource-module").on("click", ".search-tags-button", search_resource_tags)
+        $(".resource-module").on("click", ".resource-unfilter-button", unfilter_resource)
         $(".resource-module").on("click", ".save-metadata-button", save_metadata)
         resize_window();
+        $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+            ref_type = $(e.target).attr("value")
+            var h = window.innerHeight - 50 - $("#" + ref_type + "-selector-row").offset().top
+            $("#" + ref_type + "-selector-row").outerHeight(h);
+        })
     })
 }
 
 var res_types = ["list", "collection", "project", "tile"]
 
 function resize_window() {
-    module_height = (window.innerHeight - 30 - $("#left-col").offset().top) / 2;
+    //res_types.forEach(function (val, ind, array) {
+    //    $("#" + val + "-module").outerHeight(module_height);
+    //})
     res_types.forEach(function (val, ind, array) {
-        $("#" + val + "-module").outerHeight(module_height);
-    })
-    res_types.forEach(function (val, ind, array) {
-        var pos = $("#" + val + "-selector-row").offset().top - $("#" + val + "-selector-row").parent().offset().top;
-        var h = $("#" + val + "-module .panel-body").height() - pos - 20;
+        var h = window.innerHeight - 50 - $("#" + val + "-selector-row").offset().top
         $("#" + val + "-selector-row").outerHeight(h);
     })
 }

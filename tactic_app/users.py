@@ -125,8 +125,46 @@ class User(UserMixin):
             my_list_names.append(doc["list_name"])
         return sorted([str(t) for t in my_list_names], key=str.lower)
 
+    def get_resource_names(self, res_type, tag_filter=None, search_filter=None):
+        if res_type == "collection":
+            dcollections = self.data_collections
+            res_names = []
+            for dcol in dcollections:
+                cname=build_data_collection_name(dcol)
+                mdata = db[cname].find_one({"name": "__metadata__"})
+                if tag_filter is not None:
+                    if mdata is not None and "tags" in mdata:
+                        if tag_filter in mdata["tags"]:
+                            res_names.append(dcol)
+                elif search_filter is not None:
+                    if search_filter in dcol:
+                        res_names.append(dcol)
+                else:
+                    res_names.append(dcol)
+        else:
+            cnames = {"tile": self.tile_collection_name, "list": self.list_collection_name, "project": self.project_collection_name}
+            name_keys = {"tile": "tile_module_name", "list": "list_name", "project": "project_name"}
+            cname = cnames[res_type]
+            name_key = name_keys[res_type]
+            if cname not in db.collection_names():
+                db.create_collection(cname)
+                return []
+            res_names = []
+            for doc in db[cname].find():
+                if tag_filter is not None:
+                    if "metadata" in doc:
+                        if "tags" in doc["metadata"]:
+                            if tag_filter in doc["metadata"]["tags"]:
+                                res_names.append(doc[name_key])
+                elif search_filter is not None:
+                    if search_filter in doc[name_key]:
+                        res_names.append(doc[name_key])
+                else:
+                    res_names.append(doc[name_key])
+        return sorted([str(t) for t in res_names], key=str.lower)
+
     @property
-    def tile_module_names(self):
+    def tile_module_names(self,):
         if self.tile_collection_name not in db.collection_names():
             db.create_collection(self.tile_collection_name)
             return []
