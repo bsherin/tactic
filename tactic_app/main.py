@@ -58,7 +58,8 @@ class docInfo():
         result = {}
         sorted_int_keys = sorted([int(key) for key in self.current_data_rows.keys()])
         for r in sorted_int_keys[self.start_of_current_chunk:(self.start_of_current_chunk + CHUNK_SIZE)]:
-            result[str(r)] = self.cell_backgrounds[str(r)]
+            if str(r) in self.cell_backgrounds:
+                result[str(r)] = self.cell_backgrounds[str(r)]
         return result
 
     def configure_for_current_data(self):
