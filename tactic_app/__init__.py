@@ -23,6 +23,8 @@ def print_message():
 try:
     print "getting client"
     use_ssl = os.environ.get("USE_SSL")
+    CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
+    STEP_SIZE = int(os.environ.get("STEP_SIZE"))
     # client = MongoClient("localhost", serverSelectionTimeoutMS=10)
     client = MongoClient(host=os.environ.get("MONGOLAB_URI"))
     print "getting server_info"

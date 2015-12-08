@@ -32,9 +32,20 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-xs-12">
+            <div class="col-xs-9">
                 <br>
                 <textarea id="codearea">{{module_code | safe}}</textarea>
+            </div>
+            <div class="col-xs-3">
+                <div  style="display: inline-block; vertical-align: top; margin-left: 5px; margin-top: 10px">
+                    <div class="created"></div>
+                    <div class="form-group" style="margin-bottom: 7px">
+                        <textarea type="text" class="form-control" rows="1" id="tile-tags" placeholder="tags"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <textarea class="form-control" id="tile-notes" rows="5" placeholder="notes"></textarea>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

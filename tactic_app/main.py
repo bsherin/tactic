@@ -14,6 +14,9 @@ from collections import OrderedDict
 from shared_dicts import mainwindow_instances, distribute_event, get_tile_class
 from shared_dicts import tile_classes, user_tiles
 from tactic_app import socketio
+
+from tactic_app import CHUNK_SIZE, STEP_SIZE
+
 current_main_id = 0
 
 def create_new_mainwindow(user_id, collection_name):
@@ -29,22 +32,107 @@ def create_new_mainwindow_from_project(project_dict):
     return mw._main_id
 
 class docInfo():
-    def __init__(self, name, data_rows, header_list=None):
+    def __init__(self, name, data_rows, header_list=None, cell_backgrounds = {}):
         self.name = name
-        self.data_rows = data_rows
+        self.data_rows = data_rows  # All the data rows in the doc
+        self.current_data_rows = data_rows  # The current filtered set of data rows
         self.header_list = header_list
         self.table_spec = {}
+        self.cell_backgrounds = cell_backgrounds
+        self.configure_for_current_data()
+        if len(self.data_rows.keys()) > CHUNK_SIZE:
+            self.max_table_size = CHUNK_SIZE
+        else:
+            self.max_table_size = len(self.data_rows.keys())
+
+    def set_background_color(self, row, column_header, color):
+        if not str(row) in self.cell_backgrounds:
+            self.cell_backgrounds[str(row)] = {}
+        self.cell_backgrounds[str(row)][column_header] = color
+
+
+    @property
+    def displayed_background_colors(self):
+        if not self.infinite_scroll_required:
+            return self.cell_backgrounds
+        result = {}
+        sorted_int_keys = sorted([int(key) for key in self.current_data_rows.keys()])
+        for r in sorted_int_keys[self.start_of_current_chunk:(self.start_of_current_chunk + CHUNK_SIZE)]:
+            result[str(r)] = self.cell_backgrounds[str(r)]
+        return result
+
+    def configure_for_current_data(self):
+        self.start_of_current_chunk = 0
+        self.is_first_chunk = True
+        if (len(self.current_data_rows.keys()) <= CHUNK_SIZE):
+            self.infinite_scroll_required = False
+            self.is_last_chunk = True
+        else:
+            self.infinite_scroll_required = True
+            self.is_last_chunk = False
+
+    def get_actual_row(self, row_id):
+        row = int(row_id)
+        if (row >= self.start_of_current_chunk and row < (self.start_of_current_chunk + CHUNK_SIZE)):
+            return row - self.start_of_current_chunk
+        else:
+            return None
 
     def compile_save_dict(self):
-        return ({"name": self.name, "data_rows": self.data_rows, "table_spec": self.table_spec, "my_class_for_recreate": "docInfo", "header_list": self.header_list})
+        return ({"name": self.name,
+                 "data_rows": self.data_rows,
+                 "table_spec": self.table_spec,
+                 "cell_backgrounds": self.cell_backgrounds,
+                 "my_class_for_recreate": "docInfo",
+                 "header_list": self.header_list})
 
     @property
     def sorted_data_rows(self):
+        result = []
+        sorted_int_keys = sorted([int(key) for key in self.current_data_rows.keys()])
+        for r in sorted_int_keys:
+            result.append(self.data_rows[str(r)])
+        return result
+
+    @property
+    def all_sorted_data_rows(self):
         result = []
         sorted_int_keys = sorted([int(key) for key in self.data_rows.keys()])
         for r in sorted_int_keys:
             result.append(self.data_rows[str(r)])
         return result
+
+    @property
+    def displayed_data_rows(self):
+        if not self.infinite_scroll_required:
+            return self.sorted_data_rows
+        result = []
+        sorted_int_keys = sorted([int(key) for key in self.current_data_rows.keys()])
+        for r in sorted_int_keys[self.start_of_current_chunk:(self.start_of_current_chunk + CHUNK_SIZE)]:
+            result.append(self.current_data_rows[str(r)])
+        return result
+
+    def advance_to_next_chunk(self):
+        if self.is_last_chunk:
+            return
+        old_start = self.start_of_current_chunk
+        self.start_of_current_chunk = self.start_of_current_chunk + STEP_SIZE
+        self.is_first_chunk = False
+        if (self.start_of_current_chunk + CHUNK_SIZE) >= len(self.current_data_rows):
+            self.start_of_current_chunk = len(self.current_data_rows) - CHUNK_SIZE
+            self.is_last_chunk = True
+        return self.start_of_current_chunk - old_start
+
+    def go_to_previous_chunk(self):
+        if self.is_first_chunk:
+            return
+        old_start = self.start_of_current_chunk
+        self.start_of_current_chunk = self.start_of_current_chunk - STEP_SIZE
+        self.is_last_chunk = False
+        if self.start_of_current_chunk <= 0:
+            self.start_of_current_chunk = 0
+            self.is_first_chunk = True
+        return old_start - self.start_of_current_chunk
 
     @property
     def data_rows_int_keys(self):
@@ -55,7 +143,7 @@ class docInfo():
 
     @staticmethod
     def recreate_from_save(save_dict):
-        new_instance = docInfo(save_dict["name"], save_dict["data_rows"], save_dict["header_list"])
+        new_instance = docInfo(save_dict["name"], save_dict["data_rows"], save_dict["header_list"], save_dict["cell_backgrounds"])
         new_instance.table_spec = save_dict["table_spec"]
         return new_instance
 
@@ -200,7 +288,7 @@ class mainWindow(threading.Thread):
         return result
 
     def get_column_data_for_doc(self, column_header, doc_name):
-        the_rows = self.doc_dict[doc_name].sorted_data_rows
+        the_rows = self.doc_dict[doc_name].all_sorted_data_rows
         result = []
         for the_row in the_rows:
             result.append(the_row[column_header])
@@ -220,32 +308,38 @@ class mainWindow(threading.Thread):
         return result
 
     def unfilter_all_rows(self):
-        self.emit_table_message("unfilterAllRows")
+        for doc in self.doc_dict.values():
+            doc.current_data_rows = doc.data_rows
+            doc.configure_for_current_data()
+        self.refill_table()
+
+
+    def refill_table(self):
+        doc = self.doc_dict[self.visible_doc_name]
+        data_object = {}
+        data_object["data_rows"] = doc.sorted_data_rows
+        data_object["doc_name"] = self.visible_doc_name
+        data_object["is_first_chunk"] = doc.is_first_chunk
+        data_object["is_last_chunk"] = doc.is_last_chunk
+        self.emit_table_message("refill_table", data_object)
 
     def display_matching_rows(self, filter_function, document_name=None):
         if document_name is not None:
-            show_list = []
-            hide_list = []
-            i = 0
-            for r in self.doc_dict[document_name].sorted_data_rows:
-                if filter_function(r):
-                    show_list.append(i)
-                else:
-                    hide_list.append(i)
-                i += 1
-            self.emit_table_message("setHiddenRows", {"document": document_name, "hide_list": hide_list})
+            doc = self.doc_dict[document_name]
+            doc.current_data_rows = {}
+            for (key, val) in doc.data_rows.items():
+                if filter_function(val):
+                    doc.current_data_rows[key] = val
+            doc.configure_for_current_data()
+            self.refill_table()
         else:
-            for doc in self.doc_dict.keys():
-                show_list = []
-                hide_list = []
-                i = 0
-                for r in self.doc_dict[doc].sorted_data_rows:
-                    if filter_function(r):
-                        show_list.append(i)
-                    else:
-                        hide_list.append(i)
-                    i += 1
-                self.emit_table_message("setHiddenRows", {"document": doc, "hide_list": hide_list})
+            for doc in self.doc_dict.values():
+                doc.current_data_rows = {}
+                for (key, val) in doc.data_rows.items():
+                    if filter_function(val):
+                        doc.current_data_rows[key] = val
+                doc.configure_for_current_data()
+        self.refill_table()
         return
 
     def apply_to_rows(self, func, document_name=None):
@@ -337,17 +431,20 @@ class mainWindow(threading.Thread):
                 self.emit_table_message("setCellContent", data)
 
     def _set_cell_background(self, doc_name, id, column_header, color):
-        data = {"doc_name": doc_name,
-                "id": id,
-                "column_header": column_header,
-                "color": color,
-                "header_list": self.doc_dict[doc_name].header_list}
-        self.emit_table_message("setCellBackground", data)
+        doc = self.doc_dict[doc_name]
+        doc.set_background_color(id, column_header, color)
+        if doc_name == self.visible_doc_name:
+            actual_row = doc.get_actual_row(id)
+            if actual_row is not None:
+                data = {"row": actual_row,
+                        "column_header": column_header,
+                        "color": color}
+                self.emit_table_message("setCellBackground", data)
 
     def highlight_table_text(self, txt):
         row_index = 0;
         dinfo = self.doc_dict[self.visible_doc_name]
-        for the_row in dinfo.sorted_data_rows:
+        for the_row in dinfo.displayed_data_rows:
             for cheader in dinfo.header_list:
                 cdata = the_row[cheader]
                 if cdata is None:

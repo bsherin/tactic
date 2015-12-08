@@ -3,7 +3,6 @@
 {% block title %}{{ window_title }}{% endblock %}
 
 {% block head %}
-{#    <script src='//cameratag.com/api/v6/js/cameratag.js' type='text/javascript'></script>#}
 {% endblock %}
 
 {% block styles %}
@@ -13,16 +12,12 @@
 {% endblock %}
 
 {% block page_content %}
-{#    <camera id="MyFirstCamera" data-app-id="a-2ed02e70-5579-0133-03fb-22000b109ea8" style="width:500px; height:200px; display:block"></camera>#}
-{#    <video id='MyPlayer1' data-uuid='a-2ed02e70-5579-0133-03fb-22000b109ea8'></video>#}
-{#    <video id='rando' data-uuid='["v-bbfdac4a-5a46-4a4b-a87a-4d912fbd692e"]'></video>#}
     {% include 'modals/show_image_modal.html' %}
     <div id="modal-area">
     </div>
     <div id="loading-message">
         <span class="loader"><span class="loader-inner"></span></span>
     </div>
-{#    <div id="loading-message" class="loader" style="line-height: 200px" align="center"></div>#}
     <div id="outer-container" align="center" style="display: none">
         <div id="status-area"></div>
         <div class="grid-left" align="left">
@@ -60,7 +55,7 @@
                     <div id="reload-message" style="display: none">
                         <span class="loader"><span class="loader-inner"></span></span>
                     </div>
-                    <table id="table-area" >
+                    <table id="table-area">
                     </table>
                 </div>
              </div>
@@ -88,6 +83,7 @@
 {% endblock %}
 {% block scripts %}
     <script src="{{url_for('static', filename='js/jquery.flip.js')}}"></script>
+    <script src="{{url_for('static', filename='js/jquery.isonscreen.js')}}"></script>
     <script src="{{url_for('static', filename='js/socket.io.js')}}"></script>
     <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/utilities.js')}}"></script>
