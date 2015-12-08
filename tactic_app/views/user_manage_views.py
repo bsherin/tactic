@@ -12,7 +12,6 @@ from tactic_app.users import put_docs_in_collection, build_data_collection_name
 from tactic_app.user_tile_env import create_user_tiles
 from tactic_app.shared_dicts import user_tiles, loaded_user_modules, create_initial_metadata
 
-
 @app.route('/user_manage')
 @login_required
 def user_manage():
@@ -21,7 +20,6 @@ def user_manage():
     else:
         user_tile_name_list = []
     return render_template('user_manage/user_manage.html', user_tile_name_list=user_tile_name_list, use_ssl=str(use_ssl))
-
 
 @app.route('/main/<collection_name>', methods=['get'])
 @login_required
@@ -300,7 +298,7 @@ def load_files(collection_name):
     full_collection_name = build_data_collection_name(collection_name)
     mdata = create_initial_metadata()
     try:
-        db[full_collection_name].insert_one({"name": "__metadata__", "datetime": mdata})
+        db[full_collection_name].insert_one({"name": "__metadata__", "datetime": mdata["datetime"]})
     except:
         error_string = "Error creating collection: " + str(sys.exc_info()[0]) + " "  + str(sys.exc_info()[1])
         return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
@@ -371,12 +369,25 @@ def duplicate_collection():
 @app.route('/update_module', methods=['post'])
 @login_required
 def update_module():
-    data_dict = request.json
-    module_name = data_dict["module_name"]
-    module_code = data_dict["new_code"]
-    db[current_user.tile_collection_name].update_one({"tile_module_name": module_name},
-                                                        {'$set': {"tile_module": module_code}})
-    return jsonify({"success": True, "message": "Module Successfully Saved", "alert_type": "alert-success"})
+    try:
+        data_dict = request.json
+        module_name = data_dict["module_name"]
+        module_code = data_dict["new_code"]
+        tags = data_dict["tags"]
+        doc = db[current_user.tile_collection_name].find_one({"tile_module_name": module_name})
+        if "metadata" in doc:
+            mdata = doc["metadata"]
+        else:
+            mdata = {}
+        mdata["tags"] = data_dict["tags"]
+        mdata["notes"] = data_dict["notes"]
+
+        db[current_user.tile_collection_name].update_one({"tile_module_name": module_name},
+                                                         {'$set': {"tile_module": module_code, "metadata": mdata}})
+        return jsonify({"success": True, "message": "Module Successfully Saved", "alert_type": "alert-success"})
+    except:
+        error_string = "Error saving module " + str(sys.exc_info()[0]) + " "  + str(sys.exc_info()[1])
+        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
 @app.route('/get_modal_template', methods=['get'])
 @login_required

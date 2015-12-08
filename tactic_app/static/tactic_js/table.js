@@ -26,6 +26,7 @@ var table_is_shrunk = false
 $.get($SCRIPT_ROOT + "/get_table_templates", function(template){
     header_template = $(template).filter('#header-template').html();
     body_template = $(template).filter('#body-template').html();
+    body_template_hidden = $(template).filter('#body-template-hidden').html();
 })
 
 function doSearch(t) {
@@ -79,10 +80,8 @@ function select_header(header_name) {
 tableSpec = {
     "doc_name": null,
     "header_list": null,
-    "hidden_rows": [],
     "table_width": null,
     "column_widths": null,
-    "bg_colors": {},
     shift_column_left: function (column_name) {
         var i;
         for (i = 0; i < this.header_list.length; ++i) {
@@ -111,22 +110,6 @@ tableSpec = {
                 this.column_widths.splice(i + 1, 0, column_width)
             }
         }
-    },
-    set_bg_color: function(rindex, cheader, bcolor) {
-        if (!this.bg_colors.hasOwnProperty(rindex)){
-            this.bg_colors[rindex] = {}
-        };
-        this.bg_colors[rindex][cheader] = bcolor;
-
-    },
-    color_all_bgs: function() {
-        for (var row in this.bg_colors) {
-            if (!this.bg_colors.hasOwnProperty(row)) continue;
-            for (var cheader in this.bg_colors[row]) {
-                if (!this.bg_colors[row].hasOwnProperty(cheader)) continue;
-                tableObject.colorCellBackground(row, cheader, this.bg_colors[row][cheader])
-            }
-        }
     }
 }
 
@@ -134,10 +117,9 @@ function create_tablespec(dict) {
     var spec = Object.create(tableSpec);
     spec.doc_name = dict.doc_name;
     spec.header_list = dict.header_list;
-    spec.hidden_rows = dict.hidden_rows;
+    spec.hidden_list = dict.hidden_list;
     spec.table_width = dict.table_width;
     spec.column_widths = dict.column_widths;
-    spec.bg_colors = dict.bg_colors
     return spec
 }
 
@@ -159,16 +141,19 @@ var tableObject = {
         this.project_name = _project_name;
         //this.short_collection_name = _collection_name.replace(/^.*?\.data_collection\./, "");
         this.data_rows = data_object["data_rows"];
-        this.current_doc_name = data_object["doc_name"]
+        this.background_colors = data_object["background_colors"]
+        this.current_doc_name = data_object["doc_name"];
+        this.is_first_chunk = data_object["is_first_chunk"];
+        this.is_last_chunk = data_object["is_last_chunk"];
+        this.getting_new_chunk = false;
 
         if (!tablespec_dict.hasOwnProperty(this.current_doc_name)) {
             this.current_spec = create_tablespec(
                 {"doc_name": this.current_doc_name,
                 "header_list": data_object["header_list"],
-                "hidden_rows": [],
+                "hidden_list": ["__filename__"],
                 "table_width": null,
                 "column_widths": null,
-                "bg_colors": {}
                 });
             tablespec_dict[this.current_doc_name] = this.current_spec;
         }
@@ -178,21 +163,91 @@ var tableObject = {
         if (this.project_name == "") {
             menus["Project"].disable_menu_item('save')
         }
-        this.build_table(); // This is separated out because it is called from elsewhere.
+        this.build_table(data_object.max_table_size); // This is separated out because it is called from elsewhere.
+        self = this
+        $("#table-area tbody").scroll(function(){
+            if (self.getting_new_chunk) {
+                return false
+            }
+            if ($("#table-area tbody tr:last").isOnScreen()){
+                if (!self.is_last_chunk ) {
+                    self.getting_new_chunk = true
+                    nrows = $("#table-area tbody tr").length
+                    $.getJSON($SCRIPT_ROOT + "/grab_next_chunk/" + String(main_id) + "/" + String(doc_names[0]), function (data) {
+                        top_edge_pos = $("#table-area tbody tr:last").position().top
+                        tableObject.refill_table(data);
+                        // The last row will now be at this position
+                        var old_last_row = $('#table-area tbody tr')[nrows - data.step_size - 1]
+                        var rowpos = $(old_last_row).position();
+                        $('#table-area tbody').scrollTop(rowpos.top - top_edge_pos);
+                        self.getting_new_chunk = false;
+                    })
+                }
+            }
+            if ($("#table-area tbody tr:first").isOnScreen()) {
+                if (!self.is_first_chunk) {
+                    self.getting_new_chunk = true;
+                    nrows = $("#table-area tbody tr").length;
+                    $.getJSON($SCRIPT_ROOT + "/grab_previous_chunk/" + String(main_id) + "/" + String(doc_names[0]), function (data) {
+                        top_edge_pos = $("#table-area tbody tr:first").position().top
+                        tableObject.refill_table(data);
+                        // The last row will now be at this position
+                        var old_last_row = $('#table-area tbody tr')[data.step_size - 1]
+                        var rowpos = $(old_last_row).position();
+                        var rowheight = $(old_last_row).height();
+                        $('#table-area tbody').scrollTop(rowpos.top - top_edge_pos);
+                        self.getting_new_chunk = false;
+                    })
+                }
+            }
+
+        })
     },
 
-    build_table: function() {
-        var self = this;
-        initializeConsole();
-        html_result = create_all_html(this.table_id, this.data_rows, this.current_spec.header_list);
-        $("#" + this.table_id).html(html_result);
-        for (i = 0; i < hidden_columns_list.length; ++i) {
-            if ($.inArray(hidden_columns_list[i], this.current_spec.header_list) >= 0) {
-                $(".column-" + hidden_columns_list[i]).css("display", "none")
+    refill_table: function(data_object) {
+        this.data_rows = data_object["data_rows"];
+        this.current_doc_name = data_object["doc_name"];
+        this.is_first_chunk = data_object["is_first_chunk"];
+        this.is_last_chunk = data_object["is_last_chunk"];
+        var header_list = this.current_spec.header_list
+        all_rows = $("#table-area tbody tr")
+        all_rows.removeClass("hidden-row")
+        nrows = all_rows.length
+
+        var rowpos = $('#table-area tr:first').position();
+        $('#table-area tbody').scrollTop(rowpos.top);
+        for (var i = 0; i < this.data_rows.length; ++i) {
+            for (var c = 0; c < header_list.length; ++c) {
+                var td_element = $("#table-area tbody")[0].rows[i].cells[c];
+                var new_content = this.data_rows[i][header_list[c]]
+                $(td_element).html(new_content)
             }
         }
-        this.hideRows(this.current_spec.hidden_rows);
-        this.current_spec.color_all_bgs();
+        this.color_all_bgs();
+        for (; i < nrows; ++i) {
+            $(all_rows[i]).addClass("hidden-row")
+        }
+    },
+
+    color_all_bgs: function() {
+        for (var row in this.background_colors) {
+            if (!this.background_colors.hasOwnProperty(row)) continue;
+            for (var cheader in this.background_colors[row]) {
+                if (!this.background_colors[row].hasOwnProperty(cheader)) continue;
+                tableObject.colorCellBackground(row, cheader, this.background_colors[row][cheader])
+            }
+        }
+    },
+
+    build_table: function (max_table_size) {
+        var self = this;
+        initializeConsole();
+        html_result = create_all_html(this.table_id, this.data_rows, this.current_spec.header_list, max_table_size), this.is_last_chunk;
+        $("#" + this.table_id).html(html_result);
+        for (i = 0; i < this.current_spec.hidden_list.length; ++i) {
+            $(".column-" + this.current_spec.hidden_list[i]).css("display", "none");
+        }
+        this.color_all_bgs();
         $("#project-name").html(this.project_name)
         setup_resize_listeners();
         this.resize_table_area();
@@ -235,7 +290,7 @@ var tableObject = {
             }
         })
 
-        function create_all_html (table_id, data_rows, header_list) {
+        function create_all_html(table_id, data_rows, header_list, max_table_size, is_last_chunk) {
             //This method constructs all of the table html
 
             headers = []
@@ -247,7 +302,6 @@ var tableObject = {
             var body_html = "";
 
             for (i = 0; i < data_rows.length; ++i) {
-
                 cell_list = []
                 for (var c = 0; c < header_list.length; ++c) {
                     cell_list.push({"rownumber": String(i), "header": header_list[c], "value": data_rows[i][header_list[c]]})
@@ -257,6 +311,19 @@ var tableObject = {
                     "cells": cell_list
                 })
                 body_html = body_html + row_html;
+            }
+            if (i < max_table_size) {
+                cell_list = []
+                for (var c = 0; c < header_list.length; ++c) {
+                    cell_list.push({"rownumber": String(i), "header": header_list[c], "value": ""})
+                }
+                for (; i < max_table_size; ++i) {
+                    row_html = Mustache.to_html(body_template_hidden, {
+                    "row_id": "",
+                    "cells": cell_list
+                    })
+                    body_html = body_html + row_html;
+                }
             }
             html_result += "<tbody>" + body_html + "</tbody>";
             return html_result;
@@ -501,27 +568,12 @@ var tableObject = {
         this.data_rows[row_index][cheader]= new_content
     },
 
+    // setCellBackground assumes this is intended for the current document
     setCellBackground: function(data) {
-        var doc_name = data.doc_name;
         var cheader = data.column_header;
-        var rindex = data.id;
-
+        var row = data.row;
         var bcolor = data.color;
-        if (!tablespec_dict.hasOwnProperty(doc_name)){
-            tablespec_dict[doc_name] = create_tablespec(
-                {"doc_name": doc_name,
-                "header_list": data["header_list"],
-                "hidden_list": ["__filename__"],
-                "hidden_rows": [],
-                "table_width": null,
-                "column_widths": null,
-                "bg_colors": {}
-                });
-        };
-        tablespec_dict[doc_name].set_bg_color(rindex, cheader, bcolor);
-        if (doc_name == this.current_doc_name) {
-            this.colorCellBackground(rindex, cheader, bcolor)
-        }
+        this.colorCellBackground(row, cheader, bcolor)
     },
 
     // It is assumed that this is coloring the currently visible document.
@@ -601,29 +653,6 @@ var tableObject = {
     clearConsole: function(data_object) {
         $("#console").html("")
         $("#console")[0].scrollTop = $("#console")[0].scrollHeight
-    },
-
-    setHiddenRows: function(data_object) {
-        var doc_name = data_object.document;
-        if (!tablespec_dict.hasOwnProperty(doc_name)){
-            return;
-        }
-        var hide_list = data_object.hide_list
-        tablespec_dict[doc_name].hidden_rows = hide_list
-        if (doc_name == this.current_spec.doc_name) {
-            this.hideRows(data_object.hide_list)
-        }
-    },
-
-    unfilterAllRows: function() {
-        var rows = $('#table-area tbody tr');
-        this.current_spec.hidden_rows.forEach(function(r){
-            rows.eq(r).removeClass('hidden-row')
-        });
-        for (var spec in tablespec_dict) {
-            if (!tablespec_dict.hasOwnProperty(spec)) continue;
-            tablespec_dict[spec].hidden_rows = []
-        }
     },
 
     dehiglightAllCells: function() {

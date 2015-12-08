@@ -77,7 +77,38 @@ def export_data():
 @app.route('/grab_data/<main_id>/<doc_name>', methods=['get'])
 @login_required
 def grab_data(main_id, doc_name):
-    return jsonify({"doc_name": doc_name, "data_rows": mainwindow_instances[main_id].doc_dict[doc_name].sorted_data_rows, "header_list": mainwindow_instances[main_id].doc_dict[doc_name].header_list})
+    return jsonify({"doc_name": doc_name,
+                    "data_rows": mainwindow_instances[main_id].doc_dict[doc_name].displayed_data_rows,
+                    "background_colors":mainwindow_instances[main_id].doc_dict[doc_name].displayed_background_colors,
+                    "header_list": mainwindow_instances[main_id].doc_dict[doc_name].header_list,
+                    "is_last_chunk": mainwindow_instances[main_id].doc_dict[doc_name].is_last_chunk,
+                    "is_first_chunk": mainwindow_instances[main_id].doc_dict[doc_name].is_first_chunk,
+                    "max_table_size": mainwindow_instances[main_id].doc_dict[doc_name].max_table_size})
+
+@app.route('/grab_next_chunk/<main_id>/<doc_name>', methods=['get'])
+@login_required
+def grab_next_chunk(main_id, doc_name):
+    step_amount = mainwindow_instances[main_id].doc_dict[doc_name].advance_to_next_chunk()
+    return jsonify({"doc_name": doc_name,
+                    "data_rows": mainwindow_instances[main_id].doc_dict[doc_name].displayed_data_rows,
+                    "background_colors": mainwindow_instances[main_id].doc_dict[doc_name].displayed_background_colors,
+                    "header_list": mainwindow_instances[main_id].doc_dict[doc_name].header_list,
+                    "is_last_chunk": mainwindow_instances[main_id].doc_dict[doc_name].is_last_chunk,
+                    "is_first_chunk": mainwindow_instances[main_id].doc_dict[doc_name].is_first_chunk,
+                    "step_size": step_amount})
+
+@app.route('/grab_previous_chunk/<main_id>/<doc_name>', methods=['get'])
+@login_required
+def grab_previous_chunk(main_id, doc_name):
+    step_amount = mainwindow_instances[main_id].doc_dict[doc_name].go_to_previous_chunk()
+    return jsonify({"doc_name": doc_name,
+                    "data_rows": mainwindow_instances[main_id].doc_dict[doc_name].displayed_data_rows,
+                    "background_colors": mainwindow_instances[main_id].doc_dict[doc_name].displayed_background_colors,
+                    "header_list": mainwindow_instances[main_id].doc_dict[doc_name].header_list,
+                    "is_last_chunk": mainwindow_instances[main_id].doc_dict[doc_name].is_last_chunk,
+                    "is_first_chunk": mainwindow_instances[main_id].doc_dict[doc_name].is_first_chunk,
+                    "step_size": step_amount})
+
 
 @app.route('/grab_project_data/<main_id>/<doc_name>', methods=['get'])
 @login_required
@@ -85,7 +116,8 @@ def grab_project_data(main_id, doc_name):
     mw = mainwindow_instances[main_id]
     return jsonify({"doc_name": doc_name,
                     "tile_ids": mw.tile_ids,
-                    "data_rows": mw.doc_dict[doc_name].sorted_data_rows,
+                    "data_rows": mw.doc_dict[doc_name].displayed_data_rows,
+                    "background_colors": mainwindow_instances[main_id].doc_dict[doc_name].displayed_background_colors,
                     "hidden_columns_list": mw.hidden_columns_list,
                     "tablespec_dict": mw.tablespec_dict()})
 

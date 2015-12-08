@@ -377,7 +377,7 @@ class TileBase(threading.Thread):
         return mainwindow_instances[self.main_id].doc_dict[document_name].data_rows_int_keys
 
     def get_document_data_as_list(self, document_name):
-        return mainwindow_instances[self.main_id].doc_dict[document_name].sorted_data_rows
+        return mainwindow_instances[self.main_id].doc_dict[document_name].all_sorted_data_rows
 
     def get_column_names(self, document_name):
         return mainwindow_instances[self.main_id].doc_dict[document_name].header_list
@@ -386,10 +386,10 @@ class TileBase(threading.Thread):
         return len(mainwindow_instances[self.main_id].doc_dict[document_name].data_rows.keys())
 
     def get_row(self, document_name, row_number):
-        return mainwindow_instances[self.main_id].doc_dict[document_name].sorted_data_rows[row_number]
+        return mainwindow_instances[self.main_id].doc_dict[document_name].all_sorted_data_rows[row_number]
 
     def get_cell(self, document_name, row_number, column_name):
-        return mainwindow_instances[self.main_id].doc_dict[document_name].sorted_data_rows[int(row_number)][
+        return mainwindow_instances[self.main_id].doc_dict[document_name].all_sorted_data_rows[int(row_number)][
             column_name]
 
     def get_column_data(self, column_name, document_name=None):

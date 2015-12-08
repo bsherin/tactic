@@ -34,6 +34,32 @@ function start_post_load() {
       }
     });
     $(".CodeMirror").css('height', window.innerHeight - $(".CodeMirror").offset().top - 20)
+
+    var result_dict = {"res_type": "tile", "res_name": module_name};
+    $.ajax({
+            url: $SCRIPT_ROOT + "/grab_metadata",
+            contentType : 'application/json',
+            type : 'POST',
+            async: true,
+            data: JSON.stringify(result_dict),
+            dataType: 'json',
+            success: got_metadata
+    });
+    function got_metadata(data) {
+        if (data.success) {
+            $("#tile-module .created").html(data.datestring)
+            $("#tile-tags")[0].value = data.tags;
+            $("#tile-notes")[0].value = data.notes;
+        }
+        else {
+            // doFlash(data)
+            $("#tile-module .created").html("");
+            $("#tile-tags")[0].value = "";
+            $("#tile-tags").html("");
+            $("#tile-notes")[0].value = "";
+            $("#tile-notes").html("");
+        }
+    }
 }
 
 function changeTheme() {
@@ -51,10 +77,14 @@ function changeTheme() {
 
 function updateModule() {
     var new_code = myCodeMirror.getValue();
+    var tags = $("#tile-tags").val();
+    var notes = $("#tile-notes").val()
     var result_dict = {
-    "module_name": module_name,
-    "new_code": new_code
-    };
+        "module_name": module_name,
+        "new_code": new_code,
+        "tags": tags,
+        "notes": notes
+        };
     $.ajax({
         url: $SCRIPT_ROOT + "/update_module",
         contentType : 'application/json',
@@ -68,10 +98,14 @@ function updateModule() {
 
 function loadModule() {
     var new_code = myCodeMirror.getValue();
+    var tags = $("#tile-tags").val();
+    var notes = $("#tile-notes").val()
     var result_dict = {
-    "module_name": module_name,
-    "new_code": new_code
-    };
+        "module_name": module_name,
+        "new_code": new_code,
+        "tags": tags,
+        "notes": notes
+        };
     $.ajax({
         url: $SCRIPT_ROOT + "/update_module",
         contentType : 'application/json',
