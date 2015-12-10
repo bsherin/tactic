@@ -6,8 +6,7 @@ from flask_login import current_user, login_required
 from flask_socketio import join_room
 from tactic_app.shared_dicts import tile_classes, user_tiles, loaded_user_modules
 from tactic_app.shared_dicts import mainwindow_instances, distribute_event, create_initial_metadata
-from user_manage_views import render_project_list, render_collection_list
-from tactic_app.users import build_data_collection_name
+from user_manage_views import project_manager, collection_manager
 
 # The main window should join a room associated with the user
 @socketio.on('connect', namespace='/main')
@@ -39,7 +38,8 @@ def save_new_project():
         save_dict["metadata"] = create_initial_metadata()
 
         db[current_user.project_collection_name].insert_one(save_dict)
-        socketio.emit('update-project-list', {"html": render_project_list()}, namespace='/user_manage', room=current_user.get_id())
+
+        project_manager.update_selector_list()
         return jsonify({"project_name": data_dict["project_name"], "success": True, "message": "Project Successfully Saved"})
     except:
         mainwindow_instances[data_dict['main_id']].handle_exception("Error saving new project")
@@ -65,10 +65,10 @@ def update_project():
 def export_data():
     data_dict = request.json
     doc_dict = mainwindow_instances[data_dict['main_id']].doc_dict
-    full_collection_name = build_data_collection_name(data_dict['export_name'])
+    full_collection_name = current_user.build_data_collection_name(data_dict['export_name'])
     for docinfo in doc_dict.values():
         db[full_collection_name].insert_one({"name": docinfo.name, "data_rows": docinfo.data_rows, "header_list": docinfo.header_list})
-    socketio.emit('update-collection-list', {"html": render_collection_list()}, namespace='/user_manage', room=current_user.get_id())
+    collection_manager.update_selector_list()
     return jsonify({"success": True, "message": "Data Successfully Exported"})
 
 # Views for reading data from the database and

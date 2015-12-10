@@ -8,6 +8,7 @@
 
 {% block styles %}
     <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/tactic.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/loader.css')}}">
 {% endblock %}
 
 {% block page_content %}
@@ -15,7 +16,7 @@
     </div>
     <div class="container-fluid">
         <div class="page-header" style="margin-top: 5px">
-            <h1>{{current_user.username}}'s library</h1>
+            <h1>{{current_user.username}}'s library <span id="spinner" class="loader-small"></span></h1>
         </div>
         <div class="row">
             <div class="col-xs-12" id="status-area"></div>
@@ -27,6 +28,7 @@
                 <li role="presentation"><a href="#project-module" aria-controls="projects" role="tab" data-toggle="tab" value="project"><h3>projects</h3></a></li>
                 <li role="presentation"><a href="#tile-module" aria-controls="tiles" role="tab" data-toggle="tab" value="tile"><h3>tiles</h3></a></li>
                 <li role="presentation"><a href="#list-module" aria-controls="lists" role="tab" data-toggle="tab" value="list"><h3>lists</h3></a></li>
+                  <button id="toggle-repos-button" type="button" class="btn btn-info" style="margin: 25px">Toggle Repository</button>
               </ul>
                 <div class="tab-content">
                     <div class="resource-module tab-pane fade in active" id="collection-module"></div>
