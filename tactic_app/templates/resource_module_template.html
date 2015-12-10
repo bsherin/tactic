@@ -1,6 +1,5 @@
 <script id="resource-module-template" type="text/html">
-    <div class="" style="height: 100%; overflow: hidden">
-    {{#show_add}}
+    <div class="col-xs-12 resource-outer" style="height: 100%; overflow: hidden">
         <div class="row indent-row" style="margin-top: 10px">
             <div class="col-xs-12">
                 <form class="form-inline" style="display:inline">
@@ -15,6 +14,7 @@
                </form>
             </div>
         </div>
+    {{#show_add}}
     <div class="row indent-row" style="margin-top: 10px">
         <div class="col-xs-12">
             <form action="" method="post" target="_self" id="add-{{res_type}}-form" enctype="multipart/form-data">
@@ -51,7 +51,7 @@
     </div>
     <div class="row indent-row" id="{{res_type}}-selector-row" style="margin-top: 7px; height: 100%; overflow: hidden">
         <div class="col-xs-12" style="height: 100%; overflow: hidden">
-            <div style="display: inline-block; vertical-align: top; overflow-y: scroll; max-height: 100%; line-height: 1" class="list-group" id="{{res_type}}-selector" data-toggle="buttons">
+            <div style="display: inline-block; vertical-align: top; overflow-y: scroll; max-height: 100%; line-height: 1" class="list-group resource-selector" id="{{res_type}}-selector" data-toggle="buttons">
             </div>
             <div style="display: inline-block; vertical-align: top; margin-left: 5px">
                 <button type="button" class="btn btn-sm save-metadata-button" style="margin-bottom: 7px" value="{{res_type}}">Save Metadata</button>
@@ -70,6 +70,51 @@
                 </div>
             </div>
             {{/show_loaded_list}}
+        </div>
+    </div>
+    </div>
+
+</script>
+
+<script id="repository-module-template" type="text/html">
+    <div class="col-xs-6 repository-outer" style="height: 100%; overflow: hidden; display: none">
+        <div class="row indent-row" style="margin-top: 10px">
+            <h3>{{res_type}} repository</h3>
+        </div>
+        <div class="row indent-row" style="margin-top: 10px">
+            <div class="col-xs-12">
+                <form class="form-inline" style="display:inline">
+                    <div class="input-group">
+                      <input type="text" id="repository-{{res_type}}-search" class="form-control" placeholder="Search">
+                         <span class="input-group-btn">
+                            <button class="btn action-button search-repository-resource-button" type="button"  value="{{res_type}}">Search</button>
+                            <button class="btn action-button search-repository-tags-button" type="button" value="{{res_type}}">Search Tags</button>
+                            <button class="btn action-button repository-resource-unfilter-button" type="button" value="{{res_type}}">Show All</button>
+                         </span>
+                    </div>
+               </form>
+            </div>
+        </div>
+    <div class="row indent-row" style="margin-top: 5px">
+        <div class="col-xs-12">
+            <div class="btn-group" style= "margin-top: 5px; margin-bottom: 5px" role="group">
+                <button type="button" id="repository-copy-{{res_type}}-button" class="btn action-button">Copy to Library</button>
+            </div>
+        </div>
+    </div>
+    <div class="row indent-row" id="repository-{{res_type}}-selector-row" style="margin-top: 7px; height: 100%; overflow: hidden">
+        <div class="col-xs-12" style="height: 100%; overflow: hidden">
+            <div style="display: inline-block; vertical-align: top; overflow-y: scroll; max-height: 100%; line-height: 1" class="list-group repository-selector" id="repository-{{res_type}}-selector" data-toggle="buttons">
+            </div>
+            <div style="display: inline-block; vertical-align: top; margin-left: 5px">
+                <div class="repository-created"></div>
+                <div class="form-group" style="margin-bottom: 7px">
+                    <textarea contenteditable="false" type="text" class="form-control" rows="1" id="{{res_type}}-repository-tags" placeholder="tags"></textarea>
+                </div>
+                <div class="form-group">
+                    <textarea contenteditable="false" class="form-control" id="{{res_type}}-repository-notes" rows="5" placeholder="notes"></textarea>
+                </div>
+            </div>
         </div>
     </div>
     </div>

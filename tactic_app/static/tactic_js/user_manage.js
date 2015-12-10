@@ -3,13 +3,16 @@
  */
 
 var resource_module_template;
+var repository_module_template;
 var mousetrap = new Mousetrap();
+var repository_visible = false
 
 mousetrap.bind("esc", function() {
     clearStatusArea();
 })
 
 
+var res_types = ["list", "collection", "project", "tile"]
 
 function start_post_load() {
     if (use_ssl) {
@@ -20,22 +23,28 @@ function start_post_load() {
     }
     window.onresize = resize_window;
 
+
     socket.emit('join', {"user_id":  user_id});
-    socket.on('update-project-list', function(data) {
-        $("#project-selector").html(data.html);
+
+    socket.on('update-selector-list', function(data) {
+        res_type = data.res_type
+        $("#" + res_type + "-selector").html(data.html);
+        if (data.hasOwnProperty("select")) {
+            select_resource_button(res_type, data.select)
+        }
+        else {
+            select_resource_button(res_type, null)
+        }
     });
-    socket.on('update-collection-list', function(data) {
-        $("#collection-selector").html(data.html);
-    });
-    socket.on('update-list-list', function(data) {
-        $("#list-selector").html(data.html);
-    });
-    //socket.on('update-video-list', function(data) {
-    //    $("#video-selector").html(data.html)
-    //});
-    socket.on('update-tile-module-list', function(data) {
-        $("#tile-selector").html(data.html)
-    });
+
+    socket.on('start-spinner', function () {
+        stopSpinner()
+    })
+
+    socket.on('start-spinner', function () {
+        startSpinner()
+    })
+
     socket.on('update-loaded-tile-list', function(data) {
         $("#loaded-tile-list").html(data.html)
     });
@@ -45,39 +54,72 @@ function start_post_load() {
     console.log("about to create")
     $.get($SCRIPT_ROOT + "/get_resource_module_template", function(template) {
         resource_module_template = $(template).filter('#resource-module-template').html();
+        repository_module_template = $(template).filter('#repository-module-template').html();
         listManager.create_module_html();
         collectionManager.create_module_html();
         projectManager.create_module_html();
         tileManager.create_module_html();
-        $("#list-selector").load($SCRIPT_ROOT + "/request_update_list_list")
-        $("#collection-selector").load($SCRIPT_ROOT + "/request_update_collection_list")
-        $("#project-selector").load($SCRIPT_ROOT + "/request_update_project_list")
-        $("#tile-selector").load($SCRIPT_ROOT + "/request_update_tile_list")
+
+        res_types.forEach(function(element, index, array){
+            $("#"+ element + "-selector").load($SCRIPT_ROOT + "/request_update_selector_list/" + element, function () {
+                select_resource_button(element, null)
+            })
+        });
+
         $("#loaded-tile-list").load($SCRIPT_ROOT + "/request_update_loaded_tile_list");
+
+        res_types.forEach(function(element, index, array){
+            $("#repository-"+ element + "-selector").load($SCRIPT_ROOT + "/request_update_repository_selector_list/" + element, function () {
+                select_repository_button(element, null)
+            })
+        });
+
         listManager.add_listeners();
         collectionManager.add_listeners();
         projectManager.add_listeners();
         tileManager.add_listeners();
-        $(".resource-module").on("click", ".selector-button", selector_click)
+        $(".resource-module").on("click", ".resource-selector .selector-button", selector_click)
+        $(".resource-module").on("click", ".repository-selector .selector-button", repository_selector_click)
         $(".resource-module").on("click", ".search-resource-button", search_resource)
         $(".resource-module").on("click", ".search-tags-button", search_resource_tags)
         $(".resource-module").on("click", ".resource-unfilter-button", unfilter_resource)
         $(".resource-module").on("click", ".save-metadata-button", save_metadata)
+        $(".resource-module").on("click", ".search-repository-resource-button", search_repository_resource)
+        $(".resource-module").on("click", ".search-repository-tags-button", search_repository_resource_tags)
+        $(".resource-module").on("click", ".repository-resource-unfilter-button", unfilter_repository_resource)
+        $("#toggle-repos-button").click(function () {
+            if (repository_visible) {
+                $(".repository-outer").fadeOut()
+                $(".resource-outer").removeClass("col-xs-6")
+                $(".resource-outer").addClass("col-xs-12")
+                repository_visible = false
+            }
+            else {
+                $(".repository-outer").fadeIn()
+                $(".resource-outer").removeClass("col-xs-12")
+                $(".resource-outer").addClass("col-xs-6")
+                repository_visible = true
+            }
+        })
         resize_window();
         $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
             ref_type = $(e.target).attr("value")
             var h = window.innerHeight - 50 - $("#" + ref_type + "-selector-row").offset().top
             $("#" + ref_type + "-selector-row").outerHeight(h);
         })
+        $("#spinner").css("display", "none")
     })
 }
 
-var res_types = ["list", "collection", "project", "tile"]
+function startSpinner() {
+    $("#spinner").css("display", "inline-block")
+}
+
+function stopSpinner() {
+    $("#spinner").css("display", "none")
+}
 
 function resize_window() {
-    //res_types.forEach(function (val, ind, array) {
-    //    $("#" + val + "-module").outerHeight(module_height);
-    //})
     res_types.forEach(function (val, ind, array) {
         var h = window.innerHeight - 50 - $("#" + val + "-selector-row").offset().top
         $("#" + val + "-selector-row").outerHeight(h);
@@ -103,6 +145,7 @@ col_manager_specifics = {
         var manager = event.data.manager;
         the_data = new FormData(this);
         showModal("Create Collection", "Name for this collection", function (new_name) {
+            startSpinner()
             $.ajax({
                 url: $SCRIPT_ROOT + "/load_files/" + new_name,
                 type: 'POST',
@@ -111,7 +154,12 @@ col_manager_specifics = {
                 contentType: false,
                 success: doFlash
             });
+            function addSuccess(data) {
+                stopSpinner()
+                doFlash(data)
+            }
         })
+
     event.preventDefault();
     }
 }

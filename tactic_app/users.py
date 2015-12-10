@@ -8,9 +8,6 @@ from tactic_app import login_manager, db
 from bson.objectid import ObjectId
 from werkzeug.security import generate_password_hash, check_password_hash
 
-def build_data_collection_name(collection_name):
-    return '{}.data_collection.{}'.format(current_user.username, collection_name)
-
 def put_docs_in_collection(collection_name, dict_list):
     return db[collection_name].insert_many(dict_list)
 
@@ -105,6 +102,9 @@ class User(UserMixin):
     def full_collection_name(self, cname):
         return self.username + ".data_collection." + cname
 
+    def build_data_collection_name(self, collection_name):
+        return '{}.data_collection.{}'.format(self.username, collection_name)
+
     @property
     def project_names(self):
         if self.project_collection_name not in db.collection_names():
@@ -130,7 +130,7 @@ class User(UserMixin):
             dcollections = self.data_collections
             res_names = []
             for dcol in dcollections:
-                cname=build_data_collection_name(dcol)
+                cname=self.build_data_collection_name(dcol)
                 mdata = db[cname].find_one({"name": "__metadata__"})
                 if tag_filter is not None:
                     if mdata is not None and "tags" in mdata:
