@@ -197,16 +197,24 @@ tile_manager_specifics = {
     show_new: true,
     show_duplicate: false,
     show_loaded_list: true,
+    show_unload: true,
     new_view: '/create_tile_module',
     add_view: '/add_tile_module',
     view_view: 'view_module/',
     load_view: "/load_tile_module/",
     delete_view: "/delete_tile_module/",
+    unload_view: "/unload_all_tiles",
     load_func: function (event) {
         var manager = event.data.manager
         var res_name = manager.check_for_selection(manager.res_type);
         if (res_name == "") return;
         $.getJSON($SCRIPT_ROOT + '/load_tile_module/' + String(res_name), success=doFlash)
+    },
+    unload_func: function (event) {
+        var manager = event.data.manager
+        var res_name = manager.check_for_selection(manager.res_type);
+        if (res_name == "") return;
+        $.getJSON($SCRIPT_ROOT + '/unload_all_tiles', success=doFlash)
     }
 }
 updateObject(tileManager, tile_manager_specifics);

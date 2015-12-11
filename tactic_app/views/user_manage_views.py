@@ -229,7 +229,7 @@ class CollectionManager(ResourceManager):
         full_collection_name = self.user_obj.build_data_collection_name(collection_name)
         mdata = create_initial_metadata()
         try:
-            db[full_collection_name].insert_one({"name": "__metadata__", "datetime": mdata["datetime"]})
+            db[full_collection_name].insert_one({"name": "__metadata__", "datetime": mdata["datetime"], "tags": "", "notes": ""})
         except:
             error_string = "Error creating collection: " + str(sys.exc_info()[0]) + " "  + str(sys.exc_info()[1])
             return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
@@ -327,6 +327,7 @@ class TileManager(ResourceManager):
     def add_rules(self):
         app.add_url_rule('/view_module/<module_name>', "view_module", login_required(self.view_module), methods=['get'])
         app.add_url_rule('/load_tile_module/<tile_module_name>', "load_tile_module", login_required(self.load_tile_module), methods=['get', 'post'])
+        app.add_url_rule('/unload_all_tiles', "unload_all_tiles", login_required(self.unload_all_tiles), methods=['get', 'post'])
         app.add_url_rule('/add_tile_module', "add_tile_module", login_required(self.add_tile_module), methods=['get', "post"])
         app.add_url_rule('/delete_tile_module/<tile_module_name>', "delete_tile_module", login_required(self.delete_tile_module), methods=['post'])
         app.add_url_rule('/create_tile_module', "create_tile_module", login_required(self.create_tile_module), methods=['get', 'post'])
@@ -354,6 +355,18 @@ class TileManager(ResourceManager):
             return jsonify({"message": "Tile module successfully loaded", "alert_type": "alert-success"})
         except:
             error_string = "Error loading tile: " + str(sys.exc_info()[0]) + " "  + str(sys.exc_info()[1])
+            return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+
+    def unload_all_tiles(self):
+        try:
+            loaded_user_modules[current_user.username] = set([])
+            user_tiles[current_user.username] = {}
+            socketio.emit('update-loaded-tile-list', {"html": self.render_loaded_tile_list()},
+                                                 namespace='/user_manage', room=current_user.get_id())
+            socketio.emit('update-menus', {}, namespace='/main', room=current_user.get_id())
+            return jsonify({"message": "Tiles successfully unloaded", "alert_type": "alert-success"})
+        except:
+            error_string = "Error unloading tiles: " + str(sys.exc_info()[0]) + " "  + str(sys.exc_info()[1])
             return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
     def add_tile_module(self):
@@ -395,7 +408,7 @@ class RepositoryTileManager(TileManager):
         x = 3
 
     def request_update_selector_list(self):
-        return render_template("user_manage/resource_list.html", res_type=self.res_type, resource_names=get_resource_list_from_type(), rep_string="repository-")
+        return render_template("user_manage/resource_list.html", res_type=self.res_type, resource_names=self.get_resource_list_from_type(), rep_string="repository-")
 
 repository_user = User.get_user_by_username("repository")
 

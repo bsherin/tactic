@@ -4,10 +4,11 @@ from tile_env import *
 
 @tile_class
 class SimpleCoder(TileBase):
+    category = "utility"
     save_attrs = TileBase.save_attrs + ["current_text", "destination_column"]
     def __init__(self, main_id, tile_id, tile_name=None):
         TileBase.__init__(self, main_id, tile_id, tile_name)
-        self.current_text = []
+        self.current_text = ""
         self.destination_column = ""
 
     def handle_button_click(self, value, doc_name, active_row_index):
@@ -32,12 +33,14 @@ class SimpleCoder(TileBase):
 
     def render_content (self):
         the_html = ""
-        for r in self.current_text:
+        rows = self.current_text.split("\n")
+        for r in rows:
             the_html += "<button value='{0}'>{0}</button>".format (r)
         return the_html
 
 @tile_class
 class WordnetSelectionTile(TileBase):
+    category = "word"
     save_attrs = TileBase.save_attrs + ["number_to_show"]
     def __init__(self, main_id, tile_id, tile_name=None):
         TileBase.__init__(self, main_id, tile_id, tile_name)
@@ -62,6 +65,7 @@ class WordnetSelectionTile(TileBase):
 
 @tile_class
 class WordFreqDist(TileBase):
+    category = "word"
     save_attrs = TileBase.save_attrs + ["column_source", "tokenizer", "stop_list"]
     exports = ["corpus_frequency_fdist", "document_frequency_fdist"]
 
@@ -215,6 +219,7 @@ class FreqDistPlotter(TileBase):
 
 @tile_class
 class Collocations(TileBase):
+    category = "word"
     save_attrs = TileBase.save_attrs + ["column_source", "tokenizer", "stop_list", "number_to_display", "min_occurrences"]
     exports = []
     measures = ["raw_freq", "student_t", "chi_sq", "pmi", "likelihood_ratio"]
@@ -334,3 +339,29 @@ class Heatmap(TileBase):
         self.array = self.get_pipe_value(self.array_data)
         fig = ArrayHeatmap(self.array, self.width, self.height, palette_name=self.palette_name)
         return self.create_figure_html(fig)
+
+@tile_class
+class CommandTile(TileBase):
+    save_attrs = TileBase.save_attrs + ["command_text"]
+    category = "utility"
+    exports = []
+
+    def __init__(self, main_id, tile_id, tile_name=None):
+        TileBase.__init__(self, main_id, tile_id, tile_name)
+        self.command_text = None
+        return
+
+    @property
+    def options(self):
+        # options provides the specification for the options that appear on the back of the tile
+        # there are 6 types: text, textarea, column_select, tokenizer_select, list_select, pipe_select
+        return  [
+        {"name": "command_text", "type": "textarea","placeholder": self.command_text},
+    ]
+
+    def render_content(self):
+        if self.command_text is None:
+            return "Not Configured"
+        new_html= "<pre>" + self.command_text + "</pre>"
+        exec(self.command_text)
+        return new_html
