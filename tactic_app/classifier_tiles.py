@@ -105,6 +105,22 @@ class AbstractClassifier(TileBase):
 class NaiveBayes(AbstractClassifier):
     classifier_class = nltk.NaiveBayesClassifier
 
+    def __init__(self, main_id, tile_id, tile_name=None):
+        AbstractClassifier.__init__(self,main_id, tile_id, tile_name)
+        self.palette_name = "RdYlGn"
+
+    @property
+    def options(self):
+        return  [
+        {"name": "text_source", "type": "column_select", "placeholder": self.text_source},
+        {"name": "code_source", "type": "column_select", "placeholder": self.code_source},
+        {"name": "code_destination", "type": "column_select", "placeholder": self.code_destination},
+        {"name": "tokenizer", "type": "tokenizer_select", "placeholder": self.tokenizer},
+        {"name": "stop_list", "type": "list_select", "placeholder": self.stop_list},
+        {"name": "vocab_size", "type": "int", "placeholder": 50},
+        {"name": "palette_name", "type": "palette_select", "placeholder": self.palette_name}
+        ]
+
     def render_content(self):
         if self.text_source is "":
             return "No text source selected."
@@ -124,7 +140,7 @@ class NaiveBayes(AbstractClassifier):
         for w in set(txt):
             if w in reduced_vocab:
                 res[w] = self._classifier._feature_probdist[autocode, w].logprob(True)
-        cmap = ColorMapper(max(res.values()), min(res.values()))
+        cmap = ColorMapper(min(res.values()), max(res.values()), self.palette_name)
         cell_color_dict = {}
         for w in res:
             cell_color_dict[w] = cmap.color_from_val(res[w])

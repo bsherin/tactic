@@ -11,7 +11,7 @@ var resourceManager = {
     show_duplicate: true,
     show_delete: true,
     show_loaded_list: false,
-    show_save: false,
+    show_unload: false,
     res_type: "list",
     add_view: "/add_list",
     new_view: "",
@@ -20,7 +20,7 @@ var resourceManager = {
     duplicate_view: '/create_duplicate_list',
     delete_view: '/delete_list/',
     repository_copy_view: '/copy_from_repository',
-    save_view: '',
+    unload_view: '',
     add_listeners: function () {
         $("#duplicate-" + this.res_type + "-button").click({"manager": this}, this.duplicate_func);
         $("#new-" + this.res_type + "-button").click({"manager": this}, this.new_func);
@@ -30,6 +30,7 @@ var resourceManager = {
         $("#delete-" + this.res_type + "-button").click({"manager": this}, this.delete_func);
         $("#save-" + this.res_type + "-button").click({"manager": this}, this.save_func);
         $("#repository-copy-" + this.res_type + "-button").click({"manager": this}, this.repository_copy_func);
+        $("#unload-" + this.res_type + "-button").click({"manager": this}, this.unload_func);
     },
 
     add_func: function (event) {
@@ -56,13 +57,6 @@ var resourceManager = {
         var res_name = manager.check_for_selection(manager.res_type);
         if (res_name == "") return;
         window.open($SCRIPT_ROOT + manager.view_view + String(res_name))
-    },
-
-    save_func: function (event) {
-        var manager = event.data.manager;
-        var res_name = manager.check_for_selection(manager.res_type);
-        if (res_name == "") return;
-        window.open($SCRIPT_ROOT + manager.save_view + String(res_name))
     },
 
 

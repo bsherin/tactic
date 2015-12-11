@@ -166,12 +166,13 @@ var tile_object = {
             }
         );
         $(this.full_selector() + " .back textarea").each(function () {
-                lines = $(this).val().split(/\n/);
-                clean_lines = []
-                for (l = 0; l < lines.length; ++l){
-                    clean_lines.push($.trim(lines[l]))
-                }
-                data[$(this).attr('id')] = clean_lines
+                //lines = $(this).val().split(/\n/);
+                //clean_lines = []
+                //for (l = 0; l < lines.length; ++l){
+                //    clean_lines.push($.trim(lines[l]))
+                //}
+                //data[$(this).attr('id')] = clean_lines
+            data[$(this).attr('id')] = $(this).val()
             }
         );
 
