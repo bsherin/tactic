@@ -174,6 +174,9 @@ function select_resource_button(res_type, res_name) {
         if ($("#" + res_type + "-selector").children().length > 0) {
             selector_click({"target": $("#" + res_type + "-selector").children()[0]});
         }
+        else {
+            clear_resource_metadata(res_type)
+        }
     }
     else {
         $("#" + res_type + "-selector").scrollTop($("#" + res_type + "-selector-" + res_name).position().top);
@@ -186,11 +189,22 @@ function select_repository_button(res_type, res_name) {
         if ($("#repository-" + res_type + "-selector").children().length > 0) {
             repository_selector_click({"target": $("#repository-" + res_type + "-selector").children()[0]});
         }
+        else {
+            clear_repository_resource_metadata(res_type)
+        }
     }
     else {
         $("#" + res_type + "-selector").scrollTop($("#repository-" + res_type + "-selector-" + res_name).position().top);
         repository_selector_click({"target": document.getElementById("repository-" + res_type + "-selector-" + res_name)})
     }
+}
+
+function clear_resource_metadata(res_type) {
+    $("#" + res_type + "-module .created").html("");
+    $("#" + res_type + "-tags")[0].value = "";
+    $("#" + res_type + "-tags").html("");
+    $("#" + res_type + "-notes")[0].value = "";
+    $("#" + res_type + "-notes").html("");
 }
 
 function selector_click(event) {
@@ -217,13 +231,17 @@ function selector_click(event) {
         }
         else {
             // doFlash(data)
-            $("#" + res_type + "-module .created").html("");
-            $("#" + res_type + "-tags")[0].value = "";
-            $("#" + res_type + "-tags").html("");
-            $("#" + res_type + "-notes")[0].value = "";
-            $("#" + res_type + "-notes").html("");
+            clear_resource_metadata(res_type)
         }
     }
+}
+
+function clear_repository_resource_metadata(res_type) {
+    $("#" + res_type + "-module .repository-created").html("");
+    $("#" + res_type + "-repository-tags")[0].value = "";
+    $("#" + res_type + "-repository-tags").html("");
+    $("#" + res_type + "-repository-notes")[0].value = "";
+    $("#" + res_type + "-repository-notes").html("");
 }
 
 function repository_selector_click(event) {
@@ -250,11 +268,7 @@ function repository_selector_click(event) {
         }
         else {
             // doFlash(data)
-            $("#" + res_type + "-module .repository-created").html("");
-            $("#" + res_type + "-repository-tags")[0].value = "";
-            $("#" + res_type + "-repository-tags").html("");
-            $("#" + res_type + "-repository-notes")[0].value = "";
-            $("#" + res_type + "-repository-notes").html("");
+            clear_repository_resource_metadata(res_type)
         }
     }
 }
@@ -274,6 +288,7 @@ function search_resource(event) {
     });
     function search_success(data) {
         $("#" + res_type + "-selector").html(data.html)
+        select_resource_button(res_type, null)
     }
 }
 
@@ -292,6 +307,7 @@ function search_repository_resource(event) {
     });
     function search_success(data) {
         $("#repository-" + res_type + "-selector").html(data.html)
+        select_repository_button(res_type, null)
     }
 }
 
@@ -310,6 +326,7 @@ function search_resource_tags(event) {
     });
     function search_success(data) {
         $("#" + res_type + "-selector").html(data.html)
+        select_resource_button(res_type, null)
     }
 }
 
@@ -328,17 +345,23 @@ function search_repository_resource_tags(event) {
     });
     function search_success(data) {
         $("#repository-" + res_type + "-selector").html(data.html)
+        select_repository_button(res_type, null)
     }
 }
 
 function unfilter_resource(event) {
     var res_type = event.target.value;
-    $("#" + res_type + "-selector").load($SCRIPT_ROOT + "/request_update_selector_list/" + res_type);
+    $("#" + res_type + "-selector").load($SCRIPT_ROOT + "/request_update_selector_list/" + res_type, function () {
+        select_resource_button(res_type, null)
+    });
+
 }
 
 function unfilter_repository_resource(event) {
     var res_type = event.target.value;
-    $("#repository-" + res_type + "-selector").load($SCRIPT_ROOT + "/request_update_repository_selector_list/" + res_type);
+    $("#repository-" + res_type + "-selector").load($SCRIPT_ROOT + "/request_update_repository_selector_list/" + res_type, function () {
+        select_repository_button(res_type, null)
+    });
 }
 
 function save_metadata(event) {
