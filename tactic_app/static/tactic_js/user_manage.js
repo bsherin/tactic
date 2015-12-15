@@ -199,6 +199,7 @@ var tile_manager_specifics = {
     add_view: '/add_tile_module',
     view_view: '/view_module/',
     delete_view: "/delete_tile_module/",
+    show_loaded_list: true,
     buttons: [
         {"name": "new", "func": "new_func"},
         {"name": "view", "func": "view_func"},

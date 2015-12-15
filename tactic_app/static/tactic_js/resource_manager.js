@@ -38,6 +38,7 @@ ResourceManager.prototype = {
     show_add: true,
     show_multiple:false,
     repository_copy_view: '/copy_from_repository',
+    show_loaded_list: false,
     add_listeners: function () {
         var self = this;
         $.each(this.buttons, function (index, value) {
