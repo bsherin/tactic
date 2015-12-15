@@ -1,0 +1,245 @@
+/* resource module */
+
+$resource-button-background: #d9eecf;
+$resource-button-text: #333;
+$resource-button-border-color: #adadad;
+$resource-button-hover-background: #f8f8f8;
+$resource-button-hover-text: #333;
+
+.indent-row {
+    margin-left: 5px;
+    margin-bottom: 20px;
+}
+.user-button-group {
+    height: 200px;
+    overflow: scroll;
+
+}
+
+.user-button-group .btn-default{
+    text-align: left;
+    padding-top: 1px;
+    padding-bottom: 1px
+}
+
+.nav-tabs a {
+    outline: 0px;
+}
+
+.resource-module {
+    margin: 10px
+}
+
+.resource-module h2 {
+    margin-top:0px;
+}
+
+.resource-module .add-button {
+    color: $resource-button-text;
+    background-color: $resource-button-background;
+    border-color: $resource-button-border-color;
+}
+
+.resource-module .add-button:hover {
+    color: $resource-button-hover-text;
+    background-color: $resource-button-hover-background;
+    border-color: $resource-button-border-color;
+}
+
+.resource-module .action-button {
+    color: $resource-button-text;
+    background-color: $resource-button-background;
+    border-color: $resource-button-border-color;
+}
+
+.resource-module .action-button:hover {
+    color: $resource-button-hover-text;
+    background-color: $resource-button-hover-background;
+    border-color: $resource-button-border-color;
+}
+
+.resource-module .save-metadata-button {
+    color: black;
+    background-color: #e6e6e6;
+    border-color: $resource-button-border-color;
+}
+
+.resource-module .save-metadata-button:hover {
+    color: $resource-button-hover-text;
+    background-color: $resource-button-hover-background;
+    border-color: $resource-button-border-color;
+}
+
+.stacked-button {
+    margin-bottom: 10px;
+    display: block;
+    width: 150px;
+}
+
+.file-selector {
+    margin-bottom: 10px;
+    display: block;
+}
+
+.metadata-field {
+  width: 350px
+}
+
+/* Tile table related*/
+
+.tile-table td {
+    padding-top: 1px !important;
+    padding-bottom: 1px !important;
+}
+
+.row-clickable:hover {
+    background-color: #5bc0de !important
+}
+
+.row-clickable:active {
+    background-color: #1b6d85 !important
+}
+
+td.cell-clickable:hover {
+    background-color: #5bc0de !important
+}
+
+td.cell-clickable:active {
+    background-color: #1b6d85 !important
+}
+
+/* console */
+
+#console {
+    text-align: left;
+    font-size: 12px;
+    overflow: scroll
+}
+
+#console-panel {
+    margin-left: 5px;
+    margin-right: 5px
+}
+
+
+#console-heading {
+    font-size: 12px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    text-align: left
+}
+
+/* module viewer */
+
+.CodeMirror {
+    border: 1px solid #eee;
+    height: auto;
+    width: auto;
+}
+
+/*main window*/
+
+.grid-left {
+    display: inline-block;
+    width: 500px;
+    vertical-align:top
+}
+
+.grid-right {
+    display: inline-block;
+    width: 300px;
+    vertical-align:top
+}
+
+.outer-container {
+    padding: 25px;
+}
+
+#tile-div {
+    padding: 5px;
+}
+
+#tile-area {
+    margin: 0px;
+    border: 0px;
+    overflow: scroll;
+}
+
+/* tile */
+
+.tile-panel {
+    height: 265px;
+    margin: 7px;
+    border: 2px solid #BCE8F1;
+    background-color: white;
+}
+
+.tile-panel-float {
+    float: left;
+}
+
+.tile-panel-heading {
+    cursor: move;
+    padding: 5px 7px;
+}
+
+
+#spin-place {
+    position: relative;
+}
+
+.tile-display-area {
+    overflow: scroll;
+    padding: 0;
+    margin: 15px 15px 15px 15px;
+}
+
+.back {
+    padding: 20px;
+    margin: 0px;
+    overflow: scroll
+}
+
+.front {
+    padding: 0px;
+    margin: 0px;
+}
+
+.tile-body {
+    padding: 0px;
+}
+
+.tile-body img {
+    cursor: pointer
+}
+
+.output-plot {
+    max-width: 100%;
+    max-height: 100%
+}
+
+/* Other*/
+
+.highlight {
+    background: yellow;
+}
+
+button.notclose {
+  -webkit-appearance: none;
+  padding: 0;
+  cursor: pointer;
+  background: transparent;
+    opacity: .5;
+  border: 0;
+}
+
+button.notclose:hover {
+    opacity: .8;
+}
+.monospace {
+    font-family: monospace
+}
+
+.hide-important {
+    display: none !important
+}

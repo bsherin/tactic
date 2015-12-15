@@ -126,6 +126,10 @@ class User(UserMixin):
         return sorted([str(t) for t in my_list_names], key=str.lower)
 
     def get_resource_names(self, res_type, tag_filter=None, search_filter=None):
+        if tag_filter is not None:
+            tag_filter = tag_filter.lower()
+        if search_filter is not None:
+            search_filter = search_filter.lower()
         if res_type == "collection":
             dcollections = self.data_collections
             res_names = []
@@ -134,10 +138,10 @@ class User(UserMixin):
                 mdata = db[cname].find_one({"name": "__metadata__"})
                 if tag_filter is not None:
                     if mdata is not None and "tags" in mdata:
-                        if tag_filter in mdata["tags"]:
+                        if tag_filter in mdata["tags"].lower():
                             res_names.append(dcol)
                 elif search_filter is not None:
-                    if search_filter in dcol:
+                    if search_filter in dcol.lower():
                         res_names.append(dcol)
                 else:
                     res_names.append(dcol)
@@ -154,10 +158,10 @@ class User(UserMixin):
                 if tag_filter is not None:
                     if "metadata" in doc:
                         if "tags" in doc["metadata"]:
-                            if tag_filter in doc["metadata"]["tags"]:
+                            if tag_filter in doc["metadata"]["tags"].lower():
                                 res_names.append(doc[name_key])
                 elif search_filter is not None:
-                    if search_filter in doc[name_key]:
+                    if search_filter in doc[name_key].lower():
                         res_names.append(doc[name_key])
                 else:
                     res_names.append(doc[name_key])

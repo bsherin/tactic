@@ -2,35 +2,52 @@
  * Created by bls910 on 11/1/15.
  */
 
-var resourceManager = {
+function updateObject(o1, o2) {
+    for (var prop in o2) {
+        if (o2.hasOwnProperty(prop)){
+            o1[prop] = o2[prop]
+        }
+    }
+}
+
+String.prototype.format = function() {
+  var str = this;
+  for (var i = 0; i < arguments.length; i++) {
+    var reg = new RegExp("\\{" + i + "\\}", "gm");
+    str = str.replace(reg, arguments[i]);
+  }
+  return str;
+}
+
+function objectKeys(obj) {
+    result = []
+    for (key in obj){
+        if (!obj.hasOwnProperty(key)) continue;
+        result.push(key)
+    }
+    return result
+}
+
+function ResourceManager(res_type, specifics) {
+    this.res_type = res_type;
+    updateObject(this, specifics)
+    this.add_listeners()
+}
+
+ResourceManager.prototype = {
     show_add: true,
     show_multiple:false,
-    show_new: false,
-    show_load: true,
-    show_view: true,
-    show_duplicate: true,
-    show_delete: true,
-    show_loaded_list: false,
-    show_unload: false,
-    res_type: "list",
-    add_view: "/add_list",
-    new_view: "",
-    load_view: '',
-    view_view: '/view_list/',
-    duplicate_view: '/create_duplicate_list',
-    delete_view: '/delete_list/',
     repository_copy_view: '/copy_from_repository',
-    unload_view: '',
     add_listeners: function () {
-        $("#duplicate-" + this.res_type + "-button").click({"manager": this}, this.duplicate_func);
-        $("#new-" + this.res_type + "-button").click({"manager": this}, this.new_func);
-        $("#add-" + this.res_type + "-form").submit({"manager": this}, this.add_func);
-        $("#view-" + this.res_type + "-button").click({"manager": this}, this.view_func);
-        $("#load-" + this.res_type + "-button").click({"manager": this}, this.load_func);
-        $("#delete-" + this.res_type + "-button").click({"manager": this}, this.delete_func);
-        $("#save-" + this.res_type + "-button").click({"manager": this}, this.save_func);
-        $("#repository-copy-" + this.res_type + "-button").click({"manager": this}, this.repository_copy_func);
-        $("#unload-" + this.res_type + "-button").click({"manager": this}, this.unload_func);
+        var self = this;
+        $.each(this.buttons, function (index, value) {
+            $("#{0}-{1}-button".format(value.name, self.res_type)).click({"manager": self}, self[value.func])
+        })
+        if (this.show_add) {
+            $("#add-{0}-form".format(self.res_type)).submit({"manager": self}, self.add_func)
+        }
+        $("#repository-copy-" + self.res_type + "-button").click({"manager": self}, self.repository_copy_func);
+
     },
 
     add_func: function (event) {
@@ -161,18 +178,15 @@ var resourceManager = {
     }
 };
 
-function updateObject(o1, o2) {
-    for (var prop in o2) {
-        if (o2.hasOwnProperty(prop)){
-            o1[prop] = o2[prop]
-        }
-    }
-}
+
 
 function select_resource_button(res_type, res_name) {
     if (res_name == null) {
         if ($("#" + res_type + "-selector").children().length > 0) {
             selector_click({"target": $("#" + res_type + "-selector").children()[0]});
+        }
+        else {
+            clear_resource_metadata(res_type)
         }
     }
     else {
@@ -186,11 +200,22 @@ function select_repository_button(res_type, res_name) {
         if ($("#repository-" + res_type + "-selector").children().length > 0) {
             repository_selector_click({"target": $("#repository-" + res_type + "-selector").children()[0]});
         }
+        else {
+            clear_repository_resource_metadata(res_type)
+        }
     }
     else {
         $("#" + res_type + "-selector").scrollTop($("#repository-" + res_type + "-selector-" + res_name).position().top);
         repository_selector_click({"target": document.getElementById("repository-" + res_type + "-selector-" + res_name)})
     }
+}
+
+function clear_resource_metadata(res_type) {
+    $("#" + res_type + "-module .created").html("");
+    $("#" + res_type + "-tags")[0].value = "";
+    $("#" + res_type + "-tags").html("");
+    $("#" + res_type + "-notes")[0].value = "";
+    $("#" + res_type + "-notes").html("");
 }
 
 function selector_click(event) {
@@ -217,13 +242,17 @@ function selector_click(event) {
         }
         else {
             // doFlash(data)
-            $("#" + res_type + "-module .created").html("");
-            $("#" + res_type + "-tags")[0].value = "";
-            $("#" + res_type + "-tags").html("");
-            $("#" + res_type + "-notes")[0].value = "";
-            $("#" + res_type + "-notes").html("");
+            clear_resource_metadata(res_type)
         }
     }
+}
+
+function clear_repository_resource_metadata(res_type) {
+    $("#" + res_type + "-module .repository-created").html("");
+    $("#" + res_type + "-repository-tags")[0].value = "";
+    $("#" + res_type + "-repository-tags").html("");
+    $("#" + res_type + "-repository-notes")[0].value = "";
+    $("#" + res_type + "-repository-notes").html("");
 }
 
 function repository_selector_click(event) {
@@ -250,11 +279,7 @@ function repository_selector_click(event) {
         }
         else {
             // doFlash(data)
-            $("#" + res_type + "-module .repository-created").html("");
-            $("#" + res_type + "-repository-tags")[0].value = "";
-            $("#" + res_type + "-repository-tags").html("");
-            $("#" + res_type + "-repository-notes")[0].value = "";
-            $("#" + res_type + "-repository-notes").html("");
+            clear_repository_resource_metadata(res_type)
         }
     }
 }
@@ -274,6 +299,7 @@ function search_resource(event) {
     });
     function search_success(data) {
         $("#" + res_type + "-selector").html(data.html)
+        select_resource_button(res_type, null)
     }
 }
 
@@ -292,6 +318,7 @@ function search_repository_resource(event) {
     });
     function search_success(data) {
         $("#repository-" + res_type + "-selector").html(data.html)
+        select_repository_button(res_type, null)
     }
 }
 
@@ -310,6 +337,7 @@ function search_resource_tags(event) {
     });
     function search_success(data) {
         $("#" + res_type + "-selector").html(data.html)
+        select_resource_button(res_type, null)
     }
 }
 
@@ -328,17 +356,23 @@ function search_repository_resource_tags(event) {
     });
     function search_success(data) {
         $("#repository-" + res_type + "-selector").html(data.html)
+        select_repository_button(res_type, null)
     }
 }
 
 function unfilter_resource(event) {
     var res_type = event.target.value;
-    $("#" + res_type + "-selector").load($SCRIPT_ROOT + "/request_update_selector_list/" + res_type);
+    $("#" + res_type + "-selector").load($SCRIPT_ROOT + "/request_update_selector_list/" + res_type, function () {
+        select_resource_button(res_type, null)
+    });
+
 }
 
 function unfilter_repository_resource(event) {
     var res_type = event.target.value;
-    $("#repository-" + res_type + "-selector").load($SCRIPT_ROOT + "/request_update_repository_selector_list/" + res_type);
+    $("#repository-" + res_type + "-selector").load($SCRIPT_ROOT + "/request_update_repository_selector_list/" + res_type, function () {
+        select_repository_button(res_type, null)
+    });
 }
 
 function save_metadata(event) {

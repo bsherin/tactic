@@ -78,7 +78,7 @@ class AbstractClassifier(TileBase):
                 if not (code_rows_dict[dname][r] == ""):
                     for w in reduced_vocab:
                         new_fs[w] = w in instance
-                    labeled_featuresets_dict[dname].append((new_fs, code_rows_dict[dname][r]))
+                labeled_featuresets_dict[dname].append((new_fs, code_rows_dict[dname][r]))
                 r += 1
         combined_featuresets = self.dict_to_list(labeled_featuresets_dict)
         self._classifier = self.classifier_class.train(combined_featuresets)
@@ -91,8 +91,8 @@ class AbstractClassifier(TileBase):
             for lfset in doc:
                 autocode = self._classifier.classify(lfset[0])
                 self.autocodes_dict[dname].append(autocode)
-                self.set_cell(dname, r, self.code_destination, str(autocode), cellchange=False)
                 r += 1
+            self.set_column_data(dname,  self.code_destination, self.autocodes_dict[dname], cellchange=False)
         cm = nltk.ConfusionMatrix(self.dict_to_list(code_rows_dict),
                                   self.dict_to_list(self.autocodes_dict))
 

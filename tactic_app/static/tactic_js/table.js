@@ -117,7 +117,6 @@ function create_tablespec(dict) {
     var spec = Object.create(tableSpec);
     spec.doc_name = dict.doc_name;
     spec.header_list = dict.header_list;
-    spec.hidden_list = dict.hidden_list;
     spec.table_width = dict.table_width;
     spec.column_widths = dict.column_widths;
     return spec
@@ -151,7 +150,7 @@ var tableObject = {
             this.current_spec = create_tablespec(
                 {"doc_name": this.current_doc_name,
                 "header_list": data_object["header_list"],
-                "hidden_list": ["__filename__"],
+
                 "table_width": null,
                 "column_widths": null,
                 });
@@ -244,8 +243,8 @@ var tableObject = {
         initializeConsole();
         html_result = create_all_html(this.table_id, this.data_rows, this.current_spec.header_list, max_table_size), this.is_last_chunk;
         $("#" + this.table_id).html(html_result);
-        for (i = 0; i < this.current_spec.hidden_list.length; ++i) {
-            $(".column-" + this.current_spec.hidden_list[i]).css("display", "none");
+        for (i = 0; i < hidden_columns_list.length; ++i) {
+            $(".column-" + hidden_columns_list[i]).css("display", "none");
         }
         this.color_all_bgs();
         $("#project-name").html(this.project_name)

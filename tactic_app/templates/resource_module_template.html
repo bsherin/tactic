@@ -27,27 +27,9 @@
     <div class="row indent-row" style="margin-top: 5px">
         <div class="col-xs-12">
             <div class="btn-group" style= "margin-top: 5px; margin-bottom: 5px" role="group">
-                {{#show_new}}
-                    <button type="button" id="new-{{res_type}}-button" class="btn action-button">New</button>
-                {{/show_new}}
-                {{#show_view}}
-              <button type="button" id="view-{{res_type}}-button" class="btn action-button">View</button>
-                {{/show_view}}
-                {{#show_load}}
-                <button type="button" id="load-{{res_type}}-button" class="btn action-button">Load</button>
-                {{/show_load}}
-                {{#show_unload}}
-                <button type="button" id="unload-{{res_type}}-button" class="btn action-button">Unload All</button>
-                {{/show_unload}}
-                {{#show_delete}}
-              <button type="button" id="delete-{{res_type}}-button" class="btn action-button">Delete</button>
-                {{/show_delete}}
-                {{#show_duplicate}}
-              <button type="button" id="duplicate-{{res_type}}-button" class="btn action-button">Duplicate</button>
-                {{/show_duplicate}}
-                {{#show_save}}
-              <button type="button" id="save-{{res_type}}-button" class="btn action-button">Save</button>
-                {{/show_save}}
+                {{#buttons}}
+                <button type="button" id="{{name}}-{{res_type}}-button" class="btn action-button">{{name}}</button>
+                {{/buttons}}
             </div>
 
         </div>
@@ -60,10 +42,10 @@
                 <button type="button" class="btn btn-sm save-metadata-button" style="margin-bottom: 7px" value="{{res_type}}">Save Metadata</button>
                 <div class="created"></div>
                 <div class="form-group" style="margin-bottom: 7px">
-                    <textarea type="text" class="form-control" rows="1" id="{{res_type}}-tags" placeholder="tags"></textarea>
+                    <textarea type="text" class="form-control metadata-field" rows="1" id="{{res_type}}-tags"  placeholder="tags"></textarea>
                 </div>
                 <div class="form-group">
-                    <textarea class="form-control" id="{{res_type}}-notes" rows="5" placeholder="notes"></textarea>
+                    <textarea class="form-control metadata-field" id="{{res_type}}-notes" rows="5" placeholder="notes"></textarea>
                 </div>
             </div>
             {{#show_loaded_list}}
@@ -112,10 +94,10 @@
             <div style="display: inline-block; vertical-align: top; margin-left: 5px">
                 <div class="repository-created"></div>
                 <div class="form-group" style="margin-bottom: 7px">
-                    <textarea contenteditable="false" type="text" class="form-control" rows="1" id="{{res_type}}-repository-tags" placeholder="tags"></textarea>
+                    <textarea contenteditable="false" type="text" class="form-control" style="width: 350px" rows="1" id="{{res_type}}-repository-tags" placeholder="tags"></textarea>
                 </div>
                 <div class="form-group">
-                    <textarea contenteditable="false" class="form-control" id="{{res_type}}-repository-notes" rows="5" placeholder="notes"></textarea>
+                    <textarea contenteditable="false" class="form-control" id="{{res_type}}-repository-notes" style="width: 350px"rows="5" placeholder="notes"></textarea>
                 </div>
             </div>
         </div>
