@@ -6,7 +6,6 @@ import copy
 # what behavior on remote will be like.
 nltk.data.path = ['./nltk_data/']
 import numpy
-import sklearn
 import scipy
 from tactic_app.clusterer_classes import CentroidClusterer, OptCentroidClusterer
 from matplotlib_utilities import GraphList, ColorMapper, FigureCanvas, ArrayHeatmap
