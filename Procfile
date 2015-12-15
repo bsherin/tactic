@@ -1,1 +1,1 @@
-web: gunicorn --worker-class socketio.sgunicorn.GeventSocketIOWorker tactic_run:app --timeout 600
+web: gunicorn --worker-class socketio.sgunicorn.GeventSocketIOWorker tactic_run:app --timeout 6000

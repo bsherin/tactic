@@ -217,17 +217,17 @@ class OptCentroidClusterer(VectorSpaceClusterer):
     def cluster_vectorspace(self, vectors, trace=False):
         # create a cluster for each vector
         clusters = [[vector] for vector in vectors]
-        
+
         # This copy module and function is from the python standard library
         vector_sum = copy.copy(vectors)
         norm_sum = [normalize(vsum) for vsum in vector_sum]
-        
+
         cluster_matrix = numpy.zeros([len(vectors[0]), len(vectors)])
         i = 0
         for v in norm_sum:
             cluster_matrix[:, i] = v
             i = i + 1
-        
+
         dot_store_matrix = numpy.dot(cluster_matrix.transpose(), cluster_matrix)
 
         while len(clusters) > max(self._num_clusters, 1):
@@ -250,9 +250,9 @@ class OptCentroidClusterer(VectorSpaceClusterer):
             del vector_sum[j]
             del norm_sum[j]
             cluster_matrix = numpy.delete(cluster_matrix, j, 1)
-            
+
             dot_store_matrix = numpy.dot(cluster_matrix.transpose(), cluster_matrix)
-            
+
             self._dendogram.merge(i, j)
             if self._names:
                 self._name_dendogram.merge(i, j)
