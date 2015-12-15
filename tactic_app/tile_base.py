@@ -502,25 +502,6 @@ class TileBase(threading.Thread):
             result += it
         return result
 
-    # def build_html_table_from_data_list(self, data_list, title=None, row_clickable=False):
-    #     the_html = "<table class='tile-table table table-striped table-bordered table-condensed'>"
-    #     if title is not None:
-    #         the_html += "<caption>{0}</caption>".format(title)
-    #     the_html += "<thead><tr>"
-    #     for c in data_list[0]:
-    #         the_html += "<th>{0}</th>".format(c)
-    #     the_html += "</tr><tbody>"
-    #     for r in data_list[1:]:
-    #         the_html += "<tr>"
-    #         for c in r:
-    #             if row_clickable:
-    #                 the_html += "<td class='row-clickable'>{0}</td>".format(c)
-    #             else:
-    #                 the_html += "<td class='word-clickable'>{0}</td>".format(c)
-    #         the_html += "</tr>"
-    #     the_html += "</tbody></table>"
-    #     return the_html
-
     def build_html_table_from_data_list(self, data_list, title=None, row_clickable=False):
         the_html = "<table class='tile-table table table-striped table-bordered table-condensed'>"
         if title is not None:

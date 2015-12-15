@@ -9,7 +9,7 @@ from flask import render_template, request, make_response, redirect, url_for, js
 from flask_login import login_required, current_user
 from flask_socketio import join_room
 from tactic_app import app, db, socketio, use_ssl
-from tactic_app.file_handling import read_csv_file_to_dict, read_txt_file_to_dict, load_a_list;
+from tactic_app.file_handling import read_csv_file_to_dict, read_txt_file_to_dict, read_xml_file_to_dict, load_a_list;
 from tactic_app.main import create_new_mainwindow, create_new_mainwindow_from_project, mainwindow_instances
 from tactic_app.users import put_docs_in_collection, User
 from tactic_app.user_tile_env import create_user_tiles
@@ -240,6 +240,8 @@ class CollectionManager(ResourceManager):
                 (success, result_dict, header_list) = read_csv_file_to_dict(file)
             elif file_extension ==".txt":
                 (success, result_dict, header_list) = read_txt_file_to_dict(file)
+            # elif file_extension == ".xml":
+            #     (success, result_dict, header_list) = read_xml_file_to_dict(file)
             else:
                 return jsonify({"message": "Not a valid file extension " + file_extension, "alert_type": "alert-danger"})
             if not success: # then dict_list contains an error object
@@ -247,7 +249,7 @@ class CollectionManager(ResourceManager):
                 return jsonify({"message": e.message, "alert_type": "alert-danger"})
 
             try:
-                if AUTOSPLIT:
+                if AUTOSPLIT and len(result_dict.keys()) > AUTOSPLIT_SIZE:
                     docs = self.autosplit_doc(filename, result_dict)
                     for doc in docs:
                         db[full_collection_name].insert_one({"name": doc["name"], "data_rows": doc["data_rows"], "header_list": header_list})

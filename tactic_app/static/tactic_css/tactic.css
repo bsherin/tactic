@@ -27,7 +27,7 @@
   border-color: #adadad; }
 
 .resource-module .add-button:hover {
-  color: #f8f8f8;
+  color: #333;
   background-color: #f8f8f8;
   border-color: #adadad; }
 
@@ -37,17 +37,17 @@
   border-color: #adadad; }
 
 .resource-module .action-button:hover {
-  color: #f8f8f8;
+  color: #333;
   background-color: #f8f8f8;
   border-color: #adadad; }
 
 .resource-module .save-metadata-button {
-  color: #333;
+  color: black;
   background-color: #e6e6e6;
   border-color: #adadad; }
 
 .resource-module .save-metadata-button:hover {
-  color: #f8f8f8;
+  color: #333;
   background-color: #f8f8f8;
   border-color: #adadad; }
 
@@ -59,6 +59,9 @@
 .file-selector {
   margin-bottom: 10px;
   display: block; }
+
+.metadata-field {
+  width: 350px; }
 
 /* Tile table related*/
 .tile-table td {

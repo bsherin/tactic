@@ -7,7 +7,7 @@ import sys
 import xmltodict
 from xml.parsers.expat import ExpatError
 
-def read_xml_file_to_dict_list(the_file):
+def read_xml_file_to_dict(the_file):
     raw_xml = the_file.read()
     try:
         parsed_xml = xmltodict.parse(raw_xml)
@@ -70,6 +70,8 @@ def read_csv_file_to_dict(csvfile):
         filename, file_extension = os.path.splitext(csvfile.filename)
         result_dict = {}
         for row in reader:
+            for (key, val) in row.items():
+                row[key] = utf_solver(val)
             row["__filename__"] = filename
             row["__id__"] = i
             result_dict[str(i)] = row

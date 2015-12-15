@@ -4,7 +4,7 @@ $resource-button-background: #d9eecf;
 $resource-button-text: #333;
 $resource-button-border-color: #adadad;
 $resource-button-hover-background: #f8f8f8;
-$resource-button-hover-text: #f8f8f8;
+$resource-button-hover-text: #333;
 
 .indent-row {
     margin-left: 5px;
@@ -59,7 +59,7 @@ $resource-button-hover-text: #f8f8f8;
 }
 
 .resource-module .save-metadata-button {
-    color: #333;
+    color: black;
     background-color: #e6e6e6;
     border-color: $resource-button-border-color;
 }
@@ -79,6 +79,10 @@ $resource-button-hover-text: #f8f8f8;
 .file-selector {
     margin-bottom: 10px;
     display: block;
+}
+
+.metadata-field {
+  width: 350px
 }
 
 /* Tile table related*/
