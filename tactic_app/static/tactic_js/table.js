@@ -4,13 +4,7 @@
 // This controls how wide the widest field can be as
 // a fraction of the containing panel
 MAX_BIGFIELD_FRACTION = 1;
-ADDED_HEADER_WIDTH = 35;
-HEADER_SELECT_COLOR = "#9d9d9d";
-HEADER_NORMAL_COLOR = "#c9e2b3";
-TABLE_SELECT_COLOR = "#e0e0e0";
-TABLE_NORMAL_COLOR = "#ffffff";
-TABLE_BORDER_STYLE = "1px solid #9d9d9d;"
-MAX_HEIGHT = 300;
+ADDED_HEADER_WIDTH = 0;
 MARGIN_SIZE = 5;
 INITIAL_LEFT_FRACTION = .69
 
