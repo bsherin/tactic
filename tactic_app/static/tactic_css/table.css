@@ -14,8 +14,9 @@
   border-top: 1px solid #ddd; }
 
 #table-area thead {
-  background-color: #bababa;
-  display: block; }
+  background-color: #f4f5f6;
+  display: block;
+  border-bottom: 1px solid #ddd; }
 
 #table-area tbody {
   display: block;
@@ -27,7 +28,7 @@
   font-weight: normal;
   font-size: 15px;
   padding: 5px 10px;
-  color: black;
+  color: #4b4963;
   overflow: hidden; }
 
 #table-area tr {

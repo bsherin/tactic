@@ -8,6 +8,10 @@
     <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/tactic.css')}}">
 {% endblock %}
 
+{% block morenavbar %}
+    <li><a href="https://github.com/bsherin/tactic/wiki/Module%20Viewer%20Keyboard%20Shortcuts">Keyboard Shortcuts</a></li>
+{% endblock %}
+
 {% block page_content %}
     <div class="container-fluid">
         <div class="page-header">
@@ -32,11 +36,11 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-xs-9">
+            <div class="col-xs-8">
                 <br>
                 <textarea id="codearea">{{module_code | safe}}</textarea>
             </div>
-            <div class="col-xs-3">
+            <div class="col-xs-4">
                 <div  style="display: inline-block; vertical-align: top; margin-left: 5px; margin-top: 10px">
                     <div class="created"></div>
                     <div class="form-group" style="margin-bottom: 7px">

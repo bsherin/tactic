@@ -47,11 +47,11 @@ function expandConsole(){
 
 }
 
-PING_TIME = 3000
-function ioPing() {
-    console.log('Socket.io ping');
-    socket.emit('ping');
-}
+//PING_TIME = 3000
+//function ioPing() {
+//    console.log('Socket.io ping');
+//    socket.emit('ping');
+//}
 
 function start_post_load() {
     //spinner = new Spinner({scale: 1.0}).spin();
@@ -61,11 +61,9 @@ function start_post_load() {
     $("#outer-container").css({"margin-top": "0px", "margin-bottom": "0px"});
     if (use_ssl) {
         socket = io.connect('https://' + document.domain + ':' + location.port + '/main');
-        setInterval(ioPing, PING_TIME);
     }
     else {
         socket = io.connect('http://' + document.domain + ':' + location.port + '/main');
-        setInterval(ioPing, PING_TIME);
     }
     $.getJSON($SCRIPT_ROOT + "/get_tile_types", function (data) {
         tile_types = data.tile_types;

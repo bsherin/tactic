@@ -6,8 +6,9 @@ import copy
 # what behavior on remote will be like.
 nltk.data.path = ['./nltk_data/']
 import numpy
+import wordcloud
 from tactic_app.clusterer_classes import CentroidClusterer, OptCentroidClusterer
-from matplotlib_utilities import GraphList, ColorMapper, FigureCanvas, ArrayHeatmap
+from matplotlib_utilities import GraphList, ColorMapper, FigureCanvas, ArrayHeatmap, ImageShow
 from shared_dicts import mainwindow_instances
 
 from tile_base import TileBase

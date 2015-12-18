@@ -18,10 +18,14 @@ function clear_all_menus() {
     $("#menu-area").html(" ")
 }
 
+function MenuObject(menu_name, menu_function, options) {
+    this.menu_name = menu_name;
+    this.options = options;
+    this.perform_menu_item = menu_function
+}
+
 // This is the menu_object base prototype
-var menu_object = {
-    menu_name: "",
-    options: [],
+MenuObject.prototype = {
     shortcuts: {},
     render_menu: function () {
         var self = this;
@@ -126,18 +130,12 @@ mousetrap.bind("esc", function() {
 
 function build_and_render_menu_objects() {
     // Create the column_menu object
-    column_menu = Object.create(menu_object);
-    column_menu.menu_name = "Column";
-    column_menu.options = ["shift-left", "shift-right", "hide", "unhide", "add-column"];
-    column_menu.perform_menu_item = column_command;
+    column_menu = new MenuObject("Column", column_command,["shift-left", "shift-right", "hide", "unhide", "add-column"])
     menus[column_menu.menu_name] = column_menu;
     column_menu.add_options_to_index();
 
     // Create the project_menu object
-    project_menu = Object.create(menu_object);
-    project_menu.menu_name = "Project";
-    project_menu.options = ["save-as", "save", "export-data"];
-    project_menu.perform_menu_item = project_command;
+    project_menu = new MenuObject("Project", project_command,["save-as", "save", "export-data"])
     menus[project_menu.menu_name] = project_menu;
     project_menu.add_options_to_index();
     project_menu.shortcuts = {
@@ -155,11 +153,8 @@ function build_and_render_menu_objects() {
         if (!tile_types.hasOwnProperty(category)) {
             continue;
         }
-        var new_tile_menu = Object.create(menu_object);
-        new_tile_menu.menu_name = category;
-        new_tile_menu.perform_menu_item = tile_command;
+        var new_tile_menu = new MenuObject(category, tile_command, tile_types[category])
         menus[new_tile_menu.menu_name] = new_tile_menu;
-        new_tile_menu.options = tile_types[category];
         new_tile_menu.add_options_to_index();
     }
 
