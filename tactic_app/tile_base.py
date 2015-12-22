@@ -425,7 +425,7 @@ class TileBase(threading.Thread):
 
     # Filtering and iteration
 
-    def get_matching_rows(self, filter_function, document_name):
+    def get_matching_rows(self, filter_function, document_name=None):
         return mainwindow_instances[self.main_id].get_matching_rows(filter_function, document_name)
 
     def display_matching_rows(self, filter_function, document_name=None):

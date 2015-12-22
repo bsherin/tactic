@@ -3,9 +3,11 @@
  */
 
 var modal_template;
+var tooltips_
+
 $.get($SCRIPT_ROOT + "/get_modal_template", function(template){
     modal_template = $(template).filter('#modal-template').html();
-})
+});
 
 function doFlash(data) {
     // Flash a bootstrap-styled warning in status-area
@@ -26,6 +28,32 @@ function doFlash(data) {
         $("#status-area").html(result);
         $("#status-area").fadeIn();
     })
+}
+
+function tooltipper() {
+    return tooltip_dict[this.id];
+}
+
+opts_top = {
+    delay: { "show": 1000, "hide": 100 },
+    title: tooltipper,
+    placement: "top"
+};
+
+opts_bottom = {
+    delay: { "show": 1000, "hide": 100 },
+    title: tooltipper,
+    placement: "bottom"
+};
+
+function initializeTooltips() {
+    $('.tooltip-top[data-toggle="tooltip"]').tooltip(options=opts_top);
+    $('.tooltip-bottom[data-toggle="tooltip"]').tooltip(options=opts_bottom);
+}
+
+function toggleTooltips() {
+    $('[data-toggle="tooltip"]').tooltip('toggle')
+    return (false)
 }
 
 function clearStatusArea() {

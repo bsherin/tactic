@@ -23,11 +23,11 @@
         <div class="grid-left" align="left">
             <div id="main-panel" class="panel panel-default">
                 <div class="panel-heading" id="data-title" style="padding-top: 5px; padding-bottom: 5px">
-                <button type='button' class='notclose' onclick="tableObject.shrinkTable()"><span style="font-size:15px" class="glyphicon glyphicon-th"></span></button>
+                <button type='button' id="shrink-table-button" data-toggle="tooltip" class='notclose tooltip-top' onclick="tableObject.shrinkTable()"><span style="font-size:15px" class="glyphicon glyphicon-th"></span></button>
                     <form class="form-inline" style="display:inline">
                       <span class="form-group">
                         <label for="doc-selector" style="padding-left: 5px">{{short_collection_name}}: </label>
-                            <select id="doc-selector" class="form-control" onchange="change_doc(this)">
+                            <select id="doc-selector" class="form-control  tooltip-top" data-toggle="tooltip" onchange="change_doc(this)">
                                 {% for dname in doc_names %}
                                     <option>{{ dname }}</option>
                                 {% endfor %}
@@ -37,15 +37,15 @@
 
                     <span style="font-weight: bold; padding-left:5px"> Project: <span id="project-name" style="font-weight: normal">{{project_name}}</span></span>
                     <form class="form-inline" style="display:inline; float:right">
-                        <div class="input-group">
-                          <input type="text" id="search" class="form-control" placeholder="Search">
+                        <div class="input-group input-group-sm">
+                          <input type="text" id="search" class="form-control" size="10" placeholder="Search">
                              <span class="input-group-btn">
-                                <button class="btn btn-default" type="button" onclick="return doSearch(document.getElementById('search').value)" value="Find">Find</button>
+                                <button class="btn btn-default tooltip-top" id="search-button" data-toggle="tooltip" type="button" onclick="return doSearch(document.getElementById('search').value)" value="Find">Find</button>
                              </span>
                         </div>
-                        <div class="btn-group" role="group">
-                            <button class="btn btn-default" onclick="return doFilter(document.getElementById('search').value)" value="Filter">Filter</button>
-                            <button class="btn btn-default" onclick="return doUnfilter()" value="Unfilter">Unfilter</button>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button class="btn btn-default tooltip-bottom" id="filter-button" data-toggle="tooltip" onclick="return doFilter(document.getElementById('search').value)" value="Filter">Filter</button>
+                            <button class="btn btn-default tooltip-top" id="unfilter-button" data-toggle="tooltip" onclick="return doUnfilter()" value="Unfilter">Unfilter</button>
                         </div>
                    </form>
                     <span id="table-spin-place" style="margin:7px"></span>
@@ -71,9 +71,9 @@
         </div>
         <div id="console-panel" class="panel panel-default" style="display:block">
                 <div id="console-heading" class="panel-heading">
-                    <button type='button' class='notclose triangle-right' onclick=expandConsole()><span style="font-size:12px" class="glyphicon glyphicon-triangle-right"></span></button>
-                    <button type='button' class='notclose triangle-bottom' onclick=shrinkConsole()><span style="font-size:12px" class="glyphicon glyphicon-triangle-bottom"></span></button>
-                    <button type='button' class='notclose' style="float:right" onclick=tableObject.clearConsole()><span style="font-size:12px" class="glyphicon glyphicon-trash"></span></button>
+                    <button type='button' id="show-console-button" data-toggle="tooltip" class='notclose triangle-right tooltip-top' onclick=expandConsole()><span style="font-size:12px" class="glyphicon glyphicon-triangle-right"></span></button>
+                    <button type='button' id="hide-console-button" data-toggle="tooltip" class='notclose triangle-bottom tooltip-top' onclick=shrinkConsole()><span style="font-size:12px" class="glyphicon glyphicon-triangle-bottom"></span></button>
+                    <button type='button' id="clear-console-button" data-toggle="tooltip" class='notclose tooltip-top' style="float:right" onclick=tableObject.clearConsole()><span style="font-size:12px" class="glyphicon glyphicon-trash"></span></button>
                     Console
                 </div>
               <div id="console" class="panel-body"></div>
@@ -86,6 +86,7 @@
     <script src="{{url_for('static', filename='js/jquery.isonscreen.js')}}"></script>
     <script src="{{url_for('static', filename='js/socket.io.js')}}"></script>
     <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
+{#    <script src="{{url_for('static', filename='js/tooltip.js')}}"></script>#}
     <script src="{{url_for('static', filename='tactic_js/utilities.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/main_menus.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/tiles.js')}}"></script>

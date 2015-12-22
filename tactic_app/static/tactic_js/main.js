@@ -1,6 +1,17 @@
 var socket;
 var console_visible;
 
+var tooltip_dict = {
+    "shrink-table-button": "shrink/expand table",
+    "doc-selector": "select document",
+    "search-button": "highlight matching text",
+    "filter-button": "show matching rows",
+    "unfilter-button": "show all rows",
+    "show-console-button": "show/hide the console",
+    "hide-console-button": "show/hide the console",
+    "clear-console-button": "clear console output",
+};
+
 function initializeConsole() {
     saved_console_size = 150;
     var pan = $("#console-panel");
@@ -44,14 +55,7 @@ function expandConsole(){
                 $("#console").outerHeight(ui.size.height- $("#console-heading").outerHeight())
             }
         });
-
 }
-
-//PING_TIME = 3000
-//function ioPing() {
-//    console.log('Socket.io ping');
-//    socket.emit('ping');
-//}
 
 function start_post_load() {
     //spinner = new Spinner({scale: 1.0}).spin();
@@ -125,6 +129,8 @@ function continue_loading() {
         revert: 'invalid',
         forceHelperSize: true
     });
+
+    initializeTooltips();
 
     socket.emit('join', {"room": user_id});
     socket.emit('join', {"room": main_id});

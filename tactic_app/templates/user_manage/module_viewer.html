@@ -5,6 +5,7 @@
 {% block styles %}
     <link rel="stylesheet" href="{{url_for('static', filename='css/codemirrorthemes/codemirror.css')}}">
     <link rel="stylesheet" href="{{url_for('static', filename='css/codemirrorthemes/pastel-on-dark.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/codemirrorthemes/dialog.css')}}">
     <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/tactic.css')}}">
 {% endblock %}
 
@@ -58,6 +59,10 @@
 {% block scripts %}
     <script src="{{url_for('static', filename='js/socket.io.js')}}"></script>
     <script src="{{url_for('static', filename='js/codemirror.js')}}"></script>
+    <script src="{{url_for('static', filename='js/codemirror/search.js')}}"></script>
+    <script src="{{url_for('static', filename='js/codemirror/searchcursor.js')}}"></script>
+    <script src="{{url_for('static', filename='js/codemirror/jump-to-line.js')}}"></script>
+    <script src="{{url_for('static', filename='js/codemirror/dialog.js')}}"></script>
     <script src="{{url_for('static', filename='js/python.js')}}"></script>
     <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
     <script src="{{url_for('static', filename='js/matchbrackets.js')}}"></script>

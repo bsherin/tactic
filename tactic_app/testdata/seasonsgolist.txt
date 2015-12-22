@@ -1,0 +1,4 @@
+facing
+toward
+towards
+away

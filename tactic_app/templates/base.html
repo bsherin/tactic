@@ -19,14 +19,14 @@
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav" id="menu-area">
-                    <li><a href="/">Home</a></li>
                     {% block navbar %}
                     {% endblock %}
                 </ul>
                 <ul id="my-navbar-right" class="nav navbar-nav navbar-right">
                     {% block morenavbar %}
                     {% endblock %}
-                    <li><a href="https://github.com/bsherin/tactic/wiki">Docs</a></li>
+                    <li><a href="" onclick="return toggleTooltips();">?</a></li>
+                    <li><a href="https://github.com/bsherin/tactic/wiki">Documentation</a></li>
                     {% if current_user.is_authenticated() %}
                         <li><a href="{{ url_for('user_manage') }}">My Resources</a></li>
                     <li><a href="" onclick="return doSignOut();">Sign Out</a></li>

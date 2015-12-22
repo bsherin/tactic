@@ -1,75 +1,6 @@
 
 var tile_dict = {}
 
-function spin_and_refresh(tile_id) {
-    broadcast_event_to_server("StartSpinner", {"tile_id": tile_id})
-    broadcast_event_to_server("RefreshTile", {"tile_id": tile_id})
-    broadcast_event_to_server("StopSpinner", {"tile_id": tile_id})
-}
-
-function listen_for_clicks() {
-    $(".front").on('click', '.word-clickable', function(e) {
-        var tile_id = jQuery.data(e, "my_tile_id");
-        var s = window.getSelection();
-        var range = s.getRangeAt(0);
-        var node = s.anchorNode;
-        while ((range.toString().indexOf(' ') !== 0) && (range.startOffset !== 0)) {
-          range.setStart(node, (range.startOffset - 1));
-        }
-        var nlen = node.textContent.length;
-        if (range.startOffset !== 0) {
-          range.setStart(node, range.startOffset + 1);
-        }
-
-        do {
-          range.setEnd(node, range.endOffset + 1);
-
-        } while (range.toString().indexOf(' ') == -1 &&
-          range.toString().trim() !== '' &&
-          range.endOffset < nlen);
-
-        var str = range.toString().trim();
-          var data_dict = {};
-          var p = $(e.target).closest(".tile-panel")[0];
-          data_dict["tile_id"] = $(p).data("my_tile_id");
-          data_dict["clicked_text"] = str;
-          broadcast_event_to_server("TileWordClick", data_dict)
-    });
-    $(".front").on('click', '.cell-clickable', function(e) {
-
-        var tile_id = jQuery.data(e, "my_tile_id");
-        var txt = $(this).text()
-
-        var data_dict = {};
-        var p = $(e.target).closest(".tile-panel")[0];
-        data_dict["tile_id"] = $(p).data("my_tile_id");
-        data_dict["clicked_cell"] = txt;
-        broadcast_event_to_server("TileCellClick", data_dict)
-    });
-    $(".front").on('click', '.row-clickable', function(e) {
-        //var cells = $(this).closest("tr").children()
-        var cells = $(this).children()
-        var row_vals = []
-        cells.each(function() {
-            row_vals.push($(this).text())
-        })
-        var tile_id = jQuery.data(e, "my_tile_id");
-
-        var data_dict = {};
-        var p = $(e.target).closest(".tile-panel")[0];
-        data_dict["tile_id"] = $(p).data("my_tile_id");
-        data_dict["clicked_row"] = row_vals;
-        broadcast_event_to_server("TileRowClick", data_dict)
-    });
-    $(".front").on('click', 'button', function(e) {
-        var p = $(e.target).closest(".tile-panel")[0];
-        var data = {}
-        data["tile_id"] = $(p).data("my_tile_id");
-        data["button_value"] = e.target.value
-        broadcast_event_to_server("TileButtonClick", data)
-    });
-}
-
 function showZoomedImage(el) {
     src = el.src
     image_string = "<img class='output-plot' src='" + src +  "' lt='Image Placeholder'>"
@@ -91,60 +22,38 @@ function create_tile_from_save(tile_id) {
           console.log("Error creating tile from save: " + textStatus + " " + errorThrown)
         },
         success: function (data) {
-            var new_tile_object = Object.create(tile_object);
-            new_tile_object.tile_id = data.tile_id;
-            $("#tile-div").append(data.html);
-            $("#tile_body_" + data.tile_id).flip({
-                "trigger": "manual",
-                "autoSize": false,
-                "forceWidth": true,
-                "forceHeight": true
-            });
-            $("#tile_id_" + data.tile_id).resizable({
-                handles: "se",
-                resize: resize_tile_area,
-                stop: function () {
-                    new_tile_object.broadcastTileSize(new_tile_object)
-                }
-            });
-
+            var new_tile_object = new TileObject(data.tile_id, data.html);
             tile_dict[data.tile_id] = new_tile_object;
-            do_resize(data.tile_id);
-            new_tile_object.broadcastTileSize(new_tile_object);
-            listen_for_clicks();
-            $("#tile_id_" + data.tile_id).find(".triangle-right").hide()
-            //new_tile_object.initiateTileRefresh();
-            broadcast_event_to_server("RefreshTileFromSave", {"tile_id": data.tile_id})
+            new_tile_object.refreshFromSave()
         }
     })
 }
 
-function resize_tile_area(event, ui) {
-    var header_element = ui.element.children(".panel-heading")[0];
-    var hheight = $(header_element).outerHeight();
-    var front_element = ui.element.find(".front")[0];
-    $(front_element).outerHeight(ui.size.height - hheight);
-    $(front_element).outerWidth(ui.size.width);
-    var display_area = ui.element.find(".tile-display-area");
-    the_margin = $(".tile-display-area").css("margin-left").replace("px", "")
-    $(display_area).outerHeight(ui.size.height - hheight - the_margin * 2);
-    $(display_area).outerWidth(ui.size.width - the_margin * 2);
-    var back_element = ui.element.find(".back")[0];
-    $(back_element).outerHeight(ui.size.height - hheight);
-    $(back_element).outerWidth(ui.size.width)
+function TileObject(tile_id, html) {
+    this.tile_id = tile_id;
+    $("#tile-div").append(html);
+    $("#tile_body_" + this.tile_id).flip({
+        "trigger": "manual",
+        "autoSize": false,
+        "forceWidth": true,
+        "forceHeight": true
+    });
+    var self = this
+    $(this.full_selector()).resizable({
+        handles: "se",
+        resize: self.resize_tile_area,
+        stop: function () {
+            self.broadcastTileSize()
+        }
+    });
+    jQuery.data($(this.full_selector())[0], "my_tile_id", this.tile_id)
+    this.listen_for_clicks();
+    $(this.full_selector()).find(".triangle-right").hide()
+    this.do_resize();
+    this.broadcastTileSize();
 }
 
-function do_resize(tile_id){
-    el = $("#tile_id_" + tile_id);
-    ui = {
-        "element": el,
-        "size": {"width": el.outerWidth(), "height": el.outerHeight()}
-    };
-    resize_tile_area(null, ui);
-}
-
-var tile_object = {
-    tile_id: null,
+TileObject.prototype = {
     spinner: null,
     full_selector: function() {
         return "#tile_id_" + this.tile_id;
@@ -166,12 +75,6 @@ var tile_object = {
             }
         );
         $(this.full_selector() + " .back textarea").each(function () {
-                //lines = $(this).val().split(/\n/);
-                //clean_lines = []
-                //for (l = 0; l < lines.length; ++l){
-                //    clean_lines.push($.trim(lines[l]))
-                //}
-                //data[$(this).attr('id')] = clean_lines
             data[$(this).attr('id')] = $(this).val()
             }
         );
@@ -179,12 +82,21 @@ var tile_object = {
         data["tile_id"] = this.tile_id
         broadcast_event_to_server("UpdateOptions", data)
     },
-    broadcastTileSize: function(self) {
-        var w = $(self.full_selector() + " .tile-display-area").width();
-        var h = $(self.full_selector() + " .tile-display-area").height();
-        var data_dict = {"tile_id": self.tile_id, "width": w, "height": h};
+    broadcastTileSize: function() {
+        var w = $(this.full_selector() + " .tile-display-area").width();
+        var h = $(this.full_selector() + " .tile-display-area").height();
+        var data_dict = {"tile_id": this.tile_id, "width": w, "height": h};
         broadcast_event_to_server("TileSizeChange", data_dict)
     },
+    do_resize: function(){
+        el = $("#tile_id_" + this.tile_id);
+        ui = {
+            "element": el,
+            "size": {"width": el.outerWidth(), "height": el.outerHeight()}
+        };
+        this.resize_tile_area(null, ui);
+    },
+
     displayTileContent: function (data) {
         $(this.full_selector() + " .tile-display-area").html(data["html"]);
         this.showFront()
@@ -193,9 +105,7 @@ var tile_object = {
     displayFormContent: function (data) {
         $(this.full_selector() + " #form-display-area").html(data["html"]);
     },
-    //cameraTagSetup: function (data) {
-    //    CameraTag.setup();
-    //},
+
     startSpinner: function() {
         $(this.full_selector() + " #spin-place").html(spinner_html);
     },
@@ -237,11 +147,26 @@ var tile_object = {
         var self = this;
         el = $(this.full_selector()).resizable({
                 handles: "se",
-                resize: resize_tile_area,
+                resize: self.resize_tile_area,
                 stop: function () {
-                    self.broadcastTileSize(self)
+                    self.broadcastTileSize()
                 }
             });
+    },
+
+    resize_tile_area: function (event, ui) {
+        var header_element = ui.element.children(".panel-heading")[0];
+        var hheight = $(header_element).outerHeight();
+        var front_element = ui.element.find(".front")[0];
+        $(front_element).outerHeight(ui.size.height - hheight);
+        $(front_element).outerWidth(ui.size.width);
+        var display_area = ui.element.find(".tile-display-area");
+        the_margin = $(".tile-display-area").css("margin-left").replace("px", "")
+        $(display_area).outerHeight(ui.size.height - hheight - the_margin * 2);
+        $(display_area).outerWidth(ui.size.width - the_margin * 2);
+        var back_element = ui.element.find(".back")[0];
+        $(back_element).outerHeight(ui.size.height - hheight);
+        $(back_element).outerWidth(ui.size.width)
     },
 
     flipMe: function (){
@@ -263,5 +188,76 @@ var tile_object = {
         $("#tile_body_" + this.tile_id).flip(true);
         $("#tile_body_" + this.tile_id + " .front").fadeOut()
 
+    },
+    spin_and_refresh: function () {
+        broadcast_event_to_server("StartSpinner", {"tile_id": this.tile_id})
+        broadcast_event_to_server("RefreshTile", {"tile_id": this.tile_id})
+        broadcast_event_to_server("StopSpinner", {"tile_id": this.tile_id})
+    },
+    refreshFromSave: function () {
+        broadcast_event_to_server("RefreshTileFromSave", {"tile_id": this.tile_id})
+    },
+    listen_for_clicks: function() {
+        $(".front").on('click', '.word-clickable', function(e) {
+            var tile_id = jQuery.data(e, "my_tile_id");
+            var s = window.getSelection();
+            var range = s.getRangeAt(0);
+            var node = s.anchorNode;
+            while ((range.toString().indexOf(' ') !== 0) && (range.startOffset !== 0)) {
+              range.setStart(node, (range.startOffset - 1));
+            }
+            var nlen = node.textContent.length;
+            if (range.startOffset !== 0) {
+              range.setStart(node, range.startOffset + 1);
+            }
+
+            do {
+              range.setEnd(node, range.endOffset + 1);
+
+            } while (range.toString().indexOf(' ') == -1 &&
+              range.toString().trim() !== '' &&
+              range.endOffset < nlen);
+
+            var str = range.toString().trim();
+              var data_dict = {};
+              var p = $(e.target).closest(".tile-panel")[0];
+              data_dict["tile_id"] = $(p).data("my_tile_id");
+              data_dict["clicked_text"] = str;
+              broadcast_event_to_server("TileWordClick", data_dict)
+        });
+        $(".front").on('click', '.cell-clickable', function(e) {
+
+            var tile_id = jQuery.data(e, "my_tile_id");
+            var txt = $(this).text()
+
+            var data_dict = {};
+            var p = $(e.target).closest(".tile-panel")[0];
+            data_dict["tile_id"] = $(p).data("my_tile_id");
+            data_dict["clicked_cell"] = txt;
+            broadcast_event_to_server("TileCellClick", data_dict)
+        });
+        $(".front").on('click', '.row-clickable', function(e) {
+            //var cells = $(this).closest("tr").children()
+            var cells = $(this).children()
+            var row_vals = []
+            cells.each(function() {
+                row_vals.push($(this).text())
+            })
+            var tile_id = jQuery.data(e, "my_tile_id");
+
+            var data_dict = {};
+            var p = $(e.target).closest(".tile-panel")[0];
+            data_dict["tile_id"] = $(p).data("my_tile_id");
+            data_dict["clicked_row"] = row_vals;
+            broadcast_event_to_server("TileRowClick", data_dict)
+        });
+        $(".front").on('click', 'button', function(e) {
+            var p = $(e.target).closest(".tile-panel")[0];
+            var data = {}
+            data["tile_id"] = $(p).data("my_tile_id");
+            data["button_value"] = e.target.value
+            broadcast_event_to_server("TileButtonClick", data)
+        });
     }
+
 };

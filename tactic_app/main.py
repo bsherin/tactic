@@ -463,8 +463,8 @@ class mainWindow(threading.Thread):
         return False
 
     def filter_table_rows(self, txt):
-        self.highlight_table_text(txt)
         self.display_matching_rows(lambda r: self.txt_in_dict(txt, r))
+        self.highlight_table_text(txt)
 
     def dehighlight_all_table_text(self):
         self.emit_table_message("dehiglightAllCells")

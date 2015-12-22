@@ -1,3 +1,20 @@
+/* tooltips */
+.tooltip .tooltip-inner {
+  background-color: #fde930;
+  color: #66431a; }
+
+.tooltip.top .tooltip-arrow {
+  border-top-color: #fde930; }
+
+.tooltip.bottom .tooltip-arrow {
+  border-bottom-color: #fde930; }
+
+.tooltip-inner {
+  -moz-box-shadow: 0px 1px 5px 1px rgba(0, 0, 0, 0.4);
+  -webkit-box-shadow: 0px 1px 5px 1px rgba(0, 0, 0, 0.4);
+  box-shadow: 0px 1px 5px 1px rgba(0, 0, 0, 0.4);
+  zoom: 1; }
+
 /* navbar */
 #menu-area a {
   color: #575757;

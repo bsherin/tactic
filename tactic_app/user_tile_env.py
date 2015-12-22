@@ -8,6 +8,7 @@ nltk.data.path = ['./nltk_data/']
 import numpy
 import wordcloud
 from tactic_app.clusterer_classes import CentroidClusterer, OptCentroidClusterer
+from tactic_app.sentiment_tools import vader_sentiment_analyzer, sentiwordnet
 from matplotlib_utilities import GraphList, ColorMapper, FigureCanvas, ArrayHeatmap, ImageShow
 from shared_dicts import mainwindow_instances
 
