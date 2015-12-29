@@ -110,7 +110,7 @@ function start_post_load() {
         $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
             resize_window()
         });
-        $("#spinner").css("display", "none")
+        stopSpinner()
     })
 }
 

@@ -19,7 +19,7 @@ def start_spinner():
     socketio.emit('start-spinner', {}, namespace='/user_manage', room=current_user.get_id())
 
 def stop_spinner():
-    socketio.emit('start-spinner', {}, namespace='/user_manage', room=current_user.get_id())
+    socketio.emit('stop-spinner', {}, namespace='/user_manage', room=current_user.get_id())
 
 class ResourceManager(object):
     is_repository = False

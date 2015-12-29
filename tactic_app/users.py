@@ -123,7 +123,7 @@ class User(UserMixin):
             db.create_collection(self.project_collection_name)
             return []
         my_project_names = []
-        for doc in db[self.project_collection_name].find():
+        for doc in db[self.project_collection_name].find(projection=["project_name"]):
             my_project_names.append(doc["project_name"])
         return sorted([str(t) for t in my_project_names], key=str.lower)
 
@@ -133,7 +133,7 @@ class User(UserMixin):
             db.create_collection(self.list_collection_name)
             return []
         my_list_names = []
-        for doc in db[self.list_collection_name].find():
+        for doc in db[self.list_collection_name].find(projection=["list_name"]):
             my_list_names.append(doc["list_name"])
         return sorted([str(t) for t in my_list_names], key=str.lower)
 
@@ -146,7 +146,7 @@ class User(UserMixin):
             db.create_collection(self.list_collection_name)
             return []
         my_list_names = []
-        for doc in db[self.list_collection_name].find():
+        for doc in db[self.list_collection_name].find(projection=["list_name", "metadata"]):
             if "metadata" in doc:
                 my_list_names.append([doc["list_name"], doc["metadata"]])
             else:
@@ -159,20 +159,7 @@ class User(UserMixin):
             db.create_collection(self.project_collection_name)
             return []
         my_project_names = []
-        for doc in db[self.project_collection_name].find():
-            if "metadata" in doc:
-                my_project_names.append([doc["project_name"], doc["metadata"]])
-            else:
-                my_project_names.append([doc["project_name"], None])
-        return sorted(my_project_names, key=self.sort_data_list_key)
-
-    @property
-    def project_names_with_metdata(self):
-        if self.project_collection_name not in db.collection_names():
-            db.create_collection(self.project_collection_name)
-            return []
-        my_project_names = []
-        for doc in db[self.project_collection_name].find():
+        for doc in db[self.project_collection_name].find(projection=["project_name", "metadata"]):
             if "metadata" in doc:
                 my_project_names.append([doc["project_name"], doc["metadata"]])
             else:
@@ -185,7 +172,7 @@ class User(UserMixin):
             db.create_collection(self.tile_collection_name)
             return []
         my_tile_names = []
-        for doc in db[self.tile_collection_name].find():
+        for doc in db[self.tile_collection_name].find(projection=["tile_module_name", "metadata"]):
             if "metadata" in doc:
                 my_tile_names.append([doc["tile_module_name"], doc["metadata"]])
             else:
@@ -198,7 +185,7 @@ class User(UserMixin):
             db.create_collection(self.tile_collection_name)
             return []
         my_tile_names = []
-        for doc in db[self.tile_collection_name].find():
+        for doc in db[self.tile_collection_name].find(projection=["tile_module_name"]):
             my_tile_names.append(doc["tile_module_name"])
         return sorted([str(t) for t in my_tile_names], key=str.lower)
 
