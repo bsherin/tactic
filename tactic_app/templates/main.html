@@ -27,7 +27,7 @@
                     <form class="form-inline" style="display:inline">
                       <span class="form-group">
                         <label for="doc-selector" style="padding-left: 5px">{{short_collection_name}}: </label>
-                            <select id="doc-selector" class="form-control  tooltip-top" data-toggle="tooltip" onchange="change_doc(this)">
+                            <select id="doc-selector" class="form-control  tooltip-top" data-toggle="tooltip" onchange="change_doc(this, null)">
                                 {% for dname in doc_names %}
                                     <option>{{ dname }}</option>
                                 {% endfor %}

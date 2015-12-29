@@ -48,7 +48,6 @@ ResourceManager.prototype = {
             $("#add-{0}-form".format(self.res_type)).submit({"manager": self}, self.add_func)
         }
         $("#repository-copy-" + self.res_type + "-button").click({"manager": self}, self.repository_copy_func);
-
     },
 
     add_func: function (event) {
@@ -76,7 +75,6 @@ ResourceManager.prototype = {
         if (res_name == "") return;
         window.open($SCRIPT_ROOT + manager.view_view + String(res_name))
     },
-
 
     duplicate_func: function (event) {
         var manager = event.data.manager;
@@ -155,7 +153,7 @@ ResourceManager.prototype = {
 
     check_for_selection: function (res_type) {
         //var res_name = $('#' + res_type + '-selector > .btn.active').text().trim();
-        var res_name = $('.resource-selector .' + res_type + '-selector-button.active')[0].value;
+        var res_name = $('.resource-selector .' + res_type + '-selector-button.active').children()[0].innerHTML;
         if (res_name == "") {
             doFlash({"message": "Select a " + res_type + " first.", "alert_type": "alert-info"})
         }
@@ -164,7 +162,7 @@ ResourceManager.prototype = {
 
     check_for_repository_selection: function (res_type) {
         //var res_name = $('#' + res_type + '-selector > .btn.active').text().trim();
-        var res_name = $('.repository-selector .' + res_type + '-selector-button.active')[0].value;
+        var res_name = $('.repository-selector .' + res_type + '-selector-button.active').children()[0].innerHTML;
         if (res_name == "") {
             doFlash({"message": "Select a " + res_type + " first.", "alert_type": "alert-info"})
         }
@@ -180,11 +178,10 @@ ResourceManager.prototype = {
 };
 
 
-
 function select_resource_button(res_type, res_name) {
     if (res_name == null) {
         if ($("#" + res_type + "-selector").children().length > 0) {
-            selector_click({"target": $("#" + res_type + "-selector").children()[0]});
+            selector_click({"target": $("#" + res_type + "-module tbody tr")[0]});
         }
         else {
             clear_resource_metadata(res_type)
@@ -199,7 +196,7 @@ function select_resource_button(res_type, res_name) {
 function select_repository_button(res_type, res_name) {
     if (res_name == null) {
         if ($("#repository-" + res_type + "-selector").children().length > 0) {
-            repository_selector_click({"target": $("#repository-" + res_type + "-selector").children()[0]});
+            repository_selector_click({"target": $("#repository-" + res_type + "-selector-row tbody tr")[0]});
         }
         else {
             clear_repository_resource_metadata(res_type)
@@ -219,12 +216,17 @@ function clear_resource_metadata(res_type) {
     $("#" + res_type + "-notes").html("");
 }
 
+
 function selector_click(event) {
-    var re = /^(\w+?)-/;
-    var res_type = re.exec($(event.target).attr("id"))[1];
+    var row_element = $(event.target).closest('tr');
+    var cells = row_element.children();
+    var res_name = $(cells[0]).text();
+    var tab_parent = $(event.target).closest(".tab-pane");
+    var regexp = /^(\w+?)-/;
+    var res_type = regexp.exec(tab_parent.attr("id"))[1];
     $(".resource-selector ." + res_type + "-selector-button").removeClass("active");
-    $(event.target).addClass("active");
-    var res_name = $('.resource-selector .' + res_type + '-selector-button.active')[0].value;
+    row_element.addClass("active");
+    //var res_name = $('.resource-selector .' + res_type + '-selector-button.active')[0].value;
     var result_dict = {"res_type": res_type, "res_name": res_name};
     $.ajax({
             url: $SCRIPT_ROOT + "/grab_metadata",
@@ -257,11 +259,14 @@ function clear_repository_resource_metadata(res_type) {
 }
 
 function repository_selector_click(event) {
-    var re = /^repository-(\w+?)-/;
-    var res_type = re.exec($(event.target).attr("id"))[1];
+    var row_element = $(event.target).closest('tr');
+    var cells = row_element.children();
+    var res_name = $(cells[0]).text();
+    var tab_parent = $(event.target).closest(".tab-pane");
+    var regexp = /^(\w+?)-/;
+    var res_type = regexp.exec(tab_parent.attr("id"))[1];
     $(".repository-selector ." + res_type + "-selector-button").removeClass("active");
-    $(event.target).addClass("active");
-    var res_name = $('.repository-selector .' + res_type + '-selector-button.active')[0].value;
+    row_element.addClass("active");
     var result_dict = {"res_type": res_type, "res_name": res_name};
     $.ajax({
             url: $SCRIPT_ROOT + "/grab_repository_metadata",
@@ -287,100 +292,82 @@ function repository_selector_click(event) {
 
 function search_resource(event) {
     var res_type = event.target.value;
-    var txt = document.getElementById(res_type + '-search').value;
-    var data_dict = {"text": txt, "res_type": res_type , "search_type": "search", "location": "current_user"};
-    $.ajax({
-        url: $SCRIPT_ROOT + "/search_resource",
-        contentType : 'application/json',
-        type : 'POST',
-        async: true,
-        data: JSON.stringify(data_dict),
-        dataType: 'json',
-        success: search_success
+    var txt = document.getElementById(res_type + '-search').value.toLowerCase();
+    var all_rows = $("#" + res_type + "-selector tbody tr");
+    $.each(all_rows, function (index, row_element) {
+        var cells = $(row_element).children();
+        var res_name = $(cells[0]).text().toLowerCase();
+        if (res_name.search(txt) == -1) {
+            $(row_element).fadeOut()
+        }
     });
-    function search_success(data) {
-        $("#" + res_type + "-selector").html(data.html)
-        select_resource_button(res_type, null)
-    }
+    select_resource_button(res_type, null)
 }
 
 function search_repository_resource(event) {
     var res_type = event.target.value;
-    var txt = document.getElementById("repository-" + res_type + '-search').value;
-    var data_dict = {"text": txt, "res_type": res_type , "search_type": "search", "location": "repository"};
-    $.ajax({
-        url: $SCRIPT_ROOT + "/search_resource",
-        contentType : 'application/json',
-        type : 'POST',
-        async: true,
-        data: JSON.stringify(data_dict),
-        dataType: 'json',
-        success: search_success
+    var txt = document.getElementById("repository-" + res_type + '-search').value.toLowerCase();
+    var all_rows = $("#repository-" + res_type + "-selector tbody tr");
+    $.each(all_rows, function (index, row_element) {
+        var cells = $(row_element).children();
+        var res_name = $(cells[0]).text().toLowerCase();
+        if (res_name.search(txt) == -1) {
+            $(row_element).fadeOut()
+        }
     });
-    function search_success(data) {
-        $("#repository-" + res_type + "-selector").html(data.html)
-        select_repository_button(res_type, null)
-    }
+    select_repository_button(res_type, null);
 }
 
 function search_resource_tags(event) {
     var res_type = event.target.value;
-    var txt = document.getElementById(res_type + '-search').value;
-    var data_dict = {"text": txt, "res_type": res_type , "search_type": "tags", "location": "current_user"};
-    $.ajax({
-        url: $SCRIPT_ROOT + "/search_resource",
-        contentType : 'application/json',
-        type : 'POST',
-        async: true,
-        data: JSON.stringify(data_dict),
-        dataType: 'json',
-        success: search_success
+    var txt = document.getElementById(res_type + '-search').value.toLowerCase();
+    var all_rows = $("#" + res_type + "-selector tbody tr");
+    $.each(all_rows, function (index, row_element) {
+        var cells = $(row_element).children();
+        var tag_text = $(cells[2]).text().toLowerCase();
+        if (tag_text.search(txt) == -1) {
+            $(row_element).fadeOut()
+        }
     });
-    function search_success(data) {
-        $("#" + res_type + "-selector").html(data.html)
-        select_resource_button(res_type, null)
-    }
+    select_resource_button(res_type, null)
 }
 
 function search_repository_resource_tags(event) {
     var res_type = event.target.value;
-    var txt = document.getElementById("repository-" + res_type + '-search').value;
-    var data_dict = {"text": txt, "res_type": res_type , "search_type": "tags", "location": "repository"};
-    $.ajax({
-        url: $SCRIPT_ROOT + "/search_resource",
-        contentType : 'application/json',
-        type : 'POST',
-        async: true,
-        data: JSON.stringify(data_dict),
-        dataType: 'json',
-        success: search_success
+    var txt = document.getElementById("repository-" + res_type + '-search').value.toLowerCase();
+    var all_rows = $("#repository-" + res_type + "-selector tbody tr");
+    $.each(all_rows, function (index, row_element) {
+        var cells = $(row_element).children();
+        var tag_text = $(cells[2]).text().toLowerCase();
+        if (tag_text.search(txt) == -1) {
+            $(row_element).fadeOut()
+        }
     });
-    function search_success(data) {
-        $("#repository-" + res_type + "-selector").html(data.html)
-        select_repository_button(res_type, null)
-    }
+    select_repository_button(res_type, null)
 }
 
 function unfilter_resource(event) {
     var res_type = event.target.value;
-    $("#" + res_type + "-selector").load($SCRIPT_ROOT + "/request_update_selector_list/" + res_type, function () {
-        select_resource_button(res_type, null)
-    });
-
+    var all_rows = $("#" + res_type + "-selector tbody tr");
+    $.each(all_rows, function (index, row_element) {
+            $(row_element).fadeIn()
+    })
 }
 
 function unfilter_repository_resource(event) {
     var res_type = event.target.value;
-    $("#repository-" + res_type + "-selector").load($SCRIPT_ROOT + "/request_update_repository_selector_list/" + res_type, function () {
-        select_repository_button(res_type, null)
-    });
+    var all_rows = $("#repository-" + res_type + "-selector tbody tr");
+    $.each(all_rows, function (index, row_element) {
+            $(row_element).fadeIn()
+        });
+    select_repository_button(res_type, null);
 }
 
 function save_metadata(event) {
-    var res_type = event.target.value
-    var res_name = $('.' + res_type + '-selector-button.active')[0].value
+    var res_type = event.target.value;
+    var res_name = $('.resource-selector .' + res_type + '-selector-button.active').children()[0].innerHTML;
     var tags = $("#" + res_type + "-tags").val();
-    var notes = $("#" + res_type + "-notes").val()
+    var notes = $("#" + res_type + "-notes").val();
     var result_dict = {"res_type": res_type, "res_name": res_name, "tags": tags, "notes": notes}
         $.ajax({
             url: $SCRIPT_ROOT + "/save_metadata",

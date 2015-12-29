@@ -16,7 +16,10 @@
     </div>
     <div class="container-fluid">
         <div class="page-header" style="margin-top: 5px">
-            <h1>{{current_user.username}}'s library <span id="spinner" class="loader-small"></span></h1>
+            <h1>{{current_user.username}}'s library <span id="spinner" class="loader-small"></span>
+            <button id="toggle-repos-button"  type="button" class="btn btn-info btn-sm" style="margin: 25px; float: right">Toggle Repository</button>
+            </h1>
+
         </div>
         <div class="row">
             <div class="col-xs-12" id="status-area"></div>
@@ -24,11 +27,11 @@
         <div class="row">
             <div class="col-xs-12">
               <ul class="nav nav-tabs" role="tablist">
-                <li role="presentation" class="active"><a href="#collection-module" aria-controls="collections" role="tab" data-toggle="tab" value="collection"><h3>collections</h3></a></li>
-                <li role="presentation"><a href="#project-module" aria-controls="projects" role="tab" data-toggle="tab" value="project"><h3>projects</h3></a></li>
-                <li role="presentation"><a href="#tile-module" aria-controls="tiles" role="tab" data-toggle="tab" value="tile"><h3>tiles</h3></a></li>
-                <li role="presentation"><a href="#list-module" aria-controls="lists" role="tab" data-toggle="tab" value="list"><h3>lists</h3></a></li>
-                  <button id="toggle-repos-button" type="button" class="btn btn-info" style="margin: 25px">Toggle Repository</button>
+                <li role="presentation" class="active"><a href="#collection-module" aria-controls="collections" role="tab" data-toggle="tab" value="collection">collections</a></li>
+                <li role="presentation"><a href="#project-module" aria-controls="projects" role="tab" data-toggle="tab" value="project">projects</a></li>
+                <li role="presentation"><a href="#tile-module" aria-controls="tiles" role="tab" data-toggle="tab" value="tile">tiles</a></li>
+                <li role="presentation"><a href="#list-module" aria-controls="lists" role="tab" data-toggle="tab" value="list">lists</a></li>
+
               </ul>
                 <div class="tab-content">
                     <div class="resource-module tab-pane fade in active" id="collection-module"></div>
@@ -42,6 +45,7 @@
 {% endblock %}
 {% block scripts %}
     <script src="{{url_for('static', filename='js/socket.io.js')}}"></script>
+    <script src="{{url_for('static', filename='js/sorttable.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/utilities.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/resource_manager.js')}}"></script>
     <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>

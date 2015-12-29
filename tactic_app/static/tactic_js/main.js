@@ -83,6 +83,16 @@ function continue_loading() {
             clear_all_menus();
             build_and_render_menu_objects();
         })});
+    socket.on('change-doc', function(data){
+        $("#doc-selector").val(data.doc_name);
+        if (data.hasOwnProperty("row_id")) {
+            change_doc($("#doc-selector")[0], data.row_id)
+        }
+        else {
+            change_doc($("#doc-selector")[0], null)
+        }
+
+    });
     if (_project_name != "") {
         $.getJSON($SCRIPT_ROOT + "/grab_project_data/" + String(main_id) + "/" + String(doc_names[0]), function(data) {
                 $("#loading-message").css("display", "none");
@@ -170,18 +180,42 @@ function set_visible_doc(doc_name, func) {
     }
 }
 
-function change_doc(el) {
+function change_doc(el, row_id) {
     $("#table-area").css("display", "none");
     $("#reload-message").css("display", "block");
     doc_name = $(el).val();
-    $.getJSON($SCRIPT_ROOT + "/grab_data/" + String(main_id) + "/" + String(doc_name), function (data) {
-            $("#loading-message").css("display", "none");
-            $("#reload-message").css("display", "none");
-            $("#outer-container").css("display", "block");
-            $("#table-area").css("display", "block");
-            tableObject.initialize_table(data);
-            set_visible_doc(doc_name, null)
+    if (row_id == null) {
+        $.getJSON($SCRIPT_ROOT + "/grab_data/" + String(main_id) + "/" + String(doc_name), function (data) {
+        $("#loading-message").css("display", "none");
+        $("#reload-message").css("display", "none");
+        $("#outer-container").css("display", "block");
+        $("#table-area").css("display", "block");
+        tableObject.initialize_table(data);
+        set_visible_doc(doc_name, null)
         })
+    }
+    else {
+        data_dict = {"doc_name": doc_name, "row_id": row_id, "main_id": main_id}
+        $.ajax({
+            url: $SCRIPT_ROOT + "/grab_chunk_with_row",
+            contentType : 'application/json',
+            type : 'POST',
+            data: JSON.stringify(data_dict),
+            success: function (data) {
+                $("#loading-message").css("display", "none");
+                $("#reload-message").css("display", "none");
+                $("#outer-container").css("display", "block");
+                $("#table-area").css("display", "block");
+                tableObject.initialize_table(data);
+                var tr_element = $("#table-area tbody")[0].rows[data.actual_row];
+                scrollIntoView(tr_element, $("#table-area tbody"));
+                $(tr_element).addClass("selected-row");
+                self.active_row = data.actual_row;
+                set_visible_doc(doc_name, null)
+            }
+        })
+    }
+
 }
 
 function broadcast_event_to_server(event_name, data_dict) {

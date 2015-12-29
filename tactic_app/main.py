@@ -124,6 +124,17 @@ class docInfo():
             self.is_last_chunk = True
         return self.start_of_current_chunk - old_start
 
+    def row_is_visible(self, row_id):
+        sorted_int_keys = sorted([int(key) for key in self.current_data_rows.keys()])
+        displayed_int_keys = sorted_int_keys[self.start_of_current_chunk:(self.start_of_current_chunk + STEP_SIZE)]
+        return row_id in displayed_int_keys
+
+    def move_to_row(self, row_id):
+        self.current_data_rows = self.data_rows # Undo any filtering
+        self.start_of_current_chunk = 0
+        while (not (self.is_last_chunk) and not(self.row_is_visible(row_id))):
+            self.advance_to_next_chunk()
+
     def go_to_previous_chunk(self):
         if self.is_first_chunk:
             return
