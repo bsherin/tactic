@@ -94,6 +94,14 @@ class ColorMapper():
     def color_from_val(self, val):
         return self.rgb_to_hex(self.scalar_map.to_rgba(val)[:3])
 
+class ImageShow(MplFigure):
+    def draw_plot(self):
+        ax = self.add_subplot(111)
+        ax.imshow(self.data)
+        ax.axis("off")
+        self.tight_layout()
+        return
+
 class ArrayHeatmap(MplFigure):
     def draw_plot(self):
         self.dialogs = []

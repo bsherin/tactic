@@ -25,15 +25,23 @@ try:
     use_ssl = os.environ.get("USE_SSL")
     CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
     STEP_SIZE = int(os.environ.get("STEP_SIZE"))
-    # client = MongoClient("localhost", serverSelectionTimeoutMS=10)
-    client = MongoClient(host=os.environ.get("MONGOLAB_URI"))
-    print "getting server_info"
-    client.server_info() # force connection on a request as the
+    if os.environ.has_key("USE_LOCAL_SERVER") and (os.environ.get("USE_LOCAL_SERVER") == "True"):
+        client = MongoClient("localhost", serverSelectionTimeoutMS=10)
+        print "getting server_info"
+        client.server_info() # force connection on a request as the
                          # connect=True parameter of MongoClient seems
                          # to be useless here
-    # db = client.tacticdb
-    print "getting db"
-    db = client.heroku_4ncbq1zd
+        print "getting db"
+        db = client.tacticdb
+
+    else:
+        client = MongoClient(host=os.environ.get("MONGOLAB_URI"))
+        print "getting server_info"
+        client.server_info() # force connection on a request as the
+                         # connect=True parameter of MongoClient seems
+                         # to be useless here
+        print "getting db"
+        db = client.heroku_4ncbq1zd
 
     "print creating login stuff"
     login_manager = LoginManager()

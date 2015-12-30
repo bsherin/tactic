@@ -11,7 +11,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 def put_docs_in_collection(collection_name, dict_list):
     return db[collection_name].insert_many(dict_list)
 
-
 @login_manager.user_loader
 def load_user(userid):
     # This expects that userid will be a string
@@ -99,6 +98,19 @@ class User(UserMixin):
                 my_collection_names.append(m.group(1))
         return sorted([str(t) for t in my_collection_names], key=str.lower)
 
+    @property
+    def data_collection_names_with_metadata(self):
+        cnames = db.collection_names()
+        string_start =self.username + ".data_collection."
+        my_collection_names = []
+        for cname in cnames:
+            m = re.search(string_start + "(.*)", cname)
+            if m:
+                mdata = db[cname].find_one({"name": "__metadata__"})
+                my_collection_names.append([m.group(1), mdata])
+
+        return sorted(my_collection_names, key=self.sort_data_list_key)
+
     def full_collection_name(self, cname):
         return self.username + ".data_collection." + cname
 
@@ -111,7 +123,7 @@ class User(UserMixin):
             db.create_collection(self.project_collection_name)
             return []
         my_project_names = []
-        for doc in db[self.project_collection_name].find():
+        for doc in db[self.project_collection_name].find(projection=["project_name"]):
             my_project_names.append(doc["project_name"])
         return sorted([str(t) for t in my_project_names], key=str.lower)
 
@@ -121,9 +133,61 @@ class User(UserMixin):
             db.create_collection(self.list_collection_name)
             return []
         my_list_names = []
-        for doc in db[self.list_collection_name].find():
+        for doc in db[self.list_collection_name].find(projection=["list_name"]):
             my_list_names.append(doc["list_name"])
         return sorted([str(t) for t in my_list_names], key=str.lower)
+
+    def sort_data_list_key(self, item):
+        return str.lower(str(item[0]))
+
+    @property
+    def list_names_with_metadata(self):
+        if self.list_collection_name not in db.collection_names():
+            db.create_collection(self.list_collection_name)
+            return []
+        my_list_names = []
+        for doc in db[self.list_collection_name].find(projection=["list_name", "metadata"]):
+            if "metadata" in doc:
+                my_list_names.append([doc["list_name"], doc["metadata"]])
+            else:
+                my_list_names.append([doc["list_name"], None])
+        return sorted(my_list_names, key=self.sort_data_list_key)
+
+    @property
+    def project_names_with_metadata(self):
+        if self.project_collection_name not in db.collection_names():
+            db.create_collection(self.project_collection_name)
+            return []
+        my_project_names = []
+        for doc in db[self.project_collection_name].find(projection=["project_name", "metadata"]):
+            if "metadata" in doc:
+                my_project_names.append([doc["project_name"], doc["metadata"]])
+            else:
+                my_project_names.append([doc["project_name"], None])
+        return sorted(my_project_names, key=self.sort_data_list_key)
+
+    @property
+    def tile_module_names_with_metadata(self):
+        if self.tile_collection_name not in db.collection_names():
+            db.create_collection(self.tile_collection_name)
+            return []
+        my_tile_names = []
+        for doc in db[self.tile_collection_name].find(projection=["tile_module_name", "metadata"]):
+            if "metadata" in doc:
+                my_tile_names.append([doc["tile_module_name"], doc["metadata"]])
+            else:
+                my_tile_names.append([doc["tile_module_name"], None])
+        return sorted(my_tile_names, key=self.sort_data_list_key)
+
+    @property
+    def tile_module_names(self,):
+        if self.tile_collection_name not in db.collection_names():
+            db.create_collection(self.tile_collection_name)
+            return []
+        my_tile_names = []
+        for doc in db[self.tile_collection_name].find(projection=["tile_module_name"]):
+            my_tile_names.append(doc["tile_module_name"])
+        return sorted([str(t) for t in my_tile_names], key=str.lower)
 
     def get_resource_names(self, res_type, tag_filter=None, search_filter=None):
         if tag_filter is not None:
@@ -167,15 +231,7 @@ class User(UserMixin):
                     res_names.append(doc[name_key])
         return sorted([str(t) for t in res_names], key=str.lower)
 
-    @property
-    def tile_module_names(self,):
-        if self.tile_collection_name not in db.collection_names():
-            db.create_collection(self.tile_collection_name)
-            return []
-        my_tile_names = []
-        for doc in db[self.tile_collection_name].find():
-            my_tile_names.append(doc["tile_module_name"])
-        return sorted([str(t) for t in my_tile_names], key=str.lower)
+
 
     def get_list(self, list_name):
         list_dict = db[self.list_collection_name].find_one({"list_name": list_name})

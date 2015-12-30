@@ -425,7 +425,7 @@ class TileBase(threading.Thread):
 
     # Filtering and iteration
 
-    def get_matching_rows(self, filter_function, document_name):
+    def get_matching_rows(self, filter_function, document_name=None):
         return mainwindow_instances[self.main_id].get_matching_rows(filter_function, document_name)
 
     def display_matching_rows(self, filter_function, document_name=None):
@@ -447,6 +447,17 @@ class TileBase(threading.Thread):
         return
 
     # Other
+
+    def go_to_document(self, doc_name):
+        data = {}
+        data["doc_name"] = doc_name
+        socketio.emit('change-doc', data, namespace='/main', room=self.main_id)
+
+    def go_to_row_in_document(self, doc_name, row_id):
+        data = {}
+        data["doc_name"] = doc_name
+        data["row_id"] = row_id
+        socketio.emit('change-doc', data, namespace='/main', room=self.main_id)
 
     def get_selected_text(self):
         return mainwindow_instances[self.main_id].selected_text

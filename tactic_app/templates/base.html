@@ -15,16 +15,18 @@
     <div class="navbar navbar-default" style="margin-bottom: 1px" role="navigation">
         <div class="container-fluid">
             <div class="navbar-header">
-                <a class="navbar-brand" href="/">Tactic</a>
+                <a id="mybrand" class="navbar-brand" href="/">Tactic</a>
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav" id="menu-area">
-                    <li><a href="/">Home</a></li>
                     {% block navbar %}
                     {% endblock %}
                 </ul>
-                <ul class="nav navbar-nav navbar-right">
-                    <li><a href="https://github.com/bsherin/tactic/wiki">Docs</a></li>
+                <ul id="my-navbar-right" class="nav navbar-nav navbar-right">
+                    {% block morenavbar %}
+                    {% endblock %}
+                    <li><a href="" onclick="return toggleTooltips();">?</a></li>
+                    <li><a href="https://github.com/bsherin/tactic/wiki">Documentation</a></li>
                     {% if current_user.is_authenticated() %}
                         <li><a href="{{ url_for('user_manage') }}">My Resources</a></li>
                     <li><a href="" onclick="return doSignOut();">Sign Out</a></li>

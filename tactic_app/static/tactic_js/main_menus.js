@@ -18,10 +18,14 @@ function clear_all_menus() {
     $("#menu-area").html(" ")
 }
 
+function MenuObject(menu_name, menu_function, options) {
+    this.menu_name = menu_name;
+    this.options = options;
+    this.perform_menu_item = menu_function
+}
+
 // This is the menu_object base prototype
-var menu_object = {
-    menu_name: "",
-    options: [],
+MenuObject.prototype = {
     shortcuts: {},
     render_menu: function () {
         var self = this;
@@ -115,7 +119,6 @@ function bind_to_keys(shortcuts) {
     })
 }
 
-
 mousetrap.bind("esc", function() {
     if (tableObject.selected_header != null) {
         deselect_header(tableObject.selected_header)
@@ -126,18 +129,12 @@ mousetrap.bind("esc", function() {
 
 function build_and_render_menu_objects() {
     // Create the column_menu object
-    column_menu = Object.create(menu_object);
-    column_menu.menu_name = "Column";
-    column_menu.options = ["shift-left", "shift-right", "hide", "unhide", "add-column"];
-    column_menu.perform_menu_item = column_command;
+    column_menu = new MenuObject("Column", column_command,["shift-left", "shift-right", "hide", "unhide", "add-column"])
     menus[column_menu.menu_name] = column_menu;
     column_menu.add_options_to_index();
 
     // Create the project_menu object
-    project_menu = Object.create(menu_object);
-    project_menu.menu_name = "Project";
-    project_menu.options = ["save-as", "save", "export-data"];
-    project_menu.perform_menu_item = project_command;
+    project_menu = new MenuObject("Project", project_command,["save-as", "save", "export-data"])
     menus[project_menu.menu_name] = project_menu;
     project_menu.add_options_to_index();
     project_menu.shortcuts = {
@@ -155,11 +152,8 @@ function build_and_render_menu_objects() {
         if (!tile_types.hasOwnProperty(category)) {
             continue;
         }
-        var new_tile_menu = Object.create(menu_object);
-        new_tile_menu.menu_name = category;
-        new_tile_menu.perform_menu_item = tile_command;
+        var new_tile_menu = new MenuObject(category, tile_command, tile_types[category])
         menus[new_tile_menu.menu_name] = new_tile_menu;
-        new_tile_menu.options = tile_types[category];
         new_tile_menu.add_options_to_index();
     }
 
@@ -332,36 +326,12 @@ function tile_command(menu_id) {
             dataType: 'json',
             success: function (data) {
                 if (data.success) {
-                    var new_tile_object = Object.create(tile_object);
-                    new_tile_object.tile_id = data.tile_id;
-                    $("#tile-div").append(data.html);
-                    $("#tile_body_" + data.tile_id).flip({
-                        "trigger": "manual",
-                        "autoSize": false,
-                        "forceWidth": true,
-                        "forceHeight": true
-                    });
-                    var new_tile_elem = $("#tile_id_" + data.tile_id)
-                    new_tile_elem.resizable({
-                        handles: "se",
-                        resize: resize_tile_area,
-                        stop: function () {
-                            new_tile_object.broadcastTileSize(new_tile_object)
-                        }
-                    });
-                    jQuery.data(new_tile_elem[0], "my_tile_id", data.tile_id)
-                    listen_for_clicks();
-                    $("#tile_id_" + data.tile_id).find(".triangle-right").hide();
+                    new_tile_object = new TileObject(data.tile_id, data.html);
                     if (table_is_shrunk) {
                          $("#tile_id_" + data.tile_id).addClass("tile-panel-float")
                     }
-
-
                     tile_dict[data.tile_id] = new_tile_object;
-                    do_resize(data.tile_id);
-                    new_tile_object.broadcastTileSize(new_tile_object);
-                    data_dict.tile_id = data.tile_id
-                    spin_and_refresh(data_dict.tile_id)
+                    new_tile_object.spin_and_refresh()
                 }
             }
         })

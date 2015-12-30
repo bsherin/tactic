@@ -1,7 +1,7 @@
 
-$column-header-background: #bababa;
+$column-header-background: #f4f5f6;
 $table-header-font-size: 15px;
-$table-header-font-color: black;
+$table-header-font-color: #4b4963;
 
 $table-font-size: 10pt;
 $table-border-color: #ddd;
@@ -30,6 +30,7 @@ $table-border-style: $table-border-thickness solid $table-border-color;
 #table-area thead {
     background-color: $column-header-background;
     display: block;
+    border-bottom: $table-border-style;
 }
 
 #table-area tbody {

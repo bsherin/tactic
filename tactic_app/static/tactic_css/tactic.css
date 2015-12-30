@@ -1,4 +1,44 @@
+/* tooltips */
+.tooltip .tooltip-inner {
+  background-color: #fde930;
+  color: #66431a; }
+
+.tooltip.top .tooltip-arrow {
+  border-top-color: #fde930; }
+
+.tooltip.bottom .tooltip-arrow {
+  border-bottom-color: #fde930; }
+
+.tooltip-inner {
+  -moz-box-shadow: 0px 1px 5px 1px rgba(0, 0, 0, 0.4);
+  -webkit-box-shadow: 0px 1px 5px 1px rgba(0, 0, 0, 0.4);
+  box-shadow: 0px 1px 5px 1px rgba(0, 0, 0, 0.4);
+  zoom: 1; }
+
+/* navbar */
+#menu-area a {
+  color: #575757;
+  font-size: 16px; }
+
+#mybrand {
+  font-size: 20px !important; }
+
+#my-navbar-right {
+  font-size: 16px; }
+
 /* resource module */
+table.sortable thead {
+  background-color: #eee;
+  color: #666666;
+  font-weight: bold;
+  cursor: default; }
+
+.action-button {
+  border: solid white 1px; }
+
+a[role="tab"] {
+  font-size: 20px; }
+
 .indent-row {
   margin-left: 5px;
   margin-bottom: 20px; }
@@ -6,6 +46,12 @@
 .user-button-group {
   height: 200px;
   overflow: scroll; }
+
+.selector-button:hover {
+  background-color: #cbcbcb !important; }
+
+.selector-button.active td {
+  background-color: #5bb4d2 !important; }
 
 .user-button-group .btn-default {
   text-align: left;
@@ -20,41 +66,6 @@
 
 .resource-module h2 {
   margin-top: 0px; }
-
-.resource-module .add-button {
-  color: #333;
-  background-color: #d9eecf;
-  border-color: #adadad; }
-
-.resource-module .add-button:hover {
-  color: #333;
-  background-color: #f8f8f8;
-  border-color: #adadad; }
-
-.resource-module .action-button {
-  color: #333;
-  background-color: #d9eecf;
-  border-color: #adadad; }
-
-.resource-module .action-button:hover {
-  color: #333;
-  background-color: #f8f8f8;
-  border-color: #adadad; }
-
-.resource-module .save-metadata-button {
-  color: black;
-  background-color: #e6e6e6;
-  border-color: #adadad; }
-
-.resource-module .save-metadata-button:hover {
-  color: #333;
-  background-color: #f8f8f8;
-  border-color: #adadad; }
-
-.stacked-button {
-  margin-bottom: 10px;
-  display: block;
-  width: 150px; }
 
 .file-selector {
   margin-bottom: 10px;

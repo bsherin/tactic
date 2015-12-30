@@ -56,10 +56,6 @@ def make_fieldnames_unique(flist):
     return new_list
 
 def read_csv_file_to_dict(csvfile):
-    # try:
-    #     dialect = csv.Sniffer().sniff(csvfile.read(1024))
-    # except:
-    #     dialect = "excel"
     csvfile.seek(0)
     i = 0
     try:

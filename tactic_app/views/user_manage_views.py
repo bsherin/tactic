@@ -19,64 +19,113 @@ def start_spinner():
     socketio.emit('start-spinner', {}, namespace='/user_manage', room=current_user.get_id())
 
 def stop_spinner():
-    socketio.emit('start-spinner', {}, namespace='/user_manage', room=current_user.get_id())
+    socketio.emit('stop-spinner', {}, namespace='/user_manage', room=current_user.get_id())
 
 class ResourceManager(object):
-    resource_name_dict = {"collection": {"collection_name": "",
-                                  "collection_list": "data_collections",
-                                  "name_field": ""},
-                      "project": {"collection_name": "project_collection_name",
-                                  "collection_list": "project_names",
-                                  "name_field": "project_name"},
-                      "list": {"collection_name": "list_collection_name",
-                               "collection_list": "list_names",
-                               "name_field": "list_name"},
-                      "tile": {"collection_name": "tile_collection_name",
-                               "collection_list": "tile_module_names",
-                               "name_field": "tile_module_name"}}
-    def __init__(self, res_type, user_obj):
+    is_repository = False
+    rep_string = ""
+    collection_list = ""
+    collection_list_with_metadata = ""
+    collection_name = ""
+    name_field = ""
+
+    def __init__(self, res_type):
         self.res_type = res_type
-        self.user_obj = user_obj
         self.add_rules()
 
     def add_rules(self):
         print "not implemented"
 
-    def render_resource_list(self):
-        return render_template("user_manage/resource_list.html", res_type=self.res_type, resource_names=self.get_resource_list_from_type())
-
     def update_selector_list(self, select=None):
         if select is None:
-            socketio.emit('update-selector-list', {"html": self.render_resource_list(), "res_type": self.res_type}, namespace='/user_manage', room=current_user.get_id())
+            socketio.emit('update-selector-list', {"html": self.request_update_selector_list(), "res_type": self.res_type}, namespace='/user_manage', room=current_user.get_id())
         else:
-            socketio.emit('update-selector-list', {"html": self.render_resource_list(), "select": select, "res_type": self.res_type}, namespace='/user_manage', room=current_user.get_id())
+            socketio.emit('update-selector-list', {"html": self.request_update_selector_list(), "select": select, "res_type": self.res_type}, namespace='/user_manage', room=current_user.get_id())
 
-    def get_resource_list_from_type(self):
-        return getattr(self.user_obj, self.resource_name_dict[self.res_type]["collection_list"])
+    def get_resource_list(self):
+        if self.is_repository:
+            user_obj = repository_user
+        else:
+            user_obj = current_user
+        return getattr(user_obj, self.collection_list)
 
-
-    def resource_field_name(self):
-        return self.resource_name_dict[self.res_type]["name_field"]
+    def get_resource_list_with_metadata(self):
+        if self.is_repository:
+            user_obj = repository_user
+        else:
+            user_obj = current_user
+        return getattr(user_obj, self.collection_list_with_metadata)
 
     def request_update_selector_list(self):
-        result = render_template("user_manage/resource_list.html", res_type=self.res_type, resource_names=self.get_resource_list_from_type(), rep_string="")
+        # result = render_template("user_manage/resource_list.html", res_type=self.res_type, resource_names=self.get_resource_list(), rep_string=self.rep_string)
+        if self.is_repository:
+            user_obj = repository_user
+        else:
+            user_obj = current_user
+        res_list_with_metadata = self.get_resource_list_with_metadata()
+        res_array = self.build_resource_array(res_list_with_metadata)
+        result = self.build_html_table_from_data_list(res_array)
         return result
 
-def get_resource_list_name_from_type(user_obj, res_type):
-    return getattr(user_obj, ResourceManager.resource_name_dict[res_type]["collection_name"])
+    def build_html_table_from_data_list(self, data_list, title=None):
+        the_html = "<table class='tile-table table sortable table-striped table-bordered table-condensed'>"
+        if title is not None:
+            the_html += "<caption>{0}</caption>".format(title)
+        the_html += "<thead><tr>"
+        for c in data_list[0]:
+            the_html += "<th>{0}</th>".format(c)
+        the_html += "</tr><tbody>"
+        for r in data_list[1:]:
+            the_html += "<tr class='selector-button {0}-selector-button' id='{0}-selector-{1}'>".format(self.res_type, r[0])
+            for c in r:
+                the_html += "<td>{0}</td>".format(c)
+            the_html += "</tr>"
+
+        the_html += "</tbody></table>"
+        return the_html
+
+    def build_resource_array(self, res_list):
+        larray = [["Name", "Created", "Tags"]]
+        for res_item in res_list:
+            mdata = res_item[1]
+            if mdata is None:
+                datestring = ""
+                tagstring = ""
+            else:
+                if "datetime" in mdata:
+                    datestring = mdata["datetime"].strftime("%b %d, %Y, %H:%M")
+                else:
+                    datestring = ""
+                tagstring = str(mdata["tags"])
+            larray.append([res_item[0], datestring, tagstring])
+        return larray
+
+def get_manager_for_type(res_type, is_repository=False):
+    if is_repository:
+        if res_type == "list":
+            manager = repository_list_manager
+        elif res_type == "collection":
+            manager = repository_collection_manager
+        elif res_type == "project":
+            manager = repository_project_manager
+        elif res_type == "tile":
+            manager = repository_tile_manager
+    else:
+        if res_type == "list":
+            manager = list_manager
+        elif res_type == "collection":
+            manager = collection_manager
+        elif res_type == "project":
+            manager = project_manager
+        elif res_type == "tile":
+            manager = tile_manager
+    return manager
 
 @app.route('/copy_from_repository', methods=['GET', 'POST'])
 @login_required
 def copy_from_repository():
     res_type = request.json['res_type']
-    if res_type == "list":
-        manager = list_manager
-    elif res_type == "collection":
-        manager = collection_manager
-    elif res_type == "project":
-        manager = project_manager
-    elif res_type == "tile":
-        manager = tile_manager
+
     new_res_name = request.json['new_res_name']
     res_name = request.json['res_name']
 
@@ -88,18 +137,20 @@ def copy_from_repository():
         db[new_collection_name].update_one({"name": "__metadata__"},
                                            {'$set': {"datatime": datetime.datetime.today()}})
     else:
-        old_dict = db[get_resource_list_name_from_type(repository_user, res_type)].find_one({manager.resource_field_name(): res_name})
+        manager = get_manager_for_type(res_type)
+        repo_manager = get_manager_for_type(res_type, is_repository=True)
+        old_dict = db[getattr(repository_user, repo_manager.collection_name)].find_one({manager.name_field: res_name})
         keys_to_skip = ["_id", ""]
-        new_res_dict = {manager.resource_field_name(): new_res_name}
+        new_res_dict = {manager.name_field: new_res_name}
         for (key, val) in old_dict.items():
-            if (key == "_id") or (key == manager.resource_field_name()):
+            if (key == "_id") or (key == manager.name_field):
                 continue
             new_res_dict[key] = val
         if not "metadata" in new_res_dict:
             new_res_dict["metadata"] = create_initial_metadata()
         else:
             new_res_dict["metadata"]["datetime"] = datetime.datetime.today()
-        db[get_resource_list_name_from_type(current_user, res_type)].insert_one(new_res_dict)
+        db[getattr(current_user, repo_manager.collection_name)].insert_one(new_res_dict)
     manager.update_selector_list(select=new_res_name)
     return jsonify({"success": True})
 
@@ -130,6 +181,10 @@ def request_update_repository_selector_list(res_type):
     return ""
 
 class ListManager(ResourceManager):
+    collection_list = "list_names"
+    collection_list_with_metadata = "list_names_with_metadata"
+    collection_name = "list_collection_name"
+    name_field = "list_name"
 
     def add_rules(self):
         app.add_url_rule('/view_list/<list_name>', "view_list", login_required(self.view_list), methods=['get'])
@@ -138,42 +193,60 @@ class ListManager(ResourceManager):
         app.add_url_rule('/create_duplicate_list', "create_duplicate_list", login_required(self.create_duplicate_list), methods=['get', 'post'])
 
     def view_list(self, list_name):
-        the_list = self.user_obj.get_list(list_name)
+        the_list = current_user.get_list(list_name)
         return render_template("user_manage/list_viewer.html",
                                list_name=list_name,
                                the_list=the_list)
 
+    def grab_metadata(self, res_name):
+        if self.is_repository:
+            user_obj = repository_user
+        else:
+            user_obj = current_user
+        doc = db[user_obj.list_collection_name].find_one({self.name_field: res_name})
+        if "metadata" in doc:
+            mdata = doc["metadata"]
+        else:
+            mdata = None
+        return mdata
+
     def add_list(self):
+        user_obj = current_user
         file = request.files['file']
         the_list = load_a_list(file)
         data_dict = {"list_name": file.filename, "the_list": the_list}
-        db[self.user_obj.list_collection_name].insert_one(data_dict)
+        db[user_obj.list_collection_name].insert_one(data_dict)
         self.update_selector_list(select=file.filename)
         return make_response("", 204)
 
     def delete_list(self,list_name):
-        db[self.user_obj.list_collection_name].delete_one({"list_name": list_name})
+        user_obj = current_user
+        db[user_obj.list_collection_name].delete_one({"list_name": list_name})
         self.update_selector_list()
         return jsonify({"success": True})
 
     def create_duplicate_list(self):
+        user_obj = current_user
         list_to_copy = request.json['res_to_copy']
         new_list_name = request.json['new_res_name']
-        old_list_dict = db[self.user_obj.list_collection_name].find_one({"list_name": list_to_copy})
+        old_list_dict = db[user_obj.list_collection_name].find_one({"list_name": list_to_copy})
         metadata = create_initial_metadata()
         new_list_dict = {"list_name": new_list_name, "the_list": old_list_dict["the_list"], "metadata": metadata}
-        db[self.user_obj.list_collection_name].insert_one(new_list_dict)
+        db[user_obj.list_collection_name].insert_one(new_list_dict)
         self.update_selector_list(select=new_list_name)
         return jsonify({"success": True})
 
 class RepositoryListManager(ListManager):
+    rep_string = "repository-"
+    is_repository = True
     def add_rules(self):
         x = 3
 
-    def request_update_selector_list(self):
-        return render_template("user_manage/resource_list.html", res_type=self.res_type, resource_names=self.get_resource_list_from_type(), rep_string="repository-")
-
 class CollectionManager(ResourceManager):
+    collection_list = "data_collections"
+    collection_list_with_metadata = "data_collection_names_with_metadata"
+    collection_name = ""
+    name_field = ""
 
     def add_rules(self):
         app.add_url_rule('/main/<collection_name>', "main", login_required(self.main), methods=['get'])
@@ -182,15 +255,16 @@ class CollectionManager(ResourceManager):
         app.add_url_rule('/duplicate_collection', "duplicate_collection", login_required(self.duplicate_collection), methods=['post', 'get'])
 
     def main(self, collection_name):
-        cname=self.user_obj.build_data_collection_name(collection_name)
-        main_id = create_new_mainwindow(self.user_obj.get_id(), collection_name=cname)
+        user_obj = current_user
+        cname=user_obj.build_data_collection_name(collection_name)
+        main_id = create_new_mainwindow(user_obj.get_id(), collection_name=cname)
         doc_names = mainwindow_instances[main_id].doc_names
         short_collection_name = mainwindow_instances[main_id].short_collection_name
-        if self.user_obj.username not in loaded_user_modules:
-            loaded_user_modules[self.user_obj.username] = set([])
+        if user_obj.username not in loaded_user_modules:
+            loaded_user_modules[user_obj.username] = set([])
 
         # the loaded_modules must be a list to be easily saved to pymongo
-        mainwindow_instances[main_id].loaded_modules = list(loaded_user_modules[self.user_obj.username])
+        mainwindow_instances[main_id].loaded_modules = list(loaded_user_modules[user_obj.username])
         return render_template("main.html",
                                collection_name=cname,
                                window_title=short_collection_name,
@@ -199,6 +273,15 @@ class CollectionManager(ResourceManager):
                                doc_names=doc_names,
                                use_ssl = str(use_ssl),
                                short_collection_name=short_collection_name)
+
+    def grab_metadata(self, res_name):
+        if self.is_repository:
+            user_obj = repository_user
+        else:
+            user_obj = current_user
+        cname = user_obj.build_data_collection_name(res_name)
+        mdata = db[cname].find_one({"name": "__metadata__"})
+        return mdata
 
     def autosplit_doc(self, filename, full_dict):
         sorted_int_keys = sorted([int(key) for key in full_dict.keys()])
@@ -225,8 +308,9 @@ class CollectionManager(ResourceManager):
         return doc_list
 
     def load_files(self, collection_name):
+        user_obj = current_user
         file_list = request.files.getlist("file")
-        full_collection_name = self.user_obj.build_data_collection_name(collection_name)
+        full_collection_name = user_obj.build_data_collection_name(collection_name)
         mdata = create_initial_metadata()
         try:
             db[full_collection_name].insert_one({"name": "__metadata__", "datetime": mdata["datetime"], "tags": "", "notes": ""})
@@ -264,35 +348,41 @@ class CollectionManager(ResourceManager):
         return jsonify({"message":"Collection successfully loaded", "alert_type": "alert-success"})
 
     def delete_collection(self, collection_name):
-        db.drop_collection(self.user_obj.full_collection_name(collection_name))
+        user_obj = current_user
+        db.drop_collection(ser_obj.full_collection_name(collection_name))
         self.update_selector_list()
         return jsonify({"success": True})
 
     def duplicate_collection(self):
-        collection_to_copy = self.user_obj.full_collection_name(request.json['res_to_copy'])
-        new_collection_name = self.user_obj.full_collection_name(request.json['new_res_name'])
+        user_obj = current_user
+        collection_to_copy = user_obj.full_collection_name(request.json['res_to_copy'])
+        new_collection_name = user_obj.full_collection_name(request.json['new_res_name'])
         for doc in db[collection_to_copy].find():
             db[new_collection_name].insert_one(doc)
         self.update_selector_list(request.json['new_res_name'])
         return jsonify({"success": True})
 
 class RepositoryCollectionManager(CollectionManager):
+    rep_string = "repository-"
+    is_repository = True
     def add_rules(self):
         x = 3
 
-    def request_update_selector_list(self):
-        return render_template("user_manage/resource_list.html", res_type=self.res_type, resource_names=self.get_resource_list_from_type(), rep_string="repository-")
-
 class ProjectManager(ResourceManager):
+    collection_list = "project_names"
+    collection_list_with_metadata = "project_names_with_metadata"
+    collection_name = "project_collection_name"
+    name_field = "project_name"
 
     def add_rules(self):
         app.add_url_rule('/main_project/<project_name>', "main_project", login_required(self.main_project), methods=['get'])
         app.add_url_rule('/delete_project/<project_name>', "delete_project", login_required(self.delete_project), methods=['post'])
 
     def main_project(self, project_name):
-        project_dict = db[self.user_obj.project_collection_name].find_one({"project_name": project_name})
-        if self.user_obj.username not in loaded_user_modules:
-            loaded_user_modules[self.user_obj.username] = set([])
+        user_obj = current_user
+        project_dict = db[user_obj.project_collection_name].find_one({"project_name": project_name})
+        if user_obj.username not in loaded_user_modules:
+            loaded_user_modules[user_obj.username] = set([])
         for module in project_dict["loaded_modules"]:
             if module not in loaded_user_modules[current_user.username]:
                 tile_manager.load_tile_module(module)
@@ -302,7 +392,7 @@ class ProjectManager(ResourceManager):
 
         # We want to do this in case there were some additional modules loaded
         # the loaded_modules must be a list to be easily saved to pymongo
-        mainwindow_instances[main_id].loaded_modules = list(loaded_user_modules[self.user_obj.username])
+        mainwindow_instances[main_id].loaded_modules = list(loaded_user_modules[user_obj.username])
         return render_template("main.html",
                                collection_name=project_dict["collection_name"],
                                project_name=project_name,
@@ -313,18 +403,35 @@ class ProjectManager(ResourceManager):
                                short_collection_name=short_collection_name)
 
     def delete_project(self, project_name):
-        db[self.user_obj.project_collection_name].delete_one({"project_name": project_name})
+        user_obj = current_user
+        db[user_obj.project_collection_name].delete_one({"project_name": project_name})
         self.update_selector_list()
         return
 
+    def grab_metadata(self, res_name):
+        if self.is_repository:
+            user_obj = repository_user
+        else:
+            user_obj = current_user
+        doc = db[user_obj.project_collection_name].find_one({self.name_field: res_name})
+        if "metadata" in doc:
+            mdata = doc["metadata"]
+        else:
+            mdata = None
+        return mdata
+
 class RepositoryProjectManager(ProjectManager):
+    rep_string = "repository-"
+    is_repository = True
+
     def add_rules(self):
         x = 3
 
-    def request_update_selector_list(self):
-        return render_template("user_manage/resource_list.html", res_type=self.res_type, resource_names=self.get_resource_list_from_type(), rep_string="repository-")
-
 class TileManager(ResourceManager):
+    collection_list = "tile_module_names"
+    collection_list_with_metadata = "tile_module_names_with_metadata"
+    collection_name = "tile_collection_name"
+    name_field = "tile_module_name"
 
     def add_rules(self):
         app.add_url_rule('/view_module/<module_name>', "view_module", login_required(self.view_module), methods=['get'])
@@ -335,20 +442,33 @@ class TileManager(ResourceManager):
         app.add_url_rule('/create_tile_module', "create_tile_module", login_required(self.create_tile_module), methods=['get', 'post'])
         app.add_url_rule('/request_update_loaded_tile_list', "request_update_loaded_tile_list", login_required(self.request_update_loaded_tile_list), methods=['get', 'post'])
 
+    def grab_metadata(self, res_name):
+        if self.is_repository:
+            user_obj = repository_user
+        else:
+            user_obj = current_user
+        doc = db[user_obj.tile_collection_name].find_one({self.name_field: res_name})
+        if "metadata" in doc:
+            mdata = doc["metadata"]
+        else:
+            mdata = None
+        return mdata
 
     def view_module(self, module_name):
-        module_code = self.user_obj.get_tile_module(module_name)
+        user_obj = current_user
+        module_code = user_obj.get_tile_module(module_name)
         return render_template("user_manage/module_viewer.html",
                                module_name=module_name,
                                module_code=module_code)
 
     def load_tile_module(self, tile_module_name):
         try:
-            tile_module = self.user_obj.get_tile_module(tile_module_name)
+            user_obj = current_user
+            tile_module = user_obj.get_tile_module(tile_module_name)
             result = create_user_tiles(tile_module)
             if not result == "success":
                 return jsonify({"message": result, "alert_type": "alert-warning"})
-            if self.user_obj.username not in loaded_user_modules:
+            if user_obj.username not in loaded_user_modules:
                 loaded_user_modules[current_user.username] = set([])
             loaded_user_modules[current_user.username].add(tile_module_name)
             socketio.emit('update-loaded-tile-list', {"html": self.render_loaded_tile_list()},
@@ -372,11 +492,12 @@ class TileManager(ResourceManager):
             return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
     def add_tile_module(self):
+        user_obj = current_user
         f = request.files['file']
         the_module = f.read()
         metadata = create_initial_metadata()
         data_dict = {"tile_module_name": f.filename, "tile_module": the_module, "metadata": metadata}
-        db[self.user_obj.tile_collection_name].insert_one(data_dict)
+        db[user_obj.tile_collection_name].insert_one(data_dict)
         self.update_selector_list(file.filename)
         return make_response("", 204)
 
@@ -387,18 +508,18 @@ class TileManager(ResourceManager):
 
         metadata = create_initial_metadata()
         data_dict = {"tile_module_name": new_tile_name, "tile_module": template, "metadata": metadata}
-        db[self.user_obj.tile_collection_name].insert_one(data_dict)
+        db[user_obj.tile_collection_name].insert_one(data_dict)
         self.update_selector_list(new_tile_name)
         return redirect(url_for('view_module', module_name=new_tile_name))
 
     def delete_tile_module(self, tile_module_name):
-        db[self.user_obj.tile_collection_name].delete_one({"tile_module_name": tile_module_name})
+        db[user_obj.tile_collection_name].delete_one({"tile_module_name": tile_module_name})
         self.update_selector_list()
         return jsonify({"success": True})
 
     def render_loaded_tile_list(self):
         loaded_tiles = []
-        for (category, dict) in user_tiles[self.user_obj.username].items():
+        for (category, dict) in user_tiles[current_user.username].items():
             loaded_tiles += dict.keys()
         return render_template("user_manage/loaded_tile_list.html", user_tile_name_list=loaded_tiles)
 
@@ -406,25 +527,25 @@ class TileManager(ResourceManager):
         return self.render_loaded_tile_list()
 
 class RepositoryTileManager(TileManager):
+    rep_string = "repository-"
+    is_repository = True
+
     def add_rules(self):
         x = 3
 
-    def request_update_selector_list(self):
-        return render_template("user_manage/resource_list.html", res_type=self.res_type, resource_names=self.get_resource_list_from_type(), rep_string="repository-")
-
 repository_user = User.get_user_by_username("repository")
 
-list_manager = ListManager("list", current_user)
-repository_list_manager = RepositoryListManager("list", repository_user)
+list_manager = ListManager("list")
+repository_list_manager = RepositoryListManager("list")
 
-collection_manager = CollectionManager("collection", current_user)
-repository_collection_manager = RepositoryCollectionManager("collection", repository_user)
+collection_manager = CollectionManager("collection")
+repository_collection_manager = RepositoryCollectionManager("collection")
 
-project_manager = ProjectManager("project", current_user)
-repository_project_manager = RepositoryProjectManager("project", repository_user)
+project_manager = ProjectManager("project")
+repository_project_manager = RepositoryProjectManager("project")
 
-tile_manager = TileManager("tile", current_user)
-repository_tile_manager = RepositoryTileManager("tile", repository_user)
+tile_manager = TileManager("tile")
+repository_tile_manager = RepositoryTileManager("tile")
 
 @app.route('/user_manage')
 @login_required
@@ -443,25 +564,13 @@ def grab_metadata():
     try:
         res_type = request.json["res_type"]
         res_name = request.json["res_name"]
-        if res_type == "collection":
-            cname = current_user.build_data_collection_name(res_name)
-            mdata = db[cname].find_one({"name": "__metadata__"})
-        else:
-            if res_type == "tile":
-                doc = db[current_user.tile_collection_name].find_one({"tile_module_name": res_name})
-            elif res_type == "list":
-                doc = db[current_user.list_collection_name].find_one({"list_name": res_name})
-            elif res_type == "project":
-                doc = db[current_user.project_collection_name].find_one({"project_name": res_name})
-            if "metadata" in doc:
-                mdata = doc["metadata"]
-            else:
-                mdata = None
+        manager = get_manager_for_type(res_type)
+        mdata = manager.grab_metadata(res_name)
         if mdata is None:
             return jsonify({"success": False, "message": "No metadata found", "alert_type": "alert-warning"})
         else:
             if "datetime" in mdata:
-                datestring = mdata["datetime"].strftime("%b %d, %Y, %H:%M:%S")
+                datestring = mdata["datetime"].strftime("%b %d, %Y, %H:%M")
             else:
                 datestring = ""
             return jsonify({"success": True, "datestring": datestring, "tags": mdata["tags"], "notes": mdata["notes"]})
@@ -493,7 +602,7 @@ def grab_repository_metadata():
             return jsonify({"success": False, "message": "No repository metadata found", "alert_type": "alert-warning"})
         else:
             if "datetime" in mdata:
-                datestring = mdata["datetime"].strftime("%b %d, %Y, %H:%M:%S")
+                datestring = mdata["datetime"].strftime("%b %d, %Y, %H:%M")
             else:
                 datestring = ""
             return jsonify({"success": True, "datestring": datestring, "tags": mdata["tags"], "notes": mdata["notes"]})
@@ -559,15 +668,19 @@ def search_resource():
     if search_location == "repository":
         user_obj = repository_user
         rep_string = "repository-"
+        manager = get_manager_for_type(res_type, is_repository=True)
     else:
         user_obj = current_user
         rep_string = ""
+        manager = get_manager_for_type(res_type, is_repository=False)
     if search_type == "search":
         the_list = user_obj.get_resource_names(res_type, search_filter=txt)
     else:
         the_list = user_obj.get_resource_names(res_type, tag_filter=txt)
-    the_html = render_template("user_manage/resource_list.html", res_type=res_type, resource_names=the_list, rep_string=rep_string)
-    return jsonify({"html": the_html})
+
+    res_array = manager.build_resource_array(the_list)
+    result = manager.build_html_table_from_data_list(res_array)
+    return jsonify({"html": result})
 
 @app.route('/update_module', methods=['post'])
 @login_required

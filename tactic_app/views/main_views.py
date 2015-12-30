@@ -85,6 +85,23 @@ def grab_data(main_id, doc_name):
                     "is_first_chunk": mainwindow_instances[main_id].doc_dict[doc_name].is_first_chunk,
                     "max_table_size": mainwindow_instances[main_id].doc_dict[doc_name].max_table_size})
 
+@app.route('/grab_chunk_with_row', methods=['get', 'post'])
+@login_required
+def grab_chunk_with_row():
+    data_dict = request.json
+    doc_name = data_dict["doc_name"]
+    main_id = data_dict["main_id"]
+    row_id = data_dict["row_id"]
+    mainwindow_instances[main_id].doc_dict[doc_name].move_to_row(row_id)
+    return jsonify({"doc_name": doc_name,
+                    "data_rows": mainwindow_instances[main_id].doc_dict[doc_name].displayed_data_rows,
+                    "background_colors":mainwindow_instances[main_id].doc_dict[doc_name].displayed_background_colors,
+                    "header_list": mainwindow_instances[main_id].doc_dict[doc_name].header_list,
+                    "is_last_chunk": mainwindow_instances[main_id].doc_dict[doc_name].is_last_chunk,
+                    "is_first_chunk": mainwindow_instances[main_id].doc_dict[doc_name].is_first_chunk,
+                    "max_table_size": mainwindow_instances[main_id].doc_dict[doc_name].max_table_size,
+                    "actual_row": mainwindow_instances[main_id].doc_dict[doc_name].get_actual_row(row_id)})
+
 @app.route('/grab_next_chunk/<main_id>/<doc_name>', methods=['get'])
 @login_required
 def grab_next_chunk(main_id, doc_name):
@@ -96,6 +113,8 @@ def grab_next_chunk(main_id, doc_name):
                     "is_last_chunk": mainwindow_instances[main_id].doc_dict[doc_name].is_last_chunk,
                     "is_first_chunk": mainwindow_instances[main_id].doc_dict[doc_name].is_first_chunk,
                     "step_size": step_amount})
+
+
 
 @app.route('/grab_previous_chunk/<main_id>/<doc_name>', methods=['get'])
 @login_required
