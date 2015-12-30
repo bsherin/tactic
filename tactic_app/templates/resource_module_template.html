@@ -28,7 +28,7 @@
         <div class="col-xs-12">
             <div class="btn-group" style= "margin-top: 5px; margin-bottom: 5px" role="group">
                 {{#buttons}}
-                <button type="button" id="{{name}}-{{res_type}}-button" class="btn btn-default">{{name}}</button>
+                <button type="button" id="{{name}}-{{res_type}}-button" class="btn {{button_class}} action-button">{{name}}</button>
                 {{/buttons}}
             </div>
 
@@ -39,7 +39,7 @@
             <div style="display: inline-block; vertical-align: top; max-height: 100%; overflow-y: scroll; line-height: 1" class="list-group resource-selector" id="{{res_type}}-selector" data-toggle="buttons">
             </div>
             <div style="display: inline-block; vertical-align: top; margin-left: 5px">
-                <button type="button" class="btn btn-sm btn-default save-metadata-button" style="margin-bottom: 7px" value="{{res_type}}">Save Metadata</button>
+                <button type="button" class="btn btn-sm btn-warning save-metadata-button" style="margin-bottom: 7px" value="{{res_type}}">Save Metadata</button>
                 <div class="created"></div>
                 <div class="form-group" style="margin-bottom: 7px">
                     <textarea type="text" class="form-control metadata-field" id="{{res_type}}-tags" rows="1" placeholder="tags"></textarea>
@@ -62,7 +62,7 @@
 </script>
 
 <script id="repository-module-template" type="text/html">
-    <div class="col-xs-6 repository-outer" style="height: 100%; overflow: hidden; display: none">
+    <div class="col-xs-12 repository-outer" style="height: 100%; overflow: hidden; display: none">
         <div class="row indent-row" style="margin-top: 10px">
             <div class="col-xs-12">
                 <form class="form-inline" style="display:inline">
@@ -80,7 +80,7 @@
     <div class="row indent-row" style="margin-top: 5px">
         <div class="col-xs-12">
             <div class="btn-group" style= "margin-top: 5px; margin-bottom: 5px" role="group">
-                <button type="button" id="repository-copy-{{res_type}}-button" class="btn btn-default">Copy to Library</button>
+                <button type="button" id="repository-copy-{{res_type}}-button" class="btn btn-success">Copy to Library</button>
             </div>
         </div>
     </div>

@@ -14,6 +14,8 @@ mousetrap.bind("esc", function() {
 
 var res_types = ["list", "collection", "project", "tile"]
 
+
+
 function start_post_load() {
     if (use_ssl) {
         socket = io.connect('https://'+document.domain + ':' + location.port  + '/user_manage');
@@ -89,29 +91,34 @@ function start_post_load() {
         $(".resource-module").on("click", ".search-repository-resource-button", search_repository_resource)
         $(".resource-module").on("click", ".search-repository-tags-button", search_repository_resource_tags)
         $(".resource-module").on("click", ".repository-resource-unfilter-button", unfilter_repository_resource)
-        $("#toggle-repos-button").click(function () {
-            if (repository_visible) {
-                $(".repository-outer").fadeOut()
-                $(".resource-outer").removeClass("col-xs-6")
-                $(".resource-outer").addClass("col-xs-12")
-                repository_visible = false
-                resize_window()
-            }
-            else {
-                $(".repository-outer").fadeIn(complete = function () {
-                    $(".resource-outer").removeClass("col-xs-12")
-                    $(".resource-outer").addClass("col-xs-6")
-                    repository_visible = true
-                    resize_window()
-                })
-            }
-        });
         resize_window();
         $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
             resize_window()
         });
         stopSpinner()
     })
+}
+
+function toggleRepository() {
+    if (repository_visible) {
+        $(".repository-outer").fadeOut(complete=function (){
+            $(".resource-outer").fadeIn(complete=function() {
+                repository_visible = false
+                $(".page-header h1").text(saved_title)
+                resize_window()
+            })
+        })
+    }
+    else {
+        $(".resource-outer").fadeOut(complete=function(){
+            $(".repository-outer").fadeIn(complete = function () {
+                repository_visible = true
+                $(".page-header h1").text("repository")
+                resize_window()
+            })
+        })
+    }
+    return(false)
 }
 
 function startSpinner() {
@@ -139,9 +146,9 @@ var list_manager_specifics = {
     delete_view: '/delete_list/',
     add_view: "/add_list",
     buttons: [
-        {"name": "view", "func": "view_func"},
-        {"name": "duplicate", "func": "duplicate_func"},
-        {"name": "delete", "func": "delete_func"}
+        {"name": "view", "func": "view_func", "button_class": "btn-primary"},
+        {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-success"},
+        {"name": "delete", "func": "delete_func", "button_class": "btn-danger"}
     ],
 
 };
@@ -155,9 +162,9 @@ var col_manager_specifics = {
     delete_view: '/delete_collection/',
     load_view: "/main/",
     buttons: [
-        {"name": "load", "func": "load_func"},
-        {"name": "delete", "func": "delete_func"},
-        {"name": "duplicate", "func": "duplicate_func"},
+        {"name": "load", "func": "load_func", "button_class": "btn btn-primary"},
+        {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-success"},
+        {"name": "delete", "func": "delete_func", "button_class": "btn-danger"},
     ],
     add_func: function (event) {
         var manager = event.data.manager;
@@ -188,8 +195,8 @@ var project_manager_specifics = {
     load_view: "/main_project/",
     delete_view: "/delete_project/",
     buttons: [
-        {"name": "load", "func": "load_func"},
-        {"name": "delete", "func": "delete_func"}
+        {"name": "load", "func": "load_func", "button_class": "btn-primary"},
+        {"name": "delete", "func": "delete_func", "button_class": "btn-danger"}
     ],
 
 };
@@ -205,11 +212,11 @@ var tile_manager_specifics = {
     delete_view: "/delete_tile_module/",
     show_loaded_list: true,
     buttons: [
-        {"name": "new", "func": "new_func"},
-        {"name": "view", "func": "view_func"},
-        {"name": "load", "func": "load_func"},
-        {"name": "unload", "func": "unload_func"},
-        {"name": "delete", "func": "delete_func"}
+        {"name": "new", "func": "new_func", "button_class": "btn-success"},
+        {"name": "view", "func": "view_func", "button_class": "btn-primary"},
+        {"name": "load", "func": "load_func", "button_class": "btn-primary"},
+        {"name": "unload", "func": "unload_func", "button_class": "btn-warning"},
+        {"name": "delete", "func": "delete_func", "button_class": "btn-danger"}
     ],
     load_func: function (event) {
         var manager = event.data.manager

@@ -33,6 +33,9 @@ table.sortable thead {
   font-weight: bold;
   cursor: default; }
 
+.action-button {
+  border: solid white 1px; }
+
 a[role="tab"] {
   font-size: 20px; }
 
