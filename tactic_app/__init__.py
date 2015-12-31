@@ -12,10 +12,9 @@ from flask.ext.socketio import SocketIO
 
 
 print "entering new init"
+
 from flask_wtf.csrf import CsrfProtect
-
 csrf = CsrfProtect()
-
 
 def print_message():
     print "got to the message"
@@ -51,6 +50,9 @@ try:
     "print creating app and confiruting"
     app = Flask(__name__)
     app.config.from_object('config')
+
+    if os.environ.has_key("TESTING") and (os.environ.get("TESTING") == "True"):
+        app.config["WTF_CSRF_ENABLED"] = False
 
     # print ("establishing redirect function")
     # app.before_request(redirect_to_ssl)

@@ -99,8 +99,11 @@ TileObject.prototype = {
 
     displayTileContent: function (data) {
         $(this.full_selector() + " .tile-display-area").html(data["html"]);
+        var sortable_tables = $(this.full_selector() + " table.sortable")
+        $.each(sortable_tables, function (index, the_table) {
+            sorttable.makeSortable(the_table)
+        })
         this.showFront()
-        //CameraTag.setup()
     },
     displayFormContent: function (data) {
         $(this.full_selector() + " #form-display-area").html(data["html"]);

@@ -85,6 +85,9 @@ function continue_loading() {
         })});
     socket.on('change-doc', function(data){
         $("#doc-selector").val(data.doc_name);
+        if (table_is_shrunk) {
+            tableObject.expandTable()
+        }
         if (data.hasOwnProperty("row_id")) {
             change_doc($("#doc-selector")[0], data.row_id)
         }

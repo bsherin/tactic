@@ -349,7 +349,7 @@ class CollectionManager(ResourceManager):
 
     def delete_collection(self, collection_name):
         user_obj = current_user
-        db.drop_collection(ser_obj.full_collection_name(collection_name))
+        db.drop_collection(user_obj.full_collection_name(collection_name))
         self.update_selector_list()
         return jsonify({"success": True})
 
@@ -508,7 +508,7 @@ class TileManager(ResourceManager):
 
         metadata = create_initial_metadata()
         data_dict = {"tile_module_name": new_tile_name, "tile_module": template, "metadata": metadata}
-        db[user_obj.tile_collection_name].insert_one(data_dict)
+        db[current_user.tile_collection_name].insert_one(data_dict)
         self.update_selector_list(new_tile_name)
         return redirect(url_for('view_module', module_name=new_tile_name))
 
@@ -519,8 +519,9 @@ class TileManager(ResourceManager):
 
     def render_loaded_tile_list(self):
         loaded_tiles = []
-        for (category, dict) in user_tiles[current_user.username].items():
-            loaded_tiles += dict.keys()
+        if current_user.username in user_tiles:
+            for (category, dict) in user_tiles[current_user.username].items():
+                loaded_tiles += dict.keys()
         return render_template("user_manage/loaded_tile_list.html", user_tile_name_list=loaded_tiles)
 
     def request_update_loaded_tile_list(self):
@@ -706,7 +707,6 @@ def update_module():
         return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
 @app.route('/get_modal_template', methods=['get'])
-@login_required
 def get_modal_template():
     return send_file("templates/modal_text_request_template.html")
 

@@ -513,8 +513,11 @@ class TileBase(threading.Thread):
             result += it
         return result
 
-    def build_html_table_from_data_list(self, data_list, title=None, row_clickable=False):
-        the_html = "<table class='tile-table table table-striped table-bordered table-condensed'>"
+    def build_html_table_from_data_list(self, data_list, title=None, row_clickable=False, sortable=True):
+        if sortable:
+            the_html = "<table class='tile-table table table-striped table-bordered table-condensed sortable'>"
+        else:
+            the_html = "<table class='tile-table table table-striped table-bordered table-condensed'>"
         if title is not None:
             the_html += "<caption>{0}</caption>".format(title)
         the_html += "<thead><tr>"
