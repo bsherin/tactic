@@ -1,11 +1,15 @@
 import unittest
 
 import nltk
-
-nltk.data.path = ['../nltk_data/']
+import os
+nltk.data.path = [os.path.dirname(os.path.abspath(__file__)) + '/../nltk_data/']
 from sentiment_tools import vader_sentiment_analyzer, SentiText, sentiwordnet
 
 class TestSentimentTools(unittest.TestCase):
+
+    def setUp(self):
+        nltk.data.path = [os.path.dirname(os.path.abspath(__file__)) + '/../nltk_data/']
+
     def test_sentiment_analyzer(self):
         sent = "this is very nice"
         (scores, words, senti_dict) = vader_sentiment_analyzer.polarity_scores(sent)

@@ -134,7 +134,7 @@ function build_and_render_menu_objects() {
     column_menu.add_options_to_index();
 
     // Create the project_menu object
-    project_menu = new MenuObject("Project", project_command,["save-as", "save", "export-data"])
+    project_menu = new MenuObject("Project", project_command,["save-as", "save", "export-table-as-collection", "download-visible-document", "download-collection"])
     menus[project_menu.menu_name] = project_menu;
     project_menu.add_options_to_index();
     project_menu.shortcuts = {
@@ -284,11 +284,31 @@ function project_command(menu_id) {
             save_project();
             break;
         }
-        case "export-data":
+        case "export-table-as-collection":
         {
             exportDataTable()
         }
+        case "download-visible-document":
+        {
+            downloadVisibleDocument()
+        }
+        case "download-collection":
+        {
+            downloadCollection()
+        }
     }
+}
+
+function downloadVisibleDocument() {
+    showModal("Download Data Table", "New File Name", function (new_name) {
+        window.open($SCRIPT_ROOT + "/download_table/" + main_id + "/" + new_name)
+    })
+}
+
+function downloadCollection() {
+    showModal("Download Collection as Excel Notebook", "New File Name", function (new_name) {
+        window.open($SCRIPT_ROOT + "/download_collection/" + main_id + "/" + new_name)
+    })
 }
 
 function exportDataTable() {

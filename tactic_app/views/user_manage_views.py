@@ -210,6 +210,16 @@ class ListManager(ResourceManager):
             mdata = None
         return mdata
 
+    def save_metadata(self, res_name, tags, notes):
+        doc = db[current_user.list_collection_name].find_one({"list_name": res_name})
+        if "metadata" in doc:
+            mdata = doc["metadata"]
+        else:
+            mdata = {}
+        mdata["tags"] = tags
+        mdata["notes"] = notes
+        db[current_user.list_collection_name].update_one({"list_name": res_name}, {'$set': {"metadata": mdata}})
+
     def add_list(self):
         user_obj = current_user
         file = request.files['file']
@@ -240,7 +250,7 @@ class RepositoryListManager(ListManager):
     rep_string = "repository-"
     is_repository = True
     def add_rules(self):
-        x = 3
+        pass
 
 class CollectionManager(ResourceManager):
     collection_list = "data_collections"
@@ -282,6 +292,15 @@ class CollectionManager(ResourceManager):
         cname = user_obj.build_data_collection_name(res_name)
         mdata = db[cname].find_one({"name": "__metadata__"})
         return mdata
+
+    def save_metadata(self, res_name, tags, notes):
+        cname = current_user.build_data_collection_name(res_name)
+        mdata = db[cname].find_one({"name": "__metadata__"})
+        if mdata is None:
+            db[cname].insert_one({"name": "__metadata__", "tags": tags, "notes": notes})
+        else:
+            db[cname].update_one({"name": "__metadata__"},
+                                        {'$set': {"tags": tags, "notes": notes}})
 
     def autosplit_doc(self, filename, full_dict):
         sorted_int_keys = sorted([int(key) for key in full_dict.keys()])
@@ -366,7 +385,7 @@ class RepositoryCollectionManager(CollectionManager):
     rep_string = "repository-"
     is_repository = True
     def add_rules(self):
-        x = 3
+        pass
 
 class ProjectManager(ResourceManager):
     collection_list = "project_names"
@@ -420,12 +439,22 @@ class ProjectManager(ResourceManager):
             mdata = None
         return mdata
 
+    def save_metadata(self, res_name, tags, notes):
+        doc = db[current_user.project_collection_name].find_one({"project_name": res_name})
+        if "metadata" in doc:
+            mdata = doc["metadata"]
+        else:
+            mdata = {}
+        mdata["tags"] = tags
+        mdata["notes"] = notes
+        db[current_user.project_collection_name].update_one({"project_name": res_name}, {'$set': {"metadata": mdata}})
+
 class RepositoryProjectManager(ProjectManager):
     rep_string = "repository-"
     is_repository = True
 
     def add_rules(self):
-        x = 3
+        pass
 
 class TileManager(ResourceManager):
     collection_list = "tile_module_names"
@@ -453,6 +482,16 @@ class TileManager(ResourceManager):
         else:
             mdata = None
         return mdata
+
+    def save_metadata(self, res_name, tags, notes):
+        doc = db[current_user.tile_collection_name].find_one({"tile_module_name": res_name})
+        if "metadata" in doc:
+            mdata = doc["metadata"]
+        else:
+            mdata = {}
+        mdata["tags"] = tags
+        mdata["notes"] = notes
+        db[current_user.tile_collection_name].update_one({"tile_module_name": res_name}, {'$set': {"metadata": mdata}})
 
     def view_module(self, module_name):
         user_obj = current_user
@@ -513,6 +552,7 @@ class TileManager(ResourceManager):
         return redirect(url_for('view_module', module_name=new_tile_name))
 
     def delete_tile_module(self, tile_module_name):
+        user_obj = current_user
         db[user_obj.tile_collection_name].delete_one({"tile_module_name": tile_module_name})
         self.update_selector_list()
         return jsonify({"success": True})
@@ -585,20 +625,8 @@ def grab_repository_metadata():
     try:
         res_type = request.json["res_type"]
         res_name = request.json["res_name"]
-        if res_type == "collection":
-            cname = repository_user.build_data_collection_name(res_name)
-            mdata = db[cname].find_one({"name": "__metadata__"})
-        else:
-            if res_type == "tile":
-                doc = db[repository_user.tile_collection_name].find_one({"tile_module_name": res_name})
-            elif res_type == "list":
-                doc = db[repository_user.list_collection_name].find_one({"list_name": res_name})
-            elif res_type == "project":
-                doc = db[repository_user.project_collection_name].find_one({"project_name": res_name})
-            if "metadata" in doc:
-                mdata = doc["metadata"]
-            else:
-                mdata = None
+        manager = get_manager_for_type(res_type, is_repository=True)
+        mdata = manager.grab_metadata(res_name)
         if mdata is None:
             return jsonify({"success": False, "message": "No repository metadata found", "alert_type": "alert-warning"})
         else:
@@ -619,41 +647,8 @@ def save_metadata():
         res_name = request.json["res_name"]
         tags = request.json["tags"]
         notes = request.json["notes"]
-        if res_type == "collection":
-            cname = current_user.build_data_collection_name(res_name)
-            mdata = db[cname].find_one({"name": "__metadata__"})
-            if mdata is None:
-                db[cname].insert_one({"name": "__metadata__", "tags": tags, "notes": notes})
-            else:
-                db[cname].update_one({"name": "__metadata__"},
-                                            {'$set': {"tags": tags, "notes": notes}})
-        elif res_type == "tile":
-            doc = db[current_user.tile_collection_name].find_one({"tile_module_name": res_name})
-            if "metadata" in doc:
-                mdata = doc["metadata"]
-            else:
-                mdata = {}
-            mdata["tags"] = tags
-            mdata["notes"] = notes
-            db[current_user.tile_collection_name].update_one({"tile_module_name": res_name}, {'$set': {"metadata": mdata}})
-        elif res_type == "list":
-            doc = db[current_user.list_collection_name].find_one({"list_name": res_name})
-            if "metadata" in doc:
-                mdata = doc["metadata"]
-            else:
-                mdata = {}
-            mdata["tags"] = tags
-            mdata["notes"] = notes
-            db[current_user.list_collection_name].update_one({"list_name": res_name}, {'$set': {"metadata": mdata}})
-        elif res_type == "project":
-            doc = db[current_user.project_collection_name].find_one({"project_name": res_name})
-            if "metadata" in doc:
-                mdata = doc["metadata"]
-            else:
-                mdata = {}
-            mdata["tags"] = tags
-            mdata["notes"] = notes
-            db[current_user.project_collection_name].update_one({"project_name": res_name}, {'$set': {"metadata": mdata}})
+        manager = get_manager_for_type(res_type)
+        manager.save_metadata(res_name, tags, notes)
         return jsonify({"success": True, "message": "Saved metadata", "alert_type": "alert-success"})
     except:
         error_string = "Error saving metadata: " + str(sys.exc_info()[0]) + " "  + str(sys.exc_info()[1])
