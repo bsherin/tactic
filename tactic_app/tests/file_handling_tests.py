@@ -1,6 +1,6 @@
 
 import unittest
-from file_handling import read_csv_file_to_dict, load_a_list, make_fieldnames_unique, read_txt_file_to_dict
+from tactic_app.file_handling import read_csv_file_to_dict, load_a_list, make_fieldnames_unique, read_txt_file_to_dict
 from werkzeug import FileStorage
 
 class TestFileHandlingMethods(unittest.TestCase):

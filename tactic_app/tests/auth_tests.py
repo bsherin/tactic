@@ -2,7 +2,9 @@
 import unittest
 from tactic_app import app
 import json
+# noinspection PyUnresolvedReferences
 from tactic_app.views import auth_views
+
 
 class TestAuth(unittest.TestCase):
 
@@ -19,7 +21,7 @@ class TestAuth(unittest.TestCase):
         data_dict = dict(
             username=username,
             password=password,
-            remember_me = False
+            remember_me=False
         )
         the_data = json.dumps(data_dict)
         return self.app.post('/attempt_login', content_type='application/json', data=the_data, follow_redirects=True)

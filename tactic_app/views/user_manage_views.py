@@ -57,7 +57,6 @@ class ResourceManager(object):
         return getattr(user_obj, self.collection_list_with_metadata)
 
     def request_update_selector_list(self):
-        # result = render_template("user_manage/resource_list.html", res_type=self.res_type, resource_names=self.get_resource_list(), rep_string=self.rep_string)
         if self.is_repository:
             user_obj = repository_user
         else:
@@ -224,7 +223,8 @@ class ListManager(ResourceManager):
         user_obj = current_user
         file = request.files['file']
         the_list = load_a_list(file)
-        data_dict = {"list_name": file.filename, "the_list": the_list}
+        metadata = create_initial_metadata()
+        data_dict = {"list_name": file.filename, "the_list": the_list, "metadata": metadata}
         db[user_obj.list_collection_name].insert_one(data_dict)
         self.update_selector_list(select=file.filename)
         return make_response("", 204)

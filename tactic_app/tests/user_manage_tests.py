@@ -2,7 +2,11 @@
 import unittest
 from tactic_app import app
 import json
+import StringIO
+
+# noinspection PyUnresolvedReferences
 from tactic_app.views import auth_views, user_manage_views
+
 
 class UserManageTest(unittest.TestCase):
 
@@ -21,7 +25,7 @@ class UserManageTest(unittest.TestCase):
         data_dict = dict(
             username=username,
             password=password,
-            remember_me = False
+            remember_me=False
         )
         the_data = json.dumps(data_dict)
         return self.app.post('/attempt_login', content_type='application/json', data=the_data, follow_redirects=True)
@@ -29,21 +33,61 @@ class UserManageTest(unittest.TestCase):
     def test_user_manage_general(self):
         rv = self.app.get("/user_manage")
         self.assertIn("<title>test_user library</title>", rv.data)
-        data_dict = {"res_type": "tile", "res_name": "Collocations"}
+
+    def test_list_funcs(self):
+
+        # test grab_metadata with invalid name for resource that isn't present
+        data_dict = {"res_type": "list", "res_name": "blag"}
+        the_data = json.dumps(data_dict)
+        rv = self.app.post("/grab_metadata", content_type='application/json', data=the_data)
+        result = json.loads(rv.data)
+        self.assertFalse(result["success"])
+
+        # test save_metadata
+        data_dict = {"res_type": "list", "res_name": "bruce_only.txt", "tags": "test tag2", "notes": ""}
+        the_data = json.dumps(data_dict)
+        rv = self.app.post("/save_metadata", content_type='application/json', data=the_data)
+        result = json.loads(rv.data)
+        self.assertTrue(result["success"])
+
+        # test add_list
+        str_io = StringIO.StringIO()
+        str_io.write("one\ntwo\nthree")
+        str_io.seek(0)
+        the_data = {'file': (str_io, "test.txt")}
+        rv = self.app.post("/add_list", data=the_data)
+        self.assertEqual(rv._status_code, 204)
+
+        # test delete_list and get rid of the new list
+        rv = self.app.post('/delete_list/test.txt')
+        result = json.loads(rv.data)
+        self.assertTrue(result["success"])
+
+        # test grab_metadata
+        data_dict = {"res_type": "list", "res_name": "bruce_only.txt"}
         the_data = json.dumps(data_dict)
         rv = self.app.post("/grab_metadata", content_type='application/json', data=the_data)
         result = json.loads(rv.data)
         self.assertTrue(result["success"])
-        self.assertEqual(result["tags"], "default word")
+        self.assertEqual(result["tags"], "test tag2")
 
-    def test_list_funcs(self):
+        # restore the metadata so we are set up for future tests.
+        data_dict = {"res_type": "list", "res_name": "bruce_only.txt", "tags": "test", "notes": ""}
+        the_data = json.dumps(data_dict)
+        _ = self.app.post("/save_metadata", content_type='application/json', data=the_data)
+
+        # test view_list
         rv = self.app.get('/view_list/bruce_only.txt')
         self.assertTrue("<td>bruce</td>" in rv.data)
+
+        # test create_duplicate_list
         data_dict = {"res_to_copy": "bruce_only.txt", "new_res_name": "bruce_only_test_copy"}
         the_data = json.dumps(data_dict)
         rv = self.app.post('/create_duplicate_list', content_type='application/json', data=the_data)
         result = json.loads(rv.data)
         self.assertTrue(result["success"])
+
+        # test delete_list again
         rv = self.app.post('/delete_list/bruce_only_test_copy')
         result = json.loads(rv.data)
         self.assertTrue(result["success"])

@@ -1,17 +1,18 @@
-__author__ = 'bls910'
-
 import Queue
 import threading
 import re
 from tactic_app import db
 from flask_login import current_user
-import copy
 import pymongo
 import sys
-from tile_base import TileBase # This is needed from recreating tiles from saves
+
+# noinspection PyUnresolvedReferences
+from tile_base import TileBase  # This is needed from recreating tiles from saves
+# noinspection PyUnresolvedReferences
 from collections import OrderedDict
 
 from shared_dicts import mainwindow_instances, distribute_event, get_tile_class
+# noinspection PyUnresolvedReferences
 from shared_dicts import tile_classes, user_tiles
 from tactic_app import socketio
 
@@ -19,26 +20,39 @@ from tactic_app import CHUNK_SIZE, STEP_SIZE
 
 current_main_id = 0
 
+
+# noinspection PyProtectedMember
 def create_new_mainwindow(user_id, collection_name):
     mw = mainWindow(user_id, collection_name)
     mainwindow_instances[mw._main_id] = mw
     mw.start()
     return mw._main_id
 
+
+# noinspection PyProtectedMember
 def create_new_mainwindow_from_project(project_dict):
     mw = mainWindow.recreate_from_save(project_dict)
     mainwindow_instances[mw._main_id] = mw
     mw.start()
     return mw._main_id
 
-class docInfo():
-    def __init__(self, name, data_rows, header_list=None, cell_backgrounds = {}):
+
+# noinspection PyPep8Naming
+class docInfo:
+    def __init__(self, name, data_rows, header_list=None, cell_backgrounds=None):
         self.name = name
         self.data_rows = data_rows  # All the data rows in the doc
         self.current_data_rows = data_rows  # The current filtered set of data rows
         self.header_list = header_list
         self.table_spec = {}
-        self.cell_backgrounds = cell_backgrounds
+        self.start_of_current_chunk = None
+        self.is_first_chunk = None
+        self.infinite_scroll_required = None
+        self.is_last_chunk = None
+        if cell_backgrounds is None:
+            self.cell_backgrounds = {}
+        else:
+            self.cell_backgrounds = cell_backgrounds
         self.configure_for_current_data()
         if len(self.data_rows.keys()) > CHUNK_SIZE:
             self.max_table_size = CHUNK_SIZE
@@ -49,7 +63,6 @@ class docInfo():
         if not str(row) in self.cell_backgrounds:
             self.cell_backgrounds[str(row)] = {}
         self.cell_backgrounds[str(row)][column_header] = color
-
 
     @property
     def displayed_background_colors(self):
@@ -65,7 +78,7 @@ class docInfo():
     def configure_for_current_data(self):
         self.start_of_current_chunk = 0
         self.is_first_chunk = True
-        if (len(self.current_data_rows.keys()) <= CHUNK_SIZE):
+        if len(self.current_data_rows.keys()) <= CHUNK_SIZE:
             self.infinite_scroll_required = False
             self.is_last_chunk = True
         else:
@@ -74,7 +87,7 @@ class docInfo():
 
     def get_actual_row(self, row_id):
         row = int(row_id)
-        if (row >= self.start_of_current_chunk and row < (self.start_of_current_chunk + CHUNK_SIZE)):
+        if self.start_of_current_chunk <= row < (self.start_of_current_chunk + CHUNK_SIZE):
             return row - self.start_of_current_chunk
         else:
             return None
@@ -130,9 +143,9 @@ class docInfo():
         return row_id in displayed_int_keys
 
     def move_to_row(self, row_id):
-        self.current_data_rows = self.data_rows # Undo any filtering
+        self.current_data_rows = self.data_rows  # Undo any filtering
         self.start_of_current_chunk = 0
-        while (not (self.is_last_chunk) and not(self.row_is_visible(row_id))):
+        while not self.is_last_chunk and not(self.row_is_visible(row_id)):
             self.advance_to_next_chunk()
 
     def go_to_previous_chunk(self):
@@ -155,15 +168,22 @@ class docInfo():
 
     @staticmethod
     def recreate_from_save(save_dict):
-        new_instance = docInfo(save_dict["name"], save_dict["data_rows"], save_dict["header_list"], save_dict["cell_backgrounds"])
+        new_instance = docInfo(save_dict["name"],
+                               save_dict["data_rows"],
+                               save_dict["header_list"],
+                               save_dict["cell_backgrounds"])
         new_instance.table_spec = save_dict["table_spec"]
         return new_instance
 
+
+# noinspection PyPep8Naming
 class mainWindow(threading.Thread):
     save_attrs = ["short_collection_name", "collection_name", "current_tile_id",
                   "user_id", "doc_dict", "tile_instances", "project_name", "loaded_modules", "hidden_columns_list"]
     update_events = ["CellChange", "CreateColumn", "SearchTable", "SaveTableSpec",
-                    "DehighlightTable", "SetCellContent", "RemoveTile", "ColorTextInCell", "FilterTable", "UnfilterTable", "TextSelect"]
+                     "DehighlightTable", "SetCellContent", "RemoveTile", "ColorTextInCell",
+                     "FilterTable", "UnfilterTable", "TextSelect"]
+
     def __init__(self, user_id, collection_name, doc_dict=None):
         global current_main_id
         self._stopevent = threading.Event()
@@ -199,7 +219,7 @@ class mainWindow(threading.Thread):
             attr_val = getattr(self, attr)
             if hasattr(attr_val, "compile_save_dict"):
                 result[attr] = attr_val.compile_save_dict()
-            elif ((type(attr_val) == dict) and (len(attr_val) > 0) and hasattr(attr_val.values()[0], "compile_save_dict")):
+            elif (type(attr_val) == dict) and(len(attr_val) > 0) and hasattr(attr_val.values()[0], "compile_save_dict"):
                 res = {}
                 for (key, val) in attr_val.items():
                     res[key] = val.compile_save_dict()
@@ -213,11 +233,10 @@ class mainWindow(threading.Thread):
         new_instance = mainWindow(save_dict["user_id"], save_dict["collection_name"])
         for (attr, attr_val) in save_dict.items():
             if type(attr_val) == dict and ("my_class_for_recreate" in attr_val):
-                cls  = getattr(sys.modules[__name__], attr_val["my_class_for_recreate"])
+                cls = getattr(sys.modules[__name__], attr_val["my_class_for_recreate"])
                 setattr(new_instance, attr, cls.recreate_from_save(attr_val))
-            elif ((type(attr_val) == dict) and (len(attr_val) > 0) and ("my_class_for_recreate" in attr_val.values()[0])):
-                cls_name =  attr_val.values()[0]["my_class_for_recreate"]
-                cls  = getattr(sys.modules[__name__], attr_val.values()[0]["my_class_for_recreate"])
+            elif (type(attr_val) == dict) and (len(attr_val) > 0) and ("my_class_for_recreate" in attr_val.values()[0]):
+                cls = getattr(sys.modules[__name__], attr_val.values()[0]["my_class_for_recreate"])
                 res = {}
                 for (key, val) in attr_val.items():
                     res[key] = cls.recreate_from_save(val)
@@ -245,7 +264,7 @@ class mainWindow(threading.Thread):
     def tablespec_dict(self):
         tdict = {}
         for (key, docinfo) in self.doc_dict.items():
-            if docinfo.table_spec: # This will be false if table_spec == {}
+            if docinfo.table_spec:  # This will be false if table_spec == {}
                 tdict[key] = docinfo.table_spec
         return tdict
 
@@ -268,7 +287,7 @@ class mainWindow(threading.Thread):
             del self._pipe_dict[tile_id]
             distribute_event("RebuildTileForms", self._main_id)
 
-    def create_tile_instance_in_mainwindow(self, tile_type, tile_name = None):
+    def create_tile_instance_in_mainwindow(self, tile_type, tile_name=None):
         new_id = "tile_id_" + str(self.current_tile_id)
         # The user version of a tile should take precedence if both exist
         new_tile = get_tile_class(current_user.username, tile_type)(self._main_id, new_id, tile_name)
@@ -284,7 +303,7 @@ class mainWindow(threading.Thread):
         return new_tile
 
     def handle_exception(self, unique_message=None):
-        error_string = str(sys.exc_info()[0]) + " "  + str(sys.exc_info()[1])
+        error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         if unique_message is None:
             self.print_to_console(error_string, force_open=True)
         else:
@@ -325,14 +344,10 @@ class mainWindow(threading.Thread):
             doc.configure_for_current_data()
         self.refill_table()
 
-
     def refill_table(self):
         doc = self.doc_dict[self.visible_doc_name]
-        data_object = {}
-        data_object["data_rows"] = doc.sorted_data_rows
-        data_object["doc_name"] = self.visible_doc_name
-        data_object["is_first_chunk"] = doc.is_first_chunk
-        data_object["is_last_chunk"] = doc.is_last_chunk
+        data_object = {"data_rows": doc.sorted_data_rows, "doc_name": self.visible_doc_name,
+                       "is_first_chunk": doc.is_first_chunk, "is_last_chunk": doc.is_last_chunk}
         self.emit_table_message("refill_table", data_object)
 
     def display_matching_rows(self, filter_function, document_name=None):
@@ -375,8 +390,8 @@ class mainWindow(threading.Thread):
         return
 
     def run(self):
-        while not self._stopevent.isSet( ):
-            if (not self._my_q.empty()):
+        while not self._stopevent.isSet():
+            if not self._my_q.empty():
                 self.emit_table_message("startTableSpinner")
                 q_item = self._my_q.get()
                 self._handle_event(q_item["event_name"], q_item["data"])
@@ -385,15 +400,17 @@ class mainWindow(threading.Thread):
             self._stopevent.wait(self._sleepperiod)
 
     def join(self, timeout=None):
-        """ Stop the thread and wait for it to end. """
         self._stopevent.set()
         threading.Thread.join(self, timeout)
 
-    def emit_table_message(self, message, data={}):
+    def emit_table_message(self, message, data=None):
+        if data is None:
+            data = {}
         data["message"] = message
         socketio.emit("table-message", data, namespace='/main', room=self._main_id)
 
     def _handle_event(self, event_name, data=None):
+        # noinspection PyBroadException
         try:
             if event_name == "CellChange":
                 self._set_row_column_data(data["doc_name"], data["id"], data["column_header"], data["new_content"])
@@ -414,7 +431,8 @@ class mainWindow(threading.Thread):
             elif event_name == "ColorTextInCell":
                 self.emit_table_message("colorTxtInCell", data)
             elif event_name == "SetCellContent":
-                self._set_cell_content(data["doc_name"], data["id"], data["column_header"], data["new_content"], data["cellchange"])
+                self._set_cell_content(data["doc_name"], data["id"], data["column_header"],
+                                       data["new_content"], data["cellchange"])
             elif event_name == "TextSelect":
                 self.selected_text = data["selected_text"]
             elif event_name == "SaveTableSpec":
@@ -422,31 +440,32 @@ class mainWindow(threading.Thread):
                 self.doc_dict[new_spec["doc_name"]].table_spec = new_spec
         except:
             self.print_to_console("error in handle_event  " + self.__class__.__name__ +
-                                 str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]), force_open=True)
+                                  str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]), force_open=True)
         return
 
-    def _set_cell_content(self, doc_name, id, column_header, new_content, cellchange=True):
+    def _set_cell_content(self, doc_name, the_id, column_header, new_content, cellchange=True):
         doc = self.doc_dict[doc_name]
-        the_row = doc.data_rows[str(id)]
+        the_row = doc.data_rows[str(the_id)]
         old_content = the_row[column_header]
-        if (new_content != old_content):
-            data = {"doc_name": doc_name, "id": id, "column_header": column_header, "new_content": new_content, "old_content": old_content}
+        if new_content != old_content:
+            data = {"doc_name": doc_name, "id": the_id, "column_header": column_header,
+                    "new_content": new_content, "old_content": old_content}
 
             # If cellchange is True then we use a CellChange event to handle any updates.
             # Otherwise just change things right here.
             if cellchange:
                 distribute_event("CellChange", self._main_id, data)
             else:
-                self._set_row_column_data(doc_name, id, column_header, new_content)
-                self._change_list.append(id)
+                self._set_row_column_data(doc_name, the_id, column_header, new_content)
+                self._change_list.append(the_id)
             if doc_name == self.visible_doc_name:
                 self.emit_table_message("setCellContent", data)
 
-    def _set_cell_background(self, doc_name, id, column_header, color):
+    def _set_cell_background(self, doc_name, the_id, column_header, color):
         doc = self.doc_dict[doc_name]
-        doc.set_background_color(id, column_header, color)
+        doc.set_background_color(the_id, column_header, color)
         if doc_name == self.visible_doc_name:
-            actual_row = doc.get_actual_row(id)
+            actual_row = doc.get_actual_row(the_id)
             if actual_row is not None:
                 data = {"row": actual_row,
                         "column_header": column_header,
@@ -454,7 +473,7 @@ class mainWindow(threading.Thread):
                 self.emit_table_message("setCellBackground", data)
 
     def highlight_table_text(self, txt):
-        row_index = 0;
+        row_index = 0
         dinfo = self.doc_dict[self.visible_doc_name]
         for the_row in dinfo.displayed_data_rows:
             for cheader in dinfo.header_list:
@@ -463,7 +482,7 @@ class mainWindow(threading.Thread):
                     continue
                 if str(txt).lower() in str(cdata).lower():
                     self.emit_table_message("highlightTxtInCell",
-                      {"row_index": row_index, "column_header": cheader, "text_to_find": txt})
+                                            {"row_index": row_index, "column_header": cheader, "text_to_find": txt})
             row_index += 1
 
     @staticmethod
@@ -486,9 +505,10 @@ class mainWindow(threading.Thread):
             the_collection = db[self.collection_name]
             for f in the_collection.find():
                 if str(f["name"]) == "__metadata__":
-                    continue;
+                    continue
                 if "header_list" in f:
-                    result[str(f["name"])] = docInfo(str(f["name"]), f["data_rows"], f["header_list"]) # Note conversion of unicode filenames to strings
+                    # Note conversion of unicode filenames to strings
+                    result[str(f["name"])] = docInfo(str(f["name"]), f["data_rows"], f["header_list"])
                 else:
                     result[str(f["name"])] = docInfo(str(f["name"]), f["data_rows"], [])
         except pymongo.errors.PyMongoError as err:
@@ -496,7 +516,6 @@ class mainWindow(threading.Thread):
             return
         return result
 
-    def _set_row_column_data(self, doc_name, id, column_header, new_content):
-        the_row = self.doc_dict[doc_name].data_rows[str(id)][column_header] = new_content
+    def _set_row_column_data(self, doc_name, the_id, column_header, new_content):
+        _ = self.doc_dict[doc_name].data_rows[str(the_id)][column_header] = new_content
         return
-

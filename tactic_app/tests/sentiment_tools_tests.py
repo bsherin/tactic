@@ -2,13 +2,12 @@ import unittest
 
 import nltk
 import os
-nltk.data.path = [os.path.dirname(os.path.abspath(__file__)) + '/../nltk_data/']
-from sentiment_tools import vader_sentiment_analyzer, SentiText, sentiwordnet
+from tactic_app.sentiment_tools import vader_sentiment_analyzer, SentiText, sentiwordnet
 
 class TestSentimentTools(unittest.TestCase):
 
     def setUp(self):
-        nltk.data.path = [os.path.dirname(os.path.abspath(__file__)) + '/../nltk_data/']
+        nltk.data.path = [os.path.dirname(os.path.abspath(__file__)) + '/../../nltk_data/']
 
     def test_sentiment_analyzer(self):
         sent = "this is very nice"
