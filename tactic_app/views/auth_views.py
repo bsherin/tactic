@@ -33,6 +33,7 @@ def attempt_login():
         result_dict["logged_in"] = False
     return jsonify(result_dict)
 
+
 @app.route('/logout')
 @login_required
 def logout():

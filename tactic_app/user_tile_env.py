@@ -10,12 +10,12 @@ import wordcloud
 from tactic_app.clusterer_classes import CentroidClusterer, OptCentroidClusterer
 from tactic_app.sentiment_tools import vader_sentiment_analyzer, sentiwordnet
 from matplotlib_utilities import GraphList, ColorMapper, FigureCanvas, ArrayHeatmap, ImageShow
-from shared_dicts import mainwindow_instances
+from tactic_app.shared_dicts import mainwindow_instances
 
 from tile_base import TileBase
 
 def user_tile(tclass):
-    from shared_dicts import user_tiles
+    from tactic_app.shared_dicts import user_tiles
     from flask_login import current_user
     uname = current_user.username
     if not (uname in user_tiles):

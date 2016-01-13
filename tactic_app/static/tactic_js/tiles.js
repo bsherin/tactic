@@ -8,28 +8,9 @@ function showZoomedImage(el) {
     $("#image-modal").modal()
 }
 
-function create_tile_from_save(tile_id) {
-    var data_dict = {};
-    data_dict["tile_id"] = tile_id;
-    data_dict["main_id"] = main_id;
-    $.ajax({
-        url: $SCRIPT_ROOT + "/create_tile_from_save_request/" + String(tile_id),
-        contentType : 'application/json',
-        type : 'POST',
-        data: JSON.stringify(data_dict),
-        dataType: 'json',
-        error: function (jqXHR, textStatus, errorThrown) {
-          console.log("Error creating tile from save: " + textStatus + " " + errorThrown)
-        },
-        success: function (data) {
-            var new_tile_object = new TileObject(data.tile_id, data.html);
-            tile_dict[data.tile_id] = new_tile_object;
-            new_tile_object.refreshFromSave()
-        }
-    })
-}
 
-function TileObject(tile_id, html) {
+
+function TileObject(tile_id, html, broadcast_size) {
     this.tile_id = tile_id;
     $("#tile-div").append(html);
     $("#tile_body_" + this.tile_id).flip({
@@ -50,13 +31,15 @@ function TileObject(tile_id, html) {
     this.listen_for_clicks();
     $(this.full_selector()).find(".triangle-right").hide()
     this.do_resize();
-    this.broadcastTileSize();
+    if (broadcast_size){
+        this.broadcastTileSize();
+    }
 }
 
 TileObject.prototype = {
     spinner: null,
     full_selector: function() {
-        return "#tile_id_" + this.tile_id;
+        return "#" + this.tile_id;
     },
     submitOptions: function (){
         var data = {};
@@ -85,14 +68,28 @@ TileObject.prototype = {
     broadcastTileSize: function() {
         var w = $(this.full_selector() + " .tile-display-area").width();
         var h = $(this.full_selector() + " .tile-display-area").height();
-        var data_dict = {"tile_id": this.tile_id, "width": w, "height": h};
+        var full_tile_w =  $(this.full_selector()).width();
+        var full_tile_h = $(this.full_selector()).height();
+        var data_dict = {"tile_id": this.tile_id, "width": w, "height": h,
+                          "full_tile_width": full_tile_w, "full_tile_height": full_tile_h};
         broadcast_event_to_server("TileSizeChange", data_dict)
     },
     do_resize: function(){
-        el = $("#tile_id_" + this.tile_id);
+        el = $(this.full_selector());
         ui = {
             "element": el,
             "size": {"width": el.outerWidth(), "height": el.outerHeight()}
+        };
+        this.resize_tile_area(null, ui);
+    },
+
+    setTileSize: function(data) {
+        el = $(this.full_selector());
+        el.width(data.width);
+        el.height(data.height);
+        ui = {
+            "element": el,
+            "size": data
         };
         this.resize_tile_area(null, ui);
     },
@@ -129,8 +126,9 @@ TileObject.prototype = {
     },
 
     shrinkMe: function (){
-        el = $(this.full_selector())
-        this.saved_size = el.outerHeight()
+        el = $(this.full_selector());
+        this.saved_size = el.outerHeight();
+        broadcast_event_to_server("ShrinkTile", {tile_id: this.tile_id});
         el.find(".tile-body").fadeOut("fast", function () {
             var hheight = el.find(".tile-panel-heading").outerHeight()
             el.outerHeight(hheight)
@@ -148,6 +146,7 @@ TileObject.prototype = {
         el = $(this.full_selector()).find(".triangle-bottom").show();
         el = $(this.full_selector()).find(".tile-body").fadeIn();
         var self = this;
+        broadcast_event_to_server("ExpandTile", {tile_id: this.tile_id});
         el = $(this.full_selector()).resizable({
                 handles: "se",
                 resize: self.resize_tile_area,
@@ -169,7 +168,15 @@ TileObject.prototype = {
         $(display_area).outerWidth(ui.size.width - the_margin * 2);
         var back_element = ui.element.find(".back")[0];
         $(back_element).outerHeight(ui.size.height - hheight);
-        $(back_element).outerWidth(ui.size.width)
+        $(back_element).outerWidth(ui.size.width);
+        computed_width = ui.element.width()
+        computed_height = ui.element.height()
+        ui.element.width(computed_width)
+        ui.element.height(computed_height)
+        var scripts = $(ui.element.find(".tile-display-area")).find("script")
+        for (var i = 0; i < scripts.length; i = i+1) {
+            eval(scripts[i].innerHTML)
+        }
     },
 
     flipMe: function (){
@@ -193,12 +200,18 @@ TileObject.prototype = {
 
     },
     spin_and_refresh: function () {
-        broadcast_event_to_server("StartSpinner", {"tile_id": this.tile_id})
-        broadcast_event_to_server("RefreshTile", {"tile_id": this.tile_id})
-        broadcast_event_to_server("StopSpinner", {"tile_id": this.tile_id})
+        // I'm chaining these with callbacks just to make sure they don't get out of order
+        broadcast_event_to_server("StartSpinner", {"tile_id": this.tile_id}, function () {
+            broadcast_event_to_server("RefreshTile", {"tile_id": this.tile_id}, function() {
+                broadcast_event_to_server("StopSpinner", {"tile_id": this.tile_id})
+            })
+        })
+
     },
     refreshFromSave: function () {
-        broadcast_event_to_server("RefreshTileFromSave", {"tile_id": this.tile_id})
+        broadcast_event_to_server("SetSizeFromSave", {"tile_id": this.tile_id}, function() {
+            broadcast_event_to_server("RefreshTileFromSave", {"tile_id": this.tile_id})
+        })
     },
     listen_for_clicks: function() {
         $(".front").on('click', '.word-clickable', function(e) {

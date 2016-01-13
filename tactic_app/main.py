@@ -11,12 +11,13 @@ from tile_base import TileBase  # This is needed from recreating tiles from save
 # noinspection PyUnresolvedReferences
 from collections import OrderedDict
 
-from shared_dicts import mainwindow_instances, distribute_event, get_tile_class
+from tactic_app.shared_dicts import mainwindow_instances, distribute_event, get_tile_class
 # noinspection PyUnresolvedReferences
-from shared_dicts import tile_classes, user_tiles
+from tactic_app.shared_dicts import tile_classes, user_tiles
 from tactic_app import socketio
 
 from tactic_app import CHUNK_SIZE, STEP_SIZE
+INITIAL_LEFT_FRACTION = .69
 
 current_main_id = 0
 
@@ -178,11 +179,11 @@ class docInfo:
 
 # noinspection PyPep8Naming
 class mainWindow(threading.Thread):
-    save_attrs = ["short_collection_name", "collection_name", "current_tile_id",
+    save_attrs = ["short_collection_name", "collection_name", "current_tile_id", "tile_sort_list", "left_fraction", "is_shrunk",
                   "user_id", "doc_dict", "tile_instances", "project_name", "loaded_modules", "hidden_columns_list"]
     update_events = ["CellChange", "CreateColumn", "SearchTable", "SaveTableSpec",
                      "DehighlightTable", "SetCellContent", "RemoveTile", "ColorTextInCell",
-                     "FilterTable", "UnfilterTable", "TextSelect"]
+                     "FilterTable", "UnfilterTable", "TextSelect", "UpdateSortList", "UpdateLeftFraction", "UpdateTableShrinkState"]
 
     def __init__(self, user_id, collection_name, doc_dict=None):
         global current_main_id
@@ -193,6 +194,9 @@ class mainWindow(threading.Thread):
 
         # These are the main attributes that define a project state
         self.tile_instances = {}
+        self.tile_sort_list = []
+        self.left_fraction = INITIAL_LEFT_FRACTION
+        self.is_shrunk = False
         self.collection_name = collection_name
         self.short_collection_name = re.sub("^.*?\.data_collection\.", "", collection_name)
         self.user_id = user_id
@@ -283,6 +287,7 @@ class mainWindow(threading.Thread):
 
     def _delete_tile_instance(self, tile_id):
         del self.tile_instances[tile_id]
+        self.tile_sort_list.remove(tile_id)
         if tile_id in self._pipe_dict:
             del self._pipe_dict[tile_id]
             distribute_event("RebuildTileForms", self._main_id)
@@ -299,6 +304,7 @@ class mainWindow(threading.Thread):
                 self._pipe_dict[new_id][tile_name + "_" + export] = export
             distribute_event("RebuildTileForms", self._main_id)
         new_tile.start()
+        self.tile_sort_list.append(new_id)
         self.current_tile_id += 1
         return new_tile
 
@@ -438,6 +444,12 @@ class mainWindow(threading.Thread):
             elif event_name == "SaveTableSpec":
                 new_spec = data["tablespec"]
                 self.doc_dict[new_spec["doc_name"]].table_spec = new_spec
+            elif event_name == "UpdateSortList":
+                self.tile_sort_list = data["sort_list"]
+            elif event_name == "UpdateLeftFraction":
+                self.left_fraction = data["left_fraction"]
+            elif event_name == "UpdateTableShrinkState":
+                self.is_shrunk = data["is_shrunk"]
         except:
             self.print_to_console("error in handle_event  " + self.__class__.__name__ +
                                   str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]), force_open=True)

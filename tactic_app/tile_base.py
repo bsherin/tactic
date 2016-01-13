@@ -3,8 +3,8 @@ import threading
 from flask_login import current_user
 from flask import url_for
 from tactic_app import socketio
-from shared_dicts import mainwindow_instances, distribute_event, get_tile_class
-from shared_dicts import tokenizer_dict, weight_functions
+from tactic_app.shared_dicts import mainwindow_instances, distribute_event, get_tile_class
+from tactic_app.shared_dicts import tokenizer_dict, weight_functions
 from users import load_user
 import sys
 from matplotlib_utilities import color_palette_names
@@ -12,7 +12,6 @@ from matplotlib_utilities import color_palette_names
 class TileBase(threading.Thread):
     category = "basic"
     exports = {}
-    save_attrs = ["current_html", "tile_id", "tile_type", "tile_name"]
     input_start_template = '<div class="form-group form-group-sm"">' \
                            '<label>{0}</label>'
     basic_input_template = '<input type="{1}" class="form-control input-sm" id="{0}" value="{2}"></input>' \
@@ -30,6 +29,8 @@ class TileBase(threading.Thread):
         self._sleepperiod = .05
         threading.Thread.__init__(self)
         self._my_q = Queue.Queue(0)
+        self.save_attrs = ["current_html", "tile_id", "tile_type", "tile_name",
+              "width", "height", "full_tile_width", "full_tile_height", "is_shrunk"]
 
         # These define the state of a tile and should be saved
 
@@ -47,9 +48,16 @@ class TileBase(threading.Thread):
         self.figure_id = 0
         self.width = ""
         self.height = ""
+        self.file_tile_width = ""
+        self.full_tile_height = ""
         self.img_dict = {}
+        self.data_dict = {}
         self.current_fig_id = 0
+        self.current_data_id = 0
+        self.current_unique_id_index = 0
+        self.is_shrunk = False
         self.base_figure_url = url_for("figure_source", main_id=main_id, tile_id=tile_id, figure_name="X")[:-1]
+        self.base_data_url = url_for("data_source", main_id=main_id, tile_id=tile_id, data_name="X")[:-1]
         return
 
     """
@@ -83,9 +91,13 @@ class TileBase(threading.Thread):
             elif event_name == "TileSizeChange":
                 self.width = data["width"]
                 self.height = data["height"]
+                self.full_tile_width = data["full_tile_width"]
+                self.full_tile_height = data["full_tile_height"]
                 self.handle_size_change()
             elif event_name == "RefreshTileFromSave":
                 self.refresh_from_save()
+            if event_name == "SetSizeFromSave":
+                self.set_tile_size(self.full_tile_width, self.full_tile_height)
             elif event_name == "UpdateOptions":
                 self.update_options(data)
             elif event_name == "CellChange":
@@ -109,6 +121,10 @@ class TileBase(threading.Thread):
                 self.start_spinner()
             elif event_name == "StopSpinner":
                 self.stop_spinner()
+            elif event_name == "ShrinkTile":
+                self.is_shrunk = True
+            elif event_name == "ExpandTile":
+                self.is_shrunk = False
             elif event_name == "RebuildTileForms":
                 form_html = self.create_form_html()
                 self.emit_tile_message("displayFormContent", {"html": form_html})
@@ -121,22 +137,27 @@ class TileBase(threading.Thread):
         try:
             form_html = ""
             for option in self.options:
+                att_name = option["name"]
+                if not hasattr(self, att_name):
+                    setattr(self, att_name, None)
+                self.save_attrs.append(att_name)
+                starting_value = getattr(self, att_name)
                 if option["type"] == "column_select":
                     the_template = self.input_start_template + self.select_base_template
-                    form_html += the_template.format(option["name"])
+                    form_html += the_template.format(att_name)
                     current_doc_name = mainwindow_instances[self.main_id].visible_doc_name
                     current_doc = mainwindow_instances[self.main_id].doc_dict[current_doc_name]
                     for choice in current_doc.header_list:
-                        if choice == option["placeholder"]:
+                        if starting_value:
                             form_html += self.select_option_selected_template.format(choice)
                         else:
                             form_html += self.select_option_template.format(choice)
                     form_html += '</select></div>'
                 elif option["type"] == "tokenizer_select":
                     the_template = self.input_start_template + self.select_base_template
-                    form_html += the_template.format(option["name"])
+                    form_html += the_template.format(att_name)
                     for choice in tokenizer_dict.keys():
-                        if choice == option["placeholder"]:
+                        if choice == starting_value:
                             form_html += self.select_option_selected_template.format(choice)
                         else:
                             form_html += self.select_option_template.format(choice)
@@ -144,76 +165,77 @@ class TileBase(threading.Thread):
 
                 elif option["type"] == "weight_function_select":
                     the_template = self.input_start_template + self.select_base_template
-                    form_html += the_template.format(option["name"])
+                    form_html += the_template.format(att_name)
                     for choice in weight_functions.keys():
-                        if choice == option["placeholder"]:
+                        if choice == starting_value:
                             form_html += self.select_option_selected_template.format(choice)
                         else:
                             form_html += self.select_option_template.format(choice)
                     form_html += '</select></div>'
                 elif option["type"] == "pipe_select":
                     the_template = self.input_start_template + self.select_base_template
-                    form_html += the_template.format(option["name"])
+                    form_html += the_template.format(att_name)
                     for choice in self.get_current_pipe_list():
-                        if choice == option["placeholder"]:
+                        if choice == starting_value:
                             form_html += self.select_option_selected_template.format(choice)
                         else:
                             form_html += self.select_option_template.format(choice)
                     form_html += '</select></div>'
                 elif option["type"] == "document_select":
                     the_template = self.input_start_template + self.select_base_template
-                    form_html += the_template.format(option["name"])
+                    form_html += the_template.format(att_name)
                     for choice in self.get_document_names():
-                        if choice == option["placeholder"]:
+                        if choice == starting_value:
                             form_html += self.select_option_selected_template.format(choice)
                         else:
                             form_html += self.select_option_template.format(choice)
                     form_html += '</select></div>'
                 elif option["type"] == "list_select":
                     the_template = self.input_start_template + self.select_base_template
-                    form_html += the_template.format(option["name"])
+                    form_html += the_template.format(att_name)
                     for choice in self.current_user.list_names:
-                        if choice == option["placeholder"]:
+                        if choice == starting_value:
                             form_html += self.select_option_selected_template.format(choice)
                         else:
                             form_html += self.select_option_template.format(choice)
                     form_html += '</select></div>'
                 elif option["type"] == "palette_select":
                     the_template = self.input_start_template + self.select_base_template
-                    form_html += the_template.format(option["name"])
+                    form_html += the_template.format(att_name)
                     for choice in color_palette_names:
-                        if choice == option["placeholder"]:
+                        if choice == starting_value:
                             form_html += self.select_option_selected_template.format(choice)
                         else:
                             form_html += self.select_option_template.format(choice)
                     form_html += '</select></div>'
                 elif option["type"] == "custom_list":
                     the_template = self.input_start_template + self.select_base_template
-                    form_html += the_template.format(option["name"])
+                    form_html += the_template.format(att_name)
                     for choice in option["special_list"]:
-                        if choice == option["placeholder"]:
+                        if choice == starting_value:
                             form_html += self.select_option_selected_template.format(choice)
                         else:
                             form_html += self.select_option_template.format(choice)
                     form_html += '</select></div>'
                 elif option["type"] == "textarea":
                     the_template = self.input_start_template + self.textarea_template
-                    form_html += the_template.format(option["name"], option["type"], option["placeholder"])
+                    form_html += the_template.format(att_name, option["type"], starting_value)
                 elif option["type"] == "text":
                     the_template = self.input_start_template + self.basic_input_template
-                    form_html += the_template.format(option["name"], option["type"], option["placeholder"])
+                    form_html += the_template.format(att_name, option["type"], starting_value)
                 elif option["type"] == "int":
                     the_template = self.input_start_template + self.basic_input_template
-                    form_html += the_template.format(option["name"], option["type"], str(option["placeholder"]))
+                    form_html += the_template.format(att_name, option["type"], str(starting_value))
                 elif option["type"] == "boolean":
                     the_template = self.boolean_template
-                    if option["placeholder"]:
+                    if starting_value:
                         val = "checked"
                     else:
                         val = " '"
-                    form_html += the_template.format(option["name"], val)
+                    form_html += the_template.format(att_name, val)
                 else:
                     print "Unknown option type specified"
+            self.save_attrs = list(set(self.save_attrs))
             return form_html
         except:
             self.display_message("error creating form for  " + self.__class__.__name__ + " tile: " + self.tile_id + " " +
@@ -288,6 +310,9 @@ class TileBase(threading.Thread):
 
     def refresh_from_save(self):
         self.emit_tile_message("displayTileContent", {"html": self.current_html})
+
+    def set_tile_size(self, owidth, oheight):
+        self.emit_tile_message("setTileSize", {"width": owidth, "height": oheight})
 
     """
     Default Handlers
@@ -500,6 +525,39 @@ class TileBase(threading.Thread):
         image_string = "<img class='output-plot' src='{}' onclick=showZoomedImage(this) lt='Image Placeholder'>"
         the_html = image_string.format(fig_url)
         return the_html
+
+    def create_data_source(self, data):
+        dataname = str(self.current_data_id)
+        self.current_data_id += 1
+        self.data_dict[dataname] = data
+        return dataname
+
+    def create_lineplot_html(self, data, xlabels=None):
+        if xlabels is None:
+            xlabels = []
+        data_name = self.create_data_source({"data_list": data, "xlabels": xlabels})
+        uid = self.get_unique_div_id()
+        the_html = "<div id='{}'><div class='d3plot'></div>".format(str(uid))
+
+        the_script = "createLinePlot('{0}', '{1}', '{2}')".format(self.tile_id, data_name, uid)
+        the_html += "<script>{}</script></div>".format(the_script)
+        return the_html
+
+    def create_scatterplot_html(self, data, xlabels=None):
+        if xlabels is None:
+            xlabels = []
+        data_name = self.create_data_source({"data_list": data, "xlabels": xlabels})
+        uid = self.get_unique_div_id()
+        the_html = "<div id='{}'><div class='d3plot'></div>".format(str(uid))
+
+        the_script = "createScatterPlot('{0}', '{1}', '{2}')".format(self.tile_id, data_name, uid)
+        the_html += "<script>{}</script></div>".format(the_script)
+        return the_html
+
+    def get_unique_div_id(self):
+        unique_id = "div-{0}-{1}-{2}".format(self.main_id, self.tile_id, self.current_unique_id_index)
+        self.current_unique_id_index += 1
+        return str(unique_id)
 
     """
 

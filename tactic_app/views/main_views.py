@@ -57,16 +57,20 @@ def save_new_project():
 @login_required
 def update_project():
     data_dict = request.json
-    tspec_dict = data_dict["tablespec_dict"]
-    mainwindow_instances[data_dict['main_id']].hidden_columns_list = data_dict["hidden_columns_list"]
-    mainwindow_instances[data_dict['main_id']].loaded_modules = list(loaded_user_modules[current_user.username])
-    for (dname, spec) in tspec_dict.items():
-        mainwindow_instances[data_dict['main_id']].doc_dict[dname].table_spec = spec
-    save_dict = mainwindow_instances[data_dict['main_id']].compile_save_dict()
+    try:
+        tspec_dict = data_dict["tablespec_dict"]
+        mainwindow_instances[data_dict['main_id']].hidden_columns_list = data_dict["hidden_columns_list"]
+        mainwindow_instances[data_dict['main_id']].loaded_modules = list(loaded_user_modules[current_user.username])
+        for (dname, spec) in tspec_dict.items():
+            mainwindow_instances[data_dict['main_id']].doc_dict[dname].table_spec = spec
+        save_dict = mainwindow_instances[data_dict['main_id']].compile_save_dict()
 
-    db[current_user.project_collection_name].update_one({"project_name": save_dict["project_name"]},
-                                                        {'$set': save_dict})
-    return jsonify({"success": True, "message": "Project Successfully Saved"})
+        db[current_user.project_collection_name].update_one({"project_name": save_dict["project_name"]},
+                                                            {'$set': save_dict})
+        return jsonify({"success": True, "message": "Project Successfully Saved"})
+    except:
+        mainwindow_instances[data_dict['main_id']].handle_exception("Error saving project")
+        return jsonify({"success": False})
 
 
 @app.route('/export_data', methods=['POST'])
@@ -140,6 +144,8 @@ def download_collection(main_id, new_name):
 @login_required
 def grab_data(main_id, doc_name):
     return jsonify({"doc_name": doc_name,
+                    "is_shrunk": mainwindow_instances[main_id].is_shrunk,
+                    "left_fraction": mainwindow_instances[main_id].left_fraction,
                     "data_rows": mainwindow_instances[main_id].doc_dict[doc_name].displayed_data_rows,
                     "background_colors": mainwindow_instances[main_id].doc_dict[doc_name].displayed_background_colors,
                     "header_list": mainwindow_instances[main_id].doc_dict[doc_name].header_list,
@@ -197,7 +203,9 @@ def grab_previous_chunk(main_id, doc_name):
 def grab_project_data(main_id, doc_name):
     mw = mainwindow_instances[main_id]
     return jsonify({"doc_name": doc_name,
-                    "tile_ids": mw.tile_ids,
+                    "is_shrunk": mainwindow_instances[main_id].is_shrunk,
+                    "tile_ids": mw.tile_sort_list,
+                    "left_fraction": mw.left_fraction,
                     "data_rows": mw.doc_dict[doc_name].displayed_data_rows,
                     "background_colors": mainwindow_instances[main_id].doc_dict[doc_name].displayed_background_colors,
                     "hidden_columns_list": mw.hidden_columns_list,
@@ -265,6 +273,16 @@ def figure_source(main_id, tile_id, figure_name):
     img = mainwindow_instances[main_id].tile_instances[tile_id].img_dict[figure_name]
     return send_file(img, mimetype='image/png')
 
+@app.route('/data_source/<main_id>/<tile_id>/<data_name>', methods=['GET'])
+@login_required
+def data_source(main_id, tile_id, data_name):
+    try:
+        the_data = mainwindow_instances[main_id].tile_instances[tile_id].data_dict[data_name]
+        return jsonify({"success": True, "data": the_data})
+    except:
+        error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+        mainwindow_instances[main_id].handle_exception("Error getting data " + error_string)
+        return jsonify({"success": False})
 
 # noinspection PyUnresolvedReferences
 @app.route('/create_tile_request/<tile_type>', methods=['GET', 'POST'])
@@ -299,7 +317,7 @@ def create_tile_from_save_request(tile_id):
         result = render_template("tile.html", tile_id=tile_id,
                                  tile_name=tile_instance.tile_name,
                                  form_text=form_html)
-        return jsonify({"html": result, "tile_id": tile_id})
+        return jsonify({"html": result, "tile_id": tile_id, "is_shrunk": tile_instance.is_shrunk})
     except:
         error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         mainwindow_instances[main_id].handle_exception("Error creating tile from save " + error_string)

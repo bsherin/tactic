@@ -1,8 +1,8 @@
-from tile_env import *
-
-class AbstractClassifier(TileBase):
+@user_tile
+class NaiveBayes(TileBase):
     category = "classifiers"
-    classifier_class = None
+    classifier_class = nltk.NaiveBayesClassifier
+
     def __init__(self, main_id, tile_id, tile_name=None):
         TileBase.__init__(self, main_id, tile_id, tile_name)
         self._vocab = None
@@ -11,6 +11,7 @@ class AbstractClassifier(TileBase):
         self.tokenized_rows_dict = {}
         self.autocodes_dict = {}
         self.vocab_size = 50
+        self.palette_name = "RdYlGn"
 
     @property
     def options(self):
@@ -20,7 +21,8 @@ class AbstractClassifier(TileBase):
         {"name": "code_destination", "type": "column_select"},
         {"name": "tokenizer", "type": "tokenizer_select"},
         {"name": "stop_list", "type": "list_select"},
-        {"name": "vocab_size", "type": "int"}
+        {"name": "vocab_size", "type": "int"},
+        {"name": "palette_name", "type": "palette_select"}
         ]
 
     def tokenize_rows(self, the_rows, the_tokenizer):
@@ -50,9 +52,11 @@ class AbstractClassifier(TileBase):
         for entry in fdist.most_common(num):
             result.append(entry[0])
         return result
-
+    
     def render_content(self):
-        if self.text_source is None:
+        if self.text_source is "":
+            return "No text source selected."
+        if self.text_source is "":
             return "No text source selected."
         raw_text_dict = self.get_column_data_dict(self.text_source)
         self.tokenized_rows_dict = self.tokenize_docs(raw_text_dict, self.tokenizer)
@@ -60,10 +64,13 @@ class AbstractClassifier(TileBase):
         code_rows_dict = self.get_column_data_dict(self.code_source)
         combined_code_rows = self.dict_to_list(code_rows_dict)
 
+        self.dm("creating fdist")
         self.fdist = self.create_word_fdist(combined_text_rows, self.get_user_list(self.stop_list))
 
         reduced_vocab = self.get_most_common(self.fdist, self.vocab_size)
         labeled_featuresets_dict = {}
+        
+        self.dm("creating featuresets")
         for (dname, doc) in self.tokenized_rows_dict.items():
             r = 0
             labeled_featuresets_dict[dname] = []
@@ -75,11 +82,15 @@ class AbstractClassifier(TileBase):
                 labeled_featuresets_dict[dname].append((new_fs, code_rows_dict[dname][r]))
                 r += 1
         combined_featuresets = self.dict_to_list(labeled_featuresets_dict)
+        
+        self.dm("training classifier")
         self._classifier = self.classifier_class.train(combined_featuresets)
         accuracy = nltk.classify.accuracy(self._classifier, combined_featuresets)
 
+        self.dm("coding docs")
         self.autocodes_dict = {}
         for (dname, doc) in labeled_featuresets_dict.items():
+            self.dm("coding doc " + dname)
             r = 0
             self.autocodes_dict[dname] = []
             for lfset in doc:
@@ -87,38 +98,15 @@ class AbstractClassifier(TileBase):
                 self.autocodes_dict[dname].append(autocode)
                 r += 1
             self.set_column_data(dname,  self.code_destination, self.autocodes_dict[dname], cellchange=False)
+        self.dm("creating confusion matrix")
+        self.dm("length of coded_rows_dict: " + str(len(code_rows_dict.keys())))
+        self.dm("length of coded_rows_dict: " + str(len(self.autocodes_dict.keys())))
         cm = nltk.ConfusionMatrix(self.dict_to_list(code_rows_dict),
                                   self.dict_to_list(self.autocodes_dict))
 
+        self.dm("displaying result")
         html_output = "accuracy is " + str(round(accuracy, 2))
         html_output += '<pre>'+ cm.pretty_format() + '</pre>'
-        # html_output += "<button value='Color'>Color Text</button>"
-        return html_output
-
-@tile_class
-class NaiveBayes(AbstractClassifier):
-    classifier_class = nltk.NaiveBayesClassifier
-
-    def __init__(self, main_id, tile_id, tile_name=None):
-        AbstractClassifier.__init__(self,main_id, tile_id, tile_name)
-        self.palette_name = "RdYlGn"
-
-    @property
-    def options(self):
-        return  [
-        {"name": "text_source", "type": "column_select"},
-        {"name": "code_source", "type": "column_select"},
-        {"name": "code_destination", "type": "column_select"},
-        {"name": "tokenizer", "type": "tokenizer_select"},
-        {"name": "stop_list", "type": "list_select"},
-        {"name": "vocab_size", "type": "int"},
-        {"name": "palette_name", "type": "palette_select"}
-        ]
-
-    def render_content(self):
-        if self.text_source is None:
-            return "No text source selected."
-        html_output = AbstractClassifier.render_content(self)
         html_output += "<button value='Color'>Color Text</button>"
         return html_output
 
@@ -140,7 +128,3 @@ class NaiveBayes(AbstractClassifier):
             cell_color_dict[w] = cmap.color_from_val(res[w])
 
         self.color_cell_text(doc_name, row_index, self.text_source, txt, cell_color_dict)
-
-@tile_class
-class DecisionTree(AbstractClassifier):
-    classifier_class = nltk.DecisionTreeClassifier

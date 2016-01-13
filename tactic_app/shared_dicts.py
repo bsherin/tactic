@@ -1,6 +1,3 @@
-__author__ = 'bls910'
-
-
 import datetime
 
 mainwindow_instances = {}
@@ -10,9 +7,10 @@ tokenizer_dict = {}
 loaded_user_modules = {}
 weight_functions = {}
 
+
 def distribute_event(event_name, main_id, data_dict=None, tile_id=None):
+    mwindow = mainwindow_instances[main_id]
     try:
-        mwindow = mainwindow_instances[main_id]
         if tile_id is not None:
             tile_instance = mwindow.tile_instances[tile_id]
             tile_instance.post_event(event_name, data_dict)
@@ -26,14 +24,15 @@ def distribute_event(event_name, main_id, data_dict=None, tile_id=None):
         mwindow.handle_exception("Error distributing event " + event_name)
         return False
 
+
 def get_tile_class(username, tile_type):
     if username in user_tiles:
-        for (category, dict) in user_tiles[username].items():
-            if tile_type in dict:
-                return dict[tile_type]
-    for (category, dict) in tile_classes.items():
-        if tile_type in dict:
-            return dict[tile_type]
+        for (category, the_dict) in user_tiles[username].items():
+            if tile_type in the_dict:
+                return the_dict[tile_type]
+    for (category, the_dict) in tile_classes.items():
+        if tile_type in the_dict:
+            return the_dict[tile_type]
     return None
 
 

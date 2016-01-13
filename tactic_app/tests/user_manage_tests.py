@@ -6,7 +6,8 @@ import StringIO
 
 # noinspection PyUnresolvedReferences
 from tactic_app.views import auth_views, user_manage_views
-
+# noinspection PyUnresolvedReferences
+from werkzeug import FileStorage
 
 class UserManageTest(unittest.TestCase):
 
@@ -56,7 +57,8 @@ class UserManageTest(unittest.TestCase):
         str_io.seek(0)
         the_data = {'file': (str_io, "test.txt")}
         rv = self.app.post("/add_list", data=the_data)
-        self.assertEqual(rv._status_code, 204)
+        result = json.loads(rv.data)
+        self.assertTrue(result["success"])
 
         # test delete_list and get rid of the new list
         rv = self.app.post('/delete_list/test.txt')

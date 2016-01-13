@@ -222,12 +222,14 @@ class ListManager(ResourceManager):
     def add_list(self):
         user_obj = current_user
         file = request.files['file']
+        if db[user_obj.list_collection_name].find_one({"list_name": file.filename}) is not None:
+            return jsonify({"success": False, "alert_type": "alert-warning", "message": "A list with that name already exists"})
         the_list = load_a_list(file)
         metadata = create_initial_metadata()
         data_dict = {"list_name": file.filename, "the_list": the_list, "metadata": metadata}
         db[user_obj.list_collection_name].insert_one(data_dict)
         self.update_selector_list(select=file.filename)
-        return make_response("", 204)
+        return jsonify({"success": True})
 
     def delete_list(self,list_name):
         user_obj = current_user
@@ -239,6 +241,8 @@ class ListManager(ResourceManager):
         user_obj = current_user
         list_to_copy = request.json['res_to_copy']
         new_list_name = request.json['new_res_name']
+        if db[user_obj.list_collection_name].find_one({"list_name": new_list_name}) is not None:
+            return jsonify({"success": False, "alert_type": "alert-warning", "message": "A list with that name already exists"})
         old_list_dict = db[user_obj.list_collection_name].find_one({"list_name": list_to_copy})
         metadata = create_initial_metadata()
         new_list_dict = {"list_name": new_list_name, "the_list": old_list_dict["the_list"], "metadata": metadata}
@@ -330,6 +334,8 @@ class CollectionManager(ResourceManager):
         user_obj = current_user
         file_list = request.files.getlist("file")
         full_collection_name = user_obj.build_data_collection_name(collection_name)
+        if full_collection_name in db.collection_names():
+            return jsonify({"success": False, "message": "There is already a collection with that name.", "alert_type": "alert-warning"})
         mdata = create_initial_metadata()
         try:
             db[full_collection_name].insert_one({"name": "__metadata__", "datetime": mdata["datetime"], "tags": "", "notes": ""})
@@ -376,6 +382,8 @@ class CollectionManager(ResourceManager):
         user_obj = current_user
         collection_to_copy = user_obj.full_collection_name(request.json['res_to_copy'])
         new_collection_name = user_obj.full_collection_name(request.json['new_res_name'])
+        if new_collection_name in db.collection_names():
+            return jsonify({"success": False, "message": "There is already a collection with that name.", "alert_type": "alert-warning"})
         for doc in db[collection_to_copy].find():
             db[new_collection_name].insert_one(doc)
         self.update_selector_list(request.json['new_res_name'])
@@ -425,7 +433,7 @@ class ProjectManager(ResourceManager):
         user_obj = current_user
         db[user_obj.project_collection_name].delete_one({"project_name": project_name})
         self.update_selector_list()
-        return
+        return jsonify({"success": True})
 
     def grab_metadata(self, res_name):
         if self.is_repository:
@@ -506,7 +514,7 @@ class TileManager(ResourceManager):
             tile_module = user_obj.get_tile_module(tile_module_name)
             result = create_user_tiles(tile_module)
             if not result == "success":
-                return jsonify({"message": result, "alert_type": "alert-warning"})
+                return jsonify({"success": False, "message": result, "alert_type": "alert-warning"})
             if user_obj.username not in loaded_user_modules:
                 loaded_user_modules[current_user.username] = set([])
             loaded_user_modules[current_user.username].add(tile_module_name)
@@ -533,15 +541,20 @@ class TileManager(ResourceManager):
     def add_tile_module(self):
         user_obj = current_user
         f = request.files['file']
+        if db[user_obj.tile_collection_name].find_one({"tile_module_name": file.filename}) is not None:
+            return jsonify({"success": False, "alert_type": "alert-warning", "message": "A module with that name already exists"})
         the_module = f.read()
         metadata = create_initial_metadata()
         data_dict = {"tile_module_name": f.filename, "tile_module": the_module, "metadata": metadata}
         db[user_obj.tile_collection_name].insert_one(data_dict)
         self.update_selector_list(file.filename)
-        return make_response("", 204)
+        return jsonify({"success": True})
 
     def create_tile_module(self):
+        user_obj = current_user
         new_tile_name = request.json['new_res_name']
+        if db[user_obj.tile_collection_name].find_one({"tile_module_name": new_tile_name}) is not None:
+            return jsonify({"success": False, "alert_type": "alert-warning", "message": "A module with that name already exists"})
         mongo_dict = db["shared_tiles"].find_one({"tile_module_name": "tile_template.py"})
         template = mongo_dict["tile_module"]
 
@@ -549,7 +562,7 @@ class TileManager(ResourceManager):
         data_dict = {"tile_module_name": new_tile_name, "tile_module": template, "metadata": metadata}
         db[current_user.tile_collection_name].insert_one(data_dict)
         self.update_selector_list(new_tile_name)
-        return redirect(url_for('view_module', module_name=new_tile_name))
+        return jsonify({"success": True})
 
     def delete_tile_module(self, tile_module_name):
         user_obj = current_user

@@ -2,21 +2,19 @@
 # This module creates many of the objects that
 # need to be imported by other modules.
 
-from flask import Flask
-import pymongo
+
 import sys
 import os
+import pymongo
 from pymongo import MongoClient
-from flask.ext.login import LoginManager
-from flask.ext.bootstrap import Bootstrap
-from flask.ext.socketio import SocketIO
-from flask_wtf.csrf import CsrfProtect
+from users import User
 
-csrf = CsrfProtect()
+import datetime
 
+rpath = "tactic_app/repository_tiles"
+dpath = "tactic_app/downloads"
 
-def print_message():
-    print "got to the message"
+repository_user = User.get_user_by_username("repository")
 
 try:
     print "getting client"
@@ -39,29 +37,14 @@ try:
         client.server_info()
         db = client.heroku_4ncbq1zd
 
-    "print creating login stuff"
-    login_manager = LoginManager()
-    login_manager.session_protection = 'strong'
-    login_manager.login_view = 'auth.login'
+    tm_list = repository_user.tile_module_names_with_metadata
 
-    "print creating app and confiruting"
-    app = Flask(__name__)
-    app.config.from_object('config')
-
-    if ("TESTING" in os.environ) and (os.environ.get("TESTING") == "True"):
-        app.config["WTF_CSRF_ENABLED"] = False
-
-    if use_ssl == "True":
-        print "enabling sslify"
-        from flask.ext.sslify import SSLify
-        sslify = SSLify(app)
-
-    "print starting login_manager, bootstratp, socketio"
-    login_manager.init_app(app)
-    bootstrap = Bootstrap(app)
-    socketio = SocketIO(app)
-    csrf.init_app(app)
+    for tm in tm_list:
+        module_code = repository_user.get_tile_module(tm[0])
+        with open(dpath + "/" + tm[0] + ".py", 'w') as f:
+            f.write(module_code)
 
 except pymongo.errors.PyMongoError as err:
     print("There's a problem with the PyMongo database. ", err)
     sys.exit()
+

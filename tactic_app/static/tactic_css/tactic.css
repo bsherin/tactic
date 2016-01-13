@@ -1,3 +1,27 @@
+/* plot related */
+.d3plot {
+  font: 10px Arial; }
+
+.d3plot path {
+  stroke: steelblue;
+  stroke-width: 2;
+  fill: none; }
+
+.d3plot path.domain {
+  fill: none;
+  stroke: #a4a4a4;
+  shape-rendering: crispEdges; }
+
+.d3plot line {
+  stroke: black; }
+
+.d3plot .axis path,
+.d3plot .axis line {
+  fill: none;
+  stroke: grey;
+  stroke-width: 2;
+  shape-rendering: crispEdges; }
+
 /* tooltips */
 .tooltip .tooltip-inner {
   background-color: #fde930;

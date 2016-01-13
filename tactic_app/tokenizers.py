@@ -6,7 +6,7 @@ Created on Jan 6, 2014
 import re
 from nltk import stem  # @UnresolvedImport
 stemmer = stem.PorterStemmer()
-from shared_dicts import tokenizer_dict
+from tactic_app.shared_dicts import tokenizer_dict
 
 
 def tokenizer(tfunc):

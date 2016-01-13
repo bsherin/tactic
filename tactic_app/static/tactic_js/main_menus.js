@@ -346,9 +346,9 @@ function tile_command(menu_id) {
             dataType: 'json',
             success: function (data) {
                 if (data.success) {
-                    new_tile_object = new TileObject(data.tile_id, data.html);
+                    new_tile_object = new TileObject(data.tile_id, data.html, true);
                     if (table_is_shrunk) {
-                         $("#tile_id_" + data.tile_id).addClass("tile-panel-float")
+                         $(new_tile_object.full_selector()).addClass("tile-panel-float")
                     }
                     tile_dict[data.tile_id] = new_tile_object;
                     new_tile_object.spin_and_refresh()
