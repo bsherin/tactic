@@ -490,7 +490,7 @@ var tableObject = {
             $(".grid-left").width(usable_width * this.left_fraction);
         }
         $(".grid-right").width(usable_width * (1 - this.left_fraction))
-        $("#status-area").width(usable_width)
+        //$("#status-area").width(usable_width)
         $("#table-area tbody").height(window.innerHeight - $("#console-panel").outerHeight() - 30 - $("#table-area tbody").offset().top)
         //$("#main-panel").outerHeight(window.innerHeight - $("#console-panel").outerHeight() - 50 - $("#main-panel").offset().top)
         $("#tile-area").height(window.innerHeight - $("#console-panel").outerHeight() - 30 - $("#tile-area").offset().top);
