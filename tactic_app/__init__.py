@@ -11,6 +11,7 @@ from flask.ext.login import LoginManager
 from flask.ext.bootstrap import Bootstrap
 from flask.ext.socketio import SocketIO
 from flask_wtf.csrf import CsrfProtect
+import ssl
 
 csrf = CsrfProtect()
 
@@ -23,6 +24,8 @@ try:
     use_ssl = os.environ.get("USE_SSL")
     CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
     STEP_SIZE = int(os.environ.get("STEP_SIZE"))
+
+    # Now the local server branch is what executes on the remote server
     if ("USE_LOCAL_SERVER" in os.environ) and (os.environ.get("USE_LOCAL_SERVER") == "True"):
         client = MongoClient("localhost", serverSelectionTimeoutMS=10)
         # force connection on a request as the
