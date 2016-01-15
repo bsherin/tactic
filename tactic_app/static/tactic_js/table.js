@@ -6,7 +6,6 @@
 MAX_BIGFIELD_FRACTION = 1;
 ADDED_HEADER_WIDTH = 0;
 MARGIN_SIZE = 5;
-INITIAL_LEFT_FRACTION = .69
 
 
 var td_template;
@@ -128,7 +127,12 @@ var tableObject = {
 
     initialize_table: function (data_object){
         this.highlighted_cells = []
-        this.left_fraction = INITIAL_LEFT_FRACTION;
+        if (data_object.hasOwnProperty("left_fraction")) {
+            this.left_fraction = data_object.left_fraction
+        }
+        else {
+            this.left_fraction = INITIAL_LEFT_FRACTION;
+        }
         this.left_fraction_save = this.left_fraction;
         this.collection_name = _collection_name;
         this.project_name = _project_name;
@@ -355,6 +359,7 @@ var tableObject = {
                 }
                 if (this.id == "main-panel") {
                     self.left_fraction = ui.size.width / (window.innerWidth - 2 * MARGIN_SIZE - 20);
+                    broadcast_event_to_server("UpdateLeftFraction", {left_fraction: self.left_fraction})
                     self.resize_table_area();
                 }
             }
@@ -485,7 +490,7 @@ var tableObject = {
             $(".grid-left").width(usable_width * this.left_fraction);
         }
         $(".grid-right").width(usable_width * (1 - this.left_fraction))
-        $("#status-area").width(usable_width)
+        //$("#status-area").width(usable_width)
         $("#table-area tbody").height(window.innerHeight - $("#console-panel").outerHeight() - 30 - $("#table-area tbody").offset().top)
         //$("#main-panel").outerHeight(window.innerHeight - $("#console-panel").outerHeight() - 50 - $("#main-panel").offset().top)
         $("#tile-area").height(window.innerHeight - $("#console-panel").outerHeight() - 30 - $("#tile-area").offset().top);
@@ -529,6 +534,7 @@ var tableObject = {
         var usable_width = window.innerWidth - 2 * MARGIN_SIZE - 10;
         this.left_fraction = ($("#table-icon").outerWidth() + MARGIN_SIZE) / usable_width;
         table_is_shrunk = true;
+        broadcast_event_to_server("UpdateTableShrinkState", {"is_shrunk": true})
         this.resize_table_area();
         $(".tile-panel").addClass("tile-panel-float")
     },
@@ -539,6 +545,7 @@ var tableObject = {
         $("#main-panel").css("display", "block");
         this.resize_table_area();
         table_is_shrunk = false;
+        broadcast_event_to_server("UpdateTableShrinkState", {"is_shrunk": false})
         $(".tile-panel").removeClass("tile-panel-float")
     },
 

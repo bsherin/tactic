@@ -2,15 +2,9 @@ from tile_env import *
 
 class AbstractClassifier(TileBase):
     category = "classifiers"
-    save_attrs = TileBase.save_attrs + ["text_source", "code_source", "code_dest", "tokenizer", "stop_list"]
     classifier_class = None
     def __init__(self, main_id, tile_id, tile_name=None):
         TileBase.__init__(self, main_id, tile_id, tile_name)
-        self.text_source = ""
-        self.code_source = ""
-        self.code_destination = ""
-        self.stop_list = ""
-        self.tokenizer = ""
         self._vocab = None
         self._classifer = None
         self.tile_type = self.__class__.__name__
@@ -21,12 +15,12 @@ class AbstractClassifier(TileBase):
     @property
     def options(self):
         return  [
-        {"name": "text_source", "type": "column_select", "placeholder": self.text_source},
-        {"name": "code_source", "type": "column_select", "placeholder": self.code_source},
-        {"name": "code_destination", "type": "column_select", "placeholder": self.code_destination},
-        {"name": "tokenizer", "type": "tokenizer_select", "placeholder": self.tokenizer},
-        {"name": "stop_list", "type": "list_select", "placeholder": self.stop_list},
-        {"name": "vocab_size", "type": "int", "placeholder": 50}
+        {"name": "text_source", "type": "column_select"},
+        {"name": "code_source", "type": "column_select"},
+        {"name": "code_destination", "type": "column_select"},
+        {"name": "tokenizer", "type": "tokenizer_select"},
+        {"name": "stop_list", "type": "list_select"},
+        {"name": "vocab_size", "type": "int"}
         ]
 
     def tokenize_rows(self, the_rows, the_tokenizer):
@@ -58,7 +52,7 @@ class AbstractClassifier(TileBase):
         return result
 
     def render_content(self):
-        if self.text_source is "":
+        if self.text_source is None:
             return "No text source selected."
         raw_text_dict = self.get_column_data_dict(self.text_source)
         self.tokenized_rows_dict = self.tokenize_docs(raw_text_dict, self.tokenizer)
@@ -112,17 +106,17 @@ class NaiveBayes(AbstractClassifier):
     @property
     def options(self):
         return  [
-        {"name": "text_source", "type": "column_select", "placeholder": self.text_source},
-        {"name": "code_source", "type": "column_select", "placeholder": self.code_source},
-        {"name": "code_destination", "type": "column_select", "placeholder": self.code_destination},
-        {"name": "tokenizer", "type": "tokenizer_select", "placeholder": self.tokenizer},
-        {"name": "stop_list", "type": "list_select", "placeholder": self.stop_list},
-        {"name": "vocab_size", "type": "int", "placeholder": 50},
-        {"name": "palette_name", "type": "palette_select", "placeholder": self.palette_name}
+        {"name": "text_source", "type": "column_select"},
+        {"name": "code_source", "type": "column_select"},
+        {"name": "code_destination", "type": "column_select"},
+        {"name": "tokenizer", "type": "tokenizer_select"},
+        {"name": "stop_list", "type": "list_select"},
+        {"name": "vocab_size", "type": "int"},
+        {"name": "palette_name", "type": "palette_select"}
         ]
 
     def render_content(self):
-        if self.text_source is "":
+        if self.text_source is None:
             return "No text source selected."
         html_output = AbstractClassifier.render_content(self)
         html_output += "<button value='Color'>Color Text</button>"

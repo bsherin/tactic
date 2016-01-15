@@ -134,7 +134,7 @@ function build_and_render_menu_objects() {
     column_menu.add_options_to_index();
 
     // Create the project_menu object
-    project_menu = new MenuObject("Project", project_command,["save-as", "save", "export-data"])
+    project_menu = new MenuObject("Project", project_command,["save-as", "save", "export-table-as-collection", "download-visible-document", "download-collection"])
     menus[project_menu.menu_name] = project_menu;
     project_menu.add_options_to_index();
     project_menu.shortcuts = {
@@ -168,14 +168,21 @@ function build_and_render_menu_objects() {
         $(".menu-item").click(function(e) {
             var item_id = e.currentTarget.id;
             var menu_name = menu_item_index[item_id]
-            menus[menu_name].perform_menu_item(item_id)
+            if (!is_disabled(item_id)) {
+                menus[menu_name].perform_menu_item(item_id)
+            }
             e.preventDefault()
         });
         disable_require_column_select()
         project_menu.disable_items(["save"])
 
+        function is_disabled (menu_id) {
+            return $("#" + menu_id).parent().hasClass("disabled")
+        };
     }
 }
+
+
 
 function column_command(menu_id) {
     var column_header = tableObject.selected_header;
@@ -284,11 +291,31 @@ function project_command(menu_id) {
             save_project();
             break;
         }
-        case "export-data":
+        case "export-table-as-collection":
         {
             exportDataTable()
         }
+        case "download-visible-document":
+        {
+            downloadVisibleDocument()
+        }
+        case "download-collection":
+        {
+            downloadCollection()
+        }
     }
+}
+
+function downloadVisibleDocument() {
+    showModal("Download Data Table", "New File Name", function (new_name) {
+        window.open($SCRIPT_ROOT + "/download_table/" + main_id + "/" + new_name)
+    })
+}
+
+function downloadCollection() {
+    showModal("Download Collection as Excel Notebook", "New File Name", function (new_name) {
+        window.open($SCRIPT_ROOT + "/download_collection/" + main_id + "/" + new_name)
+    })
 }
 
 function exportDataTable() {
@@ -326,9 +353,9 @@ function tile_command(menu_id) {
             dataType: 'json',
             success: function (data) {
                 if (data.success) {
-                    new_tile_object = new TileObject(data.tile_id, data.html);
+                    new_tile_object = new TileObject(data.tile_id, data.html, true);
                     if (table_is_shrunk) {
-                         $("#tile_id_" + data.tile_id).addClass("tile-panel-float")
+                         $(new_tile_object.full_selector()).addClass("tile-panel-float")
                     }
                     tile_dict[data.tile_id] = new_tile_object;
                     new_tile_object.spin_and_refresh()

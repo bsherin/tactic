@@ -11,8 +11,8 @@ from flask import url_for
 from matplotlib_utilities import GraphList, ColorMapper, FigureCanvas, ArrayHeatmap, ImageShow
 
 from tile_base import TileBase
-from shared_dicts import mainwindow_instances, distribute_event
-from shared_dicts import tile_classes, user_tiles, tokenizer_dict, weight_functions
+from tactic_app.shared_dicts import mainwindow_instances, distribute_event
+from tactic_app.shared_dicts import tile_classes, user_tiles, tokenizer_dict, weight_functions
 from users import load_user
 from tactic_app.clusterer_classes import CentroidClusterer, OptCentroidClusterer
 from tactic_app.sentiment_tools import vader_sentiment_analyzer, sentiwordnet

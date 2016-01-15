@@ -13,12 +13,11 @@ from tactic_app import app
 print "imported app"
 from tactic_app import users
 from tactic_app.views import auth_views, main_views, user_manage_views
-from tactic_app import basic_tiles, classifier_tiles, clustering_tiles, tokenizers
+# from tactic_app import basic_tiles, classifier_tiles, clustering_tiles, tokenizers
 from tactic_app import socketio
 
-# app.run(debug=True)
+from tactic_app.default_tile_env import get_all_default_tiles
+get_all_default_tiles()
 
-# print "about to execute socketio.run"
-# socketio.run(app)
-# socketio.run(app, host='0.0.0.0') # Get iP address for this machine and add :5000
+
 

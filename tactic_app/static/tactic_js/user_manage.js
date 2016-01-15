@@ -5,31 +5,27 @@
 var resource_module_template;
 var repository_module_template;
 var mousetrap = new Mousetrap();
-var repository_visible = false
+var repository_visible = false;
 
 mousetrap.bind("esc", function() {
     clearStatusArea();
-})
+});
 
-
-var res_types = ["list", "collection", "project", "tile"]
-
-
+var res_types = ["list", "collection", "project", "tile"];
 
 function start_post_load() {
     if (use_ssl) {
-        socket = io.connect('https://'+document.domain + ':' + location.port  + '/user_manage');
+        socket = io.connect('https://'+ document.domain + ':' + location.port  + '/user_manage');
     }
     else {
         socket = io.connect('http://'+document.domain + ':' + location.port  + '/user_manage');
     }
     window.onresize = resize_window;
 
-
     socket.emit('join', {"user_id":  user_id});
 
     socket.on('update-selector-list', function(data) {
-        res_type = data.res_type
+        var res_type = data.res_type;
         $("#" + res_type + "-selector").html(data.html);
         if (data.hasOwnProperty("select")) {
             select_resource_button(res_type, data.select)
@@ -41,11 +37,11 @@ function start_post_load() {
 
     socket.on('start-spinner', function () {
         stopSpinner()
-    })
+    });
 
     socket.on('start-spinner', function () {
         startSpinner()
-    })
+    });
 
     socket.on('update-loaded-tile-list', function(data) {
         $("#loaded-tile-list").html(data.html)
@@ -53,7 +49,7 @@ function start_post_load() {
     socket.on('close-user-windows', function(data){
         window.close()
     });
-    console.log("about to create")
+    console.log("about to create");
     $.get($SCRIPT_ROOT + "/get_resource_module_template", function(template) {
         resource_module_template = $(template).filter('#resource-module-template').html();
         repository_module_template = $(template).filter('#repository-module-template').html();
@@ -64,7 +60,7 @@ function start_post_load() {
 
         res_types.forEach(function (element, index, array) {
             $("#" + element + "-selector").load($SCRIPT_ROOT + "/request_update_selector_list/" + element, function () {
-                select_resource_button(element, null)
+                select_resource_button(element, null);
                 sorttable.makeSortable($("#" + element + "-selector table")[0])
             })
         });
@@ -73,24 +69,24 @@ function start_post_load() {
 
         res_types.forEach(function (element, index, array) {
             $("#repository-" + element + "-selector").load($SCRIPT_ROOT + "/request_update_repository_selector_list/" + element, function () {
-                select_repository_button(element, null)
+                select_repository_button(element, null);
                 sorttable.makeSortable($("#repository-" + element + "-selector table")[0])
             })
-        })
+        });
 
         listManager.add_listeners();
         collectionManager.add_listeners();
         projectManager.add_listeners();
         tileManager.add_listeners();
-        $(".resource-module").on("click", ".resource-selector .selector-button", selector_click)
-        $(".resource-module").on("click", ".repository-selector .selector-button", repository_selector_click)
-        $(".resource-module").on("click", ".search-resource-button", search_resource)
-        $(".resource-module").on("click", ".search-tags-button", search_resource_tags)
-        $(".resource-module").on("click", ".resource-unfilter-button", unfilter_resource)
-        $(".resource-module").on("click", ".save-metadata-button", save_metadata)
-        $(".resource-module").on("click", ".search-repository-resource-button", search_repository_resource)
-        $(".resource-module").on("click", ".search-repository-tags-button", search_repository_resource_tags)
-        $(".resource-module").on("click", ".repository-resource-unfilter-button", unfilter_repository_resource)
+        $(".resource-module").on("click", ".resource-selector .selector-button", selector_click);
+        $(".resource-module").on("click", ".repository-selector .selector-button", repository_selector_click);
+        $(".resource-module").on("click", ".search-resource-button", search_resource);
+        $(".resource-module").on("click", ".search-tags-button", search_resource_tags);
+        $(".resource-module").on("click", ".resource-unfilter-button", unfilter_resource);
+        $(".resource-module").on("click", ".save-metadata-button", save_metadata);
+        $(".resource-module").on("click", ".search-repository-resource-button", search_repository_resource);
+        $(".resource-module").on("click", ".search-repository-tags-button", search_repository_resource_tags);
+        $(".resource-module").on("click", ".repository-resource-unfilter-button", unfilter_repository_resource);
         resize_window();
         $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
             resize_window()
@@ -101,19 +97,19 @@ function start_post_load() {
 
 function toggleRepository() {
     if (repository_visible) {
-        $(".repository-outer").fadeOut(complete=function (){
-            $(".resource-outer").fadeIn(complete=function() {
-                repository_visible = false
-                $(".page-header h1").text(saved_title)
+        $(".repository-outer").fadeOut(function (){
+            $(".resource-outer").fadeIn(function() {
+                repository_visible = false;
+                $(".page-header h1").text(saved_title);
                 resize_window()
             })
         })
     }
     else {
-        $(".resource-outer").fadeOut(complete=function(){
-            $(".repository-outer").fadeIn(complete = function () {
-                repository_visible = true
-                $(".page-header h1").text("repository")
+        $(".resource-outer").fadeOut(function(){
+            $(".repository-outer").fadeIn(function () {
+                repository_visible = true;
+                $(".page-header h1").text("repository");
                 resize_window()
             })
         })
@@ -131,9 +127,9 @@ function stopSpinner() {
 
 function resize_window() {
     res_types.forEach(function (val, ind, array) {
-        var h = window.innerHeight - 50 - $("#" + val + "-selector-row").offset().top
+        var h = window.innerHeight - 50 - $("#" + val + "-selector-row").offset().top;
         $("#" + val + "-selector-row").outerHeight(h);
-        var h = window.innerHeight - 50 - $("#repository-" + val + "-selector-row").offset().top
+        var h = window.innerHeight - 50 - $("#repository-" + val + "-selector-row").offset().top;
         $("#repository-" + val + "-selector-row").outerHeight(h);
     })
 }
@@ -149,12 +145,12 @@ var list_manager_specifics = {
         {"name": "view", "func": "view_func", "button_class": "btn-primary"},
         {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-success"},
         {"name": "delete", "func": "delete_func", "button_class": "btn-danger"}
-    ],
-
+    ]
 };
 
 var listManager = new ResourceManager("list", list_manager_specifics);
 
+//noinspection JSUnusedGlobalSymbols
 var col_manager_specifics = {
     show_add: true,
     show_multiple: true,
@@ -164,20 +160,20 @@ var col_manager_specifics = {
     buttons: [
         {"name": "load", "func": "load_func", "button_class": "btn btn-primary"},
         {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-success"},
-        {"name": "delete", "func": "delete_func", "button_class": "btn-danger"},
+        {"name": "delete", "func": "delete_func", "button_class": "btn-danger"}
     ],
     add_func: function (event) {
         var manager = event.data.manager;
-        the_data = new FormData(this);
+        var the_data = new FormData(this);
         showModal("Create Collection", "Name for this collection", function (new_name) {
-            startSpinner()
+            startSpinner();
             $.ajax({
                 url: $SCRIPT_ROOT + "/load_files/" + new_name,
                 type: 'POST',
                 data: the_data,
                 processData: false,
                 contentType: false,
-                success: doFlash
+                success: addSuccess
             });
             function addSuccess(data) {
                 stopSpinner();
@@ -197,8 +193,7 @@ var project_manager_specifics = {
     buttons: [
         {"name": "load", "func": "load_func", "button_class": "btn-primary"},
         {"name": "delete", "func": "delete_func", "button_class": "btn-danger"}
-    ],
-
+    ]
 };
 
 var projectManager = new ResourceManager("project", project_manager_specifics);
@@ -219,16 +214,16 @@ var tile_manager_specifics = {
         {"name": "delete", "func": "delete_func", "button_class": "btn-danger"}
     ],
     load_func: function (event) {
-        var manager = event.data.manager
+        var manager = event.data.manager;
         var res_name = manager.check_for_selection("tile");
         if (res_name == "") return;
-        $.getJSON($SCRIPT_ROOT + '/load_tile_module/' + String(res_name), success=doFlash)
+        $.getJSON($SCRIPT_ROOT + '/load_tile_module/' + String(res_name), doFlash)
     },
     unload_func: function (event) {
-        var manager = event.data.manager
+        var manager = event.data.manager;
         var res_name = manager.check_for_selection("tile");
         if (res_name == "") return;
-        $.getJSON($SCRIPT_ROOT + '/unload_all_tiles', success=doFlash)
+        $.getJSON($SCRIPT_ROOT + '/unload_all_tiles', doFlash)
     }
 };
 

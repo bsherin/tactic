@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+        <meta charset="UTF-8">
+		<title>Simple Line Graph using SVG and d3.js</title>
+
+	</head>
+	<body>
+        <script src="js/d3.js"></script>
+        <style>
+            body { font: 12px Arial;}
+
+            path {
+                stroke: steelblue;
+                stroke-width: 2;
+                fill: none;
+            }
+
+            .axis path,
+            .axis line {
+                fill: none;
+                stroke: grey;
+                stroke-width: 2;
+                shape-rendering: crispEdges;
+            }
+
+        </style>
+        <script>
+            var data = [3, 6, 2, 7, 5, 2, 1, 3, 8, 9, 2, 5, 7],
+            w = 400,
+            h = 200,
+            margin = 20
+
+            var x = d3.scale.linear().range([0, w]);
+            var y = d3.scale.linear().range([h, 0]);
+
+            var xAxis = d3.svg.axis().scale(x)
+                .orient("bottom").ticks(12);
+
+            var yAxis = d3.svg.axis().scale(y)
+                .orient("left").ticks(5);
+
+            var vis = d3.select("body")
+                .append("svg")
+                    .attr("width", w + 40)
+                    .attr("height", h + 40)
+                .append("g")
+                    .attr("transform", "translate(20, 20)");
+
+            var line = d3.svg.line()
+            .x(function(d,i) { return x(i); })
+            .y(function(d) { return y(d); });
+
+            x.domain(d3.extent(data, function(d, i) { return i; }));
+
+            y.domain([0, d3.max(data, function(d) { return d; })]);
+
+            vis.append("path").attr("d", line(data));
+
+            vis.append("g")         // Add the X Axis
+                .attr("class", "x axis")
+                .attr("transform", "translate(0, 200)")
+                .call(xAxis);
+
+            vis.append("g")         // Add the Y Axis
+                .attr("class", "y axis")
+                .call(yAxis);
+
+
+        </script>
+
+	</body>
+</html>

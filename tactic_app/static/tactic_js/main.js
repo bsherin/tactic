@@ -85,6 +85,9 @@ function continue_loading() {
         })});
     socket.on('change-doc', function(data){
         $("#doc-selector").val(data.doc_name);
+        if (table_is_shrunk) {
+            tableObject.expandTable()
+        }
         if (data.hasOwnProperty("row_id")) {
             change_doc($("#doc-selector")[0], data.row_id)
         }
@@ -114,10 +117,43 @@ function continue_loading() {
                 // in tile forms.
                 set_visible_doc(doc_names[0], function () {
                     var tile_ids = data.tile_ids;
-                    for (var i = 0; i < tile_ids.length; ++i) {
-                        create_tile_from_save(tile_ids[i])
-                    }
+                    create_tile_from_save(0);
                     menus["Project"].enable_menu_item("save");
+
+                    function create_tile_from_save(index) {
+                        if (index == tile_ids.length) {
+                            if (data.is_shrunk) {
+                                tableObject.shrinkTable()
+                            }
+                            else {
+                                table_is_shrunk = false
+                            }
+                            return
+                        }
+                        var tile_id = tile_ids[index];
+                        var data_dict = {};
+                        data_dict["tile_id"] = tile_id;
+                        data_dict["main_id"] = main_id;
+                        $.ajax({
+                            url: $SCRIPT_ROOT + "/create_tile_from_save_request/" + String(tile_id),
+                            contentType : 'application/json',
+                            type : 'POST',
+                            data: JSON.stringify(data_dict),
+                            dataType: 'json',
+                            error: function (jqXHR, textStatus, errorThrown) {
+                              console.log("Error creating tile from save: " + textStatus + " " + errorThrown)
+                            },
+                            success: function (data) {
+                                var new_tile_object = new TileObject(data.tile_id, data.html, false);
+                                tile_dict[data.tile_id] = new_tile_object;
+                                new_tile_object.refreshFromSave();
+                                if (data.is_shrunk) {
+                                    new_tile_object.shrinkMe()
+                                }
+                                create_tile_from_save(index + 1)
+                            }
+                        })
+                    }
                 })
             })
     }
@@ -137,7 +173,11 @@ function continue_loading() {
         handle: '.panel-heading',
         tolerance: 'pointer',
         revert: 'invalid',
-        forceHelperSize: true
+        forceHelperSize: true,
+        stop: function( event, ui ) {
+            new_sort_list = $("#tile-div").sortable("toArray");
+            broadcast_event_to_server("UpdateSortList", {"sort_list": new_sort_list})
+        }
     });
 
     initializeTooltips();
@@ -218,16 +258,27 @@ function change_doc(el, row_id) {
 
 }
 
-function broadcast_event_to_server(event_name, data_dict) {
+function broadcast_event_to_server(event_name, data_dict, callback) {
     data_dict.main_id = main_id;
     data_dict.doc_name = tableObject.current_spec.doc_name;
     data_dict.active_row_index = tableObject.active_row;
-    $.ajax({
-        url: $SCRIPT_ROOT + "/distribute_events/" + event_name,
-        contentType : 'application/json',
-        type : 'POST',
-        data: JSON.stringify(data_dict)
-    });
+    if (arguments.length == 2) {
+        $.ajax({
+            url: $SCRIPT_ROOT + "/distribute_events/" + event_name,
+            contentType: 'application/json',
+            type: 'POST',
+            data: JSON.stringify(data_dict)
+        });
+    }
+    else {
+        $.ajax({
+            url: $SCRIPT_ROOT + "/distribute_events/" + event_name,
+            contentType: 'application/json',
+            type: 'POST',
+            data: JSON.stringify(data_dict),
+            success: callback
+        });
+    }
 }
 
 spinner_html = '<span class="loader-small"></span>';

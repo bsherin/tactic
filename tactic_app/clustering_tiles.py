@@ -1,29 +1,22 @@
 from tile_env import *
 
+
 @tile_class
 class CentroidCluster(TileBase):
     category = "clustering"
-    save_attrs = TileBase.save_attrs + ["text_source", "number_of_clusters", "code_destination",
-                                        "tokenizer", "stop_list", "names_source",
-                                        "weight_function", "vocab_size", "orthogonalize", "palette_name"]
     exports = ["cluster_data"]
     classifier_class = None
+
     def __init__(self, main_id, tile_id, tile_name=None):
         TileBase.__init__(self, main_id, tile_id, tile_name)
-        self.text_source = ""
-        self.code_destination = ""
-        self.stop_list = ""
-        self.tokenizer = ""
         self._vocab = None
         self._classifer = None
         self.tile_type = self.__class__.__name__
         self.tokenized_rows_dict = {}
-        self.names_source = ""
         self.number_of_clusters = 5
         self.autocodes_dict = {}
         self.centroids = []
         self.vocab_size = 50
-        self.weight_function = ""
         self.orthogonalize = True
         self.palette_name = "Paired"
         self.clusterer = None
@@ -31,25 +24,24 @@ class CentroidCluster(TileBase):
 
     @property
     def options(self):
-        return  [
-        {"name": "text_source", "type": "column_select", "placeholder": self.text_source},
-        {"name": "number_of_clusters", "type": "int", "placeholder": str(self.number_of_clusters)},
-        {"name": "names_source", "type": "column_select", "placeholder": self.names_source},
-        {"name": "code_destination", "type": "column_select", "placeholder": self.code_destination},
-        {"name": "tokenizer", "type": "tokenizer_select", "placeholder": self.tokenizer},
-        {"name": "weight_function", "type": "weight_function_select", "placeholder": self.weight_function},
-        {"name": "stop_list", "type": "list_select", "placeholder": self.stop_list},
-        {"name": "vocab_size", "type": "int", "placeholder": str(self.vocab_size)},
-        {"name": "orthogonalize", "type": "boolean", "placeholder": self.orthogonalize},
-        {"name": "palette_name", "type": "palette_select", "placeholder": self.palette_name},
-        ]
+        return [{"name": "text_source", "type": "column_select"},
+                {"name": "number_of_clusters", "type": "int"},
+                {"name": "names_source", "type": "column_select"},
+                {"name": "code_destination", "type": "column_select"},
+                {"name": "tokenizer", "type": "tokenizer_select"},
+                {"name": "weight_function", "type": "weight_function_select"},
+                {"name": "stop_list", "type": "list_select"},
+                {"name": "vocab_size", "type": "int"},
+                {"name": "orthogonalize", "type": "boolean"},
+                {"name": "palette_name", "type": "palette_select"}
+                ]
 
     def norm_vec(self, vec):
         mag = numpy.dot(vec, vec)
         if mag == 0:
             return vec
         else:
-            return(vec / numpy.sqrt(mag))
+            return vec / numpy.sqrt(mag)
 
     def orthogonalize_vectors(self, doc_vectors):
         total_v = numpy.zeros(len(doc_vectors[0]))
@@ -116,7 +108,7 @@ class CentroidCluster(TileBase):
         return fdist
 
     def render_content(self):
-        if self.text_source is "":
+        if self.text_source is None:
             return "No text source selected."
         raw_text_dict = self.get_column_data_dict(self.text_source)
         self.tokenized_rows_dict = self.tokenize_docs(raw_text_dict, self.tokenizer)
@@ -174,36 +166,29 @@ class CentroidCluster(TileBase):
 @tile_class
 class OrthogonalizingGAACCluster(TileBase):
     category = "clustering"
-    save_attrs = TileBase.save_attrs + ["text_source", "number_of_clusters", "code_destination", "tokenizer", "stop_list"]
     classifier_class = None
     def __init__(self, main_id, tile_id, tile_name=None):
         TileBase.__init__(self, main_id, tile_id, tile_name)
-        self.text_source = ""
-        self.code_destination = ""
-        self.stop_list = ""
-        self.tokenizer = ""
         self._vocab = None
         self._classifer = None
         self.tile_type = self.__class__.__name__
         self.tokenized_rows_dict = {}
-        self.names_source = ""
         self.number_of_clusters = 5
         self.autocodes_dict = {}
         self.centroids = []
         self.vocab_size = 50
-        self.weight_function = ""
 
     @property
     def options(self):
         return  [
-        {"name": "text_source", "type": "column_select", "placeholder": self.text_source},
-        {"name": "number_of_clusters", "type": "int", "placeholder": str(self.number_of_clusters)},
-        {"name": "names_source", "type": "column_select", "placeholder": self.names_source},
-        {"name": "code_destination", "type": "column_select", "placeholder": self.code_destination},
-        {"name": "tokenizer", "type": "tokenizer_select", "placeholder": self.tokenizer},
-        {"name": "weight_function", "type": "weight_function_select", "placeholder": self.weight_function},
-        {"name": "stop_list", "type": "list_select", "placeholder": self.stop_list},
-        {"name": "vocab_size", "type": "int", "placeholder": str(self.vocab_size)},
+        {"name": "text_source", "type": "column_select"},
+        {"name": "number_of_clusters", "type": "int"},
+        {"name": "names_source", "type": "column_select"},
+        {"name": "code_destination", "type": "column_select"},
+        {"name": "tokenizer", "type": "tokenizer_select"},
+        {"name": "weight_function", "type": "weight_function_select"},
+        {"name": "stop_list", "type": "list_select"},
+        {"name": "vocab_size", "type": "int"},
         ]
 
     def norm_vec(self, vec):
@@ -278,7 +263,7 @@ class OrthogonalizingGAACCluster(TileBase):
         return fdist
 
     def render_content(self):
-        if self.text_source is "":
+        if self.text_source is None:
             return "No text source selected."
         raw_text_dict = self.get_column_data_dict(self.text_source)
         self.tokenized_rows_dict = self.tokenize_docs(raw_text_dict, self.tokenizer)
@@ -329,17 +314,13 @@ class OrthogonalizingGAACCluster(TileBase):
 
 @tile_class
 class ClusterViewer(TileBase):
-    # save_attrs has the variables that will be saved when a project is saved
-    save_attrs = TileBase.save_attrs + ["number_of_clusters", "cluster_data", "code_into_column", "code_destination", "palette_name"]
     category = "clustering"
 
     def __init__(self, main_id, tile_id, tile_name=None):
         TileBase.__init__(self, main_id, tile_id, tile_name)
-        self.cluster_data = None
         self.clusterer = None
         self.number_of_clusters = 5
         self.code_into_column = True
-        self.code_destination = None
         self.palette_name = "Paired"
         # Any other initializations
         return
@@ -347,11 +328,11 @@ class ClusterViewer(TileBase):
     @property
     def options(self):
         return  [
-        {"name": "cluster_data", "type": "pipe_select","placeholder": self.cluster_data},
-        {"name": "number_of_clusters", "type": "int","placeholder": self.number_of_clusters},
-        {"name": "code_into_column", "type": "boolean","placeholder": self.code_into_column},
-        {"name": "code_destination", "type": "column_select","placeholder": self.code_destination},
-        {"name": "palette_name", "type": "palette_select", "placeholder": self.palette_name}
+        {"name": "cluster_data", "type": "pipe_select"},
+        {"name": "number_of_clusters", "type": "int"},
+        {"name": "code_into_column", "type": "boolean"},
+        {"name": "code_destination", "type": "column_select"},
+        {"name": "palette_name", "type": "palette_select"}
     ]
 
     def top_words_from_centroid(self, vocab_list, n, to_print=10):

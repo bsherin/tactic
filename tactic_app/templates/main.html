@@ -18,8 +18,14 @@
     <div id="loading-message">
         <span class="loader"><span class="loader-inner"></span></span>
     </div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-xs-12">
+                <div id="status-area"></div>
+            </div>
+        </div>
+    </div>
     <div id="outer-container" align="center" style="display: none">
-        <div id="status-area"></div>
         <div class="grid-left" align="left">
             <div id="main-panel" class="panel panel-default">
                 <div class="panel-heading" id="data-title" style="padding-top: 5px; padding-bottom: 5px">
@@ -71,9 +77,9 @@
         </div>
         <div id="console-panel" class="panel panel-default" style="display:block">
                 <div id="console-heading" class="panel-heading">
-                    <button type='button' id="show-console-button" data-toggle="tooltip" class='notclose triangle-right tooltip-top' onclick=expandConsole()><span style="font-size:12px" class="glyphicon glyphicon-triangle-right"></span></button>
-                    <button type='button' id="hide-console-button" data-toggle="tooltip" class='notclose triangle-bottom tooltip-top' onclick=shrinkConsole()><span style="font-size:12px" class="glyphicon glyphicon-triangle-bottom"></span></button>
-                    <button type='button' id="clear-console-button" data-toggle="tooltip" class='notclose tooltip-top' style="float:right" onclick=tableObject.clearConsole()><span style="font-size:12px" class="glyphicon glyphicon-trash"></span></button>
+                    <button type='button' id="show-console-button" data-toggle="tooltip" class='notclose triangle-right tooltip-top' onclick=expandConsole();><span style="font-size:12px" class="glyphicon glyphicon-triangle-right"></span></button>
+                    <button type='button' id="hide-console-button" data-toggle="tooltip" class='notclose triangle-bottom tooltip-top' onclick=shrinkConsole();><span style="font-size:12px" class="glyphicon glyphicon-triangle-bottom"></span></button>
+                    <button type='button' id="clear-console-button" data-toggle="tooltip" class='notclose tooltip-top' style="float:right" onclick=tableObject.clearConsole();><span style="font-size:12px" class="glyphicon glyphicon-trash"></span></button>
                     Console
                 </div>
               <div id="console" class="panel-body"></div>
@@ -85,10 +91,12 @@
     <script src="{{url_for('static', filename='js/jquery.flip.js')}}"></script>
     <script src="{{url_for('static', filename='js/jquery.isonscreen.js')}}"></script>
     <script src="{{url_for('static', filename='js/socket.io.js')}}"></script>
+    <script src="{{url_for('static', filename='js/d3.js')}}"></script>
     <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
-{#    <script src="{{url_for('static', filename='js/tooltip.js')}}"></script>#}
+    <script src="{{url_for('static', filename='js/sorttable.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/utilities.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/main_menus.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/d3figures.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/tiles.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/main.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/table.js')}}"></script>
@@ -102,7 +110,7 @@
     window.onload = start_post_load;
     window.onresize = function () {
         tableObject.resize_table_area()
-    }
+    };
     window.onbeforeunload = function(e) {
         return "Any unsaved changes will be lost."
     }

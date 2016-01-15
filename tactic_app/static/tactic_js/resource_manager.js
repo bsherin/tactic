@@ -17,11 +17,11 @@ String.prototype.format = function() {
     str = str.replace(reg, arguments[i]);
   }
   return str;
-}
+};
 
 function objectKeys(obj) {
-    result = []
-    for (key in obj){
+    var result = [];
+    for (var key in obj){
         if (!obj.hasOwnProperty(key)) continue;
         result.push(key)
     }
@@ -30,7 +30,7 @@ function objectKeys(obj) {
 
 function ResourceManager(res_type, specifics) {
     this.res_type = res_type;
-    updateObject(this, specifics)
+    updateObject(this, specifics);
     this.add_listeners()
 }
 
@@ -43,7 +43,7 @@ ResourceManager.prototype = {
         var self = this;
         $.each(this.buttons, function (index, value) {
             $("#{0}-{1}-button".format(value.name, self.res_type)).click({"manager": self}, self[value.func])
-        })
+        });
         if (this.show_add) {
             $("#add-{0}-form".format(self.res_type)).submit({"manager": self}, self.add_func)
         }
@@ -57,7 +57,12 @@ ResourceManager.prototype = {
             type: 'POST',
             data: new FormData(this),
             processData: false,
-            contentType: false
+            contentType: false,
+            success: function(data) {
+                if (!data.success) {
+                    doFlash(data)
+                }
+            }
         });
         event.preventDefault();
     },
@@ -92,7 +97,12 @@ ResourceManager.prototype = {
                 type: 'POST',
                 async: true,
                 data: JSON.stringify(result_dict),
-                dataType: 'json'
+                dataType: 'json',
+                success: function(data) {
+                    if (!data.success) {
+                        doFlash(data)
+                    }
+                }
             });
         })
     },
@@ -110,7 +120,15 @@ ResourceManager.prototype = {
                 type: 'POST',
                 async: true,
                 data: JSON.stringify(result_dict),
-                dataType: 'json'
+                dataType: 'json',
+                success: function(data) {
+                    if (data.success){
+                        window.open($SCRIPT_ROOT + manager.view_view + String(new_name))
+                    }
+                    else {
+                        doFlash(data)
+                    }
+                }
             });
         })
     },
@@ -368,7 +386,7 @@ function save_metadata(event) {
     var res_name = $('.resource-selector .' + res_type + '-selector-button.active').children()[0].innerHTML;
     var tags = $("#" + res_type + "-tags").val();
     var notes = $("#" + res_type + "-notes").val();
-    var result_dict = {"res_type": res_type, "res_name": res_name, "tags": tags, "notes": notes}
+    var result_dict = {"res_type": res_type, "res_name": res_name, "tags": tags, "notes": notes};
         $.ajax({
             url: $SCRIPT_ROOT + "/save_metadata",
             contentType : 'application/json',
