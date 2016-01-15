@@ -15,7 +15,7 @@ var res_types = ["list", "collection", "project", "tile"];
 
 function start_post_load() {
     if (use_ssl) {
-        socket = io.connect('https://'+document.domain + ':' + location.port  + '/user_manage');
+        socket = io.connect('https://'+ document.domain + ':' + location.port  + '/user_manage');
     }
     else {
         socket = io.connect('http://'+document.domain + ':' + location.port  + '/user_manage');
