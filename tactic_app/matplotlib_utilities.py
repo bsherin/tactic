@@ -1,14 +1,13 @@
-__author__ = 'bls910'
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.colors import Normalize as mpl_Normalize
-from matplotlib.cm import get_cmap, ScalarMappable
+from matplotlib.cm import get_cmap, ScalarMappable, register_cmap, datad
 import numpy
-import pylab
+# import pylab
 import StringIO
 
-color_map_specs = [["Yellows", {'red':[(0.0, 0.0, 1.0), (1.0,  1.0, 1.0)],
+color_map_specs = [["Yellows", {'red': [(0.0, 0.0, 1.0), (1.0,  1.0, 1.0)],
                                  'green': [(0.0, 0.0, 1.0), (1.0, 1.0, 1.0)],
                                  'blue': [(0.0, 0.0, 1.0), (1.0, 0.0, 0.0)]}],
                    ["NeonPurples", {'red':[(0.0, 0.0, 1.0), (1.0, 1.0, 1.0)],
@@ -28,9 +27,11 @@ color_map_specs = [["Yellows", {'red':[(0.0, 0.0, 1.0), (1.0,  1.0, 1.0)],
                                'blue': [(0.0, 0.0, 1.0), (1.0, .25, 0.0)]}]]
 
 for spec in color_map_specs:
-    pylab.register_cmap(cmap=LinearSegmentedColormap(spec[0], spec[1]))
+    register_cmap(cmap=LinearSegmentedColormap(spec[0], spec[1]))
 
-color_palette_names = sorted(m for m in pylab.cm.datad if not m.endswith("_r"))
+color_palette_names = sorted(m for m in datad if not m.endswith("_r"))
+
+color_palette_names = ["grays", "blues"]
 
 class MplFigure(Figure):
     ## kwargs for mplfigure are dpi and title
