@@ -485,7 +485,7 @@ var tableObject = {
     },
 
     resize_table_area: function () {
-        var usable_width = window.innerWidth - 2 * MARGIN_SIZE - 10;
+        var usable_width = window.innerWidth - 2 * MARGIN_SIZE - 30;
         if (!(this.left_fraction == 0)) {
             $(".grid-left").width(usable_width * this.left_fraction);
         }

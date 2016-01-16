@@ -2,7 +2,7 @@
   margin: 5px; }
 
 #table-wrapper {
-  overflow-x: scroll;
+  overflow-x: auto;
   margin: 0px;
   padding: 0px; }
 
@@ -20,7 +20,8 @@
 
 #table-area tbody {
   display: block;
-  overflow-y: scroll; }
+  overflow-y: auto;
+  overflow-x: hidden; }
 
 #table-area th {
   /*display: inline-block;*/
