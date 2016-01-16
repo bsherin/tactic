@@ -294,14 +294,17 @@ function project_command(menu_id) {
         case "export-table-as-collection":
         {
             exportDataTable()
+            break;
         }
         case "download-visible-document":
         {
             downloadVisibleDocument()
+            break;
         }
         case "download-collection":
         {
             downloadCollection()
+            break;
         }
     }
 }

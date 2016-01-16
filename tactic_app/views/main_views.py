@@ -25,7 +25,6 @@ def on_join(data):
 # Views for creating and saving a new project
 # As well as for updating an existing project.
 
-
 @app.route('/save_new_project', methods=['POST'])
 @login_required
 def save_new_project():

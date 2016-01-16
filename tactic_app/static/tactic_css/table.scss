@@ -13,7 +13,7 @@ $table-border-style: $table-border-thickness solid $table-border-color;
 }
 
 #table-wrapper {
-    overflow-x: scroll;
+    overflow-x: auto;
     margin: 0px;
     padding: 0px;
 }
@@ -35,7 +35,8 @@ $table-border-style: $table-border-thickness solid $table-border-color;
 
 #table-area tbody {
     display: block;
-    overflow-y: scroll;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 #table-area th {

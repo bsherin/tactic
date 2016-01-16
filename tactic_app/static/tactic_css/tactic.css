@@ -68,7 +68,7 @@ a[role="tab"] {
 
 .user-button-group {
   height: 200px;
-  overflow: scroll; }
+  overflow: auto; }
 
 .selector-button:hover {
   background-color: #cbcbcb !important; }
@@ -118,7 +118,7 @@ td.cell-clickable:active {
 #console {
   text-align: left;
   font-size: 12px;
-  overflow: scroll; }
+  overflow: auto; }
 
 #console-panel {
   margin-left: 5px;
@@ -156,7 +156,7 @@ td.cell-clickable:active {
 #tile-area {
   margin: 0px;
   border: 0px;
-  overflow: scroll; }
+  overflow: auto; }
 
 /* tile */
 .tile-panel {
@@ -176,14 +176,14 @@ td.cell-clickable:active {
   position: relative; }
 
 .tile-display-area {
-  overflow: scroll;
+  overflow: auto;
   padding: 0;
   margin: 15px 15px 15px 15px; }
 
 .back {
   padding: 20px;
   margin: 0px;
-  overflow: scroll; }
+  overflow: auto; }
 
 .front {
   padding: 0px;
