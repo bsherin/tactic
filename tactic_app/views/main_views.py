@@ -6,7 +6,7 @@ from flask_socketio import join_room
 from tactic_app.shared_dicts import tile_classes, user_tiles, loaded_user_modules
 from tactic_app.shared_dicts import mainwindow_instances, distribute_event, create_initial_metadata
 from user_manage_views import project_manager, collection_manager
-# import openpyxl
+import openpyxl
 import StringIO
 
 
@@ -108,33 +108,33 @@ def download_table(main_id, new_name):
                      as_attachment=True)
 
 
-# @app.route('/download_collection/<main_id>/<new_name>', methods=['GET', 'POST'])
-# @login_required
-# def download_collection(main_id, new_name):
-#     mw = mainwindow_instances[main_id]
-#     wb = openpyxl.Workbook()
-#     first = True
-#     for (doc_name, doc_info) in mw.doc_dict.items():
-#         if first:
-#             ws = wb.active
-#             ws.title = doc_name
-#             first = False
-#         else:
-#             ws = wb.create_sheet(title=doc_name)
-#         data_rows = doc_info.all_sorted_data_rows
-#         header_list = doc_info.header_list
-#         for c, header in enumerate(header_list, start=1):
-#             _ = ws.cell(row=1, column=c, value=header)
-#         for r, row in enumerate(data_rows, start=2):
-#             for c, header in enumerate(header_list, start=1):
-#                 _ = ws.cell(row=r, column=c, value=row[header])
-#     virtual_notebook = openpyxl.writer.excel.save_virtual_workbook(wb)
-#     str_io = StringIO.StringIO()
-#     str_io.write(virtual_notebook)
-#     str_io.seek(0)
-#     return send_file(str_io,
-#                      attachment_filename=new_name,
-#                      as_attachment=True)
+@app.route('/download_collection/<main_id>/<new_name>', methods=['GET', 'POST'])
+@login_required
+def download_collection(main_id, new_name):
+    mw = mainwindow_instances[main_id]
+    wb = openpyxl.Workbook()
+    first = True
+    for (doc_name, doc_info) in mw.doc_dict.items():
+        if first:
+            ws = wb.active
+            ws.title = doc_name
+            first = False
+        else:
+            ws = wb.create_sheet(title=doc_name)
+        data_rows = doc_info.all_sorted_data_rows
+        header_list = doc_info.header_list
+        for c, header in enumerate(header_list, start=1):
+            _ = ws.cell(row=1, column=c, value=header)
+        for r, row in enumerate(data_rows, start=2):
+            for c, header in enumerate(header_list, start=1):
+                _ = ws.cell(row=r, column=c, value=row[header])
+    virtual_notebook = openpyxl.writer.excel.save_virtual_workbook(wb)
+    str_io = StringIO.StringIO()
+    str_io.write(virtual_notebook)
+    str_io.seek(0)
+    return send_file(str_io,
+                     attachment_filename=new_name,
+                     as_attachment=True)
 
 # Views for reading data from the database and
 # passing back to the client.
