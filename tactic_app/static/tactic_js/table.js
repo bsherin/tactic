@@ -244,6 +244,8 @@ var tableObject = {
         for (i = 0; i < hidden_columns_list.length; ++i) {
             $(".column-" + hidden_columns_list[i]).css("display", "none");
         }
+        $("td.column-__id__").attr("contenteditable", false);
+        $("td.column-__filename__").attr("contenteditable", false)
         this.color_all_bgs();
         $("#project-name").html(this.project_name)
         setup_resize_listeners();
