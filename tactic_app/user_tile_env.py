@@ -6,7 +6,7 @@ import copy
 # what behavior on remote will be like.
 nltk.data.path = ['./nltk_data/']
 import numpy
-import sklearn
+# import sklearn
 import wordcloud
 from tactic_app.clusterer_classes import CentroidClusterer, OptCentroidClusterer
 from tactic_app.sentiment_tools import vader_sentiment_analyzer, sentiwordnet
