@@ -1,5 +1,6 @@
-import Queue
-import threading
+
+import gevent
+from gevent.queue import Queue
 from flask_login import current_user
 from flask import url_for
 from tactic_app import socketio
@@ -9,7 +10,7 @@ from users import load_user
 import sys
 from matplotlib_utilities import color_palette_names
 
-class TileBase(threading.Thread):
+class TileBase(gevent.Greenlet):
     category = "basic"
     exports = {}
     input_start_template = '<div class="form-group form-group-sm"">' \
@@ -25,10 +26,9 @@ class TileBase(threading.Thread):
                        '<input type="checkbox" id="{0}" value="{0}" {1}>{0}</label>' \
                        '</div>'
     def __init__(self, main_id, tile_id, tile_name=None):
-        self._stopevent = threading.Event()
-        self._sleepperiod = .05
-        threading.Thread.__init__(self)
-        self._my_q = Queue.Queue(0)
+        self._my_q = Queue()
+        gevent.Greenlet.__init__(self)
+        self._sleepperiod = .0001
         self.save_attrs = ["current_html", "tile_id", "tile_type", "tile_name",
               "width", "height", "full_tile_width", "full_tile_height", "is_shrunk"]
 
@@ -64,22 +64,19 @@ class TileBase(threading.Thread):
     Basic Machinery to make the tile work.
     """
 
-    def run(self):
-        while not self._stopevent.isSet():
+    def _run(self):
+        self.running = True
+        while self.running:
             if not self._my_q.empty():
                 q_item = self._my_q.get()
                 if type(q_item) == dict:
                     self.handle_event(q_item["event_name"], q_item["data"])
                 else:
                     self.handle_event(q_item)
-            self._stopevent.wait(self._sleepperiod)
+            self.tile_yield()
 
-    def join(self, timeout=None):
-        """ Stop the thread and wait for it to end.
-        :param timeout:
-        """
-        self._stopevent.set()
-        threading.Thread.join(self, timeout)
+    def tile_yield(self):
+        gevent.sleep(self._sleepperiod)
 
     def post_event(self, event_name, data=None):
         self._my_q.put({"event_name": event_name, "data": data})
@@ -393,31 +390,40 @@ class TileBase(threading.Thread):
     # Basic setting and access
 
     def get_document_names(self):
+        self.tile_yield()
         return mainwindow_instances[self.main_id].doc_names
 
     def get_current_document_name(self):
+        self.tile_yield()
         return mainwindow_instances[self.main_id].visible_doc_name
 
     def get_document_data(self, document_name):
+        self.tile_yield()
         return mainwindow_instances[self.main_id].doc_dict[document_name].data_rows_int_keys
 
     def get_document_data_as_list(self, document_name):
+        self.tile_yield()
         return mainwindow_instances[self.main_id].doc_dict[document_name].all_sorted_data_rows
 
     def get_column_names(self, document_name):
+        self.tile_yield()
         return mainwindow_instances[self.main_id].doc_dict[document_name].header_list
 
     def get_number_rows(self, document_name):
+        self.tile_yield()
         return len(mainwindow_instances[self.main_id].doc_dict[document_name].data_rows.keys())
 
     def get_row(self, document_name, row_number):
+        self.tile_yield()
         return mainwindow_instances[self.main_id].doc_dict[document_name].all_sorted_data_rows[row_number]
 
     def get_cell(self, document_name, row_number, column_name):
+        self.tile_yield()
         return mainwindow_instances[self.main_id].doc_dict[document_name].all_sorted_data_rows[int(row_number)][
             column_name]
 
     def get_column_data(self, column_name, document_name=None):
+        self.tile_yield()
         if document_name is not None:
             result = mainwindow_instances[self.main_id].get_column_data_for_doc(column_name, document_name)
         else:
@@ -425,35 +431,42 @@ class TileBase(threading.Thread):
         return result
 
     def get_column_data_dict(self, column_name):
+        self.tile_yield()
         result = {}
         for doc_name in self.get_document_names():
             result[doc_name] = mainwindow_instances[self.main_id].get_column_data_for_doc(column_name, doc_name)
         return result
 
     def set_cell(self, document_name, row_number, column_name, text, cellchange=True):
+        self.tile_yield()
         mainwindow_instances[self.main_id]._set_cell_content(document_name, row_number, column_name, text, cellchange)
         return
 
     def set_cell_background(self, document_name, row_number, column_name, color):
+        self.tile_yield()
         mainwindow_instances[self.main_id]._set_cell_background(document_name, row_number, column_name, color)
         return
 
     def set_row(self, document_name, row_number, row_dictionary, cellchange=True):
+        self.tile_yield()
         for c in row_dictionary.keys():
             mainwindow_instances[self.main_id]._set_cell_content(document_name, row_number,
                                                                  c, row_dictionary[c], cellchange)
         return
 
     def set_column_data(self, document_name, column_name, data_list, cellchange=False):
+        self.tile_yield()
         for rnum in range(len(data_list)):
             self.set_cell(document_name, rnum, column_name, data_list[rnum], cellchange)
 
     # Filtering and iteration
 
     def get_matching_rows(self, filter_function, document_name=None):
+        self.tile_yield()
         return mainwindow_instances[self.main_id].get_matching_rows(filter_function, document_name)
 
     def display_matching_rows(self, filter_function, document_name=None):
+        self.tile_yield()
         mainwindow_instances[self.main_id].display_matching_rows(filter_function, document_name)
         return
 
@@ -468,6 +481,7 @@ class TileBase(threading.Thread):
         return
 
     def apply_to_rows(self, func, document_name=None):
+        self.tile_yield()
         mainwindow_instances[self.main_id].apply_to_rows(func, document_name)
         return
 
@@ -488,6 +502,7 @@ class TileBase(threading.Thread):
         return mainwindow_instances[self.main_id].selected_text
 
     def display_message(self, message_string, force_open=False):
+        self.tile_yield()
         mainwindow_instances[self.main_id].print_to_console(message_string, force_open)
 
 
@@ -495,6 +510,7 @@ class TileBase(threading.Thread):
         self.display_message(message_string, force_open)
 
     def color_cell_text(self, doc_name, row_index, column_name, tokenized_text, color_dict):
+        self.tile_yield()
         distribute_event("ColorTextInCell", self.main_id, {"doc_name": doc_name,
                                                            "row_index": row_index,
                                                            "column_header": column_name,
@@ -505,9 +521,11 @@ class TileBase(threading.Thread):
         return self.current_user.get_list(the_list)
 
     def get_tokenizer(self, tokenizer_name):
+        self.tile_yield()
         return tokenizer_dict[tokenizer_name]
 
     def get_pipe_value(self, pipe_key):
+        self.tile_yield()
         mw = mainwindow_instances[self.main_id]
         for(tile_id, tile_entry) in mainwindow_instances[self.main_id]._pipe_dict.items():
             if pipe_key in tile_entry:
@@ -515,6 +533,7 @@ class TileBase(threading.Thread):
         return None
 
     def get_weight_function(self, weight_function_name):
+        self.tile_yield()
         return weight_functions[weight_function_name]
 
     def create_figure_html(self, fig):

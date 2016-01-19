@@ -1,5 +1,5 @@
-import Queue
-import threading
+import gevent
+from gevent.queue import Queue
 import re
 from tactic_app import db
 from flask_login import current_user
@@ -178,7 +178,7 @@ class docInfo:
 
 
 # noinspection PyPep8Naming
-class mainWindow(threading.Thread):
+class mainWindow(gevent.Greenlet):
     save_attrs = ["short_collection_name", "collection_name", "current_tile_id", "tile_sort_list", "left_fraction", "is_shrunk",
                   "user_id", "doc_dict", "tile_instances", "project_name", "loaded_modules", "hidden_columns_list"]
     update_events = ["CellChange", "CreateColumn", "SearchTable", "SaveTableSpec",
@@ -187,10 +187,9 @@ class mainWindow(threading.Thread):
 
     def __init__(self, user_id, collection_name, doc_dict=None):
         global current_main_id
-        self._stopevent = threading.Event()
-        self._sleepperiod = .01
-        threading.Thread.__init__(self)
-        self._my_q = Queue.Queue(0)
+        self._my_q = Queue()
+        gevent.Greenlet.__init__(self)
+        self._sleepperiod = .0001
 
         # These are the main attributes that define a project state
         self.tile_instances = {}
@@ -286,6 +285,7 @@ class mainWindow(threading.Thread):
         self._my_q.put({"event_name": event_name, "data": data})
 
     def _delete_tile_instance(self, tile_id):
+        self.tile_instances[tile_id].join()
         del self.tile_instances[tile_id]
         self.tile_sort_list.remove(tile_id)
         if tile_id in self._pipe_dict:
@@ -395,19 +395,19 @@ class mainWindow(threading.Thread):
                     i += 1
         return
 
-    def run(self):
-        while not self._stopevent.isSet():
+    def _run(self):
+        self.running = True
+        while self.running:
             if not self._my_q.empty():
                 self.emit_table_message("startTableSpinner")
                 q_item = self._my_q.get()
                 self._handle_event(q_item["event_name"], q_item["data"])
             else:
                 self.emit_table_message("stopTableSpinner")
-            self._stopevent.wait(self._sleepperiod)
+            self.table_yield()
 
-    def join(self, timeout=None):
-        self._stopevent.set()
-        threading.Thread.join(self, timeout)
+    def table_yield(self):
+        gevent.sleep(self._sleepperiod)
 
     def emit_table_message(self, message, data=None):
         if data is None:
