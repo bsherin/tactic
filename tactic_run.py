@@ -7,6 +7,7 @@
 import os
 
 print "entering tactic_run"
+
 from flask import request, redirect
 
 from tactic_app import app

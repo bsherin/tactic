@@ -31,8 +31,6 @@ for spec in color_map_specs:
 
 color_palette_names = sorted(m for m in datad if not m.endswith("_r"))
 
-color_palette_names = ["grays", "blues"]
-
 class MplFigure(Figure):
     ## kwargs for mplfigure are dpi and title
     def __init__ (self, data, width, height,  **kwargs):
