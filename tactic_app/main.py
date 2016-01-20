@@ -29,7 +29,6 @@ def create_new_mainwindow(user_id, collection_name):
     mw.start()
     return mw._main_id
 
-
 # noinspection PyProtectedMember
 def create_new_mainwindow_from_project(project_dict):
     mw = mainWindow.recreate_from_save(project_dict)
@@ -37,6 +36,12 @@ def create_new_mainwindow_from_project(project_dict):
     mw.start()
     return mw._main_id
 
+def delete_mainwindow(main_id):
+    # I think this is happening from within the greenlet that I'm closing.
+    # So I have to do the join at the very end
+    the_instance = mainwindow_instances[main_id]
+    del mainwindow_instances[main_id]
+    the_instance.join()
 
 # noinspection PyPep8Naming
 class docInfo:
@@ -181,7 +186,7 @@ class docInfo:
 class mainWindow(gevent.Greenlet):
     save_attrs = ["short_collection_name", "collection_name", "current_tile_id", "tile_sort_list", "left_fraction", "is_shrunk",
                   "user_id", "doc_dict", "tile_instances", "project_name", "loaded_modules", "hidden_columns_list"]
-    update_events = ["CellChange", "CreateColumn", "SearchTable", "SaveTableSpec",
+    update_events = ["CellChange", "CreateColumn", "SearchTable", "SaveTableSpec", "MainClose",
                      "DehighlightTable", "SetCellContent", "RemoveTile", "ColorTextInCell",
                      "FilterTable", "UnfilterTable", "TextSelect", "UpdateSortList", "UpdateLeftFraction", "UpdateTableShrinkState"]
 
@@ -421,6 +426,10 @@ class mainWindow(gevent.Greenlet):
             if event_name == "CellChange":
                 self._set_row_column_data(data["doc_name"], data["id"], data["column_header"], data["new_content"])
                 self._change_list.append(data["id"])
+            elif event_name == "MainClose":
+                for tile in self.tile_instances.values():
+                    tile.join()
+                delete_mainwindow(self._main_id)
             elif event_name == "RemoveTile":
                 self._delete_tile_instance(data["tile_id"])
             elif event_name == "CreateColumn":
