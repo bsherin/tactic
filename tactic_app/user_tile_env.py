@@ -5,6 +5,7 @@ import copy
 # I want nltk to only search here so that I can see
 # what behavior on remote will be like.
 nltk.data.path = ['./nltk_data/']
+import sklearn
 import numpy
 import wordcloud
 from tactic_app.clusterer_classes import CentroidClusterer, OptCentroidClusterer
