@@ -268,6 +268,21 @@ function selector_click(event) {
     }
 }
 
+function selector_double_click(event) {
+    var row_element = $(event.target).closest('tr');
+    var cells = row_element.children();
+    var res_name = $(cells[0]).text();
+    var tab_parent = $(event.target).closest(".tab-pane");
+    var regexp = /^(\w+?)-/;
+    var res_type = regexp.exec(tab_parent.attr("id"))[1];
+    $(".resource-selector ." + res_type + "-selector-button").removeClass("active");
+    row_element.addClass("active");
+    //var res_name = $('.resource-selector .' + res_type + '-selector-button.active')[0].value;
+    var result_dict = {"res_type": res_type, "res_name": res_name};
+    var the_manager = resource_managers[res_type];
+    the_manager[the_manager.double_click_func]({data: {manager: the_manager}})
+}
+
 function clear_repository_resource_metadata(res_type) {
     $("#" + res_type + "-module .repository-created").html("");
     $("#" + res_type + "-repository-tags")[0].value = "";

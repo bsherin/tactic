@@ -12,6 +12,7 @@ mousetrap.bind("esc", function() {
 });
 
 var res_types = ["list", "collection", "project", "tile"];
+var resource_managers = {}
 
 function start_post_load() {
     if (use_ssl) {
@@ -79,6 +80,7 @@ function start_post_load() {
         projectManager.add_listeners();
         tileManager.add_listeners();
         $(".resource-module").on("click", ".resource-selector .selector-button", selector_click);
+        $(".resource-module").on("dblclick", ".resource-selector .selector-button", selector_double_click);
         $(".resource-module").on("click", ".repository-selector .selector-button", repository_selector_click);
         $(".resource-module").on("click", ".search-resource-button", search_resource);
         $(".resource-module").on("click", ".search-tags-button", search_resource_tags);
@@ -141,6 +143,7 @@ var list_manager_specifics = {
     duplicate_view: '/create_duplicate_list',
     delete_view: '/delete_list/',
     add_view: "/add_list",
+    double_click_func: "view_func",
     buttons: [
         {"name": "view", "func": "view_func", "button_class": "btn-primary"},
         {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-success"},
@@ -149,6 +152,7 @@ var list_manager_specifics = {
 };
 
 var listManager = new ResourceManager("list", list_manager_specifics);
+resource_managers["list"] = listManager;
 
 //noinspection JSUnusedGlobalSymbols
 var col_manager_specifics = {
@@ -157,6 +161,7 @@ var col_manager_specifics = {
     duplicate_view: '/duplicate_collection',
     delete_view: '/delete_collection/',
     load_view: "/main/",
+    double_click_func: "load_func",
     buttons: [
         {"name": "load", "func": "load_func", "button_class": "btn btn-primary"},
         {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-success"},
@@ -185,11 +190,13 @@ var col_manager_specifics = {
 };
 
 var collectionManager = new ResourceManager("collection", col_manager_specifics);
+resource_managers["collection"] = collectionManager;
 
 var project_manager_specifics = {
     show_add: false,
     load_view: "/main_project/",
     delete_view: "/delete_project/",
+    double_click_func: "load_func",
     buttons: [
         {"name": "load", "func": "load_func", "button_class": "btn-primary"},
         {"name": "delete", "func": "delete_func", "button_class": "btn-danger"}
@@ -197,6 +204,7 @@ var project_manager_specifics = {
 };
 
 var projectManager = new ResourceManager("project", project_manager_specifics);
+resource_managers["project"] = projectManager;
 
 var tile_manager_specifics = {
     show_add: true,
@@ -205,6 +213,7 @@ var tile_manager_specifics = {
     add_view: '/add_tile_module',
     view_view: '/view_module/',
     delete_view: "/delete_tile_module/",
+    double_click_func: "view_func",
     show_loaded_list: true,
     buttons: [
         {"name": "new", "func": "new_func", "button_class": "btn-success"},
@@ -228,3 +237,4 @@ var tile_manager_specifics = {
 };
 
 var tileManager = new ResourceManager("tile", tile_manager_specifics);
+resource_managers["tile"] = tileManager;
