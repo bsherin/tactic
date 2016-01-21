@@ -10,11 +10,11 @@ var mousetrap = new Mousetrap();
 var menu_template;
 $.get($SCRIPT_ROOT + "/get_menu_template", function(template){
     menu_template = $(template).filter('#menu-template').html();
-})
+});
 
 function clear_all_menus() {
-    menus = {}
-    menu_item_index = {}
+    menus = {};
+    menu_item_index = {};
     $("#menu-area").html(" ")
 }
 
@@ -34,13 +34,13 @@ MenuObject.prototype = {
             "menu_name": this.menu_name ,
             "options": options_list
         });
-        return res
+        return res;
 
         function create_options_list() {
             var result = [];
-            var scuts = menus[self.menu_name].shortcuts
+            var scuts = menus[self.menu_name].shortcuts;
             for (var i = 0; i < self.options.length; ++i) {
-                var opt = self.options[i]
+                var opt = self.options[i];
                 if (scuts.hasOwnProperty(opt)){
                     var key_text = scuts[opt].keys[0]
                 }
@@ -81,11 +81,11 @@ MenuObject.prototype = {
         $("#" + item_id).closest('li').addClass("disabled");
         var menu = menus[menu_item_index[item_id]];
         if (menu.shortcuts.hasOwnProperty(item_id)) {
-            var scut = menu.shortcuts[item_id]
+            var scut = menu.shortcuts[item_id];
             mousetrap.unbind(scut.keys);
             if (scut.hasOwnProperty("fallthrough")) {
                 mousetrap.bind(scut.keys, function (e) {
-                    scut.fallthrough()
+                    scut.fallthrough();
                     e.preventDefault()
                 })
             }
@@ -103,13 +103,13 @@ MenuObject.prototype = {
             })
         }
     }
-}
+};
 
 function bind_to_keys(shortcuts) {
     for (option in shortcuts) {
         if (!shortcuts.hasOwnProperty()) continue;
         mousetrap.bind(option.keys, function(e) {
-            option.command()
+            option.command();
             e.preventDefault()
         });
     }
@@ -125,16 +125,16 @@ mousetrap.bind("esc", function() {
     }
     broadcast_event_to_server("DehighlightTable", {});
     clearStatusArea();
-})
+});
 
 function build_and_render_menu_objects() {
     // Create the column_menu object
-    column_menu = new MenuObject("Column", column_command,["shift-left", "shift-right", "hide", "unhide", "add-column"])
+    column_menu = new MenuObject("Column", column_command,["shift-left", "shift-right", "hide", "unhide", "add-column"]);
     menus[column_menu.menu_name] = column_menu;
     column_menu.add_options_to_index();
 
     // Create the project_menu object
-    project_menu = new MenuObject("Project", project_command,["save-as", "save", "export-table-as-collection", "download-visible-document", "download-collection"])
+    project_menu = new MenuObject("Project", project_command,["save-as", "save", "export-table-as-collection", "download-visible-document", "download-collection"]);
     menus[project_menu.menu_name] = project_menu;
     project_menu.add_options_to_index();
     project_menu.shortcuts = {
@@ -144,7 +144,7 @@ function build_and_render_menu_objects() {
                     saveProjectAs()
                 }
         }
-    }
+    };
     bind_to_keys(project_menu.shortcuts);
 
     // Create the tile_menus
@@ -152,12 +152,12 @@ function build_and_render_menu_objects() {
         if (!tile_types.hasOwnProperty(category)) {
             continue;
         }
-        var new_tile_menu = new MenuObject(category, tile_command, tile_types[category])
+        var new_tile_menu = new MenuObject(category, tile_command, tile_types[category]);
         menus[new_tile_menu.menu_name] = new_tile_menu;
         new_tile_menu.add_options_to_index();
     }
 
-    render_menus()
+    render_menus();
 
     function render_menus() {
         for (var m in menus) {
@@ -167,14 +167,16 @@ function build_and_render_menu_objects() {
         };
         $(".menu-item").click(function(e) {
             var item_id = e.currentTarget.id;
-            var menu_name = menu_item_index[item_id]
+            var menu_name = menu_item_index[item_id];
             if (!is_disabled(item_id)) {
                 menus[menu_name].perform_menu_item(item_id)
             }
             e.preventDefault()
         });
-        disable_require_column_select()
-        project_menu.disable_items(["save"])
+        disable_require_column_select();
+        if (_project_name == "") {
+            project_menu.disable_items(["save"]);
+        }
 
         function is_disabled (menu_id) {
             return $("#" + menu_id).parent().hasClass("disabled")
@@ -182,23 +184,21 @@ function build_and_render_menu_objects() {
     }
 }
 
-
-
 function column_command(menu_id) {
     var column_header = tableObject.selected_header;
     if (column_header != null) {
         switch (menu_id) {
             case "shift-left":
             {
-                deselect_header(column_header)
-                tableObject.current_spec.shift_column_left(column_header)
+                deselect_header(column_header);
+                tableObject.current_spec.shift_column_left(column_header);
                 tableObject.build_table();
                 break;
             }
             case "shift-right":
             {
-                deselect_header(column_header)
-                tableObject.current_spec.shift_column_right(column_header)
+                deselect_header(column_header);
+                tableObject.current_spec.shift_column_right(column_header);
                 tableObject.build_table();
                 break;
             }
@@ -232,7 +232,7 @@ function createColumn() {
             }
 
             // Then rebuild the table
-            tableObject.build_table()
+            tableObject.build_table();
 
             // Then change the current data_dict back on the server
             var data_dict = {"column_name": column_name,
@@ -268,11 +268,11 @@ function saveProjectAs() {
             function save_as_success(data_object) {
                 if (data_object["success"]) {
                     menus["Project"].enable_menu_item("save");
-                    tableObject.project_name = data_object["project_name"]
+                    tableObject.project_name = data_object["project_name"];
                     //tableObject.set_table_title()
-                    $("#project-name").html(tableObject.project_name)
-                    $("title").html(data_object["project_name"])
-                    data_object.alert_type = "alert-success"
+                    $("#project-name").html(tableObject.project_name);
+                    $("title").html(data_object["project_name"]);
+                    data_object.alert_type = "alert-success";
                     doFlash(data_object)
                 }
             }
@@ -293,17 +293,17 @@ function project_command(menu_id) {
         }
         case "export-table-as-collection":
         {
-            exportDataTable()
+            exportDataTable();
             break;
         }
         case "download-visible-document":
         {
-            downloadVisibleDocument()
+            downloadVisibleDocument();
             break;
         }
         case "download-collection":
         {
-            downloadCollection()
+            downloadCollection();
             break;
         }
     }
@@ -326,7 +326,7 @@ function exportDataTable() {
             var result_dict = {
                 "export_name": new_name,
                 "main_id": main_id,
-            }
+            };
             $.ajax({
                 url: $SCRIPT_ROOT + "/export_data",
                 contentType : 'application/json',
@@ -341,7 +341,7 @@ function exportDataTable() {
 
 function tile_command(menu_id) {
 
-    showModal("Create " + menu_id, "New Tile Name", createNewTile, menu_id)
+    showModal("Create " + menu_id, "New Tile Name", createNewTile, menu_id);
 
     function createNewTile(tile_name) {
         var data_dict = {};

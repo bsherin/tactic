@@ -290,12 +290,15 @@ class mainWindow(gevent.Greenlet):
         self._my_q.put({"event_name": event_name, "data": data})
 
     def _delete_tile_instance(self, tile_id):
-        self.tile_instances[tile_id].join()
+        the_thread = self.tile_instances[tile_id]
         del self.tile_instances[tile_id]
         self.tile_sort_list.remove(tile_id)
         if tile_id in self._pipe_dict:
             del self._pipe_dict[tile_id]
             distribute_event("RebuildTileForms", self._main_id)
+        # It seems like this has to come at the end, otherwise the
+        # currently executing thread just ends.
+        the_thread.join()
 
     def create_tile_instance_in_mainwindow(self, tile_type, tile_name=None):
         new_id = "tile_id_" + str(self.current_tile_id)

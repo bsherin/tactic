@@ -145,7 +145,7 @@ class TileBase(gevent.Greenlet):
                     current_doc_name = mainwindow_instances[self.main_id].visible_doc_name
                     current_doc = mainwindow_instances[self.main_id].doc_dict[current_doc_name]
                     for choice in current_doc.header_list:
-                        if starting_value:
+                        if choice == starting_value:
                             form_html += self.select_option_selected_template.format(choice)
                         else:
                             form_html += self.select_option_template.format(choice)
@@ -562,10 +562,12 @@ class TileBase(gevent.Greenlet):
         the_html += "<script>{}</script></div>".format(the_script)
         return the_html
 
-    def create_scatterplot_html(self, data, xlabels=None):
+    def create_scatterplot_html(self, data, xlabels=None, margins=None):
+        if margins is None:
+            margins = {"top": 20, "bottom": 20, "left": 20, "right": 20}
         if xlabels is None:
             xlabels = []
-        data_name = self.create_data_source({"data_list": data, "xlabels": xlabels})
+        data_name = self.create_data_source({"data_list": data, "xlabels": xlabels, "margins": margins})
         uid = self.get_unique_div_id()
         the_html = "<div id='{}'><div class='d3plot'></div>".format(str(uid))
 
