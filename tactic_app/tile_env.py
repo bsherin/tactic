@@ -25,9 +25,7 @@ def tile_class(tclass):
     tile_classes[tclass.category][tclass.__name__] = tclass
     return tclass
 
-def weight_function(wfunc):
-    weight_functions[wfunc.__name__] = wfunc
-    return wfunc
+
 
 def user_tile(tclass):
     uname = current_user.username
