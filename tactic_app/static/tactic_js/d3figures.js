@@ -6,14 +6,16 @@ function getDataSource(tile_id, data_source, callback){
     $.getJSON($SCRIPT_ROOT + "/data_source/" + String(main_id) + "/" + String(tile_id) + "/" + data_source, callback)
 }
 
+//noinspection JSUnusedGlobalSymbols
 function createLinePlot(tile_id, data_source, target_element_id) {
-    tda = $("#" + target_element_id).parent(".tile-display-area");
+    var tda = $("#" + target_element_id).parent(".tile-display-area");
     w = tda.width();
     h = tda.height();
     getDataSource(tile_id, data_source, function (result) {
-        drawLinePlot(result.data.data_list, target_element_id, result.data.xlabels);
-        function drawLinePlot(data, target_id, xlabels) {
-            $("#" + target_element_id + " .d3plot").html("")
+        //noinspection JSUnresolvedVariable
+        drawLinePlot(result.data.data_list);
+        function drawLinePlot(data) {
+            $("#" + target_element_id + " .d3plot").html("");
             var margin = 30;
             var y = d3.scale.linear().range([h - margin, 0]);
             var x = d3.scale.linear().range([0, w - margin]);
@@ -57,26 +59,22 @@ function createLinePlot(tile_id, data_source, target_element_id) {
     })
 }
 
+//noinspection JSUnusedGlobalSymbols
 function createScatterPlot(tile_id, data_source, target_element_id) {
-    tda = $("#" + target_element_id).parent(".tile-display-area");
+    var tda = $("#" + target_element_id).parent(".tile-display-area");
     w = tda.width();
     h = tda.height();
     getDataSource(tile_id, data_source, function (result) {
-        drawLinePlot(result.data.data_list, target_element_id, result.data.xlabels);
-        function drawLinePlot(data, target_id, xlabels) {
+        //noinspection JSUnresolvedVariable
+        drawScatterPlot(result.data.data_list, target_element_id, result.data.xlabels, result.data.margins);
+        function drawScatterPlot(data, target_element_id, xlabels, margin) {
             $("#" + target_element_id + " .d3plot").html("");
 
+            //noinspection JSUnusedLocalSymbols
             var vis = d3.select("#" + target_element_id + " .d3plot")
                 .append("svg")
                     .attr("width", w )
                     .attr("height", h);
-
-            if (xlabels.length == 0) {
-                var margin = {top: 20, bottom: 20, left: 20, right: 20};
-            }
-            else {
-                var margin = {top: 20, bottom: 45, left: 20, right: 20};
-            }
 
             var xExtent = [0, d3.max(data, function(d) { return d[0]; })];
             var yExtent = [0, d3.max(data, function(d) { return d[1]; })];
@@ -93,13 +91,14 @@ function createScatterPlot(tile_id, data_source, target_element_id) {
             });
 
             if (xlabels.length == 0) {
-                var xAxis = d3.svg.axis().scale(xScale).orient("bottom")
+                //noinspection JSDuplicatedDeclaration
+                var xAxis = d3.svg.axis().scale(xScale).orient("bottom");
                 d3.select("#" + target_element_id + " svg").append("g").attr("id", "xAxisG")
                     .attr("transform", "translate(" + String(0) + " ," + String(h -  margin.bottom) + ")")
                     .call(xAxis);
             }
             else {
-                tvalues = [];
+                var tvalues = [];
                 for (var i = 1; i <= data.length; i += 1){
                     tvalues.push(i)
                 }
@@ -116,8 +115,7 @@ function createScatterPlot(tile_id, data_source, target_element_id) {
             }
 
             var yAxis = d3.svg.axis().scale(yScale).orient("left");
-            d3.select("#" + target_element_id + " svg").append("g").attr("id", "yAxisG").attr("transform", "translate(" + String(margin.top) + " ," + String(0) + ")").call(yAxis);
-
+            d3.select("#" + target_element_id + " svg").append("g").attr("id", "yAxisG").attr("transform", "translate(" + String(margin.left) + " ," + String(0) + ")").call(yAxis);
 
         }
     })

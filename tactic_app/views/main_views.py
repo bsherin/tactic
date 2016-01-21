@@ -162,6 +162,8 @@ def grab_chunk_with_row():
     row_id = data_dict["row_id"]
     mainwindow_instances[main_id].doc_dict[doc_name].move_to_row(row_id)
     return jsonify({"doc_name": doc_name,
+                    "left_fraction": mainwindow_instances[main_id].left_fraction,
+                    "is_shrunk": mainwindow_instances[main_id].is_shrunk,
                     "data_rows": mainwindow_instances[main_id].doc_dict[doc_name].displayed_data_rows,
                     "background_colors": mainwindow_instances[main_id].doc_dict[doc_name].displayed_background_colors,
                     "header_list": mainwindow_instances[main_id].doc_dict[doc_name].header_list,
