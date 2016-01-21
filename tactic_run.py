@@ -14,7 +14,7 @@ from tactic_app import app
 print "imported app"
 from tactic_app import users
 from tactic_app.views import auth_views, main_views, user_manage_views
-# from tactic_app import basic_tiles, classifier_tiles, clustering_tiles
+from tactic_app import weight_functions
 
 from tactic_app import tokenizers
 from tactic_app import socketio
