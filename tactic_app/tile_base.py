@@ -507,6 +507,7 @@ class TileBase(gevent.Greenlet):
 
 
     def dm(self, message_string, force_open=False):
+        self.tile_yield()
         self.display_message(message_string, force_open)
 
     def color_cell_text(self, doc_name, row_index, column_name, tokenized_text, color_dict):

@@ -188,7 +188,7 @@ class EuclideanCentroidClusterer(CentroidClusterer):
         self._num_clusters = len(self._centroids)
     
 class OptCentroidClusterer(VectorSpaceClusterer):
-    def __init__(self, vector_names = None, num_clusters=1, normalise=True, svd_dimensions=None):
+    def __init__(self, vector_names = None, num_clusters=1, normalise=True, svd_dimensions=None, msg_handle=None):
         VectorSpaceClusterer.__init__(self, normalise, svd_dimensions)
         self._num_clusters = num_clusters
         self._dendogram = None
@@ -196,6 +196,7 @@ class OptCentroidClusterer(VectorSpaceClusterer):
         self._names = vector_names
         self._name_dendogram = None
         self._reassigned_clusters = {}
+        self.msg_handle = msg_handle
 
     def array_max(self, ar):
         for i in range(ar.shape[0]):
@@ -257,7 +258,10 @@ class OptCentroidClusterer(VectorSpaceClusterer):
             if self._names:
                 self._name_dendogram.merge(i, j)
             if len(clusters) % 50 == 0:
-                print len(clusters)
+                if self.msg_handle is not None:
+                    self.msg_handle.print_to_console(str(len(clusters)))
+                else:
+                    print len(clusters)
         self.update_clusters(len(clusters))
 
     def update_clusters(self, num_clusters):
