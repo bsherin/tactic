@@ -39,9 +39,8 @@ def create_new_mainwindow_from_project(project_dict):
 def delete_mainwindow(main_id):
     # I think this is happening from within the greenlet that I'm closing.
     # So I have to do the join at the very end
-    the_instance = mainwindow_instances[main_id]
+    mainwindow_instances[main_id].kill()
     del mainwindow_instances[main_id]
-    the_instance.join()
 
 # noinspection PyPep8Naming
 class docInfo:
@@ -290,15 +289,13 @@ class mainWindow(gevent.Greenlet):
         self._my_q.put({"event_name": event_name, "data": data})
 
     def _delete_tile_instance(self, tile_id):
-        the_thread = self.tile_instances[tile_id]
+        self.tile_instances[tile_id].kill()
         del self.tile_instances[tile_id]
         self.tile_sort_list.remove(tile_id)
         if tile_id in self._pipe_dict:
             del self._pipe_dict[tile_id]
             distribute_event("RebuildTileForms", self._main_id)
-        # It seems like this has to come at the end, otherwise the
-        # currently executing thread just ends.
-        the_thread.join()
+        return
 
     def create_tile_instance_in_mainwindow(self, tile_type, tile_name=None):
         new_id = "tile_id_" + str(self.current_tile_id)
@@ -431,7 +428,7 @@ class mainWindow(gevent.Greenlet):
                 self._change_list.append(data["id"])
             elif event_name == "MainClose":
                 for tile in self.tile_instances.values():
-                    tile.join()
+                    tile.kill()
                 delete_mainwindow(self._main_id)
             elif event_name == "RemoveTile":
                 self._delete_tile_instance(data["tile_id"])

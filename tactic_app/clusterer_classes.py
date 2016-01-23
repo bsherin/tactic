@@ -208,6 +208,8 @@ class OptCentroidClusterer(VectorSpaceClusterer):
         
     def cluster(self, vectors, assign_clusters=False, trace=False):
         # stores the merge order
+        if self.msg_handle is not None:
+                self.msg_handle.print_to_console(str(len(clusters)))
         self._dendogram = Dendogram(
             [numpy.array(vector, numpy.float64) for vector in vectors])
         if self._names:
