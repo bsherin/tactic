@@ -25,6 +25,20 @@
     shape-rendering: crispEdges;
 }
 
+.d3plot .heatmap-cell-border {
+    stroke: #eee;
+    stroke-width:0.3px;
+  }
+
+.d3plot .heatmap-colLabel {
+    fill: #aaa;
+}
+
+.d3plot .heatmap-rowLabel {
+    fill: #aaa;
+}
+
+
 /* tooltips */
 
 $tooltip-background-color: #fde930;

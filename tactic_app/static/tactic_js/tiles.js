@@ -1,10 +1,10 @@
 
-var tile_dict = {}
+var tile_dict = {};
 
 function showZoomedImage(el) {
-    src = el.src
-    image_string = "<img class='output-plot' src='" + src +  "' lt='Image Placeholder'>"
-    $("#image-modal .modal-body").html(image_string)
+    src = el.src;
+    image_string = "<img class='output-plot' src='" + src +  "' lt='Image Placeholder'>";
+    $("#image-modal .modal-body").html(image_string);
     $("#image-modal").modal()
 }
 
@@ -19,7 +19,7 @@ function TileObject(tile_id, html, broadcast_size) {
         "forceWidth": true,
         "forceHeight": true
     });
-    var self = this
+    var self = this;
     $(this.full_selector()).resizable({
         handles: "se",
         resize: self.resize_tile_area,
@@ -27,9 +27,9 @@ function TileObject(tile_id, html, broadcast_size) {
             self.broadcastTileSize()
         }
     });
-    jQuery.data($(this.full_selector())[0], "my_tile_id", this.tile_id)
+    jQuery.data($(this.full_selector())[0], "my_tile_id", this.tile_id);
     this.listen_for_clicks();
-    $(this.full_selector()).find(".triangle-right").hide()
+    $(this.full_selector()).find(".triangle-right").hide();
     this.do_resize();
     if (broadcast_size){
         this.broadcastTileSize();
@@ -41,7 +41,7 @@ TileObject.prototype = {
     full_selector: function() {
         return "#" + this.tile_id;
     },
-    submitOptions: function (){
+    submitOptions: function () {
         var data = {};
         data["main_id"] = main_id;
         $(this.full_selector() + " .back input").each(function () {
@@ -62,7 +62,8 @@ TileObject.prototype = {
             }
         );
 
-        data["tile_id"] = this.tile_id
+        data["tile_id"] = this.tile_id;
+        dirty = true;
         broadcast_event_to_server("UpdateOptions", data)
     },
     broadcastTileSize: function() {
@@ -72,6 +73,7 @@ TileObject.prototype = {
         var full_tile_h = $(this.full_selector()).height();
         var data_dict = {"tile_id": this.tile_id, "width": w, "height": h,
                           "full_tile_width": full_tile_w, "full_tile_height": full_tile_h};
+        dirty = true;
         broadcast_event_to_server("TileSizeChange", data_dict)
     },
     do_resize: function(){
@@ -91,17 +93,20 @@ TileObject.prototype = {
             "element": el,
             "size": data
         };
+        dirty = true;
         this.resize_tile_area(null, ui);
     },
 
     displayTileContent: function (data) {
         $(this.full_selector() + " .tile-display-area").html(data["html"]);
-        var sortable_tables = $(this.full_selector() + " table.sortable")
+        var sortable_tables = $(this.full_selector() + " table.sortable");
         $.each(sortable_tables, function (index, the_table) {
             sorttable.makeSortable(the_table)
-        })
+        });
+        dirty = true;
         this.showFront()
     },
+
     displayFormContent: function (data) {
         $(this.full_selector() + " #form-display-area").html(data["html"]);
     },
@@ -115,23 +120,25 @@ TileObject.prototype = {
     },
 
     closeMe: function(){
-        var my_tile_id = this.tile_id
+        var my_tile_id = this.tile_id;
+        dirty = true;
         $(this.full_selector()).fadeOut("slow", function () {
             $(this).remove();
-            var data_dict = {}
+            var data_dict = {};
             data_dict["main_id"] = main_id;
-            data_dict["tile_id"] = my_tile_id
+            data_dict["tile_id"] = my_tile_id;
             broadcast_event_to_server("RemoveTile", data_dict)
         });
     },
 
     shrinkMe: function (){
+        dirty = true;
         el = $(this.full_selector());
         this.saved_size = el.outerHeight();
         broadcast_event_to_server("ShrinkTile", {tile_id: this.tile_id});
         el.find(".tile-body").fadeOut("fast", function () {
-            var hheight = el.find(".tile-panel-heading").outerHeight()
-            el.outerHeight(hheight)
+            var hheight = el.find(".tile-panel-heading").outerHeight();
+            el.outerHeight(hheight);
             el.resizable('destroy');
             el.find(".triangle-bottom").hide();
             el.find(".triangle-right").show();
@@ -140,8 +147,9 @@ TileObject.prototype = {
 
     },
     expandMe: function (){
-        el = $(this.full_selector())
-        el.outerHeight(this.saved_size)
+        dirty = true;
+        el = $(this.full_selector());
+        el.outerHeight(this.saved_size);
         el = $(this.full_selector()).find(".triangle-right").hide();
         el = $(this.full_selector()).find(".triangle-bottom").show();
         el = $(this.full_selector()).find(".tile-body").fadeIn();
@@ -163,17 +171,17 @@ TileObject.prototype = {
         $(front_element).outerHeight(ui.size.height - hheight);
         $(front_element).outerWidth(ui.size.width);
         var display_area = ui.element.find(".tile-display-area");
-        the_margin = $(".tile-display-area").css("margin-left").replace("px", "")
+        the_margin = $(".tile-display-area").css("margin-left").replace("px", "");
         $(display_area).outerHeight(ui.size.height - hheight - the_margin * 2);
         $(display_area).outerWidth(ui.size.width - the_margin * 2);
         var back_element = ui.element.find(".back")[0];
         $(back_element).outerHeight(ui.size.height - hheight);
         $(back_element).outerWidth(ui.size.width);
-        computed_width = ui.element.width()
-        computed_height = ui.element.height()
-        ui.element.width(computed_width)
-        ui.element.height(computed_height)
-        var scripts = $(ui.element.find(".tile-display-area")).find("script")
+        computed_width = ui.element.width();
+        computed_height = ui.element.height();
+        ui.element.width(computed_width);
+        ui.element.height(computed_height);
+        var scripts = $(ui.element.find(".tile-display-area")).find("script");
         for (var i = 0; i < scripts.length; i = i+1) {
             eval(scripts[i].innerHTML)
         }
@@ -188,29 +196,30 @@ TileObject.prototype = {
         }
     },
     showFront: function (){
-        $("#tile_body_" + this.tile_id + " .front").fadeIn()
+        $("#tile_body_" + this.tile_id + " .front").fadeIn();
         $("#tile_body_" + this.tile_id).flip(false);
         $("#tile_body_" + this.tile_id + " .back").fadeOut()
 
     },
     showBack: function (){
-        $("#tile_body_" + this.tile_id + " .back").fadeIn()
+        $("#tile_body_" + this.tile_id + " .back").fadeIn();
         $("#tile_body_" + this.tile_id).flip(true);
         $("#tile_body_" + this.tile_id + " .front").fadeOut()
 
     },
     spin_and_refresh: function () {
         // I'm chaining these with callbacks just to make sure they don't get out of order
-        broadcast_event_to_server("StartSpinner", {"tile_id": this.tile_id}, function () {
-            broadcast_event_to_server("RefreshTile", {"tile_id": this.tile_id}, function() {
-                broadcast_event_to_server("StopSpinner", {"tile_id": this.tile_id})
+        var self = this;
+        broadcast_event_to_server("StartSpinner", {"tile_id": self.tile_id}, function () {
+            broadcast_event_to_server("RefreshTile", {"tile_id": self.tile_id}, function() {
+                broadcast_event_to_server("StopSpinner", {"tile_id": self.tile_id})
             })
         })
 
     },
     refreshFromSave: function () {
-        broadcast_event_to_server("SetSizeFromSave", {"tile_id": this.tile_id}, function() {
-            broadcast_event_to_server("RefreshTileFromSave", {"tile_id": this.tile_id})
+        broadcast_event_to_server("SetSizeFromSave", {"tile_id": self.tile_id}, function() {
+            broadcast_event_to_server("RefreshTileFromSave", {"tile_id": self.tile_id})
         })
     },
     listen_for_clicks: function() {
@@ -244,7 +253,7 @@ TileObject.prototype = {
         $(".front").on('click', '.cell-clickable', function(e) {
 
             var tile_id = jQuery.data(e, "my_tile_id");
-            var txt = $(this).text()
+            var txt = $(this).text();
 
             var data_dict = {};
             var p = $(e.target).closest(".tile-panel")[0];
@@ -254,11 +263,11 @@ TileObject.prototype = {
         });
         $(".front").on('click', '.row-clickable', function(e) {
             //var cells = $(this).closest("tr").children()
-            var cells = $(this).children()
-            var row_vals = []
+            var cells = $(this).children();
+            var row_vals = [];
             cells.each(function() {
                 row_vals.push($(this).text())
-            })
+            });
             var tile_id = jQuery.data(e, "my_tile_id");
 
             var data_dict = {};
@@ -269,9 +278,9 @@ TileObject.prototype = {
         });
         $(".front").on('click', 'button', function(e) {
             var p = $(e.target).closest(".tile-panel")[0];
-            var data = {}
+            var data = {};
             data["tile_id"] = $(p).data("my_tile_id");
-            data["button_value"] = e.target.value
+            data["button_value"] = e.target.value;
             broadcast_event_to_server("TileButtonClick", data)
         });
     }

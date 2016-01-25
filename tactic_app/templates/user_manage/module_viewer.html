@@ -74,8 +74,10 @@
         var module_name = "{{module_name}}";
         window.onload = start_post_load;
         window.onbeforeunload = function(e) {
-            return "Any unsaved changes will be lost."
-        }
+            if (dirty()) {
+                return "Any unsaved changes will be lost."
+            }
+        };
         window.onresize = function () {
             $(".CodeMirror").css('height', window.innerHeight - $(".CodeMirror").offset().top - 20)
         }

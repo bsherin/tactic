@@ -1,5 +1,6 @@
 var socket;
 var console_visible;
+var dirty;
 
 var tooltip_dict = {
     "shrink-table-button": "shrink/expand table",
@@ -9,7 +10,7 @@ var tooltip_dict = {
     "unfilter-button": "show all rows",
     "show-console-button": "show/hide the console",
     "hide-console-button": "show/hide the console",
-    "clear-console-button": "clear console output",
+    "clear-console-button": "clear console output"
 };
 
 function initializeConsole() {
@@ -60,6 +61,7 @@ function expandConsole(){
 function start_post_load() {
     //spinner = new Spinner({scale: 1.0}).spin();
     //$("#loading-message").html(spinner.el);
+    dirty = false;
     $("#outer-container").css({"margin-left": String(MARGIN_SIZE) + "px"});
     $("#outer-container").css({"margin-right": String(MARGIN_SIZE) + "px"});
     $("#outer-container").css({"margin-top": "0px", "margin-bottom": "0px"});

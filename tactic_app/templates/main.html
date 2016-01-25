@@ -112,8 +112,10 @@
         tableObject.resize_table_area()
     };
     window.onbeforeunload = function(e) {
-        return "Any unsaved changes will be lost."
-    }
+        if (dirty) {
+            return "Any unsaved changes will be lost."
+        }
+    };
     window.onunload = function (e) {
         broadcast_event_to_server("MainClose", {})
     }

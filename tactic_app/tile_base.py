@@ -9,6 +9,7 @@ from tactic_app.shared_dicts import tokenizer_dict, weight_functions
 from users import load_user
 import sys
 from matplotlib_utilities import color_palette_names
+import numpy as np
 
 class TileBase(gevent.Greenlet):
     category = "basic"
@@ -573,6 +574,23 @@ class TileBase(gevent.Greenlet):
         the_html = "<div id='{}'><div class='d3plot'></div>".format(str(uid))
 
         the_script = "createScatterPlot('{0}', '{1}', '{2}')".format(self.tile_id, data_name, uid)
+        the_html += "<script>{}</script></div>".format(the_script)
+        return the_html
+
+    def create_heatmap(self, data, row_labels=None, margins=None, domain=None):
+        if margins is None:
+            margins = {"top": 20, "bottom": 20, "left": 20, "right": 20}
+        if row_labels is None:
+            row_labels = []
+
+        if domain is None:
+            domain = [np.amin(data), np.amax(data)]
+        data_name = self.create_data_source({"data_list": data, "row_labels": row_labels, "margins": margins, "domain": domain})
+        uid = self.get_unique_div_id()
+        the_html = "<div id='{}'><div class='d3plot'></div>".format(str(uid))
+
+
+        the_script = "createHeatmap('{0}', '{1}', '{2}')".format(self.tile_id, data_name, uid)
         the_html += "<script>{}</script></div>".format(the_script)
         return the_html
 
