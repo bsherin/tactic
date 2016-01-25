@@ -4,6 +4,10 @@
 
 var current_theme = "default";
 var mousetrap = new Mousetrap();
+var myCodeMirror;
+var savedCode = none;
+var savedTags = none;
+var savedNotes = none;
 
 mousetrap.bind("esc", function() {
     clearStatusArea();
@@ -20,7 +24,7 @@ mousetrap.bind(['command+l', 'ctrl+;l'], function(e) {
 });
 
 function start_post_load() {
-    codearea = document.getElementById("codearea");
+    var codearea = document.getElementById("codearea");
     myCodeMirror = CodeMirror.fromTextArea(codearea, {
         lineNumbers: true,
         matchBrackets: true,
@@ -33,7 +37,8 @@ function start_post_load() {
         cm.replaceSelection(spaces);
       }
     });
-    $(".CodeMirror").css('height', window.innerHeight - $(".CodeMirror").offset().top - 20)
+    $(".CodeMirror").css('height', window.innerHeight - $(".CodeMirror").offset().top - 20);
+    savedCode = myCodeMirror.getValue();
 
     var result_dict = {"res_type": "tile", "res_name": module_name};
     $.ajax({
@@ -47,9 +52,11 @@ function start_post_load() {
     });
     function got_metadata(data) {
         if (data.success) {
-            $("#tile-module .created").html(data.datestring)
+            $("#tile-module .created").html(data.datestring);
             $("#tile-tags")[0].value = data.tags;
             $("#tile-notes")[0].value = data.notes;
+            savedTags = data.tags;
+            savedNotes = data.notes
         }
         else {
             // doFlash(data)
@@ -59,6 +66,18 @@ function start_post_load() {
             $("#tile-notes")[0].value = "";
             $("#tile-notes").html("");
         }
+    }
+}
+
+function dirty() {
+    var the_code = myCodeMirror.getValue();
+    var tags = $("#tile-tags").val();
+    var notes = $("#tile-notes").val();
+    if ((the_code == savedCode) && (tags == savedTags) && (notes == savedNotes)) {
+        return false
+    }
+    else {
+        return true
     }
 }
 
@@ -78,7 +97,7 @@ function changeTheme() {
 function updateModule() {
     var new_code = myCodeMirror.getValue();
     var tags = $("#tile-tags").val();
-    var notes = $("#tile-notes").val()
+    var notes = $("#tile-notes").val();
     var result_dict = {
         "module_name": module_name,
         "new_code": new_code,
@@ -92,14 +111,20 @@ function updateModule() {
         async: true,
         data: JSON.stringify(result_dict),
         dataType: 'json',
-        success: doFlash
+        success: update_success
     });
+    function update_success(data) {
+        savedCode = new_code;
+        savedTags = tags;
+        savedNotes = notes;
+        doFlash(data)
+    }
 }
 
 function loadModule() {
     var new_code = myCodeMirror.getValue();
     var tags = $("#tile-tags").val();
-    var notes = $("#tile-notes").val()
+    var notes = $("#tile-notes").val();
     var result_dict = {
         "module_name": module_name,
         "new_code": new_code,
@@ -114,7 +139,8 @@ function loadModule() {
         data: JSON.stringify(result_dict),
         dataType: 'json',
         success: function () {
-            $.getJSON($SCRIPT_ROOT + '/load_tile_module/' + String(module_name), success=doFlash)
+            dirty = false;
+            $.getJSON($SCRIPT_ROOT + '/load_tile_module/' + String(module_name), doFlash)
         }
     });
 }

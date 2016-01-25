@@ -193,6 +193,7 @@ function column_command(menu_id) {
                 deselect_header(column_header);
                 tableObject.current_spec.shift_column_left(column_header);
                 tableObject.build_table();
+                dirty = true;
                 break;
             }
             case "shift-right":
@@ -200,6 +201,7 @@ function column_command(menu_id) {
                 deselect_header(column_header);
                 tableObject.current_spec.shift_column_right(column_header);
                 tableObject.build_table();
+                dirty = true;
                 break;
             }
             case "hide":
@@ -209,6 +211,7 @@ function column_command(menu_id) {
                 $(col_class).fadeOut();
                 //tableObject.current_spec.hidden_list.push(column_header);
                 hidden_columns_list.push(column_header);
+                dirty = true;
                 break;
             }
         }
@@ -216,9 +219,11 @@ function column_command(menu_id) {
     else if (menu_id == "unhide") {
         hidden_columns_list = ["__filename__"];
         tableObject.build_table();
+        dirty = true;
     }
     else if (menu_id == "add-column") {
-        createColumn()
+        createColumn();
+        dirty = true;
     }
 };
 
@@ -244,6 +249,9 @@ function createColumn() {
                 async: true,
                 data: JSON.stringify(data_dict),
                 dataType: 'json',
+                success: function () {
+                    dirty = true
+                }
             });
     })
 }
@@ -273,6 +281,7 @@ function saveProjectAs() {
                     $("#project-name").html(tableObject.project_name);
                     $("title").html(data_object["project_name"]);
                     data_object.alert_type = "alert-success";
+                    dirty = false;
                     doFlash(data_object)
                 }
             }
@@ -362,6 +371,7 @@ function tile_command(menu_id) {
                     }
                     tile_dict[data.tile_id] = new_tile_object;
                     new_tile_object.spin_and_refresh()
+                    dirty = true;
                 }
             }
         })
@@ -390,7 +400,10 @@ function save_project() {
         async: false,
         data: JSON.stringify(result_dict),
         dataType: 'json',
-        success: doFlash
+        success: function (data) {
+            dirty = false;
+            doFlash(data)
+        }
     });
 }
 
