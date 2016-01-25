@@ -30,11 +30,10 @@ MenuObject.prototype = {
     render_menu: function () {
         var self = this;
         var options_list = create_options_list();
-        var res = Mustache.to_html(menu_template, {
+        return Mustache.to_html(menu_template, {
             "menu_name": this.menu_name ,
             "options": options_list
         });
-        return res;
 
         function create_options_list() {
             var result = [];
@@ -70,13 +69,16 @@ MenuObject.prototype = {
             this.disable_menu_item(disable_list[i])
         }
     },
+
     enable_items: function (enable_list) {
         for (var i = 0; i < enable_list.length; ++i) {
             this.enable_menu_item(enable_list[i])
         }
     },
+
     perform_menu_item: function (menu_id) {
     },
+
     disable_menu_item: function (item_id) {
         $("#" + item_id).closest('li').addClass("disabled");
         var menu = menus[menu_item_index[item_id]];
@@ -106,9 +108,9 @@ MenuObject.prototype = {
 };
 
 function bind_to_keys(shortcuts) {
-    for (option in shortcuts) {
-        if (!shortcuts.hasOwnProperty()) continue;
-        mousetrap.bind(option.keys, function(e) {
+    for (var option in shortcuts) {
+        if (!shortcuts.hasOwnProperty(option)) continue;
+        mousetrap.bind(shortcuts[option].keys, function(e) {
             option.command();
             e.preventDefault()
         });
@@ -148,7 +150,7 @@ function build_and_render_menu_objects() {
     bind_to_keys(project_menu.shortcuts);
 
     // Create the tile_menus
-    for (category in tile_types) {
+    for (var category in tile_types) {
         if (!tile_types.hasOwnProperty(category)) {
             continue;
         }
@@ -164,7 +166,7 @@ function build_and_render_menu_objects() {
             if (menus.hasOwnProperty(m)) {
                 $("#menu-area").append(menus[m].render_menu())
             }
-        };
+        }
         $(".menu-item").click(function(e) {
             var item_id = e.currentTarget.id;
             var menu_name = menu_item_index[item_id];
@@ -180,7 +182,7 @@ function build_and_render_menu_objects() {
 
         function is_disabled (menu_id) {
             return $("#" + menu_id).parent().hasClass("disabled")
-        };
+        }
     }
 }
 
@@ -225,11 +227,11 @@ function column_command(menu_id) {
         createColumn();
         dirty = true;
     }
-};
+}
 
 function createColumn() {
     showModal("Create Columnm", "New Column Name", function (new_name) {
-            column_name = new_name;
+            var column_name = new_name;
             for (var doc in tablespec_dict) {
                 if (tablespec_dict.hasOwnProperty(doc)) {
                     tablespec_dict[doc].header_list.push(column_name)
@@ -334,7 +336,7 @@ function exportDataTable() {
     showModal("Export Data", "New Collection Name", function (new_name) {
             var result_dict = {
                 "export_name": new_name,
-                "main_id": main_id,
+                "main_id": main_id
             };
             $.ajax({
                 url: $SCRIPT_ROOT + "/export_data",
@@ -365,12 +367,12 @@ function tile_command(menu_id) {
             dataType: 'json',
             success: function (data) {
                 if (data.success) {
-                    new_tile_object = new TileObject(data.tile_id, data.html, true);
+                    var new_tile_object = new TileObject(data.tile_id, data.html, true);
                     if (table_is_shrunk) {
                          $(new_tile_object.full_selector()).addClass("tile-panel-float")
                     }
                     tile_dict[data.tile_id] = new_tile_object;
-                    new_tile_object.spin_and_refresh()
+                    new_tile_object.spin_and_refresh();
                     dirty = true;
                 }
             }
