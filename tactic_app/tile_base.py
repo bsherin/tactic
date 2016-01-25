@@ -11,6 +11,7 @@ import sys
 from matplotlib_utilities import color_palette_names
 import numpy as np
 
+
 class TileBase(gevent.Greenlet):
     category = "basic"
     exports = {}
@@ -26,12 +27,13 @@ class TileBase(gevent.Greenlet):
     boolean_template = '<div class="checkbox"><label style="font-weight: 700">'\
                        '<input type="checkbox" id="{0}" value="{0}" {1}>{0}</label>' \
                        '</div>'
+
     def __init__(self, main_id, tile_id, tile_name=None):
         self._my_q = Queue()
         gevent.Greenlet.__init__(self)
         self._sleepperiod = .0001
         self.save_attrs = ["current_html", "tile_id", "tile_type", "tile_name",
-              "width", "height", "full_tile_width", "full_tile_height", "is_shrunk"]
+                           "width", "height", "full_tile_width", "full_tile_height", "is_shrunk"]
 
         # These define the state of a tile and should be saved
 
@@ -49,7 +51,7 @@ class TileBase(gevent.Greenlet):
         self.figure_id = 0
         self.width = ""
         self.height = ""
-        self.file_tile_width = ""
+        self.full_tile_width = ""
         self.full_tile_height = ""
         self.img_dict = {}
         self.data_dict = {}
@@ -127,7 +129,8 @@ class TileBase(gevent.Greenlet):
                 form_html = self.create_form_html()
                 self.emit_tile_message("displayFormContent", {"html": form_html})
         except:
-            self.display_message("error in handle_event in " + self.__class__.__name__ + " tile: processing event " + event_name + " " +
+            self.display_message("error in handle_event in " + self.__class__.__name__ +
+                                 " tile: processing event " + event_name + " " +
                                  str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]), force_open=True)
         return
 
@@ -236,7 +239,8 @@ class TileBase(gevent.Greenlet):
             self.save_attrs = list(set(self.save_attrs))
             return form_html
         except:
-            self.display_message("error creating form for  " + self.__class__.__name__ + " tile: " + self.tile_id + " " +
+            self.display_message("error creating form for  " + self.__class__.__name__ +
+                                 " tile: " + self.tile_id + " " +
                                  str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]), force_open=True)
             return "error"
 
@@ -577,7 +581,7 @@ class TileBase(gevent.Greenlet):
         the_html += "<script>{}</script></div>".format(the_script)
         return the_html
 
-    def create_heatmap(self, data, row_labels=None, margins=None, domain=None):
+    def create_heatmap(self, data, row_labels=None, margins=None, domain=None, title=None):
         if margins is None:
             margins = {"top": 20, "bottom": 20, "left": 20, "right": 20}
         if row_labels is None:
@@ -585,7 +589,7 @@ class TileBase(gevent.Greenlet):
 
         if domain is None:
             domain = [np.amin(data), np.amax(data)]
-        data_name = self.create_data_source({"data_list": data, "row_labels": row_labels, "margins": margins, "domain": domain})
+        data_name = self.create_data_source({"data_list": data, "row_labels": row_labels, "margins": margins, "domain": domain, "title": title})
         uid = self.get_unique_div_id()
         the_html = "<div id='{}'><div class='d3plot'></div>".format(str(uid))
 

@@ -59,14 +59,15 @@ function createLinePlot(tile_id, data_source, target_element_id) {
     })
 }
 
+//noinspection JSUnusedGlobalSymbols
 function createHeatmap(tile_id, data_source, target_element_id) {
     var tda = $("#" + target_element_id).parent(".tile-display-area");
     var w = tda.width();
     var h = tda.height();
     getDataSource(tile_id, data_source, function (result) {
-        drawHeatmap(result.data.data_list, target_element_id, result.data.row_labels, result.data.margins, result.data.domain);
+        drawHeatmap(result.data.data_list, target_element_id, result.data.row_labels, result.data.margins, result.data.domain, result.data.title);
 
-        function drawHeatmap(data, target_element_id, labels, margin, domain) {
+        function drawHeatmap(data, target_element_id, labels, margin, domain, title) {
 
             colors = ['#005824','#1A693B','#347B53','#4F8D6B','#699F83','#83B09B','#9EC2B3','#B8D4CB','#D2E6E3','#EDF8FB','#FFFFFF','#F1EEF6','#E6D3E1','#DBB9CD','#D19EB9','#C684A4','#BB6990','#B14F7C','#A63467','#9B1A53','#91003F'];
             var colorScale = d3.scale.quantile()
@@ -86,10 +87,10 @@ function createHeatmap(tile_id, data_source, target_element_id) {
             var cellwidth = useable_width / data[0].length;
             var cellheight = useable_height / data.length;
 
-            data_with_rows = [];
+            var data_with_rows = [];
             for (var r = 0; r < data.length; ++r) {
-                the_row = data[r];
-                new_row = [];
+                var the_row = data[r];
+                var new_row = [];
                 for (var c = 0; c < the_row.length; ++c) {
                     new_row.push([r, the_row[c]])
                 }
@@ -100,7 +101,7 @@ function createHeatmap(tile_id, data_source, target_element_id) {
 
             gr.selectAll("rect").data(function (d) {return d;}).enter().append("rect")
                 .attr("x", function (d, i) {return margin.left + i * cellwidth;})
-                .attr("y", function (d, i) {return margin.top + d[0] * cellheight;})
+                .attr("y", function (d) {return margin.top + d[0] * cellheight;})
                 .attr("class", "cell cell-border")
                 .attr("width", cellwidth)
                 .attr("height", cellheight)
@@ -118,7 +119,7 @@ function createHeatmap(tile_id, data_source, target_element_id) {
                     .attr("class", "heatmap-rowLabel");
 
             }
-            var rows = data.length
+            var rows = data.length;
             var cols = data[0].length;
             var col_labels = [];
             for (var c = 0; c < cols; ++c) {
@@ -132,7 +133,17 @@ function createHeatmap(tile_id, data_source, target_element_id) {
                 .text(function (d) { return d; })
                 .attr("x", (function (d, i) { return margin.left + cellwidth * (i +.5); }))
                 .attr("y", margin.top + cellheight * rows + 10)
-                .attr("class", "heatmap-colLabel")
+                .attr("class", "heatmap-colLabel");
+
+            if (!(title == null)){
+                vis.append("text")
+                    .text(result.data.title)
+                    .attr("x", w / 2)
+                    .attr("y", margin.top / 2)
+                    .attr("class", "d3plot-title")
+                    .style("text-anchor", "middle")
+            }
+
         }
 
     })

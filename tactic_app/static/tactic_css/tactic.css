@@ -32,6 +32,9 @@
 .d3plot .heatmap-rowLabel {
   fill: #aaa; }
 
+.d3plot-title {
+  font-size: 14px; }
+
 /* tooltips */
 .tooltip .tooltip-inner {
   background-color: #fde930;
