@@ -170,7 +170,7 @@ function build_and_render_menu_objects() {
         $(".menu-item").click(function(e) {
             var item_id = e.currentTarget.id;
             var menu_name = menu_item_index[item_id];
-            //$(e.currentTarget).parents(".dropdown-menu").dropdown("toggle");
+            //$(e.currentTarget).parents(".dropdown-menu").dropdown("toggle")s;
             if (!is_disabled(item_id)) {
                 menus[menu_name].perform_menu_item(item_id)
             }

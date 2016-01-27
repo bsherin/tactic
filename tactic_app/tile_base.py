@@ -10,6 +10,24 @@ from users import load_user
 import sys
 from matplotlib_utilities import color_palette_names
 import numpy as np
+from bson.binary import Binary
+import cPickle
+import json
+from types import NoneType
+
+
+jsonizable_types = {
+    "str": str,
+    "list": list,
+    "tuple": tuple,
+    "unicode": unicode,
+    "int": int,
+    "float": float,
+    "long": long,
+    "bool": bool,
+    "dict": dict,
+    "NoneType": NoneType
+}
 
 
 class TileBase(gevent.Greenlet):
@@ -273,7 +291,19 @@ class TileBase(gevent.Greenlet):
                     res[key] = val.compile_save_dict()
                 result[attr] = res
             else:
-                result[attr] = attr_val
+                if type(attr_val) in jsonizable_types.values():
+                    try:
+                        _ = json.dumps(attr_val)
+                        result[attr] = attr_val
+                        continue
+                    except TypeError:
+                        pass
+                try:
+                    bser_attr_val = Binary(cPickle.dumps(attr_val))
+                    result[attr] = bser_attr_val
+                except TypeError:
+                    continue
+
         return result
 
     @staticmethod
@@ -296,8 +326,13 @@ class TileBase(gevent.Greenlet):
                     res[key] = cls.recreate_from_save(val)
                 setattr(new_instance, attr, res)
             else:
-                setattr(new_instance, attr, attr_val)
+                if isinstance(attr_val, Binary):
+                    decoded_val = cPickle.loads(str(attr_val.decode()))
+                    setattr(new_instance, attr, decoded_val)
+                else:
+                    setattr(new_instance, attr, attr_val)
         return new_instance
+
 
     @property
     def current_user(self):
