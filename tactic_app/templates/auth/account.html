@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}Account Management{% endblock %}
+
+{% block page_content %}
+    <div id="modal-area">
+    </div>
+    <div class="container-fluid">
+        <div class="page-header" style="margin-top: 5px">
+            <h1>{{current_user.username}}'s Account Info <span id="spinner" class="loader-small"></span>
+            </h1>
+        </div>
+        <div class="row">
+            <div class="col-xs-4" id="status-area"></div>
+        </div>
+        <div class = "row">
+            <div class="col-xs-4">
+                <form action="" method="post"
+                  class="form" role="form">
+                    <div style="display:none;"><input id="csrf_token" name="csrf_token" type="hidden" value="1441468278##9b809c12d360afbded41b2f23bca8644145708b9"></div>
+                    {% for field in fields %}
+                        <div class="form-group">
+                            <label for="field">{{field.name}}</label>
+                            <input type="text" class="form-control info-field" id="{{field.name}}" value="{{field.val}}">
+                        </div>
+                    {% endfor %}
+
+                    <div class="form-group  required"><label class="control-label" for="password">New Password</label>
+                            <input class="form-control" id="password" name="password" type="password" value="">
+                    </div>
+
+                    <div class="form-group  required"><label class="control-label" for="password2">Confirm New Password</label>
+                            <input class="form-control" id="password2" name="password2" type="password" value="">
+                    </div>
+
+                    <input class="btn btn-default" id="submit" name="submit" onclick="submit_account_info()" value="Update">
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+    <script src="{{url_for('static', filename='js/socket.io.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/utilities.js')}}"></script>
+{% endblock %}

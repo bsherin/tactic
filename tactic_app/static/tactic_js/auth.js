@@ -5,7 +5,7 @@
 
 $('.submitter-field').keypress(function(e) {
     if (e.which == 13) {
-        submit_login_info()
+        submit_login_info();
         e.preventDefault();
     }
 });
@@ -38,13 +38,49 @@ function attempt_open_register() {
     });
 }
 
-function return_from_submit_login(data, extStatus, jqXHR) {
+function return_from_submit_login(data) {
     if (data.logged_in) {
          window.open($SCRIPT_ROOT + "/user_manage", "_self")
     }
     else {
         doFlash({"message": "Login Failed", "alert_type": "alert-warning"})
     }
+}
+
+function submit_account_info() {
+    var pwd = $("#password").val();
+    var pwd2 = $("#password2").val();
+    var data = {};
+    if (pwd != "") {
+        if (pwd != pwd2) {
+            doFlash({"message": "Passwords don't match", "alert_type": "alert-warning"});
+            $("#password").val("");
+            $("#password2").val("");
+            return
+        }
+        data.password = pwd
+    }
+    $(".info-field").each(function () {
+        data[$(this).attr("id")] = $(this).val()
+    });
+
+    $.ajax({
+        url: $SCRIPT_ROOT + "/update_account_info",
+        contentType : 'application/json',
+        type : 'POST',
+        async: true,
+        data: JSON.stringify(data),
+        dataType: 'json',
+        success: function (result) {
+            if (result.success) {
+                doFlash({"message": "Account successfully updated", "alert_type": "alert-success"});
+            }
+            else {
+                data.alert_type = "alert-warning";
+                doFlash(data);
+            }
+        }
+    })
 }
 
 function submit_register_info() {
@@ -71,7 +107,7 @@ function submit_register_info() {
     });
 }
 
-function return_from_submit_register(data, extStatus, jqXHR) {
+function return_from_submit_register(data) {
     if (data.success) {
          window.open($SCRIPT_ROOT + "/login_after_register", "_self")
     }

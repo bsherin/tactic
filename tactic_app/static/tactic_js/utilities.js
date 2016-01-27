@@ -7,6 +7,7 @@ var tooltips_
 
 $.get($SCRIPT_ROOT + "/get_modal_template", function(template){
     modal_template = $(template).filter('#modal-template').html();
+    confirm_template = $(template).filter('#confirm-template').html();
 });
 
 function doFlash(data) {
@@ -70,6 +71,25 @@ function toggleTooltips() {
 
 function clearStatusArea() {
     $("#status-area").fadeOut()
+}
+
+function confirmDialog(modal_title, modal_text, cancel_text, submit_text, submit_function) {
+    var res = Mustache.to_html(confirm_template, {
+        "modal_title": modal_title,
+        "modal_text": modal_text,
+        "cancel_text": cancel_text,
+        "submit_text": submit_text
+    });
+
+    $("#modal-area").html(res);
+    $("#modal-dialog").modal();
+
+    $("#modal-submit-button").on("click", submit_handler);
+
+    function submit_handler() {
+        $("#modal-dialog").modal("hide");
+        submit_function()
+    }
 }
 
 function showModal(modal_title, field_title, submit_function, default_value) {

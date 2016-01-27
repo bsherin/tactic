@@ -29,7 +29,8 @@
                     <li><a href="https://github.com/bsherin/tactic/wiki">Documentation</a></li>
                     {% if current_user.is_authenticated() %}
                         <li><a href="{{ url_for('user_manage') }}">My Resources</a></li>
-                    <li><a href="" onclick="return doSignOut();">Sign Out</a></li>
+                        <li><a href="{{ url_for('account_info') }}">{{current_user.username}}</a></li>
+                        <li><a href="" onclick="return doSignOut();">Sign Out</a></li>
                     {% else %}
                     <li><a href="{{ url_for('login') }}">Sign In</a></li>
                     {% endif %}
