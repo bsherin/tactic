@@ -9,6 +9,7 @@ from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import Required, Length, Regexp, EqualTo
 from tactic_app.shared_dicts import user_tiles, loaded_user_modules
 from tactic_app import app, socketio, csrf
+from wtforms.validators import ValidationError
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/login', methods=['GET', 'POST'])
@@ -33,6 +34,14 @@ def attempt_login():
         result_dict["logged_in"] = False
     return jsonify(result_dict)
 
+@app.route('/check_if_admin', methods=["GET"])
+def check_if_admin():
+    result_dict = {}
+    if current_user.username == "repository":
+        result_dict["is_admin"] = True
+    else:
+        result_dict["is_admin"] = False
+    return jsonify(result_dict)
 
 @app.route('/logout')
 @login_required
@@ -48,7 +57,10 @@ def logout():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    return render_template('auth/register.html')
+    if current_user.username == "repository":
+        return render_template('auth/register.html')
+    else:
+        return render_template
 
 @app.route('/attempt_register',methods=['GET', 'POST'])
 def attempt_register():
@@ -77,4 +89,3 @@ class RegistrationForm(Form):
     def validate_username(self, field):
         if User.get_user_by_username(field.data):
             raise ValidationError('Username already in use.')
-
