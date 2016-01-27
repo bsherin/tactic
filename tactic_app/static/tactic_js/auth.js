@@ -27,6 +27,17 @@ function submit_login_info() {
     });
 }
 
+function attempt_open_register() {
+    $.getJSON($SCRIPT_ROOT + '/check_if_admin', function(data){
+        if (data.is_admin) {
+            window.open($SCRIPT_ROOT + "/register")
+        }
+        else {
+        doFlash({"message": "You aren't authorized. Email bsherin@northwestern.edu to request a new account.", "alert_type": "alert-info"})
+        }
+    });
+}
+
 function return_from_submit_login(data, extStatus, jqXHR) {
     if (data.logged_in) {
          window.open($SCRIPT_ROOT + "/user_manage", "_self")

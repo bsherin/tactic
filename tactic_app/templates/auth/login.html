@@ -28,16 +28,16 @@
 </div>
 <p>
     New user?
-    <a href="{{ url_for('register') }}">
-        Click here to register
-    </a>
+    <button class="btn btn-default" onclick="attempt_open_register()">Register</button>
 </p>
     </div>
 {% endblock %}
 {% block scripts %}
     <script src="{{url_for('static', filename='js/socket.io.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/utilities.js')}}"></script>
+
     <script>
+        current_user = "{{current_user.username}}"
         var _show_message = "{{show_message}}";
         window.onload = function() {
                 if (_show_message == "yes") {
