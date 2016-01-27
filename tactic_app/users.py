@@ -2,11 +2,14 @@
 # This module contains the User class machinery required by flask-login
 
 import re
+from collections import OrderedDict
 from flask.ext.login import UserMixin
 from flask_login import current_user
 from tactic_app import login_manager, db
 from bson.objectid import ObjectId
 from werkzeug.security import generate_password_hash, check_password_hash
+
+user_data_fields = ["username", "email", "full_name", "favorite_dumpling"]
 
 def put_docs_in_collection(collection_name, dict_list):
     return db[collection_name].insert_many(dict_list)
@@ -24,7 +27,11 @@ def load_user(userid):
 
 class User(UserMixin):
     def __init__(self, user_dict):
-        self.username = user_dict["username"]
+        for key in user_data_fields:
+            if key in user_dict:
+                setattr(self, key, user_dict[key])
+            else:
+                setattr(self, key, "")
         self.password_hash = user_dict["password_hash"]
 
     @staticmethod
@@ -35,6 +42,13 @@ class User(UserMixin):
         else:
             return User(result)
 
+    @property
+    def user_data_dict(self):
+        result = OrderedDict()
+        for key in user_data_fields:
+            result[key] = getattr(self, key)
+        return result
+
     def create_collection_meta_data(self, collection_type):
         result = {
             "username": self.username,
@@ -42,6 +56,23 @@ class User(UserMixin):
             "collection_type": collection_type
         }
         return result
+
+    def update_account(self, data_dict):
+        update_dict = {}
+        if "password" in data_dict:
+            if len(data_dict["password"]) < 4:
+                return {"success": False, "message": "Passwords must be at least 4 characters."}
+            update_dict["password_hash"] = generate_password_hash(data_dict["password"])
+        for (key, val) in data_dict.items():
+            if not key == "password":
+                update_dict[key] = val
+        try:
+            db["user_collection"].update_one({"username": self.username},
+                                                        {'$set': update_dict})
+            return {"success": True, "message": "Information successfully updated."}
+        except:
+            return {"success": False, "message": "Problem updating info."}
+        return
 
     @staticmethod
     def create_new(user_dict):
@@ -56,7 +87,9 @@ class User(UserMixin):
         if db.user_collection.find_one({"username": username}) is not None:
             return {"success": False, "message": "That username is taken.", "username": username}
         password_hash = generate_password_hash(password)
-        new_user_dict = {"username": username, "password_hash": password_hash}
+        new_user_dict = {"username": username,
+                         "password_hash": password_hash,
+                         "email": ""}
         db.user_collection.insert_one(new_user_dict)
         return {"success": True, "message": "", "username": username}
 

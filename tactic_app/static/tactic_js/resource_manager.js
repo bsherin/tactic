@@ -137,11 +137,14 @@ ResourceManager.prototype = {
         var manager = event.data.manager;
         var res_name = manager.check_for_selection(manager.res_type);
         if (res_name == "") return;
-        $('#list-selector .' + manager.res_type + '-selector-button.active').fadeOut();
-        $("#" + manager.res_type + "-module .created").html("");
-        $("#" + manager.res_type + "-tags").html("");
-        $("#" + manager.res_type + "-notes").html("");
-        $.post($SCRIPT_ROOT + manager.delete_view + String(res_name))
+        confirm_text = "Are you sure that you want to delete " + res_name + "?";
+        confirmDialog("Delete " + manager.res_type, confirm_text, "do nothing", "delete", function () {
+            $('#list-selector .' + manager.res_type + '-selector-button.active').fadeOut();
+            $("#" + manager.res_type + "-module .created").html("");
+            $("#" + manager.res_type + "-tags").html("");
+            $("#" + manager.res_type + "-notes").html("");
+            $.post($SCRIPT_ROOT + manager.delete_view + String(res_name))
+        })
     },
 
     repository_copy_func: function (event) {

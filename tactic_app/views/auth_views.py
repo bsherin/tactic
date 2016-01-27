@@ -37,9 +37,12 @@ def attempt_login():
 @app.route('/check_if_admin', methods=["GET"])
 def check_if_admin():
     result_dict = {}
-    if current_user.username == "repository":
-        result_dict["is_admin"] = True
-    else:
+    try:
+        if current_user.username == "repository":
+            result_dict["is_admin"] = True
+        else:
+            result_dict["is_admin"] = False
+    except AttributeError:
         result_dict["is_admin"] = False
     return jsonify(result_dict)
 
@@ -62,10 +65,27 @@ def register():
     else:
         return render_template
 
+@app.route('/account_info', methods=['GET', 'POST'])
+@login_required
+def account_info():
+    user_data = current_user.user_data_dict
+    field_list = []
+    for key, val in user_data.items():
+        if not key == "username":
+            field_list.append({"name": key, "val": val})
+    return render_template('auth/account.html', fields=field_list)
+
 @app.route('/attempt_register',methods=['GET', 'POST'])
 def attempt_register():
     data = request.json
     result_dict = User.create_new({"username": data["username"], "password": data["password"]})
+    return jsonify(result_dict)
+
+@app.route('/update_account_info',methods=['GET', 'POST'])
+@login_required
+def update_account_info():
+    data = request.json
+    result_dict = current_user.update_account(data)
     return jsonify(result_dict)
 
 @csrf.error_handler
