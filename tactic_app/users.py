@@ -4,15 +4,16 @@
 import re
 from collections import OrderedDict
 from flask.ext.login import UserMixin
-from flask_login import current_user
 from tactic_app import login_manager, db
 from bson.objectid import ObjectId
 from werkzeug.security import generate_password_hash, check_password_hash
 
 user_data_fields = ["username", "email", "full_name", "favorite_dumpling"]
 
+
 def put_docs_in_collection(collection_name, dict_list):
     return db[collection_name].insert_many(dict_list)
+
 
 @login_manager.user_loader
 def load_user(userid):
@@ -25,8 +26,10 @@ def load_user(userid):
     else:
         return User(result)
 
+
 class User(UserMixin):
     def __init__(self, user_dict):
+        self.username = ""  # This is just to be make introspection happy
         for key in user_data_fields:
             if key in user_dict:
                 setattr(self, key, user_dict[key])
@@ -68,11 +71,10 @@ class User(UserMixin):
                 update_dict[key] = val
         try:
             db["user_collection"].update_one({"username": self.username},
-                                                        {'$set': update_dict})
+                                             {'$set': update_dict})
             return {"success": True, "message": "Information successfully updated."}
         except:
             return {"success": False, "message": "Problem updating info."}
-        return
 
     @staticmethod
     def create_new(user_dict):
@@ -123,7 +125,7 @@ class User(UserMixin):
     @property
     def data_collections(self):
         cnames = db.collection_names()
-        string_start =self.username + ".data_collection."
+        string_start = self.username + ".data_collection."
         my_collection_names = []
         for cname in cnames:
             m = re.search(string_start + "(.*)", cname)
@@ -134,7 +136,7 @@ class User(UserMixin):
     @property
     def data_collection_names_with_metadata(self):
         cnames = db.collection_names()
-        string_start =self.username + ".data_collection."
+        string_start = self.username + ".data_collection."
         my_collection_names = []
         for cname in cnames:
             m = re.search(string_start + "(.*)", cname)
@@ -231,7 +233,7 @@ class User(UserMixin):
             dcollections = self.data_collections
             res_names = []
             for dcol in dcollections:
-                cname=self.build_data_collection_name(dcol)
+                cname = self.build_data_collection_name(dcol)
                 mdata = db[cname].find_one({"name": "__metadata__"})
                 if tag_filter is not None:
                     if mdata is not None and "tags" in mdata:
@@ -243,7 +245,8 @@ class User(UserMixin):
                 else:
                     res_names.append(dcol)
         else:
-            cnames = {"tile": self.tile_collection_name, "list": self.list_collection_name, "project": self.project_collection_name}
+            cnames = {"tile": self.tile_collection_name, "list": self.list_collection_name,
+                      "project": self.project_collection_name}
             name_keys = {"tile": "tile_module_name", "list": "list_name", "project": "project_name"}
             cname = cnames[res_type]
             name_key = name_keys[res_type]
@@ -263,8 +266,6 @@ class User(UserMixin):
                 else:
                     res_names.append(doc[name_key])
         return sorted([str(t) for t in res_names], key=str.lower)
-
-
 
     def get_list(self, list_name):
         list_dict = db[self.list_collection_name].find_one({"list_name": list_name})

@@ -1,5 +1,4 @@
-__author__ = 'bls910'
-from flask import render_template, redirect, request, url_for, flash, jsonify
+from flask import render_template, request, jsonify
 from flask.ext.login import login_user, login_required, logout_user
 from flask_login import current_user
 
@@ -11,16 +10,20 @@ from tactic_app.shared_dicts import user_tiles, loaded_user_modules
 from tactic_app import app, socketio, csrf
 from wtforms.validators import ValidationError
 
+
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     print "entering login view"
     return render_template('auth/login.html', after_register="no", message="", alert_type="")
 
+
 @app.route('/login_after_register', methods=['GET', 'POST'])
 def login_after_register():
     print "entering login view"
-    return render_template('auth/login.html', show_message="yes", message="You can now log in.", alert_type="alert-success")
+    return render_template('auth/login.html', show_message="yes",
+                           message="You can now log in.", alert_type="alert-success")
+
 
 @app.route('/attempt_login', methods=['GET', 'POST'])
 def attempt_login():
@@ -34,6 +37,7 @@ def attempt_login():
         result_dict["logged_in"] = False
     return jsonify(result_dict)
 
+
 @app.route('/check_if_admin', methods=["GET"])
 def check_if_admin():
     result_dict = {}
@@ -46,6 +50,7 @@ def check_if_admin():
         result_dict["is_admin"] = False
     return jsonify(result_dict)
 
+
 @app.route('/logout')
 @login_required
 def logout():
@@ -56,7 +61,9 @@ def logout():
     if current_user.username in loaded_user_modules:
         del loaded_user_modules[current_user.username]
     logout_user()
-    return render_template('auth/login.html', show_message="yes", message="You have been logged out.", alert_type="alert-info")
+    return render_template('auth/login.html', show_message="yes",
+                           message="You have been logged out.", alert_type="alert-info")
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -64,6 +71,7 @@ def register():
         return render_template('auth/register.html')
     else:
         return render_template
+
 
 @app.route('/account_info', methods=['GET', 'POST'])
 @login_required
@@ -75,22 +83,26 @@ def account_info():
             field_list.append({"name": key, "val": val})
     return render_template('auth/account.html', fields=field_list)
 
-@app.route('/attempt_register',methods=['GET', 'POST'])
+
+@app.route('/attempt_register', methods=['GET', 'POST'])
 def attempt_register():
     data = request.json
     result_dict = User.create_new({"username": data["username"], "password": data["password"]})
     return jsonify(result_dict)
 
-@app.route('/update_account_info',methods=['GET', 'POST'])
+
+@app.route('/update_account_info', methods=['GET', 'POST'])
 @login_required
 def update_account_info():
     data = request.json
     result_dict = current_user.update_account(data)
     return jsonify(result_dict)
 
+
 @csrf.error_handler
 def csrf_error(reason):
     return login('auth/login.html', show_message="yes", message=reason), 400
+
 
 class LoginForm(Form):
     username = StringField('Username', validators=[Required(), Length(1, 64)])
@@ -98,10 +110,12 @@ class LoginForm(Form):
     remember_me = BooleanField('Keep me logged in')
     submit = SubmitField('Log In')
 
+
 class RegistrationForm(Form):
-    username = StringField('Username', validators=[Required(), Length(1, 64), Regexp('^[A-Za-z][A-Za-z0-9_.]*$', 0,
-                                          'Usernames must have only letters, '
-                                          'numbers, dots or underscores')])
+    username = StringField('Username',
+                           validators=[Required(), Length(1, 64),
+                                       Regexp('^[A-Za-z][A-Za-z0-9_.]*$', 0,
+                                              'Usernames must have only letters, numbers, dots or underscores')])
     password = PasswordField('Password', validators=[Required(), EqualTo('password2', message='Passwords must match.')])
     password2 = PasswordField('Confirm password', validators=[Required()])
     submit = SubmitField('Register')

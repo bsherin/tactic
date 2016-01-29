@@ -25,6 +25,7 @@ def on_join(data):
 # Views for creating and saving a new project
 # As well as for updating an existing project.
 
+
 @app.route('/save_new_project', methods=['POST'])
 @login_required
 def save_new_project():
@@ -274,6 +275,7 @@ def figure_source(main_id, tile_id, figure_name):
     img = mainwindow_instances[main_id].tile_instances[tile_id].img_dict[figure_name]
     return send_file(img, mimetype='image/png')
 
+
 @app.route('/data_source/<main_id>/<tile_id>/<data_name>', methods=['GET'])
 @login_required
 def data_source(main_id, tile_id, data_name):
@@ -284,6 +286,7 @@ def data_source(main_id, tile_id, data_name):
         error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         mainwindow_instances[main_id].handle_exception("Error getting data " + error_string)
         return jsonify({"success": False})
+
 
 # noinspection PyUnresolvedReferences
 @app.route('/create_tile_request/<tile_type>', methods=['GET', 'POST'])
