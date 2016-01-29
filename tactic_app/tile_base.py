@@ -50,8 +50,8 @@ class TileBase(gevent.Greenlet):
         self._my_q = Queue()
         gevent.Greenlet.__init__(self)
         self._sleepperiod = .0001
-        self.save_attrs = ["current_html", "tile_id", "tile_type", "tile_name",
-                           "width", "height", "full_tile_width", "full_tile_height", "is_shrunk"]
+        self.save_attrs = ["current_html", "tile_id", "tile_type", "tile_name", "main_id",
+                           "width", "height", "full_tile_width", "full_tile_height", "is_shrunk", "img_dict", "current_fig_id"]
 
         # These define the state of a tile and should be saved
 
@@ -313,7 +313,7 @@ class TileBase(gevent.Greenlet):
         if tile_cls is None:
             print "Missing Tile type"
             return None
-        new_instance = tile_cls(-1, save_dict["tile_id"], save_dict["tile_name"])
+        new_instance = tile_cls(save_dict["main_id"], save_dict["tile_id"], save_dict["tile_name"])
         for(attr, attr_val) in save_dict.items():
             if type(attr_val) == dict and hasattr(attr_val, "recreate_from_save"):
                 cls = getattr(sys.modules[__name__], attr_val["my_class_for_recreate"])

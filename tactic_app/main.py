@@ -5,6 +5,7 @@ from tactic_app import db
 from flask_login import current_user
 import pymongo
 import sys
+import uuid
 
 # noinspection PyUnresolvedReferences
 from tile_base import TileBase  # This is needed from recreating tiles from saves
@@ -18,8 +19,6 @@ from tactic_app import socketio
 
 from tactic_app import CHUNK_SIZE, STEP_SIZE
 INITIAL_LEFT_FRACTION = .69
-
-current_main_id = 0
 
 
 # noinspection PyProtectedMember
@@ -184,13 +183,12 @@ class docInfo:
 # noinspection PyPep8Naming
 class mainWindow(gevent.Greenlet):
     save_attrs = ["short_collection_name", "collection_name", "current_tile_id", "tile_sort_list", "left_fraction", "is_shrunk",
-                  "user_id", "doc_dict", "tile_instances", "project_name", "loaded_modules", "hidden_columns_list"]
+                  "user_id", "doc_dict", "tile_instances", "project_name", "loaded_modules", "hidden_columns_list", "_main_id"]
     update_events = ["CellChange", "CreateColumn", "SearchTable", "SaveTableSpec", "MainClose",
                      "DehighlightTable", "SetCellContent", "RemoveTile", "ColorTextInCell",
                      "FilterTable", "UnfilterTable", "TextSelect", "UpdateSortList", "UpdateLeftFraction", "UpdateTableShrinkState"]
 
-    def __init__(self, user_id, collection_name, doc_dict=None):
-        global current_main_id
+    def __init__(self, user_id, collection_name, doc_dict=None, main_id=None):
         self._my_q = Queue()
         gevent.Greenlet.__init__(self)
         self._sleepperiod = .0001
@@ -211,8 +209,10 @@ class mainWindow(gevent.Greenlet):
 
         # These are working attributes that will change whenever the project is instantiated.
         self.current_tile_id = 0
-        self._main_id = str(current_main_id)
-        current_main_id += 1
+        if main_id is None:
+            self._main_id = str(uuid.uuid4())
+        else:
+            self._main_id = main_id
         self._change_list = []
         self.visible_doc_name = None
         self._pipe_dict = {}
@@ -237,7 +237,10 @@ class mainWindow(gevent.Greenlet):
 
     @staticmethod
     def recreate_from_save(save_dict):
-        new_instance = mainWindow(save_dict["user_id"], save_dict["collection_name"])
+        if "_main_id" in save_dict:
+            new_instance = mainWindow(save_dict["user_id"], save_dict["collection_name"], main_id=save_dict["_main_id"])
+        else:
+            new_instance = mainWindow(save_dict["user_id"], save_dict["collection_name"])
         for (attr, attr_val) in save_dict.items():
             if type(attr_val) == dict and ("my_class_for_recreate" in attr_val):
                 cls = getattr(sys.modules[__name__], attr_val["my_class_for_recreate"])
@@ -255,7 +258,6 @@ class mainWindow(gevent.Greenlet):
         # Each tile needs to know the main_id it's associated with.
         # Also I have to build the pipe machinery.
         for tile in new_instance.tile_instances.values():
-            tile.main_id = new_instance._main_id
             if len(tile.exports) > 0:
                 if tile.tile_id not in new_instance._pipe_dict:
                     new_instance._pipe_dict[tile.tile_id] = {}
