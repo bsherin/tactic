@@ -8,21 +8,21 @@ import numpy
 import StringIO
 
 color_map_specs = [["Yellows", {'red': [(0.0, 0.0, 1.0), (1.0,  1.0, 1.0)],
-                                 'green': [(0.0, 0.0, 1.0), (1.0, 1.0, 1.0)],
-                                 'blue': [(0.0, 0.0, 1.0), (1.0, 0.0, 0.0)]}],
-                   ["NeonPurples", {'red':[(0.0, 0.0, 1.0), (1.0, 1.0, 1.0)],
+                                'green': [(0.0, 0.0, 1.0), (1.0, 1.0, 1.0)],
+                                'blue': [(0.0, 0.0, 1.0), (1.0, 0.0, 0.0)]}],
+                   ["NeonPurples", {'red': [(0.0, 0.0, 1.0), (1.0, 1.0, 1.0)],
                                     'green': [(0.0, 0.0, 1.0), (1.0, 0.0, 1.0)],
                                     'blue': [(0.0, 0.0, 1.0), (1.0, 1.0, 0.0)]}],
-                   ["LightBlues",{'red':[(0.0, 1.0, 1.0), (1.0,  0.0, 1.0)],
-                                    'green': [(0.0, 1.0, 1.0), (1.0, 1.0, 1.0)],
-                                    'blue': [(0.0, 1.0, 1.0), (1.0, 1.0, 0.0)]}],
-                   ["NeonBlues",{'red':[(0.0, 1.0, 1.0), (1.0,  0.25, 1.0)],
-                                    'green': [(0.0, 1.0, 1.0), (1.0, .25, 1.0)],
-                                    'blue': [(0.0, 1.0, 1.0), (1.0, 1.0, 0.0)]}],
-                   ["NeonGreens", {'red':[(0.0, 0.0, 1.0), (1.0,  .25, 1.0)],
-                                   'green': [(0.0, 0.0, 1.0),(1.0, 1.0, 1.0)],
+                   ["LightBlues", {'red': [(0.0, 1.0, 1.0), (1.0,  0.0, 1.0)],
+                                   'green': [(0.0, 1.0, 1.0), (1.0, 1.0, 1.0)],
+                                   'blue': [(0.0, 1.0, 1.0), (1.0, 1.0, 0.0)]}],
+                   ["NeonBlues", {'red': [(0.0, 1.0, 1.0), (1.0,  0.25, 1.0)],
+                                  'green': [(0.0, 1.0, 1.0), (1.0, .25, 1.0)],
+                                  'blue': [(0.0, 1.0, 1.0), (1.0, 1.0, 0.0)]}],
+                   ["NeonGreens", {'red': [(0.0, 0.0, 1.0), (1.0,  .25, 1.0)],
+                                   'green': [(0.0, 0.0, 1.0), (1.0, 1.0, 1.0)],
                                    'blue': [(0.0, 0.0, 1.0), (1.0, .25, 0.0)]}],
-                   ["Browns", {'red':[(0.0, 0.0, 1.0), (1.0,  .7, 1.0)],
+                   ["Browns", {'red': [(0.0, 0.0, 1.0), (1.0,  .7, 1.0)],
                                'green': [(0.0, 0.0, 1.0), (1.0, .45, 1.0)],
                                'blue': [(0.0, 0.0, 1.0), (1.0, .25, 0.0)]}]]
 
@@ -31,10 +31,11 @@ for spec in color_map_specs:
 
 color_palette_names = sorted(m for m in datad if not m.endswith("_r"))
 
+
 class MplFigure(Figure):
-    ## kwargs for mplfigure are dpi and title
-    def __init__ (self, data, width, height,  **kwargs):
-        if ("dpi" in kwargs):
+    # kwargs for mplfigure are dpi and title
+    def __init__(self, data, width, height,  **kwargs):
+        if "dpi" in kwargs:
             dpi = kwargs["dpi"]
         else:
             dpi = 80
@@ -58,9 +59,10 @@ class MplFigure(Figure):
 
     def convert_figure_to_img(self):
         canvas=FigureCanvas(self) # This does seem to be necessary or savefig won't work.
-        img = StringIO.StringIO()
-        self.savefig(img)
-        img.seek(0)
+        img_file = StringIO.StringIO()
+        self.savefig(img_file)
+        img_file.seek(0)
+        img = img_file.getvalue()
         return img
 
 class GraphList(MplFigure):
@@ -76,6 +78,32 @@ class GraphList(MplFigure):
             ax.set_xticklabels(self.kwargs["xlabels"], rotation='vertical')
         if self.title is not None:
             ax.set_title(self.title, fontsize=10)
+        self.tight_layout()
+        return
+
+class DispersionPlot(MplFigure):
+    def draw_plot(self):
+        text = self.data[0]
+        words = self.data[1]
+        ax = self.add_subplot(111)
+
+        text = list(text)
+        text = list(map(str, text))  # deals with there being unicode
+        words = list(map(str, words))
+        words.reverse()
+        words_to_comp = list(map(str.lower, words))
+        text_to_comp = list(map(str.lower, text))
+
+        points = [(x,y) for x in range(len(text_to_comp))
+                for y in range(len(words_to_comp))
+                if text_to_comp[x] == words_to_comp[y]]
+
+        if len(points) > 0:
+            x, y = list(zip(*points))
+            ax.plot(x, y, "b|", scalex=.1)
+            ax.set_yticks(range(len(words)))
+            ax.set_yticklabels(words)
+            ax.set_ylim(-1, len(words))
         self.tight_layout()
         return
 

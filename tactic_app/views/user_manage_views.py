@@ -85,19 +85,24 @@ class ResourceManager(object):
         return the_html
 
     def build_resource_array(self, res_list):
-        larray = [["Name", "Created", "Tags"]]
+        larray = [["Name", "Created", "Updated", "Tags"]]
         for res_item in res_list:
             mdata = res_item[1]
             if mdata is None:
                 datestring = ""
                 tagstring = ""
+                updatestring = ""
             else:
                 if "datetime" in mdata:
                     datestring = mdata["datetime"].strftime("%b %d, %Y, %H:%M")
                 else:
                     datestring = ""
+                if "updated" in mdata:
+                    updatestring = mdata["updated"].strftime("%b %d, %Y, %H:%M")
+                else:
+                    updatestring = ""
                 tagstring = str(mdata["tags"])
-            larray.append([res_item[0], datestring, tagstring])
+            larray.append([res_item[0], datestring, updatestring, tagstring])
         return larray
 
 
@@ -441,6 +446,7 @@ class ProjectManager(ResourceManager):
         main_id = create_new_mainwindow_from_project(project_dict)
         doc_names = mainwindow_instances[main_id].doc_names
         short_collection_name = mainwindow_instances[main_id].short_collection_name
+        mainwindow_instances[main_id].mdata = project_dict["metadata"]
 
         # We want to do this in case there were some additional modules loaded
         # the loaded_modules must be a list to be easily saved to pymongo
@@ -747,9 +753,11 @@ def update_module():
             mdata = {}
         mdata["tags"] = data_dict["tags"]
         mdata["notes"] = data_dict["notes"]
+        mdata["updated"] = datetime.datetime.today()
 
         db[current_user.tile_collection_name].update_one({"tile_module_name": module_name},
                                                          {'$set': {"tile_module": module_code, "metadata": mdata}})
+        tile_manager.update_selector_list()
         return jsonify({"success": True, "message": "Module Successfully Saved", "alert_type": "alert-success"})
     except:
         error_string = "Error saving module " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])

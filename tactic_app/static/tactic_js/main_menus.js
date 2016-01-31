@@ -284,6 +284,7 @@ function saveProjectAs() {
                     $("#project-name").html(tableObject.project_name);
                     $("title").html(data_object["project_name"]);
                     data_object.alert_type = "alert-success";
+                    _project_name = data_object.project_name;  // When menus recreated, it checks _project_name
                     dirty = false;
                     doFlash(data_object)
                 }
@@ -369,9 +370,7 @@ function tile_command(menu_id) {
             success: function (data) {
                 if (data.success) {
                     var new_tile_object = new TileObject(data.tile_id, data.html, true);
-                    if (table_is_shrunk) {
-                         $(new_tile_object.full_selector()).addClass("tile-panel-float")
-                    }
+
                     tile_dict[data.tile_id] = new_tile_object;
                     new_tile_object.spin_and_refresh();
                     dirty = true;

@@ -1,4 +1,5 @@
 import sys
+import datetime
 from tactic_app import app, db, socketio
 from flask import request, jsonify, render_template, send_file, url_for
 from flask_login import current_user, login_required
@@ -7,7 +8,7 @@ from tactic_app.shared_dicts import tile_classes, user_tiles, loaded_user_module
 from tactic_app.shared_dicts import mainwindow_instances, distribute_event, create_initial_metadata
 from user_manage_views import project_manager, collection_manager
 import openpyxl
-import StringIO
+import cStringIO
 
 
 # The main window should join a room associated with the user
@@ -64,6 +65,8 @@ def update_project():
         for (dname, spec) in tspec_dict.items():
             mainwindow_instances[data_dict['main_id']].doc_dict[dname].table_spec = spec
         save_dict = mainwindow_instances[data_dict['main_id']].compile_save_dict()
+        mainwindow_instances[data_dict['main_id']].mdata["updated"] = datetime.datetime.today()
+        save_dict["metadata"] = mainwindow_instances[data_dict['main_id']].mdata
 
         db[current_user.project_collection_name].update_one({"project_name": save_dict["project_name"]},
                                                             {'$set': save_dict})
@@ -94,7 +97,7 @@ def download_table(main_id, new_name):
     doc_info = mw.doc_dict[mw.visible_doc_name]
     data_rows = doc_info.all_sorted_data_rows
     header_list = doc_info.header_list
-    str_io = StringIO.StringIO()
+    str_io = cStringIO.StringIO()
     for header in header_list[:-1]:
         str_io.write(str(header) + ',')
     str_io.write(str(header_list[-1]) + '\n')
@@ -129,7 +132,7 @@ def download_collection(main_id, new_name):
             for c, header in enumerate(header_list, start=1):
                 _ = ws.cell(row=r, column=c, value=row[header])
     virtual_notebook = openpyxl.writer.excel.save_virtual_workbook(wb)
-    str_io = StringIO.StringIO()
+    str_io = cStringIO.StringIO()
     str_io.write(virtual_notebook)
     str_io.seek(0)
     return send_file(str_io,
@@ -191,6 +194,8 @@ def grab_next_chunk(main_id, doc_name):
 @login_required
 def grab_previous_chunk(main_id, doc_name):
     step_amount = mainwindow_instances[main_id].doc_dict[doc_name].go_to_previous_chunk()
+    if step_amount is None:  # This shouldn't happen
+        return
     return jsonify({"doc_name": doc_name,
                     "data_rows": mainwindow_instances[main_id].doc_dict[doc_name].displayed_data_rows,
                     "background_colors": mainwindow_instances[main_id].doc_dict[doc_name].displayed_background_colors,
@@ -211,6 +216,8 @@ def grab_project_data(main_id, doc_name):
                     "data_rows": mw.doc_dict[doc_name].displayed_data_rows,
                     "background_colors": mainwindow_instances[main_id].doc_dict[doc_name].displayed_background_colors,
                     "hidden_columns_list": mw.hidden_columns_list,
+                    "is_last_chunk": mainwindow_instances[main_id].doc_dict[doc_name].is_last_chunk,
+                    "is_first_chunk": mainwindow_instances[main_id].doc_dict[doc_name].is_first_chunk,
                     "tablespec_dict": mw.tablespec_dict()})
 
 
@@ -273,7 +280,10 @@ def distribute_events_stub(event_name):
 @login_required
 def figure_source(main_id, tile_id, figure_name):
     img = mainwindow_instances[main_id].tile_instances[tile_id].img_dict[figure_name]
-    return send_file(img, mimetype='image/png')
+    img_file = cStringIO.StringIO()
+    img_file.write(img)
+    img_file.seek(0)
+    return send_file(img_file, mimetype='image/png')
 
 
 @app.route('/data_source/<main_id>/<tile_id>/<data_name>', methods=['GET'])
@@ -318,10 +328,36 @@ def create_tile_from_save_request(tile_id):
         tile_instance = mainwindow_instances[main_id].tile_instances[tile_id]
         tile_instance.figure_url = url_for("figure_source", main_id=main_id, tile_id=tile_id, figure_name="X")[:-1]
         form_html = tile_instance.create_form_html()
-        result = render_template("tile.html", tile_id=tile_id,
+        if tile_instance.is_shrunk:
+            dsr_string = ""
+            dbr_string = "display: none"
+            bda_string = "display: none"
+            main_height = tile_instance.header_height
+        else:
+            dsr_string = "display: none"
+            dbr_string = ""
+            bda_string = ""
+            main_height = tile_instance.full_tile_height
+        result = render_template("saved_tile.html", tile_id=tile_id,
                                  tile_name=tile_instance.tile_name,
-                                 form_text=form_html)
-        return jsonify({"html": result, "tile_id": tile_id, "is_shrunk": tile_instance.is_shrunk})
+                                 form_text=form_html,
+                                 current_html=tile_instance.current_html,
+                                 whole_width=tile_instance.full_tile_width,
+                                 whole_height=main_height,
+                                 front_height=tile_instance.front_height,
+                                 front_width=tile_instance.front_width,
+                                 back_height=tile_instance.back_height,
+                                 back_width=tile_instance.back_width,
+                                 tda_height=tile_instance.tda_height,
+                                 tda_width=tile_instance.tda_width,
+                                 is_strunk=tile_instance.is_shrunk,
+                                 triangle_right_display_string=dsr_string,
+                                 triangle_bottom_display_string=dbr_string,
+                                 front_back_display_string=bda_string
+
+                                 )
+        return jsonify({"html": result, "tile_id": tile_id, "is_shrunk": tile_instance.is_shrunk,
+                        "saved_size": tile_instance.full_tile_height})
     except:
         error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         mainwindow_instances[main_id].handle_exception("Error creating tile from save " + error_string)

@@ -360,7 +360,7 @@ function search_resource_tags(event) {
     var all_rows = $("#" + res_type + "-selector tbody tr");
     $.each(all_rows, function (index, row_element) {
         var cells = $(row_element).children();
-        var tag_text = $(cells[2]).text().toLowerCase();
+        var tag_text = $(cells[3]).text().toLowerCase();
         if (tag_text.search(txt) == -1) {
             $(row_element).fadeOut()
         }
@@ -374,7 +374,7 @@ function search_repository_resource_tags(event) {
     var all_rows = $("#repository-" + res_type + "-selector tbody tr");
     $.each(all_rows, function (index, row_element) {
         var cells = $(row_element).children();
-        var tag_text = $(cells[2]).text().toLowerCase();
+        var tag_text = $(cells[3]).text().toLowerCase();
         if (tag_text.search(txt) == -1) {
             $(row_element).fadeOut()
         }

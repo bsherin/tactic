@@ -38,6 +38,7 @@ def get_tile_class(username, tile_type):
 
 def create_initial_metadata():
     mdata = {"datetime": datetime.datetime.today(),
+             "updated": datetime.datetime.today(),
              "tags": "",
              "notes": ""}
     return mdata

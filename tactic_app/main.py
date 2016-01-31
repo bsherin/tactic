@@ -28,18 +28,22 @@ def create_new_mainwindow(user_id, collection_name):
     mw.start()
     return mw._main_id
 
+
 # noinspection PyProtectedMember
 def create_new_mainwindow_from_project(project_dict):
     mw = mainWindow.recreate_from_save(project_dict)
+    mw.mdata = project_dict["metadata"]
     mainwindow_instances[mw._main_id] = mw
     mw.start()
     return mw._main_id
+
 
 def delete_mainwindow(main_id):
     # I think this is happening from within the greenlet that I'm closing.
     # So I have to do the join at the very end
     mainwindow_instances[main_id].kill()
     del mainwindow_instances[main_id]
+
 
 # noinspection PyPep8Naming
 class docInfo:
@@ -154,7 +158,7 @@ class docInfo:
 
     def go_to_previous_chunk(self):
         if self.is_first_chunk:
-            return
+            return None
         old_start = self.start_of_current_chunk
         self.start_of_current_chunk = self.start_of_current_chunk - STEP_SIZE
         self.is_last_chunk = False
@@ -182,11 +186,13 @@ class docInfo:
 
 # noinspection PyPep8Naming
 class mainWindow(gevent.Greenlet):
-    save_attrs = ["short_collection_name", "collection_name", "current_tile_id", "tile_sort_list", "left_fraction", "is_shrunk",
-                  "user_id", "doc_dict", "tile_instances", "project_name", "loaded_modules", "hidden_columns_list", "_main_id"]
+    save_attrs = ["short_collection_name", "collection_name", "current_tile_id", "tile_sort_list", "left_fraction",
+                  "is_shrunk", "user_id", "doc_dict", "tile_instances", "project_name", "loaded_modules",
+                  "hidden_columns_list", "_main_id"]
     update_events = ["CellChange", "CreateColumn", "SearchTable", "SaveTableSpec", "MainClose",
                      "DehighlightTable", "SetCellContent", "RemoveTile", "ColorTextInCell",
-                     "FilterTable", "UnfilterTable", "TextSelect", "UpdateSortList", "UpdateLeftFraction", "UpdateTableShrinkState"]
+                     "FilterTable", "UnfilterTable", "TextSelect", "UpdateSortList", "UpdateLeftFraction",
+                     "UpdateTableShrinkState"]
 
     def __init__(self, user_id, collection_name, doc_dict=None, main_id=None):
         self._my_q = Queue()
@@ -242,16 +248,20 @@ class mainWindow(gevent.Greenlet):
         else:
             new_instance = mainWindow(save_dict["user_id"], save_dict["collection_name"])
         for (attr, attr_val) in save_dict.items():
-            if type(attr_val) == dict and ("my_class_for_recreate" in attr_val):
-                cls = getattr(sys.modules[__name__], attr_val["my_class_for_recreate"])
-                setattr(new_instance, attr, cls.recreate_from_save(attr_val))
-            elif (type(attr_val) == dict) and (len(attr_val) > 0) and ("my_class_for_recreate" in attr_val.values()[0]):
-                cls = getattr(sys.modules[__name__], attr_val.values()[0]["my_class_for_recreate"])
-                res = {}
-                for (key, val) in attr_val.items():
-                    res[key] = cls.recreate_from_save(val)
-                setattr(new_instance, attr, res)
-            else:
+            try:
+                if type(attr_val) == dict and ("my_class_for_recreate" in attr_val):
+                    cls = getattr(sys.modules[__name__], attr_val["my_class_for_recreate"])
+                    setattr(new_instance, attr, cls.recreate_from_save(attr_val))
+                elif (type(attr_val) == dict) and (len(attr_val) > 0) and \
+                        ("my_class_for_recreate" in attr_val.values()[0]):
+                    cls = getattr(sys.modules[__name__], attr_val.values()[0]["my_class_for_recreate"])
+                    res = {}
+                    for (key, val) in attr_val.items():
+                        res[key] = cls.recreate_from_save(val)
+                    setattr(new_instance, attr, res)
+                else:
+                    setattr(new_instance, attr, attr_val)
+            except TypeError:
                 setattr(new_instance, attr, attr_val)
 
         # There's some extra work I have to do once all of the tiles are built.

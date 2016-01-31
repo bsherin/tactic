@@ -28,8 +28,9 @@
     <div id="outer-container" style="display: none">
         <div class="grid-left" align="left">
             <div id="main-panel" class="panel panel-default">
-                <div class="panel-heading" id="data-title" style="padding-top: 5px; padding-bottom: 5px">
-                <button type='button' id="shrink-table-button" data-toggle="tooltip" class='notclose tooltip-top' onclick="tableObject.shrinkTable()"><span style="font-size:15px" class="glyphicon glyphicon-th"></span></button>
+                <div class="panel-heading" id="data-title" style="padding-top: 5px; padding-bottom: 5px; overflow:hidden">
+                <div class="main-heading-element" style="float:left; white-space: nowrap">
+                    <button type='button' id="shrink-table-button" data-toggle="tooltip" class='notclose tooltip-top' onclick="tableObject.shrinkTable()"><span style="font-size:15px" class="glyphicon glyphicon-th"></span></button>
                     <form class="form-inline" style="display:inline">
                       <span class="form-group">
                         <label for="doc-selector" style="padding-left: 5px">{{short_collection_name}}: </label>
@@ -40,9 +41,10 @@
                             </select>
                         </span>
                     </form>
-
                     <span style="font-weight: bold; padding-left:5px"> Project: <span id="project-name" style="font-weight: normal">{{project_name}}</span></span>
-                    <form class="form-inline" style="display:inline; float:right">
+                </div>
+                <div class="main-heading-element" style="float:right; white-space: nowrap">
+                    <form class="form-inline">
                         <div class="input-group input-group-sm">
                           <input type="text" id="search" class="form-control" size="10" placeholder="Search">
                              <span class="input-group-btn">
@@ -54,6 +56,7 @@
                             <button class="btn btn-default tooltip-top" id="unfilter-button" data-toggle="tooltip" onclick="return doUnfilter()" value="Unfilter">Unfilter</button>
                         </div>
                    </form>
+                    </div>
                     <span id="table-spin-place" style="margin:7px"></span>
                 </div>
 

@@ -14,7 +14,7 @@
   <body>
     <div class="navbar navbar-default" style="margin-bottom: 1px" role="navigation">
         <div class="container-fluid">
-            <div class="navbar-header">
+            <div class="navbar-header" >
                 <a id="mybrand" class="navbar-brand" href="/">Tactic</a>
             </div>
             <div class="navbar-collapse collapse">
@@ -26,9 +26,9 @@
                     {% block morenavbar %}
                     {% endblock %}
                     <li><a href="" onclick="return toggleTooltips();">?</a></li>
-                    <li><a href="https://github.com/bsherin/tactic/wiki">Documentation</a></li>
+                    <li><a href="https://github.com/bsherin/tactic/wiki">Docs</a></li>
                     {% if current_user.is_authenticated() %}
-                        <li><a href="{{ url_for('user_manage') }}">My Resources</a></li>
+                        <li><a href="{{ url_for('user_manage') }}">Resources</a></li>
                         <li><a href="{{ url_for('account_info') }}">{{current_user.username}}</a></li>
                         <li><a href="" onclick="return doSignOut();">Sign Out</a></li>
                     {% else %}

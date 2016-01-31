@@ -34,6 +34,7 @@ function start_post_load() {
         else {
             select_resource_button(res_type, null)
         }
+        sorttable.makeSortable($("#" + res_type + "-selector table")[0])
     });
 
     socket.on('start-spinner', function () {

@@ -71,14 +71,23 @@ $menu-text-color: #575757;
   font-size: 16px;
 }
 
+#menu-area .dropdown-toggle {
+    padding-right: 6px;
+    padding-left: 6px
+}
+
 #mybrand {
   font-size: 20px !important;
 }
 
 #my-navbar-right {
-  font-size: 16px
+  font-size: 16px;
 }
 
+#my-navbar-right a {
+    padding-right: 10px;
+    padding-left: 10px
+}
 
 /* resource module */
 
