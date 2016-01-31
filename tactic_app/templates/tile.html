@@ -7,13 +7,14 @@
         {{tile_name}}
         <span id="spin-place" style="margin:7px"></span>
     </div>
-     <div class='panel-body tile-body' id='tile_body_{{tile_id}}'>
-         <div class="front"><div class="tile-display-area"></div></div>
+     <div class='panel-body tile-body' id='tile_body_{{tile_id}}' style="overflow: hidden">
          <div class="back">
-         <form id="form-display-area">
-            {{form_text | safe}}
-         </form>
+             <form id="form-display-area">
+                {{form_text | safe}}
+             </form>
          <button class='btn btn-primary' onclick=tile_dict['{{tile_id}}'].submitOptions()>Submit</button>
          </div>
+         <div class="front"><div class="tile-display-area"></div></div>
+
      </div>
  </div>

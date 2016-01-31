@@ -6,6 +6,9 @@
   margin: 0px;
   padding: 0px; }
 
+#main-panel .panel-heading, .main-heading-element {
+  height: 45px; }
+
 #table-area {
   display: block; }
 

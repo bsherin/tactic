@@ -8,6 +8,8 @@ $table-border-color: #ddd;
 $table-border-thickness: 1px;
 $table-border-style: $table-border-thickness solid $table-border-color;
 
+$table-panel-heading-height: 45px;
+
 #main-panel {
     margin: 5px;
 }
@@ -16,6 +18,10 @@ $table-border-style: $table-border-thickness solid $table-border-color;
     overflow-x: auto;
     margin: 0px;
     padding: 0px;
+}
+
+#main-panel .panel-heading, .main-heading-element {
+    height: $table-panel-heading-height
 }
 
 #table-area {

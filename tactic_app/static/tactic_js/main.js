@@ -1,6 +1,8 @@
 var socket;
 var console_visible;
+var saved_console_size;
 var dirty;
+var tile_types;
 
 var tooltip_dict = {
     "shrink-table-button": "shrink/expand table",
@@ -106,7 +108,7 @@ function continue_loading() {
                 $("#table-area").css("display", "block");
                 hidden_columns_list = data.hidden_columns_list;
                 tablespec_dict = {};
-                for (spec in data.tablespec_dict) {
+                for (var spec in data.tablespec_dict) {
                     if (!data.tablespec_dict.hasOwnProperty(spec)){
                         continue;
                     }
@@ -138,20 +140,22 @@ function continue_loading() {
                         data_dict["main_id"] = main_id;
                         $.ajax({
                             url: $SCRIPT_ROOT + "/create_tile_from_save_request/" + String(tile_id),
-                            contentType : 'application/json',
-                            type : 'POST',
+                            contentType: 'application/json',
+                            type: 'POST',
                             data: JSON.stringify(data_dict),
                             dataType: 'json',
                             error: function (jqXHR, textStatus, errorThrown) {
-                              console.log("Error creating tile from save: " + textStatus + " " + errorThrown)
+                                console.log("Error creating tile from save: " + textStatus + " " + errorThrown)
                             },
                             success: function (data) {
                                 var new_tile_object = new TileObject(data.tile_id, data.html, false);
                                 tile_dict[data.tile_id] = new_tile_object;
-                                new_tile_object.refreshFromSave();
-                                if (data.is_shrunk) {
-                                    new_tile_object.shrinkMe()
-                                }
+                                new_tile_object.saved_size = data.saved_size;
+                                var sortable_tables = $(new_tile_object.full_selector() + " table.sortable");
+                                $.each(sortable_tables, function (index, the_table) {
+                                    sorttable.makeSortable(the_table)
+                                });
+                                new_tile_object.showFront();
                                 create_tile_from_save(index + 1)
                             }
                         })
@@ -177,7 +181,7 @@ function continue_loading() {
         revert: 'invalid',
         forceHelperSize: true,
         stop: function( event, ui ) {
-            new_sort_list = $("#tile-div").sortable("toArray");
+            var new_sort_list = $("#tile-div").sortable("toArray");
             broadcast_event_to_server("UpdateSortList", {"sort_list": new_sort_list})
         }
     });
@@ -198,8 +202,8 @@ function continue_loading() {
         $.ajax({
             url: $SCRIPT_ROOT + "/remove_mainwindow/" + String(main_id),
             contentType: 'application/json',
-            type: 'POST',
-        })
+            type: 'POST'
+        });
         window.close()
     })
 }
@@ -225,7 +229,7 @@ function set_visible_doc(doc_name, func) {
 function change_doc(el, row_id) {
     $("#table-area").css("display", "none");
     $("#reload-message").css("display", "block");
-    doc_name = $(el).val();
+    var doc_name = $(el).val();
     if (row_id == null) {
         $.getJSON($SCRIPT_ROOT + "/grab_data/" + String(main_id) + "/" + String(doc_name), function (data) {
         $("#loading-message").css("display", "none");
@@ -237,7 +241,7 @@ function change_doc(el, row_id) {
         })
     }
     else {
-        data_dict = {"doc_name": doc_name, "row_id": row_id, "main_id": main_id}
+        var data_dict = {"doc_name": doc_name, "row_id": row_id, "main_id": main_id};
         $.ajax({
             url: $SCRIPT_ROOT + "/grab_chunk_with_row",
             contentType : 'application/json',

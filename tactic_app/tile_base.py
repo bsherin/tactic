@@ -14,6 +14,7 @@ from bson.binary import Binary
 import cPickle
 import json
 from types import NoneType
+import exceptions
 
 
 jsonizable_types = {
@@ -51,8 +52,9 @@ class TileBase(gevent.Greenlet):
         gevent.Greenlet.__init__(self)
         self._sleepperiod = .0001
         self.save_attrs = ["current_html", "tile_id", "tile_type", "tile_name", "main_id",
-                           "width", "height", "full_tile_width", "full_tile_height", "is_shrunk", "img_dict", "current_fig_id"]
-
+                           "header_height", "front_height", "front_width", "back_height", "back_width",
+                           "tda_width", "tda_height", "width", "height",
+                           "full_tile_width", "full_tile_height", "is_shrunk", "img_dict", "current_fig_id"]
         # These define the state of a tile and should be saved
 
         self.tile_type = self.__class__.__name__
@@ -111,6 +113,14 @@ class TileBase(gevent.Greenlet):
                 self.height = data["height"]
                 self.full_tile_width = data["full_tile_width"]
                 self.full_tile_height = data["full_tile_height"]
+                self.header_height = data["header_height"]
+                self.front_height = data["front_height"]
+                self.front_width = data["front_width"]
+                self.back_height = data["back_height"]
+                self.back_width = data["back_width"]
+                self.tda_height = data["tda_height"]
+                self.tda_width = data["tda_width"]
+                self.margin = data["margin"]
                 self.handle_size_change()
             elif event_name == "RefreshTileFromSave":
                 self.refresh_from_save()
@@ -270,7 +280,7 @@ class TileBase(gevent.Greenlet):
         socketio.emit("tile-message", data, namespace='/main', room=self.main_id)
 
     def show_front(self):
-        self.emit_tile_message("showFront")
+        self.emit_tile_message("[")
 
     def do_the_refresh(self, new_html=None):
         if new_html is None:
@@ -296,7 +306,7 @@ class TileBase(gevent.Greenlet):
                         _ = json.dumps(attr_val)
                         result[attr] = attr_val
                         continue
-                    except TypeError:
+                    except (TypeError, exceptions.UnicodeDecodeError) as e:
                         pass
                 try:
                     bser_attr_val = Binary(cPickle.dumps(attr_val))
