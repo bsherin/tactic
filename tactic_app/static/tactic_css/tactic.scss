@@ -1,118 +1,19 @@
-/* plot related */
-.d3plot { font: 10px Arial;}
 
-.d3plot path {
-    stroke: steelblue;
-    stroke-width: 2;
-    fill: none;
-}
+$repository-title-color: #4EA818;
 
-.d3plot path.domain {
-    fill: none;
-    stroke: #a4a4a4;
-    shape-rendering: crispEdges;
-}
+$sortable-table-header-background: #eee;
+$sortable-table-header-text-color: #666666;
 
-.d3plot line {
-    stroke: black;
-}
+$resource-action-button-border-style: solid white 1px;
+$resource-manager-tab-font-size: 20px;
 
-.d3plot .axis path,
-.d3plot .axis line {
-    fill: none;
-    stroke: grey;
-    stroke-width: 2;
-    shape-rendering: crispEdges;
-}
-
-.d3plot .heatmap-cell-border {
-    stroke: #eee;
-    stroke-width:0.3px;
-  }
-
-.d3plot .heatmap-colLabel {
-    fill: #aaa;
-}
-
-.d3plot .heatmap-rowLabel {
-    fill: #aaa;
-}
-
-.d3plot-title {
-    font-size: 14px;
-}
-
-
-/* tooltips */
-
-$tooltip-background-color: #fde930;
-$tooltip-text-color: #66431a;
-
-.tooltip .tooltip-inner {background-color: $tooltip-background-color;
-                           color: $tooltip-text-color}
-
-.tooltip.top .tooltip-arrow { border-top-color:$tooltip-background-color}
-
-.tooltip.bottom .tooltip-arrow { border-bottom-color:$tooltip-background-color}
-
-.tooltip-inner{
-    -moz-box-shadow: 0px 1px 5px 1px rgba(0,0,0,0.4);
-    -webkit-box-shadow: 0px 1px 5px 1px rgba(0,0,0,0.4);
-    box-shadow: 0px 1px 5px 1px rgba(0,0,0,0.4);
-    zoom: 1;
-    }
-
-/* navbar */
-
-$menu-text-color: #575757;
-
-#menu-area a {
-  //color: $menu-text-color;
-  font-size: 16px;
-}
-
-#menu-area .dropdown-toggle {
-    padding-right: 6px;
-    padding-left: 6px
-}
-
-#mybrand {
-  font-size: 20px !important;
-}
-
-#my-navbar-right {
-  font-size: 16px;
-}
-
-#my-navbar-right a {
-    padding-right: 10px;
-    padding-left: 10px
-}
-
-/* resource module */
+/* General resources */
 
 table.sortable thead {
-    background-color:#eee;
-    color:#666666;
+    background-color:$sortable-table-header-background;
+    color:$sortable-table-header-text-color;
     font-weight: bold;
     cursor: default;
-}
-
-.action-button {
-    border: solid white 1px
-}
-
-a[role="tab"] {
-  font-size: 20px
-}
-
-.indent-row {
-    margin-left: 5px;
-    margin-bottom: 20px;
-}
-.user-button-group {
-    height: 200px;
-    overflow: auto;
 }
 
 .selector-button:hover {
@@ -123,10 +24,40 @@ a[role="tab"] {
     background-color: #5bb4d2 !important
 }
 
-.user-button-group .btn-default{
-    text-align: left;
-    padding-top: 1px;
-    padding-bottom: 1px
+
+/* navbar */
+
+#menu-area {
+    a {
+        //color: $menu-text-color;
+        font-size: 16px;
+    }
+    .dropdown-toggle {
+        padding-right: 6px;
+        padding-left: 6px
+    }
+}
+
+#mybrand {
+    font-size: 20px !important;
+}
+
+#my-navbar-right {
+    font-size: 16px;
+    a {
+        padding-right: 10px;
+        padding-left: 10px
+    }
+}
+
+/* user manage */
+
+.repository-title {
+    color: $repository-title-color;
+}
+
+a[role="tab"] {
+    font-size: $resource-manager-tab-font-size
 }
 
 .nav-tabs a {
@@ -137,175 +68,263 @@ a[role="tab"] {
     margin: 10px
 }
 
+
+/* resource module */
+
+.action-button {
+    border: $resource-action-button-border-style
+}
+
+.indent-row {
+    margin-left: 5px;
+    margin-bottom: 20px;
+}
+
+
 .resource-module h2 {
     margin-top:0px;
 }
 
-.file-selector {
-    margin-bottom: 10px;
-    display: block;
-}
 
 .metadata-field {
-  width: 350px
+    width: 350px
 }
 
-/* Tile table related*/
+    /* Tile related */
 
-.tile-table td {
-    padding-top: 1px !important;
-    padding-bottom: 1px !important;
-}
-
-
-.row-clickable:hover {
-    background-color: #5bc0de !important
-}
-
-.row-clickable:active {
-    background-color: #1b6d85 !important
-}
-
-td.cell-clickable:hover {
-    background-color: #5bc0de !important
-}
-
-td.cell-clickable:active {
-    background-color: #1b6d85 !important
-}
-
-/* console */
-
-#console {
-    text-align: left;
-    font-size: 12px;
-    overflow: auto
-}
-
-#console-panel {
-    margin-left: 5px;
-    margin-right: 5px
-}
+    .tile-panel-heading {
+        .close .glyphpicon {
+            font-size: 15px
+        }
+        .notclose .glyphicon {
+            font-size: 17px
+        }
+    }
 
 
-#console-heading {
-    font-size: 12px;
-    padding-top: 2px;
-    padding-bottom: 2px;
-    text-align: left
-}
 
-/* module viewer */
+    /* plot related */
+    .d3plot { font: 10px Arial;}
 
-.CodeMirror {
-    border: 1px solid #eee;
-    height: auto;
-    width: auto;
-}
+    .d3plot path {
+        stroke: steelblue;
+        stroke-width: 2;
+        fill: none;
+    }
 
-/*main window*/
+    .d3plot path.domain {
+        fill: none;
+        stroke: #a4a4a4;
+        shape-rendering: crispEdges;
+    }
 
-.grid-left {
-    display: inline-block;
-    width: 500px;
-    vertical-align:top
-}
+    .d3plot line {
+        stroke: black;
+    }
 
-.grid-right {
-    display: inline-block;
-    width: 300px;
-    vertical-align:top
-}
+    .d3plot .axis path,
+    .d3plot .axis line {
+        fill: none;
+        stroke: grey;
+        stroke-width: 2;
+        shape-rendering: crispEdges;
+    }
 
-.outer-container {
-    padding: 25px;
-}
+    .d3plot .heatmap-cell-border {
+        stroke: #eee;
+        stroke-width:0.3px;
+    }
 
-#tile-div {
-    padding: 5px;
-}
+    .d3plot .heatmap-colLabel {
+        fill: #aaa;
+    }
 
-#tile-area {
-    margin: 0px;
-    border: 0px;
-    overflow: auto;
-}
+    .d3plot .heatmap-rowLabel {
+        fill: #aaa;
+    }
 
-/* tile */
+    .d3plot-title {
+        font-size: 14px;
+    }
 
-.tile-panel {
-    height: 265px;
-    margin: 7px;
-    border: 2px solid #BCE8F1;
-    background-color: white;
-}
+    /* tooltips */
 
-.tile-panel-float {
-    float: left;
-}
+    $tooltip-background-color: #fde930;
+    $tooltip-text-color: #66431a;
 
-.tile-panel-heading {
-    cursor: move;
-    padding: 5px 7px;
-}
+    .tooltip .tooltip-inner {background-color: $tooltip-background-color;
+        color: $tooltip-text-color}
+
+    .tooltip.top .tooltip-arrow { border-top-color:$tooltip-background-color}
+
+    .tooltip.bottom .tooltip-arrow { border-bottom-color:$tooltip-background-color}
+
+    .tooltip-inner{
+        -moz-box-shadow: 0px 1px 5px 1px rgba(0,0,0,0.4);
+        -webkit-box-shadow: 0px 1px 5px 1px rgba(0,0,0,0.4);
+        box-shadow: 0px 1px 5px 1px rgba(0,0,0,0.4);
+        zoom: 1;
+    }
 
 
-#spin-place {
-    position: relative;
-}
 
-.tile-display-area {
-    overflow: auto;
-    padding: 0;
-    margin: 15px 15px 15px 15px;
-}
+    /* Tile table related*/
 
-.back {
-    padding: 20px;
-    margin: 0px;
-    overflow: auto
-}
+    .tile-table td {
+        padding-top: 1px !important;
+        padding-bottom: 1px !important;
+    }
 
-.front {
-    padding: 0px;
-    margin: 0px;
-}
 
-.tile-body {
-    padding: 0px;
-}
+    .row-clickable:hover {
+        background-color: #5bc0de !important
+    }
 
-.tile-body img {
-    cursor: pointer
-}
+    .row-clickable:active {
+        background-color: #1b6d85 !important
+    }
 
-.output-plot {
-    max-width: 100%;
-    max-height: 100%
-}
+    td.cell-clickable:hover {
+        background-color: #5bc0de !important
+    }
 
-/* Other*/
+    td.cell-clickable:active {
+        background-color: #1b6d85 !important
+    }
 
-.highlight {
-    background: yellow;
-}
+    /* console */
 
-button.notclose {
-  -webkit-appearance: none;
-  padding: 0;
-  cursor: pointer;
-  background: transparent;
-    opacity: .5;
-  border: 0;
-}
+    #console {
+        text-align: left;
+        font-size: 12px;
+        overflow: auto
+    }
 
-button.notclose:hover {
-    opacity: .8;
-}
-.monospace {
-    font-family: monospace
-}
+    #console-panel {
+        margin-left: 5px;
+        margin-right: 5px
+    }
 
-.hide-important {
-    display: none !important
-}
+
+    #console-heading {
+        font-size: 12px;
+        padding-top: 2px;
+        padding-bottom: 2px;
+        text-align: left
+    }
+
+    /* module viewer */
+
+    .CodeMirror {
+        border: 1px solid #eee;
+        height: auto;
+        width: auto;
+    }
+
+    /*main window*/
+
+    .grid-left {
+        display: inline-block;
+        width: 500px;
+        vertical-align:top
+    }
+
+    .grid-right {
+        display: inline-block;
+        width: 300px;
+        vertical-align:top
+    }
+
+    .outer-container {
+        padding: 25px;
+    }
+
+    #tile-div {
+        padding: 5px;
+    }
+
+    #tile-area {
+        margin: 0px;
+        border: 0px;
+        overflow: auto;
+    }
+
+    /* tile */
+
+    .tile-panel {
+        height: 265px;
+        margin: 7px;
+        border: 2px solid #BCE8F1;
+        background-color: white;
+    }
+
+    .tile-panel-float {
+        float: left;
+    }
+
+    .tile-panel-heading {
+        cursor: move;
+        padding: 5px 7px;
+    }
+
+
+    #spin-place {
+        position: relative;
+    }
+
+    .tile-display-area {
+        overflow: auto;
+        padding: 0;
+        margin: 15px 15px 15px 15px;
+    }
+
+    .back {
+        padding: 20px;
+        margin: 0px;
+        overflow: auto
+    }
+
+    .front {
+        padding: 0px;
+        margin: 0px;
+    }
+
+    .tile-body {
+        padding: 0px;
+    }
+
+    .tile-body img {
+        cursor: pointer
+    }
+
+    .output-plot {
+        max-width: 100%;
+        max-height: 100%
+    }
+
+    /* Other*/
+
+    .highlight {
+        background: yellow;
+    }
+
+    button.notclose {
+        -webkit-appearance: none;
+        padding: 0;
+        cursor: pointer;
+        background: transparent;
+        opacity: .5;
+        border: 0;
+    }
+
+    button.notclose:hover {
+        opacity: .8;
+    }
+    .monospace {
+        font-family: monospace
+    }
+
+    .hide-important {
+        display: none !important
+    }
+

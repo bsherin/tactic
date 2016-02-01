@@ -1,3 +1,65 @@
+/* General resources */
+table.sortable thead {
+  background-color: #eee;
+  color: #666666;
+  font-weight: bold;
+  cursor: default; }
+
+.selector-button:hover {
+  background-color: #cbcbcb !important; }
+
+.selector-button.active td {
+  background-color: #5bb4d2 !important; }
+
+/* navbar */
+#menu-area a {
+  font-size: 16px; }
+#menu-area .dropdown-toggle {
+  padding-right: 6px;
+  padding-left: 6px; }
+
+#mybrand {
+  font-size: 20px !important; }
+
+#my-navbar-right {
+  font-size: 16px; }
+  #my-navbar-right a {
+    padding-right: 10px;
+    padding-left: 10px; }
+
+/* user manage */
+.repository-title {
+  color: #4EA818; }
+
+a[role="tab"] {
+  font-size: 20px; }
+
+.nav-tabs a {
+  outline: 0px; }
+
+.resource-module {
+  margin: 10px; }
+
+/* resource module */
+.action-button {
+  border: solid white 1px; }
+
+.indent-row {
+  margin-left: 5px;
+  margin-bottom: 20px; }
+
+.resource-module h2 {
+  margin-top: 0px; }
+
+.metadata-field {
+  width: 350px; }
+
+/* Tile related */
+.tile-panel-heading .close .glyphpicon {
+  font-size: 15px; }
+.tile-panel-heading .notclose .glyphicon {
+  font-size: 17px; }
+
 /* plot related */
 .d3plot {
   font: 10px Arial; }
@@ -51,72 +113,6 @@
   -webkit-box-shadow: 0px 1px 5px 1px rgba(0, 0, 0, 0.4);
   box-shadow: 0px 1px 5px 1px rgba(0, 0, 0, 0.4);
   zoom: 1; }
-
-/* navbar */
-#menu-area a {
-  font-size: 16px; }
-
-#menu-area .dropdown-toggle {
-  padding-right: 6px;
-  padding-left: 6px; }
-
-#mybrand {
-  font-size: 20px !important; }
-
-#my-navbar-right {
-  font-size: 16px; }
-
-#my-navbar-right a {
-  padding-right: 10px;
-  padding-left: 10px; }
-
-/* resource module */
-table.sortable thead {
-  background-color: #eee;
-  color: #666666;
-  font-weight: bold;
-  cursor: default; }
-
-.action-button {
-  border: solid white 1px; }
-
-a[role="tab"] {
-  font-size: 20px; }
-
-.indent-row {
-  margin-left: 5px;
-  margin-bottom: 20px; }
-
-.user-button-group {
-  height: 200px;
-  overflow: auto; }
-
-.selector-button:hover {
-  background-color: #cbcbcb !important; }
-
-.selector-button.active td {
-  background-color: #5bb4d2 !important; }
-
-.user-button-group .btn-default {
-  text-align: left;
-  padding-top: 1px;
-  padding-bottom: 1px; }
-
-.nav-tabs a {
-  outline: 0px; }
-
-.resource-module {
-  margin: 10px; }
-
-.resource-module h2 {
-  margin-top: 0px; }
-
-.file-selector {
-  margin-bottom: 10px;
-  display: block; }
-
-.metadata-field {
-  width: 350px; }
 
 /* Tile table related*/
 .tile-table td {

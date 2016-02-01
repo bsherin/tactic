@@ -128,7 +128,7 @@ TileObject.prototype = {
             sorttable.makeSortable(the_table)
         });
         dirty = true;
-        this.showFront()
+        this.hideOptions()
     },
 
     displayFormContent: function (data) {
@@ -216,22 +216,22 @@ TileObject.prototype = {
         }
     },
 
-    flipMe: function (){
+    toggleOptions: function (){
         if ($("#tile_body_" + this.tile_id + " .back")[0].style.display == "none") {
-            this.showBack();
+            this.showOptions();
         }
         else {
-            this.showFront();
+            this.hideOptions();
         }
     },
-    showFront: function (){
+    hideOptions: function (){
         //$("#tile_body_" + this.tile_id + " .front").fadeIn();
         //$("#tile_body_" + this.tile_id).flip(false);
         //$("#tile_body_" + this.tile_id + " .back").fadeOut()
         $("#tile_body_" + this.tile_id + " .back").hide("blind");
 
     },
-    showBack: function (){
+    showOptions: function (){
         $("#tile_body_" + this.tile_id + " .back").show("blind");
         //$("#tile_body_" + this.tile_id).flip(false);
         //$("#tile_body_" + this.tile_id + " .front").fadeOut()

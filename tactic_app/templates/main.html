@@ -28,12 +28,12 @@
     <div id="outer-container" style="display: none">
         <div class="grid-left" align="left">
             <div id="main-panel" class="panel panel-default">
-                <div class="panel-heading" id="data-title" style="padding-top: 5px; padding-bottom: 5px; overflow:hidden">
+                <div class="panel-heading" id="data-title" style="overflow:hidden">
                 <div class="main-heading-element" style="float:left; white-space: nowrap">
-                    <button type='button' id="shrink-table-button" data-toggle="tooltip" class='notclose tooltip-top' onclick="tableObject.shrinkTable()"><span style="font-size:15px" class="glyphicon glyphicon-th"></span></button>
+                    <button type='button' id="shrink-table-button" data-toggle="tooltip" class='notclose tooltip-top' onclick="tableObject.shrinkTable()"><span class="glyphicon glyphicon-th"></span></button>
                     <form class="form-inline" style="display:inline">
                       <span class="form-group">
-                        <label for="doc-selector" style="padding-left: 5px">{{short_collection_name}}: </label>
+                        <label for="doc-selector">{{short_collection_name}}: </label>
                             <select id="doc-selector" class="form-control  tooltip-top" data-toggle="tooltip" onchange="change_doc(this, null)">
                                 {% for dname in doc_names %}
                                     <option>{{ dname }}</option>
@@ -41,7 +41,7 @@
                             </select>
                         </span>
                     </form>
-                    <span style="font-weight: bold; padding-left:5px"> Project: <span id="project-name" style="font-weight: normal">{{project_name}}</span></span>
+                    <span id="project-label"> Project: <span id="project-name" >{{project_name}}</span></span>
                 </div>
                 <div class="main-heading-element" style="float:right; white-space: nowrap">
                     <form class="form-inline">
@@ -57,7 +57,7 @@
                         </div>
                    </form>
                     </div>
-                    <span id="table-spin-place" style="margin:7px"></span>
+                    <span id="table-spin-place"></span>
                 </div>
 
                 <div id="table-wrapper" class="panel-body">
@@ -68,7 +68,7 @@
                     </table>
                 </div>
              </div>
-            <button type='button' id="table-icon" class="btn" style="border-color: #ddd" onclick="tableObject.expandTable()"><span style="font-size:15px" class="glyphicon glyphicon-th-list"></span></button>
+            <button type='button' id="table-icon" class="btn" onclick="tableObject.expandTable()"><span class="glyphicon glyphicon-th-list"></span></button>
 
         </div>
 
@@ -91,7 +91,6 @@
 
 {% endblock %}
 {% block scripts %}
-    <script src="{{url_for('static', filename='js/jquery.flip.js')}}"></script>
     <script src="{{url_for('static', filename='js/jquery.isonscreen.js')}}"></script>
     <script src="{{url_for('static', filename='js/socket.io.js')}}"></script>
     <script src="{{url_for('static', filename='js/d3.js')}}"></script>
