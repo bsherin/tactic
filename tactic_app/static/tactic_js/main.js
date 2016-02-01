@@ -155,7 +155,7 @@ function continue_loading() {
                                 $.each(sortable_tables, function (index, the_table) {
                                     sorttable.makeSortable(the_table)
                                 });
-                                new_tile_object.showFront();
+                                new_tile_object.hideOptions();
                                 create_tile_from_save(index + 1)
                             }
                         })

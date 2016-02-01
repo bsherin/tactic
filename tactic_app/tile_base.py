@@ -143,8 +143,8 @@ class TileBase(gevent.Greenlet):
                 self.handle_tile_row_click(data["clicked_row"], data["doc_name"], data["active_row_index"])
             elif event_name == "TileCellClick":
                 self.handle_tile_cell_click(data["clicked_cell"], data["doc_name"], data["active_row_index"])
-            elif event_name == "ShowFront":
-                self.show_front()
+            elif event_name == "HideOptions":
+                self.hide_options()
             elif event_name == "StartSpinner":
                 self.start_spinner()
             elif event_name == "StopSpinner":
@@ -279,8 +279,8 @@ class TileBase(gevent.Greenlet):
         data["tile_id"] = self.tile_id
         socketio.emit("tile-message", data, namespace='/main', room=self.main_id)
 
-    def show_front(self):
-        self.emit_tile_message("[")
+    def hide_options(self):
+        self.emit_tile_message("hideOptions")
 
     def do_the_refresh(self, new_html=None):
         if new_html is None:
@@ -372,7 +372,7 @@ class TileBase(gevent.Greenlet):
                 setattr(self, opt["name"], int(form_data[opt["name"]]))
             else:
                 setattr(self, opt["name"], form_data[opt["name"]])
-        self.show_front()
+        self.hide_options()
         self.spin_and_refresh()
         return
 
