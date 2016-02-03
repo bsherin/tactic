@@ -55,7 +55,7 @@ a[role="tab"] {
   width: 350px; }
 
 /* Tile related */
-.tile-panel-heading .close .glyphpicon {
+.tile-panel-heading .close .glyphicon {
   font-size: 15px; }
 .tile-panel-heading .notclose .glyphicon {
   font-size: 17px; }

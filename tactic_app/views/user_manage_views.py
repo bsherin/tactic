@@ -8,6 +8,7 @@ from tactic_app.main import create_new_mainwindow, create_new_mainwindow_from_pr
 from tactic_app.users import User
 from tactic_app.user_tile_env import create_user_tiles
 from tactic_app.shared_dicts import user_tiles, loaded_user_modules, create_initial_metadata
+from jinja2 import Markup
 
 AUTOSPLIT = True
 AUTOSPLIT_SIZE = 10000
@@ -597,7 +598,7 @@ class TileManager(ResourceManager):
         if db[user_obj.tile_collection_name].find_one({"tile_module_name": new_tile_name}) is not None:
             return jsonify({"success": False, "alert_type": "alert-warning",
                             "message": "A module with that name already exists"})
-        mongo_dict = db["shared_tiles"].find_one({"tile_module_name": "tile_template.py"})
+        mongo_dict = db["repository.tiles"].find_one({"tile_module_name": "tile_template"})
         template = mongo_dict["tile_module"]
 
         metadata = create_initial_metadata()
