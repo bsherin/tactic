@@ -314,6 +314,13 @@ TileObject.prototype = {
             data["button_value"] = e.target.value;
             broadcast_event_to_server("TileButtonClick", data)
         });
+        $(".front").on('change', 'textarea', function(e) {
+            var p = $(e.target).closest(".tile-panel")[0];
+            var data = {};
+            data["tile_id"] = $(p).data("my_tile_id");
+            data["text_value"] = e.target.value;
+            broadcast_event_to_server("TileTextAreaChange", data)
+        });
     }
 
 };

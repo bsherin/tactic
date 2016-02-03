@@ -133,6 +133,8 @@ class TileBase(gevent.Greenlet):
                                         data["new_content"], data["doc_name"])
             elif event_name == "TileButtonClick":
                 self.handle_button_click(data["button_value"], data["doc_name"], data["active_row_index"])
+            elif event_name == "TileTextAreaChange":
+                self.handle_textarea_change(data["text_value"])
             elif event_name == "TextSelect":
                 self.handle_text_select(data["selected_text"], data["doc_name"], data["active_row_index"])
             elif event_name == "PipeUpdate":
@@ -393,6 +395,9 @@ class TileBase(gevent.Greenlet):
         return
 
     def handle_button_click(self, value, doc_name, active_row_index):
+        return
+
+    def handle_textarea_change(self, value):
         return
 
     def handle_tile_row_click(self, clicked_row, doc_name, active_row_index):
