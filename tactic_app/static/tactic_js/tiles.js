@@ -109,6 +109,26 @@ TileObject.prototype = {
         this.resize_tile_area(null, ui);
     },
 
+    reloadMe: function() {
+        var data_dict = {};
+        data_dict["main_id"] = main_id;
+        var self = this;
+        $.ajax({
+            url: $SCRIPT_ROOT + "/reload_tile/" + String(this.tile_id),
+            contentType : 'application/json',
+            type : 'POST',
+            data: JSON.stringify(data_dict),
+            dataType: 'json',
+            success: function (data) {
+                if (data.success) {
+                    self.displayFormContent(data);
+                    self.spin_and_refresh();
+                    dirty = true;
+                }
+            }
+        })
+    },
+
     setTileSize: function(data) {
         var el = $(this.full_selector());
         el.width(data.width);

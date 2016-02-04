@@ -5,7 +5,7 @@ from flask import request, jsonify, render_template, send_file, url_for
 from flask_login import current_user, login_required
 from flask_socketio import join_room
 from tactic_app.shared_dicts import tile_classes, user_tiles, loaded_user_modules
-from tactic_app.shared_dicts import mainwindow_instances, distribute_event, create_initial_metadata
+from tactic_app.shared_dicts import mainwindow_instances, distribute_event, create_initial_metadata, get_tile_class
 from user_manage_views import project_manager, collection_manager
 import openpyxl
 import cStringIO
@@ -316,6 +316,39 @@ def create_tile_request(tile_type):
     except:
         error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         mainwindow_instances[main_id].handle_exception("Error creating tile " + error_string)
+        return jsonify({"success": False})
+
+
+@app.route('/reload_tile/<tile_id>', methods=['GET', 'POST'])
+@login_required
+def reload_tile(tile_id):
+    save_attrs = ["tile_id", "tile_name", "header_height", "front_height", "front_width", "back_height", "back_width",
+                  "tda_width", "tda_height", "width", "height",
+                  "full_tile_width", "full_tile_height", "is_shrunk"]
+    try:
+        main_id = request.json["main_id"]
+        mw = mainwindow_instances[main_id]
+        old_instance = mw.tile_instances[tile_id]
+        saved_options = {}
+        for option in old_instance.options:
+            attr = option["name"]
+            if hasattr(old_instance, attr):
+                saved_options[attr] = getattr(old_instance, attr)
+        tile_type = old_instance.tile_type
+        tile_name = old_instance.tile_name
+        new_cls = get_tile_class(current_user.username, tile_type)
+        new_instance = new_cls(main_id, tile_id, tile_name)
+        for attr, val in saved_options.items():
+            setattr(new_instance, attr, val)
+        for attr in save_attrs:
+            setattr(new_instance, attr, getattr(old_instance, attr))
+        form_html = new_instance.create_form_html()
+        mw.tile_instances[tile_id] = new_instance
+        new_instance.start()
+        return jsonify({"success": True, "html": form_html})
+    except:
+        error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+        mainwindow_instances[main_id].handle_exception("Error reloading tile " + error_string)
         return jsonify({"success": False})
 
 
