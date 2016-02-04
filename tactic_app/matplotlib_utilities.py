@@ -34,7 +34,7 @@ color_palette_names = sorted(m for m in datad if not m.endswith("_r"))
 
 class MplFigure(Figure):
     # kwargs for mplfigure are dpi and title
-    def __init__(self, data, width, height,  **kwargs):
+    def __init__(self, **kwargs):
         if "dpi" in kwargs:
             dpi = kwargs["dpi"]
         else:
@@ -43,15 +43,10 @@ class MplFigure(Figure):
             title = kwargs["title"]
         else:
             title = None
-        Figure.__init__(self, figsize=(width / dpi, height / 80), dpi=dpi)
-        self.width = width
-        self.height = height
+        Figure.__init__(self, figsize=(self.width / dpi, self.height / 80), dpi=dpi)
         self.title = title
         self.dpi = dpi
-        self.data = data
         self.kwargs = kwargs
-        self.draw_plot()
-        self.img = self.convert_figure_to_img()
 
     def draw_plot(self):
         print "draw_plot not implemented"

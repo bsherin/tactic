@@ -8,13 +8,14 @@ from tactic_app.shared_dicts import mainwindow_instances, distribute_event, get_
 from tactic_app.shared_dicts import tokenizer_dict, weight_functions
 from users import load_user
 import sys
-from matplotlib_utilities import color_palette_names
+from matplotlib_utilities import color_palette_names, FigureCanvas
 import numpy as np
 from bson.binary import Binary
 import cPickle
 import json
 from types import NoneType
 import exceptions
+import StringIO
 
 
 jsonizable_types = {
@@ -592,10 +593,14 @@ class TileBase(gevent.Greenlet):
         self.tile_yield()
         return weight_functions[weight_function_name]
 
-    def create_figure_html(self, fig):
+    def create_figure_html(self):
+        canvas=FigureCanvas(self) # This does seem to be necessary or savefig won't work.
+        img_file = StringIO.StringIO()
+        self.savefig(img_file)
+        img_file.seek(0)
         figname = str(self.current_fig_id)
         self.current_fig_id += 1
-        self.img_dict[figname] = fig.img
+        self.img_dict[figname]  = img_file.getvalue()
         fig_url = self.base_figure_url + figname
         image_string = "<img class='output-plot' src='{}' onclick=showZoomedImage(this) lt='Image Placeholder'>"
         the_html = image_string.format(fig_url)

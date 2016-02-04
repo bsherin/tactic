@@ -14,6 +14,7 @@ from matplotlib_utilities import GraphList, ColorMapper, FigureCanvas, ArrayHeat
 from tactic_app.shared_dicts import mainwindow_instances
 
 from tile_base import TileBase
+from matplotlib_utilities import MplFigure, get_cmap
 
 def user_tile(tclass):
     from tactic_app.shared_dicts import user_tiles
