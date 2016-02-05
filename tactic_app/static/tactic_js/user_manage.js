@@ -90,6 +90,26 @@ function start_post_load() {
         $(".resource-module").on("click", ".search-repository-resource-button", search_repository_resource);
         $(".resource-module").on("click", ".search-repository-tags-button", search_repository_resource_tags);
         $(".resource-module").on("click", ".repository-resource-unfilter-button", unfilter_repository_resource);
+        $(".resource-module").on("keypress", ".search-field", function(e) {
+            if (e.which == 13) {
+                the_id = e.target.id;
+                var regexp = /^(\w+?)-/;
+                var res_type = regexp.exec(the_id)[1];
+                fake_event = {"target": {"value": res_type}};
+                search_resource(fake_event);
+                e.preventDefault();
+            }
+        });
+        $(".resource-module").on("keypress", ".repository-search-field", function(e) {
+            if (e.which == 13) {
+                the_id = e.target.id;
+                var regexp = /^repository-(\w+?)-/;
+                var res_type = regexp.exec(the_id)[1];
+                fake_event = {"target": {"value": res_type}};
+                search_repository_resource(fake_event);
+                e.preventDefault();
+            }
+        });
         resize_window();
         $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
             resize_window()
