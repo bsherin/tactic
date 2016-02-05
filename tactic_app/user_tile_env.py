@@ -15,6 +15,7 @@ from tactic_app.shared_dicts import mainwindow_instances
 
 from tile_base import TileBase
 from matplotlib_utilities import MplFigure, get_cmap
+from users import User
 
 def user_tile(tclass):
     from tactic_app.shared_dicts import user_tiles
@@ -33,3 +34,19 @@ def create_user_tiles(tile_code):
     except:
         return str(sys.exc_info()[0]) + " "  + str(sys.exc_info()[1])
     return "success"
+
+def create_default_tiles(tile_code):
+    try:
+        exec tile_code
+    except:
+        return str(sys.exc_info()[0]) + " "  + str(sys.exc_info()[1])
+    return "success"
+
+
+def get_all_default_tiles():
+    repository_user = User.get_user_by_username("repository")
+    tm_list = repository_user.get_resource_names("tile", tag_filter="default")
+
+    for tm in tm_list:
+        module_code = repository_user.get_tile_module(tm)
+        create_default_tiles(module_code)

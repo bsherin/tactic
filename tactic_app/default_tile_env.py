@@ -8,7 +8,7 @@ nltk.data.path = ['./nltk_data/']
 from nltk.corpus import wordnet as wn
 from flask_login import current_user
 from flask import url_for
-from matplotlib_utilities import GraphList, ColorMapper, FigureCanvas, ArrayHeatmap, ImageShow
+from matplotlib_utilities import GraphList, ColorMapper, FigureCanvas, ArrayHeatmap, ImageShow, MplFigure
 
 from tile_base import TileBase
 from tactic_app.shared_dicts import mainwindow_instances, distribute_event

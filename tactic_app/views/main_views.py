@@ -4,6 +4,7 @@ from tactic_app import app, db, socketio
 from flask import request, jsonify, render_template, send_file, url_for
 from flask_login import current_user, login_required
 from flask_socketio import join_room
+from tactic_app.main import delete_mainwindow
 from tactic_app.shared_dicts import tile_classes, user_tiles, loaded_user_modules
 from tactic_app.shared_dicts import mainwindow_instances, distribute_event, create_initial_metadata, get_tile_class
 from user_manage_views import project_manager, collection_manager
@@ -236,9 +237,8 @@ def get_table_templates():
 @app.route('/remove_mainwindow/<main_id>', methods=['post'])
 @login_required
 def remove_mainwindow(main_id):
-    del mainwindow_instances[main_id]
+    delete_mainwindow(main_id)
     return
-
 
 @app.route('/get_tile_types', methods=['GET'])
 @login_required
@@ -322,13 +322,14 @@ def create_tile_request(tile_type):
 @app.route('/reload_tile/<tile_id>', methods=['GET', 'POST'])
 @login_required
 def reload_tile(tile_id):
-    save_attrs = ["tile_id", "tile_name", "header_height", "front_height", "front_width", "back_height", "back_width",
+    save_attrs_for_reload = ["tile_id", "tile_name", "header_height", "front_height", "front_width", "back_height", "back_width",
                   "tda_width", "tda_height", "width", "height",
-                  "full_tile_width", "full_tile_height", "is_shrunk"]
+                  "full_tile_width", "full_tile_height", "is_shrunk", "configured"]
     try:
         main_id = request.json["main_id"]
         mw = mainwindow_instances[main_id]
         old_instance = mw.tile_instances[tile_id]
+        old_instance.kill()
         saved_options = {}
         for option in old_instance.options:
             attr = option["name"]
@@ -340,7 +341,7 @@ def reload_tile(tile_id):
         new_instance = new_cls(main_id, tile_id, tile_name)
         for attr, val in saved_options.items():
             setattr(new_instance, attr, val)
-        for attr in save_attrs:
+        for attr in save_attrs_for_reload:
             setattr(new_instance, attr, getattr(old_instance, attr))
         form_html = new_instance.create_form_html()
         mw.tile_instances[tile_id] = new_instance

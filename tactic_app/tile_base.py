@@ -6,6 +6,7 @@ from flask import url_for
 from tactic_app import socketio
 from tactic_app.shared_dicts import mainwindow_instances, distribute_event, get_tile_class
 from tactic_app.shared_dicts import tokenizer_dict, weight_functions
+from tactic_app.matplotlib_utilities import MplFigure
 from users import load_user
 import sys
 from matplotlib_utilities import color_palette_names, FigureCanvas
@@ -52,7 +53,7 @@ class TileBase(gevent.Greenlet):
         self._my_q = Queue()
         gevent.Greenlet.__init__(self)
         self._sleepperiod = .0001
-        self.save_attrs = ["current_html", "tile_id", "tile_type", "tile_name", "main_id",
+        self.save_attrs = ["current_html", "tile_id", "tile_type", "tile_name", "main_id", "configured",
                            "header_height", "front_height", "front_width", "back_height", "back_width",
                            "tda_width", "tda_height", "width", "height",
                            "full_tile_width", "full_tile_height", "is_shrunk", "img_dict", "current_fig_id"]
@@ -82,6 +83,7 @@ class TileBase(gevent.Greenlet):
         self.is_shrunk = False
         self.base_figure_url = url_for("figure_source", main_id=main_id, tile_id=tile_id, figure_name="X")[:-1]
         self.base_data_url = url_for("data_source", main_id=main_id, tile_id=tile_id, data_name="X")[:-1]
+        self.configured = False
         return
 
     """
@@ -122,7 +124,11 @@ class TileBase(gevent.Greenlet):
                 self.tda_height = data["tda_height"]
                 self.tda_width = data["tda_width"]
                 self.margin = data["margin"]
-                self.handle_size_change()
+                if self.configured:
+                    if isinstance(self, MplFigure):
+                        self.resize_mpl_tile()
+                    else:
+                        self.handle_size_change()
             elif event_name == "RefreshTileFromSave":
                 self.refresh_from_save()
             if event_name == "SetSizeFromSave":
@@ -275,6 +281,12 @@ class TileBase(gevent.Greenlet):
                                  str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]), force_open=True)
             return "error"
 
+    def resize_mpl_tile(self):
+        self.draw_plot()
+        new_html = self.create_figure_html()
+        self.refresh_tile_now(new_html)
+        return
+
     def emit_tile_message(self, message, data=None):
         if data is None:
             data = {}
@@ -287,7 +299,10 @@ class TileBase(gevent.Greenlet):
 
     def do_the_refresh(self, new_html=None):
         if new_html is None:
-            new_html = self.render_content()
+            if not self.configured:
+                new_html = "Tile not configured"
+            else:
+                new_html = self.render_content()
         self.current_html = new_html
         self.emit_tile_message("displayTileContent", {"html": new_html})
 
@@ -375,6 +390,7 @@ class TileBase(gevent.Greenlet):
                 setattr(self, opt["name"], int(form_data[opt["name"]]))
             else:
                 setattr(self, opt["name"], form_data[opt["name"]])
+        self.configured = True
         self.hide_options()
         self.spin_and_refresh()
         return

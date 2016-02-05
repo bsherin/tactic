@@ -39,6 +39,9 @@ def create_new_mainwindow_from_project(project_dict):
 
 
 def delete_mainwindow(main_id):
+    for key, tile in mainwindow_instances[main_id].tile_instances.values():
+        tile.kill()
+        del mainwindow_instances[main_id].tile_instances[key]
     # I think this is happening from within the greenlet that I'm closing.
     # So I have to do the join at the very end
     mainwindow_instances[main_id].kill()
@@ -439,8 +442,6 @@ class mainWindow(gevent.Greenlet):
                 self._set_row_column_data(data["doc_name"], data["id"], data["column_header"], data["new_content"])
                 self._change_list.append(data["id"])
             elif event_name == "MainClose":
-                for tile in self.tile_instances.values():
-                    tile.kill()
                 delete_mainwindow(self._main_id)
             elif event_name == "RemoveTile":
                 self._delete_tile_instance(data["tile_id"])
