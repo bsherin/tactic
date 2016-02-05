@@ -327,6 +327,7 @@ function repository_selector_click(event) {
 }
 
 function search_resource(event) {
+    unfilter_resource(event)
     var res_type = event.target.value;
     var txt = document.getElementById(res_type + '-search').value.toLowerCase();
     var all_rows = $("#" + res_type + "-selector tbody tr");
@@ -341,6 +342,7 @@ function search_resource(event) {
 }
 
 function search_repository_resource(event) {
+    unfilter_repository_resource(event)
     var res_type = event.target.value;
     var txt = document.getElementById("repository-" + res_type + '-search').value.toLowerCase();
     var all_rows = $("#repository-" + res_type + "-selector tbody tr");
@@ -355,6 +357,7 @@ function search_repository_resource(event) {
 }
 
 function search_resource_tags(event) {
+    unfilter_resource(event)
     var res_type = event.target.value;
     var txt = document.getElementById(res_type + '-search').value.toLowerCase();
     var all_rows = $("#" + res_type + "-selector tbody tr");
@@ -369,6 +372,7 @@ function search_resource_tags(event) {
 }
 
 function search_repository_resource_tags(event) {
+    unfilter_repository_resource(event)
     var res_type = event.target.value;
     var txt = document.getElementById("repository-" + res_type + '-search').value.toLowerCase();
     var all_rows = $("#repository-" + res_type + "-selector tbody tr");
