@@ -8,11 +8,12 @@ import os
 import pymongo
 from pymongo import MongoClient
 from users import User
+import os
 
 import datetime
 
-rpath = "tactic_app/repository_tiles"
-dpath = "tactic_app/downloads"
+rpath = "/repository_tiles"
+dpath = "/downloads"
 
 repository_user = User.get_user_by_username("repository")
 
@@ -41,7 +42,7 @@ try:
 
     for tm in tm_list:
         module_code = repository_user.get_tile_module(tm[0])
-        with open(dpath + "/" + tm[0] + ".py", 'w') as f:
+        with open(os.getcwd() + dpath + "/" + tm[0] + ".py", 'w') as f:
             f.write(module_code)
 
 except pymongo.errors.PyMongoError as err:
