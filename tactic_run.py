@@ -19,7 +19,7 @@ from tactic_app import weight_functions
 from tactic_app import tokenizers
 from tactic_app import socketio
 
-from tactic_app.user_tile_env import get_all_default_tiles
+from default_tile_env import get_all_default_tiles
 get_all_default_tiles()
 
 
