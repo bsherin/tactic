@@ -9,6 +9,7 @@ from myclusterutil import VectorSpaceClusterer, Dendogram, normalize, euclidean_
 from nltk.probability import DictionaryProbDist
 import numpy
 import copy
+import time
 
 class CentroidClusterer(VectorSpaceClusterer):
     def __init__(self, vector_names = None, num_clusters=1, normalise=True, svd_dimensions=None):
@@ -232,8 +233,10 @@ class OptCentroidClusterer(VectorSpaceClusterer):
             cluster_matrix[:, i] = v
             i = i + 1
 
+        if self.msg_handle is not None:
+            self.msg_handle.dm("initializing dot_store_matrix")
         dot_store_matrix = numpy.dot(cluster_matrix.transpose(), cluster_matrix)
-
+        start = time.time()
         while len(clusters) > max(self._num_clusters, 1):
             # find the two best candidate clusters to merge
             max_sim = self.array_max(dot_store_matrix)
@@ -260,9 +263,11 @@ class OptCentroidClusterer(VectorSpaceClusterer):
             self._dendogram.merge(i, j)
             if self._names:
                 self._name_dendogram.merge(i, j)
-            if len(clusters) % 50 == 0:
+            end = time.time()
+            if end - start > 5:
                 if self.msg_handle is not None:
                     self.msg_handle.dm(str(len(clusters)))
+                    start = end
                 else:
                     print len(clusters)
         self.update_clusters(len(clusters))
