@@ -3,7 +3,7 @@ import nltk
 import sys
 import copy
 # I want nltk to only search here so that I can see
-# what behavior on remote will be like.
+# what behavior on remote will be like
 nltk.data.path = ['./nltk_data/']
 import sklearn
 import numpy

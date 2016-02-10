@@ -11,8 +11,9 @@ import numpy
 import copy
 import time
 
+
 class CentroidClusterer(VectorSpaceClusterer):
-    def __init__(self, vector_names = None, num_clusters=1, normalise=True, svd_dimensions=None):
+    def __init__(self, vector_names=None, num_clusters=1, normalise=True, svd_dimensions=None):
         VectorSpaceClusterer.__init__(self, normalise, svd_dimensions)
         self._num_clusters = num_clusters
         self._dendogram = None
