@@ -43,6 +43,7 @@ def save_new_project():
         mainwindow_instances[data_dict['main_id']].loaded_modules = list(loaded_user_modules[current_user.username])
         save_dict = mainwindow_instances[data_dict['main_id']].compile_save_dict()
         save_dict["metadata"] = create_initial_metadata()
+        mainwindow_instances[data_dict['main_id']].mdata = save_dict["metadata"]
 
         db[current_user.project_collection_name].insert_one(save_dict)
 
