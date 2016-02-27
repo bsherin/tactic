@@ -23,20 +23,22 @@ $.get($SCRIPT_ROOT + "/get_table_templates", function(template){
 function doSearch(t) {
     console.log("do search on " + t);
     var data_dict = {"text_to_find": t};
-    broadcast_event_to_server("DehighlightTable", data_dict);
-    if (t !== "") {
-        broadcast_event_to_server("SearchTable", data_dict);
-    }
+    broadcast_event_to_server("DehighlightTable", data_dict, function () {
+        if (t !== "") {
+            broadcast_event_to_server("SearchTable", data_dict);
+        }
+    });
     return false
 }
 
 function doFilter(t) {
     console.log("do filter on " + t);
     var data_dict = {"text_to_find": t};
-    broadcast_event_to_server("UnfilterTable", data_dict);
-    if (t !== "") {
-        broadcast_event_to_server("FilterTable", data_dict);
-    }
+    broadcast_event_to_server("UnfilterTable", data_dict, function () {
+        if (t !== "") {
+            broadcast_event_to_server("FilterTable", data_dict);
+        }
+    });
     return false
 }
 
@@ -169,7 +171,7 @@ var tableObject = {
                 if (!self.is_last_chunk ) {
                     self.getting_new_chunk = true;
                     var nrows = $("#table-area tbody tr").length;
-                    $.getJSON($SCRIPT_ROOT + "/grab_next_chunk/" + String(main_id) + "/" + String(doc_names[0]), function (data) {
+                    $.getJSON($SCRIPT_ROOT + "/grab_next_chunk/" + String(main_id) + "/" + String(self.current_doc_name), function (data) {
                         var top_edge_pos = $("#table-area tbody tr:last").position().top;
                         tableObject.refill_table(data);
                         // The last row will now be at this position
@@ -184,7 +186,7 @@ var tableObject = {
             if ($("#table-area tbody tr:first").isOnScreen()) {
                 if (!self.is_first_chunk) {
                     self.getting_new_chunk = true;
-                    $.getJSON($SCRIPT_ROOT + "/grab_previous_chunk/" + String(main_id) + "/" + String(doc_names[0]), function (data) {
+                    $.getJSON($SCRIPT_ROOT + "/grab_previous_chunk/" + String(main_id) + "/" + String(self.current_doc_name), function (data) {
                         var top_edge_pos = $("#table-area tbody tr:first").position().top;
                         tableObject.refill_table(data);
                         // The last row will now be at this position
@@ -196,7 +198,6 @@ var tableObject = {
                     })
                 }
             }
-
         })
     },
 
@@ -205,6 +206,7 @@ var tableObject = {
         this.current_doc_name = data_object["doc_name"];
         this.is_first_chunk = data_object["is_first_chunk"];
         this.is_last_chunk = data_object["is_last_chunk"];
+        this.background_colors = data_object["background_colors"]
         var header_list = this.current_spec.header_list;
         var all_rows = $("#table-area tbody tr");
         all_rows.removeClass("hidden-row");
@@ -225,7 +227,12 @@ var tableObject = {
         }
     },
 
+    clear_all_bgs: function() {
+      $("#table-area tbody td").css("background-color", "")
+    },
+
     color_all_bgs: function() {
+        this.clear_all_bgs();
         for (var row in this.background_colors) {
             if (!this.background_colors.hasOwnProperty(row)) continue;
             for (var cheader in this.background_colors[row]) {
@@ -397,12 +404,14 @@ var tableObject = {
             var cindex = this.cellIndex;
             var column_header = self.current_spec.header_list[cindex];
             var old_content = self.data_rows[rindex][column_header];
+            var id_selector = "#row-" + String(rindex) + "-col-__id__";
+            var row_id = parseInt($(this.parentElement).children(id_selector).text());
             if (current_content != old_content) {
                 shorter_sig = [];
                 //self.table_array[rindex][cindex] = current_content;
                 self.data_rows[rindex][column_header] = current_content;
                 data_dict = {
-                    "id": rindex,
+                    "id": row_id,
                     "column_header": column_header,
                     "old_content": old_content,
                     "new_content": current_content,
@@ -560,7 +569,7 @@ var tableObject = {
         dirty = true;
         var cheader = data.column_header;
         var new_content = data.new_content;
-        var row_index = data.id;
+        var row_index = data.row;
         var cell_index = this.current_spec.header_list.indexOf(cheader);
         if (cell_index == -1) {
             console.log("invalid signature");
