@@ -6,7 +6,7 @@ from flask import url_for
 from tactic_app import socketio
 from tactic_app.shared_dicts import mainwindow_instances, distribute_event, get_tile_class
 from tactic_app.shared_dicts import tokenizer_dict, weight_functions
-from tactic_app.matplotlib_utilities import MplFigure
+from matplotlib_utilities import MplFigure
 from users import load_user
 import sys
 from matplotlib_utilities import color_palette_names, FigureCanvas
@@ -17,7 +17,6 @@ import json
 from types import NoneType
 import exceptions
 import StringIO
-
 
 jsonizable_types = {
     "str": str,
@@ -31,7 +30,6 @@ jsonizable_types = {
     "dict": dict,
     "NoneType": NoneType
 }
-
 
 class TileBase(gevent.Greenlet):
     category = "basic"

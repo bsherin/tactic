@@ -123,6 +123,7 @@ function continue_loading() {
                     var tile_ids = data.tile_ids;
                     create_tile_from_save(0);
                     menus["Project"].enable_menu_item("save");
+                    broadcast_event_to_server("DisplayCreateErrors", {})
 
                     function create_tile_from_save(index) {
                         if (index == tile_ids.length) {

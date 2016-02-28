@@ -77,13 +77,11 @@ class docInfo:
 
     @property
     def displayed_background_colors(self):
-        if not self.infinite_scroll_required:
-            return self.cell_backgrounds
         result = {}
         sorted_int_keys = sorted([int(key) for key in self.current_data_rows.keys()])
-        for r in sorted_int_keys[self.start_of_current_chunk:(self.start_of_current_chunk + CHUNK_SIZE)]:
+        for i, r in enumerate(sorted_int_keys[self.start_of_current_chunk:(self.start_of_current_chunk + CHUNK_SIZE)]):
             if str(r) in self.cell_backgrounds:
-                result[str(r)] = self.cell_backgrounds[str(r)]
+                result[i] = self.cell_backgrounds[str(r)]
         return result
 
     def configure_for_current_data(self):
@@ -96,12 +94,18 @@ class docInfo:
             self.infinite_scroll_required = True
             self.is_last_chunk = False
 
+    # def get_actual_row(self, row_id):
+    #     row = int(row_id)
+    #     if self.start_of_current_chunk <= row < (self.start_of_current_chunk + CHUNK_SIZE):
+    #         return row - self.start_of_current_chunk
+    #     else:
+    #         return None
+
     def get_actual_row(self, row_id):
-        row = int(row_id)
-        if self.start_of_current_chunk <= row < (self.start_of_current_chunk + CHUNK_SIZE):
-            return row - self.start_of_current_chunk
-        else:
-            return None
+        for i, the_row in enumerate(self.sorted_data_rows):
+            if str(row_id) == str(the_row["__id__"]):
+                return i
+        return None
 
     def compile_save_dict(self):
         return ({"name": self.name,
@@ -192,7 +196,7 @@ class mainWindow(gevent.Greenlet):
     save_attrs = ["short_collection_name", "collection_name", "current_tile_id", "tile_sort_list", "left_fraction",
                   "is_shrunk", "user_id", "doc_dict", "tile_instances", "project_name", "loaded_modules",
                   "hidden_columns_list", "_main_id"]
-    update_events = ["CellChange", "CreateColumn", "SearchTable", "SaveTableSpec", "MainClose",
+    update_events = ["CellChange", "CreateColumn", "SearchTable", "SaveTableSpec", "MainClose", "DisplayCreateErrors",
                      "DehighlightTable", "SetCellContent", "RemoveTile", "ColorTextInCell",
                      "FilterTable", "UnfilterTable", "TextSelect", "UpdateSortList", "UpdateLeftFraction",
                      "UpdateTableShrinkState"]
@@ -226,6 +230,7 @@ class mainWindow(gevent.Greenlet):
         self.visible_doc_name = None
         self._pipe_dict = {}
         self.selected_text = ""
+        self.recreate_errors = []
 
         # self.cells_with_highlights = []
 
@@ -250,6 +255,7 @@ class mainWindow(gevent.Greenlet):
             new_instance = mainWindow(save_dict["user_id"], save_dict["collection_name"], main_id=save_dict["_main_id"])
         else:
             new_instance = mainWindow(save_dict["user_id"], save_dict["collection_name"])
+        error_messages = []
         for (attr, attr_val) in save_dict.items():
             try:
                 if type(attr_val) == dict and ("my_class_for_recreate" in attr_val):
@@ -260,12 +266,19 @@ class mainWindow(gevent.Greenlet):
                     cls = getattr(sys.modules[__name__], attr_val.values()[0]["my_class_for_recreate"])
                     res = {}
                     for (key, val) in attr_val.items():
-                        res[key] = cls.recreate_from_save(val)
+                        tinstance = cls.recreate_from_save(val)
+                        if tinstance is not None:
+                            res[key] = tinstance
+                        else:
+                            error_messages.append("error creating tile {}".format(key))
                     setattr(new_instance, attr, res)
                 else:
                     setattr(new_instance, attr, attr_val)
             except TypeError:
                 setattr(new_instance, attr, attr_val)
+        for tile in new_instance.tile_sort_list:
+            if not tile in new_instance.tile_instances:
+                new_instance.tile_sort_list.remove(tile)
 
         # There's some extra work I have to do once all of the tiles are built.
         # Each tile needs to know the main_id it's associated with.
@@ -277,6 +290,7 @@ class mainWindow(gevent.Greenlet):
                 for export in tile.exports:
                     new_instance._pipe_dict[tile.tile_id][tile.tile_name + "_" + export] = export
             tile.start()
+        new_instance.recreate_errors = error_messages
         return new_instance
 
     @property
@@ -372,7 +386,8 @@ class mainWindow(gevent.Greenlet):
 
     def refill_table(self):
         doc = self.doc_dict[self.visible_doc_name]
-        data_object = {"data_rows": doc.sorted_data_rows, "doc_name": self.visible_doc_name,
+        data_object = {"data_rows": doc.displayed_data_rows, "doc_name": self.visible_doc_name,
+                       "background_colors": doc.displayed_background_colors,
                        "is_first_chunk": doc.is_first_chunk, "is_last_chunk": doc.is_last_chunk}
         self.emit_table_message("refill_table", data_object)
 
@@ -392,7 +407,7 @@ class mainWindow(gevent.Greenlet):
                     if filter_function(val):
                         doc.current_data_rows[key] = val
                 doc.configure_for_current_data()
-        self.refill_table()
+            self.refill_table()
         return
 
     def apply_to_rows(self, func, document_name=None):
@@ -472,6 +487,10 @@ class mainWindow(gevent.Greenlet):
                 self.left_fraction = data["left_fraction"]
             elif event_name == "UpdateTableShrinkState":
                 self.is_shrunk = data["is_shrunk"]
+            elif event_name == "DisplayCreateErrors":
+                for msg in self.recreate_errors:
+                    self.print_to_console(msg, True)
+                self.recreate_errors = []
         except:
             self.print_to_console("error in handle_event  " + self.__class__.__name__ +
                                   str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]), force_open=True)
@@ -493,7 +512,11 @@ class mainWindow(gevent.Greenlet):
                 self._set_row_column_data(doc_name, the_id, column_header, new_content)
                 self._change_list.append(the_id)
             if doc_name == self.visible_doc_name:
-                self.emit_table_message("setCellContent", data)
+                doc = self.doc_dict[doc_name]
+                actual_row = doc.get_actual_row(the_id)
+                if actual_row is not None:
+                    data["row"] = actual_row
+                    self.emit_table_message("setCellContent", data)
 
     def _set_cell_background(self, doc_name, the_id, column_header, color):
         doc = self.doc_dict[doc_name]
