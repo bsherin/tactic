@@ -79,7 +79,10 @@ class ResourceManager(object):
             the_html += "<tr class='selector-button {0}-selector-button' id='{0}-selector-{1}'>".format(self.res_type,
                                                                                                         r[0])
             for c in r:
-                the_html += "<td>{0}</td>".format(c)
+                if isinstance(c, list):
+                    the_html += "<td sorttable_customkey='{0}'>{1}</td>".format(c[1], c[0])
+                else:
+                    the_html += "<td>{0}</td>".format(c)
             the_html += "</tr>"
 
         the_html += "</tbody></table>"
@@ -96,14 +99,18 @@ class ResourceManager(object):
             else:
                 if "datetime" in mdata:
                     datestring = mdata["datetime"].strftime("%b %d, %Y, %H:%M")
+                    datestring_for_sort = mdata["datetime"].strftime("%Y%m%d%H%M%S")
                 else:
                     datestring = ""
+                    datestring_for_sort = ""
                 if "updated" in mdata:
                     updatestring = mdata["updated"].strftime("%b %d, %Y, %H:%M")
+                    updatestring_for_sort = mdata["updated"].strftime("%Y%m%d%H%M%S")
                 else:
                     updatestring = ""
+                    updatestring_for_sort = ""
                 tagstring = str(mdata["tags"])
-            larray.append([res_item[0], datestring, updatestring, tagstring])
+            larray.append([res_item[0], [datestring, datestring_for_sort], [updatestring, updatestring_for_sort], tagstring])
         return larray
 
 
