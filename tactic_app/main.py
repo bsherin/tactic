@@ -115,6 +115,9 @@ class docInfo:
                  "my_class_for_recreate": "docInfo",
                  "header_list": self.header_list})
 
+    def get_id_from_actual_row(self, actual_row):
+        return self.sorted_data_rows[actual_row]["__id__"]
+
     @property
     def sorted_data_rows(self):
         result = []
