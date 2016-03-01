@@ -269,6 +269,12 @@ def set_visible_doc(main_id, doc_name):
 def distribute_events_stub(event_name):
     data_dict = request.json
     main_id = request.json["main_id"]
+
+    # If necessary, have to convert the row_index on the client side to the row_id
+    if (data_dict is not None) and ("active_row_index" in data_dict) and ("doc_name" in data_dict):
+        if data_dict["active_row_index"] is not None:
+            mwindow = mainwindow_instances[main_id]
+            data_dict["active_row_index"] = mwindow.doc_dict[data_dict["doc_name"]].get_id_from_actual_row(data_dict["active_row_index"])
     if "tile_id" in request.json:
         tile_id = request.json["tile_id"]
     else:

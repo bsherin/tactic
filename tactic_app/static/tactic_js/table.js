@@ -525,13 +525,14 @@ var tableObject = {
         var cindex = this.current_spec.header_list.indexOf(cheader);
         try {
             var el = this.getCellElementByRowColIndex(rindex, cindex);
-            el.innerHTML = el.innerHTML.replace(/<\/?span[^>]*>/g, "");
+            var td_element = $("#table-area tbody")[0].rows[rindex].cells[cindex];
+            $(td_element).text(this.data_rows[rindex][cheader]);
+            //el.innerHTML = el.innerHTML.replace(/<\/?span[^>]*>/g, "");
         }
         catch (err) {
             console.log(err.message + " row index " + rindex + "_col_index_ " + cindex)
         }
     },
-
 
     /* shrinkTable and expandTable are called from html inline */
 

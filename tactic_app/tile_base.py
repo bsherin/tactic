@@ -582,8 +582,9 @@ class TileBase(gevent.Greenlet):
 
     def color_cell_text(self, doc_name, row_index, column_name, tokenized_text, color_dict):
         self.tile_yield()
+        actual_row = mainwindow_instances[self.main_id].doc_dict[doc_name].get_actual_row(row_index)
         distribute_event("ColorTextInCell", self.main_id, {"doc_name": doc_name,
-                                                           "row_index": row_index,
+                                                           "row_index": actual_row,
                                                            "column_header": column_name,
                                                            "token_text": tokenized_text,
                                                            "color_dict": color_dict})
