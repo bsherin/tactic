@@ -238,8 +238,13 @@ var tile_manager_specifics = {
     delete_view: "/delete_tile_module/",
     double_click_func: "view_func",
     show_loaded_list: true,
+    popup_buttons: [{"name": "new",
+                    "button_class": "btn-success",
+                    "option_list": [{"opt_name": "BasicTileTemplate", "opt_func": "new_tile"},
+                                    {"opt_name": "ExpandedTileTemplate", "opt_func": "new_tile"},
+                                    {"opt_name": "MatplotlibTileTemplate", "opt_func": "new_tile"}]}],
+
     buttons: [
-        {"name": "new", "func": "new_func", "button_class": "btn-success"},
         {"name": "view", "func": "view_func", "button_class": "btn-primary"},
         {"name": "load", "func": "load_func", "button_class": "btn-primary"},
         {"name": "unload", "func": "unload_func", "button_class": "btn-warning"},
@@ -256,6 +261,35 @@ var tile_manager_specifics = {
         var res_name = manager.check_for_selection("tile");
         if (res_name == "") return;
         $.getJSON($SCRIPT_ROOT + '/unload_all_tiles', doFlash)
+    },
+
+    new_tile: function (event) {
+        var manager = event.data.manager;
+        var template_name = event.data.opt_name;
+        showModal("New Tile", "New Tile Name", function (new_name) {
+            var result_dict = {
+                "template_name": template_name,
+                "new_res_name": new_name
+            };
+
+            $.ajax({
+                url: $SCRIPT_ROOT + manager.new_view,
+                contentType: 'application/json',
+                type: 'POST',
+                async: true,
+                data: JSON.stringify(result_dict),
+                dataType: 'json',
+                success: function(data) {
+                    if (data.success){
+                        window.open($SCRIPT_ROOT + manager.view_view + String(new_name))
+                    }
+                    else {
+                        doFlash(data)
+                    }
+                }
+            });
+        })
+        event.preventDefault();
     }
 };
 

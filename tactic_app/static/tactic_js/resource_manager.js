@@ -48,6 +48,12 @@ ResourceManager.prototype = {
             $("#add-{0}-form".format(self.res_type)).submit({"manager": self}, self.add_func)
         }
         $("#repository-copy-" + self.res_type + "-button").click({"manager": self}, self.repository_copy_func);
+
+        $.each(this.popup_buttons, function (index, value) {
+            $.each(value.option_list, function (index, opt) {
+                $("#{0}-{1}-button".format(opt.opt_name, self.res_type)).click({"manager": self, "opt_name": opt.opt_name}, self[opt.opt_func])
+            })
+        });
     },
 
     add_func: function (event) {
@@ -66,6 +72,8 @@ ResourceManager.prototype = {
         });
         event.preventDefault();
     },
+
+    popup_buttons: [],
 
     load_func: function (event) {
         var manager = event.data.manager;
