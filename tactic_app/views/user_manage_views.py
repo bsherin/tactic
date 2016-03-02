@@ -96,6 +96,8 @@ class ResourceManager(object):
                 datestring = ""
                 tagstring = ""
                 updatestring = ""
+                datestring_for_sort = ""
+                updatestring_for_sort = ""
             else:
                 if "datetime" in mdata:
                     datestring = mdata["datetime"].strftime("%b %d, %Y, %H:%M")
@@ -602,10 +604,11 @@ class TileManager(ResourceManager):
     def create_tile_module(self):
         user_obj = current_user
         new_tile_name = request.json['new_res_name']
+        template_name = request.json["template_name"]
         if db[user_obj.tile_collection_name].find_one({"tile_module_name": new_tile_name}) is not None:
             return jsonify({"success": False, "alert_type": "alert-warning",
                             "message": "A module with that name already exists"})
-        mongo_dict = db["repository.tiles"].find_one({"tile_module_name": "tile_template"})
+        mongo_dict = db["repository.tiles"].find_one({"tile_module_name": template_name})
         template = mongo_dict["tile_module"]
 
         metadata = create_initial_metadata()
