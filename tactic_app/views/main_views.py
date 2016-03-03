@@ -1,6 +1,6 @@
 import sys
 import datetime
-from tactic_app import app, db, socketio
+from tactic_app import app, db, fs, socketio
 from flask import request, jsonify, render_template, send_file, url_for
 from flask_login import current_user, login_required
 from flask_socketio import join_room
@@ -10,6 +10,8 @@ from tactic_app.shared_dicts import mainwindow_instances, distribute_event, crea
 from user_manage_views import project_manager, collection_manager
 import openpyxl
 import cStringIO
+import cPickle
+from bson.binary import Binary
 
 
 # The main window should join a room associated with the user
@@ -41,8 +43,11 @@ def save_new_project():
             mainwindow_instances[data_dict['main_id']].doc_dict[dname].table_spec = spec
 
         mainwindow_instances[data_dict['main_id']].loaded_modules = list(loaded_user_modules[current_user.username])
-        save_dict = mainwindow_instances[data_dict['main_id']].compile_save_dict()
+        project_dict = mainwindow_instances[data_dict['main_id']].compile_save_dict()
+        save_dict = {}
         save_dict["metadata"] = create_initial_metadata()
+        save_dict["project_name"] = project_dict["project_name"]
+        save_dict["file_id"] = fs.put(Binary(cPickle.dumps(project_dict)))
         mainwindow_instances[data_dict['main_id']].mdata = save_dict["metadata"]
 
         db[current_user.project_collection_name].insert_one(save_dict)
@@ -66,12 +71,30 @@ def update_project():
         mainwindow_instances[data_dict['main_id']].loaded_modules = list(loaded_user_modules[current_user.username])
         for (dname, spec) in tspec_dict.items():
             mainwindow_instances[data_dict['main_id']].doc_dict[dname].table_spec = spec
-        save_dict = mainwindow_instances[data_dict['main_id']].compile_save_dict()
+        project_dict = mainwindow_instances[data_dict['main_id']].compile_save_dict()
+        pname = project_dict["project_name"]
         mainwindow_instances[data_dict['main_id']].mdata["updated"] = datetime.datetime.today()
-        save_dict["metadata"] = mainwindow_instances[data_dict['main_id']].mdata
 
-        db[current_user.project_collection_name].update_one({"project_name": save_dict["project_name"]},
-                                                            {'$set': save_dict})
+        new_file_id = fs.put(Binary(cPickle.dumps(project_dict)))
+
+        # Here we are trying to deal with both old-style and new-style saves
+        # If it appears the project was saved old-style, then we'll delete and recreate it.
+        save_dict = db[current_user.project_collection_name].find_one({"project_name": pname})
+        if "file_id" in save_dict:
+            fs.delete(save_dict["file_id"])
+            save_dict["project_name"] = pname
+            save_dict["metadata"] = mainwindow_instances[data_dict['main_id']].mdata
+            save_dict["file_id"] = new_file_id
+            db[current_user.project_collection_name].update_one({"project_name": pname},
+                                                    {'$set': save_dict})
+        else:
+            db[current_user.project_collection_name].delete_one({"project_name": pname})
+            save_dict = {}
+            save_dict["project_name"] = pname
+            save_dict["metadata"] = mainwindow_instances[data_dict['main_id']].mdata
+            save_dict["file_id"] = new_file_id
+            db[current_user.project_collection_name].insert_one(save_dict)
+
         return jsonify({"success": True, "message": "Project Successfully Saved"})
     except:
         mainwindow_instances[data_dict['main_id']].handle_exception("Error saving project")

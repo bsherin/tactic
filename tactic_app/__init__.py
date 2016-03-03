@@ -7,6 +7,7 @@ import pymongo
 import sys
 import os
 from pymongo import MongoClient
+import gridfs
 from flask.ext.login import LoginManager
 from flask.ext.bootstrap import Bootstrap
 from flask.ext.socketio import SocketIO
@@ -42,6 +43,7 @@ try:
         client.server_info()
         db = client.heroku_4ncbq1zd
 
+    fs = gridfs.GridFS(db)
     "print creating login stuff"
     login_manager = LoginManager()
     login_manager.session_protection = 'strong'
