@@ -2,12 +2,13 @@ import os, sys, datetime
 from flask import render_template, request, jsonify, send_file
 from flask_login import login_required, current_user
 from flask_socketio import join_room
-from tactic_app import app, db, socketio, use_ssl
+from tactic_app import app, db, fs, socketio, use_ssl
 from tactic_app.file_handling import read_csv_file_to_dict, read_txt_file_to_dict, load_a_list
 from tactic_app.main import create_new_mainwindow, create_new_mainwindow_from_project, mainwindow_instances
 from tactic_app.users import User
 from tactic_app.user_tile_env import create_user_tiles
 from tactic_app.shared_dicts import user_tiles, loaded_user_modules, create_initial_metadata
+import cPickle
 from jinja2 import Markup
 
 AUTOSPLIT = True
@@ -447,7 +448,16 @@ class ProjectManager(ResourceManager):
 
     def main_project(self, project_name):
         user_obj = current_user
-        project_dict = db[user_obj.project_collection_name].find_one({"project_name": project_name})
+        save_dict = db[user_obj.project_collection_name].find_one({"project_name": project_name})
+
+        # Right now, we are allowing for the possibility of both old-style and new-style project saves
+        # In new style, the meet of the project is saved in gridfs.
+        # In old style it is all stored in the main mongo in the project collection
+        if "file_id" in save_dict:
+            project_dict = cPickle.loads(str(fs.get(save_dict["file_id"]).read().decode()))
+            project_dict["metadata"] = save_dict["metadata"]
+        else:
+            project_dict = save_dict
         if user_obj.username not in loaded_user_modules:
             loaded_user_modules[user_obj.username] = set([])
         for module in project_dict["loaded_modules"]:
