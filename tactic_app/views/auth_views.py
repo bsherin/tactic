@@ -9,6 +9,7 @@ from wtforms.validators import Required, Length, Regexp, EqualTo
 from tactic_app.shared_dicts import user_tiles, loaded_user_modules
 from tactic_app import app, socketio, csrf
 from wtforms.validators import ValidationError
+from tactic_app.__init__ import ANYONE_CAN_REGISTER
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -42,7 +43,7 @@ def attempt_login():
 def check_if_admin():
     result_dict = {}
     try:
-        if current_user.username == "repository":
+        if ANYONE_CAN_REGISTER or (current_user.username == "repository"):
             result_dict["is_admin"] = True
         else:
             result_dict["is_admin"] = False
@@ -67,7 +68,7 @@ def logout():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    if current_user.username == "repository":
+    if ANYONE_CAN_REGISTER or (current_user.username == "repository"):
         return render_template('auth/register.html')
     else:
         return render_template
