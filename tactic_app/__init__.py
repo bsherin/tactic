@@ -43,6 +43,11 @@ try:
         client.server_info()
         db = client.heroku_4ncbq1zd
 
+    if ("ANYONE_CAN_REGISTER" in os.environ) and (os.environ.get("ANYONE_CAN_REGISTER") == "True"):
+        ANYONE_CAN_REGISTER = True
+    else:
+        ANYONE_CAN_REGISTER = False
+
     fs = gridfs.GridFS(db)
     "print creating login stuff"
     login_manager = LoginManager()
