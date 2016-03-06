@@ -230,7 +230,7 @@ TileObject.prototype = {
         var computed_height = ui.element.height();
         ui.element.width(computed_width);
         ui.element.height(computed_height);
-        var scripts = $(ui.element.find(".tile-display-area")).find("script");
+        var scripts = $(ui.element.find(".tile-display-area")).find(".resize-rerun");
         for (var i = 0; i < scripts.length; i = i+1) {
             eval(scripts[i].innerHTML)
         }

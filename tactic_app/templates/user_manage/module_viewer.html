@@ -15,30 +15,30 @@
 
 {% block page_content %}
     <div class="container-fluid">
-        <div class="page-header">
-            <h3>{{ module_name }}</h3>
-        </div>
         <div class="row">
             <div class="col-xs-12">
                 <div id="status-area"></div>
             </div>
         </div>
-        <div class="row">
-            <div class="btn-toolbar col-xs-12" role="toolbar" >
-                <div class="btn-group" role="group">
-                    <button type="button" class="btn btn-default" onclick="updateModule()">Save</button>
-                    <button type="button" class="btn btn-default" onclick="saveModuleAs()">Save as ...</button>
-                    <button type="button" class="btn btn-default" onclick="loadModule()">Save and Load</button>
-                    <button type="button" class="btn btn-default" onclick="window.close()">Close</button>
-                </div>
-                <div class="btn-group" role="group">
-                    <button type="button" class="btn btn-default" onclick="changeTheme()">Toggle Theme</button>
-                </div>
-            </div>
-        </div>
+
         <div class="row">
             <div class="col-xs-8">
-                <br>
+                <div class="row" style="margin-top: 10px"">
+                    <div class="btn-toolbar col-xs-12" role="toolbar" >
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-default" onclick="updateModule()">Save</button>
+                            <button type="button" class="btn btn-default" onclick="saveModuleAs()">Save as ...</button>
+                            <button type="button" class="btn btn-default" onclick="loadModule()">Save and Load</button>
+                            <button type="button" class="btn btn-default" onclick="window.close()">Close</button>
+                        </div>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-default" onclick="changeTheme()">Toggle Theme</button>
+                        </div>
+                        <div style="float: right">
+                            <h4>{{ module_name }}</h4>
+                        </div>
+                    </div>
+                </div>
                 <textarea id="codearea">{{module_code | safe}}</textarea>
             </div>
             <div class="col-xs-4">

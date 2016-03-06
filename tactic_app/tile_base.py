@@ -6,7 +6,7 @@ from flask import url_for
 from tactic_app import socketio
 from tactic_app.shared_dicts import mainwindow_instances, distribute_event, get_tile_class
 from tactic_app.shared_dicts import tokenizer_dict, weight_functions
-from matplotlib_utilities import MplFigure
+from matplotlib_utilities import MplFigure, Mpld3Figure
 from users import load_user
 import sys
 from matplotlib_utilities import color_palette_names, FigureCanvas
@@ -123,7 +123,7 @@ class TileBase(gevent.Greenlet):
                 self.tda_width = data["tda_width"]
                 self.margin = data["margin"]
                 if self.configured:
-                    if isinstance(self, MplFigure):
+                    if isinstance(self, MplFigure) or isinstance(self, Mpld3Figure):
                         self.resize_mpl_tile()
                     else:
                         self.handle_size_change()
@@ -608,18 +608,6 @@ class TileBase(gevent.Greenlet):
         self.tile_yield()
         return weight_functions[weight_function_name]
 
-    def create_figure_html(self):
-        canvas=FigureCanvas(self) # This does seem to be necessary or savefig won't work.
-        img_file = StringIO.StringIO()
-        self.savefig(img_file)
-        img_file.seek(0)
-        figname = str(self.current_fig_id)
-        self.current_fig_id += 1
-        self.img_dict[figname]  = img_file.getvalue()
-        fig_url = self.base_figure_url + figname
-        image_string = "<img class='output-plot' src='{}' onclick=showZoomedImage(this) lt='Image Placeholder'>"
-        the_html = image_string.format(fig_url)
-        return the_html
 
     def create_data_source(self, data):
         dataname = str(self.current_data_id)
@@ -635,7 +623,7 @@ class TileBase(gevent.Greenlet):
         the_html = "<div id='{}'><div class='d3plot'></div>".format(str(uid))
 
         the_script = "createLinePlot('{0}', '{1}', '{2}')".format(self.tile_id, data_name, uid)
-        the_html += "<script>{}</script></div>".format(the_script)
+        the_html += "<script class='resize-rerun'>{}</script></div>".format(the_script)
         return the_html
 
     def create_scatterplot_html(self, data, xlabels=None, margins=None):
@@ -648,7 +636,7 @@ class TileBase(gevent.Greenlet):
         the_html = "<div id='{}'><div class='d3plot'></div>".format(str(uid))
 
         the_script = "createScatterPlot('{0}', '{1}', '{2}')".format(self.tile_id, data_name, uid)
-        the_html += "<script>{}</script></div>".format(the_script)
+        the_html += "<script class='resize-rerun'>{}</script></div>".format(the_script)
         return the_html
 
     def create_heatmap(self, data, row_labels=None, margins=None, domain=None, title=None):
@@ -665,7 +653,7 @@ class TileBase(gevent.Greenlet):
 
 
         the_script = "createHeatmap('{0}', '{1}', '{2}')".format(self.tile_id, data_name, uid)
-        the_html += "<script>{}</script></div>".format(the_script)
+        the_html += "<script class='resize-rerun' >{}</script></div>".format(the_script)
         return the_html
 
     def get_unique_div_id(self):
