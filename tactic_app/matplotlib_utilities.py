@@ -1,11 +1,14 @@
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
-from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 from matplotlib.colors import Normalize as mpl_Normalize
 from matplotlib.cm import get_cmap, ScalarMappable, register_cmap, datad
 import numpy
+import mpld3
 # import pylab
 import StringIO
+
+color_palette_names = [m for m in datad if not m.endswith("_r")]
 
 color_map_specs = [["Yellows", {'red': [(0.0, 0.0, 1.0), (1.0,  1.0, 1.0)],
                                 'green': [(0.0, 0.0, 1.0), (1.0, 1.0, 1.0)],
@@ -28,9 +31,38 @@ color_map_specs = [["Yellows", {'red': [(0.0, 0.0, 1.0), (1.0,  1.0, 1.0)],
 
 for spec in color_map_specs:
     register_cmap(cmap=LinearSegmentedColormap(spec[0], spec[1]))
+    color_palette_names.append(spec[0])
 
-color_palette_names = sorted(m for m in datad if not m.endswith("_r"))
+tableau20 = [(31, 119, 180), (174, 199, 232), (255, 127, 14), (255, 187, 120),
+             (44, 160, 44), (152, 223, 138), (214, 39, 40), (255, 152, 150),
+             (148, 103, 189), (197, 176, 213), (140, 86, 75), (196, 156, 148),
+             (227, 119, 194), (247, 182, 210), (127, 127, 127), (199, 199, 199),
+             (188, 189, 34), (219, 219, 141), (23, 190, 207), (158, 218, 229)]
 
+# Tableau Color Blind 10
+tableau20blind = [(0, 107, 164), (255, 128, 14), (171, 171, 171), (89, 89, 89),
+             (95, 158, 209), (200, 82, 0), (137, 137, 137), (163, 200, 236),
+             (255, 188, 121), (207, 207, 207)]
+
+standard = ['#005824','#1A693B','#347B53','#4F8D6B','#699F83','#83B09B','#9EC2B3','#B8D4CB','#D2E6E3','#EDF8FB','#FFFFFF','#F1EEF6','#E6D3E1','#DBB9CD','#D19EB9','#C684A4','#BB6990','#B14F7C','#A63467','#9B1A53','#91003F'];
+
+# Rescale to values between 0 and 1
+for i in range(len(tableau20)):
+    r, g, b = tableau20[i]
+    tableau20[i] = (r / 255., g / 255., b / 255.)
+
+for i in range(len(tableau20blind)):
+    r, g, b = tableau20blind[i]
+    tableau20blind[i] = (r / 255., g / 255., b / 255.)
+
+register_cmap(cmap=ListedColormap(tableau20, name="tableau20"))
+color_palette_names.append("tableau20")
+register_cmap(cmap=ListedColormap(tableau20blind, name="tableau20blind"))
+color_palette_names.append("tableau20blind")
+
+register_cmap(cmap=ListedColormap(standard, name="standard"))
+color_palette_names = sorted(color_palette_names)
+color_palette_names = ["standard"] + color_palette_names
 
 class MplFigure(Figure):
     # kwargs for mplfigure are dpi and title
@@ -59,6 +91,43 @@ class MplFigure(Figure):
         img_file.seek(0)
         img = img_file.getvalue()
         return img
+
+    def create_figure_html(self):
+        canvas=FigureCanvas(self) # This does seem to be necessary or savefig won't work.
+        img_file = StringIO.StringIO()
+        self.savefig(img_file)
+        img_file.seek(0)
+        figname = str(self.current_fig_id)
+        self.current_fig_id += 1
+        self.img_dict[figname]  = img_file.getvalue()
+        fig_url = self.base_figure_url + figname
+        image_string = "<img class='output-plot' src='{}' onclick=showZoomedImage(this) lt='Image Placeholder'>"
+        the_html = image_string.format(fig_url)
+        return the_html
+
+class Mpld3Figure(Figure):
+    # kwargs for mplfigure are dpi and title
+    def __init__(self, **kwargs):
+        if "dpi" in kwargs:
+            dpi = kwargs["dpi"]
+        else:
+            dpi = 80
+        if ("title" in kwargs):
+            title = kwargs["title"]
+        else:
+            title = None
+        Figure.__init__(self, figsize=(self.width / dpi, self.height / 80), dpi=dpi)
+        self.title = title
+        self.dpi = dpi
+        self.kwargs = kwargs
+        canvas=FigureCanvas(self)
+
+    def draw_plot(self):
+        print "draw_plot not implemented"
+        return
+
+    def create_figure_html(self):
+        return mpld3.fig_to_html(self)
 
 class GraphList(MplFigure):
     def draw_plot(self):

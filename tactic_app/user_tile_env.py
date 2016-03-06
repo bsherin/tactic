@@ -7,6 +7,7 @@ import copy
 nltk.data.path = ['./nltk_data/']
 import sklearn
 import numpy
+import mpld3
 import wordcloud
 from tactic_app.clusterer_classes import CentroidClusterer, OptCentroidClusterer
 from tactic_app.sentiment_tools import vader_sentiment_analyzer, sentiwordnet
@@ -14,7 +15,7 @@ from matplotlib_utilities import GraphList, ColorMapper, FigureCanvas, ArrayHeat
 from tactic_app.shared_dicts import mainwindow_instances
 
 from tile_base import TileBase
-from matplotlib_utilities import MplFigure, get_cmap
+from matplotlib_utilities import MplFigure, Mpld3Figure, get_cmap
 from users import User
 
 def user_tile(tclass):
