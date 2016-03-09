@@ -12,8 +12,22 @@ function showZoomedImage(el) {
 
 function TileObject(tile_id, html, is_new_tile) {
     this.tile_id = tile_id;
+    this.codeMirrorObjects = {};
+    self = this;
 
     $("#tile-div").append(html);  // This append has to be after the flip or weird things happen
+
+    $(".codearea").each( function () {
+        theId = $(this).attr("id");
+        self.codeMirrorObjects[theId] = CodeMirror.fromTextArea(this, {
+            matchBrackets: true,
+            autoCloseBrackets: true,
+            indentUnit: 4
+        });
+        cm_element = $($(this).siblings(".CodeMirror")[0])
+        cm_element.resizable({handles: "se"})
+        cm_element.height(100)
+    })
 
     var self = this;
     $(this.full_selector()).resizable({
@@ -55,6 +69,14 @@ TileObject.prototype = {
     submitOptions: function () {
         var data = {};
         data["main_id"] = main_id;
+        self = this;
+        $(this.full_selector() + " .CodeMirror").each(function () {
+            theTextArea = $($(this).siblings(".codearea")[0]);
+            theId = theTextArea.attr("id");
+            theCode = self.codeMirrorObjects[theId].getValue();
+            theTextArea.text(theCode)
+
+        })
         $(this.full_selector() + " .back input").each(function () {
                 if (this.type == "checkbox") {
                     data[$(this).attr('id')] = this.checked
