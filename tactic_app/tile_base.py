@@ -40,6 +40,8 @@ class TileBase(gevent.Greenlet):
                            '</div>'
     textarea_template = '<textarea type="{1}" class="form-control input-sm" id="{0}" value="{2}">{2}</textarea>' \
                         '</div>'
+    codearea_template = '<textarea type="{1}" class="form-control input-sm codearea" id="{0}" value="{2}">{2}</textarea>' \
+                        '</div>'
     select_base_template = '<select class="form-control input-sm" id="{0}">'
     select_option_template = '<option value="{0}">{0}</option>'
     select_option_selected_template = '<option value="{0}" selected>{0}</option>'
@@ -255,6 +257,9 @@ class TileBase(gevent.Greenlet):
                     form_html += '</select></div>'
                 elif option["type"] == "textarea":
                     the_template = self.input_start_template + self.textarea_template
+                    form_html += the_template.format(att_name, option["type"], starting_value)
+                elif option["type"] == "codearea":
+                    the_template = self.input_start_template + self.codearea_template
                     form_html += the_template.format(att_name, option["type"], starting_value)
                 elif option["type"] == "text":
                     the_template = self.input_start_template + self.basic_input_template

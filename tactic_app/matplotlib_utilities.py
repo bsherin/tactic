@@ -41,10 +41,12 @@ tableau20 = [(31, 119, 180), (174, 199, 232), (255, 127, 14), (255, 187, 120),
 
 # Tableau Color Blind 10
 tableau20blind = [(0, 107, 164), (255, 128, 14), (171, 171, 171), (89, 89, 89),
-             (95, 158, 209), (200, 82, 0), (137, 137, 137), (163, 200, 236),
-             (255, 188, 121), (207, 207, 207)]
+                  (95, 158, 209), (200, 82, 0), (137, 137, 137), (163, 200, 236),
+                  (255, 188, 121), (207, 207, 207)]
 
-standard = ['#005824','#1A693B','#347B53','#4F8D6B','#699F83','#83B09B','#9EC2B3','#B8D4CB','#D2E6E3','#EDF8FB','#FFFFFF','#F1EEF6','#E6D3E1','#DBB9CD','#D19EB9','#C684A4','#BB6990','#B14F7C','#A63467','#9B1A53','#91003F'];
+standard = ['#005824', '#1A693B', '#347B53', '#4F8D6B', '#699F83', '#83B09B', '#9EC2B3', '#B8D4CB', '#D2E6E3',
+            '#EDF8FB', '#FFFFFF', '#F1EEF6', '#E6D3E1', '#DBB9CD', '#D19EB9', '#C684A4', '#BB6990', '#B14F7C',
+            '#A63467', '#9B1A53', '#91003F']
 
 # Rescale to values between 0 and 1
 for i in range(len(tableau20)):
@@ -64,6 +66,7 @@ register_cmap(cmap=ListedColormap(standard, name="standard"))
 color_palette_names = sorted(color_palette_names)
 color_palette_names = ["standard"] + color_palette_names
 
+
 class MplFigure(Figure):
     # kwargs for mplfigure are dpi and title
     def __init__(self, **kwargs):
@@ -71,7 +74,7 @@ class MplFigure(Figure):
             dpi = kwargs["dpi"]
         else:
             dpi = 80
-        if ("title" in kwargs):
+        if "title" in kwargs:
             title = kwargs["title"]
         else:
             title = None
@@ -85,7 +88,7 @@ class MplFigure(Figure):
         return
 
     def convert_figure_to_img(self):
-        canvas=FigureCanvas(self) # This does seem to be necessary or savefig won't work.
+        FigureCanvas(self)  # This does seem to be necessary or savefig won't work.
         img_file = StringIO.StringIO()
         self.savefig(img_file)
         img_file.seek(0)
@@ -93,17 +96,18 @@ class MplFigure(Figure):
         return img
 
     def create_figure_html(self):
-        canvas=FigureCanvas(self) # This does seem to be necessary or savefig won't work.
+        FigureCanvas(self)  # This does seem to be necessary or savefig won't work.
         img_file = StringIO.StringIO()
         self.savefig(img_file)
         img_file.seek(0)
         figname = str(self.current_fig_id)
         self.current_fig_id += 1
-        self.img_dict[figname]  = img_file.getvalue()
+        self.img_dict[figname] = img_file.getvalue()
         fig_url = self.base_figure_url + figname
         image_string = "<img class='output-plot' src='{}' onclick=showZoomedImage(this) lt='Image Placeholder'>"
         the_html = image_string.format(fig_url)
         return the_html
+
 
 class Mpld3Figure(Figure):
     # kwargs for mplfigure are dpi and title
@@ -112,7 +116,7 @@ class Mpld3Figure(Figure):
             dpi = kwargs["dpi"]
         else:
             dpi = 80
-        if ("title" in kwargs):
+        if "title" in kwargs:
             title = kwargs["title"]
         else:
             title = None
@@ -120,7 +124,7 @@ class Mpld3Figure(Figure):
         self.title = title
         self.dpi = dpi
         self.kwargs = kwargs
-        canvas=FigureCanvas(self)
+        FigureCanvas(self)
 
     def draw_plot(self):
         print "draw_plot not implemented"
@@ -128,6 +132,7 @@ class Mpld3Figure(Figure):
 
     def create_figure_html(self):
         return mpld3.fig_to_html(self)
+
 
 class GraphList(MplFigure):
     def draw_plot(self):
@@ -145,6 +150,7 @@ class GraphList(MplFigure):
         self.tight_layout()
         return
 
+
 class DispersionPlot(MplFigure):
     def draw_plot(self):
         text = self.data[0]
@@ -158,9 +164,9 @@ class DispersionPlot(MplFigure):
         words_to_comp = list(map(str.lower, words))
         text_to_comp = list(map(str.lower, text))
 
-        points = [(x,y) for x in range(len(text_to_comp))
-                for y in range(len(words_to_comp))
-                if text_to_comp[x] == words_to_comp[y]]
+        points = [(x, y) for x in range(len(text_to_comp))
+                  for y in range(len(words_to_comp))
+                  if text_to_comp[x] == words_to_comp[y]]
 
         if len(points) > 0:
             x, y = list(zip(*points))
@@ -171,11 +177,12 @@ class DispersionPlot(MplFigure):
         self.tight_layout()
         return
 
-class ColorMapper():
-    def __init__ (self, bottom_val, top_val, color_palette_name):
-        cNorm = mpl_Normalize(vmin=bottom_val, vmax=top_val)
+
+class ColorMapper(object):
+    def __init__(self, bottom_val, top_val, color_palette_name):
+        cnorm = mpl_Normalize(vmin=bottom_val, vmax=top_val)
         comap = get_cmap(color_palette_name)
-        self.scalar_map = ScalarMappable(norm = cNorm, cmap = comap)
+        self.scalar_map = ScalarMappable(norm=cnorm, cmap=comap)
 
     @staticmethod
     def rgb_to_hex(rgb):
@@ -185,6 +192,7 @@ class ColorMapper():
     def color_from_val(self, val):
         return self.rgb_to_hex(self.scalar_map.to_rgba(val)[:3])
 
+
 class ImageShow(MplFigure):
     def draw_plot(self):
         ax = self.add_subplot(111)
@@ -192,6 +200,7 @@ class ImageShow(MplFigure):
         ax.axis("off")
         self.tight_layout()
         return
+
 
 class ArrayHeatmap(MplFigure):
     def draw_plot(self):
@@ -239,4 +248,3 @@ class ArrayHeatmap(MplFigure):
         self.set_facecolor("white")
         self.tight_layout()
         return
-
