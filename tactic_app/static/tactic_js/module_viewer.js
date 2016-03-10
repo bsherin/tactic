@@ -94,6 +94,32 @@ function changeTheme() {
     }
 }
 
+function renameModule() {
+    console.log("entering rename")
+    showModal("Rename module", "Name for this module", function (new_name) {
+        the_data = {"new_name": new_name};
+        $.ajax({
+            url: $SCRIPT_ROOT + "/rename_module/" + module_name,
+            contentType : 'application/json',
+            type : 'POST',
+            async: true,
+            data: JSON.stringify(the_data),
+            dataType: 'json',
+            success: renameSuccess
+        });
+        function renameSuccess(data) {
+            if (data.success) {
+                module_name = new_name;
+                $("#module-name").text(module_name)
+            }
+            else {
+                doFlash(data)
+            }
+
+        }
+    });
+}
+
 function updateModule() {
     var new_code = myCodeMirror.getValue();
     var tags = $("#tile-tags").val();

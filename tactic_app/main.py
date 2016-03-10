@@ -102,7 +102,7 @@ class docInfo:
     #         return None
 
     def get_actual_row(self, row_id):
-        for i, the_row in enumerate(self.sorted_data_rows):
+        for i, the_row in enumerate(self.displayed_data_rows):
             if str(row_id) == str(the_row["__id__"]):
                 return i
         return None
@@ -158,11 +158,11 @@ class docInfo:
     def row_is_visible(self, row_id):
         sorted_int_keys = sorted([int(key) for key in self.current_data_rows.keys()])
         displayed_int_keys = sorted_int_keys[self.start_of_current_chunk:(self.start_of_current_chunk + STEP_SIZE)]
-        return row_id in displayed_int_keys
+        return int(row_id) in displayed_int_keys
 
     def move_to_row(self, row_id):
         self.current_data_rows = self.data_rows  # Undo any filtering
-        self.start_of_current_chunk = 0
+        self.configure_for_current_data()
         while not self.is_last_chunk and not(self.row_is_visible(row_id)):
             self.advance_to_next_chunk()
 

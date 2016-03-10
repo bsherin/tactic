@@ -759,6 +759,19 @@ def search_resource():
     result = manager.build_html_table_from_data_list(res_array)
     return jsonify({"html": result})
 
+@app.route('/rename_module/<old_name>', methods=['post'])
+@login_required
+def rename_module(old_name):
+    try:
+        new_name = request.json["new_name"]
+        db[current_user.tile_collection_name].update_one({"tile_module_name": old_name},
+                                                             {'$set': {"tile_module_name": new_name}})
+        tile_manager.update_selector_list()
+        return jsonify({"success": True, "message": "Module Successfully Saved", "alert_type": "alert-success"})
+    except:
+        error_string = "Error renaming module " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+
 
 @app.route('/update_module', methods=['post'])
 @login_required

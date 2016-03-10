@@ -152,6 +152,8 @@ class TileBase(gevent.Greenlet):
                 self.handle_tile_row_click(data["clicked_row"], data["doc_name"], data["active_row_index"])
             elif event_name == "TileCellClick":
                 self.handle_tile_cell_click(data["clicked_cell"], data["doc_name"], data["active_row_index"])
+            elif event_name == "TileElementClick":
+                self.handle_tile_element_click(data["dataset"], data["doc_name"], data["active_row_index"])
             elif event_name == "HideOptions":
                 self.hide_options()
             elif event_name == "StartSpinner":
@@ -428,6 +430,10 @@ class TileBase(gevent.Greenlet):
         self.highlight_matching_text(clicked_text)
         return
 
+    def handle_tile_element_click(self, dataset, doc_name, active_row_index):
+        return
+
+
     def handle_tile_word_click(self, clicked_word, doc_name, active_row_index):
         distribute_event("DehighlightTable", self.main_id, {})
         distribute_event("SearchTable", self.main_id, {"text_to_find": clicked_word})
@@ -678,7 +684,7 @@ class TileBase(gevent.Greenlet):
             result += it
         return result
 
-    def build_html_table_from_data_list(self, data_list, title=None, row_clickable=False, sortable=True):
+    def build_html_table_from_data_list(self, data_list, title=None, click_type="word-clickable", sortable=True):
         if sortable:
             the_html = "<table class='tile-table table table-striped table-bordered table-condensed sortable'>"
         else:
@@ -689,16 +695,22 @@ class TileBase(gevent.Greenlet):
         for c in data_list[0]:
             the_html += "<th>{0}</th>".format(c)
         the_html += "</tr><tbody>"
-        for r in data_list[1:]:
-            if row_clickable:
+        for rnum, r in enumerate(data_list[1:]):
+            if click_type == "row-clickable":
                 the_html += "<tr class='row-clickable'>"
                 for c in r:
                     the_html += "<td>{0}</td>".format(c)
                 the_html += "</tr>"
-            else:
+            elif click_type == "word-clickable":
                 the_html += "<tr>"
                 for c in r:
-                    the_html += "<td class='cell-clickable'>{0}</td>".format(c)
+                    the_html += "<td class='word-clickable'>{0}</td>".format(c)
+                the_html += "</tr>"
+            else:
+                the_html += "<tr>"
+                for cnum, c in enumerate(r):
+                    the_html += "<td class='element-clickable' data-row='{1}' " \
+                                "data-col='{2}' data-val='{0}'>{0}</td>".format(c, str(rnum), str(cnum))
                 the_html += "</tr>"
         the_html += "</tbody></table>"
         return the_html
