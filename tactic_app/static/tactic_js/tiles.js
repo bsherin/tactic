@@ -324,7 +324,6 @@ TileObject.prototype = {
               broadcast_event_to_server("TileWordClick", data_dict)
         });
         $(".front").on('click', '.cell-clickable', function(e) {
-
             var tile_id = jQuery.data(e, "my_tile_id");
             var txt = $(this).text();
 
@@ -333,6 +332,21 @@ TileObject.prototype = {
             data_dict["tile_id"] = $(p).data("my_tile_id");
             data_dict["clicked_cell"] = txt;
             broadcast_event_to_server("TileCellClick", data_dict)
+        });
+        $(".front").on('click', '.element-clickable', function(e) {
+            var tile_id = jQuery.data(e, "my_tile_id");
+            var txt = $(this).text();
+
+            var data_dict = {};
+            var p = $(e.target).closest(".tile-panel")[0];
+            data_dict["tile_id"] = $(p).data("my_tile_id");
+            dset = e.target.dataset;
+            data_dict.dataset = {};
+            for (key in dset) {
+                if (!dset.hasOwnProperty(key)) continue;
+                data_dict.dataset[key] = dset[key]
+            }
+            broadcast_event_to_server("TileElementClick", data_dict)
         });
         $(".front").on('click', '.row-clickable', function(e) {
             //var cells = $(this).closest("tr").children()

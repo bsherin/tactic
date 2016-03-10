@@ -11,6 +11,18 @@ table.sortable thead {
 .selector-button.active td {
   background-color: #5bb4d2 !important; }
 
+.res-name-button {
+  border: none;
+  font-weight: bold;
+  font-size: 18px; }
+
+.res-name-button:hover {
+  color: #5bc0de;
+  background-color: white; }
+
+.res-name-button:active {
+  color: #1b6d85; }
+
 /* navbar */
 #menu-area a {
   font-size: 16px; }
@@ -129,6 +141,12 @@ td.cell-clickable:hover {
   background-color: #5bc0de !important; }
 
 td.cell-clickable:active {
+  background-color: #1b6d85 !important; }
+
+.element-clickable:hover {
+  background-color: #5bc0de !important; }
+
+.element-clickable:active {
   background-color: #1b6d85 !important; }
 
 /* console */
