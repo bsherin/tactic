@@ -140,9 +140,12 @@ function updateModule() {
         success: update_success
     });
     function update_success(data) {
-        savedCode = new_code;
-        savedTags = tags;
-        savedNotes = notes;
+        if (data.success) {
+            savedCode = new_code;
+            savedTags = tags;
+            savedNotes = notes;
+            data.timeout = 2000;
+        }
         doFlash(data)
     }
 }
@@ -164,11 +167,26 @@ function loadModule() {
         async: true,
         data: JSON.stringify(result_dict),
         dataType: 'json',
-        success: function () {
-            dirty = false;
-            $.getJSON($SCRIPT_ROOT + '/load_tile_module/' + String(module_name), doFlash)
+        success: function (data) {
+            if (data.success) {
+                savedCode = new_code;
+                savedTags = tags;
+                savedNotes = notes;
+                data.timeout = 2000;
+                $.getJSON($SCRIPT_ROOT + '/load_tile_module/' + String(module_name), load_success)
+            }
+            else {
+                doFlash(data)
+            }
         }
+
     });
+    function load_success(data) {
+        if (data.success) {
+            data.timeout = 2000;
+        }
+        doFlash(data)
+    }
 }
 
 function saveModuleAs() {
