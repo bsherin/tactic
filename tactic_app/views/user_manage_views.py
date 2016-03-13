@@ -3,7 +3,7 @@ from flask import render_template, request, jsonify, send_file
 from flask_login import login_required, current_user
 from flask_socketio import join_room
 from tactic_app import app, db, fs, socketio, use_ssl
-from tactic_app.file_handling import read_csv_file_to_dict, read_txt_file_to_dict, load_a_list
+from tactic_app.file_handling import read_csv_file_to_dict, read_tsv_file_to_dict, read_txt_file_to_dict, load_a_list
 from tactic_app.main import create_new_mainwindow, create_new_mainwindow_from_project, mainwindow_instances
 from tactic_app.users import User
 from tactic_app.user_tile_env import create_user_tiles
@@ -379,13 +379,15 @@ class CollectionManager(ResourceManager):
             filename, file_extension = os.path.splitext(the_file.filename)
             if file_extension == ".csv":
                 (success, result_dict, header_list) = read_csv_file_to_dict(the_file)
+            elif file_extension == ".tsv":
+                (success, result_dict, header_list) = read_tsv_file_to_dict(the_file)
             elif file_extension == ".txt":
                 (success, result_dict, header_list) = read_txt_file_to_dict(the_file)
             # elif file_extension == ".xml":
             #     (success, result_dict, header_list) = read_xml_file_to_dict(file)
             else:
-                return jsonify({"message": "Not a valid file extension " + file_extension,
-                                "alert_type": "alert-danger"})
+                return jsonify({"success": False, "message": "Not a valid file extension " + file_extension,
+                                "alert_type": "alert-warning"})
             if not success:  # then result_dict contains an error object
                 e = result_dict
                 return jsonify({"message": e.message, "alert_type": "alert-danger"})

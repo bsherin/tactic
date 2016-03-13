@@ -17,7 +17,7 @@ function TileObject(tile_id, html, is_new_tile) {
 
     $("#tile-div").append(html);  // This append has to be after the flip or weird things happen
 
-    $(".codearea").each( function () {
+    $(this.full_selector() + " .codearea").each( function () {
         theId = $(this).attr("id");
         self.codeMirrorObjects[theId] = CodeMirror.fromTextArea(this, {
             matchBrackets: true,
@@ -69,11 +69,11 @@ TileObject.prototype = {
     submitOptions: function () {
         var data = {};
         data["main_id"] = main_id;
-        self = this;
+        var self = this;
         $(this.full_selector() + " .CodeMirror").each(function () {
-            theTextArea = $($(this).siblings(".codearea")[0]);
-            theId = theTextArea.attr("id");
-            theCode = self.codeMirrorObjects[theId].getValue();
+            var theTextArea = $($(this).siblings(".codearea")[0]);
+            var theId = theTextArea.attr("id");
+            var theCode = self.codeMirrorObjects[theId].getValue();
             theTextArea.text(theCode)
 
         })

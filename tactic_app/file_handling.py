@@ -79,6 +79,29 @@ def read_csv_file_to_dict(csvfile):
         return (None, e, None)
     return (filename, result_dict, header_list)
 
+def read_tsv_file_to_dict(tsvfile):
+    tsvfile.seek(0)
+    i = 0
+    try:
+        header_list = tsvfile.readline().rstrip().split("\t")
+        header_list = make_fieldnames_unique(header_list)
+        filename, file_extension = os.path.splitext(tsvfile.filename)
+        result_dict = {}
+        for line in tsvfile:
+            row = {}
+            for col, val in enumerate(line.rstrip().split("\t")):
+                row[header_list[col]] = utf_solver(val)
+            row["__filename__"] = filename
+            row["__id__"] = i
+            result_dict[str(i)] = row
+            i += 1
+        tsvfile.seek(0)
+        header_list = ["__id__", "__filename__"] + header_list
+
+    except csv.Error as e:
+        return (None, e, None)
+    return (filename, result_dict, header_list)
+
 def utf_solver(txt):
     return txt.decode("utf-8", 'ignore').encode("ascii", "ignore")
 
