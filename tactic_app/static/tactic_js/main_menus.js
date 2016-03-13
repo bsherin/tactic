@@ -284,6 +284,7 @@ function saveProjectAs() {
                     $("#project-name").html(tableObject.project_name);
                     $("title").html(data_object["project_name"]);
                     data_object.alert_type = "alert-success";
+                    data_object.timeout = 2000;
                     _project_name = data_object.project_name;  // When menus recreated, it checks _project_name
                     dirty = false;
                     doFlash(data_object)
@@ -402,11 +403,19 @@ function save_project() {
         async: false,
         data: JSON.stringify(result_dict),
         dataType: 'json',
-        success: function (data) {
+        success: updateSuccess
+    });
+    function updateSuccess(data) {
+        if (data.success) {
+            dirty = false;
+            data.timeout = 2000;
+            doFlash(data)
+        }
+        else {
             dirty = false;
             doFlash(data)
         }
-    });
+    }
 }
 
 

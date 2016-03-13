@@ -27,7 +27,13 @@ function doFlash(data) {
         var result = Mustache.to_html(alert_template, data);
 
         $("#status-area").html(result);
-        $("#status-area").fadeIn();
+        if (data.hasOwnProperty("timeout")) {
+            $("#status-area").fadeIn().delay(data.timeout).fadeOut();
+        }
+        else {
+            $("#status-area").fadeIn();
+        }
+
     })
 }
 
