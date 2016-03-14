@@ -583,7 +583,7 @@ class TileManager(ResourceManager):
             socketio.emit('update-loaded-tile-list', {"html": self.render_loaded_tile_list()},
                           namespace='/user_manage', room=current_user.get_id())
             socketio.emit('update-menus', {}, namespace='/main', room=current_user.get_id())
-            return jsonify({"message": "Tile module successfully loaded", "alert_type": "alert-success"})
+            return jsonify({"success": True, "message": "Tile module successfully loaded", "alert_type": "alert-success"})
         except:
             error_string = "Error loading tile: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
             return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
