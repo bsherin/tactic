@@ -6,6 +6,7 @@ from flask import url_for
 from tactic_app import socketio
 from tactic_app.shared_dicts import mainwindow_instances, distribute_event, get_tile_class
 from tactic_app.shared_dicts import tokenizer_dict, weight_functions
+from tactic_app.cluster_metrics import cluster_metric_dict
 from matplotlib_utilities import MplFigure, Mpld3Figure
 from users import load_user
 import sys
@@ -252,6 +253,15 @@ class TileBase(gevent.Greenlet):
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
                     for choice in option["special_list"]:
+                        if choice == starting_value:
+                            form_html += self.select_option_selected_template.format(choice)
+                        else:
+                            form_html += self.select_option_template.format(choice)
+                    form_html += '</select></div>'
+                elif option["type"] == "cluster_metric":
+                    the_template = self.input_start_template + self.select_base_template
+                    form_html += the_template.format(att_name)
+                    for choice in cluster_metric_dict.keys():
                         if choice == starting_value:
                             form_html += self.select_option_selected_template.format(choice)
                         else:
@@ -606,6 +616,10 @@ class TileBase(gevent.Greenlet):
     def get_tokenizer(self, tokenizer_name):
         self.tile_yield()
         return tokenizer_dict[tokenizer_name]
+
+    def get_cluster_metric(self, metric_name):
+        self.tile_yield()
+        return cluster_metric_dict[metric_name]
 
     def get_pipe_value(self, pipe_key):
         self.tile_yield()
