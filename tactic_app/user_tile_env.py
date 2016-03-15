@@ -13,6 +13,7 @@ from tactic_app.clusterer_classes import CentroidClusterer, OptCentroidClusterer
 from tactic_app.sentiment_tools import vader_sentiment_analyzer, sentiwordnet
 from matplotlib_utilities import GraphList, ColorMapper, FigureCanvas, ArrayHeatmap, ImageShow, DispersionPlot
 from tactic_app.shared_dicts import mainwindow_instances
+from tactic_app.cluster_metrics import cluster_metric_dict
 
 from tile_base import TileBase
 from matplotlib_utilities import MplFigure, Mpld3Figure, get_cmap
