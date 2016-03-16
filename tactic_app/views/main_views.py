@@ -382,7 +382,6 @@ def reload_tile(tile_id):
         mainwindow_instances[main_id].handle_exception("Error reloading tile " + error_string)
         return jsonify({"success": False})
 
-
 @app.route('/create_tile_from_save_request/<tile_id>', methods=['GET', 'POST'])
 @login_required
 def create_tile_from_save_request(tile_id):

@@ -151,6 +151,13 @@ TileObject.prototype = {
         })
     },
 
+    logMe: function() {
+        data_dict = {}
+        data_dict["main_id"] = main_id;
+        data_dict["tile_id"] = this.tile_id;
+        broadcast_event_to_server("LogTile", data_dict)
+    },
+
     setTileSize: function(data) {
         var el = $(this.full_selector());
         el.width(data.width);
@@ -296,7 +303,8 @@ TileObject.prototype = {
         })
     },
     listen_for_clicks: function() {
-        $(".front").on('click', '.word-clickable', function(e) {
+        var full_frontal_selector = this.full_selector() + " .front";
+        $(full_frontal_selector).on('click', '.word-clickable', function(e) {
             var tile_id = jQuery.data(e, "my_tile_id");
             var s = window.getSelection();
             var range = s.getRangeAt(0);
@@ -323,7 +331,7 @@ TileObject.prototype = {
               data_dict["clicked_text"] = str;
               broadcast_event_to_server("TileWordClick", data_dict)
         });
-        $(".front").on('click', '.cell-clickable', function(e) {
+        $(full_frontal_selector).on('click', '.cell-clickable', function(e) {
             var tile_id = jQuery.data(e, "my_tile_id");
             var txt = $(this).text();
 
@@ -333,7 +341,7 @@ TileObject.prototype = {
             data_dict["clicked_cell"] = txt;
             broadcast_event_to_server("TileCellClick", data_dict)
         });
-        $(".front").on('click', '.element-clickable', function(e) {
+        $(full_frontal_selector).on('click', '.element-clickable', function(e) {
             var tile_id = jQuery.data(e, "my_tile_id");
             var txt = $(this).text();
 
@@ -348,7 +356,7 @@ TileObject.prototype = {
             }
             broadcast_event_to_server("TileElementClick", data_dict)
         });
-        $(".front").on('click', '.row-clickable', function(e) {
+        $(full_frontal_selector).on('click', '.row-clickable', function(e) {
             //var cells = $(this).closest("tr").children()
             var cells = $(this).children();
             var row_vals = [];
@@ -363,14 +371,14 @@ TileObject.prototype = {
             data_dict["clicked_row"] = row_vals;
             broadcast_event_to_server("TileRowClick", data_dict)
         });
-        $(".front").on('click', 'button', function(e) {
+        $(full_frontal_selector).on('click', 'button', function(e) {
             var p = $(e.target).closest(".tile-panel")[0];
             var data = {};
             data["tile_id"] = $(p).data("my_tile_id");
             data["button_value"] = e.target.value;
             broadcast_event_to_server("TileButtonClick", data)
         });
-        $(".front").on('change', 'textarea', function(e) {
+        $(full_frontal_selector).on('change', 'textarea', function(e) {
             var p = $(e.target).closest(".tile-panel")[0];
             var data = {};
             data["tile_id"] = $(p).data("my_tile_id");
