@@ -165,6 +165,8 @@ class TileBase(gevent.Greenlet):
                 self.is_shrunk = True
             elif event_name == "ExpandTile":
                 self.is_shrunk = False
+            elif event_name == "LogTile":
+                self.handle_log_tile()
             elif event_name == "RebuildTileForms":
                 form_html = self.create_form_html()
                 self.emit_tile_message("displayFormContent", {"html": form_html})
@@ -443,6 +445,9 @@ class TileBase(gevent.Greenlet):
     def handle_tile_element_click(self, dataset, doc_name, active_row_index):
         return
 
+    def handle_log_tile(self):
+        self.dm(self.current_html)
+        return
 
     def handle_tile_word_click(self, clicked_word, doc_name, active_row_index):
         distribute_event("DehighlightTable", self.main_id, {})
@@ -698,11 +703,18 @@ class TileBase(gevent.Greenlet):
             result += it
         return result
 
-    def build_html_table_from_data_list(self, data_list, title=None, click_type="word-clickable", sortable=True):
+    def build_html_table_from_data_list(self, data_list, title=None, click_type="word-clickable", sortable=True, sidebyside=False):
         if sortable:
-            the_html = "<table class='tile-table table table-striped table-bordered table-condensed sortable'>"
+            if not sidebyside:
+                the_html = "<table class='tile-table table table-striped table-bordered table-condensed sortable'>"
+            else:
+                the_html = "<table class='tile-table sidebyside-table table-striped table-bordered table-condensed sortable'>"
         else:
-            the_html = "<table class='tile-table table table-striped table-bordered table-condensed'>"
+            if not sidebyside:
+                the_html = "<table class='tile-table table table-striped table-bordered table-condensed'>"
+            else:
+                the_html = "<table class='tile-table sidebyside-table table-striped table-bordered table-condensed'>"
+
         if title is not None:
             the_html += "<caption>{0}</caption>".format(title)
         the_html += "<thead><tr>"

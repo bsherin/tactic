@@ -131,6 +131,11 @@ a[role="tab"] {
   padding-top: 1px !important;
   padding-bottom: 1px !important; }
 
+.sidebyside-table {
+  display: inline-block;
+  margin-right: 10px;
+  border: none; }
+
 .row-clickable:hover {
   background-color: #5bc0de !important; }
 
