@@ -323,6 +323,10 @@ class TileBase(gevent.Greenlet):
         self.current_html = new_html
         self.emit_tile_message("displayTileContent", {"html": new_html})
 
+    def display_status(self, message):
+        self.do_the_refresh(message)
+        return
+
     def compile_save_dict(self):
         result = {"my_class_for_recreate": "TileBase"}
         for attr in self.save_attrs:
