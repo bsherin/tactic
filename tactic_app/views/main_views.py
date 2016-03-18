@@ -38,6 +38,7 @@ def save_new_project():
     try:
         mainwindow_instances[data_dict['main_id']].project_name = data_dict["project_name"]
         mainwindow_instances[data_dict['main_id']].hidden_columns_list = data_dict["hidden_columns_list"]
+        mainwindow_instances[data_dict['main_id']].console_html = data_dict["console_html"]
         tspec_dict = data_dict["tablespec_dict"]
         for (dname, spec) in tspec_dict.items():
             mainwindow_instances[data_dict['main_id']].doc_dict[dname].table_spec = spec
@@ -61,6 +62,22 @@ def save_new_project():
         return jsonify({"success": False})
 
 
+@app.route("/send_log_html/<main_id>", methods=["POST"])
+@login_required
+def send_log_html(main_id):
+    try:
+        console_html = request.json["console_html"]
+        mainwindow_instances[main_id].console_html = console_html
+        return jsonify({"success": True})
+    except:
+        return jsonify({"success": False, "message": "Error opening log wndow"})
+
+@app.route("/open_log_window/<main_id>", methods=["GET", "POST"])
+@login_required
+def open_log_window(main_id):
+    console_html = mainwindow_instances[main_id].console_html.decode("utf-8", "ignore").encode("ascii")
+    return render_template("log_window_template.html", window_title="Log", console_html=console_html)
+
 @app.route('/update_project', methods=['POST'])
 @login_required
 def update_project():
@@ -68,6 +85,7 @@ def update_project():
     try:
         tspec_dict = data_dict["tablespec_dict"]
         mainwindow_instances[data_dict['main_id']].hidden_columns_list = data_dict["hidden_columns_list"]
+        mainwindow_instances[data_dict['main_id']].console_html = data_dict["console_html"]
         mainwindow_instances[data_dict['main_id']].loaded_modules = list(loaded_user_modules[current_user.username])
         for (dname, spec) in tspec_dict.items():
             mainwindow_instances[data_dict['main_id']].doc_dict[dname].table_spec = spec

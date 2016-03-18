@@ -1,8 +1,9 @@
 import gevent
 from gevent.queue import Queue
 import re
-from tactic_app import db
+from tactic_app import db, app
 from flask_login import current_user
+from flask import render_template
 import pymongo
 import sys
 import uuid
@@ -198,7 +199,7 @@ class docInfo:
 class mainWindow(gevent.Greenlet):
     save_attrs = ["short_collection_name", "collection_name", "current_tile_id", "tile_sort_list", "left_fraction",
                   "is_shrunk", "user_id", "doc_dict", "tile_instances", "project_name", "loaded_modules",
-                  "hidden_columns_list", "_main_id"]
+                  "hidden_columns_list", "_main_id", "console_html"]
     update_events = ["CellChange", "CreateColumn", "SearchTable", "SaveTableSpec", "MainClose", "DisplayCreateErrors",
                      "DehighlightTable", "SetCellContent", "RemoveTile", "ColorTextInCell",
                      "FilterTable", "UnfilterTable", "TextSelect", "UpdateSortList", "UpdateLeftFraction",
@@ -218,6 +219,7 @@ class mainWindow(gevent.Greenlet):
         self.short_collection_name = re.sub("^.*?\.data_collection\.", "", collection_name)
         self.user_id = user_id
         self.project_name = None
+        self.console_html = None
         if doc_dict is None:
             self.doc_dict = self._build_doc_dict()
         else:
@@ -353,7 +355,9 @@ class mainWindow(gevent.Greenlet):
             self.print_to_console(unique_message + " " + error_string, force_open=True)
 
     def print_to_console(self, message_string, force_open=False):
-        self.emit_table_message("consoleLog", {"message_string": message_string, "force_open": force_open})
+        with app.test_request_context():
+            pmessage = render_template("log_item.html", log_item=message_string)
+        self.emit_table_message("consoleLog", {"message_string": pmessage, "force_open": force_open})
 
     def get_column_data(self, column_header):
         result = []

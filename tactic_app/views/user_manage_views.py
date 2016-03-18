@@ -316,6 +316,7 @@ class CollectionManager(ResourceManager):
                                main_id=main_id,
                                doc_names=doc_names,
                                use_ssl=str(use_ssl),
+                               console_html="",
                                short_collection_name=short_collection_name)
 
     def grab_metadata(self, res_name):
@@ -453,10 +454,10 @@ class ProjectManager(ResourceManager):
         save_dict = db[user_obj.project_collection_name].find_one({"project_name": project_name})
 
         # Right now, we are allowing for the possibility of both old-style and new-style project saves
-        # In new style, the meet of the project is saved in gridfs.
+        # In new style, the meat of the project is saved in gridfs.
         # In old style it is all stored in the main mongo in the project collection
         if "file_id" in save_dict:
-            project_dict = cPickle.loads(str(fs.get(save_dict["file_id"]).read().decode()))
+            project_dict = cPickle.loads(fs.get(save_dict["file_id"]).read().decode("utf-8", "ignore").encode("ascii"))
             project_dict["metadata"] = save_dict["metadata"]
         else:
             project_dict = save_dict
@@ -480,6 +481,7 @@ class ProjectManager(ResourceManager):
                                main_id=main_id,
                                doc_names=doc_names,
                                use_ssl=str(use_ssl),
+                               console_html= mainwindow_instances[main_id].console_html,
                                short_collection_name=short_collection_name)
 
     def delete_project(self, project_name):
