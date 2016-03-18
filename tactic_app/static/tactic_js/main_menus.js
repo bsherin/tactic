@@ -265,7 +265,8 @@ function saveProjectAs() {
                 "project_name": new_name,
                 "main_id": main_id,
                 "hidden_columns_list": hidden_columns_list,
-                "tablespec_dict": tablespec_dict
+                "tablespec_dict": tablespec_dict,
+                "console_html": $("#console").html()
             };
             $.ajax({
                     url: $SCRIPT_ROOT + "/save_new_project",
@@ -393,7 +394,8 @@ function save_project() {
     var result_dict = {
         "main_id": main_id,
         "tablespec_dict": tablespec_dict,
-        "hidden_columns_list": hidden_columns_list
+        "hidden_columns_list": hidden_columns_list,
+        "console_html": $("#console").html()
         //"tablespec_dict": tablespec_dict
     };
     $.ajax({

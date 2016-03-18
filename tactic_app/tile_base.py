@@ -606,6 +606,10 @@ class TileBase(gevent.Greenlet):
         self.tile_yield()
         self.display_message(message_string, force_open)
 
+    def log_it(self, message_string, force_open=False):
+        self.tile_yield()
+        mainwindow_instances[self.main_id].print_to_console(message_string, force_open)
+
     def color_cell_text(self, doc_name, row_index, column_name, tokenized_text, color_dict):
         self.tile_yield()
         actual_row = mainwindow_instances[self.main_id].doc_dict[doc_name].get_actual_row(row_index)

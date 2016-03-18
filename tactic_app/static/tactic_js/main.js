@@ -60,6 +60,32 @@ function expandConsole(){
         });
 }
 
+function closeLogItem(e) {
+    $(e.parentElement.parentElement).remove()
+}
+
+function openLogWindow() {
+    var result_dict = {
+        "console_html": $("#console").html()
+    };
+    $.ajax({
+            url: $SCRIPT_ROOT + "/send_log_html/" + String(main_id),
+            contentType : 'application/json',
+            type : 'POST',
+            async: true,
+            data: JSON.stringify(result_dict),
+            dataType: 'json',
+            success: function (data) {
+                if (data.success) {
+                     window.open($SCRIPT_ROOT + "/open_log_window/" + String(main_id))
+                }
+                else {
+                    doFlash(data)
+                }wind
+            }
+    });
+}
+
 function start_post_load() {
     //spinner = new Spinner({scale: 1.0}).spin();
     //$("#loading-message").html(spinner.el);
@@ -185,6 +211,13 @@ function continue_loading() {
             var new_sort_list = $("#tile-div").sortable("toArray");
             broadcast_event_to_server("UpdateSortList", {"sort_list": new_sort_list})
         }
+    });
+
+    $("#console").sortable({
+        handle: '.panel-heading',
+        tolerance: 'pointer',
+        revert: 'invalid',
+        forceHelperSize: true
     });
 
     initializeTooltips();
