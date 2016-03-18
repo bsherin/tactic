@@ -66,7 +66,7 @@ function closeLogItem(e) {
 
 function openLogWindow() {
     var result_dict = {
-        "console_html": $("#console").html()
+        "console_html": $("#console").html(),
     };
     $.ajax({
             url: $SCRIPT_ROOT + "/send_log_html/" + String(main_id),

@@ -75,8 +75,12 @@ def send_log_html(main_id):
 @app.route("/open_log_window/<main_id>", methods=["GET", "POST"])
 @login_required
 def open_log_window(main_id):
+    if mainwindow_instances[main_id].project_name == None:
+        title = mainwindow_instances[main_id].short_collection_name + " log"
+    else:
+        title = mainwindow_instances[main_id].project_name + " log"
     console_html = mainwindow_instances[main_id].console_html.decode("utf-8", "ignore").encode("ascii")
-    return render_template("log_window_template.html", window_title="Log", console_html=console_html)
+    return render_template("log_window_template.html", window_title=title, console_html=console_html)
 
 @app.route('/update_project', methods=['POST'])
 @login_required
