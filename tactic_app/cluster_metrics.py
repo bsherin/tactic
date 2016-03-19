@@ -1,5 +1,3 @@
-__author__ = 'bls910'
-
 import numpy
 import copy
 
@@ -16,6 +14,7 @@ single_cluster_metric_dict = {}
 
 gamma = .5
 
+
 def normalize(vec):
     mag = numpy.vdot(vec, vec)
     if mag == 0:
@@ -25,22 +24,31 @@ def normalize(vec):
 
 
 def distance_metric(dm):
-    """Decorator function used to register each distance metric in distance_metric_dict."""
-
+    """Decorator function used to register each distance metric in distance_metric_dict.
+    :param dm: the metric function
+    """
     distance_metric_dict[dm.__name__] = dm
     return dm
 
+
 def cluster_metric(cm):
-    """Decorator function used to register each distance metric in distance_metric_dict."""
+    """Decorator function used to register each distance metric in distance_metric_dict.
+    :param cm: the metric function
+    :return:
+    """
 
     cluster_metric_dict[cm.__name__] = cm
     return cm
 
-def single_cluster_metric(cm):
-    """Decorator function used to register each distance metric in distance_metric_dict."""
 
+def single_cluster_metric(cm):
+    """Decorator function used to register each distance metric in distance_metric_dict.
+    :param cm: the metric function
+    :return:
+    """
     single_cluster_metric_dict[cm.__name__] = cm
     return cm
+
 
 @distance_metric
 def euclidean_distance(u, v):
@@ -52,6 +60,7 @@ def euclidean_distance(u, v):
 
     return numpy.sqrt(numpy.dot(diff, diff))
 
+
 @distance_metric
 def cosine_distance(u, v):
     """
@@ -59,6 +68,7 @@ def cosine_distance(u, v):
     u.v / |u||v|.
     """
     return numpy.dot(u, v) / (numpy.sqrt(numpy.dot(u, u)) * numpy.sqrt(numpy.dot(v, v)))
+
 
 @distance_metric
 def normalize_first_euclidean_distance(u, v):

@@ -325,6 +325,7 @@ class TileBase(gevent.Greenlet):
 
     def display_status(self, message):
         self.do_the_refresh(message)
+        self.tile_yield()
         return
 
     def compile_save_dict(self):
