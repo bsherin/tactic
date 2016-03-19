@@ -64,6 +64,15 @@ function closeLogItem(e) {
     $(e.parentElement.parentElement).remove()
 }
 
+
+function addBlankConsoleText() {
+    $.getJSON($SCRIPT_ROOT + '/add_blank_console_text/'  + String(main_id), function(data) {
+        if (!data.success) {
+            doFlash(data)
+        }
+    })
+}
+
 function openLogWindow() {
     var result_dict = {
         "console_html": $("#console").html(),
@@ -81,7 +90,7 @@ function openLogWindow() {
                 }
                 else {
                     doFlash(data)
-                }wind
+                }
             }
     });
 }

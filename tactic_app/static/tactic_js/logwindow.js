@@ -12,3 +12,4 @@ function start_post_load() {
 function closeLogItem(e) {
     $(e.parentElement.parentElement).remove()
 }
+

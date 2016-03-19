@@ -62,6 +62,16 @@ def save_new_project():
         return jsonify({"success": False})
 
 
+@app.route("/add_blank_console_text/<main_id>", methods=["GET"])
+@login_required
+def add_blank_console_text(main_id):
+    try:
+        mainwindow_instances[main_id].print_to_console("<div contenteditable='true'></div>")
+        return jsonify({"success": True})
+    except:
+        return jsonify({"success": False, "message": "Error creating console text area"})
+
+
 @app.route("/send_log_html/<main_id>", methods=["POST"])
 @login_required
 def send_log_html(main_id):
