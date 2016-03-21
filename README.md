@@ -2,4 +2,4 @@
 
 Take a look at the [wiki](https://github.com/bsherin/tactic/wiki) for a little documentation
 
-Access tactic [here](https://tactic.northwestern.edu)
+You can access tactic or request an account [here](https://tactic.northwestern.edu)
