@@ -451,7 +451,7 @@ class TileBase(gevent.Greenlet):
         return
 
     def handle_log_tile(self):
-        self.dm(self.current_html)
+        self.log_it(self.current_html)
         return
 
     def handle_tile_word_click(self, clicked_word, doc_name, active_row_index):
