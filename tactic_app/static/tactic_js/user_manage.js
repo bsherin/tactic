@@ -12,7 +12,7 @@ mousetrap.bind("esc", function() {
 });
 
 var res_types = ["list", "collection", "project", "tile"];
-var resource_managers = {}
+var resource_managers = {};
 
 function start_post_load() {
     if (use_ssl) {
@@ -34,7 +34,11 @@ function start_post_load() {
         else {
             select_resource_button(res_type, null)
         }
-        sorttable.makeSortable($("#" + res_type + "-selector table")[0])
+        sorttable.makeSortable($("#" + res_type + "-selector table")[0]);
+        var updated_header = $("#" + res_type + "-selector table th")[2];
+        // We do the sort below twice to get the most recent dates first.
+        sorttable.innerSortFunction.apply(updated_header, []);
+        sorttable.innerSortFunction.apply(updated_header, []);
     });
 
     socket.on('start-spinner', function () {
@@ -48,6 +52,7 @@ function start_post_load() {
     socket.on('update-loaded-tile-list', function(data) {
         $("#loaded-tile-list").html(data.html)
     });
+
     socket.on('close-user-windows', function(data){
         window.close()
     });
@@ -63,7 +68,11 @@ function start_post_load() {
         res_types.forEach(function (element, index, array) {
             $("#" + element + "-selector").load($SCRIPT_ROOT + "/request_update_selector_list/" + element, function () {
                 select_resource_button(element, null);
-                sorttable.makeSortable($("#" + element + "-selector table")[0])
+                sorttable.makeSortable($("#" + element + "-selector table")[0]);
+                var updated_header = $("#" + element + "-selector table th")[2];
+                // We do the sort below twice to get the most recent dates first.
+                sorttable.innerSortFunction.apply(updated_header, []);
+                sorttable.innerSortFunction.apply(updated_header, []);
             })
         });
 
@@ -124,7 +133,7 @@ function toggleRepository() {
             $(".resource-outer").fadeIn(function() {
                 repository_visible = false;
                 $(".page-header h1").text(saved_title);
-                $(".page-header").removeClass("repository-title")
+                $(".page-header").removeClass("repository-title");
                 resize_window()
             })
         })
@@ -288,7 +297,7 @@ var tile_manager_specifics = {
                     }
                 }
             });
-        })
+        });
         event.preventDefault();
     }
 };
