@@ -1,5 +1,6 @@
 from tile_env import *
 
+# probably won't need any of this any more
 class AbstractClassifier(TileBase):
     category = "classifiers"
     classifier_class = None
