@@ -1,22 +1,23 @@
-import gevent
-from gevent.queue import Queue
-import re
-from tactic_app import db, app
-from flask_login import current_user
-from flask import render_template
-import pymongo
 import sys
 import uuid
 
+import gevent
+import pymongo
+import re
+from flask import render_template
+from flask_login import current_user
+from gevent.queue import Queue
+from tactic_app import db, app
+
 # noinspection PyUnresolvedReferences
-from tile_base import TileBase  # This is needed from recreating tiles from saves
+from tactic_app.tile_container_env.tile_base import TileBase  # This is needed from recreating tiles from saves
 # noinspection PyUnresolvedReferences
 from collections import OrderedDict
 
 from tactic_app.shared_dicts import mainwindow_instances, distribute_event, get_tile_class
 # noinspection PyUnresolvedReferences
 from tactic_app.shared_dicts import tile_classes, user_tiles
-from tactic_app import socketio
+from tactic_app import socketio # only used in emit_table_message
 
 from tactic_app import CHUNK_SIZE, STEP_SIZE
 INITIAL_LEFT_FRACTION = .69

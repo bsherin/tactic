@@ -1,22 +1,14 @@
+import sys
 
 import nltk
-import sys
-import copy
+
 # I want nltk to only search here so that I can see
 # what behavior on remote will be like.
 nltk.data.path = ['./nltk_data/']
-from nltk.corpus import wordnet as wn
 from flask_login import current_user
-from flask import url_for
-from matplotlib_utilities import GraphList, ColorMapper, FigureCanvas, ArrayHeatmap, ImageShow
 
-from tile_base import TileBase
-from tactic_app.shared_dicts import mainwindow_instances, distribute_event
-from tactic_app.shared_dicts import tile_classes, user_tiles, tokenizer_dict, weight_functions
-from users import load_user
-from tactic_app.clusterer_classes import CentroidClusterer, OptCentroidClusterer
-from tactic_app.sentiment_tools import vader_sentiment_analyzer, sentiwordnet
-import numpy
+from tactic_app.shared_dicts import tile_classes, user_tiles
+
 
 # Decorator function used to register runnable analyses in analysis_dict
 def tile_class(tclass):

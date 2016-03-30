@@ -1,0 +1,7 @@
+version: '2'
+
+services:
+  tile:
+    build: tactic_app/tile_container_env/.
+    volumes:
+      - .:/code

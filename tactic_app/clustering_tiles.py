@@ -1,4 +1,4 @@
-from tile_env import *
+from tactic_app.tile_container_env.tile_env import *
 
 
 @tile_class

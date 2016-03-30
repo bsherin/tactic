@@ -1,15 +1,17 @@
-import os, sys, datetime
+import cPickle
+import datetime
+import sys
+
+import os
 from flask import render_template, request, jsonify, send_file
 from flask_login import login_required, current_user
 from flask_socketio import join_room
 from tactic_app import app, db, fs, socketio, use_ssl
 from tactic_app.file_handling import read_csv_file_to_dict, read_tsv_file_to_dict, read_txt_file_to_dict, load_a_list
-from tactic_app.main import create_new_mainwindow, create_new_mainwindow_from_project, mainwindow_instances
-from tactic_app.users import User
-from tactic_app.user_tile_env import create_user_tiles
+from tactic_app.main_container_env.main import create_new_mainwindow, create_new_mainwindow_from_project, mainwindow_instances
 from tactic_app.shared_dicts import user_tiles, loaded_user_modules, create_initial_metadata
-import cPickle
-from jinja2 import Markup
+from tactic_app.user_tile_env import create_user_tiles
+from tactic_app.users import User
 
 AUTOSPLIT = True
 AUTOSPLIT_SIZE = 10000
@@ -127,6 +129,8 @@ def get_manager_for_type(res_type, is_repository=False):
             manager = repository_project_manager
         elif res_type == "tile":
             manager = repository_tile_manager
+        else:
+            manager = None
     else:
         if res_type == "list":
             manager = list_manager
@@ -136,6 +140,8 @@ def get_manager_for_type(res_type, is_repository=False):
             manager = project_manager
         elif res_type == "tile":
             manager = tile_manager
+        else:
+            manager = None
     return manager
 
 

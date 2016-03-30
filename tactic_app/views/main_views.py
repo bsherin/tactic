@@ -1,17 +1,18 @@
-import sys
+import cPickle
+import cStringIO
 import datetime
-from tactic_app import app, db, fs, socketio
+import sys
+
+import openpyxl
+from bson.binary import Binary
 from flask import request, jsonify, render_template, send_file, url_for
 from flask_login import current_user, login_required
 from flask_socketio import join_room
-from tactic_app.main import delete_mainwindow
-from tactic_app.shared_dicts import tile_classes, user_tiles, loaded_user_modules
+from tactic_app import app, db, fs, socketio
+from tactic_app.main_container_env.main import delete_mainwindow
 from tactic_app.shared_dicts import mainwindow_instances, distribute_event, create_initial_metadata, get_tile_class
+from tactic_app.shared_dicts import tile_classes, user_tiles, loaded_user_modules
 from user_manage_views import project_manager, collection_manager
-import openpyxl
-import cStringIO
-import cPickle
-from bson.binary import Binary
 
 
 # The main window should join a room associated with the user
@@ -82,15 +83,17 @@ def send_log_html(main_id):
     except:
         return jsonify({"success": False, "message": "Error opening log wndow"})
 
+
 @app.route("/open_log_window/<main_id>", methods=["GET", "POST"])
 @login_required
 def open_log_window(main_id):
-    if mainwindow_instances[main_id].project_name == None:
+    if mainwindow_instances[main_id].project_name is None:
         title = mainwindow_instances[main_id].short_collection_name + " log"
     else:
         title = mainwindow_instances[main_id].project_name + " log"
     console_html = mainwindow_instances[main_id].console_html.decode("utf-8", "ignore").encode("ascii")
     return render_template("log_window_template.html", window_title=title, console_html=console_html)
+
 
 @app.route('/update_project', methods=['POST'])
 @login_required
@@ -413,6 +416,7 @@ def reload_tile(tile_id):
         error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         mainwindow_instances[main_id].handle_exception("Error reloading tile " + error_string)
         return jsonify({"success": False})
+
 
 @app.route('/create_tile_from_save_request/<tile_id>', methods=['GET', 'POST'])
 @login_required
