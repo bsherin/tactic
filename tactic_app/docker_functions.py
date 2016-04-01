@@ -1,5 +1,7 @@
 
 import docker
+import time
+import requests
 
 cli = docker.Client(base_url='unix://var/run/docker.sock')
 
@@ -9,7 +11,7 @@ def get_address(container_identifier, network_name):
     return cli.inspect_container(container_identifier)["NetworkSettings"]["Networks"][network_name]["IPAddress"]
 
 
-def create_container(image_name, container_name=None, network_mode="bridge"):
+def create_container(image_name, container_name=None, network_mode="bridge", wait_until_running=True):
     if container_name is None:
         container_id = cli.create_container(image=image_name,
                                             host_config=cli.create_host_config(network_mode=network_mode)
@@ -19,6 +21,10 @@ def create_container(image_name, container_name=None, network_mode="bridge"):
                                             name=container_name,
                                             host_config=cli.create_host_config(network_mode=network_mode))
     cli.start(container_id)
+    print "status " + str(cli.inspect_container(container_id)["State"]["Status"])
+    if wait_until_running:
+        while not cli.inspect_container(container_id)["State"]["Status"] == "running":
+            time.sleep(0.1)
     return container_id
 
 
@@ -36,6 +42,18 @@ def destroy_container(cname):
     except:
         return -1
 
+
+def send_request_to_container(container_id, msg_type, data_dict, wait_for_success=True, timeout=3, wait_time=.1):
+    maddress = get_address(container_id, "bridge")
+    if wait_for_success:
+        for attempt in range(int(1.0 * timeout / wait_time)):
+            try:
+                return requests.post("http://{0}:5000/{1}".format(maddress, msg_type), json=data_dict)
+            except:
+                time.sleep(wait_time)
+                continue
+    else:
+        return requests.post("http://{0}:5000/{1}".format(maddress, msg_type), json=data_dict)
 
 def connect_to_network(container, network):
     return cli.connect_container_to_network(container, network)

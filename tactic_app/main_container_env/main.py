@@ -6,7 +6,7 @@ import copy
 import gevent
 from flask import render_template
 from gevent.queue import Queue
-
+import pymongo
 
 def cprint(tx):
     dlog = open("dlog", "a")
@@ -192,7 +192,7 @@ class mainWindow(gevent.Greenlet):
                      "FilterTable", "UnfilterTable", "TextSelect", "UpdateSortList", "UpdateLeftFraction",
                      "UpdateTableShrinkState"]
 
-    def __init__(self, app, collection_name, main_container_id, host_address, loaded_user_modules, doc_dict=None):
+    def __init__(self, app, collection_name, main_container_id, host_address, loaded_user_modules, mongo_uri, doc_dict=None):
         cprint("entering mainWindow init")
         self._my_q = Queue()
         gevent.Greenlet.__init__(self)
@@ -220,6 +220,14 @@ class mainWindow(gevent.Greenlet):
         self.selected_text = ""
         self.recreate_errors = []
         self.loaded_user_modules = set(loaded_user_modules)
+        try:
+            client = pymongo.MongoClient(mongo_uri)
+            client.server_info()
+            self.db = client.heroku_4ncbq1zd
+        except pymongo.errors.PyMongoError as err:
+            cprint("There's a problem with the PyMongo database. " + str(err))
+            sys.exit()
+        self.doc_dict = self._build_doc_dict()
 
     def ask_tile(self, tile_id, request_name, data_dict=None):
         if data_dict is None:
@@ -586,12 +594,12 @@ class mainWindow(gevent.Greenlet):
     def dehighlight_all_table_text(self):
         self.emit_table_message("dehiglightAllCells")
 
-    def _build_doc_dict(self, collection_name):
+    def _build_doc_dict(self):
         cprint("entering build_doc_dict")
         result = {}
         try:
-            cprint("about to ask host. collection name is " + collection_name)
-            the_collection = self.ask_host("request_collection", {"collection_name": collection_name})["the_collection"]
+            cprint("about to get data_collection from mongodb")
+            the_collection = self.db[self.collection_name]
             for f in the_collection.find():
                 if str(f["name"]) == "__metadata__":
                     continue

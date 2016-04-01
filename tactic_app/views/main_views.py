@@ -14,6 +14,7 @@ from tactic_app import app, db, fs, socketio
 from tactic_app.shared_dicts import mainwindow_instances, create_initial_metadata, get_tile_class
 from tactic_app.shared_dicts import tile_classes, user_tiles, loaded_user_modules
 from user_manage_views import project_manager, collection_manager
+from tactic_app.docker_functions import send_request_to_container
 
 
 # todo main_views.py has views for the host associated with main
@@ -209,63 +210,34 @@ def download_collection(main_id, new_name):
 @app.route('/grab_data/<main_id>/<doc_name>', methods=['get'])
 @login_required
 def grab_data(main_id, doc_name):
-    return jsonify({"doc_name": doc_name,
-                    "is_shrunk": mainwindow_instances[main_id].is_shrunk,
-                    "left_fraction": mainwindow_instances[main_id].left_fraction,
-                    "data_rows": mainwindow_instances[main_id].doc_dict[doc_name].displayed_data_rows,
-                    "background_colors": mainwindow_instances[main_id].doc_dict[doc_name].displayed_background_colors,
-                    "header_list": mainwindow_instances[main_id].doc_dict[doc_name].header_list,
-                    "is_last_chunk": mainwindow_instances[main_id].doc_dict[doc_name].is_last_chunk,
-                    "is_first_chunk": mainwindow_instances[main_id].doc_dict[doc_name].is_first_chunk,
-                    "max_table_size": mainwindow_instances[main_id].doc_dict[doc_name].max_table_size})
+    data_dict = {"doc_name": doc_name}
+    result = send_request_to_container(main_id, "grab_data", data_dict)
+    return jsonify(result.json())
 
 
 @app.route('/grab_chunk_with_row', methods=['get', 'post'])
 @login_required
 def grab_chunk_with_row():
     data_dict = request.json
-    doc_name = data_dict["doc_name"]
     main_id = data_dict["main_id"]
-    row_id = data_dict["row_id"]
-    mainwindow_instances[main_id].doc_dict[doc_name].move_to_row(row_id)
-    return jsonify({"doc_name": doc_name,
-                    "left_fraction": mainwindow_instances[main_id].left_fraction,
-                    "is_shrunk": mainwindow_instances[main_id].is_shrunk,
-                    "data_rows": mainwindow_instances[main_id].doc_dict[doc_name].displayed_data_rows,
-                    "background_colors": mainwindow_instances[main_id].doc_dict[doc_name].displayed_background_colors,
-                    "header_list": mainwindow_instances[main_id].doc_dict[doc_name].header_list,
-                    "is_last_chunk": mainwindow_instances[main_id].doc_dict[doc_name].is_last_chunk,
-                    "is_first_chunk": mainwindow_instances[main_id].doc_dict[doc_name].is_first_chunk,
-                    "max_table_size": mainwindow_instances[main_id].doc_dict[doc_name].max_table_size,
-                    "actual_row": mainwindow_instances[main_id].doc_dict[doc_name].get_actual_row(row_id)})
+    result = send_request_to_container(main_id, "grab_chunk_with_row", data_dict)
+    return jsonify(result.json())
 
 
 @app.route('/grab_next_chunk/<main_id>/<doc_name>', methods=['get'])
 @login_required
 def grab_next_chunk(main_id, doc_name):
-    step_amount = mainwindow_instances[main_id].doc_dict[doc_name].advance_to_next_chunk()
-    return jsonify({"doc_name": doc_name,
-                    "data_rows": mainwindow_instances[main_id].doc_dict[doc_name].displayed_data_rows,
-                    "background_colors": mainwindow_instances[main_id].doc_dict[doc_name].displayed_background_colors,
-                    "header_list": mainwindow_instances[main_id].doc_dict[doc_name].header_list,
-                    "is_last_chunk": mainwindow_instances[main_id].doc_dict[doc_name].is_last_chunk,
-                    "is_first_chunk": mainwindow_instances[main_id].doc_dict[doc_name].is_first_chunk,
-                    "step_size": step_amount})
+    data_dict = {"doc_name": doc_name}
+    result = send_request_to_container(main_id, "grab_next_chunk", data_dict)
+    return jsonify(result.json())
 
 
 @app.route('/grab_previous_chunk/<main_id>/<doc_name>', methods=['get'])
 @login_required
 def grab_previous_chunk(main_id, doc_name):
-    step_amount = mainwindow_instances[main_id].doc_dict[doc_name].go_to_previous_chunk()
-    if step_amount is None:  # This shouldn't happen
-        return
-    return jsonify({"doc_name": doc_name,
-                    "data_rows": mainwindow_instances[main_id].doc_dict[doc_name].displayed_data_rows,
-                    "background_colors": mainwindow_instances[main_id].doc_dict[doc_name].displayed_background_colors,
-                    "header_list": mainwindow_instances[main_id].doc_dict[doc_name].header_list,
-                    "is_last_chunk": mainwindow_instances[main_id].doc_dict[doc_name].is_last_chunk,
-                    "is_first_chunk": mainwindow_instances[main_id].doc_dict[doc_name].is_first_chunk,
-                    "step_size": step_amount})
+    data_dict = {"doc_name": doc_name}
+    result = send_request_to_container(main_id, "grab_previous_chunk,", data_dict)
+    return jsonify(result.json())
 
 
 @app.route('/grab_project_data/<main_id>/<doc_name>', methods=['get'])
@@ -299,8 +271,10 @@ def get_table_templates():
 @app.route('/remove_mainwindow/<main_id>', methods=['post'])
 @login_required
 def remove_mainwindow(main_id):
-    delete_mainwindow(main_id)
+    # todo work on remove_mainwindow
+    # delete_mainwindow(main_id)
     return
+
 
 @app.route('/get_tile_types', methods=['GET'])
 @login_required

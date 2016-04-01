@@ -4,16 +4,18 @@ import sys
 import subprocess
 import re
 import requests
+import time
 
 import os
 from flask import render_template, request, jsonify, send_file
 from flask_login import login_required, current_user
 from flask_socketio import join_room
-from tactic_app import app, db, fs, socketio, use_ssl
+from tactic_app import app, db, fs, socketio, use_ssl, mongo_uri
 from tactic_app.file_handling import read_csv_file_to_dict, read_tsv_file_to_dict, read_txt_file_to_dict, load_a_list
 from tactic_app.shared_dicts import user_tiles, loaded_user_modules, create_initial_metadata, mainwindow_instances
 from tactic_app.user_tile_env import create_user_tiles
 from tactic_app.users import User
+from tactic_app.docker_functions import send_request_to_container
 
 from tactic_app.docker_functions import create_container, get_address
 
@@ -326,18 +328,20 @@ class CollectionManager(ResourceManager):
         data_dict = {"collection_name": cname,
                      "main_container_id": main_id,
                      "host_address": host_ip,
-                     "loaded_user_modules": loaded_user_modules}
+                     "loaded_user_modules": loaded_user_modules,
+                     "mongo_uri": mongo_uri}
 
-        requests.post("http://{0}:5000/{1}".format(caddress, "initialize_mainwindow"), json=data_dict)
+        # requests.post("http://{0}:5000/{1}".format(caddress, "initialize_mainwindow"), json=data_dict)
+        send_request_to_container(main_id, "initialize_mainwindow", data_dict)
         short_collection_name = re.sub("^.*?\.data_collection\.", "", collection_name)
 
-        the_collection = db[collection_name]
+        the_collection = db[cname]
         doc_names = []
         for f in the_collection.find():
             if str(f["name"]) == "__metadata__":
                 continue
             else:
-                doc_names.append(f["name"])
+                doc_names.append(str(f["name"]))
 
         return render_template("main.html",
                                collection_name=cname,

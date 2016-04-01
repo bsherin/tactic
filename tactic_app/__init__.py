@@ -15,6 +15,7 @@ from flask_wtf.csrf import CsrfProtect
 import ssl
 
 csrf = CsrfProtect()
+mongo_uri = None
 
 
 def print_message():
@@ -34,6 +35,7 @@ try:
         # to be useless here
         client.server_info()
         db = client.tacticdb
+        mongo_uri = "localhost"
 
     else:
         client = MongoClient(host=os.environ.get("MONGOLAB_URI"))
@@ -42,6 +44,7 @@ try:
         # to be useless here
         client.server_info()
         db = client.heroku_4ncbq1zd
+        mongo_uri = os.environ.get("MONGOLAB_URI")
 
     if ("ANYONE_CAN_REGISTER" in os.environ) and (os.environ.get("ANYONE_CAN_REGISTER") == "True"):
         ANYONE_CAN_REGISTER = True
