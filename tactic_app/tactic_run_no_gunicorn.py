@@ -22,5 +22,5 @@ get_all_default_tiles()
 
 from tactic_app.views import tester_views
 
-socketio.run(app)
+socketio.run(app, host="0.0.0.0")
 

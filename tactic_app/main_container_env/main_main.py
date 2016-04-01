@@ -18,7 +18,8 @@ def initialize_mainwindow():
     mwindow = mainWindow(app, data_dict["collection_name"], data_dict["main_container_id"],
                          data_dict["host_address"], data_dict["loaded_user_modules"])
     mwindow.start()
-    return mwindow.doc_names
+    mwindow.post_event("BuildDocDict")
+    return jsonify({"success": True})
 
 
 @app.route('/distribute_events/<event_name>', methods=['get', 'post'])

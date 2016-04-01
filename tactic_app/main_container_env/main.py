@@ -211,10 +211,6 @@ class mainWindow(gevent.Greenlet):
         self.short_collection_name = re.sub("^.*?\.data_collection\.", "", collection_name)
         self.project_name = None
         self.console_html = None
-        if doc_dict is None:
-            self.doc_dict = self._build_doc_dict(collection_name)
-        else:
-            self.doc_dict = doc_dict
 
         # These are working attributes that will change whenever the project is instantiated.
         self.current_tile_id = 0
@@ -471,6 +467,7 @@ class mainWindow(gevent.Greenlet):
     def _run(self):
         self.running = True
         while self.running:
+            cprint("in _run")
             if not self._my_q.empty():
                 self.emit_table_message("startTableSpinner")
                 q_item = self._my_q.get()
@@ -484,10 +481,13 @@ class mainWindow(gevent.Greenlet):
 
     def _handle_event(self, event_name, data=None):
         # noinspection PyBroadException
+        cprint("entering handle event with: " + event_name)
         try:
             if event_name == "CellChange":
                 self._set_row_column_data(data["doc_name"], data["id"], data["column_header"], data["new_content"])
                 self._change_list.append(data["id"])
+            elif event_name == "BuildDocDict":
+                self.doc_dict = self._build_doc_dict(self.collection_name)
             elif event_name == "RemoveTile":
                 self._delete_tile_instance(data["tile_id"])
             elif event_name == "CreateColumn":

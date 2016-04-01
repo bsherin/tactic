@@ -21,7 +21,9 @@ AUTOSPLIT = True
 AUTOSPLIT_SIZE = 10000
 
 
-host_ip = subprocess.check_output(["/sbin/ip", "route"]).split()[2]
+# host_ip = subprocess.check_output(["/sbin/ip", "route"]).split()[2]
+ip_info = subprocess.check_output(['ip', '-4', 'addr', 'show', 'scope', 'global', 'dev', 'docker0'])
+host_ip = re.search("inet (.*?)/", ip_info).group(1)
 
 
 def start_spinner():
@@ -326,10 +328,16 @@ class CollectionManager(ResourceManager):
                      "host_address": host_ip,
                      "loaded_user_modules": loaded_user_modules}
 
-        result = requests.post("http://{0}:5000/{1}".format(caddress, "initialize_mainwindow"), json=data_dict)
+        requests.post("http://{0}:5000/{1}".format(caddress, "initialize_mainwindow"), json=data_dict)
         short_collection_name = re.sub("^.*?\.data_collection\.", "", collection_name)
 
-        doc_names = result.json["doc_names"]
+        the_collection = db[collection_name]
+        doc_names = []
+        for f in the_collection.find():
+            if str(f["name"]) == "__metadata__":
+                continue
+            else:
+                doc_names.append(f["name"])
 
         return render_template("main.html",
                                collection_name=cname,
