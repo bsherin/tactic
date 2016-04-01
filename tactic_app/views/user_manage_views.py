@@ -1,6 +1,9 @@
 import cPickle
 import datetime
 import sys
+import subprocess
+import re
+import requests
 
 import os
 from flask import render_template, request, jsonify, send_file
@@ -8,13 +11,17 @@ from flask_login import login_required, current_user
 from flask_socketio import join_room
 from tactic_app import app, db, fs, socketio, use_ssl
 from tactic_app.file_handling import read_csv_file_to_dict, read_tsv_file_to_dict, read_txt_file_to_dict, load_a_list
-from tactic_app.main_container_env.main import create_new_mainwindow, create_new_mainwindow_from_project, mainwindow_instances
-from tactic_app.shared_dicts import user_tiles, loaded_user_modules, create_initial_metadata
+from tactic_app.shared_dicts import user_tiles, loaded_user_modules, create_initial_metadata, mainwindow_instances
 from tactic_app.user_tile_env import create_user_tiles
 from tactic_app.users import User
 
+from tactic_app.docker_functions import create_container, get_address
+
 AUTOSPLIT = True
 AUTOSPLIT_SIZE = 10000
+
+
+host_ip = subprocess.check_output(["/sbin/ip", "route"]).split()[2]
 
 
 def start_spinner():
@@ -307,14 +314,23 @@ class CollectionManager(ResourceManager):
     def main(self, collection_name):
         user_obj = current_user
         cname = user_obj.build_data_collection_name(collection_name)
-        main_id = create_new_mainwindow(user_obj.get_id(), collection_name=cname)
-        doc_names = mainwindow_instances[main_id].doc_names
-        short_collection_name = mainwindow_instances[main_id].short_collection_name
-        if user_obj.username not in loaded_user_modules:
-            loaded_user_modules[user_obj.username] = set([])
+        main_id = create_container("tactic_main_image", network_mode="bridge")["Id"]
+        caddress = get_address(main_id, "bridge")
+        mainwindow_instances[main_id] = caddress
 
-        # the loaded_modules must be a list to be easily saved to pymongo
-        mainwindow_instances[main_id].loaded_modules = list(loaded_user_modules[user_obj.username])
+        if user_obj.username not in loaded_user_modules:
+            loaded_user_modules[user_obj.username] = []
+
+        data_dict = {"collection_name": cname,
+                     "main_container_id": main_id,
+                     "host_address": host_ip,
+                     "loaded_user_modules": loaded_user_modules}
+
+        result = requests.post("http://{0}:5000/{1}".format(caddress, "initialize_mainwindow"), json=data_dict)
+        short_collection_name = re.sub("^.*?\.data_collection\.", "", collection_name)
+
+        doc_names = result.json["doc_names"]
+
         return render_template("main.html",
                                collection_name=cname,
                                window_title=short_collection_name,
@@ -472,7 +488,8 @@ class ProjectManager(ResourceManager):
         for module in project_dict["loaded_modules"]:
             if module not in loaded_user_modules[current_user.username]:
                 tile_manager.load_tile_module(module)
-        main_id = create_new_mainwindow_from_project(project_dict)
+        # todo this must be fixed
+        main_id = "123" # create_new_mainwindow_from_project(project_dict)
         doc_names = mainwindow_instances[main_id].doc_names
         short_collection_name = mainwindow_instances[main_id].short_collection_name
         mainwindow_instances[main_id].mdata = project_dict["metadata"]

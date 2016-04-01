@@ -2,6 +2,8 @@ import cPickle
 import cStringIO
 import datetime
 import sys
+import copy
+import requests
 
 import openpyxl
 from bson.binary import Binary
@@ -9,11 +11,12 @@ from flask import request, jsonify, render_template, send_file, url_for
 from flask_login import current_user, login_required
 from flask_socketio import join_room
 from tactic_app import app, db, fs, socketio
-from tactic_app.main_container_env.main import delete_mainwindow
-from tactic_app.shared_dicts import mainwindow_instances, distribute_event, create_initial_metadata, get_tile_class
+from tactic_app.shared_dicts import mainwindow_instances, create_initial_metadata, get_tile_class
 from tactic_app.shared_dicts import tile_classes, user_tiles, loaded_user_modules
 from user_manage_views import project_manager, collection_manager
 
+
+# todo main_views.py has views for the host associated with main
 
 # The main window should join a room associated with the user
 @socketio.on('connect', namespace='/main')
@@ -327,18 +330,24 @@ def set_visible_doc(main_id, doc_name):
 def distribute_events_stub(event_name):
     data_dict = request.json
     main_id = request.json["main_id"]
+    mwindow_address = mainwindow_instances[main_id]["address"]
+    response = requests.post("http://{0}:5000/{1}".format(mwindow_address, event_name), json=data_dict)
+    return jsonify({"respose": response})
 
-    # If necessary, have to convert the row_index on the client side to the row_id
-    if (data_dict is not None) and ("active_row_index" in data_dict) and ("doc_name" in data_dict):
-        if data_dict["active_row_index"] is not None:
-            mwindow = mainwindow_instances[main_id]
-            data_dict["active_row_index"] = mwindow.doc_dict[data_dict["doc_name"]].get_id_from_actual_row(data_dict["active_row_index"])
-    if "tile_id" in request.json:
-        tile_id = request.json["tile_id"]
-    else:
-        tile_id = None
-    success = distribute_event(event_name, main_id, data_dict, tile_id)
-    return jsonify({"success": success})
+
+@app.route("/request_collection", methods=['GET', 'POST'])
+@login_required
+def request_collection():
+    the_collection = db[request.json["collection_name"]]
+    return jsonify({"the_collection": the_collection})
+
+
+@app.route("/emit_table_message/<main_id>", methods=['GET', 'POST'])
+@login_required
+def emit_table_message(main_id):
+    data = copy.copy(request.json)
+    socketio.emit("table-message", data, namespace='/main', room=main_id)
+    return jsonify({"success": True})
 
 
 @app.route('/figure_source/<main_id>/<tile_id>/<figure_name>', methods=['GET', 'POST'])

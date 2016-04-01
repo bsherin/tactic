@@ -1,53 +1,47 @@
 import sys
-import uuid
-
-import gevent
-import pymongo
 import re
+# noinspection PyUnresolvedReferences
+import requests
+import copy
+import gevent
 from flask import render_template
-from flask_login import current_user
 from gevent.queue import Queue
-from tactic_app import db, app
 
-# noinspection PyUnresolvedReferences
-from tactic_app.tile_container_env.tile_base import TileBase  # This is needed from recreating tiles from saves
-# noinspection PyUnresolvedReferences
-from collections import OrderedDict
 
-from tactic_app.shared_dicts import mainwindow_instances, distribute_event, get_tile_class
-# noinspection PyUnresolvedReferences
-from tactic_app.shared_dicts import tile_classes, user_tiles
-from tactic_app import socketio # only used in emit_table_message
+def cprint(tx):
+    dlog = open("dlog", "a")
+    dlog.write(tx + "\n")
+    dlog.close()
 
-from tactic_app import CHUNK_SIZE, STEP_SIZE
 INITIAL_LEFT_FRACTION = .69
-
-
-# noinspection PyProtectedMember
-def create_new_mainwindow(user_id, collection_name):
-    mw = mainWindow(user_id, collection_name)
-    mainwindow_instances[mw._main_id] = mw
-    mw.start()
-    return mw._main_id
-
+CHUNK_SIZE = 200
+STEP_SIZE = 100
 
 # noinspection PyProtectedMember
-def create_new_mainwindow_from_project(project_dict):
-    mw = mainWindow.recreate_from_save(project_dict)
-    mw.mdata = project_dict["metadata"]
-    mainwindow_instances[mw._main_id] = mw
-    mw.start()
-    return mw._main_id
+# def create_new_mainwindow(user_id, collection_name):
+#     mw = mainWindow(user_id, collection_name)
+#     mainwindow_instances[mw._main_id] = mw
+#     mw.start()
+#     return mw._main_id
+
+# todo create_new_mainwindow_from_project
+# noinspection PyProtectedMember
+# def create_new_mainwindow_from_project(project_dict):
+#     mw = mainWindow.recreate_from_save(project_dict)
+#     mw.mdata = project_dict["metadata"]
+#     mainwindow_instances[mw.main_id] = mw
+#     mw.start()
+#     return mw.main_id
 
 
-def delete_mainwindow(main_id):
-    for key, tile in mainwindow_instances[main_id].tile_instances.values():
-        tile.kill()
-        del mainwindow_instances[main_id].tile_instances[key]
-    # I think this is happening from within the greenlet that I'm closing.
-    # So I have to do the join at the very end
-    mainwindow_instances[main_id].kill()
-    del mainwindow_instances[main_id]
+# def delete_mainwindow(main_id):
+#     for tile_id, tile in mainwindow_instances[main_id].tile_instances.values():
+#         tile.kill()
+#         del mainwindow_instances[main_id].tile_instances[key]
+#     # I think this is happening from within the greenlet that I'm closing.
+#     # So I have to do the join at the very end
+#     mainwindow_instances[main_id].kill()
+#     del mainwindow_instances[main_id]
 
 
 # noinspection PyPep8Naming
@@ -95,14 +89,6 @@ class docInfo:
         else:
             self.infinite_scroll_required = True
             self.is_last_chunk = False
-
-    # def get_actual_row(self, row_id):
-    #     row = int(row_id)
-    #     if self.start_of_current_chunk <= row < (self.start_of_current_chunk + CHUNK_SIZE):
-    #         return row - self.start_of_current_chunk
-    #     else:
-    #         return None
-
     def get_actual_row(self, row_id):
         for i, the_row in enumerate(self.displayed_data_rows):
             if str(row_id) == str(the_row["__id__"]):
@@ -206,10 +192,15 @@ class mainWindow(gevent.Greenlet):
                      "FilterTable", "UnfilterTable", "TextSelect", "UpdateSortList", "UpdateLeftFraction",
                      "UpdateTableShrinkState"]
 
-    def __init__(self, user_id, collection_name, doc_dict=None, main_id=None):
+    def __init__(self, app, collection_name, main_container_id, host_address, loaded_user_modules, doc_dict=None):
+        cprint("entering mainWindow init")
         self._my_q = Queue()
         gevent.Greenlet.__init__(self)
         self._sleepperiod = .0001
+        self.main_id = main_container_id
+        cprint("host address is " + str(host_address))
+        self.host_address = host_address
+        self.app = app
 
         # These are the main attributes that define a project state
         self.tile_instances = {}
@@ -218,27 +209,68 @@ class mainWindow(gevent.Greenlet):
         self.is_shrunk = False
         self.collection_name = collection_name
         self.short_collection_name = re.sub("^.*?\.data_collection\.", "", collection_name)
-        self.user_id = user_id
         self.project_name = None
         self.console_html = None
         if doc_dict is None:
-            self.doc_dict = self._build_doc_dict()
+            self.doc_dict = self._build_doc_dict(collection_name)
         else:
             self.doc_dict = doc_dict
 
         # These are working attributes that will change whenever the project is instantiated.
         self.current_tile_id = 0
-        if main_id is None:
-            self._main_id = str(uuid.uuid4())
-        else:
-            self._main_id = main_id
         self._change_list = []
         self.visible_doc_name = None
         self._pipe_dict = {}
         self.selected_text = ""
         self.recreate_errors = []
+        self.loaded_user_modules = set(loaded_user_modules)
 
-        # self.cells_with_highlights = []
+    def ask_tile(self, tile_id, request_name, data_dict=None):
+        if data_dict is None:
+            data_dict = {}
+        taddress = self.tile_instances[tile_id]
+        result = requests.post("http://{0}:5000/{1}".format(taddress, request_name), json=data_dict)
+        return result
+
+    def ask_host(self, request_name, data_dict=None):
+        cprint("entering ask host")
+        cprint("host address is " + str(self.host_address))
+        cprint("data_dict " + str(data_dict))
+        if data_dict is None:
+            data_dict = {}
+        result = requests.post("http://{0}:5000/{1}".format(self.host_address, request_name), json=data_dict)
+        cprint("got result")
+        return result
+
+    def post_tile_event(self, tile_id, event_name, data_dict=None):
+        if data_dict is None:
+            data_dict = {}
+        taddress = self.tile_instances[tile_id]
+        ddict = copy.copy(data_dict)
+        ddict["event_name"] = event_name
+        requests.post("http://{0}:5000/{1}".format(taddress, "post_event"), json=data_dict)
+
+    def emit_table_message(self, message, data=None):
+        if data is None:
+            data = {}
+        data["message"] = message
+        return requests.post("http://{0}:5000"/{1}/{2}.format(self.host_address, "emit_table_message", self.main_id), json=data)
+
+    def distribute_event(self, event_name, data_dict=None, tile_id=None):
+        if data_dict is None:
+            data_dict = {}
+        try:
+            if tile_id is not None:
+                self.post_tile_event(tile_id, event_name, data_dict)
+            else:
+                for tile_id in self.tile_instances.keys():
+                    self.post_tile_event(tile_id, event_name, data_dict)
+            if event_name in self.update_events:
+                self.post_event(event_name, data_dict)
+            return True
+        except:
+            self.handle_exception("Error distributing event " + event_name)
+            return False
 
     def compile_save_dict(self):
         result = {}
@@ -256,11 +288,8 @@ class mainWindow(gevent.Greenlet):
         return result
 
     @staticmethod
-    def recreate_from_save(save_dict):
-        if "_main_id" in save_dict:
-            new_instance = mainWindow(save_dict["user_id"], save_dict["collection_name"], main_id=save_dict["_main_id"])
-        else:
-            new_instance = mainWindow(save_dict["user_id"], save_dict["collection_name"])
+    def recreate_from_save(app, save_dict):
+        new_instance = mainWindow(app, save_dict["data_collection_name"], save_dict["main_container_id"], save_dict["host_addres"])
         error_messages = []
         for (attr, attr_val) in save_dict.items():
             try:
@@ -324,29 +353,30 @@ class mainWindow(gevent.Greenlet):
         self._my_q.put({"event_name": event_name, "data": data})
 
     def _delete_tile_instance(self, tile_id):
-        self.tile_instances[tile_id].kill()
         del self.tile_instances[tile_id]
         self.tile_sort_list.remove(tile_id)
         if tile_id in self._pipe_dict:
             del self._pipe_dict[tile_id]
-            distribute_event("RebuildTileForms", self._main_id)
+            self.distribute_event("RebuildTileForms")
         return
 
-    def create_tile_instance_in_mainwindow(self, tile_type, tile_name=None):
-        new_id = "tile_id_" + str(self.current_tile_id)
+    def create_tile_instance_in_mainwindow(self, tile_container_address, tile_container_id, tile_name=None):
+        # new_id = "tile_id_" + str(self.current_tile_id)
         # The user version of a tile should take precedence if both exist
-        new_tile = get_tile_class(current_user.username, tile_type)(self._main_id, new_id, tile_name)
-        self.tile_instances[new_id] = new_tile
-        if len(new_tile.exports) > 0:
-            if new_id not in self._pipe_dict:
-                self._pipe_dict[new_id] = {}
-            for export in new_tile.exports:
-                self._pipe_dict[new_id][tile_name + "_" + export] = export
-            distribute_event("RebuildTileForms", self._main_id)
-        new_tile.start()
-        self.tile_sort_list.append(new_id)
+        # new_tile = get_tile_class(current_user.username, tile_type)(self._main_id, new_id, tile_name)
+        self.tile_instances[tile_container_id] = tile_container_address
+
+        # todo tile_request get_tile_expeort
+        exports = self.ask_tile(tile_container_id, "get_tile_exports")
+        if len(exports) > 0:
+            if tile_container_id not in self._pipe_dict:
+                self._pipe_dict[tile_container_id] = {}
+            for export in tile_container_id.exports:
+                self._pipe_dict[tile_container_id][tile_name + "_" + export] = export
+            self.distribute_event("RebuildTileForms")
+        self.tile_sort_list.append(tile_container_id)
         self.current_tile_id += 1
-        return new_tile
+        return
 
     def handle_exception(self, unique_message=None):
         error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
@@ -356,7 +386,7 @@ class mainWindow(gevent.Greenlet):
             self.print_to_console(unique_message + " " + error_string, force_open=True)
 
     def print_to_console(self, message_string, force_open=False):
-        with app.test_request_context():
+        with self.app.test_request_context():
             pmessage = render_template("log_item.html", log_item=message_string)
         self.emit_table_message("consoleLog", {"message_string": pmessage, "force_open": force_open})
 
@@ -452,25 +482,17 @@ class mainWindow(gevent.Greenlet):
     def table_yield(self):
         gevent.sleep(self._sleepperiod)
 
-    def emit_table_message(self, message, data=None):
-        if data is None:
-            data = {}
-        data["message"] = message
-        socketio.emit("table-message", data, namespace='/main', room=self._main_id)
-
     def _handle_event(self, event_name, data=None):
         # noinspection PyBroadException
         try:
             if event_name == "CellChange":
                 self._set_row_column_data(data["doc_name"], data["id"], data["column_header"], data["new_content"])
                 self._change_list.append(data["id"])
-            elif event_name == "MainClose":
-                delete_mainwindow(self._main_id)
             elif event_name == "RemoveTile":
                 self._delete_tile_instance(data["tile_id"])
             elif event_name == "CreateColumn":
                 self.add_blank_column(data["column_name"])
-                distribute_event("RebuildTileForms", self._main_id)
+                self.distribute_event("RebuildTileForms")
             elif event_name == "SearchTable":
                 self.highlight_table_text(data["text_to_find"])
             elif event_name == "FilterTable":
@@ -515,7 +537,7 @@ class mainWindow(gevent.Greenlet):
             # If cellchange is True then we use a CellChange event to handle any updates.
             # Otherwise just change things right here.
             if cellchange:
-                distribute_event("CellChange", self._main_id, data)
+                self.distribute_event("CellChange", data)
             else:
                 self._set_row_column_data(doc_name, the_id, column_header, new_content)
                 self._change_list.append(the_id)
@@ -564,10 +586,12 @@ class mainWindow(gevent.Greenlet):
     def dehighlight_all_table_text(self):
         self.emit_table_message("dehiglightAllCells")
 
-    def _build_doc_dict(self):
+    def _build_doc_dict(self, collection_name):
+        cprint("entering build_doc_dict")
         result = {}
         try:
-            the_collection = db[self.collection_name]
+            cprint("about to ask host. collection name is " + collection_name)
+            the_collection = self.ask_host("request_collection", {"collection_name": collection_name})["the_collection"]
             for f in the_collection.find():
                 if str(f["name"]) == "__metadata__":
                     continue
@@ -576,8 +600,8 @@ class mainWindow(gevent.Greenlet):
                     result[str(f["name"])] = docInfo(str(f["name"]), f["data_rows"], f["header_list"])
                 else:
                     result[str(f["name"])] = docInfo(str(f["name"]), f["data_rows"], [])
-        except pymongo.errors.PyMongoError as err:
-            print("There's a problem with the PyMongo database. ", err)
+        except:
+            cprint("There's a problem with the data_collection")
             return
         return result
 
