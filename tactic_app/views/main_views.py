@@ -17,8 +17,6 @@ from user_manage_views import project_manager, collection_manager
 from tactic_app.docker_functions import send_request_to_container
 
 
-# todo main_views.py has views for the host associated with main
-
 # The main window should join a room associated with the user
 @socketio.on('connect', namespace='/main')
 def connected_msg():
@@ -39,32 +37,11 @@ def on_join(data):
 @login_required
 def save_new_project():
     data_dict = request.json
-    # noinspection PyBroadException
-    try:
-        mainwindow_instances[data_dict['main_id']].project_name = data_dict["project_name"]
-        mainwindow_instances[data_dict['main_id']].hidden_columns_list = data_dict["hidden_columns_list"]
-        mainwindow_instances[data_dict['main_id']].console_html = data_dict["console_html"]
-        tspec_dict = data_dict["tablespec_dict"]
-        for (dname, spec) in tspec_dict.items():
-            mainwindow_instances[data_dict['main_id']].doc_dict[dname].table_spec = spec
-
-        mainwindow_instances[data_dict['main_id']].loaded_modules = list(loaded_user_modules[current_user.username])
-        project_dict = mainwindow_instances[data_dict['main_id']].compile_save_dict()
-        save_dict = {}
-        save_dict["metadata"] = create_initial_metadata()
-        save_dict["project_name"] = project_dict["project_name"]
-        save_dict["file_id"] = fs.put(Binary(cPickle.dumps(project_dict)))
-        mainwindow_instances[data_dict['main_id']].mdata = save_dict["metadata"]
-
-        db[current_user.project_collection_name].insert_one(save_dict)
-
-        project_manager.update_selector_list()
-        return jsonify({"project_name": data_dict["project_name"],
-                        "success": True,
-                        "message": "Project Successfully Saved"})
-    except:
-        mainwindow_instances[data_dict['main_id']].handle_exception("Error saving new project")
-        return jsonify({"success": False})
+    data_dict["users_loaded_modules"] = list(loaded_user_modules[current_user.username])
+    data_dict["project_collection_name"] = current_user.project_collection_name
+    result = send_request_to_container(data_dict["main_id"], "save_new_project", data_dict)
+    project_manager.update_selector_list()
+    return jsonify(result.json())
 
 
 @app.route("/add_blank_console_text/<main_id>", methods=["GET"])
@@ -236,7 +213,7 @@ def grab_next_chunk(main_id, doc_name):
 @login_required
 def grab_previous_chunk(main_id, doc_name):
     data_dict = {"doc_name": doc_name}
-    result = send_request_to_container(main_id, "grab_previous_chunk,", data_dict)
+    result = send_request_to_container(main_id, "grab_previous_chunk", data_dict)
     return jsonify(result.json())
 
 

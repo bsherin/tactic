@@ -1,5 +1,8 @@
 from flask import Flask, request, jsonify
 from main import mainWindow
+from bson.binary import Binary
+import datetime
+import cPickle
 
 app = Flask(__name__)
 
@@ -9,6 +12,44 @@ mwindow = None
 @app.route('/')
 def hello():
     return 'This is mainwindow communicating'
+
+
+def create_initial_metadata():
+    mdata = {"datetime": datetime.datetime.today(),
+             "updated": datetime.datetime.today(),
+             "tags": "",
+             "notes": ""}
+    return mdata
+
+
+@app.route('/save_new_project', methods=['POST'])
+def save_new_project():
+    data_dict = request.json
+    # noinspection PyBroadException
+    try:
+        mwindow.project_name = data_dict["project_name"]
+        mwindow.hidden_columns_list = data_dict["hidden_columns_list"]
+        mwindow.console_html = data_dict["console_html"]
+        tspec_dict = data_dict["tablespec_dict"]
+        for (dname, spec) in tspec_dict.items():
+            mwindow.doc_dict[dname].table_spec = spec
+
+            mwindow.loaded_modules = data_dict["users_loaded_modules"]
+        project_dict = mwindow.compile_save_dict()
+        save_dict = {}
+        save_dict["metadata"] = create_initial_metadata()
+        save_dict["project_name"] = project_dict["project_name"]
+        save_dict["file_id"] = mwindow.fs.put(Binary(cPickle.dumps(project_dict)))
+        mwindow.mdata = save_dict["metadata"]
+
+        mwindow.db[data_dict["project_collection_name"]].insert_one(save_dict)
+
+        return jsonify({"project_name": data_dict["project_name"],
+                        "success": True,
+                        "message": "Project Successfully Saved"})
+    except:
+        mwindow.handle_exception("Error saving new project")
+        return jsonify({"success": False})
 
 
 @app.route("/grab_data", methods=["GET", "POST"])
@@ -28,6 +69,7 @@ def grab_data():
 
 @app.route('/grab_chunk_with_row', methods=['get', 'post'])
 def grab_chunk_with_row():
+    app.logger.debug("Entering grab chunk with row")
     data_dict = request.json
     doc_name = data_dict["doc_name"]
     row_id = data_dict["row_id"]
@@ -46,6 +88,7 @@ def grab_chunk_with_row():
 
 @app.route('/grab_next_chunk', methods=['get', "post"])
 def grab_next_chunk():
+    app.logger.debug("entering grab next chunk")
     data_dict = request.json
     doc_name = data_dict["doc_name"]
     step_amount = mwindow.doc_dict[doc_name].advance_to_next_chunk()
@@ -59,9 +102,11 @@ def grab_next_chunk():
 
 
 @app.route('/grab_previous_chunk', methods=['get', 'post'])
-def grab_previous_chunk(main_id, doc_name):
+def grab_previous_chunk():
+    app.logger.debug("entering grab previous chunk")
     data_dict = request.json
     doc_name = data_dict["doc_name"]
+    app.logger.debug("doc_name is " + doc_name)
     step_amount = mwindow.doc_dict[doc_name].go_to_previous_chunk()
     return jsonify({"doc_name": doc_name,
                     "data_rows": mwindow.doc_dict[doc_name].displayed_data_rows,
@@ -74,6 +119,7 @@ def grab_previous_chunk(main_id, doc_name):
 
 @app.route('/initialize_mainwindow', methods=['POST'])
 def initialize_mainwindow():
+    app.logger.debug("entering intialize mainwindow")
     global mwindow
     data_dict = request.json
     mwindow = mainWindow(app, data_dict["collection_name"], data_dict["main_container_id"],

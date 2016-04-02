@@ -7,11 +7,7 @@ import gevent
 from flask import render_template
 from gevent.queue import Queue
 import pymongo
-
-def cprint(tx):
-    dlog = open("dlog", "a")
-    dlog.write(tx + "\n")
-    dlog.close()
+import gridfs
 
 INITIAL_LEFT_FRACTION = .69
 CHUNK_SIZE = 200
@@ -193,12 +189,10 @@ class mainWindow(gevent.Greenlet):
                      "UpdateTableShrinkState"]
 
     def __init__(self, app, collection_name, main_container_id, host_address, loaded_user_modules, mongo_uri, doc_dict=None):
-        cprint("entering mainWindow init")
         self._my_q = Queue()
         gevent.Greenlet.__init__(self)
         self._sleepperiod = .0001
         self.main_id = main_container_id
-        cprint("host address is " + str(host_address))
         self.host_address = host_address
         self.app = app
 
@@ -224,8 +218,8 @@ class mainWindow(gevent.Greenlet):
             client = pymongo.MongoClient(mongo_uri)
             client.server_info()
             self.db = client.heroku_4ncbq1zd
+            self.fs = gridfs.GridFS(self.db)
         except pymongo.errors.PyMongoError as err:
-            cprint("There's a problem with the PyMongo database. " + str(err))
             sys.exit()
         self.doc_dict = self._build_doc_dict()
 
@@ -237,13 +231,9 @@ class mainWindow(gevent.Greenlet):
         return result
 
     def ask_host(self, request_name, data_dict=None):
-        cprint("entering ask host")
-        cprint("host address is " + str(self.host_address))
-        cprint("data_dict " + str(data_dict))
         if data_dict is None:
             data_dict = {}
         result = requests.post("http://{0}:5000/{1}".format(self.host_address, request_name), json=data_dict)
-        cprint("got result")
         return result
 
     def post_tile_event(self, tile_id, event_name, data_dict=None):
@@ -389,6 +379,8 @@ class mainWindow(gevent.Greenlet):
         else:
             self.print_to_console(unique_message + " " + error_string, force_open=True)
 
+    # todo xxx here is where I am. this template wasn't found
+    # Note that this will be a trial of emit_table_message
     def print_to_console(self, message_string, force_open=False):
         with self.app.test_request_context():
             pmessage = render_template("log_item.html", log_item=message_string)
@@ -475,7 +467,6 @@ class mainWindow(gevent.Greenlet):
     def _run(self):
         self.running = True
         while self.running:
-            cprint("in _run")
             if not self._my_q.empty():
                 self.emit_table_message("startTableSpinner")
                 q_item = self._my_q.get()
@@ -489,7 +480,6 @@ class mainWindow(gevent.Greenlet):
 
     def _handle_event(self, event_name, data=None):
         # noinspection PyBroadException
-        cprint("entering handle event with: " + event_name)
         try:
             if event_name == "CellChange":
                 self._set_row_column_data(data["doc_name"], data["id"], data["column_header"], data["new_content"])
@@ -595,10 +585,8 @@ class mainWindow(gevent.Greenlet):
         self.emit_table_message("dehiglightAllCells")
 
     def _build_doc_dict(self):
-        cprint("entering build_doc_dict")
         result = {}
         try:
-            cprint("about to get data_collection from mongodb")
             the_collection = self.db[self.collection_name]
             for f in the_collection.find():
                 if str(f["name"]) == "__metadata__":
@@ -609,7 +597,6 @@ class mainWindow(gevent.Greenlet):
                 else:
                     result[str(f["name"])] = docInfo(str(f["name"]), f["data_rows"], [])
         except:
-            cprint("There's a problem with the data_collection")
             return
         return result
 
