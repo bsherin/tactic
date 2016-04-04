@@ -22,34 +22,66 @@ def create_initial_metadata():
     return mdata
 
 
+@app.route('/set_visible_doc', methods=['get', 'post'])
+def set_visible_doc():
+    data_dict = request.json
+    doc_name = data_dict["doc_name"]
+    mwindow.visible_doc_name = doc_name
+    return jsonify({"success": True})
+
+
+@app.route("/print_to_console", methods=['get', 'post'])
+def print_to_console():
+    def do_print_to_console(data):
+        mwindow.print_to_console(data["print_string"])
+        mwindow.generate_callback(data)
+    data = request.json
+    mwindow.post_with_callback(do_print_to_console, data)
+    return jsonify({"success": True})
+
+
+# this generate_callback is generated in response to
+# a request from the javascript client.
+# if there's a jcallback_id then that indicates that the client
+# wants a callback
+
 @app.route('/save_new_project', methods=['POST'])
 def save_new_project():
-    data_dict = request.json
-    # noinspection PyBroadException
-    try:
-        mwindow.project_name = data_dict["project_name"]
-        mwindow.hidden_columns_list = data_dict["hidden_columns_list"]
-        mwindow.console_html = data_dict["console_html"]
-        tspec_dict = data_dict["tablespec_dict"]
-        for (dname, spec) in tspec_dict.items():
-            mwindow.doc_dict[dname].table_spec = spec
+    def do_save_new_project(data_dict):
+        app.logger.debug("entering do_save_new_project")
+        app.logger.debug("data_dict is " + str(data_dict))
+        # noinspection PyBroadException
+        try:
+            mwindow.project_name = data_dict["project_name"]
+            mwindow.hidden_columns_list = data_dict["hidden_columns_list"]
+            mwindow.console_html = data_dict["console_html"]
+            tspec_dict = data_dict["tablespec_dict"]
+            for (dname, spec) in tspec_dict.items():
+                mwindow.doc_dict[dname].table_spec = spec
 
-            mwindow.loaded_modules = data_dict["users_loaded_modules"]
-        project_dict = mwindow.compile_save_dict()
-        save_dict = {}
-        save_dict["metadata"] = create_initial_metadata()
-        save_dict["project_name"] = project_dict["project_name"]
-        save_dict["file_id"] = mwindow.fs.put(Binary(cPickle.dumps(project_dict)))
-        mwindow.mdata = save_dict["metadata"]
+                mwindow.loaded_modules = data_dict["users_loaded_modules"]
+            project_dict = mwindow.compile_save_dict()
+            save_dict = {}
+            save_dict["metadata"] = create_initial_metadata()
+            save_dict["project_name"] = project_dict["project_name"]
+            save_dict["file_id"] = mwindow.fs.put(Binary(cPickle.dumps(project_dict)))
+            mwindow.mdata = save_dict["metadata"]
 
-        mwindow.db[data_dict["project_collection_name"]].insert_one(save_dict)
+            mwindow.db[data_dict["project_collection_name"]].insert_one(save_dict)
+            return_data = {"project_name": data_dict["project_name"],
+                           "success": True,
+                           "message_string": "Project Successfully Saved",
+                           "jcallback_id": data_dict["jcallback_id"]}
 
-        return jsonify({"project_name": data_dict["project_name"],
-                        "success": True,
-                        "message": "Project Successfully Saved"})
-    except:
-        mwindow.handle_exception("Error saving new project")
-        return jsonify({"success": False})
+        except:
+            error_string = mwindow.handle_exception("Error saving new project", print_to_console=False)
+            return_data = {"success": False, "message_string": error_string, "jcallback_id": data_dict["jcallback_id"]}
+        mwindow.generate_callback(return_data)
+        return
+    data = request.json
+    app.logger.debug("data passed to save_new_project is " + str(data))
+    mwindow.post_with_function(do_save_new_project, data)
+    return jsonify({"success": True})
 
 
 @app.route("/grab_data", methods=["GET", "POST"])
@@ -122,9 +154,12 @@ def initialize_mainwindow():
     app.logger.debug("entering intialize mainwindow")
     global mwindow
     data_dict = request.json
+
     mwindow = mainWindow(app, data_dict["collection_name"], data_dict["main_container_id"],
                          data_dict["host_address"], data_dict["loaded_user_modules"], data_dict["mongo_uri"])
+    app.logger.debug("starting mainwindow")
     mwindow.start()
+    # mwindow.post_with_callback(mwindow.login_to_host)
     return jsonify({"success": True})
 
 

@@ -11,7 +11,7 @@ from flask import request, jsonify, render_template, send_file, url_for
 from flask_login import current_user, login_required
 from flask_socketio import join_room
 from tactic_app import app, db, fs, socketio
-from tactic_app.shared_dicts import mainwindow_instances, create_initial_metadata, get_tile_class
+from tactic_app.shared_dicts import mainwindow_instances, get_tile_class
 from tactic_app.shared_dicts import tile_classes, user_tiles, loaded_user_modules
 from user_manage_views import project_manager, collection_manager
 from tactic_app.docker_functions import send_request_to_container
@@ -44,11 +44,22 @@ def save_new_project():
     return jsonify(result.json())
 
 
+@app.route('/set_visible_doc/<main_id>/<doc_name>', methods=['get', 'post'])
+@login_required
+def set_visible_doc(main_id, doc_name):
+    data_dict = {}
+    data_dict["doc_name"] = doc_name
+    send_request_to_container(main_id, "set_visible_doc", data_dict)
+    return jsonify({"success": True})
+
+
 @app.route("/add_blank_console_text/<main_id>", methods=["GET"])
 @login_required
 def add_blank_console_text(main_id):
     try:
-        mainwindow_instances[main_id].print_to_console("<div contenteditable='true'></div>")
+        print_string = "<div contenteditable='true'></div>"
+        data_dict = {"print_string": print_string}
+        send_request_to_container(main_id, "print_to_console", data_dict)
         return jsonify({"success": True})
     except:
         return jsonify({"success": False, "message": "Error creating console text area"})
@@ -172,6 +183,7 @@ def download_collection(main_id, new_name):
         for r, row in enumerate(data_rows, start=2):
             for c, header in enumerate(header_list, start=1):
                 _ = ws.cell(row=r, column=c, value=row[header])
+    # noinspection PyUnresolvedReferences
     virtual_notebook = openpyxl.writer.excel.save_virtual_workbook(wb)
     str_io = cStringIO.StringIO()
     str_io.write(virtual_notebook)
@@ -184,7 +196,7 @@ def download_collection(main_id, new_name):
 # passing back to the client.
 
 
-@app.route('/grab_data/<main_id>/<doc_name>', methods=['get'])
+@app.route('/grab_data/<main_id>/<doc_name>', methods=['get', 'post'])
 @login_required
 def grab_data(main_id, doc_name):
     data_dict = {"doc_name": doc_name}
@@ -269,13 +281,6 @@ def get_tile_types():
     return jsonify(result)
 
 
-@app.route('/set_visible_doc/<main_id>/<doc_name>', methods=['get', 'post'])
-@login_required
-def set_visible_doc(main_id, doc_name):
-    mainwindow_instances[main_id].visible_doc_name = doc_name
-    return jsonify({"success": True})
-
-
 @app.route('/distribute_events/<event_name>', methods=['get', 'post'])
 @login_required
 def distribute_events_stub(event_name):
@@ -293,11 +298,20 @@ def request_collection():
     return jsonify({"the_collection": the_collection})
 
 
-@app.route("/emit_table_message/<main_id>", methods=['GET', 'POST'])
-@login_required
-def emit_table_message(main_id):
+@app.route("/emit_table_message", methods=['GET', 'POST'])
+def emit_table_message():
+    print "entering emit_table_message on the host"
     data = copy.copy(request.json)
-    socketio.emit("table-message", data, namespace='/main', room=main_id)
+    print "message is " + str(data)
+    socketio.emit("table-message", data, namespace='/main', room=data["main_id"])
+    return jsonify({"success": True})
+
+
+@app.route("/handle_callback", methods=['GET', 'POST'])
+def emit_table_message():
+    print "entering handle_callback on the host"
+    data = copy.copy(request.json)
+    socketio.emit("handle-callback", data, namespace='/main', room=data["main_id"])
     return jsonify({"success": True})
 
 

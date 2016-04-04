@@ -1,0 +1,3 @@
+parallels@ubuntu:~$ docker exec -i -t bbda4be70452 bash
+root@bbda4be70452:/code# export C_FORCE_ROOT="true"
+root@bbda4be70452:/code# celery worker -A tasks.cel --loglevel=info

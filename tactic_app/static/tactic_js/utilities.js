@@ -130,3 +130,13 @@ function showModal(modal_title, field_title, submit_function, default_value) {
         submit_function($("#modal-text-input-field").val())
     }
 }
+
+function guid() {
+  function s4() {
+    return Math.floor((1 + Math.random()) * 0x10000)
+      .toString(16)
+      .substring(1);
+  }
+  return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+    s4() + '-' + s4() + s4() + s4();
+}

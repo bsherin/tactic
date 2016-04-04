@@ -241,6 +241,7 @@ function continue_loading() {
         // console.log("received table message " + data.message);
         tableObject[data.message](data)
     });
+    socket.on('handle-callback', handleCallback)
     socket.on('close-user-windows', function(data){
         $.ajax({
             url: $SCRIPT_ROOT + "/remove_mainwindow/" + String(main_id),

@@ -421,16 +421,17 @@ var tableObject = {
         }
     },
 
+
     freeze_column_widths: function (table_id) {
         // This modifies this.column_widths and this.table_width
         // This is only called by initialize_table.
         // But I split it out because it's so big.
-        tidstr = "#" + table_id;
+        var tidstr = "#" + table_id;
         var ncols = this.current_spec.header_list.length;
         var all_rows = $(tidstr).find("tr");
-        column_widths = [];
+        var column_widths = [];
         //this.big_fields = []
-
+ 
         var the_row;
         var the_width;
         var the_text;

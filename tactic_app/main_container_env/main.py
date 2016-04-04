@@ -4,14 +4,21 @@ import re
 import requests
 import copy
 import gevent
-from flask import render_template
+from gevent import monkey; monkey.patch_all()
+from flask import Flask, render_template
 from gevent.queue import Queue
 import pymongo
 import gridfs
+import time
+import uuid
+
 
 INITIAL_LEFT_FRACTION = .69
 CHUNK_SIZE = 200
 STEP_SIZE = 100
+
+username = "bsherinrem"
+password = "mang"
 
 # noinspection PyProtectedMember
 # def create_new_mainwindow(user_id, collection_name):
@@ -85,6 +92,7 @@ class docInfo:
         else:
             self.infinite_scroll_required = True
             self.is_last_chunk = False
+
     def get_actual_row(self, row_id):
         for i, the_row in enumerate(self.displayed_data_rows):
             if str(row_id) == str(the_row["__id__"]):
@@ -181,13 +189,14 @@ class docInfo:
 # noinspection PyPep8Naming
 class mainWindow(gevent.Greenlet):
     save_attrs = ["short_collection_name", "collection_name", "current_tile_id", "tile_sort_list", "left_fraction",
-                  "is_shrunk", "user_id", "doc_dict", "tile_instances", "project_name", "loaded_modules",
-                  "hidden_columns_list", "_main_id", "console_html"]
+                  "is_shrunk", "doc_dict", "tile_instances", "project_name", "loaded_modules",
+                  "hidden_columns_list", "main_id", "console_html"]
     update_events = ["CellChange", "CreateColumn", "SearchTable", "SaveTableSpec", "MainClose", "DisplayCreateErrors",
                      "DehighlightTable", "SetCellContent", "RemoveTile", "ColorTextInCell",
                      "FilterTable", "UnfilterTable", "TextSelect", "UpdateSortList", "UpdateLeftFraction",
                      "UpdateTableShrinkState"]
 
+    # noinspection PyUnresolvedReferences
     def __init__(self, app, collection_name, main_container_id, host_address, loaded_user_modules, mongo_uri, doc_dict=None):
         self._my_q = Queue()
         gevent.Greenlet.__init__(self)
@@ -205,6 +214,7 @@ class mainWindow(gevent.Greenlet):
         self.short_collection_name = re.sub("^.*?\.data_collection\.", "", collection_name)
         self.project_name = None
         self.console_html = None
+        self.callbacks = {}
 
         # These are working attributes that will change whenever the project is instantiated.
         self.current_tile_id = 0
@@ -217,23 +227,38 @@ class mainWindow(gevent.Greenlet):
         try:
             client = pymongo.MongoClient(mongo_uri)
             client.server_info()
+            # noinspection PyUnresolvedReferences
             self.db = client.heroku_4ncbq1zd
             self.fs = gridfs.GridFS(self.db)
         except pymongo.errors.PyMongoError as err:
             sys.exit()
         self.doc_dict = self._build_doc_dict()
 
+    def send_request_to_host(self, msg_type, data_dict=None, wait_for_success=True, timeout=3, wait_time=.1):
+        if data_dict is None:
+            data_dict = {}
+        data_dict["main_id"] = self.main_id
+        if wait_for_success:
+            for attempt in range(int(1.0 * timeout / wait_time)):
+                try:
+                    return requests.get("http://{0}:5000/{1}".format(self.host_address, msg_type), json=data_dict)
+                except:
+                    time.sleep(wait_time)
+                    continue
+        else:
+            return requests.get("http://{0}:5000/{1}".format(self.host_address, msg_type), json=data_dict)
+
+    def login_to_host(self, data_dict):
+        # data_dict is irrelevant here
+        self.app.logger.debug("entering login to host")
+        data = {"username": username, "password": password, "remember_me": False}
+        self.send_request_to_host("attempt_login", data)
+
     def ask_tile(self, tile_id, request_name, data_dict=None):
         if data_dict is None:
             data_dict = {}
         taddress = self.tile_instances[tile_id]
         result = requests.post("http://{0}:5000/{1}".format(taddress, request_name), json=data_dict)
-        return result
-
-    def ask_host(self, request_name, data_dict=None):
-        if data_dict is None:
-            data_dict = {}
-        result = requests.post("http://{0}:5000/{1}".format(self.host_address, request_name), json=data_dict)
         return result
 
     def post_tile_event(self, tile_id, event_name, data_dict=None):
@@ -245,10 +270,18 @@ class mainWindow(gevent.Greenlet):
         requests.post("http://{0}:5000/{1}".format(taddress, "post_event"), json=data_dict)
 
     def emit_table_message(self, message, data=None):
+        self.app.logger.debug("entering emit table message. host is: " + str(self.host_address))
+        self.app.logger.debug(message + " " + str(data))
         if data is None:
             data = {}
         data["message"] = message
-        return requests.post("http://{0}:5000"/{1}/{2}.format(self.host_address, "emit_table_message", self.main_id), json=data)
+        result = self.send_request_to_host("emit_table_message", data)
+        return result
+
+    def generate_callback(self, return_data):
+        if "jcallback_id" in return_data:
+            self.send_request_to_host("handle_callback", return_data)
+        return
 
     def distribute_event(self, event_name, data_dict=None, tile_id=None):
         if data_dict is None:
@@ -306,7 +339,7 @@ class mainWindow(gevent.Greenlet):
             except TypeError:
                 setattr(new_instance, attr, attr_val)
         for tile in new_instance.tile_sort_list:
-            if not tile in new_instance.tile_instances:
+            if tile not in new_instance.tile_instances:
                 new_instance.tile_sort_list.remove(tile)
 
         # There's some extra work I have to do once all of the tiles are built.
@@ -343,7 +376,17 @@ class mainWindow(gevent.Greenlet):
             for r in doc.data_rows.values():
                 r[column_name] = ""
 
-    def post_event(self, event_name, data=None):
+    def post_event(self, event_name, data=None, callback=None):
+        self.app.logger.debug("entering post_event")
+        self._my_q.put({"event_name": event_name, "data": data})
+
+    # This provides a general mechanism to put a function on the event loop.
+    def post_with_function(self, func, data=None):
+        self.app.logger.debug("entering post_with_function")
+        event_name = "FuncEvent"
+        if data is None:
+            data = {}
+        data["func"] = func
         self._my_q.put({"event_name": event_name, "data": data})
 
     def _delete_tile_instance(self, tile_id):
@@ -372,12 +415,13 @@ class mainWindow(gevent.Greenlet):
         self.current_tile_id += 1
         return
 
-    def handle_exception(self, unique_message=None):
+    def handle_exception(self, unique_message=None, print_to_console=True):
         error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-        if unique_message is None:
+        if unique_message is not None:
+            error_string = unique_message + " " + error_string
+        if print_to_console:
             self.print_to_console(error_string, force_open=True)
-        else:
-            self.print_to_console(unique_message + " " + error_string, force_open=True)
+        return error_string
 
     # todo xxx here is where I am. this template wasn't found
     # Note that this will be a trial of emit_table_message
@@ -468,12 +512,12 @@ class mainWindow(gevent.Greenlet):
         self.running = True
         while self.running:
             if not self._my_q.empty():
-                self.emit_table_message("startTableSpinner")
+                # self.emit_table_message("startTableSpinner")
                 q_item = self._my_q.get()
                 self._handle_event(q_item["event_name"], q_item["data"])
             else:
-                self.emit_table_message("stopTableSpinner")
-            self.table_yield()
+                self.table_yield()
+            #     self.emit_table_message("stopTableSpinner")
 
     def table_yield(self):
         gevent.sleep(self._sleepperiod)
@@ -484,6 +528,9 @@ class mainWindow(gevent.Greenlet):
             if event_name == "CellChange":
                 self._set_row_column_data(data["doc_name"], data["id"], data["column_header"], data["new_content"])
                 self._change_list.append(data["id"])
+            elif event_name == "FuncEvent":
+                func = data["func"]
+                func(data)
             elif event_name == "BuildDocDict":
                 self.doc_dict = self._build_doc_dict(self.collection_name)
             elif event_name == "RemoveTile":
@@ -515,11 +562,18 @@ class mainWindow(gevent.Greenlet):
                 self.left_fraction = data["left_fraction"]
             elif event_name == "UpdateTableShrinkState":
                 self.is_shrunk = data["is_shrunk"]
+            elif event_name == "PrintToConsole":
+                self.print_to_console(data["message"], True)
+            # elif event_name == "LogIn":
+            #     self.login_to_host()
             elif event_name == "DisplayCreateErrors":
                 for msg in self.recreate_errors:
                     self.print_to_console(msg, True)
                 self.recreate_errors = []
         except:
+            # with self.app.app_context():
+            #     self.logger.debug("error in handle_event" + self.__class__.__name__ +
+            #                           str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
             self.print_to_console("error in handle_event  " + self.__class__.__name__ +
                                   str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]), force_open=True)
         return

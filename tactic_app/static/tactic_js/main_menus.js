@@ -259,6 +259,29 @@ function createColumn() {
     })
 }
 
+var callbacks = {};
+
+function handleCallback (data_dict) {
+    var task_id = data_dict["jcallback_id"];
+    var func = callbacks[task_id];
+    delete callbacks[task_id];
+    func(data_dict);
+}
+
+function containerPostWithCallback(url, data_dict, callback){
+    var unique_id = guid();
+    callbacks[unique_id] = callback;
+    data_dict["jcallback_id"] = unique_id;
+    $.ajax({
+        url: $SCRIPT_ROOT + url,
+        contentType : 'application/json',
+        type : 'POST',
+        async: true,
+        data: JSON.stringify(data_dict),
+        dataType: 'json'
+    });
+}
+
 function saveProjectAs() {
     showModal("Save Project As", "New Project Name", function (new_name) {
                 var result_dict = {
@@ -268,15 +291,7 @@ function saveProjectAs() {
                 "tablespec_dict": tablespec_dict,
                 "console_html": $("#console").html()
             };
-            $.ajax({
-                    url: $SCRIPT_ROOT + "/save_new_project",
-                    contentType : 'application/json',
-                    type : 'POST',
-                    async: true,
-                    data: JSON.stringify(result_dict),
-                    dataType: 'json',
-                    success: save_as_success
-            });
+            containerPostWithCallback("/save_new_project", result_dict, save_as_success);
             function save_as_success(data_object) {
                 if (data_object["success"]) {
                     menus["Project"].enable_menu_item("save");
@@ -288,6 +303,11 @@ function saveProjectAs() {
                     data_object.timeout = 2000;
                     _project_name = data_object.project_name;  // When menus recreated, it checks _project_name
                     dirty = false;
+                    data_object["message"] = data_object["message_string"]
+                    doFlash(data_object)
+                }
+                else {
+                    data_object["message"] = data_object["message_string"]
                     doFlash(data_object)
                 }
             }
