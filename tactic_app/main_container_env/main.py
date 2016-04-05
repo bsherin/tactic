@@ -280,7 +280,7 @@ class mainWindow(gevent.Greenlet):
 
     def generate_callback(self, return_data):
         if "jcallback_id" in return_data:
-            self.send_request_to_host("handle_callback", return_data)
+            self.send_request_to_host("handle_client_callback", return_data)
         return
 
     def distribute_event(self, event_name, data_dict=None, tile_id=None):

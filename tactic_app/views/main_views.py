@@ -272,11 +272,11 @@ def get_tile_types():
     for (category, the_dict) in tile_classes.items():
         tile_types[category] = the_dict.keys()
 
-    if current_user.username in user_tiles:
-        for (category, the_dict) in user_tiles[current_user.username].items():
-            if category not in tile_types:
-                tile_types[category] = []
-            tile_types[category] += the_dict.keys()
+    # if current_user.username in user_tiles:
+    #     for (category, the_dict) in user_tiles[current_user.username].items():
+    #         if category not in tile_types:
+    #             tile_types[category] = []
+    #         tile_types[category] += the_dict.keys()
     result = {"tile_types": tile_types}
     return jsonify(result)
 
@@ -307,8 +307,8 @@ def emit_table_message():
     return jsonify({"success": True})
 
 
-@app.route("/handle_callback", methods=['GET', 'POST'])
-def emit_table_message():
+@app.route("/handle_client_callback", methods=['GET', 'POST'])
+def handle_client_callback():
     print "entering handle_callback on the host"
     data = copy.copy(request.json)
     socketio.emit("handle-callback", data, namespace='/main', room=data["main_id"])

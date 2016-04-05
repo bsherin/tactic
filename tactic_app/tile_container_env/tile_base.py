@@ -7,15 +7,15 @@ import gevent
 import numpy as np
 from bson.binary import Binary
 from flask import url_for
-from flask_login import current_user
+# from flask_login import current_user
 from gevent.queue import Queue
-from tactic_app import socketio
-from tactic_app.shared_dicts import mainwindow_instances, distribute_event, get_tile_class
-from tactic_app.shared_dicts import tokenizer_dict, weight_functions
-from tactic_app.tile_container_env.cluster_metrics import cluster_metric_dict
-from tactic_app.tile_container_env.matplotlib_utilities import MplFigure, Mpld3Figure
-from tactic_app.tile_container_env.matplotlib_utilities import color_palette_names
-from tactic_app.users import load_user
+# from tactic_app import socketio
+# from tactic_app.shared_dicts import mainwindow_instances, distribute_event, get_tile_class
+# from tactic_app.shared_dicts import tokenizer_dict, weight_functions
+# from tactic_app.tile_container_env.cluster_metrics import cluster_metric_dict
+# from tactic_app.tile_container_env.matplotlib_utilities import MplFigure, Mpld3Figure
+# from tactic_app.tile_container_env.matplotlib_utilities import color_palette_names
+# from tactic_app.users import load_user
 from types import NoneType
 
 jsonizable_types = {
@@ -30,6 +30,7 @@ jsonizable_types = {
     "dict": dict,
     "NoneType": NoneType
 }
+
 
 class TileBase(gevent.Greenlet):
     category = "basic"

@@ -19,7 +19,7 @@ function initializeConsole() {
     saved_console_size = 150;
     var pan = $("#console-panel");
     $("#console").fadeOut();
-    var hheight = $("#console-heading").outerHeight();
+    var hheight = $('#console-heading').outerHeight();
     pan.outerHeight(hheight);
     pan.find(".triangle-bottom").hide();
     pan.find(".triangle-right").show();
@@ -75,7 +75,7 @@ function addBlankConsoleText() {
 
 function openLogWindow() {
     var result_dict = {
-        "console_html": $("#console").html(),
+        "console_html": $('#console').html()
     };
     $.ajax({
             url: $SCRIPT_ROOT + "/send_log_html/" + String(main_id),
@@ -99,7 +99,7 @@ function start_post_load() {
     //spinner = new Spinner({scale: 1.0}).spin();
     //$("#loading-message").html(spinner.el);
     dirty = false;
-    $("#outer-container").css({"margin-left": String(MARGIN_SIZE) + "px"});
+    $('#outer-container').css({"margin-left": String(MARGIN_SIZE) + "px"});
     $("#outer-container").css({"margin-right": String(MARGIN_SIZE) + "px"});
     $("#outer-container").css({"margin-top": "0px", "margin-bottom": "0px"});
     if (use_ssl) {

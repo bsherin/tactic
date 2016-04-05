@@ -1,13 +1,22 @@
 import sys
-
 import nltk
+#import sklearn
+
+
+tile_name = ""
+tile_class = None
 
 # I want nltk to only search here so that I can see
 # what behavior on remote will be like
 nltk.data.path = ['./nltk_data/']
-#import sklearn
 
-from users import User
+
+def user_tile(tclass):
+    global tile_name, tile_class
+    tile_name = tclass.__name__
+    tile_class = tclass
+    return tclass
+
 
 def user_tile(tclass):
     from tactic_app.shared_dicts import user_tiles

@@ -55,5 +55,6 @@ def send_request_to_container(container_id, msg_type, data_dict, wait_for_succes
     else:
         return requests.post("http://{0}:5000/{1}".format(maddress, msg_type), json=data_dict)
 
+
 def connect_to_network(container, network):
     return cli.connect_container_to_network(container, network)

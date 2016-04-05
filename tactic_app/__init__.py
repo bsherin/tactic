@@ -12,7 +12,6 @@ from flask.ext.login import LoginManager
 from flask.ext.bootstrap import Bootstrap
 from flask.ext.socketio import SocketIO
 from flask_wtf.csrf import CsrfProtect
-import ssl
 
 csrf = CsrfProtect()
 mongo_uri = None
@@ -21,6 +20,8 @@ mongo_uri = None
 def print_message():
     print "got to the message"
 
+
+# noinspection PyUnresolvedReferences
 try:
     print "getting client"
     use_ssl = os.environ.get("USE_SSL")
@@ -34,6 +35,7 @@ try:
         # connect=True parameter of MongoClient seems
         # to be useless here
         client.server_info()
+        # noinspection PyUnresolvedReferences
         db = client.tacticdb
         mongo_uri = "localhost"
 
@@ -43,6 +45,7 @@ try:
         # connect=True parameter of MongoClient seems
         # to be useless here
         client.server_info()
+        # noinspection PyUnresolvedReferences
         db = client.heroku_4ncbq1zd
         mongo_uri = os.environ.get("MONGOLAB_URI")
 
