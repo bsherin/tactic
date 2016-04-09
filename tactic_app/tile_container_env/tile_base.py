@@ -337,8 +337,8 @@ class TileBase(gevent.Greenlet):
             return result.json()
 
     def distribute_event(self, event_name, data_dict):
-        return requests.post.get("http://{0}:5000/{1}/{2}".format(self.main_address, "distribute_events", event_name),
-                                 json=data_dict)
+        return requests.post("http://{0}:5000/{1}/{2}".format(self.main_address, "distribute_events", event_name),
+                             json=data_dict)
 
     def get_main_property(self, prop_name):
         data_dict = {"property": prop_name}
@@ -510,8 +510,8 @@ class TileBase(gevent.Greenlet):
         return
 
     def handle_tile_word_click(self, clicked_word, doc_name, active_row_index):
-        distribute_event("DehighlightTable", self.main_id, {})
-        distribute_event("SearchTable", self.main_id, {"text_to_find": clicked_word})
+        self.distribute_event("DehighlightTable", {})
+        self.distribute_event("SearchTable", {"text_to_find": clicked_word})
         return
 
     def render_content(self):
@@ -626,12 +626,11 @@ class TileBase(gevent.Greenlet):
         self.perform_main_function("display_matching_rows", [filter_function, document_name])
         return
 
-    # todo distribute_event to deal with
     def clear_table_highlighting(self):
-        distribute_event("DehighlightTable", self.main_id, {})
+        self.distribute_event(self.main_id, {})
 
     def highlight_matching_text(self, txt):
-        distribute_event("SearchTable", self.main_id, {"text_to_find": txt})
+        self.distribute_event("SearchTable", {"text_to_find": txt})
 
     def display_all_rows(self):
         self.perform_main_function("unfilter_all_rows", [])
@@ -673,13 +672,12 @@ class TileBase(gevent.Greenlet):
     def color_cell_text(self, doc_name, row_index, column_name, tokenized_text, color_dict):
         self.tile_yield()
         actual_row = self.get_main_property("doc_dict")[doc_name].get_actual_row(row_index)
-        distribute_event("ColorTextInCell", self.main_id, {"doc_name": doc_name,
-                                                           "row_index": actual_row,
-                                                           "column_header": column_name,
-                                                           "token_text": tokenized_text,
-                                                           "color_dict": color_dict})
+        self.distribute_event("ColorTextInCell", {"doc_name": doc_name,
+                                                  "row_index": actual_row,
+                                                  "column_header": column_name,
+                                                  "token_text": tokenized_text,
+                                                  "color_dict": color_dict})
 
-    # todo current_user
     def get_user_list(self, the_list):
         result = self.send_request_to_host("get_list", {"user_id": self.user_id, "list_name": the_list})
         return result["the_list"]

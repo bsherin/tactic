@@ -57,7 +57,7 @@ def get_list():
     user_id = request.json["user_id"]
     list_name = request.json["list_name"]
     the_user = load_user(user_id)
-    return jsonify({"the_list": the_user.get_list[list_name]})
+    return jsonify({"the_list": the_user.get_list(list_name)})
 
 
 @app.route('/set_visible_doc/<main_id>/<doc_name>', methods=['get', 'post'])

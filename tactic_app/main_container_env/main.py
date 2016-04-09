@@ -422,6 +422,7 @@ class mainWindow(gevent.Greenlet):
         data["func"] = func
         self._my_q.put({"event_name": event_name, "data": data})
 
+    # todo have to remove tile containers
     def _delete_tile_instance(self, tile_id):
         del self.tile_instances[tile_id]
         self.tile_sort_list.remove(tile_id)
