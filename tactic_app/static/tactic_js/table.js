@@ -167,10 +167,10 @@ var tableObject = {
             if (self.getting_new_chunk) {
                 return false
             }
-            if ($("#table-area tbody tr:last").isOnScreen()){
+            if ($('#table-area tbody tr:last').isOnScreen()){
                 if (!self.is_last_chunk ) {
                     self.getting_new_chunk = true;
-                    var nrows = $("#table-area tbody tr").length;
+                    var nrows = $('#table-area tbody tr').length;
                     $.getJSON($SCRIPT_ROOT + "/grab_next_chunk/" + String(main_id) + "/" + String(self.current_doc_name), function (data) {
                         var top_edge_pos = $("#table-area tbody tr:last").position().top;
                         tableObject.refill_table(data);
@@ -206,7 +206,7 @@ var tableObject = {
         this.current_doc_name = data_object["doc_name"];
         this.is_first_chunk = data_object["is_first_chunk"];
         this.is_last_chunk = data_object["is_last_chunk"];
-        this.background_colors = data_object["background_colors"]
+        this.background_colors = data_object["background_colors"];
         var header_list = this.current_spec.header_list;
         var all_rows = $("#table-area tbody tr");
         all_rows.removeClass("hidden-row");
@@ -654,7 +654,7 @@ var tableObject = {
 
     consoleLog: function(data_object) {
         var force_open = data_object.force_open;
-        $("#console").append(data_object.message_string)
+        $("#console").append(data_object.message_string);
         if (force_open && !console_visible) {
             expandConsole()
         }

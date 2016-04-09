@@ -268,7 +268,7 @@ function handleCallback (data_dict) {
     func(data_dict);
 }
 
-function containerPostWithCallback(url, data_dict, callback){
+function postWithCallback(url, data_dict, callback){
     var unique_id = guid();
     callbacks[unique_id] = callback;
     data_dict["jcallback_id"] = unique_id;
@@ -291,7 +291,7 @@ function saveProjectAs() {
                 "tablespec_dict": tablespec_dict,
                 "console_html": $("#console").html()
             };
-            containerPostWithCallback("/save_new_project", result_dict, save_as_success);
+            postWithCallback("/save_new_project", result_dict, save_as_success);
             function save_as_success(data_object) {
                 if (data_object["success"]) {
                     menus["Project"].enable_menu_item("save");
@@ -383,13 +383,8 @@ function tile_command(menu_id) {
         var tile_type = menu_id;
         data_dict["main_id"] = main_id;
         data_dict["tile_name"] = tile_name;
-        $.ajax({
-            url: $SCRIPT_ROOT + "/create_tile_request/" + String(tile_type),
-            contentType : 'application/json',
-            type : 'POST',
-            data: JSON.stringify(data_dict),
-            dataType: 'json',
-            success: function (data) {
+        data_dict["tile_type"] = tile_type;
+        postWithCallback('/create_tile_request', data_dict, function (data) {
                 if (data.success) {
                     var new_tile_object = new TileObject(data.tile_id, data.html, true);
 
@@ -397,7 +392,6 @@ function tile_command(menu_id) {
                     new_tile_object.spin_and_refresh();
                     dirty = true;
                 }
-            }
         })
     }
 }

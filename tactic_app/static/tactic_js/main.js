@@ -99,7 +99,7 @@ function start_post_load() {
     //spinner = new Spinner({scale: 1.0}).spin();
     //$("#loading-message").html(spinner.el);
     dirty = false;
-    $('#outer-container').css({"margin-left": String(MARGIN_SIZE) + "px"});
+    $("#outer-container").css({"margin-left": String(MARGIN_SIZE) + "px"});
     $("#outer-container").css({"margin-right": String(MARGIN_SIZE) + "px"});
     $("#outer-container").css({"margin-top": "0px", "margin-bottom": "0px"});
     if (use_ssl) {
@@ -135,6 +135,7 @@ function continue_loading() {
         }
 
     });
+     // todo I skipped loading of projects
     if (_project_name != "") {
         $.getJSON($SCRIPT_ROOT + "/grab_project_data/" + String(main_id) + "/" + String(doc_names[0]), function(data) {
                 $("#loading-message").css("display", "none");

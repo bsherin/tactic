@@ -30,20 +30,32 @@ def set_visible_doc():
     return jsonify({"success": True})
 
 
+@app.route('/get_property', methods=['get', 'post'])
+def get_property():
+    data_dict = request.json
+    prop_name = data_dict["property"]
+    val = getattr(mwindow, prop_name)
+    return jsonify({"val": val})
+
+
+@app.route('/get_func', methods=['get', 'post'])
+def get_func():
+    data_dict = request.json
+    func_name = data_dict["func"]
+    args = data_dict["args"]
+    val = getattr(mwindow, func_name)(*args)
+    return jsonify({"val": val})
+
+
 @app.route("/print_to_console", methods=['get', 'post'])
 def print_to_console():
     def do_print_to_console(data):
         mwindow.print_to_console(data["print_string"])
         mwindow.generate_callback(data)
     data = request.json
-    mwindow.post_with_callback(do_print_to_console, data)
+    mwindow.post_with_function(do_print_to_console, data)
     return jsonify({"success": True})
 
-
-# this generate_callback is generated in response to
-# a request from the javascript client.
-# if there's a jcallback_id then that indicates that the client
-# wants a callback
 
 @app.route('/save_new_project', methods=['POST'])
 def save_new_project():
@@ -156,7 +168,9 @@ def initialize_mainwindow():
     data_dict = request.json
 
     mwindow = mainWindow(app, data_dict["collection_name"], data_dict["main_container_id"],
-                         data_dict["host_address"], data_dict["loaded_user_modules"], data_dict["mongo_uri"])
+                         data_dict["user_id"],
+                         data_dict["host_address"], data_dict["main_address"],
+                         data_dict["loaded_user_modules"], data_dict["mongo_uri"])
     app.logger.debug("starting mainwindow")
     mwindow.start()
     # mwindow.post_with_callback(mwindow.login_to_host)
@@ -175,16 +189,26 @@ def distribute_events_stub(event_name):
         tile_id = request.json["tile_id"]
     else:
         tile_id = None
-    success = mwindow.distribute_event(event_name,  data_dict, tile_id)
+    success = mwindow.distribute_event(event_name, data_dict, tile_id)
     return jsonify({"success": success})
 
 
 @app.route('/create_tile_instance', methods=["POST"])
 def create_tile_instance():
-    data_dict = request.json
-    mwindow.create_tile_instance_in_mainwindow(data_dict["tile_container_address"], data_dict["main_container_id"],
-                                               data_dict["host_address"],
-                                               data_dict["tile_container_address"])
+    app.logger.debug("Entering create_tile_instances")
+
+    def do_create_tile_instance(data_dict):
+
+        result_dict = mwindow.create_tile_instance_in_mainwindow(data_dict)
+        data_dict["host_address"] = mwindow.host_address
+        data_dict["user_id"] = mwindow.user_id
+
+        mwindow.generate_callback(result_dict)
+        return
+    ddict = request.json
+    mwindow.post_with_function(do_create_tile_instance, ddict)
+    app.logger.debug("leaving create_tile_instance")
+    return jsonify({"success": True})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=True)

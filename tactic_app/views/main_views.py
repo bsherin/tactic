@@ -11,10 +11,11 @@ from flask import request, jsonify, render_template, send_file, url_for
 from flask_login import current_user, login_required
 from flask_socketio import join_room
 from tactic_app import app, db, fs, socketio
-from tactic_app.shared_dicts import mainwindow_instances, get_tile_class
+from tactic_app.shared_dicts import mainwindow_instances, get_tile_code
 from tactic_app.shared_dicts import tile_classes, user_tiles, loaded_user_modules
 from user_manage_views import project_manager, collection_manager
-from tactic_app.docker_functions import send_request_to_container
+from tactic_app.docker_functions import send_request_to_container, create_container, get_address, callbacks
+from tactic_app.users import load_user
 
 
 # The main window should join a room associated with the user
@@ -37,11 +38,26 @@ def on_join(data):
 @login_required
 def save_new_project():
     data_dict = request.json
-    data_dict["users_loaded_modules"] = list(loaded_user_modules[current_user.username])
+    data_dict["users_loaded_modules"] = loaded_user_modules[current_user.username]
     data_dict["project_collection_name"] = current_user.project_collection_name
     result = send_request_to_container(data_dict["main_id"], "save_new_project", data_dict)
     project_manager.update_selector_list()
     return jsonify(result.json())
+
+
+@app.route('/get_list_names', methods=["get", "post"])
+def get_list_names():
+    user_id = request.json["user_id"]
+    the_user = load_user(user_id)
+    return jsonify({"list_names": the_user.list_names})
+
+
+@app.route('/get_list', methods=["get", "post"])
+def get_list():
+    user_id = request.json["user_id"]
+    list_name = request.json["list_name"]
+    the_user = load_user(user_id)
+    return jsonify({"the_list": the_user.get_list[list_name]})
 
 
 @app.route('/set_visible_doc/<main_id>/<doc_name>', methods=['get', 'post'])
@@ -95,7 +111,7 @@ def update_project():
         tspec_dict = data_dict["tablespec_dict"]
         mainwindow_instances[data_dict['main_id']].hidden_columns_list = data_dict["hidden_columns_list"]
         mainwindow_instances[data_dict['main_id']].console_html = data_dict["console_html"]
-        mainwindow_instances[data_dict['main_id']].loaded_modules = list(loaded_user_modules[current_user.username])
+        mainwindow_instances[data_dict['main_id']].loaded_modules = loaded_user_modules[current_user.username]
         for (dname, spec) in tspec_dict.items():
             mainwindow_instances[data_dict['main_id']].doc_dict[dname].table_spec = spec
         project_dict = mainwindow_instances[data_dict['main_id']].compile_save_dict()
@@ -286,9 +302,9 @@ def get_tile_types():
 def distribute_events_stub(event_name):
     data_dict = request.json
     main_id = request.json["main_id"]
-    mwindow_address = mainwindow_instances[main_id]["address"]
-    response = requests.post("http://{0}:5000/{1}".format(mwindow_address, event_name), json=data_dict)
-    return jsonify({"respose": response})
+    mwindow_address = mainwindow_instances[main_id]
+    response = requests.post("http://{0}:5000/distribute_events/{1}".format(mwindow_address, event_name), json=data_dict)
+    return jsonify({"respose": response.json()})
 
 
 @app.route("/request_collection", methods=['GET', 'POST'])
@@ -307,11 +323,30 @@ def emit_table_message():
     return jsonify({"success": True})
 
 
-@app.route("/handle_client_callback", methods=['GET', 'POST'])
-def handle_client_callback():
+@app.route("/emit_tile_message", methods=['GET', 'POST'])
+def emit_tile_message():
+    print "entering emit_table_message on the host"
+    data = copy.copy(request.json)
+    print "message is " + str(data)
+    socketio.emit("tile-message", data, namespace='/main', room=data["main_id"])
+    return jsonify({"success": True})
+
+
+@app.route("/socketio_emit/<msg>", methods=['GET', 'POST'])
+def socketio_emit(msg):
+    data = copy.copy(request.json)
+    socketio.emit(msg, data, namespace='/main', room=data["main_id"])
+
+
+@app.route("/handle_callback", methods=['GET', 'POST'])
+def handle_callback():
     print "entering handle_callback on the host"
     data = copy.copy(request.json)
-    socketio.emit("handle-callback", data, namespace='/main', room=data["main_id"])
+    if "host_callback_id" in data:
+        data = callbacks[data["host_callback_id"]](data)
+        del callbacks[data["host_callback_id"]]
+    if "jcallback_id" in data:
+        socketio.emit("handle-callback", data, namespace='/main', room=data["main_id"])
     return jsonify({"success": True})
 
 
@@ -338,20 +373,37 @@ def data_source(main_id, tile_id, data_name):
 
 
 # noinspection PyUnresolvedReferences
-@app.route('/create_tile_request/<tile_type>', methods=['GET', 'POST'])
+@app.route('/create_tile_request', methods=['GET', 'POST'])
 @login_required
-def create_tile_request(tile_type):
-    main_id = request.json["main_id"]
+def create_tile_request():
+    def create_tile_callback(ldata_dict):
+        tile_id = ldata_dict["tile_id"]
+        form_html = ldata_dict["form_html"]
+        tname = data_dict["tile_name"]
+        the_html = render_template("tile.html", tile_id=tile_id,
+                                   tile_name=tname,
+                                   form_text=form_html)
+        ddict = copy.copy(ldata_dict)
+        ddict["success"] = True
+        ddict["html"] = the_html
+        ddict["tile_id"] = tile_id
+        return ddict
+    data_dict = request.json
+    main_id = data_dict["main_id"]
+    tile_type = data_dict["tile_type"]
     # noinspection PyBroadException
     try:
-        tile_name = request.json["tile_name"]
-        new_tile = mainwindow_instances[main_id].create_tile_instance_in_mainwindow(tile_type, tile_name)
-        tile_id = new_tile.tile_id
-        form_html = new_tile.create_form_html()
-        result = render_template("tile.html", tile_id=tile_id,
-                                 tile_name=new_tile.tile_name,
-                                 form_text=form_html)
-        return jsonify({"success": True, "html": result, "tile_id": tile_id})
+        tile_container_id = create_container("tactic_tile_image", network_mode="bridge")["Id"]
+        module_code = get_tile_code(tile_type)
+        send_request_to_container(tile_container_id, "load_source", {"tile_code": module_code})
+        tile_container_address = get_address(tile_container_id, "bridge")
+
+        data_dict["tile_id"] = tile_container_id
+        data_dict["tile_container_address"] = tile_container_address
+        send_request_to_container(main_id, "create_tile_instance",
+                                  data_dict, callback=create_tile_callback)
+        return jsonify({"success": True})
+
     except:
         error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         mainwindow_instances[main_id].handle_exception("Error creating tile " + error_string)

@@ -189,7 +189,7 @@ class docInfo:
 # noinspection PyPep8Naming
 class mainWindow(gevent.Greenlet):
     save_attrs = ["short_collection_name", "collection_name", "current_tile_id", "tile_sort_list", "left_fraction",
-                  "is_shrunk", "doc_dict", "tile_instances", "project_name", "loaded_modules",
+                  "is_shrunk", "doc_dict", "tile_instances", "project_name", "loaded_modules", "main_address", "user_id",
                   "hidden_columns_list", "main_id", "console_html"]
     update_events = ["CellChange", "CreateColumn", "SearchTable", "SaveTableSpec", "MainClose", "DisplayCreateErrors",
                      "DehighlightTable", "SetCellContent", "RemoveTile", "ColorTextInCell",
@@ -197,12 +197,14 @@ class mainWindow(gevent.Greenlet):
                      "UpdateTableShrinkState"]
 
     # noinspection PyUnresolvedReferences
-    def __init__(self, app, collection_name, main_container_id, host_address, loaded_user_modules, mongo_uri, doc_dict=None):
+    def __init__(self, app, collection_name, main_container_id, user_id, host_address, main_address,
+                 loaded_user_modules, mongo_uri, doc_dict=None):
         self._my_q = Queue()
         gevent.Greenlet.__init__(self)
         self._sleepperiod = .0001
         self.main_id = main_container_id
         self.host_address = host_address
+        self.main_address = main_address
         self.app = app
 
         # These are the main attributes that define a project state
@@ -223,7 +225,8 @@ class mainWindow(gevent.Greenlet):
         self._pipe_dict = {}
         self.selected_text = ""
         self.recreate_errors = []
-        self.loaded_user_modules = set(loaded_user_modules)
+        self.loaded_user_modules = loaded_user_modules
+        self.user_id = user_id
         try:
             client = pymongo.MongoClient(mongo_uri)
             client.server_info()
@@ -235,6 +238,7 @@ class mainWindow(gevent.Greenlet):
         self.doc_dict = self._build_doc_dict()
 
     def send_request_to_host(self, msg_type, data_dict=None, wait_for_success=True, timeout=3, wait_time=.1):
+        self.debug_log("Entering send_request_to_host with msg: " + msg_type)
         if data_dict is None:
             data_dict = {}
         data_dict["main_id"] = self.main_id
@@ -254,20 +258,48 @@ class mainWindow(gevent.Greenlet):
         data = {"username": username, "password": password, "remember_me": False}
         self.send_request_to_host("attempt_login", data)
 
+    def debug_log(self, msg):
+        with self.app.test_request_context():
+            self.app.logger.debug(msg)
+
+    def send_request_to_container(self, taddress, msg_type, data_dict, wait_for_success=True, timeout=3,
+                                  wait_time=.1):
+        self.debug_log("Entering send request {0} to {1}".format(msg_type, taddress))
+        if wait_for_success:
+            for attempt in range(int(1.0 * timeout / wait_time)):
+                try:
+                    self.debug_log("Trying request {0} to {1}".format(msg_type, taddress))
+                    return requests.post("http://{0}:5000/{1}".format(taddress, msg_type), json=data_dict)
+                except:
+                    error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+                    self.debug_log("Got error on question: " + error_string)
+                    time.sleep(wait_time)
+                    continue
+            self.debug_log("Request {0} to {1} timed out".format(msg_type, taddress))
+        else:
+            return requests.post("http://{0}:5000/{1}".format(taddress, msg_type), json=data_dict)
+
     def ask_tile(self, tile_id, request_name, data_dict=None):
-        if data_dict is None:
-            data_dict = {}
-        taddress = self.tile_instances[tile_id]
-        result = requests.post("http://{0}:5000/{1}".format(taddress, request_name), json=data_dict)
+        try:
+            self.debug_log("In mwindow ask_tile with request: " + request_name)
+            if data_dict is None:
+                data_dict = {}
+            taddress = self.tile_instances[tile_id]
+            data_dict["main_id"] = self.main_id
+            self.debug_log("in ask_tile with tile address: " + taddress)
+            result = self.send_request_to_container(taddress, request_name, data_dict)
+            self.debug_log("result of ask_tile is " + result.text)
+        except:
+            result = self.handle_exception("Error in mwindow.ask_tile", True)
         return result
 
     def post_tile_event(self, tile_id, event_name, data_dict=None):
+        self.debug_log("entering post_tile_event with event_name: " + event_name)
         if data_dict is None:
             data_dict = {}
-        taddress = self.tile_instances[tile_id]
         ddict = copy.copy(data_dict)
         ddict["event_name"] = event_name
-        requests.post("http://{0}:5000/{1}".format(taddress, "post_event"), json=data_dict)
+        self.ask_tile(tile_id, "post_event", ddict)
 
     def emit_table_message(self, message, data=None):
         self.app.logger.debug("entering emit table message. host is: " + str(self.host_address))
@@ -279,11 +311,12 @@ class mainWindow(gevent.Greenlet):
         return result
 
     def generate_callback(self, return_data):
-        if "jcallback_id" in return_data:
-            self.send_request_to_host("handle_client_callback", return_data)
+        if "jcallback_id" in return_data or "host_callback_id" in return_data:
+            self.send_request_to_host("handle_callback", return_data)
         return
 
     def distribute_event(self, event_name, data_dict=None, tile_id=None):
+        self.debug_log("Entering distribute event with event_name: " + event_name)
         if data_dict is None:
             data_dict = {}
         try:
@@ -316,7 +349,7 @@ class mainWindow(gevent.Greenlet):
 
     @staticmethod
     def recreate_from_save(app, save_dict):
-        new_instance = mainWindow(app, save_dict["data_collection_name"], save_dict["main_container_id"], save_dict["host_addres"])
+        new_instance = mainWindow(app, save_dict["data_collection_name"], save_dict["main_container_id"], save_dict["host_address"])
         error_messages = []
         for (attr, attr_val) in save_dict.items():
             try:
@@ -397,23 +430,29 @@ class mainWindow(gevent.Greenlet):
             self.distribute_event("RebuildTileForms")
         return
 
-    def create_tile_instance_in_mainwindow(self, tile_container_address, tile_container_id, tile_name=None):
-        # new_id = "tile_id_" + str(self.current_tile_id)
-        # The user version of a tile should take precedence if both exist
-        # new_tile = get_tile_class(current_user.username, tile_type)(self._main_id, new_id, tile_name)
+    def create_tile_instance_in_mainwindow(self, data_dict):
+        tile_container_id = data_dict["tile_id"]
+        tile_container_address = data_dict["tile_container_address"]
         self.tile_instances[tile_container_id] = tile_container_address
+        tile_name = data_dict["tile_name"]
+        data_dict["host_address"] = self.host_address
+        data_dict["user_id"] = self.user_id
+        data_dict["main_address"] = self.main_address
 
-        # todo tile_request get_tile_expeort
-        exports = self.ask_tile(tile_container_id, "get_tile_exports")
-        if len(exports) > 0:
-            if tile_container_id not in self._pipe_dict:
-                self._pipe_dict[tile_container_id] = {}
-            for export in tile_container_id.exports:
-                self._pipe_dict[tile_container_id][tile_name + "_" + export] = export
-            self.distribute_event("RebuildTileForms")
-        self.tile_sort_list.append(tile_container_id)
-        self.current_tile_id += 1
-        return
+        # todo this instantiate_result has the form_html
+        instantiate_result = self.ask_tile(data_dict["tile_id"], "instantiate_tile_class", data_dict).json()
+        result_dict = self.ask_tile(tile_container_id, "get_tile_exports").json()
+        if result_dict["success"]:
+            exports = result_dict["exports"]
+            if len(exports) > 0:
+                if tile_container_id not in self._pipe_dict:
+                    self._pipe_dict[tile_container_id] = {}
+                for export in exports:
+                    self._pipe_dict[tile_container_id][tile_name + "_" + export] = export
+                self.distribute_event("RebuildTileForms")
+            self.tile_sort_list.append(tile_container_id)
+            self.current_tile_id += 1
+        return instantiate_result
 
     def handle_exception(self, unique_message=None, print_to_console=True):
         error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
@@ -423,8 +462,6 @@ class mainWindow(gevent.Greenlet):
             self.print_to_console(error_string, force_open=True)
         return error_string
 
-    # todo xxx here is where I am. this template wasn't found
-    # Note that this will be a trial of emit_table_message
     def print_to_console(self, message_string, force_open=False):
         with self.app.test_request_context():
             pmessage = render_template("log_item.html", log_item=message_string)
@@ -524,12 +561,15 @@ class mainWindow(gevent.Greenlet):
 
     def _handle_event(self, event_name, data=None):
         # noinspection PyBroadException
+        self.debug_log("Entering _handle event with event_name " + event_name)
         try:
             if event_name == "CellChange":
                 self._set_row_column_data(data["doc_name"], data["id"], data["column_header"], data["new_content"])
                 self._change_list.append(data["id"])
             elif event_name == "FuncEvent":
                 func = data["func"]
+                self.debug_log("func is " + func.__name__)
+                del data["func"]
                 func(data)
             elif event_name == "BuildDocDict":
                 self.doc_dict = self._build_doc_dict(self.collection_name)
@@ -610,6 +650,11 @@ class mainWindow(gevent.Greenlet):
                         "column_header": column_header,
                         "color": color}
                 self.emit_table_message("setCellBackground", data)
+
+    @property
+    def current_header_list(self):
+        dinfo = self.doc_dict[self.visible_doc_name]
+        return dinfo.header_list
 
     def highlight_table_text(self, txt):
         row_index = 0

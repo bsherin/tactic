@@ -6,9 +6,7 @@ from users import User
 mainwindow_instances = {}
 tile_classes = {}
 user_tiles = {}
-tokenizer_dict = {}
 loaded_user_modules = {}
-weight_functions = {}
 
 
 # # todo distirubte event also in mainWindow now.
@@ -48,9 +46,15 @@ def get_all_default_tiles():
                 tile_classes[category][res_dict["tile_name"]] = module_code
 
 
-def get_tile_class(tile_type):
-    pass
-
+def get_tile_code(tile_type):
+    # todo have to deal with user loaded tiles
+    # if username in user_tiles:
+    #     for (category, the_dict) in user_tiles[username].items():
+    #         if tile_type in the_dict:
+    #             return the_dict[tile_type]
+    for (category, the_dict) in tile_classes.items():
+        if tile_type in the_dict:
+            return the_dict[tile_type]
 
 def create_initial_metadata():
     mdata = {"datetime": datetime.datetime.today(),

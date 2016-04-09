@@ -13,6 +13,7 @@ from flask_socketio import join_room
 from tactic_app import app, db, fs, socketio, use_ssl, mongo_uri
 from tactic_app.file_handling import read_csv_file_to_dict, read_tsv_file_to_dict, read_txt_file_to_dict, load_a_list
 from tactic_app.shared_dicts import user_tiles, loaded_user_modules, create_initial_metadata, mainwindow_instances
+from tactic_app.shared_dicts import test_tile_container_id, tile_classes
 from tactic_app.user_tile_env import create_user_tiles
 from tactic_app.users import User
 from tactic_app.docker_functions import send_request_to_container
@@ -327,7 +328,9 @@ class CollectionManager(ResourceManager):
 
         data_dict = {"collection_name": cname,
                      "main_container_id": main_id,
+                     "user_id": current_user.get_id(),
                      "host_address": host_ip,
+                     "main_address": caddress,
                      "loaded_user_modules": loaded_user_modules,
                      "mongo_uri": mongo_uri}
 
@@ -483,6 +486,7 @@ class ProjectManager(ResourceManager):
         app.add_url_rule('/delete_project/<project_name>', "delete_project", login_required(self.delete_project),
                          methods=['post'])
 
+    # todo this is the project loading code in user_manage_views
     def main_project(self, project_name):
         user_obj = current_user
         save_dict = db[user_obj.project_collection_name].find_one({"project_name": project_name})
@@ -496,11 +500,11 @@ class ProjectManager(ResourceManager):
         else:
             project_dict = save_dict
         if user_obj.username not in loaded_user_modules:
-            loaded_user_modules[user_obj.username] = set([])
+            loaded_user_modules[user_obj.username] = []
         for module in project_dict["loaded_modules"]:
             if module not in loaded_user_modules[current_user.username]:
                 tile_manager.load_tile_module(module)
-        # todo this must be fixed
+
         main_id = "123" # create_new_mainwindow_from_project(project_dict)
         doc_names = mainwindow_instances[main_id].doc_names
         short_collection_name = mainwindow_instances[main_id].short_collection_name
@@ -508,7 +512,7 @@ class ProjectManager(ResourceManager):
 
         # We want to do this in case there were some additional modules loaded
         # the loaded_modules must be a list to be easily saved to pymongo
-        mainwindow_instances[main_id].loaded_modules = list(loaded_user_modules[user_obj.username])
+        mainwindow_instances[main_id].loaded_modules = loaded_user_modules[user_obj.username]
         return render_template("main.html",
                                collection_name=project_dict["collection_name"],
                                project_name=project_name,
@@ -611,12 +615,21 @@ class TileManager(ResourceManager):
         try:
             user_obj = current_user
             tile_module = user_obj.get_tile_module(tile_module_name)
-            result = create_user_tiles(tile_module)
-            if not result == "success":
-                return jsonify({"success": False, "message": result, "alert_type": "alert-warning"})
+
+            result = send_request_to_container(test_tile_container_id, "load_source", {"tile_code": tile_module})
+            res_dict = result.json()
+
+            if not res_dict["success"]:
+                return jsonify({"success": False, "message": res_dict["message_string"], "alert_type": "alert-warning"})
+            category = res_dict["category"]
+            if category not in tile_classes:
+                tile_classes[category] = {}
+            tile_classes[category][res_dict["tile_name"]] = tile_module
+
             if user_obj.username not in loaded_user_modules:
-                loaded_user_modules[current_user.username] = set([])
-            loaded_user_modules[current_user.username].add(tile_module_name)
+                loaded_user_modules[current_user.username] = []
+            if tile_module_name not in loaded_user_modules[current_user.username]:
+                loaded_user_modules[current_user.username].append(tile_module_name)
             socketio.emit('update-loaded-tile-list', {"html": self.render_loaded_tile_list()},
                           namespace='/user_manage', room=current_user.get_id())
             socketio.emit('update-menus', {}, namespace='/main', room=current_user.get_id())
@@ -627,7 +640,7 @@ class TileManager(ResourceManager):
 
     def unload_all_tiles(self):
         try:
-            loaded_user_modules[current_user.username] = set([])
+            loaded_user_modules[current_user.username] = []
             user_tiles[current_user.username] = {}
             socketio.emit('update-loaded-tile-list', {"html": self.render_loaded_tile_list()},
                           namespace='/user_manage', room=current_user.get_id())

@@ -2,6 +2,9 @@
 import docker
 import time
 import requests
+import uuid
+
+callbacks = {}
 
 cli = docker.Client(base_url='unix://var/run/docker.sock')
 
@@ -43,8 +46,17 @@ def destroy_container(cname):
         return -1
 
 
-def send_request_to_container(container_id, msg_type, data_dict, wait_for_success=True, timeout=3, wait_time=.1):
+def create_callback(func):
+    unique_id = str(uuid.uuid4())
+    callbacks[unique_id] = func
+    return unique_id
+
+
+def send_request_to_container(container_id, msg_type, data_dict, callback=None, wait_for_success=True, timeout=3, wait_time=.1):
     maddress = get_address(container_id, "bridge")
+    if callback is not None:
+        callback_id = create_callback(callback)
+        data_dict["host_callback_id"] = callback_id
     if wait_for_success:
         for attempt in range(int(1.0 * timeout / wait_time)):
             try:
