@@ -119,6 +119,7 @@
     var user_id = "{{current_user.get_id()}}";
     var doc_names = {{ doc_names | safe }};
     var use_ssl = "{{use_ssl}}"=="True";
+    var new_tile_info = "{{new_tile_info}}";
     window.onload = start_post_load;
     window.onresize = function () {
         tableObject.resize_table_area()
@@ -129,7 +130,7 @@
         }
     };
     window.onunload = function (e) {
-        broadcast_event_to_server("MainClose", {})
+        removeMainwindow()
     }
     </script>
 {% endblock %}

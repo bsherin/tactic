@@ -135,7 +135,6 @@ function continue_loading() {
         }
 
     });
-     // todo I skipped loading of projects
     if (_project_name != "") {
         $.getJSON($SCRIPT_ROOT + "/grab_project_data/" + String(main_id) + "/" + String(doc_names[0]), function(data) {
                 $("#loading-message").css("display", "none");
@@ -159,7 +158,7 @@ function continue_loading() {
                     var tile_ids = data.tile_ids;
                     create_tile_from_save(0);
                     menus["Project"].enable_menu_item("save");
-                    broadcast_event_to_server("DisplayCreateErrors", {})
+                    broadcast_event_to_server("DisplayCreateErrors", {});
 
                     function create_tile_from_save(index) {
                         if (index == tile_ids.length) {
@@ -330,6 +329,10 @@ function broadcast_event_to_server(event_name, data_dict, callback) {
             success: callback
         });
     }
+}
+
+function removeMainwindow() {
+    $.getJSON($SCRIPT_ROOT + "/remove_mainwindow/" + String(main_id))
 }
 
 spinner_html = '<span class="loader-small"></span>';

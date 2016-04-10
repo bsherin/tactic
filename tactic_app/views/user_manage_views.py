@@ -334,7 +334,6 @@ class CollectionManager(ResourceManager):
                      "loaded_user_modules": loaded_user_modules,
                      "mongo_uri": mongo_uri}
 
-        # requests.post("http://{0}:5000/{1}".format(caddress, "initialize_mainwindow"), json=data_dict)
         send_request_to_container(main_id, "initialize_mainwindow", data_dict)
         short_collection_name = re.sub("^.*?\.data_collection\.", "", collection_name)
 
@@ -354,7 +353,8 @@ class CollectionManager(ResourceManager):
                                doc_names=doc_names,
                                use_ssl=str(use_ssl),
                                console_html="",
-                               short_collection_name=short_collection_name)
+                               short_collection_name=short_collection_name,
+                               new_tile_info="")
 
     def grab_metadata(self, res_name):
         if self.is_repository:
@@ -486,42 +486,64 @@ class ProjectManager(ResourceManager):
         app.add_url_rule('/delete_project/<project_name>', "delete_project", login_required(self.delete_project),
                          methods=['post'])
 
-    # todo this is the project loading code in user_manage_views
     def main_project(self, project_name):
         user_obj = current_user
-        save_dict = db[user_obj.project_collection_name].find_one({"project_name": project_name})
+        main_id = create_container("tactic_main_image", network_mode="bridge")["Id"]
+        caddress = get_address(main_id, "bridge")
+        mainwindow_instances[main_id] = caddress
 
-        # Right now, we are allowing for the possibility of both old-style and new-style project saves
-        # In new style, the meat of the project is saved in gridfs.
-        # In old style it is all stored in the main mongo in the project collection
-        if "file_id" in save_dict:
-            project_dict = cPickle.loads(fs.get(save_dict["file_id"]).read().decode("utf-8", "ignore").encode("ascii"))
-            project_dict["metadata"] = save_dict["metadata"]
-        else:
-            project_dict = save_dict
         if user_obj.username not in loaded_user_modules:
             loaded_user_modules[user_obj.username] = []
-        for module in project_dict["loaded_modules"]:
+
+        data_dict = {"project_name": cname,
+                     "project_collection_name": current_user.project_collection_name,
+                     "main_container_id": main_id,
+                     "user_id": current_user.get_id(),
+                     "host_address": host_ip,
+                     "main_address": caddress,
+                     "loaded_user_modules": loaded_user_modules,
+                     "mongo_uri": mongo_uri}
+
+        recreate_info = send_request_to_container(main_id, "initialize_project_mainwindow", data_dict).json()
+
+        tile_info_dict = recreate_info["tile_info_dict"]
+        loaded_modules = recreate_info["loaded_modules"]
+        doc_names = recreate_info["doc_names"]
+        collection_name = recreate_info["collection_name"]
+        short_collection_name = recreate_info["short_collection_name"]
+        console_html = recreate_info["console_html"]
+
+        for module in loaded_modules:
             if module not in loaded_user_modules[current_user.username]:
                 tile_manager.load_tile_module(module)
 
-        main_id = "123" # create_new_mainwindow_from_project(project_dict)
-        doc_names = mainwindow_instances[main_id].doc_names
-        short_collection_name = mainwindow_instances[main_id].short_collection_name
-        mainwindow_instances[main_id].mdata = project_dict["metadata"]
+        # Now create tile shells with the correct source loaded in.
+        new_tile_info = {}
+        for old_tile_id, tile_type in tile_info_dict.items():
+            tile_container_id = create_container("tactic_tile_image", network_mode="bridge")["Id"]
+            module_code = get_tile_code(tile_type)
+            send_request_to_container(tile_container_id, "load_source", {"tile_code": module_code})
+            tile_container_address = get_address(tile_container_id, "bridge")
+            new_tile_info[old_tile_id] = {"new_tile_id": tile_container_id,
+                                          "tile_container_address": tile_container_address}
+
+        # todo investigate metadata handling in project
+        # mainwindow_instances[main_id].mdata = project_dict["metadata"]
 
         # We want to do this in case there were some additional modules loaded
         # the loaded_modules must be a list to be easily saved to pymongo
-        mainwindow_instances[main_id].loaded_modules = loaded_user_modules[user_obj.username]
+        # todo investigate loaded_modules handling here
+        # mainwindow_instances[main_id].loaded_modules = loaded_user_modules[user_obj.username]
         return render_template("main.html",
-                               collection_name=project_dict["collection_name"],
+                               collection_name=collection_name,
                                project_name=project_name,
                                window_title=project_name,
                                main_id=main_id,
                                doc_names=doc_names,
                                use_ssl=str(use_ssl),
-                               console_html= mainwindow_instances[main_id].console_html,
-                               short_collection_name=short_collection_name)
+                               console_html=console_html,
+                               short_collection_name=short_collection_name,
+                               new_tile_info=new_tile_info)
 
     def delete_project(self, project_name):
         user_obj = current_user

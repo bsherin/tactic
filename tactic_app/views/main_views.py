@@ -14,7 +14,8 @@ from tactic_app import app, db, fs, socketio
 from tactic_app.shared_dicts import mainwindow_instances, get_tile_code
 from tactic_app.shared_dicts import tile_classes, user_tiles, loaded_user_modules
 from user_manage_views import project_manager, collection_manager
-from tactic_app.docker_functions import send_request_to_container, create_container, get_address, callbacks
+from tactic_app.docker_functions import send_request_to_container, create_container
+from tactic_app.docker_functions import get_address, callbacks, destroy_container
 from tactic_app.users import load_user
 
 
@@ -50,6 +51,13 @@ def get_list_names():
     user_id = request.json["user_id"]
     the_user = load_user(user_id)
     return jsonify({"list_names": the_user.list_names})
+
+
+@app.route('/delete_container', methods=["get", "post"])
+def delete_container():
+    container_id = request.json["container_id"]
+    destroy_container(container_id)
+    return jsonify({"success": True})
 
 
 @app.route('/get_list', methods=["get", "post"])
@@ -248,17 +256,9 @@ def grab_previous_chunk(main_id, doc_name):
 @app.route('/grab_project_data/<main_id>/<doc_name>', methods=['get'])
 @login_required
 def grab_project_data(main_id, doc_name):
-    mw = mainwindow_instances[main_id]
-    return jsonify({"doc_name": doc_name,
-                    "is_shrunk": mainwindow_instances[main_id].is_shrunk,
-                    "tile_ids": mw.tile_sort_list,
-                    "left_fraction": mw.left_fraction,
-                    "data_rows": mw.doc_dict[doc_name].displayed_data_rows,
-                    "background_colors": mainwindow_instances[main_id].doc_dict[doc_name].displayed_background_colors,
-                    "hidden_columns_list": mw.hidden_columns_list,
-                    "is_last_chunk": mainwindow_instances[main_id].doc_dict[doc_name].is_last_chunk,
-                    "is_first_chunk": mainwindow_instances[main_id].doc_dict[doc_name].is_first_chunk,
-                    "tablespec_dict": mw.tablespec_dict()})
+    data_dict = {"doc_name": doc_name}
+    result = send_request_to_container(main_id, "grab_project_data", data_dict)
+    return jsonify(result.json())
 
 
 @app.route('/get_menu_template', methods=['get'])
@@ -273,12 +273,17 @@ def get_table_templates():
     return send_file("templates/table_templates.html")
 
 
-@app.route('/remove_mainwindow/<main_id>', methods=['post'])
+@app.route('/remove_mainwindow/<main_id>', methods=['get', 'post'])
 @login_required
 def remove_mainwindow(main_id):
-    # todo work on remove_mainwindow
-    # delete_mainwindow(main_id)
-    return
+    data_dict = {"main_id": main_id}
+    response = send_request_to_container(main_id, "get_tile_ids", data_dict)
+    tile_ids = response.json()["tile_ids"]
+    for tile_id in tile_ids:
+        destroy_container(tile_id)
+    destroy_container(main_id)
+    del mainwindow_instances[main_id]
+    return jsonify({"success": True})
 
 
 @app.route('/get_tile_types', methods=['GET'])
@@ -288,11 +293,11 @@ def get_tile_types():
     for (category, the_dict) in tile_classes.items():
         tile_types[category] = the_dict.keys()
 
-    # if current_user.username in user_tiles:
-    #     for (category, the_dict) in user_tiles[current_user.username].items():
-    #         if category not in tile_types:
-    #             tile_types[category] = []
-    #         tile_types[category] += the_dict.keys()
+    if current_user.username in user_tiles:
+        for (category, the_dict) in user_tiles[current_user.username].items():
+            if category not in tile_types:
+                tile_types[category] = []
+            tile_types[category] += the_dict.keys()
     result = {"tile_types": tile_types}
     return jsonify(result)
 
@@ -302,9 +307,8 @@ def get_tile_types():
 def distribute_events_stub(event_name):
     data_dict = request.json
     main_id = request.json["main_id"]
-    mwindow_address = mainwindow_instances[main_id]
-    response = requests.post("http://{0}:5000/distribute_events/{1}".format(mwindow_address, event_name), json=data_dict)
-    return jsonify({"respose": response.json()})
+    response = send_request_to_container(main_id, "distribute_events/" + event_name, data_dict)
+    return jsonify({"response": response.json()})
 
 
 @app.route("/request_collection", methods=['GET', 'POST'])
@@ -336,6 +340,7 @@ def emit_tile_message():
 def socketio_emit(msg):
     data = copy.copy(request.json)
     socketio.emit(msg, data, namespace='/main', room=data["main_id"])
+    return jsonify({"success": True})
 
 
 @app.route("/handle_callback", methods=['GET', 'POST'])
@@ -360,6 +365,7 @@ def figure_source(main_id, tile_id, figure_name):
     return send_file(img_file, mimetype='image/png')
 
 
+# todo deal with figure_source and data_source
 @app.route('/data_source/<main_id>/<tile_id>/<data_name>', methods=['GET'])
 @login_required
 def data_source(main_id, tile_id, data_name):
@@ -406,10 +412,33 @@ def create_tile_request():
 
     except:
         error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-        mainwindow_instances[main_id].handle_exception("Error creating tile " + error_string)
+        # mainwindow_instances[main_id].handle_exception("Error creating tile " + error_string)
         return jsonify({"success": False})
 
 
+@app.route('/create_tile_from_save_dict', methods=['GET', 'POST'])
+def create_tile_from_save_dict():
+    save_dict = request.json
+    main_id = save_dict["main_id"]
+    tile_type = save_dict["tile_type"]
+    # noinspection PyBroadException
+    try:
+        tile_container_id = create_container("tactic_tile_image", network_mode="bridge")["Id"]
+        module_code = get_tile_code(tile_type)
+        send_request_to_container(tile_container_id, "load_source", {"tile_code": module_code})
+        tile_container_address = get_address(tile_container_id, "bridge")
+
+        data_dict["tile_id"] = tile_container_id
+        data_dict["tile_container_address"] = tile_container_address
+        send_request_to_container(tile_id, "recreate_from_save", save_dict)
+        return jsonify({"success": True, "tile_id": tile_id, "tile_container_address": tile_container_address})
+
+    except:
+        error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+        # mainwindow_instances[main_id].handle_exception("Error creating tile " + error_string)
+        return jsonify({"success": False, "error_string": error_string})
+
+# todo work on reload_tiles
 @app.route('/reload_tile/<tile_id>', methods=['GET', 'POST'])
 @login_required
 def reload_tile(tile_id):
@@ -427,7 +456,7 @@ def reload_tile(tile_id):
             if hasattr(old_instance, attr):
                 saved_options[attr] = getattr(old_instance, attr)
         tile_type = old_instance.tile_type
-        tile_name = old_instance.tile_name
+        tile_name = old_instance.tile_tname
         new_cls = get_tile_class(current_user.username, tile_type)
         new_instance = new_cls(main_id, tile_id, tile_name)
         for attr, val in saved_options.items():
@@ -448,42 +477,7 @@ def reload_tile(tile_id):
 @login_required
 def create_tile_from_save_request(tile_id):
     main_id = request.json["main_id"]
-    # noinspection PyBroadException
-    try:
-        tile_instance = mainwindow_instances[main_id].tile_instances[tile_id]
-        tile_instance.figure_url = url_for("figure_source", main_id=main_id, tile_id=tile_id, figure_name="X")[:-1]
-        form_html = tile_instance.create_form_html()
-        if tile_instance.is_shrunk:
-            dsr_string = ""
-            dbr_string = "display: none"
-            bda_string = "display: none"
-            main_height = tile_instance.header_height
-        else:
-            dsr_string = "display: none"
-            dbr_string = ""
-            bda_string = ""
-            main_height = tile_instance.full_tile_height
-        result = render_template("saved_tile.html", tile_id=tile_id,
-                                 tile_name=tile_instance.tile_name,
-                                 form_text=form_html,
-                                 current_html=tile_instance.current_html,
-                                 whole_width=tile_instance.full_tile_width,
-                                 whole_height=main_height,
-                                 front_height=tile_instance.front_height,
-                                 front_width=tile_instance.front_width,
-                                 back_height=tile_instance.back_height,
-                                 back_width=tile_instance.back_width,
-                                 tda_height=tile_instance.tda_height,
-                                 tda_width=tile_instance.tda_width,
-                                 is_strunk=tile_instance.is_shrunk,
-                                 triangle_right_display_string=dsr_string,
-                                 triangle_bottom_display_string=dbr_string,
-                                 front_back_display_string=bda_string
+    tile_save_result = send_request_to_container(main_id, "get_saved_tile_info/" + tile_id, {})
+    tile_save_result["tile_id"] = tile_id # a little silly that I need to do that but requies less changes this way
+    return jsonify(tile_save_result)
 
-                                 )
-        return jsonify({"html": result, "tile_id": tile_id, "is_shrunk": tile_instance.is_shrunk,
-                        "saved_size": tile_instance.full_tile_height})
-    except:
-        error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-        mainwindow_instances[main_id].handle_exception("Error creating tile from save " + error_string)
-        return jsonify({"success": False})

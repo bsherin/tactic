@@ -11,6 +11,8 @@ import pymongo
 import gridfs
 import time
 import uuid
+import cPickle
+
 
 
 INITIAL_LEFT_FRACTION = .69
@@ -19,32 +21,6 @@ STEP_SIZE = 100
 
 username = "bsherinrem"
 password = "mang"
-
-# noinspection PyProtectedMember
-# def create_new_mainwindow(user_id, collection_name):
-#     mw = mainWindow(user_id, collection_name)
-#     mainwindow_instances[mw._main_id] = mw
-#     mw.start()
-#     return mw._main_id
-
-# todo create_new_mainwindow_from_project
-# noinspection PyProtectedMember
-# def create_new_mainwindow_from_project(project_dict):
-#     mw = mainWindow.recreate_from_save(project_dict)
-#     mw.mdata = project_dict["metadata"]
-#     mainwindow_instances[mw.main_id] = mw
-#     mw.start()
-#     return mw.main_id
-
-
-# def delete_mainwindow(main_id):
-#     for tile_id, tile in mainwindow_instances[main_id].tile_instances.values():
-#         tile.kill()
-#         del mainwindow_instances[main_id].tile_instances[key]
-#     # I think this is happening from within the greenlet that I'm closing.
-#     # So I have to do the join at the very end
-#     mainwindow_instances[main_id].kill()
-#     del mainwindow_instances[main_id]
 
 
 # noinspection PyPep8Naming
@@ -140,7 +116,7 @@ class docInfo:
         if self.is_last_chunk:
             return
         old_start = self.start_of_current_chunk
-        self.start_of_current_chunk = self.start_of_current_chunk + STEP_SIZE
+        self.start_of_current_chunk += STEP_SIZE
         self.is_first_chunk = False
         if (self.start_of_current_chunk + CHUNK_SIZE) >= len(self.current_data_rows):
             self.start_of_current_chunk = len(self.current_data_rows) - CHUNK_SIZE
@@ -189,53 +165,60 @@ class docInfo:
 # noinspection PyPep8Naming
 class mainWindow(gevent.Greenlet):
     save_attrs = ["short_collection_name", "collection_name", "current_tile_id", "tile_sort_list", "left_fraction",
-                  "is_shrunk", "doc_dict", "tile_instances", "project_name", "loaded_modules", "main_address", "user_id",
-                  "hidden_columns_list", "main_id", "console_html"]
+                  "is_shrunk", "doc_dict", "project_name", "loaded_modules", "user_id",
+                  "hidden_columns_list", "console_html"]
     update_events = ["CellChange", "CreateColumn", "SearchTable", "SaveTableSpec", "MainClose", "DisplayCreateErrors",
                      "DehighlightTable", "SetCellContent", "RemoveTile", "ColorTextInCell",
                      "FilterTable", "UnfilterTable", "TextSelect", "UpdateSortList", "UpdateLeftFraction",
                      "UpdateTableShrinkState"]
 
     # noinspection PyUnresolvedReferences
-    def __init__(self, app, collection_name, main_container_id, user_id, host_address, main_address,
-                 loaded_user_modules, mongo_uri, doc_dict=None):
+    def __init__(self, app, data_dict):
         self._my_q = Queue()
         gevent.Greenlet.__init__(self)
         self._sleepperiod = .0001
-        self.main_id = main_container_id
-        self.host_address = host_address
-        self.main_address = main_address
-        self.app = app
-
-        # These are the main attributes that define a project state
-        self.tile_instances = {}
-        self.tile_sort_list = []
-        self.left_fraction = INITIAL_LEFT_FRACTION
-        self.is_shrunk = False
-        self.collection_name = collection_name
-        self.short_collection_name = re.sub("^.*?\.data_collection\.", "", collection_name)
-        self.project_name = None
-        self.console_html = None
-        self.callbacks = {}
-
-        # These are working attributes that will change whenever the project is instantiated.
-        self.current_tile_id = 0
-        self._change_list = []
-        self.visible_doc_name = None
-        self._pipe_dict = {}
-        self.selected_text = ""
-        self.recreate_errors = []
-        self.loaded_user_modules = loaded_user_modules
-        self.user_id = user_id
         try:
-            client = pymongo.MongoClient(mongo_uri)
+            client = pymongo.MongoClient(data_dict["mongo_uri"])
             client.server_info()
             # noinspection PyUnresolvedReferences
             self.db = client.heroku_4ncbq1zd
             self.fs = gridfs.GridFS(self.db)
         except pymongo.errors.PyMongoError as err:
             sys.exit()
-        self.doc_dict = self._build_doc_dict()
+
+        self.main_id = data_dict["main_container_id"]
+        self.host_address = data_dict["host_address"]
+        self.main_address = data_dict["main_address"]
+        self.app = app
+
+        # These are the main attributes that define a project state
+
+        self.callbacks = {}
+
+        # These are working attributes that will change whenever the project is instantiated.
+
+        self._change_list = []
+        self.visible_doc_name = None
+        self._pipe_dict = {}
+        self.selected_text = ""
+        self.recreate_errors = []
+        self.save_dict = None
+        self.tile_save_results = None
+
+        if "project_name" in data_dict:
+            self.recreate_from_save(data_dict["project_name"])
+        else:
+            self.current_tile_id = 0
+            self.tile_instances = {}
+            self.tile_sort_list = []
+            self.left_fraction = INITIAL_LEFT_FRACTION
+            self.is_shrunk = False
+            self.collection_name = data_dict["collection_name"]
+            self.short_collection_name = re.sub("^.*?\.data_collection\.", "", self.collection_name)
+            self.project_name = None
+            self.console_html = None
+            self.user_id = data_dict["user_id"]
+            self.doc_dict = self._build_doc_dict()
 
     def send_request_to_host(self, msg_type, data_dict=None, wait_for_success=True, timeout=3, wait_time=.1):
         self.debug_log("Entering send_request_to_host with msg: " + msg_type)
@@ -245,18 +228,24 @@ class mainWindow(gevent.Greenlet):
         if wait_for_success:
             for attempt in range(int(1.0 * timeout / wait_time)):
                 try:
-                    return requests.get("http://{0}:5000/{1}".format(self.host_address, msg_type), json=data_dict)
+                    self.debug_log("Trying request {0} to {1}".format(msg_type, self.host_address))
+                    res = requests.get("http://{0}:5000/{1}".format(self.host_address, msg_type), json=data_dict)
+                    self.debug_log("container returned: " + res.text)
+                    return res
                 except:
+                    error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+                    self.debug_log("Got error on reqiest: " + error_string)
                     time.sleep(wait_time)
                     continue
+            self.debug_log("Request {0} to {1} timed out".format(msg_type, self.host_address))
         else:
             return requests.get("http://{0}:5000/{1}".format(self.host_address, msg_type), json=data_dict)
 
-    def login_to_host(self, data_dict):
-        # data_dict is irrelevant here
-        self.app.logger.debug("entering login to host")
-        data = {"username": username, "password": password, "remember_me": False}
-        self.send_request_to_host("attempt_login", data)
+    # def login_to_host(self, data_dict):
+    #     # data_dict is irrelevant here
+    #     self.app.logger.debug("entering login to host")
+    #     data = {"username": username, "password": password, "remember_me": False}
+    #     self.send_request_to_host("attempt_login", data)
 
     def debug_log(self, msg):
         with self.app.test_request_context():
@@ -269,10 +258,12 @@ class mainWindow(gevent.Greenlet):
             for attempt in range(int(1.0 * timeout / wait_time)):
                 try:
                     self.debug_log("Trying request {0} to {1}".format(msg_type, taddress))
-                    return requests.post("http://{0}:5000/{1}".format(taddress, msg_type), json=data_dict)
+                    res = requests.post("http://{0}:5000/{1}".format(taddress, msg_type), json=data_dict)
+                    self.debug_log("container returned: " + res.text)
+                    return res
                 except:
                     error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-                    self.debug_log("Got error on question: " + error_string)
+                    self.debug_log("Got error on reqiest: " + error_string)
                     time.sleep(wait_time)
                     continue
             self.debug_log("Request {0} to {1} timed out".format(msg_type, taddress))
@@ -345,48 +336,71 @@ class mainWindow(gevent.Greenlet):
                 result[attr] = res
             else:
                 result[attr] = attr_val
+        tile_instances = {}
+        for tile_id in self.tile_instances.keys():
+            tile_save_dict = self.ask_tile(tile_id, "get_save_dict").json()
+            tile_instances[tile_id] = tile_save_dict  # tile_id isn't meaningful going forward.
+        result["tile_instances"] = tile_instances
         return result
 
-    @staticmethod
-    def recreate_from_save(app, save_dict):
-        new_instance = mainWindow(app, save_dict["data_collection_name"], save_dict["main_container_id"], save_dict["host_address"])
+    def recreate_from_save(self, project_collection_name, project_name):
+        save_dict = self.db[project_collection_name].find_one({"project_name": project_name})
+        project_dict = cPickle.loads(fs.get(save_dict["file_id"]).read().decode("utf-8", "ignore").encode("ascii"))
+        # todo metadatahandling issue here?
+        project_dict["metadata"] = save_dict["metadata"]
         error_messages = []
         for (attr, attr_val) in save_dict.items():
-            try:
-                if type(attr_val) == dict and ("my_class_for_recreate" in attr_val):
-                    cls = getattr(sys.modules[__name__], attr_val["my_class_for_recreate"])
-                    setattr(new_instance, attr, cls.recreate_from_save(attr_val))
-                elif (type(attr_val) == dict) and (len(attr_val) > 0) and \
-                        ("my_class_for_recreate" in attr_val.values()[0]):
-                    cls = getattr(sys.modules[__name__], attr_val.values()[0]["my_class_for_recreate"])
-                    res = {}
-                    for (key, val) in attr_val.items():
-                        tinstance = cls.recreate_from_save(val)
-                        if tinstance is not None:
-                            res[key] = tinstance
-                        else:
-                            error_messages.append("error creating tile {}".format(key))
-                    setattr(new_instance, attr, res)
-                else:
-                    setattr(new_instance, attr, attr_val)
-            except TypeError:
-                setattr(new_instance, attr, attr_val)
-        for tile in new_instance.tile_sort_list:
-            if tile not in new_instance.tile_instances:
-                new_instance.tile_sort_list.remove(tile)
+            if attr is not "tile_instances":
+                try:
+                    if type(attr_val) == dict and ("my_class_for_recreate" in attr_val):
+                        cls = getattr(sys.modules[__name__], attr_val["my_class_for_recreate"])
+                        setattr(self, attr, cls.recreate_from_save(attr_val))
+
+                    else:
+                        setattr(self, attr, attr_val)
+                except TypeError:
+                    setattr(self, attr, attr_val)
+
+        tile_info_dict = {}
+        for old_tile_id, tile_save_dict in save_dict["tile_instances"]:
+            tile_info_dict[old_tile_id] = tile_save_dict["tile_type"]
+        self.save_dict = save_dict
+        self.tile_save_results = recreate_the_tiles(tile_info_dict)
+        return tile_info_dict, project_dict["loaded_modules"]
+
+    def recreate_the_tiles(self, new_tile_info):
+        self.tile_instances = {}
+        tile_results = {}
+        for old_tile_id, tile_save_dict in self.save_dict["tile_instances"].items():
+            new_tile_id = new_tile_info[old_tile_id]["new_tile_id"]
+            new_tile_address = new_tile_info[old_tile_id]["tile_container_address"]
+            self.tile_instances[new_tile_id] = new_tile_address
+            self.tile_sort_list[self.tile_sort_list.index(old_tile_id)] = new_tile_id
+            tile_save_dict = self.save_dict["tile_instances"]["old_tile_id"]
+            tile_save_dict["tile_id"] = new_tile_id
+            tile_save_dict["host_address"] = self.host_address
+            tile_save_dict["main_address"] = self.main_address
+            tile_result = self.ask_tile(new_tile_id, "recreate_from_save", tile_save_dict)
+            tile_results[new_tile_id] = tile_result
+
+        for tile in self.tile_sort_list:
+            if tile not in self.tile_instances:
+                self.tile_sort_list.remove(tile)
 
         # There's some extra work I have to do once all of the tiles are built.
         # Each tile needs to know the main_id it's associated with.
         # Also I have to build the pipe machinery.
-        for tile in new_instance.tile_instances.values():
-            if len(tile.exports) > 0:
-                if tile.tile_id not in new_instance._pipe_dict:
-                    new_instance._pipe_dict[tile.tile_id] = {}
-                for export in tile.exports:
-                    new_instance._pipe_dict[tile.tile_id][tile.tile_name + "_" + export] = export
-            tile.start()
-        new_instance.recreate_errors = error_messages
-        return new_instance
+        # todo still have to do this exports stuff
+        for tile_result in tile_results:
+            if len(tile_result["exports"]) > 0:
+                tile_id = tile_result["tile_id"]
+                if tile_id not in self._pipe_dict:
+                    self._pipe_dict[tile_id] = {}
+                for export in tile_result["exports"]:
+                    self._pipe_dict[tile_id][tile_result["tile_name"] + "_" + export] = export
+
+        # todo capture errors his this method
+        return tile_results
 
     @property
     def doc_names(self):
@@ -422,13 +436,13 @@ class mainWindow(gevent.Greenlet):
         data["func"] = func
         self._my_q.put({"event_name": event_name, "data": data})
 
-    # todo have to remove tile containers
     def _delete_tile_instance(self, tile_id):
         del self.tile_instances[tile_id]
         self.tile_sort_list.remove(tile_id)
         if tile_id in self._pipe_dict:
             del self._pipe_dict[tile_id]
             self.distribute_event("RebuildTileForms")
+        self.send_request_to_host("delete_container", {"container_id": tile_id})
         return
 
     def create_tile_instance_in_mainwindow(self, data_dict):
@@ -440,7 +454,6 @@ class mainWindow(gevent.Greenlet):
         data_dict["user_id"] = self.user_id
         data_dict["main_address"] = self.main_address
 
-        # todo this instantiate_result has the form_html
         instantiate_result = self.ask_tile(data_dict["tile_id"], "instantiate_tile_class", data_dict).json()
         result_dict = self.ask_tile(tile_container_id, "get_tile_exports").json()
         if result_dict["success"]:

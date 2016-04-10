@@ -3,6 +3,7 @@ from main import mainWindow
 from bson.binary import Binary
 import datetime
 import cPickle
+import pymongo
 
 app = Flask(__name__)
 
@@ -111,6 +112,23 @@ def grab_data():
                     "max_table_size": mwindow.doc_dict[doc_name].max_table_size})
 
 
+@app.route("/grab_project_data", methods=["GET", "POST"])
+def grab_project_data():
+    data_dict = request.json
+    doc_name = data_dict["doc_name"]
+    return jsonify({"doc_name": doc_name,
+                    "is_shrunk": mwindow.is_shrunk,
+                    "tile_ids": mwindow.tile_sort_list,
+                    "left_fraction": mwindow.left_fraction,
+                    "data_rows": mwindow.doc_dict[doc_name].displayed_data_rows,
+                    "background_colors":mwindow.doc_dict[doc_name].displayed_background_colors,
+                    "header_list": mwindow.doc_dict[doc_name].header_list,
+                    "is_last_chunk": mwindow.doc_dict[doc_name].is_last_chunk,
+                    "is_first_chunk": mwindow.doc_dict[doc_name].is_first_chunk,
+                    "max_table_size": mwindow.doc_dict[doc_name].max_table_size,
+                    "tablespec_dict": mwindow.tablespec_dict()})
+
+
 @app.route('/grab_chunk_with_row', methods=['get', 'post'])
 def grab_chunk_with_row():
     app.logger.debug("Entering grab chunk with row")
@@ -166,15 +184,31 @@ def initialize_mainwindow():
     app.logger.debug("entering intialize mainwindow")
     global mwindow
     data_dict = request.json
-
-    mwindow = mainWindow(app, data_dict["collection_name"], data_dict["main_container_id"],
-                         data_dict["user_id"],
-                         data_dict["host_address"], data_dict["main_address"],
-                         data_dict["loaded_user_modules"], data_dict["mongo_uri"])
-    app.logger.debug("starting mainwindow")
+    mwindow = mainWindow(app, data_dict)
     mwindow.start()
-    # mwindow.post_with_callback(mwindow.login_to_host)
     return jsonify({"success": True})
+
+
+@app.route('/initialize_project_mainwindow', methods=['POST'])
+def initialize_project_mainwindow():
+    app.logger.debug("entering intialize project mainwindow")
+    global mwindow
+    data_dict = request.json
+    mwindow = mainWindow(app, data_dict)
+    mwindow.start()
+    tile_info_dict, loaded_modules = mwindow.recreate_from_save(data_dict["project_collection_name"], data_dict["project_name"])
+    return jsonify({"success": True,
+                    "tile_info_dict": tile_info_dict,
+                    "loaded_modules": loaded_modules,
+                    "doc_names": mwindow.doc_names,
+                    "collection_name": mwindow.collection_name,
+                    "short_collection_name": mwindow.short_collection_name,
+                    "console_html": mwindow.console_html})
+
+
+@app.route('/get_saved_tile_info/<tile_id>', methods=["get", "post"])
+def get_saved_tile_info(tile_id):
+    return jsonify(mwindow.tile_save_results[tile_id])
 
 
 @app.route('/distribute_events/<event_name>', methods=['get', 'post'])
@@ -191,6 +225,12 @@ def distribute_events_stub(event_name):
         tile_id = None
     success = mwindow.distribute_event(event_name, data_dict, tile_id)
     return jsonify({"success": success})
+
+
+@app.route('/get_tile_ids', methods=['get', 'post'])
+def get_tile_ids():
+    tile_ids = mwindow.tile_instances.keys()
+    return jsonify({"success": True, "tile_ids": tile_ids})
 
 
 @app.route('/create_tile_instance', methods=["POST"])

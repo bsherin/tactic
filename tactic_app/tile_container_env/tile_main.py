@@ -24,6 +24,26 @@ def load_source():
     return jsonify(result)
 
 
+@app.route("/recreate_from_save", methods=["get", "post"])
+def recreate_from_save():
+    app.logger.debug("entering recreate_from_save")
+    global tile_instance
+    from tile_env import tile_class
+    data = copy.copy(request.json)
+    app.logger.debug("creating tile instance")
+    tile_instance = tile_class(data["main_id"], data["tile_id"],
+                               data["tile_name"])
+    app.logger.debug("tile instance is complete")
+    tile_instance.host_address = data["host_address"]
+    tile_instance.main_address = data["main_address"]
+    tile_instance.recreate_from_save(data)
+    tile_instance.app = app
+    tile_instance.start()
+    return jsonify({"tile_html": tile_istance.render_me(),
+                    "is_shrunk": tile_instance.is_shrunk,
+                    "saved_size": tile_instance.full_tile_height})
+
+
 @app.route('/get_tile_exports', methods=["get", "post"])
 def get_tile_exports():
     export_dict = tile_instance.exports
@@ -55,8 +75,10 @@ def instantiate_tile_class():
     tile_instance.main_address = data["main_address"]
     tile_instance.app = app
     tile_instance.start()
+    app.logger.debug("about to create form html")
     form_html = tile_instance.create_form_html()
     data["form_html"] = form_html
+    app.logger.debug("leaving instantiate_tile_class")
     return jsonify(data)
 
 

@@ -324,6 +324,7 @@ class TileBase(gevent.Greenlet):
         if data_dict is None:
             data_dict = {}
         data_dict["main_id"] = self.main_id
+        self.debug_log("sending request to host: " + msg_type)
         if wait_for_success:
             for attempt in range(int(1.0 * timeout / wait_time)):
                 try:
@@ -379,7 +380,6 @@ class TileBase(gevent.Greenlet):
 
     def display_status(self, message):
         self.do_the_refresh(message)
-        self.tile_yield()
         return
 
     def compile_save_dict(self):
@@ -410,39 +410,60 @@ class TileBase(gevent.Greenlet):
 
         return result
 
-    @staticmethod
-    def recreate_from_save(save_dict):
-        tile_type = save_dict["tile_type"]
-        # todo note this requres tile_class to be set earlier
-        tile_cls = tile_class
-        if tile_cls is None:
-            print "Missing Tile type"
-            return None
-        new_instance = tile_cls(save_dict["main_id"], save_dict["tile_id"], save_dict["tile_name"])
+    def recreate_from_save(self, save_dict):
         for(attr, attr_val) in save_dict.items():
             if type(attr_val) == dict and hasattr(attr_val, "recreate_from_save"):
                 cls = getattr(sys.modules[__name__], attr_val["my_class_for_recreate"])
-                setattr(new_instance, attr, cls.recreate_from_save(attr_val))
+                setattr(self, attr, cls.recreate_from_save(attr_val))
             elif((type(attr_val) == dict) and(len(attr_val) > 0) and
                  hasattr(attr_val.values()[0], "recreate_from_save")):
                 cls = getattr(sys.modules[__name__], attr_val.values()[0]["my_class_for_recreate"])
                 res = {}
                 for(key, val) in attr_val.items():
                     res[key] = cls.recreate_from_save(val)
-                setattr(new_instance, attr, res)
+                setattr(self, attr, res)
             else:
                 if isinstance(attr_val, Binary):
                     decoded_val = cPickle.loads(str(attr_val.decode()))
-                    setattr(new_instance, attr, decoded_val)
+                    setattr(self, attr, decoded_val)
                 else:
-                    setattr(new_instance, attr, attr_val)
-        return new_instance
+                    setattr(self, attr, attr_val)
+        return
 
+    def render_me(self):
+        # todo deal with figure_url here
+        # self.figure_url = url_for("figure_source", main_id=main_id, tile_id=tile_id, figure_name="X")[:-1]
+        form_html = self.create_form_html()
+        if self.is_shrunk:
+            dsr_string = ""
+            dbr_string = "display: none"
+            bda_string = "display: none"
+            main_height = self.header_height
+        else:
+            dsr_string = "display: none"
+            dbr_string = ""
+            bda_string = ""
+            main_height = self.full_tile_height
+        result = render_template("saved_tile.html", tile_id=self.tile_id,
+                                 tile_name=self.tile_name,
+                                 form_text=form_html,
+                                 current_html=self.current_html,
+                                 whole_width=self.full_tile_width,
+                                 whole_height=main_height,
+                                 front_height=self.front_height,
+                                 front_width=self.front_width,
+                                 back_height=self.back_height,
+                                 back_width=self.back_width,
+                                 tda_height=self.tda_height,
+                                 tda_width=self.tda_width,
+                                 is_strunk=self.is_shrunk,
+                                 triangle_right_display_string=dsr_string,
+                                 triangle_bottom_display_string=dbr_string,
+                                 front_back_display_string=bda_string
 
-    # @property
-    # def current_user(self):
-    #     user_id = self.get_main_property("user_id")
-    #     return load_user(user_id)
+                                 )
+        return {"html": result, "tile_id": tile_id, "is_shrunk": self.is_shrunk,
+                "saved_size": self.full_tile_height, "exports": self.exports, "tile_name": self.tile_name}
 
     def get_current_pipe_list(self):
         pipe_list = []
@@ -546,40 +567,31 @@ class TileBase(gevent.Greenlet):
     # Basic setting and access
 
     def get_document_names(self):
-        self.tile_yield()
         return self.get_main_property("doc_names")
 
     def get_current_document_name(self):
-        self.tile_yield()
         return self.get_main_property("visible_doc_name")
 
     def get_document_data(self, document_name):
-        self.tile_yield()
         return self.get_main_property("doc_dict")[document_name].data_rows_int_keys
 
     def get_document_data_as_list(self, document_name):
-        self.tile_yield()
         return self.get_main_property("doc_dict")[document_name].all_sorted_data_rows
 
     def get_column_names(self, document_name):
-        self.tile_yield()
         return self.get_main_property("doc_dict")[document_name].header_list
 
     def get_number_rows(self, document_name):
-        self.tile_yield()
         return len(self.get_main_property("doc_dict")[document_name].data_rows.keys())
 
     def get_row(self, document_name, row_number):
-        self.tile_yield()
         return self.get_main_property("doc_dict")[document_name].all_sorted_data_rows[row_number]
 
     def get_cell(self, document_name, row_number, column_name):
-        self.tile_yield()
         return self.get_main_property("doc_dict")[document_name].all_sorted_data_rows[int(row_number)][
             column_name]
 
     def get_column_data(self, column_name, document_name=None):
-        self.tile_yield()
         if document_name is not None:
             result = self.perform_main_function("get_column_data_for_doc", [column_name, document_name])
         else:
@@ -587,42 +599,35 @@ class TileBase(gevent.Greenlet):
         return result
 
     def get_column_data_dict(self, column_name):
-        self.tile_yield()
         result = {}
         for doc_name in self.get_document_names():
             result[doc_name] = self.perform_main_function("get_column_data_for_doc", [column_name, doc_name])
         return result
 
     def set_cell(self, document_name, row_number, column_name, text, cellchange=True):
-        self.tile_yield()
         self.perform_main_function("_set_cell_content", [document_name, row_number, column_name, text, cellchange])
         return
 
     def set_cell_background(self, document_name, row_number, column_name, color):
-        self.tile_yield()
         self.perform_main_function("_set_cell_background", [document_name, row_number, column_name, color])
         return
 
     def set_row(self, document_name, row_number, row_dictionary, cellchange=True):
-        self.tile_yield()
         for c in row_dictionary.keys():
             self.perform_main_function("_set_cell_content",
                                        [document_name, row_number,c, row_dictionary[c], cellchange])
         return
 
     def set_column_data(self, document_name, column_name, data_list, cellchange=False):
-        self.tile_yield()
         for rnum in range(len(data_list)):
             self.set_cell(document_name, rnum, column_name, data_list[rnum], cellchange)
 
     # Filtering and iteration
 
     def get_matching_rows(self, filter_function, document_name=None):
-        self.tile_yield()
         return self.perform_main_function("get_matching_rows", [filter_function, document_name])
 
     def display_matching_rows(self, filter_function, document_name=None):
-        self.tile_yield()
         self.perform_main_function("display_matching_rows", [filter_function, document_name])
         return
 
@@ -637,7 +642,6 @@ class TileBase(gevent.Greenlet):
         return
 
     def apply_to_rows(self, func, document_name=None):
-        self.tile_yield()
         self.perform_main_function("apply_to_rows" [func, document_name])
         return
 
@@ -658,19 +662,15 @@ class TileBase(gevent.Greenlet):
         return self.get_main_property("selected_text")
 
     def display_message(self, message_string, force_open=False):
-        self.tile_yield()
         self.perform_main_function("print_to_console", [message_string, force_open])
 
     def dm(self, message_string, force_open=False):
-        self.tile_yield()
         self.display_message(message_string, force_open)
 
     def log_it(self, message_string, force_open=False):
-        self.tile_yield()
         self.perform_main_function("print_to_console", [message_string, force_open])
 
     def color_cell_text(self, doc_name, row_index, column_name, tokenized_text, color_dict):
-        self.tile_yield()
         actual_row = self.get_main_property("doc_dict")[doc_name].get_actual_row(row_index)
         self.distribute_event("ColorTextInCell", {"doc_name": doc_name,
                                                   "row_index": actual_row,
@@ -683,23 +683,19 @@ class TileBase(gevent.Greenlet):
         return result["the_list"]
 
     def get_tokenizer(self, tokenizer_name):
-        self.tile_yield()
         return tokenizer_dict[tokenizer_name]
 
     def get_cluster_metric(self, metric_name):
-        self.tile_yield()
-        return cluster_metric_dict[metric_name]
+                return cluster_metric_dict[metric_name]
 
     # todo getting pipe values from other tiles
     def get_pipe_value(self, pipe_key):
-        self.tile_yield()
         for(tile_id, tile_entry) in self.get_main_property("_pipe_dict").items():
             if pipe_key in tile_entry:
                 return getattr(mw.tile_instances[tile_id], tile_entry[pipe_key])
         return None
 
     def get_weight_function(self, weight_function_name):
-        self.tile_yield()
         return weight_functions[weight_function_name]
 
 

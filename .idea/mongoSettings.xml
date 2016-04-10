@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="MongoConfiguration">
+    <option name="serverConfigurations">
+      <list>
+        <ServerConfiguration>
+          <option name="authenticationDatabase" value="heroku_4ncbq1zd" />
+          <option name="label" value="tacticdb" />
+          <option name="password" value="mang0mang" />
+          <option name="serverUrls">
+            <list>
+              <option value="tactic.northwestern.edu:27017" />
+            </list>
+          </option>
+          <option name="sslConnection" value="true" />
+          <option name="userDatabase" value="tacticdb" />
+          <option name="username" value="tacticdb" />
+        </ServerConfiguration>
+      </list>
+    </option>
+    <option name="shellPath" value="/usr/bin/mongo" />
+  </component>
+</project>
