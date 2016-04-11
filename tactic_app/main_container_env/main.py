@@ -206,7 +206,7 @@ class mainWindow(gevent.Greenlet):
         self.tile_save_results = None
 
         if "project_name" in data_dict:
-            self.recreate_from_save(data_dict["project_name"])
+            self.recreate_from_save(data_dict["project_collection_name"], data_dict["project_name"])
         else:
             self.current_tile_id = 0
             self.tile_instances = {}
@@ -345,7 +345,7 @@ class mainWindow(gevent.Greenlet):
 
     def recreate_from_save(self, project_collection_name, project_name):
         save_dict = self.db[project_collection_name].find_one({"project_name": project_name})
-        project_dict = cPickle.loads(fs.get(save_dict["file_id"]).read().decode("utf-8", "ignore").encode("ascii"))
+        project_dict = cPickle.loads(self.fs.get(save_dict["file_id"]).read().decode("utf-8", "ignore").encode("ascii"))
         # todo metadatahandling issue here?
         project_dict["metadata"] = save_dict["metadata"]
         error_messages = []
@@ -361,11 +361,14 @@ class mainWindow(gevent.Greenlet):
                 except TypeError:
                     setattr(self, attr, attr_val)
 
+        for attr in self.save_attrs:
+            if attr not in save_dict:
+                setattr(self, attr, "")
+
         tile_info_dict = {}
-        for old_tile_id, tile_save_dict in save_dict["tile_instances"]:
+        for old_tile_id, tile_save_dict in save_dict["tile_instances"].items():
             tile_info_dict[old_tile_id] = tile_save_dict["tile_type"]
         self.save_dict = save_dict
-        self.tile_save_results = recreate_the_tiles(tile_info_dict)
         return tile_info_dict, project_dict["loaded_modules"]
 
     def recreate_the_tiles(self, new_tile_info):
@@ -376,7 +379,7 @@ class mainWindow(gevent.Greenlet):
             new_tile_address = new_tile_info[old_tile_id]["tile_container_address"]
             self.tile_instances[new_tile_id] = new_tile_address
             self.tile_sort_list[self.tile_sort_list.index(old_tile_id)] = new_tile_id
-            tile_save_dict = self.save_dict["tile_instances"]["old_tile_id"]
+            tile_save_dict = self.save_dict["tile_instances"][old_tile_id]
             tile_save_dict["tile_id"] = new_tile_id
             tile_save_dict["host_address"] = self.host_address
             tile_save_dict["main_address"] = self.main_address
@@ -400,7 +403,8 @@ class mainWindow(gevent.Greenlet):
                     self._pipe_dict[tile_id][tile_result["tile_name"] + "_" + export] = export
 
         # todo capture errors his this method
-        return tile_results
+        self.tile_save_results = tile_results
+        return
 
     @property
     def doc_names(self):
@@ -580,6 +584,8 @@ class mainWindow(gevent.Greenlet):
             if event_name == "CellChange":
                 self._set_row_column_data(data["doc_name"], data["id"], data["column_header"], data["new_content"])
                 self._change_list.append(data["id"])
+            elif event_name == "RecreateTiles":
+                self.recreate_the_tiles(data)
             elif event_name == "FuncEvent":
                 func = data["func"]
                 self.debug_log("func is " + func.__name__)

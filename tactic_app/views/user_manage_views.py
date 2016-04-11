@@ -13,7 +13,7 @@ from flask_socketio import join_room
 from tactic_app import app, db, fs, socketio, use_ssl, mongo_uri
 from tactic_app.file_handling import read_csv_file_to_dict, read_tsv_file_to_dict, read_txt_file_to_dict, load_a_list
 from tactic_app.shared_dicts import user_tiles, loaded_user_modules, create_initial_metadata, mainwindow_instances
-from tactic_app.shared_dicts import test_tile_container_id, tile_classes
+from tactic_app.shared_dicts import test_tile_container_id, tile_classes, get_tile_code
 from tactic_app.user_tile_env import create_user_tiles
 from tactic_app.users import User
 from tactic_app.docker_functions import send_request_to_container
@@ -490,12 +490,14 @@ class ProjectManager(ResourceManager):
         user_obj = current_user
         main_id = create_container("tactic_main_image", network_mode="bridge")["Id"]
         caddress = get_address(main_id, "bridge")
+
+        # todo don't need to track these, spoils restlessness
         mainwindow_instances[main_id] = caddress
 
         if user_obj.username not in loaded_user_modules:
             loaded_user_modules[user_obj.username] = []
 
-        data_dict = {"project_name": cname,
+        data_dict = {"project_name": project_name,
                      "project_collection_name": current_user.project_collection_name,
                      "main_container_id": main_id,
                      "user_id": current_user.get_id(),
@@ -526,6 +528,9 @@ class ProjectManager(ResourceManager):
             tile_container_address = get_address(tile_container_id, "bridge")
             new_tile_info[old_tile_id] = {"new_tile_id": tile_container_id,
                                           "tile_container_address": tile_container_address}
+
+        # todo this now returns beefore making all the tiles. might cause not-ready problems
+        send_request_to_container(main_id, "recreate_project_tiles", new_tile_info)
 
         # todo investigate metadata handling in project
         # mainwindow_instances[main_id].mdata = project_dict["metadata"]

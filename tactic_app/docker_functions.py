@@ -60,7 +60,8 @@ def send_request_to_container(container_id, msg_type, data_dict, callback=None, 
     if wait_for_success:
         for attempt in range(int(1.0 * timeout / wait_time)):
             try:
-                return requests.post("http://{0}:5000/{1}".format(maddress, msg_type), json=data_dict)
+                res = requests.post("http://{0}:5000/{1}".format(maddress, msg_type), json=data_dict)
+                return res
             except:
                 time.sleep(wait_time)
                 continue

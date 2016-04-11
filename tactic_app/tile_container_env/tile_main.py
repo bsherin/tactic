@@ -39,7 +39,7 @@ def recreate_from_save():
     tile_instance.recreate_from_save(data)
     tile_instance.app = app
     tile_instance.start()
-    return jsonify({"tile_html": tile_istance.render_me(),
+    return jsonify({"tile_html": tile_instance.render_me(),
                     "is_shrunk": tile_instance.is_shrunk,
                     "saved_size": tile_instance.full_tile_height})
 

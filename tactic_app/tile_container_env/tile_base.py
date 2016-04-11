@@ -8,7 +8,7 @@ import gevent
 from gevent import monkey; monkey.patch_all()
 import numpy as np
 from bson.binary import Binary
-from flask import url_for
+from flask import url_for, render_template
 # from flask_login import current_user
 from gevent.queue import Queue
 
@@ -462,7 +462,7 @@ class TileBase(gevent.Greenlet):
                                  front_back_display_string=bda_string
 
                                  )
-        return {"html": result, "tile_id": tile_id, "is_shrunk": self.is_shrunk,
+        return {"html": result, "tile_id": self.tile_id, "is_shrunk": self.is_shrunk,
                 "saved_size": self.full_tile_height, "exports": self.exports, "tile_name": self.tile_name}
 
     def get_current_pipe_list(self):

@@ -206,6 +206,13 @@ def initialize_project_mainwindow():
                     "console_html": mwindow.console_html})
 
 
+@app.route('/recreate_project_tiles', methods=["get", "post"])
+def recreate_project_tiles():
+    new_tile_info = request.json
+    mwindow.post_event("RecreateTiles", new_tile_info)
+    return jsonify({"success": True})
+
+
 @app.route('/get_saved_tile_info/<tile_id>', methods=["get", "post"])
 def get_saved_tile_info(tile_id):
     return jsonify(mwindow.tile_save_results[tile_id])
