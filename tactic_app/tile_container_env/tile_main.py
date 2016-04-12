@@ -38,6 +38,7 @@ def recreate_from_save():
     app.logger.debug("tile instance is complete")
     tile_instance.host_address = data["host_address"]
     tile_instance.main_address = data["main_address"]
+    tile_instance.base_figure_url = data["base_figure_url"]
     tile_instance.recreate_from_save(data)
     tile_instance.app = app
     tile_instance.start()
@@ -81,6 +82,12 @@ def post_event():
     return jsonify(result_dict)
 
 
+@app.route('/get_image/<figure_name>', methods=["get", "post"])
+def get_image(figure_name):
+    encoded_img = Binary(cPickle.dumps(tile_instance.img_dict[figure_name]))
+    return jsonify({"img": encoded_img})
+
+
 @app.route('/instantiate_tile_class', methods=["get", "post"])
 def instantiate_tile_class():
     app.logger.debug("entering instantiate_tile_class")
@@ -94,6 +101,7 @@ def instantiate_tile_class():
     tile_instance.host_address = data["host_address"]
     tile_instance.user_id = data["user_id"]
     tile_instance.main_address = data["main_address"]
+    tile_instance.base_figure_url = data["base_figure_url"]
     tile_instance.app = app
     tile_instance.start()
     app.logger.debug("about to create form html")

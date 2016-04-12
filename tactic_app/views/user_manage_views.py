@@ -7,7 +7,7 @@ import requests
 import time
 
 import os
-from flask import render_template, request, jsonify, send_file
+from flask import render_template, request, jsonify, send_file, url_for
 from flask_login import login_required, current_user
 from flask_socketio import join_room
 from tactic_app import app, db, fs, socketio, use_ssl, mongo_uri
@@ -332,7 +332,8 @@ class CollectionManager(ResourceManager):
                      "host_address": host_ip,
                      "main_address": caddress,
                      "loaded_user_modules": loaded_user_modules,
-                     "mongo_uri": mongo_uri}
+                     "mongo_uri": mongo_uri,
+                     "base_figure_url": url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1]}
 
         send_request_to_container(main_id, "initialize_mainwindow", data_dict)
         short_collection_name = re.sub("^.*?\.data_collection\.", "", collection_name)
@@ -504,7 +505,8 @@ class ProjectManager(ResourceManager):
                      "host_address": host_ip,
                      "main_address": caddress,
                      "loaded_user_modules": loaded_user_modules,
-                     "mongo_uri": mongo_uri}
+                     "mongo_uri": mongo_uri,
+                     "base_figure_url": url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1]}
 
         recreate_info = send_request_to_container(main_id, "initialize_project_mainwindow", data_dict).json()
 

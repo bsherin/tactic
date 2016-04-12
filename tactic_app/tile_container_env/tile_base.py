@@ -86,10 +86,8 @@ class TileBase(gevent.Greenlet):
         self.current_data_id = 0
         self.current_unique_id_index = 0
         self.is_shrunk = False
-        # todo base_figure_url and base_data_url have to be handled in some manner
-        # self.base_figure_url = url_for("figure_source", main_id=main_id, tile_id=tile_id, figure_name="X")[:-1]
+        # todo base_data_url has to be handled in some manner
         # self.base_data_url = url_for("data_source", main_id=main_id, tile_id=tile_id, data_name="X")[:-1]
-        self.base_figure_url = ""
         self.base_data_url = ""
         self.configured = False
         self.host_address = None

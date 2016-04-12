@@ -189,6 +189,7 @@ class mainWindow(gevent.Greenlet):
         self.main_id = data_dict["main_container_id"]
         self.host_address = data_dict["host_address"]
         self.main_address = data_dict["main_address"]
+        self.base_figure_url = data_dict["base_figure_url"]
         self.app = app
 
         # These are the main attributes that define a project state
@@ -386,6 +387,7 @@ class mainWindow(gevent.Greenlet):
             tile_save_dict["tile_id"] = new_tile_id
             tile_save_dict["host_address"] = self.host_address
             tile_save_dict["main_address"] = self.main_address
+            tile_save_dict["base_figure_url"] = self.base_figure_url.replace("tile_id", new_tile_id)
             tile_result = self.ask_tile(new_tile_id, "recreate_from_save", tile_save_dict).json()
             tile_results[new_tile_id] = tile_result
             self.debug_log("Got tile_result")
@@ -469,6 +471,9 @@ class mainWindow(gevent.Greenlet):
         data_dict["host_address"] = self.host_address
         data_dict["user_id"] = self.user_id
         data_dict["main_address"] = self.main_address
+        self.debug_log("mwindow has base_figure_url = " + self.base_figure_url)
+        data_dict["base_figure_url"] = self.base_figure_url.replace("tile_id", tile_container_id)
+        self.debug_log("base_figure_url sent to tile is " + data_dict["base_figure_url"])
 
         instantiate_result = self.ask_tile(data_dict["tile_id"], "instantiate_tile_class", data_dict).json()
         result_dict = self.ask_tile(tile_container_id, "get_tile_exports").json()

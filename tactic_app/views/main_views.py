@@ -356,10 +356,12 @@ def handle_callback():
     return jsonify({"success": True})
 
 
-@app.route('/figure_source/<main_id>/<tile_id>/<figure_name>', methods=['GET', 'POST'])
+@app.route('/figure_source/<tile_id>/<figure_name>', methods=['GET', 'POST'])
 @login_required
-def figure_source(main_id, tile_id, figure_name):
-    img = mainwindow_instances[main_id].tile_instances[tile_id].img_dict[figure_name]
+def figure_source(tile_id, figure_name):
+
+    encoded_img = send_request_to_container(tile_id, "get_image/" + figure_name, {}).json()["img"]
+    img = cPickle.loads(encoded_img.decode("utf-8", "ignore").encode("ascii"))
     img_file = cStringIO.StringIO()
     img_file.write(img)
     img_file.seek(0)
@@ -416,28 +418,6 @@ def create_tile_request():
         # mainwindow_instances[main_id].handle_exception("Error creating tile " + error_string)
         return jsonify({"success": False})
 
-
-@app.route('/create_tile_from_save_dict', methods=['GET', 'POST'])
-def create_tile_from_save_dict():
-    save_dict = request.json
-    main_id = save_dict["main_id"]
-    tile_type = save_dict["tile_type"]
-    # noinspection PyBroadException
-    try:
-        tile_container_id = create_container("tactic_tile_image", network_mode="bridge")["Id"]
-        module_code = get_tile_code(tile_type)
-        send_request_to_container(tile_container_id, "load_source", {"tile_code": module_code})
-        tile_container_address = get_address(tile_container_id, "bridge")
-
-        data_dict["tile_id"] = tile_container_id
-        data_dict["tile_container_address"] = tile_container_address
-        send_request_to_container(tile_id, "recreate_from_save", save_dict)
-        return jsonify({"success": True, "tile_id": tile_id, "tile_container_address": tile_container_address})
-
-    except:
-        error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-        # mainwindow_instances[main_id].handle_exception("Error creating tile " + error_string)
-        return jsonify({"success": False, "error_string": error_string})
 
 # todo work on reload_tiles
 @app.route('/reload_tile/<tile_id>', methods=['GET', 'POST'])
