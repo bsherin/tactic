@@ -3,6 +3,8 @@ import sys
 import copy
 import tile_env
 from tile_env import exec_tile_code
+import cPickle
+from bson.binary import Binary
 
 app = Flask(__name__)
 
@@ -39,15 +41,28 @@ def recreate_from_save():
     tile_instance.recreate_from_save(data)
     tile_instance.app = app
     tile_instance.start()
-    return jsonify({"tile_html": tile_instance.render_me(),
-                    "is_shrunk": tile_instance.is_shrunk,
-                    "saved_size": tile_instance.full_tile_height})
+    return jsonify({"is_shrunk": tile_instance.is_shrunk,
+                    "saved_size": tile_instance.full_tile_height,
+                    "exports": tile_instance.exports,
+                    "tile_name": tile_instance.tile_name})
+
+
+@app.route("/render_tile", methods=["get", "post"])
+def render_tile():
+    return jsonify({"tile_html": tile_instance.render_me()})
 
 
 @app.route('/get_save_dict', methods=["get", "post"])
 def get_save_dict():
     save_dict = tile_instance.compile_save_dict()
     return jsonify(save_dict)
+
+
+@app.route('/transfer_pipe_value', methods=["get", "post"])
+def transfer_pipe_value():
+    export_name = request.json["export_name"]
+    encoded_val = Binary(cPickle.dumps(getattr(tile_instance, export_name)))
+    return jsonify({"encoded_val": encoded_val})
 
 
 @app.route('/get_tile_exports', methods=["get", "post"])

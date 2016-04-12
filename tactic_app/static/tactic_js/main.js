@@ -185,7 +185,6 @@ function continue_loading() {
                                 console.log("Error creating tile from save: " + textStatus + " " + errorThrown)
                             },
                             success: function (data) {
-                                // todo it dies in the next line
                                 var new_tile_object = new TileObject(data.tile_id, data.tile_html, false);
                                 tile_dict[data.tile_id] = new_tile_object;
                                 new_tile_object.saved_size = data.saved_size;
@@ -198,7 +197,7 @@ function continue_loading() {
                             }
                         })
                     }
-            })
+        })
             })
     }
 else {

@@ -399,19 +399,23 @@ class mainWindow(gevent.Greenlet):
         # There's some extra work I have to do once all of the tiles are built.
         # Each tile needs to know the main_id it's associated with.
         # Also I have to build the pipe machinery.
-        # todo still have to do this exports stuff
         self.debug_log("dealing with pipe stuff")
-        # for tile_result in tile_results:
-        #     if len(tile_result["exports"]) > 0:
-        #         tile_id = tile_result["tile_id"]
-        #         if tile_id not in self._pipe_dict:
-        #             self._pipe_dict[tile_id] = {}
-        #         for export in tile_result["exports"]:
-        #             self._pipe_dict[tile_id][tile_result["tile_name"] + "_" + export] = export
-
+        for tile_id, tile_result in tile_results.items():
+            if len(tile_result["exports"]) > 0:
+                if tile_id not in self._pipe_dict:
+                    self._pipe_dict[tile_id] = {}
+                for export in tile_result["exports"]:
+                    self._pipe_dict[tile_id][tile_result["tile_name"] + "_" + export] = {
+                        "export_name": export,
+                        "tile_address": self.tile_instances[tile_id]}
         self.debug_log("done with pipes")
-        # todo capture errors his this method
+
+        # We have to wait to here to actually render the tiles because
+        # the pipe_dict needs to be complete to build the forms.
+        for tile_id, tile_result in tile_results.items():
+            tile_result["tile_html"] = self.ask_tile(tile_id, "render_tile").json()["tile_html"]
         self.tile_save_results = tile_results
+        # todo capture errors in this method
         return
 
     @property
@@ -474,7 +478,9 @@ class mainWindow(gevent.Greenlet):
                 if tile_container_id not in self._pipe_dict:
                     self._pipe_dict[tile_container_id] = {}
                 for export in exports:
-                    self._pipe_dict[tile_container_id][tile_name + "_" + export] = export
+                    self._pipe_dict[tile_container_id][tile_name + "_" + export] = {
+                        "export_name": export,
+                        "tile_address": tile_container_address}
                 self.distribute_event("RebuildTileForms")
             self.tile_sort_list.append(tile_container_id)
             self.current_tile_id += 1

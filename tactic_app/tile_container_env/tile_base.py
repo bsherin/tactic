@@ -323,6 +323,25 @@ class TileBase(gevent.Greenlet):
         self.refresh_tile_now(new_html)
         return
 
+    def send_request_to_container(self, taddress, msg_type, data_dict, wait_for_success=True, timeout=3,
+                                  wait_time=.1):
+        self.debug_log("Entering send request {0} to {1}".format(msg_type, taddress))
+        if wait_for_success:
+            for attempt in range(int(1.0 * timeout / wait_time)):
+                try:
+                    self.debug_log("Trying request {0} to {1}".format(msg_type, taddress))
+                    res = requests.post("http://{0}:5000/{1}".format(taddress, msg_type), json=data_dict)
+                    # self.debug_log("container returned: " + res.text)
+                    return res
+                except:
+                    error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+                    self.debug_log("Got error on reqiest: " + error_string)
+                    time.sleep(wait_time)
+                    continue
+            self.debug_log("Request {0} to {1} timed out".format(msg_type, taddress))
+        else:
+            return requests.post("http://{0}:5000/{1}".format(taddress, msg_type), json=data_dict)
+
     def send_request_to_host(self, msg_type, data_dict=None, wait_for_success=True, timeout=3, wait_time=.1):
         if data_dict is None:
             data_dict = {}
@@ -693,16 +712,20 @@ class TileBase(gevent.Greenlet):
     def get_cluster_metric(self, metric_name):
                 return cluster_metric_dict[metric_name]
 
-    # todo getting pipe values from other tiles
     def get_pipe_value(self, pipe_key):
+        self.debug_log("entering get_pipe_value with pipe_key: " + str(pipe_key))
         for(tile_id, tile_entry) in self.get_main_property("_pipe_dict").items():
             if pipe_key in tile_entry:
-                return getattr(mw.tile_instances[tile_id], tile_entry[pipe_key])
+                self.debug_log("found tile_entry: " + str(tile_entry))
+                result = self.send_request_to_container(tile_entry[pipe_key]["tile_address"],
+                                                        "transfer_pipe_value", tile_entry[pipe_key])
+                encoded_val = result.json()["encoded_val"]
+                val = cPickle.loads(encoded_val.decode("utf-8", "ignore").encode("ascii"))
+                return val
         return None
 
     def get_weight_function(self, weight_function_name):
         return weight_functions[weight_function_name]
-
 
     def create_data_source(self, data):
         dataname = str(self.current_data_id)

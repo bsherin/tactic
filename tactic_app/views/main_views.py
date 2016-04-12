@@ -111,6 +111,7 @@ def open_log_window(main_id):
     return render_template("log_window_template.html", window_title=title, console_html=console_html)
 
 
+# todo update_project must be reworked
 @app.route('/update_project', methods=['POST'])
 @login_required
 def update_project():
