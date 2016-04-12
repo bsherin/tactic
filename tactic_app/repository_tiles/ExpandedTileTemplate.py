@@ -65,7 +65,7 @@ class ExpandedTileTemplate(TileBase):
         {"name": "my_list", "type": "list_select"},
         {"name": "my_palette", "type": "palette_select"},
         {"name": "my_pipe", "type": "pipe_select"},
-        {"name": "my_list", "type": "custom_list", "special_list": ["a", "b", "c"]}
+        {"name": "my_list", "type": "custom_list", "special_list": ["a", "b", "c"]},
         {"name": "my_weight_function", "type": "weight_function_select"}
     ]
 

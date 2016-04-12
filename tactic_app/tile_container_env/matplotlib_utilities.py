@@ -96,16 +96,20 @@ class MplFigure(Figure):
         return img
 
     def create_figure_html(self):
+        self.debug_log("entering create_figure_html")
         FigureCanvas(self)  # This does seem to be necessary or savefig won't work.
         img_file = StringIO.StringIO()
+        self.debug_log("about to save the figure")
         self.savefig(img_file)
         img_file.seek(0)
         figname = str(self.current_fig_id)
         self.current_fig_id += 1
+        self.debug_log("about to put the image into img_dict")
         self.img_dict[figname] = img_file.getvalue()
         fig_url = self.base_figure_url + figname
         image_string = "<img class='output-plot' src='{}' onclick=showZoomedImage(this) lt='Image Placeholder'>"
         the_html = image_string.format(fig_url)
+        self.debug_log("leaving create_figure_html")
         return the_html
 
 

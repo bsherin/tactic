@@ -404,6 +404,7 @@ class TileBase(gevent.Greenlet):
 
     def compile_save_dict(self):
         result = {"my_class_for_recreate": "TileBase"}
+        result["binary_attrs"] = []
         for attr in self.save_attrs:
             attr_val = getattr(self, attr)
             if hasattr(attr_val, "compile_save_dict"):
@@ -423,6 +424,8 @@ class TileBase(gevent.Greenlet):
                     except (TypeError, exceptions.UnicodeDecodeError) as e:
                         pass
                 try:
+                    self.debug_log("Found non jsonizable attribute " + attr)
+                    result["binary_attrs"].append(attr)
                     bser_attr_val = Binary(cPickle.dumps(attr_val))
                     result[attr] = bser_attr_val
                 except TypeError:
@@ -443,7 +446,8 @@ class TileBase(gevent.Greenlet):
                     res[key] = cls.recreate_from_save(val)
                 setattr(self, attr, res)
             else:
-                if isinstance(attr_val, Binary):
+                if isinstance(attr_val, Binary) or attr in save_dict["binary_attrs"]:
+                    self.debug_log("Found Binary attribute " + attr)
                     decoded_val = cPickle.loads(str(attr_val.decode()))
                     setattr(self, attr, decoded_val)
                 else:

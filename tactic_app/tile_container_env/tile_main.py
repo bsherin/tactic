@@ -39,6 +39,7 @@ def recreate_from_save():
     tile_instance.host_address = data["host_address"]
     tile_instance.main_address = data["main_address"]
     tile_instance.base_figure_url = data["base_figure_url"]
+    tile_instance.app = app
     tile_instance.recreate_from_save(data)
     tile_instance.app = app
     tile_instance.start()
