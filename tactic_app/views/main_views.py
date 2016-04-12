@@ -477,7 +477,7 @@ def reload_tile(tile_id):
 @login_required
 def create_tile_from_save_request(tile_id):
     main_id = request.json["main_id"]
-    tile_save_result = send_request_to_container(main_id, "get_saved_tile_info/" + tile_id, {})
+    tile_save_result = send_request_to_container(main_id, "get_saved_tile_info/" + tile_id, {}).json()
     tile_save_result["tile_id"] = tile_id # a little silly that I need to do that but requies less changes this way
     return jsonify(tile_save_result)
 

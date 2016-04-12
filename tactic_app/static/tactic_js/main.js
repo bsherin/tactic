@@ -137,6 +137,7 @@ function continue_loading() {
     });
     if (_project_name != "") {
         $.getJSON($SCRIPT_ROOT + "/grab_project_data/" + String(main_id) + "/" + String(doc_names[0]), function(data) {
+                console.log("Entering grab_project_data callback")
                 $("#loading-message").css("display", "none");
                 $("#reload-message").css("display", "none");
                 $("#outer-container").css("display", "block");
@@ -184,7 +185,8 @@ function continue_loading() {
                                 console.log("Error creating tile from save: " + textStatus + " " + errorThrown)
                             },
                             success: function (data) {
-                                var new_tile_object = new TileObject(data.tile_id, data.html, false);
+                                // todo it dies in the next line
+                                var new_tile_object = new TileObject(data.tile_id, data.tile_html, false);
                                 tile_dict[data.tile_id] = new_tile_object;
                                 new_tile_object.saved_size = data.saved_size;
                                 var sortable_tables = $(new_tile_object.full_selector() + " table.sortable");
@@ -196,10 +198,10 @@ function continue_loading() {
                             }
                         })
                     }
-                })
+            })
             })
     }
-    else {
+else {
         $.getJSON($SCRIPT_ROOT + "/grab_data/" + String(main_id) + "/" + String(doc_names[0]), function (data) {
             $("#loading-message").css("display", "none");
             $("#reload-message").css("display", "none");

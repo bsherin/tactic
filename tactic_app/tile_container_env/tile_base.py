@@ -58,7 +58,7 @@ class TileBase(gevent.Greenlet):
         self._sleepperiod = .0001
         self.save_attrs = ["current_html", "tile_id", "tile_type", "tile_name", "main_id", "configured",
                            "header_height", "front_height", "front_width", "back_height", "back_width",
-                           "tda_width", "tda_height", "width", "height", "host_adddress", "user_id",
+                           "tda_width", "tda_height", "width", "height", "host_address", "user_id",
                            "full_tile_width", "full_tile_height", "is_shrunk", "img_dict", "current_fig_id"]
         # These define the state of a tile and should be saved
 
@@ -195,13 +195,16 @@ class TileBase(gevent.Greenlet):
     def create_form_html(self):
         try:
             form_html = ""
+            self.debug_log("getting list names in create_form_html")
             self.list_names = self.send_request_to_host("get_list_names", {"user_id": self.user_id})["list_names"]
+            self.debug_log("Got list names")
             for option in self.options:
                 att_name = option["name"]
                 if not hasattr(self, att_name):
                     setattr(self, att_name, None)
                 self.save_attrs.append(att_name)
                 starting_value = getattr(self, att_name)
+                self.debug_log("option is " + str(option["name"]) + " " + str(option["type"]))
                 if option["type"] == "column_select":
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
@@ -433,7 +436,9 @@ class TileBase(gevent.Greenlet):
     def render_me(self):
         # todo deal with figure_url here
         # self.figure_url = url_for("figure_source", main_id=main_id, tile_id=tile_id, figure_name="X")[:-1]
+        self.debug_log("Entering render_me in tile")
         form_html = self.create_form_html()
+        self.debug_log("Done creating form_html")
         if self.is_shrunk:
             dsr_string = ""
             dbr_string = "display: none"
@@ -462,8 +467,8 @@ class TileBase(gevent.Greenlet):
                                  front_back_display_string=bda_string
 
                                  )
-        return {"html": result, "tile_id": self.tile_id, "is_shrunk": self.is_shrunk,
-                "saved_size": self.full_tile_height, "exports": self.exports, "tile_name": self.tile_name}
+        self.debug_log("Rendered the result " + str(result[:200]))
+        return result
 
     def get_current_pipe_list(self):
         pipe_list = []

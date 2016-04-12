@@ -511,6 +511,8 @@ class ProjectManager(ResourceManager):
         tile_info_dict = recreate_info["tile_info_dict"]
         loaded_modules = recreate_info["loaded_modules"]
         doc_names = recreate_info["doc_names"]
+        fixed_doc_names = [str(doc_name) for doc_name in doc_names]
+        doc_names = fixed_doc_names
         collection_name = recreate_info["collection_name"]
         short_collection_name = recreate_info["short_collection_name"]
         console_html = recreate_info["console_html"]

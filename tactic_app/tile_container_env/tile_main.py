@@ -44,6 +44,12 @@ def recreate_from_save():
                     "saved_size": tile_instance.full_tile_height})
 
 
+@app.route('/get_save_dict', methods=["get", "post"])
+def get_save_dict():
+    save_dict = tile_instance.compile_save_dict()
+    return jsonify(save_dict)
+
+
 @app.route('/get_tile_exports', methods=["get", "post"])
 def get_tile_exports():
     export_dict = tile_instance.exports

@@ -202,12 +202,10 @@ class mainWindow(gevent.Greenlet):
         self._pipe_dict = {}
         self.selected_text = ""
         self.recreate_errors = []
-        self.save_dict = None
+        self.project_dict = None
         self.tile_save_results = None
 
-        if "project_name" in data_dict:
-            self.recreate_from_save(data_dict["project_collection_name"], data_dict["project_name"])
-        else:
+        if "project_name" not in data_dict:
             self.current_tile_id = 0
             self.tile_instances = {}
             self.tile_sort_list = []
@@ -230,7 +228,7 @@ class mainWindow(gevent.Greenlet):
                 try:
                     self.debug_log("Trying request {0} to {1}".format(msg_type, self.host_address))
                     res = requests.get("http://{0}:5000/{1}".format(self.host_address, msg_type), json=data_dict)
-                    self.debug_log("container returned: " + res.text)
+                    # self.debug_log("container returned: " + res.text)
                     return res
                 except:
                     error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
@@ -259,7 +257,7 @@ class mainWindow(gevent.Greenlet):
                 try:
                     self.debug_log("Trying request {0} to {1}".format(msg_type, taddress))
                     res = requests.post("http://{0}:5000/{1}".format(taddress, msg_type), json=data_dict)
-                    self.debug_log("container returned: " + res.text)
+                    # self.debug_log("container returned: " + res.text)
                     return res
                 except:
                     error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
@@ -279,7 +277,7 @@ class mainWindow(gevent.Greenlet):
             data_dict["main_id"] = self.main_id
             self.debug_log("in ask_tile with tile address: " + taddress)
             result = self.send_request_to_container(taddress, request_name, data_dict)
-            self.debug_log("result of ask_tile is " + result.text)
+            # self.debug_log("result of ask_tile is " + result.text)
         except:
             result = self.handle_exception("Error in mwindow.ask_tile", True)
         return result
@@ -324,6 +322,7 @@ class mainWindow(gevent.Greenlet):
             return False
 
     def compile_save_dict(self):
+        self.debug_log("entering compile_save_dict in main")
         result = {}
         for attr in self.save_attrs:
             attr_val = getattr(self, attr)
@@ -341,15 +340,17 @@ class mainWindow(gevent.Greenlet):
             tile_save_dict = self.ask_tile(tile_id, "get_save_dict").json()
             tile_instances[tile_id] = tile_save_dict  # tile_id isn't meaningful going forward.
         result["tile_instances"] = tile_instances
+        self.debug_log("leaving compile_save_dict in main")
         return result
 
     def recreate_from_save(self, project_collection_name, project_name):
         save_dict = self.db[project_collection_name].find_one({"project_name": project_name})
         project_dict = cPickle.loads(self.fs.get(save_dict["file_id"]).read().decode("utf-8", "ignore").encode("ascii"))
+        self.debug_log("Got project_dict with keys: " + str(project_dict.keys()))
         # todo metadatahandling issue here?
         project_dict["metadata"] = save_dict["metadata"]
         error_messages = []
-        for (attr, attr_val) in save_dict.items():
+        for (attr, attr_val) in project_dict.items():
             if attr is not "tile_instances":
                 try:
                     if type(attr_val) == dict and ("my_class_for_recreate" in attr_val):
@@ -362,46 +363,53 @@ class mainWindow(gevent.Greenlet):
                     setattr(self, attr, attr_val)
 
         for attr in self.save_attrs:
-            if attr not in save_dict:
+            if attr not in project_dict:
                 setattr(self, attr, "")
 
         tile_info_dict = {}
-        for old_tile_id, tile_save_dict in save_dict["tile_instances"].items():
+        for old_tile_id, tile_save_dict in project_dict["tile_instances"].items():
             tile_info_dict[old_tile_id] = tile_save_dict["tile_type"]
-        self.save_dict = save_dict
+        self.project_dict = project_dict
+        self.doc_dict = self._build_doc_dict()
+        self.visible_doc_name = self.doc_dict.keys()[0] #  This is necessary for recreating the tiles
         return tile_info_dict, project_dict["loaded_modules"]
 
     def recreate_the_tiles(self, new_tile_info):
         self.tile_instances = {}
         tile_results = {}
-        for old_tile_id, tile_save_dict in self.save_dict["tile_instances"].items():
+        for old_tile_id, tile_save_dict in self.project_dict["tile_instances"].items():
             new_tile_id = new_tile_info[old_tile_id]["new_tile_id"]
             new_tile_address = new_tile_info[old_tile_id]["tile_container_address"]
             self.tile_instances[new_tile_id] = new_tile_address
             self.tile_sort_list[self.tile_sort_list.index(old_tile_id)] = new_tile_id
-            tile_save_dict = self.save_dict["tile_instances"][old_tile_id]
+            tile_save_dict = self.project_dict["tile_instances"][old_tile_id]
             tile_save_dict["tile_id"] = new_tile_id
             tile_save_dict["host_address"] = self.host_address
             tile_save_dict["main_address"] = self.main_address
-            tile_result = self.ask_tile(new_tile_id, "recreate_from_save", tile_save_dict)
+            tile_result = self.ask_tile(new_tile_id, "recreate_from_save", tile_save_dict).json()
             tile_results[new_tile_id] = tile_result
+            self.debug_log("Got tile_result")
 
         for tile in self.tile_sort_list:
             if tile not in self.tile_instances:
                 self.tile_sort_list.remove(tile)
 
+        self.debug_log("updated tile_sort_list")
+
         # There's some extra work I have to do once all of the tiles are built.
         # Each tile needs to know the main_id it's associated with.
         # Also I have to build the pipe machinery.
         # todo still have to do this exports stuff
-        for tile_result in tile_results:
-            if len(tile_result["exports"]) > 0:
-                tile_id = tile_result["tile_id"]
-                if tile_id not in self._pipe_dict:
-                    self._pipe_dict[tile_id] = {}
-                for export in tile_result["exports"]:
-                    self._pipe_dict[tile_id][tile_result["tile_name"] + "_" + export] = export
+        self.debug_log("dealing with pipe stuff")
+        # for tile_result in tile_results:
+        #     if len(tile_result["exports"]) > 0:
+        #         tile_id = tile_result["tile_id"]
+        #         if tile_id not in self._pipe_dict:
+        #             self._pipe_dict[tile_id] = {}
+        #         for export in tile_result["exports"]:
+        #             self._pipe_dict[tile_id][tile_result["tile_name"] + "_" + export] = export
 
+        self.debug_log("done with pipes")
         # todo capture errors his this method
         self.tile_save_results = tile_results
         return
@@ -591,7 +599,7 @@ class mainWindow(gevent.Greenlet):
                 self.debug_log("func is " + func.__name__)
                 del data["func"]
                 func(data)
-            elif event_name == "BuildDocDict":
+            elif event_name == "BuildDocDict": # todo this might never be called
                 self.doc_dict = self._build_doc_dict(self.collection_name)
             elif event_name == "RemoveTile":
                 self._delete_tile_instance(data["tile_id"])
@@ -628,6 +636,7 @@ class mainWindow(gevent.Greenlet):
             #     self.login_to_host()
             elif event_name == "DisplayCreateErrors":
                 for msg in self.recreate_errors:
+                    self.debug_log("Got CreateError: " + msg)
                     self.print_to_console(msg, True)
                 self.recreate_errors = []
         except:
@@ -673,6 +682,7 @@ class mainWindow(gevent.Greenlet):
 
     @property
     def current_header_list(self):
+        self.debug_log("Enterinting current header list. doc_dict has keys: " + str(self.doc_dict.keys()))
         dinfo = self.doc_dict[self.visible_doc_name]
         return dinfo.header_list
 
@@ -705,6 +715,7 @@ class mainWindow(gevent.Greenlet):
 
     def _build_doc_dict(self):
         result = {}
+        self.debug_log("building doc_dict with collection: " + self.collection_name)
         try:
             the_collection = self.db[self.collection_name]
             for f in the_collection.find():

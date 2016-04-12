@@ -34,6 +34,7 @@ def set_visible_doc():
 @app.route('/get_property', methods=['get', 'post'])
 def get_property():
     data_dict = request.json
+    app.logger.debug("Entering get_property with data_dict " + str(data_dict))
     prop_name = data_dict["property"]
     val = getattr(mwindow, prop_name)
     return jsonify({"val": val})
@@ -42,6 +43,7 @@ def get_property():
 @app.route('/get_func', methods=['get', 'post'])
 def get_func():
     data_dict = request.json
+    app.logger.debug("Entering get_fun with data_dict " + str(data_dict))
     func_name = data_dict["func"]
     args = data_dict["args"]
     val = getattr(mwindow, func_name)(*args)
@@ -74,6 +76,8 @@ def save_new_project():
 
                 mwindow.loaded_modules = data_dict["users_loaded_modules"]
             project_dict = mwindow.compile_save_dict()
+            app.logger.debug("got compiled project dict")
+            app.logger.debug("length of tile_instances is: " + str(len(project_dict["tile_instances"])))
             save_dict = {}
             save_dict["metadata"] = create_initial_metadata()
             save_dict["project_name"] = project_dict["project_name"]
@@ -126,7 +130,8 @@ def grab_project_data():
                     "is_last_chunk": mwindow.doc_dict[doc_name].is_last_chunk,
                     "is_first_chunk": mwindow.doc_dict[doc_name].is_first_chunk,
                     "max_table_size": mwindow.doc_dict[doc_name].max_table_size,
-                    "tablespec_dict": mwindow.tablespec_dict()})
+                    "tablespec_dict": mwindow.tablespec_dict(),
+                    "hidden_columns_list": mwindow.hidden_columns_list})
 
 
 @app.route('/grab_chunk_with_row', methods=['get', 'post'])
