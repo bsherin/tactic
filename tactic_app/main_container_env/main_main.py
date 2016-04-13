@@ -40,6 +40,15 @@ def get_property():
     return jsonify({"val": val})
 
 
+@app.route('/set_property', methods=['get', 'post'])
+def set_property():
+    data_dict = request.json
+    prop_name = data_dict["property"]
+    val = data_dict["val"]
+    setattr(mwindow, prop_name, val)
+    return jsonify({"success": True})
+
+
 @app.route('/get_func', methods=['get', 'post'])
 def get_func():
     data_dict = request.json

@@ -321,7 +321,6 @@ class CollectionManager(ResourceManager):
         cname = user_obj.build_data_collection_name(collection_name)
         main_id = create_container("tactic_main_image", network_mode="bridge")["Id"]
         caddress = get_address(main_id, "bridge")
-        mainwindow_instances[main_id] = caddress
 
         if user_obj.username not in loaded_user_modules:
             loaded_user_modules[user_obj.username] = []
@@ -492,9 +491,6 @@ class ProjectManager(ResourceManager):
         main_id = create_container("tactic_main_image", network_mode="bridge")["Id"]
         caddress = get_address(main_id, "bridge")
 
-        # todo don't need to track these, spoils restlessness
-        mainwindow_instances[main_id] = caddress
-
         if user_obj.username not in loaded_user_modules:
             loaded_user_modules[user_obj.username] = []
 
@@ -535,9 +531,6 @@ class ProjectManager(ResourceManager):
 
         # todo this now returns beefore making all the tiles. might cause not-ready problems
         send_request_to_container(main_id, "recreate_project_tiles", new_tile_info)
-
-        # todo investigate metadata handling in project
-        # mainwindow_instances[main_id].mdata = project_dict["metadata"]
 
         # We want to do this in case there were some additional modules loaded
         # the loaded_modules must be a list to be easily saved to pymongo

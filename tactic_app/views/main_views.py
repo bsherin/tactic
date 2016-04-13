@@ -89,12 +89,22 @@ def add_blank_console_text(main_id):
         return jsonify({"success": False, "message": "Error creating console text area"})
 
 
+def set_mainwindow_property(main_id, prop_name, prop_value):
+    result = send_request_to_container(main_id, "set_property", {"property": prop_name, "val": prop_value}).json()
+    return result
+
+
+def get_mainwindow_property(main_id, prop_name):
+    result = send_request_to_container(main_id, "get_property", {"property": prop_name}).json()
+    return result["val"]
+
+
 @app.route("/send_log_html/<main_id>", methods=["POST"])
 @login_required
 def send_log_html(main_id):
     try:
         console_html = request.json["console_html"]
-        mainwindow_instances[main_id].console_html = console_html
+        set_mainwindow_property(main_id, "console_html", console_html)
         return jsonify({"success": True})
     except:
         return jsonify({"success": False, "message": "Error opening log wndow"})
@@ -103,15 +113,14 @@ def send_log_html(main_id):
 @app.route("/open_log_window/<main_id>", methods=["GET", "POST"])
 @login_required
 def open_log_window(main_id):
-    if mainwindow_instances[main_id].project_name is None:
-        title = mainwindow_instances[main_id].short_collection_name + " log"
+    if get_mainwindow_property(main_id, "project_name") is None:
+        title = get_mainwindow_property(main_id, "short_collection_name") + " log"
     else:
-        title = mainwindow_instances[main_id].project_name + " log"
-    console_html = mainwindow_instances[main_id].console_html.decode("utf-8", "ignore").encode("ascii")
+        title = get_mainwindow_property(main_id, "project_name") + " log"
+    console_html = get_mainwindow_property(main_id, "console_html").decode("utf-8", "ignore").encode("ascii")
     return render_template("log_window_template.html", window_title=title, console_html=console_html)
 
 
-# todo update_project must be reworked
 @app.route('/update_project', methods=['POST'])
 @login_required
 def update_project():
@@ -123,11 +132,13 @@ def update_project():
     return jsonify(result.json())
 
 
+# todo export_table doesn't work because it's trying to send doc_dict, which isn't serializable
+# todo probably give /get_property ability to pickle and convert to binary
 @app.route('/export_data', methods=['POST'])
 @login_required
 def export_data():
     data_dict = request.json
-    doc_dict = mainwindow_instances[data_dict['main_id']].doc_dict
+    doc_dict = get_mainwindow_property(data_dict["main_id"], "doc_dict")
     full_collection_name = current_user.build_data_collection_name(data_dict['export_name'])
     for docinfo in doc_dict.values():
         db[full_collection_name].insert_one({"name": docinfo.name,
@@ -137,6 +148,7 @@ def export_data():
     return jsonify({"success": True, "message": "Data Successfully Exported"})
 
 
+# todo download_table needs rewriting
 @app.route('/download_table/<main_id>/<new_name>', methods=['GET', 'POST'])
 @login_required
 def download_table(main_id, new_name):
@@ -158,6 +170,7 @@ def download_table(main_id, new_name):
                      as_attachment=True)
 
 
+# todo download collection needs rewriting
 @app.route('/download_collection/<main_id>/<new_name>', methods=['GET', 'POST'])
 @login_required
 def download_collection(main_id, new_name):
@@ -253,7 +266,6 @@ def remove_mainwindow(main_id):
     for tile_id in tile_ids:
         destroy_container(tile_id)
     destroy_container(main_id)
-    del mainwindow_instances[main_id]
     return jsonify({"success": True})
 
 
@@ -338,7 +350,7 @@ def figure_source(tile_id, figure_name):
     return send_file(img_file, mimetype='image/png')
 
 
-# todo deal with data_source
+# todo deal with data_source, part of base_data_url, create_data_source
 @app.route('/data_source/<main_id>/<tile_id>/<data_name>', methods=['GET'])
 @login_required
 def data_source(main_id, tile_id, data_name):

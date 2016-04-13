@@ -351,7 +351,6 @@ class mainWindow(gevent.Greenlet):
         self.debug_log("Got project_dict with keys: " + str(project_dict.keys()))
         project_dict["metadata"] = save_dict["metadata"]
         self.mdata = save_dict["metadata"]
-        error_messages = []
         for (attr, attr_val) in project_dict.items():
             if attr is not "tile_instances":
                 try:
