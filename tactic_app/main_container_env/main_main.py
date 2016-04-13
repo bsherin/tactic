@@ -60,6 +60,46 @@ def print_to_console():
     return jsonify({"success": True})
 
 
+@app.route('/update_project', methods=['POST'])
+def update_project():
+    def do_update_project(data_dict):
+        app.logger.debug("entering update_project")
+        app.logger.debug("data_dict is " + str(data_dict))
+        # noinspection PyBroadException
+        try:
+            mwindow.hidden_columns_list = data_dict["hidden_columns_list"]
+            mwindow.console_html = data_dict["console_html"]
+            tspec_dict = data_dict["tablespec_dict"]
+            for (dname, spec) in tspec_dict.items():
+                mwindow.doc_dict[dname].table_spec = spec
+            mwindow.loaded_modules = data_dict["users_loaded_modules"]
+            project_dict = mwindow.compile_save_dict()
+            pname = project_dict["project_name"]
+            mwindow.mdata["updated"] = datetime.datetime.today()
+            new_file_id = mwindow.fs.put(Binary(cPickle.dumps(project_dict)))
+            save_dict = mwindow.db[data_dict["project_collection_name"]].find_one({"project_name": pname})
+            mwindow.fs.delete(save_dict["file_id"])
+            save_dict["project_name"] = pname
+            save_dict["metadata"] = mwindow.mdata
+            save_dict["file_id"] = new_file_id
+            mwindow.db[data_dict["project_collection_name"]].update_one({"project_name": pname},
+                                                                {'$set': save_dict})
+            mwindow.mdata = save_dict["metadata"]
+            return_data = {"project_name": pname,
+                           "success": True,
+                           "message": "Project Successfully Saved",
+                           "jcallback_id": data_dict["jcallback_id"]}
+
+        except:
+            error_string = mwindow.handle_exception("Error saving project", print_to_console=False)
+            return_data = {"success": False, "message": error_string, "jcallback_id": data_dict["jcallback_id"]}
+        mwindow.generate_callback(return_data)
+        return
+    data = request.json
+    mwindow.post_with_function(do_update_project, data)
+    return jsonify({"success": True})
+
+
 @app.route('/save_new_project', methods=['POST'])
 def save_new_project():
     def do_save_new_project(data_dict):
@@ -74,7 +114,7 @@ def save_new_project():
             for (dname, spec) in tspec_dict.items():
                 mwindow.doc_dict[dname].table_spec = spec
 
-                mwindow.loaded_modules = data_dict["users_loaded_modules"]
+            mwindow.loaded_modules = data_dict["users_loaded_modules"]
             project_dict = mwindow.compile_save_dict()
             app.logger.debug("got compiled project dict")
             app.logger.debug("length of tile_instances is: " + str(len(project_dict["tile_instances"])))
@@ -96,7 +136,6 @@ def save_new_project():
         mwindow.generate_callback(return_data)
         return
     data = request.json
-    app.logger.debug("data passed to save_new_project is " + str(data))
     mwindow.post_with_function(do_save_new_project, data)
     return jsonify({"success": True})
 

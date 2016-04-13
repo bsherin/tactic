@@ -412,15 +412,7 @@ function save_project() {
         "console_html": $("#console").html()
         //"tablespec_dict": tablespec_dict
     };
-    $.ajax({
-        url: $SCRIPT_ROOT + "/update_project",
-        contentType : 'application/json',
-        type : 'POST',
-        async: false,
-        data: JSON.stringify(result_dict),
-        dataType: 'json',
-        success: updateSuccess
-    });
+    postWithCallback("/update_project", result_dict, updateSuccess);
     function updateSuccess(data) {
         if (data.success) {
             dirty = false;

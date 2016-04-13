@@ -116,41 +116,11 @@ def open_log_window(main_id):
 @login_required
 def update_project():
     data_dict = request.json
-    try:
-        tspec_dict = data_dict["tablespec_dict"]
-        mainwindow_instances[data_dict['main_id']].hidden_columns_list = data_dict["hidden_columns_list"]
-        mainwindow_instances[data_dict['main_id']].console_html = data_dict["console_html"]
-        mainwindow_instances[data_dict['main_id']].loaded_modules = loaded_user_modules[current_user.username]
-        for (dname, spec) in tspec_dict.items():
-            mainwindow_instances[data_dict['main_id']].doc_dict[dname].table_spec = spec
-        project_dict = mainwindow_instances[data_dict['main_id']].compile_save_dict()
-        pname = project_dict["project_name"]
-        mainwindow_instances[data_dict['main_id']].mdata["updated"] = datetime.datetime.today()
-
-        new_file_id = fs.put(Binary(cPickle.dumps(project_dict)))
-
-        # Here we are trying to deal with both old-style and new-style saves
-        # If it appears the project was saved old-style, then we'll delete and recreate it.
-        save_dict = db[current_user.project_collection_name].find_one({"project_name": pname})
-        if "file_id" in save_dict:
-            fs.delete(save_dict["file_id"])
-            save_dict["project_name"] = pname
-            save_dict["metadata"] = mainwindow_instances[data_dict['main_id']].mdata
-            save_dict["file_id"] = new_file_id
-            db[current_user.project_collection_name].update_one({"project_name": pname},
-                                                    {'$set': save_dict})
-        else:
-            db[current_user.project_collection_name].delete_one({"project_name": pname})
-            save_dict = {}
-            save_dict["project_name"] = pname
-            save_dict["metadata"] = mainwindow_instances[data_dict['main_id']].mdata
-            save_dict["file_id"] = new_file_id
-            db[current_user.project_collection_name].insert_one(save_dict)
-
-        return jsonify({"success": True, "message": "Project Successfully Saved"})
-    except:
-        mainwindow_instances[data_dict['main_id']].handle_exception("Error saving project")
-        return jsonify({"success": False})
+    data_dict["users_loaded_modules"] = loaded_user_modules[current_user.username]
+    data_dict["project_collection_name"] = current_user.project_collection_name
+    result = send_request_to_container(data_dict["main_id"], "update_project", data_dict)
+    project_manager.update_selector_list()
+    return jsonify(result.json())
 
 
 @app.route('/export_data', methods=['POST'])
@@ -368,7 +338,7 @@ def figure_source(tile_id, figure_name):
     return send_file(img_file, mimetype='image/png')
 
 
-# todo deal with figure_source and data_source
+# todo deal with data_source
 @app.route('/data_source/<main_id>/<tile_id>/<data_name>', methods=['GET'])
 @login_required
 def data_source(main_id, tile_id, data_name):

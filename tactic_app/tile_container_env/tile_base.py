@@ -455,8 +455,6 @@ class TileBase(gevent.Greenlet):
         return
 
     def render_me(self):
-        # todo deal with figure_url here
-        # self.figure_url = url_for("figure_source", main_id=main_id, tile_id=tile_id, figure_name="X")[:-1]
         self.debug_log("Entering render_me in tile")
         form_html = self.create_form_html()
         self.debug_log("Done creating form_html")

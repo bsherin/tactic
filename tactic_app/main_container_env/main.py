@@ -205,6 +205,7 @@ class mainWindow(gevent.Greenlet):
         self.recreate_errors = []
         self.project_dict = None
         self.tile_save_results = None
+        self.mdata = None
 
         if "project_name" not in data_dict:
             self.current_tile_id = 0
@@ -348,8 +349,8 @@ class mainWindow(gevent.Greenlet):
         save_dict = self.db[project_collection_name].find_one({"project_name": project_name})
         project_dict = cPickle.loads(self.fs.get(save_dict["file_id"]).read().decode("utf-8", "ignore").encode("ascii"))
         self.debug_log("Got project_dict with keys: " + str(project_dict.keys()))
-        # todo metadatahandling issue here?
         project_dict["metadata"] = save_dict["metadata"]
+        self.mdata = save_dict["metadata"]
         error_messages = []
         for (attr, attr_val) in project_dict.items():
             if attr is not "tile_instances":
