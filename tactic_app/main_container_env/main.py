@@ -13,8 +13,6 @@ import time
 import uuid
 import cPickle
 
-
-
 INITIAL_LEFT_FRACTION = .69
 CHUNK_SIZE = 200
 STEP_SIZE = 100
@@ -230,11 +228,10 @@ class mainWindow(gevent.Greenlet):
                 try:
                     self.debug_log("Trying request {0} to {1}".format(msg_type, self.host_address))
                     res = requests.get("http://{0}:5000/{1}".format(self.host_address, msg_type), json=data_dict)
-                    # self.debug_log("container returned: " + res.text)
                     return res
                 except:
                     error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-                    self.debug_log("Got error on reqiest: " + error_string)
+                    self.debug_log("Got error on request: " + error_string)
                     time.sleep(wait_time)
                     continue
             self.debug_log("Request {0} to {1} timed out".format(msg_type, self.host_address))
@@ -259,7 +256,6 @@ class mainWindow(gevent.Greenlet):
                 try:
                     self.debug_log("Trying request {0} to {1}".format(msg_type, taddress))
                     res = requests.post("http://{0}:5000/{1}".format(taddress, msg_type), json=data_dict)
-                    # self.debug_log("container returned: " + res.text)
                     return res
                 except:
                     error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
@@ -279,7 +275,6 @@ class mainWindow(gevent.Greenlet):
             data_dict["main_id"] = self.main_id
             self.debug_log("in ask_tile with tile address: " + taddress)
             result = self.send_request_to_container(taddress, request_name, data_dict)
-            # self.debug_log("result of ask_tile is " + result.text)
         except:
             result = self.handle_exception("Error in mwindow.ask_tile", True)
         return result
@@ -294,7 +289,6 @@ class mainWindow(gevent.Greenlet):
 
     def emit_table_message(self, message, data=None):
         self.app.logger.debug("entering emit table message. host is: " + str(self.host_address))
-        self.app.logger.debug(message + " " + str(data))
         if data is None:
             data = {}
         data["message"] = message
@@ -348,7 +342,6 @@ class mainWindow(gevent.Greenlet):
     def recreate_from_save(self, project_collection_name, project_name):
         save_dict = self.db[project_collection_name].find_one({"project_name": project_name})
         project_dict = cPickle.loads(self.fs.get(save_dict["file_id"]).read().decode("utf-8", "ignore").encode("ascii"))
-        self.debug_log("Got project_dict with keys: " + str(project_dict.keys()))
         project_dict["metadata"] = save_dict["metadata"]
         self.mdata = save_dict["metadata"]
         for (attr, attr_val) in project_dict.items():
@@ -471,9 +464,7 @@ class mainWindow(gevent.Greenlet):
         data_dict["host_address"] = self.host_address
         data_dict["user_id"] = self.user_id
         data_dict["main_address"] = self.main_address
-        self.debug_log("mwindow has base_figure_url = " + self.base_figure_url)
         data_dict["base_figure_url"] = self.base_figure_url.replace("tile_id", tile_container_id)
-        self.debug_log("base_figure_url sent to tile is " + data_dict["base_figure_url"])
 
         instantiate_result = self.ask_tile(data_dict["tile_id"], "instantiate_tile_class", data_dict).json()
         result_dict = self.ask_tile(tile_container_id, "get_tile_exports").json()
@@ -693,7 +684,6 @@ class mainWindow(gevent.Greenlet):
 
     @property
     def current_header_list(self):
-        self.debug_log("Enterinting current header list. doc_dict has keys: " + str(self.doc_dict.keys()))
         dinfo = self.doc_dict[self.visible_doc_name]
         return dinfo.header_list
 

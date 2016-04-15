@@ -135,24 +135,19 @@ TileObject.prototype = {
         var data_dict = {};
         data_dict["main_id"] = main_id;
         var self = this;
-        $.ajax({
-            url: $SCRIPT_ROOT + "/reload_tile/" + String(this.tile_id),
-            contentType : 'application/json',
-            type : 'POST',
-            data: JSON.stringify(data_dict),
-            dataType: 'json',
-            success: function (data) {
-                if (data.success) {
-                    self.displayFormContent(data);
-                    self.spin_and_refresh();
-                    dirty = true;
-                }
+        postWithCallback("reload_tile/" + this.tile_id, data_dict, reload_success);
+
+        function reload_success (data) {
+            if (data.success) {
+                self.displayFormContent(data);
+                self.spin_and_refresh();
+                dirty = true;
             }
-        })
+        }
     },
 
     logMe: function() {
-        data_dict = {}
+        data_dict = {};
         data_dict["main_id"] = main_id;
         data_dict["tile_id"] = this.tile_id;
         broadcast_event_to_server("LogTile", data_dict)

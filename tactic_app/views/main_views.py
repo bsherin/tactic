@@ -405,35 +405,13 @@ def create_tile_request():
 @app.route('/reload_tile/<tile_id>', methods=['GET', 'POST'])
 @login_required
 def reload_tile(tile_id):
-    save_attrs_for_reload = ["tile_id", "tile_name", "header_height", "front_height", "front_width", "back_height", "back_width",
-                  "tda_width", "tda_height", "width", "height",
-                  "full_tile_width", "full_tile_height", "is_shrunk", "configured"]
-    try:
-        main_id = request.json["main_id"]
-        mw = mainwindow_instances[main_id]
-        old_instance = mw.tile_instances[tile_id]
-        old_instance.kill()
-        saved_options = {}
-        for option in old_instance.options:
-            attr = option["name"]
-            if hasattr(old_instance, attr):
-                saved_options[attr] = getattr(old_instance, attr)
-        tile_type = old_instance.tile_type
-        tile_name = old_instance.tile_tname
-        new_cls = get_tile_class(current_user.username, tile_type)
-        new_instance = new_cls(main_id, tile_id, tile_name)
-        for attr, val in saved_options.items():
-            setattr(new_instance, attr, val)
-        for attr in save_attrs_for_reload:
-            setattr(new_instance, attr, getattr(old_instance, attr))
-        form_html = new_instance.create_form_html()
-        mw.tile_instances[tile_id] = new_instance
-        new_instance.start()
-        return jsonify({"success": True, "html": form_html})
-    except:
-        error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-        mainwindow_instances[main_id].handle_exception("Error reloading tile " + error_string)
-        return jsonify({"success": False})
+    main_id = request.json["main_id"]
+    tile_type = send_request_to_container(tile_id, "get_property/tile_type", {})
+    module_code = get_tile_code(tile_type)
+    send_request_to_container(main_id, "reload_tile/" + tile_id ,
+                              {"tile_code": module_code,
+                               "jcallback_id": request.json["jcallback_id"]})
+    return jsonify({"success": False})
 
 
 @app.route('/create_tile_from_save_request/<tile_id>', methods=['GET', 'POST'])

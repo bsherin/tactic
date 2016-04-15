@@ -4,6 +4,8 @@ from bson.binary import Binary
 import datetime
 import cPickle
 import pymongo
+import sys
+import copy
 
 app = Flask(__name__)
 
@@ -34,7 +36,6 @@ def set_visible_doc():
 @app.route('/get_property', methods=['get', 'post'])
 def get_property():
     data_dict = request.json
-    app.logger.debug("Entering get_property with data_dict " + str(data_dict))
     prop_name = data_dict["property"]
     val = getattr(mwindow, prop_name)
     return jsonify({"val": val})
@@ -52,7 +53,6 @@ def set_property():
 @app.route('/get_func', methods=['get', 'post'])
 def get_func():
     data_dict = request.json
-    app.logger.debug("Entering get_fun with data_dict " + str(data_dict))
     func_name = data_dict["func"]
     args = data_dict["args"]
     val = getattr(mwindow, func_name)(*args)
@@ -73,7 +73,6 @@ def print_to_console():
 def update_project():
     def do_update_project(data_dict):
         app.logger.debug("entering update_project")
-        app.logger.debug("data_dict is " + str(data_dict))
         # noinspection PyBroadException
         try:
             mwindow.hidden_columns_list = data_dict["hidden_columns_list"]
@@ -113,7 +112,6 @@ def update_project():
 def save_new_project():
     def do_save_new_project(data_dict):
         app.logger.debug("entering do_save_new_project")
-        app.logger.debug("data_dict is " + str(data_dict))
         # noinspection PyBroadException
         try:
             mwindow.project_name = data_dict["project_name"]
@@ -269,6 +267,32 @@ def recreate_project_tiles():
 @app.route('/get_saved_tile_info/<tile_id>', methods=["get", "post"])
 def get_saved_tile_info(tile_id):
     return jsonify(mwindow.tile_save_results[tile_id])
+
+
+def get_tile_property(tile_id, prop_name):
+    res = mwindow.ask_tile(tile_id, "get_property/" + prop_name).json()
+    return res["val"]
+
+
+@app.route('/reload_tile/<tile_id>', methods=["get", "post"])
+def reload_tile(tile_id):
+    def do_reload_tile(data_dict):
+        try:
+            mwindow.debug_log("entering do_reload_tile")
+            module_code = data_dict["tile_code"]
+            reload_dict = copy.copy(get_tile_property(tile_id, "current_reload_attrs"))
+            saved_options = copy.copy(get_tile_property(tile_id, "current_options"))
+            reload_dict.update(saved_options)
+            mwindow.ask_tile(tile_id, "load_source", {"tile_code": module_code})
+            result = mwindow.ask_tile(tile_id, "reinstantiate_tile", reload_dict).json()
+            mwindow.generate_callback({"html": result["form_html"], "jcallback_id": data_dict["jcallback_id"]})
+        except Exception as ex:
+            template = "An exception of type {0} occured. Arguments:\n{1!r}"
+            error_string = template.format(type(ex).__name__, ex.args)
+            mwindow.handle_exception("Error reloading tile " + error_string)
+    ddict = request.json
+    mwindow.post_with_function(do_reload_tile, ddict)
+    return jsonify({"success": True})
 
 
 @app.route('/distribute_events/<event_name>', methods=['get', 'post'])

@@ -43,14 +43,19 @@ class TileBase(gevent.Greenlet):
                            '</div>'
     textarea_template = '<textarea type="{1}" class="form-control input-sm" id="{0}" value="{2}">{2}</textarea>' \
                         '</div>'
-    codearea_template = '<textarea type="{1}" class="form-control input-sm codearea" id="{0}" value="{2}">{2}</textarea>' \
-                        '</div>'
+    codearea_template = '<textarea type="{1}" class="form-control input-sm codearea" id="{0}" value="{2}">{2}' \
+                        '</textarea></div>'
     select_base_template = '<select class="form-control input-sm" id="{0}">'
     select_option_template = '<option value="{0}">{0}</option>'
     select_option_selected_template = '<option value="{0}" selected>{0}</option>'
     boolean_template = '<div class="checkbox"><label style="font-weight: 700">'\
                        '<input type="checkbox" id="{0}" value="{0}" {1}>{0}</label>' \
                        '</div>'
+    reload_attrs = ["main_address", "host_address", "tile_name", "tile_type", "base_figure_url", "user_id",
+                    "tile_id", "header_height", "front_height", "front_width", "back_height",
+                    "back_width", "tda_width", "tda_height", "width", "height", "full_tile_width",
+                    "full_tile_height", "is_shrunk", "configured"
+                    ]
 
     def __init__(self, main_id, tile_id, tile_name=None):
         self._my_q = Queue()
@@ -97,6 +102,13 @@ class TileBase(gevent.Greenlet):
     """
     Basic Machinery to make the tile work.
     """
+
+    @property
+    def current_reload_attrs(self):
+        result = {}
+        for attr in self.reload_attrs:
+            result[attr] = getattr(self, attr)
+        return result
 
     def debug_log(self, msg):
         with self.app.test_request_context():
@@ -321,6 +333,15 @@ class TileBase(gevent.Greenlet):
         self.refresh_tile_now(new_html)
         return
 
+    @property
+    def current_options(self):
+        result = {}
+        for option in self.options:
+            attr = option["name"]
+            if hasattr(self, attr):
+                result[attr] = getattr(self, attr)
+        return result
+
     def send_request_to_container(self, taddress, msg_type, data_dict, wait_for_success=True, timeout=3,
                                   wait_time=.1):
         self.debug_log("Entering send request {0} to {1}".format(msg_type, taddress))
@@ -434,6 +455,8 @@ class TileBase(gevent.Greenlet):
         return result
 
     def recreate_from_save(self, save_dict):
+        if "binary_attrs" not in save_dict:
+            save_dict["binary_attrs"] = []
         for(attr, attr_val) in save_dict.items():
             if type(attr_val) == dict and hasattr(attr_val, "recreate_from_save"):
                 cls = getattr(sys.modules[__name__], attr_val["my_class_for_recreate"])
