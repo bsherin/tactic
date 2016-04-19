@@ -25,31 +25,6 @@ def create_initial_metadata():
     return mdata
 
 
-@app.route('/set_visible_doc', methods=['get', 'post'])
-def set_visible_doc():
-    data_dict = request.json
-    doc_name = data_dict["doc_name"]
-    mwindow.visible_doc_name = doc_name
-    return jsonify({"success": True})
-
-
-@app.route('/get_property', methods=['get', 'post'])
-def get_property():
-    data_dict = request.json
-    prop_name = data_dict["property"]
-    val = getattr(mwindow, prop_name)
-    return jsonify({"val": val})
-
-
-@app.route('/set_property', methods=['get', 'post'])
-def set_property():
-    data_dict = request.json
-    prop_name = data_dict["property"]
-    val = data_dict["val"]
-    setattr(mwindow, prop_name, val)
-    return jsonify({"success": True})
-
-
 @app.route('/get_func', methods=['get', 'post'])
 def get_func():
     data_dict = request.json
@@ -57,17 +32,6 @@ def get_func():
     args = data_dict["args"]
     val = getattr(mwindow, func_name)(*args)
     return jsonify({"val": val})
-
-
-@app.route("/print_to_console", methods=['get', 'post'])
-def print_to_console():
-    def do_print_to_console(data):
-        mwindow.print_to_console(data["print_string"])
-        mwindow.generate_callback(data)
-    data = request.json
-    mwindow.post_with_function(do_print_to_console, data)
-    return jsonify({"success": True})
-
 
 @app.route('/update_project', methods=['POST'])
 def update_project():
@@ -147,21 +111,6 @@ def save_new_project():
     return jsonify({"success": True})
 
 
-@app.route("/grab_data", methods=["GET", "POST"])
-def grab_data():
-    data_dict = request.json
-    doc_name = data_dict["doc_name"]
-    return jsonify({"doc_name": doc_name,
-                    "is_shrunk": mwindow.is_shrunk,
-                    "left_fraction": mwindow.left_fraction,
-                    "data_rows": mwindow.doc_dict[doc_name].displayed_data_rows,
-                    "background_colors":mwindow.doc_dict[doc_name].displayed_background_colors,
-                    "header_list": mwindow.doc_dict[doc_name].header_list,
-                    "is_last_chunk": mwindow.doc_dict[doc_name].is_last_chunk,
-                    "is_first_chunk": mwindow.doc_dict[doc_name].is_first_chunk,
-                    "max_table_size": mwindow.doc_dict[doc_name].max_table_size})
-
-
 @app.route("/grab_project_data", methods=["GET", "POST"])
 def grab_project_data():
     data_dict = request.json
@@ -197,37 +146,6 @@ def grab_chunk_with_row():
                     "is_first_chunk": mwindow.doc_dict[doc_name].is_first_chunk,
                     "max_table_size": mwindow.doc_dict[doc_name].max_table_size,
                     "actual_row": mwindow.doc_dict[doc_name].get_actual_row(row_id)})
-
-
-@app.route('/grab_next_chunk', methods=['get', "post"])
-def grab_next_chunk():
-    app.logger.debug("entering grab next chunk")
-    data_dict = request.json
-    doc_name = data_dict["doc_name"]
-    step_amount = mwindow.doc_dict[doc_name].advance_to_next_chunk()
-    return jsonify({"doc_name": doc_name,
-                    "data_rows": mwindow.doc_dict[doc_name].displayed_data_rows,
-                    "background_colors": mwindow.doc_dict[doc_name].displayed_background_colors,
-                    "header_list": mwindow.doc_dict[doc_name].header_list,
-                    "is_last_chunk": mwindow.doc_dict[doc_name].is_last_chunk,
-                    "is_first_chunk": mwindow.doc_dict[doc_name].is_first_chunk,
-                    "step_size": step_amount})
-
-
-@app.route('/grab_previous_chunk', methods=['get', 'post'])
-def grab_previous_chunk():
-    app.logger.debug("entering grab previous chunk")
-    data_dict = request.json
-    doc_name = data_dict["doc_name"]
-    app.logger.debug("doc_name is " + doc_name)
-    step_amount = mwindow.doc_dict[doc_name].go_to_previous_chunk()
-    return jsonify({"doc_name": doc_name,
-                    "data_rows": mwindow.doc_dict[doc_name].displayed_data_rows,
-                    "background_colors": mwindow.doc_dict[doc_name].displayed_background_colors,
-                    "header_list": mwindow.doc_dict[doc_name].header_list,
-                    "is_last_chunk": mwindow.doc_dict[doc_name].is_last_chunk,
-                    "is_first_chunk": mwindow.doc_dict[doc_name].is_first_chunk,
-                    "step_size": step_amount})
 
 
 @app.route('/initialize_mainwindow', methods=['POST'])
@@ -285,30 +203,15 @@ def reload_tile(tile_id):
             reload_dict.update(saved_options)
             mwindow.ask_tile(tile_id, "load_source", {"tile_code": module_code})
             result = mwindow.ask_tile(tile_id, "reinstantiate_tile", reload_dict).json()
-            mwindow.generate_callback({"html": result["form_html"], "jcallback_id": data_dict["jcallback_id"]})
+            mwindow.generate_callback({"success": True, "html": result["form_html"], "jcallback_id": data_dict["jcallback_id"]})
         except Exception as ex:
             template = "An exception of type {0} occured. Arguments:\n{1!r}"
             error_string = template.format(type(ex).__name__, ex.args)
+            mwindow.debug_lot("Error reloading tile " + error_string)
             mwindow.handle_exception("Error reloading tile " + error_string)
     ddict = request.json
     mwindow.post_with_function(do_reload_tile, ddict)
     return jsonify({"success": True})
-
-
-@app.route('/distribute_events/<event_name>', methods=['get', 'post'])
-def distribute_events_stub(event_name):
-    data_dict = request.json
-
-    # If necessary, have to convert the row_index on the client side to the row_id
-    if (data_dict is not None) and ("active_row_index" in data_dict) and ("doc_name" in data_dict):
-        if data_dict["active_row_index"] is not None:
-            data_dict["active_row_index"] = mwindow.doc_dict[data_dict["doc_name"]].get_id_from_actual_row(data_dict["active_row_index"])
-    if "tile_id" in request.json:
-        tile_id = request.json["tile_id"]
-    else:
-        tile_id = None
-    success = mwindow.distribute_event(event_name, data_dict, tile_id)
-    return jsonify({"success": success})
 
 
 @app.route('/get_tile_ids', methods=['get', 'post'])
@@ -316,23 +219,6 @@ def get_tile_ids():
     tile_ids = mwindow.tile_instances.keys()
     return jsonify({"success": True, "tile_ids": tile_ids})
 
-
-@app.route('/create_tile_instance', methods=["POST"])
-def create_tile_instance():
-    app.logger.debug("Entering create_tile_instances")
-
-    def do_create_tile_instance(data_dict):
-
-        result_dict = mwindow.create_tile_instance_in_mainwindow(data_dict)
-        data_dict["host_address"] = mwindow.host_address
-        data_dict["user_id"] = mwindow.user_id
-
-        mwindow.generate_callback(result_dict)
-        return
-    ddict = request.json
-    mwindow.post_with_function(do_create_tile_instance, ddict)
-    app.logger.debug("leaving create_tile_instance")
-    return jsonify({"success": True})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=True)

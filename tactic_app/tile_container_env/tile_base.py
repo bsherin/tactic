@@ -11,7 +11,7 @@ from bson.binary import Binary
 from flask import url_for, render_template
 # from flask_login import current_user
 from gevent.queue import Queue
-
+from qworker import QWorker
 
 from tokenizers import tokenizer_dict
 from weight_function_module import weight_functions
@@ -34,7 +34,7 @@ jsonizable_types = {
 }
 
 
-class TileBase(gevent.Greenlet):
+class TileBase(QWorker):
     category = "basic"
     exports = {}
     input_start_template = '<div class="form-group form-group-sm"">' \
@@ -51,19 +51,19 @@ class TileBase(gevent.Greenlet):
     boolean_template = '<div class="checkbox"><label style="font-weight: 700">'\
                        '<input type="checkbox" id="{0}" value="{0}" {1}>{0}</label>' \
                        '</div>'
-    reload_attrs = ["main_address", "host_address", "tile_name", "tile_type", "base_figure_url", "user_id",
+    reload_attrs = ["tile_name", "tile_type", "base_figure_url", "user_id",
                     "tile_id", "header_height", "front_height", "front_width", "back_height",
                     "back_width", "tda_width", "tda_height", "width", "height", "full_tile_width",
                     "full_tile_height", "is_shrunk", "configured"
                     ]
 
     def __init__(self, main_id, tile_id, tile_name=None):
-        self._my_q = Queue()
-        gevent.Greenlet.__init__(self)
+        # todo need app to init qworker
+        QWorker.__init__(self)
         self._sleepperiod = .0001
         self.save_attrs = ["current_html", "tile_id", "tile_type", "tile_name", "main_id", "configured",
                            "header_height", "front_height", "front_width", "back_height", "back_width",
-                           "tda_width", "tda_height", "width", "height", "host_address", "user_id",
+                           "tda_width", "tda_height", "width", "height", "user_id",
                            "full_tile_width", "full_tile_height", "is_shrunk", "img_dict", "current_fig_id"]
         # These define the state of a tile and should be saved
 
@@ -78,7 +78,6 @@ class TileBase(gevent.Greenlet):
         # These will differ each time the tile is instantiated.
         self.tile_id = tile_id
         self.main_id = main_id
-        self.main_address = None
         self.figure_id = 0
         self.width = ""
         self.height = ""
@@ -95,7 +94,6 @@ class TileBase(gevent.Greenlet):
         # self.base_data_url = url_for("data_source", main_id=main_id, tile_id=tile_id, data_name="X")[:-1]
         self.base_data_url = ""
         self.configured = False
-        self.host_address = None
         self.list_names = []
         return
 
@@ -342,14 +340,15 @@ class TileBase(gevent.Greenlet):
                 result[attr] = getattr(self, attr)
         return result
 
-    def send_request_to_container(self, taddress, msg_type, data_dict, wait_for_success=True, timeout=3,
-                                  wait_time=.1):
+    def send_request_to_container(self, taddress, msg_type, data_dict, wait_for_success=True,
+                                  timeout=3, tries=30, wait_time=.1):
         self.debug_log("Entering send request {0} to {1}".format(msg_type, taddress))
         if wait_for_success:
-            for attempt in range(int(1.0 * timeout / wait_time)):
+            for attempt in range(tries):
                 try:
                     self.debug_log("Trying request {0} to {1}".format(msg_type, taddress))
-                    res = requests.post("http://{0}:5000/{1}".format(taddress, msg_type), json=data_dict)
+                    res = requests.post("http://{0}:5000/{1}".format(taddress, msg_type),
+                                        timeout=timeout, json=data_dict)
                     # self.debug_log("container returned: " + res.text)
                     return res
                 except:
@@ -359,39 +358,43 @@ class TileBase(gevent.Greenlet):
                     continue
             self.debug_log("Request {0} to {1} timed out".format(msg_type, taddress))
         else:
-            return requests.post("http://{0}:5000/{1}".format(taddress, msg_type), json=data_dict)
+            return requests.post("http://{0}:5000/{1}".format(taddress, msg_type), timeout=timeout, json=data_dict)
 
-    def send_request_to_host(self, msg_type, data_dict=None, wait_for_success=True, timeout=3, wait_time=.1):
+    def send_request_to_host(self, msg_type, data_dict=None, wait_for_success=True,
+                             timeout=3, tries=30, wait_time=.1):
         if data_dict is None:
             data_dict = {}
         data_dict["main_id"] = self.main_id
         self.debug_log("sending request to host: " + msg_type)
         if wait_for_success:
-            for attempt in range(int(1.0 * timeout / wait_time)):
+            for attempt in range(tries):
                 try:
-                    result = requests.get("http://{0}:5000/{1}".format(self.host_address, msg_type), json=data_dict)
+                    result = requests.get("http://{0}:5000/{1}".format(self.host_address, msg_type),
+                                          timeout=timeout, json=data_dict)
                     return result.json()
                 except:
                     time.sleep(wait_time)
                     continue
         else:
-            result = requests.get("http://{0}:5000/{1}".format(self.host_address, msg_type), json=data_dict)
+            result = requests.get("http://{0}:5000/{1}".format(self.host_address, msg_type),
+                                  timeout=timeout, json=data_dict)
             return result.json()
 
     def distribute_event(self, event_name, data_dict):
-        return requests.post("http://{0}:5000/{1}/{2}".format(self.main_address, "distribute_events", event_name),
-                             json=data_dict)
+        self.send_request_to_container(self.main_address, "distribute_events/" + event_name, json=data_dict)
 
-    def get_main_property(self, prop_name):
+    def get_main_property(self, prop_name, timeout=3):
         data_dict = {"property": prop_name}
-        result = requests.get("http://{0}:5000/{1}".format(self.main_address, "get_property"), json=data_dict)
+        result = requests.get("http://{0}:5000/{1}".format(self.main_address, "get_property"), timeout=timeout,
+                              json=data_dict)
         return result.json()["val"]
 
-    def perform_main_function(self, func_name, args):
+    def perform_main_function(self, func_name, args, timeout=3):
         data_dict = {}
         data_dict["args"] = args
         data_dict["func"] = func_name
-        result = requests.get("http://{0}:5000/{1}".format(self.main_address, "get_func"), json=data_dict)
+        result = requests.get("http://{0}:5000/{1}".format(self.main_address, "get_func"),
+                              timeout=timeout, json=data_dict)
         return result.json()["val"]
 
     def emit_tile_message(self, message, data=None):
@@ -399,6 +402,7 @@ class TileBase(gevent.Greenlet):
             data = {}
         data["message"] = message
         data["tile_id"] = self.tile_id
+        self.debug_log("in emit_tile_message with message {0}".format(message))
         result = self.send_request_to_host("emit_tile_message", data)
         return result
 
@@ -411,10 +415,12 @@ class TileBase(gevent.Greenlet):
         self.emit_tile_message("hideOptions")
 
     def do_the_refresh(self, new_html=None):
+        self.debug_log("Entering do_the_refresh")
         if new_html is None:
             if not self.configured:
                 new_html = "Tile not configured"
             else:
+                self.debug_log("About to call render_content")
                 new_html = self.render_content()
         self.current_html = new_html
         self.emit_tile_message("displayTileContent", {"html": new_html})
@@ -583,7 +589,8 @@ class TileBase(gevent.Greenlet):
         return
 
     def render_content(self):
-        print "not implemented"
+        self.debug_log("render_content not implemented")
+        return " "
 
     """
 

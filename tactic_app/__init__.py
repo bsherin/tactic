@@ -5,6 +5,8 @@
 from flask import Flask
 import pymongo
 import sys
+import subprocess
+import re
 import os
 from pymongo import MongoClient
 import gridfs
@@ -12,9 +14,14 @@ from flask.ext.login import LoginManager
 from flask.ext.bootstrap import Bootstrap
 from flask.ext.socketio import SocketIO
 from flask_wtf.csrf import CsrfProtect
+from docker_functions import create_container, get_address
+from communication_utils import send_request_to_container
+from host_workers import HostWorker
 
 csrf = CsrfProtect()
 mongo_uri = None
+ip_info = subprocess.check_output(['ip', '-4', 'addr', 'show', 'scope', 'global', 'dev', 'docker0'])
+host_ip = re.search("inet (.*?)/", ip_info).group(1)
 
 
 def print_message():
@@ -77,6 +84,16 @@ try:
     bootstrap = Bootstrap(app)
     socketio = SocketIO(app)
     csrf.init_app(app)
+
+    print "creating the megaplex"
+    megaplex_id = create_container("tactic_megaplex_image", network_mode="bridge")["Id"]
+    megaplex_address = get_address(megaplex_id, "bridge")
+    send_request_to_container(megaplex_address, "add_address", {"container_id": "host", "address": host_ip})
+
+    print "creating host and client workers"
+    host_worker = HostWorker(app, megaplex_address)
+    client_worker = ClientWorker(app, megaplex_addres, socketio)
+    host_worker.start()
 
 except pymongo.errors.PyMongoError as err:
     print("There's a problem with the PyMongo database. ", err)

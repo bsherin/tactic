@@ -108,7 +108,7 @@ function start_post_load() {
     else {
         socket = io.connect('http://' + document.domain + ':' + location.port + '/main');
     }
-    $.getJSON($SCRIPT_ROOT + "/get_tile_types", function (data) {
+    postWithCallback("host", "get_tile_types", null, function (data) {
         tile_types = data.tile_types;
         build_and_render_menu_objects();
         continue_loading()
@@ -116,8 +116,8 @@ function start_post_load() {
 }
 
 function continue_loading() {
-    socket.on('update-menus', function(data) {
-        $.getJSON($SCRIPT_ROOT + "/get_tile_types", function (data) {
+    socket.on('update-menus', function() {
+        postWithCallback("host", "get_tile_types", null, function (data) {
             tile_types = data.tile_types;
             clear_all_menus();
             build_and_render_menu_objects();
@@ -201,7 +201,7 @@ function continue_loading() {
             })
     }
 else {
-        $.getJSON($SCRIPT_ROOT + "/grab_data/" + String(main_id) + "/" + String(doc_names[0]), function (data) {
+        postWithCallback(main_id, "grab_data", {"doc_name":String(doc_names[0])}, function (data) {
             $("#loading-message").css("display", "none");
             $("#reload-message").css("display", "none");
             $("#outer-container").css("display", "block");
@@ -254,20 +254,12 @@ else {
 }
 
 function set_visible_doc(doc_name, func) {
-    if (func == null) {
-        $.ajax({
-            url: $SCRIPT_ROOT + "/set_visible_doc/" + String(main_id) + "/" + String(doc_name),
-            contentType: 'application/json',
-            type: 'POST'
-        })
+    var data_dict = {"doc_name": doc_name};
+    if (typeof func === "undefined") {
+        postWithCallback(main_id, "set_visible_doc", data_dict)
     }
     else {
-        $.ajax({
-            url: $SCRIPT_ROOT + "/set_visible_doc/" + String(main_id) + "/" + String(doc_name),
-            contentType: 'application/json',
-            type: 'POST',
-            success: func
-        })
+        postWithCallback(main_id, "set_visible_doc", data_dict, func)
     }
 }
 
@@ -309,28 +301,6 @@ function change_doc(el, row_id) {
 
 }
 
-function broadcast_event_to_server(event_name, data_dict, callback) {
-    data_dict.main_id = main_id;
-    data_dict.doc_name = tableObject.current_spec.doc_name;
-    data_dict.active_row_index = tableObject.active_row;
-    if (arguments.length == 2) {
-        $.ajax({
-            url: $SCRIPT_ROOT + "/distribute_events/" + event_name,
-            contentType: 'application/json',
-            type: 'POST',
-            data: JSON.stringify(data_dict)
-        });
-    }
-    else {
-        $.ajax({
-            url: $SCRIPT_ROOT + "/distribute_events/" + event_name,
-            contentType: 'application/json',
-            type: 'POST',
-            data: JSON.stringify(data_dict),
-            success: callback
-        });
-    }
-}
 
 function removeMainwindow() {
     $.getJSON($SCRIPT_ROOT + "/remove_mainwindow/" + String(main_id))

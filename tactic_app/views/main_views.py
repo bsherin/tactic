@@ -17,6 +17,7 @@ from user_manage_views import project_manager, collection_manager
 from tactic_app.docker_functions import send_request_to_container, create_container
 from tactic_app.docker_functions import get_address, callbacks, destroy_container
 from tactic_app.users import load_user
+from tactic_app import host_worker
 
 
 # The main window should join a room associated with the user
@@ -34,7 +35,15 @@ def on_join(data):
 # Views for creating and saving a new project
 # As well as for updating an existing project.
 
+@app.route('/post_from_client', methods=['POST'])
+@login_required
+def post_from_client():
+    task_packet = request.json
+    client_worker.forward_client_post(task_packet)
+    return jsonify({"success": True})
 
+
+# todo This one comes from the client.
 @app.route('/save_new_project', methods=['POST'])
 @login_required
 def save_new_project():
@@ -46,57 +55,26 @@ def save_new_project():
     return jsonify(result.json())
 
 
-@app.route('/get_list_names', methods=["get", "post"])
-def get_list_names():
-    user_id = request.json["user_id"]
-    the_user = load_user(user_id)
-    return jsonify({"list_names": the_user.list_names})
-
-
-@app.route('/delete_container', methods=["get", "post"])
-def delete_container():
-    container_id = request.json["container_id"]
-    destroy_container(container_id)
-    return jsonify({"success": True})
-
-
-@app.route('/get_list', methods=["get", "post"])
-def get_list():
-    user_id = request.json["user_id"]
-    list_name = request.json["list_name"]
-    the_user = load_user(user_id)
-    return jsonify({"the_list": the_user.get_list(list_name)})
-
-
-@app.route('/set_visible_doc/<main_id>/<doc_name>', methods=['get', 'post'])
-@login_required
-def set_visible_doc(main_id, doc_name):
-    data_dict = {}
-    data_dict["doc_name"] = doc_name
-    send_request_to_container(main_id, "set_visible_doc", data_dict)
-    return jsonify({"success": True})
-
-
 @app.route("/add_blank_console_text/<main_id>", methods=["GET"])
 @login_required
 def add_blank_console_text(main_id):
     try:
         print_string = "<div contenteditable='true'></div>"
         data_dict = {"print_string": print_string}
-        send_request_to_container(main_id, "print_to_console", data_dict)
+        host_worker.post_task(main_id, "print_to_console", data_dict)
         return jsonify({"success": True})
     except:
         return jsonify({"success": False, "message": "Error creating console text area"})
 
 
 def set_mainwindow_property(main_id, prop_name, prop_value):
-    result = send_request_to_container(main_id, "set_property", {"property": prop_name, "val": prop_value}).json()
-    return result
+    host_worker.post_task(main_id, "set_property", {"property": prop_name, "val": prop_value})
+    return
 
 
-def get_mainwindow_property(main_id, prop_name):
-    result = send_request_to_container(main_id, "get_property", {"property": prop_name}).json()
-    return result["val"]
+def get_mainwindow_property(main_id, prop_name, callback):
+    host_worker.post_task(main_id, "get_property", {"property": prop_name}, callback)
+    return
 
 
 @app.route("/send_log_html/<main_id>", methods=["POST"])
@@ -110,6 +88,7 @@ def send_log_html(main_id):
         return jsonify({"success": False, "message": "Error opening log wndow"})
 
 
+# todo open_log_window will require a change on the client
 @app.route("/open_log_window/<main_id>", methods=["GET", "POST"])
 @login_required
 def open_log_window(main_id):
@@ -208,7 +187,7 @@ def download_collection(main_id, new_name):
 @login_required
 def grab_data(main_id, doc_name):
     data_dict = {"doc_name": doc_name}
-    result = send_request_to_container(main_id, "grab_data", data_dict)
+    result = send_direct_request_to_container(main_id, "grab_data", data_dict)
     return jsonify(result.json())
 
 
@@ -267,22 +246,6 @@ def remove_mainwindow(main_id):
         destroy_container(tile_id)
     destroy_container(main_id)
     return jsonify({"success": True})
-
-
-@app.route('/get_tile_types', methods=['GET'])
-@login_required
-def get_tile_types():
-    tile_types = {}
-    for (category, the_dict) in tile_classes.items():
-        tile_types[category] = the_dict.keys()
-
-    if current_user.username in user_tiles:
-        for (category, the_dict) in user_tiles[current_user.username].items():
-            if category not in tile_types:
-                tile_types[category] = []
-            tile_types[category] += the_dict.keys()
-    result = {"tile_types": tile_types}
-    return jsonify(result)
 
 
 @app.route('/distribute_events/<event_name>', methods=['get', 'post'])
@@ -406,7 +369,7 @@ def create_tile_request():
 @login_required
 def reload_tile(tile_id):
     main_id = request.json["main_id"]
-    tile_type = send_request_to_container(tile_id, "get_property/tile_type", {})
+    tile_type = send_request_to_container(tile_id, "get_property/tile_type", {}).json()["val"]
     module_code = get_tile_code(tile_type)
     send_request_to_container(main_id, "reload_tile/" + tile_id ,
                               {"tile_code": module_code,

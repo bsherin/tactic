@@ -171,7 +171,7 @@ var tableObject = {
                 if (!self.is_last_chunk ) {
                     self.getting_new_chunk = true;
                     var nrows = $('#table-area tbody tr').length;
-                    $.getJSON($SCRIPT_ROOT + "/grab_next_chunk/" + String(main_id) + "/" + String(self.current_doc_name), function (data) {
+                    postWithCallback(main_id, "grab_next_chunk", {"doc_name": self.current_doc_name}, function (data) {
                         var top_edge_pos = $("#table-area tbody tr:last").position().top;
                         tableObject.refill_table(data);
                         // The last row will now be at this position
@@ -186,7 +186,7 @@ var tableObject = {
             if ($("#table-area tbody tr:first").isOnScreen()) {
                 if (!self.is_first_chunk) {
                     self.getting_new_chunk = true;
-                    $.getJSON($SCRIPT_ROOT + "/grab_previous_chunk/" + String(main_id) + "/" + String(self.current_doc_name), function (data) {
+                    postWithCallback(main_id, "grab_previous_chunk", {"doc_name": self.current_doc_name}, function (data) {
                         var top_edge_pos = $("#table-area tbody tr:first").position().top;
                         tableObject.refill_table(data);
                         // The last row will now be at this position
@@ -407,16 +407,16 @@ var tableObject = {
             var id_selector = "#row-" + String(rindex) + "-col-__id__";
             var row_id = parseInt($(this.parentElement).children(id_selector).text());
             if (current_content != old_content) {
-                shorter_sig = [];
+                var shorter_sig = [];
                 //self.table_array[rindex][cindex] = current_content;
                 self.data_rows[rindex][column_header] = current_content;
-                data_dict = {
+                var data_dict = {
                     "id": row_id,
                     "column_header": column_header,
                     "old_content": old_content,
                     "new_content": current_content,
                     "doc_name": self.current_doc_name};
-                broadcast_event_to_server("CellChange", data_dict)
+                broadcast_event_to_server("CellChange", data_dict, null)
             }
         }
     },

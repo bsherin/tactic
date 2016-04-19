@@ -16,9 +16,10 @@ from tactic_app.shared_dicts import user_tiles, loaded_user_modules, create_init
 from tactic_app.shared_dicts import test_tile_container_id, tile_classes, get_tile_code
 from tactic_app.user_tile_env import create_user_tiles
 from tactic_app.users import User
-from tactic_app.docker_functions import send_request_to_container
+from tactic_app.communication_utilities import send_request_to_container
 
 from tactic_app.docker_functions import create_container, get_address
+from tactic_app import megaplex_address, megaplex_id, host_worker
 
 AUTOSPLIT = True
 AUTOSPLIT_SIZE = 10000
@@ -321,6 +322,7 @@ class CollectionManager(ResourceManager):
         cname = user_obj.build_data_collection_name(collection_name)
         main_id = create_container("tactic_main_image", network_mode="bridge")["Id"]
         caddress = get_address(main_id, "bridge")
+        send_direct_request_to_container(megaplex_id, "add_address", {"container_id": "main", "address": caddress})
 
         if user_obj.username not in loaded_user_modules:
             loaded_user_modules[user_obj.username] = []
@@ -328,13 +330,12 @@ class CollectionManager(ResourceManager):
         data_dict = {"collection_name": cname,
                      "main_container_id": main_id,
                      "user_id": current_user.get_id(),
-                     "host_address": host_ip,
-                     "main_address": caddress,
+                     "megaplex_address": megaplex_address,
                      "loaded_user_modules": loaded_user_modules,
                      "mongo_uri": mongo_uri,
                      "base_figure_url": url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1]}
 
-        send_request_to_container(main_id, "initialize_mainwindow", data_dict)
+        send_direct_request_to_container(main_id, "initialize_mainwindow", data_dict)
         short_collection_name = re.sub("^.*?\.data_collection\.", "", collection_name)
 
         the_collection = db[cname]

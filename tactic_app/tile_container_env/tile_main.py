@@ -36,8 +36,6 @@ def recreate_from_save():
     tile_instance = tile_class(data["main_id"], data["tile_id"],
                                data["tile_name"])
     app.logger.debug("tile instance is complete")
-    tile_instance.host_address = data["host_address"]
-    tile_instance.main_address = data["main_address"]
     tile_instance.base_figure_url = data["base_figure_url"]
     tile_instance.app = app
     tile_instance.recreate_from_save(data)
@@ -82,10 +80,12 @@ def get_tile_exports():
 
 @app.route('/post_event', methods=["get", "post"])
 def post_event():
+    app.logger.debug("entering post_event in tile_main")
     data_dict = request.json
     event_name = data_dict["event_name"]
     tile_instance.post_event(event_name, data_dict)
     result_dict = {"success": True}
+    app.logger.debug("leaving post_event in tile_main")
     return jsonify(result_dict)
 
 
@@ -105,9 +105,7 @@ def instantiate_tile_class():
     tile_instance = tile_class(data["main_id"], data["tile_id"],
                                data["tile_name"])
     app.logger.debug("tile instance is complete")
-    tile_instance.host_address = data["host_address"]
     tile_instance.user_id = data["user_id"]
-    tile_instance.main_address = data["main_address"]
     tile_instance.base_figure_url = data["base_figure_url"]
     tile_instance.app = app
     tile_instance.start()
@@ -125,7 +123,7 @@ def reinstantiate_tile():
     from tile_env import tile_class
     reload_dict = copy.copy(request.json)
     app.logger.debug("creating tile instance")
-    tile_instance.kill()
+    # tile_instance.kill()
     tile_instance = tile_class(reload_dict["main_id"], reload_dict["tile_id"],
                                reload_dict["tile_name"])
     for (attr, val) in reload_dict.items():

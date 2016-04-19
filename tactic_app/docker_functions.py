@@ -52,21 +52,19 @@ def create_callback(func):
     return unique_id
 
 
-def send_request_to_container(container_id, msg_type, data_dict, callback=None, wait_for_success=True, timeout=3, wait_time=.1):
+def send_direct_request_to_container(container_id, msg_type, data_dict, wait_for_success=True,
+                              timeout=3, tries=30, wait_time=.1):
     maddress = get_address(container_id, "bridge")
-    if callback is not None:
-        callback_id = create_callback(callback)
-        data_dict["host_callback_id"] = callback_id
     if wait_for_success:
-        for attempt in range(int(1.0 * timeout / wait_time)):
+        for attempt in range(tries):
             try:
-                res = requests.post("http://{0}:5000/{1}".format(maddress, msg_type), json=data_dict)
+                res = requests.post("http://{0}:5000/{1}".format(maddress, msg_type), timeout=timeout, json=data_dict)
                 return res
             except:
                 time.sleep(wait_time)
                 continue
     else:
-        return requests.post("http://{0}:5000/{1}".format(maddress, msg_type), json=data_dict)
+        return requests.post("http://{0}:5000/{1}".format(maddress, msg_type), timeout=timeout, json=data_dict)
 
 
 def connect_to_network(container, network):

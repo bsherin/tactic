@@ -161,7 +161,7 @@ class docInfo:
 
 
 # noinspection PyPep8Naming
-class mainWindow(gevent.Greenlet):
+class mainWindow(QWorker):
     save_attrs = ["short_collection_name", "collection_name", "current_tile_id", "tile_sort_list", "left_fraction",
                   "is_shrunk", "doc_dict", "project_name", "loaded_modules", "user_id",
                   "hidden_columns_list", "console_html"]
@@ -172,9 +172,7 @@ class mainWindow(gevent.Greenlet):
 
     # noinspection PyUnresolvedReferences
     def __init__(self, app, data_dict):
-        self._my_q = Queue()
-        gevent.Greenlet.__init__(self)
-        self._sleepperiod = .0001
+        QWorker.__init__(self, app, data_dict["megaplex_address"], data_dict["main_container_id"])
         try:
             client = pymongo.MongoClient(data_dict["mongo_uri"])
             client.server_info()
@@ -184,11 +182,7 @@ class mainWindow(gevent.Greenlet):
         except pymongo.errors.PyMongoError as err:
             sys.exit()
 
-        self.main_id = data_dict["main_container_id"]
-        self.host_address = data_dict["host_address"]
-        self.main_address = data_dict["main_address"]
         self.base_figure_url = data_dict["base_figure_url"]
-        self.app = app
 
         # These are the main attributes that define a project state
 
@@ -218,86 +212,19 @@ class mainWindow(gevent.Greenlet):
             self.user_id = data_dict["user_id"]
             self.doc_dict = self._build_doc_dict()
 
-    def send_request_to_host(self, msg_type, data_dict=None, wait_for_success=True, timeout=3, wait_time=.1):
-        self.debug_log("Entering send_request_to_host with msg: " + msg_type)
-        if data_dict is None:
-            data_dict = {}
-        data_dict["main_id"] = self.main_id
-        if wait_for_success:
-            for attempt in range(int(1.0 * timeout / wait_time)):
-                try:
-                    self.debug_log("Trying request {0} to {1}".format(msg_type, self.host_address))
-                    res = requests.get("http://{0}:5000/{1}".format(self.host_address, msg_type), json=data_dict)
-                    return res
-                except:
-                    error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-                    self.debug_log("Got error on request: " + error_string)
-                    time.sleep(wait_time)
-                    continue
-            self.debug_log("Request {0} to {1} timed out".format(msg_type, self.host_address))
-        else:
-            return requests.get("http://{0}:5000/{1}".format(self.host_address, msg_type), json=data_dict)
+    def ask_host(self, msg_type, task_data=None, callback_func=None):
+        self.post_task("host", msg_type, task_data, callback_func)
+        return
 
-    # def login_to_host(self, data_dict):
-    #     # data_dict is irrelevant here
-    #     self.app.logger.debug("entering login to host")
-    #     data = {"username": username, "password": password, "remember_me": False}
-    #     self.send_request_to_host("attempt_login", data)
+    def ask_tile(self, tile_id, msg_type, task_data=None, callback_func=None):
+        self.post_task(tile_id, msg_type, task_data, callback_func)
+        return
 
-    def debug_log(self, msg):
-        with self.app.test_request_context():
-            self.app.logger.debug(msg)
-
-    def send_request_to_container(self, taddress, msg_type, data_dict, wait_for_success=True, timeout=3,
-                                  wait_time=.1):
-        self.debug_log("Entering send request {0} to {1}".format(msg_type, taddress))
-        if wait_for_success:
-            for attempt in range(int(1.0 * timeout / wait_time)):
-                try:
-                    self.debug_log("Trying request {0} to {1}".format(msg_type, taddress))
-                    res = requests.post("http://{0}:5000/{1}".format(taddress, msg_type), json=data_dict)
-                    return res
-                except:
-                    error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-                    self.debug_log("Got error on reqiest: " + error_string)
-                    time.sleep(wait_time)
-                    continue
-            self.debug_log("Request {0} to {1} timed out".format(msg_type, taddress))
-        else:
-            return requests.post("http://{0}:5000/{1}".format(taddress, msg_type), json=data_dict)
-
-    def ask_tile(self, tile_id, request_name, data_dict=None):
-        try:
-            self.debug_log("In mwindow ask_tile with request: " + request_name)
-            if data_dict is None:
-                data_dict = {}
-            taddress = self.tile_instances[tile_id]
-            data_dict["main_id"] = self.main_id
-            self.debug_log("in ask_tile with tile address: " + taddress)
-            result = self.send_request_to_container(taddress, request_name, data_dict)
-        except:
-            result = self.handle_exception("Error in mwindow.ask_tile", True)
-        return result
-
-    def post_tile_event(self, tile_id, event_name, data_dict=None):
-        self.debug_log("entering post_tile_event with event_name: " + event_name)
-        if data_dict is None:
-            data_dict = {}
-        ddict = copy.copy(data_dict)
-        ddict["event_name"] = event_name
-        self.ask_tile(tile_id, "post_event", ddict)
-
-    def emit_table_message(self, message, data=None):
-        self.app.logger.debug("entering emit table message. host is: " + str(self.host_address))
+    def emit_table_message(self, message, data=None, callback_func=None):
         if data is None:
             data = {}
         data["message"] = message
-        result = self.send_request_to_host("emit_table_message", data)
-        return result
-
-    def generate_callback(self, return_data):
-        if "jcallback_id" in return_data or "host_callback_id" in return_data:
-            self.send_request_to_host("handle_callback", return_data)
+        self.ask_host("emit_table_message", data, callback_func)
         return
 
     def distribute_event(self, event_name, data_dict=None, tile_id=None):
@@ -306,14 +233,16 @@ class mainWindow(gevent.Greenlet):
             data_dict = {}
         try:
             if tile_id is not None:
-                self.post_tile_event(tile_id, event_name, data_dict)
+                self.ask_tile(tile_id, event_name, data_dict)
             else:
                 for tile_id in self.tile_instances.keys():
-                    self.post_tile_event(tile_id, event_name, data_dict)
+                    self.ask_tile(tile_id, event_name, data_dict)
             if event_name in self.update_events:
-                self.post_event(event_name, data_dict)
+                self.post_task(self.my_id, event_name, data_dict)
+            self.debug_log("successfully leaving distribute_event in main with with event_name: " + event_name)
             return True
         except:
+            self.debug("Unsuccessfully leaving distribute_event in main with with event_name: " + event_name)
             self.handle_exception("Error distributing event " + event_name)
             return False
 
@@ -368,6 +297,7 @@ class mainWindow(gevent.Greenlet):
         self.visible_doc_name = self.doc_dict.keys()[0] #  This is necessary for recreating the tiles
         return tile_info_dict, project_dict["loaded_modules"]
 
+    # todo come back to recreate_the_tiles. have to deal with tile_instances
     def recreate_the_tiles(self, new_tile_info):
         self.tile_instances = {}
         tile_results = {}
@@ -378,8 +308,6 @@ class mainWindow(gevent.Greenlet):
             self.tile_sort_list[self.tile_sort_list.index(old_tile_id)] = new_tile_id
             tile_save_dict = self.project_dict["tile_instances"][old_tile_id]
             tile_save_dict["tile_id"] = new_tile_id
-            tile_save_dict["host_address"] = self.host_address
-            tile_save_dict["main_address"] = self.main_address
             tile_save_dict["base_figure_url"] = self.base_figure_url.replace("tile_id", new_tile_id)
             tile_result = self.ask_tile(new_tile_id, "recreate_from_save", tile_save_dict).json()
             tile_results[new_tile_id] = tile_result
@@ -426,7 +354,7 @@ class mainWindow(gevent.Greenlet):
 
     @property
     def tile_ids(self):
-        return self.tile_instances.keys()
+        return self.tile_instances
 
     def add_blank_column(self, column_name):
         for doc in self.doc_dict.values():
@@ -434,58 +362,47 @@ class mainWindow(gevent.Greenlet):
             for r in doc.data_rows.values():
                 r[column_name] = ""
 
-    def post_event(self, event_name, data=None, callback=None):
-        self.app.logger.debug("entering post_event")
-        self._my_q.put({"event_name": event_name, "data": data})
-
-    # This provides a general mechanism to put a function on the event loop.
-    def post_with_function(self, func, data=None):
-        self.app.logger.debug("entering post_with_function")
-        event_name = "FuncEvent"
-        if data is None:
-            data = {}
-        data["func"] = func
-        self._my_q.put({"event_name": event_name, "data": data})
-
     def _delete_tile_instance(self, tile_id):
-        del self.tile_instances[tile_id]
+        self.tile_instances.remove(tile_id)
         self.tile_sort_list.remove(tile_id)
         if tile_id in self._pipe_dict:
             del self._pipe_dict[tile_id]
             self.distribute_event("RebuildTileForms")
-        self.send_request_to_host("delete_container", {"container_id": tile_id})
+        self.ask_host("delete_container", {"container_id": tile_id})
         return
 
-    def create_tile_instance_in_mainwindow(self, data_dict):
-        tile_container_id = data_dict["tile_id"]
-        tile_container_address = data_dict["tile_container_address"]
-        self.tile_instances[tile_container_id] = tile_container_address
-        tile_name = data_dict["tile_name"]
-        data_dict["host_address"] = self.host_address
-        data_dict["user_id"] = self.user_id
-        data_dict["main_address"] = self.main_address
-        data_dict["base_figure_url"] = self.base_figure_url.replace("tile_id", tile_container_id)
+    # todo create_tile stuff is a mess right now.
+    def create_tile_instance(self, data_dict):
+        def keep_on_tile_creation(next_response):
+            if next_response["success"]:
+                exports = next_response["exports"]
+                if len(exports) > 0:
+                    if tile_container_id not in self._pipe_dict:
+                        self._pipe_dict[tile_container_id] = {}
+                    for export in exports:
+                        self._pipe_dict[tile_container_id][tile_name + "_" + export] = {
+                            "export_name": export,
+                            "tile_address": tile_container_address}
+                    self.distribute_event("RebuildTileForms")
+                self.tile_sort_list.append(tile_container_id)
+                self.current_tile_id += 1
 
-        instantiate_result = self.ask_tile(data_dict["tile_id"], "instantiate_tile_class", data_dict).json()
-        result_dict = self.ask_tile(tile_container_id, "get_tile_exports").json()
-        if result_dict["success"]:
-            exports = result_dict["exports"]
-            if len(exports) > 0:
-                if tile_container_id not in self._pipe_dict:
-                    self._pipe_dict[tile_container_id] = {}
-                for export in exports:
-                    self._pipe_dict[tile_container_id][tile_name + "_" + export] = {
-                        "export_name": export,
-                        "tile_address": tile_container_address}
-                self.distribute_event("RebuildTileForms")
-            self.tile_sort_list.append(tile_container_id)
-            self.current_tile_id += 1
-        return instantiate_result
+        def continue_tile_creation(response_data):
+            self.ask_tile(tile_container_id, "get_tile_exports", response_data, keep_on_tile_creation)
+            return
+
+        tile_container_id = data_dict["tile_id"]
+        self.tile_instances.append(tile_container_id)
+        tile_name = data_dict["tile_name"]
+        data_dict["user_id"] = self.user_id
+        data_dict["base_figure_url"] = self.base_figure_url.replace("tile_id", tile_container_id)
+        self.ask_tile(data_dict["tile_id"], "instantiate_tile_class", data_dict, callback_func=continue_tile_creation)
 
     def handle_exception(self, unique_message=None, print_to_console=True):
         error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         if unique_message is not None:
             error_string = unique_message + " " + error_string
+            self.debug_log(error_string)
         if print_to_console:
             self.print_to_console(error_string, force_open=True)
         return error_string
@@ -573,81 +490,152 @@ class mainWindow(gevent.Greenlet):
                     i += 1
         return
 
-    def _run(self):
-        self.running = True
-        while self.running:
-            if not self._my_q.empty():
-                # self.emit_table_message("startTableSpinner")
-                q_item = self._my_q.get()
-                self._handle_event(q_item["event_name"], q_item["data"])
-            else:
-                self.table_yield()
-            #     self.emit_table_message("stopTableSpinner")
+    def CellChange(self, data):
+        self._set_row_column_data(data["doc_name"], data["id"], data["column_header"], data["new_content"])
+        self._change_list.append(data["id"])
+        return None
 
-    def table_yield(self):
-        gevent.sleep(self._sleepperiod)
+    def set_visible_doc(self, data):
+        doc_name = data["doc_name"]
+        self.visible_doc_name = doc_name
+        return None
 
-    def _handle_event(self, event_name, data=None):
-        # noinspection PyBroadException
-        self.debug_log("Entering _handle event with event_name " + event_name)
-        try:
-            if event_name == "CellChange":
-                self._set_row_column_data(data["doc_name"], data["id"], data["column_header"], data["new_content"])
-                self._change_list.append(data["id"])
-            elif event_name == "RecreateTiles":
-                self.recreate_the_tiles(data)
-            elif event_name == "FuncEvent":
-                func = data["func"]
-                self.debug_log("func is " + func.__name__)
-                del data["func"]
-                func(data)
-            elif event_name == "BuildDocDict": # todo this might never be called
-                self.doc_dict = self._build_doc_dict(self.collection_name)
-            elif event_name == "RemoveTile":
-                self._delete_tile_instance(data["tile_id"])
-            elif event_name == "CreateColumn":
-                self.add_blank_column(data["column_name"])
-                self.distribute_event("RebuildTileForms")
-            elif event_name == "SearchTable":
-                self.highlight_table_text(data["text_to_find"])
-            elif event_name == "FilterTable":
-                self.filter_table_rows(data["text_to_find"])
-            elif event_name == "DehighlightTable":
-                self.dehighlight_all_table_text()
-            elif event_name == "UnfilterTable":
-                self.unfilter_all_rows()
-            elif event_name == "ColorTextInCell":
-                self.emit_table_message("colorTxtInCell", data)
-            elif event_name == "SetCellContent":
-                self._set_cell_content(data["doc_name"], data["id"], data["column_header"],
-                                       data["new_content"], data["cellchange"])
-            elif event_name == "TextSelect":
-                self.selected_text = data["selected_text"]
-            elif event_name == "SaveTableSpec":
-                new_spec = data["tablespec"]
-                self.doc_dict[new_spec["doc_name"]].table_spec = new_spec
-            elif event_name == "UpdateSortList":
-                self.tile_sort_list = data["sort_list"]
-            elif event_name == "UpdateLeftFraction":
-                self.left_fraction = data["left_fraction"]
-            elif event_name == "UpdateTableShrinkState":
-                self.is_shrunk = data["is_shrunk"]
-            elif event_name == "PrintToConsole":
-                self.print_to_console(data["message"], True)
-            # elif event_name == "LogIn":
-            #     self.login_to_host()
-            elif event_name == "DisplayCreateErrors":
-                for msg in self.recreate_errors:
-                    self.debug_log("Got CreateError: " + msg)
-                    self.print_to_console(msg, True)
-                self.recreate_errors = []
-        except:
-            # with self.app.app_context():
-            #     self.logger.debug("error in handle_event" + self.__class__.__name__ +
-            #                           str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
-            self.print_to_console("error in handle_event  " + self.__class__.__name__ +
-                                  str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]), force_open=True)
-        return
+    def get_property(self, data_dict):
+        prop_name = data_dict["property"]
+        val = getattr(mwindow, prop_name)
+        return jsonify({"val": val})
+
+    def set_property(self, data_dict):
+        prop_name = data_dict["property"]
+        val = data_dict["val"]
+        setattr(mwindow, prop_name, val)
+        return None
+
+    def grab_data(self, data):
+        doc_name = data["doc_name"]
+        return jsonify({"doc_name": doc_name,
+                        "is_shrunk": self.is_shrunk,
+                        "left_fraction": self.left_fraction,
+                        "data_rows": self.doc_dict[doc_name].displayed_data_rows,
+                        "background_colors": self.doc_dict[doc_name].displayed_background_colors,
+                        "header_list": self.doc_dict[doc_name].header_list,
+                        "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
+                        "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
+                        "max_table_size": self.doc_dict[doc_name].max_table_size})
+
+    def distribute_events_stub(self, data_dict):
+        event_name = data_dict["event_name"]
+
+        # If necessary, have to convert the row_index on the client side to the row_id
+        if (data_dict is not None) and ("active_row_index" in data_dict) and ("doc_name" in data_dict):
+            if data_dict["active_row_index"] is not None:
+                data_dict["active_row_index"] = self.doc_dict[data_dict["doc_name"]].get_id_from_actual_row(
+                    data_dict["active_row_index"])
+        if "tile_id" in data_dict:
+            tile_id = data_dict["tile_id"]
+        else:
+            tile_id = None
+        success = self.distribute_event(event_name, data_dict, tile_id)
+        return jsonify({"success": success})
+
+    def grab_next_chunk(self, data_dict):
+        self.debug_log("entering grab next chunk")
+        doc_name = data_dict["doc_name"]
+        step_amount = self.doc_dict[doc_name].advance_to_next_chunk()
+        return jsonify({"doc_name": doc_name,
+                        "data_rows": self.doc_dict[doc_name].displayed_data_rows,
+                        "background_colors": self.doc_dict[doc_name].displayed_background_colors,
+                        "header_list": self.doc_dict[doc_name].header_list,
+                        "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
+                        "is_first_chunk": slef.doc_dict[doc_name].is_first_chunk,
+                        "step_size": step_amount})
+
+    def grab_previous_chunk(self, data_dict):
+        self.debug_log("entering grab previous chunk")
+        doc_name = data_dict["doc_name"]
+        step_amount = self.doc_dict[doc_name].go_to_previous_chunk()
+        return jsonify({"doc_name": doc_name,
+                        "data_rows": self.doc_dict[doc_name].displayed_data_rows,
+                        "background_colors": self.doc_dict[doc_name].displayed_background_colors,
+                        "header_list": self.doc_dict[doc_name].header_list,
+                        "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
+                        "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
+                        "step_size": step_amount})
+
+
+    # todo some of these can be compacted
+    def RecreateTiles(self, data):
+        self.recreate_the_tiles(data)
+        return None
+
+    def BuildDocDict(self, data): # todo this might never be called
+        self.doc_dict = self._build_doc_dict(self.collection_name)
+
+    def RemoveTile(self, data):
+        self._delete_tile_instance(data["tile_id"])
+        return None
+
+    def CreateColumn(self, data):
+        self.add_blank_column(data["column_name"])
+        self.distribute_event("RebuildTileForms")
+        return None
+
+    def SearchTable(self, data):
+        self.highlight_table_text(data["text_to_find"])
+        return None
+
+    def FilterTable(self, data):
+        self.filter_table_rows(data["text_to_find"])
+        return None
+
+    def DehighlightTable(self, data):
+        self.dehighlight_all_table_text()
+        return None
+
+    def UnfilterTable(self, data):
+        self.unfilter_all_rows()
+        return None
+
+    def ColorTextInCell(self, data):
+        self.emit_table_message("colorTxtInCell", data)
+        return None
+
+    def SetCellContent(self, data):
+        self._set_cell_content(data["doc_name"], data["id"], data["column_header"],
+                               data["new_content"], data["cellchange"])
+        return None
+
+    def TextSelect(self, data):
+        self.selected_text = data["selected_text"]
+        return None
+
+    def SaveTableSpec(self, data):
+        new_spec = data["tablespec"]
+        self.doc_dict[new_spec["doc_name"]].table_spec = new_spec
+        return None
+
+    def UpdateSortList(self, data):
+        self.tile_sort_list = data["sort_list"]
+        return None
+
+    def UpdateLeftFraction(self, data):
+        self.left_fraction = data["left_fraction"]
+        return None
+
+    def UpdateTableShrinkState(self, data):
+        self.is_shrunk = data["is_shrunk"]
+        return None
+
+    def PrintToConsole(self, data):
+        self.print_to_console(data["message"], True)
+        return None
+
+    def DisplayCreateErrors(self, data):
+        for msg in self.recreate_errors:
+            self.debug_log("Got CreateError: " + msg)
+            self.print_to_console(msg, True)
+        self.recreate_errors = []
+        return None
 
     def _set_cell_content(self, doc_name, the_id, column_header, new_content, cellchange=True):
         doc = self.doc_dict[doc_name]
