@@ -494,35 +494,35 @@ class mainWindow(QWorker):
     def CellChange(self, data):
         self._set_row_column_data(data["doc_name"], data["id"], data["column_header"], data["new_content"])
         self._change_list.append(data["id"])
-        return None
+        return {"success": True}
 
     def set_visible_doc(self, data):
         doc_name = data["doc_name"]
         self.visible_doc_name = doc_name
-        return None
+        return {"success": True}
 
     def get_property(self, data_dict):
         prop_name = data_dict["property"]
         val = getattr(mwindow, prop_name)
-        return jsonify({"val": val})
+        return {"val": val}
 
     def set_property(self, data_dict):
         prop_name = data_dict["property"]
         val = data_dict["val"]
         setattr(mwindow, prop_name, val)
-        return None
+        return {"success": True}
 
     def grab_data(self, data):
         doc_name = data["doc_name"]
-        return jsonify({"doc_name": doc_name,
-                        "is_shrunk": self.is_shrunk,
-                        "left_fraction": self.left_fraction,
-                        "data_rows": self.doc_dict[doc_name].displayed_data_rows,
-                        "background_colors": self.doc_dict[doc_name].displayed_background_colors,
-                        "header_list": self.doc_dict[doc_name].header_list,
-                        "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
-                        "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
-                        "max_table_size": self.doc_dict[doc_name].max_table_size})
+        return {"doc_name": doc_name,
+                "is_shrunk": self.is_shrunk,
+                "left_fraction": self.left_fraction,
+                "data_rows": self.doc_dict[doc_name].displayed_data_rows,
+                "background_colors": self.doc_dict[doc_name].displayed_background_colors,
+                "header_list": self.doc_dict[doc_name].header_list,
+                "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
+                "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
+                "max_table_size": self.doc_dict[doc_name].max_table_size}
 
     def distribute_events_stub(self, data_dict):
         event_name = data_dict["event_name"]
@@ -537,31 +537,31 @@ class mainWindow(QWorker):
         else:
             tile_id = None
         success = self.distribute_event(event_name, data_dict, tile_id)
-        return jsonify({"success": success})
+        return {"success": success}
 
     def grab_next_chunk(self, data_dict):
         self.debug_log("entering grab next chunk")
         doc_name = data_dict["doc_name"]
         step_amount = self.doc_dict[doc_name].advance_to_next_chunk()
-        return jsonify({"doc_name": doc_name,
-                        "data_rows": self.doc_dict[doc_name].displayed_data_rows,
-                        "background_colors": self.doc_dict[doc_name].displayed_background_colors,
-                        "header_list": self.doc_dict[doc_name].header_list,
-                        "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
-                        "is_first_chunk": slef.doc_dict[doc_name].is_first_chunk,
-                        "step_size": step_amount})
+        return {"doc_name": doc_name,
+                "data_rows": self.doc_dict[doc_name].displayed_data_rows,
+                "background_colors": self.doc_dict[doc_name].displayed_background_colors,
+                "header_list": self.doc_dict[doc_name].header_list,
+                "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
+                "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
+                "step_size": step_amount}
 
     def grab_previous_chunk(self, data_dict):
         self.debug_log("entering grab previous chunk")
         doc_name = data_dict["doc_name"]
         step_amount = self.doc_dict[doc_name].go_to_previous_chunk()
-        return jsonify({"doc_name": doc_name,
-                        "data_rows": self.doc_dict[doc_name].displayed_data_rows,
-                        "background_colors": self.doc_dict[doc_name].displayed_background_colors,
-                        "header_list": self.doc_dict[doc_name].header_list,
-                        "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
-                        "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
-                        "step_size": step_amount})
+        return {"doc_name": doc_name,
+                "data_rows": self.doc_dict[doc_name].displayed_data_rows,
+                "background_colors": self.doc_dict[doc_name].displayed_background_colors,
+                "header_list": self.doc_dict[doc_name].header_list,
+                "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
+                "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
+                "step_size": step_amount}
 
 
     # todo some of these can be compacted

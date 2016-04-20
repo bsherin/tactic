@@ -1,11 +1,9 @@
-from qworker import QWorker
+from qworker import QWorker, _sleepperiod
 from flask import jsonify
 from flask_login import current_user
 from users import load_user
 import gevent
 from communication_utils import send_request_to_container
-
-_sleepperiod = .0001
 
 
 class HostWorker(QWorker):
@@ -62,5 +60,6 @@ class ClientWorker(QWorker):
                 if task_packet["response_data"] is not None:
                     self.socketio.emit("handle-callback", task_packet, namespace='/main', room=task_packet["main_id"])
                 else:
+                    # todo This must handle_event differently
                     self.handle_event(task_packet)
             gevent.sleep(_sleepperiod)

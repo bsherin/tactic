@@ -57,11 +57,11 @@ def get_next_task(requester_id):
         return jsonify({"empty": True})
     if not queue_dict[requester_id]["responses"].empty():
         task_packet = queue_dict[requester_id]["responses"].get()
-        dmsg("got task {0} for {1}".format(task_packet["task_type"], requester_id))
+        dmsg("got response {0} for {1}".format(task_packet["task_type"], requester_id))
         return jsonify(task_packet)
     if not queue_dict[requester_id]["tasks"].empty():
         task_packet = queue_dict[requester_id]["tasks"].get()
-        dmsg("got response {0} for {1}".format(task_packet["task_type"], requester_id))
+        dmsg("got task {0} for {1}".format(task_packet["task_type"], requester_id))
         return jsonify(task_packet)
     return jsonify({"empty": True})
 

@@ -14,7 +14,7 @@ blank_packet = {"source": None,
                 "response_data": None,
                 "callback_id": None}
 
-_sleepperiod = .0001
+_sleepperiod = 1
 
 
 def send_request_to_container(taddress, msg_type, data_dict=None, wait_for_success=True,
