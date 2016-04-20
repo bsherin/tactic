@@ -715,6 +715,7 @@ class TileBase(QWorker):
     def get_selected_text(self):
         return self.get_main_property("selected_text")
 
+    # todo print_to_consoles will need to be changed here.
     def display_message(self, message_string, force_open=False):
         self.perform_main_function("print_to_console", [message_string, force_open])
 

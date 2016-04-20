@@ -42,6 +42,11 @@ class HostWorker(QWorker):
         result = {"tile_types": tile_types}
         return result
 
+    def emit_table_message(self, data):
+        from tactic_app import socketio
+        socketio.emit("table-message", data, namespace='/main', room=data["main_id"])
+        return {"success": True}
+
 
 class ClientWorker(QWorker):
     def __init__(self, app, megaplex_address, socketio):

@@ -283,6 +283,9 @@ function postWithCallback(dest_id, task_type, task_data, callback_func){
         callbacks[unique_id] = callback_func;
         task_packet.callback_id = unique_id
     }
+    else {
+        task_packet.callback_id = null
+    }
     $.ajax({
         url: $SCRIPT_ROOT + "/post_from_client",
         contentType : 'application/json',

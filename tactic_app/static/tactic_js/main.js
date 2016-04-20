@@ -66,7 +66,9 @@ function closeLogItem(e) {
 
 
 function addBlankConsoleText() {
-    $.getJSON($SCRIPT_ROOT + '/add_blank_console_text/'  + String(main_id), function(data) {
+    var print_string = "<div contenteditable='true'></div>"
+    var task_data = {"print_string": print_string}
+    postWithCallback(main_id, "print_to_console_event", task_data, function(data) {
         if (!data.success) {
             doFlash(data)
         }
@@ -74,25 +76,13 @@ function addBlankConsoleText() {
 }
 
 function openLogWindow() {
-    var result_dict = {
-        "console_html": $('#console').html()
+    var task_data = {
+        "property": "console_html",
+        "val": $('#console').html()
     };
-    $.ajax({
-            url: $SCRIPT_ROOT + "/send_log_html/" + String(main_id),
-            contentType : 'application/json',
-            type : 'POST',
-            async: true,
-            data: JSON.stringify(result_dict),
-            dataType: 'json',
-            success: function (data) {
-                if (data.success) {
-                     window.open($SCRIPT_ROOT + "/open_log_window/" + String(main_id))
-                }
-                else {
-                    doFlash(data)
-                }
-            }
-    });
+    postWithCallback(main_id, "open_log_window", task_data, function(response_data) {
+        window.open(response_data.html)
+    })
 }
 
 

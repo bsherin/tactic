@@ -46,7 +46,7 @@ def post_from_client():
     return jsonify({"success": True})
 
 
-# todo This one comes from the client.
+# todo work on saving
 @app.route('/save_new_project', methods=['POST'])
 @login_required
 def save_new_project():
@@ -58,18 +58,6 @@ def save_new_project():
     return jsonify(result.json())
 
 
-@app.route("/add_blank_console_text/<main_id>", methods=["GET"])
-@login_required
-def add_blank_console_text(main_id):
-    try:
-        print_string = "<div contenteditable='true'></div>"
-        data_dict = {"print_string": print_string}
-        host_worker.post_task(main_id, "print_to_console", data_dict)
-        return jsonify({"success": True})
-    except:
-        return jsonify({"success": False, "message": "Error creating console text area"})
-
-
 def set_mainwindow_property(main_id, prop_name, prop_value):
     host_worker.post_task(main_id, "set_property", {"property": prop_name, "val": prop_value})
     return
@@ -77,30 +65,7 @@ def set_mainwindow_property(main_id, prop_name, prop_value):
 
 def get_mainwindow_property(main_id, prop_name, callback):
     host_worker.post_task(main_id, "get_property", {"property": prop_name}, callback)
-    return
-
-
-@app.route("/send_log_html/<main_id>", methods=["POST"])
-@login_required
-def send_log_html(main_id):
-    try:
-        console_html = request.json["console_html"]
-        set_mainwindow_property(main_id, "console_html", console_html)
-        return jsonify({"success": True})
-    except:
-        return jsonify({"success": False, "message": "Error opening log wndow"})
-
-
-# todo open_log_window will require a change on the client
-@app.route("/open_log_window/<main_id>", methods=["GET", "POST"])
-@login_required
-def open_log_window(main_id):
-    if get_mainwindow_property(main_id, "project_name") is None:
-        title = get_mainwindow_property(main_id, "short_collection_name") + " log"
-    else:
-        title = get_mainwindow_property(main_id, "project_name") + " log"
-    console_html = get_mainwindow_property(main_id, "console_html").decode("utf-8", "ignore").encode("ascii")
-    return render_template("log_window_template.html", window_title=title, console_html=console_html)
+    retur
 
 
 @app.route('/update_project', methods=['POST'])
@@ -265,15 +230,6 @@ def distribute_events_stub(event_name):
 def request_collection():
     the_collection = db[request.json["collection_name"]]
     return jsonify({"the_collection": the_collection})
-
-
-@app.route("/emit_table_message", methods=['GET', 'POST'])
-def emit_table_message():
-    print "entering emit_table_message on the host"
-    data = copy.copy(request.json)
-    print "message is " + str(data)
-    socketio.emit("table-message", data, namespace='/main', room=data["main_id"])
-    return jsonify({"success": True})
 
 
 @app.route("/emit_tile_message", methods=['GET', 'POST'])

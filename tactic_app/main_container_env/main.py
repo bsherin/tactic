@@ -214,6 +214,7 @@ class mainWindow(QWorker):
             self.doc_dict = self._build_doc_dict()
 
     def ask_host(self, msg_type, task_data=None, callback_func=None):
+        task_data["main_id"] = self.my_id
         self.post_task("host", msg_type, task_data, callback_func)
         return
 
@@ -412,6 +413,7 @@ class mainWindow(QWorker):
         with self.app.test_request_context():
             pmessage = render_template("log_item.html", log_item=message_string)
         self.emit_table_message("consoleLog", {"message_string": pmessage, "force_open": force_open})
+        return {"success": True}
 
     def get_column_data(self, column_header):
         result = []
@@ -501,6 +503,10 @@ class mainWindow(QWorker):
         self.visible_doc_name = doc_name
         return {"success": True}
 
+    def print_to_console_event(self, data):
+        self.print_to_console(data["print_string"], force_open=True)
+        return {"success": True}
+
     def get_property(self, data_dict):
         prop_name = data_dict["property"]
         val = getattr(mwindow, prop_name)
@@ -511,6 +517,16 @@ class mainWindow(QWorker):
         val = data_dict["val"]
         setattr(mwindow, prop_name, val)
         return {"success": True}
+
+    def open_log_window(self, task_data):
+        self.console_html = task_data["console_html"]
+        if self.project_name is None:
+            title = self.short_collection_name + " log"
+        else:
+            title = self.project_name + " log"
+        with self.app.test_request_context():
+            the_html = render_template("log_window_template.html", window_title=title, console_html=console_html)
+        return {"html": the_html}
 
     def grab_data(self, data):
         doc_name = data["doc_name"]
@@ -562,7 +578,6 @@ class mainWindow(QWorker):
                 "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
                 "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
                 "step_size": step_amount}
-
 
     # todo some of these can be compacted
     def RecreateTiles(self, data):

@@ -56,6 +56,8 @@ class QWorker(gevent.Greenlet):
         if callback_func is not None:
             callback_id = str(uuid.uuid4())
             callback_dict[callback_id] = callback_func
+        else:
+            callback_id = None
         new_packet = {"source": self.my_id,
                       "dest": dest_id,
                       "task_type": task_type,
