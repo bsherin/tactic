@@ -1,0 +1,22 @@
+version: '2'
+
+services:
+  tactic_megaplex:
+    build:
+      context: .
+      dockerfile: Dockerfile-megaplex
+    image: tactic_megaplex_image
+
+  tactic_main:
+    build:
+      context: .
+      dockerfile: Dockerfile-main
+    image: tactic_main_image
+
+  tactic_tile:
+    build:
+      context: .
+      dockerfile: Dockerfile-tile
+    image: tactic_tile_image
+
+

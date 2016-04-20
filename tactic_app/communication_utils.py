@@ -2,6 +2,7 @@ import requests
 import sys
 import time
 
+
 def send_request_to_container(taddress, msg_type, data_dict=None, wait_for_success=True,
                               timeout=3, tries=30, wait_time=.1):
     if wait_for_success:

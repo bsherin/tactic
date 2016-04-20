@@ -12,6 +12,7 @@ import gridfs
 import time
 import uuid
 import cPickle
+from qworker import QWorker
 
 INITIAL_LEFT_FRACTION = .69
 CHUNK_SIZE = 200

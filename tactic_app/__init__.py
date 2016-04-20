@@ -16,7 +16,6 @@ from flask.ext.socketio import SocketIO
 from flask_wtf.csrf import CsrfProtect
 from docker_functions import create_container, get_address
 from communication_utils import send_request_to_container
-from host_workers import HostWorker
 
 csrf = CsrfProtect()
 mongo_uri = None
@@ -91,9 +90,11 @@ try:
     send_request_to_container(megaplex_address, "add_address", {"container_id": "host", "address": host_ip})
 
     print "creating host and client workers"
+    from host_workers import HostWorker, ClientWorker
     host_worker = HostWorker(app, megaplex_address)
-    client_worker = ClientWorker(app, megaplex_addres, socketio)
+    client_worker = ClientWorker(app, megaplex_address, socketio)
     host_worker.start()
+    client_worker.start()
 
 except pymongo.errors.PyMongoError as err:
     print("There's a problem with the PyMongo database. ", err)

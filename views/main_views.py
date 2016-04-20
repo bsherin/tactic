@@ -14,10 +14,11 @@ from tactic_app import app, db, fs, socketio
 from tactic_app.shared_dicts import mainwindow_instances, get_tile_code
 from tactic_app.shared_dicts import tile_classes, user_tiles, loaded_user_modules
 from user_manage_views import project_manager, collection_manager
-from tactic_app.docker_functions import send_request_to_container, create_container
+from tactic_app.docker_functions import create_container
 from tactic_app.docker_functions import get_address, callbacks, destroy_container
+from tactic_app.communication_utils import send_request_to_container
 from tactic_app.users import load_user
-from tactic_app import host_worker
+from tactic_app import host_worker, client_worker
 
 
 # The main window should join a room associated with the user
@@ -30,12 +31,14 @@ def connected_msg():
 def on_join(data):
     room = data["room"]
     join_room(room)
+    socketio.emit("finish-post-load", data, namespace='/main', room=room)
     print "user joined room " + room
 
 # Views for creating and saving a new project
 # As well as for updating an existing project.
 
-@app.route('/post_from_client', methods=['POST'])
+
+@app.route('/post_from_client', methods=["GET", "POST"])
 @login_required
 def post_from_client():
     task_packet = request.json

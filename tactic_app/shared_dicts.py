@@ -1,5 +1,5 @@
 import datetime
-from docker_functions import create_container, get_address, send_request_to_container
+from docker_functions import create_container, get_address, send_direct_request_to_container
 from users import User
 
 
@@ -19,7 +19,7 @@ def get_all_default_tiles():
 
         for tm in tm_list:
             module_code = repository_user.get_tile_module(tm)
-            result = send_request_to_container(test_tile_container_id, "load_source", {"tile_code": module_code})
+            result = send_direct_request_to_container(test_tile_container_id, "load_source", {"tile_code": module_code})
             res_dict = result.json()
             if res_dict["success"]:
                 category = res_dict["category"]

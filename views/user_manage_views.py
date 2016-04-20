@@ -16,7 +16,8 @@ from tactic_app.shared_dicts import user_tiles, loaded_user_modules, create_init
 from tactic_app.shared_dicts import test_tile_container_id, tile_classes, get_tile_code
 from tactic_app.user_tile_env import create_user_tiles
 from tactic_app.users import User
-from tactic_app.communication_utilities import send_request_to_container
+from tactic_app.communication_utils import send_request_to_container
+from docker_functions import send_direct_request_to_container
 
 from tactic_app.docker_functions import create_container, get_address
 from tactic_app import megaplex_address, megaplex_id, host_worker

@@ -3,7 +3,7 @@ import sys
 import copy
 import cPickle
 from bson.binary import Binary
-from gevent.queue import Queue
+import Queue
 
 queue_dict = {}
 address_dict = {}
@@ -39,38 +39,42 @@ def add_address():
 @app.route('/post_task', methods=["get", "post"])
 def post_task():
     task_packet = request.json
-    dnsg("post_task {0} to {1}".format(task_packet["task_type"], task_packet["dest"]))
+    dmsg("post_task {0} to {1}".format(task_packet["task_type"], task_packet["dest"]))
     dest = task_packet["dest"]
     if dest not in queue_dict:
-        queue_dict[dest] = {"tasks": Queue(),
-                            "responses": Queue()}
+        queue_dict[dest] = {"tasks": Queue.Queue(),
+                            "responses": Queue.Queue()}
 
-    queue_dict[dest].put(task_packet)
+    queue_dict[dest]["tasks"].put(task_packet)
     return jsonify({"success": True})
 
 
-@app.route('/get_next_task/requester_id', methods=["get", "post"])
+@app.route('/get_next_task/<requester_id>', methods=["get", "post"])
 def get_next_task(requester_id):
-    if not queue_dict[requester_id].responses.empty():
-        task_packet = queue_dict[dest].responses.get()
+    if requester_id not in queue_dict:
+        queue_dict[requester_id] = {"tasks": Queue.Queue(),
+                                    "responses": Queue.Queue()}
+        return jsonify({"empty": True})
+    if not queue_dict[requester_id]["responses"].empty():
+        task_packet = queue_dict[requester_id]["responses"].get()
         dmsg("got task {0} for {1}".format(task_packet["task_type"], requester_id))
         return jsonify(task_packet)
-    if not queue_dict[requester_id].tasks.empty():
-        task_packet = queue_dict[dest].tasks.get()
+    if not queue_dict[requester_id]["tasks"].empty():
+        task_packet = queue_dict[requester_id]["tasks"].get()
         dmsg("got response {0} for {1}".format(task_packet["task_type"], requester_id))
         return jsonify(task_packet)
-    return jsonify("empty")
+    return jsonify({"empty": True})
 
 
 @app.route('/submit_response', methods=["get", "post"])
 def submit_respone():
     task_packet = request.json
     source = task_packet["source"]
-    if dest not in queue_dict: # This shouldn't happen
-        queue_dict[source] = {"tasks": Queue(),
-                              "responses": Queue()}
+    if source not in queue_dict: # This shouldn't happen
+        queue_dict[source] = {"tasks": Queue.Queue(),
+                              "responses": Queue.Queue()}
     dmsg("submitting response {0} for {1}".format(task_packet["task_type"], source))
-    queue_dict[source].put(task_packet)
+    queue_dict[source]["responses"].put(task_packet)
     return jsonify({"success": True})
 
 

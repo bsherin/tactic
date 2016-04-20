@@ -1,7 +1,8 @@
 FROM ruimashita/scikit-learn:latest
 WORKDIR /code
-ADD requirements.txt /code/requirements.txt
+ADD ./tile_container_env/requirements.txt /code/requirements.txt
 RUN pip install -r requirements.txt
 MAINTAINER "Bruce L Sherin"
-ADD  . /code
+ADD  ./tile_container_env /code
+ADD ./qworker.py /code
 CMD ["python", "tile_main.py"]

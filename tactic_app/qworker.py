@@ -1,8 +1,9 @@
 import gevent
-# todo its hanging here for some reason (at the next line)
-from gevent import monkey; monkey.patch_all()
 import copy
 import uuid
+import sys
+import time
+import requests
 
 callback_dict = {}
 
@@ -44,7 +45,11 @@ class QWorker(gevent.Greenlet):
             self.app.logger.debug(msg)
 
     def get_next_task(self):
-        task_packet = send_request_to_container(self.megaplex_address, "get_next_task/" + my_id).json()
+        try:
+            raw_result = send_request_to_container(self.megaplex_address, "get_next_task/" + self.my_id)
+            task_packet = raw_result.json()
+        except ValueError:
+            print "send_request_to_container error. Probably no JSON could be decoded"
         return task_packet
 
     def post_task(self, dest_id, task_type, task_data=None, callback_func=None):
@@ -60,15 +65,15 @@ class QWorker(gevent.Greenlet):
         send_request_to_container(self.megaplex_address, "post_task", new_packet)
         return
 
-    def post_response(self, task_packet):
-        send_request_to_container(self.megaplex_address, "post_response", task_packet)
+    def submit_response(self, task_packet):
+        send_request_to_container(self.megaplex_address, "submit_response", task_packet)
         return
 
     def _run(self):
         self.running = True
         while self.running:
             task_packet = self.get_next_task()
-            if not task_packet == "empty":
+            if "empty" not in task_packet:
                 if task_packet["response_data"] is not None:
                     func = callback_dict[task_packet["callback_id"]]
                     del callback_dict[task_packet["callback_id"]]
@@ -78,7 +83,7 @@ class QWorker(gevent.Greenlet):
             gevent.sleep(_sleepperiod)
 
     def handle_event(self, task_packet):
-        response_data = getattr(self, task_packet["task_type"])(task_packet[task_data])
+        response_data = getattr(self, task_packet["task_type"])(task_packet["task_data"])
         if task_packet["callback_id"] is not None:
             task_packet["response_data"] = response_data
             self.submit_response(task_packet)

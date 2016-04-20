@@ -9,7 +9,7 @@ from wtforms.validators import Required, Length, Regexp, EqualTo
 from tactic_app.shared_dicts import user_tiles, loaded_user_modules
 from tactic_app import app, socketio, csrf
 from wtforms.validators import ValidationError
-from tactic_app.__init__ import ANYONE_CAN_REGISTER
+from tactic_app import ANYONE_CAN_REGISTER
 
 
 @app.route('/', methods=['GET', 'POST'])

@@ -275,7 +275,7 @@ function postWithCallback(dest_id, task_type, task_data, callback_func){
         "dest": dest_id,
         "task_type": task_type,
         "task_data": task_data,
-        "response_data": None,
+        "response_data": null,
         "main_id": main_id
     };
     if (typeof callback_func != "undefined") {

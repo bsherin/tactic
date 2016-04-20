@@ -95,6 +95,7 @@ function openLogWindow() {
     });
 }
 
+
 function start_post_load() {
     //spinner = new Spinner({scale: 1.0}).spin();
     //$("#loading-message").html(spinner.el);
@@ -108,16 +109,37 @@ function start_post_load() {
     else {
         socket = io.connect('http://' + document.domain + ':' + location.port + '/main');
     }
-    postWithCallback("host", "get_tile_types", null, function (data) {
-        tile_types = data.tile_types;
-        build_and_render_menu_objects();
-        continue_loading()
+    socket.emit('join', {"room": user_id});
+    socket.emit('join', {"room": main_id});
+    socket.on('tile-message', function (data) {
+        // console.log("received tile message " + data.message);
+        tile_dict[data.tile_id][data.message](data)
+    });
+    socket.on('table-message', function (data) {
+        // console.log("received table message " + data.message);
+        tableObject[data.message](data)
+    });
+    socket.on('handle-callback', handleCallback);
+    socket.on('close-user-windows', function(data){
+                $.ajax({
+                    url: $SCRIPT_ROOT + "/remove_mainwindow/" + String(main_id),
+                    contentType: 'application/json',
+                    type: 'POST'
+                });
+                window.close()
+            });
+    socket.on('finish-post-load', function (data) {
+        postWithCallback("host", "get_tile_types", {"user_id": user_id}, function (data) {
+            tile_types = data.tile_types;
+            build_and_render_menu_objects();
+            continue_loading()
+        })
     })
 }
 
 function continue_loading() {
     socket.on('update-menus', function() {
-        postWithCallback("host", "get_tile_types", null, function (data) {
+        postWithCallback("host", "get_tile_types", {"user_id": user_id}, function (data) {
             tile_types = data.tile_types;
             clear_all_menus();
             build_and_render_menu_objects();
@@ -200,17 +222,17 @@ function continue_loading() {
         })
             })
     }
-else {
-        postWithCallback(main_id, "grab_data", {"doc_name":String(doc_names[0])}, function (data) {
-            $("#loading-message").css("display", "none");
-            $("#reload-message").css("display", "none");
-            $("#outer-container").css("display", "block");
-            $("#table-area").css("display", "block");
-            tablespec_dict = {};
-            tableObject.initialize_table(data);
-            set_visible_doc(doc_names[0], null)
-        })
-    }
+    else {
+            postWithCallback(main_id, "grab_data", {"doc_name":String(doc_names[0])}, function (data) {
+                $("#loading-message").css("display", "none");
+                $("#reload-message").css("display", "none");
+                $("#outer-container").css("display", "block");
+                $("#table-area").css("display", "block");
+                tablespec_dict = {};
+                tableObject.initialize_table(data);
+                set_visible_doc(doc_names[0], null)
+            })
+        }
 
     $("#tile-div").sortable({
         handle: '.panel-heading',
@@ -232,25 +254,7 @@ else {
 
     initializeTooltips();
 
-    socket.emit('join', {"room": user_id});
-    socket.emit('join', {"room": main_id});
-    socket.on('tile-message', function (data) {
-        // console.log("received tile message " + data.message);
-        tile_dict[data.tile_id][data.message](data)
-    });
-    socket.on('table-message', function (data) {
-        // console.log("received table message " + data.message);
-        tableObject[data.message](data)
-    });
-    socket.on('handle-callback', handleCallback)
-    socket.on('close-user-windows', function(data){
-        $.ajax({
-            url: $SCRIPT_ROOT + "/remove_mainwindow/" + String(main_id),
-            contentType: 'application/json',
-            type: 'POST'
-        });
-        window.close()
-    })
+
 }
 
 function set_visible_doc(doc_name, func) {

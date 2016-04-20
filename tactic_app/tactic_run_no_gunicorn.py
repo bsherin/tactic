@@ -5,11 +5,12 @@
 # This avoids circular imports since the view functions make use
 # of things such as app, socketio, and db that are created in __init__.py
 import os
+import docker_cleanup
 print "entering tactic_run"
 
 from tactic_app import app
 from tactic_app import users
-from tactic_app.views import auth_views, main_views, user_manage_views
+from views import auth_views, main_views, user_manage_views
 from tactic_app import socketio
 
 from tactic_app.shared_dicts import get_all_default_tiles
@@ -17,7 +18,7 @@ print "imported app"
 
 get_all_default_tiles()
 
-from tactic_app.views import tester_views
+from views import tester_views
 
 socketio.run(app, host="0.0.0.0")
 
