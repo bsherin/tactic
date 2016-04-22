@@ -5,8 +5,8 @@ import requests
 import uuid
 import os
 
-SHORT_SLEEP_PERIOD = int(os.environ.get("SHORT_SLEEP_PERIOD"))
-LONG_SLEEP_PERIOD = int(os.environ.get("LONG_SLEEP_PERIOD"))
+SHORT_SLEEP_PERIOD = float(os.environ.get("SHORT_SLEEP_PERIOD"))
+LONG_SLEEP_PERIOD = float(os.environ.get("LONG_SLEEP_PERIOD"))
 
 callbacks = {}
 

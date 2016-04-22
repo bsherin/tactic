@@ -15,8 +15,8 @@ blank_packet = {"source": None,
                 "response_data": None,
                 "callback_id": None}
 
-SHORT_SLEEP_PERIOD = int(os.environ.get("SHORT_SLEEP_PERIOD"))
-LONG_SLEEP_PERIOD = int(os.environ.get("LONG_SLEEP_PERIOD"))
+SHORT_SLEEP_PERIOD = float(os.environ.get("SHORT_SLEEP_PERIOD"))
+LONG_SLEEP_PERIOD = float(os.environ.get("LONG_SLEEP_PERIOD"))
 
 
 def send_request_to_container(taddress, msg_type, data_dict=None, wait_for_success=True,
