@@ -1,5 +1,5 @@
 from qworker import QWorker, SHORT_SLEEP_PERIOD, LONG_SLEEP_PERIOD
-from flask import jsonify
+from flask import jsonify, render_template
 from flask_login import current_user
 from users import load_user
 import gevent
@@ -49,6 +49,11 @@ class HostWorker(QWorker):
         socketio.emit("table-message", data, namespace='/main', room=data["main_id"])
         return {"success": True}
 
+    def emit_tile_message(self, data):
+        from tactic_app import socketio
+        socketio.emit("tile-message", data, namespace='/main', room=data["main_id"])
+        return {"success": True}
+
     def create_tile_container(self, data):
         tile_container_id = create_container("tactic_tile_image", network_mode="bridge")["Id"]
         tile_address = get_address(tile_container_id, "bridge")
@@ -57,6 +62,19 @@ class HostWorker(QWorker):
     def get_module_code(self, data):
         module_code = get_tile_code(data["tile_type"])
         return {"module_code": module_code, "megaplex_address": self.megaplex_address}
+
+    def render_tile(self, data):
+        tile_id = data["tile_id"]
+        form_html = data["form_html"]
+        tname = data["tile_name"]
+        with self.app.test_request_context():
+            the_html = render_template("tile.html", tile_id=tile_id,
+                                       tile_name=tname,
+                                       form_text=form_html)
+        ddict = data
+        ddict["success"] = True
+        ddict["html"] = the_html
+        return ddict
 
     def create_tile_request(self, data_dict):
         def load_source_callback(data):
@@ -102,10 +120,10 @@ class ClientWorker(QWorker):
         send_request_to_container(self.megaplex_address, "post_task", task_packet)
         return
 
-    def emit_table_message(self, data):
-        from tactic_app import socketio
-        socketio.emit("table-message", data, namespace='/main', room=data["main_id"])
-        return {"success": True}
+    # def emit_table_message(self, data):
+    #     from tactic_app import socketio
+    #     socketio.emit("table-message", data, namespace='/main', room=data["main_id"])
+    #     return {"success": True}
 
     def _run(self):
         self.running = True

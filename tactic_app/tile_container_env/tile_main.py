@@ -128,6 +128,7 @@ def instantiate_tile_class():
     app.logger.debug("creating tile instance")
     tile_instance = tile_class(data["main_id"], data["tile_id"],
                                data["tile_name"])
+    tile_instance.init_qworker(app, megaplex_address)
     app.logger.debug("tile instance is complete")
     tile_instance.user_id = data["user_id"]
     tile_instance.base_figure_url = data["base_figure_url"]

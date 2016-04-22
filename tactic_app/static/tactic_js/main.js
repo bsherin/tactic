@@ -103,7 +103,7 @@ function start_post_load() {
     socket.emit('ready-to-finish', {"room": main_id});
     socket.on('tile-message', function (data) {
         // console.log("received tile message " + data.message);
-        tile_dict[data.tile_id][data.message](data)
+        tile_dict[data.tile_id][data.tile_message](data)
     });
     socket.on('table-message', function (data) {
         // console.log("received table message " + data.message);

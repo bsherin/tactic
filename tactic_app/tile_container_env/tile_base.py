@@ -56,8 +56,8 @@ class TileBase(QWorker):
                     ]
 
     def __init__(self, main_id, tile_id, tile_name=None):
-        from tile_main import app, megaplex_address
-        QWorker.__init__(self, app, megaplex_address, tile_id)
+        # from tile_main import app, megaplex_address
+        # QWorker.__init__(self, app, megaplex_address, tile_id)
         self._sleepperiod = .0001
         self.save_attrs = ["current_html", "my_id", "tile_type", "tile_name", "main_id", "configured",
                            "header_height", "front_height", "front_width", "back_height", "back_width",
@@ -65,6 +65,7 @@ class TileBase(QWorker):
                            "full_tile_width", "full_tile_height", "is_shrunk", "img_dict", "current_fig_id"]
         # These define the state of a tile and should be saved
 
+        self.tile_id = tile_id
         self.tile_type = self.__class__.__name__
         if tile_name is None:
             self.tile_name = self.tile_type
@@ -97,6 +98,14 @@ class TileBase(QWorker):
     """
     Basic Machinery to make the tile work.
     """
+
+    def init_qworker(self, app, megaplex_address):
+        QWorker.__init__(self, app, megaplex_address, self.tile_id)
+        return
+
+    def post_event(self, event_name):
+        self.post_task(self.my_id, event_name)
+        return
 
     @property
     def current_reload_attrs(self):
@@ -408,14 +417,18 @@ class TileBase(QWorker):
                               timeout=timeout, json=data_dict)
         return result.json()["val"]
 
+    def ask_host(self, msg_type, task_data=None, callback_func=None):
+        task_data["main_id"] = self.main_id
+        self.post_task("host", msg_type, task_data, callback_func)
+        return
+
     def emit_tile_message(self, message, data=None):
         if data is None:
             data = {}
-        data["message"] = message
-        data["my_id"] = self.my_id
-        self.debug_log("in emit_tile_message with message {0}".format(message))
-        result = self.send_request_to_host("emit_tile_message", data)
-        return result
+        data["tile_message"] = message
+        data["tile_id"] = self.my_id
+        self.ask_host("emit_tile_message", data)
+        return
 
     def socketio_emit(self, msg, data=None):
         data["my_id"] = self.my_id
@@ -727,14 +740,14 @@ class TileBase(QWorker):
         return self.get_main_property("selected_text")
 
     def display_message(self, message_string, force_open=False):
-        self.post_task(self.main_id, "print_to_console", {"print_string": message_string})
+        self.post_task(self.main_id, "print_to_console_event", {"print_string": message_string})
         return
 
     def dm(self, message_string, force_open=False):
         self.display_message(message_string, force_open)
 
     def log_it(self, message_string, force_open=False):
-        self.perform_main_function("print_to_console", [message_string, force_open])
+        self.post_task(self.main_id, "print_to_console_event", {"print_string": message_string})
 
     def color_cell_text(self, doc_name, row_index, column_name, tokenized_text, color_dict):
         actual_row = self.get_main_property("doc_dict")[doc_name].get_actual_row(row_index)
