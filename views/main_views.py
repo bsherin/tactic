@@ -73,12 +73,12 @@ def get_mainwindow_property(main_id, prop_name, callback):
 @app.route('/remove_mainwindow/<main_id>', methods=['get', 'post'])
 @login_required
 def remove_mainwindow(main_id):
-    data_dict = {"main_id": main_id}
-    response = send_request_to_container(main_id, "get_tile_ids", data_dict)
-    tile_ids = response.json()["tile_ids"]
-    for tile_id in tile_ids:
-        destroy_container(tile_id)
-    destroy_container(main_id)
+    def do_the_destroys(result):
+        tile_ids = result["tile_ids"]
+        for tile_id in tile_ids:
+            destroy_container(tile_id)
+        destroy_container(main_id)
+    host_worker.post_task(main_id, "get_tile_ids", {}, do_the_destroys)
     return jsonify({"success": True})
 
 

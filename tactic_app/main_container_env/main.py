@@ -431,6 +431,12 @@ class mainWindow(QWorker):
         self.emit_table_message("consoleLog", {"message_string": pmessage, "force_open": force_open})
         return {"success": True}
 
+    def get_func(self, data_dict):
+        func_name = data_dict["func"]
+        args = data_dict["args"]
+        val = getattr(self, func_name)(*args)
+        return {"val": val}
+
     def get_column_data(self, data):
         result = []
         ddata = copy.copy(data)
@@ -531,6 +537,10 @@ class mainWindow(QWorker):
         prop_name = data_dict["property"]
         val = getattr(mwindow, prop_name)
         return {"val": val}
+
+    def get_tile_ids(self, data):
+        tile_ids = self.tile_instances.keys()
+        return {"success": True, "tile_ids": tile_ids}
 
     def set_property(self, data_dict):
         prop_name = data_dict["property"]

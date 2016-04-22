@@ -404,18 +404,16 @@ class TileBase(QWorker):
         data_dict["event_name"] = event_name
         self.post_task(self.main_id, "distribute_events_stub", data_dict)
 
-    def get_main_property(self, prop_name, timeout=3):
+    def get_main_property(self, prop_name):
         data_dict = {"property": prop_name}
-        result = requests.get("http://{0}:5000/{1}".format(self.main_address, "get_property"), timeout=timeout,
-                              json=data_dict)
+        result = self.post_and_wait(self.main_id, "get_property", data_dict)
         return result.json()["val"]
 
-    def perform_main_function(self, func_name, args, timeout=3):
+    def perform_main_function(self, func_name, args):
         data_dict = {}
         data_dict["args"] = args
         data_dict["func"] = func_name
-        result = requests.get("http://{0}:5000/{1}".format(self.main_address, "get_func"),
-                              timeout=timeout, json=data_dict)
+        result = self.post_and_wait(self.main_id, "get_func", data_dict)
         return result.json()["val"]
 
     def ask_host(self, msg_type, task_data=None, callback_func=None):

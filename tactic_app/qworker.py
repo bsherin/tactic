@@ -109,8 +109,9 @@ class QWorker(gevent.Greenlet):
                 gevent.sleep(LONG_SLEEP_PERIOD)
 
     def handle_event(self, task_packet):
-        response_data = getattr(self, task_packet["task_type"])(task_packet["task_data"])
-        if task_packet["callback_id"] is not None:
-            task_packet["response_data"] = response_data
-            self.submit_response(task_packet)
+        if hasattr(self, task_packet["task_type"]):
+            response_data = getattr(self, task_packet["task_type"])(task_packet["task_data"])
+            if task_packet["callback_id"] is not None:
+                task_packet["response_data"] = response_data
+                self.submit_response(task_packet)
         return

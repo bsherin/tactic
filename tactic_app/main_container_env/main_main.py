@@ -25,15 +25,6 @@ def create_initial_metadata():
     return mdata
 
 
-@app.route('/get_func', methods=['get', 'post'])
-def get_func():
-    data_dict = request.json
-    func_name = data_dict["func"]
-    args = data_dict["args"]
-    val = getattr(mwindow, func_name)(*args)
-    return jsonify({"val": val})
-
-
 @app.route('/update_project', methods=['POST'])
 def update_project():
     def do_update_project(data_dict):
@@ -195,12 +186,6 @@ def reload_tile(tile_id):
     ddict = request.json
     mwindow.post_with_function(do_reload_tile, ddict)
     return jsonify({"success": True})
-
-
-@app.route('/get_tile_ids', methods=['get', 'post'])
-def get_tile_ids():
-    tile_ids = mwindow.tile_instances.keys()
-    return jsonify({"success": True, "tile_ids": tile_ids})
 
 
 if __name__ == "__main__":
