@@ -4,7 +4,7 @@ from flask_login import current_user
 from users import load_user
 import gevent
 from communication_utils import send_request_to_container
-from docker_functions import create_container, get_address
+from docker_functions import create_container, get_address, destroy_container
 from shared_dicts import get_tile_code
 
 

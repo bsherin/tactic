@@ -431,13 +431,17 @@ class mainWindow(QWorker):
         self.emit_table_message("consoleLog", {"message_string": pmessage, "force_open": force_open})
         return {"success": True}
 
-    def get_column_data(self, column_header):
+    def get_column_data(self, data):
         result = []
+        ddata = copy.copy(data)
         for doc_name in self.doc_dict.keys():
-            result = result + self.get_column_data_for_doc(column_header, doc_name)
+            ddata["doc_name"] = doc_name
+            result = result + self.get_column_data_for_doc(ddata)
         return result
 
-    def get_column_data_for_doc(self, column_header, doc_name):
+    def get_column_data_for_doc(self, data):
+        column_header = data["column_name"]
+        doc_name = data["doc_name"]
         the_rows = self.doc_dict[doc_name].all_sorted_data_rows
         result = []
         for the_row in the_rows:

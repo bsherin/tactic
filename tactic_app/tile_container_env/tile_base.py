@@ -401,7 +401,8 @@ class TileBase(QWorker):
             return result.json()
 
     def distribute_event(self, event_name, data_dict):
-        self.send_request_to_container(self.main_address, "distribute_events/" + event_name, json=data_dict)
+        data_dict["event_name"] = event_name
+        self.post_task(self.main_id, "distribute_events_stub", data_dict)
 
     def get_main_property(self, prop_name, timeout=3):
         data_dict = {"property": prop_name}
@@ -429,11 +430,6 @@ class TileBase(QWorker):
         data["tile_id"] = self.my_id
         self.ask_host("emit_tile_message", data)
         return
-
-    def socketio_emit(self, msg, data=None):
-        data["my_id"] = self.my_id
-        result = self.send_request_to_host("socketio_emit/" + msg, data)
-        return result
 
     def hide_options(self):
         self.emit_tile_message("hideOptions")
@@ -671,11 +667,14 @@ class TileBase(QWorker):
 
     def get_column_data(self, column_name, document_name=None):
         if document_name is not None:
-            result = self.perform_main_function("get_column_data_for_doc", [column_name, document_name])
+            task_data = {"column_name": column_name, "doc_name": document_name}
+            result = self.post_and_wait(self.main_id, "get_column_data_for_doc", task_data)
         else:
-            result = self.perform_main_function("get_column_data", [column_name])
+            task_data = {"column_name": column_name}
+            result = self.post_and_wait(self.main_id, "get_column_data", task_data)
         return result
 
+    # todo have to fix all of these perform_main_function
     def get_column_data_dict(self, column_name):
         result = {}
         for doc_name in self.get_document_names():
@@ -728,13 +727,13 @@ class TileBase(QWorker):
     def go_to_document(self, doc_name):
         data = {}
         data["doc_name"] = doc_name
-        self.socketio_emit('change-doc', data)
+        self.emit_tile_message('change-doc', data)
 
     def go_to_row_in_document(self, doc_name, row_id):
         data = {}
         data["doc_name"] = doc_name
         data["row_id"] = row_id
-        self.socketio_emit('change-doc', data)
+        self.emit_tile_message('change-doc', data)
 
     def get_selected_text(self):
         return self.get_main_property("selected_text")
@@ -757,15 +756,16 @@ class TileBase(QWorker):
                                                   "token_text": tokenized_text,
                                                   "color_dict": color_dict})
 
+    # todo xx this is a key problem
     def get_user_list(self, the_list):
-        result = self.send_request_to_host("get_list", {"user_id": self.user_id, "list_name": the_list})
+        result = self.post_and_wait("host", "get_list", {"user_id": self.user_id, "list_name": the_list})
         return result["the_list"]
 
     def get_tokenizer(self, tokenizer_name):
         return tokenizer_dict[tokenizer_name]
 
     def get_cluster_metric(self, metric_name):
-                return cluster_metric_dict[metric_name]
+        return cluster_metric_dict[metric_name]
 
     def get_pipe_value(self, pipe_key):
         self.debug_log("entering get_pipe_value with pipe_key: " + str(pipe_key))

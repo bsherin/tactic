@@ -43,17 +43,53 @@ def post_task():
     dest = task_packet["dest"]
     if dest not in queue_dict:
         queue_dict[dest] = {"tasks": Queue.Queue(),
-                            "responses": Queue.Queue()}
+                            "responses": Queue.Queue(),
+                            "wait_dict": {}}
 
     queue_dict[dest]["tasks"].put(task_packet)
     return jsonify({"success": True})
+
+
+@app.route('/post_wait_task', methods=["get", "post"])
+def post_wait_task():
+    task_packet = request.json
+    dmsg("post_wait_task {0} to {1}".format(task_packet["task_type"], task_packet["dest"]))
+    dest = task_packet["dest"]
+    source = task_packet["source"]
+    if dest not in queue_dict:
+        queue_dict[dest] = {"tasks": Queue.Queue(),
+                            "responses": Queue.Queue(),
+                            "wait_dict": {}}
+    if source not in queue_dict:
+        queue_dict[source] = {"tasks": Queue.Queue(),
+                              "responses": Queue.Queue(),
+                              "wait_dict": {}}
+    queue_dict[source]["wait_dict"][task_packet["callback_id"]] = None
+    queue_dict[dest]["tasks"].put(task_packet)
+    return jsonify({"success": True})
+
+
+@app.route("/check_wait_task", methods=["get", "post"])
+def check_wait_task():
+    task_packet = request.json
+    cbid = task_packet["callback_id"]
+    source = task_packet["source"]
+    app.logger.debug("task_packet is " + str(task_packet))
+    app.logger.debug("wait dict is " + str(queue_dict[source]["wait_dict"]))
+    result = queue_dict[source]["wait_dict"][cbid]
+    if result is None:
+        return jsonify({"success": False})
+    else:
+        del queue_dict[source]["wait_dict"][cbid]
+        return jsonify({"success": True, "result": result})
 
 
 @app.route('/get_next_task/<requester_id>', methods=["get", "post"])
 def get_next_task(requester_id):
     if requester_id not in queue_dict:
         queue_dict[requester_id] = {"tasks": Queue.Queue(),
-                                    "responses": Queue.Queue()}
+                                    "responses": Queue.Queue(),
+                                    "wait_dict": {}}
         return jsonify({"empty": True})
     if not queue_dict[requester_id]["responses"].empty():
         task_packet = queue_dict[requester_id]["responses"].get()
@@ -72,9 +108,14 @@ def submit_respone():
     source = task_packet["source"]
     if source not in queue_dict: # This shouldn't happen
         queue_dict[source] = {"tasks": Queue.Queue(),
-                              "responses": Queue.Queue()}
+                              "responses": Queue.Queue(),
+                              "wait_dict": {}}
     dmsg("submitting response {0} for {1}".format(task_packet["task_type"], source))
-    queue_dict[source]["responses"].put(task_packet)
+    cbid = task_packet["callback_id"]
+    if cbid is not None and cbid in queue_dict[source]["wait_dict"]:
+        queue_dict[source]["wait_dict"][cbid] = task_packet["response_data"]
+    else:
+        queue_dict[source]["responses"].put(task_packet)
     return jsonify({"success": True})
 
 
