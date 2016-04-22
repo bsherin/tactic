@@ -232,30 +232,20 @@ function column_command(menu_id) {
 
 function createColumn() {
     showModal("Create Columnm", "New Column Name", function (new_name) {
-            var column_name = new_name;
-            for (var doc in tablespec_dict) {
-                if (tablespec_dict.hasOwnProperty(doc)) {
-                    tablespec_dict[doc].header_list.push(column_name)
-                }
+        var column_name = new_name;
+        for (var doc in tablespec_dict) {
+            if (tablespec_dict.hasOwnProperty(doc)) {
+                tablespec_dict[doc].header_list.push(column_name)
             }
+        }
+        // Then rebuild the table
+        tableObject.build_table();
 
-            // Then rebuild the table
-            tableObject.build_table();
-
-            // Then change the current data_dict back on the server
-            var data_dict = {"column_name": column_name,
-                            "main_id": main_id};
-            $.ajax({
-                url: $SCRIPT_ROOT + "/distribute_events/CreateColumn",
-                contentType : 'application/json',
-                type : 'POST',
-                async: true,
-                data: JSON.stringify(data_dict),
-                dataType: 'json',
-                success: function () {
-                    dirty = true
-                }
-            });
+        // Then change the current data_dict back on the server
+        var data_dict = {"column_name": column_name};
+        broadcast_event_to_server("CreateColumn", data_dict, function () {
+            dirty = true
+        })
     })
 }
 
@@ -404,17 +394,28 @@ function tile_command(menu_id) {
     function createNewTile(tile_name) {
         var data_dict = {};
         var tile_type = menu_id;
-        data_dict["main_id"] = main_id;
         data_dict["tile_name"] = tile_name;
         data_dict["tile_type"] = tile_type;
-        postWithCallback('/create_tile_request', data_dict, function (data) {
-                if (data.success) {
-                    var new_tile_object = new TileObject(data.tile_id, data.html, true);
+        data_dict["user_id"] = user_id
+        postWithCallback("host", "create_tile_container", {}, function (data) {
+            var tile_id = data["tile_id"];
+            data_dict["tile_id"] = tile_id;
+            data_dict["tile_address"] = data["tile_address"];
+            postWithCallback("host", "get_module_code", data_dict, function (data) {
+                data_dict["tile_code"] = data["module_code"];
+                postWithCallback("host", "get_list_names", data_dict, function (data) {
+                    data_dict["list_names"] = data["list_names"]
+                    postWithCallback(main_id, "create_tile", data_dict, function (data) {
+                        if (data.success) {
+                            var new_tile_object = new TileObject(tile_id, data.html, true);
 
-                    tile_dict[data.tile_id] = new_tile_object;
-                    new_tile_object.spin_and_refresh();
-                    dirty = true;
-                }
+                            tile_dict[tile_id] = new_tile_object;
+                            new_tile_object.spin_and_refresh();
+                            dirty = true;
+                        }
+                    })
+                })
+            })
         })
     }
 }

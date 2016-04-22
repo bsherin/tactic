@@ -9,7 +9,6 @@ from gevent import monkey; monkey.patch_all()
 import numpy as np
 from bson.binary import Binary
 from flask import url_for, render_template
-# from flask_login import current_user
 from gevent.queue import Queue
 from qworker import QWorker
 
@@ -17,7 +16,6 @@ from tokenizers import tokenizer_dict
 from weight_function_module import weight_functions
 from cluster_metrics import cluster_metric_dict
 from matplotlib_utilities import MplFigure, Mpld3Figure, color_palette_names
-# from tactic_app.users import load_user
 from types import NoneType
 
 jsonizable_types = {
@@ -52,16 +50,16 @@ class TileBase(QWorker):
                        '<input type="checkbox" id="{0}" value="{0}" {1}>{0}</label>' \
                        '</div>'
     reload_attrs = ["tile_name", "tile_type", "base_figure_url", "user_id",
-                    "tile_id", "header_height", "front_height", "front_width", "back_height",
+                    "my_id", "header_height", "front_height", "front_width", "back_height",
                     "back_width", "tda_width", "tda_height", "width", "height", "full_tile_width",
                     "full_tile_height", "is_shrunk", "configured"
                     ]
 
     def __init__(self, main_id, tile_id, tile_name=None):
-        # todo need app to init qworker
-        QWorker.__init__(self)
+        from tile_main import app, megaplex_address
+        QWorker.__init__(self, app, megaplex_address, tile_id)
         self._sleepperiod = .0001
-        self.save_attrs = ["current_html", "tile_id", "tile_type", "tile_name", "main_id", "configured",
+        self.save_attrs = ["current_html", "my_id", "tile_type", "tile_name", "main_id", "configured",
                            "header_height", "front_height", "front_width", "back_height", "back_width",
                            "tda_width", "tda_height", "width", "height", "user_id",
                            "full_tile_width", "full_tile_height", "is_shrunk", "img_dict", "current_fig_id"]
@@ -76,7 +74,6 @@ class TileBase(QWorker):
         self.current_html = None
 
         # These will differ each time the tile is instantiated.
-        self.tile_id = tile_id
         self.main_id = main_id
         self.figure_id = 0
         self.width = ""
@@ -112,100 +109,113 @@ class TileBase(QWorker):
         with self.app.test_request_context():
             self.app.logger.debug(msg)
 
-    def _run(self):
-        self.debug_log("In main tile_base loop")
-        self.running = True
-        while self.running:
-            if not self._my_q.empty():
-                q_item = self._my_q.get()
-                if type(q_item) == dict:
-                    self.handle_event(q_item["event_name"], q_item["data"])
-                else:
-                    self.handle_event(q_item)
-            self.tile_yield()
+    def RefreshTile(self, data):
+        self.do_the_refresh()
+        return None
 
-    def tile_yield(self):
-        gevent.sleep(self._sleepperiod)
+    def TileSizeChange(self, data):
+        self.width = data["width"]
+        self.height = data["height"]
+        self.full_tile_width = data["full_tile_width"]
+        self.full_tile_height = data["full_tile_height"]
+        self.header_height = data["header_height"]
+        self.front_height = data["front_height"]
+        self.front_width = data["front_width"]
+        self.back_height = data["back_height"]
+        self.back_width = data["back_width"]
+        self.tda_height = data["tda_height"]
+        self.tda_width = data["tda_width"]
+        self.margin = data["margin"]
+        if self.configured:
+            if isinstance(self, MplFigure) or isinstance(self, Mpld3Figure):
+                self.resize_mpl_tile()
+            else:
+                self.handle_size_change()
+        return None
 
-    def post_event(self, event_name, data=None):
-        self.debug_log("in post_event with event_name: " + event_name)
-        self._my_q.put({"event_name": event_name, "data": data})
+    def RefreshTileFromSave(self, data):
+        self.refresh_from_save()
+        return None
 
-    def handle_event(self, event_name, data=None):
-        try:
-            self.debug_log("In tile_base handle_event with event_name: " + event_name)
-            if event_name == "RefreshTile":
-                self.do_the_refresh()
-            elif event_name == "TileSizeChange":
-                self.width = data["width"]
-                self.height = data["height"]
-                self.full_tile_width = data["full_tile_width"]
-                self.full_tile_height = data["full_tile_height"]
-                self.header_height = data["header_height"]
-                self.front_height = data["front_height"]
-                self.front_width = data["front_width"]
-                self.back_height = data["back_height"]
-                self.back_width = data["back_width"]
-                self.tda_height = data["tda_height"]
-                self.tda_width = data["tda_width"]
-                self.margin = data["margin"]
-                if self.configured:
-                    if isinstance(self, MplFigure) or isinstance(self, Mpld3Figure):
-                        self.resize_mpl_tile()
-                    else:
-                        self.handle_size_change()
-            elif event_name == "RefreshTileFromSave":
-                self.refresh_from_save()
-            if event_name == "SetSizeFromSave":
-                self.set_tile_size(self.full_tile_width, self.full_tile_height)
-            elif event_name == "UpdateOptions":
-                self.update_options(data)
-            elif event_name == "CellChange":
-                self.handle_cell_change(data["column_header"], data["id"], data["old_content"],
-                                        data["new_content"], data["doc_name"])
-            elif event_name == "TileButtonClick":
-                self.handle_button_click(data["button_value"], data["doc_name"], data["active_row_index"])
-            elif event_name == "TileTextAreaChange":
-                self.handle_textarea_change(data["text_value"])
-            elif event_name == "TextSelect":
-                self.handle_text_select(data["selected_text"], data["doc_name"], data["active_row_index"])
-            elif event_name == "PipeUpdate":
-                self.handle_pipe_update(data["pipe_name"])
-            elif event_name == "TileWordClick":
-                self.handle_tile_word_click(data["clicked_text"], data["doc_name"], data["active_row_index"])
-            elif event_name == "TileRowClick":
-                self.handle_tile_row_click(data["clicked_row"], data["doc_name"], data["active_row_index"])
-            elif event_name == "TileCellClick":
-                self.handle_tile_cell_click(data["clicked_cell"], data["doc_name"], data["active_row_index"])
-            elif event_name == "TileElementClick":
-                self.handle_tile_element_click(data["dataset"], data["doc_name"], data["active_row_index"])
-            elif event_name == "HideOptions":
-                self.hide_options()
-            elif event_name == "StartSpinner":
-                self.start_spinner()
-            elif event_name == "StopSpinner":
-                self.stop_spinner()
-            elif event_name == "ShrinkTile":
-                self.is_shrunk = True
-            elif event_name == "ExpandTile":
-                self.is_shrunk = False
-            elif event_name == "LogTile":
-                self.handle_log_tile()
-            elif event_name == "RebuildTileForms":
-                form_html = self.create_form_html()
-                self.emit_tile_message("displayFormContent", {"html": form_html})
-        except:
-            self.display_message("error in handle_event in " + self.__class__.__name__ +
-                                 " tile: processing event " + event_name + " " +
-                                 str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]), force_open=True)
-        return
+    def SetSizeFromSave(self, data):
+        self.set_tile_size(self.full_tile_width, self.full_tile_height)
+        return None
 
-    def create_form_html(self):
+    def UpdateOptions(self, data):
+        self.update_options(data)
+        return None
+
+    def CellChange(self, data):
+        self.handle_cell_change(data["column_header"], data["id"], data["old_content"],
+                                data["new_content"], data["doc_name"])
+        return None
+
+    def TileButtonClick(self, data):
+        self.handle_button_click(data["button_value"], data["doc_name"], data["active_row_index"])
+        return None
+
+    def TileTextAreaChange(self, data):
+        self.handle_textarea_change(data["text_value"])
+        return None
+
+    def TextSelect(self, data):
+        self.handle_text_select(data["selected_text"], data["doc_name"], data["active_row_index"])
+        return None
+
+    def PipeUpdate(self, data):
+        self.handle_pipe_update(data["pipe_name"])
+        return None
+
+    def TileWordClick(self, data):
+        self.handle_tile_word_click(data["clicked_text"], data["doc_name"], data["active_row_index"])
+        return None
+
+    def TileRowClick(self, data):
+        self.handle_tile_row_click(data["clicked_row"], data["doc_name"], data["active_row_index"])
+        return None
+
+    def TileCellClick(self, data):
+        self.handle_tile_cell_click(data["clicked_cell"], data["doc_name"], data["active_row_index"])
+        return None
+
+    def TileElementClick(self, data):
+        self.handle_tile_element_click(data["dataset"], data["doc_name"], data["active_row_index"])
+        return None
+
+    def HideOptions(self, data):
+        self.hide_options()
+        return None
+
+    def StartSpinner(self, data):
+        self.start_spinner()
+        return None
+
+    def StopSpinner(self, data):
+        self.stop_spinner()
+        return None
+
+    def ShrinkTile(self, data):
+        self.is_shrunk = True
+        return None
+
+    def ExpandTile(self, data):
+        self.is_shrunk = False
+        return None
+
+    def LogTile(self, data):
+        self.handle_log_tile()
+        return None
+
+    def RebuildTileForms(self, data):
+        form_html = self.create_form_html()
+        self.emit_tile_message("displayFormContent", {"html": form_html})
+        return None
+
+    # Info needed here: list_names, current_header_list, list, pipe_list, document_names
+    def create_form_html(self, data):
+        self.debug_log("entering create_form_html")
         try:
             form_html = ""
-            self.debug_log("getting list names in create_form_html")
-            self.list_names = self.send_request_to_host("get_list_names", {"user_id": self.user_id})["list_names"]
-            self.debug_log("Got list names")
             for option in self.options:
                 att_name = option["name"]
                 if not hasattr(self, att_name):
@@ -216,7 +226,7 @@ class TileBase(QWorker):
                 if option["type"] == "column_select":
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
-                    header_list = self.get_main_property("current_header_list")
+                    header_list = data["current_header_list"]
                     for choice in header_list:
                         if choice == starting_value:
                             form_html += self.select_option_selected_template.format(choice)
@@ -245,7 +255,7 @@ class TileBase(QWorker):
                 elif option["type"] == "pipe_select":
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
-                    for choice in self.get_current_pipe_list():
+                    for choice in data["pipt_list"]:
                         if choice == starting_value:
                             form_html += self.select_option_selected_template.format(choice)
                         else:
@@ -254,7 +264,7 @@ class TileBase(QWorker):
                 elif option["type"] == "document_select":
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
-                    for choice in self.get_document_names():
+                    for choice in data["doc_names"]:
                         if choice == starting_value:
                             form_html += self.select_option_selected_template.format(choice)
                         else:
@@ -263,7 +273,7 @@ class TileBase(QWorker):
                 elif option["type"] == "list_select":
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
-                    for choice in self.list_names:
+                    for choice in data["list_names"]:
                         if choice == starting_value:
                             form_html += self.select_option_selected_template.format(choice)
                         else:
@@ -320,10 +330,11 @@ class TileBase(QWorker):
             self.save_attrs = list(set(self.save_attrs))
             return form_html
         except:
-            self.display_message("error creating form for  " + self.__class__.__name__ +
-                                 " tile: " + self.tile_id + " " +
-                                 str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]), force_open=True)
-            return "error"
+            error_string = ("error creating form for  " + self.__class__.__name__ + " tile: " + self.my_id + " " +
+                            str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
+            self.debug_log("Got an error creating form " + error_string)
+            # self.display_message(error_string, True)
+            return error_string
 
     def resize_mpl_tile(self):
         self.draw_plot()
@@ -401,13 +412,13 @@ class TileBase(QWorker):
         if data is None:
             data = {}
         data["message"] = message
-        data["tile_id"] = self.tile_id
+        data["my_id"] = self.my_id
         self.debug_log("in emit_tile_message with message {0}".format(message))
         result = self.send_request_to_host("emit_tile_message", data)
         return result
 
     def socketio_emit(self, msg, data=None):
-        data["tile_id"] = self.tile_id
+        data["my_id"] = self.my_id
         result = self.send_request_to_host("socketio_emit/" + msg, data)
         return result
 
@@ -497,7 +508,7 @@ class TileBase(QWorker):
             dbr_string = ""
             bda_string = ""
             main_height = self.full_tile_height
-        result = render_template("saved_tile.html", tile_id=self.tile_id,
+        result = render_template("saved_tile.html", tile_id=self.my_id,
                                  tile_name=self.tile_name,
                                  form_text=form_html,
                                  current_html=self.current_html,
@@ -715,9 +726,9 @@ class TileBase(QWorker):
     def get_selected_text(self):
         return self.get_main_property("selected_text")
 
-    # todo print_to_consoles will need to be changed here.
     def display_message(self, message_string, force_open=False):
-        self.perform_main_function("print_to_console", [message_string, force_open])
+        self.post_task(self.main_id, "print_to_console", {"print_string": message_string})
+        return
 
     def dm(self, message_string, force_open=False):
         self.display_message(message_string, force_open)
@@ -771,7 +782,7 @@ class TileBase(QWorker):
         uid = self.get_unique_div_id()
         the_html = "<div id='{}'><div class='d3plot'></div>".format(str(uid))
 
-        the_script = "createLinePlot('{0}', '{1}', '{2}')".format(self.tile_id, data_name, uid)
+        the_script = "createLinePlot('{0}', '{1}', '{2}')".format(self.my_id, data_name, uid)
         the_html += "<script class='resize-rerun'>{}</script></div>".format(the_script)
         return the_html
 
@@ -784,7 +795,7 @@ class TileBase(QWorker):
         uid = self.get_unique_div_id()
         the_html = "<div id='{}'><div class='d3plot'></div>".format(str(uid))
 
-        the_script = "createScatterPlot('{0}', '{1}', '{2}')".format(self.tile_id, data_name, uid)
+        the_script = "createScatterPlot('{0}', '{1}', '{2}')".format(self.my_id, data_name, uid)
         the_html += "<script class='resize-rerun'>{}</script></div>".format(the_script)
         return the_html
 
@@ -801,12 +812,12 @@ class TileBase(QWorker):
         the_html = "<div id='{}'><div class='d3plot'></div>".format(str(uid))
 
 
-        the_script = "createHeatmap('{0}', '{1}', '{2}')".format(self.tile_id, data_name, uid)
+        the_script = "createHeatmap('{0}', '{1}', '{2}')".format(self.my_id, data_name, uid)
         the_html += "<script class='resize-rerun' >{}</script></div>".format(the_script)
         return the_html
 
     def get_unique_div_id(self):
-        unique_id = "div-{0}-{1}-{2}".format(self.main_id, self.tile_id, self.current_unique_id_index)
+        unique_id = "div-{0}-{1}-{2}".format(self.main_id, self.my_id, self.current_unique_id_index)
         self.current_unique_id_index += 1
         return str(unique_id)
 

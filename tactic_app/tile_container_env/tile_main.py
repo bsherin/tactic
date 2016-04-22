@@ -10,6 +10,8 @@ app = Flask(__name__)
 
 tile_instance = None
 
+megaplex_address = None
+
 
 @app.route('/')
 def hello():
@@ -18,8 +20,10 @@ def hello():
 
 @app.route('/load_source', methods=["get", "post"])
 def load_source():
+    global megaplex_address
     app.logger.debug("entering load_source")
     data_dict = request.json
+    megaplex_address = data_dict["megaplex_address"]
     # app.logger.debug("data_dict is " + str(data_dict))
     tile_code = data_dict["tile_code"]
     result = exec_tile_code(tile_code)
@@ -95,27 +99,6 @@ def get_image(figure_name):
     return jsonify({"img": encoded_img})
 
 
-@app.route('/instantiate_tile_class', methods=["get", "post"])
-def instantiate_tile_class():
-    app.logger.debug("entering instantiate_tile_class")
-    global tile_instance
-    from tile_env import tile_class
-    data = copy.copy(request.json)
-    app.logger.debug("creating tile instance")
-    tile_instance = tile_class(data["main_id"], data["tile_id"],
-                               data["tile_name"])
-    app.logger.debug("tile instance is complete")
-    tile_instance.user_id = data["user_id"]
-    tile_instance.base_figure_url = data["base_figure_url"]
-    tile_instance.app = app
-    tile_instance.start()
-    app.logger.debug("about to create form html")
-    form_html = tile_instance.create_form_html()
-    data["form_html"] = form_html
-    app.logger.debug("leaving instantiate_tile_class")
-    return jsonify(data)
-
-
 @app.route('/reinstantiate_tile', methods=["get", "post"])
 def reinstantiate_tile():
     app.logger.debug("entering reinstantiate_tile_class")
@@ -134,6 +117,29 @@ def reinstantiate_tile():
     form_html = tile_instance.create_form_html()
     app.logger.debug("leaving reinstantiate_tile_class")
     return jsonify({"success": True, "form_html": form_html})
+
+
+@app.route('/instantiate_tile_class', methods=["get", "post"])
+def instantiate_tile_class():
+    app.logger.debug("entering instantiate_tile_class")
+    global tile_instance
+    from tile_env import tile_class
+    data = copy.copy(request.json)
+    app.logger.debug("creating tile instance")
+    tile_instance = tile_class(data["main_id"], data["tile_id"],
+                               data["tile_name"])
+    app.logger.debug("tile instance is complete")
+    tile_instance.user_id = data["user_id"]
+    tile_instance.base_figure_url = data["base_figure_url"]
+
+    app.logger.debug("about to create form html")
+    form_html = tile_instance.create_form_html(data["form_info"])
+    data["form_html"] = form_html
+    app.logger.debug("Got form_html " + str(data["form_html"]))
+    data["exports"] = tile_instance.exports
+    tile_instance.start()
+    app.logger.debug("leaving instantiate_tile_class")
+    return jsonify(data)
 
 
 if __name__ == "__main__":

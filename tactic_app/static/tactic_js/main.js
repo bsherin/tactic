@@ -77,8 +77,7 @@ function addBlankConsoleText() {
 
 function openLogWindow() {
     var task_data = {
-        "property": "console_html",
-        "val": $('#console').html()
+        "console_html": $('#console').html()
     };
     postWithCallback(main_id, "open_log_window", task_data, function(response_data) {
         window.open(response_data.html)
@@ -101,13 +100,14 @@ function start_post_load() {
     }
     socket.emit('join', {"room": user_id});
     socket.emit('join', {"room": main_id});
+    socket.emit('ready-to-finish', {"room": main_id});
     socket.on('tile-message', function (data) {
         // console.log("received tile message " + data.message);
         tile_dict[data.tile_id][data.message](data)
     });
     socket.on('table-message', function (data) {
         // console.log("received table message " + data.message);
-        tableObject[data.message](data)
+        tableObject[data.table_message](data)
     });
     socket.on('handle-callback', handleCallback);
     socket.on('close-user-windows', function(data){
@@ -249,7 +249,7 @@ function continue_loading() {
 
 function set_visible_doc(doc_name, func) {
     var data_dict = {"doc_name": doc_name};
-    if (typeof func === "undefined") {
+    if (func === null) {
         postWithCallback(main_id, "set_visible_doc", data_dict)
     }
     else {
@@ -257,12 +257,13 @@ function set_visible_doc(doc_name, func) {
     }
 }
 
+// todo update change_doc
 function change_doc(el, row_id) {
     $("#table-area").css("display", "none");
     $("#reload-message").css("display", "block");
     var doc_name = $(el).val();
     if (row_id == null) {
-        $.getJSON($SCRIPT_ROOT + "/grab_data/" + String(main_id) + "/" + String(doc_name), function (data) {
+        postWithCallback(main_id, "grab_data", {"doc_name":doc_name}, function (data) {
         $("#loading-message").css("display", "none");
         $("#reload-message").css("display", "none");
         $("#outer-container").css("display", "block");
@@ -272,13 +273,8 @@ function change_doc(el, row_id) {
         })
     }
     else {
-        var data_dict = {"doc_name": doc_name, "row_id": row_id, "main_id": main_id};
-        $.ajax({
-            url: $SCRIPT_ROOT + "/grab_chunk_with_row",
-            contentType : 'application/json',
-            type : 'POST',
-            data: JSON.stringify(data_dict),
-            success: function (data) {
+        var data_dict = {"doc_name": doc_name, "row_id": row_id};
+        postWithCallback(main_id, "grab_chunk_with_row", data_dict, function (data) {
                 $("#loading-message").css("display", "none");
                 $("#reload-message").css("display", "none");
                 $("#outer-container").css("display", "block");
@@ -289,8 +285,7 @@ function change_doc(el, row_id) {
                 $(tr_element).addClass("selected-row");
                 self.active_row = data.actual_row;
                 set_visible_doc(doc_name, null)
-            }
-        })
+            })
     }
 
 }

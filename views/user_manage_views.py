@@ -526,7 +526,8 @@ class ProjectManager(ResourceManager):
         for old_tile_id, tile_type in tile_info_dict.items():
             tile_container_id = create_container("tactic_tile_image", network_mode="bridge")["Id"]
             module_code = get_tile_code(tile_type)
-            send_request_to_container(tile_container_id, "load_source", {"tile_code": module_code})
+            send_request_to_container(tile_container_id, "load_source", {"tile_code": module_code,
+                                                                         "megaplex_address": megaplex_address})
             tile_container_address = get_address(tile_container_id, "bridge")
             new_tile_info[old_tile_id] = {"new_tile_id": tile_container_id,
                                           "tile_container_address": tile_container_address}
@@ -642,7 +643,8 @@ class TileManager(ResourceManager):
             user_obj = current_user
             tile_module = user_obj.get_tile_module(tile_module_name)
 
-            result = send_request_to_container(test_tile_container_id, "load_source", {"tile_code": tile_module})
+            result = send_direct_request_to_container(test_tile_container_id, "load_source", {"tile_code": tile_module,
+                                                                                              "megaplex_address": megaplex_address})
             res_dict = result.json()
 
             if not res_dict["success"]:

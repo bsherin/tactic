@@ -9,10 +9,12 @@ from flask import Flask, render_template
 from gevent.queue import Queue
 import pymongo
 import gridfs
+import gridfs
 import time
 import uuid
 import cPickle
 from qworker import QWorker
+from communication_utils import send_request_to_container
 
 INITIAL_LEFT_FRACTION = .69
 CHUNK_SIZE = 200
@@ -225,7 +227,7 @@ class mainWindow(QWorker):
     def emit_table_message(self, message, data=None, callback_func=None):
         if data is None:
             data = {}
-        data["message"] = message
+        data["table_message"] = message
         self.ask_host("emit_table_message", data, callback_func)
         return
 
@@ -365,7 +367,7 @@ class mainWindow(QWorker):
                 r[column_name] = ""
 
     def _delete_tile_instance(self, tile_id):
-        self.tile_instances.remove(tile_id)
+        del self.tile_instances[tile_id]
         self.tile_sort_list.remove(tile_id)
         if tile_id in self._pipe_dict:
             del self._pipe_dict[tile_id]
@@ -373,32 +375,46 @@ class mainWindow(QWorker):
         self.ask_host("delete_container", {"container_id": tile_id})
         return
 
-    # todo create_tile stuff is a mess right now.
-    def create_tile_instance(self, data_dict):
-        def keep_on_tile_creation(next_response):
-            if next_response["success"]:
-                exports = next_response["exports"]
-                if len(exports) > 0:
-                    if tile_container_id not in self._pipe_dict:
-                        self._pipe_dict[tile_container_id] = {}
-                    for export in exports:
-                        self._pipe_dict[tile_container_id][tile_name + "_" + export] = {
-                            "export_name": export,
-                            "tile_address": tile_container_address}
-                    self.distribute_event("RebuildTileForms")
-                self.tile_sort_list.append(tile_container_id)
-                self.current_tile_id += 1
+    def get_current_pipe_list(self):
+        pipe_list = []
+        for tile_entry in self._pipe_dict.values():
+            pipe_list += tile_entry.keys()
+        return pipe_list
 
-        def continue_tile_creation(response_data):
-            self.ask_tile(tile_container_id, "get_tile_exports", response_data, keep_on_tile_creation)
-            return
-
+    def create_tile(self, data_dict):
+        self.debug_log("entering create_tile in main.py")
         tile_container_id = data_dict["tile_id"]
-        self.tile_instances.append(tile_container_id)
+        self.tile_instances[tile_container_id] = data_dict["tile_address"]
         tile_name = data_dict["tile_name"]
         data_dict["user_id"] = self.user_id
         data_dict["base_figure_url"] = self.base_figure_url.replace("tile_id", tile_container_id)
-        self.ask_tile(data_dict["tile_id"], "instantiate_tile_class", data_dict, callback_func=continue_tile_creation)
+        data_dict["main_id"] = self.my_id
+        data_dict["megaplex_address"] = self.megaplex_address
+        form_info = {"current_header_list": self.current_header_list,
+                     "pipe_list": self.get_current_pipe_list(),
+                     "doc_names": self.doc_names,
+                     "list_names": data_dict["list_names"]}
+        data_dict["form_info"] = form_info
+        tile_address = data_dict["tile_address"]
+        load_result = send_request_to_container(tile_address, "load_source", data_dict).json()
+        instantiate_result = send_request_to_container(tile_address, "instantiate_tile_class", data_dict)
+        self.debug_log("got instantiate result " + str(instantiate_result))
+        form_html = instantiate_result.json()["form_html"]
+        exports = instantiate_result.json()["exports"]
+        if len(exports) > 0:
+            if tile_container_id not in self._pipe_dict:
+                self._pipe_dict[tile_container_id] = {}
+            for export in exports:
+                self._pipe_dict[tile_container_id][tile_name + "_" + export] = {
+                    "export_name": export,
+                    "tile_address": tile_address}
+
+            # todo I have turned off rebuildtileforms here
+            # self.distribute_event("RebuildTileForms")
+        self.tile_sort_list.append(tile_container_id)
+        self.current_tile_id += 1
+        self.debug_log("leaving create_tile in main.py")
+        return {"success": True, "html": form_html}
 
     def handle_exception(self, unique_message=None, print_to_console=True):
         error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
@@ -496,16 +512,16 @@ class mainWindow(QWorker):
     def CellChange(self, data):
         self._set_row_column_data(data["doc_name"], data["id"], data["column_header"], data["new_content"])
         self._change_list.append(data["id"])
-        return {"success": True}
+        return None
 
     def set_visible_doc(self, data):
         doc_name = data["doc_name"]
         self.visible_doc_name = doc_name
-        return {"success": True}
+        return None
 
     def print_to_console_event(self, data):
         self.print_to_console(data["print_string"], force_open=True)
-        return {"success": True}
+        return None
 
     def get_property(self, data_dict):
         prop_name = data_dict["property"]
@@ -516,7 +532,7 @@ class mainWindow(QWorker):
         prop_name = data_dict["property"]
         val = data_dict["val"]
         setattr(mwindow, prop_name, val)
-        return {"success": True}
+        return
 
     def open_log_window(self, task_data):
         self.console_html = task_data["console_html"]
@@ -525,7 +541,8 @@ class mainWindow(QWorker):
         else:
             title = self.project_name + " log"
         with self.app.test_request_context():
-            the_html = render_template("log_window_template.html", window_title=title, console_html=console_html)
+            # todo rendering this template here won't work. must be done back on the host
+            the_html = render_template("log_window_template.html", window_title=title, console_html=self.console_html)
         return {"html": the_html}
 
     def grab_data(self, data):
@@ -539,6 +556,23 @@ class mainWindow(QWorker):
                 "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
                 "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
                 "max_table_size": self.doc_dict[doc_name].max_table_size}
+
+    # todo grab_chunk_with_row has not been tested
+    def grab_chunk_with_row(self, data_dict):
+        app.logger.debug("Entering grab chunk with row")
+        doc_name = data_dict["doc_name"]
+        row_id = data_dict["row_id"]
+        self.doc_dict[doc_name].move_to_row(row_id)
+        return {"doc_name": doc_name,
+                "left_fraction": self.left_fraction,
+                "is_shrunk": self.is_shrunk,
+                "data_rows": self.doc_dict[doc_name].displayed_data_rows,
+                "background_colors": self.doc_dict[doc_name].displayed_background_colors,
+                "header_list": self.doc_dict[doc_name].header_list,
+                "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
+                "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
+                "max_table_size": self.doc_dict[doc_name].max_table_size,
+                "actual_row": self.doc_dict[doc_name].get_actual_row(row_id)}
 
     def distribute_events_stub(self, data_dict):
         event_name = data_dict["event_name"]

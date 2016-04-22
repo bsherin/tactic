@@ -3,6 +3,10 @@ import docker
 import time
 import requests
 import uuid
+import os
+
+SHORT_SLEEP_PERIOD = int(os.environ.get("SHORT_SLEEP_PERIOD"))
+LONG_SLEEP_PERIOD = int(os.environ.get("LONG_SLEEP_PERIOD"))
 
 callbacks = {}
 
@@ -17,12 +21,17 @@ def get_address(container_identifier, network_name):
 def create_container(image_name, container_name=None, network_mode="bridge", wait_until_running=True):
     if container_name is None:
         container_id = cli.create_container(image=image_name,
-                                            host_config=cli.create_host_config(network_mode=network_mode)
+                                            host_config=cli.create_host_config(network_mode=network_mode),
+                                            environment={"SHORT_SLEEP_PERIOD": SHORT_SLEEP_PERIOD,
+                                                         "LONG_SLEEP_PERIOD": LONG_SLEEP_PERIOD}
                                             )
     else:
         container_id = cli.create_container(image=image_name,
                                             name=container_name,
-                                            host_config=cli.create_host_config(network_mode=network_mode))
+                                            host_config=cli.create_host_config(network_mode=network_mode),
+                                            environment={"SHORT_SLEEP_PERIOD": SHORT_SLEEP_PERIOD,
+                                                         "LONG_SLEEP_PERIOD": LONG_SLEEP_PERIOD}
+                                            )
     cli.start(container_id)
     print "status " + str(cli.inspect_container(container_id)["State"]["Status"])
     if wait_until_running:

@@ -4,6 +4,7 @@ import uuid
 import sys
 import time
 import requests
+import os
 
 callback_dict = {}
 
@@ -14,7 +15,8 @@ blank_packet = {"source": None,
                 "response_data": None,
                 "callback_id": None}
 
-_sleepperiod = 1
+SHORT_SLEEP_PERIOD = int(os.environ.get("SHORT_SLEEP_PERIOD"))
+LONG_SLEEP_PERIOD = int(os.environ.get("LONG_SLEEP_PERIOD"))
 
 
 def send_request_to_container(taddress, msg_type, data_dict=None, wait_for_success=True,
@@ -48,8 +50,9 @@ class QWorker(gevent.Greenlet):
         try:
             raw_result = send_request_to_container(self.megaplex_address, "get_next_task/" + self.my_id)
             task_packet = raw_result.json()
-        except ValueError:
+        except AttributeError:
             print "send_request_to_container error. Probably no JSON could be decoded"
+            task_packet = {"empty": True, "error": True}
         return task_packet
 
     def post_task(self, dest_id, task_type, task_data=None, callback_func=None):
@@ -82,7 +85,9 @@ class QWorker(gevent.Greenlet):
                     func(task_packet["response_data"])
                 else:
                     self.handle_event(task_packet)
-            gevent.sleep(_sleepperiod)
+                gevent.sleep(SHORT_SLEEP_PERIOD)
+            else:
+                gevent.sleep(LONG_SLEEP_PERIOD)
 
     def handle_event(self, task_packet):
         response_data = getattr(self, task_packet["task_type"])(task_packet["task_data"])

@@ -18,7 +18,7 @@ from tactic_app.docker_functions import create_container
 from tactic_app.docker_functions import get_address, callbacks, destroy_container
 from tactic_app.communication_utils import send_request_to_container
 from tactic_app.users import load_user
-from tactic_app import host_worker, client_worker
+from tactic_app import host_worker, client_worker, megaplex_address
 
 
 # The main window should join a room associated with the user
@@ -31,11 +31,13 @@ def connected_msg():
 def on_join(data):
     room = data["room"]
     join_room(room)
-    socketio.emit("finish-post-load", data, namespace='/main', room=room)
+
     print "user joined room " + room
 
-# Views for creating and saving a new project
-# As well as for updating an existing project.
+
+@socketio.on('ready-to-finish', namespace='/main')
+def on_ready_to_finish(data):
+    socketio.emit("finish-post-load", data, namespace='/main', room=data["room"])
 
 
 @app.route('/post_from_client', methods=["GET", "POST"])
@@ -43,6 +45,40 @@ def on_join(data):
 def post_from_client():
     task_packet = request.json
     client_worker.forward_client_post(task_packet)
+    return jsonify({"success": True})
+
+
+@app.route('/get_menu_template', methods=['get'])
+@login_required
+def get_menu_template():
+    return send_file("templates/menu_template.html")
+
+
+@app.route('/get_table_templates', methods=['get'])
+@login_required
+def get_table_templates():
+    return send_file("templates/table_templates.html")
+
+
+def set_mainwindow_property(main_id, prop_name, prop_value):
+    host_worker.post_task(main_id, "set_property", {"property": prop_name, "val": prop_value})
+    return
+
+
+def get_mainwindow_property(main_id, prop_name, callback):
+    host_worker.post_task(main_id, "get_property", {"property": prop_name}, callback)
+    return
+
+
+@app.route('/remove_mainwindow/<main_id>', methods=['get', 'post'])
+@login_required
+def remove_mainwindow(main_id):
+    data_dict = {"main_id": main_id}
+    response = send_request_to_container(main_id, "get_tile_ids", data_dict)
+    tile_ids = response.json()["tile_ids"]
+    for tile_id in tile_ids:
+        destroy_container(tile_id)
+    destroy_container(main_id)
     return jsonify({"success": True})
 
 
@@ -58,16 +94,6 @@ def save_new_project():
     return jsonify(result.json())
 
 
-def set_mainwindow_property(main_id, prop_name, prop_value):
-    host_worker.post_task(main_id, "set_property", {"property": prop_name, "val": prop_value})
-    return
-
-
-def get_mainwindow_property(main_id, prop_name, callback):
-    host_worker.post_task(main_id, "get_property", {"property": prop_name}, callback)
-    retur
-
-
 @app.route('/update_project', methods=['POST'])
 @login_required
 def update_project():
@@ -79,8 +105,7 @@ def update_project():
     return jsonify(result.json())
 
 
-# todo export_table doesn't work because it's trying to send doc_dict, which isn't serializable
-# todo probably give /get_property ability to pickle and convert to binary
+# todo various exporting and downloading
 @app.route('/export_data', methods=['POST'])
 @login_required
 def export_data():
@@ -95,7 +120,6 @@ def export_data():
     return jsonify({"success": True, "message": "Data Successfully Exported"})
 
 
-# todo download_table needs rewriting
 @app.route('/download_table/<main_id>/<new_name>', methods=['GET', 'POST'])
 @login_required
 def download_table(main_id, new_name):
@@ -117,7 +141,6 @@ def download_table(main_id, new_name):
                      as_attachment=True)
 
 
-# todo download collection needs rewriting
 @app.route('/download_collection/<main_id>/<new_name>', methods=['GET', 'POST'])
 @login_required
 def download_collection(main_id, new_name):
@@ -147,123 +170,11 @@ def download_collection(main_id, new_name):
                      attachment_filename=new_name,
                      as_attachment=True)
 
-# Views for reading data from the database and
-# passing back to the client.
 
-
-@app.route('/grab_data/<main_id>/<doc_name>', methods=['get', 'post'])
-@login_required
-def grab_data(main_id, doc_name):
-    data_dict = {"doc_name": doc_name}
-    result = send_direct_request_to_container(main_id, "grab_data", data_dict)
-    return jsonify(result.json())
-
-
-@app.route('/grab_chunk_with_row', methods=['get', 'post'])
-@login_required
-def grab_chunk_with_row():
-    data_dict = request.json
-    main_id = data_dict["main_id"]
-    result = send_request_to_container(main_id, "grab_chunk_with_row", data_dict)
-    return jsonify(result.json())
-
-
-@app.route('/grab_next_chunk/<main_id>/<doc_name>', methods=['get'])
-@login_required
-def grab_next_chunk(main_id, doc_name):
-    data_dict = {"doc_name": doc_name}
-    result = send_request_to_container(main_id, "grab_next_chunk", data_dict)
-    return jsonify(result.json())
-
-
-@app.route('/grab_previous_chunk/<main_id>/<doc_name>', methods=['get'])
-@login_required
-def grab_previous_chunk(main_id, doc_name):
-    data_dict = {"doc_name": doc_name}
-    result = send_request_to_container(main_id, "grab_previous_chunk", data_dict)
-    return jsonify(result.json())
-
-
-@app.route('/grab_project_data/<main_id>/<doc_name>', methods=['get'])
-@login_required
-def grab_project_data(main_id, doc_name):
-    data_dict = {"doc_name": doc_name}
-    result = send_request_to_container(main_id, "grab_project_data", data_dict)
-    return jsonify(result.json())
-
-
-@app.route('/get_menu_template', methods=['get'])
-@login_required
-def get_menu_template():
-    return send_file("templates/menu_template.html")
-
-
-@app.route('/get_table_templates', methods=['get'])
-@login_required
-def get_table_templates():
-    return send_file("templates/table_templates.html")
-
-
-@app.route('/remove_mainwindow/<main_id>', methods=['get', 'post'])
-@login_required
-def remove_mainwindow(main_id):
-    data_dict = {"main_id": main_id}
-    response = send_request_to_container(main_id, "get_tile_ids", data_dict)
-    tile_ids = response.json()["tile_ids"]
-    for tile_id in tile_ids:
-        destroy_container(tile_id)
-    destroy_container(main_id)
-    return jsonify({"success": True})
-
-
-@app.route('/distribute_events/<event_name>', methods=['get', 'post'])
-@login_required
-def distribute_events_stub(event_name):
-    data_dict = request.json
-    main_id = request.json["main_id"]
-    response = send_request_to_container(main_id, "distribute_events/" + event_name, data_dict)
-    return jsonify({"response": response.json()})
-
-
-@app.route("/request_collection", methods=['GET', 'POST'])
-@login_required
-def request_collection():
-    the_collection = db[request.json["collection_name"]]
-    return jsonify({"the_collection": the_collection})
-
-
-@app.route("/emit_tile_message", methods=['GET', 'POST'])
-def emit_tile_message():
-    print "entering emit_table_message on the host"
-    data = copy.copy(request.json)
-    print "message is " + str(data)
-    socketio.emit("tile-message", data, namespace='/main', room=data["main_id"])
-    return jsonify({"success": True})
-
-
-@app.route("/socketio_emit/<msg>", methods=['GET', 'POST'])
-def socketio_emit(msg):
-    data = copy.copy(request.json)
-    socketio.emit(msg, data, namespace='/main', room=data["main_id"])
-    return jsonify({"success": True})
-
-
-@app.route("/handle_callback", methods=['GET', 'POST'])
-def handle_callback():
-    print "entering handle_callback on the host"
-    data = copy.copy(request.json)
-    if "host_callback_id" in data:
-        data = callbacks[data["host_callback_id"]](data)
-        del callbacks[data["host_callback_id"]]
-    if "jcallback_id" in data:
-        socketio.emit("handle-callback", data, namespace='/main', room=data["main_id"])
-    return jsonify({"success": True})
-
-
+# todo deal with figure source
 @app.route('/figure_source/<tile_id>/<figure_name>', methods=['GET', 'POST'])
 @login_required
 def figure_source(tile_id, figure_name):
-
     encoded_img = send_request_to_container(tile_id, "get_image/" + figure_name, {}).json()["img"]
     img = cPickle.loads(encoded_img.decode("utf-8", "ignore").encode("ascii"))
     img_file = cStringIO.StringIO()
@@ -285,45 +196,24 @@ def data_source(main_id, tile_id, data_name):
         return jsonify({"success": False})
 
 
-# noinspection PyUnresolvedReferences
-@app.route('/create_tile_request', methods=['GET', 'POST'])
-@login_required
-def create_tile_request():
-    def create_tile_callback(ldata_dict):
-        tile_id = ldata_dict["tile_id"]
-        form_html = ldata_dict["form_html"]
-        tname = data_dict["tile_name"]
-        the_html = render_template("tile.html", tile_id=tile_id,
-                                   tile_name=tname,
-                                   form_text=form_html)
-        ddict = copy.copy(ldata_dict)
-        ddict["success"] = True
-        ddict["html"] = the_html
-        ddict["tile_id"] = tile_id
-        return ddict
-    data_dict = request.json
-    main_id = data_dict["main_id"]
-    tile_type = data_dict["tile_type"]
-    # noinspection PyBroadException
-    try:
-        tile_container_id = create_container("tactic_tile_image", network_mode="bridge")["Id"]
-        module_code = get_tile_code(tile_type)
-        send_request_to_container(tile_container_id, "load_source", {"tile_code": module_code})
-        tile_container_address = get_address(tile_container_id, "bridge")
-
-        data_dict["tile_id"] = tile_container_id
-        data_dict["tile_container_address"] = tile_container_address
-        send_request_to_container(main_id, "create_tile_instance",
-                                  data_dict, callback=create_tile_callback)
-        return jsonify({"success": True})
-
-    except:
-        error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-        # mainwindow_instances[main_id].handle_exception("Error creating tile " + error_string)
-        return jsonify({"success": False})
+# todo tile-related stuff
+@app.route("/emit_tile_message", methods=['GET', 'POST'])
+def emit_tile_message():
+    print "entering emit_tilt_message on the host"
+    data = copy.copy(request.json)
+    print "message is " + str(data)
+    socketio.emit("tile-message", data, namespace='/main', room=data["main_id"])
+    return jsonify({"success": True})
 
 
-# todo work on reload_tiles
+@app.route("/socketio_emit/<msg>", methods=['GET', 'POST'])
+def socketio_emit(msg):
+    data = copy.copy(request.json)
+    socketio.emit(msg, data, namespace='/main', room=data["main_id"])
+    return jsonify({"success": True})
+
+
+# todo reload_tiles
 @app.route('/reload_tile/<tile_id>', methods=['GET', 'POST'])
 @login_required
 def reload_tile(tile_id):
@@ -344,3 +234,11 @@ def create_tile_from_save_request(tile_id):
     tile_save_result["tile_id"] = tile_id # a little silly that I need to do that but requies less changes this way
     return jsonify(tile_save_result)
 
+
+# todo project loading
+@app.route('/grab_project_data/<main_id>/<doc_name>', methods=['get'])
+@login_required
+def grab_project_data(main_id, doc_name):
+    data_dict = {"doc_name": doc_name}
+    result = send_request_to_container(main_id, "grab_project_data", data_dict)
+    return jsonify(result.json())

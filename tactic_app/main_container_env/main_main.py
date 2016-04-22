@@ -33,6 +33,7 @@ def get_func():
     val = getattr(mwindow, func_name)(*args)
     return jsonify({"val": val})
 
+
 @app.route('/update_project', methods=['POST'])
 def update_project():
     def do_update_project(data_dict):
@@ -129,25 +130,6 @@ def grab_project_data():
                     "hidden_columns_list": mwindow.hidden_columns_list})
 
 
-@app.route('/grab_chunk_with_row', methods=['get', 'post'])
-def grab_chunk_with_row():
-    app.logger.debug("Entering grab chunk with row")
-    data_dict = request.json
-    doc_name = data_dict["doc_name"]
-    row_id = data_dict["row_id"]
-    mwindow.doc_dict[doc_name].move_to_row(row_id)
-    return jsonify({"doc_name": doc_name,
-                    "left_fraction": mwindow.left_fraction,
-                    "is_shrunk": mwindow.is_shrunk,
-                    "data_rows": mwindow.doc_dict[doc_name].displayed_data_rows,
-                    "background_colors": mwindow.doc_dict[doc_name].displayed_background_colors,
-                    "header_list": mwindow.doc_dict[doc_name].header_list,
-                    "is_last_chunk": mwindow.doc_dict[doc_name].is_last_chunk,
-                    "is_first_chunk": mwindow.doc_dict[doc_name].is_first_chunk,
-                    "max_table_size": mwindow.doc_dict[doc_name].max_table_size,
-                    "actual_row": mwindow.doc_dict[doc_name].get_actual_row(row_id)})
-
-
 @app.route('/initialize_mainwindow', methods=['POST'])
 def initialize_mainwindow():
     app.logger.debug("entering intialize mainwindow")
@@ -201,7 +183,8 @@ def reload_tile(tile_id):
             reload_dict = copy.copy(get_tile_property(tile_id, "current_reload_attrs"))
             saved_options = copy.copy(get_tile_property(tile_id, "current_options"))
             reload_dict.update(saved_options)
-            mwindow.ask_tile(tile_id, "load_source", {"tile_code": module_code})
+            mwindow.ask_tile(tile_id, "load_source", {"tile_code": module_code,
+                                                      "megaplex_address": mwindow.megaplex_addres})
             result = mwindow.ask_tile(tile_id, "reinstantiate_tile", reload_dict).json()
             mwindow.generate_callback({"success": True, "html": result["form_html"], "jcallback_id": data_dict["jcallback_id"]})
         except Exception as ex:

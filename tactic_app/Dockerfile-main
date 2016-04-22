@@ -5,4 +5,5 @@ RUN pip install -r requirements.txt
 MAINTAINER "Bruce L Sherin"
 ADD  ./main_container_env /code
 ADD ./qworker.py /code
+add ./communication_utils.py /code
 CMD ["python", "-u", "main_main.py"]
