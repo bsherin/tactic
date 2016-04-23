@@ -93,6 +93,7 @@ class TileBase(QWorker):
         self.base_data_url = ""
         self.configured = False
         self.list_names = []
+        self._pipe_dict = None # This is set when the form is created
         return
 
     """
@@ -216,13 +217,14 @@ class TileBase(QWorker):
         return None
 
     def RebuildTileForms(self, data):
-        form_html = self.create_form_html()
+        form_html = self.create_form_html(data)
         self.emit_tile_message("displayFormContent", {"html": form_html})
         return None
 
     # Info needed here: list_names, current_header_list, list, pipe_list, document_names
     def create_form_html(self, data):
         self.debug_log("entering create_form_html")
+        self._pipe_dict = data["pipe_dict"]
         try:
             form_html = ""
             for option in self.options:
@@ -264,7 +266,7 @@ class TileBase(QWorker):
                 elif option["type"] == "pipe_select":
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
-                    for choice in data["pipt_list"]:
+                    for choice in self.get_current_pipe_list():
                         if choice == starting_value:
                             form_html += self.select_option_selected_template.format(choice)
                         else:
@@ -538,7 +540,7 @@ class TileBase(QWorker):
 
     def get_current_pipe_list(self):
         pipe_list = []
-        for tile_entry in self.get_main_property("_pipe_dict").values():
+        for tile_entry in self._pipe_dict.values():
             pipe_list += tile_entry.keys()
         return pipe_list
 
@@ -672,7 +674,6 @@ class TileBase(QWorker):
             result = self.post_and_wait(self.main_id, "get_column_data", task_data)
         return result
 
-    # todo have to fix all of these perform_main_function
     def get_column_data_dict(self, column_name):
         result = {}
         for doc_name in self.get_document_names():
@@ -754,7 +755,6 @@ class TileBase(QWorker):
                                                   "token_text": tokenized_text,
                                                   "color_dict": color_dict})
 
-    # todo xx this is a key problem
     def get_user_list(self, the_list):
         result = self.post_and_wait("host", "get_list", {"user_id": self.user_id, "list_name": the_list})
         return result["the_list"]
@@ -767,15 +767,20 @@ class TileBase(QWorker):
 
     def get_pipe_value(self, pipe_key):
         self.debug_log("entering get_pipe_value with pipe_key: " + str(pipe_key))
-        for(tile_id, tile_entry) in self.get_main_property("_pipe_dict").items():
+        for(tile_id, tile_entry) in self._pipe_dict.items():
             if pipe_key in tile_entry:
                 self.debug_log("found tile_entry: " + str(tile_entry))
-                result = self.send_request_to_container(tile_entry[pipe_key]["tile_address"],
-                                                        "transfer_pipe_value", tile_entry[pipe_key])
-                encoded_val = result.json()["encoded_val"]
+                result = self.post_and_wait(tile_entry[pipe_key]["tile_id"],
+                                            "transfer_pipe_value", {"export_name": tile_entry[pipe_key]["export_name"]})
+                encoded_val = result["encoded_val"]
                 val = cPickle.loads(encoded_val.decode("utf-8", "ignore").encode("ascii"))
                 return val
         return None
+
+    def transfer_pipe_value(self, data):
+        export_name = data["export_name"]
+        encoded_val = Binary(cPickle.dumps(getattr(self, export_name)))
+        return {"encoded_val": encoded_val}
 
     def get_weight_function(self, weight_function_name):
         return weight_functions[weight_function_name]

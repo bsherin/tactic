@@ -19,6 +19,7 @@ from tactic_app.docker_functions import get_address, callbacks, destroy_containe
 from tactic_app.communication_utils import send_request_to_container
 from tactic_app.users import load_user
 from tactic_app import host_worker, client_worker, megaplex_address
+from docker_functions import send_direct_request_to_container
 
 
 # The main window should join a room associated with the user
@@ -171,11 +172,10 @@ def download_collection(main_id, new_name):
                      as_attachment=True)
 
 
-# todo deal with figure source
 @app.route('/figure_source/<tile_id>/<figure_name>', methods=['GET', 'POST'])
 @login_required
 def figure_source(tile_id, figure_name):
-    encoded_img = send_request_to_container(tile_id, "get_image/" + figure_name, {}).json()["img"]
+    encoded_img = send_direct_request_to_container(tile_id, "get_image/" + figure_name, {}).json()["img"]
     img = cPickle.loads(encoded_img.decode("utf-8", "ignore").encode("ascii"))
     img_file = cStringIO.StringIO()
     img_file.write(img)

@@ -55,7 +55,7 @@ class QWorker(gevent.Greenlet):
             task_packet = {"empty": True, "error": True}
         return task_packet
 
-    def post_and_wait(self, dest_id, task_type, task_data=None, timeout=10, tries=30):
+    def post_and_wait(self, dest_id, task_type, task_data=None, sleep_time=.1, timeout=10, tries=30):
         callback_id = str(uuid.uuid4())
         new_packet = {"source": self.my_id,
                       "dest": dest_id,
@@ -71,7 +71,7 @@ class QWorker(gevent.Greenlet):
                 return res["result"]
             else:
                 self.app.logger.debug("No result yet for post_and_wait")
-                time.sleep(SHORT_SLEEP_PERIOD)
+                time.sleep(sleep_time)
         return None
 
     def post_task(self, dest_id, task_type, task_data=None, callback_func=None):

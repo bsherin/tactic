@@ -62,7 +62,7 @@ def create_callback(func):
 
 
 def send_direct_request_to_container(container_id, msg_type, data_dict, wait_for_success=True,
-                              timeout=3, tries=30, wait_time=.1):
+                                     timeout=3, tries=30, wait_time=.1):
     maddress = get_address(container_id, "bridge")
     if wait_for_success:
         for attempt in range(tries):

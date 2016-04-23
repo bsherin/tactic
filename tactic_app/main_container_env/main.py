@@ -334,7 +334,8 @@ class mainWindow(QWorker):
                 for export in tile_result["exports"]:
                     self._pipe_dict[tile_id][tile_result["tile_name"] + "_" + export] = {
                         "export_name": export,
-                        "tile_address": self.tile_instances[tile_id]}
+                        "tile_id": tile_id,
+                        "tile_address": self.tile_instances[tile_id],}
         self.debug_log("done with pipes")
 
         # We have to wait to here to actually render the tiles because
@@ -366,12 +367,20 @@ class mainWindow(QWorker):
             for r in doc.data_rows.values():
                 r[column_name] = ""
 
+    def get_list_names(self):
+        list_names = self.post_and_wait("host", "get_list_names", {"user_id": self.user_id})
+        return list_names
+
     def _delete_tile_instance(self, tile_id):
         del self.tile_instances[tile_id]
         self.tile_sort_list.remove(tile_id)
+        form_info = {"current_header_list": self.current_header_list,
+                     "pipe_dict": self._pipe_dict,
+                     "doc_names": self.doc_names,
+                     "list_names": self.get_list_names()}
         if tile_id in self._pipe_dict:
             del self._pipe_dict[tile_id]
-            self.distribute_event("RebuildTileForms")
+            self.distribute_event("RebuildTileForms", form_info)
         self.ask_host("delete_container", {"container_id": tile_id})
         return
 
@@ -391,7 +400,7 @@ class mainWindow(QWorker):
         data_dict["main_id"] = self.my_id
         data_dict["megaplex_address"] = self.megaplex_address
         form_info = {"current_header_list": self.current_header_list,
-                     "pipe_list": self.get_current_pipe_list(),
+                     "pipe_dict": self._pipe_dict,
                      "doc_names": self.doc_names,
                      "list_names": data_dict["list_names"]}
         data_dict["form_info"] = form_info
@@ -407,10 +416,11 @@ class mainWindow(QWorker):
             for export in exports:
                 self._pipe_dict[tile_container_id][tile_name + "_" + export] = {
                     "export_name": export,
+                    "tile_id": tile_container_id,
                     "tile_address": tile_address}
 
-            # todo I have turned off rebuildtileforms here
-            # self.distribute_event("RebuildTileForms")
+        # todo I have turned off rebuildtileforms here
+        self.distribute_event("RebuildTileForms", form_info)
         self.tile_sort_list.append(tile_container_id)
         self.current_tile_id += 1
         self.debug_log("leaving create_tile in main.py")
@@ -641,7 +651,11 @@ class mainWindow(QWorker):
 
     def CreateColumn(self, data):
         self.add_blank_column(data["column_name"])
-        self.distribute_event("RebuildTileForms")
+        form_info = {"current_header_list": self.current_header_list,
+                     "pipe_dict": self._pipe_dict,
+                     "doc_names": self.doc_names,
+                     "list_names": self.get_list_names()}
+        self.distribute_event("RebuildTileForms", form_info)
         return None
 
     def SearchTable(self, data):

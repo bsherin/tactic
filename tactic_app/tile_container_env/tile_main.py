@@ -68,13 +68,6 @@ def get_property(property_name):
     return jsonify({"val": val})
 
 
-@app.route('/transfer_pipe_value', methods=["get", "post"])
-def transfer_pipe_value():
-    export_name = request.json["export_name"]
-    encoded_val = Binary(cPickle.dumps(getattr(tile_instance, export_name)))
-    return jsonify({"encoded_val": encoded_val})
-
-
 @app.route('/get_tile_exports', methods=["get", "post"])
 def get_tile_exports():
     export_dict = tile_instance.exports
