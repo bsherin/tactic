@@ -39,21 +39,15 @@ def recreate_from_save():
     app.logger.debug("creating tile instance")
     tile_instance = tile_class(data["main_id"], data["tile_id"],
                                data["tile_name"])
+    tile_instance.init_qworker(app, megaplex_address)
     app.logger.debug("tile instance is complete")
     tile_instance.base_figure_url = data["base_figure_url"]
-    tile_instance.app = app
     tile_instance.recreate_from_save(data)
-    tile_instance.app = app
     tile_instance.start()
     return jsonify({"is_shrunk": tile_instance.is_shrunk,
                     "saved_size": tile_instance.full_tile_height,
                     "exports": tile_instance.exports,
                     "tile_name": tile_instance.tile_name})
-
-
-@app.route("/render_tile", methods=["get", "post"])
-def render_tile():
-    return jsonify({"tile_html": tile_instance.render_me()})
 
 
 @app.route('/get_save_dict', methods=["get", "post"])

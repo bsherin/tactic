@@ -492,6 +492,7 @@ class ProjectManager(ResourceManager):
         user_obj = current_user
         main_id = create_container("tactic_main_image", network_mode="bridge")["Id"]
         caddress = get_address(main_id, "bridge")
+        send_direct_request_to_container(megaplex_id, "add_address", {"container_id": "main", "address": caddress})
 
         if user_obj.username not in loaded_user_modules:
             loaded_user_modules[user_obj.username] = []
@@ -500,13 +501,14 @@ class ProjectManager(ResourceManager):
                      "project_collection_name": current_user.project_collection_name,
                      "main_container_id": main_id,
                      "user_id": current_user.get_id(),
-                     "host_address": host_ip,
+                     "megaplex_address": megaplex_address,
                      "main_address": caddress,
                      "loaded_user_modules": loaded_user_modules,
                      "mongo_uri": mongo_uri,
                      "base_figure_url": url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1]}
 
-        recreate_info = send_request_to_container(main_id, "initialize_project_mainwindow", data_dict).json()
+        # todo this can create a long wait at the server - refactor a bit
+        recreate_info = send_direct_request_to_container(main_id, "initialize_project_mainwindow", data_dict).json()
 
         tile_info_dict = recreate_info["tile_info_dict"]
         loaded_modules = recreate_info["loaded_modules"]
@@ -526,14 +528,16 @@ class ProjectManager(ResourceManager):
         for old_tile_id, tile_type in tile_info_dict.items():
             tile_container_id = create_container("tactic_tile_image", network_mode="bridge")["Id"]
             module_code = get_tile_code(tile_type)
-            send_request_to_container(tile_container_id, "load_source", {"tile_code": module_code,
-                                                                         "megaplex_address": megaplex_address})
+            send_direct_request_to_container(tile_container_id, "load_source", {"tile_code": module_code,
+                                                                                "megaplex_address": megaplex_address})
             tile_container_address = get_address(tile_container_id, "bridge")
             new_tile_info[old_tile_id] = {"new_tile_id": tile_container_id,
                                           "tile_container_address": tile_container_address}
 
-        # todo this now returns beefore making all the tiles. might cause not-ready problems
-        send_request_to_container(main_id, "recreate_project_tiles", new_tile_info)
+        # todo blocking call issue to be addressed
+        list_names = host_worker.get_list_names({"user_id": current_user.get_id()})["list_names"]
+        host_worker.post_and_wait(main_id, "recreate_project_tiles",
+                                  {"list_names": list_names, "new_tile_info": new_tile_info})
 
         # We want to do this in case there were some additional modules loaded
         # the loaded_modules must be a list to be easily saved to pymongo

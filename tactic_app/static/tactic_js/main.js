@@ -148,7 +148,7 @@ function continue_loading() {
 
     });
     if (_project_name != "") {
-        $.getJSON($SCRIPT_ROOT + "/grab_project_data/" + String(main_id) + "/" + String(doc_names[0]), function(data) {
+        postWithCallback(main_id, "grab_project_data", {"doc_name":String(doc_names[0])}, function(data) {
                 console.log("Entering grab_project_data callback")
                 $("#loading-message").css("display", "none");
                 $("#reload-message").css("display", "none");
@@ -187,18 +187,9 @@ function continue_loading() {
                         var data_dict = {};
                         data_dict["tile_id"] = tile_id;
                         data_dict["main_id"] = main_id;
-                        $.ajax({
-                            url: $SCRIPT_ROOT + "/create_tile_from_save_request/" + String(tile_id),
-                            contentType: 'application/json',
-                            type: 'POST',
-                            data: JSON.stringify(data_dict),
-                            dataType: 'json',
-                            error: function (jqXHR, textStatus, errorThrown) {
-                                console.log("Error creating tile from save: " + textStatus + " " + errorThrown)
-                            },
-                            success: function (data) {
-                                var new_tile_object = new TileObject(data.tile_id, data.tile_html, false);
-                                tile_dict[data.tile_id] = new_tile_object;
+                        postWithCallback(main_id, "get_saved_tile_info", data_dict, function (data) {
+                                var new_tile_object = new TileObject(tile_id, data.tile_html, false);
+                                tile_dict[tile_id] = new_tile_object;
                                 new_tile_object.saved_size = data.saved_size;
                                 var sortable_tables = $(new_tile_object.full_selector() + " table.sortable");
                                 $.each(sortable_tables, function (index, the_table) {
@@ -206,12 +197,11 @@ function continue_loading() {
                                 });
                                 new_tile_object.hideOptions();
                                 create_tile_from_save(index + 1)
-                            }
-                        })
-                    }
-        })
-            })
-    }
+                            })
+                        }
+                    })
+                })
+            }
     else {
             postWithCallback(main_id, "grab_data", {"doc_name":String(doc_names[0])}, function (data) {
                 $("#loading-message").css("display", "none");
@@ -257,7 +247,6 @@ function set_visible_doc(doc_name, func) {
     }
 }
 
-// todo update change_doc
 function change_doc(el, row_id) {
     $("#table-area").css("display", "none");
     $("#reload-message").css("display", "block");

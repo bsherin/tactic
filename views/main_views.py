@@ -196,23 +196,6 @@ def data_source(main_id, tile_id, data_name):
         return jsonify({"success": False})
 
 
-# todo tile-related stuff
-@app.route("/emit_tile_message", methods=['GET', 'POST'])
-def emit_tile_message():
-    print "entering emit_tilt_message on the host"
-    data = copy.copy(request.json)
-    print "message is " + str(data)
-    socketio.emit("tile-message", data, namespace='/main', room=data["main_id"])
-    return jsonify({"success": True})
-
-
-@app.route("/socketio_emit/<msg>", methods=['GET', 'POST'])
-def socketio_emit(msg):
-    data = copy.copy(request.json)
-    socketio.emit(msg, data, namespace='/main', room=data["main_id"])
-    return jsonify({"success": True})
-
-
 # todo reload_tiles
 @app.route('/reload_tile/<tile_id>', methods=['GET', 'POST'])
 @login_required

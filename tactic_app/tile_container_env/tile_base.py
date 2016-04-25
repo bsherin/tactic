@@ -221,7 +221,7 @@ class TileBase(QWorker):
         self.emit_tile_message("displayFormContent", {"html": form_html})
         return None
 
-    # Info needed here: list_names, current_header_list, list, pipe_list, document_names
+    # Info needed here: list_names, current_header_list, pipe_dict, doc_names
     def create_form_html(self, data):
         self.debug_log("entering create_form_html")
         self._pipe_dict = data["pipe_dict"]
@@ -503,9 +503,12 @@ class TileBase(QWorker):
                     setattr(self, attr, attr_val)
         return
 
-    def render_me(self):
+    def render_tile(self, data):
+        return {"tile_html": self.render_me(data)}
+
+    def render_me(self, form_info):
         self.debug_log("Entering render_me in tile")
-        form_html = self.create_form_html()
+        form_html = self.create_form_html(form_info)
         self.debug_log("Done creating form_html")
         if self.is_shrunk:
             dsr_string = ""
@@ -517,22 +520,23 @@ class TileBase(QWorker):
             dbr_string = ""
             bda_string = ""
             main_height = self.full_tile_height
-        result = render_template("saved_tile.html", tile_id=self.my_id,
-                                 tile_name=self.tile_name,
-                                 form_text=form_html,
-                                 current_html=self.current_html,
-                                 whole_width=self.full_tile_width,
-                                 whole_height=main_height,
-                                 front_height=self.front_height,
-                                 front_width=self.front_width,
-                                 back_height=self.back_height,
-                                 back_width=self.back_width,
-                                 tda_height=self.tda_height,
-                                 tda_width=self.tda_width,
-                                 is_strunk=self.is_shrunk,
-                                 triangle_right_display_string=dsr_string,
-                                 triangle_bottom_display_string=dbr_string,
-                                 front_back_display_string=bda_string
+        with self.app.test_request_context():
+            result = render_template("saved_tile.html", tile_id=self.my_id,
+                                     tile_name=self.tile_name,
+                                     form_text=form_html,
+                                     current_html=self.current_html,
+                                     whole_width=self.full_tile_width,
+                                     whole_height=main_height,
+                                     front_height=self.front_height,
+                                     front_width=self.front_width,
+                                     back_height=self.back_height,
+                                     back_width=self.back_width,
+                                     tda_height=self.tda_height,
+                                     tda_width=self.tda_width,
+                                     is_strunk=self.is_shrunk,
+                                     triangle_right_display_string=dsr_string,
+                                     triangle_bottom_display_string=dbr_string,
+                                     front_back_display_string=bda_string
 
                                  )
         self.debug_log("Rendered the result " + str(result[:200]))

@@ -298,11 +298,14 @@ class mainWindow(QWorker):
             tile_info_dict[old_tile_id] = tile_save_dict["tile_type"]
         self.project_dict = project_dict
         self.doc_dict = self._build_doc_dict()
-        self.visible_doc_name = self.doc_dict.keys()[0] #  This is necessary for recreating the tiles
+        self.visible_doc_name = self.doc_dict.keys()[0]  # This is necessary for recreating the tiles
         return tile_info_dict, project_dict["loaded_modules"]
 
-    # todo come back to recreate_the_tiles. have to deal with tile_instances
-    def recreate_the_tiles(self, new_tile_info):
+    # todo this is all done as part of long synchronous task starting at server
+    def recreate_project_tiles(self, data):
+        list_names = data["list_names"]
+        new_tile_info = data["new_tile_info"]
+
         self.tile_instances = {}
         tile_results = {}
         for old_tile_id, tile_save_dict in self.project_dict["tile_instances"].items():
@@ -313,7 +316,7 @@ class mainWindow(QWorker):
             tile_save_dict = self.project_dict["tile_instances"][old_tile_id]
             tile_save_dict["tile_id"] = new_tile_id
             tile_save_dict["base_figure_url"] = self.base_figure_url.replace("tile_id", new_tile_id)
-            tile_result = self.ask_tile(new_tile_id, "recreate_from_save", tile_save_dict).json()
+            tile_result = send_request_to_container(new_tile_address, "recreate_from_save", tile_save_dict).json()
             tile_results[new_tile_id] = tile_result
             self.debug_log("Got tile_result")
 
@@ -340,11 +343,16 @@ class mainWindow(QWorker):
 
         # We have to wait to here to actually render the tiles because
         # the pipe_dict needs to be complete to build the forms.
+
+        form_info = {"current_header_list": self.current_header_list,
+                     "pipe_dict": self._pipe_dict,
+                     "doc_names": self.doc_names,
+                     "list_names": list_names}
         for tile_id, tile_result in tile_results.items():
-            tile_result["tile_html"] = self.ask_tile(tile_id, "render_tile").json()["tile_html"]
+            tile_result["tile_html"] = self.post_and_wait(tile_id, "render_tile", form_info)["tile_html"]
         self.tile_save_results = tile_results
         # todo capture errors in this method
-        return
+        return {"success": True}
 
     @property
     def doc_names(self):
@@ -419,7 +427,6 @@ class mainWindow(QWorker):
                     "tile_id": tile_container_id,
                     "tile_address": tile_address}
 
-        # todo I have turned off rebuildtileforms here
         self.distribute_event("RebuildTileForms", form_info)
         self.tile_sort_list.append(tile_container_id)
         self.current_tile_id += 1
@@ -535,9 +542,10 @@ class mainWindow(QWorker):
         return None
 
     def set_visible_doc(self, data):
+        self.debug_log("entering save visible_doc on main")
         doc_name = data["doc_name"]
         self.visible_doc_name = doc_name
-        return None
+        return {"success": True}
 
     def print_to_console_event(self, data):
         self.print_to_console(data["print_string"], force_open=True)
@@ -580,6 +588,21 @@ class mainWindow(QWorker):
                 "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
                 "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
                 "max_table_size": self.doc_dict[doc_name].max_table_size}
+
+    def grab_project_data(self, data_dict):
+        doc_name = data_dict["doc_name"]
+        return {"doc_name": doc_name,
+                "is_shrunk": self.is_shrunk,
+                "tile_ids": self.tile_sort_list,
+                "left_fraction": self.left_fraction,
+                "data_rows": self.doc_dict[doc_name].displayed_data_rows,
+                "background_colors": self.doc_dict[doc_name].displayed_background_colors,
+                "header_list": self.doc_dict[doc_name].header_list,
+                "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
+                "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
+                "max_table_size": self.doc_dict[doc_name].max_table_size,
+                "tablespec_dict": self.tablespec_dict(),
+                "hidden_columns_list": self.hidden_columns_list}
 
     # todo grab_chunk_with_row has not been tested
     def grab_chunk_with_row(self, data_dict):
@@ -637,10 +660,9 @@ class mainWindow(QWorker):
                 "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
                 "step_size": step_amount}
 
-    # todo some of these can be compacted
-    def RecreateTiles(self, data):
-        self.recreate_the_tiles(data)
-        return None
+    def get_saved_tile_info(self, data):
+        tile_id = data["tile_id"]
+        return self.tile_save_results[tile_id]
 
     def BuildDocDict(self, data): # todo this might never be called
         self.doc_dict = self._build_doc_dict(self.collection_name)

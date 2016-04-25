@@ -103,24 +103,6 @@ def save_new_project():
     return jsonify({"success": True})
 
 
-@app.route("/grab_project_data", methods=["GET", "POST"])
-def grab_project_data():
-    data_dict = request.json
-    doc_name = data_dict["doc_name"]
-    return jsonify({"doc_name": doc_name,
-                    "is_shrunk": mwindow.is_shrunk,
-                    "tile_ids": mwindow.tile_sort_list,
-                    "left_fraction": mwindow.left_fraction,
-                    "data_rows": mwindow.doc_dict[doc_name].displayed_data_rows,
-                    "background_colors":mwindow.doc_dict[doc_name].displayed_background_colors,
-                    "header_list": mwindow.doc_dict[doc_name].header_list,
-                    "is_last_chunk": mwindow.doc_dict[doc_name].is_last_chunk,
-                    "is_first_chunk": mwindow.doc_dict[doc_name].is_first_chunk,
-                    "max_table_size": mwindow.doc_dict[doc_name].max_table_size,
-                    "tablespec_dict": mwindow.tablespec_dict(),
-                    "hidden_columns_list": mwindow.hidden_columns_list})
-
-
 @app.route('/initialize_mainwindow', methods=['POST'])
 def initialize_mainwindow():
     app.logger.debug("entering intialize mainwindow")
@@ -146,18 +128,6 @@ def initialize_project_mainwindow():
                     "collection_name": mwindow.collection_name,
                     "short_collection_name": mwindow.short_collection_name,
                     "console_html": mwindow.console_html})
-
-
-@app.route('/recreate_project_tiles', methods=["get", "post"])
-def recreate_project_tiles():
-    new_tile_info = request.json
-    mwindow.post_event("RecreateTiles", new_tile_info)
-    return jsonify({"success": True})
-
-
-@app.route('/get_saved_tile_info/<tile_id>', methods=["get", "post"])
-def get_saved_tile_info(tile_id):
-    return jsonify(mwindow.tile_save_results[tile_id])
 
 
 def get_tile_property(tile_id, prop_name):

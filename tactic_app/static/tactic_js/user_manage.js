@@ -232,7 +232,16 @@ var project_manager_specifics = {
     buttons: [
         {"name": "load", "func": "load_func", "button_class": "btn-primary"},
         {"name": "delete", "func": "delete_func", "button_class": "btn-danger"}
-    ]
+    ],
+    load_func: function (event) {
+        var manager = event.data.manager;
+        var res_name = manager.check_for_selection(manager.res_type);
+        if (res_name == "") return;
+        data = {"project_name": res_name, "user_id": user_id}
+        postWithCallback("host", "main_project", data, function(data) {
+            window.open(data)
+        })
+    }
 };
 
 var projectManager = new ResourceManager("project", project_manager_specifics);
