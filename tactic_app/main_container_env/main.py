@@ -15,6 +15,7 @@ import uuid
 import cPickle
 from qworker import QWorker
 from communication_utils import send_request_to_container
+import numpy
 
 INITIAL_LEFT_FRACTION = .69
 CHUNK_SIZE = 200
@@ -345,6 +346,7 @@ class mainWindow(QWorker):
             self.tile_sort_list[self.tile_sort_list.index(old_tile_id)] = new_tile_id
             tile_save_dict = self.project_dict["tile_instances"][old_tile_id]
             tile_save_dict["tile_id"] = new_tile_id
+            tile_save_dict["main_id"] = self.my_id
             tile_save_dict["base_figure_url"] = self.base_figure_url.replace("tile_id", new_tile_id)
             tile_result = send_request_to_container(new_tile_address, "recreate_from_save", tile_save_dict).json()
             tile_results[new_tile_id] = tile_result
@@ -484,20 +486,24 @@ class mainWindow(QWorker):
         return {"val": val}
 
     def get_column_data(self, data):
+        self.debug_log("entering get_column_data")
         result = []
         ddata = copy.copy(data)
         for doc_name in self.doc_dict.keys():
             ddata["doc_name"] = doc_name
             result = result + self.get_column_data_for_doc(ddata)
+        self.debug_log("leaving get_column_data")
         return result
 
     def get_column_data_for_doc(self, data):
+        self.debug_log("entering get_column_data_for_doc in main.py")
         column_header = data["column_name"]
         doc_name = data["doc_name"]
         the_rows = self.doc_dict[doc_name].all_sorted_data_rows
         result = []
         for the_row in the_rows:
             result.append(the_row[column_header])
+        self.debug_log("levaing get_column_data_for_doc in main.py")
         return result
 
     def get_matching_rows(self, filter_function, document_name):

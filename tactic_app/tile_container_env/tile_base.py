@@ -560,6 +560,7 @@ class TileBase(QWorker):
     """
 
     def update_options(self, form_data):
+        self.debug_log("entering update_options")
         for opt in self.options:
             if opt["type"] == "int":
                 setattr(self, opt["name"], int(form_data[opt["name"]]))
@@ -625,6 +626,7 @@ class TileBase(QWorker):
     # Refreshing a tile
 
     def spin_and_refresh(self):
+        self.debug_log("Entering spin_and_refresh in tile_base")
         self.post_event("StartSpinner")
         self.post_event("RefreshTile")
         self.post_event("StopSpinner")
@@ -670,12 +672,14 @@ class TileBase(QWorker):
             column_name]
 
     def get_column_data(self, column_name, document_name=None):
+        self.debug_log("entering get_column_data")
         if document_name is not None:
             task_data = {"column_name": column_name, "doc_name": document_name}
             result = self.post_and_wait(self.main_id, "get_column_data_for_doc", task_data)
         else:
             task_data = {"column_name": column_name}
             result = self.post_and_wait(self.main_id, "get_column_data", task_data)
+        self.debug_log("leaving get_column_data")
         return result
 
     def get_column_data_dict(self, column_name):
@@ -760,7 +764,9 @@ class TileBase(QWorker):
                                                   "color_dict": color_dict})
 
     def get_user_list(self, the_list):
+        self.debug_log("entering get_user_list")
         result = self.post_and_wait("host", "get_list", {"user_id": self.user_id, "list_name": the_list})
+        self.debug_log("leaving get_user_list")
         return result["the_list"]
 
     def get_tokenizer(self, tokenizer_name):
