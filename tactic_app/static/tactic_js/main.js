@@ -88,6 +88,7 @@ function openLogWindow() {
 function start_post_load() {
     //spinner = new Spinner({scale: 1.0}).spin();
     //$("#loading-message").html(spinner.el);
+    console.log("entering start_post_load")
     dirty = false;
     $("#outer-container").css({"margin-left": String(MARGIN_SIZE) + "px"});
     $("#outer-container").css({"margin-right": String(MARGIN_SIZE) + "px"});
@@ -168,36 +169,29 @@ function continue_loading() {
                 // before creating the tiles. It is needed in order to set the list of column headers
                 // in tile forms.
                 set_visible_doc(doc_names[0], function () {
-                    var tile_ids = data.tile_ids;
-                    create_tile_from_save(0);
+                    $.each(data.tile_ids, function(index, tile_id){
+                        create_tile_from_save(tile_id)
+                    });
+                    if (data.is_shrunk) {
+                        tableObject.shrinkTable()
+                    }
+                    else {
+                        table_is_shrunk = false
+                    }
+                    
                     menus["Project"].enable_menu_item("save");
                     broadcast_event_to_server("DisplayCreateErrors", {});
 
-                    function create_tile_from_save(index) {
-                        if (index == tile_ids.length) {
-                            if (data.is_shrunk) {
-                                tableObject.shrinkTable()
-                            }
-                            else {
-                                table_is_shrunk = false
-                            }
-                            return
-                        }
-                        var tile_id = tile_ids[index];
-                        var data_dict = {};
-                        data_dict["tile_id"] = tile_id;
-                        data_dict["main_id"] = main_id;
-                        postWithCallback(main_id, "get_saved_tile_info", data_dict, function (data) {
-                                var new_tile_object = new TileObject(tile_id, data.tile_html, false);
-                                tile_dict[tile_id] = new_tile_object;
-                                new_tile_object.saved_size = data.saved_size;
-                                var sortable_tables = $(new_tile_object.full_selector() + " table.sortable");
-                                $.each(sortable_tables, function (index, the_table) {
-                                    sorttable.makeSortable(the_table)
-                                });
-                                new_tile_object.hideOptions();
-                                create_tile_from_save(index + 1)
-                            })
+                    function create_tile_from_save(tile_id) {
+                        tile_html = data.tile_save_results[tile_id].tile_html
+                        var new_tile_object = new TileObject(tile_id, tile_html, false);
+                        tile_dict[tile_id] = new_tile_object;
+                        new_tile_object.saved_size = data.saved_size;
+                        var sortable_tables = $(new_tile_object.full_selector() + " table.sortable");
+                        $.each(sortable_tables, function (index, the_table) {
+                            sorttable.makeSortable(the_table)
+                        });
+                        new_tile_object.hideOptions();
                         }
                     })
                 })

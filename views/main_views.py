@@ -18,7 +18,8 @@ from tactic_app.docker_functions import create_container
 from tactic_app.docker_functions import get_address, callbacks, destroy_container
 from tactic_app.communication_utils import send_request_to_container
 from tactic_app.users import load_user
-from tactic_app import host_worker, client_worker, megaplex_address
+from tactic_app.host_workers import host_worker, client_worker
+from tactic_app import megaplex_address
 from docker_functions import send_direct_request_to_container
 
 
@@ -69,6 +70,14 @@ def set_mainwindow_property(main_id, prop_name, prop_value):
 def get_mainwindow_property(main_id, prop_name, callback):
     host_worker.post_task(main_id, "get_property", {"property": prop_name}, callback)
     return
+
+
+@app.route('/load_temp_page/<the_id>', methods=['get', 'post'])
+@login_required
+def load_temp_page(the_id):
+    template_data = host_worker.temp_dict[the_id]
+    del host_worker.temp_dict[the_id]
+    return render_template("main.html", **template_data)
 
 
 @app.route('/remove_mainwindow/<main_id>', methods=['get', 'post'])

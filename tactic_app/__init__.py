@@ -89,13 +89,6 @@ try:
     megaplex_address = get_address(megaplex_id, "bridge")
     send_request_to_container(megaplex_address, "add_address", {"container_id": "host", "address": host_ip})
 
-    print "creating host and client workers"
-    from host_workers import HostWorker, ClientWorker
-    host_worker = HostWorker(app, megaplex_address)
-    client_worker = ClientWorker(app, megaplex_address, socketio)
-    host_worker.start()
-    client_worker.start()
-
 except pymongo.errors.PyMongoError as err:
     print("There's a problem with the PyMongo database. ", err)
     sys.exit()

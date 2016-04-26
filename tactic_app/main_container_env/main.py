@@ -175,7 +175,7 @@ class mainWindow(QWorker):
 
     # noinspection PyUnresolvedReferences
     def __init__(self, app, data_dict):
-        QWorker.__init__(self, app, data_dict["megaplex_address"], data_dict["main_container_id"])
+        QWorker.__init__(self, app, data_dict["megaplex_address"], data_dict["main_id"])
         try:
             client = pymongo.MongoClient(data_dict["mongo_uri"])
             client.server_info()
@@ -272,6 +272,40 @@ class mainWindow(QWorker):
         self.debug_log("leaving compile_save_dict in main")
         return result
 
+    def do_full_recreation(self, data_dict):
+        tile_info_dict, loaded_modules = self.recreate_from_save(data_dict["project_collection_name"],
+                                                                 data_dict["project_name"])
+        doc_names = [str(doc_name) for doc_name in self.doc_names]
+        tile_containers = self.post_and_wait("host", "get_empty_tile_containers", {"number": len(tile_info_dict.keys())})
+        tile_code_dict = self.post_and_wait("host", "get_tile_code", tile_info_dict)
+        new_tile_info = {}
+        new_tile_keys = tile_containers.keys()
+        for i, old_tile_id in enumerate(tile_info_dict.keys()):
+            new_id = new_tile_keys[i]
+            new_address = tile_containers[new_tile_keys[i]]
+            new_tile_info[old_tile_id] = {"new_tile_id": new_id,
+                                          "tile_container_address": new_address}
+            send_request_to_container(new_address, "load_source", {"tile_code": tile_code_dict[old_tile_id],
+                                                                   "megaplex_address": self.megaplex_address})
+
+        self.tile_save_results = self.recreate_project_tiles(data_dict["list_names"], new_tile_info)
+        self.post_and_wait("host", "load_modules", {"loaded_modules": loaded_modules, "user_id": data_dict["user_id"]})
+        self.debug_log("Returned from load_modules")
+        template_data = {"collection_name": self.collection_name,
+                         "project_name": self.project_name,
+                         "window_title": self.project_name,
+                         "main_id": self.my_id,
+                         "doc_names": doc_names,
+                         "use_ssl": str(data_dict["use_ssl"]),
+                         "console_html": self.console_html,
+                         "short_collection_name": self.short_collection_name,
+                         "new_tile_info": new_tile_info}
+
+        self.post_task("host", "open_project_window", {"user_manage_id": data_dict["user_manage_id"],
+                                                       "template_data": template_data,
+                                                       "message": "window-open"})
+        return
+
     def recreate_from_save(self, project_collection_name, project_name):
         save_dict = self.db[project_collection_name].find_one({"project_name": project_name})
         project_dict = cPickle.loads(self.fs.get(save_dict["file_id"]).read().decode("utf-8", "ignore").encode("ascii"))
@@ -301,11 +335,7 @@ class mainWindow(QWorker):
         self.visible_doc_name = self.doc_dict.keys()[0]  # This is necessary for recreating the tiles
         return tile_info_dict, project_dict["loaded_modules"]
 
-    # todo this is all done as part of long synchronous task starting at server
-    def recreate_project_tiles(self, data):
-        list_names = data["list_names"]
-        new_tile_info = data["new_tile_info"]
-
+    def recreate_project_tiles(self, list_names, new_tile_info):
         self.tile_instances = {}
         tile_results = {}
         for old_tile_id, tile_save_dict in self.project_dict["tile_instances"].items():
@@ -350,9 +380,8 @@ class mainWindow(QWorker):
                      "list_names": list_names}
         for tile_id, tile_result in tile_results.items():
             tile_result["tile_html"] = self.post_and_wait(tile_id, "render_tile", form_info)["tile_html"]
-        self.tile_save_results = tile_results
         # todo capture errors in this method
-        return {"success": True}
+        return tile_results
 
     @property
     def doc_names(self):
@@ -602,7 +631,8 @@ class mainWindow(QWorker):
                 "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
                 "max_table_size": self.doc_dict[doc_name].max_table_size,
                 "tablespec_dict": self.tablespec_dict(),
-                "hidden_columns_list": self.hidden_columns_list}
+                "hidden_columns_list": self.hidden_columns_list,
+                "tile_save_results": self.tile_save_results}
 
     # todo grab_chunk_with_row has not been tested
     def grab_chunk_with_row(self, data_dict):
@@ -660,6 +690,7 @@ class mainWindow(QWorker):
                 "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
                 "step_size": step_amount}
 
+    # todo this shouldn't be needed any longer
     def get_saved_tile_info(self, data):
         tile_id = data["tile_id"]
         return self.tile_save_results[tile_id]

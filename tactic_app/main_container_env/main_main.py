@@ -120,14 +120,8 @@ def initialize_project_mainwindow():
     data_dict = request.json
     mwindow = mainWindow(app, data_dict)
     mwindow.start()
-    tile_info_dict, loaded_modules = mwindow.recreate_from_save(data_dict["project_collection_name"], data_dict["project_name"])
-    return jsonify({"success": True,
-                    "tile_info_dict": tile_info_dict,
-                    "loaded_modules": loaded_modules,
-                    "doc_names": mwindow.doc_names,
-                    "collection_name": mwindow.collection_name,
-                    "short_collection_name": mwindow.short_collection_name,
-                    "console_html": mwindow.console_html})
+    mwindow.post_task(data_dict["main_id"], "do_full_recreation", data_dict)
+    return jsonify({"success": True})
 
 
 def get_tile_property(tile_id, prop_name):

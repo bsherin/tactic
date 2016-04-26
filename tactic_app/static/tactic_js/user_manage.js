@@ -6,6 +6,7 @@ var resource_module_template;
 var repository_module_template;
 var mousetrap = new Mousetrap();
 var repository_visible = false;
+var user_manage_id = guid();
 
 mousetrap.bind("esc", function() {
     clearStatusArea();
@@ -23,7 +24,11 @@ function start_post_load() {
     }
     window.onresize = resize_window;
 
-    socket.emit('join', {"user_id":  user_id});
+    socket.emit('join', {"user_id":  user_id, "user_manage_id":  user_manage_id});
+
+    socket.on("window-open", function(data) {
+        window.open($SCRIPT_ROOT + "/load_temp_page/" + data["the_id"])
+    });
 
     socket.on('update-selector-list', function(data) {
         var res_type = data.res_type;
@@ -226,7 +231,7 @@ resource_managers["collection"] = collectionManager;
 
 var project_manager_specifics = {
     show_add: false,
-    load_view: "/main_project/",
+    load_view: "/main_project/",  // todo this might be obsolete now, as is all related stuff
     delete_view: "/delete_project/",
     double_click_func: "load_func",
     buttons: [
@@ -237,10 +242,8 @@ var project_manager_specifics = {
         var manager = event.data.manager;
         var res_name = manager.check_for_selection(manager.res_type);
         if (res_name == "") return;
-        data = {"project_name": res_name, "user_id": user_id}
-        postWithCallback("host", "main_project", data, function(data) {
-            window.open(data)
-        })
+        var data = {"project_name": res_name, "user_id": user_id, "user_manage_id": user_manage_id};
+        postWithCallbackNoMain("host", "main_project", data)
     }
 };
 

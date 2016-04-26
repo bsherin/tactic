@@ -8,10 +8,12 @@ import os
 import docker_cleanup
 print "entering tactic_run"
 
-from tactic_app import app
+from tactic_app import app, socketio
+
+from tactic_app import host_workers  # this creates the host_worker and client_worker
+
 from tactic_app import users
 from views import auth_views, main_views, user_manage_views
-from tactic_app import socketio
 
 from tactic_app.shared_dicts import get_all_default_tiles
 print "imported app"

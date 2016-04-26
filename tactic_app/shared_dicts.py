@@ -9,7 +9,7 @@ user_tiles = {}
 loaded_user_modules = {}
 
 test_tile_container_id = create_container("tactic_tile_image", network_mode="bridge")["Id"]
-test_tile_conatiner_address = get_address(test_tile_container_id, "bridge")
+test_tile_container_address = get_address(test_tile_container_id, "bridge")
 
 
 def get_all_default_tiles():
