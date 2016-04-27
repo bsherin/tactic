@@ -92,17 +92,6 @@ def remove_mainwindow(main_id):
     return jsonify({"success": True})
 
 
-@app.route('/update_project', methods=['POST'])
-@login_required
-def update_project():
-    data_dict = request.json
-    data_dict["users_loaded_modules"] = loaded_user_modules[current_user.username]
-    data_dict["project_collection_name"] = current_user.project_collection_name
-    result = send_request_to_container(data_dict["main_id"], "update_project", data_dict)
-    project_manager.update_selector_list()
-    return jsonify(result.json())
-
-
 # todo various exporting and downloading
 @app.route('/export_data', methods=['POST'])
 @login_required
@@ -205,21 +194,3 @@ def reload_tile(tile_id):
                               {"tile_code": module_code,
                                "jcallback_id": request.json["jcallback_id"]})
     return jsonify({"success": False})
-
-
-@app.route('/create_tile_from_save_request/<tile_id>', methods=['GET', 'POST'])
-@login_required
-def create_tile_from_save_request(tile_id):
-    main_id = request.json["main_id"]
-    tile_save_result = send_request_to_container(main_id, "get_saved_tile_info/" + tile_id, {}).json()
-    tile_save_result["tile_id"] = tile_id # a little silly that I need to do that but requies less changes this way
-    return jsonify(tile_save_result)
-
-
-# todo project loading
-@app.route('/grab_project_data/<main_id>/<doc_name>', methods=['get'])
-@login_required
-def grab_project_data(main_id, doc_name):
-    data_dict = {"doc_name": doc_name}
-    result = send_request_to_container(main_id, "grab_project_data", data_dict)
-    return jsonify(result.json())

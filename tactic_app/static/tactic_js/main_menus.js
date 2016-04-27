@@ -282,6 +282,30 @@ function saveProjectAs() {
     })
 }
 
+function save_project() {
+    var result_dict = {
+        "main_id": main_id,
+        "tablespec_dict": tablespec_dict,
+        "hidden_columns_list": hidden_columns_list,
+        "console_html": $("#console").html()
+        //"tablespec_dict": tablespec_dict
+    };
+    postWithCallback(main_id, "update_project", result_dict, updateSuccess);
+    function updateSuccess(data) {
+        if (data.success) {
+            data.alert_type = "alert-success";
+            dirty = false;
+            data.timeout = 2000;
+            doFlash(data)
+        }
+        else {
+            data.alert_type = "alert-warning";
+            dirty = false;
+            doFlash(data)
+        }
+    }
+}
+
 function project_command(menu_id) {
     switch (menu_id) {
         case "save-as":
@@ -386,26 +410,6 @@ function enable_require_column_select(){
     column_menu.enable_items(["shift-left", "shift-right", "hide"])
 }
 
-function save_project() {
-    var result_dict = {
-        "main_id": main_id,
-        "tablespec_dict": tablespec_dict,
-        "hidden_columns_list": hidden_columns_list,
-        "console_html": $("#console").html()
-        //"tablespec_dict": tablespec_dict
-    };
-    postWithCallback("/update_project", result_dict, updateSuccess);
-    function updateSuccess(data) {
-        if (data.success) {
-            dirty = false;
-            data.timeout = 2000;
-            doFlash(data)
-        }
-        else {
-            dirty = false;
-            doFlash(data)
-        }
-    }
-}
+
 
 

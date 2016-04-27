@@ -527,6 +527,38 @@ class mainWindow(QWorker):
             return_data = {"success": False, "message_string": error_string}
         return return_data
 
+    def update_project(self, data_dict):
+        self.debug_log("entering update_project")
+        # noinspection PyBroadException
+        try:
+            self.hidden_columns_list = data_dict["hidden_columns_list"]
+            self.console_html = data_dict["console_html"]
+            tspec_dict = data_dict["tablespec_dict"]
+            for (dname, spec) in tspec_dict.items():
+                self.doc_dict[dname].table_spec = spec
+            self.loaded_modules = self.post_and_wait("host", "get_loaded_user_modules", {"user_id": self.user_id})["loaded_modules"]
+            project_dict = self.compile_save_dict()
+            pname = project_dict["project_name"]
+            self.mdata["updated"] = datetime.datetime.today()
+            new_file_id = self.fs.put(Binary(cPickle.dumps(project_dict)))
+            save_dict = self.db[self.project_collection_name].find_one({"project_name": pname})
+            self.fs.delete(save_dict["file_id"])
+            save_dict["project_name"] = pname
+            save_dict["metadata"] = self.mdata
+            save_dict["file_id"] = new_file_id
+            self.db[self.project_collection_name].update_one({"project_name": pname},
+                                                                        {'$set': save_dict})
+            self.mdata = save_dict["metadata"]
+            return_data = {"project_name": pname,
+                           "success": True,
+                           "message": "Project Successfully Saved"}
+
+        except:
+            error_string = self.handle_exception("Error saving project", print_to_console=False)
+            return_data = {"success": False, "message": error_string}
+        return return_data
+
+
     def get_column_data(self, data):
         self.debug_log("entering get_column_data")
         result = []
