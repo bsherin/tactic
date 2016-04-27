@@ -92,18 +92,6 @@ def remove_mainwindow(main_id):
     return jsonify({"success": True})
 
 
-# todo work on saving
-@app.route('/save_new_project', methods=['POST'])
-@login_required
-def save_new_project():
-    data_dict = request.json
-    data_dict["users_loaded_modules"] = loaded_user_modules[current_user.username]
-    data_dict["project_collection_name"] = current_user.project_collection_name
-    result = send_request_to_container(data_dict["main_id"], "save_new_project", data_dict)
-    project_manager.update_selector_list()
-    return jsonify(result.json())
-
-
 @app.route('/update_project', methods=['POST'])
 @login_required
 def update_project():
@@ -181,6 +169,7 @@ def download_collection(main_id, new_name):
                      as_attachment=True)
 
 
+# todo this is different I think so existing saves won't work.
 @app.route('/figure_source/<tile_id>/<figure_name>', methods=['GET', 'POST'])
 @login_required
 def figure_source(tile_id, figure_name):

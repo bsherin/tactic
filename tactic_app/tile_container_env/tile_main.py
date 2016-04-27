@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request
 import sys
 import copy
 import tile_env
+from tile_env import class_info
 from tile_env import exec_tile_code
 import cPickle
 from bson.binary import Binary
@@ -32,18 +33,20 @@ def load_source():
 
 @app.route("/recreate_from_save", methods=["get", "post"])
 def recreate_from_save():
-    app.logger.debug("entering recreate_from_save")
+    app.logger.debug("entering recreate_from_save. class_name is " + class_info["class_name"])
     global tile_instance
-    from tile_env import tile_class
     data = copy.copy(request.json)
     app.logger.debug("creating tile instance")
-    tile_instance = tile_class(data["main_id"], data["tile_id"],
+    tile_instance = class_info["tile_class"](data["main_id"], data["tile_id"],
                                data["tile_name"])
+    app.logger.debug("megaplex_address is " + megaplex_address)
     tile_instance.init_qworker(app, megaplex_address)
     app.logger.debug("tile instance is complete")
     tile_instance.base_figure_url = data["base_figure_url"]
     tile_instance.recreate_from_save(data)
+    app.logger.debug("back from recreate_from_save")
     tile_instance.start()
+    app.logger.debug("tile instance started")
     return jsonify({"is_shrunk": tile_instance.is_shrunk,
                     "saved_size": tile_instance.full_tile_height,
                     "exports": tile_instance.exports,
@@ -90,11 +93,10 @@ def get_image(figure_name):
 def reinstantiate_tile():
     app.logger.debug("entering reinstantiate_tile_class")
     global tile_instance
-    from tile_env import tile_class
     reload_dict = copy.copy(request.json)
     app.logger.debug("creating tile instance")
     # tile_instance.kill()
-    tile_instance = tile_class(reload_dict["main_id"], reload_dict["tile_id"],
+    tile_instance = class_info["tile_class"](reload_dict["main_id"], reload_dict["tile_id"],
                                reload_dict["tile_name"])
     for (attr, val) in reload_dict.items():
         setattr(tile_instance, attr, val)
@@ -110,10 +112,9 @@ def reinstantiate_tile():
 def instantiate_tile_class():
     app.logger.debug("entering instantiate_tile_class")
     global tile_instance
-    from tile_env import tile_class
     data = copy.copy(request.json)
     app.logger.debug("creating tile instance")
-    tile_instance = tile_class(data["main_id"], data["tile_id"],
+    tile_instance = class_info["tile_class"](data["main_id"], data["tile_id"],
                                data["tile_name"])
     tile_instance.init_qworker(app, megaplex_address)
     app.logger.debug("tile instance is complete")

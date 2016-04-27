@@ -8,6 +8,9 @@ from matplotlib_utilities import GraphList, ColorMapper, FigureCanvas, ArrayHeat
 from bson.binary import Binary
 from tile_base import TileBase
 
+class_info = {"class_name": "",
+              "tile_class": None}
+
 tile_name = ""
 tile_class = None
 
@@ -17,9 +20,8 @@ nltk.data.path = ['./nltk_data/']
 
 
 def user_tile(tclass):
-    global tile_name, tile_class
-    tile_name = tclass.__name__
-    tile_class = tclass
+    class_info["class_name"] = tclass.__name__
+    class_info["tile_class"] = tclass
     return tclass
 
 
@@ -29,4 +31,4 @@ def exec_tile_code(tile_code):
     except:
         error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         return {"success": False, "message_string": error_string}
-    return {"success": True, "tile_name": tile_name, "category": tile_class.category}
+    return {"success": True, "tile_name": class_info["class_name"], "category": class_info["tile_class"].category}

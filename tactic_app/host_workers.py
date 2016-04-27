@@ -7,6 +7,7 @@ from communication_utils import send_request_to_container
 from docker_functions import create_container, get_address, destroy_container
 from shared_dicts import get_tile_code, loaded_user_modules
 from tactic_app import app, socketio, mongo_uri, megaplex_address, use_ssl
+from views.user_manage_views import tile_manager, project_manager
 import uuid
 
 
@@ -53,13 +54,26 @@ class HostWorker(QWorker):
         the_user = load_user(user_id)
         return {"list_names": the_user.list_names}
 
+    def get_loaded_user_modules(self, data):
+        user_id = data["user_id"]
+        user_obj = load_user(user_id)
+
+        return {"loaded_modules": loaded_user_modules[user_obj.username]}
+
     def load_modules(self, data):
         loaded_modules = data["loaded_modules"]
         user_id = data["user_id"]
         user_obj = load_user(user_id)
         for module in loaded_modules:
             if module not in loaded_user_modules[user_obj.username]:
-                tile_manager.load_tile_module(module)
+                tile_manager.load_tile_module(module, return_json=False, user_obj=user_obj)
+        return {"success": True}
+
+    def update_project_selector_list(self, data):
+        # todo xx left off here. user_id is needed downstream it will be evident (or user_obj)
+        user_id = data["user_id"]
+        user_obj = load_user(user_id)
+        project_manager.update_selector_list(user_obj=user_obj)
         return {"success": True}
 
     def get_empty_tile_containers(self, data):

@@ -51,7 +51,7 @@ class QWorker(gevent.Greenlet):
             raw_result = send_request_to_container(self.megaplex_address, "get_next_task/" + self.my_id)
             task_packet = raw_result.json()
         except AttributeError:
-            self.app.logger.debug("send_request_to_container error. Probably no JSON could be decoded")
+            self.debug_log("send_request_to_container error. Probably no JSON could be decoded")
             task_packet = {"empty": True, "error": True}
         return task_packet
 
@@ -94,6 +94,7 @@ class QWorker(gevent.Greenlet):
         return
 
     def _run(self):
+        self.debug_log("Entering _run")
         self.running = True
         while self.running:
             task_packet = self.get_next_task()

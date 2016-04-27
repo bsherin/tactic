@@ -54,15 +54,17 @@ class ResourceManager(object):
     def add_rules(self):
         print "not implemented"
 
-    def update_selector_list(self, select=None):
+    def update_selector_list(self, select=None, user_obj=None):
+        if user_obj is None:
+            user_obj = current_user
         if select is None:
             socketio.emit('update-selector-list',
-                          {"html": self.request_update_selector_list(), "res_type": self.res_type},
-                          namespace='/user_manage', room=current_user.get_id())
+                          {"html": self.request_update_selector_list(user_obj=user_obj), "res_type": self.res_type},
+                          namespace='/user_manage', room=user_obj.get_id())
         else:
             socketio.emit('update-selector-list',
-                          {"html": self.request_update_selector_list(), "select": select, "res_type": self.res_type},
-                          namespace='/user_manage', room=current_user.get_id())
+                          {"html": self.request_update_selector_list(user_obj=user_obj), "select": select, "res_type": self.res_type},
+                          namespace='/user_manage', room=user_obj.get_id())
 
     def get_resource_list(self):
         if self.is_repository:
@@ -71,15 +73,16 @@ class ResourceManager(object):
             user_obj = current_user
         return getattr(user_obj, self.collection_list)
 
-    def get_resource_list_with_metadata(self):
-        if self.is_repository:
-            user_obj = repository_user
-        else:
-            user_obj = current_user
+    def get_resource_list_with_metadata(self, user_obj=None):
+        if user_obj is None:
+            if self.is_repository:
+                user_obj = repository_user
+            else:
+                user_obj = current_user
         return getattr(user_obj, self.collection_list_with_metadata)
 
-    def request_update_selector_list(self):
-        res_list_with_metadata = self.get_resource_list_with_metadata()
+    def request_update_selector_list(self, user_obj=None):
+        res_list_with_metadata = self.get_resource_list_with_metadata(user_obj)
         res_array = self.build_resource_array(res_list_with_metadata)
         result = self.build_html_table_from_data_list(res_array)
         return result
@@ -333,6 +336,7 @@ class CollectionManager(ResourceManager):
                      "user_id": current_user.get_id(),
                      "megaplex_address": megaplex_address,
                      "loaded_user_modules": loaded_user_modules,
+                     "project_collection_name": user_obj.project_collection_name,
                      "mongo_uri": mongo_uri,
                      "base_figure_url": url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1]}
 
@@ -576,9 +580,10 @@ class TileManager(ResourceManager):
                                module_name=module_name,
                                module_code=module_code)
 
-    def load_tile_module(self, tile_module_name):
+    def load_tile_module(self, tile_module_name, return_json=True, user_obj=None):
         try:
-            user_obj = current_user
+            if user_obj is None:
+                user_obj = current_user
             tile_module = user_obj.get_tile_module(tile_module_name)
 
             result = send_direct_request_to_container(test_tile_container_id, "load_source", {"tile_code": tile_module,
@@ -599,10 +604,16 @@ class TileManager(ResourceManager):
             socketio.emit('update-loaded-tile-list', {"html": self.render_loaded_tile_list()},
                           namespace='/user_manage', room=current_user.get_id())
             socketio.emit('update-menus', {}, namespace='/main', room=current_user.get_id())
-            return jsonify({"success": True, "message": "Tile module successfully loaded", "alert_type": "alert-success"})
+            if return_json:
+                return jsonify({"success": True, "message": "Tile module successfully loaded", "alert_type": "alert-success"})
+            else:
+                return {"success": True}
         except:
             error_string = "Error loading tile: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-            return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+            if return_json:
+                return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+            else:
+                return {"success": False, "message": error_string}
 
     def unload_all_tiles(self):
         try:

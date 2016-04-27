@@ -59,7 +59,7 @@ class TileBase(QWorker):
         # from tile_main import app, megaplex_address
         # QWorker.__init__(self, app, megaplex_address, tile_id)
         self._sleepperiod = .0001
-        self.save_attrs = ["current_html", "my_id", "tile_type", "tile_name", "main_id", "configured",
+        self.save_attrs = ["current_html", "tile_type", "tile_name", "main_id", "configured",
                            "header_height", "front_height", "front_width", "back_height", "back_width",
                            "tda_width", "tda_height", "width", "height", "user_id",
                            "full_tile_width", "full_tile_height", "is_shrunk", "img_dict", "current_fig_id"]
@@ -449,7 +449,7 @@ class TileBase(QWorker):
         self.do_the_refresh(message)
         return
 
-    def compile_save_dict(self):
+    def compile_save_dict(self, data):
         result = {"my_class_for_recreate": "TileBase"}
         result["binary_attrs"] = []
         for attr in self.save_attrs:
@@ -481,6 +481,7 @@ class TileBase(QWorker):
         return result
 
     def recreate_from_save(self, save_dict):
+        self.debug_log("entering recreate_from_save in tile_base")
         if "binary_attrs" not in save_dict:
             save_dict["binary_attrs"] = []
         for(attr, attr_val) in save_dict.items():

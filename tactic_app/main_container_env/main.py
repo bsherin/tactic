@@ -13,7 +13,9 @@ import gridfs
 import time
 import uuid
 import cPickle
+from bson.binary import Binary
 from qworker import QWorker
+import datetime
 from communication_utils import send_request_to_container
 import numpy
 
@@ -187,6 +189,7 @@ class mainWindow(QWorker):
             sys.exit()
 
         self.base_figure_url = data_dict["base_figure_url"]
+        self.project_collection_name = data_dict["project_collection_name"]
 
         # These are the main attributes that define a project state
 
@@ -267,7 +270,7 @@ class mainWindow(QWorker):
                 result[attr] = attr_val
         tile_instances = {}
         for tile_id in self.tile_instances.keys():
-            tile_save_dict = self.ask_tile(tile_id, "get_save_dict").json()
+            tile_save_dict = self.post_and_wait(tile_id, "compile_save_dict")
             tile_instances[tile_id] = tile_save_dict  # tile_id isn't meaningful going forward.
         result["tile_instances"] = tile_instances
         self.debug_log("leaving compile_save_dict in main")
@@ -276,8 +279,11 @@ class mainWindow(QWorker):
     def do_full_recreation(self, data_dict):
         tile_info_dict, loaded_modules = self.recreate_from_save(data_dict["project_collection_name"],
                                                                  data_dict["project_name"])
+        self.post_and_wait("host", "load_modules", {"loaded_modules": loaded_modules, "user_id": data_dict["user_id"]})
         doc_names = [str(doc_name) for doc_name in self.doc_names]
+        self.debug_log("Getting empty tile containers")
         tile_containers = self.post_and_wait("host", "get_empty_tile_containers", {"number": len(tile_info_dict.keys())})
+        self.debug_log("getting code for the tiles")
         tile_code_dict = self.post_and_wait("host", "get_tile_code", tile_info_dict)
         new_tile_info = {}
         new_tile_keys = tile_containers.keys()
@@ -290,7 +296,6 @@ class mainWindow(QWorker):
                                                                    "megaplex_address": self.megaplex_address})
 
         self.tile_save_results = self.recreate_project_tiles(data_dict["list_names"], new_tile_info)
-        self.post_and_wait("host", "load_modules", {"loaded_modules": loaded_modules, "user_id": data_dict["user_id"]})
         self.debug_log("Returned from load_modules")
         template_data = {"collection_name": self.collection_name,
                          "project_name": self.project_name,
@@ -485,6 +490,43 @@ class mainWindow(QWorker):
         val = getattr(self, func_name)(*args)
         return {"val": val}
 
+    def create_initial_metadata(self):
+        mdata = {"datetime": datetime.datetime.today(),
+                 "updated": datetime.datetime.today(),
+                 "tags": "",
+                 "notes": ""}
+        return mdata
+
+    def save_new_project(self, data_dict):
+        self.debug_log("entering save_new_project")
+        # noinspection PyBroadException
+        try:
+            self.project_name = data_dict["project_name"]
+            self.hidden_columns_list = data_dict["hidden_columns_list"]
+            self.console_html = data_dict["console_html"]
+            tspec_dict = data_dict["tablespec_dict"]
+            for (dname, spec) in tspec_dict.items():
+                self.doc_dict[dname].table_spec = spec
+
+            self.loaded_modules = self.post_and_wait("host", "get_loaded_user_modules", {"user_id": self.user_id})["loaded_modules"]
+            project_dict = self.compile_save_dict()
+            self.debug_log("got compiled project dict")
+            save_dict = {}
+            save_dict["metadata"] = self.create_initial_metadata()
+            save_dict["project_name"] = project_dict["project_name"]
+            save_dict["file_id"] = self.fs.put(Binary(cPickle.dumps(project_dict)))
+            self.mdata = save_dict["metadata"]
+
+            self.db[self.project_collection_name].insert_one(save_dict)
+            return_data = {"project_name": data_dict["project_name"],
+                           "success": True,
+                           "message_string": "Project Successfully Saved"}
+
+        except:
+            error_string = self.handle_exception("Error saving new project", print_to_console=False)
+            return_data = {"success": False, "message_string": error_string}
+        return return_data
+
     def get_column_data(self, data):
         self.debug_log("entering get_column_data")
         result = []
@@ -588,7 +630,7 @@ class mainWindow(QWorker):
 
     def get_property(self, data_dict):
         prop_name = data_dict["property"]
-        val = getattr(mwindow, prop_name)
+        val = getattr(self, prop_name)
         return {"val": val}
 
     def get_tile_ids(self, data):
@@ -598,7 +640,7 @@ class mainWindow(QWorker):
     def set_property(self, data_dict):
         prop_name = data_dict["property"]
         val = data_dict["val"]
-        setattr(mwindow, prop_name, val)
+        setattr(self, prop_name, val)
         return
 
     def open_log_window(self, task_data):

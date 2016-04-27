@@ -17,14 +17,6 @@ def hello():
     return 'This is mainwindow communicating'
 
 
-def create_initial_metadata():
-    mdata = {"datetime": datetime.datetime.today(),
-             "updated": datetime.datetime.today(),
-             "tags": "",
-             "notes": ""}
-    return mdata
-
-
 @app.route('/update_project', methods=['POST'])
 def update_project():
     def do_update_project(data_dict):
@@ -61,45 +53,6 @@ def update_project():
         return
     data = request.json
     mwindow.post_with_function(do_update_project, data)
-    return jsonify({"success": True})
-
-
-@app.route('/save_new_project', methods=['POST'])
-def save_new_project():
-    def do_save_new_project(data_dict):
-        app.logger.debug("entering do_save_new_project")
-        # noinspection PyBroadException
-        try:
-            mwindow.project_name = data_dict["project_name"]
-            mwindow.hidden_columns_list = data_dict["hidden_columns_list"]
-            mwindow.console_html = data_dict["console_html"]
-            tspec_dict = data_dict["tablespec_dict"]
-            for (dname, spec) in tspec_dict.items():
-                mwindow.doc_dict[dname].table_spec = spec
-
-            mwindow.loaded_modules = data_dict["users_loaded_modules"]
-            project_dict = mwindow.compile_save_dict()
-            app.logger.debug("got compiled project dict")
-            app.logger.debug("length of tile_instances is: " + str(len(project_dict["tile_instances"])))
-            save_dict = {}
-            save_dict["metadata"] = create_initial_metadata()
-            save_dict["project_name"] = project_dict["project_name"]
-            save_dict["file_id"] = mwindow.fs.put(Binary(cPickle.dumps(project_dict)))
-            mwindow.mdata = save_dict["metadata"]
-
-            mwindow.db[data_dict["project_collection_name"]].insert_one(save_dict)
-            return_data = {"project_name": data_dict["project_name"],
-                           "success": True,
-                           "message_string": "Project Successfully Saved",
-                           "jcallback_id": data_dict["jcallback_id"]}
-
-        except:
-            error_string = mwindow.handle_exception("Error saving new project", print_to_console=False)
-            return_data = {"success": False, "message_string": error_string, "jcallback_id": data_dict["jcallback_id"]}
-        mwindow.generate_callback(return_data)
-        return
-    data = request.json
-    mwindow.post_with_function(do_save_new_project, data)
     return jsonify({"success": True})
 
 
