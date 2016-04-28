@@ -180,13 +180,13 @@ function continue_loading() {
                     }
                     
                     menus["Project"].enable_menu_item("save");
-                    broadcast_event_to_server("DisplayCreateErrors", {});
+                    postWithCallback(main_id, "DisplayCreateErrors", {});
 
                     function create_tile_from_save(tile_id) {
                         tile_html = data.tile_save_results[tile_id].tile_html
                         var new_tile_object = new TileObject(tile_id, tile_html, false);
                         tile_dict[tile_id] = new_tile_object;
-                        new_tile_object.saved_size = data.saved_size;
+                        new_tile_object.saved_size = data.tile_save_results[tile_id].saved_size;
                         var sortable_tables = $(new_tile_object.full_selector() + " table.sortable");
                         $.each(sortable_tables, function (index, the_table) {
                             sorttable.makeSortable(the_table)
@@ -215,7 +215,7 @@ function continue_loading() {
         forceHelperSize: true,
         stop: function( event, ui ) {
             var new_sort_list = $("#tile-div").sortable("toArray");
-            broadcast_event_to_server("UpdateSortList", {"sort_list": new_sort_list})
+            postWithCallback(main_id, "UpdateSortList", {"sort_list": new_sort_list})
         }
     });
 
@@ -227,8 +227,7 @@ function continue_loading() {
     });
 
     initializeTooltips();
-
-
+    
 }
 
 function set_visible_doc(doc_name, func) {

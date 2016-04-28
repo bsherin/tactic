@@ -27,7 +27,7 @@ function TileObject(tile_id, html, is_new_tile) {
         cm_element = $($(this).siblings(".CodeMirror")[0])
         cm_element.resizable({handles: "se"})
         cm_element.height(100)
-    })
+    });
 
     var self = this;
     $(this.full_selector()).resizable({
@@ -120,7 +120,7 @@ TileObject.prototype = {
             "margin": the_margin
         };
         dirty = true;
-        broadcast_event_to_server("TileSizeChange", data_dict)
+        postWithCallback(this.tile_id, "TileSizeChange", data_dict)
     },
     do_resize: function(){
         var el = $(this.full_selector());
@@ -150,7 +150,7 @@ TileObject.prototype = {
         data_dict = {};
         data_dict["main_id"] = main_id;
         data_dict["tile_id"] = this.tile_id;
-        broadcast_event_to_server("LogTile", data_dict)
+        postWithCallback(this.tile_id, "LogTile", data_dict)
     },
 
     setTileSize: function(data) {
@@ -195,7 +195,7 @@ TileObject.prototype = {
             var data_dict = {};
             data_dict["main_id"] = main_id;
             data_dict["tile_id"] = my_tile_id;
-            broadcast_event_to_server("RemoveTile", data_dict)
+            postWithCallback(main_id, "RemoveTile", data_dict)
         });
     },
 
@@ -203,19 +203,17 @@ TileObject.prototype = {
         dirty = true;
         var el = $(this.full_selector());
         this.saved_size = el.outerHeight();
-        broadcast_event_to_server("ShrinkTile", {tile_id: this.tile_id});
+        postWithCallback(this.tile_id, "ShrinkTile", {});
         el.find(".tile-body").fadeOut("fast", function () {
             var hheight = el.find(".tile-panel-heading").outerHeight();
             el.outerHeight(hheight);
             el.resizable('destroy');
             el.find(".triangle-bottom").hide();
             el.find(".triangle-right").show();
-            if (arguments.length == 1){
+            if (arguments.length == 1) {
                 callback()
             }
-
-        });
-
+        })
     },
     expandMe: function (){
         dirty = true;
@@ -225,7 +223,7 @@ TileObject.prototype = {
         $(this.full_selector()).find(".triangle-bottom").show();
         $(this.full_selector()).find(".tile-body").fadeIn();
         var self = this;
-        broadcast_event_to_server("ExpandTile", {tile_id: this.tile_id});
+        postWithCallback(this.tile_id, "ExpandTile", {});
         $(this.full_selector()).resizable({
                 handles: "se",
                 resize: self.resize_tile_area,
@@ -285,16 +283,16 @@ TileObject.prototype = {
     spin_and_refresh: function () {
         // I'm chaining these with callbacks just to make sure they don't get out of order
         var self = this;
-        broadcast_event_to_server("StartSpinner", {"tile_id": self.tile_id}, function () {
-            broadcast_event_to_server("RefreshTile", {"tile_id": self.tile_id}, function() {
-                broadcast_event_to_server("StopSpinner", {"tile_id": self.tile_id})
+        postWithCallback(self.tile_id, "StartSpinner", {}, function () {
+            postWithCallback(self.tile_id, "RefreshTile", {}, function() {
+                postWithCallback(self.tile_id, "StopSpinner", {})
             })
         })
 
     },
     refreshFromSave: function (final_callback) {
-        broadcast_event_to_server("SetSizeFromSave", {"tile_id": self.tile_id}, function() {
-            broadcast_event_to_server("RefreshTileFromSave", {"tile_id": self.tile_id}, final_callback)
+        postWithCallback(self.tile_id, "SetSizeFromSave", {}, function() {
+            postWithCallback(self.tile_id, "RefreshTileFromSave", {}, final_callback)
         })
     },
     listen_for_clicks: function() {
@@ -324,7 +322,7 @@ TileObject.prototype = {
               var p = $(e.target).closest(".tile-panel")[0];
               data_dict["tile_id"] = $(p).data("my_tile_id");
               data_dict["clicked_text"] = str;
-              broadcast_event_to_server("TileWordClick", data_dict)
+              postWithCallback(data_dict["tile_id"], "TileWordClick", data_dict)
         });
         $(full_frontal_selector).on('click', '.cell-clickable', function(e) {
             var tile_id = jQuery.data(e, "my_tile_id");
@@ -334,7 +332,7 @@ TileObject.prototype = {
             var p = $(e.target).closest(".tile-panel")[0];
             data_dict["tile_id"] = $(p).data("my_tile_id");
             data_dict["clicked_cell"] = txt;
-            broadcast_event_to_server("TileCellClick", data_dict)
+            postWithCallback(data_dict["tile_id"], "TileCellClick", data_dict)
         });
         $(full_frontal_selector).on('click', '.element-clickable', function(e) {
             var tile_id = jQuery.data(e, "my_tile_id");
@@ -349,7 +347,7 @@ TileObject.prototype = {
                 if (!dset.hasOwnProperty(key)) continue;
                 data_dict.dataset[key] = dset[key]
             }
-            broadcast_event_to_server("TileElementClick", data_dict)
+            postWithCallback(data_dict["tile_id"], "TileElementClick", data_dict)
         });
         $(full_frontal_selector).on('click', '.row-clickable', function(e) {
             //var cells = $(this).closest("tr").children()
@@ -364,21 +362,21 @@ TileObject.prototype = {
             var p = $(e.target).closest(".tile-panel")[0];
             data_dict["tile_id"] = $(p).data("my_tile_id");
             data_dict["clicked_row"] = row_vals;
-            broadcast_event_to_server("TileRowClick", data_dict)
+            postWithCallback(data_dict["tile_id"], "TileRowClick", data_dict)
         });
         $(full_frontal_selector).on('click', 'button', function(e) {
             var p = $(e.target).closest(".tile-panel")[0];
             var data = {};
             data["tile_id"] = $(p).data("my_tile_id");
             data["button_value"] = e.target.value;
-            broadcast_event_to_server("TileButtonClick", data)
+            postWithCallback(data["tile_id"], "TileButtonClick", data)
         });
         $(full_frontal_selector).on('change', 'textarea', function(e) {
             var p = $(e.target).closest(".tile-panel")[0];
             var data = {};
             data["tile_id"] = $(p).data("my_tile_id");
             data["text_value"] = e.target.value;
-            broadcast_event_to_server("TileTextAreaChange", data)
+            postWithCallback(data["tile_id"], "TileTextAreaChange", data)
         });
     }
 

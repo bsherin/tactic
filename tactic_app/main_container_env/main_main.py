@@ -43,6 +43,7 @@ def get_tile_property(tile_id, prop_name):
     return res["val"]
 
 
+# todo work on reload. get_tile_poperty stuff get_property is just for this
 @app.route('/reload_tile/<tile_id>', methods=["get", "post"])
 def reload_tile(tile_id):
     def do_reload_tile(data_dict):

@@ -215,7 +215,7 @@ class ClientWorker(QWorker):
         while self.running:
             task_packet = self.get_next_task()
             if "empty" not in task_packet:
-                if task_packet["response_data"] is not None:
+                if task_packet["callback_id"] is not None:
                     self.socketio.emit("handle-callback", task_packet, namespace='/main', room=task_packet["main_id"])
                 else:
                     task_packet["table_message"] = task_packet["task_type"]

@@ -424,7 +424,8 @@ class mainWindow(QWorker):
                      "list_names": self.get_list_names()}
         if tile_id in self._pipe_dict:
             del self._pipe_dict[tile_id]
-            self.distribute_event("RebuildTileForms", form_info)
+            for tid in self.tile_instances.keys():
+                self.post_task(tid, "RebuildTileForms", form_info)
         self.ask_host("delete_container", {"container_id": tile_id})
         return
 
@@ -447,12 +448,12 @@ class mainWindow(QWorker):
                      "pipe_dict": self._pipe_dict,
                      "doc_names": self.doc_names,
                      "list_names": data_dict["list_names"]}
-        data_dict["form_info"] = form_info
+        # data_dict["form_info"] = form_info
         tile_address = data_dict["tile_address"]
         load_result = send_request_to_container(tile_address, "load_source", data_dict).json()
         instantiate_result = send_request_to_container(tile_address, "instantiate_tile_class", data_dict)
         self.debug_log("got instantiate result " + str(instantiate_result))
-        form_html = instantiate_result.json()["form_html"]
+        # form_html = instantiate_result.json()["form_html"]
         exports = instantiate_result.json()["exports"]
         if len(exports) > 0:
             if tile_container_id not in self._pipe_dict:
@@ -463,7 +464,10 @@ class mainWindow(QWorker):
                     "tile_id": tile_container_id,
                     "tile_address": tile_address}
 
-        self.distribute_event("RebuildTileForms", form_info)
+        form_html = self.post_and_wait(tile_container_id, "create_form_html", form_info)["form_html"]
+        for tid in self.tile_instances.keys():
+            if not tid == tile_container_id:
+                self.post_task(tile_container_id, "RebuildTileForms", form_info)
         self.tile_sort_list.append(tile_container_id)
         self.current_tile_id += 1
         self.debug_log("leaving create_tile in main.py")
@@ -788,7 +792,8 @@ class mainWindow(QWorker):
                      "pipe_dict": self._pipe_dict,
                      "doc_names": self.doc_names,
                      "list_names": self.get_list_names()}
-        self.distribute_event("RebuildTileForms", form_info)
+        for tid in self.tile_instances.keys():
+            self.post_task(tid, "RebuildTileForms", form_info)
         return None
 
     def SearchTable(self, data):

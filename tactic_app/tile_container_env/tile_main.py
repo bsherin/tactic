@@ -53,34 +53,10 @@ def recreate_from_save():
                     "tile_name": tile_instance.tile_name})
 
 
-@app.route('/get_save_dict', methods=["get", "post"])
-def get_save_dict():
-    save_dict = tile_instance.compile_save_dict()
-    return jsonify(save_dict)
-
-
 @app.route('/get_property/<property_name>', methods=["get", "post"])
 def get_property(property_name):
     val = getattr(tile_instance, property_name)
     return jsonify({"val": val})
-
-
-@app.route('/get_tile_exports', methods=["get", "post"])
-def get_tile_exports():
-    export_dict = tile_instance.exports
-    result_dict = {"success": True, "exports": export_dict}
-    return jsonify(result_dict)
-
-
-@app.route('/post_event', methods=["get", "post"])
-def post_event():
-    app.logger.debug("entering post_event in tile_main")
-    data_dict = request.json
-    event_name = data_dict["event_name"]
-    tile_instance.post_event(event_name, data_dict)
-    result_dict = {"success": True}
-    app.logger.debug("leaving post_event in tile_main")
-    return jsonify(result_dict)
 
 
 @app.route('/get_image/<figure_name>', methods=["get", "post"])
@@ -103,7 +79,7 @@ def reinstantiate_tile():
     tile_instance.app = app
     tile_instance.start()
     app.logger.debug("about to create form html")
-    form_html = tile_instance.create_form_html()
+    form_html = tile_instance.create_form_html()["form_html"]
     app.logger.debug("leaving reinstantiate_tile_class")
     return jsonify({"success": True, "form_html": form_html})
 
@@ -121,10 +97,10 @@ def instantiate_tile_class():
     tile_instance.user_id = data["user_id"]
     tile_instance.base_figure_url = data["base_figure_url"]
 
-    app.logger.debug("about to create form html")
-    form_html = tile_instance.create_form_html(data["form_info"])
-    data["form_html"] = form_html
-    app.logger.debug("Got form_html " + str(data["form_html"]))
+    # app.logger.debug("about to create form html")
+    # form_html = tile_instance.create_form_html(data["form_info"])
+    # data["form_html"] = form_html
+    # app.logger.debug("Got form_html " + str(data["form_html"]))
     data["exports"] = tile_instance.exports
     tile_instance.start()
     app.logger.debug("leaving instantiate_tile_class")

@@ -389,7 +389,6 @@ function tile_command(menu_id) {
                             data_dict["form_html"] = data["html"]
                             postWithCallback("host", "render_tile", data_dict, function(data) {
                                 var new_tile_object = new TileObject(tile_id, data.html, true);
-
                                 tile_dict[tile_id] = new_tile_object;
                                 new_tile_object.spin_and_refresh();
                                 dirty = true;

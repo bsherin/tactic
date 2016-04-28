@@ -217,7 +217,7 @@ class TileBase(QWorker):
         return None
 
     def RebuildTileForms(self, data):
-        form_html = self.create_form_html(data)
+        form_html = self.create_form_html(data)["form_html"]
         self.emit_tile_message("displayFormContent", {"html": form_html})
         return None
 
@@ -339,7 +339,7 @@ class TileBase(QWorker):
                 else:
                     print "Unknown option type specified"
             self.save_attrs = list(set(self.save_attrs))
-            return form_html
+            return {"form_html": form_html}
         except:
             error_string = ("error creating form for  " + self.__class__.__name__ + " tile: " + self.my_id + " " +
                             str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
@@ -509,7 +509,7 @@ class TileBase(QWorker):
 
     def render_me(self, form_info):
         self.debug_log("Entering render_me in tile")
-        form_html = self.create_form_html(form_info)
+        form_html = self.create_form_html(form_info)["form_html"]
         self.debug_log("Done creating form_html")
         if self.is_shrunk:
             dsr_string = ""
