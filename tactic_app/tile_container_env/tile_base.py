@@ -61,7 +61,7 @@ class TileBase(QWorker):
         self._sleepperiod = .0001
         self.save_attrs = ["current_html", "tile_type", "tile_name", "main_id", "configured",
                            "header_height", "front_height", "front_width", "back_height", "back_width",
-                           "tda_width", "tda_height", "width", "height", "user_id",
+                           "tda_width", "tda_height", "width", "height", "user_id", "base_figure_url",
                            "full_tile_width", "full_tile_height", "is_shrunk", "img_dict", "current_fig_id"]
         # These define the state of a tile and should be saved
 

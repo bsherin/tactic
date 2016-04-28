@@ -158,7 +158,6 @@ def download_collection(main_id, new_name):
                      as_attachment=True)
 
 
-# todo this is different I think so existing saves won't work.
 @app.route('/figure_source/<tile_id>/<figure_name>', methods=['GET', 'POST'])
 @login_required
 def figure_source(tile_id, figure_name):

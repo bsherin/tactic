@@ -352,7 +352,7 @@ class mainWindow(QWorker):
             tile_save_dict = self.project_dict["tile_instances"][old_tile_id]
             tile_save_dict["tile_id"] = new_tile_id
             tile_save_dict["main_id"] = self.my_id
-            tile_save_dict["base_figure_url"] = self.base_figure_url.replace("tile_id", new_tile_id)
+            tile_save_dict["new_base_figure_url"] = self.base_figure_url.replace("tile_id", new_tile_id)
             tile_result = send_request_to_container(new_tile_address, "recreate_from_save", tile_save_dict).json()
             tile_results[new_tile_id] = tile_result
             self.debug_log("Got tile_result")
@@ -686,7 +686,7 @@ class mainWindow(QWorker):
         else:
             title = self.project_name + " log"
         with self.app.test_request_context():
-            # todo rendering this template here won't work. must be done back on the host
+            # todo log window - rendering this template here won't work. must be done back on the host
             the_html = render_template("log_window_template.html", window_title=title, console_html=self.console_html)
         return {"html": the_html}
 
@@ -773,14 +773,6 @@ class mainWindow(QWorker):
                 "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
                 "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
                 "step_size": step_amount}
-
-    # todo this shouldn't be needed any longer
-    def get_saved_tile_info(self, data):
-        tile_id = data["tile_id"]
-        return self.tile_save_results[tile_id]
-
-    def BuildDocDict(self, data): # todo this might never be called
-        self.doc_dict = self._build_doc_dict(self.collection_name)
 
     def RemoveTile(self, data):
         self._delete_tile_instance(data["tile_id"])

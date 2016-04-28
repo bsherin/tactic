@@ -42,9 +42,10 @@ def recreate_from_save():
     app.logger.debug("megaplex_address is " + megaplex_address)
     tile_instance.init_qworker(app, megaplex_address)
     app.logger.debug("tile instance is complete")
-    tile_instance.base_figure_url = data["base_figure_url"]
     tile_instance.recreate_from_save(data)
     app.logger.debug("back from recreate_from_save")
+    tile_instance.current_html.replace(data["base_figure_url"], data["new_base_figure_url"])
+    tile_instance.base_figure_url = data["new_base_figure_url"]
     tile_instance.start()
     app.logger.debug("tile instance started")
     return jsonify({"is_shrunk": tile_instance.is_shrunk,

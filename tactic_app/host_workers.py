@@ -70,7 +70,6 @@ class HostWorker(QWorker):
         return {"success": True}
 
     def update_project_selector_list(self, data):
-        # todo xx left off here. user_id is needed downstream it will be evident (or user_obj)
         user_id = data["user_id"]
         user_obj = load_user(user_id)
         project_manager.update_selector_list(user_obj=user_obj)
