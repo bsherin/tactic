@@ -180,16 +180,3 @@ def data_source(main_id, tile_id, data_name):
         error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         mainwindow_instances[main_id].handle_exception("Error getting data " + error_string)
         return jsonify({"success": False})
-
-
-# todo reload_tiles
-@app.route('/reload_tile/<tile_id>', methods=['GET', 'POST'])
-@login_required
-def reload_tile(tile_id):
-    main_id = request.json["main_id"]
-    tile_type = send_request_to_container(tile_id, "get_property/tile_type", {}).json()["val"]
-    module_code = get_tile_code(tile_type)
-    send_request_to_container(main_id, "reload_tile/" + tile_id ,
-                              {"tile_code": module_code,
-                               "jcallback_id": request.json["jcallback_id"]})
-    return jsonify({"success": False})

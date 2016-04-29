@@ -43,29 +43,5 @@ def get_tile_property(tile_id, prop_name):
     return res["val"]
 
 
-# todo work on reload. get_tile_poperty stuff get_property is just for this
-@app.route('/reload_tile/<tile_id>', methods=["get", "post"])
-def reload_tile(tile_id):
-    def do_reload_tile(data_dict):
-        try:
-            mwindow.debug_log("entering do_reload_tile")
-            module_code = data_dict["tile_code"]
-            reload_dict = copy.copy(get_tile_property(tile_id, "current_reload_attrs"))
-            saved_options = copy.copy(get_tile_property(tile_id, "current_options"))
-            reload_dict.update(saved_options)
-            mwindow.ask_tile(tile_id, "load_source", {"tile_code": module_code,
-                                                      "megaplex_address": mwindow.megaplex_addres})
-            result = mwindow.ask_tile(tile_id, "reinstantiate_tile", reload_dict).json()
-            mwindow.generate_callback({"success": True, "html": result["form_html"], "jcallback_id": data_dict["jcallback_id"]})
-        except Exception as ex:
-            template = "An exception of type {0} occured. Arguments:\n{1!r}"
-            error_string = template.format(type(ex).__name__, ex.args)
-            mwindow.debug_lot("Error reloading tile " + error_string)
-            mwindow.handle_exception("Error reloading tile " + error_string)
-    ddict = request.json
-    mwindow.post_with_function(do_reload_tile, ddict)
-    return jsonify({"success": True})
-
-
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=True)

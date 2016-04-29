@@ -132,10 +132,9 @@ TileObject.prototype = {
     },
 
     reloadMe: function() {
-        var data_dict = {};
-        data_dict["main_id"] = main_id;
         var self = this;
-        postWithCallback("reload_tile/" + this.tile_id, data_dict, reload_success);
+        var data_dict = {"tile_id": this.tile_id};
+        postWithCallback(main_id, "reload_tile", data_dict, reload_success);
 
         function reload_success (data) {
             if (data.success) {

@@ -5,7 +5,7 @@ from users import load_user
 import gevent
 from communication_utils import send_request_to_container
 from docker_functions import create_container, get_address, destroy_container
-from shared_dicts import get_tile_code, loaded_user_modules
+import shared_dicts
 from tactic_app import app, socketio, mongo_uri, megaplex_address, use_ssl
 from views.user_manage_views import tile_manager, project_manager
 import uuid
@@ -25,8 +25,8 @@ class HostWorker(QWorker):
         caddress = get_address(main_id, "bridge")
         send_request_to_container(self.megaplex_address, "add_address", {"container_id": "main", "address": caddress})
 
-        if user_obj.username not in loaded_user_modules:
-            loaded_user_modules[user_obj.username] = []
+        if user_obj.username not in shared_dicts.loaded_user_modules:
+            shared_dicts.loaded_user_modules[user_obj.username] = []
 
         list_names = self.get_list_names({"user_id": user_obj.get_id()})["list_names"]
 
@@ -38,7 +38,7 @@ class HostWorker(QWorker):
                      "user_id": user_obj.get_id(),
                      "megaplex_address": self.megaplex_address,
                      "main_address": caddress,
-                     "loaded_user_modules": loaded_user_modules,
+                     "loaded_user_modules": shared_dicts.loaded_user_modules,
                      "mongo_uri": mongo_uri,
                      "list_names": list_names,
                      "user_manage_id": user_manage_id,
@@ -58,14 +58,14 @@ class HostWorker(QWorker):
         user_id = data["user_id"]
         user_obj = load_user(user_id)
 
-        return {"loaded_modules": loaded_user_modules[user_obj.username]}
+        return {"loaded_modules": shared_dicts.loaded_user_modules[user_obj.username]}
 
     def load_modules(self, data):
         loaded_modules = data["loaded_modules"]
         user_id = data["user_id"]
         user_obj = load_user(user_id)
         for module in loaded_modules:
-            if module not in loaded_user_modules[user_obj.username]:
+            if module not in shared_dicts.loaded_user_modules[user_obj.username]:
                 tile_manager.load_tile_module(module, return_json=False, user_obj=user_obj)
         return {"success": True}
 
@@ -86,7 +86,7 @@ class HostWorker(QWorker):
     def get_tile_code(self, tile_info_dict):
         result = {}
         for old_tile_id, tile_type in tile_info_dict.items():
-            result[old_tile_id] = get_tile_code(tile_type)
+            result[old_tile_id] = shared_dicts.get_tile_code(tile_type)
         return result
 
     def delete_container(self, data):
@@ -144,7 +144,7 @@ class HostWorker(QWorker):
         return {"tile_id": tile_container_id, "tile_address": tile_address}
 
     def get_module_code(self, data):
-        module_code = get_tile_code(data["tile_type"])
+        module_code = shared_dicts.get_tile_code(data["tile_type"])
         return {"module_code": module_code, "megaplex_address": self.megaplex_address}
 
     def render_tile(self, data):
@@ -159,40 +159,6 @@ class HostWorker(QWorker):
         ddict["success"] = True
         ddict["html"] = the_html
         return ddict
-
-    def create_tile_request(self, data_dict):
-        def load_source_callback(data):
-            def create_tile_callback(ldata_dict):
-                tile_id = ldata_dict["tile_id"]
-                form_html = ldata_dict["form_html"]
-                tname = data_dict["tile_name"]
-                the_html = render_template("tile.html", tile_id=tile_id,
-                                           tile_name=tname,
-                                           form_text=form_html)
-                ddict = copy.copy(ldata_dict)
-                ddict["success"] = True
-                ddict["html"] = the_html
-                ddict["tile_id"] = tile_id
-                return ddict
-
-            data_dict["tile_id"] = tile_container_id
-            data_dict["tile_container_address"] = tile_container_address
-            send_request_to_container(main_id, "create_tile_instance",
-                                      data_dict, callback=create_tile_callback)
-            return jsonify({"success": True})
-
-        main_id = data_dict["main_id"]
-        tile_type = data_dict["tile_type"]
-        try:
-            tile_container_id = create_container("tactic_tile_image", network_mode="bridge")["Id"]
-            module_code = get_tile_code(tile_type)
-            self.post_task(tile_container_id,
-                           "load_source",
-                           {"tile_code": module_code, "megaplex_address": megaplex_address},
-                           load_source_callback)
-        except:
-            error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-            return {"success": False}
 
 
 class ClientWorker(QWorker):

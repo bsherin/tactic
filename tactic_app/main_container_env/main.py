@@ -281,9 +281,7 @@ class mainWindow(QWorker):
                                                                  data_dict["project_name"])
         self.post_and_wait("host", "load_modules", {"loaded_modules": loaded_modules, "user_id": data_dict["user_id"]})
         doc_names = [str(doc_name) for doc_name in self.doc_names]
-        self.debug_log("Getting empty tile containers")
         tile_containers = self.post_and_wait("host", "get_empty_tile_containers", {"number": len(tile_info_dict.keys())})
-        self.debug_log("getting code for the tiles")
         tile_code_dict = self.post_and_wait("host", "get_tile_code", tile_info_dict)
         new_tile_info = {}
         new_tile_keys = tile_containers.keys()
@@ -296,7 +294,6 @@ class mainWindow(QWorker):
                                                                    "megaplex_address": self.megaplex_address})
 
         self.tile_save_results = self.recreate_project_tiles(data_dict["list_names"], new_tile_info)
-        self.debug_log("Returned from load_modules")
         template_data = {"collection_name": self.collection_name,
                          "project_name": self.project_name,
                          "window_title": self.project_name,
@@ -355,18 +352,14 @@ class mainWindow(QWorker):
             tile_save_dict["new_base_figure_url"] = self.base_figure_url.replace("tile_id", new_tile_id)
             tile_result = send_request_to_container(new_tile_address, "recreate_from_save", tile_save_dict).json()
             tile_results[new_tile_id] = tile_result
-            self.debug_log("Got tile_result")
 
         for tile in self.tile_sort_list:
             if tile not in self.tile_instances:
                 self.tile_sort_list.remove(tile)
 
-        self.debug_log("updated tile_sort_list")
-
         # There's some extra work I have to do once all of the tiles are built.
         # Each tile needs to know the main_id it's associated with.
         # Also I have to build the pipe machinery.
-        self.debug_log("dealing with pipe stuff")
         for tile_id, tile_result in tile_results.items():
             if len(tile_result["exports"]) > 0:
                 if tile_id not in self._pipe_dict:
@@ -376,7 +369,6 @@ class mainWindow(QWorker):
                         "export_name": export,
                         "tile_id": tile_id,
                         "tile_address": self.tile_instances[tile_id],}
-        self.debug_log("done with pipes")
 
         # We have to wait to here to actually render the tiles because
         # the pipe_dict needs to be complete to build the forms.
@@ -452,8 +444,6 @@ class mainWindow(QWorker):
         tile_address = data_dict["tile_address"]
         load_result = send_request_to_container(tile_address, "load_source", data_dict).json()
         instantiate_result = send_request_to_container(tile_address, "instantiate_tile_class", data_dict)
-        self.debug_log("got instantiate result " + str(instantiate_result))
-        # form_html = instantiate_result.json()["form_html"]
         exports = instantiate_result.json()["exports"]
         if len(exports) > 0:
             if tile_container_id not in self._pipe_dict:
@@ -514,7 +504,6 @@ class mainWindow(QWorker):
 
             self.loaded_modules = self.post_and_wait("host", "get_loaded_user_modules", {"user_id": self.user_id})["loaded_modules"]
             project_dict = self.compile_save_dict()
-            self.debug_log("got compiled project dict")
             save_dict = {}
             save_dict["metadata"] = self.create_initial_metadata()
             save_dict["project_name"] = project_dict["project_name"]
@@ -581,7 +570,7 @@ class mainWindow(QWorker):
         result = []
         for the_row in the_rows:
             result.append(the_row[column_header])
-        self.debug_log("levaing get_column_data_for_doc in main.py")
+        self.debug_log("leaving get_column_data_for_doc in main.py")
         return result
 
     def get_matching_rows(self, filter_function, document_name):
@@ -717,6 +706,37 @@ class mainWindow(QWorker):
                 "tablespec_dict": self.tablespec_dict(),
                 "hidden_columns_list": self.hidden_columns_list,
                 "tile_save_results": self.tile_save_results}
+
+    def get_tile_property(self, tile_id, prop_name):
+        result = self.post_and_wait(tile_id, 'get_property', {"property": prop_name})["val"]
+        return result
+
+    def reload_tile(self, ddict):
+        try:
+            self.debug_log("entering reload_tile")
+            tile_id = ddict["tile_id"]
+            tile_type = self.get_tile_property(tile_id, "tile_type")
+            module_code = self.post_and_wait("host", "get_module_code", {"tile_type": tile_type})["module_code"]
+            list_names = self.post_and_wait("host", "get_list_names", {"user_id": self.user_id})["list_names"]
+            reload_dict = copy.copy(self.get_tile_property(tile_id, "current_reload_attrs"))
+            saved_options = copy.copy(self.get_tile_property(tile_id, "current_options"))
+            reload_dict.update(saved_options)
+            send_request_to_container(self.tile_instances[tile_id], "load_source",
+                                      {"tile_code": module_code, "megaplex_address": self.megaplex_address})
+            form_info = {"current_header_list": self.current_header_list,
+                         "pipe_dict": self._pipe_dict,
+                         "doc_names": self.doc_names,
+                         "list_names": list_names}
+            reload_dict["form_info"] = form_info
+            reload_dict["main_id"] = self.my_id
+            result = send_request_to_container(self.tile_instances[tile_id], "reinstantiate_tile", reload_dict).json()
+            return {"success": True, "html": result["form_html"]}
+        except Exception as ex:
+            template = "An exception of type {0} occured. Arguments:\n{1!r}"
+            error_string = template.format(type(ex).__name__, ex.args)
+            self.debug_log("Error reloading tile " + error_string)
+            self.handle_exception("Error reloading tile " + error_string)
+        return {"success": False}
 
     # todo grab_chunk_with_row has not been tested
     def grab_chunk_with_row(self, data_dict):

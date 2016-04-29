@@ -123,6 +123,10 @@ class TileBase(QWorker):
         self.do_the_refresh()
         return None
 
+    def get_property(self, data):
+        data["val"] = getattr(self, data["property"])
+        return data
+
     def TileSizeChange(self, data):
         self.width = data["width"]
         self.height = data["height"]

@@ -63,6 +63,7 @@ class QWorker(gevent.Greenlet):
                       "task_data": task_data,
                       "response_data": None,
                       "callback_id": callback_id}
+        self.debug_log("in post and wait with new_packet " + str(new_packet))
         send_request_to_container(self.megaplex_address, "post_wait_task", new_packet)
         for i in range(tries):
             res = send_request_to_container(self.megaplex_address, "check_wait_task", new_packet).json()
