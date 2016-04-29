@@ -63,6 +63,12 @@ def get_image(figure_name):
     return jsonify({"img": encoded_img})
 
 
+@app.route('/kill_me', methods=["get", "post"])
+def kill_me():
+    gevent.kill(tile_instance)
+    return
+
+
 @app.route('/reinstantiate_tile', methods=["get", "post"])
 def reinstantiate_tile():
     app.logger.debug("entering reinstantiate_tile_class")

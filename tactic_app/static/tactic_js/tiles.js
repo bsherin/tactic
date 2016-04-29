@@ -321,6 +321,9 @@ TileObject.prototype = {
               var p = $(e.target).closest(".tile-panel")[0];
               data_dict["tile_id"] = $(p).data("my_tile_id");
               data_dict["clicked_text"] = str;
+              data_dict.main_id = main_id;
+              data_dict.doc_name = tableObject.current_spec.doc_name;
+              data_dict.active_row_index = tableObject.active_row;
               postWithCallback(data_dict["tile_id"], "TileWordClick", data_dict)
         });
         $(full_frontal_selector).on('click', '.cell-clickable', function(e) {
@@ -331,6 +334,9 @@ TileObject.prototype = {
             var p = $(e.target).closest(".tile-panel")[0];
             data_dict["tile_id"] = $(p).data("my_tile_id");
             data_dict["clicked_cell"] = txt;
+            data_dict.main_id = main_id;
+            data_dict.doc_name = tableObject.current_spec.doc_name;
+            data_dict.active_row_index = tableObject.active_row;
             postWithCallback(data_dict["tile_id"], "TileCellClick", data_dict)
         });
         $(full_frontal_selector).on('click', '.element-clickable', function(e) {
@@ -346,6 +352,9 @@ TileObject.prototype = {
                 if (!dset.hasOwnProperty(key)) continue;
                 data_dict.dataset[key] = dset[key]
             }
+            data_dict.main_id = main_id;
+            data_dict.doc_name = tableObject.current_spec.doc_name;
+            data_dict.active_row_index = tableObject.active_row;
             postWithCallback(data_dict["tile_id"], "TileElementClick", data_dict)
         });
         $(full_frontal_selector).on('click', '.row-clickable', function(e) {
@@ -361,6 +370,9 @@ TileObject.prototype = {
             var p = $(e.target).closest(".tile-panel")[0];
             data_dict["tile_id"] = $(p).data("my_tile_id");
             data_dict["clicked_row"] = row_vals;
+            data_dict.main_id = main_id;
+            data_dict.doc_name = tableObject.current_spec.doc_name;
+            data_dict.active_row_index = tableObject.active_row;
             postWithCallback(data_dict["tile_id"], "TileRowClick", data_dict)
         });
         $(full_frontal_selector).on('click', 'button', function(e) {
@@ -368,6 +380,9 @@ TileObject.prototype = {
             var data = {};
             data["tile_id"] = $(p).data("my_tile_id");
             data["button_value"] = e.target.value;
+            data.main_id = main_id;
+            data.doc_name = tableObject.current_spec.doc_name;
+            data.active_row_index = tableObject.active_row;
             postWithCallback(data["tile_id"], "TileButtonClick", data)
         });
         $(full_frontal_selector).on('change', 'textarea', function(e) {

@@ -64,7 +64,7 @@ class QWorker(gevent.Greenlet):
                       "response_data": None,
                       "callback_id": callback_id}
         self.debug_log("in post and wait with new_packet " + str(new_packet))
-        send_request_to_container(self.megaplex_address, "post_wait_task", new_packet)
+        result = send_request_to_container(self.megaplex_address, "post_wait_task", new_packet)
         for i in range(tries):
             res = send_request_to_container(self.megaplex_address, "check_wait_task", new_packet).json()
             if res["success"]:
@@ -73,7 +73,7 @@ class QWorker(gevent.Greenlet):
             else:
                 self.app.logger.debug("No result yet for post_and_wait")
                 time.sleep(sleep_time)
-        return None
+        return result
 
     def post_task(self, dest_id, task_type, task_data=None, callback_func=None):
         if callback_func is not None:
@@ -87,8 +87,10 @@ class QWorker(gevent.Greenlet):
                       "task_data": task_data,
                       "response_data": None,
                       "callback_id": callback_id}
-        send_request_to_container(self.megaplex_address, "post_task", new_packet)
-        return
+        result = send_request_to_container(self.megaplex_address, "post_task", new_packet).json()
+        if not result["success"]:
+            self.debug_log("Error posting task to megaplex + " + result[message])
+        return result
 
     def submit_response(self, task_packet):
         send_request_to_container(self.megaplex_address, "submit_response", task_packet)

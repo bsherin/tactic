@@ -8,14 +8,14 @@ import os
 
 print "entering tactic_run"
 
-from flask import request, redirect
+# from flask import request, redirect
 
-from tactic_app import app
+from tactic_app import app, socketio
+from tactic_app import host_workers
 print "imported app"
 from tactic_app import users
-from tactic_app.views import auth_views, main_views, user_manage_views
+from views import auth_views, main_views, user_manage_views
 
-from tactic_app import socketio
 
 from tactic_app.shared_dicts import get_all_default_tiles
 get_all_default_tiles()

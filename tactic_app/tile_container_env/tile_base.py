@@ -165,7 +165,10 @@ class TileBase(QWorker):
         return None
 
     def TileButtonClick(self, data):
-        self.handle_button_click(data["button_value"], data["doc_name"], data["active_row_index"])
+        try:
+            self.handle_button_click(data["button_value"], data["doc_name"], data["active_row_index"])
+        except Exception as ex:
+            self.handle_exception(ex)
         return None
 
     def TileTextAreaChange(self, data):
@@ -413,14 +416,14 @@ class TileBase(QWorker):
     def get_main_property(self, prop_name):
         data_dict = {"property": prop_name}
         result = self.post_and_wait(self.main_id, "get_property", data_dict)
-        return result.json()["val"]
+        return result["val"]
 
     def perform_main_function(self, func_name, args):
         data_dict = {}
         data_dict["args"] = args
         data_dict["func"] = func_name
         result = self.post_and_wait(self.main_id, "get_func", data_dict)
-        return result.json()["val"]
+        return result["val"]
 
     def ask_host(self, msg_type, task_data=None, callback_func=None):
         task_data["main_id"] = self.main_id
@@ -439,15 +442,19 @@ class TileBase(QWorker):
         self.emit_tile_message("hideOptions")
 
     def do_the_refresh(self, new_html=None):
-        self.debug_log("Entering do_the_refresh")
-        if new_html is None:
-            if not self.configured:
-                new_html = "Tile not configured"
-            else:
-                self.debug_log("About to call render_content")
-                new_html = self.render_content()
-        self.current_html = new_html
-        self.emit_tile_message("displayTileContent", {"html": new_html})
+        try:
+            self.debug_log("Entering do_the_refresh")
+            if new_html is None:
+                if not self.configured:
+                    new_html = "Tile not configured"
+                else:
+                    self.debug_log("About to call render_content")
+                    new_html = self.render_content()
+            self.current_html = new_html
+            self.emit_tile_message("displayTileContent", {"html": new_html})
+        except Exception as ex:
+            self.handle_exception(ex)
+        return
 
     def display_status(self, message):
         self.do_the_refresh(message)
@@ -749,6 +756,12 @@ class TileBase(QWorker):
 
     def get_selected_text(self):
         return self.get_main_property("selected_text")
+
+    def handle_exception(self, ex):
+        template = "An exception of type {0} occured. Arguments:\n{1!r}"
+        error_string = template.format(type(ex).__name__, ex.args)
+        self.dm(error_string)
+        return
 
     def display_message(self, message_string, force_open=False):
         self.post_task(self.main_id, "print_to_console_event", {"print_string": message_string})

@@ -4,6 +4,9 @@ import copy
 import cPickle
 from bson.binary import Binary
 import Queue
+import os
+
+timeout_on_queue_full = .01
 
 queue_dict = {}
 address_dict = {}
@@ -17,6 +20,7 @@ blank_packet = {"source": None,
 
 app = Flask(__name__)
 
+MAX_QUEUE_LENGTH = int(os.environ.get("MAX_QUEUE_LENGTH"))
 
 @app.route('/')
 def hello():
@@ -42,11 +46,15 @@ def post_task():
     dmsg("post_task {0} to {1}".format(task_packet["task_type"], task_packet["dest"]))
     dest = task_packet["dest"]
     if dest not in queue_dict:
-        queue_dict[dest] = {"tasks": Queue.Queue(),
+        queue_dict[dest] = {"tasks": Queue.Queue(maxsize=MAX_QUEUE_LENGTH),
                             "responses": Queue.Queue(),
                             "wait_dict": {}}
 
-    queue_dict[dest]["tasks"].put(task_packet)
+    try:
+        queue_dict[dest]["tasks"].put(task_packet, block=True, timeout=timeout_on_queue_full)
+    except Queue.Full:
+        dmsg("Queue was full. Couldn't post task")
+        return jsonify({"success": False, "message": "Megaplex task queue is full"})
     return jsonify({"success": True})
 
 
@@ -57,15 +65,19 @@ def post_wait_task():
     dest = task_packet["dest"]
     source = task_packet["source"]
     if dest not in queue_dict:
-        queue_dict[dest] = {"tasks": Queue.Queue(),
+        queue_dict[dest] = {"tasks": Queue.Queue(maxsize=MAX_QUEUE_LENGTH),
                             "responses": Queue.Queue(),
                             "wait_dict": {}}
     if source not in queue_dict:
-        queue_dict[source] = {"tasks": Queue.Queue(),
+        queue_dict[source] = {"tasks": Queue.Queue(maxsize=MAX_QUEUE_LENGTH),
                               "responses": Queue.Queue(),
                               "wait_dict": {}}
     queue_dict[source]["wait_dict"][task_packet["callback_id"]] = None
-    queue_dict[dest]["tasks"].put(task_packet)
+    try:
+        queue_dict[dest]["tasks"].put(task_packet, block=True, timeout=timeout_on_queue_full)
+    except Queue.Full:
+        dmsg("Queue was full. Couldn't post task")
+        return jsonify({"success": False, "message": "Megaplex task queue is full"})
     return jsonify({"success": True})
 
 

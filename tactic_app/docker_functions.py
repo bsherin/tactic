@@ -7,6 +7,7 @@ import os
 
 SHORT_SLEEP_PERIOD = float(os.environ.get("SHORT_SLEEP_PERIOD"))
 LONG_SLEEP_PERIOD = float(os.environ.get("LONG_SLEEP_PERIOD"))
+MAX_QUEUE_LENGTH = int(os.environ.get("MAX_QUEUE_LENGTH"))
 
 callbacks = {}
 
@@ -23,14 +24,16 @@ def create_container(image_name, container_name=None, network_mode="bridge", wai
         container_id = cli.create_container(image=image_name,
                                             host_config=cli.create_host_config(network_mode=network_mode),
                                             environment={"SHORT_SLEEP_PERIOD": SHORT_SLEEP_PERIOD,
-                                                         "LONG_SLEEP_PERIOD": LONG_SLEEP_PERIOD}
+                                                         "LONG_SLEEP_PERIOD": LONG_SLEEP_PERIOD,
+                                                         "MAX_QUEUE_LENGTH": MAX_QUEUE_LENGTH}
                                             )
     else:
         container_id = cli.create_container(image=image_name,
                                             name=container_name,
                                             host_config=cli.create_host_config(network_mode=network_mode),
                                             environment={"SHORT_SLEEP_PERIOD": SHORT_SLEEP_PERIOD,
-                                                         "LONG_SLEEP_PERIOD": LONG_SLEEP_PERIOD}
+                                                         "LONG_SLEEP_PERIOD": LONG_SLEEP_PERIOD,
+                                                         "MAX_QUEUE_LENGTH": MAX_QUEUE_LENGTH}
                                             )
     cli.start(container_id)
     print "status " + str(cli.inspect_container(container_id)["State"]["Status"])

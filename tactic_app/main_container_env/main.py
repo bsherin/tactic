@@ -408,6 +408,7 @@ class mainWindow(QWorker):
         return list_names
 
     def _delete_tile_instance(self, tile_id):
+        send_request_to_container(self.tile_instances[tile_id], "kill_me")
         del self.tile_instances[tile_id]
         self.tile_sort_list.remove(tile_id)
         form_info = {"current_header_list": self.current_header_list,
