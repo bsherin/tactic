@@ -77,7 +77,7 @@ def get_mainwindow_property(main_id, prop_name, callback):
 def load_temp_page(the_id):
     template_data = host_worker.temp_dict[the_id]
     del host_worker.temp_dict[the_id]
-    return render_template("main.html", **template_data)
+    return render_template(template_data["template_name"], **template_data)
 
 
 @app.route('/remove_mainwindow/<main_id>', methods=['get', 'post'])

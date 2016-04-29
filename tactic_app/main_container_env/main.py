@@ -674,10 +674,10 @@ class mainWindow(QWorker):
             title = self.short_collection_name + " log"
         else:
             title = self.project_name + " log"
-        with self.app.test_request_context():
-            # todo log window - rendering this template here won't work. must be done back on the host
-            the_html = render_template("log_window_template.html", window_title=title, console_html=self.console_html)
-        return {"html": the_html}
+        self.post_task("host", "open_log_window", {"console_html": self.console_html,
+                                                   "title": title,
+                                                   "main_id": self.my_id})
+        return
 
     def grab_data(self, data):
         doc_name = data["doc_name"]

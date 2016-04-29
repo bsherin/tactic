@@ -487,8 +487,6 @@ class ProjectManager(ResourceManager):
     name_field = "project_name"
 
     def add_rules(self):
-        # app.add_url_rule('/main_project/<project_name>', "main_project", login_required(self.main_project),
-        #                  methods=['get'])
         app.add_url_rule('/delete_project/<project_name>', "delete_project", login_required(self.delete_project),
                          methods=['post'])
 

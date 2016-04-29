@@ -46,7 +46,7 @@ function start_post_load() {
         sorttable.innerSortFunction.apply(updated_header, []);
     });
 
-    socket.on('start-spinner', function () {
+    socket.on('stop-spinner', function () {
         stopSpinner()
     });
 
@@ -231,7 +231,7 @@ resource_managers["collection"] = collectionManager;
 
 var project_manager_specifics = {
     show_add: false,
-    load_view: "/main_project/",  // todo this might be obsolete now, as is all related stuff
+    load_view: "",
     delete_view: "/delete_project/",
     double_click_func: "load_func",
     buttons: [
@@ -243,6 +243,7 @@ var project_manager_specifics = {
         var res_name = manager.check_for_selection(manager.res_type);
         if (res_name == "") return;
         var data = {"project_name": res_name, "user_id": user_id, "user_manage_id": user_manage_id};
+        startSpinner();
         postWithCallbackNoMain("host", "main_project", data)
     }
 };

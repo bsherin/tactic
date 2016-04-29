@@ -9,6 +9,7 @@ import shared_dicts
 from tactic_app import app, socketio, mongo_uri, megaplex_address, use_ssl
 from views.user_manage_views import tile_manager, project_manager
 import uuid
+import copy
 
 
 class HostWorker(QWorker):
@@ -46,7 +47,7 @@ class HostWorker(QWorker):
                      "use_ssl": use_ssl}
 
         send_request_to_container(caddress, "initialize_project_mainwindow", data_dict)
-
+        socketio.emit('stop-spinner', {}, namespace='/user_manage', room=user_obj.get_id())
         return None
 
     def get_list_names(self, data):
@@ -120,12 +121,22 @@ class HostWorker(QWorker):
         from tactic_app import socketio
         unique_id = str(uuid.uuid4())
         template_data = data["template_data"]
+        template_data["template_name"] = "main.html"
         doc_names = template_data["doc_names"]
-        # todo why is this fix needed here when I did it upstream?
+        # why is this fix needed here when I did it upstream?
         fixed_doc_names = [str(doc_name) for doc_name in doc_names]
         template_data["doc_names"] = fixed_doc_names
         self.temp_dict[unique_id] = template_data
         socketio.emit("window-open", {"the_id": unique_id}, namespace='/user_manage', room=data["user_manage_id"])
+        return {"success": True}
+
+    def open_log_window(self, data):
+        from tactic_app import socketio
+        unique_id = str(uuid.uuid4())
+        template_data = copy.copy(data)
+        template_data["template_name"] = "log_window_template.html"
+        self.temp_dict[unique_id] = template_data
+        socketio.emit("window-open", {"the_id": unique_id}, namespace='/main', room=data["main_id"])
         return {"success": True}
 
     def emit_table_message(self, data):

@@ -79,9 +79,7 @@ function openLogWindow() {
     var task_data = {
         "console_html": $('#console').html()
     };
-    postWithCallback(main_id, "open_log_window", task_data, function(response_data) {
-        window.open(response_data.html)
-    })
+    postWithCallback(main_id, "open_log_window", task_data)
 }
 
 
@@ -126,6 +124,9 @@ function start_post_load() {
             continue_loading()
         })
     })
+    socket.on("window-open", function(data) {
+        window.open($SCRIPT_ROOT + "/load_temp_page/" + data["the_id"])
+    });
 }
 
 function continue_loading() {
@@ -183,7 +184,7 @@ function continue_loading() {
                     postWithCallback(main_id, "DisplayCreateErrors", {});
 
                     function create_tile_from_save(tile_id) {
-                        tile_html = data.tile_save_results[tile_id].tile_html
+                        var tile_html = data.tile_save_results[tile_id].tile_html;
                         var new_tile_object = new TileObject(tile_id, tile_html, false);
                         tile_dict[tile_id] = new_tile_object;
                         new_tile_object.saved_size = data.tile_save_results[tile_id].saved_size;
