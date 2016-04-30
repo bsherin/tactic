@@ -38,10 +38,5 @@ def initialize_project_mainwindow():
     return jsonify({"success": True})
 
 
-def get_tile_property(tile_id, prop_name):
-    res = mwindow.ask_tile(tile_id, "get_property/" + prop_name).json()
-    return res["val"]
-
-
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=True)

@@ -352,7 +352,8 @@ function exportDataTable() {
     showModal("Export Data", "New Collection Name", function (new_name) {
             var result_dict = {
                 "export_name": new_name,
-                "main_id": main_id
+                "main_id": main_id,
+                "user_id": user_id
             };
             $.ajax({
                 url: $SCRIPT_ROOT + "/export_data",
@@ -361,7 +362,6 @@ function exportDataTable() {
                 async: true,
                 data: JSON.stringify(result_dict),
                 dataType: 'json',
-                success: doFlash
             });
     })
 }

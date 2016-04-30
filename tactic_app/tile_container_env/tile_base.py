@@ -10,7 +10,7 @@ import numpy as np
 from bson.binary import Binary
 from flask import url_for, render_template
 from gevent.queue import Queue
-from qworker import QWorker
+from qworker import QWorker, task_worthy
 
 from tokenizers import tokenizer_dict
 from weight_function_module import weight_functions
@@ -119,14 +119,17 @@ class TileBase(QWorker):
         with self.app.test_request_context():
             self.app.logger.debug(msg)
 
+    @task_worthy
     def RefreshTile(self, data):
         self.do_the_refresh()
         return None
 
+    @task_worthy
     def get_property(self, data):
         data["val"] = getattr(self, data["property"])
         return data
 
+    @task_worthy
     def TileSizeChange(self, data):
         self.width = data["width"]
         self.height = data["height"]
@@ -147,23 +150,28 @@ class TileBase(QWorker):
                 self.handle_size_change()
         return None
 
+    @task_worthy
     def RefreshTileFromSave(self, data):
         self.refresh_from_save()
         return None
 
+    @task_worthy
     def SetSizeFromSave(self, data):
         self.set_tile_size(self.full_tile_width, self.full_tile_height)
         return None
 
+    @task_worthy
     def UpdateOptions(self, data):
         self.update_options(data)
         return None
 
+    @task_worthy
     def CellChange(self, data):
         self.handle_cell_change(data["column_header"], data["id"], data["old_content"],
                                 data["new_content"], data["doc_name"])
         return None
 
+    @task_worthy
     def TileButtonClick(self, data):
         try:
             self.handle_button_click(data["button_value"], data["doc_name"], data["active_row_index"])
@@ -171,64 +179,79 @@ class TileBase(QWorker):
             self.handle_exception(ex)
         return None
 
+    @task_worthy
     def TileTextAreaChange(self, data):
         self.handle_textarea_change(data["text_value"])
         return None
 
+    @task_worthy
     def TextSelect(self, data):
         self.handle_text_select(data["selected_text"], data["doc_name"], data["active_row_index"])
         return None
 
+    @task_worthy
     def PipeUpdate(self, data):
         self.handle_pipe_update(data["pipe_name"])
         return None
 
+    @task_worthy
     def TileWordClick(self, data):
         self.handle_tile_word_click(data["clicked_text"], data["doc_name"], data["active_row_index"])
         return None
 
+    @task_worthy
     def TileRowClick(self, data):
         self.handle_tile_row_click(data["clicked_row"], data["doc_name"], data["active_row_index"])
         return None
 
+    @task_worthy
     def TileCellClick(self, data):
         self.handle_tile_cell_click(data["clicked_cell"], data["doc_name"], data["active_row_index"])
         return None
 
+    @task_worthy
     def TileElementClick(self, data):
         self.handle_tile_element_click(data["dataset"], data["doc_name"], data["active_row_index"])
         return None
 
+    @task_worthy
     def HideOptions(self, data):
         self.hide_options()
         return None
 
+    @task_worthy
     def StartSpinner(self, data):
         self.start_spinner()
         return None
 
+    @task_worthy
     def StopSpinner(self, data):
         self.stop_spinner()
         return None
 
+    @task_worthy
     def ShrinkTile(self, data):
         self.is_shrunk = True
         return None
 
+    @task_worthy
     def ExpandTile(self, data):
         self.is_shrunk = False
         return None
 
+    @task_worthy
     def LogTile(self, data):
         self.handle_log_tile()
         return None
 
+    @task_worthy
     def RebuildTileForms(self, data):
         form_html = self.create_form_html(data)["form_html"]
         self.emit_tile_message("displayFormContent", {"html": form_html})
         return None
 
     # Info needed here: list_names, current_header_list, pipe_dict, doc_names
+    @task_worthy
     def create_form_html(self, data):
         self.debug_log("entering create_form_html")
         self._pipe_dict = data["pipe_dict"]
@@ -460,6 +483,7 @@ class TileBase(QWorker):
         self.do_the_refresh(message)
         return
 
+    @task_worthy
     def compile_save_dict(self, data):
         result = {"my_class_for_recreate": "TileBase"}
         result["binary_attrs"] = []
@@ -491,6 +515,7 @@ class TileBase(QWorker):
 
         return result
 
+    @task_worthy
     def recreate_from_save(self, save_dict):
         self.debug_log("entering recreate_from_save in tile_base")
         if "binary_attrs" not in save_dict:
@@ -515,6 +540,7 @@ class TileBase(QWorker):
                     setattr(self, attr, attr_val)
         return
 
+    @task_worthy
     def render_tile(self, data):
         return {"tile_html": self.render_me(data)}
 
@@ -805,6 +831,7 @@ class TileBase(QWorker):
                 return val
         return None
 
+    @task_worthy
     def transfer_pipe_value(self, data):
         export_name = data["export_name"]
         encoded_val = Binary(cPickle.dumps(getattr(self, export_name)))
@@ -854,8 +881,6 @@ class TileBase(QWorker):
         data_name = self.create_data_source({"data_list": data, "row_labels": row_labels, "margins": margins, "domain": domain, "title": title})
         uid = self.get_unique_div_id()
         the_html = "<div id='{}'><div class='d3plot'></div>".format(str(uid))
-
-
         the_script = "createHeatmap('{0}', '{1}', '{2}')".format(self.my_id, data_name, uid)
         the_html += "<script class='resize-rerun' >{}</script></div>".format(the_script)
         return the_html

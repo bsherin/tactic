@@ -92,21 +92,24 @@ def remove_mainwindow(main_id):
     return jsonify({"success": True})
 
 
-# todo various exporting and downloading
 @app.route('/export_data', methods=['POST'])
 @login_required
 def export_data():
+    def export_success(result):
+        if result["success"]:
+            socketio.emit("doFlash", {"alert_type": "alert-success", "message": "Data successfully exported"},
+                          namespace='/main', room=data_dict["main_id"])
+        user_obj = load_user(data_dict["user_id"])
+        collection_manager.update_selector_list(user_obj=user_obj)
+        return
     data_dict = request.json
-    doc_dict = get_mainwindow_property(data_dict["main_id"], "doc_dict")
     full_collection_name = current_user.build_data_collection_name(data_dict['export_name'])
-    for docinfo in doc_dict.values():
-        db[full_collection_name].insert_one({"name": docinfo.name,
-                                             "data_rows": docinfo.data_rows,
-                                             "header_list": docinfo.header_list})
-    collection_manager.update_selector_list()
-    return jsonify({"success": True, "message": "Data Successfully Exported"})
+    host_worker.post_task(data_dict["main_id"], "export_data", {"full_collection_name": full_collection_name},
+                          export_success)
+    return jsonify({"success": True})
 
 
+# todo various exporting and downloading
 @app.route('/download_table/<main_id>/<new_name>', methods=['GET', 'POST'])
 @login_required
 def download_table(main_id, new_name):

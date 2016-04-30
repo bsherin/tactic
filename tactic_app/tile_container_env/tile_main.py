@@ -41,7 +41,8 @@ def recreate_from_save():
                                              data["tile_name"])
     tile_instance.init_qworker(app, megaplex_address)
     tile_instance.recreate_from_save(data)
-    tile_instance.current_html.replace(data["base_figure_url"], data["new_base_figure_url"])
+    tile_instance.current_html = tile_instance.current_html.replace(data["base_figure_url"],
+                                                                    data["new_base_figure_url"])
     tile_instance.base_figure_url = data["new_base_figure_url"]
     tile_instance.start()
     app.logger.debug("tile instance started")

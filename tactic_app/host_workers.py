@@ -1,4 +1,4 @@
-from qworker import QWorker, SHORT_SLEEP_PERIOD, LONG_SLEEP_PERIOD
+from qworker import QWorker, SHORT_SLEEP_PERIOD, LONG_SLEEP_PERIOD, task_worthy
 from flask import jsonify, render_template
 from flask_login import current_user, url_for
 from users import load_user
@@ -17,6 +17,7 @@ class HostWorker(QWorker):
         QWorker.__init__(self, app, megaplex_address, "host")
         self.temp_dict = {}
 
+    @task_worthy
     def main_project(self, data):
         user_id = data["user_id"]
         project_name = data["project_name"]
@@ -50,17 +51,20 @@ class HostWorker(QWorker):
         socketio.emit('stop-spinner', {}, namespace='/user_manage', room=user_obj.get_id())
         return None
 
+    @task_worthy
     def get_list_names(self, data):
         user_id = data["user_id"]
         the_user = load_user(user_id)
         return {"list_names": the_user.list_names}
 
+    @task_worthy
     def get_loaded_user_modules(self, data):
         user_id = data["user_id"]
         user_obj = load_user(user_id)
 
         return {"loaded_modules": shared_dicts.loaded_user_modules[user_obj.username]}
 
+    @task_worthy
     def load_modules(self, data):
         loaded_modules = data["loaded_modules"]
         user_id = data["user_id"]
@@ -70,12 +74,14 @@ class HostWorker(QWorker):
                 tile_manager.load_tile_module(module, return_json=False, user_obj=user_obj)
         return {"success": True}
 
+    @task_worthy
     def update_project_selector_list(self, data):
         user_id = data["user_id"]
         user_obj = load_user(user_id)
         project_manager.update_selector_list(user_obj=user_obj)
         return {"success": True}
 
+    @task_worthy
     def get_empty_tile_containers(self, data):
         cdict = {}
         for i in range(data["number"]):
@@ -84,23 +90,27 @@ class HostWorker(QWorker):
             cdict[tile_container_id] = tile_container_address
         return cdict
 
+    @task_worthy
     def get_tile_code(self, tile_info_dict):
         result = {}
         for old_tile_id, tile_type in tile_info_dict.items():
             result[old_tile_id] = shared_dicts.get_tile_code(tile_type)
         return result
 
+    @task_worthy
     def delete_container(self, data):
         container_id = data["container_id"]
         destroy_container(container_id)
         return {"success": True}
 
+    @task_worthy
     def get_list(self, data):
         user_id = data["user_id"]
         list_name = data["list_name"]
         the_user = load_user(user_id)
         return {"the_list": the_user.get_list(list_name)}
 
+    @task_worthy
     def get_tile_types(self, data):
         from tactic_app.shared_dicts import tile_classes, user_tiles
         tile_types = {}
@@ -117,6 +127,7 @@ class HostWorker(QWorker):
         result = {"tile_types": tile_types}
         return result
 
+    @task_worthy
     def open_project_window(self, data):
         from tactic_app import socketio
         unique_id = str(uuid.uuid4())
@@ -130,6 +141,7 @@ class HostWorker(QWorker):
         socketio.emit("window-open", {"the_id": unique_id}, namespace='/user_manage', room=data["user_manage_id"])
         return {"success": True}
 
+    @task_worthy
     def open_log_window(self, data):
         from tactic_app import socketio
         unique_id = str(uuid.uuid4())
@@ -139,25 +151,30 @@ class HostWorker(QWorker):
         socketio.emit("window-open", {"the_id": unique_id}, namespace='/main', room=data["main_id"])
         return {"success": True}
 
+    @task_worthy
     def emit_table_message(self, data):
         from tactic_app import socketio
         socketio.emit("table-message", data, namespace='/main', room=data["main_id"])
         return {"success": True}
 
+    @task_worthy
     def emit_tile_message(self, data):
         from tactic_app import socketio
         socketio.emit("tile-message", data, namespace='/main', room=data["main_id"])
         return {"success": True}
 
+    @task_worthy
     def create_tile_container(self, data):
         tile_container_id = create_container("tactic_tile_image", network_mode="bridge")["Id"]
         tile_address = get_address(tile_container_id, "bridge")
         return {"tile_id": tile_container_id, "tile_address": tile_address}
 
+    @task_worthy
     def get_module_code(self, data):
         module_code = shared_dicts.get_tile_code(data["tile_type"])
         return {"module_code": module_code, "megaplex_address": self.megaplex_address}
 
+    @task_worthy
     def render_tile(self, data):
         tile_id = data["tile_id"]
         form_html = data["form_html"]
@@ -180,11 +197,6 @@ class ClientWorker(QWorker):
     def forward_client_post(self, task_packet):
         send_request_to_container(self.megaplex_address, "post_task", task_packet)
         return
-
-    # def emit_table_message(self, data):
-    #     from tactic_app import socketio
-    #     socketio.emit("table-message", data, namespace='/main', room=data["main_id"])
-    #     return {"success": True}
 
     def _run(self):
         self.running = True

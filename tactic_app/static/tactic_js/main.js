@@ -127,6 +127,9 @@ function start_post_load() {
     socket.on("window-open", function(data) {
         window.open($SCRIPT_ROOT + "/load_temp_page/" + data["the_id"])
     });
+    socket.on("doFlash", function(data) {
+        doFlash(data)
+    })
 }
 
 function continue_loading() {

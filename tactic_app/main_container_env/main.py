@@ -14,7 +14,7 @@ import time
 import uuid
 import cPickle
 from bson.binary import Binary
-from qworker import QWorker
+from qworker import QWorker, task_worthy
 import datetime
 from communication_utils import send_request_to_container
 import numpy
@@ -22,9 +22,6 @@ import numpy
 INITIAL_LEFT_FRACTION = .69
 CHUNK_SIZE = 200
 STEP_SIZE = 100
-
-username = "bsherinrem"
-password = "mang"
 
 
 # noinspection PyPep8Naming
@@ -219,6 +216,8 @@ class mainWindow(QWorker):
             self.user_id = data_dict["user_id"]
             self.doc_dict = self._build_doc_dict()
 
+    # Communication Methods
+
     def ask_host(self, msg_type, task_data=None, callback_func=None):
         task_data["main_id"] = self.my_id
         self.post_task("host", msg_type, task_data, callback_func)
@@ -254,6 +253,8 @@ class mainWindow(QWorker):
             self.handle_exception("Error distributing event " + event_name)
             return False
 
+    # Save and load-related methods
+
     def compile_save_dict(self):
         self.debug_log("entering compile_save_dict in main")
         result = {}
@@ -276,6 +277,7 @@ class mainWindow(QWorker):
         self.debug_log("leaving compile_save_dict in main")
         return result
 
+    @task_worthy
     def do_full_recreation(self, data_dict):
         tile_info_dict, loaded_modules = self.recreate_from_save(data_dict["project_collection_name"],
                                                                  data_dict["project_name"])
@@ -382,6 +384,72 @@ class mainWindow(QWorker):
         # todo capture errors in this method
         return tile_results
 
+    @task_worthy
+    def save_new_project(self, data_dict):
+        self.debug_log("entering save_new_project")
+        # noinspection PyBroadException
+        try:
+            self.project_name = data_dict["project_name"]
+            self.hidden_columns_list = data_dict["hidden_columns_list"]
+            self.console_html = data_dict["console_html"]
+            tspec_dict = data_dict["tablespec_dict"]
+            for (dname, spec) in tspec_dict.items():
+                self.doc_dict[dname].table_spec = spec
+
+            self.loaded_modules = self.post_and_wait("host", "get_loaded_user_modules", {"user_id": self.user_id})[
+                "loaded_modules"]
+            project_dict = self.compile_save_dict()
+            save_dict = {}
+            save_dict["metadata"] = self.create_initial_metadata()
+            save_dict["project_name"] = project_dict["project_name"]
+            save_dict["file_id"] = self.fs.put(Binary(cPickle.dumps(project_dict)))
+            self.mdata = save_dict["metadata"]
+
+            self.db[self.project_collection_name].insert_one(save_dict)
+            return_data = {"project_name": data_dict["project_name"],
+                           "success": True,
+                           "message_string": "Project Successfully Saved"}
+
+        except:
+            error_string = self.handle_exception("Error saving new project", print_to_console=False)
+            return_data = {"success": False, "message_string": error_string}
+        return return_data
+
+    @task_worthy
+    def update_project(self, data_dict):
+        self.debug_log("entering update_project")
+        # noinspection PyBroadException
+        try:
+            self.hidden_columns_list = data_dict["hidden_columns_list"]
+            self.console_html = data_dict["console_html"]
+            tspec_dict = data_dict["tablespec_dict"]
+            for (dname, spec) in tspec_dict.items():
+                self.doc_dict[dname].table_spec = spec
+            self.loaded_modules = self.post_and_wait("host", "get_loaded_user_modules", {"user_id": self.user_id})[
+                "loaded_modules"]
+            project_dict = self.compile_save_dict()
+            pname = project_dict["project_name"]
+            self.mdata["updated"] = datetime.datetime.today()
+            new_file_id = self.fs.put(Binary(cPickle.dumps(project_dict)))
+            save_dict = self.db[self.project_collection_name].find_one({"project_name": pname})
+            self.fs.delete(save_dict["file_id"])
+            save_dict["project_name"] = pname
+            save_dict["metadata"] = self.mdata
+            save_dict["file_id"] = new_file_id
+            self.db[self.project_collection_name].update_one({"project_name": pname},
+                                                             {'$set': save_dict})
+            self.mdata = save_dict["metadata"]
+            return_data = {"project_name": pname,
+                           "success": True,
+                           "message": "Project Successfully Saved"}
+
+        except:
+            error_string = self.handle_exception("Error saving project", print_to_console=False)
+            return_data = {"success": False, "message": error_string}
+        return return_data
+
+    # utility methods
+
     @property
     def doc_names(self):
         return sorted([str(key) for key in self.doc_dict.keys()])
@@ -428,6 +496,16 @@ class mainWindow(QWorker):
             pipe_list += tile_entry.keys()
         return pipe_list
 
+    def handle_exception(self, unique_message=None, print_to_console=True):
+            error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+            if unique_message is not None:
+                error_string = unique_message + " " + error_string
+                self.debug_log(error_string)
+            if print_to_console:
+                self.print_to_console(error_string, force_open=True)
+            return error_string
+
+    @task_worthy
     def create_tile(self, data_dict):
         self.debug_log("entering create_tile in main.py")
         tile_container_id = data_dict["tile_id"]
@@ -464,22 +542,14 @@ class mainWindow(QWorker):
         self.debug_log("leaving create_tile in main.py")
         return {"success": True, "html": form_html}
 
-    def handle_exception(self, unique_message=None, print_to_console=True):
-        error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-        if unique_message is not None:
-            error_string = unique_message + " " + error_string
-            self.debug_log(error_string)
-        if print_to_console:
-            self.print_to_console(error_string, force_open=True)
-        return error_string
-
     def print_to_console(self, message_string, force_open=False):
         with self.app.test_request_context():
             pmessage = render_template("log_item.html", log_item=message_string)
         self.emit_table_message("consoleLog", {"message_string": pmessage, "force_open": force_open})
         return {"success": True}
 
-    def get_func(self, data_dict):
+    @task_worthy
+    def get_func(self, data_dict):  # todo this is too powerful for tile API
         func_name = data_dict["func"]
         args = data_dict["args"]
         val = getattr(self, func_name)(*args)
@@ -492,67 +562,7 @@ class mainWindow(QWorker):
                  "notes": ""}
         return mdata
 
-    def save_new_project(self, data_dict):
-        self.debug_log("entering save_new_project")
-        # noinspection PyBroadException
-        try:
-            self.project_name = data_dict["project_name"]
-            self.hidden_columns_list = data_dict["hidden_columns_list"]
-            self.console_html = data_dict["console_html"]
-            tspec_dict = data_dict["tablespec_dict"]
-            for (dname, spec) in tspec_dict.items():
-                self.doc_dict[dname].table_spec = spec
-
-            self.loaded_modules = self.post_and_wait("host", "get_loaded_user_modules", {"user_id": self.user_id})["loaded_modules"]
-            project_dict = self.compile_save_dict()
-            save_dict = {}
-            save_dict["metadata"] = self.create_initial_metadata()
-            save_dict["project_name"] = project_dict["project_name"]
-            save_dict["file_id"] = self.fs.put(Binary(cPickle.dumps(project_dict)))
-            self.mdata = save_dict["metadata"]
-
-            self.db[self.project_collection_name].insert_one(save_dict)
-            return_data = {"project_name": data_dict["project_name"],
-                           "success": True,
-                           "message_string": "Project Successfully Saved"}
-
-        except:
-            error_string = self.handle_exception("Error saving new project", print_to_console=False)
-            return_data = {"success": False, "message_string": error_string}
-        return return_data
-
-    def update_project(self, data_dict):
-        self.debug_log("entering update_project")
-        # noinspection PyBroadException
-        try:
-            self.hidden_columns_list = data_dict["hidden_columns_list"]
-            self.console_html = data_dict["console_html"]
-            tspec_dict = data_dict["tablespec_dict"]
-            for (dname, spec) in tspec_dict.items():
-                self.doc_dict[dname].table_spec = spec
-            self.loaded_modules = self.post_and_wait("host", "get_loaded_user_modules", {"user_id": self.user_id})["loaded_modules"]
-            project_dict = self.compile_save_dict()
-            pname = project_dict["project_name"]
-            self.mdata["updated"] = datetime.datetime.today()
-            new_file_id = self.fs.put(Binary(cPickle.dumps(project_dict)))
-            save_dict = self.db[self.project_collection_name].find_one({"project_name": pname})
-            self.fs.delete(save_dict["file_id"])
-            save_dict["project_name"] = pname
-            save_dict["metadata"] = self.mdata
-            save_dict["file_id"] = new_file_id
-            self.db[self.project_collection_name].update_one({"project_name": pname},
-                                                                        {'$set': save_dict})
-            self.mdata = save_dict["metadata"]
-            return_data = {"project_name": pname,
-                           "success": True,
-                           "message": "Project Successfully Saved"}
-
-        except:
-            error_string = self.handle_exception("Error saving project", print_to_console=False)
-            return_data = {"success": False, "message": error_string}
-        return return_data
-
-
+    @task_worthy
     def get_column_data(self, data):
         self.debug_log("entering get_column_data")
         result = []
@@ -563,7 +573,8 @@ class mainWindow(QWorker):
         self.debug_log("leaving get_column_data")
         return result
 
-    def get_column_data_for_doc(self, data):
+    @task_worthy
+    def get_column_data_for_doc(self, data):  # todo this is used only from get_func I think
         self.debug_log("entering get_column_data_for_doc in main.py")
         column_header = data["column_name"]
         doc_name = data["doc_name"]
@@ -600,6 +611,7 @@ class mainWindow(QWorker):
                        "is_first_chunk": doc.is_first_chunk, "is_last_chunk": doc.is_last_chunk}
         self.emit_table_message("refill_table", data_object)
 
+    # todo this and similar called form get_func
     def display_matching_rows(self, filter_function, document_name=None):
         if document_name is not None:
             doc = self.doc_dict[document_name]
@@ -639,36 +651,64 @@ class mainWindow(QWorker):
                     i += 1
         return
 
+    @task_worthy
     def CellChange(self, data):
         self._set_row_column_data(data["doc_name"], data["id"], data["column_header"], data["new_content"])
         self._change_list.append(data["id"])
         return None
 
+    @task_worthy
     def set_visible_doc(self, data):
         self.debug_log("entering save visible_doc on main")
         doc_name = data["doc_name"]
         self.visible_doc_name = doc_name
         return {"success": True}
 
+    @task_worthy
     def print_to_console_event(self, data):
         self.print_to_console(data["print_string"], force_open=True)
         return None
 
+    # todo change these to only accept events from certain places
+    @task_worthy
     def get_property(self, data_dict):
-        prop_name = data_dict["property"]
-        val = getattr(self, prop_name)
-        return {"val": val}
+        try:
+            prop_name = data_dict["property"]
+            val = getattr(self, prop_name)
+            return {"success": True, "val": val}
+        except:
+            self.handle_exception("Error exporting table as collection.")
+            return {"success": False}
 
+    @task_worthy
+    def export_data(self, data):
+        try:
+            mdata = self.create_initial_metadata()
+            mdata["name"] = "__metadata__"
+            full_collection_name = data["full_collection_name"]
+            self.db[full_collection_name].insert_one(mdata)
+            for docinfo in self.doc_dict.values():
+                self.db[full_collection_name].insert_one({"name": docinfo.name,
+                                                          "data_rows": docinfo.data_rows,
+                                                          "header_list": docinfo.header_list})
+        except:
+            self.handle_exception("Error exporting data")
+            return {"success": False}
+        return {"success": True}
+
+    @task_worthy
     def get_tile_ids(self, data):
         tile_ids = self.tile_instances.keys()
         return {"success": True, "tile_ids": tile_ids}
 
+    @task_worthy
     def set_property(self, data_dict):
         prop_name = data_dict["property"]
         val = data_dict["val"]
         setattr(self, prop_name, val)
         return
 
+    @task_worthy
     def open_log_window(self, task_data):
         self.console_html = task_data["console_html"]
         if self.project_name is None:
@@ -680,6 +720,7 @@ class mainWindow(QWorker):
                                                    "main_id": self.my_id})
         return
 
+    @task_worthy
     def grab_data(self, data):
         doc_name = data["doc_name"]
         return {"doc_name": doc_name,
@@ -692,6 +733,7 @@ class mainWindow(QWorker):
                 "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
                 "max_table_size": self.doc_dict[doc_name].max_table_size}
 
+    @task_worthy
     def grab_project_data(self, data_dict):
         doc_name = data_dict["doc_name"]
         return {"doc_name": doc_name,
@@ -712,6 +754,7 @@ class mainWindow(QWorker):
         result = self.post_and_wait(tile_id, 'get_property', {"property": prop_name})["val"]
         return result
 
+    @task_worthy
     def reload_tile(self, ddict):
         try:
             self.debug_log("entering reload_tile")
@@ -740,6 +783,7 @@ class mainWindow(QWorker):
         return {"success": False}
 
     # todo grab_chunk_with_row has not been tested
+    @task_worthy
     def grab_chunk_with_row(self, data_dict):
         app.logger.debug("Entering grab chunk with row")
         doc_name = data_dict["doc_name"]
@@ -756,6 +800,7 @@ class mainWindow(QWorker):
                 "max_table_size": self.doc_dict[doc_name].max_table_size,
                 "actual_row": self.doc_dict[doc_name].get_actual_row(row_id)}
 
+    @task_worthy
     def distribute_events_stub(self, data_dict):
         event_name = data_dict["event_name"]
 
@@ -771,6 +816,7 @@ class mainWindow(QWorker):
         success = self.distribute_event(event_name, data_dict, tile_id)
         return {"success": success}
 
+    @task_worthy
     def grab_next_chunk(self, data_dict):
         self.debug_log("entering grab next chunk")
         doc_name = data_dict["doc_name"]
@@ -783,6 +829,7 @@ class mainWindow(QWorker):
                 "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
                 "step_size": step_amount}
 
+    @task_worthy
     def grab_previous_chunk(self, data_dict):
         self.debug_log("entering grab previous chunk")
         doc_name = data_dict["doc_name"]
@@ -795,10 +842,12 @@ class mainWindow(QWorker):
                 "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
                 "step_size": step_amount}
 
+    @task_worthy
     def RemoveTile(self, data):
         self._delete_tile_instance(data["tile_id"])
         return None
 
+    @task_worthy
     def CreateColumn(self, data):
         self.add_blank_column(data["column_name"])
         form_info = {"current_header_list": self.current_header_list,
@@ -809,56 +858,69 @@ class mainWindow(QWorker):
             self.post_task(tid, "RebuildTileForms", form_info)
         return None
 
+    @task_worthy
     def SearchTable(self, data):
         self.highlight_table_text(data["text_to_find"])
         return None
 
+    @task_worthy
     def FilterTable(self, data):
         self.filter_table_rows(data["text_to_find"])
         return None
 
+    @task_worthy
     def DehighlightTable(self, data):
         self.dehighlight_all_table_text()
         return None
 
+    @task_worthy
     def UnfilterTable(self, data):
         self.unfilter_all_rows()
         return None
 
+    @task_worthy
     def ColorTextInCell(self, data):
         self.emit_table_message("colorTxtInCell", data)
         return None
 
+    @task_worthy
     def SetCellContent(self, data):
         self._set_cell_content(data["doc_name"], data["id"], data["column_header"],
                                data["new_content"], data["cellchange"])
         return None
 
+    @task_worthy
     def TextSelect(self, data):
         self.selected_text = data["selected_text"]
         return None
 
+    @task_worthy
     def SaveTableSpec(self, data):
         new_spec = data["tablespec"]
         self.doc_dict[new_spec["doc_name"]].table_spec = new_spec
         return None
 
+    @task_worthy
     def UpdateSortList(self, data):
         self.tile_sort_list = data["sort_list"]
         return None
 
+    @task_worthy
     def UpdateLeftFraction(self, data):
         self.left_fraction = data["left_fraction"]
         return None
 
+    @task_worthy
     def UpdateTableShrinkState(self, data):
         self.is_shrunk = data["is_shrunk"]
         return None
 
+    @task_worthy
     def PrintToConsole(self, data):
         self.print_to_console(data["message"], True)
         return None
 
+    @task_worthy
     def DisplayCreateErrors(self, data):
         for msg in self.recreate_errors:
             self.debug_log("Got CreateError: " + msg)

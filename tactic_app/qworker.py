@@ -34,6 +34,13 @@ def send_request_to_container(taddress, msg_type, data_dict=None, wait_for_succe
     else:
         return requests.post("http://{0}:5000/{1}".format(taddress, msg_type), timeout=timeout, json=data_dict)
 
+task_worthy_methods = []
+
+
+def task_worthy(m):
+    task_worthy_methods.append(m.__name__)
+    return m
+
 
 class QWorker(gevent.Greenlet):
     def __init__(self, app, megaplex_address, my_id):
@@ -114,8 +121,11 @@ class QWorker(gevent.Greenlet):
 
     def handle_event(self, task_packet):
         if hasattr(self, task_packet["task_type"]):
-            response_data = getattr(self, task_packet["task_type"])(task_packet["task_data"])
-            if task_packet["callback_id"] is not None:
-                task_packet["response_data"] = response_data
-                self.submit_response(task_packet)
+            if task_packet["task_type"] in task_worthy_methods:
+                response_data = getattr(self, task_packet["task_type"])(task_packet["task_data"])
+                if task_packet["callback_id"] is not None:
+                    task_packet["response_data"] = response_data
+                    self.submit_response(task_packet)
+            else:
+                self.debug_log("Got invalid task type")
         return
