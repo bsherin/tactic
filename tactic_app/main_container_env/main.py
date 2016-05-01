@@ -450,6 +450,33 @@ class mainWindow(QWorker):
 
     # utility methods
 
+    def _build_doc_dict(self):
+        result = {}
+        self.debug_log("building doc_dict with collection: " + self.collection_name)
+        try:
+            the_collection = self.db[self.collection_name]
+            for f in the_collection.find():
+                if str(f["name"]) == "__metadata__":
+                    continue
+                if "header_list" in f:
+                    # Note conversion of unicode filenames to strings
+                    result[str(f["name"])] = docInfo(str(f["name"]), f["data_rows"], f["header_list"])
+                else:
+                    result[str(f["name"])] = docInfo(str(f["name"]), f["data_rows"], [])
+        except:
+            return
+        return result
+
+    def _set_row_column_data(self, doc_name, the_id, column_header, new_content):
+        _ = self.doc_dict[doc_name].data_rows[str(the_id)][column_header] = new_content
+        return
+
+    def print_to_console(self, message_string, force_open=False):
+        with self.app.test_request_context():
+            pmessage = render_template("log_item.html", log_item=message_string)
+        self.emit_table_message("consoleLog", {"message_string": pmessage, "force_open": force_open})
+        return {"success": True}
+
     @property
     def doc_names(self):
         return sorted([str(key) for key in self.doc_dict.keys()])
@@ -461,15 +488,28 @@ class mainWindow(QWorker):
                 tdict[key] = docinfo.table_spec
         return tdict
 
+    def create_initial_metadata(self):
+        mdata = {"datetime": datetime.datetime.today(),
+                 "updated": datetime.datetime.today(),
+                 "tags": "",
+                 "notes": ""}
+        return mdata
+
+    def refill_table(self):
+        doc = self.doc_dict[self.visible_doc_name]
+        data_object = {"data_rows": doc.displayed_data_rows, "doc_name": self.visible_doc_name,
+                       "background_colors": doc.displayed_background_colors,
+                       "is_first_chunk": doc.is_first_chunk, "is_last_chunk": doc.is_last_chunk}
+        self.emit_table_message("refill_table", data_object)
+
     @property
     def tile_ids(self):
         return self.tile_instances
 
-    def add_blank_column(self, column_name):
-        for doc in self.doc_dict.values():
-            doc.header_list.append(column_name)
-            for r in doc.data_rows.values():
-                r[column_name] = ""
+    @property
+    def current_header_list(self):
+        dinfo = self.doc_dict[self.visible_doc_name]
+        return dinfo.header_list
 
     def get_list_names(self):
         list_names = self.post_and_wait("host", "get_list_names", {"user_id": self.user_id})
@@ -505,6 +545,27 @@ class mainWindow(QWorker):
                 self.print_to_console(error_string, force_open=True)
             return error_string
 
+    def highlight_table_text(self, txt):
+        row_index = 0
+        dinfo = self.doc_dict[self.visible_doc_name]
+        for the_row in dinfo.displayed_data_rows:
+            for cheader in dinfo.header_list:
+                cdata = the_row[cheader]
+                if cdata is None:
+                    continue
+                if str(txt).lower() in str(cdata).lower():
+                    self.emit_table_message("highlightTxtInCell",
+                                            {"row_index": row_index, "column_header": cheader, "text_to_find": txt})
+            row_index += 1
+
+    @staticmethod
+    def txt_in_dict(txt, d):
+        for val in d.values():
+            if str(txt).lower() in str(val).lower():
+                return True
+        return False
+
+    # Task Worthy methods. These are eligible to be the recipient of posted tasks.
     @task_worthy
     def create_tile(self, data_dict):
         self.debug_log("entering create_tile in main.py")
@@ -521,7 +582,7 @@ class mainWindow(QWorker):
                      "list_names": data_dict["list_names"]}
         # data_dict["form_info"] = form_info
         tile_address = data_dict["tile_address"]
-        load_result = send_request_to_container(tile_address, "load_source", data_dict).json()
+        send_request_to_container(tile_address, "load_source", data_dict).json()
         instantiate_result = send_request_to_container(tile_address, "instantiate_tile_class", data_dict)
         exports = instantiate_result.json()["exports"]
         if len(exports) > 0:
@@ -542,25 +603,12 @@ class mainWindow(QWorker):
         self.debug_log("leaving create_tile in main.py")
         return {"success": True, "html": form_html}
 
-    def print_to_console(self, message_string, force_open=False):
-        with self.app.test_request_context():
-            pmessage = render_template("log_item.html", log_item=message_string)
-        self.emit_table_message("consoleLog", {"message_string": pmessage, "force_open": force_open})
-        return {"success": True}
-
     @task_worthy
     def get_func(self, data_dict):  # todo this is too powerful for tile API
         func_name = data_dict["func"]
         args = data_dict["args"]
         val = getattr(self, func_name)(*args)
         return {"val": val}
-
-    def create_initial_metadata(self):
-        mdata = {"datetime": datetime.datetime.today(),
-                 "updated": datetime.datetime.today(),
-                 "tags": "",
-                 "notes": ""}
-        return mdata
 
     @task_worthy
     def get_column_data(self, data):
@@ -574,6 +622,50 @@ class mainWindow(QWorker):
         return result
 
     @task_worthy
+    def get_document_data(self, data):
+        self.debug_log("entering get_document_data")
+        doc_name = data["document_name"]
+        return self.doc_dict[doc_name].data_rows_int_keys
+
+    @task_worthy
+    def get_document_data_as_list(self, data):
+        self.debug_log("entering get_document_data_as_list")
+        doc_name = data["document_name"]
+        data_list = self.doc_dict[doc_name].all_sorted_data_rows
+        return {"data_list": data_list}
+
+    @task_worthy
+    def get_column_names(self, data):
+        self.debug_log("entering get_column_names")
+        doc_name = data["document_name"]
+        header_list = self.doc_dict[doc_name].header_list
+        return {"header_list": header_list}
+
+    @task_worthy
+    def get_number_rows(self, data):
+        self.debug_log("entering get_column_names")
+        doc_name = data["document_name"]
+        nrows = len(self.doc_dict[doc_name].data_rows.keys())
+        return {"number_rows": nrows}
+
+    @task_worthy
+    def get_row(self, data):
+        self.debug_log("entering get_column_names")
+        doc_name = data["document_name"]
+        row_num = data["row_number"]
+        the_row = self.doc_dict[doc_name].all_sorted_data_rows[int(row_num)]
+        return the_row
+
+    @task_worthy
+    def get_cell(self, data):
+        self.debug_log("entering get_column_names")
+        doc_name = data["document_name"]
+        row_num = data["row_number"]
+        column_name = data["column_name"]
+        the_cell = self.doc_dict[doc_name].all_sorted_data_rows[int(row_num)][column_name]
+        return {"the_cell": the_cell}
+
+    @task_worthy
     def get_column_data_for_doc(self, data):  # todo this is used only from get_func I think
         self.debug_log("entering get_column_data_for_doc in main.py")
         column_header = data["column_name"]
@@ -585,72 +677,7 @@ class mainWindow(QWorker):
         self.debug_log("leaving get_column_data_for_doc in main.py")
         return result
 
-    def get_matching_rows(self, filter_function, document_name):
-        result = []
-        if document_name is not None:
-            for r in self.doc_dict[document_name].sorted_data_rows:
-                if filter_function(r):
-                    result.append(r)
-        else:
-            for doc in self.doc_dict.keys():
-                for r in self.doc_dict[doc].sorted_data_rows:
-                    if filter_function(r):
-                        result.append(r)
-        return result
-
-    def unfilter_all_rows(self):
-        for doc in self.doc_dict.values():
-            doc.current_data_rows = doc.data_rows
-            doc.configure_for_current_data()
-        self.refill_table()
-
-    def refill_table(self):
-        doc = self.doc_dict[self.visible_doc_name]
-        data_object = {"data_rows": doc.displayed_data_rows, "doc_name": self.visible_doc_name,
-                       "background_colors": doc.displayed_background_colors,
-                       "is_first_chunk": doc.is_first_chunk, "is_last_chunk": doc.is_last_chunk}
-        self.emit_table_message("refill_table", data_object)
-
-    # todo this and similar called form get_func
-    def display_matching_rows(self, filter_function, document_name=None):
-        if document_name is not None:
-            doc = self.doc_dict[document_name]
-            doc.current_data_rows = {}
-            for (key, val) in doc.data_rows.items():
-                if filter_function(val):
-                    doc.current_data_rows[key] = val
-            doc.configure_for_current_data()
-            self.refill_table()
-        else:
-            for doc in self.doc_dict.values():
-                doc.current_data_rows = {}
-                for (key, val) in doc.data_rows.items():
-                    if filter_function(val):
-                        doc.current_data_rows[key] = val
-                doc.configure_for_current_data()
-            self.refill_table()
-        return
-
-    def apply_to_rows(self, func, document_name=None):
-        if document_name is not None:
-            i = 0
-            for r in self.doc_dict[document_name].sorted_data_rows:
-                new_r = func(r)
-                for (key, val) in new_r.items():
-                    # self.doc_dict[document_name].data_rows[i][key] = val
-                    self._set_cell_content(document_name, i, key, val, cellchange=False)
-                i += 1
-        else:
-            for doc in self.doc_dict.keys():
-                i = 0
-                for r in self.doc_dict[doc].sorted_data_rows:
-                    new_r = func(r)
-                    for (key, val) in new_r.itesm():
-                        # self.doc_dict[document_name].data_rows[i][key] = val
-                        self._set_cell_content(doc, i, key, val, cellchange=False)
-                    i += 1
-        return
-
+    # todo When I change a cell the new values don't seem to save
     @task_worthy
     def CellChange(self, data):
         self._set_row_column_data(data["doc_name"], data["id"], data["column_header"], data["new_content"])
@@ -669,15 +696,15 @@ class mainWindow(QWorker):
         self.print_to_console(data["print_string"], force_open=True)
         return None
 
-    # todo change these to only accept events from certain places
     @task_worthy
     def get_property(self, data_dict):
+        self.debug_log("Entering get_property on main")
         try:
             prop_name = data_dict["property"]
             val = getattr(self, prop_name)
             return {"success": True, "val": val}
         except:
-            self.handle_exception("Error exporting table as collection.")
+            self.handle_exception()
             return {"success": False}
 
     @task_worthy
@@ -849,7 +876,11 @@ class mainWindow(QWorker):
 
     @task_worthy
     def CreateColumn(self, data):
-        self.add_blank_column(data["column_name"])
+        column_name = data["column_name"]
+        for doc in self.doc_dict.values():
+            doc.header_list.append(column_name)
+            for r in doc.data_rows.values():
+                r[column_name] = ""
         form_info = {"current_header_list": self.current_header_list,
                      "pipe_dict": self._pipe_dict,
                      "doc_names": self.doc_names,
@@ -865,17 +896,22 @@ class mainWindow(QWorker):
 
     @task_worthy
     def FilterTable(self, data):
-        self.filter_table_rows(data["text_to_find"])
+        txt = data["text_to_find"]
+        self.display_matching_rows(lambda r: self.txt_in_dict(txt, r))
+        self.highlight_table_text(txt)
         return None
 
     @task_worthy
     def DehighlightTable(self, data):
-        self.dehighlight_all_table_text()
+        self.emit_table_message("dehiglightAllCells")
         return None
 
     @task_worthy
     def UnfilterTable(self, data):
-        self.unfilter_all_rows()
+        for doc in self.doc_dict.values():
+            doc.current_data_rows = doc.data_rows
+            doc.configure_for_current_data()
+        self.refill_table()
         return None
 
     @task_worthy
@@ -928,6 +964,62 @@ class mainWindow(QWorker):
         self.recreate_errors = []
         return None
 
+    # called view get_func
+    # todo this and similar called form get_func
+
+    def get_matching_rows(self, filter_function, document_name):
+        result = []
+        if document_name is not None:
+            for r in self.doc_dict[document_name].sorted_data_rows:
+                if filter_function(r):
+                    result.append(r)
+        else:
+            for doc in self.doc_dict.keys():
+                for r in self.doc_dict[doc].sorted_data_rows:
+                    if filter_function(r):
+                        result.append(r)
+        return result
+
+    def display_matching_rows(self, filter_function, document_name=None):
+        if document_name is not None:
+            doc = self.doc_dict[document_name]
+            doc.current_data_rows = {}
+            for (key, val) in doc.data_rows.items():
+                if filter_function(val):
+                    doc.current_data_rows[key] = val
+            doc.configure_for_current_data()
+            self.refill_table()
+        else:
+            for doc in self.doc_dict.values():
+                doc.current_data_rows = {}
+                for (key, val) in doc.data_rows.items():
+                    if filter_function(val):
+                        doc.current_data_rows[key] = val
+                doc.configure_for_current_data()
+            self.refill_table()
+        return
+
+    def apply_to_rows(self, func, document_name=None):
+        if document_name is not None:
+            i = 0
+            for r in self.doc_dict[document_name].sorted_data_rows:
+                new_r = func(r)
+                for (key, val) in new_r.items():
+                    # self.doc_dict[document_name].data_rows[i][key] = val
+                    self._set_cell_content(document_name, i, key, val, cellchange=False)
+                i += 1
+        else:
+            for doc in self.doc_dict.keys():
+                i = 0
+                for r in self.doc_dict[doc].sorted_data_rows:
+                    new_r = func(r)
+                    for (key, val) in new_r.itesm():
+                        # self.doc_dict[document_name].data_rows[i][key] = val
+                        self._set_cell_content(doc, i, key, val, cellchange=False)
+                    i += 1
+        return
+
+    # _set_cell_content is called from several places
     def _set_cell_content(self, doc_name, the_id, column_header, new_content, cellchange=True):
         doc = self.doc_dict[doc_name]
         the_row = doc.data_rows[str(the_id)]
@@ -961,55 +1053,3 @@ class mainWindow(QWorker):
                         "color": color}
                 self.emit_table_message("setCellBackground", data)
 
-    @property
-    def current_header_list(self):
-        dinfo = self.doc_dict[self.visible_doc_name]
-        return dinfo.header_list
-
-    def highlight_table_text(self, txt):
-        row_index = 0
-        dinfo = self.doc_dict[self.visible_doc_name]
-        for the_row in dinfo.displayed_data_rows:
-            for cheader in dinfo.header_list:
-                cdata = the_row[cheader]
-                if cdata is None:
-                    continue
-                if str(txt).lower() in str(cdata).lower():
-                    self.emit_table_message("highlightTxtInCell",
-                                            {"row_index": row_index, "column_header": cheader, "text_to_find": txt})
-            row_index += 1
-
-    @staticmethod
-    def txt_in_dict(txt, d):
-        for val in d.values():
-            if str(txt).lower() in str(val).lower():
-                return True
-        return False
-
-    def filter_table_rows(self, txt):
-        self.display_matching_rows(lambda r: self.txt_in_dict(txt, r))
-        self.highlight_table_text(txt)
-
-    def dehighlight_all_table_text(self):
-        self.emit_table_message("dehiglightAllCells")
-
-    def _build_doc_dict(self):
-        result = {}
-        self.debug_log("building doc_dict with collection: " + self.collection_name)
-        try:
-            the_collection = self.db[self.collection_name]
-            for f in the_collection.find():
-                if str(f["name"]) == "__metadata__":
-                    continue
-                if "header_list" in f:
-                    # Note conversion of unicode filenames to strings
-                    result[str(f["name"])] = docInfo(str(f["name"]), f["data_rows"], f["header_list"])
-                else:
-                    result[str(f["name"])] = docInfo(str(f["name"]), f["data_rows"], [])
-        except:
-            return
-        return result
-
-    def _set_row_column_data(self, doc_name, the_id, column_header, new_content):
-        _ = self.doc_dict[doc_name].data_rows[str(the_id)][column_header] = new_content
-        return

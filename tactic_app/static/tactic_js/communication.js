@@ -17,7 +17,7 @@ function postWithCallback(dest_id, task_type, task_data, callback_func){
         "response_data": null,
         "main_id": main_id
     };
-    if (typeof callback_func != "undefined") {
+    if ((typeof callback_func != "undefined") && (callback_func != null)) {
         var unique_id = guid();
         callbacks[unique_id] = callback_func;
         task_packet.callback_id = unique_id

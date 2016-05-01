@@ -240,6 +240,7 @@ function createColumn() {
         }
         // Then rebuild the table
         tableObject.build_table();
+        get_column(column_name).text(" ");  // This seems to be necessary for the column to be editable
 
         // Then change the current data_dict back on the server
         var data_dict = {"column_name": column_name};

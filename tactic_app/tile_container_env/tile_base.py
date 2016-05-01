@@ -691,23 +691,29 @@ class TileBase(QWorker):
         return self.get_main_property("visible_doc_name")
 
     def get_document_data(self, document_name):
-        return self.get_main_property("doc_dict")[document_name].data_rows_int_keys
+        return self.post_and_wait(self.main_id, "get_document_data", {"document_name": document_name})
 
     def get_document_data_as_list(self, document_name):
-        return self.get_main_property("doc_dict")[document_name].all_sorted_data_rows
+        result = self.post_and_wait(self.main_id, "get_document_data_as_list", {"document_name": document_name})
+        return result["data_list"]
 
     def get_column_names(self, document_name):
-        return self.get_main_property("doc_dict")[document_name].header_list
+        result = self.post_and_wait(self.main_id, "get_column_names", {"document_name": document_name})
+        return result["header_list"]
 
     def get_number_rows(self, document_name):
-        return len(self.get_main_property("doc_dict")[document_name].data_rows.keys())
+        result = self.post_and_wait(self.main_id, "get_number_rows", {"document_name": document_name})
+        return result["number_rows"]
 
     def get_row(self, document_name, row_number):
-        return self.get_main_property("doc_dict")[document_name].all_sorted_data_rows[row_number]
+        data = {"document_name": document_name, "row_number": row_number}
+        result = self.post_and_wait(self.main_id, "get_row", data)
+        return result
 
     def get_cell(self, document_name, row_number, column_name):
-        return self.get_main_property("doc_dict")[document_name].all_sorted_data_rows[int(row_number)][
-            column_name]
+        data = {"document_name": document_name, "row_number": row_number, "column_name": column_name}
+        result = self.post_and_wait(self.main_id, "get_cell", data)
+        return result["the_cell"]
 
     def get_column_data(self, column_name, document_name=None):
         self.debug_log("entering get_column_data")
@@ -723,7 +729,8 @@ class TileBase(QWorker):
     def get_column_data_dict(self, column_name):
         result = {}
         for doc_name in self.get_document_names():
-            result[doc_name] = self.perform_main_function("get_column_data_for_doc", [column_name, doc_name])
+            task_data = {"column_name": column_name, "doc_name": doc_name}
+            result[doc_name] = self.post_and_wait(self.main_id, "get_column_data_for_doc", task_data)
         return result
 
     def set_cell(self, document_name, row_number, column_name, text, cellchange=True):
@@ -746,9 +753,11 @@ class TileBase(QWorker):
 
     # Filtering and iteration
 
+    # todo I think this might not work anymore
     def get_matching_rows(self, filter_function, document_name=None):
         return self.perform_main_function("get_matching_rows", [filter_function, document_name])
 
+    # todo this might not work
     def display_matching_rows(self, filter_function, document_name=None):
         self.perform_main_function("display_matching_rows", [filter_function, document_name])
         return
@@ -760,7 +769,7 @@ class TileBase(QWorker):
         self.distribute_event("SearchTable", {"text_to_find": txt})
 
     def display_all_rows(self):
-        self.perform_main_function("unfilter_all_rows", [])
+        self.post_task(self.main_id, "UnfilterTable")
         return
 
     def apply_to_rows(self, func, document_name=None):
