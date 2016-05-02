@@ -312,12 +312,13 @@ class mainWindow(QWorker):
         return
 
     def recreate_from_save(self, project_collection_name, project_name):
+        self.debug_log("entering recreate_from_save")
         save_dict = self.db[project_collection_name].find_one({"project_name": project_name})
         project_dict = cPickle.loads(self.fs.get(save_dict["file_id"]).read().decode("utf-8", "ignore").encode("ascii"))
         project_dict["metadata"] = save_dict["metadata"]
         self.mdata = save_dict["metadata"]
         for (attr, attr_val) in project_dict.items():
-            if attr is not "tile_instances":
+            if str(attr) != "tile_instances":
                 try:
                     if type(attr_val) == dict and ("my_class_for_recreate" in attr_val):
                         cls = getattr(sys.modules[__name__], attr_val["my_class_for_recreate"])
@@ -392,7 +393,6 @@ class mainWindow(QWorker):
                      "list_names": list_names}
         for tile_id, tile_result in tile_results.items():
             tile_result["tile_html"] = self.post_and_wait(tile_id, "render_tile", form_info)["tile_html"]
-        # todo capture errors in this method
         return tile_results
 
     @task_worthy
@@ -677,7 +677,7 @@ class mainWindow(QWorker):
         return {"the_cell": the_cell}
 
     @task_worthy
-    def get_column_data_for_doc(self, data):  # todo this is used only from get_func I think
+    def get_column_data_for_doc(self, data):
         self.debug_log("entering get_column_data_for_doc in main.py")
         column_header = data["column_name"]
         doc_name = data["doc_name"]
@@ -688,7 +688,6 @@ class mainWindow(QWorker):
         self.debug_log("leaving get_column_data_for_doc in main.py")
         return result
 
-    # todo When I change a cell the new values don't seem to save
     @task_worthy
     def CellChange(self, data):
         self.debug_log("Entering CellChange in main.")
@@ -977,7 +976,6 @@ class mainWindow(QWorker):
         return None
 
     # called view get_func
-    # todo this and similar called form get_func
 
     def get_matching_rows(self, filter_function, document_name):
         result = []

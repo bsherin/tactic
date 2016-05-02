@@ -753,11 +753,23 @@ class TileBase(QWorker):
 
     # Filtering and iteration
 
-    # todo I think this might not work anymore
+    # TODO: This hasn't been tested
     def get_matching_rows(self, filter_function, document_name=None):
-        return self.perform_main_function("get_matching_rows", [filter_function, document_name])
+        result = []
+        if document_name is not None:
+            data_list = self.get_document_data_as_list(document_name)
+            for r in data_list:
+                if filter_function(r):
+                    result.append(r)
+        else:
+            for document_name in self.get_document_names():
+                data_list = self.get_document_data_as_list(document_name)
+                for r in data_list:
+                    if filter_function(r):
+                        result.append(r)
+        return result
 
-    # todo this might not work
+    # fixme This doesn't work because of the need to pass the filter function
     def display_matching_rows(self, filter_function, document_name=None):
         self.perform_main_function("display_matching_rows", [filter_function, document_name])
         return
