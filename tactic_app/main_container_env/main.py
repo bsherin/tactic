@@ -28,8 +28,8 @@ STEP_SIZE = 100
 class docInfo:
     def __init__(self, name, data_rows, header_list=None, cell_backgrounds=None):
         self.name = name
-        self.data_rows = data_rows  # All the data rows in the doc
-        self.current_data_rows = data_rows  # The current filtered set of data rows
+        self.data_rows = copy.deepcopy(data_rows)  # All the data rows in the doc
+        self.current_data_rows = self.data_rows  # The current filtered set of data rows
         self.header_list = header_list
         self.table_spec = {}
         self.start_of_current_chunk = None
@@ -322,6 +322,17 @@ class mainWindow(QWorker):
                     if type(attr_val) == dict and ("my_class_for_recreate" in attr_val):
                         cls = getattr(sys.modules[__name__], attr_val["my_class_for_recreate"])
                         setattr(self, attr, cls.recreate_from_save(attr_val))
+                    elif (type(attr_val) == dict) and (len(attr_val) > 0) and \
+                            ("my_class_for_recreate" in attr_val.values()[0]):
+                        cls = getattr(sys.modules[__name__], attr_val.values()[0]["my_class_for_recreate"])
+                        res = {}
+                        for (key, val) in attr_val.items():
+                            tinstance = cls.recreate_from_save(val)
+                            if tinstance is not None:
+                                res[key] = tinstance
+                            else:
+                                error_messages.append("error creating {}".format(key))
+                        setattr(self, attr, res)
 
                     else:
                         setattr(self, attr, attr_val)
@@ -336,7 +347,7 @@ class mainWindow(QWorker):
         for old_tile_id, tile_save_dict in project_dict["tile_instances"].items():
             tile_info_dict[old_tile_id] = tile_save_dict["tile_type"]
         self.project_dict = project_dict
-        self.doc_dict = self._build_doc_dict()
+        # self.doc_dict = self._build_doc_dict()
         self.visible_doc_name = self.doc_dict.keys()[0]  # This is necessary for recreating the tiles
         return tile_info_dict, project_dict["loaded_modules"]
 
@@ -468,7 +479,7 @@ class mainWindow(QWorker):
         return result
 
     def _set_row_column_data(self, doc_name, the_id, column_header, new_content):
-        _ = self.doc_dict[doc_name].data_rows[str(the_id)][column_header] = new_content
+        self.doc_dict[doc_name].data_rows[str(the_id)][column_header] = new_content
         return
 
     def print_to_console(self, message_string, force_open=False):
@@ -680,6 +691,7 @@ class mainWindow(QWorker):
     # todo When I change a cell the new values don't seem to save
     @task_worthy
     def CellChange(self, data):
+        self.debug_log("Entering CellChange in main.")
         self._set_row_column_data(data["doc_name"], data["id"], data["column_header"], data["new_content"])
         self._change_list.append(data["id"])
         return None
