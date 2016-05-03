@@ -340,7 +340,9 @@ class CollectionManager(ResourceManager):
                      "mongo_uri": mongo_uri,
                      "base_figure_url": url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1]}
 
-        send_direct_request_to_container(main_id, "initialize_mainwindow", data_dict)
+        result = send_direct_request_to_container(main_id, "initialize_mainwindow", data_dict).json()
+        if not result["success"]:
+            return result["message_string"]
         short_collection_name = re.sub("^.*?\.data_collection\.", "", collection_name)
 
         the_collection = db[cname]

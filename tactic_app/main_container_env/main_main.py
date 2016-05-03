@@ -17,25 +17,40 @@ def hello():
     return 'This is mainwindow communicating'
 
 
+def handle_exception(ex, special_string=None):
+    if special_string is None:
+        template = "An exception of type {0} occured. Arguments:\n{1!r}"
+    else:
+        template = special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}"
+    error_string = template.format(type(ex).__name__, ex.args)
+    return jsonify({"success": False, "message_string": error_string})
+
+
 @app.route('/initialize_mainwindow', methods=['POST'])
 def initialize_mainwindow():
-    app.logger.debug("entering intialize mainwindow")
-    global mwindow
-    data_dict = request.json
-    mwindow = mainWindow(app, data_dict)
-    mwindow.start()
-    return jsonify({"success": True})
+    try:
+        app.logger.debug("entering intialize mainwindow")
+        global mwindow
+        data_dict = request.json
+        mwindow = mainWindow(app, data_dict)
+        mwindow.start()
+        return jsonify({"success": True})
+    except Exception as Ex:
+        return handle_exception(ex, "Error initializing mainwindow")
 
 
 @app.route('/initialize_project_mainwindow', methods=['POST'])
 def initialize_project_mainwindow():
-    app.logger.debug("entering intialize project mainwindow")
-    global mwindow
-    data_dict = request.json
-    mwindow = mainWindow(app, data_dict)
-    mwindow.start()
-    mwindow.post_task(data_dict["main_id"], "do_full_recreation", data_dict)
-    return jsonify({"success": True})
+    try:
+        app.logger.debug("entering intialize project mainwindow")
+        global mwindow
+        data_dict = request.json
+        mwindow = mainWindow(app, data_dict)
+        mwindow.start()
+        mwindow.post_task(data_dict["main_id"], "do_full_recreation", data_dict)
+        return jsonify({"success": True})
+    except Exception as Ex:
+        return handle_exception(ex, "Error initializing project mainwindow")
 
 
 if __name__ == "__main__":

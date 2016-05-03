@@ -27,6 +27,8 @@ def get_all_default_tiles():
                 if category not in tile_classes:
                     tile_classes[category] = {}
                 tile_classes[category][res_dict["tile_name"]] = module_code
+            else:
+                print "Error loading tile " + res_dic["message_string"]
 
 
 def get_tile_code(tile_type):

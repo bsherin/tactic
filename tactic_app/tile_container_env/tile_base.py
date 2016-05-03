@@ -785,7 +785,7 @@ class TileBase(QWorker):
         return
 
     def apply_to_rows(self, func, document_name=None):
-        self.perform_main_function("apply_to_rows" [func, document_name])
+        self.perform_main_function("apply_to_rows", [func, document_name])
         return
 
     # Other
@@ -804,8 +804,11 @@ class TileBase(QWorker):
     def get_selected_text(self):
         return self.get_main_property("selected_text")
 
-    def handle_exception(self, ex):
-        template = "An exception of type {0} occured. Arguments:\n{1!r}"
+    def handle_exception(self, ex, special_string=None):
+        if special_string is None:
+            template = "An exception of type {0} occured. Arguments:\n{1!r}"
+        else:
+            template = special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}"
         error_string = template.format(type(ex).__name__, ex.args)
         self.dm(error_string)
         return

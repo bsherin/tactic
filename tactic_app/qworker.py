@@ -110,9 +110,13 @@ class QWorker(gevent.Greenlet):
             task_packet = self.get_next_task()
             if "empty" not in task_packet:
                 if task_packet["response_data"] is not None:
-                    func = callback_dict[task_packet["callback_id"]]
-                    del callback_dict[task_packet["callback_id"]]
-                    func(task_packet["response_data"])
+                    try:
+                        func = callback_dict[task_packet["callback_id"]]
+                        del callback_dict[task_packet["callback_id"]]
+                        func(task_packet["response_data"])
+                    except Exception as ex:
+                        special_string = "Error handling callback for task of type {}".format(task_packet["task_type"])
+                        self.handle_exception(ex, special_string)
                 else:
                     self.handle_event(task_packet)
                 gevent.sleep(SHORT_SLEEP_PERIOD)
@@ -122,7 +126,12 @@ class QWorker(gevent.Greenlet):
     def handle_event(self, task_packet):
         if hasattr(self, task_packet["task_type"]):
             if task_packet["task_type"] in task_worthy_methods:
-                response_data = getattr(self, task_packet["task_type"])(task_packet["task_data"])
+                try:
+                    response_data = getattr(self, task_packet["task_type"])(task_packet["task_data"])
+                except Exception as ex:
+                    special_string = "Error handling task of type {}".format(task_packet["task_type"])
+                    response_data = "__ERROR__"
+                    self.handle_exception(ex, special_string)
                 if task_packet["callback_id"] is not None:
                     task_packet["response_data"] = response_data
                     self.submit_response(task_packet)

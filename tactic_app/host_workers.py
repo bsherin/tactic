@@ -47,8 +47,10 @@ class HostWorker(QWorker):
                      "base_figure_url": bf_url,
                      "use_ssl": use_ssl}
 
-        send_request_to_container(caddress, "initialize_project_mainwindow", data_dict)
+        result = send_request_to_container(caddress, "initialize_project_mainwindow", data_dict).json()
         socketio.emit('stop-spinner', {}, namespace='/user_manage', room=user_obj.get_id())
+        if not result["success"]:
+            raise Exception(result["message_string"])
         return None
 
     @task_worthy
@@ -142,6 +144,17 @@ class HostWorker(QWorker):
         return {"success": True}
 
     @task_worthy
+    def open_error_window(self, data):
+        from tactic_app import socketio
+        unique_id = str(uuid.uuid4())
+        template_data = copy.copy(data)
+        template_data["template_name"] = "error_window_template.html"
+        template_data["error_string"] = str(template_data["error_string"])
+        self.temp_dict[unique_id] = template_data
+        socketio.emit("window-open", {"the_id": unique_id}, namespace='/user_manage', room=data["user_manage_id"])
+        return {"success": True}
+
+    @task_worthy
     def open_log_window(self, data):
         from tactic_app import socketio
         unique_id = str(uuid.uuid4())
@@ -189,6 +202,15 @@ class HostWorker(QWorker):
         return ddict
 
 
+    def handle_exception(self, ex, special_string=None):
+        if special_string is None:
+            template = "An exception of type {0} occured. Arguments:\n{1!r}"
+        else:
+            template = special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}"
+        error_string = template.format(type(ex).__name__, ex.args)
+        print error_string
+        return
+
 class ClientWorker(QWorker):
     def __init__(self, app, megaplex_address, socketio):
         QWorker.__init__(self, app, megaplex_address, "client")
@@ -196,6 +218,15 @@ class ClientWorker(QWorker):
 
     def forward_client_post(self, task_packet):
         send_request_to_container(self.megaplex_address, "post_task", task_packet)
+        return
+
+    def handle_exception(self, ex, special_string=None):
+        if special_string is None:
+            template = "An exception of type {0} occured. Arguments:\n{1!r}"
+        else:
+            template = special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}"
+        error_string = template.format(type(ex).__name__, ex.args)
+        print error_string
         return
 
     def _run(self):

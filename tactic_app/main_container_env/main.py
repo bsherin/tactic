@@ -238,20 +238,15 @@ class mainWindow(QWorker):
         self.debug_log("Entering distribute event with event_name: " + event_name)
         if data_dict is None:
             data_dict = {}
-        try:
-            if tile_id is not None:
+        if tile_id is not None:
+            self.ask_tile(tile_id, event_name, data_dict)
+        else:
+            for tile_id in self.tile_instances.keys():
                 self.ask_tile(tile_id, event_name, data_dict)
-            else:
-                for tile_id in self.tile_instances.keys():
-                    self.ask_tile(tile_id, event_name, data_dict)
-            if event_name in self.update_events:
-                self.post_task(self.my_id, event_name, data_dict)
-            self.debug_log("successfully leaving distribute_event in main with with event_name: " + event_name)
-            return True
-        except:
-            self.debug("Unsuccessfully leaving distribute_event in main with with event_name: " + event_name)
-            self.handle_exception("Error distributing event " + event_name)
-            return False
+        if event_name in self.update_events:
+            self.post_task(self.my_id, event_name, data_dict)
+        self.debug_log("successfully leaving distribute_event in main with with event_name: " + event_name)
+        return True
 
     # Save and load-related methods
 
@@ -279,36 +274,44 @@ class mainWindow(QWorker):
 
     @task_worthy
     def do_full_recreation(self, data_dict):
-        tile_info_dict, loaded_modules = self.recreate_from_save(data_dict["project_collection_name"],
-                                                                 data_dict["project_name"])
-        self.post_and_wait("host", "load_modules", {"loaded_modules": loaded_modules, "user_id": data_dict["user_id"]})
-        doc_names = [str(doc_name) for doc_name in self.doc_names]
-        tile_containers = self.post_and_wait("host", "get_empty_tile_containers", {"number": len(tile_info_dict.keys())})
-        tile_code_dict = self.post_and_wait("host", "get_tile_code", tile_info_dict)
-        new_tile_info = {}
-        new_tile_keys = tile_containers.keys()
-        for i, old_tile_id in enumerate(tile_info_dict.keys()):
-            new_id = new_tile_keys[i]
-            new_address = tile_containers[new_tile_keys[i]]
-            new_tile_info[old_tile_id] = {"new_tile_id": new_id,
-                                          "tile_container_address": new_address}
-            send_request_to_container(new_address, "load_source", {"tile_code": tile_code_dict[old_tile_id],
-                                                                   "megaplex_address": self.megaplex_address})
+        try:
+            tile_info_dict, loaded_modules = self.recreate_from_save(data_dict["project_collection_name"],
+                                                                     data_dict["project_name"])
+            self.post_and_wait("host", "load_modules", {"loaded_modules": loaded_modules, "user_id": data_dict["user_id"]})
+            doc_names = [str(doc_name) for doc_name in self.doc_names]
+            tile_containers = self.post_and_wait("host", "get_empty_tile_containers", {"number": len(tile_info_dict.keys())})
+            tile_code_dict = self.post_and_wait("host", "get_tile_code", tile_info_dict)
+            new_tile_info = {}
+            new_tile_keys = tile_containers.keys()
+            for i, old_tile_id in enumerate(tile_info_dict.keys()):
+                new_id = new_tile_keys[i]
+                new_address = tile_containers[new_tile_keys[i]]
+                new_tile_info[old_tile_id] = {"new_tile_id": new_id,
+                                              "tile_container_address": new_address}
+                result = send_request_to_container(new_address, "load_source",
+                                                   {"tile_code": tile_code_dict[old_tile_id],
+                                                    "megaplex_address": self.megaplex_address}).json()
+                if not result["success"]:
+                    raise Exception(result["message_string"])
+            self.tile_save_results = self.recreate_project_tiles(data_dict["list_names"], new_tile_info)
+            template_data = {"collection_name": self.collection_name,
+                             "project_name": self.project_name,
+                             "window_title": self.project_name,
+                             "main_id": self.my_id,
+                             "doc_names": doc_names,
+                             "use_ssl": str(data_dict["use_ssl"]),
+                             "console_html": self.console_html,
+                             "short_collection_name": self.short_collection_name,
+                             "new_tile_info": new_tile_info}
 
-        self.tile_save_results = self.recreate_project_tiles(data_dict["list_names"], new_tile_info)
-        template_data = {"collection_name": self.collection_name,
-                         "project_name": self.project_name,
-                         "window_title": self.project_name,
-                         "main_id": self.my_id,
-                         "doc_names": doc_names,
-                         "use_ssl": str(data_dict["use_ssl"]),
-                         "console_html": self.console_html,
-                         "short_collection_name": self.short_collection_name,
-                         "new_tile_info": new_tile_info}
-
-        self.post_task("host", "open_project_window", {"user_manage_id": data_dict["user_manage_id"],
-                                                       "template_data": template_data,
-                                                       "message": "window-open"})
+            self.post_task("host", "open_project_window", {"user_manage_id": data_dict["user_manage_id"],
+                                                           "template_data": template_data,
+                                                           "message": "window-open"})
+        except Exception as ex:
+            template = "An exception of type {0} occured. Arguments:\n{1!r}"
+            error_string = template.format(type(ex).__name__, ex.args)
+            self.post_task("host", "open_error_window", {"user_manage_id": data_dict["user_manage_id"],
+                                                         "error_string": error_string})
         return
 
     def recreate_from_save(self, project_collection_name, project_name):
@@ -365,6 +368,8 @@ class mainWindow(QWorker):
             tile_save_dict["main_id"] = self.my_id
             tile_save_dict["new_base_figure_url"] = self.base_figure_url.replace("tile_id", new_tile_id)
             tile_result = send_request_to_container(new_tile_address, "recreate_from_save", tile_save_dict).json()
+            if not tile_result["success"]:
+                raise Exception(tile_result["message_string"])
             tile_results[new_tile_id] = tile_result
 
         for tile in self.tile_sort_list:
@@ -421,8 +426,8 @@ class mainWindow(QWorker):
                            "success": True,
                            "message_string": "Project Successfully Saved"}
 
-        except:
-            error_string = self.handle_exception("Error saving new project", print_to_console=False)
+        except Exception as ex:
+            error_string = self.handle_exception(ex, "Error saving new project", print_to_console=False)
             return_data = {"success": False, "message_string": error_string}
         return return_data
 
@@ -454,8 +459,8 @@ class mainWindow(QWorker):
                            "success": True,
                            "message": "Project Successfully Saved"}
 
-        except:
-            error_string = self.handle_exception("Error saving project", print_to_console=False)
+        except Exception as ex:
+            error_string = self.handle_exception(ex, "Error saving project", print_to_console=False)
             return_data = {"success": False, "message": error_string}
         return return_data
 
@@ -547,14 +552,16 @@ class mainWindow(QWorker):
             pipe_list += tile_entry.keys()
         return pipe_list
 
-    def handle_exception(self, unique_message=None, print_to_console=True):
-            error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-            if unique_message is not None:
-                error_string = unique_message + " " + error_string
-                self.debug_log(error_string)
-            if print_to_console:
-                self.print_to_console(error_string, force_open=True)
-            return error_string
+    def handle_exception(self, ex, special_string=None, print_to_console=True):
+        if special_string is None:
+            template = "An exception of type {0} occured. Arguments:\n{1!r}"
+        else:
+            template = special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}"
+        error_string = template.format(type(ex).__name__, ex.args)
+        self.debug_log(error_string)
+        if print_to_console:
+            self.print_to_console(error_string, force_open=True)
+        return
 
     def highlight_table_text(self, txt):
         row_index = 0
@@ -593,9 +600,15 @@ class mainWindow(QWorker):
                      "list_names": data_dict["list_names"]}
         # data_dict["form_info"] = form_info
         tile_address = data_dict["tile_address"]
-        send_request_to_container(tile_address, "load_source", data_dict).json()
-        instantiate_result = send_request_to_container(tile_address, "instantiate_tile_class", data_dict)
-        exports = instantiate_result.json()["exports"]
+        result = send_request_to_container(tile_address, "load_source", data_dict).json()
+        if not result["success"]:
+            raise Exception(result["message_string"])
+
+        instantiate_result = send_request_to_container(tile_address, "instantiate_tile_class", data_dict).json()
+        if not instantiate_result["success"]:
+            raise Exception(instantiate_result["message_string"])
+
+        exports = instantiate_result["exports"]
         if len(exports) > 0:
             if tile_container_id not in self._pipe_dict:
                 self._pipe_dict[tile_container_id] = {}
@@ -710,28 +723,20 @@ class mainWindow(QWorker):
     @task_worthy
     def get_property(self, data_dict):
         self.debug_log("Entering get_property on main")
-        try:
-            prop_name = data_dict["property"]
-            val = getattr(self, prop_name)
-            return {"success": True, "val": val}
-        except:
-            self.handle_exception()
-            return {"success": False}
+        prop_name = data_dict["property"]
+        val = getattr(self, prop_name)
+        return {"success": True, "val": val}
 
     @task_worthy
     def export_data(self, data):
-        try:
-            mdata = self.create_initial_metadata()
-            mdata["name"] = "__metadata__"
-            full_collection_name = data["full_collection_name"]
-            self.db[full_collection_name].insert_one(mdata)
-            for docinfo in self.doc_dict.values():
-                self.db[full_collection_name].insert_one({"name": docinfo.name,
-                                                          "data_rows": docinfo.data_rows,
-                                                          "header_list": docinfo.header_list})
-        except:
-            self.handle_exception("Error exporting data")
-            return {"success": False}
+        mdata = self.create_initial_metadata()
+        mdata["name"] = "__metadata__"
+        full_collection_name = data["full_collection_name"]
+        self.db[full_collection_name].insert_one(mdata)
+        for docinfo in self.doc_dict.values():
+            self.db[full_collection_name].insert_one({"name": docinfo.name,
+                                                      "data_rows": docinfo.data_rows,
+                                                      "header_list": docinfo.header_list})
         return {"success": True}
 
     @task_worthy
@@ -794,31 +799,30 @@ class mainWindow(QWorker):
 
     @task_worthy
     def reload_tile(self, ddict):
-        try:
-            self.debug_log("entering reload_tile")
-            tile_id = ddict["tile_id"]
-            tile_type = self.get_tile_property(tile_id, "tile_type")
-            module_code = self.post_and_wait("host", "get_module_code", {"tile_type": tile_type})["module_code"]
-            list_names = self.post_and_wait("host", "get_list_names", {"user_id": self.user_id})["list_names"]
-            reload_dict = copy.copy(self.get_tile_property(tile_id, "current_reload_attrs"))
-            saved_options = copy.copy(self.get_tile_property(tile_id, "current_options"))
-            reload_dict.update(saved_options)
-            send_request_to_container(self.tile_instances[tile_id], "load_source",
-                                      {"tile_code": module_code, "megaplex_address": self.megaplex_address})
-            form_info = {"current_header_list": self.current_header_list,
-                         "pipe_dict": self._pipe_dict,
-                         "doc_names": self.doc_names,
-                         "list_names": list_names}
-            reload_dict["form_info"] = form_info
-            reload_dict["main_id"] = self.my_id
-            result = send_request_to_container(self.tile_instances[tile_id], "reinstantiate_tile", reload_dict).json()
+        self.debug_log("entering reload_tile")
+        tile_id = ddict["tile_id"]
+        tile_type = self.get_tile_property(tile_id, "tile_type")
+        module_code = self.post_and_wait("host", "get_module_code", {"tile_type": tile_type})["module_code"]
+        list_names = self.post_and_wait("host", "get_list_names", {"user_id": self.user_id})["list_names"]
+        reload_dict = copy.copy(self.get_tile_property(tile_id, "current_reload_attrs"))
+        saved_options = copy.copy(self.get_tile_property(tile_id, "current_options"))
+        reload_dict.update(saved_options)
+        result = send_request_to_container(self.tile_instances[tile_id], "load_source",
+                                  {"tile_code": module_code, "megaplex_address": self.megaplex_address}).json()
+        if not result["success"]:
+            raise Exception(result["message_string"])
+
+        form_info = {"current_header_list": self.current_header_list,
+                     "pipe_dict": self._pipe_dict,
+                     "doc_names": self.doc_names,
+                     "list_names": list_names}
+        reload_dict["form_info"] = form_info
+        reload_dict["main_id"] = self.my_id
+        result = send_request_to_container(self.tile_instances[tile_id], "reinstantiate_tile", reload_dict).json()
+        if result["success"]:
             return {"success": True, "html": result["form_html"]}
-        except Exception as ex:
-            template = "An exception of type {0} occured. Arguments:\n{1!r}"
-            error_string = template.format(type(ex).__name__, ex.args)
-            self.debug_log("Error reloading tile " + error_string)
-            self.handle_exception("Error reloading tile " + error_string)
-        return {"success": False}
+        else:
+            raise Exception(result["message_string"])
 
     # todo grab_chunk_with_row has not been tested
     @task_worthy
