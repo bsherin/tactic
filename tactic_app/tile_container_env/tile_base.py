@@ -485,6 +485,7 @@ class TileBase(QWorker):
 
     @task_worthy
     def compile_save_dict(self, data):
+        self.debug_log('Entering compile_save_dict in tile_base')
         result = {"my_class_for_recreate": "TileBase"}
         result["binary_attrs"] = []
         for attr in self.save_attrs:

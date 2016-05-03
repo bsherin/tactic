@@ -421,8 +421,12 @@ class mainWindow(QWorker):
             save_dict = {}
             save_dict["metadata"] = self.create_initial_metadata()
             save_dict["project_name"] = project_dict["project_name"]
-            self.debug_log("about to pickl and dump")
-            save_dict["file_id"] = self.fs.put(Binary(cPickle.dumps(project_dict)))
+            self.debug_log("about to pickle")
+            pdict = cPickle.dumps(project_dict)
+            self.debug_log("converting to binary")
+            pdict = Binary(pdict)
+            self.debug_log("putting the data")
+            save_dict["file_id"] = self.fs.put(pdict)
             self.debug_log("pickled and dumped")
             self.mdata = save_dict["metadata"]
             self.debug_log("inserting the save_dict")
@@ -453,7 +457,9 @@ class mainWindow(QWorker):
             project_dict = self.compile_save_dict()
             pname = project_dict["project_name"]
             self.mdata["updated"] = datetime.datetime.today()
+            self.debug_log("about to put project_dict")
             new_file_id = self.fs.put(Binary(cPickle.dumps(project_dict)))
+            self.debug_log("finished the put")
             save_dict = self.db[self.project_collection_name].find_one({"project_name": pname})
             self.fs.delete(save_dict["file_id"])
             save_dict["project_name"] = pname
