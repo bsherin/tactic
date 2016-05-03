@@ -259,9 +259,11 @@ function saveProjectAs() {
                 "tablespec_dict": tablespec_dict,
                 "console_html": $("#console").html()
             };
+            tableObject.startTableSpinner();
             postWithCallback(main_id, "save_new_project", result_dict, save_as_success);
             function save_as_success(data_object) {
                 if (data_object["success"]) {
+                    tableObject.stopTableSpinner();
                     menus["Project"].enable_menu_item("save");
                     tableObject.project_name = data_object["project_name"];
                     //tableObject.set_table_title()
@@ -276,6 +278,7 @@ function saveProjectAs() {
                     postWithCallback("host", "update_project_selector_list", {'user_id': user_id})
                 }
                 else {
+                    tableObject.stopTableSpinner();
                     data_object["message"] = data_object["message_string"]
                     doFlash(data_object)
                 }
@@ -291,15 +294,18 @@ function save_project() {
         "console_html": $("#console").html()
         //"tablespec_dict": tablespec_dict
     };
+    tableObject.startTableSpinner();
     postWithCallback(main_id, "update_project", result_dict, updateSuccess);
     function updateSuccess(data) {
         if (data.success) {
+            tableObject.stopTableSpinner();
             data.alert_type = "alert-success";
             dirty = false;
             data.timeout = 2000;
             doFlash(data)
         }
         else {
+            tableObject.stopTableSpinner();
             data.alert_type = "alert-warning";
             dirty = false;
             doFlash(data)

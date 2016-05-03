@@ -18,6 +18,10 @@ class HostWorker(QWorker):
         self.temp_dict = {}
 
     @task_worthy
+    def stop_user_manage_spinner(self, data):
+        socketio.emit('stop-spinner', {}, namespace='/user_manage', room=data["user_manage_id"])
+
+    @task_worthy
     def main_project(self, data):
         user_id = data["user_id"]
         project_name = data["project_name"]
@@ -48,7 +52,6 @@ class HostWorker(QWorker):
                      "use_ssl": use_ssl}
 
         result = send_request_to_container(caddress, "initialize_project_mainwindow", data_dict).json()
-        socketio.emit('stop-spinner', {}, namespace='/user_manage', room=user_obj.get_id())
         if not result["success"]:
             raise Exception(result["message_string"])
         return None
@@ -63,7 +66,6 @@ class HostWorker(QWorker):
     def get_loaded_user_modules(self, data):
         user_id = data["user_id"]
         user_obj = load_user(user_id)
-
         return {"loaded_modules": shared_dicts.loaded_user_modules[user_obj.username]}
 
     @task_worthy
@@ -141,6 +143,7 @@ class HostWorker(QWorker):
         template_data["doc_names"] = fixed_doc_names
         self.temp_dict[unique_id] = template_data
         socketio.emit("window-open", {"the_id": unique_id}, namespace='/user_manage', room=data["user_manage_id"])
+        socketio.emit('stop-spinner', {}, namespace='/user_manage', room=data["user_manage_id"])
         return {"success": True}
 
     @task_worthy
@@ -152,6 +155,7 @@ class HostWorker(QWorker):
         template_data["error_string"] = str(template_data["error_string"])
         self.temp_dict[unique_id] = template_data
         socketio.emit("window-open", {"the_id": unique_id}, namespace='/user_manage', room=data["user_manage_id"])
+        socketio.emit('stop-spinner', {}, namespace='/user_manage', room=data["user_manage_id"])
         return {"success": True}
 
     @task_worthy

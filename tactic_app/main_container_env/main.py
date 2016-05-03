@@ -412,21 +412,28 @@ class mainWindow(QWorker):
             for (dname, spec) in tspec_dict.items():
                 self.doc_dict[dname].table_spec = spec
 
+            self.debug_log("posting get_loaded_user_modules")
             self.loaded_modules = self.post_and_wait("host", "get_loaded_user_modules", {"user_id": self.user_id})[
                 "loaded_modules"]
+            self.debug_log("got loaded user modules " + str(self.loaded_modules))
             project_dict = self.compile_save_dict()
+            self.debug_log("got compiled save_dict")
             save_dict = {}
             save_dict["metadata"] = self.create_initial_metadata()
             save_dict["project_name"] = project_dict["project_name"]
+            self.debug_log("about to pickl and dump")
             save_dict["file_id"] = self.fs.put(Binary(cPickle.dumps(project_dict)))
+            self.debug_log("pickled and dumped")
             self.mdata = save_dict["metadata"]
-
+            self.debug_log("inserting the save_dict")
             self.db[self.project_collection_name].insert_one(save_dict)
             return_data = {"project_name": data_dict["project_name"],
                            "success": True,
                            "message_string": "Project Successfully Saved"}
+            self.debug_log("ready to return")
 
         except Exception as ex:
+            self.debug_log("got an error in save_new_project")
             error_string = self.handle_exception(ex, "Error saving new project", print_to_console=False)
             return_data = {"success": False, "message_string": error_string}
         return return_data
