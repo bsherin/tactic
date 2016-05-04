@@ -5,11 +5,12 @@ from users import load_user
 import gevent
 from communication_utils import send_request_to_container
 from docker_functions import create_container, get_address, destroy_container
-import shared_dicts
+from tactic_app import shared_dicts
 from tactic_app import app, socketio, mongo_uri, megaplex_address, use_ssl
 from views.user_manage_views import tile_manager, project_manager
 import uuid
 import copy
+import traceback
 
 
 class HostWorker(QWorker):
@@ -75,7 +76,10 @@ class HostWorker(QWorker):
         user_obj = load_user(user_id)
         for module in loaded_modules:
             if module not in shared_dicts.loaded_user_modules[user_obj.username]:
-                tile_manager.load_tile_module(module, return_json=False, user_obj=user_obj)
+                result = tile_manager.load_tile_module(module, return_json=False, user_obj=user_obj)
+                if not result["success"]:
+                    template = "Error loading module {}\n" + result["message"]
+                    raise Exception(template.format(module))
         return {"success": True}
 
     @task_worthy
@@ -95,10 +99,12 @@ class HostWorker(QWorker):
         return cdict
 
     @task_worthy
-    def get_tile_code(self, tile_info_dict):
+    def get_tile_code(self, data_dict):
         result = {}
+        tile_info_dict = data_dict["tile_info_dict"]
+        user_id = data_dict["user_id"]
         for old_tile_id, tile_type in tile_info_dict.items():
-            result[old_tile_id] = shared_dicts.get_tile_code(tile_type)
+            result[old_tile_id] = shared_dicts.get_tile_code(tile_type, user_id)
         return result
 
     @task_worthy
@@ -116,15 +122,14 @@ class HostWorker(QWorker):
 
     @task_worthy
     def get_tile_types(self, data):
-        from tactic_app.shared_dicts import tile_classes, user_tiles
         tile_types = {}
         user_id = data["user_id"]
         the_user = load_user(user_id)
-        for (category, the_dict) in tile_classes.items():
+        for (category, the_dict) in shared_dicts.tile_classes.items():
             tile_types[category] = the_dict.keys()
 
-        if the_user.username in user_tiles:
-            for (category, the_dict) in user_tiles[the_user.username].items():
+        if the_user.username in shared_dicts.user_tiles:
+            for (category, the_dict) in shared_dicts.user_tiles[the_user.username].items():
                 if category not in tile_types:
                     tile_types[category] = []
                 tile_types[category] += the_dict.keys()
@@ -188,7 +193,7 @@ class HostWorker(QWorker):
 
     @task_worthy
     def get_module_code(self, data):
-        module_code = shared_dicts.get_tile_code(data["tile_type"])
+        module_code = shared_dicts.get_tile_code(data["tile_type"], data["user_id"])
         return {"module_code": module_code, "megaplex_address": self.megaplex_address}
 
     @task_worthy
@@ -226,10 +231,11 @@ class ClientWorker(QWorker):
 
     def handle_exception(self, ex, special_string=None):
         if special_string is None:
-            template = "An exception of type {0} occured. Arguments:\n{1!r}"
+            template = "An exception of type {0} occured. Arguments:\n{1!r}\n"
         else:
-            template = special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}"
+            template = special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}\n"
         error_string = template.format(type(ex).__name__, ex.args)
+        error_string += traceback.format_exc()
         print error_string
         return
 

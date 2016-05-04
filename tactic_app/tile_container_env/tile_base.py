@@ -17,6 +17,7 @@ from weight_function_module import weight_functions
 from cluster_metrics import cluster_metric_dict
 from matplotlib_utilities import MplFigure, Mpld3Figure, color_palette_names
 from types import NoneType
+import traceback
 
 jsonizable_types = {
     "str": str,
@@ -807,10 +808,11 @@ class TileBase(QWorker):
 
     def handle_exception(self, ex, special_string=None):
         if special_string is None:
-            template = "An exception of type {0} occured. Arguments:\n{1!r}"
+            template = "An exception of type {0} occured. Arguments:\n{1!r}\n"
         else:
-            template = special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}"
+            template = special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}\n"
         error_string = template.format(type(ex).__name__, ex.args)
+        error_string += traceback.format_exc()
         self.dm(error_string)
         return
 

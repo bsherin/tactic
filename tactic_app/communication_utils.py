@@ -15,5 +15,7 @@ def send_request_to_container(taddress, msg_type, data_dict=None, wait_for_succe
                 error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
                 time.sleep(wait_time)
                 continue
+        error_string = "Send container request timed out with msg_type {} and address {} ".format(msg_type, taddress)
+        raise Exception(error_string)
     else:
         return requests.post("http://{0}:5000/{1}".format(taddress, msg_type), timeout=timeout, json=data_dict)

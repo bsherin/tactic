@@ -11,8 +11,7 @@ from flask import request, jsonify, render_template, send_file, url_for
 from flask_login import current_user, login_required
 from flask_socketio import join_room
 from tactic_app import app, db, fs, socketio
-from tactic_app.shared_dicts import mainwindow_instances, get_tile_code
-from tactic_app.shared_dicts import tile_classes, user_tiles, loaded_user_modules
+from tactic_app.shared_dicts import get_tile_code
 from user_manage_views import project_manager, collection_manager
 from tactic_app.docker_functions import create_container
 from tactic_app.docker_functions import get_address, callbacks, destroy_container
@@ -21,6 +20,7 @@ from tactic_app.users import load_user
 from tactic_app.host_workers import host_worker, client_worker
 from tactic_app import megaplex_address
 from docker_functions import send_direct_request_to_container
+from tactic_app import shared_dicts
 
 
 # The main window should join a room associated with the user
@@ -113,7 +113,7 @@ def export_data():
 @app.route('/download_table/<main_id>/<new_name>', methods=['GET', 'POST'])
 @login_required
 def download_table(main_id, new_name):
-    mw = mainwindow_instances[main_id]
+    mw = shared_dicts.mainwindow_instances[main_id]
     doc_info = mw.doc_dict[mw.visible_doc_name]
     data_rows = doc_info.all_sorted_data_rows
     header_list = doc_info.header_list
@@ -134,7 +134,7 @@ def download_table(main_id, new_name):
 @app.route('/download_collection/<main_id>/<new_name>', methods=['GET', 'POST'])
 @login_required
 def download_collection(main_id, new_name):
-    mw = mainwindow_instances[main_id]
+    mw = shared_dicts.mainwindow_instances[main_id]
     wb = openpyxl.Workbook()
     first = True
     for (doc_name, doc_info) in mw.doc_dict.items():
@@ -177,7 +177,7 @@ def figure_source(tile_id, figure_name):
 @login_required
 def data_source(main_id, tile_id, data_name):
     try:
-        the_data = mainwindow_instances[main_id].tile_instances[tile_id].data_dict[data_name]
+        the_data = shared_dicts.mainwindow_instances[main_id].tile_instances[tile_id].data_dict[data_name]
         return jsonify({"success": True, "data": the_data})
     except:
         error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])

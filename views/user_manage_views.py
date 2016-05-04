@@ -12,8 +12,10 @@ from flask_login import login_required, current_user
 from flask_socketio import join_room
 from tactic_app import app, db, fs, socketio, use_ssl, mongo_uri
 from tactic_app.file_handling import read_csv_file_to_dict, read_tsv_file_to_dict, read_txt_file_to_dict, load_a_list
-from tactic_app.shared_dicts import user_tiles, loaded_user_modules, create_initial_metadata, mainwindow_instances
-from tactic_app.shared_dicts import test_tile_container_id, tile_classes, get_tile_code
+
+from tactic_app import shared_dicts
+from tactic_app.shared_dicts import create_initial_metadata
+from tactic_app.shared_dicts import test_tile_container_id, get_tile_code
 from tactic_app.user_tile_env import create_user_tiles
 from tactic_app.users import User
 from tactic_app.communication_utils import send_request_to_container
@@ -34,10 +36,12 @@ host_ip = re.search("inet (.*?)/", ip_info).group(1)
 def start_spinner():
     socketio.emit('start-spinner', {}, namespace='/user_manage', room=current_user.get_id())
 
-
 def stop_spinner():
     socketio.emit('stop-spinner', {}, namespace='/user_manage', room=current_user.get_id())
 
+def doflash(message, alert_type='alert-info'):
+    data = {"message": message, "alert_type": alert_type}
+    socketio.emit('stop-spinner', data, namespace='/user_manage', room=current_user.get_id())
 
 class ResourceManager(object):
     is_repository = False
@@ -50,6 +54,16 @@ class ResourceManager(object):
     def __init__(self, res_type):
         self.res_type = res_type
         self.add_rules()
+
+    def handle_exception(self, ex, special_string=None):
+        if special_string is None:
+            template = "An exception of type {0} occured. Arguments:\n{1!r}\n"
+        else:
+            template = special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}\n"
+        error_string = template.format(type(ex).__name__, ex.args)
+        error_string += traceback.format_exc()
+        doflash("error_string", alert_type="alert-warning")
+        return
 
     def add_rules(self):
         print "not implemented"
@@ -328,14 +342,13 @@ class CollectionManager(ResourceManager):
         caddress = get_address(main_id, "bridge")
         send_direct_request_to_container(megaplex_id, "add_address", {"container_id": "main", "address": caddress})
 
-        if user_obj.username not in loaded_user_modules:
-            loaded_user_modules[user_obj.username] = []
+        if user_obj.username not in shared_dicts.loaded_user_modules:
+            shared_dicts.loaded_user_modules[user_obj.username] = []
 
         data_dict = {"collection_name": cname,
                      "main_id": main_id,
                      "user_id": current_user.get_id(),
                      "megaplex_address": megaplex_address,
-                     "loaded_user_modules": loaded_user_modules,
                      "project_collection_name": user_obj.project_collection_name,
                      "mongo_uri": mongo_uri,
                      "base_figure_url": url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1]}
@@ -593,17 +606,19 @@ class TileManager(ResourceManager):
             if not res_dict["success"]:
                 return jsonify({"success": False, "message": res_dict["message_string"], "alert_type": "alert-warning"})
             category = res_dict["category"]
-            if category not in tile_classes:
-                tile_classes[category] = {}
-            tile_classes[category][res_dict["tile_name"]] = tile_module
+            if user_obj.username not in shared_dicts.user_tiles:
+                shared_dicts.user_tiles[user_obj.username] = {}
+            if category not in shared_dicts.user_tiles[user_obj.username]:
+                shared_dicts.user_tiles[user_obj.username][category] = {}
+            shared_dicts.user_tiles[user_obj.username][category][res_dict["tile_name"]] = tile_module
 
-            if user_obj.username not in loaded_user_modules:
-                loaded_user_modules[current_user.username] = []
-            if tile_module_name not in loaded_user_modules[current_user.username]:
-                loaded_user_modules[current_user.username].append(tile_module_name)
+            if user_obj.username not in shared_dicts.loaded_user_modules:
+                shared_dicts.loaded_user_modules[user_obj.username] = []
+            if tile_module_name not in shared_dicts.loaded_user_modules[user_obj.username]:
+                shared_dicts.loaded_user_modules[user_obj.username].append(tile_module_name)
             socketio.emit('update-loaded-tile-list', {"html": self.render_loaded_tile_list()},
-                          namespace='/user_manage', room=current_user.get_id())
-            socketio.emit('update-menus', {}, namespace='/main', room=current_user.get_id())
+                          namespace='/user_manage', room=user_obj.get_id())
+            socketio.emit('update-menus', {}, namespace='/main', room=user_obj.get_id())
             if return_json:
                 return jsonify({"success": True, "message": "Tile module successfully loaded", "alert_type": "alert-success"})
             else:
@@ -617,8 +632,8 @@ class TileManager(ResourceManager):
 
     def unload_all_tiles(self):
         try:
-            loaded_user_modules[current_user.username] = []
-            user_tiles[current_user.username] = {}
+            shared_dicts.loaded_user_modules[current_user.username] = []
+            shared_dicts.user_tiles[current_user.username] = {}
             socketio.emit('update-loaded-tile-list', {"html": self.render_loaded_tile_list()},
                           namespace='/user_manage', room=current_user.get_id())
             socketio.emit('update-menus', {}, namespace='/main', room=current_user.get_id())
@@ -664,8 +679,8 @@ class TileManager(ResourceManager):
 
     def render_loaded_tile_list(self):
         loaded_tiles = []
-        if current_user.username in user_tiles:
-            for (category, the_dict) in user_tiles[current_user.username].items():
+        if current_user.username in shared_dicts.user_tiles:
+            for (category, the_dict) in shared_dicts.user_tiles[current_user.username].items():
                 loaded_tiles += the_dict.keys()
         return render_template("user_manage/loaded_tile_list.html", user_tile_name_list=loaded_tiles)
 
@@ -698,8 +713,8 @@ repository_tile_manager = RepositoryTileManager("tile")
 @app.route('/user_manage')
 @login_required
 def user_manage():
-    if current_user.username in user_tiles:
-        user_tile_name_list = user_tiles[current_user.username].keys()
+    if current_user.username in shared_dicts.user_tiles:
+        user_tile_name_list = shared_dicts.user_tiles[current_user.username].keys()
     else:
         user_tile_name_list = []
     return render_template('user_manage/user_manage.html', user_tile_name_list=user_tile_name_list,

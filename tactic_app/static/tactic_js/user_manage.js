@@ -61,6 +61,8 @@ function start_post_load() {
     socket.on('close-user-windows', function(data){
         window.close()
     });
+    
+    socket.on('doflash', doFlash);
     console.log("about to create");
     $.get($SCRIPT_ROOT + "/get_resource_module_template", function(template) {
         resource_module_template = $(template).filter('#resource-module-template').html();

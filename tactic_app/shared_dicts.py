@@ -1,6 +1,6 @@
 import datetime
 from docker_functions import create_container, get_address, send_direct_request_to_container
-from users import User
+from users import User, load_user
 
 
 mainwindow_instances = {}
@@ -31,7 +31,12 @@ def get_all_default_tiles():
                 print "Error loading tile " + res_dic["message_string"]
 
 
-def get_tile_code(tile_type):
+def get_tile_code(tile_type, user_id):
+    user_obj = load_user(user_id)
+    if user_obj.username in user_tiles:
+        for (category, the_dict) in user_tiles[user_obj.username].items():
+            if tile_type in the_dict:
+                return the_dict[tile_type]
     for (category, the_dict) in tile_classes.items():
         if tile_type in the_dict:
             return the_dict[tile_type]

@@ -18,6 +18,7 @@ from qworker import QWorker, task_worthy
 import datetime
 from communication_utils import send_request_to_container
 import numpy
+import traceback
 
 INITIAL_LEFT_FRACTION = .69
 CHUNK_SIZE = 200
@@ -280,7 +281,8 @@ class mainWindow(QWorker):
             self.post_and_wait("host", "load_modules", {"loaded_modules": loaded_modules, "user_id": data_dict["user_id"]})
             doc_names = [str(doc_name) for doc_name in self.doc_names]
             tile_containers = self.post_and_wait("host", "get_empty_tile_containers", {"number": len(tile_info_dict.keys())})
-            tile_code_dict = self.post_and_wait("host", "get_tile_code", tile_info_dict)
+            tile_code_dict = self.post_and_wait("host", "get_tile_code", {"tile_info_dict": tile_info_dict,
+                                                                          "user_id": data_dict["user_id"]})
             new_tile_info = {}
             new_tile_keys = tile_containers.keys()
             for i, old_tile_id in enumerate(tile_info_dict.keys()):
@@ -308,8 +310,9 @@ class mainWindow(QWorker):
                                                            "template_data": template_data,
                                                            "message": "window-open"})
         except Exception as ex:
-            template = "An exception of type {0} occured. Arguments:\n{1!r}"
+            template = "An exception of type {0} occured. Arguments:\n{1!r}\n"
             error_string = template.format(type(ex).__name__, ex.args)
+            error_string += traceback.format_exc()
             self.post_task("host", "open_error_window", {"user_manage_id": data_dict["user_manage_id"],
                                                          "error_string": error_string})
         return
@@ -415,6 +418,7 @@ class mainWindow(QWorker):
             self.debug_log("posting get_loaded_user_modules")
             self.loaded_modules = self.post_and_wait("host", "get_loaded_user_modules", {"user_id": self.user_id})[
                 "loaded_modules"]
+            self.loaded_modules = [str(module) for module in self.loaded_modules]
             self.debug_log("got loaded user modules " + str(self.loaded_modules))
             project_dict = self.compile_save_dict()
             self.debug_log("got compiled save_dict")
@@ -454,11 +458,16 @@ class mainWindow(QWorker):
                 self.doc_dict[dname].table_spec = spec
             self.loaded_modules = self.post_and_wait("host", "get_loaded_user_modules", {"user_id": self.user_id})[
                 "loaded_modules"]
+            self.loaded_modules = [str(module) for module in self.loaded_modules]
             project_dict = self.compile_save_dict()
             pname = project_dict["project_name"]
             self.mdata["updated"] = datetime.datetime.today()
+            self.debug_log("pickling")
+            pdict = cPickle.dumps(project_dict)
+            self.debug_log("Binarying")
+            pdict = Binary(pdict)
             self.debug_log("about to put project_dict")
-            new_file_id = self.fs.put(Binary(cPickle.dumps(project_dict)))
+            new_file_id = self.fs.put(pdict)
             self.debug_log("finished the put")
             save_dict = self.db[self.project_collection_name].find_one({"project_name": pname})
             self.fs.delete(save_dict["file_id"])
@@ -567,10 +576,11 @@ class mainWindow(QWorker):
 
     def handle_exception(self, ex, special_string=None, print_to_console=True):
         if special_string is None:
-            template = "An exception of type {0} occured. Arguments:\n{1!r}"
+            template = "An exception of type {0} occured. Arguments:\n{1!r}\n"
         else:
-            template = special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}"
+            template = special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}\n"
         error_string = template.format(type(ex).__name__, ex.args)
+        error_string += traceback.format_exc()
         self.debug_log(error_string)
         if print_to_console:
             self.print_to_console(error_string, force_open=True)

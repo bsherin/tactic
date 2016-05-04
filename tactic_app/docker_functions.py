@@ -75,6 +75,8 @@ def send_direct_request_to_container(container_id, msg_type, data_dict, wait_for
             except:
                 time.sleep(wait_time)
                 continue
+        error_string = "Send direct container request timed out with msg_type {} and container {} ".format(msg_type, container_id)
+        raise Exception(error_string)
     else:
         return requests.post("http://{0}:5000/{1}".format(maddress, msg_type), timeout=timeout, json=data_dict)
 

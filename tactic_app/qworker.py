@@ -31,6 +31,8 @@ def send_request_to_container(taddress, msg_type, data_dict=None, wait_for_succe
                 error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
                 time.sleep(wait_time)
                 continue
+        error_string = "Send container request timed out with msg_type {} and address {} ".format(msg_type, taddress)
+        raise Exception(error_string)
     else:
         return requests.post("http://{0}:5000/{1}".format(taddress, msg_type), timeout=timeout, json=data_dict)
 
@@ -54,12 +56,8 @@ class QWorker(gevent.Greenlet):
             self.app.logger.debug(msg)
 
     def get_next_task(self):
-        try:
-            raw_result = send_request_to_container(self.megaplex_address, "get_next_task/" + self.my_id)
-            task_packet = raw_result.json()
-        except AttributeError:
-            self.debug_log("send_request_to_container error. Probably no JSON could be decoded")
-            task_packet = {"empty": True, "error": True}
+        raw_result = send_request_to_container(self.megaplex_address, "get_next_task/" + self.my_id)
+        task_packet = raw_result.json()
         return task_packet
 
     def post_and_wait(self, dest_id, task_type, task_data=None, sleep_time=.1, timeout=10, tries=30):
@@ -80,6 +78,9 @@ class QWorker(gevent.Greenlet):
             else:
                 self.app.logger.debug("No result yet for post_and_wait")
                 time.sleep(sleep_time)
+        error_string = "post_and_wait timed out with msg_type {} and destination {}".format(task_type, dest_id)
+        raise Exception(error_string)
+
         return result
 
     def post_task(self, dest_id, task_type, task_data=None, callback_func=None):
@@ -107,21 +108,26 @@ class QWorker(gevent.Greenlet):
         self.debug_log("Entering _run")
         self.running = True
         while self.running:
-            task_packet = self.get_next_task()
-            if "empty" not in task_packet:
-                if task_packet["response_data"] is not None:
-                    try:
-                        func = callback_dict[task_packet["callback_id"]]
-                        del callback_dict[task_packet["callback_id"]]
-                        func(task_packet["response_data"])
-                    except Exception as ex:
-                        special_string = "Error handling callback for task of type {}".format(task_packet["task_type"])
-                        self.handle_exception(ex, special_string)
-                else:
-                    self.handle_event(task_packet)
-                gevent.sleep(SHORT_SLEEP_PERIOD)
+            try:
+                task_packet = self.get_next_task()
+            except Exception as ex:
+                special_string = "Error in get_next_task"
+                self.handle_exception(ex, special_string)
             else:
-                gevent.sleep(LONG_SLEEP_PERIOD)
+                if "empty" not in task_packet:
+                    if task_packet["response_data"] is not None:
+                        try:
+                            func = callback_dict[task_packet["callback_id"]]
+                            del callback_dict[task_packet["callback_id"]]
+                            func(task_packet["response_data"])
+                        except Exception as ex:
+                            special_string = "Error handling callback for task of type {}".format(task_packet["task_type"])
+                            self.handle_exception(ex, special_string)
+                    else:
+                        self.handle_event(task_packet)
+                    gevent.sleep(SHORT_SLEEP_PERIOD)
+                else:
+                    gevent.sleep(LONG_SLEEP_PERIOD)
 
     def handle_event(self, task_packet):
         if hasattr(self, task_packet["task_type"]):
