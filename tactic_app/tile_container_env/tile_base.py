@@ -755,7 +755,6 @@ class TileBase(QWorker):
 
     # Filtering and iteration
 
-    # TODO: This hasn't been tested
     def get_matching_rows(self, filter_function, document_name=None):
         result = []
         if document_name is not None:
@@ -771,6 +770,9 @@ class TileBase(QWorker):
                         result.append(r)
         return result
 
+    def update_document(self, new_data, document_name):
+        self.post_and_wait(self.main_id, "update_document", {"new_data": new_data, "document_name": document_name})
+        return
 
     @task_worthy
     def display_matching_rows(self, filter_function, document_name=None):

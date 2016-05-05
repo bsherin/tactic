@@ -1053,6 +1053,18 @@ class mainWindow(QWorker):
             self.refill_table()
         return
 
+    @task_worthy
+    def update_document(self, data):
+        new_data= data["new_data"]
+        doc_name = data["document_name"]
+        doc = self.doc_dict[doc_name]
+        for key, r in new_data.items():
+            for c, val in r.items():
+                doc.data_rows[key][c] = val
+        if doc_name == self.visible_doc_name:
+            self.refill_table()
+        return {"success": True}
+
     def display_matching_rows_applying_filter(self, filter_function, document_name=None):
         if document_name is not None:
             doc = self.doc_dict[document_name]
