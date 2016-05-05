@@ -19,9 +19,9 @@ def hello():
 
 def handle_exception(ex, special_string=None):
     if special_string is None:
-        template = "An exception of type {0} occured. Arguments:\n{1!r}"
+        template = "<pre>An exception of type {0} occured. Arguments:\n{1!r}</pre>"
     else:
-        template = special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}"
+        template = "<pre>" + special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}</pre>"
     error_string = template.format(type(ex).__name__, ex.args)
     return jsonify({"success": False, "message_string": error_string})
 

@@ -764,16 +764,32 @@ class TileBase(QWorker):
                 if filter_function(r):
                     result.append(r)
         else:
-            for document_name in self.get_document_names():
-                data_list = self.get_document_data_as_list(document_name)
+            for docname in self.get_document_names():
+                data_list = self.get_document_data_as_list(docname)
                 for r in data_list:
                     if filter_function(r):
                         result.append(r)
         return result
 
-    # fixme This doesn't work because of the need to pass the filter function
+
+    @task_worthy
     def display_matching_rows(self, filter_function, document_name=None):
-        self.perform_main_function("display_matching_rows", [filter_function, document_name])
+        if document_name is not None:
+            result = []
+            data_list = self.get_document_data_as_list(document_name)
+            for r in data_list:
+                if filter_function(r):
+                    result.append(r["__id__"])
+        else:
+            result = {}
+            for docname in self.get_document_names():
+                result[docname] = []
+                data_list = self.get_document_data_as_list(docname)
+                for r in data_list:
+                    if filter_function(r):
+                        result[docname].append(r["__id__"])
+        self.post_task(self.main_id, "display_matching_rows",
+                       {"result": result, "document_name": document_name})
         return
 
     def clear_table_highlighting(self):
@@ -795,13 +811,13 @@ class TileBase(QWorker):
     def go_to_document(self, doc_name):
         data = {}
         data["doc_name"] = doc_name
-        self.emit_tile_message('change-doc', data)
+        self.ask_host('go_to_row_in_document', data)
 
     def go_to_row_in_document(self, doc_name, row_id):
         data = {}
         data["doc_name"] = doc_name
         data["row_id"] = row_id
-        self.emit_tile_message('change-doc', data)
+        self.ask_host('go_to_row_in_document', data)
 
     def get_selected_text(self):
         return self.get_main_property("selected_text")
@@ -813,7 +829,7 @@ class TileBase(QWorker):
             template = special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}\n"
         error_string = template.format(type(ex).__name__, ex.args)
         error_string += traceback.format_exc()
-        self.dm(error_string)
+        self.dm("<pre>" + error_string + "</pre>")
         return
 
     def display_message(self, message_string, force_open=False):
@@ -827,7 +843,8 @@ class TileBase(QWorker):
         self.post_task(self.main_id, "print_to_console_event", {"print_string": message_string})
 
     def color_cell_text(self, doc_name, row_index, column_name, tokenized_text, color_dict):
-        actual_row = self.get_main_property("doc_dict")[doc_name].get_actual_row(row_index)
+        data = {"doc_name": doc_name, "row_index": row_index}
+        actual_row = self.post_and_wait(self.main_id, "get_actual_row", data)["actual_row"]
         self.distribute_event("ColorTextInCell", {"doc_name": doc_name,
                                                   "row_index": actual_row,
                                                   "column_header": column_name,

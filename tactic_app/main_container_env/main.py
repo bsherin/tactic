@@ -216,6 +216,7 @@ class mainWindow(QWorker):
             self.console_html = None
             self.user_id = data_dict["user_id"]
             self.doc_dict = self._build_doc_dict()
+            self.visible_doc_name = self.doc_dict.keys()[0]
 
     # Communication Methods
 
@@ -313,6 +314,7 @@ class mainWindow(QWorker):
             template = "An exception of type {0} occured. Arguments:\n{1!r}\n"
             error_string = template.format(type(ex).__name__, ex.args)
             error_string += traceback.format_exc()
+            error_string = "<pre>" + error_string + "</pre>"
             self.post_task("host", "open_error_window", {"user_manage_id": data_dict["user_manage_id"],
                                                          "error_string": error_string})
         return
@@ -442,7 +444,7 @@ class mainWindow(QWorker):
 
         except Exception as ex:
             self.debug_log("got an error in save_new_project")
-            error_string = self.handle_exception(ex, "Error saving new project", print_to_console=False)
+            error_string = self.handle_exception(ex, "<pre>Error saving new project</pre>", print_to_console=False)
             return_data = {"success": False, "message_string": error_string}
         return return_data
 
@@ -535,6 +537,8 @@ class mainWindow(QWorker):
 
     def refill_table(self):
         doc = self.doc_dict[self.visible_doc_name]
+        self.debug_log("current_data_rows keys " + str(doc.current_data_rows.keys()))
+        self.debug_log("displayed_data_rows keys " + str(len(doc.displayed_data_rows)))
         data_object = {"data_rows": doc.displayed_data_rows, "doc_name": self.visible_doc_name,
                        "background_colors": doc.displayed_background_colors,
                        "is_first_chunk": doc.is_first_chunk, "is_last_chunk": doc.is_last_chunk}
@@ -581,6 +585,7 @@ class mainWindow(QWorker):
             template = special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}\n"
         error_string = template.format(type(ex).__name__, ex.args)
         error_string += traceback.format_exc()
+        error_string = "<pre>" + error_string + "</pre>"
         self.debug_log(error_string)
         if print_to_console:
             self.print_to_console(error_string, force_open=True)
@@ -825,7 +830,8 @@ class mainWindow(QWorker):
         self.debug_log("entering reload_tile")
         tile_id = ddict["tile_id"]
         tile_type = self.get_tile_property(tile_id, "tile_type")
-        module_code = self.post_and_wait("host", "get_module_code", {"tile_type": tile_type})["module_code"]
+        data = {"tile_type": tile_type, "user_id": self.user_id}
+        module_code = self.post_and_wait("host", "get_module_code", data)["module_code"]
         list_names = self.post_and_wait("host", "get_list_names", {"user_id": self.user_id})["list_names"]
         reload_dict = copy.copy(self.get_tile_property(tile_id, "current_reload_attrs"))
         saved_options = copy.copy(self.get_tile_property(tile_id, "current_options"))
@@ -847,10 +853,9 @@ class mainWindow(QWorker):
         else:
             raise Exception(result["message_string"])
 
-    # todo grab_chunk_with_row has not been tested
     @task_worthy
     def grab_chunk_with_row(self, data_dict):
-        app.logger.debug("Entering grab chunk with row")
+        self.debug_log("Entering grab chunk with row")
         doc_name = data_dict["doc_name"]
         row_id = data_dict["row_id"]
         self.doc_dict[doc_name].move_to_row(row_id)
@@ -864,6 +869,13 @@ class mainWindow(QWorker):
                 "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
                 "max_table_size": self.doc_dict[doc_name].max_table_size,
                 "actual_row": self.doc_dict[doc_name].get_actual_row(row_id)}
+
+    @task_worthy
+    def get_actual_row(self, data):
+        doc_name = data["doc_name"]
+        row_index = data["row_index"]
+        actual_row = self.doc_dict[doc_name].get_actual_row(row_index)
+        return {"actual_row": actual_row}
 
     @task_worthy
     def distribute_events_stub(self, data_dict):
@@ -935,7 +947,7 @@ class mainWindow(QWorker):
     @task_worthy
     def FilterTable(self, data):
         txt = data["text_to_find"]
-        self.display_matching_rows(lambda r: self.txt_in_dict(txt, r))
+        self.display_matching_rows_applying_filter(lambda r: self.txt_in_dict(txt, r))
         self.highlight_table_text(txt)
         return None
 
@@ -1017,7 +1029,31 @@ class mainWindow(QWorker):
                         result.append(r)
         return result
 
-    def display_matching_rows(self, filter_function, document_name=None):
+    @task_worthy
+    def display_matching_rows(self, data):
+        self.debug_log("Entering display_matching_rows in main.py")
+        result = data["result"]
+        document_name = data["document_name"]
+        if document_name is not None:
+            doc = self.doc_dict[document_name]
+            doc.current_data_rows = {}
+            for (key, val) in doc.data_rows.items():
+                if int(key) in result:
+                    doc.current_data_rows[key] = val
+            doc.configure_for_current_data()
+            self.refill_table()
+        else:
+            for docname, doc in self.doc_dict.items():
+                doc.current_data_rows = {}
+                self.debug_log("result[docname] is " + str(result[docname]))
+                for (key, val) in doc.data_rows.items():
+                    if int(key) in result[docname]:
+                        doc.current_data_rows[key] = val
+                doc.configure_for_current_data()
+            self.refill_table()
+        return
+
+    def display_matching_rows_applying_filter(self, filter_function, document_name=None):
         if document_name is not None:
             doc = self.doc_dict[document_name]
             doc.current_data_rows = {}
@@ -1027,7 +1063,7 @@ class mainWindow(QWorker):
             doc.configure_for_current_data()
             self.refill_table()
         else:
-            for doc in self.doc_dict.values():
+            for docname, doc in self.doc_dict.items():
                 doc.current_data_rows = {}
                 for (key, val) in doc.data_rows.items():
                     if filter_function(val):

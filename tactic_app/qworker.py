@@ -81,8 +81,6 @@ class QWorker(gevent.Greenlet):
         error_string = "post_and_wait timed out with msg_type {} and destination {}".format(task_type, dest_id)
         raise Exception(error_string)
 
-        return result
-
     def post_task(self, dest_id, task_type, task_data=None, callback_func=None):
         if callback_func is not None:
             callback_id = str(uuid.uuid4())
@@ -139,8 +137,12 @@ class QWorker(gevent.Greenlet):
                     response_data = "__ERROR__"
                     self.handle_exception(ex, special_string)
                 if task_packet["callback_id"] is not None:
-                    task_packet["response_data"] = response_data
-                    self.submit_response(task_packet)
+                    try:
+                        task_packet["response_data"] = response_data
+                        self.submit_response(task_packet)
+                    except Exception as ex:
+                        special_string = "Error submitting response for task type {}".format(task_packet["task_type"])
+                        self.handle_exception(ex, special_string)
             else:
                 self.debug_log("Got invalid task type")
         return

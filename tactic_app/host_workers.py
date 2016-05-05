@@ -180,6 +180,11 @@ class HostWorker(QWorker):
         return {"success": True}
 
     @task_worthy
+    def go_to_row_in_document(self, data):
+        from tactic_app import socketio
+        socketio.emit("change-doc", data, namespace='/main', room=data["main_id"])
+
+    @task_worthy
     def emit_tile_message(self, data):
         from tactic_app import socketio
         socketio.emit("tile-message", data, namespace='/main', room=data["main_id"])
