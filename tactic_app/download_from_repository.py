@@ -13,9 +13,9 @@ import os
 import datetime
 
 rpath = "/repository_tiles"
-dpath = "/downloads"
+dpath = "/bsherinremtiles"
 
-repository_user = User.get_user_by_username("repository")
+repository_user = User.get_user_by_username("bsherinrem")
 
 try:
     print "getting client"

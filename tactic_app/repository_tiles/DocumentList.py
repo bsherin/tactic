@@ -22,6 +22,6 @@ class DocumentLIst(TileBase):
         data_list = [["Doc Name"]]
         for doc in doc_list:
             data_list.append([doc])
-        new_html = self.build_html_table_from_data_list(data_list, row_clickable=True)
+        new_html = self.build_html_table_from_data_list(data_list, click_type="row-clickable")
         return new_html
 

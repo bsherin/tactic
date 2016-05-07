@@ -8,7 +8,8 @@ class WordFreqDist(TileBase):
         self.corpus_frequency_fdist = None
         self.document_frequency_fdist = None
         self.number_to_display = 50
-        self.save_attrs += self.exports
+        self.save_attrs += self.exports + ["logging_html"]
+        self.logging_html = ""
         return
 
     @property
@@ -56,6 +57,14 @@ class WordFreqDist(TileBase):
             if raw_row != None:
                 tokenized_rows.append(tokenizer(raw_row))
         return tokenized_rows
+    
+    def handle_tile_element_click(self, dataset, doc_name, active_row_index):
+        text_to_find = dataset["val"]
+        self.clear_table_highlighting()
+        self.highlight_matching_text(text_to_find)
+        
+    def handle_log_tile(self):
+        self.dm(self.logging_html)
 
     def render_content(self):
         slist = self.get_user_list(self.stop_list)
@@ -70,5 +79,9 @@ class WordFreqDist(TileBase):
                                     trow[1],
                                     self.document_frequency_fdist[trow[0]]])
         self.vdata_table = [["word", "cf", "df"]] + self.vdata_table
-        the_html = self.build_html_table_from_data_list(self.vdata_table, title="Frequency Distributions")
+        the_html = self.build_html_table_from_data_list(self.vdata_table, click_type="element-clickable", title="Frequency Distributions")
+        self.logging_html = self.build_html_table_from_data_list(self.vdata_table, click_type="element-clickable", 
+                                                                 title="Frequency Distributions", sidebyside=True)
         return the_html
+
+

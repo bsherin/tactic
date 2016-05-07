@@ -31,7 +31,7 @@ class MatchingRowViewer(TileBase):
         for row_dict in match_list:
             new_row = [row_dict[key] for key in key_list]
             tarray.append(new_row)
-        return self.build_html_table_from_data_list(tarray, title=None, row_clickable=True)
+        return self.build_html_table_from_data_list(tarray, title=None, click_type="row-clickable")
 
     def render_content(self):
         self.dm("displaying " + str(self.matching_rows))

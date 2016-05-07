@@ -43,6 +43,12 @@ class ExpandedTileTemplate(TileBase):
     def handle_tile_cell_click(self, clicked_text, doc_name, active_row_index):
         return
     
+    def handle_tile_element_click(self, dataset, doc_name, active_row_index):
+        return
+    
+    def handle_log_tile(self):
+        self.log_it(self.current_html)
+    
     def handle_size_change(self):
         # self.width and self.height will have the current width and height of the tile
         return

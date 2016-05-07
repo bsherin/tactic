@@ -10,7 +10,7 @@ class CommandTile(TileBase):
     @property
     def options(self):
         return  [
-        {"name": "command_text", "type": "textarea"},
+        {"name": "command_text", "type": "codearea"},
     ]
 
     def render_content(self):

@@ -616,7 +616,7 @@ class TileManager(ResourceManager):
                 shared_dicts.loaded_user_modules[user_obj.username] = []
             if tile_module_name not in shared_dicts.loaded_user_modules[user_obj.username]:
                 shared_dicts.loaded_user_modules[user_obj.username].append(tile_module_name)
-            socketio.emit('update-loaded-tile-list', {"html": self.render_loaded_tile_list()},
+            socketio.emit('update-loaded-tile-list', {"html": self.render_loaded_tile_list(user_obj)},
                           namespace='/user_manage', room=user_obj.get_id())
             socketio.emit('update-menus', {}, namespace='/main', room=user_obj.get_id())
             if return_json:
@@ -677,12 +677,16 @@ class TileManager(ResourceManager):
         self.update_selector_list()
         return jsonify({"success": True})
 
-    def render_loaded_tile_list(self):
+    def render_loaded_tile_list(self, user_obj=None):
         loaded_tiles = []
-        if current_user.username in shared_dicts.user_tiles:
-            for (category, the_dict) in shared_dicts.user_tiles[current_user.username].items():
+        if user_obj is None:
+            user_obj = current_user
+        if user_obj.username in shared_dicts.user_tiles:
+            for (category, the_dict) in shared_dicts.user_tiles[user_obj.username].items():
                 loaded_tiles += the_dict.keys()
-        return render_template("user_manage/loaded_tile_list.html", user_tile_name_list=loaded_tiles)
+        with app.test_request_context():
+            result = render_template("user_manage/loaded_tile_list.html", user_tile_name_list=loaded_tiles)
+        return result
 
     def request_update_loaded_tile_list(self):
         return self.render_loaded_tile_list()

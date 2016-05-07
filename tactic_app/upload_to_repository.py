@@ -12,7 +12,7 @@ import ssl
 
 import datetime
 
-rpath = "tactic_app/repository_tiles"
+rpath = "bsherinremtiles"
 
 def create_initial_metadata():
     mdata = {"datetime": datetime.datetime.today(),
@@ -20,7 +20,7 @@ def create_initial_metadata():
              "notes": ""}
     return mdata
 
-repository_user = User.get_user_by_username("repository")
+repository_user = User.get_user_by_username("bsherin")
 
 def add_tile_module(full_filename):
     user_obj = repository_user

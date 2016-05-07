@@ -43,7 +43,8 @@ try:
         client.server_info()
         # noinspection PyUnresolvedReferences
         db = client.tacticdb
-        mongo_uri = "localhost"
+        # mongo_uri = "localhost"
+        mongo_uri ="mongodb://{}:27017/tacticdb".format(host_ip)
 
     else:
         client = MongoClient(host=os.environ.get("MONGOLAB_URI"))

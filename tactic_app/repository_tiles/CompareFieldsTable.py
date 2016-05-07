@@ -62,7 +62,7 @@ class CompareFieldsTable(TileBase):
         for row_dict in match_list:
             tarray.append([row_dict["doc_name"], row_dict["__id__"], 
                            row_dict[self.extra_column_to_display], row_dict[self.source_field]])
-        return self.build_html_table_from_data_list(tarray, title=None, row_clickable=True)
+        return self.build_html_table_from_data_list(tarray, title=None, click_type="row-clickable")
 
     def render_content(self):
         if self.source_field is None:

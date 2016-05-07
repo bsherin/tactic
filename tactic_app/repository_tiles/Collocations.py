@@ -77,5 +77,5 @@ class Collocations(TileBase):
                                     round(finder.score_ngram(measure, trow[0], trow[1]), 2),
                                     self.bigram_fdist[trow]])
         self.vdata_table = [["w1", "w2", "score", "freq"]] + self.vdata_table
-        the_html = self.build_html_table_from_data_list(self.vdata_table, title="Collocations", row_clickable=True)
+        the_html = self.build_html_table_from_data_list(self.vdata_table, title="Collocations", click_type="row-clickable")
         return the_html

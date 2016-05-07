@@ -19,6 +19,7 @@ import datetime
 from communication_utils import send_request_to_container
 import numpy
 import traceback
+import zlib
 
 INITIAL_LEFT_FRACTION = .69
 CHUNK_SIZE = 200
@@ -181,7 +182,7 @@ class mainWindow(QWorker):
             client = pymongo.MongoClient(data_dict["mongo_uri"])
             client.server_info()
             # noinspection PyUnresolvedReferences
-            self.db = client.heroku_4ncbq1zd
+            self.db = client.tacticdb
             self.fs = gridfs.GridFS(self.db)
         except pymongo.errors.PyMongoError as err:
             sys.exit()
@@ -322,7 +323,7 @@ class mainWindow(QWorker):
     def recreate_from_save(self, project_collection_name, project_name):
         self.debug_log("entering recreate_from_save")
         save_dict = self.db[project_collection_name].find_one({"project_name": project_name})
-        project_dict = cPickle.loads(self.fs.get(save_dict["file_id"]).read().decode("utf-8", "ignore").encode("ascii"))
+        project_dict = cPickle.loads(zlib.decompress(self.fs.get(save_dict["file_id"]).read()).decode("utf-8", "ignore").encode("ascii"))
         project_dict["metadata"] = save_dict["metadata"]
         self.mdata = save_dict["metadata"]
         for (attr, attr_val) in project_dict.items():
@@ -430,7 +431,7 @@ class mainWindow(QWorker):
             self.debug_log("about to pickle")
             pdict = cPickle.dumps(project_dict)
             self.debug_log("converting to binary")
-            pdict = Binary(pdict)
+            pdict = Binary(zlib.compress(pdict))
             self.debug_log("putting the data")
             save_dict["file_id"] = self.fs.put(pdict)
             self.debug_log("pickled and dumped")
@@ -467,7 +468,7 @@ class mainWindow(QWorker):
             self.debug_log("pickling")
             pdict = cPickle.dumps(project_dict)
             self.debug_log("Binarying")
-            pdict = Binary(pdict)
+            pdict = Binary(zlib.compress(pdict))
             self.debug_log("about to put project_dict")
             new_file_id = self.fs.put(pdict)
             self.debug_log("finished the put")
@@ -564,7 +565,7 @@ class mainWindow(QWorker):
         form_info = {"current_header_list": self.current_header_list,
                      "pipe_dict": self._pipe_dict,
                      "doc_names": self.doc_names,
-                     "list_names": self.get_list_names()}
+                     "list_names": self.get_list_names()["list_names"]}
         if tile_id in self._pipe_dict:
             del self._pipe_dict[tile_id]
             for tid in self.tile_instances.keys():

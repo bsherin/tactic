@@ -32,6 +32,7 @@ def initialize_mainwindow():
         app.logger.debug("entering intialize mainwindow")
         global mwindow
         data_dict = request.json
+        app.logger.debug("data_dict is " + str(data_dict))
         mwindow = mainWindow(app, data_dict)
         mwindow.start()
         return jsonify({"success": True})
@@ -48,10 +49,11 @@ def initialize_project_mainwindow():
         mwindow = mainWindow(app, data_dict)
         mwindow.start()
         mwindow.post_task(data_dict["main_id"], "do_full_recreation", data_dict)
+        app.logger.debug("leaving initialize_project_mainwindow")
         return jsonify({"success": True})
     except Exception as Ex:
         return handle_exception(ex, "Error initializing project mainwindow")
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", debug=True)
+    app.run(host="0.0.0.0", debug=True, threaded=True)

@@ -27,6 +27,11 @@ class ClusterViewer(TileBase):
             result.append([vocab_list[sc[i]], round(self.centroids[n][sc[i]], 4)])
         return result
 
+    def handle_tile_element_click(self, dataset, doc_name, active_row_index):
+        text_to_find = dataset["val"]
+        self.clear_table_highlighting()
+        self.highlight_matching_text(text_to_find)
+    
     def render_content(self):
         cdata = self.get_pipe_value(self.cluster_data)
         self.clusterer = cdata["clusterer"]
@@ -39,7 +44,8 @@ class ClusterViewer(TileBase):
 
         for i in range(self.number_of_clusters):
             ctitle = "Cluster " + str(i + 1)
-            the_html += self.build_html_table_from_data_list(self.top_words_from_centroid(reduced_vocab, i, 10), title=ctitle)
+            the_html += self.build_html_table_from_data_list(self.top_words_from_centroid(reduced_vocab, i, 10), 
+                                                             click_type="element-clickable", title=ctitle)
 
         self.autocodes_dict = {}
         if self.code_into_column:

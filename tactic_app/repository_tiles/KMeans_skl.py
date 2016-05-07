@@ -55,6 +55,11 @@ class Kmeans_skl(TileBase):
         else:
             return(vec / mag)
 
+    def handle_tile_element_click(self, dataset, doc_name, active_row_index):
+        text_to_find = dataset["val"]
+        self.clear_table_highlighting()
+        self.highlight_matching_text(text_to_find)       
+        
     def render_content(self):
         cdata = self.get_pipe_value(self.cluster_data)
         self.clusterer = cdata["clusterer"]
@@ -81,7 +86,7 @@ class Kmeans_skl(TileBase):
             ctitle = "Cluster " + str(i + 1) + " " + str(cluster_sizes[i])
             the_html += self.build_html_table_from_data_list(
                 self.top_words_from_centroid(reduced_vocab, cfdist, dfdist, i, to_print=self.number_to_show, min_oc=self.minimum_occurrences), 
-                title=ctitle)
+                click_type="element-clickable", title=ctitle)
         self.new_cluster_data = {"clusterer": self.clusterer, "reduced_vocab": reduced_vocab, 
                                  "current_clustering": new_clusters, "sample_array": seg_vectors,
                                  "cf_dist": cfdist, "df_dist": dfdist}

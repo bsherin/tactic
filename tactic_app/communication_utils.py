@@ -10,9 +10,12 @@ def send_request_to_container(taddress, msg_type, data_dict=None, wait_for_succe
             try:
                 res = requests.post("http://{0}:5000/{1}".format(taddress, msg_type),
                                     timeout=timeout, json=data_dict)
+                print "attempt succeeded for " + msg_type
                 return res
             except:
+                print "attempt failed for " + msg_type
                 error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+                print error_string
                 time.sleep(wait_time)
                 continue
         error_string = "Send container request timed out with msg_type {} and address {} ".format(msg_type, taddress)

@@ -29,6 +29,7 @@ def handle_exception(ex, special_string=None):
     error_string = "<pre>" + error_string + "</pre>"
     return jsonifY({"success": False, "message_string": error_string})
 
+
 @app.route('/load_source', methods=["get", "post"])
 def load_source():
     try:
@@ -122,4 +123,4 @@ def instantiate_tile_class():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", debug=True)
+    app.run(host="0.0.0.0", debug=True, threaded=True)

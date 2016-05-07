@@ -41,8 +41,8 @@ class MatchTable(TileBase):
         tarray = []
         tarray.append(["doc_name", "id", "text", "source"])
         for row_dict in match_list:
-            tarray.append([row_dict["doc_name"], row_dict["__id__"], row_dict["text"], row_dict["self.source_field"]])
-        return self.build_html_table_from_data_list(tarray, title=None, row_clickable=True)
+            tarray.append([row_dict["doc_name"], row_dict["__id__"], row_dict["text"], row_dict[self.source_field]])
+        return self.build_html_table_from_data_list(tarray, title=None, click_type="row-clickable")
 
     def render_content(self):
         if self.comparison_type == "equal_to":

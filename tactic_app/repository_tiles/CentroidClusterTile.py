@@ -103,6 +103,11 @@ class CentroidCluster(TileBase):
                     fdist[w] += 1
         return fdist
 
+    def handle_tile_element_click(self, dataset, doc_name, active_row_index):
+        text_to_find = dataset["val"]
+        self.clear_table_highlighting()
+        self.highlight_matching_text(text_to_find)
+    
     def render_content(self):
         raw_text_dict = self.get_column_data_dict(self.text_source)
         self.tokenized_rows_dict = self.tokenize_docs(raw_text_dict, self.tokenizer)
@@ -140,7 +145,8 @@ class CentroidCluster(TileBase):
 
         for i in range(self.number_of_clusters):
             ctitle = "Cluster " + str(i + 1)
-            the_html += self.build_html_table_from_data_list(self.top_words_from_centroid(reduced_vocab, i, 10), title=ctitle)
+            the_html += self.build_html_table_from_data_list(self.top_words_from_centroid(reduced_vocab, i, 10), 
+                                                             click_type="element-clickable", title=ctitle)
 
         cmapper = ColorMapper(1, self.number_of_clusters, self.palette_name)
 

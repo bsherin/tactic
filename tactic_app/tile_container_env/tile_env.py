@@ -8,6 +8,7 @@ from matplotlib_utilities import GraphList, ColorMapper, FigureCanvas, ArrayHeat
 from matplotlib.cm import get_cmap
 from bson.binary import Binary
 from tile_base import TileBase
+import sklearn
 
 class_info = {"class_name": "",
               "tile_class": None}
