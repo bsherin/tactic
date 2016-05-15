@@ -127,6 +127,7 @@ mousetrap.bind("esc", function() {
     }
     broadcast_event_to_server("DehighlightTable", {});
     clearStatusArea();
+    clearStatusMessage();
 });
 
 function build_and_render_menu_objects() {
@@ -264,6 +265,7 @@ function saveProjectAs() {
             function save_as_success(data_object) {
                 if (data_object["success"]) {
                     tableObject.stopTableSpinner();
+                    clearStatusMessage();
                     menus["Project"].enable_menu_item("save");
                     tableObject.project_name = data_object["project_name"];
                     //tableObject.set_table_title()
@@ -279,6 +281,7 @@ function saveProjectAs() {
                 }
                 else {
                     tableObject.stopTableSpinner();
+                    clearStatusMessage();
                     data_object["message"] = data_object["message_string"]
                     doFlash(data_object)
                 }
@@ -299,6 +302,7 @@ function save_project() {
     function updateSuccess(data) {
         if (data.success) {
             tableObject.stopTableSpinner();
+            clearStatusMessage();
             data.alert_type = "alert-success";
             dirty = false;
             data.timeout = 2000;
@@ -306,6 +310,7 @@ function save_project() {
         }
         else {
             tableObject.stopTableSpinner();
+            clearStatusMessage();
             data.alert_type = "alert-warning";
             dirty = false;
             doFlash(data)

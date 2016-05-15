@@ -19,7 +19,7 @@ from tactic_app.shared_dicts import test_tile_container_id, get_tile_code
 from tactic_app.user_tile_env import create_user_tiles
 from tactic_app.users import User
 from tactic_app.communication_utils import send_request_to_container
-from docker_functions import send_direct_request_to_container
+from tactic_app.docker_functions import send_direct_request_to_container
 
 from tactic_app.docker_functions import create_container, get_address
 from tactic_app import megaplex_address, megaplex_id
@@ -33,15 +33,24 @@ ip_info = subprocess.check_output(['ip', '-4', 'addr', 'show', 'scope', 'global'
 host_ip = re.search("inet (.*?)/", ip_info).group(1)
 
 
-def start_spinner():
-    socketio.emit('start-spinner', {}, namespace='/user_manage', room=current_user.get_id())
+def start_spinner(user_id=None):
+    if user_id is None:
+        user_id = current_user.get_id()
+    socketio.emit('start-spinner', {}, namespace='/user_manage', room=user_id)
 
-def stop_spinner():
-    socketio.emit('stop-spinner', {}, namespace='/user_manage', room=current_user.get_id())
 
-def doflash(message, alert_type='alert-info'):
+def stop_spinner(user_id=None):
+    if user_id is None:
+        user_id = current_user.get_id()
+    socketio.emit('stop-spinner', {}, namespace='/user_manage', room=user_id)
+
+
+def doflash(message, alert_type='alert-info', user_id=None):
+    if user_id is None:
+        user_id = current_user.get_id()
     data = {"message": message, "alert_type": alert_type}
-    socketio.emit('stop-spinner', data, namespace='/user_manage', room=current_user.get_id())
+    socketio.emit('stop-spinner', data, namespace='/user_manage', room=user_id)
+
 
 class ResourceManager(object):
     is_repository = False
@@ -361,10 +370,11 @@ class CollectionManager(ResourceManager):
         the_collection = db[cname]
         doc_names = []
         for f in the_collection.find():
-            if str(f["name"]) == "__metadata__":
+            fname = f["name"].encode("ascii", "ignore")
+            if fname == "__metadata__":
                 continue
             else:
-                doc_names.append(str(f["name"]))
+                doc_names.append(fname)
 
         return render_template("main.html",
                                collection_name=cname,
@@ -436,6 +446,7 @@ class CollectionManager(ResourceManager):
 
         for the_file in file_list:
             filename, file_extension = os.path.splitext(the_file.filename)
+            filename = filename.encode("ascii", "ignore")
             if file_extension == ".csv":
                 (success, result_dict, header_list) = read_csv_file_to_dict(the_file)
             elif file_extension == ".tsv":

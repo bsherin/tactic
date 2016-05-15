@@ -10,6 +10,22 @@ $.get($SCRIPT_ROOT + "/get_modal_template", function(template){
     confirm_template = $(template).filter('#confirm-template').html();
 });
 
+function statusMessage(data) {
+    $("#status-msg-area").fadeOut(function () {
+        $("#status-msg-area").text(data["message"]);
+        if (data.hasOwnProperty("timeout") && (data["timeout"] != null)) {
+            $("#status-msg-area").fadeIn().delay(data.timeout).fadeOut();
+        }
+        else {
+            $("#status-msg-area").fadeIn();
+        }
+    });
+}
+
+function clearStatusMessage() {
+    $("#status-msg-area").fadeOut();
+}
+
 function doFlash(data) {
     // Flash a bootstrap-styled warning in status-area
     // data should be a dict with message and type fields.

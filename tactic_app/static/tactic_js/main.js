@@ -123,13 +123,20 @@ function start_post_load() {
             build_and_render_menu_objects();
             continue_loading()
         })
-    })
+    });
     socket.on("window-open", function(data) {
         window.open($SCRIPT_ROOT + "/load_temp_page/" + data["the_id"])
     });
     socket.on("doFlash", function(data) {
         doFlash(data)
-    })
+    });
+    socket.on('show-status-msg', function (data){
+        statusMessage(data)
+    });
+
+    socket.on("clear-status-msg", function (data){
+       clearStatusMessage()
+    });
 }
 
 function continue_loading() {

@@ -19,7 +19,7 @@ from tactic_app.communication_utils import send_request_to_container
 from tactic_app.users import load_user
 from tactic_app.host_workers import host_worker, client_worker
 from tactic_app import megaplex_address
-from docker_functions import send_direct_request_to_container
+from tactic_app.docker_functions import send_direct_request_to_container
 from tactic_app import shared_dicts
 
 

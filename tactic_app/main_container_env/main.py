@@ -29,6 +29,7 @@ STEP_SIZE = 100
 # noinspection PyPep8Naming
 class docInfo:
     def __init__(self, name, data_rows, header_list=None, cell_backgrounds=None):
+
         self.name = name
         self.data_rows = copy.deepcopy(data_rows)  # All the data rows in the doc
         self.current_data_rows = self.data_rows  # The current filtered set of data rows
@@ -217,6 +218,7 @@ class mainWindow(QWorker):
             self.console_html = None
             self.user_id = data_dict["user_id"]
             self.doc_dict = self._build_doc_dict()
+            self.debug_log("Done with build_doc_dict")
             self.visible_doc_name = self.doc_dict.keys()[0]
 
     # Communication Methods
@@ -275,6 +277,22 @@ class mainWindow(QWorker):
         self.debug_log("leaving compile_save_dict in main")
         return result
 
+    def show_um_message(self, message, user_manage_id, timeout=None):
+        data = {"message": message, "timeout": timeout, "user_manage_id": user_manage_id}
+        self.post_task("host", "show_um_status_message_task", data)
+
+    def clear_um_message(self, user_manage_id):
+        data = {"user_manage_id": user_manage_id}
+        self.post_task("host", "clear_um_status_message_task", data)
+
+    def show_main_status_message(self, message, timeout=None):
+        data = {"message": message, "timeout": timeout, "main_id": self.my_id}
+        self.post_task("host", "show_main_status_message", data)
+
+    def clear_main_status_message(self):
+        data = {"main_id": self.my_id}
+        self.post_task("host", "clear_main_status_message", data)
+
     @task_worthy
     def do_full_recreation(self, data_dict):
         try:
@@ -282,7 +300,9 @@ class mainWindow(QWorker):
                                                                      data_dict["project_name"])
             self.post_and_wait("host", "load_modules", {"loaded_modules": loaded_modules, "user_id": data_dict["user_id"]})
             doc_names = [str(doc_name) for doc_name in self.doc_names]
+            self.show_um_message("Creating empty containers", data_dict["user_manage_id"])
             tile_containers = self.post_and_wait("host", "get_empty_tile_containers", {"number": len(tile_info_dict.keys())})
+            self.show_um_message("Getting tile code", data_dict["user_manage_id"])
             tile_code_dict = self.post_and_wait("host", "get_tile_code", {"tile_info_dict": tile_info_dict,
                                                                           "user_id": data_dict["user_id"]})
             new_tile_info = {}
@@ -297,6 +317,7 @@ class mainWindow(QWorker):
                                                     "megaplex_address": self.megaplex_address}).json()
                 if not result["success"]:
                     raise Exception(result["message_string"])
+            self.show_um_message("Recreating the tiles", data_dict["user_manage_id"])
             self.tile_save_results = self.recreate_project_tiles(data_dict["list_names"], new_tile_info)
             template_data = {"collection_name": self.collection_name,
                              "project_name": self.project_name,
@@ -308,6 +329,7 @@ class mainWindow(QWorker):
                              "short_collection_name": self.short_collection_name,
                              "new_tile_info": new_tile_info}
 
+            self.clear_um_message(data_dict["user_manage_id"])
             self.post_task("host", "open_project_window", {"user_manage_id": data_dict["user_manage_id"],
                                                            "template_data": template_data,
                                                            "message": "window-open"})
@@ -418,30 +440,27 @@ class mainWindow(QWorker):
             for (dname, spec) in tspec_dict.items():
                 self.doc_dict[dname].table_spec = spec
 
-            self.debug_log("posting get_loaded_user_modules")
+            self.show_main_status_message("Getting loaded modules")
             self.loaded_modules = self.post_and_wait("host", "get_loaded_user_modules", {"user_id": self.user_id})[
                 "loaded_modules"]
             self.loaded_modules = [str(module) for module in self.loaded_modules]
-            self.debug_log("got loaded user modules " + str(self.loaded_modules))
+            self.show_main_status_message("compiling save dictionary")
             project_dict = self.compile_save_dict()
-            self.debug_log("got compiled save_dict")
+
             save_dict = {}
             save_dict["metadata"] = self.create_initial_metadata()
             save_dict["project_name"] = project_dict["project_name"]
-            self.debug_log("about to pickle")
+            self.show_main_status_message("Pickle, convert, compress")
             pdict = cPickle.dumps(project_dict)
-            self.debug_log("converting to binary")
             pdict = Binary(zlib.compress(pdict))
-            self.debug_log("putting the data")
+            self.show_main_status_message("Writing the data")
             save_dict["file_id"] = self.fs.put(pdict)
-            self.debug_log("pickled and dumped")
             self.mdata = save_dict["metadata"]
-            self.debug_log("inserting the save_dict")
             self.db[self.project_collection_name].insert_one(save_dict)
+
             return_data = {"project_name": data_dict["project_name"],
                            "success": True,
                            "message_string": "Project Successfully Saved"}
-            self.debug_log("ready to return")
 
         except Exception as ex:
             self.debug_log("got an error in save_new_project")
@@ -459,19 +478,19 @@ class mainWindow(QWorker):
             tspec_dict = data_dict["tablespec_dict"]
             for (dname, spec) in tspec_dict.items():
                 self.doc_dict[dname].table_spec = spec
+            self.show_main_status_message("Getting loaded modules")
             self.loaded_modules = self.post_and_wait("host", "get_loaded_user_modules", {"user_id": self.user_id})[
                 "loaded_modules"]
             self.loaded_modules = [str(module) for module in self.loaded_modules]
+            self.show_main_status_message("compiling save dictionary")
             project_dict = self.compile_save_dict()
             pname = project_dict["project_name"]
             self.mdata["updated"] = datetime.datetime.today()
-            self.debug_log("pickling")
+            self.show_main_status_message("Pickle, convert, compress")
             pdict = cPickle.dumps(project_dict)
-            self.debug_log("Binarying")
             pdict = Binary(zlib.compress(pdict))
-            self.debug_log("about to put project_dict")
+            self.show_main_status_message("Writing the data")
             new_file_id = self.fs.put(pdict)
-            self.debug_log("finished the put")
             save_dict = self.db[self.project_collection_name].find_one({"project_name": pname})
             self.fs.delete(save_dict["file_id"])
             save_dict["project_name"] = pname
@@ -479,6 +498,7 @@ class mainWindow(QWorker):
             save_dict["file_id"] = new_file_id
             self.db[self.project_collection_name].update_one({"project_name": pname},
                                                              {'$set': save_dict})
+            self.show_main_status_message("Save completed")
             self.mdata = save_dict["metadata"]
             return_data = {"project_name": pname,
                            "success": True,
@@ -494,18 +514,18 @@ class mainWindow(QWorker):
     def _build_doc_dict(self):
         result = {}
         self.debug_log("building doc_dict with collection: " + self.collection_name)
-        try:
-            the_collection = self.db[self.collection_name]
-            for f in the_collection.find():
-                if str(f["name"]) == "__metadata__":
-                    continue
-                if "header_list" in f:
-                    # Note conversion of unicode filenames to strings
-                    result[str(f["name"])] = docInfo(str(f["name"]), f["data_rows"], f["header_list"])
-                else:
-                    result[str(f["name"])] = docInfo(str(f["name"]), f["data_rows"], [])
-        except:
-            return
+        the_collection = self.db[self.collection_name]
+        for f in the_collection.find():
+            fname = f["name"].encode("ascii", "ignore")
+            self.debug_log("Got fname " + fname)
+            if fname == "__metadata__":
+                continue
+            if "header_list" in f:
+                # Note conversion of unicode filenames to strings
+                self.debug_log("got header_list " + str(f["header_list"]))
+                result[fname] = docInfo(fname, f["data_rows"], f["header_list"])
+            else:
+                result[fname] = docInfo(fname, f["data_rows"], [])
         return result
 
     def _set_row_column_data(self, doc_name, the_id, column_header, new_content):

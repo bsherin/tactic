@@ -266,6 +266,10 @@ td.cell-clickable:active {
   max-height: 100%; }
 
 /* Other*/
+.status-msg {
+  font-size: 16px;
+  color: dimgray; }
+
 .highlight {
   background: yellow; }
 

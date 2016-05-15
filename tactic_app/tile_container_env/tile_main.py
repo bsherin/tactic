@@ -27,7 +27,7 @@ def handle_exception(ex, special_string=None):
         template = special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}"
     error_string = template.format(type(ex).__name__, ex.args)
     error_string = "<pre>" + error_string + "</pre>"
-    return jsonifY({"success": False, "message_string": error_string})
+    return jsonify({"success": False, "message_string": error_string})
 
 
 @app.route('/load_source', methods=["get", "post"])

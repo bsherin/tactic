@@ -86,8 +86,6 @@ def check_wait_task():
     task_packet = request.json
     cbid = task_packet["callback_id"]
     source = task_packet["source"]
-    app.logger.debug("task_packet is " + str(task_packet))
-    app.logger.debug("wait dict is " + str(queue_dict[source]["wait_dict"]))
     result = queue_dict[source]["wait_dict"][cbid]
     if result is None:
         return jsonify({"success": False})

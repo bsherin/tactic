@@ -10,6 +10,7 @@ var user_manage_id = guid();
 
 mousetrap.bind("esc", function() {
     clearStatusArea();
+    clearStatusMessage();
 });
 
 var res_types = ["list", "collection", "project", "tile"];
@@ -54,6 +55,14 @@ function start_post_load() {
         startSpinner()
     });
 
+    socket.on('show-status-msg', function (data){
+        statusMessage(data)
+    });
+
+    socket.on("clear-status-msg", function (data){
+       clearStatusMessage()
+    });
+
     socket.on('update-loaded-tile-list', function(data) {
         $("#loaded-tile-list").html(data.html)
     });
@@ -61,6 +70,8 @@ function start_post_load() {
     socket.on('close-user-windows', function(data){
         window.close()
     });
+    
+    
     
     socket.on('doflash', doFlash);
     console.log("about to create");
@@ -284,7 +295,7 @@ var tile_manager_specifics = {
         var manager = event.data.manager;
         var res_name = manager.check_for_selection("tile");
         if (res_name == "") return;
-        $.getJSON($SCRIPT_ROOT + '/unload_all_tiles', doFlash)
+        $.getJSON($SCRIPT_ROOT + '/userunload_all_tiles', doFlash)
     },
 
     new_tile: function (event) {

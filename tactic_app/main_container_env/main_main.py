@@ -37,7 +37,7 @@ def initialize_mainwindow():
         mwindow.start()
         return jsonify({"success": True})
     except Exception as Ex:
-        return handle_exception(ex, "Error initializing mainwindow")
+        return handle_exception(Ex, "Error initializing mainwindow")
 
 
 @app.route('/initialize_project_mainwindow', methods=['POST'])
