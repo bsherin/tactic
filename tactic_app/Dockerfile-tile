@@ -1,9 +1,8 @@
 FROM ruimashita/scikit-learn:latest
 WORKDIR /code
 ADD ./tile_container_env/requirements.txt /code/requirements.txt
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 MAINTAINER "Bruce L Sherin"
 ADD  ./tile_container_env /code
 ADD ./qworker.py /code
-ADD ./communication_utils.py /code
 CMD ["python", "tile_main.py"]
