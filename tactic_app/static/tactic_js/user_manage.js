@@ -71,8 +71,6 @@ function start_post_load() {
         window.close()
     });
     
-    
-    
     socket.on('doflash', doFlash);
     console.log("about to create");
     $.get($SCRIPT_ROOT + "/get_resource_module_template", function(template) {

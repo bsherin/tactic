@@ -10,47 +10,69 @@ $.get($SCRIPT_ROOT + "/get_modal_template", function(template){
     confirm_template = $(template).filter('#confirm-template').html();
 });
 
+alertbox = alertify.alert()
+        .setting({
+            'basic': true,
+            'modal': false,
+            'frameless': true,
+            'closable': false,
+            'transition': 'fade',
+            'resizable': true
+        });
+
 function statusMessage(data) {
-    $("#status-msg-area").fadeOut(function () {
-        $("#status-msg-area").text(data["message"]);
-        if (data.hasOwnProperty("timeout") && (data["timeout"] != null)) {
-            $("#status-msg-area").fadeIn().delay(data.timeout).fadeOut();
-        }
-        else {
-            $("#status-msg-area").fadeIn();
-        }
-    });
+    if (data.hasOwnProperty("timeout") && (data.timeout != null)) {
+        timeout = data.timeout
+    } else {
+        timeout = 0
+    }
+
+    if (!alertbox.isOpen()){
+        alertbox.setContent(data.message).show().resizeTo("100%", 50).moveTo(0,0)
+    } else {
+        alertbox.setContent(data.message)
+    }
 }
 
 function clearStatusMessage() {
-    $("#status-msg-area").fadeOut();
+    alertbox.close();
 }
 
 function doFlash(data) {
     // Flash a bootstrap-styled warning in status-area
     // data should be a dict with message and type fields.
     // type can be alert-success, alert-warning, alert-info, alert-danger
-    $("#status-area").fadeOut(function () {
-        if (!data.hasOwnProperty("alert_type")){
-            data.alert_type = "alert-info"
-        }
-        if (!data.hasOwnProperty("message")){
-            data.message = "Unspecified message"
-        }
-        var alert_template = "<div class='alert {{alert_type}} alert-dismissible'>" +
-            '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button> {{message}}</div>'
+    if (!data.hasOwnProperty("alert_type")){
+        alert_type = "alert-info"
+    }
+    else {
+        alert_type = data.alert_type
+    }
+    if (!data.hasOwnProperty("message")){
+        message = "Unspecified message"
+    }
+    else {
+        message = data.message
+    }
+    if (!data.hasOwnProperty("timeout")) {
+        timeout = 0
+    } else {
+        timeout = data.timeout
+    }
 
-        var result = Mustache.to_html(alert_template, data);
+    if (alert_type == "alert-success") {
+        var msg = alertify.success(message, timeout);
 
-        $("#status-area").html(result);
-        if (data.hasOwnProperty("timeout")) {
-            $("#status-area").fadeIn().delay(data.timeout).fadeOut();
-        }
-        else {
-            $("#status-area").fadeIn();
-        }
+    } else if(alert_type =="alert-warning") {
+        var msg = alertify.error(message, timeout);
 
-    })
+    } else {
+        var msg = alertify.message(message, timeout);
+    }
+
+     $('body').one('click', function(){
+        msg.dismiss();
+     });
 }
 
 function scrollIntoView(element, container) {

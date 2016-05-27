@@ -45,9 +45,8 @@ class HostWorker(QWorker):
     def show_um_status_message_task(self, data):
         socketio.emit('show-status-msg', data, namespace='/user_manage', room=data["user_manage_id"])
 
-
     @task_worthy
-    def clear_um_status_message_task(data):
+    def clear_um_status_message_task(self, data):
         socketio.emit('clear-status-msg', {}, namespace='/user_manage', room=data["user_manage_id"])
 
     @task_worthy
@@ -277,7 +276,11 @@ class ClientWorker(QWorker):
     def _run(self):
         self.running = True
         while self.running:
-            task_packet = self.get_next_task()
+            try:
+                task_packet = self.get_next_task()
+            except Exception as ex:
+                special_string = "Error in get_next_task for my_id {}".format(self.my_id)
+                self.handle_exception(ex, special_string)
             if "empty" not in task_packet:
                 if task_packet["callback_id"] is not None:
                     self.socketio.emit("handle-callback", task_packet, namespace='/main', room=task_packet["main_id"])

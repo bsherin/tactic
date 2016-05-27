@@ -871,7 +871,9 @@ class TileBase(QWorker):
             if pipe_key in tile_entry:
                 self.debug_log("found tile_entry: " + str(tile_entry))
                 result = self.post_and_wait(tile_entry[pipe_key]["tile_id"],
-                                            "transfer_pipe_value", {"export_name": tile_entry[pipe_key]["export_name"]})
+                                            "transfer_pipe_value", {"export_name": tile_entry[pipe_key]["export_name"]},
+                                            timeout=60,
+                                            tries=30)
                 encoded_val = result["encoded_val"]
                 val = cPickle.loads(encoded_val.decode("utf-8", "ignore").encode("ascii"))
                 return val

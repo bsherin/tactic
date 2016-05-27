@@ -5,7 +5,7 @@ import sys
 import time
 import requests
 import os
-
+from communication_utils import send_request_to_container
 callback_dict = {}
 
 blank_packet = {"source": None,
@@ -17,24 +17,6 @@ blank_packet = {"source": None,
 
 SHORT_SLEEP_PERIOD = float(os.environ.get("SHORT_SLEEP_PERIOD"))
 LONG_SLEEP_PERIOD = float(os.environ.get("LONG_SLEEP_PERIOD"))
-
-
-def send_request_to_container(taddress, msg_type, data_dict=None, wait_for_success=True,
-                              timeout=3, tries=30, wait_time=.1):
-    if wait_for_success:
-        for attempt in range(tries):
-            try:
-                res = requests.post("http://{0}:5000/{1}".format(taddress, msg_type),
-                                    timeout=timeout, json=data_dict)
-                return res
-            except:
-                error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-                time.sleep(wait_time)
-                continue
-        error_string = "Send container request timed out with msg_type {} and address {} ".format(msg_type, taddress)
-        raise Exception(error_string)
-    else:
-        return requests.post("http://{0}:5000/{1}".format(taddress, msg_type), timeout=timeout, json=data_dict)
 
 task_worthy_methods = []
 
@@ -76,9 +58,10 @@ class QWorker(gevent.Greenlet):
                 self.app.logger.debug("Got result to post_and_wait")
                 return res["result"]
             else:
-                self.app.logger.debug("No result yet for post_and_wait")
+                self.app.logger.debug("No result yet for post_and_wait after tries " + str(i))
                 time.sleep(sleep_time)
-        error_string = "post_and_wait timed out with msg_type {} and destination {}".format(task_type, dest_id)
+        error_string = "post_and_wait timed out with msg_type {}, destination {}, and source".format(task_type, dest_id, self.my_id)
+        self.app.logger.debug(error_string)
         raise Exception(error_string)
 
     def post_task(self, dest_id, task_type, task_data=None, callback_func=None):
@@ -95,7 +78,11 @@ class QWorker(gevent.Greenlet):
                       "callback_id": callback_id}
         result = send_request_to_container(self.megaplex_address, "post_task", new_packet).json()
         if not result["success"]:
-            self.debug_log("Error posting task to megaplex + " + result[message])
+            error_string = "Error posting task with msg_type {} dest {} source {}. Error: {}".format(task_type,
+                                                                                                     dest_id,
+                                                                                                     self.my_id,
+                                                                                                     result["message"])
+            raise Exception(error_string)
         return result
 
     def submit_response(self, task_packet):
@@ -109,7 +96,7 @@ class QWorker(gevent.Greenlet):
             try:
                 task_packet = self.get_next_task()
             except Exception as ex:
-                special_string = "Error in get_next_task"
+                special_string = "Error in get_next_task for my_id {}".format(self.my_id)
                 self.handle_exception(ex, special_string)
             else:
                 if "empty" not in task_packet:
@@ -119,7 +106,8 @@ class QWorker(gevent.Greenlet):
                             del callback_dict[task_packet["callback_id"]]
                             func(task_packet["response_data"])
                         except Exception as ex:
-                            special_string = "Error handling callback for task of type {}".format(task_packet["task_type"])
+                            special_string = "Error handling callback for task type {} for my_id {}".format(task_packet["task_type"],
+                                                                                                            self.my_id)
                             self.handle_exception(ex, special_string)
                     else:
                         self.handle_event(task_packet)
@@ -133,7 +121,8 @@ class QWorker(gevent.Greenlet):
                 try:
                     response_data = getattr(self, task_packet["task_type"])(task_packet["task_data"])
                 except Exception as ex:
-                    special_string = "Error handling task of type {}".format(task_packet["task_type"])
+                    special_string = "Error handling task of type {} for my_id {}".format(task_packet["task_type"],
+                                                                                          self.my_id)
                     response_data = "__ERROR__"
                     self.handle_exception(ex, special_string)
                 if task_packet["callback_id"] is not None:
@@ -141,8 +130,9 @@ class QWorker(gevent.Greenlet):
                         task_packet["response_data"] = response_data
                         self.submit_response(task_packet)
                     except Exception as ex:
-                        special_string = "Error submitting response for task type {}".format(task_packet["task_type"])
+                        special_string = "Error submitting response for task type {} for my_id {}".format(task_packet["task_type"],
+                                                                                                         self.my_id)
                         self.handle_exception(ex, special_string)
             else:
-                self.debug_log("Got invalid task type")
+                self.debug_log("Got invalid task type for my_id ".format(self.my_id))
         return

@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="{{url_for('static', filename='css/codemirrorthemes/pastel-on-dark.css')}}">
     <link rel="stylesheet" href="{{url_for('static', filename='css/codemirrorthemes/dialog.css')}}">
     <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/tactic.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/alertify_css/alertify.min.css')}}"/>
+    <link rel="stylesheet" href="{{url_for('static', filename='css/alertify_css/themes/bootstrap.min.css')}}" />
 {% endblock %}
 
 {% block morenavbar %}
@@ -59,6 +61,7 @@
 {%  endblock %}
 
 {% block scripts %}
+    <script src="{{url_for('static', filename='js/alertify.js')}}"></script>
     <script src="{{url_for('static', filename='js/socket.io.js')}}"></script>
     <script src="{{url_for('static', filename='js/codemirror.js')}}"></script>
     <script src="{{url_for('static', filename='js/codemirror/search.js')}}"></script>

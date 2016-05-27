@@ -5,6 +5,9 @@ import cPickle
 from bson.binary import Binary
 import Queue
 import os
+import logging
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
 
 timeout_on_queue_full = .01
 

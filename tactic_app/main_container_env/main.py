@@ -395,7 +395,11 @@ class mainWindow(QWorker):
             tile_save_dict["tile_id"] = new_tile_id
             tile_save_dict["main_id"] = self.my_id
             tile_save_dict["new_base_figure_url"] = self.base_figure_url.replace("tile_id", new_tile_id)
-            tile_result = send_request_to_container(new_tile_address, "recreate_from_save", tile_save_dict).json()
+            tresult = send_request_to_container(new_tile_address,
+                                                "recreate_from_save",
+                                                tile_save_dict,
+                                                timeout=60, tries=30)
+            tile_result = tresult.json()
             if not tile_result["success"]:
                 raise Exception(tile_result["message_string"])
             tile_results[new_tile_id] = tile_result
@@ -457,6 +461,7 @@ class mainWindow(QWorker):
             save_dict["file_id"] = self.fs.put(pdict)
             self.mdata = save_dict["metadata"]
             self.db[self.project_collection_name].insert_one(save_dict)
+            self.clear_main_status_message()
 
             return_data = {"project_name": data_dict["project_name"],
                            "success": True,
@@ -498,7 +503,7 @@ class mainWindow(QWorker):
             save_dict["file_id"] = new_file_id
             self.db[self.project_collection_name].update_one({"project_name": pname},
                                                              {'$set': save_dict})
-            self.show_main_status_message("Save completed")
+            self.clear_main_status_message()
             self.mdata = save_dict["metadata"]
             return_data = {"project_name": pname,
                            "success": True,
