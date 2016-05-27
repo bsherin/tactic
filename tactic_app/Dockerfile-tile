@@ -5,4 +5,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 MAINTAINER "Bruce L Sherin"
 ADD  ./tile_container_env /code
 ADD ./qworker.py /code
+ADD ./communication_utils.py /code
 CMD ["python", "tile_main.py"]
