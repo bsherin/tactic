@@ -269,6 +269,7 @@ var tile_manager_specifics = {
     add_view: '/add_tile_module',
     view_view: '/view_module/',
     delete_view: "/delete_tile_module/",
+    duplicate_view: '/create_duplicate_tile',
     double_click_func: "view_func",
     show_loaded_list: true,
     popup_buttons: [{"name": "new",
@@ -280,6 +281,7 @@ var tile_manager_specifics = {
     buttons: [
         {"name": "view", "func": "view_func", "button_class": "btn-primary"},
         {"name": "load", "func": "load_func", "button_class": "btn-primary"},
+        {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-success"},
         {"name": "unload", "func": "unload_func", "button_class": "btn-warning"},
         {"name": "delete", "func": "delete_func", "button_class": "btn-danger"}
     ],

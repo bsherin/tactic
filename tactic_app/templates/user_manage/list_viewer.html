@@ -1,22 +1,63 @@
 {% extends "base.html" %}
 
-{% block title %}List viewer{% endblock %}
+{% block title %}{{list_name}}{% endblock %}
+
+{% block styles %}
+    <!--suppress ALL -->
+<link rel="stylesheet" href="{{url_for('static', filename='tactic_css/tactic.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/alertify_css/alertify.min.css')}}"/>
+    <link rel="stylesheet" href="{{url_for('static', filename='css/alertify_css/themes/bootstrap.min.css')}}" />
+{% endblock %}
 
 {% block page_content %}
+    <div id="modal-area">
+    </div>
     <div class="container-fluid">
-        <div class="page-header">
-            <h1>{{list_name}}</h1>
-        </div>
         <div class="row">
-            <div class="col-xs-12">
-                <table>
-                    <tbody class="table">
-                    {% for w in the_list %}
-                        <tr><td>{{w}}</td></tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
+            <div class="col-xs-12" style="margin-left: 40px">
+                <div class="row" style="margin-top: 35px">
+                    <div class="btn-toolbar col-xs-12" role="toolbar" >
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-default" onclick="updateList()">Save</button>
+                            <button type="button" class="btn btn-default" onclick="saveListAs()">Save as ...</button>
+                            <button type="button" class="btn btn-default" onclick="window.close()">Close</button>
+                        </div>
+                        <button id="list-Name" type="button" class="btn btn-default res-name-button" onclick="renameList()">{{ list_name }}</button>
+                    </div>
+                </div>
+                <textarea id="listarea">{{the_list_as_string | safe}}</textarea>
+                <div  style="display: inline-block; vertical-align: top; margin-left: 5px; margin-top: 10px">
+                    <div class="created"></div>
+                    <div class="form-group" style="margin-bottom: 7px">
+                        <textarea type="text" class="form-control metadata-field" id="list-tags" rows="1" placeholder="tags"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <textarea class="form-control metadata-field" id="list-notes" rows="10" placeholder="notes"></textarea>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 {%  endblock %}
+
+{% block scripts %}
+    <script src="{{url_for('static', filename='js/alertify.js')}}"></script>
+    <script src="{{url_for('static', filename='js/socket.io.js')}}"></script>
+    <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/utilities.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/list_viewer.js')}}"></script>
+    <script>
+        var user_id = "{{current_user.get_id()}}";
+        var list_name = "{{list_name}}";
+        var the_list_as_string = listarea.valuel
+        window.onload = start_post_load;
+        window.onbeforeunload = function(e) {
+            if (dirty()) {
+                return "Any unsaved changes will be lost."
+            }
+        };
+        window.onresize = function () {
+            $("#listarea").css('height', window.innerHeight - $("#listarea").offset().top - 40)
+        }
+    </script>
+{% endblock %}

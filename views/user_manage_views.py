@@ -261,9 +261,12 @@ class ListManager(ResourceManager):
 
     def view_list(self, list_name):
         the_list = current_user.get_list(list_name)
+        lstring = ""
+        for w in the_list:
+            lstring += w + "\n"
         return render_template("user_manage/list_viewer.html",
                                list_name=list_name,
-                               the_list=the_list)
+                               the_list_as_string=lstring)
 
     def grab_metadata(self, res_name):
         if self.is_repository:
@@ -574,6 +577,8 @@ class TileManager(ResourceManager):
                          login_required(self.create_tile_module), methods=['get', 'post'])
         app.add_url_rule('/request_update_loaded_tile_list', "request_update_loaded_tile_list",
                          login_required(self.request_update_loaded_tile_list), methods=['get', 'post'])
+        app.add_url_rule('/create_duplicate_tile', "create_duplicate_tile",
+                         login_required(self.create_duplicate_tile), methods=['get', 'post'])
 
     def grab_metadata(self, res_name):
         if self.is_repository:
@@ -664,6 +669,20 @@ class TileManager(ResourceManager):
         data_dict = {"tile_module_name": f.filename, "tile_module": the_module, "metadata": metadata}
         db[user_obj.tile_collection_name].insert_one(data_dict)
         self.update_selector_list(f.filename)
+        return jsonify({"success": True})
+
+    def create_duplicate_tile(self):
+        user_obj = current_user
+        tile_to_copy = request.json['res_to_copy']
+        new_tile_name = request.json['new_res_name']
+        if db[user_obj.tile_collection_name].find_one({"tile_module_name": new_tile_name}) is not None:
+            return jsonify({"success": False, "alert_type": "alert-warning",
+                            "message": "A tile with that name already exists"})
+        old_tile_dict = db[user_obj.tile_collection_name].find_one({"tile_module_name": tile_to_copy})
+        metadata = create_initial_metadata()
+        new_tile_dict = {"tile_module_name": new_tile_name, "tile_module": old_tile_dict["tile_module"], "metadata": metadata}
+        db[user_obj.tile_collection_name].insert_one(new_tile_dict)
+        self.update_selector_list(select=new_tile_name)
         return jsonify({"success": True})
 
     def create_tile_module(self):
@@ -854,6 +873,31 @@ def update_module():
         return jsonify({"success": True, "message": "Module Successfully Saved", "alert_type": "alert-success"})
     except:
         error_string = "Error saving module " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+
+@app.route('/update_list', methods=['post'])
+@login_required
+def update_list():
+    try:
+        data_dict = request.json
+        list_name = data_dict["list_name"]
+        new_list_as_string = data_dict["new_list_as_string"]
+        new_list = new_list_as_string.split("\n")
+        doc = db[current_user.list_collection_name].find_one({"list_name": list_name})
+        if "metadata" in doc:
+            mdata = doc["metadata"]
+        else:
+            mdata = {}
+        mdata["tags"] = data_dict["tags"]
+        mdata["notes"] = data_dict["notes"]
+        mdata["updated"] = datetime.datetime.today()
+
+        db[current_user.list_collection_name].update_one({"list_name": list_name},
+                                                         {'$set': {"the_list": new_list, "metadata": mdata}})
+        list_manager.update_selector_list()
+        return jsonify({"success": True, "message": "List Successfully Saved", "alert_type": "alert-success"})
+    except:
+        error_string = "Error saving list " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
 

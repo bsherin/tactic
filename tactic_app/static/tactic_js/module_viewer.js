@@ -5,9 +5,9 @@
 var current_theme = "default";
 var mousetrap = new Mousetrap();
 var myCodeMirror;
-var savedCode = none;
-var savedTags = none;
-var savedNotes = none;
+var savedCode = null;
+var savedTags = null;
+var savedNotes = null;
 
 mousetrap.bind("esc", function() {
     clearStatusArea();
