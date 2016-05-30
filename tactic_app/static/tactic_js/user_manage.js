@@ -148,7 +148,8 @@ function toggleRepository() {
         $(".repository-outer").fadeOut(function (){
             $(".resource-outer").fadeIn(function() {
                 repository_visible = false;
-                $(".page-header h1").text(saved_title);
+                $("#view-title").text(saved_title);
+                $("#toggle-repository-button").text("Show Repository");
                 $(".page-header").removeClass("repository-title");
                 resize_window()
             })
@@ -158,7 +159,8 @@ function toggleRepository() {
         $(".resource-outer").fadeOut(function(){
             $(".repository-outer").fadeIn(function () {
                 repository_visible = true;
-                $(".page-header h1").text("Repository");
+                $("#view-title").text("Repository");
+                $("#toggle-repository-button").text("Hide Repository");
                 $(".page-header").addClass("repository-title");
                 resize_window()
             })
