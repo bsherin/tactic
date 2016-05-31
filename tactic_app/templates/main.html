@@ -38,7 +38,7 @@
                     <form class="form-inline" style="display:inline">
                       <span class="form-group">
                         <label for="doc-selector">{{short_collection_name}}: </label>
-                            <select id="doc-selector" class="form-control  tooltip-top" data-toggle="tooltip" onchange="change_doc(this, null)">
+                            <select id="doc-selector" style="max-width: 200px" class="form-control  tooltip-top" data-toggle="tooltip" onchange="change_doc(this, null)">
                                 {% for dname in doc_names %}
                                     <option>{{ dname }}</option>
                                 {% endfor %}
@@ -86,8 +86,8 @@
                 <div id="console-heading" class="panel-heading">
                     <button type='button' id="show-console-button" data-toggle="tooltip" class='notclose triangle-right tooltip-top' onclick=expandConsole();><span style="font-size:12px" class="glyphicon glyphicon-triangle-right"></span></button>
                     <button type='button' id="hide-console-button" data-toggle="tooltip" class='notclose triangle-bottom tooltip-top' onclick=shrinkConsole();><span style="font-size:12px" class="glyphicon glyphicon-triangle-bottom"></span></button>
-                    <button type='button' id="clear-console-button" data-toggle="tooltip" class='notclose tooltip-top'  onclick=openLogWindow();><span style="font-size:12px" class="glyphicon glyphicon-open"></span></button>
-                    <button type='button' id="clear-console-button" data-toggle="tooltip" class='notclose tooltip-top'  onclick=addBlankConsoleText();><span style="font-size:12px" class="glyphicon glyphicon-plus"></span></button>
+                    <button type='button' id="open-log-button" data-toggle="tooltip" class='notclose tooltip-top'  onclick=openLogWindow();><span style="font-size:12px" class="glyphicon glyphicon-open"></span></button>
+                    <button type='button' id="add-blank-text-button" data-toggle="tooltip" class='notclose tooltip-top'  onclick=addBlankConsoleText();><span style="font-size:12px" class="glyphicon glyphicon-plus"></span></button>
                     <button type='button' id="clear-console-button" data-toggle="tooltip" class='notclose tooltip-top' style="float:right" onclick=tableObject.clearConsole();><span style="font-size:12px" class="glyphicon glyphicon-trash"></span></button>
                     Log
                 </div>

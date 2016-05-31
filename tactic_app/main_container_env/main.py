@@ -633,8 +633,11 @@ class mainWindow(QWorker):
     @staticmethod
     def txt_in_dict(txt, d):
         for val in d.values():
-            if str(txt).lower() in str(val).lower():
-                return True
+            try:
+                if str(txt).lower() in str(val).lower():
+                    return True
+            except UnicodeEncodeError:
+                continue
         return False
 
     # Task Worthy methods. These are eligible to be the recipient of posted tasks.

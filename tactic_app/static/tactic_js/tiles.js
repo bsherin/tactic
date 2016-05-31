@@ -145,6 +145,13 @@ TileObject.prototype = {
         }
     },
 
+    logParams: function() {
+        data_dict = {};
+        data_dict["main_id"] = main_id;
+        data_dict["tile_id"] = this.tile_id;
+        postWithCallback(this.tile_id, "LogParams", data_dict)
+    },
+
     logMe: function() {
         data_dict = {};
         data_dict["main_id"] = main_id;

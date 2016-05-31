@@ -246,6 +246,15 @@ class TileBase(QWorker):
         return None
 
     @task_worthy
+    def LogParams(self, data):
+        parray = [["name", "value"]]
+        for opt in self.options:
+            parray.append([opt["name"], getattr(self, opt["name"])])
+
+        self.log_it(self.build_html_table_from_data_list(parray, title=self.tile_name,
+                                                         sidebyside=True))
+
+    @task_worthy
     def RebuildTileForms(self, data):
         form_html = self.create_form_html(data)["form_html"]
         self.emit_tile_message("displayFormContent", {"html": form_html})
