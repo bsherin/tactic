@@ -6,6 +6,8 @@ import time
 import requests
 import os
 from communication_utils import send_request_to_container
+import cPickle
+
 callback_dict = {}
 
 blank_packet = {"source": None,
@@ -104,6 +106,8 @@ class QWorker(gevent.Greenlet):
                         try:
                             func = callback_dict[task_packet["callback_id"]]
                             del callback_dict[task_packet["callback_id"]]
+                            if isinstance(task_packet["response_data"], Binary):
+                                task_packet["response_data"] = cPickle.loads(encoded_val.decode("utf-8", "ignore").encode("ascii"))
                             func(task_packet["response_data"])
                         except Exception as ex:
                             special_string = "Error handling callback for task type {} for my_id {}".format(task_packet["task_type"],

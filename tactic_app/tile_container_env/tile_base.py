@@ -35,7 +35,7 @@ jsonizable_types = {
 
 class TileBase(QWorker):
     category = "basic"
-    exports = {}
+    exports = []
     input_start_template = '<div class="form-group form-group-sm"">' \
                            '<label>{0}</label>'
     basic_input_template = '<input type="{1}" class="form-control input-sm" id="{0}" value="{2}"></input>' \
@@ -89,7 +89,7 @@ class TileBase(QWorker):
         self.current_data_id = 0
         self.current_unique_id_index = 0
         self.is_shrunk = False
-        # todo base_data_url keep or get rid of? Seems like this is used for d3plots maybe old ones only?
+        # tactic_todo base_data_url keep or get rid of? Seems like this is used for d3plots maybe old ones only?
         # self.base_data_url = url_for("data_source", main_id=main_id, tile_id=tile_id, data_name="X")[:-1]
         self.base_data_url = ""
         self.configured = False

@@ -86,6 +86,7 @@ try:
     csrf.init_app(app)
 
     print "creating the megaplex"
+    # tactic_todo Create the megaplex in a separate script
     megaplex_id = create_container("tactic_megaplex_image", network_mode="bridge")["Id"]
     megaplex_address = get_address(megaplex_id, "bridge")
     send_request_to_container(megaplex_address, "add_address", {"container_id": "host", "address": host_ip})

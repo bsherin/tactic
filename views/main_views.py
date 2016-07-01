@@ -109,7 +109,7 @@ def export_data():
     return jsonify({"success": True})
 
 
-# todo various exporting and downloading
+# tactic_todo various exporting and downloading
 @app.route('/download_table/<main_id>/<new_name>', methods=['GET', 'POST'])
 @login_required
 def download_table(main_id, new_name):
@@ -126,39 +126,7 @@ def download_table(main_id, new_name):
             str_io.write(str(row[header]) + ",")
         str_io.write(str(row[header_list[-1]]) + '\n')
     str_io.seek(0)
-    return send_file(str_io,
-                     attachment_filename=new_name,
-                     as_attachment=True)
-
-
-@app.route('/download_collection/<main_id>/<new_name>', methods=['GET', 'POST'])
-@login_required
-def download_collection(main_id, new_name):
-    mw = shared_dicts.mainwindow_instances[main_id]
-    wb = openpyxl.Workbook()
-    first = True
-    for (doc_name, doc_info) in mw.doc_dict.items():
-        if first:
-            ws = wb.active
-            ws.title = doc_name
-            first = False
-        else:
-            ws = wb.create_sheet(title=doc_name)
-        data_rows = doc_info.all_sorted_data_rows
-        header_list = doc_info.header_list
-        for c, header in enumerate(header_list, start=1):
-            _ = ws.cell(row=1, column=c, value=header)
-        for r, row in enumerate(data_rows, start=2):
-            for c, header in enumerate(header_list, start=1):
-                _ = ws.cell(row=r, column=c, value=row[header])
-    # noinspection PyUnresolvedReferences
-    virtual_notebook = openpyxl.writer.excel.save_virtual_workbook(wb)
-    str_io = cStringIO.StringIO()
-    str_io.write(virtual_notebook)
-    str_io.seek(0)
-    return send_file(str_io,
-                     attachment_filename=new_name,
-                     as_attachment=True)
+    return {"sent_file": send_file(str_io, attachment_filename=new_name, as_attachment=True)}
 
 
 @app.route('/figure_source/<tile_id>/<figure_name>', methods=['GET', 'POST'])
@@ -172,7 +140,7 @@ def figure_source(tile_id, figure_name):
     return send_file(img_file, mimetype='image/png')
 
 
-# todo deal with data_source, part of base_data_url, create_data_source
+# tactic_todo deal with data_source, part of base_data_url, create_data_source
 @app.route('/data_source/<main_id>/<tile_id>/<data_name>', methods=['GET'])
 @login_required
 def data_source(main_id, tile_id, data_name):

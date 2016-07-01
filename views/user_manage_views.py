@@ -254,6 +254,7 @@ class ListManager(ResourceManager):
 
     def add_rules(self):
         app.add_url_rule('/view_list/<list_name>', "view_list", login_required(self.view_list), methods=['get'])
+        app.add_url_rule('/repository_view_list/<list_name>', "repository_view_list", login_required(self.repository_view_list), methods=['get'])
         app.add_url_rule('/add_list', "add_list", login_required(self.add_list), methods=['get', "post"])
         app.add_url_rule('/delete_list/<list_name>', "delete_list", login_required(self.delete_list), methods=['post'])
         app.add_url_rule('/create_duplicate_list', "create_duplicate_list",
@@ -267,7 +268,18 @@ class ListManager(ResourceManager):
         return render_template("user_manage/list_viewer.html",
                                list_name=list_name,
                                the_list_as_string=lstring,
+                               include_buttons=True,
                                read_only_string="")
+
+    def repository_view_list(self, list_name):
+        the_list = repository_user.get_list(list_name)
+        lstring = ""
+        for w in the_list:
+            lstring += w + "\n"
+        return render_template("user_manage/list_viewer.html",
+                               list_name=list_name,
+                               the_list_as_string=lstring,
+                               read_only_string="readonly")
 
     def grab_metadata(self, res_name):
         if self.is_repository:
@@ -569,6 +581,8 @@ class TileManager(ResourceManager):
     def add_rules(self):
         app.add_url_rule('/view_module/<module_name>', "view_module",
                          login_required(self.view_module), methods=['get'])
+        app.add_url_rule('/repository_view_module/<module_name>', "repository_view_module",
+                         login_required(self.repository_view_module), methods=['get'])
         app.add_url_rule('/load_tile_module/<tile_module_name>', "load_tile_module",
                          login_required(self.load_tile_module), methods=['get', 'post'])
         app.add_url_rule('/unload_all_tiles', "unload_all_tiles",
@@ -612,7 +626,17 @@ class TileManager(ResourceManager):
         module_code = user_obj.get_tile_module(module_name)
         return render_template("user_manage/module_viewer.html",
                                module_name=module_name,
-                               module_code=module_code)
+                               module_code=module_code,
+                               include_buttons=True,
+                               view_only="False")
+
+    def repository_view_module(self, module_name):
+        user_obj = repository_user
+        module_code = user_obj.get_tile_module(module_name)
+        return render_template("user_manage/module_viewer.html",
+                               module_name=module_name,
+                               module_code=module_code,
+                               view_only="True")
 
     def load_tile_module(self, tile_module_name, return_json=True, user_obj=None):
         try:

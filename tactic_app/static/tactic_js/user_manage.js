@@ -108,6 +108,7 @@ function start_post_load() {
         $(".resource-module").on("click", ".resource-selector .selector-button", selector_click);
         $(".resource-module").on("dblclick", ".resource-selector .selector-button", selector_double_click);
         $(".resource-module").on("click", ".repository-selector .selector-button", repository_selector_click);
+        $(".resource-module").on("dblclick", ".repository-selector .selector-button", repository_selector_double_click);
         $(".resource-module").on("click", ".search-resource-button", search_resource);
         $(".resource-module").on("click", ".search-tags-button", search_resource_tags);
         $(".resource-module").on("click", ".resource-unfilter-button", unfilter_resource);
@@ -190,14 +191,19 @@ var list_manager_specifics = {
     show_add: true,
     show_multiple: false,
     view_view: '/view_list/',
+    repository_view_view: '/repository_view_list/',
     duplicate_view: '/create_duplicate_list',
     delete_view: '/delete_list/',
     add_view: "/add_list",
     double_click_func: "view_func",
+    repository_double_click_func: "repository_view_func",
     buttons: [
         {"name": "view", "func": "view_func", "button_class": "btn-primary"},
         {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-success"},
         {"name": "delete", "func": "delete_func", "button_class": "btn-danger"}
+    ],
+    repository_buttons: [
+        {"name": "view", "func": "repository_view_func", "button_class": "btn-primary"}
     ]
 };
 
@@ -270,9 +276,11 @@ var tile_manager_specifics = {
     new_view: '/create_tile_module',
     add_view: '/add_tile_module',
     view_view: '/view_module/',
+    repository_view_view: '/repository_view_module/',
     delete_view: "/delete_tile_module/",
     duplicate_view: '/create_duplicate_tile',
     double_click_func: "view_func",
+    repository_double_click_func: "repository_view_func",
     show_loaded_list: true,
     popup_buttons: [{"name": "new",
                     "button_class": "btn-success",
@@ -286,6 +294,10 @@ var tile_manager_specifics = {
         {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-success"},
         {"name": "unload", "func": "unload_func", "button_class": "btn-warning"},
         {"name": "delete", "func": "delete_func", "button_class": "btn-danger"}
+    ],
+    
+    repository_buttons: [
+        {"name": "view", "func": "repository_view_func", "button_class": "btn-primary"}
     ],
     load_func: function (event) {
         var manager = event.data.manager;

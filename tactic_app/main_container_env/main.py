@@ -20,6 +20,8 @@ from communication_utils import send_request_to_container
 import numpy
 import traceback
 import zlib
+import openpyxl
+import cStringIO
 
 INITIAL_LEFT_FRACTION = .69
 CHUNK_SIZE = 200
@@ -412,14 +414,15 @@ class mainWindow(QWorker):
         # Each tile needs to know the main_id it's associated with.
         # Also I have to build the pipe machinery.
         for tile_id, tile_result in tile_results.items():
-            if len(tile_result["exports"]) > 0:
-                if tile_id not in self._pipe_dict:
-                    self._pipe_dict[tile_id] = {}
-                for export in tile_result["exports"]:
-                    self._pipe_dict[tile_id][tile_result["tile_name"] + "_" + export] = {
-                        "export_name": export,
-                        "tile_id": tile_id,
-                        "tile_address": self.tile_instances[tile_id],}
+            if "exports" in tile_result:
+                if len(tile_result["exports"]) > 0:
+                    if tile_id not in self._pipe_dict:
+                        self._pipe_dict[tile_id] = {}
+                    for export in tile_result["exports"]:
+                        self._pipe_dict[tile_id][tile_result["tile_name"] + "_" + export] = {
+                            "export_name": export,
+                            "tile_id": tile_id,
+                            "tile_address": self.tile_instances[tile_id],}
 
         # We have to wait to here to actually render the tiles because
         # the pipe_dict needs to be complete to build the forms.
@@ -685,7 +688,7 @@ class mainWindow(QWorker):
         return {"success": True, "html": form_html}
 
     @task_worthy
-    def get_func(self, data_dict):  # todo this is too powerful for tile API
+    def get_func(self, data_dict):  # tactic_todo this is too powerful for tile API
         func_name = data_dict["func"]
         args = data_dict["args"]
         val = getattr(self, func_name)(*args)
@@ -797,6 +800,11 @@ class mainWindow(QWorker):
         return {"success": True}
 
     @task_worthy
+    def get_doc_dict(self, data):
+        return {"success": True, "doc_dict": self.doc_dict}
+
+
+    @task_worthy
     def get_tile_ids(self, data):
         tile_ids = self.tile_instances.keys()
         return {"success": True, "tile_ids": tile_ids}
@@ -818,6 +826,37 @@ class mainWindow(QWorker):
         self.post_task("host", "open_log_window", {"console_html": self.console_html,
                                                    "title": title,
                                                    "main_id": self.my_id})
+        return
+
+    # todo download_collection needs rethinking look at how pipe_values handled for a good model
+    # todo I'm in the middle of figuring out how to make this work.
+    @task_worthy
+    def download_collection(self, data):
+        new_name = data["new_name"]
+
+        wb = openpyxl.Workbook()
+        first = True
+        for (doc_name, doc_info) in self.doc_dict.items():
+            if first:
+                ws = wb.active
+                ws.title = doc_name
+                first = False
+            else:
+                ws = wb.create_sheet(title=doc_name)
+            data_rows = doc_info.all_sorted_data_rows
+            header_list = doc_info.header_list
+            for c, header in enumerate(header_list, start=1):
+                _ = ws.cell(row=1, column=c, value=header)
+            for r, row in enumerate(data_rows, start=2):
+                for c, header in enumerate(header_list, start=1):
+                    _ = ws.cell(row=r, column=c, value=row[header])
+            # noinspection PyUnresolvedReferences
+        virtual_notebook = openpyxl.writer.excel.save_virtual_workbook(wb)
+        str_io = cStringIO.StringIO()
+        str_io.write(virtual_notebook)
+        str_io.seek(0)
+        encoded_str_io = Binary(cPickle.dumps(str_io))
+        self.post_task("host", "send_file_to_client", {"encoded_str_io": encoded_str_io})
         return
 
     @task_worthy

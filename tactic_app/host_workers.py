@@ -13,7 +13,6 @@ import uuid
 import copy
 import traceback
 
-
 class HostWorker(QWorker):
     def __init__(self, app, megaplex_address):
         QWorker.__init__(self, app, megaplex_address, "host")
@@ -165,6 +164,7 @@ class HostWorker(QWorker):
         result = {"tile_types": tile_types}
         return result
 
+    # todo should clear temp_dict entry after use?
     @task_worthy
     def open_project_window(self, data):
         from tactic_app import socketio
@@ -179,6 +179,13 @@ class HostWorker(QWorker):
         socketio.emit("window-open", {"the_id": unique_id}, namespace='/user_manage', room=data["user_manage_id"])
         socketio.emit('stop-spinner', {}, namespace='/user_manage', room=data["user_manage_id"])
         return {"success": True}
+
+    # todo I'm in the middle of figuring out how to do this send_file_to_client
+    # currently I'm thinking I'll do it with something like the temp page loading
+    @task_worthy
+    def send_file_to_client(self, data):
+        from tactic_app import socketio
+        str_io = cPickle.loads(data["encoded_str_io"]).decode("utf-8", "ignore").encode("ascii")
 
     @task_worthy
     def open_error_window(self, data):

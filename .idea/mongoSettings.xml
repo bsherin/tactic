@@ -16,6 +16,14 @@
           <option name="userDatabase" value="tacticdb" />
           <option name="username" value="tacticdb" />
         </ServerConfiguration>
+        <ServerConfiguration>
+          <option name="label" value="mongo local" />
+          <option name="serverUrls">
+            <list>
+              <option value="localhost:27017" />
+            </list>
+          </option>
+        </ServerConfiguration>
       </list>
     </option>
     <option name="shellPath" value="/usr/bin/mongo" />

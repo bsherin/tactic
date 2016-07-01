@@ -18,8 +18,10 @@
                 <div class="row" style="margin-top: 35px">
                     <div class="btn-toolbar col-xs-12" role="toolbar" >
                         <div class="btn-group btn-group-sm" role="group">
+                            {% if include_buttons %}
                             <button type="button" class="btn btn-default" onclick="updateList()">Save</button>
                             <button type="button" class="btn btn-default" onclick="saveListAs()">Save as ...</button>
+                            {% endif %}
                             <button type="button" class="btn btn-default" onclick="window.close()">Close</button>
                         </div>
                         <button id="list-Name" type="button" class="btn btn-default res-name-button" onclick="renameList()">{{ list_name }}</button>

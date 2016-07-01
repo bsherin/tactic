@@ -44,6 +44,9 @@ ResourceManager.prototype = {
         $.each(this.buttons, function (index, value) {
             $("#{0}-{1}-button".format(value.name, self.res_type)).click({"manager": self}, self[value.func])
         });
+        $.each(this.repository_buttons, function (index, value) {
+            $("#repository-{0}-{1}-button".format(value.name, self.res_type)).click({"manager": self}, self[value.func])
+        });
         if (this.show_add) {
             $("#add-{0}-form".format(self.res_type)).submit({"manager": self}, self.add_func)
         }
@@ -74,6 +77,8 @@ ResourceManager.prototype = {
     },
 
     popup_buttons: [],
+
+    repository_buttons: [],
 
     load_func: function (event) {
         var manager = event.data.manager;
@@ -153,6 +158,13 @@ ResourceManager.prototype = {
             $("#" + manager.res_type + "-notes").html("");
             $.post($SCRIPT_ROOT + manager.delete_view + String(res_name))
         })
+    },
+
+    repository_view_func: function (event) {
+        var manager = event.data.manager;
+        var res_name = manager.check_for_repository_selection(manager.res_type);
+        if (res_name == "") return;
+        window.open($SCRIPT_ROOT + manager.repository_view_view + String(res_name))
     },
 
     repository_copy_func: function (event) {
@@ -292,6 +304,21 @@ function selector_double_click(event) {
     var result_dict = {"res_type": res_type, "res_name": res_name};
     var the_manager = resource_managers[res_type];
     the_manager[the_manager.double_click_func]({data: {manager: the_manager}})
+}
+
+function repository_selector_double_click(event) {
+    var row_element = $(event.target).closest('tr');
+    var cells = row_element.children();
+    var res_name = $(cells[0]).text();
+    var tab_parent = $(event.target).closest(".tab-pane");
+    var regexp = /^(\w+?)-/;
+    var res_type = regexp.exec(tab_parent.attr("id"))[1];
+    $(".repository-selector ." + res_type + "-selector-button").removeClass("active");
+    row_element.addClass("active");
+    //var res_name = $('.resource-selector .' + res_type + '-selector-button.active')[0].value;
+    var result_dict = {"res_type": res_type, "res_name": res_name};
+    var the_manager = resource_managers[res_type];
+    the_manager[the_manager.repository_double_click_func]({data: {manager: the_manager}})
 }
 
 function clear_repository_resource_metadata(res_type) {

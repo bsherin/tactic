@@ -356,7 +356,7 @@ function downloadVisibleDocument() {
 
 function downloadCollection() {
     showModal("Download Collection as Excel Notebook", "New File Name", function (new_name) {
-        window.open($SCRIPT_ROOT + "/download_collection/" + main_id + "/" + new_name)
+        postWithCallback(main_id, "download_collection", {"new_name": new_name})
     })
 }
 

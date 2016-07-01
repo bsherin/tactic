@@ -29,7 +29,8 @@ function start_post_load() {
         lineNumbers: true,
         matchBrackets: true,
         autoCloseBrackets: true,
-        indentUnit: 4
+        indentUnit: 4,
+        readOnly: view_only
     });
     myCodeMirror.setOption("extraKeys", {
       Tab: function(cm) {
