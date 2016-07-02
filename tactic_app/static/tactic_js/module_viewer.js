@@ -193,3 +193,23 @@ function loadModule() {
 function saveModuleAs() {
     doFlash({"message": "not implemented yet"})
 }
+
+function copyToLibrary() {
+    showModal("Import tile", "New tile Name", function (new_name) {
+        var result_dict = {
+            "res_type": "tile",
+            "res_name": module_name,
+            "new_res_name": new_name
+        };
+
+        $.ajax({
+            url: $SCRIPT_ROOT + 'copy_from_repository',
+            contentType: 'application/json',
+            type: 'POST',
+            async: true,
+            data: JSON.stringify(result_dict),
+            dataType: 'json',
+            success: doFlash
+        });
+    });
+}

@@ -188,34 +188,37 @@ def get_manager_for_type(res_type, is_repository=False):
 @app.route('/copy_from_repository', methods=['GET', 'POST'])
 @login_required
 def copy_from_repository():
-    res_type = request.json['res_type']
+    try:
+        res_type = request.json['res_type']
 
-    new_res_name = request.json['new_res_name']
-    res_name = request.json['res_name']
-
-    if res_type == "collection":
-        collection_to_copy = repository_user.full_collection_name(request.json['res_name'])
-        new_collection_name = current_user.full_collection_name(request.json['new_res_name'])
-        for doc in db[collection_to_copy].find():
-            db[new_collection_name].insert_one(doc)
-        db[new_collection_name].update_one({"name": "__metadata__"},
-                                           {'$set': {"datatime": datetime.datetime.today()}})
-    else:
+        new_res_name = request.json['new_res_name']
+        res_name = request.json['res_name']
         manager = get_manager_for_type(res_type)
-        repo_manager = get_manager_for_type(res_type, is_repository=True)
-        old_dict = db[getattr(repository_user, repo_manager.collection_name)].find_one({manager.name_field: res_name})
-        new_res_dict = {manager.name_field: new_res_name}
-        for (key, val) in old_dict.items():
-            if (key == "_id") or (key == manager.name_field):
-                continue
-            new_res_dict[key] = val
-        if "metadata" not in new_res_dict:
-            new_res_dict["metadata"] = create_initial_metadata()
+        if res_type == "collection":
+            collection_to_copy = repository_user.full_collection_name(request.json['res_name'])
+            new_collection_name = current_user.full_collection_name(request.json['new_res_name'])
+            for doc in db[collection_to_copy].find():
+                db[new_collection_name].insert_one(doc)
+            db[new_collection_name].update_one({"name": "__metadata__"},
+                                               {'$set': {"datatime": datetime.datetime.today()}})
         else:
-            new_res_dict["metadata"]["datetime"] = datetime.datetime.today()
-        db[getattr(current_user, repo_manager.collection_name)].insert_one(new_res_dict)
-    manager.update_selector_list(select=new_res_name)
-    return jsonify({"success": True})
+            repo_manager = get_manager_for_type(res_type, is_repository=True)
+            old_dict = db[getattr(repository_user, repo_manager.collection_name)].find_one({manager.name_field: res_name})
+            new_res_dict = {manager.name_field: new_res_name}
+            for (key, val) in old_dict.items():
+                if (key == "_id") or (key == manager.name_field):
+                    continue
+                new_res_dict[key] = val
+            if "metadata" not in new_res_dict:
+                new_res_dict["metadata"] = create_initial_metadata()
+            else:
+                new_res_dict["metadata"]["datetime"] = datetime.datetime.today()
+            db[getattr(current_user, repo_manager.collection_name)].insert_one(new_res_dict)
+        manager.update_selector_list(select=new_res_name)
+        return jsonify({"success": True, "message": "Resource Successfully Copied", "alert_type": "alert-success"})
+    except:
+        error_string = "Error copying resource" + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
 
 @app.route('/request_update_selector_list/<res_type>', methods=['GET'])
@@ -268,7 +271,6 @@ class ListManager(ResourceManager):
         return render_template("user_manage/list_viewer.html",
                                list_name=list_name,
                                the_list_as_string=lstring,
-                               include_buttons=True,
                                read_only_string="")
 
     def repository_view_list(self, list_name):
@@ -627,8 +629,7 @@ class TileManager(ResourceManager):
         return render_template("user_manage/module_viewer.html",
                                module_name=module_name,
                                module_code=module_code,
-                               include_buttons=True,
-                               view_only="False")
+                               read_only_string="")
 
     def repository_view_module(self, module_name):
         user_obj = repository_user
@@ -636,7 +637,7 @@ class TileManager(ResourceManager):
         return render_template("user_manage/module_viewer.html",
                                module_name=module_name,
                                module_code=module_code,
-                               view_only="True")
+                               read_only_string="readonly")
 
     def load_tile_module(self, tile_module_name, return_json=True, user_obj=None):
         try:

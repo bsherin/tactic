@@ -18,9 +18,11 @@
                 <div class="row" style="margin-top: 35px">
                     <div class="btn-toolbar col-xs-12" role="toolbar" >
                         <div class="btn-group btn-group-sm" role="group">
-                            {% if include_buttons %}
+                            {% if read_only_string == "" %}
                             <button type="button" class="btn btn-default" onclick="updateList()">Save</button>
                             <button type="button" class="btn btn-default" onclick="saveListAs()">Save as ...</button>
+                            {% else %}
+                            <button type="button" class="btn btn-default" onclick="copyToLibrary()">Copy to Library</button>
                             {% endif %}
                             <button type="button" class="btn btn-default" onclick="window.close()">Close</button>
                         </div>
@@ -31,10 +33,10 @@
                 <div  style="display: inline-block; vertical-align: top; margin-left: 5px; margin-top: 10px">
                     <div class="created"></div>
                     <div class="form-group" style="margin-bottom: 7px">
-                        <textarea type="text" class="form-control metadata-field" id="list-tags" rows="1" placeholder="tags"></textarea>
+                        <textarea type="text" class="form-control metadata-field" id="list-tags" rows="1" placeholder="tags" {{read_only_string}}></textarea>
                     </div>
                     <div class="form-group">
-                        <textarea class="form-control metadata-field" id="list-notes" rows="10" placeholder="notes"></textarea>
+                        <textarea class="form-control metadata-field" id="list-notes" rows="10" placeholder="notes" {{read_only_string}}></textarea>
                     </div>
                 </div>
             </div>

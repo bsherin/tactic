@@ -121,3 +121,23 @@ function updateList() {
 function saveListAs() {
     doFlash({"message": "not implemented yet"})
 }
+
+function copyToLibrary() {
+    showModal("Import list", "New list Name", function (new_name) {
+        var result_dict = {
+            "res_type": "list",
+            "res_name": list_name,
+            "new_res_name": new_name
+        };
+
+        $.ajax({
+            url: $SCRIPT_ROOT + 'copy_from_repository',
+            contentType: 'application/json',
+            type: 'POST',
+            async: true,
+            data: JSON.stringify(result_dict),
+            dataType: 'json',
+            success: doFlash
+        });
+    });
+}

@@ -186,7 +186,8 @@ ResourceManager.prototype = {
                 type: 'POST',
                 async: true,
                 data: JSON.stringify(result_dict),
-                dataType: 'json'
+                dataType: 'json',
+                success: doFlash
             });
         });
         return res_name
