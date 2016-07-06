@@ -18,4 +18,5 @@ services:
       context: .
       dockerfile: Dockerfile-tile
     image: tactic_tile_image
-
+    environment:
+      PYTHONUNBUFFERED: 0

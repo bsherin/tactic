@@ -33,6 +33,7 @@
     </div>
 {% endblock %}
 {% block scripts %}
+    <script src="{{url_for('static', filename='js/alertify.js')}}"></script>
     <script src="{{url_for('static', filename='js/socket.io.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/utilities.js')}}"></script>
 

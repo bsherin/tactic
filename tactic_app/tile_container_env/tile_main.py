@@ -8,6 +8,8 @@ import cPickle
 from bson.binary import Binary
 import inspect
 import gevent
+import sys
+sys.stdout = sys.stderr
 
 app = Flask(__name__)
 
