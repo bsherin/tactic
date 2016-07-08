@@ -309,7 +309,7 @@ var tile_manager_specifics = {
         var manager = event.data.manager;
         var res_name = manager.check_for_selection("tile");
         if (res_name == "") return;
-        $.getJSON($SCRIPT_ROOT + '/userunload_all_tiles', doFlash)
+        $.getJSON($SCRIPT_ROOT + '/unload_all_tiles', doFlash)
     },
 
     new_tile: function (event) {
