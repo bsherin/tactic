@@ -26,7 +26,7 @@ host_ip = re.search("inet (.*?)/", ip_info).group(1)
 def print_message():
     print "got to the message"
 
-print "small modification"
+print "small modification again"
 # noinspection PyUnresolvedReferences
 try:
     print "getting client"
