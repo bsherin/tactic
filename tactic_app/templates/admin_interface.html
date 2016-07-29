@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}Tactic - Administer{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{{url_for('static', filename='css/alertify_css/alertify.min.css')}}"/>
+{% endblock %}
+
+{% block page_content %}
+    <div class="container-fluid">
+<div class="page-header">
+    <h1>Admin Interface</h1>
+    <button id="clear-user-containers-button" class="btn btn-danger">Clear User Containers</button>
+</div>
+
+<div class="col-md-4">
+<div id="status-area"></div>
+
+</div>
+    </div>
+{% endblock %}
+{% block scripts %}
+    <script src="{{url_for('static', filename='js/alertify.js')}}"></script>
+    <script src="{{url_for('static', filename='js/socket.io.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/utilities.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/communication.js')}}"></script>
+    <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/administer.js')}}"></script>
+    <script>
+        var user_id = "{{current_user.get_id()}}";
+        var use_ssl = "{{use_ssl}}"=="True";
+        window.onload = start_post_load;
+    </script>
+{% endblock %}

@@ -41,7 +41,7 @@ function postWithCallbackNoMain(dest_id, task_type, task_data, callback_func){
         "dest": dest_id,
         "task_type": task_type,
         "task_data": task_data,
-        "response_data": null,
+        "response_data": null
     };
     if (typeof callback_func != "undefined") {
         var unique_id = guid();

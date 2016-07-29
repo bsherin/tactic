@@ -14,7 +14,7 @@ from tactic_app import app, socketio
 from tactic_app import host_workers
 print "imported app"
 from tactic_app import users
-from views import auth_views, main_views, user_manage_views
+from views import auth_views, main_views, user_manage_views, admin_views
 
 
 from tactic_app.shared_dicts import get_all_default_tiles

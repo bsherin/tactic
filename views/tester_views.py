@@ -16,6 +16,13 @@ def direct_user_manage(username, password):
         login_user(user, remember=False)
     return redirect(url_for("user_manage"))
 
+@app.route('/direct_administer/<password>', methods=['GET', 'POST'])
+def direct_administer(password):
+    user = User.get_user_by_username("repository")
+    if user is not None and user.verify_password(password):
+        login_user(user, remember=False)
+    return redirect(url_for("admin_interface"))
+
 @app.route('/direct_project/<project_name>/<username>/<password>', methods=['GET', 'POST'])
 def direct_project(project_name, username, password):
     user = User.get_user_by_username(username)
