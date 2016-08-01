@@ -182,12 +182,14 @@ class mainWindow(QWorker):
     def __init__(self, app, data_dict):
         QWorker.__init__(self, app, data_dict["megaplex_address"], data_dict["main_id"])
         try:
-            client = pymongo.MongoClient(data_dict["mongo_uri"])
+            client = pymongo.MongoClient(data_dict["mongo_uri"], serverSelectionTimeoutMS=10)
             client.server_info()
             # noinspection PyUnresolvedReferences
             self.db = client.tacticdb
             self.fs = gridfs.GridFS(self.db)
-        except pymongo.errors.PyMongoError as err:
+        except:
+            error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+            self.debug_log("error getting pymongo client: " + error_string)
             sys.exit()
 
         self.base_figure_url = data_dict["base_figure_url"]
@@ -220,7 +222,6 @@ class mainWindow(QWorker):
             self.console_html = None
             self.user_id = data_dict["user_id"]
             self.doc_dict = self._build_doc_dict()
-            self.debug_log("Done with build_doc_dict")
             self.visible_doc_name = self.doc_dict.keys()[0]
 
     # Communication Methods
