@@ -113,20 +113,28 @@ var container_manager_specifics = {
     show_multiple: false,
 
     buttons: [
-        {"name": "clear-user", "func": "clear_user_func", "button_class": "btn btn-danger"},
-        {"name": "destory-conainer", "func": "destroy_container", "button_class": "btn btn-warning"}
+        {"name": "clear-user-containers", "func": "clear_user_func", "button_class": "btn btn-danger"},
+        {"name": "destroy-container", "func": "destroy_container", "button_class": "btn btn-warning"},
+        {"name": "container-logs", "func": "container_logs", "button_class": "btn btn-info"},
     ],
     clear_user_func: function (event) {
-        var manager = event.data.manager;
-        var the_data = new FormData(this);
         $.getJSON($SCRIPT_ROOT + '/clear_user_containers', doFlash);
         event.preventDefault();
     },
     destroy_container: function (event) {
         var manager = event.data.manager;
-        var the_data = new FormData(this);
-        cont_id = manager.check_for_selection("container", 1)
+        cont_id = manager.check_for_selection("container", 1);
         $.getJSON($SCRIPT_ROOT + '/destroy_container/' + cont_id, doFlash);
+        event.preventDefault();
+    },
+
+    container_logs: function (event) {
+        var manager = event.data.manager;
+        cont_id = manager.check_for_selection("container", 1);
+        $.getJSON($SCRIPT_ROOT + '/container_logs/' + cont_id, function (data) {
+            the_html = "<pre>" + data.log_text + "</pre>";
+            $("#container-module #aux-area").html(the_html)
+        });
         event.preventDefault();
     },
 

@@ -14,6 +14,7 @@ class ContainerManager(ResourceManager):
     def add_rules(self):
         app.add_url_rule('/clear_user_containers', "clear_user_containers", login_required(self.clear_user_containers), methods=['get'])
         app.add_url_rule('/destroy_container/<container_id>', "kill_container", login_required(self.kill_container), methods=['get'])
+        app.add_url_rule('/container_logs/<container_id>', "container_logs", login_required(self.container_logs), methods=['get'])
 
     def clear_user_containers(self):
         if not (current_user.get_id() == repository_user.get_id()):
@@ -52,11 +53,23 @@ class ContainerManager(ResourceManager):
         self.update_selector_list()
         return jsonify({"success": True, "message": "Container Destroeyd", "alert_type": "alert-success"})
 
+    def container_logs(self, container_id):
+        if not (current_user.get_id() == repository_user.get_id()):
+            return jsonify({"success": False, "message": "not authorized", "alert_type": "alert-warning"})
+        try:
+            log_text = cli.logs(container_id)
+        except Exception as ex:
+            template = "<pre>An exception of type {0} occured. Arguments:\n{1!r}</pre>"
+            error_string = template.format(type(ex).__name__, ex.args)
+            error_string += traceback.format_exc()
+            return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+        return jsonify({"success": True, "message": "Got Logs", "log_text": log_text, "alert_type": "alert-success"})
+
     def build_resource_array(self):
-        larray = [["Name", "Id", "Image", "State"]]
+        larray = [["Name", "Id", "Image", "Status"]]
         all_containers = cli.containers(all=True)
         for cont in all_containers:
-            larray.append([cont["Names"][0], cont["Id"], cont["Image"], cont["State"]])
+            larray.append([cont["Names"][0], cont["Id"], cont["Image"], cont["Status"]])
         return larray
 
     def build_html_table_from_data_list(self, data_list, title=None):
