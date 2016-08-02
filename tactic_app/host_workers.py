@@ -55,7 +55,7 @@ class HostWorker(QWorker):
         user_manage_id = data["user_manage_id"]
         user_obj = load_user(user_id)
         self.show_um_status_message("creating main container", user_manage_id, None)
-        main_id = create_container("tactic_main_image", network_mode="bridge")["Id"]
+        main_id = create_container("tactic_main_image", network_mode="bridge", owner=user_id)
         caddress = get_address(main_id, "bridge")
         send_request_to_container(self.megaplex_address, "add_address", {"container_id": "main", "address": caddress})
 
@@ -121,7 +121,9 @@ class HostWorker(QWorker):
     def get_empty_tile_containers(self, data):
         cdict = {}
         for i in range(data["number"]):
-            tile_container_id = create_container("tactic_tile_image", network_mode="bridge")["Id"]
+            tile_container_id = create_container("tactic_tile_image",
+                                                 network_mode="bridge",
+                                                 owner=data["user_id"])
             tile_container_address = get_address(tile_container_id, "bridge")
             cdict[tile_container_id] = tile_container_address
         return cdict
@@ -185,7 +187,7 @@ class HostWorker(QWorker):
     @task_worthy
     def send_file_to_client(self, data):
         from tactic_app import socketio
-        str_io = cPickle.loads(data["encoded_str_io"]).decode("utf-8", "ignore").encode("ascii")
+        # str_io = cPickle.loads(data["encoded_str_io"]).decode("utf-8", "ignore").encode("ascii")
 
     @task_worthy
     def open_error_window(self, data):
@@ -228,7 +230,8 @@ class HostWorker(QWorker):
 
     @task_worthy
     def create_tile_container(self, data):
-        tile_container_id = create_container("tactic_tile_image", network_mode="bridge")["Id"]
+        tile_container_id = create_container("tactic_tile_image", network_mode="bridge",
+                                             owner=data["user_id"])
         tile_address = get_address(tile_container_id, "bridge")
         return {"tile_id": tile_container_id, "tile_address": tile_address}
 

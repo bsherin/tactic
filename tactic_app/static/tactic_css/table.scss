@@ -8,6 +8,8 @@ $table-header-font-size: 15px;
 $table-header-font-color: #4b4963;
 $table-header-font-weight: normal;
 
+$admin-table-row-font-size: 10px;
+
 $table-font-size: 10pt;
 $table-border-color: #ddd;
 $table-border-thickness: 1px;
@@ -45,6 +47,10 @@ $selected-column-background: #e0e0e0;
             }
         }
     }
+}
+
+.admin-table-row {
+    font-size: $admin-table-row-font-size;
 }
 
 #project-label {

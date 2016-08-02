@@ -10,6 +10,7 @@ LONG_SLEEP_PERIOD = float(os.environ.get("LONG_SLEEP_PERIOD"))
 MAX_QUEUE_LENGTH = int(os.environ.get("MAX_QUEUE_LENGTH"))
 
 callbacks = {}
+container_owners = {}
 
 cli = docker.Client(base_url='unix://var/run/docker.sock')
 
@@ -19,27 +20,29 @@ def get_address(container_identifier, network_name):
     return cli.inspect_container(container_identifier)["NetworkSettings"]["Networks"][network_name]["IPAddress"]
 
 
-def create_container(image_name, container_name=None, network_mode="bridge", wait_until_running=True):
+def create_container(image_name, container_name=None, network_mode="bridge", wait_until_running=True, owner="host"):
     if container_name is None:
-        container_id = cli.create_container(image=image_name,
+        container = cli.create_container(image=image_name,
                                             host_config=cli.create_host_config(network_mode=network_mode),
                                             environment={"SHORT_SLEEP_PERIOD": SHORT_SLEEP_PERIOD,
                                                          "LONG_SLEEP_PERIOD": LONG_SLEEP_PERIOD,
                                                          "MAX_QUEUE_LENGTH": MAX_QUEUE_LENGTH}
                                             )
     else:
-        container_id = cli.create_container(image=image_name,
+        container = cli.create_container(image=image_name,
                                             name=container_name,
                                             host_config=cli.create_host_config(network_mode=network_mode),
                                             environment={"SHORT_SLEEP_PERIOD": SHORT_SLEEP_PERIOD,
                                                          "LONG_SLEEP_PERIOD": LONG_SLEEP_PERIOD,
                                                          "MAX_QUEUE_LENGTH": MAX_QUEUE_LENGTH}
                                             )
+    container_id = container.get('Id')
     cli.start(container_id)
     print "status " + str(cli.inspect_container(container_id)["State"]["Status"])
     if wait_until_running:
         while not cli.inspect_container(container_id)["State"]["Status"] == "running":
             time.sleep(0.1)
+    container_owners[container_id] = owner
     return container_id
 
 
@@ -53,7 +56,10 @@ def remove_network(network_name):
 
 def destroy_container(cname):
     try:
-        return cli.remove_container(cname, force=True)
+        result = cli.remove_container(cname, force=True)
+        if cname in container_owners:
+            del container_owners[cname]
+        return result
     except:
         return -1
 

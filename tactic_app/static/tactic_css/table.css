@@ -11,6 +11,9 @@
       #main-panel .panel-heading .main-heading-element label[for=doc-selector] {
         padding-left: 5px; }
 
+.admin-table-row {
+  font-size: 10px; }
+
 #project-label {
   font-weight: bold;
   padding-left: 5px; }

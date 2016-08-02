@@ -11,8 +11,12 @@ user_tiles = {}
 loaded_user_modules = {}
 
 # tactic_todo test tile container: should there be one for every worker? That's probably okay.
-test_tile_container_id = create_container("tactic_tile_image", network_mode="bridge")["Id"]
+test_tile_container_id = create_container("tactic_tile_image",
+                                          network_mode="bridge",
+                                          container_name="tile_test_container")
 test_tile_container_address = get_address(test_tile_container_id, "bridge")
+
+
 
 def get_all_default_tiles():
     repository_user = User.get_user_by_username("repository")
@@ -30,7 +34,7 @@ def get_all_default_tiles():
                     tile_classes[category] = {}
                 tile_classes[category][res_dict["tile_name"]] = module_code
             else:
-                print "Error loading tile " + res_dic["message_string"]
+                print "Error loading tile " + res_dict["message_string"]
 
 
 def get_tile_code(tile_type, user_id):

@@ -1,9 +1,9 @@
 from flask import render_template, jsonify, send_file
 from flask_login import login_required, current_user
 from tactic_app import app, use_ssl, shared_dicts
-from tactic_app.users import User
+from tactic_app.users import User, load_user
 from user_manage_views import ResourceManager
-from tactic_app.docker_functions import cli, destroy_container
+from tactic_app.docker_functions import cli, destroy_container, container_owners
 import traceback
 
 repository_user = User.get_user_by_username("repository")
@@ -66,10 +66,15 @@ class ContainerManager(ResourceManager):
         return jsonify({"success": True, "message": "Got Logs", "log_text": log_text, "alert_type": "alert-success"})
 
     def build_resource_array(self):
-        larray = [["Name", "Id", "Image", "Status"]]
+        larray = [["Name", "Id", "Image", "Owner", "Status"]]
         all_containers = cli.containers(all=True)
         for cont in all_containers:
-            larray.append([cont["Names"][0], cont["Id"], cont["Image"], cont["Status"]])
+            owner_id = container_owners[cont["Id"]]
+            if owner_id == "host":
+                owner_name = "host"
+            else:
+                owner_name = load_user(owner_id).username
+            larray.append([cont["Names"][0], cont["Id"], cont["Image"], owner_name, cont["Status"]])
         return larray
 
     def build_html_table_from_data_list(self, data_list, title=None):
@@ -81,7 +86,7 @@ class ContainerManager(ResourceManager):
             the_html += "<th>{0}</th>".format(c)
         the_html += "</tr><tbody>"
         for r in data_list[1:]:
-            the_html += "<tr class='selector-button {0}-selector-button' id='{0}-selector-{1}'>".format(self.res_type,
+            the_html += "<tr class='selector-button {0}-selector-button admin-table-row' id='{0}-selector-{1}'>".format(self.res_type,
                                                                                                         r[0])
             for c in r:
                 the_html += "<td>{0}</td>".format(c)

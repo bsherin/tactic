@@ -132,7 +132,7 @@ var container_manager_specifics = {
         var manager = event.data.manager;
         cont_id = manager.check_for_selection("container", 1);
         $.getJSON($SCRIPT_ROOT + '/container_logs/' + cont_id, function (data) {
-            the_html = "<pre>" + data.log_text + "</pre>";
+            the_html = "<pre><small>" + data.log_text + "</small></pre>";
             $("#container-module #aux-area").html(the_html)
         });
         event.preventDefault();

@@ -366,7 +366,7 @@ class CollectionManager(ResourceManager):
     def main(self, collection_name):
         user_obj = current_user
         cname = user_obj.build_data_collection_name(collection_name)
-        main_id = create_container("tactic_main_image", network_mode="bridge")["Id"]
+        main_id = create_container("tactic_main_image", network_mode="bridge", owner=user_obj.get_id())
         caddress = get_address(main_id, "bridge")
         send_direct_request_to_container(megaplex_id, "add_address", {"container_id": "main", "address": caddress})
 
