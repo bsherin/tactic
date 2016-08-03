@@ -11,14 +11,10 @@ from flask import request, jsonify, render_template, send_file, url_for
 from flask_login import current_user, login_required
 from flask_socketio import join_room
 from tactic_app import app, db, fs, socketio
-from tactic_app.shared_dicts import get_tile_code
-from user_manage_views import project_manager, collection_manager
-from tactic_app.docker_functions import create_container
-from tactic_app.docker_functions import get_address, callbacks, destroy_container
-from tactic_app.communication_utils import send_request_to_container
+from user_manage_views import collection_manager
+from tactic_app.docker_functions import get_address, destroy_container
 from tactic_app.users import load_user
 from tactic_app.host_workers import host_worker, client_worker
-from tactic_app import megaplex_address
 from tactic_app.docker_functions import send_direct_request_to_container
 from tactic_app import shared_dicts
 

@@ -10,19 +10,17 @@ import os
 from flask import render_template, request, jsonify, send_file, url_for
 from flask_login import login_required, current_user
 from flask_socketio import join_room
+import tactic_app
 from tactic_app import app, db, fs, socketio, use_ssl, mongo_uri
 from tactic_app.file_handling import read_csv_file_to_dict, read_tsv_file_to_dict, read_txt_file_to_dict, load_a_list
 
 from tactic_app import shared_dicts
 from tactic_app.shared_dicts import create_initial_metadata
-from tactic_app.shared_dicts import test_tile_container_id, get_tile_code
-from tactic_app.user_tile_env import create_user_tiles
 from tactic_app.users import User
-from tactic_app.communication_utils import send_request_to_container
 from tactic_app.docker_functions import send_direct_request_to_container
 
 from tactic_app.docker_functions import create_container, get_address
-from tactic_app import megaplex_address, megaplex_id
+import traceback
 
 AUTOSPLIT = True
 AUTOSPLIT_SIZE = 10000
@@ -368,7 +366,7 @@ class CollectionManager(ResourceManager):
         cname = user_obj.build_data_collection_name(collection_name)
         main_id = create_container("tactic_main_image", network_mode="bridge", owner=user_obj.get_id())
         caddress = get_address(main_id, "bridge")
-        send_direct_request_to_container(megaplex_id, "add_address", {"container_id": "main", "address": caddress})
+        send_direct_request_to_container(tactic_app.megaplex_id, "add_address", {"container_id": "main", "address": caddress})
 
         if user_obj.username not in shared_dicts.loaded_user_modules:
             shared_dicts.loaded_user_modules[user_obj.username] = []
@@ -376,7 +374,7 @@ class CollectionManager(ResourceManager):
         data_dict = {"collection_name": cname,
                      "main_id": main_id,
                      "user_id": current_user.get_id(),
-                     "megaplex_address": megaplex_address,
+                     "megaplex_address": tactic_app.megaplex_address,
                      "project_collection_name": user_obj.project_collection_name,
                      "mongo_uri": mongo_uri,
                      "base_figure_url": url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1]}
@@ -645,8 +643,8 @@ class TileManager(ResourceManager):
                 user_obj = current_user
             tile_module = user_obj.get_tile_module(tile_module_name)
 
-            result = send_direct_request_to_container(test_tile_container_id, "load_source", {"tile_code": tile_module,
-                                                                                              "megaplex_address": megaplex_address})
+            result = send_direct_request_to_container(shared_dicts.test_tile_container_id, "load_source", {"tile_code": tile_module,
+                                                                                              "megaplex_address": tactic_app.megaplex_address})
             res_dict = result.json()
 
             if not res_dict["success"]:

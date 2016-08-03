@@ -111,6 +111,7 @@ function start_post_load() {
 var container_manager_specifics = {
 
     buttons: [
+        {"name": "reset-server", "func": "reset_server_func", "button_class": "btn btn-danger"},
         {"name": "clear-user-containers", "func": "clear_user_func", "button_class": "btn btn-danger"},
         {"name": "destroy-container", "func": "destroy_container", "button_class": "btn btn-warning"},
         {"name": "container-logs", "func": "container_logs", "button_class": "btn btn-info"},
@@ -118,6 +119,10 @@ var container_manager_specifics = {
     ],
     clear_user_func: function (event) {
         $.getJSON($SCRIPT_ROOT + '/clear_user_containers', doFlash);
+        event.preventDefault();
+    },
+    reset_server_func: function (event) {
+        $.getJSON($SCRIPT_ROOT + '/reset_server', doFlash);
         event.preventDefault();
     },
     destroy_container: function (event) {

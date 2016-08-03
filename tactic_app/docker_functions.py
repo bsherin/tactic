@@ -10,7 +10,7 @@ LONG_SLEEP_PERIOD = float(os.environ.get("LONG_SLEEP_PERIOD"))
 MAX_QUEUE_LENGTH = int(os.environ.get("MAX_QUEUE_LENGTH"))
 
 # multiple_worker_issue global variables here
-callbacks = {}
+
 container_owners = {}
 
 cli = docker.Client(base_url='unix://var/run/docker.sock')
@@ -63,12 +63,6 @@ def destroy_container(cname):
         return result
     except:
         return -1
-
-
-def create_callback(func):
-    unique_id = str(uuid.uuid4())
-    callbacks[unique_id] = func
-    return unique_id
 
 
 def send_direct_request_to_container(container_id, msg_type, data_dict, wait_for_success=True,

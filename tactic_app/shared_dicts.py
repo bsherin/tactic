@@ -2,21 +2,26 @@ import datetime
 from docker_functions import create_container, get_address, send_direct_request_to_container
 from users import User, load_user
 
-# tactic_todo mainwindow_instances isn't used anymoe I think
-mainwindow_instances = {}
 tile_classes = {}
-
-# multiple_worker_issue user_tiles and loaded_user_modules will need to somehow be shared across workers
 user_tiles = {}
 loaded_user_modules = {}
+test_tile_container_id = ""
+test_tile_container_address = ""
 
-# multiple_worker_issue test tile container: should there be one for every worker? That's probably okay.
-test_tile_container_id = create_container("tactic_tile_image",
-                                          network_mode="bridge",
-                                          container_name="tile_test_container")
-test_tile_container_address = get_address(test_tile_container_id, "bridge")
+def initialize_globals():
+    global tile_classes, user_tiles, loaded_user_modules, test_tile_container_id, test_tile_container_address
+
+    # multiple_worker_issue user_tiles and loaded_user_modules will need to somehow be shared across workers
+    tile_classes = {}
+    user_tiles = {}
+    loaded_user_modules = {}
+    test_tile_container_id = create_container("tactic_tile_image",
+                                              network_mode="bridge",
+                                              container_name="tile_test_container")
+    test_tile_container_address = get_address(test_tile_container_id, "bridge")
 
 
+initialize_globals()
 
 def get_all_default_tiles():
     repository_user = User.get_user_by_username("repository")

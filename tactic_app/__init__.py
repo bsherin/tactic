@@ -1,6 +1,6 @@
 
 # This module creates many of the objects that
-# need to be imported by other modules. Unnecessary edit
+# need to be imported by other modules.
 
 from flask import Flask
 import pymongo
@@ -22,11 +22,19 @@ mongo_uri = None
 ip_info = subprocess.check_output(['ip', '-4', 'addr', 'show', 'scope', 'global', 'dev', 'docker0'])
 host_ip = re.search("inet (.*?)/", ip_info).group(1)
 
+megaplex_address = ""
+megaplex_id = ""
 
 def print_message():
     print "got to the message"
 
-print "small modification again"
+def create_megaplex():
+    global megaplex_address, megaplex_id
+    # multiple_worker_issue Create the megaplex in a separate script when multiple workers
+    megaplex_id = create_container("tactic_megaplex_image", network_mode="bridge")
+    megaplex_address = get_address(megaplex_id, "bridge")
+    send_request_to_container(megaplex_address, "add_address", {"container_id": "host", "address": host_ip})
+
 # noinspection PyUnresolvedReferences
 try:
     print "getting client"
@@ -86,10 +94,7 @@ try:
     csrf.init_app(app)
 
     print "creating the megaplex"
-    # multiple_worker_issue Create the megaplex in a separate script when multiple workers
-    megaplex_id = create_container("tactic_megaplex_image", network_mode="bridge")
-    megaplex_address = get_address(megaplex_id, "bridge")
-    send_request_to_container(megaplex_address, "add_address", {"container_id": "host", "address": host_ip})
+    create_megaplex()
 
 except pymongo.errors.PyMongoError as err:
     print("There's a problem with the PyMongo database. ", err)
