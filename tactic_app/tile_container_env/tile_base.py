@@ -116,9 +116,10 @@ class TileBase(QWorker):
             result[attr] = getattr(self, attr)
         return result
 
-    def debug_log(self, msg):
-        with self.app.test_request_context():
-            self.app.logger.debug(msg)
+    # def debug_log(self, msg):
+    #     print msg
+        # with self.app.test_request_context():
+        #     self.app.logger.debug(msg)
 
     @task_worthy
     def RefreshTile(self, data):
@@ -832,16 +833,6 @@ class TileBase(QWorker):
 
     def get_selected_text(self):
         return self.get_main_property("selected_text")
-
-    def handle_exception(self, ex, special_string=None):
-        if special_string is None:
-            template = "An exception of type {0} occured. Arguments:\n{1!r}\n"
-        else:
-            template = special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}\n"
-        error_string = template.format(type(ex).__name__, ex.args)
-        error_string += traceback.format_exc()
-        self.dm("<pre>" + error_string + "</pre>")
-        return
 
     def display_message(self, message_string, force_open=False):
         self.post_task(self.main_id, "print_to_console_event", {"print_string": message_string})

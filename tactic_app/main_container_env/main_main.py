@@ -6,6 +6,7 @@ import cPickle
 import pymongo
 import sys
 import copy
+sys.stdout = sys.stderr
 
 app = Flask(__name__)
 
@@ -29,10 +30,10 @@ def handle_exception(ex, special_string=None):
 @app.route('/initialize_mainwindow', methods=['POST'])
 def initialize_mainwindow():
     try:
-        app.logger.debug("entering intialize mainwindow")
+        print("entering intialize mainwindow")
         global mwindow
         data_dict = request.json
-        app.logger.debug("data_dict is " + str(data_dict))
+        print("data_dict is " + str(data_dict))
         mwindow = mainWindow(app, data_dict)
         mwindow.start()
         return jsonify({"success": True})
@@ -43,15 +44,15 @@ def initialize_mainwindow():
 @app.route('/initialize_project_mainwindow', methods=['POST'])
 def initialize_project_mainwindow():
     try:
-        app.logger.debug("entering intialize project mainwindow")
+        print("entering intialize project mainwindow")
         global mwindow
         data_dict = request.json
         mwindow = mainWindow(app, data_dict)
         mwindow.start()
         mwindow.post_task(data_dict["main_id"], "do_full_recreation", data_dict)
-        app.logger.debug("leaving initialize_project_mainwindow")
+        print("leaving initialize_project_mainwindow")
         return jsonify({"success": True})
-    except Exception as Ex:
+    except Exception as ex:
         return handle_exception(ex, "Error initializing project mainwindow")
 
 

@@ -127,14 +127,14 @@ var container_manager_specifics = {
     },
     destroy_container: function (event) {
         var manager = event.data.manager;
-        cont_id = manager.check_for_selection("container", 1);
+        cont_id = manager.check_for_selection("container", 4);
         $.getJSON($SCRIPT_ROOT + '/destroy_container/' + cont_id, doFlash);
         event.preventDefault();
     },
 
     container_logs: function (event) {
         var manager = event.data.manager;
-        cont_id = manager.check_for_selection("container", 1);
+        cont_id = manager.check_for_selection("container", 4);
         $.getJSON($SCRIPT_ROOT + '/container_logs/' + cont_id, function (data) {
             the_html = "<pre><small>" + data.log_text + "</small></pre>";
             $("#container-module #aux-area").html(the_html)

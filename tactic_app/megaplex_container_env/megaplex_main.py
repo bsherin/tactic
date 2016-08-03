@@ -1,11 +1,11 @@
 from flask import Flask, jsonify, request
 import sys
-import copy
-import cPickle
-from bson.binary import Binary
-import Queue
 import os
 import logging
+import Queue
+import datetime
+sys.stdout = sys.stderr
+
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
@@ -31,7 +31,9 @@ def hello():
 
 
 def dmsg(msg):
-    app.logger.debug(msg)
+    timestring = datetime.datetime.today().strftime("%b %d, %Y, %H:%M")
+    print timestring + ": " + msg
+    # app.logger.debug(msg)
     return
 
 

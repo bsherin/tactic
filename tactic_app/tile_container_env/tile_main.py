@@ -36,7 +36,7 @@ def handle_exception(ex, special_string=None):
 def load_source():
     try:
         global megaplex_address
-        app.logger.debug("entering load_source")
+        print("entering load_source")
         data_dict = request.json
         megaplex_address = data_dict["megaplex_address"]
         tile_code = data_dict["tile_code"]
@@ -49,7 +49,7 @@ def load_source():
 @app.route("/recreate_from_save", methods=["get", "post"])
 def recreate_from_save():
     try:
-        app.logger.debug("entering recreate_from_save. class_name is " + class_info["class_name"])
+        print("entering recreate_from_save. class_name is " + class_info["class_name"])
         global tile_instance
         data = copy.copy(request.json)
         tile_instance = class_info["tile_class"](data["main_id"], data["tile_id"],
@@ -60,7 +60,7 @@ def recreate_from_save():
                                                                         data["new_base_figure_url"])
         tile_instance.base_figure_url = data["new_base_figure_url"]
         tile_instance.start()
-        app.logger.debug("tile instance started")
+        print("tile instance started")
     except Exception as ex:
         return handle_exception(ex, "Error loading source")
     return jsonify({"success": True,
@@ -87,7 +87,7 @@ def kill_me():
 @app.route('/reinstantiate_tile', methods=["get", "post"])
 def reinstantiate_tile():
     try:
-        app.logger.debug("entering reinstantiate_tile_class")
+        print("entering reinstantiate_tile_class")
         global tile_instance
         gevent.kill(tile_instance)
         reload_dict = copy.copy(request.json)
@@ -98,7 +98,7 @@ def reinstantiate_tile():
             setattr(tile_instance, attr, val)
         tile_instance.start()
         form_html = tile_instance.create_form_html(reload_dict["form_info"])["form_html"]
-        app.logger.debug("leaving reinstantiate_tile_class")
+        print("leaving reinstantiate_tile_class")
         return jsonify({"success": True, "form_html": form_html})
     except Exception as ex:
         return handle_exception(ex, "Error reinstantiating tile")
@@ -107,7 +107,7 @@ def reinstantiate_tile():
 @app.route('/instantiate_tile_class', methods=["get", "post"])
 def instantiate_tile_class():
     try:
-        app.logger.debug("entering instantiate_tile_class")
+        print("entering instantiate_tile_class")
         global tile_instance
         data = copy.copy(request.json)
         tile_instance = class_info["tile_class"](data["main_id"], data["tile_id"],
@@ -117,7 +117,7 @@ def instantiate_tile_class():
         tile_instance.base_figure_url = data["base_figure_url"]
         data["exports"] = tile_instance.exports
         tile_instance.start()
-        app.logger.debug("leaving instantiate_tile_class")
+        print("leaving instantiate_tile_class")
         data["success"] = True
         return jsonify(data)
     except Exception as ex:

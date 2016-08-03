@@ -352,6 +352,7 @@ class mainWindow(QWorker):
         project_dict = cPickle.loads(zlib.decompress(self.fs.get(save_dict["file_id"]).read()).decode("utf-8", "ignore").encode("ascii"))
         project_dict["metadata"] = save_dict["metadata"]
         self.mdata = save_dict["metadata"]
+        error_messages = ""
         for (attr, attr_val) in project_dict.items():
             if str(attr) != "tile_instances":
                 try:
