@@ -109,13 +109,12 @@ function start_post_load() {
 }
 
 var container_manager_specifics = {
-    show_add: false,
-    show_multiple: false,
 
     buttons: [
         {"name": "clear-user-containers", "func": "clear_user_func", "button_class": "btn btn-danger"},
         {"name": "destroy-container", "func": "destroy_container", "button_class": "btn btn-warning"},
         {"name": "container-logs", "func": "container_logs", "button_class": "btn btn-info"},
+        {"name": "refresh", "func": "refresh_container_table", "button_class": "btn btn-info"}
     ],
     clear_user_func: function (event) {
         $.getJSON($SCRIPT_ROOT + '/clear_user_containers', doFlash);
@@ -135,6 +134,12 @@ var container_manager_specifics = {
             the_html = "<pre><small>" + data.log_text + "</small></pre>";
             $("#container-module #aux-area").html(the_html)
         });
+        event.preventDefault();
+    },
+
+    refresh_container_table: function (event) {
+        var manager = event.data.manager;
+        $.getJSON($SCRIPT_ROOT + '/refresh_container_table');
         event.preventDefault();
     },
 

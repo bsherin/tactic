@@ -6,11 +6,11 @@ from users import User, load_user
 mainwindow_instances = {}
 tile_classes = {}
 
-# tactic_todo user_tiles and loaded_user_modules will need to somehow be shared across workers
+# multiple_worker_issue user_tiles and loaded_user_modules will need to somehow be shared across workers
 user_tiles = {}
 loaded_user_modules = {}
 
-# tactic_todo test tile container: should there be one for every worker? That's probably okay.
+# multiple_worker_issue test tile container: should there be one for every worker? That's probably okay.
 test_tile_container_id = create_container("tactic_tile_image",
                                           network_mode="bridge",
                                           container_name="tile_test_container")

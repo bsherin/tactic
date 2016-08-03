@@ -9,6 +9,7 @@ SHORT_SLEEP_PERIOD = float(os.environ.get("SHORT_SLEEP_PERIOD"))
 LONG_SLEEP_PERIOD = float(os.environ.get("LONG_SLEEP_PERIOD"))
 MAX_QUEUE_LENGTH = int(os.environ.get("MAX_QUEUE_LENGTH"))
 
+# multiple_worker_issue global variables here
 callbacks = {}
 container_owners = {}
 

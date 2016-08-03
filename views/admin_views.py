@@ -15,6 +15,8 @@ class ContainerManager(ResourceManager):
         app.add_url_rule('/clear_user_containers', "clear_user_containers", login_required(self.clear_user_containers), methods=['get'])
         app.add_url_rule('/destroy_container/<container_id>', "kill_container", login_required(self.kill_container), methods=['get'])
         app.add_url_rule('/container_logs/<container_id>', "container_logs", login_required(self.container_logs), methods=['get'])
+        app.add_url_rule('/refresh_container_table', "refresh_container_table", login_required(self.refresh_container_table),
+                         methods=['get'])
 
     def clear_user_containers(self):
         if not (current_user.get_id() == repository_user.get_id()):
@@ -65,6 +67,10 @@ class ContainerManager(ResourceManager):
             return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
         return jsonify({"success": True, "message": "Got Logs", "log_text": log_text, "alert_type": "alert-success"})
 
+    def refresh_container_table(self):
+        self.update_selector_list()
+        return jsonify({"success": True})
+
     def build_resource_array(self):
         larray = [["Name", "Id", "Image", "Owner", "Status"]]
         all_containers = cli.containers(all=True)
@@ -93,7 +99,6 @@ class ContainerManager(ResourceManager):
             the_html += "</tr>"
         the_html += "</tbody></table>"
         return the_html
-
 
     def request_update_selector_list(self, user_obj=None):
         res_array = self.build_resource_array()

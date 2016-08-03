@@ -166,7 +166,7 @@ class HostWorker(QWorker):
         result = {"tile_types": tile_types}
         return result
 
-    # todo should clear temp_dict entry after use?
+    # tactic_todo should clear temp_dict entry after use?
     @task_worthy
     def open_project_window(self, data):
         from tactic_app import socketio
@@ -182,7 +182,7 @@ class HostWorker(QWorker):
         socketio.emit('stop-spinner', {}, namespace='/user_manage', room=data["user_manage_id"])
         return {"success": True}
 
-    # todo I'm in the middle of figuring out how to do this send_file_to_client
+    # tactic_todo I'm in the middle of figuring out how to do this send_file_to_client
     # currently I'm thinking I'll do it with something like the temp page loading
     @task_worthy
     def send_file_to_client(self, data):

@@ -830,8 +830,8 @@ class mainWindow(QWorker):
                                                    "main_id": self.my_id})
         return
 
-    # todo download_collection needs rethinking look at how pipe_values handled for a good model
-    # todo I'm in the middle of figuring out how to make this work.
+    # tactic_todo download_collection needs rethinking look at how pipe_values handled for a good model
+    # tactic_todo I'm in the middle of figuring out how to make this work.
     @task_worthy
     def download_collection(self, data):
         new_name = data["new_name"]
