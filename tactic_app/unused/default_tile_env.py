@@ -1,7 +1,7 @@
 import sys
 import nltk
-from tactic_app.shared_dicts import tile_classes, weight_functions
-from users import User
+from tactic_app.global_tile_management import tile_classes, weight_functions
+from tactic_app.users import User
 
 # I want nltk to only search here so that I can see
 # what behavior on remote will be like.

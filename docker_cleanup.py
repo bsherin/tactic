@@ -15,5 +15,3 @@ def do_docker_cleanup():
     dangling_images = cli.images(all=True, filters={"dangling": True})
     for img in dangling_images:
         cli.remove_image(img["Id"], force=True)
-
-do_docker_cleanup()

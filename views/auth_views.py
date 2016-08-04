@@ -9,7 +9,7 @@ from wtforms.validators import Required, Length, Regexp, EqualTo
 from tactic_app import app, socketio, csrf
 from wtforms.validators import ValidationError
 from tactic_app import ANYONE_CAN_REGISTER
-from tactic_app import shared_dicts
+from tactic_app.global_tile_management import global_tile_manager
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -57,10 +57,7 @@ def check_if_admin():
 def logout():
     socketio.emit('close-user-windows', {}, namespace='/user_manage', room=current_user.get_id())
     socketio.emit('close-user-windows', {}, namespace='/main', room=current_user.get_id())
-    if current_user.username in shared_dicts.user_tiles:
-        del shared_dicts.user_tiles[current_user.username]
-    if current_user.username in shared_dicts.loaded_user_modules:
-        del shared_dicts.loaded_user_modules[current_user.username]
+    global_tile_manager.remove_user(current_user.username)
     logout_user()
     return render_template('auth/login.html', show_message="yes",
                            message="You have been logged out.", alert_type="alert-info")

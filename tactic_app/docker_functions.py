@@ -11,6 +11,7 @@ MAX_QUEUE_LENGTH = int(os.environ.get("MAX_QUEUE_LENGTH"))
 
 # multiple_worker_issue global variables here
 
+# global_stuff
 container_owners = {}
 
 cli = docker.Client(base_url='unix://var/run/docker.sock')

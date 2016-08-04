@@ -8,7 +8,8 @@ import os
 import docker_cleanup
 print "entering tactic_run"
 
-# from flask import request, redirect
+docker_cleanup.do_docker_cleanup()
+
 
 from tactic_app import app, socketio
 from tactic_app import host_workers
@@ -17,5 +18,5 @@ from tactic_app import users
 from views import auth_views, main_views, user_manage_views, admin_views
 
 
-from tactic_app.shared_dicts import get_all_default_tiles
-get_all_default_tiles()
+from tactic_app.global_tile_management import global_tile_manager
+global_tile_manager.get_all_default_tiles()

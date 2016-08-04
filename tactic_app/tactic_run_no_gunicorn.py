@@ -5,20 +5,22 @@
 # This avoids circular imports since the view functions make use
 # of things such as app, socketio, and db that are created in __init__.py
 import os
-import docker_cleanup
-print "entering tactic_run"
 
-from tactic_app import app, socketio
+print "entering tactic_run"
+import docker_cleanup
+docker_cleanup.do_docker_cleanup()
+
+from tactic_app import app, socketio # global_stuff ?
 
 from tactic_app import host_workers  # this creates the host_worker and client_worker
 
 from tactic_app import users
 from views import auth_views, main_views, user_manage_views, admin_views
 
-from tactic_app.shared_dicts import get_all_default_tiles
+from tactic_app.global_tile_management import global_tile_manager
 print "imported app"
 
-get_all_default_tiles()
+global_tile_manager.get_all_default_tiles()
 
 from views import tester_views
 

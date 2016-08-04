@@ -11,11 +11,10 @@ from flask import render_template, request, jsonify, send_file, url_for
 from flask_login import login_required, current_user
 from flask_socketio import join_room
 import tactic_app
-from tactic_app import app, db, fs, socketio, use_ssl, mongo_uri
+from tactic_app import app, db, fs, socketio, use_ssl, mongo_uri # global_stuff
 from tactic_app.file_handling import read_csv_file_to_dict, read_tsv_file_to_dict, read_txt_file_to_dict, load_a_list
 
-from tactic_app import shared_dicts
-from tactic_app.shared_dicts import create_initial_metadata
+from tactic_app.global_tile_management import global_tile_manager # global_stuff
 from tactic_app.users import User
 from tactic_app.docker_functions import send_direct_request_to_container
 
@@ -24,12 +23,6 @@ import traceback
 
 AUTOSPLIT = True
 AUTOSPLIT_SIZE = 10000
-
-
-# host_ip = subprocess.check_output(["/sbin/ip", "route"]).split()[2]
-ip_info = subprocess.check_output(['ip', '-4', 'addr', 'show', 'scope', 'global', 'dev', 'docker0'])
-host_ip = re.search("inet (.*?)/", ip_info).group(1)
-
 
 def start_spinner(user_id=None):
     if user_id is None:
@@ -208,7 +201,7 @@ def copy_from_repository():
                     continue
                 new_res_dict[key] = val
             if "metadata" not in new_res_dict:
-                new_res_dict["metadata"] = create_initial_metadata()
+                new_res_dict["metadata"] = global_tile_manager.create_initial_metadata()
             else:
                 new_res_dict["metadata"]["datetime"] = datetime.datetime.today()
             db[getattr(current_user, repo_manager.collection_name)].insert_one(new_res_dict)
@@ -311,7 +304,7 @@ class ListManager(ResourceManager):
             return jsonify({"success": False, "alert_type": "alert-warning",
                             "message": "A list with that name already exists"})
         the_list = load_a_list(the_file)
-        metadata = create_initial_metadata()
+        metadata = global_tile_manager.create_initial_metadata()
         data_dict = {"list_name": the_file.filename, "the_list": the_list, "metadata": metadata}
         db[user_obj.list_collection_name].insert_one(data_dict)
         self.update_selector_list(select=the_file.filename)
@@ -331,7 +324,7 @@ class ListManager(ResourceManager):
             return jsonify({"success": False, "alert_type": "alert-warning",
                             "message": "A list with that name already exists"})
         old_list_dict = db[user_obj.list_collection_name].find_one({"list_name": list_to_copy})
-        metadata = create_initial_metadata()
+        metadata = global_tile_manager.create_initial_metadata()
         new_list_dict = {"list_name": new_list_name, "the_list": old_list_dict["the_list"], "metadata": metadata}
         db[user_obj.list_collection_name].insert_one(new_list_dict)
         self.update_selector_list(select=new_list_name)
@@ -368,8 +361,7 @@ class CollectionManager(ResourceManager):
         caddress = get_address(main_id, "bridge")
         send_direct_request_to_container(tactic_app.megaplex_id, "add_address", {"container_id": "main", "address": caddress})
 
-        if user_obj.username not in shared_dicts.loaded_user_modules:
-            shared_dicts.loaded_user_modules[user_obj.username] = []
+        global_tile_manager.add_user(user_obj.username)
 
         data_dict = {"collection_name": cname,
                      "main_id": main_id,
@@ -454,7 +446,7 @@ class CollectionManager(ResourceManager):
         if full_collection_name in db.collection_names():
             return jsonify({"success": False, "message": "There is already a collection with that name.",
                             "alert_type": "alert-warning"})
-        mdata = create_initial_metadata()
+        mdata = global_tile_manager.create_initial_metadata()
         try:
             db[full_collection_name].insert_one({"name": "__metadata__", "datetime": mdata["datetime"],
                                                  "tags": "", "notes": ""})
@@ -643,23 +635,20 @@ class TileManager(ResourceManager):
                 user_obj = current_user
             tile_module = user_obj.get_tile_module(tile_module_name)
 
-            result = send_direct_request_to_container(shared_dicts.test_tile_container_id, "load_source", {"tile_code": tile_module,
+            result = send_direct_request_to_container(global_tile_manager.test_tile_container_id, "load_source", {"tile_code": tile_module,
                                                                                               "megaplex_address": tactic_app.megaplex_address})
             res_dict = result.json()
 
             if not res_dict["success"]:
                 return jsonify({"success": False, "message": res_dict["message_string"], "alert_type": "alert-warning"})
             category = res_dict["category"]
-            if user_obj.username not in shared_dicts.user_tiles:
-                shared_dicts.user_tiles[user_obj.username] = {}
-            if category not in shared_dicts.user_tiles[user_obj.username]:
-                shared_dicts.user_tiles[user_obj.username][category] = {}
-            shared_dicts.user_tiles[user_obj.username][category][res_dict["tile_name"]] = tile_module
 
-            if user_obj.username not in shared_dicts.loaded_user_modules:
-                shared_dicts.loaded_user_modules[user_obj.username] = []
-            if tile_module_name not in shared_dicts.loaded_user_modules[user_obj.username]:
-                shared_dicts.loaded_user_modules[user_obj.username].append(tile_module_name)
+            global_tile_manager.add_user_tile_module(user_obj.username,
+                                              category,
+                                              res_dict["tile_name"],
+                                              tile_module,
+                                              tile_module_name)
+
             socketio.emit('update-loaded-tile-list', {"html": self.render_loaded_tile_list(user_obj)},
                           namespace='/user_manage', room=user_obj.get_id())
             socketio.emit('update-menus', {}, namespace='/main', room=user_obj.get_id())
@@ -676,8 +665,7 @@ class TileManager(ResourceManager):
 
     def unload_all_tiles(self):
         try:
-            shared_dicts.loaded_user_modules[current_user.username] = []
-            shared_dicts.user_tiles[current_user.username] = {}
+            global_tile_manager.unload_user_tiles(current_user.username)
             socketio.emit('update-loaded-tile-list', {"html": self.render_loaded_tile_list()},
                           namespace='/user_manage', room=current_user.get_id())
             socketio.emit('update-menus', {}, namespace='/main', room=current_user.get_id())
@@ -693,7 +681,7 @@ class TileManager(ResourceManager):
             return jsonify({"success": False, "alert_type": "alert-warning",
                             "message": "A module with that name already exists"})
         the_module = f.read()
-        metadata = create_initial_metadata()
+        metadata = global_tile_manager.create_initial_metadata()
         data_dict = {"tile_module_name": f.filename, "tile_module": the_module, "metadata": metadata}
         db[user_obj.tile_collection_name].insert_one(data_dict)
         self.update_selector_list(f.filename)
@@ -707,7 +695,7 @@ class TileManager(ResourceManager):
             return jsonify({"success": False, "alert_type": "alert-warning",
                             "message": "A tile with that name already exists"})
         old_tile_dict = db[user_obj.tile_collection_name].find_one({"tile_module_name": tile_to_copy})
-        metadata = create_initial_metadata()
+        metadata = global_tile_manager.create_initial_metadata()
         new_tile_dict = {"tile_module_name": new_tile_name, "tile_module": old_tile_dict["tile_module"], "metadata": metadata}
         db[user_obj.tile_collection_name].insert_one(new_tile_dict)
         self.update_selector_list(select=new_tile_name)
@@ -723,7 +711,7 @@ class TileManager(ResourceManager):
         mongo_dict = db["repository.tiles"].find_one({"tile_module_name": template_name})
         template = mongo_dict["tile_module"]
 
-        metadata = create_initial_metadata()
+        metadata = global_tile_manager.create_initial_metadata()
         data_dict = {"tile_module_name": new_tile_name, "tile_module": template, "metadata": metadata}
         db[current_user.tile_collection_name].insert_one(data_dict)
         self.update_selector_list(new_tile_name)
@@ -736,12 +724,9 @@ class TileManager(ResourceManager):
         return jsonify({"success": True})
 
     def render_loaded_tile_list(self, user_obj=None):
-        loaded_tiles = []
         if user_obj is None:
             user_obj = current_user
-        if user_obj.username in shared_dicts.user_tiles:
-            for (category, the_dict) in shared_dicts.user_tiles[user_obj.username].items():
-                loaded_tiles += the_dict.keys()
+        loaded_tiles = global_tile_manager.get_loaded_user_tiles_list(user_obj.username)
         with app.test_request_context():
             result = render_template("user_manage/loaded_tile_list.html", user_tile_name_list=loaded_tiles)
         return result
@@ -775,15 +760,10 @@ repository_tile_manager = RepositoryTileManager("tile")
 @app.route('/user_manage')
 @login_required
 def user_manage():
-    if current_user.username in shared_dicts.user_tiles:
-        user_tile_name_list = shared_dicts.user_tiles[current_user.username].keys()
-    else:
-        user_tile_name_list = []
-    return render_template('user_manage/user_manage.html', user_tile_name_list=user_tile_name_list,
+    return render_template('user_manage/user_manage.html',
                            use_ssl=str(use_ssl))
 
 # Metadata views
-
 
 @app.route('/grab_metadata', methods=['POST'])
 @login_required

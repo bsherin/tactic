@@ -4,9 +4,9 @@ from flask_login import current_user, url_for
 from users import load_user
 import gevent
 from communication_utils import send_request_to_container
-from docker_functions import create_container, get_address, destroy_container, cli
-from tactic_app import shared_dicts
-from tactic_app import app, socketio, mongo_uri, megaplex_address, use_ssl
+from docker_functions import create_container, get_address, destroy_container, cli # global_stuff cli
+from tactic_app.global_tile_management import global_tile_manager
+from tactic_app import app, socketio, mongo_uri, megaplex_address, use_ssl # global_stuff
 from views.user_manage_views import tile_manager, project_manager
 from views import user_manage_views
 import uuid
@@ -59,8 +59,7 @@ class HostWorker(QWorker):
         caddress = get_address(main_id, "bridge")
         send_request_to_container(self.megaplex_address, "add_address", {"container_id": "main", "address": caddress})
 
-        if user_obj.username not in shared_dicts.loaded_user_modules:
-            shared_dicts.loaded_user_modules[user_obj.username] = []
+        global_tile_manager.add_user(user_obj.username)
 
         list_names = self.get_list_names({"user_id": user_obj.get_id()})["list_names"]
 
@@ -72,7 +71,7 @@ class HostWorker(QWorker):
                      "user_id": user_obj.get_id(),
                      "megaplex_address": self.megaplex_address,
                      "main_address": caddress,
-                     "loaded_user_modules": shared_dicts.loaded_user_modules,
+                     "loaded_user_modules": global_tile_manager.loaded_user_modules,
                      "mongo_uri": mongo_uri,
                      "list_names": list_names,
                      "user_manage_id": user_manage_id,
@@ -95,7 +94,7 @@ class HostWorker(QWorker):
     def get_loaded_user_modules(self, data):
         user_id = data["user_id"]
         user_obj = load_user(user_id)
-        return {"loaded_modules": shared_dicts.loaded_user_modules[user_obj.username]}
+        return {"loaded_modules": global_tile_manager.loaded_user_modules[user_obj.username]}
 
     @task_worthy
     def load_modules(self, data):
@@ -103,7 +102,7 @@ class HostWorker(QWorker):
         user_id = data["user_id"]
         user_obj = load_user(user_id)
         for module in loaded_modules:
-            if module not in shared_dicts.loaded_user_modules[user_obj.username]:
+            if module not in global_tile_manager.loaded_user_modules[user_obj.username]:
                 result = tile_manager.load_tile_module(module, return_json=False, user_obj=user_obj)
                 if not result["success"]:
                     template = "Error loading module {}\n" + result["message"]
@@ -134,7 +133,7 @@ class HostWorker(QWorker):
         tile_info_dict = data_dict["tile_info_dict"]
         user_id = data_dict["user_id"]
         for old_tile_id, tile_type in tile_info_dict.items():
-            result[old_tile_id] = shared_dicts.get_tile_code(tile_type, user_id)
+            result[old_tile_id] = global_tile_manager.get_tile_code(tile_type, user_id)
         return result
 
     @task_worthy
@@ -155,15 +154,7 @@ class HostWorker(QWorker):
         tile_types = {}
         user_id = data["user_id"]
         the_user = load_user(user_id)
-        for (category, the_dict) in shared_dicts.tile_classes.items():
-            tile_types[category] = the_dict.keys()
-
-        if the_user.username in shared_dicts.user_tiles:
-            for (category, the_dict) in shared_dicts.user_tiles[the_user.username].items():
-                if category not in tile_types:
-                    tile_types[category] = []
-                tile_types[category] += the_dict.keys()
-        result = {"tile_types": tile_types}
+        result = {"tile_types": global_tile_manager.get_user_available_tile_types(the_user.username)}
         return result
 
     # tactic_todo should clear temp_dict entry after use?
@@ -237,7 +228,7 @@ class HostWorker(QWorker):
 
     @task_worthy
     def get_module_code(self, data):
-        module_code = shared_dicts.get_tile_code(data["tile_type"], data["user_id"])
+        module_code = global_tile_manager.get_tile_code(data["tile_type"], data["user_id"])
         return {"module_code": module_code, "megaplex_address": self.megaplex_address}
 
     @task_worthy

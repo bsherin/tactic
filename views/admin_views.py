@@ -1,7 +1,7 @@
 from flask import render_template, jsonify, send_file
 from flask_login import login_required, current_user
-from tactic_app import app, use_ssl, shared_dicts, create_megaplex, host_ip
-from tactic_app import shared_dicts
+from tactic_app import app, use_ssl, create_megaplex
+from tactic_app.global_tile_management import global_tile_manager
 from tactic_app.users import User, load_user
 from user_manage_views import ResourceManager
 from tactic_app.docker_functions import cli, destroy_container, container_owners
@@ -31,7 +31,7 @@ class ContainerManager(ResourceManager):
                     cli.remove_container(cont["Id"], force=True)
                     continue
                 if cont["Image"] in ["tactic_tile_image"]:
-                    if not cont["Id"] == shared_dicts.test_tile_container_id:
+                    if not cont["Id"] == global_tile_manager.test_tile_container_id:
                         cli.remove_container(cont["Id"], force=True)
                     continue
                 if cont["Image"] == cont["ImageID"]:
@@ -51,8 +51,8 @@ class ContainerManager(ResourceManager):
         try:
             do_docker_cleanup()
             create_megaplex()
-            shared_dicts.initialize_globals()
-            shared_dicts.get_all_default_tiles()
+            global_tile_manager.initialize()
+            global_tile_manager.get_all_default_tiles()
         except Exception as ex:
             template = "<pre>An exception of type {0} occured. Arguments:\n{1!r}</pre>"
             error_string = template.format(type(ex).__name__, ex.args)

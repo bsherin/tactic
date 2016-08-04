@@ -17,11 +17,13 @@ from flask_wtf.csrf import CsrfProtect
 from docker_functions import create_container, get_address
 from communication_utils import send_request_to_container
 
+# global_stuff
 csrf = CsrfProtect()
 mongo_uri = None
 ip_info = subprocess.check_output(['ip', '-4', 'addr', 'show', 'scope', 'global', 'dev', 'docker0'])
 host_ip = re.search("inet (.*?)/", ip_info).group(1)
 
+# global_stuff
 megaplex_address = ""
 megaplex_id = ""
 
@@ -29,6 +31,7 @@ def print_message():
     print "got to the message"
 
 def create_megaplex():
+    # global_stuff
     global megaplex_address, megaplex_id
     # multiple_worker_issue Create the megaplex in a separate script when multiple workers
     megaplex_id = create_container("tactic_megaplex_image", network_mode="bridge")
