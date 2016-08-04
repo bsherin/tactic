@@ -14,7 +14,7 @@ import tactic_app
 from tactic_app import app, db, fs, socketio, use_ssl, mongo_uri # global_stuff
 from tactic_app.file_handling import read_csv_file_to_dict, read_tsv_file_to_dict, read_txt_file_to_dict, load_a_list
 
-from tactic_app.global_tile_management import global_tile_manager # global_stuff
+from tactic_app.global_tile_management import global_tile_manager
 from tactic_app.users import User
 from tactic_app.docker_functions import send_direct_request_to_container
 

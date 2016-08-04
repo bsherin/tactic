@@ -1,7 +1,5 @@
-
 # This module creates many of the objects that
 # need to be imported by other modules.
-
 from flask import Flask
 import pymongo
 import sys
@@ -17,21 +15,27 @@ from flask_wtf.csrf import CsrfProtect
 from docker_functions import create_container, get_address
 from communication_utils import send_request_to_container
 
-# global_stuff
 csrf = CsrfProtect()
-mongo_uri = None
+
+# ip_info is only used as a step to getting the host_ip
 ip_info = subprocess.check_output(['ip', '-4', 'addr', 'show', 'scope', 'global', 'dev', 'docker0'])
-host_ip = re.search("inet (.*?)/", ip_info).group(1)
 
 # global_stuff
-megaplex_address = ""
-megaplex_id = ""
+# these variables are imported by other modules
+host_ip = re.search("inet (.*?)/", ip_info).group(1)
+mongo_uri = None
+megaplex_address = None
+megaplex_id = None
+use_ssl = os.environ.get("USE_SSL")
+app = None
+db = None
+fs = None
+socketio = None
 
 def print_message():
     print "got to the message"
 
 def create_megaplex():
-    # global_stuff
     global megaplex_address, megaplex_id
     # multiple_worker_issue Create the megaplex in a separate script when multiple workers
     megaplex_id = create_container("tactic_megaplex_image", network_mode="bridge")
@@ -41,7 +45,6 @@ def create_megaplex():
 # noinspection PyUnresolvedReferences
 try:
     print "getting client"
-    use_ssl = os.environ.get("USE_SSL")
     CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
     STEP_SIZE = int(os.environ.get("STEP_SIZE"))
 

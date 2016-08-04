@@ -12,12 +12,13 @@ MAX_QUEUE_LENGTH = int(os.environ.get("MAX_QUEUE_LENGTH"))
 # multiple_worker_issue global variables here
 
 # global_stuff
+# container_owners is imported by admin_views
 container_owners = {}
 
 cli = docker.Client(base_url='unix://var/run/docker.sock')
 
 
-# Note taht get_address assumes that the network is named usernet
+# Note that get_address assumes that the network is named usernet
 def get_address(container_identifier, network_name):
     return cli.inspect_container(container_identifier)["NetworkSettings"]["Networks"][network_name]["IPAddress"]
 
