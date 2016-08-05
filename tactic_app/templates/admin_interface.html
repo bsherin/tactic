@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}Tactic - Administer{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{{url_for('static', filename='css/alertify_css/alertify.min.css')}}"/>
+    <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/table.css')}}">
+{% endblock %}
+
+{% block page_content %}
+    <div class="container-fluid">
+        <div class="page-header">
+            <h1>Admin Interface</h1>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-12" id="status-area"></div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12">
+              <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a href="#container-module" aria-controls="containers" role="tab" data-toggle="tab" value="container">containers</a></li>
+              </ul>
+                <div class="tab-content">
+                    <div class="resource-module tab-pane fade in active" id="container-module"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+    <script src="{{url_for('static', filename='js/alertify.js')}}"></script>
+    <script src="{{url_for('static', filename='js/socket.io.js')}}"></script>
+    <script src="{{url_for('static', filename='js/sorttable.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/utilities.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/communication.js')}}"></script>
+    <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/admin_resource_manager.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/administer.js')}}"></script>
+    <script>
+        var user_id = "{{current_user.get_id()}}";
+        var use_ssl = "{{use_ssl}}"=="True";
+        window.onload = start_post_load;
+    </script>
+{% endblock %}

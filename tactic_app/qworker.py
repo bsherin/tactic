@@ -1,9 +1,7 @@
 import gevent
-import copy
 import uuid
-import sys
 import time
-import requests
+import datetime
 import os
 from communication_utils import send_request_to_container
 import cPickle
@@ -37,8 +35,10 @@ class QWorker(gevent.Greenlet):
         self.app = app
 
     def debug_log(self, msg):
-        with self.app.test_request_context():
-            self.app.logger.debug(msg)
+        timestring = datetime.datetime.today().strftime("%b %d, %Y, %H:%M:%S")
+        print timestring + ": " + msg
+        # with self.app.test_request_context():
+        #     self.app.logger.debug(msg)
 
     def get_next_task(self):
         raw_result = send_request_to_container(self.megaplex_address, "get_next_task/" + self.my_id)
@@ -58,13 +58,13 @@ class QWorker(gevent.Greenlet):
         for i in range(tries):
             res = send_request_to_container(self.megaplex_address, "check_wait_task", new_packet).json()
             if res["success"]:
-                self.app.logger.debug("Got result to post_and_wait")
+                self.debug_log("Got result to post_and_wait")
                 return res["result"]
             else:
-                self.app.logger.debug("No result yet for post_and_wait after tries " + str(i))
+                self.debug_log("No result yet for post_and_wait after tries " + str(i))
                 time.sleep(sleep_time)
         error_string = "post_and_wait timed out with msg_type {}, destination {}, and source".format(task_type, dest_id, self.my_id)
-        self.app.logger.debug(error_string)
+        self.debug_log(error_string)
         raise Exception(error_string)
 
     def post_task(self, dest_id, task_type, task_data=None, callback_func=None):
@@ -108,7 +108,7 @@ class QWorker(gevent.Greenlet):
                             func = callback_dict[task_packet["callback_id"]]
                             del callback_dict[task_packet["callback_id"]]
                             if isinstance(task_packet["response_data"], Binary):
-                                task_packet["response_data"] = cPickle.loads(encoded_val.decode("utf-8", "ignore").encode("ascii"))
+                                task_packet["response_data"] = cPickle.loads(task_packet["response_data"].decode("utf-8", "ignore").encode("ascii"))
                             func(task_packet["response_data"])
                         except Exception as ex:
                             special_string = "Error handling callback for task type {} for my_id {}".format(task_packet["task_type"],
@@ -141,3 +141,6 @@ class QWorker(gevent.Greenlet):
             else:
                 self.debug_log("Got invalid task type for my_id ".format(self.my_id))
         return
+
+    def handle_exception(self, ex, special_string=None):
+        print "handle exception not implemented in qworker subclass"

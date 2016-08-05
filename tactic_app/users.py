@@ -4,7 +4,7 @@
 import re
 from collections import OrderedDict
 from flask.ext.login import UserMixin
-from tactic_app import login_manager, db
+from tactic_app import login_manager, db # global_stuff db
 from bson.objectid import ObjectId
 from werkzeug.security import generate_password_hash, check_password_hash
 

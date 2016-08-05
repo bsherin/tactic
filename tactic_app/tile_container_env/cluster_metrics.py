@@ -7,6 +7,7 @@ try:
     from sklearn import metrics
 except ImportError:
     sklearn_available = False
+    metrics = None
 
 distance_metric_dict = {}
 cluster_metric_dict = {}

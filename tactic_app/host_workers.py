@@ -1,14 +1,13 @@
 from qworker import QWorker, SHORT_SLEEP_PERIOD, LONG_SLEEP_PERIOD, task_worthy
-from flask import jsonify, render_template
-from flask_login import current_user, url_for
+from flask import render_template
+from flask_login import url_for
 from users import load_user
 import gevent
 from communication_utils import send_request_to_container
 from docker_functions import create_container, get_address, destroy_container
-from tactic_app import shared_dicts
-from tactic_app import app, socketio, mongo_uri, megaplex_address, use_ssl
+from tactic_app.global_tile_management import global_tile_manager
+from tactic_app import app, socketio, mongo_uri, megaplex_address, use_ssl # global_stuff
 from views.user_manage_views import tile_manager, project_manager
-from views import user_manage_views
 import uuid
 import copy
 import traceback
@@ -54,13 +53,13 @@ class HostWorker(QWorker):
         project_name = data["project_name"]
         user_manage_id = data["user_manage_id"]
         user_obj = load_user(user_id)
+        # noinspection PyTypeChecker
         self.show_um_status_message("creating main container", user_manage_id, None)
-        main_id = create_container("tactic_main_image", network_mode="bridge")["Id"]
+        main_id = create_container("tactic_main_image", network_mode="bridge", owner=user_id)
         caddress = get_address(main_id, "bridge")
         send_request_to_container(self.megaplex_address, "add_address", {"container_id": "main", "address": caddress})
 
-        if user_obj.username not in shared_dicts.loaded_user_modules:
-            shared_dicts.loaded_user_modules[user_obj.username] = []
+        global_tile_manager.add_user(user_obj.username)
 
         list_names = self.get_list_names({"user_id": user_obj.get_id()})["list_names"]
 
@@ -72,13 +71,14 @@ class HostWorker(QWorker):
                      "user_id": user_obj.get_id(),
                      "megaplex_address": self.megaplex_address,
                      "main_address": caddress,
-                     "loaded_user_modules": shared_dicts.loaded_user_modules,
+                     "loaded_user_modules": global_tile_manager.loaded_user_modules,
                      "mongo_uri": mongo_uri,
                      "list_names": list_names,
                      "user_manage_id": user_manage_id,
                      "base_figure_url": bf_url,
                      "use_ssl": use_ssl}
 
+        # noinspection PyTypeChecker
         self.show_um_status_message("start initialize project", user_manage_id, None)
         result = send_request_to_container(caddress, "initialize_project_mainwindow", data_dict).json()
         if not result["success"]:
@@ -95,7 +95,7 @@ class HostWorker(QWorker):
     def get_loaded_user_modules(self, data):
         user_id = data["user_id"]
         user_obj = load_user(user_id)
-        return {"loaded_modules": shared_dicts.loaded_user_modules[user_obj.username]}
+        return {"loaded_modules": global_tile_manager.loaded_user_modules[user_obj.username]}
 
     @task_worthy
     def load_modules(self, data):
@@ -103,7 +103,7 @@ class HostWorker(QWorker):
         user_id = data["user_id"]
         user_obj = load_user(user_id)
         for module in loaded_modules:
-            if module not in shared_dicts.loaded_user_modules[user_obj.username]:
+            if module not in global_tile_manager.loaded_user_modules[user_obj.username]:
                 result = tile_manager.load_tile_module(module, return_json=False, user_obj=user_obj)
                 if not result["success"]:
                     template = "Error loading module {}\n" + result["message"]
@@ -121,7 +121,9 @@ class HostWorker(QWorker):
     def get_empty_tile_containers(self, data):
         cdict = {}
         for i in range(data["number"]):
-            tile_container_id = create_container("tactic_tile_image", network_mode="bridge")["Id"]
+            tile_container_id = create_container("tactic_tile_image",
+                                                 network_mode="bridge",
+                                                 owner=data["user_id"])
             tile_container_address = get_address(tile_container_id, "bridge")
             cdict[tile_container_id] = tile_container_address
         return cdict
@@ -132,7 +134,7 @@ class HostWorker(QWorker):
         tile_info_dict = data_dict["tile_info_dict"]
         user_id = data_dict["user_id"]
         for old_tile_id, tile_type in tile_info_dict.items():
-            result[old_tile_id] = shared_dicts.get_tile_code(tile_type, user_id)
+            result[old_tile_id] = global_tile_manager.get_tile_code(tile_type, user_id)
         return result
 
     @task_worthy
@@ -153,18 +155,10 @@ class HostWorker(QWorker):
         tile_types = {}
         user_id = data["user_id"]
         the_user = load_user(user_id)
-        for (category, the_dict) in shared_dicts.tile_classes.items():
-            tile_types[category] = the_dict.keys()
-
-        if the_user.username in shared_dicts.user_tiles:
-            for (category, the_dict) in shared_dicts.user_tiles[the_user.username].items():
-                if category not in tile_types:
-                    tile_types[category] = []
-                tile_types[category] += the_dict.keys()
-        result = {"tile_types": tile_types}
+        result = {"tile_types": global_tile_manager.get_user_available_tile_types(the_user.username)}
         return result
 
-    # todo should clear temp_dict entry after use?
+    # tactic_todo should clear temp_dict entry after use?
     @task_worthy
     def open_project_window(self, data):
         from tactic_app import socketio
@@ -180,12 +174,12 @@ class HostWorker(QWorker):
         socketio.emit('stop-spinner', {}, namespace='/user_manage', room=data["user_manage_id"])
         return {"success": True}
 
-    # todo I'm in the middle of figuring out how to do this send_file_to_client
+    # tactic_todo I'm in the middle of figuring out how to do this send_file_to_client
     # currently I'm thinking I'll do it with something like the temp page loading
-    @task_worthy
-    def send_file_to_client(self, data):
-        from tactic_app import socketio
-        str_io = cPickle.loads(data["encoded_str_io"]).decode("utf-8", "ignore").encode("ascii")
+    # @task_worthy
+    # def send_file_to_client(self, data):
+        # from tactic_app import socketio
+        # str_io = cPickle.loads(data["encoded_str_io"]).decode("utf-8", "ignore").encode("ascii")
 
     @task_worthy
     def open_error_window(self, data):
@@ -228,13 +222,14 @@ class HostWorker(QWorker):
 
     @task_worthy
     def create_tile_container(self, data):
-        tile_container_id = create_container("tactic_tile_image", network_mode="bridge")["Id"]
+        tile_container_id = create_container("tactic_tile_image", network_mode="bridge",
+                                             owner=data["user_id"])
         tile_address = get_address(tile_container_id, "bridge")
         return {"tile_id": tile_container_id, "tile_address": tile_address}
 
     @task_worthy
     def get_module_code(self, data):
-        module_code = shared_dicts.get_tile_code(data["tile_type"], data["user_id"])
+        module_code = global_tile_manager.get_tile_code(data["tile_type"], data["user_id"])
         return {"module_code": module_code, "megaplex_address": self.megaplex_address}
 
     @task_worthy

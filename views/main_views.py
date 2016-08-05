@@ -11,16 +11,11 @@ from flask import request, jsonify, render_template, send_file, url_for
 from flask_login import current_user, login_required
 from flask_socketio import join_room
 from tactic_app import app, db, fs, socketio
-from tactic_app.shared_dicts import get_tile_code
-from user_manage_views import project_manager, collection_manager
-from tactic_app.docker_functions import create_container
-from tactic_app.docker_functions import get_address, callbacks, destroy_container
-from tactic_app.communication_utils import send_request_to_container
+from user_manage_views import collection_manager
+from tactic_app.docker_functions import get_address, destroy_container
 from tactic_app.users import load_user
 from tactic_app.host_workers import host_worker, client_worker
-from tactic_app import megaplex_address
 from tactic_app.docker_functions import send_direct_request_to_container
-from tactic_app import shared_dicts
 
 
 # The main window should join a room associated with the user
@@ -110,23 +105,23 @@ def export_data():
 
 
 # tactic_todo various exporting and downloading
-@app.route('/download_table/<main_id>/<new_name>', methods=['GET', 'POST'])
-@login_required
-def download_table(main_id, new_name):
-    mw = shared_dicts.mainwindow_instances[main_id]
-    doc_info = mw.doc_dict[mw.visible_doc_name]
-    data_rows = doc_info.all_sorted_data_rows
-    header_list = doc_info.header_list
-    str_io = cStringIO.StringIO()
-    for header in header_list[:-1]:
-        str_io.write(str(header) + ',')
-    str_io.write(str(header_list[-1]) + '\n')
-    for row in data_rows:
-        for header in header_list[:-1]:
-            str_io.write(str(row[header]) + ",")
-        str_io.write(str(row[header_list[-1]]) + '\n')
-    str_io.seek(0)
-    return {"sent_file": send_file(str_io, attachment_filename=new_name, as_attachment=True)}
+# @app.route('/download_table/<main_id>/<new_name>', methods=['GET', 'POST'])
+# @login_required
+# def download_table(main_id, new_name):
+#     mw = shared_dicts.mainwindow_instances[main_id]
+#     doc_info = mw.doc_dict[mw.visible_doc_name]
+#     data_rows = doc_info.all_sorted_data_rows
+#     header_list = doc_info.header_list
+#     str_io = cStringIO.StringIO()
+#     for header in header_list[:-1]:
+#         str_io.write(str(header) + ',')
+#     str_io.write(str(header_list[-1]) + '\n')
+#     for row in data_rows:
+#         for header in header_list[:-1]:
+#             str_io.write(str(row[header]) + ",")
+#         str_io.write(str(row[header_list[-1]]) + '\n')
+#     str_io.seek(0)
+#     return {"sent_file": send_file(str_io, attachment_filename=new_name, as_attachment=True)}
 
 
 @app.route('/figure_source/<tile_id>/<figure_name>', methods=['GET', 'POST'])
@@ -141,13 +136,13 @@ def figure_source(tile_id, figure_name):
 
 
 # tactic_todo deal with data_source, part of base_data_url, create_data_source
-@app.route('/data_source/<main_id>/<tile_id>/<data_name>', methods=['GET'])
-@login_required
-def data_source(main_id, tile_id, data_name):
-    try:
-        the_data = shared_dicts.mainwindow_instances[main_id].tile_instances[tile_id].data_dict[data_name]
-        return jsonify({"success": True, "data": the_data})
-    except:
-        error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-        mainwindow_instances[main_id].handle_exception("Error getting data " + error_string)
-        return jsonify({"success": False})
+# @app.route('/data_source/<main_id>/<tile_id>/<data_name>', methods=['GET'])
+# @login_required
+# def data_source(main_id, tile_id, data_name):
+#     try:
+#         the_data = shared_dicts.mainwindow_instances[main_id].tile_instances[tile_id].data_dict[data_name]
+#         return jsonify({"success": True, "data": the_data})
+#     except:
+#         error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+#         mainwindow_instances[main_id].handle_exception("Error getting data " + error_string)
+#         return jsonify({"success": False})

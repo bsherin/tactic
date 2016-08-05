@@ -3,21 +3,16 @@ import re
 # noinspection PyUnresolvedReferences
 import requests
 import copy
-import gevent
 from gevent import monkey; monkey.patch_all()
-from flask import Flask, render_template
-from gevent.queue import Queue
+from flask import render_template
 import pymongo
 import gridfs
-import gridfs
-import time
-import uuid
 import cPickle
 from bson.binary import Binary
 from qworker import QWorker, task_worthy
 import datetime
+# noinspection PyUnresolvedReferences
 from communication_utils import send_request_to_container
-import numpy
 import traceback
 import zlib
 import openpyxl
@@ -29,7 +24,7 @@ STEP_SIZE = 100
 
 
 # noinspection PyPep8Naming
-class docInfo:
+class docInfo(object):
     def __init__(self, name, data_rows, header_list=None, cell_backgrounds=None):
 
         self.name = name
@@ -182,12 +177,14 @@ class mainWindow(QWorker):
     def __init__(self, app, data_dict):
         QWorker.__init__(self, app, data_dict["megaplex_address"], data_dict["main_id"])
         try:
-            client = pymongo.MongoClient(data_dict["mongo_uri"])
+            client = pymongo.MongoClient(data_dict["mongo_uri"], serverSelectionTimeoutMS=10)
             client.server_info()
             # noinspection PyUnresolvedReferences
             self.db = client.tacticdb
             self.fs = gridfs.GridFS(self.db)
-        except pymongo.errors.PyMongoError as err:
+        except:
+            error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+            self.debug_log("error getting pymongo client: " + error_string)
             sys.exit()
 
         self.base_figure_url = data_dict["base_figure_url"]
@@ -220,7 +217,6 @@ class mainWindow(QWorker):
             self.console_html = None
             self.user_id = data_dict["user_id"]
             self.doc_dict = self._build_doc_dict()
-            self.debug_log("Done with build_doc_dict")
             self.visible_doc_name = self.doc_dict.keys()[0]
 
     # Communication Methods
@@ -298,12 +294,14 @@ class mainWindow(QWorker):
     @task_worthy
     def do_full_recreation(self, data_dict):
         try:
+            self.show_um_message("Entering do_full_recreation", data_dict["user_manage_id"], None)
             tile_info_dict, loaded_modules = self.recreate_from_save(data_dict["project_collection_name"],
                                                                      data_dict["project_name"])
             self.post_and_wait("host", "load_modules", {"loaded_modules": loaded_modules, "user_id": data_dict["user_id"]})
             doc_names = [str(doc_name) for doc_name in self.doc_names]
             self.show_um_message("Creating empty containers", data_dict["user_manage_id"])
-            tile_containers = self.post_and_wait("host", "get_empty_tile_containers", {"number": len(tile_info_dict.keys())})
+            tile_containers = self.post_and_wait("host", "get_empty_tile_containers",
+                                                 {"number": len(tile_info_dict.keys()), "user_id": data_dict["user_id"]})
             self.show_um_message("Getting tile code", data_dict["user_manage_id"])
             tile_code_dict = self.post_and_wait("host", "get_tile_code", {"tile_info_dict": tile_info_dict,
                                                                           "user_id": data_dict["user_id"]})
@@ -350,6 +348,7 @@ class mainWindow(QWorker):
         project_dict = cPickle.loads(zlib.decompress(self.fs.get(save_dict["file_id"]).read()).decode("utf-8", "ignore").encode("ascii"))
         project_dict["metadata"] = save_dict["metadata"]
         self.mdata = save_dict["metadata"]
+        error_messages = []
         for (attr, attr_val) in project_dict.items():
             if str(attr) != "tile_instances":
                 try:
@@ -542,6 +541,7 @@ class mainWindow(QWorker):
 
     def print_to_console(self, message_string, force_open=False):
         with self.app.test_request_context():
+            # noinspection PyUnresolvedReferences
             pmessage = render_template("log_item.html", log_item=message_string)
         self.emit_table_message("consoleLog", {"message_string": pmessage, "force_open": force_open})
         return {"success": True}
@@ -828,8 +828,8 @@ class mainWindow(QWorker):
                                                    "main_id": self.my_id})
         return
 
-    # todo download_collection needs rethinking look at how pipe_values handled for a good model
-    # todo I'm in the middle of figuring out how to make this work.
+    # tactic_todo download_collection needs rethinking look at how pipe_values handled for a good model
+    # tactic_todo I'm in the middle of figuring out how to make this work.
     @task_worthy
     def download_collection(self, data):
         new_name = data["new_name"]

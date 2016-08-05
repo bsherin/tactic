@@ -1,8 +1,8 @@
-'''
+"""
 Created on Jan 6, 2014
 
 @author: bls910
-'''
+"""
 import re
 from nltk import stem  # @UnresolvedImport
 stemmer = stem.PorterStemmer()

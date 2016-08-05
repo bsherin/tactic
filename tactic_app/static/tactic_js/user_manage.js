@@ -170,6 +170,10 @@ function toggleRepository() {
     return(false)
 }
 
+function showAdmin() {
+    window.open($SCRIPT_ROOT + "/admin_interface")
+}
+
 function startSpinner() {
     $("#spinner").css("display", "inline-block")
 }

@@ -19,7 +19,7 @@ def user_tile(tclass):
 
 
 def user_tile(tclass):
-    from tactic_app.shared_dicts import user_tiles
+    from tactic_app.global_tile_management import user_tiles
     from flask_login import current_user
     uname = current_user.username
     if not (uname in user_tiles):

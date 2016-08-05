@@ -18,7 +18,11 @@
     <div class="container-fluid">
         <div class="page-header" style="margin-top: 5px">
             <h1><span id="view-title">{{current_user.username}}'s library </span>
+                {% if current_user.username == "repository" %}
+                <button id="show-admin-button" class="btn btn-default" onclick="return showAdmin();">Administer</button>
+                {% else %}
                 <button id="toggle-repository-button" class="btn btn-default" onclick="return toggleRepository();">Show Repository</button>
+                {% endif %}
                 <span id="spinner" class="loader-small"></span><span id="status-msg-area" class="status-msg"></span>
             </h1>
 

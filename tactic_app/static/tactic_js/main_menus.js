@@ -388,7 +388,7 @@ function tile_command(menu_id) {
         data_dict["tile_name"] = tile_name;
         data_dict["tile_type"] = tile_type;
         data_dict["user_id"] = user_id
-        postWithCallback("host", "create_tile_container", {}, function (data) {
+        postWithCallback("host", "create_tile_container", data_dict, function (data) {
             var tile_id = data["tile_id"];
             data_dict["tile_id"] = tile_id;
             data_dict["tile_address"] = data["tile_address"];

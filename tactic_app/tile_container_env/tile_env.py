@@ -2,9 +2,9 @@ import sys
 import nltk
 import numpy
 import wordcloud
-# from tactic_app.clusterer_classes import CentroidClusterer, OptCentroidClusterer
 from sentiment_tools import vader_sentiment_analyzer, sentiwordnet
 from matplotlib_utilities import GraphList, ColorMapper, FigureCanvas, ArrayHeatmap, ImageShow, MplFigure
+# noinspection PyUnresolvedReferences
 from matplotlib.cm import get_cmap
 from bson.binary import Binary
 from tile_base import TileBase
