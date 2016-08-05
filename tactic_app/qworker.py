@@ -39,7 +39,7 @@ class QWorker(gevent.Greenlet):
         self.app = app
 
     def debug_log(self, msg):
-        timestring = datetime.datetime.today().strftime("%b %d, %Y, %H:%M")
+        timestring = datetime.datetime.today().strftime("%b %d, %Y, %H:%M:%S")
         print timestring + ": " + msg
         # with self.app.test_request_context():
         #     self.app.logger.debug(msg)

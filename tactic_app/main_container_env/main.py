@@ -16,6 +16,7 @@ import cPickle
 from bson.binary import Binary
 from qworker import QWorker, task_worthy
 import datetime
+# noinspection PyUnresolvedReferences
 from communication_utils import send_request_to_container
 import numpy
 import traceback
@@ -299,6 +300,7 @@ class mainWindow(QWorker):
     @task_worthy
     def do_full_recreation(self, data_dict):
         try:
+            self.show_um_message("Entering do_full_recreation", data_dict["user_manage_id"], None)
             tile_info_dict, loaded_modules = self.recreate_from_save(data_dict["project_collection_name"],
                                                                      data_dict["project_name"])
             self.post_and_wait("host", "load_modules", {"loaded_modules": loaded_modules, "user_id": data_dict["user_id"]})
@@ -352,7 +354,7 @@ class mainWindow(QWorker):
         project_dict = cPickle.loads(zlib.decompress(self.fs.get(save_dict["file_id"]).read()).decode("utf-8", "ignore").encode("ascii"))
         project_dict["metadata"] = save_dict["metadata"]
         self.mdata = save_dict["metadata"]
-        error_messages = ""
+        error_messages = []
         for (attr, attr_val) in project_dict.items():
             if str(attr) != "tile_instances":
                 try:
