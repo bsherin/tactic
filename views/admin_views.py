@@ -95,11 +95,14 @@ class ContainerManager(ResourceManager):
         larray = [["Name", "Image", "Owner", "Status", "Id"]]
         all_containers = cli.containers(all=True)
         for cont in all_containers:
-            owner_id = container_owners[cont["Id"]]
-            if owner_id == "host":
-                owner_name = "host"
+            if cont["Id"] in container_owners:
+                owner_id = container_owners[cont["Id"]]
+                if owner_id == "host":
+                    owner_name = "host"
+                else:
+                    owner_name = load_user(owner_id).username
             else:
-                owner_name = load_user(owner_id).username
+                owner_name = "system"
             larray.append([cont["Names"][0], cont["Image"], owner_name, cont["Status"], cont["Id"]])
         return larray
 
