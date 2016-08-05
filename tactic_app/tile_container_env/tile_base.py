@@ -4,12 +4,10 @@ import json
 import sys
 import time
 import requests
-import gevent
 from gevent import monkey; monkey.patch_all()
 import numpy as np
 from bson.binary import Binary
-from flask import url_for, render_template
-from gevent.queue import Queue
+from flask import render_template
 from qworker import QWorker, task_worthy
 
 from tokenizers import tokenizer_dict
@@ -17,7 +15,6 @@ from weight_function_module import weight_functions
 from cluster_metrics import cluster_metric_dict
 from matplotlib_utilities import MplFigure, Mpld3Figure, color_palette_names
 from types import NoneType
-import traceback
 
 jsonizable_types = {
     "str": str,
@@ -33,6 +30,7 @@ jsonizable_types = {
 }
 
 
+# noinspection PyMissingConstructor
 class TileBase(QWorker):
     category = "basic"
     exports = []
@@ -89,7 +87,6 @@ class TileBase(QWorker):
         self.current_data_id = 0
         self.current_unique_id_index = 0
         self.is_shrunk = False
-        # tactic_todo base_data_url keep or get rid of? Seems like this is used for d3plots maybe old ones only?
         # self.base_data_url = url_for("data_source", main_id=main_id, tile_id=tile_id, data_name="X")[:-1]
         self.base_data_url = ""
         self.configured = False
@@ -423,26 +420,6 @@ class TileBase(QWorker):
         else:
             return requests.post("http://{0}:5000/{1}".format(taddress, msg_type), timeout=timeout, json=data_dict)
 
-    def send_request_to_host(self, msg_type, data_dict=None, wait_for_success=True,
-                             timeout=3, tries=30, wait_time=.1):
-        if data_dict is None:
-            data_dict = {}
-        data_dict["main_id"] = self.main_id
-        self.debug_log("sending request to host: " + msg_type)
-        if wait_for_success:
-            for attempt in range(tries):
-                try:
-                    result = requests.get("http://{0}:5000/{1}".format(self.host_address, msg_type),
-                                          timeout=timeout, json=data_dict)
-                    return result.json()
-                except:
-                    time.sleep(wait_time)
-                    continue
-        else:
-            result = requests.get("http://{0}:5000/{1}".format(self.host_address, msg_type),
-                                  timeout=timeout, json=data_dict)
-            return result.json()
-
     def distribute_event(self, event_name, data_dict):
         data_dict["event_name"] = event_name
         self.post_task(self.main_id, "distribute_events_stub", data_dict)
@@ -571,6 +548,7 @@ class TileBase(QWorker):
             bda_string = ""
             main_height = self.full_tile_height
         with self.app.test_request_context():
+            # noinspection PyUnresolvedReferences
             result = render_template("saved_tile.html", tile_id=self.my_id,
                                      tile_name=self.tile_name,
                                      form_text=form_html,
@@ -623,7 +601,7 @@ class TileBase(QWorker):
 
     @property
     def options(self):
-        return []
+        return [{}]
 
     def handle_size_change(self):
         return

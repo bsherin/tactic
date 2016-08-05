@@ -2,7 +2,6 @@
 import docker
 import time
 import requests
-import uuid
 import os
 
 SHORT_SLEEP_PERIOD = float(os.environ.get("SHORT_SLEEP_PERIOD"))

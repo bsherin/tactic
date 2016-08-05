@@ -1,14 +1,13 @@
 from qworker import QWorker, SHORT_SLEEP_PERIOD, LONG_SLEEP_PERIOD, task_worthy
-from flask import jsonify, render_template
-from flask_login import current_user, url_for
+from flask import render_template
+from flask_login import url_for
 from users import load_user
 import gevent
 from communication_utils import send_request_to_container
-from docker_functions import create_container, get_address, destroy_container, cli # global_stuff cli
+from docker_functions import create_container, get_address, destroy_container
 from tactic_app.global_tile_management import global_tile_manager
 from tactic_app import app, socketio, mongo_uri, megaplex_address, use_ssl # global_stuff
 from views.user_manage_views import tile_manager, project_manager
-from views import user_manage_views
 import uuid
 import copy
 import traceback
@@ -54,6 +53,7 @@ class HostWorker(QWorker):
         project_name = data["project_name"]
         user_manage_id = data["user_manage_id"]
         user_obj = load_user(user_id)
+        # noinspection PyTypeChecker
         self.show_um_status_message("creating main container", user_manage_id, None)
         main_id = create_container("tactic_main_image", network_mode="bridge", owner=user_id)
         caddress = get_address(main_id, "bridge")
@@ -78,6 +78,7 @@ class HostWorker(QWorker):
                      "base_figure_url": bf_url,
                      "use_ssl": use_ssl}
 
+        # noinspection PyTypeChecker
         self.show_um_status_message("start initialize project", user_manage_id, None)
         result = send_request_to_container(caddress, "initialize_project_mainwindow", data_dict).json()
         if not result["success"]:
@@ -175,9 +176,9 @@ class HostWorker(QWorker):
 
     # tactic_todo I'm in the middle of figuring out how to do this send_file_to_client
     # currently I'm thinking I'll do it with something like the temp page loading
-    @task_worthy
-    def send_file_to_client(self, data):
-        from tactic_app import socketio
+    # @task_worthy
+    # def send_file_to_client(self, data):
+        # from tactic_app import socketio
         # str_io = cPickle.loads(data["encoded_str_io"]).decode("utf-8", "ignore").encode("ascii")
 
     @task_worthy

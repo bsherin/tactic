@@ -1,15 +1,11 @@
 import gevent
-import copy
 import uuid
-import sys
 import time
 import datetime
-import requests
 import os
 from communication_utils import send_request_to_container
 import cPickle
 from bson.binary import Binary
-import traceback
 
 callback_dict = {}
 

@@ -3,22 +3,16 @@ import re
 # noinspection PyUnresolvedReferences
 import requests
 import copy
-import gevent
 from gevent import monkey; monkey.patch_all()
-from flask import Flask, render_template
-from gevent.queue import Queue
+from flask import render_template
 import pymongo
 import gridfs
-import gridfs
-import time
-import uuid
 import cPickle
 from bson.binary import Binary
 from qworker import QWorker, task_worthy
 import datetime
 # noinspection PyUnresolvedReferences
 from communication_utils import send_request_to_container
-import numpy
 import traceback
 import zlib
 import openpyxl
@@ -30,7 +24,7 @@ STEP_SIZE = 100
 
 
 # noinspection PyPep8Naming
-class docInfo:
+class docInfo(object):
     def __init__(self, name, data_rows, header_list=None, cell_backgrounds=None):
 
         self.name = name
@@ -547,6 +541,7 @@ class mainWindow(QWorker):
 
     def print_to_console(self, message_string, force_open=False):
         with self.app.test_request_context():
+            # noinspection PyUnresolvedReferences
             pmessage = render_template("log_item.html", log_item=message_string)
         self.emit_table_message("consoleLog", {"message_string": pmessage, "force_open": force_open})
         return {"success": True}

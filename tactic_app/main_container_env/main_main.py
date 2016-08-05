@@ -1,11 +1,6 @@
 from flask import Flask, request, jsonify
 from main import mainWindow
-from bson.binary import Binary
-import datetime
-import cPickle
-import pymongo
 import sys
-import copy
 sys.stdout = sys.stderr
 
 app = Flask(__name__)

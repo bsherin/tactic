@@ -1,5 +1,4 @@
 from flask import Flask, jsonify, request
-import sys
 import copy
 import tile_env
 from tile_env import class_info

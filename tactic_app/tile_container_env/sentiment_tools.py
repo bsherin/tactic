@@ -1,7 +1,6 @@
 import os
-import nltk
 from nltk.sentiment.vader import SentimentIntensityAnalyzer, SentiText, BOOSTER_DICT
-from nltk.corpus import sentiwordnet
+from nltk.corpus import sentiwordnet # tile_env makes use of this
 
 script_loc = os.path.dirname(os.path.realpath(__file__))
 

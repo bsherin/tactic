@@ -4,7 +4,7 @@ from users import User, load_user
 
 # global_stuff
 
-class GlobalTileManager():
+class GlobalTileManager(object):
 
     def __init__(self):
         self.initialize()

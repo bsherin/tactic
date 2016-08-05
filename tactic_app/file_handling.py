@@ -1,4 +1,3 @@
-__author__ = 'bls910'
 import copy
 import re
 import csv
@@ -6,6 +5,7 @@ import os
 import sys
 import xmltodict
 from xml.parsers.expat import ExpatError
+
 
 def read_xml_file_to_dict(the_file):
     raw_xml = the_file.read()
