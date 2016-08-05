@@ -660,12 +660,16 @@ class mainWindow(QWorker):
                      "list_names": data_dict["list_names"]}
         # data_dict["form_info"] = form_info
         tile_address = data_dict["tile_address"]
+        self.debug_log("creating the container")
         result = send_request_to_container(tile_address, "load_source", data_dict).json()
         if not result["success"]:
+            self.debug_log("got an exception " + result["message_string"])
             raise Exception(result["message_string"])
 
+        self.debug_log("instantiating tile class")
         instantiate_result = send_request_to_container(tile_address, "instantiate_tile_class", data_dict).json()
         if not instantiate_result["success"]:
+            self.debug_log("got an exception " + result["message_string"])
             raise Exception(instantiate_result["message_string"])
 
         exports = instantiate_result["exports"]
