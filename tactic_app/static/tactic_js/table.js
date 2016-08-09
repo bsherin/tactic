@@ -260,6 +260,7 @@ var tableObject = {
         //broadcast_event_to_server("SaveTableSpec", {"tablespec": this.current_spec})
          $('#table-area td').blur(handle_cell_change);
         this.active_row = null;
+        this.active_row_id = null
 
         // Listen for the cursor to be placed in row
         $("#table-area").on('focus', 'td', function() {
@@ -268,7 +269,8 @@ var tableObject = {
               $(old_row).removeClass("selected-row");
               var new_row = $("#table-area tbody tr")[row_index];
               $(new_row).addClass("selected-row");
-              self.active_row = row_index
+              self.active_row = row_index;
+              self.active_row_id = self.data_rows[row_index]["__id__"]
         });
 
         // Listen for the user to click on a header

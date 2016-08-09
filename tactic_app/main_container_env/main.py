@@ -692,13 +692,6 @@ class mainWindow(QWorker):
         return {"success": True, "html": form_html}
 
     @task_worthy
-    def get_func(self, data_dict):  # tactic_todo this is too powerful for tile API
-        func_name = data_dict["func"]
-        args = data_dict["args"]
-        val = getattr(self, func_name)(*args)
-        return {"val": val}
-
-    @task_worthy
     def get_column_data(self, data):
         self.debug_log("entering get_column_data")
         result = []
@@ -740,17 +733,17 @@ class mainWindow(QWorker):
     def get_row(self, data):
         self.debug_log("entering get_column_names")
         doc_name = data["document_name"]
-        row_num = data["row_number"]
-        the_row = self.doc_dict[doc_name].all_sorted_data_rows[int(row_num)]
+        row_id = data["row_id"]
+        the_row = self.doc_dict[doc_name].data_rows_int_keys[int(row_id)]
         return the_row
 
     @task_worthy
     def get_cell(self, data):
         self.debug_log("entering get_column_names")
         doc_name = data["document_name"]
-        row_num = data["row_number"]
+        row_id = data["row_id"]
         column_name = data["column_name"]
-        the_cell = self.doc_dict[doc_name].all_sorted_data_rows[int(row_num)][column_name]
+        the_cell = self.doc_dict[doc_name].data_rows_int_keys[int(row_id)][column_name]
         return {"the_cell": the_cell}
 
     @task_worthy
@@ -945,19 +938,13 @@ class mainWindow(QWorker):
     @task_worthy
     def get_actual_row(self, data):
         doc_name = data["doc_name"]
-        row_index = data["row_index"]
-        actual_row = self.doc_dict[doc_name].get_actual_row(row_index)
-        return {"actual_row": actual_row}
+        row_id = data["row_id"]
+        actual_row = self.doc_dict[doc_name].get_actual_row(row_id)
+        return actual_row
 
     @task_worthy
     def distribute_events_stub(self, data_dict):
         event_name = data_dict["event_name"]
-
-        # If necessary, have to convert the row_index on the client side to the row_id
-        if (data_dict is not None) and ("active_row_index" in data_dict) and ("doc_name" in data_dict):
-            if data_dict["active_row_index"] is not None:
-                data_dict["active_row_index"] = self.doc_dict[data_dict["doc_name"]].get_id_from_actual_row(
-                    data_dict["active_row_index"])
         if "tile_id" in data_dict:
             tile_id = data_dict["tile_id"]
         else:
@@ -1038,13 +1025,30 @@ class mainWindow(QWorker):
 
     @task_worthy
     def ColorTextInCell(self, data):
-        self.emit_table_message("colorTxtInCell", data)
+        data["row_index"] = self.get_actual_row(data)
+        if data["row_index"] is not None:
+            self.emit_table_message("colorTxtInCell", data)
         return None
 
     @task_worthy
     def SetCellContent(self, data):
         self._set_cell_content(data["doc_name"], data["id"], data["column_header"],
                                data["new_content"], data["cellchange"])
+        return None
+
+    @task_worthy
+    def SetColumnData(self, data):
+        if isinstance(data["new_content"], dict):
+            for rid, ntext in data["new_content"].items():
+                self._set_cell_content(data["doc_name"], rid, data["column_header"],
+                                       ntext, data["cellchange"])
+
+        elif isinstance(data["new_content"], list):
+            for rid, ntext in enumerate(data["new_content"]):
+                self._set_cell_content(data["doc_name"], rid, data["column_header"],
+                                       ntext, data["cellchange"])
+        else:
+            raise Exception("Got invalid data type in SetColumnData.")
         return None
 
     @task_worthy
@@ -1085,8 +1089,6 @@ class mainWindow(QWorker):
             self.print_to_console(msg, True)
         self.recreate_errors = []
         return None
-
-    # called view get_func
 
     def get_matching_rows(self, filter_function, document_name):
         result = []
@@ -1156,6 +1158,11 @@ class mainWindow(QWorker):
             self.refill_table()
         return
 
+    @task_worthy
+    def ApplyToRows(self, data):
+        self.apply_to_rows(data["func"], data["doc_name"])
+        return None
+
     def apply_to_rows(self, func, document_name=None):
         if document_name is not None:
             i = 0
@@ -1198,6 +1205,11 @@ class mainWindow(QWorker):
                 if actual_row is not None:
                     data["row"] = actual_row
                     self.emit_table_message("setCellContent", data)
+
+    @task_worthy
+    def SetCellBackground(self, data):
+        self._set_cell_background(data["doc_name"], data["row_id"], data["column_name"], data["color"])
+        return None
 
     def _set_cell_background(self, doc_name, the_id, column_header, color):
         doc = self.doc_dict[doc_name]

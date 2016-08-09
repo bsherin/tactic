@@ -67,5 +67,6 @@ function broadcast_event_to_server(event_name, data_dict, callback) {
     data_dict.event_name = event_name
     data_dict.doc_name = tableObject.current_spec.doc_name;
     data_dict.active_row_index = tableObject.active_row;
+    data_dict.active_row_id = tableObject.active_row_id;
     postWithCallback(main_id, "distribute_events_stub", data_dict, callback)
 }
