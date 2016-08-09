@@ -8,6 +8,7 @@ from gevent import monkey; monkey.patch_all()
 import numpy as np
 from bson.binary import Binary
 from flask import render_template
+# noinspection PyUnresolvedReferences
 from qworker import QWorker, task_worthy
 
 from tokenizers import tokenizer_dict
@@ -174,7 +175,7 @@ class TileBase(QWorker):
     @task_worthy
     def TileButtonClick(self, data):
         try:
-            self.handle_button_click(data["button_value"], data["doc_name"], data["active_row_index"])
+            self.handle_button_click(data["button_value"], data["doc_name"], data["active_row_id"])
         except Exception as ex:
             self.handle_exception(ex)
         return None
@@ -186,7 +187,7 @@ class TileBase(QWorker):
 
     @task_worthy
     def TextSelect(self, data):
-        self.handle_text_select(data["selected_text"], data["doc_name"], data["active_row_index"])
+        self.handle_text_select(data["selected_text"], data["doc_name"], data["active_row_id"])
         return None
 
     @task_worthy
@@ -196,22 +197,22 @@ class TileBase(QWorker):
 
     @task_worthy
     def TileWordClick(self, data):
-        self.handle_tile_word_click(data["clicked_text"], data["doc_name"], data["active_row_index"])
+        self.handle_tile_word_click(data["clicked_text"], data["doc_name"], data["active_row_id"])
         return None
 
     @task_worthy
     def TileRowClick(self, data):
-        self.handle_tile_row_click(data["clicked_row"], data["doc_name"], data["active_row_index"])
+        self.handle_tile_row_click(data["clicked_row"], data["doc_name"], data["active_row_id"])
         return None
 
     @task_worthy
     def TileCellClick(self, data):
-        self.handle_tile_cell_click(data["clicked_cell"], data["doc_name"], data["active_row_index"])
+        self.handle_tile_cell_click(data["clicked_cell"], data["doc_name"], data["active_row_id"])
         return None
 
     @task_worthy
     def TileElementClick(self, data):
-        self.handle_tile_element_click(data["dataset"], data["doc_name"], data["active_row_index"])
+        self.handle_tile_element_click(data["dataset"], data["doc_name"], data["active_row_id"])
         return None
 
     @task_worthy
@@ -410,13 +411,6 @@ class TileBase(QWorker):
         result = self.post_and_wait(self.main_id, "get_property", data_dict)
         return result["val"]
 
-    def perform_main_function(self, func_name, args):
-        data_dict = {}
-        data_dict["args"] = args
-        data_dict["func"] = func_name
-        result = self.post_and_wait(self.main_id, "get_func", data_dict)
-        return result["val"]
-
     def ask_host(self, msg_type, task_data=None, callback_func=None):
         task_data["main_id"] = self.main_id
         self.post_task("host", msg_type, task_data, callback_func)
@@ -603,34 +597,34 @@ class TileBase(QWorker):
     def handle_cell_change(self, column_header, row_index, old_content, new_content, doc_name):
         return
 
-    def handle_text_select(self, selected_text, doc_name, active_row_index):
+    def handle_text_select(self, selected_text, doc_name, active_row_id):
         return
 
     def handle_pipe_update(self, pipe_name):
         return
 
-    def handle_button_click(self, value, doc_name, active_row_index):
+    def handle_button_click(self, value, doc_name, active_row_id):
         return
 
     def handle_textarea_change(self, value):
         return
 
-    def handle_tile_row_click(self, clicked_row, doc_name, active_row_index):
+    def handle_tile_row_click(self, clicked_row, doc_name, active_row_id):
         return
 
-    def handle_tile_cell_click(self, clicked_text, doc_name, active_row_index):
+    def handle_tile_cell_click(self, clicked_text, doc_name, active_row_id):
         self.clear_table_highlighting()
         self.highlight_matching_text(clicked_text)
         return
 
-    def handle_tile_element_click(self, dataset, doc_name, active_row_index):
+    def handle_tile_element_click(self, dataset, doc_name, active_row_id):
         return
 
     def handle_log_tile(self):
         self.log_it(self.current_html)
         return
 
-    def handle_tile_word_click(self, clicked_word, doc_name, active_row_index):
+    def handle_tile_word_click(self, clicked_word, doc_name, active_row_id):
         self.distribute_event("DehighlightTable", {})
         self.distribute_event("SearchTable", {"text_to_find": clicked_word})
         return
@@ -689,13 +683,13 @@ class TileBase(QWorker):
         result = self.post_and_wait(self.main_id, "get_number_rows", {"document_name": document_name})
         return result["number_rows"]
 
-    def get_row(self, document_name, row_number):
-        data = {"document_name": document_name, "row_number": row_number}
+    def get_row(self, document_name, row_id):
+        data = {"document_name": document_name, "row_id": row_id}
         result = self.post_and_wait(self.main_id, "get_row", data)
         return result
 
-    def get_cell(self, document_name, row_number, column_name):
-        data = {"document_name": document_name, "row_number": row_number, "column_name": column_name}
+    def get_cell(self, document_name, row_id, column_name):
+        data = {"document_name": document_name, "row_id": row_id, "column_name": column_name}
         result = self.post_and_wait(self.main_id, "get_cell", data)
         return result["the_cell"]
 
@@ -717,23 +711,39 @@ class TileBase(QWorker):
             result[doc_name] = self.post_and_wait(self.main_id, "get_column_data_for_doc", task_data)
         return result
 
-    def set_cell(self, document_name, row_number, column_name, text, cellchange=True):
-        self.perform_main_function("_set_cell_content", [document_name, row_number, column_name, text, cellchange])
+    def set_cell(self, document_name, row_id, column_name, text, cellchange=True):
+        task_data = {
+            "doc_name": document_name,
+            "id": row_id,
+            "column_header": column_name,
+            "new_content": text,
+            "cellchange": cellchange
+        }
+        self.post_task(self.main_id, "SetCellContent", task_data)
         return
 
-    def set_cell_background(self, document_name, row_number, column_name, color):
-        self.perform_main_function("_set_cell_background", [document_name, row_number, column_name, color])
+    def set_cell_background(self, document_name, row_id, column_name, color):
+        task_data = {"doc_name": document_name,
+                     "row_id": row_id,
+                     "column_name": column_name,
+                     "color": color}
+        self.post_task(self.main_id, "SetCellBackground", task_data)
         return
 
-    def set_row(self, document_name, row_number, row_dictionary, cellchange=True):
-        for c in row_dictionary.keys():
-            self.perform_main_function("_set_cell_content",
-                                       [document_name, row_number,c, row_dictionary[c], cellchange])
-        return
+    # def set_row(self, document_name, row_number, row_dictionary, cellchange=True):
+    #     for c in row_dictionary.keys():
+    #         self.perform_main_function("_set_cell_content",
+    #                                    [document_name, row_number,c, row_dictionary[c], cellchange])
+    #     return
 
-    def set_column_data(self, document_name, column_name, data_list, cellchange=False):
-        for rnum in range(len(data_list)):
-            self.set_cell(document_name, rnum, column_name, data_list[rnum], cellchange)
+    def set_column_data(self, document_name, column_name, data_list_or_dict, cellchange=False):
+        task_data = {
+            "doc_name": document_name,
+            "column_header": column_name,
+            "new_content": data_list_or_dict,
+            "cellchange": cellchange
+        }
+        self.post_task(self.main_id, "SetColumnData", task_data)
 
     # Filtering and iteration
 
@@ -786,8 +796,11 @@ class TileBase(QWorker):
         self.post_task(self.main_id, "UnfilterTable")
         return
 
+    # tactic_todo this is broken now
     def apply_to_rows(self, func, document_name=None):
-        self.perform_main_function("apply_to_rows", [func, document_name])
+        task_data = {"func": func,
+                     "doc_name": document_name}
+        self.post_task(self.main_id, "ApplyToRows", task_data)
         return
 
     # Other
@@ -816,14 +829,14 @@ class TileBase(QWorker):
     def log_it(self, message_string, force_open=False):
         self.post_task(self.main_id, "print_to_console_event", {"print_string": message_string})
 
-    def color_cell_text(self, doc_name, row_index, column_name, tokenized_text, color_dict):
-        data = {"doc_name": doc_name, "row_index": row_index}
-        actual_row = self.post_and_wait(self.main_id, "get_actual_row", data)["actual_row"]
-        self.distribute_event("ColorTextInCell", {"doc_name": doc_name,
-                                                  "row_index": actual_row,
-                                                  "column_header": column_name,
-                                                  "token_text": tokenized_text,
-                                                  "color_dict": color_dict})
+    def color_cell_text(self, doc_name, row_id, column_name, tokenized_text, color_dict):
+        # actual_row = self.post_and_wait(self.main_id, "get_actual_row", data)["actual_row"]
+        data_dict = {"doc_name": doc_name,
+                     "row_id": row_id,
+                     "column_header": column_name,
+                     "token_text": tokenized_text,
+                      "color_dict": color_dict}
+        self.post_task(self.main_id, "ColorTextInCell", data_dict)
 
     def get_user_list(self, the_list):
         self.debug_log("entering get_user_list")

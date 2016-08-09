@@ -267,6 +267,7 @@ function change_doc(el, row_id) {
     }
     else {
         var data_dict = {"doc_name": doc_name, "row_id": row_id};
+
         postWithCallback(main_id, "grab_chunk_with_row", data_dict, function (data) {
                 $("#loading-message").css("display", "none");
                 $("#reload-message").css("display", "none");
@@ -276,7 +277,8 @@ function change_doc(el, row_id) {
                 var tr_element = $("#table-area tbody")[0].rows[data.actual_row];
                 scrollIntoView(tr_element, $("#table-area tbody"));
                 $(tr_element).addClass("selected-row");
-                self.active_row = data.actual_row;
+                tableObject.active_row = data.actual_row;
+                tableObject.active_row_id = row_id;
                 set_visible_doc(doc_name, null)
             })
     }
