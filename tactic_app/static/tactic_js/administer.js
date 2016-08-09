@@ -137,7 +137,7 @@ var container_manager_specifics = {
         cont_id = manager.check_for_selection("container", 4);
         $.getJSON($SCRIPT_ROOT + '/container_logs/' + cont_id, function (data) {
             the_html = "<pre><small>" + data.log_text + "</small></pre>";
-            $("#container-module #aux-area").html(the_html)
+            $("#container-aux-area").html(the_html)
         });
         event.preventDefault();
     },
@@ -162,6 +162,8 @@ function resize_window() {
     res_types.forEach(function (val, ind, array) {
         var h = window.innerHeight - 50 - $("#" + val + "-selector-row").offset().top;
         $("#" + val + "-selector-row").outerHeight(h);
+        var auxh = window.innerHeight - 50 - $("#" + val + "-aux-area").offset().top;
+        $("#" + val + "-aux-area").outerHeight(auxh);
     })
 }
 
