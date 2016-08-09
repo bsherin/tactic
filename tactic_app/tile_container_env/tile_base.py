@@ -15,6 +15,7 @@ from weight_function_module import weight_functions
 from cluster_metrics import cluster_metric_dict
 from matplotlib_utilities import MplFigure, Mpld3Figure, color_palette_names
 from types import NoneType
+import traceback
 
 jsonizable_types = {
     "str": str,
@@ -400,26 +401,6 @@ class TileBase(QWorker):
                 result[attr] = getattr(self, attr)
         return result
 
-    def send_request_to_container(self, taddress, msg_type, data_dict, wait_for_success=True,
-                                  timeout=3, tries=30, wait_time=.1):
-        self.debug_log("Entering send request {0} to {1}".format(msg_type, taddress))
-        if wait_for_success:
-            for attempt in range(tries):
-                try:
-                    self.debug_log("Trying request {0} to {1}".format(msg_type, taddress))
-                    res = requests.post("http://{0}:5000/{1}".format(taddress, msg_type),
-                                        timeout=timeout, json=data_dict)
-                    # self.debug_log("container returned: " + res.text)
-                    return res
-                except:
-                    error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-                    self.debug_log("Got error on reqiest: " + error_string)
-                    time.sleep(wait_time)
-                    continue
-            self.debug_log("Request {0} to {1} timed out".format(msg_type, taddress))
-        else:
-            return requests.post("http://{0}:5000/{1}".format(taddress, msg_type), timeout=timeout, json=data_dict)
-
     def distribute_event(self, event_name, data_dict):
         data_dict["event_name"] = event_name
         self.post_task(self.main_id, "distribute_events_stub", data_dict)
@@ -569,6 +550,19 @@ class TileBase(QWorker):
                                  )
         self.debug_log("Rendered the result " + str(result[:200]))
         return result
+
+    def handle_exception(self, ex, special_string=None, print_to_console=True):
+        if special_string is None:
+            template = "An exception of type {0} occured. Arguments:\n{1!r}\n"
+        else:
+            template = special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}\n"
+        error_string = template.format(type(ex).__name__, ex.args)
+        error_string += traceback.format_exc()
+        error_string = "<pre>" + error_string + "</pre>"
+        self.debug_log(error_string)
+        if print_to_console:
+            self.log_it(error_string, force_open=True)
+        return
 
     def get_current_pipe_list(self):
         pipe_list = []
