@@ -17,6 +17,8 @@ from cluster_metrics import cluster_metric_dict
 from matplotlib_utilities import MplFigure, Mpld3Figure, color_palette_names
 from types import NoneType
 import traceback
+import os
+RETRIES  = int(os.environ.get("RETRIES"))
 
 jsonizable_types = {
     "str": str,
@@ -871,7 +873,7 @@ class TileBase(QWorker):
                 result = self.post_and_wait(tile_entry[pipe_key]["tile_id"],
                                             "transfer_pipe_value", {"export_name": tile_entry[pipe_key]["export_name"]},
                                             timeout=60,
-                                            tries=30)
+                                            tries=RETRIES)
                 encoded_val = result["encoded_val"]
                 val = cPickle.loads(encoded_val.decode("utf-8", "ignore").encode("ascii"))
                 return val
