@@ -17,10 +17,13 @@ import traceback
 import zlib
 import openpyxl
 import cStringIO
+import os
 
 INITIAL_LEFT_FRACTION = .69
-CHUNK_SIZE = 200
-STEP_SIZE = 100
+CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
+STEP_SIZE = int(os.environ.get("STEP_SIZE"))
+RETRIES  = int(os.environ.get("RETRIES"))
+
 
 
 # noinspection PyPep8Naming
@@ -399,7 +402,7 @@ class mainWindow(QWorker):
             tresult = send_request_to_container(new_tile_address,
                                                 "recreate_from_save",
                                                 tile_save_dict,
-                                                timeout=60, tries=30)
+                                                timeout=60, tries=RETRIES)
             tile_result = tresult.json()
             if not tile_result["success"]:
                 raise Exception(tile_result["message_string"])

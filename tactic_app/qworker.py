@@ -18,6 +18,7 @@ blank_packet = {"source": None,
 
 SHORT_SLEEP_PERIOD = float(os.environ.get("SHORT_SLEEP_PERIOD"))
 LONG_SLEEP_PERIOD = float(os.environ.get("LONG_SLEEP_PERIOD"))
+RETRIES  = int(os.environ.get("RETRIES"))
 
 task_worthy_methods = []
 
@@ -45,7 +46,7 @@ class QWorker(gevent.Greenlet):
         task_packet = raw_result.json()
         return task_packet
 
-    def post_and_wait(self, dest_id, task_type, task_data=None, sleep_time=.1, timeout=10, tries=30):
+    def post_and_wait(self, dest_id, task_type, task_data=None, sleep_time=.1, timeout=10, tries=RETRIES):
         callback_id = str(uuid.uuid4())
         new_packet = {"source": self.my_id,
                       "dest": dest_id,
