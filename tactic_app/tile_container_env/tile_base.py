@@ -796,11 +796,24 @@ class TileBase(QWorker):
         self.post_task(self.main_id, "UnfilterTable")
         return
 
-    # tactic_todo this is broken now
-    def apply_to_rows(self, func, document_name=None):
-        task_data = {"func": func,
-                     "doc_name": document_name}
-        self.post_task(self.main_id, "ApplyToRows", task_data)
+    def apply_to_rows(self, func, document_name=None, cellchange=False):
+        if document_name is not None:
+            doc_dict = self.get_document_data(document_name)
+            new_doc_dict = {}
+            for id, r in doc_dict.items():
+                new_doc_dict[id] = func(r)
+            self.set_document(document_name, new_doc_dict, cellchange)
+            return None
+        else:
+            for doc_name in self.get_document_names():
+                self.apply_to_rows(func, doc_name, cellchange)
+            return None
+
+    def set_document(self, document_name, new_doc_dict, cellchange=False):
+        task_data = {"new_doc_dict": new_doc_dict,
+                     "doc_name": document_name,
+                     "cellchange": cellchange}
+        self.post_and_wait(self.main_id, "SetDocument", task_data)
         return
 
     # Other
