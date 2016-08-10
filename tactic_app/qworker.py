@@ -18,7 +18,10 @@ blank_packet = {"source": None,
 
 SHORT_SLEEP_PERIOD = float(os.environ.get("SHORT_SLEEP_PERIOD"))
 LONG_SLEEP_PERIOD = float(os.environ.get("LONG_SLEEP_PERIOD"))
-RETRIES  = int(os.environ.get("RETRIES"))
+if "RETRIES" in os.environ:
+    RETRIES = int(os.environ.get("RETRIES"))
+else:
+    RETRIES = 60
 
 task_worthy_methods = []
 

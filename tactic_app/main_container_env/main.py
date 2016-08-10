@@ -22,8 +22,10 @@ import os
 INITIAL_LEFT_FRACTION = .69
 CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
 STEP_SIZE = int(os.environ.get("STEP_SIZE"))
-RETRIES  = int(os.environ.get("RETRIES"))
-
+if "RETRIES" in os.environ:
+    RETRIES = int(os.environ.get("RETRIES"))
+else:
+    RETRIES = 60
 
 
 # noinspection PyPep8Naming

@@ -10,9 +10,14 @@ print os.environ
 SHORT_SLEEP_PERIOD = float(os.environ.get("SHORT_SLEEP_PERIOD"))
 LONG_SLEEP_PERIOD = float(os.environ.get("LONG_SLEEP_PERIOD"))
 MAX_QUEUE_LENGTH = int(os.environ.get("MAX_QUEUE_LENGTH"))
-RETRIES  = int(os.environ.get("RETRIES"))
 CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
 STEP_SIZE = int(os.environ.get("STEP_SIZE"))
+
+if "RETRIES" in os.environ:
+    RETRIES = int(os.environ.get("RETRIES"))
+else:
+    RETRIES = 60
+
 
 # multiple_worker_issue global variables here
 
