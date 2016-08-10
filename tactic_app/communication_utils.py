@@ -2,7 +2,12 @@ import requests
 import sys
 import time
 import os
-RETRIES  = int(os.environ.get("RETRIES"))
+
+if "RETRIES" in os.environ:
+    RETRIES = int(os.environ.get("RETRIES"))
+else:
+    RETRIES = 60
+
 
 def send_request_to_container(taddress, msg_type, data_dict=None, wait_for_success=True,
                               timeout=3, tries=RETRIES, wait_time=.1):

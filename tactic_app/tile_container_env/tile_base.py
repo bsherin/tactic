@@ -18,7 +18,12 @@ from matplotlib_utilities import MplFigure, Mpld3Figure, color_palette_names
 from types import NoneType
 import traceback
 import os
-RETRIES  = int(os.environ.get("RETRIES"))
+
+if "RETRIES" in os.environ:
+    RETRIES = int(os.environ.get("RETRIES"))
+else:
+    RETRIES = 60
+
 
 jsonizable_types = {
     "str": str,
