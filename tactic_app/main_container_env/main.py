@@ -706,7 +706,7 @@ class mainWindow(QWorker):
     def get_document_data(self, data):
         self.debug_log("entering get_document_data")
         doc_name = data["document_name"]
-        return self.doc_dict[doc_name].data_rows_int_keys
+        return self.doc_dict[doc_name].data_rows
 
     @task_worthy
     def get_document_data_as_list(self, data):
@@ -1037,6 +1037,19 @@ class mainWindow(QWorker):
         return None
 
     @task_worthy
+    def SetDocument(self, data):
+        doc_name = data["doc_name"]
+        new_doc_dict = data["new_doc_dict"]
+        cellchange = data["cellchange"]
+        current_doc_dict = self.doc_dict[doc_name].data_rows
+        for id, r in new_doc_dict.items():
+            old_r = current_doc_dict[id]
+            for key, val in r.items():
+                if not val == old_r[key]:
+                    self._set_cell_content(doc_name, id, key, val, cellchange)
+        return {"success": True}
+
+    @task_worthy
     def SetColumnData(self, data):
         if isinstance(data["new_content"], dict):
             for rid, ntext in data["new_content"].items():
@@ -1157,11 +1170,6 @@ class mainWindow(QWorker):
                 doc.configure_for_current_data()
             self.refill_table()
         return
-
-    @task_worthy
-    def ApplyToRows(self, data):
-        self.apply_to_rows(data["func"], data["doc_name"])
-        return None
 
     def apply_to_rows(self, func, document_name=None):
         if document_name is not None:
