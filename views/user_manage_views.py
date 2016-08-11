@@ -6,6 +6,11 @@ import os
 from flask import render_template, request, jsonify, send_file, url_for
 from flask_login import login_required, current_user
 from flask_socketio import join_room
+import openpyxl
+import cStringIO
+import cPickle
+from bson.binary import Binary
+
 import tactic_app
 from tactic_app import app, db, fs, socketio, use_ssl, mongo_uri # global_stuff
 from tactic_app.file_handling import read_csv_file_to_dict, read_tsv_file_to_dict, read_txt_file_to_dict, load_a_list
@@ -349,6 +354,8 @@ class CollectionManager(ResourceManager):
                          login_required(self.delete_collection), methods=['post'])
         app.add_url_rule('/duplicate_collection', "duplicate_collection",
                          login_required(self.duplicate_collection), methods=['post', 'get'])
+        app.add_url_rule('/download_collection/<collection_name>/<new_name>', "download_collection",
+                         login_required(self.download_collection), methods=['post', 'get'])
 
     def main(self, collection_name):
         user_obj = current_user
@@ -391,6 +398,42 @@ class CollectionManager(ResourceManager):
                                console_html="",
                                short_collection_name=short_collection_name,
                                new_tile_info="")
+
+
+    def download_collection(self, collection_name, new_name):
+        user_obj = current_user
+        cname = user_obj.build_data_collection_name(collection_name)
+        the_collection = db[cname]
+
+        wb = openpyxl.Workbook()
+        first = True
+        for f in the_collection.find():
+            doc_name = f["name"].encode("ascii", "ignore")
+            if doc_name == "__metadata__":
+                continue
+
+            if first:
+                ws = wb.active
+                ws.title = doc_name
+                first = False
+            else:
+                ws = wb.create_sheet(title=doc_name)
+            data_rows = f["data_rows"]
+            header_list = f["header_list"]
+            for c, header in enumerate(header_list, start=1):
+                _ = ws.cell(row=1, column=c, value=header)
+            for r, row in enumerate(data_rows.values(), start=2):
+                for c, header in enumerate(header_list, start=1):
+                    _ = ws.cell(row=r, column=c, value=row[header])
+            # noinspection PyUnresolvedReferences
+        virtual_notebook = openpyxl.writer.excel.save_virtual_workbook(wb)
+        str_io = cStringIO.StringIO()
+        str_io.write(virtual_notebook)
+        str_io.seek(0)
+        return send_file(str_io,
+                         attachment_filename=new_name,
+                         as_attachment=True)
+
 
     def grab_metadata(self, res_name):
         if self.is_repository:
