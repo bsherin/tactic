@@ -9,14 +9,13 @@ import pymongo
 import gridfs
 import cPickle
 from bson.binary import Binary
+# noinspection PyUnresolvedReferences
 from qworker import QWorker, task_worthy
 import datetime
 # noinspection PyUnresolvedReferences
 from communication_utils import send_request_to_container
 import traceback
 import zlib
-import openpyxl
-import cStringIO
 import os
 
 INITIAL_LEFT_FRACTION = .69
@@ -830,36 +829,8 @@ class mainWindow(QWorker):
                                                    "main_id": self.my_id})
         return
 
-    # tactic_todo download_collection needs rethinking look at how pipe_values handled for a good model
-    # tactic_todo I'm in the middle of figuring out how to make this work.
-    @task_worthy
-    def download_collection(self, data):
-        new_name = data["new_name"]
 
-        wb = openpyxl.Workbook()
-        first = True
-        for (doc_name, doc_info) in self.doc_dict.items():
-            if first:
-                ws = wb.active
-                ws.title = doc_name
-                first = False
-            else:
-                ws = wb.create_sheet(title=doc_name)
-            data_rows = doc_info.all_sorted_data_rows
-            header_list = doc_info.header_list
-            for c, header in enumerate(header_list, start=1):
-                _ = ws.cell(row=1, column=c, value=header)
-            for r, row in enumerate(data_rows, start=2):
-                for c, header in enumerate(header_list, start=1):
-                    _ = ws.cell(row=r, column=c, value=row[header])
-            # noinspection PyUnresolvedReferences
-        virtual_notebook = openpyxl.writer.excel.save_virtual_workbook(wb)
-        str_io = cStringIO.StringIO()
-        str_io.write(virtual_notebook)
-        str_io.seek(0)
-        encoded_str_io = Binary(cPickle.dumps(str_io))
-        self.post_task("host", "send_file_to_client", {"encoded_str_io": encoded_str_io})
-        return
+
 
     @task_worthy
     def grab_data(self, data):
@@ -998,7 +969,7 @@ class mainWindow(QWorker):
         form_info = {"current_header_list": self.current_header_list,
                      "pipe_dict": self._pipe_dict,
                      "doc_names": self.doc_names,
-                     "list_names": self.get_list_names()}
+                     "list_names": self.get_list_names()["list_names"]}
         for tid in self.tile_instances.keys():
             self.post_task(tid, "RebuildTileForms", form_info)
         return None

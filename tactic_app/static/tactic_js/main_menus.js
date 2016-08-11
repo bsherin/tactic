@@ -137,7 +137,7 @@ function build_and_render_menu_objects() {
     column_menu.add_options_to_index();
 
     // Create the project_menu object
-    project_menu = new MenuObject("Project", project_command,["save-as", "save", "export-table-as-collection", "download-visible-document", "download-collection"]);
+    project_menu = new MenuObject("Project", project_command,["save-as", "save", "export-table-as-collection"]);
     menus[project_menu.menu_name] = project_menu;
     project_menu.add_options_to_index();
     project_menu.shortcuts = {
@@ -335,16 +335,6 @@ function project_command(menu_id) {
             exportDataTable();
             break;
         }
-        case "download-visible-document":
-        {
-            downloadVisibleDocument();
-            break;
-        }
-        case "download-collection":
-        {
-            downloadCollection();
-            break;
-        }
     }
 }
 
@@ -354,11 +344,6 @@ function downloadVisibleDocument() {
     })
 }
 
-function downloadCollection() {
-    showModal("Download Collection as Excel Notebook", "New File Name", function (new_name) {
-        postWithCallback(main_id, "download_collection", {"new_name": new_name})
-    })
-}
 
 function exportDataTable() {
     showModal("Export Data", "New Collection Name", function (new_name) {
@@ -373,7 +358,7 @@ function exportDataTable() {
                 type : 'POST',
                 async: true,
                 data: JSON.stringify(result_dict),
-                dataType: 'json',
+                dataType: 'json'
             });
     })
 }

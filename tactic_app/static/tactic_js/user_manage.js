@@ -225,6 +225,7 @@ var col_manager_specifics = {
     buttons: [
         {"name": "load", "func": "load_func", "button_class": "btn btn-primary"},
         {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-success"},
+        {"name": "download", "func": "downloadCollection", "button_class": "btn btn-primary"},
         {"name": "delete", "func": "delete_func", "button_class": "btn-danger"}
     ],
     add_func: function (event) {
@@ -245,7 +246,15 @@ var col_manager_specifics = {
                 doFlash(data)
             }
         });
-    event.preventDefault();
+        event.preventDefault();
+    },
+    downloadCollection: function (event) {
+        var manager = event.data.manager;
+        var res_name = manager.check_for_selection(manager.res_type);
+        if (res_name == "") return;
+        showModal("Download Collection as Excel Notebook", "New File Name", function (new_name) {
+            window.open($SCRIPT_ROOT + "/download_collection/" + res_name + "/" + new_name)
+        }, res_name + ".xls")
     }
 };
 
