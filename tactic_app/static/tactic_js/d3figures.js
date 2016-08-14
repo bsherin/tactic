@@ -165,7 +165,7 @@ function createScatterPlot(tile_id, data_source, target_element_id) {
                 .append("svg")
                     .attr("width", w )
                     .attr("height", h);
-
+                                                                                                                                                                                                          ale
             var xExtent = [0, d3.max(data, function(d) { return d[0]; })];
             var yExtent = [0, d3.max(data, function(d) { return d[1]; })];
 

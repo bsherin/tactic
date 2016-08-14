@@ -7,6 +7,9 @@ $sortable-table-header-text-color: #666666;
 $resource-action-button-border-style: solid white 1px;
 $resource-manager-tab-font-size: 20px;
 
+$tile-header-background-color: #d9edf7; // bootstrap default is #d9edf7
+$tile-header-foreground-color: #31708f; // boostrap default is #31708f
+
 /* General resources */
 
 table.sortable thead {
@@ -322,8 +325,10 @@ a[role="tab"] {
     }
 
     .tile-panel-heading {
+        color: $tile-header-foreground-color !important;
         cursor: move;
         padding: 5px 7px;
+        background-color: $tile-header-background-color !important;
     }
 
 

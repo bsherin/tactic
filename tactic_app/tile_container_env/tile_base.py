@@ -899,6 +899,7 @@ class TileBase(QWorker):
         self.data_dict[dataname] = data
         return dataname
 
+    # tactic_todo these d3-based plots currently won't work.
     def create_lineplot_html(self, data, xlabels=None):
         if xlabels is None:
             xlabels = []

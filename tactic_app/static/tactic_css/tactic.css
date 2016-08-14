@@ -235,8 +235,10 @@ td.cell-clickable:active {
   float: left; }
 
 .tile-panel-heading {
+  color: #31708f !important;
   cursor: move;
-  padding: 5px 7px; }
+  padding: 5px 7px;
+  background-color: #d9edf7 !important; }
 
 #spin-place {
   position: relative; }
