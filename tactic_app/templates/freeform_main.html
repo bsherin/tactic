@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}{{ window_title }}{% endblock %}
+
+{% block head %}
+{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{{url_for('static', filename='css/jquery-ui.min.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/loader.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/table.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/codemirrorthemes/codemirror.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/codemirrorthemes/pastel-on-dark.css')}}">
+     <link rel="stylesheet" href="{{url_for('static', filename='css/alertify_css/alertify.min.css')}}"/>
+    <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/tactic_alertify_theme.css')}}" />
+{% endblock %}
+
+{% block page_content %}
+    {% include 'modals/show_image_modal.html' %}
+    <div id="modal-area">
+    </div>
+    <div id="loading-message">
+        <span class="loader"><span class="loader-inner"></span></span>
+    </div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-xs-12">
+                <div id="status-area"></div>
+            </div>
+        </div>
+    </div>
+    <div id="outer-container" style="display: none">
+        <div class="grid-left" align="left">
+            <div id="main-panel" class="panel panel-default">
+                <div class="panel-heading" id="data-title" style="overflow:hidden">
+                <div class="main-heading-element" style="float:left; white-space: nowrap">
+                    <button type='button' id="shrink-table-button" data-toggle="tooltip" class='notclose tooltip-top' onclick="tableObject.shrinkTable()"><span class="glyphicon glyphicon-th"></span></button>
+                    <form class="form-inline" style="display:inline">
+                      <span class="form-group">
+                        <label for="doc-selector">{{short_collection_name}}: </label>
+                            <select id="doc-selector" style="max-width: 200px" class="form-control  tooltip-top" data-toggle="tooltip" onchange="change_doc(this, null)">
+                                {% for dname in doc_names %}
+                                    <option>{{ dname }}</option>
+                                {% endfor %}
+                            </select>
+                        </span>
+                    </form>
+                    <span id="project-label"> Project: <span id="project-name" >{{project_name}}</span></span>
+                </div>
+                <div class="main-heading-element" style="float:right; white-space: nowrap">
+                    <form class="form-inline">
+                        <div class="input-group input-group-sm">
+                          <input type="text" id="search" class="form-control" size="10" placeholder="Search">
+                             <span class="input-group-btn">
+                                <button class="btn btn-default tooltip-top" id="search-button" data-toggle="tooltip" type="button" onclick="return doSearch(document.getElementById('search').value)" value="Find">Find</button>
+                             </span>
+                        </div>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button class="btn btn-default tooltip-bottom" id="filter-button" data-toggle="tooltip" onclick="return doFilter(document.getElementById('search').value)" value="Filter">Filter</button>
+                            <button class="btn btn-default tooltip-top" id="unfilter-button" data-toggle="tooltip" onclick="return doUnfilter()" value="Unfilter">Unfilter</button>
+                        </div>
+                   </form>
+                    </div>
+                    <span id="table-spin-place"></span><span id="status-msg-area" class="status-msg"></span>
+                </div>
+
+                <div id="table-wrapper" class="panel-body">
+                    <div id="reload-message" style="display: none">
+                        <span class="loader"><span class="loader-inner"></span></span>
+                    </div>
+                    <table id="table-area">
+                    </table>
+                </div>
+             </div>
+            <button type='button' id="table-icon" class="btn" onclick="tableObject.expandTable()"><span class="glyphicon glyphicon-th-list"></span></button>
+
+        </div>
+
+        <div class="grid-right" align="left">
+            <div  class="panel panel-default" id="tile-area">
+                <div class="panel-body" id="tile-div">
+                </div>
+            </div>
+        </div>
+        <div id="console-panel" class="panel panel-default" style="display:block">
+                <div id="console-heading" class="panel-heading">
+                    <button type='button' id="show-console-button" data-toggle="tooltip" class='notclose triangle-right tooltip-top' onclick=expandConsole();><span style="font-size:12px" class="glyphicon glyphicon-triangle-right"></span></button>
+                    <button type='button' id="hide-console-button" data-toggle="tooltip" class='notclose triangle-bottom tooltip-top' onclick=shrinkConsole();><span style="font-size:12px" class="glyphicon glyphicon-triangle-bottom"></span></button>
+                    <button type='button' id="open-log-button" data-toggle="tooltip" class='notclose tooltip-top'  onclick=openLogWindow();><span style="font-size:12px" class="glyphicon glyphicon-open"></span></button>
+                    <button type='button' id="add-blank-text-button" data-toggle="tooltip" class='notclose tooltip-top'  onclick=addBlankConsoleText();><span style="font-size:12px" class="glyphicon glyphicon-plus"></span></button>
+                    <button type='button' id="clear-console-button" data-toggle="tooltip" class='notclose tooltip-top' style="float:right" onclick=tableObject.clearConsole();><span style="font-size:12px" class="glyphicon glyphicon-trash"></span></button>
+                    Log
+                </div>
+              <div id="console" class="panel-body">{{ console_html | safe }}</div>
+        </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+    <script src="{{url_for('static', filename='js/alertify.js')}}"></script>
+    <script src="{{url_for('static', filename='js/jquery.isonscreen.js')}}"></script>
+    <script src="{{url_for('static', filename='js/socket.io.js')}}"></script>
+    <script src="{{url_for('static', filename='js/d3.js')}}"></script>
+    <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
+    <script src="{{url_for('static', filename='js/sorttable.js')}}"></script>
+    <script src="{{url_for('static', filename='js/codemirror.js')}}"></script>
+    <script src="{{url_for('static', filename='js/codemirror/search.js')}}"></script>
+    <script src="{{url_for('static', filename='js/codemirror/searchcursor.js')}}"></script>
+    <script src="{{url_for('static', filename='js/codemirror/jump-to-line.js')}}"></script>
+    <script src="{{url_for('static', filename='js/codemirror/dialog.js')}}"></script>
+    <script src="{{url_for('static', filename='js/python.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/utilities.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/communication.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/main_menus.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/d3figures.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/tiles.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/main.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/freeform.js')}}"></script>
+    <script>
+    console.log("running scripts")
+    var _collection_name = "{{collection_name}}";
+    var _project_name = "{{project_name}}";
+    var main_id = "{{main_id}}";
+    var user_id = "{{current_user.get_id()}}";
+    var doc_names = {{ doc_names | safe }};
+    var use_ssl = "{{use_ssl}}"=="True";
+    var new_tile_info = "{{new_tile_info | safe}}";
+    window.onload = start_post_load;
+    window.onresize = function () {
+        tableObject.resize_table_area()
+    };
+    window.onbeforeunload = function(e) {
+        if (dirty) {
+            return "Any unsaved changes will be lost."
+        }
+    };
+    window.onunload = function (e) {
+        removeMainwindow()
+    }
+    </script>
+{% endblock %}

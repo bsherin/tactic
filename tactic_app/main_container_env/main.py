@@ -27,6 +27,22 @@ else:
     RETRIES = 60
 
 
+class freeformDocInfo(object):
+    def __init__(self, name, data_text):
+        self.name = name
+        self.data_text = data_text
+
+    def compile_save_dict(self):
+        return ({"name": self.name,
+                 "data_text": self.data_text})
+
+    @staticmethod
+    def recreate_from_save(save_dict):
+        new_instance = freeformDocInfo(save_dict["name"],
+                               save_dict["data_text"])
+        return new_instance
+
+
 # noinspection PyPep8Naming
 class docInfo(object):
     def __init__(self, name, data_rows, header_list=None, cell_backgrounds=None):
@@ -191,6 +207,7 @@ class mainWindow(QWorker):
             self.debug_log("error getting pymongo client: " + error_string)
             sys.exit()
 
+        self.doc_type = data_dict["doc_type"]
         self.base_figure_url = data_dict["base_figure_url"]
         self.project_collection_name = data_dict["project_collection_name"]
 
@@ -531,12 +548,16 @@ class mainWindow(QWorker):
             self.debug_log("Got fname " + fname)
             if fname == "__metadata__":
                 continue
-            if "header_list" in f:
-                # Note conversion of unicode filenames to strings
-                self.debug_log("got header_list " + str(f["header_list"]))
-                result[fname] = docInfo(fname, f["data_rows"], f["header_list"])
+            if self.doc_type == "table":
+                if "header_list" in f:
+                    # Note conversion of unicode filenames to strings
+                    self.debug_log("got header_list " + str(f["header_list"]))
+                    result[fname] = docInfo(fname, f["data_rows"], f["header_list"])
+                else:
+                    result[fname] = docInfo(fname, f["data_rows"], [])
             else:
-                result[fname] = docInfo(fname, f["data_rows"], [])
+
+                result[fname] = freeformDocInfo(fname, self.fs.get(f["file_id"]).read())
         return result
 
     def _set_row_column_data(self, doc_name, the_id, column_header, new_content):
@@ -829,38 +850,51 @@ class mainWindow(QWorker):
                                                    "main_id": self.my_id})
         return
 
-
-
-
     @task_worthy
     def grab_data(self, data):
         doc_name = data["doc_name"]
-        return {"doc_name": doc_name,
-                "is_shrunk": self.is_shrunk,
-                "left_fraction": self.left_fraction,
-                "data_rows": self.doc_dict[doc_name].displayed_data_rows,
-                "background_colors": self.doc_dict[doc_name].displayed_background_colors,
-                "header_list": self.doc_dict[doc_name].header_list,
-                "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
-                "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
-                "max_table_size": self.doc_dict[doc_name].max_table_size}
+        if self.doc_type == "table":
+            return {"doc_name": doc_name,
+                    "is_shrunk": self.is_shrunk,
+                    "left_fraction": self.left_fraction,
+                    "data_rows": self.doc_dict[doc_name].displayed_data_rows,
+                    "background_colors": self.doc_dict[doc_name].displayed_background_colors,
+                    "header_list": self.doc_dict[doc_name].header_list,
+                    "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
+                    "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
+                    "max_table_size": self.doc_dict[doc_name].max_table_size}
+        else:
+            self.debug_log("grabbing freeform data")
+            return {"doc_name": doc_name,
+                    "is_shrunk": self.is_shrunk,
+                    "left_fraction": self.left_fraction,
+                    "data_text": self.doc_dict[doc_name].data_text}
 
     @task_worthy
     def grab_project_data(self, data_dict):
         doc_name = data_dict["doc_name"]
-        return {"doc_name": doc_name,
-                "is_shrunk": self.is_shrunk,
-                "tile_ids": self.tile_sort_list,
-                "left_fraction": self.left_fraction,
-                "data_rows": self.doc_dict[doc_name].displayed_data_rows,
-                "background_colors": self.doc_dict[doc_name].displayed_background_colors,
-                "header_list": self.doc_dict[doc_name].header_list,
-                "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
-                "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
-                "max_table_size": self.doc_dict[doc_name].max_table_size,
-                "tablespec_dict": self.tablespec_dict(),
-                "hidden_columns_list": self.hidden_columns_list,
-                "tile_save_results": self.tile_save_results}
+        if self.doc_type == "table":
+            return {"doc_name": doc_name,
+                    "is_shrunk": self.is_shrunk,
+                    "tile_ids": self.tile_sort_list,
+                    "left_fraction": self.left_fraction,
+                    "data_rows": self.doc_dict[doc_name].displayed_data_rows,
+                    "background_colors": self.doc_dict[doc_name].displayed_background_colors,
+                    "header_list": self.doc_dict[doc_name].header_list,
+                    "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
+                    "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
+                    "max_table_size": self.doc_dict[doc_name].max_table_size,
+                    "tablespec_dict": self.tablespec_dict(),
+                    "hidden_columns_list": self.hidden_columns_list,
+                    "tile_save_results": self.tile_save_results}
+        else:
+            return {"doc_name": doc_name,
+                    "is_shrunk": self.is_shrunk,
+                    "tile_ids": self.tile_sort_list,
+                    "left_fraction": self.left_fraction,
+                    "data_text": self.doc_dict[doc_name].data_text,
+                    "tablespec_dict": self.tablespec_dict(),
+                    "tile_save_results": self.tile_save_results}
 
     def get_tile_property(self, tile_id, prop_name):
         result = self.post_and_wait(tile_id, 'get_property', {"property": prop_name})["val"]

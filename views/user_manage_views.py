@@ -14,6 +14,7 @@ from bson.binary import Binary
 import tactic_app
 from tactic_app import app, db, fs, socketio, use_ssl, mongo_uri # global_stuff
 from tactic_app.file_handling import read_csv_file_to_dict, read_tsv_file_to_dict, read_txt_file_to_dict, load_a_list
+from tactic_app.file_handling import read_freeform_file
 
 from tactic_app.global_tile_management import global_tile_manager
 from tactic_app.users import User
@@ -348,8 +349,10 @@ class CollectionManager(ResourceManager):
 
     def add_rules(self):
         app.add_url_rule('/main/<collection_name>', "main", login_required(self.main), methods=['get'])
-        app.add_url_rule('/load_files/<collection_name>', "load_files",
-                         login_required(self.load_files), methods=['get', "post"])
+        app.add_url_rule('/import_as_table/<collection_name>', "import_as_table",
+                         login_required(self.import_as_table), methods=['get', "post"])
+        app.add_url_rule('/import_as_freeform/<collection_name>', "import_as_freeform",
+                         login_required(self.import_as_freeform), methods=['get', "post"])
         app.add_url_rule('/delete_collection/<collection_name>', "delete_collection",
                          login_required(self.delete_collection), methods=['post'])
         app.add_url_rule('/duplicate_collection', "duplicate_collection",
@@ -366,12 +369,23 @@ class CollectionManager(ResourceManager):
 
         global_tile_manager.add_user(user_obj.username)
 
+        # tactic_change 1(done): send info about doc_type
+        the_collection = db[cname]
+        mdata = the_collection.find_one({"name": "__metadata__"})
+        if "type" in mdata and mdata["type"] == "freeform":
+            doc_type = "freeform"
+            template = "freeform_main.html"
+        else:
+            doc_type = "table"
+            template = "main.html"
+
         data_dict = {"collection_name": cname,
                      "main_id": main_id,
                      "user_id": current_user.get_id(),
                      "megaplex_address": tactic_app.megaplex_address,
                      "project_collection_name": user_obj.project_collection_name,
                      "mongo_uri": mongo_uri,
+                     "doc_type": doc_type,
                      "base_figure_url": url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1]}
 
         result = send_direct_request_to_container(main_id, "initialize_mainwindow", data_dict).json()
@@ -379,8 +393,8 @@ class CollectionManager(ResourceManager):
             return result["message_string"]
         short_collection_name = re.sub("^.*?\.data_collection\.", "", collection_name)
 
-        the_collection = db[cname]
         doc_names = []
+
         for f in the_collection.find():
             fname = f["name"].encode("ascii", "ignore")
             if fname == "__metadata__":
@@ -388,7 +402,7 @@ class CollectionManager(ResourceManager):
             else:
                 doc_names.append(fname)
 
-        return render_template("main.html",
+        return render_template(template,
                                collection_name=cname,
                                window_title=short_collection_name,
                                project_name='',
@@ -478,7 +492,7 @@ class CollectionManager(ResourceManager):
             })
         return doc_list
 
-    def load_files(self, collection_name):
+    def import_as_table(self, collection_name):
         user_obj = current_user
         file_list = request.files.getlist("file")
         full_collection_name = user_obj.build_data_collection_name(collection_name)
@@ -488,7 +502,7 @@ class CollectionManager(ResourceManager):
         mdata = global_tile_manager.create_initial_metadata()
         try:
             db[full_collection_name].insert_one({"name": "__metadata__", "datetime": mdata["datetime"],
-                                                 "tags": "", "notes": ""})
+                                                 "tags": "", "notes": "", "type": "table"})
         except:
             error_string = "Error creating collection: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
             return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
@@ -516,10 +530,45 @@ class CollectionManager(ResourceManager):
                     docs = self.autosplit_doc(filename, result_dict)
                     for doc in docs:
                         db[full_collection_name].insert_one({"name": doc["name"], "data_rows": doc["data_rows"],
-                                                             "header_list": header_list})
+                                                             "header_list": header_list, "type": "table"})
                 else:
                     db[full_collection_name].insert_one({"name": filename, "data_rows": result_dict,
                                                          "header_list": header_list})
+            except:
+                error_string = "Error creating collection: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+                stop_spinner()
+                return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+
+        self.update_selector_list(collection_name)
+        return jsonify({"message": "Collection successfully loaded", "alert_type": "alert-success"})
+
+    def import_as_freeform(self, collection_name):
+        user_obj = current_user
+        file_list = request.files.getlist("file")
+        full_collection_name = user_obj.build_data_collection_name(collection_name)
+        if full_collection_name in db.collection_names():
+            return jsonify({"success": False, "message": "There is already a collection with that name.",
+                            "alert_type": "alert-warning"})
+        mdata = global_tile_manager.create_initial_metadata()
+        try:
+            db[full_collection_name].insert_one({"name": "__metadata__", "datetime": mdata["datetime"],
+                                                 "tags": "", "notes": "", "type": "freeform"})
+        except:
+            error_string = "Error creating collection: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+            return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+
+        for the_file in file_list:
+            filename, file_extension = os.path.splitext(the_file.filename)
+            filename = filename.encode("ascii", "ignore")
+            (success, result_txt) = read_freeform_file(the_file)
+            if not success:  # then result_dict contains an error object
+                e = result_txt
+                return jsonify({"message": e.message, "alert_type": "alert-danger"})
+
+            try:
+                save_dict = {"name": filename}
+                save_dict["file_id"] = fs.put(result_txt)
+                db[full_collection_name].insert_one(save_dict)
             except:
                 error_string = "Error creating collection: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
                 stop_spinner()

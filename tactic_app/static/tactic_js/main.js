@@ -166,7 +166,9 @@ function continue_loading() {
                 $("#reload-message").css("display", "none");
                 $("#outer-container").css("display", "block");
                 $("#table-area").css("display", "block");
-                hidden_columns_list = data.hidden_columns_list;
+                if (data.hasOwnProperty("hidden_columns_list")) {
+                    hidden_columns_list = data.hidden_columns_list;
+                }
                 tablespec_dict = {};
                 for (var spec in data.tablespec_dict) {
                     if (!data.tablespec_dict.hasOwnProperty(spec)){

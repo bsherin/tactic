@@ -35,7 +35,7 @@ function ResourceManager(res_type, specifics) {
 }
 
 ResourceManager.prototype = {
-    show_add: true,
+    file_adders: [],
     show_multiple:false,
     repository_copy_view: '/copy_from_repository',
     show_loaded_list: false,
@@ -47,9 +47,10 @@ ResourceManager.prototype = {
         $.each(this.repository_buttons, function (index, value) {
             $("#repository-{0}-{1}-button".format(value.name, self.res_type)).click({"manager": self}, self[value.func])
         });
-        if (this.show_add) {
-            $("#add-{0}-form".format(self.res_type)).submit({"manager": self}, self.add_func)
-        }
+        $.each(this.file_adders, function(index, value) {
+                $("#{0}-{1}-form".format(value.name, self.res_type)).submit({"manager": self}, self[value.func])
+            }
+        );
         $("#repository-copy-" + self.res_type + "-button").click({"manager": self}, self.repository_copy_func);
 
         $.each(this.popup_buttons, function (index, value) {

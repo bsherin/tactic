@@ -3,6 +3,7 @@
  */
 // This controls how wide the widest field can be as
 // a fraction of the containing panel
+
 MAX_BIGFIELD_FRACTION = 1;
 ADDED_HEADER_WIDTH = 0;
 MARGIN_SIZE = 5;

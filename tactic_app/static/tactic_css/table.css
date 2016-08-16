@@ -43,6 +43,11 @@
     display: block;
     overflow-y: auto;
     overflow-x: hidden; }
+  #table-area #freebody {
+    display: block;
+    overflow-y: auto;
+    overflow-x: hidden;
+    white-space: pre-wrap; }
   #table-area th {
     /*display: inline-block;*/
     cursor: pointer;
