@@ -39,7 +39,7 @@ function start_post_load() {
       }
     });
     $(".CodeMirror").css('height', window.innerHeight - $(".CodeMirror").offset().top - 20);
-    savedCode = myCodeMirror.getValue();
+    savedCode = myCodeMirror.getdoc().getValue();
 
     var result_dict = {"res_type": "tile", "res_name": module_name};
     $.ajax({
@@ -71,7 +71,7 @@ function start_post_load() {
 }
 
 function dirty() {
-    var the_code = myCodeMirror.getValue();
+    var the_code = myCodeMirror.getDoc().getValue();
     var tags = $("#tile-tags").val();
     var notes = $("#tile-notes").val();
     if ((the_code == savedCode) && (tags == savedTags) && (notes == savedNotes)) {
@@ -122,7 +122,7 @@ function renameModule() {
 }
 
 function updateModule() {
-    var new_code = myCodeMirror.getValue();
+    var new_code = myCodeMirror.getDoc().getValue();
     var tags = $("#tile-tags").val();
     var notes = $("#tile-notes").val();
     var result_dict = {
@@ -152,7 +152,7 @@ function updateModule() {
 }
 
 function loadModule() {
-    var new_code = myCodeMirror.getValue();
+    var new_code = myCodeMirror.getDoc().getValue();
     var tags = $("#tile-tags").val();
     var notes = $("#tile-notes").val();
     var result_dict = {

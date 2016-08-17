@@ -13,6 +13,7 @@ var body_template;
 var body_template_hidden;
 
 var table_is_shrunk = false;
+var myCodeMirror = null;
 
 function doSearch(t) {
     console.log("do search on " + t);
@@ -58,7 +59,6 @@ function create_tablespec(dict) {
 var tablespec_dict = {};
 
 var tableObject = {
-    table_id: "freeform-area",
     collection_name: null,
     data_text: null,
 
@@ -90,16 +90,27 @@ var tableObject = {
         if (this.project_name == "") {
             menus["Project"].disable_menu_item('save')
         }
+
+        if (myCodeMirror == null) {
+            var tablearea = document.getElementById("freeform-area")
+            myCodeMirror = CodeMirror(tablearea, {
+                lineNumbers: true,
+                readOnly: false,
+                mode: "Plain Text",
+                lineWrapping: true,
+                firstLineNumber: 0
+            });
+        }
         //noinspection JSUnresolvedVariable
         this.build_table(); // This is separated out because it is called from elsewhere.
         var self = this;
     },
 
-    // tactic_new added refill_table to freeform
+    // tactic_change is refill_table used for anything
     refill_table: function(data_object) {
         this.data_text = data_object["data_text"];
         this.current_doc_name = data_object["doc_name"];
-        myCodeMirror.setValue(data_object["new_content"])
+        myCodeMirror.setVal(data_object["new_content"])
     },
 
 
@@ -108,15 +119,7 @@ var tableObject = {
         this.active_line = null;
         initializeConsole();
         var html_result = create_all_html(this.data_text);
-        $("#" + this.table_id).html(html_result);
-        var tablearea = document.getElementById(this.table_id);
-        myCodeMirror = CodeMirror.fromTextArea(tablearea, {
-            lineNumbers: true,
-            readOnly: false,
-            mode: "Plain Text",
-            lineWrapping: true,
-            firstLineNumber: 0
-        });
+        myCodeMirror.setValue(html_result);
 
         $("#project-name").html(this.project_name);
         setup_resize_listeners();
@@ -126,13 +129,13 @@ var tableObject = {
         });
         // tactic_new listen for selection, active line change
         myCodeMirror.on("cursorActivity", function(cminstance) {
-            var the_text = myCodeMirror.getSelection();
+            var the_text = myCodeMirror.getDoc().getSelection();
             var the_dict;
             if (the_text.length > 0) {
                 the_dict = {"selected_text": the_text};
                 broadcast_event_to_server("TextSelect", the_dict)
             }
-            self.active_line = myCodeMirror.getCursor("anchor").line
+            self.active_line = myCodeMirror.getDoc().getCursor("anchor").line
         });
 
 
@@ -147,7 +150,7 @@ var tableObject = {
         function handleTextChange(changeobj_array) {
             // tactic_change handle_textchange: perhaps makes this work on changeobjects
             dirty = true;
-            current_content = myCodeMirror.getValue();
+            current_content = myCodeMirror.getDoc().getValue();
             var data_dict = {
                     "new_content": current_content,
                     "doc_name": self.current_doc_name};
@@ -245,7 +248,7 @@ var tableObject = {
     // tactic_new setfreeformcontent
     setFreeformContent: function(data_object) {
         if (data_object["doc_name"] == this.current_doc_name) {
-            myCodeMirror.setValue(data_object["new_content"])
+            myCodeMirror.getDoc().setValue(data_object["new_content"])
         }
     },
 
