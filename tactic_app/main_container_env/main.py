@@ -36,6 +36,25 @@ class freeformDocInfo(object):
         return ({"name": self.name,
                  "data_text": self.data_text})
 
+    @property
+    def all_data(self):
+        return self.data_text
+
+    @property
+    def all_sorted_data_rows(self):
+        return self.data_text.splitlines()
+
+    @property
+    def number_of_rows(self):
+        return len(self.data_text.splitlines())
+
+    @property
+    def get_row(self, line_number):
+        return self.all_sorted_data_rows[line_number]
+
+    def get_actual_row(self, row_id):
+        return row_id
+
     @staticmethod
     def recreate_from_save(save_dict):
         new_instance = freeformDocInfo(save_dict["name"],
@@ -80,6 +99,13 @@ class docInfo(object):
                 result[i] = self.cell_backgrounds[str(r)]
         return result
 
+    @property
+    def number_of_rows(self):
+        return len(self.data_rows.keys())
+
+    def get_row(self, row_id):
+        return self.data_rows_int_keys[int(row_id)]
+
     def configure_for_current_data(self):
         self.start_of_current_chunk = 0
         self.is_first_chunk = True
@@ -106,6 +132,10 @@ class docInfo(object):
 
     def get_id_from_actual_row(self, actual_row):
         return self.sorted_data_rows[actual_row]["__id__"]
+
+    @property
+    def all_data(self):
+        return self.data_rows
 
     @property
     def sorted_data_rows(self):
@@ -187,8 +217,8 @@ class docInfo(object):
 class mainWindow(QWorker):
     save_attrs = ["short_collection_name", "collection_name", "current_tile_id", "tile_sort_list", "left_fraction",
                   "is_shrunk", "doc_dict", "project_name", "loaded_modules", "user_id",
-                  "hidden_columns_list", "console_html"]
-    update_events = ["CellChange", "CreateColumn", "SearchTable", "SaveTableSpec", "MainClose", "DisplayCreateErrors",
+                  "hidden_columns_list", "console_html", "doc_type"]
+    update_events = ["CellChange", "FreeformTextchange","CreateColumn", "SearchTable", "SaveTableSpec", "MainClose", "DisplayCreateErrors",
                      "DehighlightTable", "SetCellContent", "RemoveTile", "ColorTextInCell",
                      "FilterTable", "UnfilterTable", "TextSelect", "UpdateSortList", "UpdateLeftFraction",
                      "UpdateTableShrinkState"]
@@ -207,7 +237,6 @@ class mainWindow(QWorker):
             self.debug_log("error getting pymongo client: " + error_string)
             sys.exit()
 
-        self.doc_type = data_dict["doc_type"]
         self.base_figure_url = data_dict["base_figure_url"]
         self.project_collection_name = data_dict["project_collection_name"]
 
@@ -227,6 +256,7 @@ class mainWindow(QWorker):
         self.mdata = None
 
         if "project_name" not in data_dict:
+            self.doc_type = data_dict["doc_type"]
             self.current_tile_id = 0
             self.tile_instances = {}
             self.tile_sort_list = []
@@ -278,6 +308,8 @@ class mainWindow(QWorker):
         self.debug_log("entering compile_save_dict in main")
         result = {}
         for attr in self.save_attrs:
+            if attr == "hidden_columns_list" and self.doc_type == "freeform":
+                continue
             attr_val = getattr(self, attr)
             if hasattr(attr_val, "compile_save_dict"):
                 result[attr] = attr_val.compile_save_dict()
@@ -315,6 +347,7 @@ class mainWindow(QWorker):
     @task_worthy
     def do_full_recreation(self, data_dict):
         try:
+            print "Entering do_full_recreation"
             self.show_um_message("Entering do_full_recreation", data_dict["user_manage_id"], None)
             tile_info_dict, loaded_modules = self.recreate_from_save(data_dict["project_collection_name"],
                                                                      data_dict["project_name"])
@@ -461,7 +494,8 @@ class mainWindow(QWorker):
         # noinspection PyBroadException
         try:
             self.project_name = data_dict["project_name"]
-            self.hidden_columns_list = data_dict["hidden_columns_list"]
+            if self.doc_type == "table":
+                self.hidden_columns_list = data_dict["hidden_columns_list"]
             self.console_html = data_dict["console_html"]
             tspec_dict = data_dict["tablespec_dict"]
             for (dname, spec) in tspec_dict.items():
@@ -564,6 +598,11 @@ class mainWindow(QWorker):
         self.doc_dict[doc_name].data_rows[str(the_id)][column_header] = new_content
         return
 
+    # tactic_new _set_freeform_data
+    def _set_freeform_data(self, doc_name, new_content):
+        self.doc_dict[doc_name].data_text = new_content
+        return
+
     def print_to_console(self, message_string, force_open=False):
         with self.app.test_request_context():
             # noinspection PyUnresolvedReferences
@@ -591,11 +630,13 @@ class mainWindow(QWorker):
 
     def refill_table(self):
         doc = self.doc_dict[self.visible_doc_name]
-        self.debug_log("current_data_rows keys " + str(doc.current_data_rows.keys()))
-        self.debug_log("displayed_data_rows keys " + str(len(doc.displayed_data_rows)))
-        data_object = {"data_rows": doc.displayed_data_rows, "doc_name": self.visible_doc_name,
-                       "background_colors": doc.displayed_background_colors,
-                       "is_first_chunk": doc.is_first_chunk, "is_last_chunk": doc.is_last_chunk}
+        if self.doc_type == "table":
+            data_object = {"data_rows": doc.displayed_data_rows, "doc_name": self.visible_doc_name,
+                           "background_colors": doc.displayed_background_colors,
+                           "is_first_chunk": doc.is_first_chunk, "is_last_chunk": doc.is_last_chunk}
+        else:
+            data_object = {"data_text": doc.data_text, "doc_name": self.visible_doc_name,
+                           "background_colors": doc.displayed_background_colors}
         self.emit_table_message("refill_table", data_object)
 
     @property
@@ -604,6 +645,8 @@ class mainWindow(QWorker):
 
     @property
     def current_header_list(self):
+        if self.doc_type == "freeform":
+            return []
         dinfo = self.doc_dict[self.visible_doc_name]
         return dinfo.header_list
 
@@ -679,6 +722,8 @@ class mainWindow(QWorker):
         data_dict["base_figure_url"] = self.base_figure_url.replace("tile_id", tile_container_id)
         data_dict["main_id"] = self.my_id
         data_dict["megaplex_address"] = self.megaplex_address
+        # tactic_new now pass doc_type to tile
+        data_dict["doc_type"] = self.doc_type
         form_info = {"current_header_list": self.current_header_list,
                      "pipe_dict": self._pipe_dict,
                      "doc_names": self.doc_names,
@@ -729,12 +774,14 @@ class mainWindow(QWorker):
 
     @task_worthy
     def get_document_data(self, data):
+        # tactic_document get_document_data changes
         self.debug_log("entering get_document_data")
         doc_name = data["document_name"]
-        return self.doc_dict[doc_name].data_rows
+        return self.doc_dict[doc_name].all_data
 
     @task_worthy
     def get_document_data_as_list(self, data):
+        # tactic_document get_document_data_as_list behavior
         self.debug_log("entering get_document_data_as_list")
         doc_name = data["document_name"]
         data_list = self.doc_dict[doc_name].all_sorted_data_rows
@@ -749,18 +796,28 @@ class mainWindow(QWorker):
 
     @task_worthy
     def get_number_rows(self, data):
+        # tactic_document get_number_rows
         self.debug_log("entering get_column_names")
         doc_name = data["document_name"]
+        nrows = self.doc_dict[doc_name].number_of_rows
         nrows = len(self.doc_dict[doc_name].data_rows.keys())
         return {"number_rows": nrows}
 
     @task_worthy
     def get_row(self, data):
+        # tactic_document get_row
         self.debug_log("entering get_column_names")
         doc_name = data["document_name"]
-        row_id = data["row_id"]
-        the_row = self.doc_dict[doc_name].data_rows_int_keys[int(row_id)]
+        if "row_id" in data:
+            row_id = data["row_id"]
+        else:
+            row_id = data["line_number"]
+        the_row = self.doc_dict[doc_name].get_row(row_id)
         return the_row
+
+    @task_worthy
+    def get_line(self, data):
+        return self.get_row(data)
 
     @task_worthy
     def get_cell(self, data):
@@ -791,6 +848,12 @@ class mainWindow(QWorker):
         return None
 
     @task_worthy
+    def FreeformTextchange(self, data):
+        self.debug_log("Entering FreeformTextchange in main.")
+        self._set_freeform_data(data["doc_name"], data["new_content"])
+        return None
+
+    @task_worthy
     def set_visible_doc(self, data):
         self.debug_log("entering save visible_doc on main")
         doc_name = data["doc_name"]
@@ -804,6 +867,7 @@ class mainWindow(QWorker):
 
     @task_worthy
     def get_property(self, data_dict):
+        # tactic_todo eliminate get_property?
         self.debug_log("Entering get_property on main")
         prop_name = data_dict["property"]
         val = getattr(self, prop_name)
@@ -821,9 +885,9 @@ class mainWindow(QWorker):
                                                       "header_list": docinfo.header_list})
         return {"success": True}
 
-    @task_worthy
-    def get_doc_dict(self, data):
-        return {"success": True, "doc_dict": self.doc_dict}
+    # @task_worthy
+    # def get_doc_dict(self, data):
+    #     return {"success": True, "doc_dict": self.doc_dict}
 
 
     @task_worthy
@@ -833,6 +897,7 @@ class mainWindow(QWorker):
 
     @task_worthy
     def set_property(self, data_dict):
+        # tactic_todo eliminate set_property as task
         prop_name = data_dict["property"]
         val = data_dict["val"]
         setattr(self, prop_name, val)
@@ -1010,11 +1075,13 @@ class mainWindow(QWorker):
 
     @task_worthy
     def SearchTable(self, data):
+        # tactic_change searchtable
         self.highlight_table_text(data["text_to_find"])
         return None
 
     @task_worthy
     def FilterTable(self, data):
+        # tactic_change filtertable
         txt = data["text_to_find"]
         self.display_matching_rows_applying_filter(lambda r: self.txt_in_dict(txt, r))
         self.highlight_table_text(txt)
@@ -1022,11 +1089,13 @@ class mainWindow(QWorker):
 
     @task_worthy
     def DehighlightTable(self, data):
+        # tactic_change dehighlight
         self.emit_table_message("dehiglightAllCells")
         return None
 
     @task_worthy
     def UnfilterTable(self, data):
+        # tactic_change unfilter
         for doc in self.doc_dict.values():
             doc.current_data_rows = doc.data_rows
             doc.configure_for_current_data()
@@ -1048,15 +1117,26 @@ class mainWindow(QWorker):
 
     @task_worthy
     def SetDocument(self, data):
+        # tactic_todo compare to update_document
         doc_name = data["doc_name"]
-        new_doc_dict = data["new_doc_dict"]
-        cellchange = data["cellchange"]
-        current_doc_dict = self.doc_dict[doc_name].data_rows
-        for id, r in new_doc_dict.items():
-            old_r = current_doc_dict[id]
-            for key, val in r.items():
-                if not val == old_r[key]:
-                    self._set_cell_content(doc_name, id, key, val, cellchange)
+
+        if self.doc_type == "table":
+            new_doc_dict = data["new_data"]
+            cellchange = data["cellchange"]
+
+            current_doc_dict = self.doc_dict[doc_name].data_rows
+            for id, r in new_doc_dict.items():
+                old_r = current_doc_dict[id]
+                for key, val in r.items():
+                    if not val == old_r[key]:
+                        self._set_cell_content(doc_name, id, key, val, cellchange)
+        else:
+            new_doc_text = data["new_data"]
+            self._set_freeform_data(doc_name, new_doc_text)
+            if doc_name == self.visible_doc_name:
+                data = {"new_content": new_doc_text,
+                        "doc_name": doc_name}
+                self.emit_table_message("setFreeformContent", data)
         return {"success": True}
 
     @task_worthy
@@ -1113,21 +1193,9 @@ class mainWindow(QWorker):
         self.recreate_errors = []
         return None
 
-    def get_matching_rows(self, filter_function, document_name):
-        result = []
-        if document_name is not None:
-            for r in self.doc_dict[document_name].sorted_data_rows:
-                if filter_function(r):
-                    result.append(r)
-        else:
-            for doc in self.doc_dict.keys():
-                for r in self.doc_dict[doc].sorted_data_rows:
-                    if filter_function(r):
-                        result.append(r)
-        return result
-
     @task_worthy
     def display_matching_rows(self, data):
+        # tactic_change display_matching_rows
         self.debug_log("Entering display_matching_rows in main.py")
         result = data["result"]
         document_name = data["document_name"]
@@ -1152,12 +1220,16 @@ class mainWindow(QWorker):
 
     @task_worthy
     def update_document(self, data):
+        # tactic_new changed updated_document. compare to setdocument
         new_data= data["new_data"]
         doc_name = data["document_name"]
         doc = self.doc_dict[doc_name]
-        for key, r in new_data.items():
-            for c, val in r.items():
-                doc.data_rows[key][c] = val
+        if self.doc_type == "table":
+            for key, r in new_data.items():
+                for c, val in r.items():
+                    doc.data_rows[key][c] = val
+        else:
+            self._set_freeform_data(doc_name, new_data)
         if doc_name == self.visible_doc_name:
             self.refill_table()
         return {"success": True}
@@ -1181,6 +1253,7 @@ class mainWindow(QWorker):
             self.refill_table()
         return
 
+    # tactic_todo apply_to_rows not used here. eliminate?
     def apply_to_rows(self, func, document_name=None):
         if document_name is not None:
             i = 0

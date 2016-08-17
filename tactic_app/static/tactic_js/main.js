@@ -66,8 +66,8 @@ function closeLogItem(e) {
 
 
 function addBlankConsoleText() {
-    var print_string = "<div contenteditable='true'></div>"
-    var task_data = {"print_string": print_string}
+    var print_string = "<div contenteditable='true'></div>";
+    var task_data = {"print_string": print_string};
     postWithCallback(main_id, "print_to_console_event", task_data, function(data) {
         if (!data.success) {
             doFlash(data)
@@ -86,7 +86,7 @@ function openLogWindow() {
 function start_post_load() {
     //spinner = new Spinner({scale: 1.0}).spin();
     //$("#loading-message").html(spinner.el);
-    console.log("entering start_post_load")
+    console.log("entering start_post_load");
     dirty = false;
     $("#outer-container").css({"margin-left": String(MARGIN_SIZE) + "px"});
     $("#outer-container").css({"margin-right": String(MARGIN_SIZE) + "px"});
@@ -254,6 +254,7 @@ function set_visible_doc(doc_name, func) {
 }
 
 function change_doc(el, row_id) {
+    // tactic_new change_doc updated
     $("#table-area").css("display", "none");
     $("#reload-message").css("display", "block");
     var doc_name = $(el).val();
@@ -269,8 +270,8 @@ function change_doc(el, row_id) {
     }
     else {
         var data_dict = {"doc_name": doc_name, "row_id": row_id};
-
-        postWithCallback(main_id, "grab_chunk_with_row", data_dict, function (data) {
+        if (tableObject.doctype == "table") {
+            postWithCallback(main_id, "grab_chunk_with_row", data_dict, function (data) {
                 $("#loading-message").css("display", "none");
                 $("#reload-message").css("display", "none");
                 $("#outer-container").css("display", "block");
@@ -283,8 +284,20 @@ function change_doc(el, row_id) {
                 tableObject.active_row_id = row_id;
                 set_visible_doc(doc_name, null)
             })
-    }
-
+        }
+        else {
+            postWithCallback(main_id, "grab_data", {"doc_name":doc_name}, function (data) {
+                $("#loading-message").css("display", "none");
+                $("#reload-message").css("display", "none");
+                $("#outer-container").css("display", "block");
+                $("#table-area").css("display", "block");
+                tableObject.initialize_table(data);
+                myCodeMirror.scrollIntoView(row_id);
+                tableOject.active_row = row_id;
+                set_visible_doc(doc_name, null)
+                })
+            }
+        }
 }
 
 

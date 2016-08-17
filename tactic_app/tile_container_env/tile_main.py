@@ -52,7 +52,7 @@ def recreate_from_save():
         global tile_instance
         data = copy.copy(request.json)
         tile_instance = class_info["tile_class"](data["main_id"], data["tile_id"],
-                                                 data["tile_name"])
+                                                 data["tile_name"], data["doc_type"])
         tile_instance.init_qworker(app, megaplex_address)
         tile_instance.recreate_from_save(data)
         tile_instance.current_html = tile_instance.current_html.replace(data["base_figure_url"],

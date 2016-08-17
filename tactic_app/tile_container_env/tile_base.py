@@ -63,11 +63,11 @@ class TileBase(QWorker):
                     "full_tile_height", "is_shrunk", "configured"
                     ]
 
-    def __init__(self, main_id, tile_id, tile_name=None):
+    def __init__(self, main_id, tile_id, tile_name=None, doc_type="table"):
         # from tile_main import app, megaplex_address
         # QWorker.__init__(self, app, megaplex_address, tile_id)
         self._sleepperiod = .0001
-        self.save_attrs = ["current_html", "tile_type", "tile_name", "main_id", "configured",
+        self.save_attrs = ["current_html", "tile_type", "tile_name", "main_id", "doc_type", "configured",
                            "header_height", "front_height", "front_width", "back_height", "back_width",
                            "tda_width", "tda_height", "width", "height", "user_id", "base_figure_url",
                            "full_tile_width", "full_tile_height", "is_shrunk", "img_dict", "current_fig_id"]
@@ -79,6 +79,7 @@ class TileBase(QWorker):
             self.tile_name = self.tile_type
         else:
             self.tile_name = tile_name
+        self.doc_type = doc_type
 
         self.current_html = None
 
@@ -173,10 +174,17 @@ class TileBase(QWorker):
         self.update_options(data)
         return None
 
+    # tactic_change test cellchange
     @task_worthy
     def CellChange(self, data):
         self.handle_cell_change(data["column_header"], data["id"], data["old_content"],
                                 data["new_content"], data["doc_name"])
+        return None
+
+    # tactic_new freeformtextchange
+    @task_worthy
+    def FreeformTextChange(self, data):
+        self.handle_freeform_text_change(data["old_content"],data["new_content"], data["doc_name"])
         return None
 
     @task_worthy
@@ -604,6 +612,10 @@ class TileBase(QWorker):
     def handle_cell_change(self, column_header, row_index, old_content, new_content, doc_name):
         return
 
+    # tactic_document handle_freeform_text_change
+    def handle_freeform_text_change(self, old_content, new_content, doc_name):
+        return
+
     def handle_text_select(self, selected_text, doc_name, active_row_id):
         return
 
@@ -695,6 +707,13 @@ class TileBase(QWorker):
         result = self.post_and_wait(self.main_id, "get_row", data)
         return result
 
+    def get_line(self, document_name, line_number):
+        # tactic_document get_line
+        # tactic_new get_line
+        data = {"document_name": document_name, "line_number": line_number}
+        result = self.post_and_wait(self.main_id, "get_line", data)
+        return result
+
     def get_cell(self, document_name, row_id, column_name):
         data = {"document_name": document_name, "row_id": row_id, "column_name": column_name}
         result = self.post_and_wait(self.main_id, "get_cell", data)
@@ -755,6 +774,7 @@ class TileBase(QWorker):
     # Filtering and iteration
 
     def get_matching_rows(self, filter_function, document_name=None):
+        # tactic_document get_matching_rows. filter function behavior
         result = []
         if document_name is not None:
             data_list = self.get_document_data_as_list(document_name)
@@ -775,20 +795,38 @@ class TileBase(QWorker):
 
     @task_worthy
     def display_matching_rows(self, filter_function, document_name=None):
-        if document_name is not None:
-            result = []
-            data_list = self.get_document_data_as_list(document_name)
-            for r in data_list:
-                if filter_function(r):
-                    result.append(r["__id__"])
-        else:
-            result = {}
-            for docname in self.get_document_names():
-                result[docname] = []
-                data_list = self.get_document_data_as_list(docname)
+        # tactic_new changed display_matching_rows. Won't work until corresponding change in main.py
+        # tactic_document display_matching rows.
+        if self.doc_type == "table":
+            if document_name is not None:
+                result = []
+                data_list = self.get_document_data_as_list(document_name)
                 for r in data_list:
                     if filter_function(r):
-                        result[docname].append(r["__id__"])
+                        result.append(r["__id__"])
+            else:
+                result = {}
+                for docname in self.get_document_names():
+                    result[docname] = []
+                    data_list = self.get_document_data_as_list(docname)
+                    for r in data_list:
+                        if filter_function(r):
+                            result[docname].append(r["__id__"])
+        else:
+            if document_name is not None:
+                result = []
+                data_list = self.get_document_data_as_list(document_name)
+                for rnum, rtxt in enumerate(data_list):
+                    if filter_function(rtxt):
+                        result.append(rnum)
+            else:
+                result = {}
+                for docname in self.get_document_names():
+                    result[docname] = []
+                    data_list = self.get_document_data_as_list(docname)
+                    for rnum, rtxt in enumerate(data_list):
+                        if filter_function(rtxt):
+                            result[docname].append(rnum)
         self.post_task(self.main_id, "display_matching_rows",
                        {"result": result, "document_name": document_name})
         return
@@ -804,6 +842,7 @@ class TileBase(QWorker):
         return
 
     def apply_to_rows(self, func, document_name=None, cellchange=False):
+        # tactic_document doesn't apply to freeform
         if document_name is not None:
             doc_dict = self.get_document_data(document_name)
             new_doc_dict = {}
@@ -816,8 +855,9 @@ class TileBase(QWorker):
                 self.apply_to_rows(func, doc_name, cellchange)
             return None
 
-    def set_document(self, document_name, new_doc_dict, cellchange=False):
-        task_data = {"new_doc_dict": new_doc_dict,
+    def set_document(self, document_name, new_data, cellchange=False):
+        # tactic_document set_document
+        task_data = {"new_data": new_data,
                      "doc_name": document_name,
                      "cellchange": cellchange}
         self.post_and_wait(self.main_id, "SetDocument", task_data)
@@ -831,6 +871,7 @@ class TileBase(QWorker):
         self.ask_host('go_to_row_in_document', data)
 
     def go_to_row_in_document(self, doc_name, row_id):
+        # tactic_document go_to_row_in_documentgo_to_row_in_document
         data = {}
         data["doc_name"] = doc_name
         data["row_id"] = row_id

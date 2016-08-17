@@ -369,7 +369,6 @@ class CollectionManager(ResourceManager):
 
         global_tile_manager.add_user(user_obj.username)
 
-        # tactic_change 1(done): send info about doc_type
         the_collection = db[cname]
         mdata = the_collection.find_one({"name": "__metadata__"})
         if "type" in mdata and mdata["type"] == "freeform":

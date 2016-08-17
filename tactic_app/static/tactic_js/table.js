@@ -9,6 +9,8 @@ ADDED_HEADER_WIDTH = 0;
 MARGIN_SIZE = 5;
 INITIAL_LEFT_FRACTION = .69;
 
+DOC_TYPE = "table";
+
 var header_template;
 var body_template;
 var body_template_hidden;

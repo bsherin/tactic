@@ -254,12 +254,16 @@ function createColumn() {
 function saveProjectAs() {
     showModal("Save Project As", "New Project Name", function (new_name) {
                 var result_dict = {
-                "project_name": new_name,
-                "main_id": main_id,
-                "hidden_columns_list": hidden_columns_list,
-                "tablespec_dict": tablespec_dict,
-                "console_html": $("#console").html()
-            };
+                    "project_name": new_name,
+                    "main_id": main_id,
+                    "tablespec_dict": tablespec_dict,
+                    "console_html": $("#console").html(),
+                    "doc_type": DOC_TYPE
+                };
+                if (DOC_TYPE == "table") {
+                    result_dict.hidden_columns_list = hidden_columns_list
+                }
+
             tableObject.startTableSpinner();
             postWithCallback(main_id, "save_new_project", result_dict, save_as_success);
             function save_as_success(data_object) {

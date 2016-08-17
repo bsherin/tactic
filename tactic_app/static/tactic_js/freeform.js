@@ -4,6 +4,8 @@
 // This controls how wide the widest field can be as
 // a fraction of the containing panel
 
+DOC_TYPE = "freeform";
+
 MARGIN_SIZE = 5;
 INITIAL_LEFT_FRACTION = .69;
 
@@ -56,7 +58,7 @@ function create_tablespec(dict) {
 var tablespec_dict = {};
 
 var tableObject = {
-    table_id: "table-area",
+    table_id: "freeform-area",
     collection_name: null,
     data_text: null,
 
@@ -93,38 +95,70 @@ var tableObject = {
         var self = this;
     },
 
+    // tactic_new added refill_table to freeform
+    refill_table: function(data_object) {
+        this.data_text = data_object["data_text"];
+        this.current_doc_name = data_object["doc_name"];
+        myCodeMirror.setValue(data_object["new_content"])
+    },
+
+
     build_table: function (max_table_size) {
         var self = this;
+        this.active_line = null;
         initializeConsole();
         var html_result = create_all_html(this.data_text);
         $("#" + this.table_id).html(html_result);
+        var tablearea = document.getElementById(this.table_id);
+        myCodeMirror = CodeMirror.fromTextArea(tablearea, {
+            lineNumbers: true,
+            readOnly: false,
+            mode: "Plain Text",
+            lineWrapping: true,
+            firstLineNumber: 0
+        });
 
         $("#project-name").html(this.project_name);
         setup_resize_listeners();
         this.resize_table_area();
-
-        $("#table-area pre").mouseup(function () {
-            var the_text = document.getSelection().toString();
+        myCodeMirror.on("changes", function(cminstance, changeobj_array) {
+            handleTextChange(changeobj_array)
+        });
+        // tactic_new listen for selection, active line change
+        myCodeMirror.on("cursorActivity", function(cminstance) {
+            var the_text = myCodeMirror.getSelection();
             var the_dict;
             if (the_text.length > 0) {
                 the_dict = {"selected_text": the_text};
                 broadcast_event_to_server("TextSelect", the_dict)
             }
+            self.active_line = myCodeMirror.getCursor("anchor").line
         });
+
 
         function create_all_html(data_text) {
             //This method constructs all of the table html
 
-            html_result = "<pre id='freebody'>" + data_text + "</pre>";
+            html_result = data_text;
 
             return html_result;
         }
 
+        function handleTextChange(changeobj_array) {
+            // tactic_change handle_textchange: perhaps makes this work on changeobjects
+            dirty = true;
+            current_content = myCodeMirror.getValue();
+            var data_dict = {
+                    "new_content": current_content,
+                    "doc_name": self.current_doc_name};
+            broadcast_event_to_server("FreeformTextChange", data_dict, null)
+        }
+
         function setup_resize_listeners() {
-            $("#table-area").resizable({
-                handles: "e",
-                stop: save_table_width
-            });
+            // $("#table-area").resizable({
+            //     handles: "e",
+            //     stop: save_table_width
+            // });
             $("#main-panel").resizable({
                 handles: "e",
                 resize: handle_resize
@@ -144,7 +178,7 @@ var tableObject = {
         function save_table_width() {
             resize = true;
 
-            self.current_spec.table_width = $("#table-area").width();
+            self.current_spec.table_width = $("#freeform-area").width();
 
             //broadcast_event_to_server("SaveTableSpec", {"tablespec": self.current_spec})
         }
@@ -158,9 +192,7 @@ var tableObject = {
             $(".grid-left").width(usable_width * this.left_fraction);
         }
         $(".grid-right").width(usable_width * (1 - this.left_fraction));
-        //$("#status-area").width(usable_width)
-        $("#table-area #freebody").height(window.innerHeight - $("#console-panel").outerHeight() - 30 - $("#table-area #freebody").offset().top);
-        //$("#main-panel").outerHeight(window.innerHeight - $("#console-panel").outerHeight() - 50 - $("#main-panel").offset().top)
+        $(".CodeMirror").css('height', window.innerHeight - $("#console-panel").outerHeight() - 30- $(".CodeMirror").offset().top);
         $("#tile-area").height(window.innerHeight - $("#console-panel").outerHeight() - 30 - $("#tile-area").offset().top);
         $("#main-panel").width(""); // We do this so that this will resize when the window is resized.
     },
@@ -207,6 +239,13 @@ var tableObject = {
         var scripts = $(last_child).find(".resize-rerun");
         for (var i = 0; i < scripts.length; i = i+1) {
             eval(scripts[i].innerHTML)
+        }
+    },
+
+    // tactic_new setfreeformcontent
+    setFreeformContent: function(data_object) {
+        if (data_object["doc_name"] == this.current_doc_name) {
+            myCodeMirror.setValue(data_object["new_content"])
         }
     },
 

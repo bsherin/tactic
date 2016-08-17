@@ -198,7 +198,6 @@ var list_manager_specifics = {
     repository_view_view: '/repository_view_list/',
     duplicate_view: '/create_duplicate_list',
     delete_view: '/delete_list/',
-    add_view: "/add_list", // tactic_change must fix this
     double_click_func: "view_func",
     repository_double_click_func: "repository_view_func",
     file_adders: [
@@ -212,7 +211,24 @@ var list_manager_specifics = {
     ],
     repository_buttons: [
         {"name": "view", "func": "repository_view_func", "button_class": "btn-primary"}
-    ]
+    ],
+    // tactic_new add_list added
+    add_list: function (event) {
+        var manager = event.data.manager;
+        $.ajax({
+            url: $SCRIPT_ROOT + "add_list",
+            type: 'POST',
+            data: new FormData(this),
+            processData: false,
+            contentType: false,
+            success: function(data) {
+                if (!data.success) {
+                    doFlash(data)
+                }
+            }
+        });
+        event.preventDefault();
+    },
 };
 
 var listManager = new ResourceManager("list", list_manager_specifics);
@@ -256,7 +272,6 @@ var col_manager_specifics = {
         });
         event.preventDefault();
     },
-    // tactic_change import_as_freeform. check if files selected?
     import_as_freeform: function (event) {
         var manager = event.data.manager;
         var the_data = new FormData(this);

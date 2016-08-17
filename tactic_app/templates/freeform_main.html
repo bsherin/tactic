@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/table.css')}}">
     <link rel="stylesheet" href="{{url_for('static', filename='css/codemirrorthemes/codemirror.css')}}">
     <link rel="stylesheet" href="{{url_for('static', filename='css/codemirrorthemes/pastel-on-dark.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/codemirrorthemes/dialog.css')}}">
      <link rel="stylesheet" href="{{url_for('static', filename='css/alertify_css/alertify.min.css')}}"/>
     <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/tactic_alertify_theme.css')}}" />
 {% endblock %}
@@ -68,8 +69,8 @@
                     <div id="reload-message" style="display: none">
                         <span class="loader"><span class="loader-inner"></span></span>
                     </div>
-                    <table id="table-area">
-                    </table>
+                    <textarea id="freeform-area">
+                    </textarea>
                 </div>
              </div>
             <button type='button' id="table-icon" class="btn" onclick="tableObject.expandTable()"><span class="glyphicon glyphicon-th-list"></span></button>
