@@ -57,7 +57,7 @@ class TileBase(QWorker):
     boolean_template = '<div class="checkbox"><label style="font-weight: 700">'\
                        '<input type="checkbox" id="{0}" value="{0}" {1}>{0}</label>' \
                        '</div>'
-    reload_attrs = ["tile_name", "tile_type", "base_figure_url", "user_id",
+    reload_attrs = ["tile_name", "tile_type", "base_figure_url", "user_id", "doc_type",
                     "my_id", "header_height", "front_height", "front_width", "back_height",
                     "back_width", "tda_width", "tda_height", "width", "height", "full_tile_width",
                     "full_tile_height", "is_shrunk", "configured"
@@ -67,7 +67,7 @@ class TileBase(QWorker):
         # from tile_main import app, megaplex_address
         # QWorker.__init__(self, app, megaplex_address, tile_id)
         self._sleepperiod = .0001
-        self.save_attrs = ["current_html", "tile_type", "tile_name", "main_id", "configured",
+        self.save_attrs = ["current_html", "tile_type", "tile_name", "main_id", "doc_type", "configured",
                            "header_height", "front_height", "front_width", "back_height", "back_width",
                            "tda_width", "tda_height", "width", "height", "user_id", "base_figure_url",
                            "full_tile_width", "full_tile_height", "is_shrunk", "img_dict", "current_fig_id"]
@@ -79,8 +79,7 @@ class TileBase(QWorker):
             self.tile_name = self.tile_type
         else:
             self.tile_name = tile_name
-
-        self.current_html = None
+        self.doc_type = None
 
         # These will differ each time the tile is instantiated.
         self.main_id = main_id
@@ -180,6 +179,11 @@ class TileBase(QWorker):
         return None
 
     @task_worthy
+    def FreeformTextChange(self, data):
+        self.handle_freeform_text_change(data["new_content"], data["doc_name"])
+        return None
+
+    @task_worthy
     def TileButtonClick(self, data):
         try:
             self.handle_button_click(data["button_value"], data["doc_name"], data["active_row_id"])
@@ -194,7 +198,7 @@ class TileBase(QWorker):
 
     @task_worthy
     def TextSelect(self, data):
-        self.handle_text_select(data["selected_text"], data["doc_name"], data["active_row_id"])
+        self.handle_text_select(data["selected_text"])
         return None
 
     @task_worthy
@@ -492,6 +496,7 @@ class TileBase(QWorker):
         if "binary_attrs" not in save_dict:
             save_dict["binary_attrs"] = []
         for(attr, attr_val) in save_dict.items():
+            self.debug_log("handling attr: " + str(attr))
             if type(attr_val) == dict and hasattr(attr_val, "recreate_from_save"):
                 cls = getattr(sys.modules[__name__], attr_val["my_class_for_recreate"])
                 setattr(self, attr, cls.recreate_from_save(attr_val))
@@ -604,7 +609,10 @@ class TileBase(QWorker):
     def handle_cell_change(self, column_header, row_index, old_content, new_content, doc_name):
         return
 
-    def handle_text_select(self, selected_text, doc_name, active_row_id):
+    def handle_freeform_text_change(self, new_content, doc_name):
+        return
+
+    def handle_text_select(self, selected_text):
         return
 
     def handle_pipe_update(self, pipe_name):
@@ -695,6 +703,11 @@ class TileBase(QWorker):
         result = self.post_and_wait(self.main_id, "get_row", data)
         return result
 
+    def get_line(self, document_name, line_number):
+        data = {"document_name": document_name, "line_number": line_number}
+        result = self.post_and_wait(self.main_id, "get_line", data)
+        return result
+
     def get_cell(self, document_name, row_id, column_name):
         data = {"document_name": document_name, "row_id": row_id, "column_name": column_name}
         result = self.post_and_wait(self.main_id, "get_cell", data)
@@ -775,20 +788,36 @@ class TileBase(QWorker):
 
     @task_worthy
     def display_matching_rows(self, filter_function, document_name=None):
-        if document_name is not None:
-            result = []
-            data_list = self.get_document_data_as_list(document_name)
-            for r in data_list:
-                if filter_function(r):
-                    result.append(r["__id__"])
-        else:
-            result = {}
-            for docname in self.get_document_names():
-                result[docname] = []
-                data_list = self.get_document_data_as_list(docname)
+        if self.doc_type == "table":
+            if document_name is not None:
+                result = []
+                data_list = self.get_document_data_as_list(document_name)
                 for r in data_list:
                     if filter_function(r):
-                        result[docname].append(r["__id__"])
+                        result.append(r["__id__"])
+            else:
+                result = {}
+                for docname in self.get_document_names():
+                    result[docname] = []
+                    data_list = self.get_document_data_as_list(docname)
+                    for r in data_list:
+                        if filter_function(r):
+                            result[docname].append(r["__id__"])
+        else:
+            if document_name is not None:
+                result = []
+                data_list = self.get_document_data_as_list(document_name)
+                for rnum, rtxt in enumerate(data_list):
+                    if filter_function(rtxt):
+                        result.append(rnum)
+            else:
+                result = {}
+                for docname in self.get_document_names():
+                    result[docname] = []
+                    data_list = self.get_document_data_as_list(docname)
+                    for rnum, rtxt in enumerate(data_list):
+                        if filter_function(rtxt):
+                            result[docname].append(rnum)
         self.post_task(self.main_id, "display_matching_rows",
                        {"result": result, "document_name": document_name})
         return
@@ -816,8 +845,8 @@ class TileBase(QWorker):
                 self.apply_to_rows(func, doc_name, cellchange)
             return None
 
-    def set_document(self, document_name, new_doc_dict, cellchange=False):
-        task_data = {"new_doc_dict": new_doc_dict,
+    def set_document(self, document_name, new_data, cellchange=False):
+        task_data = {"new_data": new_data,
                      "doc_name": document_name,
                      "cellchange": cellchange}
         self.post_and_wait(self.main_id, "SetDocument", task_data)
@@ -899,6 +928,7 @@ class TileBase(QWorker):
         self.data_dict[dataname] = data
         return dataname
 
+    # tactic_todo these d3-based plots currently won't work.
     def create_lineplot_html(self, data, xlabels=None):
         if xlabels is None:
             xlabels = []

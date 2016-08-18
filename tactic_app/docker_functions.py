@@ -33,27 +33,25 @@ def get_address(container_identifier, network_name):
     return cli.inspect_container(container_identifier)["NetworkSettings"]["Networks"][network_name]["IPAddress"]
 
 
-def create_container(image_name, container_name=None, network_mode="bridge", wait_until_running=True, owner="host"):
+def create_container(image_name, container_name=None, network_mode="bridge", wait_until_running=True, owner="host", env_vars={}):
+    environ = {"SHORT_SLEEP_PERIOD": SHORT_SLEEP_PERIOD,
+               "LONG_SLEEP_PERIOD": LONG_SLEEP_PERIOD,
+               "MAX_QUEUE_LENGTH": MAX_QUEUE_LENGTH,
+               "RETRIES": RETRIES,
+               "CHUNK_SIZE": CHUNK_SIZE,
+               "STEP_SIZE": STEP_SIZE}
+    for key, val in env_vars.items():
+        environ[key] = val
     if container_name is None:
         container = cli.create_container(image=image_name,
                                             host_config=cli.create_host_config(network_mode=network_mode),
-                                            environment={"SHORT_SLEEP_PERIOD": SHORT_SLEEP_PERIOD,
-                                                         "LONG_SLEEP_PERIOD": LONG_SLEEP_PERIOD,
-                                                         "MAX_QUEUE_LENGTH": MAX_QUEUE_LENGTH,
-                                                         "RETRIES": RETRIES,
-                                                         "CHUNK_SIZE": CHUNK_SIZE,
-                                                         "STEP_SIZE": STEP_SIZE}
+                                            environment=environ
                                             )
     else:
         container = cli.create_container(image=image_name,
                                             name=container_name,
                                             host_config=cli.create_host_config(network_mode=network_mode),
-                                            environment={"SHORT_SLEEP_PERIOD": SHORT_SLEEP_PERIOD,
-                                                         "LONG_SLEEP_PERIOD": LONG_SLEEP_PERIOD,
-                                                         "MAX_QUEUE_LENGTH": MAX_QUEUE_LENGTH,
-                                                         "RETRIES": RETRIES,
-                                                         "CHUNK_SIZE": CHUNK_SIZE,
-                                                         "STEP_SIZE": STEP_SIZE}
+                                            environment=environ
                                             )
     container_id = container.get('Id')
     cli.start(container_id)

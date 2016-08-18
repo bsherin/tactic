@@ -121,6 +121,15 @@ def read_txt_file_to_dict(txtfile):
         return (None, {"message": ermsg}, None)
     return (filename, result_dict, header_list)
 
+def read_freeform_file(txtfile):
+    try:
+        filename, file_extension = os.path.splitext(txtfile.filename)
+        the_text = utf_solver(txtfile.read())
+    except:
+        ermsg = "Error reading text file " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+        return (None, {"message": ermsg})
+    return (filename, the_text)
+
 def convert_lists_to_dicts(a_dict):
     new_dict = {}
     for (the_key, the_val) in a_dict.items():

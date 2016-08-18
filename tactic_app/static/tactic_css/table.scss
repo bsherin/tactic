@@ -92,6 +92,13 @@ $selected-column-background: #e0e0e0;
         overflow-x: hidden;
     }
 
+    #freebody {
+        display: block;
+        overflow-y: auto;
+        overflow-x: hidden;
+        white-space: pre-wrap;
+    }
+
     th {
         /*display: inline-block;*/
         cursor: pointer;

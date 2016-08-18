@@ -14,16 +14,16 @@
                </form>
             </div>
         </div>
-    {{#show_add}}
+    {{#file_adders}}
     <div class="row indent-row" style="margin-top: 10px">
         <div class="col-xs-12">
-            <form action="" method="post" target="_self" id="add-{{res_type}}-form" enctype="multipart/form-data">
-                <input class="btn add-button btn-success" style="display: inline" type="submit" value="Add File">
+            <form action="" method="post" target="_self" id="{{name}}-{{res_type}}-form" enctype="multipart/form-data">
+                <input class="btn add-button btn-success" style="display: inline" type="submit" value="{{name}}">
                 <input id="file-inputter" style="display: inline" type="file" name="file" {{#show_multiple}}multiple{{/show_multiple}}>
             </form>
         </div>
     </div>
-    {{/show_add}}
+    {{/file_adders}}
     <div class="row indent-row" style="margin-top: 5px">
         <div class="col-xs-12">
             <div class="btn-group" style= "margin-top: 5px; margin-bottom: 5px" role="group">

@@ -198,17 +198,36 @@ var list_manager_specifics = {
     repository_view_view: '/repository_view_list/',
     duplicate_view: '/create_duplicate_list',
     delete_view: '/delete_list/',
-    add_view: "/add_list",
     double_click_func: "view_func",
     repository_double_click_func: "repository_view_func",
+    file_adders: [
+        {"name": "add_list", "func": "add_list", "button_class": "btn-success" }
+    ],
     buttons: [
+        {"name": "view", "func": "view_func", "button_class": "btn-primary"},
         {"name": "view", "func": "view_func", "button_class": "btn-primary"},
         {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-success"},
         {"name": "delete", "func": "delete_func", "button_class": "btn-danger"}
     ],
     repository_buttons: [
         {"name": "view", "func": "repository_view_func", "button_class": "btn-primary"}
-    ]
+    ],
+    add_list: function (event) {
+        var manager = event.data.manager;
+        $.ajax({
+            url: $SCRIPT_ROOT + "add_list",
+            type: 'POST',
+            data: new FormData(this),
+            processData: false,
+            contentType: false,
+            success: function(data) {
+                if (!data.success) {
+                    doFlash(data)
+                }
+            }
+        });
+        event.preventDefault();
+    },
 };
 
 var listManager = new ResourceManager("list", list_manager_specifics);
@@ -222,19 +241,43 @@ var col_manager_specifics = {
     delete_view: '/delete_collection/',
     load_view: "/main/",
     double_click_func: "load_func",
+    file_adders: [
+        {"name": "import_as_table", "func": "import_as_table", "button_class": "btn-success" },
+        {"name": "import_as_freeform", "func": "import_as_freeform", "button_class": "btn-success" }
+    ],
     buttons: [
         {"name": "load", "func": "load_func", "button_class": "btn btn-primary"},
         {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-success"},
         {"name": "download", "func": "downloadCollection", "button_class": "btn btn-primary"},
         {"name": "delete", "func": "delete_func", "button_class": "btn-danger"}
     ],
-    add_func: function (event) {
+    import_as_table: function (event) {
         var manager = event.data.manager;
         var the_data = new FormData(this);
         showModal("Create Collection", "Name for this collection", function (new_name) {
             startSpinner();
             $.ajax({
-                url: $SCRIPT_ROOT + "/load_files/" + new_name,
+                url: $SCRIPT_ROOT + "/import_as_table/" + new_name,
+                type: 'POST',
+                data: the_data,
+                processData: false,
+                contentType: false,
+                success: addSuccess
+            });
+            function addSuccess(data) {
+                stopSpinner();
+                doFlash(data)
+            }
+        });
+        event.preventDefault();
+    },
+    import_as_freeform: function (event) {
+        var manager = event.data.manager;
+        var the_data = new FormData(this);
+        showModal("Create Collection", "Name for this collection", function (new_name) {
+            startSpinner();
+            $.ajax({
+                url: $SCRIPT_ROOT + "/import_as_freeform/" + new_name,
                 type: 'POST',
                 data: the_data,
                 processData: false,

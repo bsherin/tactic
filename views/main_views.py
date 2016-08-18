@@ -104,26 +104,6 @@ def export_data():
     return jsonify({"success": True})
 
 
-# tactic_todo various exporting and downloading
-# @app.route('/download_table/<main_id>/<new_name>', methods=['GET', 'POST'])
-# @login_required
-# def download_table(main_id, new_name):
-#     mw = shared_dicts.mainwindow_instances[main_id]
-#     doc_info = mw.doc_dict[mw.visible_doc_name]
-#     data_rows = doc_info.all_sorted_data_rows
-#     header_list = doc_info.header_list
-#     str_io = cStringIO.StringIO()
-#     for header in header_list[:-1]:
-#         str_io.write(str(header) + ',')
-#     str_io.write(str(header_list[-1]) + '\n')
-#     for row in data_rows:
-#         for header in header_list[:-1]:
-#             str_io.write(str(row[header]) + ",")
-#         str_io.write(str(row[header_list[-1]]) + '\n')
-#     str_io.seek(0)
-#     return {"sent_file": send_file(str_io, attachment_filename=new_name, as_attachment=True)}
-
-
 @app.route('/figure_source/<tile_id>/<figure_name>', methods=['GET', 'POST'])
 @login_required
 def figure_source(tile_id, figure_name):
