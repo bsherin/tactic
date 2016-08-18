@@ -254,7 +254,6 @@ function set_visible_doc(doc_name, func) {
 }
 
 function change_doc(el, row_id) {
-    // tactic_new tested change_doc updated
     $("#table-area").css("display", "none");
     $("#reload-message").css("display", "block");
     var doc_name = $(el).val();

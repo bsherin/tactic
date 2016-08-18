@@ -689,17 +689,20 @@ class mainWindow(QWorker):
         return
 
     def highlight_table_text(self, txt):
-        row_index = 0
-        dinfo = self.doc_dict[self.visible_doc_name]
-        for the_row in dinfo.displayed_data_rows:
-            for cheader in dinfo.header_list:
-                cdata = the_row[cheader]
-                if cdata is None:
-                    continue
-                if str(txt).lower() in str(cdata).lower():
-                    self.emit_table_message("highlightTxtInCell",
-                                            {"row_index": row_index, "column_header": cheader, "text_to_find": txt})
+        if self.doc_type == "table":
+            row_index = 0
+            dinfo = self.doc_dict[self.visible_doc_name]
+            for the_row in dinfo.displayed_data_rows:
+                for cheader in dinfo.header_list:
+                    cdata = the_row[cheader]
+                    if cdata is None:
+                        continue
+                    if str(txt).lower() in str(cdata).lower():
+                        self.emit_table_message("highlightTxtInDocument",
+                                                {"row_index": row_index, "column_header": cheader, "text_to_find": txt})
             row_index += 1
+        else:
+            self.emit_table_message("highlightTxtInDocument", {"text_to_find": txt})
 
     @staticmethod
     def txt_in_dict(txt, d):
@@ -1069,13 +1072,11 @@ class mainWindow(QWorker):
 
     @task_worthy
     def SearchTable(self, data):
-        # tactic_change searchtable
         self.highlight_table_text(data["text_to_find"])
         return None
 
     @task_worthy
     def FilterTable(self, data):
-        # tactic_change filtertable
         txt = data["text_to_find"]
         self.display_matching_rows_applying_filter(lambda r: self.txt_in_dict(txt, r))
         self.highlight_table_text(txt)
@@ -1083,13 +1084,11 @@ class mainWindow(QWorker):
 
     @task_worthy
     def DehighlightTable(self, data):
-        # tactic_change dehighlight
-        self.emit_table_message("dehiglightAllCells")
+        self.emit_table_message("dehighlightAllText")
         return None
 
     @task_worthy
     def UnfilterTable(self, data):
-        # tactic_change unfilter
         for doc in self.doc_dict.values():
             doc.current_data_rows = doc.data_rows
             doc.configure_for_current_data()
@@ -1189,7 +1188,6 @@ class mainWindow(QWorker):
 
     @task_worthy
     def display_matching_rows(self, data):
-        # tactic_change display_matching_rows
         self.debug_log("Entering display_matching_rows in main.py")
         result = data["result"]
         document_name = data["document_name"]
@@ -1214,7 +1212,6 @@ class mainWindow(QWorker):
 
     @task_worthy
     def update_document(self, data):
-        # tactic_new changed updated_document. compare to setdocument
         new_data= data["new_data"]
         doc_name = data["document_name"]
         doc = self.doc_dict[doc_name]

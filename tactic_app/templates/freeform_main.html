@@ -56,10 +56,6 @@
                                 <button class="btn btn-default tooltip-top" id="search-button" data-toggle="tooltip" type="button" onclick="return doSearch(document.getElementById('search').value)" value="Find">Find</button>
                              </span>
                         </div>
-                        <div class="btn-group btn-group-sm" role="group">
-                            <button class="btn btn-default tooltip-bottom" id="filter-button" data-toggle="tooltip" onclick="return doFilter(document.getElementById('search').value)" value="Filter">Filter</button>
-                            <button class="btn btn-default tooltip-top" id="unfilter-button" data-toggle="tooltip" onclick="return doUnfilter()" value="Unfilter">Unfilter</button>
-                        </div>
                    </form>
                     </div>
                     <span id="table-spin-place"></span><span id="status-msg-area" class="status-msg"></span>
@@ -109,6 +105,7 @@
     <script src="{{url_for('static', filename='js/codemirror/searchcursor.js')}}"></script>
     <script src="{{url_for('static', filename='js/codemirror/jump-to-line.js')}}"></script>
     <script src="{{url_for('static', filename='js/codemirror/dialog.js')}}"></script>
+    <script src="{{url_for('static', filename='js/codemirror/simple.js')}}"></script>
     <script src="{{url_for('static', filename='js/python.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/utilities.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/communication.js')}}"></script>

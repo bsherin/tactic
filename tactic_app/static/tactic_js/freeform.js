@@ -26,6 +26,27 @@ function doSearch(t) {
     return false
 }
 
+function mySearchOverlay(query, caseInsensitive) {
+    if (typeof query == "string")
+      query = new RegExp(query.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"), caseInsensitive ? "gi" : "g");
+    else if (!query.global)
+      query = new RegExp(query.source, query.ignoreCase ? "gi" : "g");
+
+    return {token: function(stream) {
+      query.lastIndex = stream.pos;
+      var match = query.exec(stream.string);
+      if (match && match.index == stream.pos) {
+        stream.pos += match[0].length || 1;
+        return "searching";
+      } else if (match) {
+        stream.pos = match.index;
+      } else {
+        stream.skipToEnd();
+      }
+    }};
+  }
+
+
 function doFilter(t) {
     console.log("do filter on " + t);
     var data_dict = {"text_to_find": t};
@@ -61,6 +82,7 @@ var tablespec_dict = {};
 var tableObject = {
     collection_name: null,
     data_text: null,
+    overlay: null,
 
     initialize_table: function (data_object){
         this.highlighted_cells = [];
@@ -106,13 +128,25 @@ var tableObject = {
         var self = this;
     },
 
-    // tactic_change is refill_table used for anything
+    // refill_table is currently not used for freeform docs
     refill_table: function(data_object) {
         this.data_text = data_object["data_text"];
         this.current_doc_name = data_object["doc_name"];
         myCodeMirror.setVal(data_object["new_content"])
     },
 
+    highlightTxtInDocument: function(data_object) {
+        var text_to_find = data_object.text_to_find;
+        this.overlay = mySearchOverlay(text_to_find, true);
+        myCodeMirror.addOverlay(this.overlay);
+    },
+
+    dehighlightAllText: function() {
+        if (this.overlay) {
+            myCodeMirror.removeOverlay(this.overlay);
+            this.overlay = null;
+        }
+    },
 
     build_table: function (max_table_size) {
         var self = this;
@@ -128,7 +162,6 @@ var tableObject = {
         myCodeMirror.on("update", function(cminstance) {
             handleTextChange()
         });
-        // tactic_new listen for selection, active line change
         myCodeMirror.on("cursorActivity", function(cminstance) {
             var the_text = myCodeMirror.getDoc().getSelection();
             var the_dict;
@@ -139,7 +172,6 @@ var tableObject = {
             self.active_line = myCodeMirror.getDoc().getCursor("anchor").line
         });
 
-
         function create_all_html(data_text) {
             //This method constructs all of the table html
 
@@ -149,7 +181,6 @@ var tableObject = {
         }
 
         function handleTextChange() {
-            // tactic_change handle_textchange - have this check if there is a real update
             dirty = true;
             current_content = myCodeMirror.getDoc().getValue();
             if (current_content != this.old_content) {
@@ -249,7 +280,6 @@ var tableObject = {
         }
     },
 
-    // tactic_new tested setfreeformcontent
     setFreeformContent: function(data_object) {
         if (data_object["doc_name"] == this.current_doc_name) {
             myCodeMirror.getDoc().setValue(data_object["new_content"])

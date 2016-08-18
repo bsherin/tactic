@@ -172,14 +172,12 @@ class TileBase(QWorker):
         self.update_options(data)
         return None
 
-    # tactic_change test cellchange
     @task_worthy
     def CellChange(self, data):
         self.handle_cell_change(data["column_header"], data["id"], data["old_content"],
                                 data["new_content"], data["doc_name"])
         return None
 
-    # tactic_new tested freeformtextchange
     @task_worthy
     def FreeformTextChange(self, data):
         self.handle_freeform_text_change(data["new_content"], data["doc_name"])
@@ -198,7 +196,6 @@ class TileBase(QWorker):
         self.handle_textarea_change(data["text_value"])
         return None
 
-    # tactic_change TextSelect look at
     @task_worthy
     def TextSelect(self, data):
         self.handle_text_select(data["selected_text"])
@@ -612,7 +609,6 @@ class TileBase(QWorker):
     def handle_cell_change(self, column_header, row_index, old_content, new_content, doc_name):
         return
 
-    # tactic_new handle_freeform_text_change
     def handle_freeform_text_change(self, new_content, doc_name):
         return
 
@@ -772,7 +768,6 @@ class TileBase(QWorker):
     # Filtering and iteration
 
     def get_matching_rows(self, filter_function, document_name=None):
-        # tactic_new get_matching_rows. filter function behavior
         result = []
         if document_name is not None:
             data_list = self.get_document_data_as_list(document_name)
@@ -793,7 +788,6 @@ class TileBase(QWorker):
 
     @task_worthy
     def display_matching_rows(self, filter_function, document_name=None):
-        # tactic_new changed display_matching_rows. Won't work until corresponding change in main.py
         if self.doc_type == "table":
             if document_name is not None:
                 result = []

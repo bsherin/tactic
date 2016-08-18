@@ -610,7 +610,7 @@ var tableObject = {
         }
     },
 
-    highlightTxtInCell: function(data_object) {
+    highlightTxtInDocument: function(data_object) {
         var rindex = data_object.row_index;
         var cheader = data_object.column_header;
         var text_to_find = data_object.text_to_find;
@@ -677,7 +677,7 @@ var tableObject = {
         $("#console")[0].scrollTop = $("#console")[0].scrollHeight
     },
 
-    dehiglightAllCells: function() {
+    dehighlightAllText: function() {
         var self = this;
         this.highlighted_cells.forEach(function(c){
             self.dehighlightTxtInCell(c)
