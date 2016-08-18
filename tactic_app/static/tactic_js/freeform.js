@@ -120,12 +120,13 @@ var tableObject = {
         initializeConsole();
         var html_result = create_all_html(this.data_text);
         myCodeMirror.setValue(html_result);
+        this.old_content = html_result
 
         $("#project-name").html(this.project_name);
         setup_resize_listeners();
         this.resize_table_area();
-        myCodeMirror.on("changes", function(cminstance, changeobj_array) {
-            handleTextChange(changeobj_array)
+        myCodeMirror.on("update", function(cminstance) {
+            handleTextChange()
         });
         // tactic_new listen for selection, active line change
         myCodeMirror.on("cursorActivity", function(cminstance) {
@@ -147,14 +148,17 @@ var tableObject = {
             return html_result;
         }
 
-        function handleTextChange(changeobj_array) {
-            // tactic_change handle_textchange: perhaps makes this work on changeobjects
+        function handleTextChange() {
+            // tactic_change handle_textchange - have this check if there is a real update
             dirty = true;
             current_content = myCodeMirror.getDoc().getValue();
-            var data_dict = {
+            if (current_content != this.old_content) {
+                var data_dict = {
                     "new_content": current_content,
                     "doc_name": self.current_doc_name};
+                this.old_content = current_content
             broadcast_event_to_server("FreeformTextChange", data_dict, null)
+            }
         }
 
         function setup_resize_listeners() {
@@ -245,7 +249,7 @@ var tableObject = {
         }
     },
 
-    // tactic_new setfreeformcontent
+    // tactic_new tested setfreeformcontent
     setFreeformContent: function(data_object) {
         if (data_object["doc_name"] == this.current_doc_name) {
             myCodeMirror.getDoc().setValue(data_object["new_content"])

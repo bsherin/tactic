@@ -48,7 +48,6 @@ class freeformDocInfo(object):
     def number_of_rows(self):
         return len(self.data_text.splitlines())
 
-    @property
     def get_row(self, line_number):
         return self.all_sorted_data_rows[line_number]
 
@@ -218,7 +217,7 @@ class mainWindow(QWorker):
     save_attrs = ["short_collection_name", "collection_name", "current_tile_id", "tile_sort_list", "left_fraction",
                   "is_shrunk", "doc_dict", "project_name", "loaded_modules", "user_id",
                   "hidden_columns_list", "console_html", "doc_type"]
-    update_events = ["CellChange", "FreeformTextchange","CreateColumn", "SearchTable", "SaveTableSpec", "MainClose", "DisplayCreateErrors",
+    update_events = ["CellChange", "FreeformTextChange","CreateColumn", "SearchTable", "SaveTableSpec", "MainClose", "DisplayCreateErrors",
                      "DehighlightTable", "SetCellContent", "RemoveTile", "ColorTextInCell",
                      "FilterTable", "UnfilterTable", "TextSelect", "UpdateSortList", "UpdateLeftFraction",
                      "UpdateTableShrinkState"]
@@ -403,6 +402,8 @@ class mainWindow(QWorker):
         project_dict["metadata"] = save_dict["metadata"]
         self.mdata = save_dict["metadata"]
         error_messages = []
+        if "doc_type" not in project_dict: # This is for backward compatibility
+            project_dict["doc_type"] = "table"
         for (attr, attr_val) in project_dict.items():
             if str(attr) != "tile_instances":
                 try:
@@ -598,7 +599,6 @@ class mainWindow(QWorker):
         self.doc_dict[doc_name].data_rows[str(the_id)][column_header] = new_content
         return
 
-    # tactic_new _set_freeform_data
     def _set_freeform_data(self, doc_name, new_content):
         self.doc_dict[doc_name].data_text = new_content
         return
@@ -722,7 +722,6 @@ class mainWindow(QWorker):
         data_dict["base_figure_url"] = self.base_figure_url.replace("tile_id", tile_container_id)
         data_dict["main_id"] = self.my_id
         data_dict["megaplex_address"] = self.megaplex_address
-        # tactic_new now pass doc_type to tile
         data_dict["doc_type"] = self.doc_type
         form_info = {"current_header_list": self.current_header_list,
                      "pipe_dict": self._pipe_dict,
@@ -774,14 +773,12 @@ class mainWindow(QWorker):
 
     @task_worthy
     def get_document_data(self, data):
-        # tactic_document get_document_data changes
         self.debug_log("entering get_document_data")
         doc_name = data["document_name"]
         return self.doc_dict[doc_name].all_data
 
     @task_worthy
     def get_document_data_as_list(self, data):
-        # tactic_document get_document_data_as_list behavior
         self.debug_log("entering get_document_data_as_list")
         doc_name = data["document_name"]
         data_list = self.doc_dict[doc_name].all_sorted_data_rows
@@ -796,17 +793,14 @@ class mainWindow(QWorker):
 
     @task_worthy
     def get_number_rows(self, data):
-        # tactic_document get_number_rows
         self.debug_log("entering get_column_names")
         doc_name = data["document_name"]
         nrows = self.doc_dict[doc_name].number_of_rows
-        nrows = len(self.doc_dict[doc_name].data_rows.keys())
         return {"number_rows": nrows}
 
     @task_worthy
     def get_row(self, data):
-        # tactic_document get_row
-        self.debug_log("entering get_column_names")
+        self.debug_log("entering get_row")
         doc_name = data["document_name"]
         if "row_id" in data:
             row_id = data["row_id"]
@@ -848,8 +842,8 @@ class mainWindow(QWorker):
         return None
 
     @task_worthy
-    def FreeformTextchange(self, data):
-        self.debug_log("Entering FreeformTextchange in main.")
+    def FreeformTextChange(self, data):
+        self.debug_log("Entering FreeformTextChange in main")
         self._set_freeform_data(data["doc_name"], data["new_content"])
         return None
 

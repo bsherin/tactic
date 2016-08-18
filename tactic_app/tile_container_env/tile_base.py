@@ -57,13 +57,13 @@ class TileBase(QWorker):
     boolean_template = '<div class="checkbox"><label style="font-weight: 700">'\
                        '<input type="checkbox" id="{0}" value="{0}" {1}>{0}</label>' \
                        '</div>'
-    reload_attrs = ["tile_name", "tile_type", "base_figure_url", "user_id",
+    reload_attrs = ["tile_name", "tile_type", "base_figure_url", "user_id", "doc_type",
                     "my_id", "header_height", "front_height", "front_width", "back_height",
                     "back_width", "tda_width", "tda_height", "width", "height", "full_tile_width",
                     "full_tile_height", "is_shrunk", "configured"
                     ]
 
-    def __init__(self, main_id, tile_id, tile_name=None, doc_type="table"):
+    def __init__(self, main_id, tile_id, tile_name=None):
         # from tile_main import app, megaplex_address
         # QWorker.__init__(self, app, megaplex_address, tile_id)
         self._sleepperiod = .0001
@@ -79,9 +79,7 @@ class TileBase(QWorker):
             self.tile_name = self.tile_type
         else:
             self.tile_name = tile_name
-        self.doc_type = doc_type
-
-        self.current_html = None
+        self.doc_type = None
 
         # These will differ each time the tile is instantiated.
         self.main_id = main_id
@@ -181,10 +179,10 @@ class TileBase(QWorker):
                                 data["new_content"], data["doc_name"])
         return None
 
-    # tactic_new freeformtextchange
+    # tactic_new tested freeformtextchange
     @task_worthy
     def FreeformTextChange(self, data):
-        self.handle_freeform_text_change(data["old_content"],data["new_content"], data["doc_name"])
+        self.handle_freeform_text_change(data["new_content"], data["doc_name"])
         return None
 
     @task_worthy
@@ -200,9 +198,10 @@ class TileBase(QWorker):
         self.handle_textarea_change(data["text_value"])
         return None
 
+    # tactic_change TextSelect look at
     @task_worthy
     def TextSelect(self, data):
-        self.handle_text_select(data["selected_text"], data["doc_name"], data["active_row_id"])
+        self.handle_text_select(data["selected_text"])
         return None
 
     @task_worthy
@@ -500,6 +499,7 @@ class TileBase(QWorker):
         if "binary_attrs" not in save_dict:
             save_dict["binary_attrs"] = []
         for(attr, attr_val) in save_dict.items():
+            self.debug_log("handling attr: " + str(attr))
             if type(attr_val) == dict and hasattr(attr_val, "recreate_from_save"):
                 cls = getattr(sys.modules[__name__], attr_val["my_class_for_recreate"])
                 setattr(self, attr, cls.recreate_from_save(attr_val))
@@ -612,11 +612,11 @@ class TileBase(QWorker):
     def handle_cell_change(self, column_header, row_index, old_content, new_content, doc_name):
         return
 
-    # tactic_document handle_freeform_text_change
-    def handle_freeform_text_change(self, old_content, new_content, doc_name):
+    # tactic_new handle_freeform_text_change
+    def handle_freeform_text_change(self, new_content, doc_name):
         return
 
-    def handle_text_select(self, selected_text, doc_name, active_row_id):
+    def handle_text_select(self, selected_text):
         return
 
     def handle_pipe_update(self, pipe_name):
@@ -708,8 +708,6 @@ class TileBase(QWorker):
         return result
 
     def get_line(self, document_name, line_number):
-        # tactic_document get_line
-        # tactic_new get_line
         data = {"document_name": document_name, "line_number": line_number}
         result = self.post_and_wait(self.main_id, "get_line", data)
         return result
@@ -774,7 +772,7 @@ class TileBase(QWorker):
     # Filtering and iteration
 
     def get_matching_rows(self, filter_function, document_name=None):
-        # tactic_document get_matching_rows. filter function behavior
+        # tactic_new get_matching_rows. filter function behavior
         result = []
         if document_name is not None:
             data_list = self.get_document_data_as_list(document_name)
@@ -796,7 +794,6 @@ class TileBase(QWorker):
     @task_worthy
     def display_matching_rows(self, filter_function, document_name=None):
         # tactic_new changed display_matching_rows. Won't work until corresponding change in main.py
-        # tactic_document display_matching rows.
         if self.doc_type == "table":
             if document_name is not None:
                 result = []
@@ -842,7 +839,6 @@ class TileBase(QWorker):
         return
 
     def apply_to_rows(self, func, document_name=None, cellchange=False):
-        # tactic_document doesn't apply to freeform
         if document_name is not None:
             doc_dict = self.get_document_data(document_name)
             new_doc_dict = {}
@@ -856,7 +852,6 @@ class TileBase(QWorker):
             return None
 
     def set_document(self, document_name, new_data, cellchange=False):
-        # tactic_document set_document
         task_data = {"new_data": new_data,
                      "doc_name": document_name,
                      "cellchange": cellchange}
@@ -871,7 +866,6 @@ class TileBase(QWorker):
         self.ask_host('go_to_row_in_document', data)
 
     def go_to_row_in_document(self, doc_name, row_id):
-        # tactic_document go_to_row_in_documentgo_to_row_in_document
         data = {}
         data["doc_name"] = doc_name
         data["row_id"] = row_id

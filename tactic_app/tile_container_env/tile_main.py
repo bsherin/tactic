@@ -52,12 +52,16 @@ def recreate_from_save():
         global tile_instance
         data = copy.copy(request.json)
         tile_instance = class_info["tile_class"](data["main_id"], data["tile_id"],
-                                                 data["tile_name"], data["doc_type"])
+                                                 data["tile_name"])
         tile_instance.init_qworker(app, megaplex_address)
         tile_instance.recreate_from_save(data)
         tile_instance.current_html = tile_instance.current_html.replace(data["base_figure_url"],
                                                                         data["new_base_figure_url"])
         tile_instance.base_figure_url = data["new_base_figure_url"]
+        if "doc_type" in data:
+            tile_instance.doc_type = data["doc_type"]
+        else:
+            tile_instance.doc_type = "table"
         tile_instance.start()
         print("tile instance started")
     except Exception as ex:
@@ -114,6 +118,10 @@ def instantiate_tile_class():
         tile_instance.init_qworker(app, megaplex_address)
         tile_instance.user_id = data["user_id"]
         tile_instance.base_figure_url = data["base_figure_url"]
+        if "doc_type" in data:
+            tile_instance.doc_type = data["doc_type"]
+        else:
+            tile_instance.doc_type = "table"
         data["exports"] = tile_instance.exports
         tile_instance.start()
         print("leaving instantiate_tile_class")

@@ -212,7 +212,6 @@ var list_manager_specifics = {
     repository_buttons: [
         {"name": "view", "func": "repository_view_func", "button_class": "btn-primary"}
     ],
-    // tactic_new add_list added
     add_list: function (event) {
         var manager = event.data.manager;
         $.ajax({
