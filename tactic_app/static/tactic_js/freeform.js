@@ -37,7 +37,7 @@ function mySearchOverlay(query, caseInsensitive) {
       var match = query.exec(stream.string);
       if (match && match.index == stream.pos) {
         stream.pos += match[0].length || 1;
-        return "searching";
+        return "searching"; // I believe this causes the style .cm-searching to be applied
       } else if (match) {
         stream.pos = match.index;
       } else {
@@ -82,7 +82,7 @@ var tablespec_dict = {};
 var tableObject = {
     collection_name: null,
     data_text: null,
-    overlay: null,
+    overlay_list: [],
 
     initialize_table: function (data_object){
         this.highlighted_cells = [];
@@ -137,14 +137,15 @@ var tableObject = {
 
     highlightTxtInDocument: function(data_object) {
         var text_to_find = data_object.text_to_find;
-        this.overlay = mySearchOverlay(text_to_find, true);
-        myCodeMirror.addOverlay(this.overlay);
+        var overlay = mySearchOverlay(text_to_find, true);
+        myCodeMirror.addOverlay(overlay);
+        this.overlay_list.push(overlay)
     },
 
     dehighlightAllText: function() {
-        if (this.overlay) {
-            myCodeMirror.removeOverlay(this.overlay);
-            this.overlay = null;
+        overlay = this.overlay_list.pop()
+        if (overlay != null) {
+            myCodeMirror.removeOverlay(overlay);
         }
     },
 
