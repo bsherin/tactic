@@ -330,8 +330,13 @@ TileObject.prototype = {
               data_dict["clicked_text"] = str;
               data_dict.main_id = main_id;
               data_dict.doc_name = tableObject.current_spec.doc_name;
-              data_dict.active_row_index = tableObject.active_row;
-              data_dict.active_row_id = tableObject.active_row_id;
+            if (DOC_TYPE == "table") {
+                data_dict.active_row_index = tableObject.active_row;
+                data_dict.active_row_id = tableObject.active_row_id;
+            }
+            else {
+                data_dict.active_row_id = tableObject.active_line;
+            }
               postWithCallback(data_dict["tile_id"], "TileWordClick", data_dict)
         });
         $(full_frontal_selector).on('click', '.cell-clickable', function(e) {
@@ -344,8 +349,13 @@ TileObject.prototype = {
             data_dict["clicked_cell"] = txt;
             data_dict.main_id = main_id;
             data_dict.doc_name = tableObject.current_spec.doc_name;
-            data_dict.active_row_index = tableObject.active_row;
-            data_dict.active_row_id = tableObject.active_row_id;
+            if (DOC_TYPE == "table") {
+                data_dict.active_row_index = tableObject.active_row;
+                data_dict.active_row_id = tableObject.active_row_id;
+            }
+            else {
+                data_dict.active_row_id = tableObject.active_line;
+            }
             postWithCallback(data_dict["tile_id"], "TileCellClick", data_dict)
         });
         $(full_frontal_selector).on('click', '.element-clickable', function(e) {
@@ -363,8 +373,13 @@ TileObject.prototype = {
             }
             data_dict.main_id = main_id;
             data_dict.doc_name = tableObject.current_spec.doc_name;
-            data_dict.active_row_index = tableObject.active_row;
-            data_dict.active_row_id = tableObject.active_row_id;
+            if (DOC_TYPE == "table") {
+                data_dict.active_row_index = tableObject.active_row;
+                data_dict.active_row_id = tableObject.active_row_id;
+            }
+            else {
+                data_dict.active_row_id = tableObject.active_line;
+            }
             postWithCallback(data_dict["tile_id"], "TileElementClick", data_dict)
         });
         $(full_frontal_selector).on('click', '.row-clickable', function(e) {
@@ -382,8 +397,13 @@ TileObject.prototype = {
             data_dict["clicked_row"] = row_vals;
             data_dict.main_id = main_id;
             data_dict.doc_name = tableObject.current_spec.doc_name;
-            data_dict.active_row_index = tableObject.active_row;
-            data_dict.active_row_id = tableObject.active_row_id;
+            if (DOC_TYPE == "table") {
+                data_dict.active_row_index = tableObject.active_row;
+                data_dict.active_row_id = tableObject.active_row_id;
+            }
+            else {
+                data_dict.active_row_id = tableObject.active_line;
+            }
             postWithCallback(data_dict["tile_id"], "TileRowClick", data_dict)
         });
         $(full_frontal_selector).on('click', 'button', function(e) {
@@ -393,7 +413,13 @@ TileObject.prototype = {
             data["button_value"] = e.target.value;
             data.main_id = main_id;
             data.doc_name = tableObject.current_spec.doc_name;
-            data.active_row_id = tableObject.active_row_id;
+            if (DOC_TYPE == "table") {
+                data.active_row_index = tableObject.active_row;
+                data.active_row_id = tableObject.active_row_id;
+            }
+            else {
+                data.active_row_id = tableObject.active_line;
+            }
             postWithCallback(data["tile_id"], "TileButtonClick", data)
         });
         $(full_frontal_selector).on('change', 'textarea', function(e) {

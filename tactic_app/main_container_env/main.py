@@ -7,6 +7,7 @@ from gevent import monkey; monkey.patch_all()
 from flask import render_template
 import pymongo
 import gridfs
+import gridfs
 import cPickle
 from bson.binary import Binary
 # noinspection PyUnresolvedReferences
@@ -31,10 +32,13 @@ class freeformDocInfo(object):
     def __init__(self, name, data_text):
         self.name = name
         self.data_text = data_text
+        self.table_spec = {}
 
     def compile_save_dict(self):
         return ({"name": self.name,
-                 "data_text": self.data_text})
+                 "data_text": self.data_text,
+                 "table_spec": self.table_spec,
+                 "my_class_for_recreate": "freeformDocInfo"})
 
     @property
     def all_data(self):
@@ -58,6 +62,7 @@ class freeformDocInfo(object):
     def recreate_from_save(save_dict):
         new_instance = freeformDocInfo(save_dict["name"],
                                save_dict["data_text"])
+        new_instance.table_spec = save_dict["table_spec"]
         return new_instance
 
 
@@ -385,7 +390,8 @@ class mainWindow(QWorker):
             self.clear_um_message(data_dict["user_manage_id"])
             self.post_task("host", "open_project_window", {"user_manage_id": data_dict["user_manage_id"],
                                                            "template_data": template_data,
-                                                           "message": "window-open"})
+                                                           "message": "window-open",
+                                                           "doc_type": self.doc_type})
         except Exception as ex:
             template = "An exception of type {0} occured. Arguments:\n{1!r}\n"
             error_string = template.format(type(ex).__name__, ex.args)
@@ -536,7 +542,8 @@ class mainWindow(QWorker):
         self.debug_log("entering update_project")
         # noinspection PyBroadException
         try:
-            self.hidden_columns_list = data_dict["hidden_columns_list"]
+            if self.doc_type == "table":
+                self.hidden_columns_list = data_dict["hidden_columns_list"]
             self.console_html = data_dict["console_html"]
             tspec_dict = data_dict["tablespec_dict"]
             for (dname, spec) in tspec_dict.items():

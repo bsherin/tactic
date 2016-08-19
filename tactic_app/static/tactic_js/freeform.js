@@ -233,6 +233,7 @@ var tableObject = {
         $(".CodeMirror").css('height', window.innerHeight - $("#console-panel").outerHeight() - 30- $(".CodeMirror").offset().top);
         $("#tile-area").height(window.innerHeight - $("#console-panel").outerHeight() - 30 - $("#tile-area").offset().top);
         $("#main-panel").width(""); // We do this so that this will resize when the window is resized.
+        myCodeMirror.refresh()
     },
 
     /* shrinkTable and expandTable are called from html inline */
