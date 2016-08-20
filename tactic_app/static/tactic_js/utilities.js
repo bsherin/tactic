@@ -28,7 +28,7 @@ function statusMessage(data) {
     }
 
     if (!alertbox.isOpen()){
-        alertbox.setContent(data.message).show().resizeTo("100%", 30).moveTo(0,0)
+        alertbox.setContent(data.message).show().resizeTo("100%", 50).moveTo(0,0)
     } else {
         alertbox.setContent(data.message)
     }
