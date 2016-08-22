@@ -62,9 +62,13 @@ class HostWorker(QWorker):
         global_tile_manager.add_user(user_obj.username)
 
         list_names = self.get_list_names({"user_id": user_obj.get_id()})["list_names"]
+        class_names = self.get_class_names({"user_id": user_obj.get_id()})["class_names"]
+        function_names = self.get_class_names({"user_id": user_obj.get_id()})["function_names"]
 
         with self.app.test_request_context():
             bf_url = url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1]
+
+        # tactic_new 5c: in main_project here pass class and function_names
         data_dict = {"project_name": project_name,
                      "project_collection_name": user_obj.project_collection_name,
                      "main_id": main_id,
@@ -74,6 +78,8 @@ class HostWorker(QWorker):
                      "loaded_user_modules": global_tile_manager.loaded_user_modules,
                      "mongo_uri": mongo_uri,
                      "list_names": list_names,
+                     "class_names": class_names,
+                     "function_names": function_names,
                      "user_manage_id": user_manage_id,
                      "base_figure_url": bf_url,
                      "use_ssl": use_ssl}
@@ -86,10 +92,31 @@ class HostWorker(QWorker):
         return None
 
     @task_worthy
+    def get_lists_classes_functions(self, data):
+        user_id = data["user_id"]
+        the_user = load_user(user_id)
+        return {"list_names": the_user.list_names,
+                "class_names": the_user.class_names,
+                "function_names": the_user.function_names}
+
+    @task_worthy
     def get_list_names(self, data):
         user_id = data["user_id"]
         the_user = load_user(user_id)
         return {"list_names": the_user.list_names}
+
+    # tactic_new 5a: want get_function/class_names here
+    @task_worthy
+    def get_class_names(self, data):
+        user_id = data["user_id"]
+        the_user = load_user(user_id)
+        return {"class_names": the_user.class_names}
+
+    @task_worthy
+    def get_function_names(self, data):
+        user_id = data["user_id"]
+        the_user = load_user(user_id)
+        return {"function_names": the_user.function_names}
 
     @task_worthy
     def get_loaded_user_modules(self, data):
@@ -149,6 +176,21 @@ class HostWorker(QWorker):
         list_name = data["list_name"]
         the_user = load_user(user_id)
         return {"the_list": the_user.get_list(list_name)}
+
+    # tactic_new 5b: get_code_with_function/class
+    @task_worthy
+    def get_code_with_function(self, data):
+        user_id = data["user_id"]
+        function_name = data["function_name"]
+        the_user = load_user(user_id)
+        return {"the_code": the_user.get_code_with_function(function_name)}
+
+    @task_worthy
+    def get_code_with_class(self, data):
+        user_id = data["user_id"]
+        class_name = data["class_name"]
+        the_user = load_user(user_id)
+        return {"the_list": the_user.get_code_with_class(class_name)}
 
     @task_worthy
     def get_tile_types(self, data):

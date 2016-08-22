@@ -384,11 +384,14 @@ function tile_command(menu_id) {
             data_dict["tile_address"] = data["tile_address"];
             postWithCallback("host", "get_module_code", data_dict, function (data) {
                 data_dict["tile_code"] = data["module_code"];
-                postWithCallback("host", "get_list_names", data_dict, function (data) {
-                    data_dict["list_names"] = data["list_names"]
+                // tactic_new 7: get and pass classes and functions
+                postWithCallback("host", "get_lists_classes_functions", data_dict, function (data) {
+                    data_dict["list_names"] = data["list_names"];
+                    data_dict["class_names"] = data["class_names"];
+                    data_dict["function_names"] = data["function_names"];
                     postWithCallback(main_id, "create_tile", data_dict, function (data) {
                         if (data.success) {
-                            data_dict["form_html"] = data["html"]
+                            data_dict["form_html"] = data["html"] ;
                             postWithCallback("host", "render_tile", data_dict, function(data) {
                                 var new_tile_object = new TileObject(tile_id, data.html, true);
                                 tile_dict[tile_id] = new_tile_object;

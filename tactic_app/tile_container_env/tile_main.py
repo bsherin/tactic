@@ -2,7 +2,7 @@ from flask import Flask, jsonify, request
 import copy
 import tile_env
 from tile_env import class_info
-from tile_env import exec_tile_code
+from tile_env import exec_tile_code, clear_and_exec_user_code
 import cPickle
 from bson.binary import Binary
 import inspect
@@ -30,7 +30,7 @@ def handle_exception(ex, special_string=None):
     error_string = "<pre>" + error_string + "</pre>"
     return jsonify({"success": False, "message_string": error_string})
 
-
+# it should return a dict with success, functions, classes
 @app.route('/load_source', methods=["get", "post"])
 def load_source():
     try:
@@ -44,6 +44,20 @@ def load_source():
         return handle_exception(ex, "Error loading source")
     return jsonify(result)
 
+# tactic_new clear_and_load code
+# This should only be used in the tester tile.
+@app.route('/clear_and_load_code', methods=["get", "post"])
+def clear_and_load_code():
+    try:
+        global megaplex_address
+        print("entering load_source")
+        data_dict = request.json
+        megaplex_address = data_dict["megaplex_address"]
+        the_code = data_dict["tile_code"]
+        result = clear_and_exec_user_code(the_code)
+    except Exception as ex:
+        return handle_exception(ex, "Error loading source")
+    return jsonify(result)
 
 @app.route("/recreate_from_save", methods=["get", "post"])
 def recreate_from_save():

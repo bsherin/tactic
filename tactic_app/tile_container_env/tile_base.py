@@ -38,6 +38,25 @@ jsonizable_types = {
     "NoneType": NoneType
 }
 
+# tactic_change this is a bit ugly. also what if use code needs nltk, etc?
+code_names = {"classes":{},
+              "functions": {}}
+
+def user_function(the_func):
+    code_names["functions"][the_func.__name__] = the_func
+    return the_func
+
+def user_class(the_class):
+    code_names["classes"][the_class.__name__] = the_class
+    return the_class
+
+def exec_user_code(the_code):
+    try:
+        exec the_code
+    except:
+        error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+        return {"success": False, "message_string": error_string}
+    return {"success": True, "classes": code_names["classes"].keys(), "functions": code_names["functions"].keys()}
 
 # noinspection PyMissingConstructor
 class TileBase(QWorker):
@@ -98,7 +117,10 @@ class TileBase(QWorker):
         # self.base_data_url = url_for("data_source", main_id=main_id, tile_id=tile_id, data_name="X")[:-1]
         self.base_data_url = ""
         self.configured = False
+        # tactic_new 8a: need self.function names, class_names?
         self.list_names = []
+        self.class_names = []
+        self.function_names = []
         self._pipe_dict = None # This is set when the form is created
         return
 
@@ -272,6 +294,7 @@ class TileBase(QWorker):
         return None
 
     # Info needed here: list_names, current_header_list, pipe_dict, doc_names
+    # tactic_new 8b: create_form_html will need to deal with code names
     @task_worthy
     def create_form_html(self, data):
         self.debug_log("entering create_form_html")
@@ -341,6 +364,23 @@ class TileBase(QWorker):
                         else:
                             form_html += self.select_option_template.format(choice)
                     form_html += '</select></div>'
+                elif option["type"] == "function_select":
+                    the_template = self.input_start_template + self.select_base_template
+                    form_html += the_template.format(att_name)
+                    for choice in data["function_names"]:
+                        if choice == starting_value:
+                            form_html += self.select_option_selected_template.format(choice)
+                        else:
+                            form_html += self.select_option_template.format(choice)
+                    form_html += '</select></div>'
+                elif option["type"] == "class_select":
+                    the_template = self.input_start_template + self.select_base_template
+                    form_html += the_template.format(att_name)
+                    for choice in data["class_names"]:
+                        if choice == starting_value:
+                            form_html += self.select_option_selected_template.format(choice)
+                        else:
+                            form_html += self.select_option_template.format(choice)
                 elif option["type"] == "palette_select":
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
@@ -892,6 +932,21 @@ class TileBase(QWorker):
         result = self.post_and_wait("host", "get_list", {"user_id": self.user_id, "list_name": the_list})
         self.debug_log("leaving get_user_list")
         return result["the_list"]
+
+    # tactic_new: get_user_function/code
+    def get_user_function(self, function_name):
+        result = self.post_and_wait("host", "get_code_with_function", {"user_id": self.user_id,
+                                                                              "function_name": function_name})
+        the_code = result["the_code"]
+        result = exec_user_code(the_code)
+        return code_names["functions"][function_name]
+
+    def get_user_class(self, function_name):
+        result = self.post_and_with("host", "get_code_with_function", {"user_id": self.user_id,
+                                                                              "function_name": function_name})
+        the_code = result["the_code"]
+        result = exec_user_code(the_code)
+        return code_names["functions"][function_name]
 
     def get_tokenizer(self, tokenizer_name):
         return tokenizer_dict[tokenizer_name]
