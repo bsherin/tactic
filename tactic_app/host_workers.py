@@ -63,7 +63,7 @@ class HostWorker(QWorker):
 
         list_names = self.get_list_names({"user_id": user_obj.get_id()})["list_names"]
         class_names = self.get_class_names({"user_id": user_obj.get_id()})["class_names"]
-        function_names = self.get_class_names({"user_id": user_obj.get_id()})["function_names"]
+        function_names = self.get_function_names({"user_id": user_obj.get_id()})["function_names"]
 
         with self.app.test_request_context():
             bf_url = url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1]

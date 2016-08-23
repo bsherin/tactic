@@ -11,8 +11,6 @@ from flask import render_template
 # noinspection PyUnresolvedReferences
 from qworker import QWorker, task_worthy
 
-from tokenizers import tokenizer_dict
-from weight_function_module import weight_functions
 from cluster_metrics import cluster_metric_dict
 from matplotlib_utilities import MplFigure, Mpld3Figure, color_palette_names
 from types import NoneType
@@ -1001,7 +999,7 @@ class TileBase(QWorker):
         return {"encoded_val": encoded_val}
 
     def get_weight_function(self, weight_function_name):
-        self.get_user_function(weight_function_name)
+        return self.get_user_function(weight_function_name)
 
     def create_data_source(self, data):
         dataname = str(self.current_data_id)
