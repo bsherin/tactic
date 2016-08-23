@@ -318,20 +318,29 @@ class TileBase(QWorker):
                         else:
                             form_html += self.select_option_template.format(choice)
                     form_html += '</select></div>'
-                elif option["type"] == "tokenizer_select":
+                # tactic_new modified tokenizer_select option
+                elif option["type"] == "tokenizer_select": # for backward compatibility
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
-                    for choice in tokenizer_dict.keys():
+                    fnames = []
+                    for func_name, tags in data["function_names"].items():
+                        if "tokenizer" in tags.split():
+                            fnames.append(func_name)
+                    for choice in fnames:
                         if choice == starting_value:
                             form_html += self.select_option_selected_template.format(choice)
                         else:
                             form_html += self.select_option_template.format(choice)
                     form_html += '</select></div>'
-
-                elif option["type"] == "weight_function_select":
+                # tactic_new modified weight_function_select option
+                elif option["type"] == "weight_function_select": # for backward compatibility
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
-                    for choice in weight_functions.keys():
+                    fnames = []
+                    for func_name, tags in data["function_names"].items():
+                        if "weight_function" in tags.split():
+                            fnames.append(func_name)
+                    for choice in fnames:
                         if choice == starting_value:
                             form_html += self.select_option_selected_template.format(choice)
                         else:
@@ -364,10 +373,18 @@ class TileBase(QWorker):
                         else:
                             form_html += self.select_option_template.format(choice)
                     form_html += '</select></div>'
+                # tactic_new: create_form_html needs to allow for filtering of functions and classes
                 elif option["type"] == "function_select":
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
-                    for choice in data["function_names"]:
+                    if "tag" in option:
+                        fnames = []
+                        for func_name, tags in data["function_names"].items():
+                            if option["tag"] in tags.split():
+                                fnames.append(func_name)
+                    else:
+                        fnames = data["function_names"].keys()
+                    for choice in fnames:
                         if choice == starting_value:
                             form_html += self.select_option_selected_template.format(choice)
                         else:
@@ -376,7 +393,14 @@ class TileBase(QWorker):
                 elif option["type"] == "class_select":
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
-                    for choice in data["class_names"]:
+                    if "tag" in option:
+                        cnames = []
+                        for class_name, tags in data["class_names"].items():
+                            if option["tag"] in tags.split():
+                                fnames.append(class_name)
+                    else:
+                        fnames = data["class_names"].keys()
+                    for choice in cnames:
                         if choice == starting_value:
                             form_html += self.select_option_selected_template.format(choice)
                         else:
@@ -948,9 +972,11 @@ class TileBase(QWorker):
         result = exec_user_code(the_code)
         return code_names["functions"][function_name]
 
+    # tactic_new modified for backward compatibility
     def get_tokenizer(self, tokenizer_name):
-        return tokenizer_dict[tokenizer_name]
+        return self.get_user_function(tokenizer_name)
 
+    # tactic_new moddified for  compatibility
     def get_cluster_metric(self, metric_name):
         return cluster_metric_dict[metric_name]
 
@@ -975,7 +1001,7 @@ class TileBase(QWorker):
         return {"encoded_val": encoded_val}
 
     def get_weight_function(self, weight_function_name):
-        return weight_functions[weight_function_name]
+        self.get_user_function(weight_function_name)
 
     def create_data_source(self, data):
         dataname = str(self.current_data_id)

@@ -155,9 +155,9 @@ class ResourceManager(object):
 def get_manager_for_type(res_type, is_repository=False):
 
     if is_repository:
-        return managers[res_type][0]
-    else:
         return managers[res_type][1]
+    else:
+        return managers[res_type][0]
 
 @app.route('/copy_from_repository', methods=['GET', 'POST'])
 @login_required

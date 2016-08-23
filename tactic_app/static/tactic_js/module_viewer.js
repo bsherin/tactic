@@ -38,7 +38,7 @@ function start_post_load() {
       }
     });
     $(".CodeMirror").css('height', window.innerHeight - $(".CodeMirror").offset().top - 20);
-    savedCode = myCodeMirror.getdoc().getValue();
+    savedCode = myCodeMirror.getDoc().getValue();
 
     var result_dict = {"res_type": "tile", "res_name": module_name};
     $.ajax({

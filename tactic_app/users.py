@@ -257,21 +257,25 @@ class User(UserMixin):
     def class_names(self, ):
         if self.code_collection_name not in db.collection_names():
             db.create_collection(self.code_collection_name)
-            return []
-        classes = []
+            return {}
+        classes = {}
         for doc in db[self.code_collection_name].find():
-            classes += doc["metadata"]["classes"]
-        return sorted([str(t) for t in classes], key=str.lower)
+            tags = doc["metadata"]["tags"]
+            for c in doc["metadata"]["classes"]:
+                classes[c] = tags
+        return classes
 
     @property
     def function_names(self, ):
         if self.code_collection_name not in db.collection_names():
             db.create_collection(self.code_collection_name)
-            return []
-        functions = []
+            return {}
+        functions = {}
         for doc in db[self.code_collection_name].find():
-            functions += doc["metadata"]["functions"]
-        return sorted([str(t) for t in functions], key=str.lower)
+            tags = doc["metadata"]["tags"]
+            for f in doc["metadata"]["functions"]:
+                functions[f] = tags
+        return functions
 
     def get_resource_names(self, res_type, tag_filter=None, search_filter=None):
         if tag_filter is not None:
@@ -335,7 +339,7 @@ class User(UserMixin):
         for doc in db[self.code_collection_name].find():
             if class_name in doc["metadata"]["classes"]:
                 return doc["the_code"]
-            return None
+        return None
 
     def get_code_with_function(self, function_name):
         if self.code_collection_name not in db.collection_names():
@@ -343,5 +347,5 @@ class User(UserMixin):
         for doc in db[self.code_collection_name].find():
             if function_name in doc["metadata"]["functions"]:
                 return doc["the_code"]
-            return None
+        return None
 

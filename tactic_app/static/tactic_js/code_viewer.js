@@ -35,7 +35,7 @@ function start_post_load() {
       }
     });
     $(".CodeMirror").css('height', window.innerHeight - $(".CodeMirror").offset().top - 20);
-    savedCode = myCodeMirror.getdoc().getValue();
+    savedCode = myCodeMirror.getDoc().getValue();
 
     var result_dict = {"res_type": "code", "res_name": code_name};
     $.ajax({
