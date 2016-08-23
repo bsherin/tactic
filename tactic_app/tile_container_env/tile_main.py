@@ -53,7 +53,7 @@ def clear_and_load_code():
         print("entering load_source")
         data_dict = request.json
         megaplex_address = data_dict["megaplex_address"]
-        the_code = data_dict["tile_code"]
+        the_code = data_dict["the_code"]
         result = clear_and_exec_user_code(the_code)
     except Exception as ex:
         return handle_exception(ex, "Error loading source")

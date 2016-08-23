@@ -259,8 +259,8 @@ class User(UserMixin):
             db.create_collection(self.code_collection_name)
             return []
         classes = []
-        for doc in db[self.code_collection_name].find(projection=["classes"]):
-            classes += doc["classes"]
+        for doc in db[self.code_collection_name].find():
+            classes += doc["metadata"]["classes"]
         return sorted([str(t) for t in classes], key=str.lower)
 
     @property
@@ -269,8 +269,8 @@ class User(UserMixin):
             db.create_collection(self.code_collection_name)
             return []
         functions = []
-        for doc in db[self.code_collection_name].find(projection=["functions"]):
-            functions += doc["functions"]
+        for doc in db[self.code_collection_name].find():
+            functions += doc["metadata"]["functions"]
         return sorted([str(t) for t in functions], key=str.lower)
 
     def get_resource_names(self, res_type, tag_filter=None, search_filter=None):

@@ -153,30 +153,11 @@ class ResourceManager(object):
 
 
 def get_manager_for_type(res_type, is_repository=False):
-    if is_repository:
-        if res_type == "list":
-            manager = repository_list_manager
-        elif res_type == "collection":
-            manager = repository_collection_manager
-        elif res_type == "project":
-            manager = repository_project_manager
-        elif res_type == "tile":
-            manager = repository_tile_manager
-        else:
-            manager = None
-    else:
-        if res_type == "list":
-            manager = list_manager
-        elif res_type == "collection":
-            manager = collection_manager
-        elif res_type == "project":
-            manager = project_manager
-        elif res_type == "tile":
-            manager = tile_manager
-        else:
-            manager = None
-    return manager
 
+    if is_repository:
+        return managers[res_type][0]
+    else:
+        return managers[res_type][1]
 
 @app.route('/copy_from_repository', methods=['GET', 'POST'])
 @login_required
@@ -217,29 +198,12 @@ def copy_from_repository():
 @app.route('/request_update_selector_list/<res_type>', methods=['GET'])
 @login_required
 def request_update_selector_list(res_type):
-    if res_type == "list":
-        return list_manager.request_update_selector_list()
-    if res_type == "collection":
-        return collection_manager.request_update_selector_list()
-    if res_type == "project":
-        return project_manager.request_update_selector_list()
-    if res_type == "tile":
-        return tile_manager.request_update_selector_list()
-    return ""
-
+    return managers[res_type][0].request_update_selector_list()
 
 @app.route('/request_update_repository_selector_list/<res_type>', methods=['GET'])
 @login_required
 def request_update_repository_selector_list(res_type):
-    if res_type == "list":
-        return repository_list_manager.request_update_selector_list()
-    if res_type == "collection":
-        return repository_collection_manager.request_update_selector_list()
-    if res_type == "project":
-        return repository_project_manager.request_update_selector_list()
-    if res_type == "tile":
-        return repository_tile_manager.request_update_selector_list()
-    return ""
+    return managers[res_type][1].request_update_selector_list()
 
 
 class ListManager(ResourceManager):
@@ -987,6 +951,14 @@ repository_tile_manager = RepositoryTileManager("tile")
 code_manager = CodeManager("code")
 repository_code_manager = RepositoryCodeManager("code")
 
+managers = {
+    "list": [list_manager, repository_list_manager],
+    "collection": [collection_manager, repository_collection_manager],
+    "project": [project_manager, repository_project_manager],
+    "tile": [tile_manager, repository_tile_manager],
+    "code": [code_manager, repository_code_manager]
+}
+
 # tactic_new 1c: create the new manager instances here
 
 @app.route('/user_manage')
@@ -1077,6 +1049,31 @@ def search_resource():
     result = manager.build_html_table_from_data_list(res_array)
     return jsonify({"html": result})
 
+@app.route('/update_module', methods=['post'])
+@login_required
+def update_module():
+    try:
+        data_dict = request.json
+        module_name = data_dict["module_name"]
+        module_code = data_dict["new_code"]
+        doc = db[current_user.tile_collection_name].find_one({"tile_module_name": module_name})
+        if "metadata" in doc:
+            mdata = doc["metadata"]
+        else:
+            mdata = {}
+        mdata["tags"] = data_dict["tags"]
+        mdata["notes"] = data_dict["notes"]
+        mdata["updated"] = datetime.datetime.today()
+
+        db[current_user.tile_collection_name].update_one({"tile_module_name": module_name},
+                                                         {'$set': {"tile_module": module_code, "metadata": mdata}})
+        tile_manager.update_selector_list()
+        return jsonify({"success": True, "message": "Module Successfully Saved", "alert_type": "alert-success"})
+    except:
+        error_string = "Error saving module " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+
+
 @app.route('/rename_module/<old_name>', methods=['post'])
 @login_required
 def rename_module(old_name):
@@ -1105,7 +1102,7 @@ def rename_code(old_name):
         return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
 # tactic_new need update_code (and this must process)
-@app.route('/update_module', methods=['post'])
+@app.route('/update_code', methods=['post'])
 @login_required
 def update_code():
     try:
