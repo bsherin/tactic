@@ -118,7 +118,6 @@ class User(UserMixin):
     def tile_collection_name(self):
         return '{}.tiles'.format(self.username)
 
-    # tactic_new need code_collection_name
     @property
     def code_collection_name(self):
         return '{}.code'.format(self.username)
@@ -229,7 +228,6 @@ class User(UserMixin):
             my_tile_names.append(doc["tile_module_name"])
         return sorted([str(t) for t in my_tile_names], key=str.lower)
 
-    # tactic_new want 4a: code_names, code_names_with_metadata functions, classes
     @property
     def code_names(self, ):
         if self.code_collection_name not in db.collection_names():
@@ -328,7 +326,6 @@ class User(UserMixin):
         tile_dict = db[self.tile_collection_name].find_one({"tile_module_name": tile_module_name})
         return tile_dict["tile_module"]
 
-    # tactic_new 4c: get_code, get_code_with_function/class here
     def get_code(self, code_name):
         code_dict = db[self.code_collection_name].find_one({"code_name": code_name})
         return code_dict["the_code"]

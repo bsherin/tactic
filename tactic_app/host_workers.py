@@ -68,7 +68,6 @@ class HostWorker(QWorker):
         with self.app.test_request_context():
             bf_url = url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1]
 
-        # tactic_new 5c: in main_project here pass class and function_names
         data_dict = {"project_name": project_name,
                      "project_collection_name": user_obj.project_collection_name,
                      "main_id": main_id,
@@ -105,7 +104,6 @@ class HostWorker(QWorker):
         the_user = load_user(user_id)
         return {"list_names": the_user.list_names}
 
-    # tactic_new 5a: want get_function/class_names here
     @task_worthy
     def get_class_names(self, data):
         user_id = data["user_id"]
@@ -177,7 +175,6 @@ class HostWorker(QWorker):
         the_user = load_user(user_id)
         return {"the_list": the_user.get_list(list_name)}
 
-    # tactic_new 5b: get_code_with_function/class
     @task_worthy
     def get_code_with_function(self, data):
         user_id = data["user_id"]

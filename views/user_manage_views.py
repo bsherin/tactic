@@ -794,7 +794,6 @@ class RepositoryTileManager(TileManager):
         pass
 
 
-# tactic_new 1a: add CodeManager based on TileManager
 class CodeManager(ResourceManager):
     collection_list = "code_names"
     collection_list_with_metadata = "code_names_with_metadata"
@@ -899,7 +898,6 @@ class CodeManager(ResourceManager):
         self.update_selector_list(select=new_code_name)
         return jsonify({"success": True})
 
-    # tactic_new note this needs to have a template name passed
     def create_code(self):
         user_obj = current_user
         new_code_name = request.json['new_res_name']
@@ -918,7 +916,6 @@ class CodeManager(ResourceManager):
         self.update_selector_list(new_code_name)
         return jsonify({"success": True})
 
-    # tactic_change do I want to push an update to the lists that appear in forms?
     def delete_code(self, code_name):
         user_obj = current_user
         db[user_obj.code_collection_name].delete_one({"code_name": code_name})
@@ -926,7 +923,6 @@ class CodeManager(ResourceManager):
         return jsonify({"success": True})
 
 
-# tactic_new 1b: add RepositoryCodeManager based on RepositoryTileManager
 class RepositoryCodeManager(CodeManager):
     rep_string = "repository-"
     is_repository = True
@@ -959,7 +955,6 @@ managers = {
     "code": [code_manager, repository_code_manager]
 }
 
-# tactic_new 1c: create the new manager instances here
 
 @app.route('/user_manage')
 @login_required
@@ -1087,7 +1082,7 @@ def rename_module(old_name):
         error_string = "Error renaming module " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
-# tactic_new rename code
+
 @app.route('/rename_code/<old_name>', methods=['post'])
 @login_required
 def rename_code(old_name):
@@ -1101,7 +1096,7 @@ def rename_code(old_name):
         error_string = "Error renaming module " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
-# tactic_new need update_code (and this must process)
+
 @app.route('/update_code', methods=['post'])
 @login_required
 def update_code():

@@ -376,7 +376,7 @@ class mainWindow(QWorker):
                 if not result["success"]:
                     raise Exception(result["message_string"])
             self.show_um_message("Recreating the tiles", data_dict["user_manage_id"])
-            # tactic_new need to pass class and function names here. note data_dict will have this all
+            # Note data_dict has class, function, and list_names
             self.tile_save_results = self.recreate_project_tiles(data_dict, new_tile_info)
             template_data = {"collection_name": self.collection_name,
                              "project_name": self.project_name,
@@ -446,7 +446,6 @@ class mainWindow(QWorker):
         self.visible_doc_name = self.doc_dict.keys()[0]  # This is necessary for recreating the tiles
         return tile_info_dict, project_dict["loaded_modules"]
 
-    # tactic_new: recreate_project_tiles needs code names as input
     def recreate_project_tiles(self, data_dict, new_tile_info):
         list_names = data_dict["list_names"]
         class_names = data_dict["class_names"]
@@ -492,7 +491,6 @@ class mainWindow(QWorker):
         # We have to wait to here to actually render the tiles because
         # the pipe_dict needs to be complete to build the forms.
 
-        # tactic_new in form_info must pass function and class names
         form_info = {"current_header_list": self.current_header_list,
                      "pipe_dict": self._pipe_dict,
                      "doc_names": self.doc_names,
@@ -686,7 +684,6 @@ class mainWindow(QWorker):
         del self.tile_instances[tile_id]
         self.tile_sort_list.remove(tile_id)
         the_lists = self.get_lists_classes_functions()
-        # tactic_new in form_info here pass code names
         form_info = {"current_header_list": self.current_header_list,
                      "pipe_dict": self._pipe_dict,
                      "doc_names": self.doc_names,
@@ -757,7 +754,6 @@ class mainWindow(QWorker):
         data_dict["main_id"] = self.my_id
         data_dict["megaplex_address"] = self.megaplex_address
         data_dict["doc_type"] = self.doc_type
-        # tactic_new 6: add function and class_names to form_info
         form_info = {"current_header_list": self.current_header_list,
                      "pipe_dict": self._pipe_dict,
                      "doc_names": self.doc_names,
@@ -1012,7 +1008,6 @@ class mainWindow(QWorker):
         if not result["success"]:
             raise Exception(result["message_string"])
 
-        # tactic_new passing all the lists
         form_info = {"current_header_list": self.current_header_list,
                  "pipe_dict": self._pipe_dict,
                  "doc_names": self.doc_names,
@@ -1102,7 +1097,6 @@ class mainWindow(QWorker):
 
         the_lists = self.get_lists_classes_functions()
 
-        # tactic_new in form_info here pass code names
         form_info = {"current_header_list": self.current_header_list,
                      "pipe_dict": self._pipe_dict,
                      "doc_names": self.doc_names,

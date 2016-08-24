@@ -11,7 +11,6 @@ from flask import render_template
 # noinspection PyUnresolvedReferences
 from qworker import QWorker, task_worthy
 
-from cluster_metrics import cluster_metric_dict
 from matplotlib_utilities import MplFigure, Mpld3Figure, color_palette_names
 from types import NoneType
 import traceback
@@ -36,7 +35,7 @@ jsonizable_types = {
     "NoneType": NoneType
 }
 
-# tactic_change this is a bit ugly. also what if use code needs nltk, etc?
+# tactic_change this is a bit ugly.
 code_names = {"classes":{},
               "functions": {}}
 
@@ -115,7 +114,6 @@ class TileBase(QWorker):
         # self.base_data_url = url_for("data_source", main_id=main_id, tile_id=tile_id, data_name="X")[:-1]
         self.base_data_url = ""
         self.configured = False
-        # tactic_new 8a: need self.function names, class_names?
         self.list_names = []
         self.class_names = []
         self.function_names = []
@@ -292,7 +290,6 @@ class TileBase(QWorker):
         return None
 
     # Info needed here: list_names, current_header_list, pipe_dict, doc_names
-    # tactic_new 8b: create_form_html will need to deal with code names
     @task_worthy
     def create_form_html(self, data):
         self.debug_log("entering create_form_html")
@@ -316,7 +313,6 @@ class TileBase(QWorker):
                         else:
                             form_html += self.select_option_template.format(choice)
                     form_html += '</select></div>'
-                # tactic_new modified tokenizer_select option
                 elif option["type"] == "tokenizer_select": # for backward compatibility
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
@@ -330,7 +326,6 @@ class TileBase(QWorker):
                         else:
                             form_html += self.select_option_template.format(choice)
                     form_html += '</select></div>'
-                # tactic_new modified weight_function_select option
                 elif option["type"] == "weight_function_select": # for backward compatibility
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
@@ -339,6 +334,19 @@ class TileBase(QWorker):
                         if "weight_function" in tags.split():
                             fnames.append(func_name)
                     for choice in fnames:
+                        if choice == starting_value:
+                            form_html += self.select_option_selected_template.format(choice)
+                        else:
+                            form_html += self.select_option_template.format(choice)
+                    form_html += '</select></div>'
+                elif option["type"] == "cluster_metric": # for backward comptibility
+                    the_template = self.input_start_template + self.select_base_template
+                    form_html += the_template.format(att_name)
+                    cmetricnames = []
+                    for func_name, tags in data["function_names"].items():
+                        if "cluster_metric" in tags.split():
+                            cmetricnames.append(func_name)
+                    for choice in cmetricnames:
                         if choice == starting_value:
                             form_html += self.select_option_selected_template.format(choice)
                         else:
@@ -371,7 +379,6 @@ class TileBase(QWorker):
                         else:
                             form_html += self.select_option_template.format(choice)
                     form_html += '</select></div>'
-                # tactic_new: create_form_html needs to allow for filtering of functions and classes
                 elif option["type"] == "function_select":
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
@@ -416,15 +423,6 @@ class TileBase(QWorker):
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
                     for choice in option["special_list"]:
-                        if choice == starting_value:
-                            form_html += self.select_option_selected_template.format(choice)
-                        else:
-                            form_html += self.select_option_template.format(choice)
-                    form_html += '</select></div>'
-                elif option["type"] == "cluster_metric":
-                    the_template = self.input_start_template + self.select_base_template
-                    form_html += the_template.format(att_name)
-                    for choice in cluster_metric_dict.keys():
                         if choice == starting_value:
                             form_html += self.select_option_selected_template.format(choice)
                         else:
@@ -955,7 +953,6 @@ class TileBase(QWorker):
         self.debug_log("leaving get_user_list")
         return result["the_list"]
 
-    # tactic_new: get_user_function/code
     def get_user_function(self, function_name):
         result = self.post_and_wait("host", "get_code_with_function", {"user_id": self.user_id,
                                                                               "function_name": function_name})
@@ -970,13 +967,13 @@ class TileBase(QWorker):
         result = exec_user_code(the_code)
         return code_names["functions"][function_name]
 
-    # tactic_new modified for backward compatibility
+    # deprecated
     def get_tokenizer(self, tokenizer_name):
         return self.get_user_function(tokenizer_name)
 
-    # tactic_new moddified for  compatibility
+    # deprecated
     def get_cluster_metric(self, metric_name):
-        return cluster_metric_dict[metric_name]
+        return self.get_user_function(metric_name)
 
     def get_pipe_value(self, pipe_key):
         self.debug_log("entering get_pipe_value with pipe_key: " + str(pipe_key))

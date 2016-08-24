@@ -421,12 +421,11 @@ var tile_manager_specifics = {
 var tileManager = new ResourceManager("tile", tile_manager_specifics);
 resource_managers["tile"] = tileManager;
 
-// tactic_new 2: add code_manager resource manager
 var code_manager_specifics = {
     show_multiple: false,
     new_view: '/create_code',
     view_view: '/view_code/',
-    repository_view_view: '/repository_code/',
+    repository_view_view: '/repository_view_code/',
     delete_view: "/delete_code/",
     duplicate_view: '/create_duplicate_code',
     double_click_func: "view_func",

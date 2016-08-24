@@ -44,7 +44,6 @@ def load_source():
         return handle_exception(ex, "Error loading source")
     return jsonify(result)
 
-# tactic_new clear_and_load code
 # This should only be used in the tester tile.
 @app.route('/clear_and_load_code', methods=["get", "post"])
 def clear_and_load_code():

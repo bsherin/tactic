@@ -1,7 +1,7 @@
 /**
  * Created by bls910 on 10/4/15.
  */
-// tactic_new 3: add code_viewer.js and code_viewer.html
+// tactic_document code_viewer
 var current_theme = "default";
 var mousetrap = new Mousetrap();
 var myCodeMirror;
