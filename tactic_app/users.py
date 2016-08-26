@@ -252,7 +252,7 @@ class User(UserMixin):
         return sorted(my_code_names, key=self.sort_data_list_key)
 
     @property
-    def class_names(self, ):
+    def class_tags_dict(self, ):
         if self.code_collection_name not in db.collection_names():
             db.create_collection(self.code_collection_name)
             return {}
@@ -264,7 +264,7 @@ class User(UserMixin):
         return classes
 
     @property
-    def function_names(self, ):
+    def function_tags_dict(self):
         if self.code_collection_name not in db.collection_names():
             db.create_collection(self.code_collection_name)
             return {}

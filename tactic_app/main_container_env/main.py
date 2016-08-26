@@ -671,9 +671,9 @@ class mainWindow(QWorker):
         class_names = self.post_and_wait("host", "get_class_names", {"user_id": self.user_id})
         return class_names
 
-    def get_function_names(self):
-        function_names = self.post_and_wait("host", "get_function_names", {"user_id": self.user_id})
-        return function_names
+    def get_function_tags_dict(self):
+        function_tags_dict = self.post_and_wait("host", "get_function_tags_dict", {"user_id": self.user_id})
+        return function_tags_dict
 
     def get_lists_classes_functions(self):
         result_dict = self.post_and_wait("host", "get_lists_classes_functions", {"user_id": self.user_id})

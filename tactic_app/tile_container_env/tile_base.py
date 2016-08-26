@@ -154,6 +154,41 @@ class TileBase(QWorker):
         data["val"] = getattr(self, data["property"])
         return data
 
+    # tactic_new commit and push, document get_function_names / class_names
+    @task_worthy
+    def get_function_names(self, tag=None):
+        func_tag_dict = self.post_and_wait("host", "get_function_tags_dict", {"user_id": self.user_id})["function_names"]
+        if tag is None:
+            fnames = func_tag_dict.keys()
+        else:
+            fnames = []
+            for func_name, tags in func_tag_dict.items():
+                if tag in tags.split():
+                    fnames.append(func_name)
+        return fnames
+
+    @task_worthy
+    def get_class_names(self, tag=None):
+        class_tag_dict = self.post_and_wait("host", "get_class_tags_dict", {"user_id": self.user_id})["class_names"]
+        if tag is None:
+            cnames = class_tag_dict.keys()
+        else:
+            cnames = []
+            for class_name, tags in class_tag_dict.items():
+                if tag in tags.split():
+                    cnames.append(class_name)
+        return cnames
+
+    @task_worthy
+    def ShowContainerLog(self, data):
+        self.log_it("<pre>" + self.get_container_log() + "</pre>")
+        return
+
+    # tactic_document document container log stuff - new button, new function
+    def get_container_log(self):
+        log_text = self.post_and_wait("host", "get_container_log", {"container_id": self.my_id})["log_text"]
+        return log_text
+
     @task_worthy
     def TileSizeChange(self, data):
         self.width = data["width"]
@@ -961,7 +996,7 @@ class TileBase(QWorker):
         return code_names["functions"][function_name]
 
     def get_user_class(self, function_name):
-        result = self.post_and_with("host", "get_code_with_function", {"user_id": self.user_id,
+        result = self.post_and_wait("host", "get_code_with_function", {"user_id": self.user_id,
                                                                               "function_name": function_name})
         the_code = result["the_code"]
         result = exec_user_code(the_code)

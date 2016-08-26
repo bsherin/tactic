@@ -159,6 +159,13 @@ TileObject.prototype = {
         postWithCallback(this.tile_id, "LogTile", data_dict)
     },
 
+    showContainerLog: function() {
+        data_dict = {};
+        data_dict["main_id"] = main_id;
+        data_dict["tile_id"] = this.tile_id;
+        postWithCallback(this.tile_id, "ShowContainerLog", data_dict)
+    },
+
     setTileSize: function(data) {
         var el = $(this.full_selector());
         el.width(data.width);

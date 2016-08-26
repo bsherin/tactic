@@ -4,7 +4,7 @@ from flask_login import url_for
 from users import load_user
 import gevent
 from communication_utils import send_request_to_container
-from docker_functions import create_container, get_address, destroy_container
+from docker_functions import create_container, get_address, destroy_container, cli
 from tactic_app.global_tile_management import global_tile_manager
 from tactic_app import app, socketio, mongo_uri, megaplex_address, use_ssl # global_stuff
 from views.user_manage_views import tile_manager, project_manager
@@ -63,7 +63,7 @@ class HostWorker(QWorker):
 
         list_names = self.get_list_names({"user_id": user_obj.get_id()})["list_names"]
         class_names = self.get_class_names({"user_id": user_obj.get_id()})["class_names"]
-        function_names = self.get_function_names({"user_id": user_obj.get_id()})["function_names"]
+        function_names = self.get_function_tags_dict({"user_id": user_obj.get_id()})["function_names"]
 
         with self.app.test_request_context():
             bf_url = url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1]
@@ -91,12 +91,17 @@ class HostWorker(QWorker):
         return None
 
     @task_worthy
+    def get_container_log(self, data):
+        container_id = data["container_id"]
+        return {"success": True, "log_text": cli.logs(container_id)}
+
+    @task_worthy
     def get_lists_classes_functions(self, data):
         user_id = data["user_id"]
         the_user = load_user(user_id)
         return {"list_names": the_user.list_names,
-                "class_names": the_user.class_names,
-                "function_names": the_user.function_names}
+                "class_names": the_user.class_tags_dict,
+                "function_names": the_user.function_tags_dict}
 
     @task_worthy
     def get_list_names(self, data):
@@ -108,13 +113,19 @@ class HostWorker(QWorker):
     def get_class_names(self, data):
         user_id = data["user_id"]
         the_user = load_user(user_id)
-        return {"class_names": the_user.class_names}
+        return {"class_names": the_user.class_tags_dict}
 
     @task_worthy
-    def get_function_names(self, data):
+    def get_function_tags_dict(self, data):
         user_id = data["user_id"]
         the_user = load_user(user_id)
-        return {"function_names": the_user.function_names}
+        return {"function_names": the_user.function_tags_dict}
+
+    @task_worthy
+    def get_class_tags_dict(self, data):
+        user_id = data["user_id"]
+        the_user = load_user(user_id)
+        return {"class_names": the_user.class_tags_dict}
 
     @task_worthy
     def get_loaded_user_modules(self, data):
