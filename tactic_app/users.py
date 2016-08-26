@@ -119,6 +119,10 @@ class User(UserMixin):
         return '{}.tiles'.format(self.username)
 
     @property
+    def code_collection_name(self):
+        return '{}.code'.format(self.username)
+
+    @property
     def my_record(self):
         return db.user_collection.find_one({"username": self.username})
 
@@ -224,6 +228,53 @@ class User(UserMixin):
             my_tile_names.append(doc["tile_module_name"])
         return sorted([str(t) for t in my_tile_names], key=str.lower)
 
+    @property
+    def code_names(self, ):
+        if self.code_collection_name not in db.collection_names():
+            db.create_collection(self.code_collection_name)
+            return []
+        my_code_names = []
+        for doc in db[self.code_collection_name].find(projection=["code_name"]):
+            my_code_names.append(doc["code_name"])
+        return sorted([str(t) for t in my_code_names], key=str.lower)
+
+    @property
+    def code_names_with_metadata(self):
+        if self.code_collection_name not in db.collection_names():
+            db.create_collection(self.code_collection_name)
+            return []
+        my_code_names = []
+        for doc in db[self.code_collection_name].find(projection=["code_name", "metadata"]):
+            if "metadata" in doc:
+                my_code_names.append([doc["code_name"], doc["metadata"]])
+            else:
+                my_code_names.append([doc["code_name"], None])
+        return sorted(my_code_names, key=self.sort_data_list_key)
+
+    @property
+    def class_tags_dict(self, ):
+        if self.code_collection_name not in db.collection_names():
+            db.create_collection(self.code_collection_name)
+            return {}
+        classes = {}
+        for doc in db[self.code_collection_name].find():
+            tags = doc["metadata"]["tags"]
+            for c in doc["metadata"]["classes"]:
+                classes[c] = tags
+        return classes
+
+    @property
+    def function_tags_dict(self):
+        if self.code_collection_name not in db.collection_names():
+            db.create_collection(self.code_collection_name)
+            return {}
+        functions = {}
+        for doc in db[self.code_collection_name].find():
+            tags = doc["metadata"]["tags"]
+            for f in doc["metadata"]["functions"]:
+                functions[f] = tags
+        return functions
+
     def get_resource_names(self, res_type, tag_filter=None, search_filter=None):
         if tag_filter is not None:
             tag_filter = tag_filter.lower()
@@ -246,8 +297,8 @@ class User(UserMixin):
                     res_names.append(dcol)
         else:
             cnames = {"tile": self.tile_collection_name, "list": self.list_collection_name,
-                      "project": self.project_collection_name}
-            name_keys = {"tile": "tile_module_name", "list": "list_name", "project": "project_name"}
+                      "project": self.project_collection_name, "code": self.code_collection_name}
+            name_keys = {"tile": "tile_module_name", "list": "list_name", "project": "project_name", "code": "code_name"}
             cname = cnames[res_type]
             name_key = name_keys[res_type]
             if cname not in db.collection_names():
@@ -274,3 +325,24 @@ class User(UserMixin):
     def get_tile_module(self, tile_module_name):
         tile_dict = db[self.tile_collection_name].find_one({"tile_module_name": tile_module_name})
         return tile_dict["tile_module"]
+
+    def get_code(self, code_name):
+        code_dict = db[self.code_collection_name].find_one({"code_name": code_name})
+        return code_dict["the_code"]
+
+    def get_code_with_class(self, class_name):
+        if self.code_collection_name not in db.collection_names():
+            db.create_collection(self.code_collection_name)
+        for doc in db[self.code_collection_name].find():
+            if class_name in doc["metadata"]["classes"]:
+                return doc["the_code"]
+        return None
+
+    def get_code_with_function(self, function_name):
+        if self.code_collection_name not in db.collection_names():
+            db.create_collection(self.code_collection_name)
+        for doc in db[self.code_collection_name].find():
+            if function_name in doc["metadata"]["functions"]:
+                return doc["the_code"]
+        return None
+

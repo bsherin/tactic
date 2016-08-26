@@ -13,7 +13,7 @@ mousetrap.bind("esc", function() {
     clearStatusMessage();
 });
 
-var res_types = ["list", "collection", "project", "tile"];
+var res_types = ["list", "collection", "project", "tile", "code"];
 var resource_managers = {};
 
 function start_post_load() {
@@ -80,6 +80,7 @@ function start_post_load() {
         collectionManager.create_module_html();
         projectManager.create_module_html();
         tileManager.create_module_html();
+        codeManager.create_module_html();
 
         res_types.forEach(function (element, index, array) {
             $("#" + element + "-selector").load($SCRIPT_ROOT + "/request_update_selector_list/" + element, function () {
@@ -105,6 +106,7 @@ function start_post_load() {
         collectionManager.add_listeners();
         projectManager.add_listeners();
         tileManager.add_listeners();
+        codeManager.add_listeners();
         $(".resource-module").on("click", ".resource-selector .selector-button", selector_click);
         $(".resource-module").on("dblclick", ".resource-selector .selector-button", selector_double_click);
         $(".resource-module").on("click", ".repository-selector .selector-button", repository_selector_click);
@@ -327,10 +329,8 @@ var projectManager = new ResourceManager("project", project_manager_specifics);
 resource_managers["project"] = projectManager;
 
 var tile_manager_specifics = {
-    show_add: true,
     show_multiple: false,
     new_view: '/create_tile_module',
-    add_view: '/add_tile_module',
     view_view: '/view_module/',
     repository_view_view: '/repository_view_module/',
     delete_view: "/delete_tile_module/",
@@ -344,6 +344,9 @@ var tile_manager_specifics = {
                                     {"opt_name": "ExpandedTileTemplate", "opt_func": "new_tile"},
                                     {"opt_name": "MatplotlibTileTemplate", "opt_func": "new_tile"}]}],
 
+    file_adders: [
+        {"name": "add_module", "func": "add_tile_module", "button_class": "btn-success" }
+    ],
     buttons: [
         {"name": "view", "func": "view_func", "button_class": "btn-primary"},
         {"name": "load", "func": "load_func", "button_class": "btn-primary"},
@@ -366,6 +369,23 @@ var tile_manager_specifics = {
         var res_name = manager.check_for_selection("tile");
         if (res_name == "") return;
         $.getJSON($SCRIPT_ROOT + '/unload_all_tiles', doFlash)
+    },
+
+    add_tile_module: function (event) {
+        var manager = event.data.manager;
+        $.ajax({
+            url: $SCRIPT_ROOT + "add_tile_module",
+            type: 'POST',
+            data: new FormData(this),
+            processData: false,
+            contentType: false,
+            success: function(data) {
+                if (!data.success) {
+                    doFlash(data)
+                }
+            }
+        });
+        event.preventDefault();
     },
 
     new_tile: function (event) {
@@ -400,3 +420,77 @@ var tile_manager_specifics = {
 
 var tileManager = new ResourceManager("tile", tile_manager_specifics);
 resource_managers["tile"] = tileManager;
+
+var code_manager_specifics = {
+    show_multiple: false,
+    new_view: '/create_code',
+    view_view: '/view_code/',
+    repository_view_view: '/repository_view_code/',
+    delete_view: "/delete_code/",
+    duplicate_view: '/create_duplicate_code',
+    double_click_func: "view_func",
+    repository_double_click_func: "repository_view_func",
+    show_loaded_list: true,
+    popup_buttons: [{"name": "new",
+                    "button_class": "btn-success",
+                    "option_list": [{"opt_name": "BasicCodeTemplate", "opt_func": "new_code"}]}],
+    file_adders: [
+        {"name": "add_code", "func": "add_code", "button_class": "btn-success" }
+    ],
+    buttons: [
+        {"name": "view", "func": "view_func", "button_class": "btn-primary"},
+        {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-success"},
+        {"name": "delete", "func": "delete_func", "button_class": "btn-danger"}
+    ],
+
+    repository_buttons: [
+        {"name": "view", "func": "repository_view_func", "button_class": "btn-primary"}
+    ],
+    add_code: function (event) {
+        var manager = event.data.manager;
+        $.ajax({
+            url: $SCRIPT_ROOT + "add_code",
+            type: 'POST',
+            data: new FormData(this),
+            processData: false,
+            contentType: false,
+            success: function(data) {
+                if (!data.success) {
+                    doFlash(data)
+                }
+            }
+        });
+        event.preventDefault();
+    },
+    new_code: function (event) {
+        var manager = event.data.manager;
+        var template_name = event.data.opt_name;
+        showModal("New Code Resource", "New Code Resource Name", function (new_name) {
+            var result_dict = {
+                "template_name": template_name,
+                "new_res_name": new_name
+            };
+
+            $.ajax({
+                url: $SCRIPT_ROOT + manager.new_view,
+                contentType: 'application/json',
+                type: 'POST',
+                async: true,
+                data: JSON.stringify(result_dict),
+                dataType: 'json',
+                success: function(data) {
+                    if (data.success){
+                        window.open($SCRIPT_ROOT + manager.view_view + String(new_name))
+                    }
+                    else {
+                        doFlash(data)
+                    }
+                }
+            });
+        });
+        event.preventDefault();
+    }
+};
+
+var codeManager = new ResourceManager("code", code_manager_specifics);
+resource_managers["code"] = codeManager;

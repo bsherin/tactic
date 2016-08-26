@@ -1,6 +1,7 @@
 /**
  * Created by bls910 on 10/4/15.
  */
+
 var current_theme = "default";
 var mousetrap = new Mousetrap();
 var myCodeMirror;
@@ -13,14 +14,10 @@ mousetrap.bind("esc", function() {
 });
 
 mousetrap.bind(['command+s', 'ctrl+s'], function(e) {
-    updateModule();
+    updateCode();
     e.preventDefault()
 });
 
-mousetrap.bind(['command+l', 'ctrl+;l'], function(e) {
-    loadModule();
-    e.preventDefault()
-});
 
 function start_post_load() {
     var codearea = document.getElementById("codearea");
@@ -40,7 +37,7 @@ function start_post_load() {
     $(".CodeMirror").css('height', window.innerHeight - $(".CodeMirror").offset().top - 20);
     savedCode = myCodeMirror.getDoc().getValue();
 
-    var result_dict = {"res_type": "tile", "res_name": module_name};
+    var result_dict = {"res_type": "code", "res_name": code_name};
     $.ajax({
             url: $SCRIPT_ROOT + "/grab_metadata",
             contentType : 'application/json',
@@ -53,26 +50,26 @@ function start_post_load() {
     function got_metadata(data) {
         if (data.success) {
             $(".created").html(data.datestring);
-            $("#tile-tags")[0].value = data.tags;
-            $("#tile-notes")[0].value = data.notes;
+            $("#code-tags")[0].value = data.tags;
+            $("#code-notes")[0].value = data.notes;
             savedTags = data.tags;
             savedNotes = data.notes
         }
         else {
             // doFlash(data)
             $(".created").html("");
-            $("#tile-tags")[0].value = "";
-            $("#tile-tags").html("");
-            $("#tile-notes")[0].value = "";
-            $("#tile-notes").html("");
+            $("#code-tags")[0].value = "";
+            $("#code-tags").html("");
+            $("#code-notes")[0].value = "";
+            $("#code-notes").html("");
         }
     }
 }
 
 function dirty() {
     var the_code = myCodeMirror.getDoc().getValue();
-    var tags = $("#tile-tags").val();
-    var notes = $("#tile-notes").val();
+    var tags = $("#code-tags").val();
+    var notes = $("#code-notes").val();
     if ((the_code == savedCode) && (tags == savedTags) && (notes == savedNotes)) {
         return false
     }
@@ -94,12 +91,12 @@ function changeTheme() {
     }
 }
 
-function renameModule() {
+function renameCode() {
     console.log("entering rename")
-    showModal("Rename module", "Name for this module", function (new_name) {
+    showModal("Rename code resource", "Name for this code resource", function (new_name) {
         the_data = {"new_name": new_name};
         $.ajax({
-            url: $SCRIPT_ROOT + "/rename_module/" + module_name,
+            url: $SCRIPT_ROOT + "/rename_code/" + code_name,
             contentType : 'application/json',
             type : 'POST',
             async: true,
@@ -109,8 +106,8 @@ function renameModule() {
         });
         function renameSuccess(data) {
             if (data.success) {
-                module_name = new_name;
-                $("#module-name").text(module_name)
+                code_name = new_name;
+                $("#code-name").text(code_name)
             }
             else {
                 doFlash(data)
@@ -120,18 +117,18 @@ function renameModule() {
     });
 }
 
-function updateModule() {
+function updateCode() {
     var new_code = myCodeMirror.getDoc().getValue();
-    var tags = $("#tile-tags").val();
-    var notes = $("#tile-notes").val();
+    var tags = $("#code-tags").val();
+    var notes = $("#code-notes").val();
     var result_dict = {
-        "module_name": module_name,
+        "code_name": code_name,
         "new_code": new_code,
         "tags": tags,
         "notes": notes
         };
     $.ajax({
-        url: $SCRIPT_ROOT + "/update_module",
+        url: $SCRIPT_ROOT + "/update_code",
         contentType : 'application/json',
         type : 'POST',
         async: true,
@@ -150,54 +147,15 @@ function updateModule() {
     }
 }
 
-function loadModule() {
-    var new_code = myCodeMirror.getDoc().getValue();
-    var tags = $("#tile-tags").val();
-    var notes = $("#tile-notes").val();
-    var result_dict = {
-        "module_name": module_name,
-        "new_code": new_code,
-        "tags": tags,
-        "notes": notes
-        };
-    $.ajax({
-        url: $SCRIPT_ROOT + "/update_module",
-        contentType : 'application/json',
-        type : 'POST',
-        async: true,
-        data: JSON.stringify(result_dict),
-        dataType: 'json',
-        success: function (data) {
-            if (data.success) {
-                savedCode = new_code;
-                savedTags = tags;
-                savedNotes = notes;
-                data.timeout = 2000;
-                $.getJSON($SCRIPT_ROOT + '/load_tile_module/' + String(module_name), load_success)
-            }
-            else {
-                doFlash(data)
-            }
-        }
-
-    });
-    function load_success(data) {
-        if (data.success) {
-            data.timeout = 2000;
-        }
-        doFlash(data)
-    }
-}
-
-function saveModuleAs() {
+function saveCodeAs() {
     doFlash({"message": "not implemented yet"})
 }
 
 function copyToLibrary() {
-    showModal("Import tile", "New tile Name", function (new_name) {
+    showModal("Import code resource", "New code resource name", function (new_name) {
         var result_dict = {
-            "res_type": "tile",
-            "res_name": module_name,
+            "res_type": "code",
+            "res_name": code_name,
             "new_res_name": new_name
         };
 

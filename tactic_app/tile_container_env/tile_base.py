@@ -11,9 +11,6 @@ from flask import render_template
 # noinspection PyUnresolvedReferences
 from qworker import QWorker, task_worthy
 
-from tokenizers import tokenizer_dict
-from weight_function_module import weight_functions
-from cluster_metrics import cluster_metric_dict
 from matplotlib_utilities import MplFigure, Mpld3Figure, color_palette_names
 from types import NoneType
 import traceback
@@ -38,6 +35,25 @@ jsonizable_types = {
     "NoneType": NoneType
 }
 
+# tactic_change this is a bit ugly.
+code_names = {"classes":{},
+              "functions": {}}
+
+def user_function(the_func):
+    code_names["functions"][the_func.__name__] = the_func
+    return the_func
+
+def user_class(the_class):
+    code_names["classes"][the_class.__name__] = the_class
+    return the_class
+
+def exec_user_code(the_code):
+    try:
+        exec the_code
+    except:
+        error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+        return {"success": False, "message_string": error_string}
+    return {"success": True, "classes": code_names["classes"].keys(), "functions": code_names["functions"].keys()}
 
 # noinspection PyMissingConstructor
 class TileBase(QWorker):
@@ -99,6 +115,8 @@ class TileBase(QWorker):
         self.base_data_url = ""
         self.configured = False
         self.list_names = []
+        self.class_names = []
+        self.function_names = []
         self._pipe_dict = None # This is set when the form is created
         return
 
@@ -135,6 +153,39 @@ class TileBase(QWorker):
     def get_property(self, data):
         data["val"] = getattr(self, data["property"])
         return data
+
+    @task_worthy
+    def get_function_names(self, tag=None):
+        func_tag_dict = self.post_and_wait("host", "get_function_tags_dict", {"user_id": self.user_id})["function_names"]
+        if tag is None:
+            fnames = func_tag_dict.keys()
+        else:
+            fnames = []
+            for func_name, tags in func_tag_dict.items():
+                if tag in tags.split():
+                    fnames.append(func_name)
+        return fnames
+
+    @task_worthy
+    def get_class_names(self, tag=None):
+        class_tag_dict = self.post_and_wait("host", "get_class_tags_dict", {"user_id": self.user_id})["class_names"]
+        if tag is None:
+            cnames = class_tag_dict.keys()
+        else:
+            cnames = []
+            for class_name, tags in class_tag_dict.items():
+                if tag in tags.split():
+                    cnames.append(class_name)
+        return cnames
+
+    @task_worthy
+    def ShowContainerLog(self, data):
+        self.log_it("<pre>" + self.get_container_log() + "</pre>")
+        return
+
+    def get_container_log(self):
+        log_text = self.post_and_wait("host", "get_container_log", {"container_id": self.my_id})["log_text"]
+        return log_text
 
     @task_worthy
     def TileSizeChange(self, data):
@@ -295,20 +346,40 @@ class TileBase(QWorker):
                         else:
                             form_html += self.select_option_template.format(choice)
                     form_html += '</select></div>'
-                elif option["type"] == "tokenizer_select":
+                elif option["type"] == "tokenizer_select": # for backward compatibility
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
-                    for choice in tokenizer_dict.keys():
+                    fnames = []
+                    for func_name, tags in data["function_names"].items():
+                        if "tokenizer" in tags.split():
+                            fnames.append(func_name)
+                    for choice in fnames:
                         if choice == starting_value:
                             form_html += self.select_option_selected_template.format(choice)
                         else:
                             form_html += self.select_option_template.format(choice)
                     form_html += '</select></div>'
-
-                elif option["type"] == "weight_function_select":
+                elif option["type"] == "weight_function_select": # for backward compatibility
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
-                    for choice in weight_functions.keys():
+                    fnames = []
+                    for func_name, tags in data["function_names"].items():
+                        if "weight_function" in tags.split():
+                            fnames.append(func_name)
+                    for choice in fnames:
+                        if choice == starting_value:
+                            form_html += self.select_option_selected_template.format(choice)
+                        else:
+                            form_html += self.select_option_template.format(choice)
+                    form_html += '</select></div>'
+                elif option["type"] == "cluster_metric": # for backward comptibility
+                    the_template = self.input_start_template + self.select_base_template
+                    form_html += the_template.format(att_name)
+                    cmetricnames = []
+                    for func_name, tags in data["function_names"].items():
+                        if "cluster_metric" in tags.split():
+                            cmetricnames.append(func_name)
+                    for choice in cmetricnames:
                         if choice == starting_value:
                             form_html += self.select_option_selected_template.format(choice)
                         else:
@@ -341,6 +412,37 @@ class TileBase(QWorker):
                         else:
                             form_html += self.select_option_template.format(choice)
                     form_html += '</select></div>'
+                elif option["type"] == "function_select":
+                    the_template = self.input_start_template + self.select_base_template
+                    form_html += the_template.format(att_name)
+                    if "tag" in option:
+                        fnames = []
+                        for func_name, tags in data["function_names"].items():
+                            if option["tag"] in tags.split():
+                                fnames.append(func_name)
+                    else:
+                        fnames = data["function_names"].keys()
+                    for choice in fnames:
+                        if choice == starting_value:
+                            form_html += self.select_option_selected_template.format(choice)
+                        else:
+                            form_html += self.select_option_template.format(choice)
+                    form_html += '</select></div>'
+                elif option["type"] == "class_select":
+                    the_template = self.input_start_template + self.select_base_template
+                    form_html += the_template.format(att_name)
+                    if "tag" in option:
+                        cnames = []
+                        for class_name, tags in data["class_names"].items():
+                            if option["tag"] in tags.split():
+                                fnames.append(class_name)
+                    else:
+                        fnames = data["class_names"].keys()
+                    for choice in cnames:
+                        if choice == starting_value:
+                            form_html += self.select_option_selected_template.format(choice)
+                        else:
+                            form_html += self.select_option_template.format(choice)
                 elif option["type"] == "palette_select":
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
@@ -354,15 +456,6 @@ class TileBase(QWorker):
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
                     for choice in option["special_list"]:
-                        if choice == starting_value:
-                            form_html += self.select_option_selected_template.format(choice)
-                        else:
-                            form_html += self.select_option_template.format(choice)
-                    form_html += '</select></div>'
-                elif option["type"] == "cluster_metric":
-                    the_template = self.input_start_template + self.select_base_template
-                    form_html += the_template.format(att_name)
-                    for choice in cluster_metric_dict.keys():
                         if choice == starting_value:
                             form_html += self.select_option_selected_template.format(choice)
                         else:
@@ -893,11 +986,27 @@ class TileBase(QWorker):
         self.debug_log("leaving get_user_list")
         return result["the_list"]
 
-    def get_tokenizer(self, tokenizer_name):
-        return tokenizer_dict[tokenizer_name]
+    def get_user_function(self, function_name):
+        result = self.post_and_wait("host", "get_code_with_function", {"user_id": self.user_id,
+                                                                              "function_name": function_name})
+        the_code = result["the_code"]
+        result = exec_user_code(the_code)
+        return code_names["functions"][function_name]
 
+    def get_user_class(self, function_name):
+        result = self.post_and_wait("host", "get_code_with_function", {"user_id": self.user_id,
+                                                                              "function_name": function_name})
+        the_code = result["the_code"]
+        result = exec_user_code(the_code)
+        return code_names["functions"][function_name]
+
+    # deprecated
+    def get_tokenizer(self, tokenizer_name):
+        return self.get_user_function(tokenizer_name)
+
+    # deprecated
     def get_cluster_metric(self, metric_name):
-        return cluster_metric_dict[metric_name]
+        return self.get_user_function(metric_name)
 
     def get_pipe_value(self, pipe_key):
         self.debug_log("entering get_pipe_value with pipe_key: " + str(pipe_key))
@@ -920,7 +1029,7 @@ class TileBase(QWorker):
         return {"encoded_val": encoded_val}
 
     def get_weight_function(self, weight_function_name):
-        return weight_functions[weight_function_name]
+        return self.get_user_function(weight_function_name)
 
     def create_data_source(self, data):
         dataname = str(self.current_data_id)
