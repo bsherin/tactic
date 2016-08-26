@@ -1,7 +1,7 @@
 /**
  * Created by bls910 on 10/4/15.
  */
-// tactic_document code_viewer
+
 var current_theme = "default";
 var mousetrap = new Mousetrap();
 var myCodeMirror;

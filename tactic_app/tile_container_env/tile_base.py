@@ -154,7 +154,6 @@ class TileBase(QWorker):
         data["val"] = getattr(self, data["property"])
         return data
 
-    # tactic_new commit and push, document get_function_names / class_names
     @task_worthy
     def get_function_names(self, tag=None):
         func_tag_dict = self.post_and_wait("host", "get_function_tags_dict", {"user_id": self.user_id})["function_names"]
@@ -184,7 +183,6 @@ class TileBase(QWorker):
         self.log_it("<pre>" + self.get_container_log() + "</pre>")
         return
 
-    # tactic_document document container log stuff - new button, new function
     def get_container_log(self):
         log_text = self.post_and_wait("host", "get_container_log", {"container_id": self.my_id})["log_text"]
         return log_text
