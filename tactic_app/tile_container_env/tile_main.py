@@ -67,6 +67,9 @@ def recreate_from_save():
         tile_instance = class_info["tile_class"](data["main_id"], data["tile_id"],
                                                  data["tile_name"])
         tile_instance.init_qworker(app, megaplex_address)
+        if "tile_log_width" not in data:
+            data["tile_log_width"] = data["back_width"]
+            data["tile_log_height"] = data["back_height"]
         tile_instance.recreate_from_save(data)
         tile_instance.current_html = tile_instance.current_html.replace(data["base_figure_url"],
                                                                         data["new_base_figure_url"])
