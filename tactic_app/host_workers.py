@@ -198,7 +198,7 @@ class HostWorker(QWorker):
         user_id = data["user_id"]
         class_name = data["class_name"]
         the_user = load_user(user_id)
-        return {"the_list": the_user.get_code_with_class(class_name)}
+        return {"the_code": the_user.get_code_with_class(class_name)}
 
     @task_worthy
     def get_tile_types(self, data):

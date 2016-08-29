@@ -439,14 +439,15 @@ class TileBase(QWorker):
                         cnames = []
                         for class_name, tags in data["class_names"].items():
                             if option["tag"] in tags.split():
-                                fnames.append(class_name)
+                                cnames.append(class_name)
                     else:
-                        fnames = data["class_names"].keys()
+                        cnames = data["class_names"].keys()
                     for choice in cnames:
                         if choice == starting_value:
                             form_html += self.select_option_selected_template.format(choice)
                         else:
                             form_html += self.select_option_template.format(choice)
+                    form_html += '</select></div>'
                 elif option["type"] == "palette_select":
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
@@ -999,12 +1000,12 @@ class TileBase(QWorker):
         result = exec_user_code(the_code)
         return code_names["functions"][function_name]
 
-    def get_user_class(self, function_name):
-        result = self.post_and_wait("host", "get_code_with_function", {"user_id": self.user_id,
-                                                                              "function_name": function_name})
+    def get_user_class(self, class_name):
+        result = self.post_and_wait("host", "get_code_with_class", {"user_id": self.user_id,
+                                                                              "class_name": class_name})
         the_code = result["the_code"]
         result = exec_user_code(the_code)
-        return code_names["functions"][function_name]
+        return code_names["classes"][class_name]
 
     # deprecated
     def get_tokenizer(self, tokenizer_name):
