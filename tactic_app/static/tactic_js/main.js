@@ -205,6 +205,7 @@ function continue_loading() {
                             sorttable.makeSortable(the_table)
                         });
                         new_tile_object.hideOptions();
+                        new_tile_object.hideTileLog();
                         }
                     })
                 })

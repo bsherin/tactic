@@ -109,12 +109,15 @@ TileObject.prototype = {
         var front_width = $(this.full_selector() + " .front").outerWidth();
         var back_height = $(this.full_selector() + " .back").outerHeight();
         var back_width = $(this.full_selector() + " .back").outerWidth();
+        var tile_log_height = $(this.full_selector() + " .tile-log").outerHeight();
+        var tile_log_width = $(this.full_selector() + " .tile-log").outerWidth();
         var tda_height = $(this.full_selector() + " .tile-display-area").outerHeight();
         var tda_width = $(this.full_selector() + " .tile-display-area").outerWidth();
         var the_margin = $(".tile-display-area").css("margin-left").replace("px", "");
         var data_dict = {"tile_id": this.tile_id, "width": w, "height": h, "header_height": header_height,
             "full_tile_width": full_tile_width, "full_tile_height": full_tile_height,
             "front_height": front_height, "front_width": front_width,
+            "tile_log_height": tile_log_height, "tile_log_width": tile_log_width,
             "back_height": back_height, "back_width": back_width,
             "tda_height": tda_height, "tda_width": tda_width,
             "margin": the_margin
@@ -185,7 +188,8 @@ TileObject.prototype = {
             sorttable.makeSortable(the_table)
         });
         dirty = true;
-        this.hideOptions()
+        this.hideOptions();
+        this.hideTileLog();
     },
 
     displayFormContent: function (data) {
@@ -245,7 +249,6 @@ TileObject.prototype = {
                 }
             });
     },
-
     resize_tile_area: function (event, ui) {
         var header_element = ui.element.children(".panel-heading")[0];
         var hheight = $(header_element).outerHeight();
@@ -260,6 +263,10 @@ TileObject.prototype = {
         $(back_element).outerHeight(ui.size.height - hheight);
         $(back_element).outerWidth(ui.size.width);
         var pbody = ui.element.find(".panel-body")[0];
+        var log_element = ui.element.find(".tile-log")[0];
+        $(log_element).outerHeight(ui.size.height - hheight);
+        $(log_element).outerWidth(ui.size.width);
+
         $(pbody).outerHeight(ui.size.height - hheight);
         var computed_width = ui.element.width();
         var computed_height = ui.element.height();
@@ -290,8 +297,25 @@ TileObject.prototype = {
         $("#tile_body_" + this.tile_id + " .back").show("blind");
         //$("#tile_body_" + this.tile_id).flip(false);
         //$("#tile_body_" + this.tile_id + " .front").fadeOut()
-
-
+    },
+    toggleContainerLog: function () {
+        if ($("#tile_body_" + this.tile_id + " .tile-log")[0].style.display == "none") {
+            this.showTileLog()
+        }
+        else {
+            this.hideTileLog()
+        }
+    },
+    showTileLog: function() {
+        var self = this;
+        postWithCallback("host", "get_container_log", {"container_id": self.tile_id}, function (res) {
+            the_html = "<pre>" + res["log_text"] + "</pre>";
+            $("#tile_body_" + self.tile_id + " .tile-log-area").html(the_html);
+            $("#tile_body_" + self.tile_id + " .tile-log").show("blind");
+        })
+    },
+    hideTileLog: function () {
+        $("#tile_body_" + this.tile_id + " .tile-log").hide("blind");
     },
     spin_and_refresh: function () {
         // I'm chaining these with callbacks just to make sure they don't get out of order

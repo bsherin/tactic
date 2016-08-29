@@ -76,6 +76,7 @@ class TileBase(QWorker):
     reload_attrs = ["tile_name", "tile_type", "base_figure_url", "user_id", "doc_type",
                     "my_id", "header_height", "front_height", "front_width", "back_height",
                     "back_width", "tda_width", "tda_height", "width", "height", "full_tile_width",
+                    "tile_log_height", "tile_log_width",
                     "full_tile_height", "is_shrunk", "configured"
                     ]
 
@@ -85,6 +86,7 @@ class TileBase(QWorker):
         self._sleepperiod = .0001
         self.save_attrs = ["current_html", "tile_type", "tile_name", "main_id", "doc_type", "configured",
                            "header_height", "front_height", "front_width", "back_height", "back_width",
+                           "tile_log_height", "tile_log_width",
                            "tda_width", "tda_height", "width", "height", "user_id", "base_figure_url",
                            "full_tile_width", "full_tile_height", "is_shrunk", "img_dict", "current_fig_id"]
         # These define the state of a tile and should be saved
@@ -198,6 +200,8 @@ class TileBase(QWorker):
         self.front_width = data["front_width"]
         self.back_height = data["back_height"]
         self.back_width = data["back_width"]
+        self.tile_log_height = data["tile_log_height"]
+        self.tile_log_width = data["tile_log_width"]
         self.tda_height = data["tda_height"]
         self.tda_width = data["tda_width"]
         self.margin = data["margin"]
@@ -639,6 +643,8 @@ class TileBase(QWorker):
                                      front_width=self.front_width,
                                      back_height=self.back_height,
                                      back_width=self.back_width,
+                                     tile_log_height = self.tile_log_height,
+                                     tile_log_width = self.tile_log_width,
                                      tda_height=self.tda_height,
                                      tda_width=self.tda_width,
                                      is_strunk=self.is_shrunk,
