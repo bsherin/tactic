@@ -1044,6 +1044,12 @@ class TileBase(QWorker):
         self.data_dict[dataname] = data
         return dataname
 
+    def create_collection(self, name, doc_dict, doc_type="table"):
+        data = {"name": name,
+                "doc_dict": doc_dict,
+                "doc_type": doc_type}
+        self.post_task(self.main_id, "create_collection", data)
+
     # tactic_todo these d3-based plots currently won't work.
     def create_lineplot_html(self, data, xlabels=None):
         if xlabels is None:

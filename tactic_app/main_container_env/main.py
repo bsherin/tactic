@@ -900,6 +900,7 @@ class mainWindow(QWorker):
         val = getattr(self, prop_name)
         return {"success": True, "val": val}
 
+    # tactic_change make export_data work with freeform
     @task_worthy
     def export_data(self, data):
         mdata = self.create_initial_metadata()
@@ -912,10 +913,30 @@ class mainWindow(QWorker):
                                                       "header_list": docinfo.header_list})
         return {"success": True}
 
-    # @task_worthy
-    # def get_doc_dict(self, data):
-    #     return {"success": True, "doc_dict": self.doc_dict}
-
+    @task_worthy
+    def create_collection(self, data):
+        mdata = self.create_initial_metadata()
+        mdata["name"] = "__metadata__"
+        new_name = data["name"]
+        doc_dict = data["doc_dict"]
+        doc_type = data["doc_type"]
+        full_collection_name = self.post_and_wait("host", "get_full_collection_name", {"name": new_name, "user_id": self.user_id})["full_collection_name"]
+        if doc_type == "table":
+            self.db[full_collection_name].insert_one(mdata)
+            for docname, doc in doc_dict.items():
+                header_list = doc[doc.keys()[0]].keys()
+                self.db[full_collection_name].insert_one({"name": docname,
+                                                          "data_rows": doc,
+                                                          "header_list": header_list})
+        else:
+            mdata["type"] = "freeform"
+            self.db[full_collection_name].insert_one(mdata)
+            for docname, doc in doc_dict.items():
+                file_id = self.fs.put(str(doc))
+                self.db[full_collection_name].insert_one({"name": docname,
+                                                         "file_id": file_id})
+        self.ask_host("update_collection_selector_list", {"user_id": self.user_id})
+        return {"success": True}
 
     @task_worthy
     def get_tile_ids(self, data):
