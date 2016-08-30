@@ -270,7 +270,7 @@ function change_doc(el, row_id) {
     }
     else {
         var data_dict = {"doc_name": doc_name, "row_id": row_id};
-        if (tableObject.doctype == "table") {
+        if (DOC_TYPE == "table") {
             postWithCallback(main_id, "grab_chunk_with_row", data_dict, function (data) {
                 $("#loading-message").css("display", "none");
                 $("#reload-message").css("display", "none");
