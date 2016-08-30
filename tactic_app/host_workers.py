@@ -7,7 +7,7 @@ from communication_utils import send_request_to_container
 from docker_functions import create_container, get_address, destroy_container, cli
 from tactic_app.global_tile_management import global_tile_manager
 from tactic_app import app, socketio, mongo_uri, megaplex_address, use_ssl # global_stuff
-from views.user_manage_views import tile_manager, project_manager
+from views.user_manage_views import tile_manager, project_manager, collection_manager
 import uuid
 import copy
 import traceback
@@ -46,6 +46,10 @@ class HostWorker(QWorker):
     @task_worthy
     def clear_um_status_message_task(self, data):
         socketio.emit('clear-status-msg', {}, namespace='/user_manage', room=data["user_manage_id"])
+
+    @task_worthy
+    def update_collection_selector_list(self, data):
+        collection_manager.update_selector_list(user_obj=load_user(data["user_id"]))
 
     @task_worthy
     def main_project(self, data):
@@ -94,6 +98,12 @@ class HostWorker(QWorker):
     def get_container_log(self, data):
         container_id = data["container_id"]
         return {"success": True, "log_text": cli.logs(container_id)}
+
+    @task_worthy
+    def get_full_collection_name(self, data):
+        short_name = data["name"]
+        the_user = load_user(data["user_id"])
+        return {"full_collection_name": the_user.build_data_collection_name(short_name)}
 
     @task_worthy
     def get_lists_classes_functions(self, data):
