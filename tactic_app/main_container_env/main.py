@@ -728,7 +728,7 @@ class mainWindow(QWorker):
                     if str(txt).lower() in str(cdata).lower():
                         self.emit_table_message("highlightTxtInDocument",
                                                 {"row_index": row_index, "column_header": cheader, "text_to_find": txt})
-            row_index += 1
+                row_index += 1
         else:
             self.emit_table_message("highlightTxtInDocument", {"text_to_find": txt})
 
