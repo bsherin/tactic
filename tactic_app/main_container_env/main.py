@@ -787,7 +787,7 @@ class mainWindow(QWorker):
         form_html = self.post_and_wait(tile_container_id, "create_form_html", form_info)["form_html"]
         for tid in self.tile_instances.keys():
             if not tid == tile_container_id:
-                self.post_task(tile_container_id, "RebuildTileForms", form_info)
+                self.post_task(tid, "RebuildTileForms", form_info)
         self.tile_sort_list.append(tile_container_id)
         self.current_tile_id += 1
         self.debug_log("leaving create_tile in main.py")
