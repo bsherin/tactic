@@ -913,6 +913,7 @@ class mainWindow(QWorker):
                                                       "header_list": docinfo.header_list})
         return {"success": True}
 
+    # tactic_new reworked create_collection
     @task_worthy
     def create_collection(self, data):
         mdata = self.create_initial_metadata()
@@ -922,11 +923,18 @@ class mainWindow(QWorker):
         doc_type = data["doc_type"]
         full_collection_name = self.post_and_wait("host", "get_full_collection_name", {"name": new_name, "user_id": self.user_id})["full_collection_name"]
         if doc_type == "table":
+            mdata["type"] = "table"
             self.db[full_collection_name].insert_one(mdata)
-            for docname, doc in doc_dict.items():
-                header_list = doc[doc.keys()[0]].keys()
+            for docname, doc_as_list in doc_dict.items():
+                header_list = doc_as_list[0].keys()
+                doc_as_dict = {}
+                for r, the_row in enumerate(doc_as_list):
+                    the_row["__id__"] = r
+                    the_row["__filename__"] = docname
+                    doc_as_dict[str(r)] = the_row
+                header_list = ["__id__", "__filename__"] + header_list
                 self.db[full_collection_name].insert_one({"name": docname,
-                                                          "data_rows": doc,
+                                                          "data_rows": doc_as_dict,
                                                           "header_list": header_list})
         else:
             mdata["type"] = "freeform"
