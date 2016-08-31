@@ -231,7 +231,7 @@ var tableObject = {
             $(".grid-left").width(usable_width * this.left_fraction);
         }
         $(".grid-right").width(usable_width * (1 - this.left_fraction));
-        $(".CodeMirror").css('height', window.innerHeight - $("#console-panel").outerHeight() - 30- $(".CodeMirror").offset().top);
+        $("#freeform-area .CodeMirror").css('height', window.innerHeight - $("#console-panel").outerHeight() - 30- $("#freeform-area .CodeMirror").offset().top);
         $("#tile-area").height(window.innerHeight - $("#console-panel").outerHeight() - 30 - $("#tile-area").offset().top);
         $("#main-panel").width(""); // We do this so that this will resize when the window is resized.
         myCodeMirror.refresh()
