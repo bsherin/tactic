@@ -323,6 +323,8 @@ class CollectionManager(ResourceManager):
                          login_required(self.duplicate_collection), methods=['post', 'get'])
         app.add_url_rule('/download_collection/<collection_name>/<new_name>', "download_collection",
                          login_required(self.download_collection), methods=['post', 'get'])
+        app.add_url_rule('/combine_collections/<base_collection>/<collection_to_add>', "combine_collections",
+                         login_required(self.combine_collections), methods=['post', 'get'])
 
     def main(self, collection_name):
         user_obj = current_user
@@ -454,6 +456,23 @@ class CollectionManager(ResourceManager):
                 "data_rows": doc_rows
             })
         return doc_list
+
+    def combine_collections(self, base_collection, collection_to_add):
+        try:
+            user_obj = current_user
+            base_full_name = user_obj.build_data_collection_name(base_collection)
+            add_full_name = user_obj.build_data_collection_name(collection_to_add)
+            base_collection = db[base_full_name]
+            add_collection = db[add_full_name]
+            for f in add_collection.find():
+                fname = f["name"].encode("ascii", "ignore")
+                if fname == "__metadata__":
+                    continue
+                base_collection.insert_one(f)
+            return jsonify({"message": "Collections successfull combined", "alert_type": "alert-success"})
+        except:
+            error_string = "Error combining collections: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+            return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
     def import_as_table(self, collection_name):
         user_obj = current_user
