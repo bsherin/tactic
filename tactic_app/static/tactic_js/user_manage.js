@@ -250,6 +250,7 @@ var col_manager_specifics = {
     buttons: [
         {"name": "load", "func": "load_func", "button_class": "btn btn-primary"},
         {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-success"},
+        {"name": "combine_collections", "func": "combineCollections", "button_class": "btn-primary"},
         {"name": "download", "func": "downloadCollection", "button_class": "btn btn-primary"},
         {"name": "delete", "func": "delete_func", "button_class": "btn-danger"}
     ],
@@ -300,6 +301,25 @@ var col_manager_specifics = {
         showModal("Download Collection as Excel Notebook", "New File Name", function (new_name) {
             window.open($SCRIPT_ROOT + "/download_collection/" + res_name + "/" + new_name)
         }, res_name + ".xls")
+    },
+    combineCollections: function (event) {
+        var manager = event.data.manager;
+        var res_name = manager.check_for_selection(manager.res_type);
+        if (res_name == "") return;
+        showModal("Name of collection to combine with " + res_name, "collection Name", function (other_name) {
+            startSpinner();
+            $.ajax({
+                url: $SCRIPT_ROOT + "/combine_collections/" + res_name + "/" + other_name,
+                type: 'POST',
+                processData: false,
+                contentType: false,
+                success: combineSuccess
+            });
+            function combineSuccess(data) {
+                stopSpinner();
+                doFlash(data)
+            }
+        })
     }
 };
 
