@@ -118,11 +118,11 @@ var container_manager_specifics = {
         {"name": "refresh", "func": "refresh_container_table", "button_class": "btn btn-info"}
     ],
     clear_user_func: function (event) {
-        $.getJSON($SCRIPT_ROOT + '/clear_user_containers', doFlash);
+        $.getJSON($SCRIPT_ROOT + '/clear_user_containers/' + user_manage_id, doFlash);
         event.preventDefault();
     },
     reset_server_func: function (event) {
-        $.getJSON($SCRIPT_ROOT + '/reset_server', doFlash);
+        $.getJSON($SCRIPT_ROOT + '/reset_server/' + user_manage_id, doFlash);
         event.preventDefault();
     },
     destroy_container: function (event) {
@@ -166,15 +166,6 @@ function resize_window() {
         $("#" + val + "-aux-area").outerHeight(auxh);
     })
 }
-
-function clearUserContainers() {
-    $.getJSON($SCRIPT_ROOT + '/clear_user_containers', function(data) {
-
-        doFlash(data);
-
-    })
-}
-
 
 function startSpinner() {
     $("#spinner").css("display", "inline-block")

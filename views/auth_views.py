@@ -1,4 +1,4 @@
-from flask import render_template, request, jsonify
+from flask import render_template, request, jsonify, session
 from flask.ext.login import login_user, login_required, logout_user
 from flask_login import current_user
 
@@ -10,7 +10,11 @@ from tactic_app import app, socketio, csrf
 from wtforms.validators import ValidationError
 from tactic_app import ANYONE_CAN_REGISTER
 from tactic_app.global_tile_management import global_tile_manager
+from tactic_app.docker_functions import destroy_user_containers
 
+@app.before_request
+def mark_sess_modified():
+  session.modified = True
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/login', methods=['GET', 'POST'])
@@ -52,12 +56,15 @@ def check_if_admin():
     return jsonify(result_dict)
 
 
+# tactic_new I changed this an added destroy_user_containers. should test
 @app.route('/logout')
 @login_required
 def logout():
-    socketio.emit('close-user-windows', {}, namespace='/user_manage', room=current_user.get_id())
-    socketio.emit('close-user-windows', {}, namespace='/main', room=current_user.get_id())
+    user_id = current_user.get_id()
+    socketio.emit('close-user-windows', {}, namespace='/user_manage', room=user_id)
+    socketio.emit('close-user-windows', {}, namespace='/main', room=user_id)
     global_tile_manager.remove_user(current_user.username)
+    destroy_user_containers(user_id) # They should be gone by this point. But make sure.
     logout_user()
     return render_template('auth/login.html', show_message="yes",
                            message="You have been logged out.", alert_type="alert-info")
