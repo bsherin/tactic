@@ -76,7 +76,6 @@ def load_temp_page(the_id):
 
 
 @app.route('/remove_mainwindow/<main_id>', methods=['get', 'post'])
-@login_required
 def remove_mainwindow(main_id):
     def do_the_destroys(result):
         tile_ids = result["tile_ids"]

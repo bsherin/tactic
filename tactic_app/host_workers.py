@@ -4,7 +4,7 @@ from flask_login import url_for
 from users import load_user
 import gevent
 from communication_utils import send_request_to_container
-from docker_functions import create_container, get_address, destroy_container, cli
+from docker_functions import create_container, get_address, destroy_container, cli, container_owners, destroy_user_containers
 from tactic_app.global_tile_management import global_tile_manager
 from tactic_app import app, socketio, mongo_uri, megaplex_address, use_ssl # global_stuff
 from views.user_manage_views import tile_manager, project_manager, collection_manager
@@ -12,10 +12,17 @@ import uuid
 import copy
 import traceback
 
+
+
 class HostWorker(QWorker):
     def __init__(self, app, megaplex_address):
         QWorker.__init__(self, app, megaplex_address, "host")
         self.temp_dict = {}
+
+    def check_for_containers_without_active_owners(self):
+        for cont, owner_id in container_owners.items():
+            if not owner_id == "host" and not load_user(owner_id).is_authenticated():
+                destroy_user_containers(owner_id)
 
     @task_worthy
     def stop_user_manage_spinner(self, data):
@@ -318,6 +325,9 @@ class HostWorker(QWorker):
         error_string = template.format(type(ex).__name__, ex.args)
         print error_string
         return
+
+    def special_long_sleep_function(self):
+        self.check_for_containers_without_active_owners()
 
 class ClientWorker(QWorker):
     def __init__(self, app, megaplex_address, socketio):

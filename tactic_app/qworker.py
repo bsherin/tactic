@@ -96,6 +96,9 @@ class QWorker(gevent.Greenlet):
         send_request_to_container(self.megaplex_address, "submit_response", task_packet)
         return
 
+    def special_long_sleep_function(self):
+        pass
+
     def _run(self):
         self.debug_log("Entering _run")
         self.running = True
@@ -122,6 +125,7 @@ class QWorker(gevent.Greenlet):
                         self.handle_event(task_packet)
                     gevent.sleep(SHORT_SLEEP_PERIOD)
                 else:
+                    self.special_long_sleep_function()
                     gevent.sleep(LONG_SLEEP_PERIOD)
 
     def handle_event(self, task_packet):

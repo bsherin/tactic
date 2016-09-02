@@ -37,6 +37,12 @@ class User(UserMixin):
                 setattr(self, key, "")
         self.password_hash = user_dict["password_hash"]
 
+    def is_authenticate(self):
+        return True
+
+    def is_anonymous(self):
+        return False
+
     @staticmethod
     def get_user_by_username(username):
         result = db.user_collection.find_one({"username": username})

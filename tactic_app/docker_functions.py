@@ -80,6 +80,10 @@ def destroy_container(cname):
     except:
         return -1
 
+def destroy_user_containers(owner_id):
+    for cont, owner in container_owners.items():
+        if owner == owner_id:
+            destroy_container(cont)
 
 def send_direct_request_to_container(container_id, msg_type, data_dict, wait_for_success=True,
                                      timeout=3, tries=RETRIES, wait_time=.1):

@@ -103,6 +103,14 @@ class ResourceManager(object):
         result = self.build_html_table_from_data_list(res_array)
         return result
 
+    # I don't think the timeout variable has any effect.
+    def show_um_message(self, message, user_manage_id, timeout=3):
+        data = {"message": message, "timeout": timeout}
+        socketio.emit('show-status-msg', data, namespace='/user_manage', room=user_manage_id)
+
+    def clear_um_message(self, user_manage_id):
+        socketio.emit('clear-status-msg', {}, namespace='/user_manage', room=user_manage_id)
+
     def build_html_table_from_data_list(self, data_list, title=None):
         the_html = "<table class='tile-table table sortable table-striped table-bordered table-condensed'>"
         if title is not None:

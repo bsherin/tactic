@@ -13,28 +13,32 @@ repository_user = User.get_user_by_username("repository")
 class ContainerManager(ResourceManager):
 
     def add_rules(self):
-        app.add_url_rule('/reset_server', "reset_server", login_required(self.reset_server),
+        app.add_url_rule('/reset_server/<user_manage_id>', "reset_server", login_required(self.reset_server),
                          methods=['get'])
-        app.add_url_rule('/clear_user_containers', "clear_user_containers", login_required(self.clear_user_containers), methods=['get'])
+        app.add_url_rule('/clear_user_containers/<user_manage_id>', "clear_user_containers", login_required(self.clear_user_containers), methods=['get'])
         app.add_url_rule('/destroy_container/<container_id>', "kill_container", login_required(self.kill_container), methods=['get'])
         app.add_url_rule('/container_logs/<container_id>', "container_logs", login_required(self.container_logs), methods=['get'])
         app.add_url_rule('/refresh_container_table', "refresh_container_table", login_required(self.refresh_container_table),
                          methods=['get'])
 
-    def clear_user_containers(self):
+    def clear_user_containers(self, user_manage_id):
         if not (current_user.get_id() == repository_user.get_id()):
             return jsonify({"success": False, "message": "not authorized", "alert_type": "alert-warning"})
         try:
+            self.show_um_message("removing user containers", user_manage_id)
             all_containers = cli.containers(all=True)
             for cont in all_containers:
                 if cont["Image"] in ["tactic_main_image"]:
+                    self.show_um_message("removing main container " + cont["Id"], user_manage_id)
                     cli.remove_container(cont["Id"], force=True)
                     continue
                 if cont["Image"] in ["tactic_tile_image"]:
                     if not cont["Id"] == global_tile_manager.test_tile_container_id:
+                        self.show_um_message("removing tile container " + cont["Id"], user_manage_id)
                         cli.remove_container(cont["Id"], force=True)
                     continue
                 if cont["Image"] == cont["ImageID"]:
+                    self.show_um_message("removing image container " + cont["Id"], user_manage_id)
                     cli.remove_container(cont["Id"], force=True)
         except Exception as ex:
             template = "<pre>An exception of type {0} occured. Arguments:\n{1!r}</pre>"
@@ -42,16 +46,21 @@ class ContainerManager(ResourceManager):
             error_string += traceback.format_exc()
             return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
+        self.clear_um_message(user_manage_id)
         self.update_selector_list()
         return jsonify({"success": True, "message": "User Containers Cleared", "alert_type": "alert-success"})
 
-    def reset_server(self):
+    def reset_server(self, user_manage_id):
         if not (current_user.get_id() == repository_user.get_id()):
             return jsonify({"success": False, "message": "not authorized", "alert_type": "alert-warning"})
         try:
+            self.show_um_message("removing all containers", user_manage_id)
             do_docker_cleanup()
+            self.show_um_message("recreating the megaplex", user_manage_id)
             create_megaplex()
+            self.show_um_message("initializing the global tile manager", user_manage_id)
             global_tile_manager.initialize()
+            self.show_um_message("getting default tiles", user_manage_id)
             global_tile_manager.get_all_default_tiles()
         except Exception as ex:
             template = "<pre>An exception of type {0} occured. Arguments:\n{1!r}</pre>"
@@ -59,6 +68,7 @@ class ContainerManager(ResourceManager):
             error_string += traceback.format_exc()
             return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
+        self.clear_um_message(user_manage_id)
         self.update_selector_list()
         return jsonify({"success": True, "message": "Server successefully reset", "alert_type": "alert-success"})
 
