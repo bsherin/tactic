@@ -35,7 +35,6 @@ jsonizable_types = {
     "NoneType": NoneType
 }
 
-# tactic_change this is a bit ugly.
 code_names = {"classes":{},
               "functions": {}}
 
@@ -43,9 +42,11 @@ def user_function(the_func):
     code_names["functions"][the_func.__name__] = the_func
     return the_func
 
+
 def user_class(the_class):
     code_names["classes"][the_class.__name__] = the_class
     return the_class
+
 
 def exec_user_code(the_code):
     try:
@@ -55,7 +56,14 @@ def exec_user_code(the_code):
         return {"success": False, "message_string": error_string}
     return {"success": True, "classes": code_names["classes"].keys(), "functions": code_names["functions"].keys()}
 
-# noinspection PyMissingConstructor
+
+def clear_and_exec_user_code(the_code):
+    code_names["classes"] = {}
+    code_names["functions"] = {}
+    return exec_user_code(the_code)
+
+# noinspection PyMiss
+# ingConstructor
 class TileBase(QWorker):
     category = "basic"
     exports = []
