@@ -153,8 +153,8 @@ class ResourceManager(object):
                     updatestring = mdata["updated"].strftime("%b %d, %Y, %H:%M")
                     updatestring_for_sort = mdata["updated"].strftime("%Y%m%d%H%M%S")
                 else:
-                    updatestring = ""
-                    updatestring_for_sort = ""
+                    updatestring = datestring
+                    updatestring_for_sort = datestring_for_sort
                 tagstring = str(mdata["tags"])
             larray.append([res_item[0], [datestring, datestring_for_sort], [updatestring, updatestring_for_sort], tagstring])
         return larray
@@ -464,10 +464,10 @@ class CollectionManager(ResourceManager):
             })
         return doc_list
 
-    def combine_collections(self, base_collection, collection_to_add):
+    def combine_collections(self, base_collection_name, collection_to_add):
         try:
             user_obj = current_user
-            base_full_name = user_obj.build_data_collection_name(base_collection)
+            base_full_name = user_obj.build_data_collection_name(base_collection_name)
             add_full_name = user_obj.build_data_collection_name(collection_to_add)
             base_collection = db[base_full_name]
             add_collection = db[add_full_name]
@@ -476,6 +476,9 @@ class CollectionManager(ResourceManager):
                 if fname == "__metadata__":
                     continue
                 base_collection.insert_one(f)
+            db[base_full_name].update_one({"name": "__metadata__"},
+                                 {'$set': {"updated": datetime.datetime.today()}})
+            self.update_selector_list(base_collection_name)
             return jsonify({"message": "Collections successfull combined", "alert_type": "alert-success"})
         except:
             error_string = "Error combining collections: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
@@ -491,7 +494,7 @@ class CollectionManager(ResourceManager):
         mdata = global_tile_manager.create_initial_metadata()
         try:
             db[full_collection_name].insert_one({"name": "__metadata__", "datetime": mdata["datetime"],
-                                                 "tags": "", "notes": "", "type": "table"})
+                                                 "updated": mdata["updated"], "tags": "", "notes": "", "type": "table"})
         except:
             error_string = "Error creating collection: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
             return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
@@ -541,7 +544,7 @@ class CollectionManager(ResourceManager):
         mdata = global_tile_manager.create_initial_metadata()
         try:
             db[full_collection_name].insert_one({"name": "__metadata__", "datetime": mdata["datetime"],
-                                                 "tags": "", "notes": "", "type": "freeform"})
+                                                 "updated": mdata["updated"], "tags": "", "notes": "", "type": "freeform"})
         except:
             error_string = "Error creating collection: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
             return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
