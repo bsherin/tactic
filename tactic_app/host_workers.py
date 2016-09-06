@@ -95,6 +95,7 @@ class HostWorker(QWorker):
         self.show_um_status_message("start initialize project", user_manage_id, None)
         result = send_request_to_container(caddress, "initialize_project_mainwindow", data_dict).json()
         if not result["success"]:
+            destroy_container(main_id)
             raise Exception(result["message_string"])
 
         return None
@@ -193,6 +194,13 @@ class HostWorker(QWorker):
     def delete_container(self, data):
         container_id = data["container_id"]
         destroy_container(container_id)
+        return {"success": True}
+
+    @task_worthy
+    def delete_container_list(self, data):
+        container_list = data["container_list"]
+        for container_id in container_list:
+            destroy_container(container_id)
         return {"success": True}
 
     @task_worthy
