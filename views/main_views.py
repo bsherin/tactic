@@ -10,7 +10,7 @@ from bson.binary import Binary
 from flask import request, jsonify, render_template, send_file, url_for
 from flask_login import current_user, login_required
 from flask_socketio import join_room
-from tactic_app import app, db, fs, socketio
+from tactic_app import app, db, fs, socketio, megaplex_id
 from user_manage_views import collection_manager
 from tactic_app.docker_functions import get_address, destroy_container
 from tactic_app.users import load_user
@@ -81,7 +81,9 @@ def remove_mainwindow(main_id):
         tile_ids = result["tile_ids"]
         for tile_id in tile_ids:
             destroy_container(tile_id)
+            send_direct_request_to_container(megaplex_id, "deregister_container", {"container_id": tile_id})
         destroy_container(main_id)
+        send_direct_request_to_container(megaplex_id, "deregister_container", {"container_id": main_id})
     host_worker.post_task(main_id, "get_tile_ids", {}, do_the_destroys)
     return jsonify({"success": True})
 

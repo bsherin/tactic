@@ -11,18 +11,15 @@ from views.user_manage_views import tile_manager, project_manager, collection_ma
 import uuid
 import copy
 import traceback
+import datetime
 
-
+check_for_dead_time = 300
 
 class HostWorker(QWorker):
     def __init__(self, app, megaplex_address):
         QWorker.__init__(self, app, megaplex_address, "host")
         self.temp_dict = {}
-
-    def check_for_containers_without_active_owners(self):
-        for cont, owner_id in container_owners.items():
-            if not owner_id == "host" and not load_user(owner_id).is_authenticated():
-                destroy_user_containers(owner_id)
+        self.last_check_for_dead_containers = datetime.datetime.today()
 
     @task_worthy
     def stop_user_manage_spinner(self, data):
@@ -68,7 +65,7 @@ class HostWorker(QWorker):
         self.show_um_status_message("creating main container", user_manage_id, None)
         main_id = create_container("tactic_main_image", network_mode="bridge", owner=user_id)
         caddress = get_address(main_id, "bridge")
-        send_request_to_container(self.megaplex_address, "add_address", {"container_id": "main", "address": caddress})
+        send_request_to_container(self.megaplex_address, "register_container", {"container_id": main_id})
 
         global_tile_manager.add_user(user_obj.username)
 
@@ -99,6 +96,7 @@ class HostWorker(QWorker):
         result = send_request_to_container(caddress, "initialize_project_mainwindow", data_dict).json()
         if not result["success"]:
             raise Exception(result["message_string"])
+
         return None
 
     @task_worthy
@@ -178,6 +176,7 @@ class HostWorker(QWorker):
                                                  network_mode="bridge",
                                                  owner=data["user_id"])
             tile_container_address = get_address(tile_container_id, "bridge")
+            send_request_to_container(megaplex_address, "register_container", {"container_id": tile_container_id})
             cdict[tile_container_id] = tile_container_address
         return cdict
 
@@ -295,6 +294,7 @@ class HostWorker(QWorker):
         tile_container_id = create_container("tactic_tile_image", network_mode="bridge",
                                              owner=data["user_id"])
         tile_address = get_address(tile_container_id, "bridge")
+        send_request_to_container(megaplex_address, "register_container", {"container_id": tile_container_id})
         return {"tile_id": tile_container_id, "tile_address": tile_address}
 
     @task_worthy
@@ -326,8 +326,19 @@ class HostWorker(QWorker):
         print error_string
         return
 
+    def clear_stale_containers(self):
+        res = send_request_to_container(megaplex_address, "get_old_inactive_stalled_containers").json()
+        cont_list = res["old_inactive_stalled_containers"]
+        for cont_id in cont_list:
+            destroy_container(cont_id)
+
     def special_long_sleep_function(self):
-        self.check_for_containers_without_active_owners()
+        current_time = datetime.datetime.today()
+        tdelta = current_time - self.last_check_for_dead_containers
+        delta_seconds = tdelta.days * 24 * 60 + tdelta.seconds
+        if delta_seconds > check_for_dead_time:
+            self.last_check_for_dead_containers = current_time
+            self.clear_stale_containers()
 
 class ClientWorker(QWorker):
     def __init__(self, app, megaplex_address, socketio):
@@ -364,6 +375,7 @@ class ClientWorker(QWorker):
                     self.socketio.emit("table-message", task_packet, namespace='/main', room=task_packet["main_id"])
                 gevent.sleep(SHORT_SLEEP_PERIOD)
             else:
+                self.special_long_sleep_function()
                 gevent.sleep(LONG_SLEEP_PERIOD)
 
 host_worker = HostWorker(app, megaplex_address)

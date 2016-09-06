@@ -33,7 +33,8 @@ def get_address(container_identifier, network_name):
     return cli.inspect_container(container_identifier)["NetworkSettings"]["Networks"][network_name]["IPAddress"]
 
 
-def create_container(image_name, container_name=None, network_mode="bridge", wait_until_running=True, owner="host", env_vars={}):
+def create_container(image_name, container_name=None, network_mode="bridge",
+                     wait_until_running=True, owner="host", env_vars={}):
     environ = {"SHORT_SLEEP_PERIOD": SHORT_SLEEP_PERIOD,
                "LONG_SLEEP_PERIOD": LONG_SLEEP_PERIOD,
                "MAX_QUEUE_LENGTH": MAX_QUEUE_LENGTH,

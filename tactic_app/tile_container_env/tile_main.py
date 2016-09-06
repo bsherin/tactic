@@ -2,7 +2,8 @@ from flask import Flask, jsonify, request
 import copy
 import tile_env
 from tile_env import class_info
-from tile_env import exec_tile_code, clear_and_exec_user_code
+from tile_env import exec_tile_code
+from tile_base import clear_and_exec_user_code
 import cPickle
 from bson.binary import Binary
 import inspect
