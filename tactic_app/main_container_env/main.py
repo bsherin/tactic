@@ -774,7 +774,7 @@ class mainWindow(QWorker):
         self.debug_log("instantiating tile class")
         instantiate_result = send_request_to_container(tile_address, "instantiate_tile_class", data_dict).json()
         if not instantiate_result["success"]:
-            self.debug_log("got an exception " + result["message_string"])
+            self.debug_log("got an exception " + instantiate_result["message_string"])
             raise Exception(instantiate_result["message_string"])
 
         exports = instantiate_result["exports"]
