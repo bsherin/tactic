@@ -395,7 +395,7 @@ class mainWindow(QWorker):
                                                            "message": "window-open",
                                                            "doc_type": self.doc_type})
         except Exception as ex:
-            container_list = [self.my_id] + tile_containers
+            container_list = [self.my_id] + tile_containers.keys()
             self.ask_host("delete_container_list", {"container_list": container_list})
             template = "An exception of type {0} occured. Arguments:\n{1!r}\n"
             error_string = template.format(type(ex).__name__, ex.args)
