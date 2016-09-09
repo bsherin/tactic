@@ -346,9 +346,10 @@ TileObject.prototype = {
     listen_for_clicks: function() {
         var full_frontal_selector = this.full_selector() + " .front";
 
-        self = this;
-        $(this.full_selector()).on('click', ".header-but", function (e) {
-            self[self.tileHeaderButtons[e.target.parentElement.id]]()
+        $(this.full_selector()).on('click touchstart', ".header-but", function (e) {
+            the_id = $(e.target).closest(".tile-panel").attr("id");
+            tobject = tile_dict[the_id];
+            tobject[tobject.tileHeaderButtons[e.target.parentElement.id]]()
         });
 
         $(full_frontal_selector).on('click', '.word-clickable', function(e) {
