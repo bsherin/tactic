@@ -33,30 +33,29 @@
     <div id="outer-container" style="display: none">
         <div class="grid-left" align="left">
             <div id="main-panel" class="panel panel-default">
-                <div class="panel-heading" id="data-title" style="overflow:hidden">
-                <div class="main-heading-element" style="float:left; white-space: nowrap">
-                    <button type='button' id="shrink-table-button" data-toggle="tooltip" class='notclose tooltip-top' onclick="tableObject.shrinkTable()"><span class="glyphicon glyphicon-th"></span></button>
-                    <form class="form-inline" style="display:inline">
-                      <span class="form-group">
-                        <label for="doc-selector">{{short_collection_name}}: </label>
-                            <select id="doc-selector" style="max-width: 200px" class="form-control  tooltip-top" data-toggle="tooltip" onchange="change_doc(this, null)">
-                                {% for dname in doc_names %}
-                                    <option>{{ dname }}</option>
-                                {% endfor %}
-                            </select>
-                        </span>
-                    </form>
-                    <span id="project-label"> Project: <span id="project-name" >{{project_name}}</span></span>
-                </div>
-                <div class="main-heading-element" style="float:right; white-space: nowrap">
-                    <form class="form-inline">
-                        <div class="input-group input-group-sm">
-                          <input type="text" id="search" class="form-control" size="10" placeholder="Search">
-                             <span class="input-group-btn">
-                                <button class="btn btn-default tooltip-top" id="search-button" data-toggle="tooltip" type="button" onclick="return doSearch(document.getElementById('search').value)" value="Find">Find</button>
-                             </span>
-                        </div>
-                   </form>
+                <div class="panel-heading" id="data-title" style="overflow:hidden; white-space:nowrap">
+                    <div class="main-heading-element" style="float:right; display:inline-block">
+                        <form class="form-inline">
+                            <div class="input-group input-group-sm">
+                              <input type="text" id="search" class="form-control" size="10" placeholder="Search">
+                                 <span class="input-group-btn">
+                                    <button class="btn btn-default tooltip-top" id="search-button" data-toggle="tooltip" type="button" onclick="return doSearch(document.getElementById('search').value)" value="Find">Find</button>
+                                 </span>
+                            </div>
+                       </form>
+                    </div>
+                    <div class="main-heading-element" style="float:left; display:inline-block">
+                        <button type='button' id="shrink-table-button" data-toggle="tooltip" class='notclose tooltip-top' onclick="tableObject.shrinkTable()"><span class="glyphicon glyphicon-th"></span></button>
+                        <form class="form-inline" style="display:inline">
+                          <span class="form-group">
+                            <label for="doc-selector">{{short_collection_name}}: </label>
+                                <select id="doc-selector" style="max-width: 200px" class="form-control  tooltip-top" data-toggle="tooltip" onchange="change_doc(this, null)">
+                                    {% for dname in doc_names %}
+                                        <option>{{ dname }}</option>
+                                    {% endfor %}
+                                </select>
+                            </span>
+                        </form>
                     </div>
                     <span id="table-spin-place"></span><span id="status-msg-area" class="status-msg"></span>
                 </div>
@@ -99,13 +98,14 @@
     <script src="{{url_for('static', filename='js/socket.io.js')}}"></script>
     <script src="{{url_for('static', filename='js/d3.js')}}"></script>
     <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
+    <script src="{{url_for('static', filename='js/transition.js')}}"></script>
+    <script src="{{url_for('static', filename='js/collapse.js')}}"></script>
     <script src="{{url_for('static', filename='js/sorttable.js')}}"></script>
     <script src="{{url_for('static', filename='js/codemirror.js')}}"></script>
     <script src="{{url_for('static', filename='js/codemirror/search.js')}}"></script>
     <script src="{{url_for('static', filename='js/codemirror/searchcursor.js')}}"></script>
     <script src="{{url_for('static', filename='js/codemirror/jump-to-line.js')}}"></script>
     <script src="{{url_for('static', filename='js/codemirror/dialog.js')}}"></script>
-    <script src="{{url_for('static', filename='js/codemirror/simple.js')}}"></script>
     <script src="{{url_for('static', filename='js/python.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/utilities.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/communication.js')}}"></script>
@@ -113,9 +113,10 @@
     <script src="{{url_for('static', filename='tactic_js/d3figures.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/tiles.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/main.js')}}"></script>
+    <script src="{{url_for('static', filename='js/codemirror/simple.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/freeform.js')}}"></script>
     <script>
-    console.log("running scripts")
+    console.log("running scripts");
     var _collection_name = "{{collection_name}}";
     var _project_name = "{{project_name}}";
     var main_id = "{{main_id}}";
