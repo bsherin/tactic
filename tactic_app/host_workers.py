@@ -238,10 +238,11 @@ class HostWorker(QWorker):
         from tactic_app import socketio
         unique_id = str(uuid.uuid4())
         template_data = data["template_data"]
+        template_data["template_name"] = "main.html"
         if data["doc_type"] == "table":
-            template_data["template_name"] = "main.html"
+            template_data["is_table"] = True
         else:
-            template_data["template_name"] = "freeform_main.html"
+            template_data["is_freeform"] = True
         doc_names = template_data["doc_names"]
         # why is this fix needed here when I did it upstream?
         fixed_doc_names = [str(doc_name) for doc_name in doc_names]

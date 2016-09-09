@@ -13,7 +13,6 @@ function showZoomedImage(el) {
 function TileObject(tile_id, html, is_new_tile) {
     this.tile_id = tile_id;
     this.codeMirrorObjects = {};
-    self = this;
 
     $("#tile-div").append(html);  // This append has to be after the flip or weird things happen
 
@@ -37,6 +36,7 @@ function TileObject(tile_id, html, is_new_tile) {
             self.broadcastTileSize()
         }
     });
+    // tactic_change Is this stuff with my_tile_id really needed? Note that the id has the tile_id.
     jQuery.data($(this.full_selector())[0], "my_tile_id", this.tile_id);
     this.listen_for_clicks();
 
@@ -76,7 +76,7 @@ TileObject.prototype = {
             var theCode = self.codeMirrorObjects[theId].getValue();
             theTextArea.text(theCode)
 
-        })
+        });
         $(this.full_selector() + " .back input").each(function () {
                 if (this.type == "checkbox") {
                     data[$(this).attr('id')] = this.checked
@@ -332,8 +332,25 @@ TileObject.prototype = {
             postWithCallback(self.tile_id, "RefreshTileFromSave", {}, final_callback)
         })
     },
+
+    tileHeaderButtons: {"tile-close": "closeMe",
+            "tile-reload": "reloadMe",
+            "tile-log-params": "logParams",
+            "tile-logme": "logMe",
+            "tile-container-log": "toggleContainerLog",
+            "tile-expandme": "expandMe",
+            "tile-shrinkme": "shrinkMe",
+            "tile-options": "toggleOptions"
+    },
+
     listen_for_clicks: function() {
         var full_frontal_selector = this.full_selector() + " .front";
+
+        self = this;
+        $(this.full_selector()).on('click', ".header-but", function (e) {
+            self[self.tileHeaderButtons[e.target.parentElement.id]]()
+        });
+
         $(full_frontal_selector).on('click', '.word-clickable', function(e) {
             var tile_id = jQuery.data(e, "my_tile_id");
             var s = window.getSelection();

@@ -346,10 +346,8 @@ class CollectionManager(ResourceManager):
         mdata = the_collection.find_one({"name": "__metadata__"})
         if "type" in mdata and mdata["type"] == "freeform":
             doc_type = "freeform"
-            template = "freeform_main.html"
         else:
             doc_type = "table"
-            template = "main.html"
 
         data_dict = {"collection_name": cname,
                      "main_id": main_id,
@@ -374,7 +372,7 @@ class CollectionManager(ResourceManager):
             else:
                 doc_names.append(fname)
 
-        return render_template(template,
+        return render_template("main.html",
                                collection_name=cname,
                                window_title=short_collection_name,
                                project_name='',
@@ -382,6 +380,7 @@ class CollectionManager(ResourceManager):
                                doc_names=doc_names,
                                use_ssl=str(use_ssl),
                                console_html="",
+                               is_table = (doc_type == "table"),
                                short_collection_name=short_collection_name,
                                new_tile_info="")
 

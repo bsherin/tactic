@@ -13,29 +13,37 @@
   </head>
   <body>
     <div class="navbar navbar-default" style="margin-bottom: 1px" role="navigation">
-        <div class="container-fluid">
-            <div class="navbar-header" >
-                <a id="mybrand" class="navbar-brand" href="/">Tactic</a>
-            </div>
-            <div class="navbar-collapse collapse">
-                <ul class="nav navbar-nav" id="menu-area">
-                    {% block navbar %}
-                    {% endblock %}
-                </ul>
+        <div class="container-fluid" style="white-space:nowrap">
+            <div class="navbar-collapse collapse" id="collapse-area" style="display:inline-block !important; float:right">
                 <ul id="my-navbar-right" class="nav navbar-nav navbar-right">
                     {% block morenavbar %}
                     {% endblock %}
-                    <li><a href="" onclick="return toggleTooltips();">?</a></li>
-                    <li><a href="https://github.com/bsherin/tactic/wiki">Docs</a></li>
+                    <li class="hidden-sm"><a href="https://github.com/bsherin/tactic/wiki">Docs</a></li>
                     {% if current_user.is_authenticated() %}
                         <li><a href="{{ url_for('user_manage') }}">Resources</a></li>
-                        <li><a href="{{ url_for('account_info') }}">{{current_user.username}}</a></li>
+                        <li class="hidden-sm hidden-xs"><a href="{{ url_for('account_info') }}">{{current_user.username}}</a></li>
                         <li><a href="" onclick="return doSignOut();">Sign Out</a></li>
                     {% else %}
                     <li><a href="{{ url_for('login') }}">Sign In</a></li>
                     {% endif %}
                 </ul>
             </div>
+            <div class="navbar-header">
+{#                 <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#collapse-area">#}
+{#                    <span class="sr-only">Toggle navigation</span>#}
+{#                    <span class="icon-bar"></span>#}
+{#                    <span class="icon-bar"></span>#}
+{#                    <span class="icon-bar"></span>#}
+{#                  </button>#}
+                <a id="mybrand" class="navbar-brand" href="/">Tactic</a>
+            </div>
+            <div class="navbar-collapse collapse" style="display:inline-block !important">
+                <ul class="nav navbar-nav" id="menu-area">
+                    {% block navbar %}
+                    {% endblock %}
+                </ul>
+            </div>
+
         </div>
     </div>
 
