@@ -34,7 +34,7 @@
         <div class="grid-left" align="left">
             <div id="main-panel" class="panel panel-default">
                 <div class="panel-heading" id="data-title" style="overflow:hidden; white-space:nowrap">
-                    <div class="main-heading-element" style="float:right; display:inline-block">
+                    <div class="main-heading-element hidden-xs" style="float:right; display:inline-block">
                         <form class="form-inline">
                             <div class="input-group input-group-sm">
                               <input type="text" id="search" class="form-control" size="10" placeholder="Search">
@@ -50,11 +50,13 @@
                             {% endif %}
                        </form>
                     </div>
-                    <div class="main-heading-element" style="float:left; display:inline-block">
+                    <div class="main-heading-element" style="float:left; display:inline-block; line-height:30px">
                         <button type='button' id="shrink-table-button" data-toggle="tooltip" class='notclose tooltip-top' onclick="tableObject.shrinkTable()"><span class="glyphicon glyphicon-th"></span></button>
+                    </div>
+                    <div class="main-heading-element" style="float:left; display:inline-block">
                         <form class="form-inline" style="display:inline">
                           <span class="form-group">
-                            <label for="doc-selector">{{short_collection_name}}: </label>
+                            <label for="doc-selector" class="hidden-sm hidden-xs">{{short_collection_name}}: </label>
                                 <select id="doc-selector" style="max-width: 200px" class="form-control  tooltip-top" data-toggle="tooltip" onchange="change_doc(this, null)">
                                     {% for dname in doc_names %}
                                         <option>{{ dname }}</option>
