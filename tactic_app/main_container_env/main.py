@@ -916,7 +916,6 @@ class mainWindow(QWorker):
                                                       "header_list": docinfo.header_list})
         return {"success": True}
 
-    # tactic_new reworked create_collection
     @task_worthy
     def create_collection(self, data):
         mdata = self.create_initial_metadata()

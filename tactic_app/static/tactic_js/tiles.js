@@ -16,6 +16,7 @@ function TileObject(tile_id, html, is_new_tile) {
 
     $("#tile-div").append(html);  // This append has to be after the flip or weird things happen
 
+    self = this;
     $(this.full_selector() + " .codearea").each( function () {
         theId = $(this).attr("id");
         self.codeMirrorObjects[theId] = CodeMirror.fromTextArea(this, {
@@ -27,8 +28,6 @@ function TileObject(tile_id, html, is_new_tile) {
         cm_element.resizable({handles: "se"})
         cm_element.height(100)
     });
-
-    var self = this;
     $(this.full_selector()).resizable({
         handles: "se",
         resize: self.resize_tile_area,
@@ -36,7 +35,7 @@ function TileObject(tile_id, html, is_new_tile) {
             self.broadcastTileSize()
         }
     });
-    // tactic_change Is this stuff with my_tile_id really needed? Note that the id has the tile_id.
+    // tactic_todo Is this stuff with my_tile_id really needed? Note that the id has the tile_id.
     jQuery.data($(this.full_selector())[0], "my_tile_id", this.tile_id);
     this.listen_for_clicks();
 
