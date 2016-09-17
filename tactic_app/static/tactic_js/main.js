@@ -3,6 +3,7 @@ var console_visible;
 var saved_console_size;
 var dirty;
 var tile_types;
+var consoleCMObjects = {};
 
 var tooltip_dict = {
     "shrink-table-button": "shrink/expand table",
@@ -64,6 +65,12 @@ function closeLogItem(e) {
     $(e.parentElement.parentElement).remove()
 }
 
+function runConsoleCode(e) {
+    el = $(e.parentElement.parentElement);
+    uid = el.find(".console-code")[0].id
+    the_code = consoleCMObjects[uid].getValue();
+    postWithCallback(main_id, "exec_console_code", {"the_code": the_code})
+}
 
 function addBlankConsoleText() {
     var print_string = "<div contenteditable='true'></div>";
@@ -71,6 +78,27 @@ function addBlankConsoleText() {
     postWithCallback(main_id, "print_to_console_event", task_data, function(data) {
         if (!data.success) {
             doFlash(data)
+        }
+    })
+}
+
+// tactic_change working here
+function addConsoleCodearea() {
+    postWithCallback(main_id, "create_console_code_area", {}, function(data) {
+        if (!data.success) {
+            doFlash(data)
+        }
+        else {
+            var codearea = document.getElementById(data["unique_id"]);
+            consoleCMObjects[data["unique_id"]] = CodeMirror(codearea, {
+                        lineNumbers: true,
+                        matchBrackets: true,
+                        autoCloseBrackets: true,
+                        indentUnit: 4,
+                        readOnly: false,
+            });
+            $(codearea).find(".CodeMirror").resizable({handles: "se"})
+            $(codearea).find(".CodeMirror").height(100)
         }
     })
 }
@@ -137,7 +165,20 @@ function start_post_load() {
     socket.on("clear-status-msg", function (data){
        clearStatusMessage()
     });
+
+    // tactic_change left off here
+    mousetrap.bind(['command+enter', 'ctrl+enter'], function(e) {
+        el = $(e.target);
+        if (el.hasClass("console-code")) {
+            uid = el.attr("id");
+            the_code = consoleCMObjects[uid].getValue();
+            postWithCallback(main_id, "exec_console_code", {"the_code": the_code})
+        }
+        e.preventDefault()
+    })
 }
+
+
 
 function continue_loading() {
     socket.on('update-menus', function() {

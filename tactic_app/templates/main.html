@@ -96,9 +96,11 @@
                     <button type='button' id="show-console-button" data-toggle="tooltip" class='notclose triangle-right tooltip-top' onclick=expandConsole();><span style="font-size:12px" class="glyphicon glyphicon-triangle-right"></span></button>
                     <button type='button' id="hide-console-button" data-toggle="tooltip" class='notclose triangle-bottom tooltip-top' onclick=shrinkConsole();><span style="font-size:12px" class="glyphicon glyphicon-triangle-bottom"></span></button>
                     <button type='button' id="open-log-button" data-toggle="tooltip" class='notclose tooltip-top'  onclick=openLogWindow();><span style="font-size:12px" class="glyphicon glyphicon-open"></span></button>
-                    <button type='button' id="add-blank-text-button" data-toggle="tooltip" class='notclose tooltip-top'  onclick=addBlankConsoleText();><span style="font-size:12px" class="glyphicon glyphicon-plus"></span></button>
-                    <button type='button' id="clear-console-button" data-toggle="tooltip" class='notclose tooltip-top' style="float:right" onclick=tableObject.clearConsole();><span style="font-size:12px" class="glyphicon glyphicon-trash"></span></button>
                     Log
+                    <button type='button' id="add-blank-text-button" data-toggle="tooltip" class='notclose tooltip-top'  onclick=addConsoleCodearea();>code</button>
+                    <button type='button' id="add-blank-text-button" data-toggle="tooltip" class='notclose tooltip-top'  onclick=addBlankConsoleText();>text</button>
+                    <button type='button' id="clear-console-button" data-toggle="tooltip" class='notclose tooltip-top' style="float:right" onclick=tableObject.clearConsole();><span style="font-size:12px" class="glyphicon glyphicon-trash"></span></button>
+
                 </div>
               <div id="console" class="panel-body">{{ console_html | safe }}</div>
         </div>

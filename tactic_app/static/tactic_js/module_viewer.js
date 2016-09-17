@@ -17,7 +17,7 @@ mousetrap.bind(['command+s', 'ctrl+s'], function(e) {
     e.preventDefault()
 });
 
-mousetrap.bind(['command+l', 'ctrl+;l'], function(e) {
+mousetrap.bind(['command+l', 'ctrl+l'], function(e) {
     loadModule();
     e.preventDefault()
 });

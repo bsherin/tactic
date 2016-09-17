@@ -18,6 +18,8 @@ from communication_utils import send_request_to_container
 import traceback
 import zlib
 import os
+import uuid
+from cStringIO import StringIO
 
 INITIAL_LEFT_FRACTION = .69
 CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
@@ -893,7 +895,27 @@ class mainWindow(QWorker):
     @task_worthy
     def print_to_console_event(self, data):
         self.print_to_console(data["print_string"], force_open=True)
-        return None
+        return {"success": True}
+
+    @task_worthy
+    def create_console_code_area(self, data):
+        unique_id = str(uuid.uuid4())
+        with self.app.test_request_context():
+            # noinspection PyUnresolvedReferences
+            pmessage = render_template("code_log_item.html", unique_id=unique_id)
+        self.emit_table_message("consoleLog", {"message_string": pmessage, "force_open": True})
+        return {"success": True, "unique_id": unique_id}
+
+    # tactic_change working here
+    @task_worthy
+    def exec_console_code(self, data):
+        the_code = data["the_code"]
+        old_stdout = sys.stdout
+        redirected_output = sys.stdout = StringIO()
+        exec(the_code)
+        sys.stdout = old_stdout
+        self.print_to_console(redirected_output.getvalue())
+        return {"success": True}
 
     @task_worthy
     def get_property(self, data_dict):
@@ -903,7 +925,7 @@ class mainWindow(QWorker):
         val = getattr(self, prop_name)
         return {"success": True, "val": val}
 
-    # tactic_change make export_data work with freeform
+    # tactic_todo work with freeform
     @task_worthy
     def export_data(self, data):
         mdata = self.create_initial_metadata()
