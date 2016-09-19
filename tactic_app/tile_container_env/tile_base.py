@@ -128,6 +128,7 @@ class TileBase(QWorker):
         self.class_names = []
         self.function_names = []
         self._pipe_dict = None # This is set when the form is created
+        self.is_pseudo = False
         return
 
     """
@@ -626,6 +627,21 @@ class TileBase(QWorker):
     def render_tile(self, data):
         return {"tile_html": self.render_me(data)}
 
+    # tactic_change exec_console_code
+    @task_worthy
+    def exec_console_code(self, data):
+        import StringIO
+        try:
+            old_stdout = sys.stdout
+            redirected_output = StringIO.StringIO()
+            sys.stdout = redirected_output
+            exec(data["the_code"])
+            sys.stdout = old_stdout
+            data["result_string"] = redirected_output.getvalue()
+        except Exception as ex:
+            data["result_string"] = self.handle_exception(ex, "Error executing console code", print_to_console = False)
+        return data
+
     def render_me(self, form_info):
         self.debug_log("Entering render_me in tile")
         form_html = self.create_form_html(form_info)["form_html"]
@@ -676,7 +692,7 @@ class TileBase(QWorker):
         self.debug_log(error_string)
         if print_to_console:
             self.log_it(error_string, force_open=True)
-        return
+        return error_string
 
     def get_current_pipe_list(self):
         pipe_list = []
@@ -785,30 +801,55 @@ class TileBase(QWorker):
 
     # Basic setting and access
 
+    def save_stdout(self):
+        self.old_stdout = sys.stdout
+        sys.stdout = sys.stderr
+        return
+
+    def restore_stdout(self):
+        sys.stdout = self.old_stdout
+
     def get_document_names(self):
-        return self.get_main_property("doc_names")
+        self.save_stdout()
+        result =  self.get_main_property("doc_names")
+        self.restore_stdout()
+        return result
 
     def get_current_document_name(self):
-        return self.get_main_property("visible_doc_name")
+        self.save_stdout()
+        result = self.get_main_property("visible_doc_name")
+        self.restore_stdout()
+        return result
 
     def get_document_data(self, document_name):
-        return self.post_and_wait(self.main_id, "get_document_data", {"document_name": document_name})
+        self.save_stdout()
+        result = self.post_and_wait(self.main_id, "get_document_data", {"document_name": document_name})
+        self.restore_stdout()
+        return result
 
     def get_document_data_as_list(self, document_name):
+        self.save_stdout()
         result = self.post_and_wait(self.main_id, "get_document_data_as_list", {"document_name": document_name})
+        self.restore_stdout()
         return result["data_list"]
 
     def get_column_names(self, document_name):
+        self.save_stdout()
         result = self.post_and_wait(self.main_id, "get_column_names", {"document_name": document_name})
+        self.restore_stdout()
         return result["header_list"]
 
     def get_number_rows(self, document_name):
+        self.save_stdout()
         result = self.post_and_wait(self.main_id, "get_number_rows", {"document_name": document_name})
+        self.restore_stdout()
         return result["number_rows"]
 
     def get_row(self, document_name, row_id):
+        self.save_stdout()
         data = {"document_name": document_name, "row_id": row_id}
         result = self.post_and_wait(self.main_id, "get_row", data)
+        self.restore_stdout()
         return result
 
     def get_line(self, document_name, line_number):
@@ -817,11 +858,14 @@ class TileBase(QWorker):
         return result
 
     def get_cell(self, document_name, row_id, column_name):
+        self.save_stdout()
         data = {"document_name": document_name, "row_id": row_id, "column_name": column_name}
         result = self.post_and_wait(self.main_id, "get_cell", data)
+        self.restore_stdout()
         return result["the_cell"]
 
     def get_column_data(self, column_name, document_name=None):
+        self.save_stdout()
         self.debug_log("entering get_column_data")
         if document_name is not None:
             task_data = {"column_name": column_name, "doc_name": document_name}
@@ -830,16 +874,20 @@ class TileBase(QWorker):
             task_data = {"column_name": column_name}
             result = self.post_and_wait(self.main_id, "get_column_data", task_data)
         self.debug_log("leaving get_column_data")
+        self.restore_stdout()
         return result
 
     def get_column_data_dict(self, column_name):
+        self.save_stdout()
         result = {}
         for doc_name in self.get_document_names():
             task_data = {"column_name": column_name, "doc_name": doc_name}
             result[doc_name] = self.post_and_wait(self.main_id, "get_column_data_for_doc", task_data)
+        self.restore_stdout()
         return result
 
     def set_cell(self, document_name, row_id, column_name, text, cellchange=True):
+        self.save_stdout()
         task_data = {
             "doc_name": document_name,
             "id": row_id,
@@ -848,14 +896,17 @@ class TileBase(QWorker):
             "cellchange": cellchange
         }
         self.post_task(self.main_id, "SetCellContent", task_data)
+        self.restore_stdout()
         return
 
     def set_cell_background(self, document_name, row_id, column_name, color):
+        self.save_stdout()
         task_data = {"doc_name": document_name,
                      "row_id": row_id,
                      "column_name": column_name,
                      "color": color}
         self.post_task(self.main_id, "SetCellBackground", task_data)
+        self.restore_stdout()
         return
 
     # def set_row(self, document_name, row_number, row_dictionary, cellchange=True):
@@ -865,6 +916,7 @@ class TileBase(QWorker):
     #     return
 
     def set_column_data(self, document_name, column_name, data_list_or_dict, cellchange=False):
+        self.save_stdout()
         task_data = {
             "doc_name": document_name,
             "column_header": column_name,
@@ -872,10 +924,13 @@ class TileBase(QWorker):
             "cellchange": cellchange
         }
         self.post_task(self.main_id, "SetColumnData", task_data)
+        self.restore_stdout()
+        return
 
     # Filtering and iteration
 
     def get_matching_rows(self, filter_function, document_name=None):
+        self.save_stdout()
         result = []
         if document_name is not None:
             data_list = self.get_document_data_as_list(document_name)
@@ -888,14 +943,18 @@ class TileBase(QWorker):
                 for r in data_list:
                     if filter_function(r):
                         result.append(r)
+        self.restore_stdout()
         return result
 
     def update_document(self, new_data, document_name):
-        self.post_and_wait(self.main_id, "update_document", {"new_data": new_data, "document_name": document_name})
+        self.save_stdout()
+        result = self.post_and_wait(self.main_id, "update_document", {"new_data": new_data, "document_name": document_name})
+        self.restore_stdout()
         return
 
     @task_worthy
     def display_matching_rows(self, filter_function, document_name=None):
+        self.save_stdout()
         if self.doc_type == "table":
             if document_name is not None:
                 result = []
@@ -928,102 +987,145 @@ class TileBase(QWorker):
                             result[docname].append(rnum)
         self.post_task(self.main_id, "display_matching_rows",
                        {"result": result, "document_name": document_name})
+        self.restore_stdout()
         return
 
     def clear_table_highlighting(self):
+        self.save_stdout()
         self.distribute_event(self.main_id, {})
+        self.restore_stdout()
+        return
 
     def highlight_matching_text(self, txt):
+        self.save_stdout()
         self.distribute_event("SearchTable", {"text_to_find": txt})
 
     def display_all_rows(self):
+        self.save_stdout()
         self.post_task(self.main_id, "UnfilterTable")
+        self.restore_stdout()
         return
 
     def apply_to_rows(self, func, document_name=None, cellchange=False):
+        self.save_stdout()
         if document_name is not None:
             doc_dict = self.get_document_data(document_name)
             new_doc_dict = {}
             for id, r in doc_dict.items():
                 new_doc_dict[id] = func(r)
             self.set_document(document_name, new_doc_dict, cellchange)
+            self.restore_stdout()
             return None
         else:
             for doc_name in self.get_document_names():
                 self.apply_to_rows(func, doc_name, cellchange)
+            self.restore_stdout()
             return None
 
     def set_document(self, document_name, new_data, cellchange=False):
+        self.save_stdout()
         task_data = {"new_data": new_data,
                      "doc_name": document_name,
                      "cellchange": cellchange}
         self.post_and_wait(self.main_id, "SetDocument", task_data)
+        self.restore_stdout()
         return
 
     # Other
 
     def go_to_document(self, doc_name):
+        self.save_stdout()
         data = {}
         data["doc_name"] = doc_name
         self.ask_host('go_to_row_in_document', data)
+        self.restore_stdout()
+        return
 
     def go_to_row_in_document(self, doc_name, row_id):
+        self.save_stdout()
         data = {}
         data["doc_name"] = doc_name
         data["row_id"] = row_id
         self.ask_host('go_to_row_in_document', data)
+        self.restore_stdout()
+        return
 
     def get_selected_text(self):
-        return self.get_main_property("selected_text")
+        self.save_stdout()
+        result = self.get_main_property("selected_text")
+        self.restore_stdout()
+        return result
 
     def display_message(self, message_string, force_open=False):
+        self.save_stdout()
         self.post_task(self.main_id, "print_to_console_event", {"print_string": message_string})
+        self.restore_stdout()
         return
 
     def dm(self, message_string, force_open=False):
+        self.save_stdout()
         self.display_message(message_string, force_open)
+        self.restore_stdout()
+        return
 
     def log_it(self, message_string, force_open=False):
+        self.save_stdout()
         self.post_task(self.main_id, "print_to_console_event", {"print_string": message_string})
+        self.restore_stdout()
+        return
 
     def color_cell_text(self, doc_name, row_id, column_name, tokenized_text, color_dict):
         # actual_row = self.post_and_wait(self.main_id, "get_actual_row", data)["actual_row"]
+        self.save_stdout()
         data_dict = {"doc_name": doc_name,
                      "row_id": row_id,
                      "column_header": column_name,
                      "token_text": tokenized_text,
                       "color_dict": color_dict}
         self.post_task(self.main_id, "ColorTextInCell", data_dict)
+        self.restore_stdout()
+        return
 
     def get_user_list(self, the_list):
-        self.debug_log("entering get_user_list")
+        self.save_stdout()
         result = self.post_and_wait("host", "get_list", {"user_id": self.user_id, "list_name": the_list})
-        self.debug_log("leaving get_user_list")
+        self.restore_stdout()
         return result["the_list"]
 
     def get_user_function(self, function_name):
+        self.save_stdout()
         result = self.post_and_wait("host", "get_code_with_function", {"user_id": self.user_id,
                                                                               "function_name": function_name})
         the_code = result["the_code"]
         result = exec_user_code(the_code)
+        self.restore_stdout()
         return code_names["functions"][function_name]
 
     def get_user_class(self, class_name):
+        self.save_stdout()
         result = self.post_and_wait("host", "get_code_with_class", {"user_id": self.user_id,
                                                                               "class_name": class_name})
         the_code = result["the_code"]
         result = exec_user_code(the_code)
+        self.restore_stdout()
         return code_names["classes"][class_name]
 
     # deprecated
     def get_tokenizer(self, tokenizer_name):
-        return self.get_user_function(tokenizer_name)
+        self.save_stdout()
+        result = self.get_user_function(tokenizer_name)
+        self.restore_stdout()
+        return result
 
     # deprecated
     def get_cluster_metric(self, metric_name):
-        return self.get_user_function(metric_name)
+        self.save_stdout()
+        result = self.get_user_function(metric_name)
+        self.restore_stdout()
+        return result
 
     def get_pipe_value(self, pipe_key):
+        self.save_stdout()
         self.debug_log("entering get_pipe_value with pipe_key: " + str(pipe_key))
         for(tile_id, tile_entry) in self._pipe_dict.items():
             if pipe_key in tile_entry:
@@ -1035,16 +1137,22 @@ class TileBase(QWorker):
                 encoded_val = result["encoded_val"]
                 val = cPickle.loads(encoded_val.decode("utf-8", "ignore").encode("ascii"))
                 return val
+        self.restore_stdout()
         return None
 
     @task_worthy
     def transfer_pipe_value(self, data):
+        self.save_stdout()
         export_name = data["export_name"]
         encoded_val = Binary(cPickle.dumps(getattr(self, export_name)))
+        self.restore_stdout()
         return {"encoded_val": encoded_val}
 
     def get_weight_function(self, weight_function_name):
-        return self.get_user_function(weight_function_name)
+        self.save_stdout()
+        result = self.get_user_function(weight_function_name)
+        self.restore_stdout()
+        return result
 
     def create_data_source(self, data):
         dataname = str(self.current_data_id)
@@ -1053,10 +1161,13 @@ class TileBase(QWorker):
         return dataname
 
     def create_collection(self, name, doc_dict, doc_type="table"):
+        self.save_stdout()
         data = {"name": name,
                 "doc_dict": doc_dict,
                 "doc_type": doc_type}
         self.post_task(self.main_id, "create_collection", data)
+        self.restore_stdout()
+        return
 
     # tactic_todo these d3-based plots currently won't work.
     def create_lineplot_html(self, data, xlabels=None):
@@ -1116,6 +1227,7 @@ class TileBase(QWorker):
         return result
 
     def build_html_table_from_data_list(self, data_list, title=None, click_type="word-clickable", sortable=True, sidebyside=False):
+        self.save_stdout()
         if sortable:
             if not sidebyside:
                 the_html = "<table class='tile-table table table-striped table-bordered table-condensed sortable'>"
@@ -1151,4 +1263,5 @@ class TileBase(QWorker):
                                 "data-col='{2}' data-val='{0}'>{0}</td>".format(c, str(rnum), str(cnum))
                 the_html += "</tr>"
         the_html += "</tbody></table>"
+        self.restore_stdout()
         return the_html

@@ -3,7 +3,7 @@ import copy
 import tile_env
 from tile_env import class_info
 from tile_env import exec_tile_code
-from tile_base import clear_and_exec_user_code
+from tile_base import clear_and_exec_user_code, TileBase
 import cPickle
 from bson.binary import Binary
 import inspect
@@ -123,6 +123,29 @@ def reinstantiate_tile():
     except Exception as ex:
         return handle_exception(ex, "Error reinstantiating tile")
 
+# tactic_change working here
+@app.route('/instantiate_as_pseudo_tile', methods=["get", "post"])
+def create_as_pseudo_tile():
+    try:
+        global megaplex_address
+        print("entering load_source")
+        data = request.json
+        megaplex_address = data["megaplex_address"]
+        tile_instance = PseudoTileClass(data["main_id"], data["tile_id"])
+        tile_instance.init_qworker(app, megaplex_address)
+        tile_instance.user_id = data["user_id"]
+        tile_instance.base_figure_url = data["base_figure_url"]
+        if "doc_type" in data:
+            tile_instance.doc_type = data["doc_type"]
+        else:
+            tile_instance.doc_type = "table"
+        data["exports"] = []
+        tile_instance.start()
+        print("leaving instantiate_tile_class")
+        data["success"] = True
+        return jsonify(data)
+    except Exception as ex:
+        return handle_exception(ex, "Error initializing pseudo tile")
 
 @app.route('/instantiate_tile_class', methods=["get", "post"])
 def instantiate_tile_class():
@@ -147,6 +170,15 @@ def instantiate_tile_class():
     except Exception as ex:
         return handle_exception(ex, "Error instantiating tile class")
 
+class PseudoTileClass(TileBase):
+    category = "word"
+    exports = []
+    measures = ["raw_freq", "student_t", "chi_sq", "pmi", "likelihood_ratio"]
+
+    def __init__(self, main_id, tile_id, tile_name=None):
+        TileBase.__init__(self, main_id, tile_id, tile_name)
+        self.is_pseudo = True
+        return
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=True, threaded=True)

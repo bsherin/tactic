@@ -157,7 +157,7 @@ td.cell-clickable:active {
 /* console */
 #console {
   text-align: left;
-  font-size: 12px;
+  font-size: 14px;
   overflow: auto;
   padding: 5px; }
 
@@ -166,7 +166,7 @@ td.cell-clickable:active {
   margin-right: 5px; }
 
 #console-heading {
-  font-size: 12px;
+  font-size: 16px;
   padding-top: 2px;
   padding-bottom: 2px;
   text-align: left; }
