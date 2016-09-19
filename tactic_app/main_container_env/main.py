@@ -884,11 +884,11 @@ class mainWindow(QWorker):
 
     @task_worthy
     def got_console_result(self, data):
-        # tactic_change Want to change this so prints to specific location
-        self.print_to_console(data["result_string"])
+        self.emit_table_message("consoleCodeLog", {"message_string": data["result_string"],
+                                                   "console_id": data["console_id"],
+                                                   "force_open": True})
         return {"success": True}
 
-    # tactic_change working here
     @task_worthy
     def exec_console_code(self, data):
         if self.pseudo_tile_id is None:

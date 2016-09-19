@@ -619,7 +619,6 @@ class TileBase(QWorker):
     def render_tile(self, data):
         return {"tile_html": self.render_me(data)}
 
-    # tactic_change exec_console_code
     @task_worthy
     def exec_console_code(self, data):
         import StringIO
