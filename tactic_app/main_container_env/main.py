@@ -297,7 +297,6 @@ class mainWindow(QWorker):
         return
 
     def distribute_event(self, event_name, data_dict=None, tile_id=None):
-        self.debug_log("Entering distribute event with event_name: " + event_name)
         if data_dict is None:
             data_dict = {}
         if tile_id is not None:
@@ -307,13 +306,11 @@ class mainWindow(QWorker):
                 self.ask_tile(tile_id, event_name, data_dict)
         if event_name in self.update_events:
             self.post_task(self.my_id, event_name, data_dict)
-        self.debug_log("successfully leaving distribute_event in main with with event_name: " + event_name)
         return True
 
     # Save and load-related methods
 
     def compile_save_dict(self):
-        self.debug_log("entering compile_save_dict in main")
         result = {}
         for attr in self.save_attrs:
             if attr == "hidden_columns_list" and self.doc_type == "freeform":
@@ -333,7 +330,6 @@ class mainWindow(QWorker):
             tile_save_dict = self.post_and_wait(tile_id, "compile_save_dict")
             tile_instances[tile_id] = tile_save_dict  # tile_id isn't meaningful going forward.
         result["tile_instances"] = tile_instances
-        self.debug_log("leaving compile_save_dict in main")
         return result
 
     def show_um_message(self, message, user_manage_id, timeout=None):
@@ -410,7 +406,6 @@ class mainWindow(QWorker):
         return
 
     def recreate_from_save(self, project_collection_name, project_name):
-        self.debug_log("entering recreate_from_save")
         save_dict = self.db[project_collection_name].find_one({"project_name": project_name})
         project_dict = cPickle.loads(zlib.decompress(self.fs.get(save_dict["file_id"]).read()).decode("utf-8", "ignore").encode("ascii"))
         project_dict["metadata"] = save_dict["metadata"]
@@ -510,7 +505,6 @@ class mainWindow(QWorker):
 
     @task_worthy
     def save_new_project(self, data_dict):
-        self.debug_log("entering save_new_project")
         # noinspection PyBroadException
         try:
             self.project_name = data_dict["project_name"]
@@ -552,7 +546,6 @@ class mainWindow(QWorker):
 
     @task_worthy
     def update_project(self, data_dict):
-        self.debug_log("entering update_project")
         # noinspection PyBroadException
         try:
             if self.doc_type == "table":
@@ -596,17 +589,14 @@ class mainWindow(QWorker):
 
     def _build_doc_dict(self):
         result = {}
-        self.debug_log("building doc_dict with collection: " + self.collection_name)
         the_collection = self.db[self.collection_name]
         for f in the_collection.find():
             fname = f["name"].encode("ascii", "ignore")
-            self.debug_log("Got fname " + fname)
             if fname == "__metadata__":
                 continue
             if self.doc_type == "table":
                 if "header_list" in f:
                     # Note conversion of unicode filenames to strings
-                    self.debug_log("got header_list " + str(f["header_list"]))
                     result[fname] = docInfo(fname, f["data_rows"], f["header_list"])
                 else:
                     result[fname] = docInfo(fname, f["data_rows"], [])
@@ -752,7 +742,6 @@ class mainWindow(QWorker):
     # Task Worthy methods. These are eligible to be the recipient of posted tasks.
     @task_worthy
     def create_tile(self, data_dict):
-        self.debug_log("entering create_tile in main.py")
         tile_container_id = data_dict["tile_id"]
         self.tile_instances[tile_container_id] = data_dict["tile_address"]
         tile_name = data_dict["tile_name"]
@@ -769,13 +758,11 @@ class mainWindow(QWorker):
                      "class_names": data_dict["class_names"]}
         # data_dict["form_info"] = form_info
         tile_address = data_dict["tile_address"]
-        self.debug_log("creating the container")
         result = send_request_to_container(tile_address, "load_source", data_dict).json()
         if not result["success"]:
             self.debug_log("got an exception " + result["message_string"])
             raise Exception(result["message_string"])
 
-        self.debug_log("instantiating tile class")
         instantiate_result = send_request_to_container(tile_address, "instantiate_tile_class", data_dict).json()
         if not instantiate_result["success"]:
             self.debug_log("got an exception " + instantiate_result["message_string"])
@@ -797,50 +784,43 @@ class mainWindow(QWorker):
                 self.post_task(tid, "RebuildTileForms", form_info)
         self.tile_sort_list.append(tile_container_id)
         self.current_tile_id += 1
-        self.debug_log("leaving create_tile in main.py")
         return {"success": True, "html": form_html}
 
     @task_worthy
     def get_column_data(self, data):
-        self.debug_log("entering get_column_data")
         result = []
         ddata = copy.copy(data)
         for doc_name in self.doc_dict.keys():
             ddata["doc_name"] = doc_name
             result = result + self.get_column_data_for_doc(ddata)
-        self.debug_log("leaving get_column_data")
         return result
 
     @task_worthy
     def get_document_data(self, data):
-        self.debug_log("entering get_document_data")
         doc_name = data["document_name"]
         return self.doc_dict[doc_name].all_data
 
     @task_worthy
     def get_document_data_as_list(self, data):
-        self.debug_log("entering get_document_data_as_list")
         doc_name = data["document_name"]
         data_list = self.doc_dict[doc_name].all_sorted_data_rows
         return {"data_list": data_list}
 
     @task_worthy
     def get_column_names(self, data):
-        self.debug_log("entering get_column_names")
         doc_name = data["document_name"]
         header_list = self.doc_dict[doc_name].header_list
         return {"header_list": header_list}
 
     @task_worthy
     def get_number_rows(self, data):
-        self.debug_log("entering get_column_names")
+
         doc_name = data["document_name"]
         nrows = self.doc_dict[doc_name].number_of_rows
         return {"number_rows": nrows}
 
     @task_worthy
     def get_row(self, data):
-        self.debug_log("entering get_row")
         doc_name = data["document_name"]
         if "row_id" in data:
             row_id = data["row_id"]
@@ -855,7 +835,6 @@ class mainWindow(QWorker):
 
     @task_worthy
     def get_cell(self, data):
-        self.debug_log("entering get_column_names")
         doc_name = data["document_name"]
         row_id = data["row_id"]
         column_name = data["column_name"]
@@ -864,32 +843,27 @@ class mainWindow(QWorker):
 
     @task_worthy
     def get_column_data_for_doc(self, data):
-        self.debug_log("entering get_column_data_for_doc in main.py")
         column_header = data["column_name"]
         doc_name = data["doc_name"]
         the_rows = self.doc_dict[doc_name].all_sorted_data_rows
         result = []
         for the_row in the_rows:
             result.append(the_row[column_header])
-        self.debug_log("leaving get_column_data_for_doc in main.py")
         return result
 
     @task_worthy
     def CellChange(self, data):
-        self.debug_log("Entering CellChange in main.")
         self._set_row_column_data(data["doc_name"], data["id"], data["column_header"], data["new_content"])
         self._change_list.append(data["id"])
         return None
 
     @task_worthy
     def FreeformTextChange(self, data):
-        self.debug_log("Entering FreeformTextChange in main")
         self._set_freeform_data(data["doc_name"], data["new_content"])
         return None
 
     @task_worthy
     def set_visible_doc(self, data):
-        self.debug_log("entering save visible_doc on main")
         doc_name = data["doc_name"]
         self.visible_doc_name = doc_name
         return {"success": True}
@@ -924,7 +898,6 @@ class mainWindow(QWorker):
         return {"success": True}
 
     def create_pseudo_tile(self):
-        self.debug_log("entering create_pseudo_tile in main.py")
         data = self.post_and_wait("host", "create_tile_container", {"user_id": self.user_id})
         self.pseudo_tile_id = data["tile_id"]
         self.pseudo_tile_address = data["tile_address"]
@@ -945,7 +918,6 @@ class mainWindow(QWorker):
     @task_worthy
     def get_property(self, data_dict):
         # tactic_todo eliminate get_property?
-        self.debug_log("Entering get_property on main")
         prop_name = data_dict["property"]
         val = getattr(self, prop_name)
         return {"success": True, "val": val}
@@ -1034,7 +1006,6 @@ class mainWindow(QWorker):
                     "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
                     "max_table_size": self.doc_dict[doc_name].max_table_size}
         else:
-            self.debug_log("grabbing freeform data")
             return {"doc_name": doc_name,
                     "is_shrunk": self.is_shrunk,
                     "left_fraction": self.left_fraction,
@@ -1072,7 +1043,6 @@ class mainWindow(QWorker):
 
     @task_worthy
     def reload_tile(self, ddict):
-        self.debug_log("entering reload_tile")
         tile_id = ddict["tile_id"]
         tile_type = self.get_tile_property(tile_id, "tile_type")
         data = {"tile_type": tile_type, "user_id": self.user_id}
@@ -1102,7 +1072,6 @@ class mainWindow(QWorker):
 
     @task_worthy
     def grab_chunk_with_row(self, data_dict):
-        self.debug_log("Entering grab chunk with row")
         doc_name = data_dict["doc_name"]
         row_id = data_dict["row_id"]
         self.doc_dict[doc_name].move_to_row(row_id)
@@ -1136,7 +1105,6 @@ class mainWindow(QWorker):
 
     @task_worthy
     def grab_next_chunk(self, data_dict):
-        self.debug_log("entering grab next chunk")
         doc_name = data_dict["doc_name"]
         step_amount = self.doc_dict[doc_name].advance_to_next_chunk()
         return {"doc_name": doc_name,
@@ -1149,7 +1117,6 @@ class mainWindow(QWorker):
 
     @task_worthy
     def grab_previous_chunk(self, data_dict):
-        self.debug_log("entering grab previous chunk")
         doc_name = data_dict["doc_name"]
         step_amount = self.doc_dict[doc_name].go_to_previous_chunk()
         return {"doc_name": doc_name,
@@ -1303,7 +1270,6 @@ class mainWindow(QWorker):
 
     @task_worthy
     def display_matching_rows(self, data):
-        self.debug_log("Entering display_matching_rows in main.py")
         result = data["result"]
         document_name = data["document_name"]
         if document_name is not None:
@@ -1317,7 +1283,6 @@ class mainWindow(QWorker):
         else:
             for docname, doc in self.doc_dict.items():
                 doc.current_data_rows = {}
-                self.debug_log("result[docname] is " + str(result[docname]))
                 for (key, val) in doc.data_rows.items():
                     if int(key) in result[docname]:
                         doc.current_data_rows[key] = val

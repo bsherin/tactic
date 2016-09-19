@@ -57,15 +57,15 @@ class QWorker(gevent.Greenlet):
                       "task_data": task_data,
                       "response_data": None,
                       "callback_id": callback_id}
-        self.debug_log("in post and wait with new_packet " + str(new_packet))
+        # self.debug_log("in post and wait with new_packet " + str(new_packet))
         result = send_request_to_container(self.megaplex_address, "post_wait_task", new_packet)
         for i in range(tries):
             res = send_request_to_container(self.megaplex_address, "check_wait_task", new_packet).json()
             if res["success"]:
-                self.debug_log("Got result to post_and_wait")
+                # self.debug_log("Got result to post_and_wait")
                 return res["result"]
             else:
-                self.debug_log("No result yet for post_and_wait after tries " + str(i))
+                # self.debug_log("No result yet for post_and_wait after tries " + str(i))
                 time.sleep(sleep_time)
         error_string = "post_and_wait timed out with msg_type {}, destination {}, and source".format(task_type, dest_id, self.my_id)
         self.debug_log(error_string)
