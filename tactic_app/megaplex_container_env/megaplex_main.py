@@ -92,7 +92,7 @@ def get_inactive():
     for cont_id, info in container_registry.items():
         tdelta = current_time - info["last_active_contact"]
         delta_seconds = tdelta.days * 24 * 60 + tdelta.seconds
-        dmsg("delta_seconds is {}".format(str(delta_seconds)))
+        # dmsg("delta_seconds is {}".format(str(delta_seconds)))
         if delta_seconds > inactive_container_time:
             inactive_containers.append(cont_id)
             del container_registry[cont_id]
@@ -140,7 +140,7 @@ def update_last_active_contact(container_id):
 def post_task():
     task_packet = request.json
     update_last_active_contact(task_packet["source"])
-    dmsg("post_task {0} to {1}".format(task_packet["task_type"], task_packet["dest"]))
+    # dmsg("post_task {0} to {1}".format(task_packet["task_type"], task_packet["dest"]))
     dest = task_packet["dest"]
     if dest not in queue_dict:
         queue_dict[dest] = {"tasks": Queue.Queue(maxsize=MAX_QUEUE_LENGTH),
@@ -158,7 +158,7 @@ def post_task():
 @app.route('/post_wait_task', methods=["get", "post"])
 def post_wait_task():
     task_packet = request.json
-    dmsg("post_wait_task {0} to {1}".format(task_packet["task_type"], task_packet["dest"]))
+    # dmsg("post_wait_task {0} to {1}".format(task_packet["task_type"], task_packet["dest"]))
     dest = task_packet["dest"]
     source = task_packet["source"]
     update_last_active_contact(source)
@@ -203,11 +203,11 @@ def get_next_task(requester_id):
         return jsonify({"empty": True})
     if not queue_dict[requester_id]["responses"].empty():
         task_packet = queue_dict[requester_id]["responses"].get()
-        dmsg("got response {0} for {1}".format(task_packet["task_type"], requester_id))
+        # dmsg("got response {0} for {1}".format(task_packet["task_type"], requester_id))
         return jsonify(task_packet)
     if not queue_dict[requester_id]["tasks"].empty():
         task_packet = queue_dict[requester_id]["tasks"].get()
-        dmsg("got task {0} for {1}".format(task_packet["task_type"], requester_id))
+        # dmsg("got task {0} for {1}".format(task_packet["task_type"], requester_id))
         return jsonify(task_packet)
     return jsonify({"empty": True})
 
@@ -221,7 +221,7 @@ def submit_response():
         queue_dict[source] = {"tasks": Queue.Queue(),
                               "responses": Queue.Queue(),
                               "wait_dict": {}}
-    dmsg("submitting response {0} for {1}".format(task_packet["task_type"], source))
+    # dmsg("submitting response {0} for {1}".format(task_packet["task_type"], source))
     cbid = task_packet["callback_id"]
     if cbid is not None and cbid in queue_dict[source]["wait_dict"]:
         queue_dict[source]["wait_dict"][cbid] = task_packet["response_data"]

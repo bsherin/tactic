@@ -338,7 +338,6 @@ class TileBase(QWorker):
     # Info needed here: list_names, current_header_list, pipe_dict, doc_names
     @task_worthy
     def create_form_html(self, data):
-        self.debug_log("entering create_form_html")
         self._pipe_dict = data["pipe_dict"]
         try:
             form_html = ""
@@ -348,7 +347,6 @@ class TileBase(QWorker):
                     setattr(self, att_name, None)
                 self.save_attrs.append(att_name)
                 starting_value = getattr(self, att_name)
-                self.debug_log("option is " + str(option["name"]) + " " + str(option["type"]))
                 if option["type"] == "column_select":
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
@@ -547,12 +545,10 @@ class TileBase(QWorker):
 
     def do_the_refresh(self, new_html=None):
         try:
-            self.debug_log("Entering do_the_refresh")
             if new_html is None:
                 if not self.configured:
                     new_html = "Tile not configured"
                 else:
-                    self.debug_log("About to call render_content")
                     new_html = self.render_content()
             self.current_html = new_html
             self.emit_tile_message("displayTileContent", {"html": new_html})
@@ -566,7 +562,6 @@ class TileBase(QWorker):
 
     @task_worthy
     def compile_save_dict(self, data):
-        self.debug_log('Entering compile_save_dict in tile_base')
         result = {"my_class_for_recreate": "TileBase"}
         result["binary_attrs"] = []
         for attr in self.save_attrs:
@@ -599,11 +594,9 @@ class TileBase(QWorker):
 
     @task_worthy
     def recreate_from_save(self, save_dict):
-        self.debug_log("entering recreate_from_save in tile_base")
         if "binary_attrs" not in save_dict:
             save_dict["binary_attrs"] = []
         for(attr, attr_val) in save_dict.items():
-            self.debug_log("handling attr: " + str(attr))
             if type(attr_val) == dict and hasattr(attr_val, "recreate_from_save"):
                 cls = getattr(sys.modules[__name__], attr_val["my_class_for_recreate"])
                 setattr(self, attr, cls.recreate_from_save(attr_val))
@@ -616,7 +609,6 @@ class TileBase(QWorker):
                 setattr(self, attr, res)
             else:
                 if isinstance(attr_val, Binary) or attr in save_dict["binary_attrs"]:
-                    self.debug_log("Found Binary attribute " + attr)
                     decoded_val = cPickle.loads(str(attr_val.decode()))
                     setattr(self, attr, decoded_val)
                 else:
@@ -643,9 +635,7 @@ class TileBase(QWorker):
         return data
 
     def render_me(self, form_info):
-        self.debug_log("Entering render_me in tile")
         form_html = self.create_form_html(form_info)["form_html"]
-        self.debug_log("Done creating form_html")
         if self.is_shrunk:
             dsr_string = ""
             dbr_string = "display: none"
@@ -678,7 +668,6 @@ class TileBase(QWorker):
                                      front_back_display_string=bda_string
 
                                  )
-        self.debug_log("Rendered the result " + str(result[:200]))
         return result
 
     def handle_exception(self, ex, special_string=None, print_to_console=True):
@@ -712,7 +701,6 @@ class TileBase(QWorker):
     """
 
     def update_options(self, form_data):
-        self.debug_log("entering update_options")
         for opt in self.options:
             if opt["type"] == "int":
                 setattr(self, opt["name"], int(form_data[opt["name"]]))
@@ -781,7 +769,7 @@ class TileBase(QWorker):
     # Refreshing a tile
 
     def spin_and_refresh(self):
-        self.debug_log("Entering spin_and_refresh in tile_base")
+
         self.post_event("StartSpinner")
         self.post_event("RefreshTile")
         self.post_event("StopSpinner")
@@ -866,14 +854,14 @@ class TileBase(QWorker):
 
     def get_column_data(self, column_name, document_name=None):
         self.save_stdout()
-        self.debug_log("entering get_column_data")
+
         if document_name is not None:
             task_data = {"column_name": column_name, "doc_name": document_name}
             result = self.post_and_wait(self.main_id, "get_column_data_for_doc", task_data)
         else:
             task_data = {"column_name": column_name}
             result = self.post_and_wait(self.main_id, "get_column_data", task_data)
-        self.debug_log("leaving get_column_data")
+
         self.restore_stdout()
         return result
 
@@ -1126,10 +1114,8 @@ class TileBase(QWorker):
 
     def get_pipe_value(self, pipe_key):
         self.save_stdout()
-        self.debug_log("entering get_pipe_value with pipe_key: " + str(pipe_key))
         for(tile_id, tile_entry) in self._pipe_dict.items():
             if pipe_key in tile_entry:
-                self.debug_log("found tile_entry: " + str(tile_entry))
                 result = self.post_and_wait(tile_entry[pipe_key]["tile_id"],
                                             "transfer_pipe_value", {"export_name": tile_entry[pipe_key]["export_name"]},
                                             timeout=60,
