@@ -123,7 +123,6 @@ def reinstantiate_tile():
     except Exception as ex:
         return handle_exception(ex, "Error reinstantiating tile")
 
-# tactic_change working here
 @app.route('/instantiate_as_pseudo_tile', methods=["get", "post"])
 def create_as_pseudo_tile():
     try:

@@ -67,7 +67,7 @@ function closeLogItem(e) {
 
 function runConsoleCode(e) {
     el = $(e.parentElement.parentElement);
-    uid = el.find(".console-code")[0].id
+    uid = el.find(".console-code")[0].id;
     the_code = consoleCMObjects[uid].getValue();
     postWithCallback(main_id, "exec_console_code", {"the_code": the_code, "console_id": uid})
 }
@@ -94,8 +94,6 @@ function check_for_element(elstring, callback) {
     rec();
 }
 
-
-// tactic_change working here
 function addConsoleCodearea() {
     postWithCallback(main_id, "create_console_code_area", {}, function(data) {
         if (!data.success) {
@@ -109,8 +107,19 @@ function addConsoleCodearea() {
                             matchBrackets: true,
                             autoCloseBrackets: true,
                             indentUnit: 4,
-                            readOnly: false
+                            readOnly: false,
+                            extraKeys: {
+                                'Ctrl-Enter': function(cm) {
+                                    the_code = cm.getValue();
+                                    postWithCallback(main_id, "exec_console_code", {"the_code": the_code, "console_id": cm.tactic_uid})
+                                },
+                                'Cmd-Enter': function (cm) {
+                                    the_code = cm.getValue();
+                                    postWithCallback(main_id, "exec_console_code", {"the_code": the_code, "console_id": cm.tactic_uid})
+                                }
+                            }
                 });
+                consoleCMObjects[data["unique_id"]].tactic_uid = data["unique_id"]
                 $(codearea).find(".CodeMirror").resizable({handles: "se"});
                 $(codearea).find(".CodeMirror").height(100)
             })
@@ -180,17 +189,6 @@ function start_post_load() {
     socket.on("clear-status-msg", function (data){
        clearStatusMessage()
     });
-
-    // tactic_change left off here
-    mousetrap.bind(['command+enter', 'ctrl+enter'], function(e) {
-        el = $(e.target);
-        if (el.hasClass("console-code")) {
-            uid = el.attr("id");
-            the_code = consoleCMObjects[uid].getValue();
-            postWithCallback(main_id, "exec_console_code", {"the_code": the_code, "console_id": uid})
-        }
-        e.preventDefault()
-    })
 }
 
 

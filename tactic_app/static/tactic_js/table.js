@@ -672,6 +672,22 @@ var tableObject = {
         }
     },
 
+    consoleCodeLog: function(data_object) {
+        var force_open = data_object.force_open;
+        el = $("#" + data_object.console_id).parent().find(".log-code-output");
+        el.html(data_object.message_string);
+        if (force_open && !console_visible) {
+            expandConsole()
+        }
+        // $("#console")[0].scrollTop = $("#console")[0].scrollHeight;
+        // var child_array = $("#console").children();
+        // var last_child = child_array[child_array.length - 1];
+        var scripts = el.find(".resize-rerun");
+        for (var i = 0; i < scripts.length; i = i+1) {
+            eval(scripts[i].innerHTML)
+        }
+    },
+
     clearConsole: function(data_object) {
         $("#console").html("");
         $("#console")[0].scrollTop = $("#console")[0].scrollHeight

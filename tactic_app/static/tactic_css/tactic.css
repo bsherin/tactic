@@ -182,6 +182,12 @@ td.cell-clickable:active {
   padding-top: 0px;
   padding-bottom: 0px; }
 
+.log-code-output {
+  padding-left: 15px;
+  padding-right: 15px;
+  padding-top: 10px;
+  padding-bottom: 10px; }
+
 .log-panel .panel-heading {
   background-color: white;
   border: none;
