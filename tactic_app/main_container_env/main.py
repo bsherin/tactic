@@ -260,6 +260,8 @@ class mainWindow(QWorker):
         self.project_dict = None
         self.tile_save_results = None
         self.mdata = None
+        self.pseudo_tile_id = None
+        self.pseudo_tile_address = None
 
         if "project_name" not in data_dict:
             self.doc_type = data_dict["doc_type"]
@@ -906,15 +908,38 @@ class mainWindow(QWorker):
         self.emit_table_message("consoleLog", {"message_string": pmessage, "force_open": True})
         return {"success": True, "unique_id": unique_id}
 
+    @task_worthy
+    def got_console_result(self, data):
+        # tactic_change Want to change this so prints to specific location
+        self.print_to_console(data["result_string"])
+        return {"success": True}
+
     # tactic_change working here
     @task_worthy
     def exec_console_code(self, data):
+        if self.pseudo_tile_id is None:
+            self.create_pseudo_tile()
         the_code = data["the_code"]
-        old_stdout = sys.stdout
-        redirected_output = sys.stdout = StringIO()
-        exec(the_code)
-        sys.stdout = old_stdout
-        self.print_to_console(redirected_output.getvalue())
+        self.post_task(self.pseudo_tile_id, "exec_console_code", data, self.got_console_result)
+        return {"success": True}
+
+    def create_pseudo_tile(self):
+        self.debug_log("entering create_pseudo_tile in main.py")
+        data = self.post_and_wait("host", "create_tile_container", {"user_id": self.user_id})
+        self.pseudo_tile_id = data["tile_id"]
+        self.pseudo_tile_address = data["tile_address"]
+        data_dict = {}
+        data_dict["user_id"] = self.user_id
+        data_dict["base_figure_url"] = self.base_figure_url.replace("tile_id", self.pseudo_tile_id)
+        data_dict["main_id"] = self.my_id
+        data_dict["megaplex_address"] = self.megaplex_address
+        data_dict["doc_type"] = self.doc_type
+        data_dict["tile_id"] = self.pseudo_tile_id
+        instantiate_result = send_request_to_container(self.pseudo_tile_address, "instantiate_as_pseudo_tile", data_dict).json()
+        if not instantiate_result["success"]:
+            self.debug_log("got an exception " + instantiate_result["message_string"])
+            raise Exception(instantiate_result["message_string"])
+
         return {"success": True}
 
     @task_worthy

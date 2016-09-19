@@ -69,7 +69,7 @@ function runConsoleCode(e) {
     el = $(e.parentElement.parentElement);
     uid = el.find(".console-code")[0].id
     the_code = consoleCMObjects[uid].getValue();
-    postWithCallback(main_id, "exec_console_code", {"the_code": the_code})
+    postWithCallback(main_id, "exec_console_code", {"the_code": the_code, "console_id": uid})
 }
 
 function addBlankConsoleText() {
@@ -82,6 +82,19 @@ function addBlankConsoleText() {
     })
 }
 
+function check_for_element(elstring, callback) {
+    var rec = function() {
+        setTimeout(function() {
+            if ($(elstring).length > 0) {
+                callback()
+            } else
+                rec();
+        }, 10);
+    }
+    rec();
+}
+
+
 // tactic_change working here
 function addConsoleCodearea() {
     postWithCallback(main_id, "create_console_code_area", {}, function(data) {
@@ -89,16 +102,18 @@ function addConsoleCodearea() {
             doFlash(data)
         }
         else {
-            var codearea = document.getElementById(data["unique_id"]);
-            consoleCMObjects[data["unique_id"]] = CodeMirror(codearea, {
-                        lineNumbers: true,
-                        matchBrackets: true,
-                        autoCloseBrackets: true,
-                        indentUnit: 4,
-                        readOnly: false,
-            });
-            $(codearea).find(".CodeMirror").resizable({handles: "se"})
-            $(codearea).find(".CodeMirror").height(100)
+            check_for_element("#" + data["unique_id"], function () {
+                var codearea = document.getElementById(data["unique_id"]);
+                consoleCMObjects[data["unique_id"]] = CodeMirror(codearea, {
+                            lineNumbers: true,
+                            matchBrackets: true,
+                            autoCloseBrackets: true,
+                            indentUnit: 4,
+                            readOnly: false
+                });
+                $(codearea).find(".CodeMirror").resizable({handles: "se"});
+                $(codearea).find(".CodeMirror").height(100)
+            })
         }
     })
 }
@@ -172,7 +187,7 @@ function start_post_load() {
         if (el.hasClass("console-code")) {
             uid = el.attr("id");
             the_code = consoleCMObjects[uid].getValue();
-            postWithCallback(main_id, "exec_console_code", {"the_code": the_code})
+            postWithCallback(main_id, "exec_console_code", {"the_code": the_code, "console_id": uid})
         }
         e.preventDefault()
     })
