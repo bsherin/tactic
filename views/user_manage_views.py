@@ -202,6 +202,41 @@ def copy_from_repository():
         error_string = "Error copying resource" + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
+@app.route('/send_to_repository', methods=['GET', 'POST'])
+@login_required
+def send_to_repository():
+    try:
+        res_type = request.json['res_type']
+
+        new_res_name = request.json['new_res_name']
+        res_name = request.json['res_name']
+        manager = get_manager_for_type(res_type)
+        repo_manager = get_manager_for_type(res_type, is_repository=True)
+        if res_type == "collection":
+            collection_to_copy = current_user.full_collection_name(request.json['res_name'])
+            new_collection_name = repository_user.full_collection_name(request.json['new_res_name'])
+            for doc in db[collection_to_copy].find():
+                db[new_collection_name].insert_one(doc)
+            db[new_collection_name].update_one({"name": "__metadata__"},
+                                               {'$set': {"datatime": datetime.datetime.today()}})
+        else:
+            old_dict = db[getattr(current_user, manager.collection_name)].find_one({repo_manager.name_field: res_name})
+            new_res_dict = {repo_manager.name_field: new_res_name}
+            for (key, val) in old_dict.items():
+                if (key == "_id") or (key == repo_manager.name_field):
+                    continue
+                new_res_dict[key] = val
+            if "metadata" not in new_res_dict:
+                new_res_dict["metadata"] = global_tile_manager.create_initial_metadata()
+            else:
+                new_res_dict["metadata"]["datetime"] = datetime.datetime.today()
+            db[getattr(repository_user, manager.collection_name)].insert_one(new_res_dict)
+        repo_manager.update_selector_list(select=new_res_name)
+        return jsonify({"success": True, "message": "Resource Successfully Copied", "alert_type": "alert-success"})
+    except:
+        error_string = "Error copying resource" + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+
 
 @app.route('/request_update_selector_list/<res_type>', methods=['GET'])
 @login_required

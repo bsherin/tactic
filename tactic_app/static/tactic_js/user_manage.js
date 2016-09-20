@@ -209,6 +209,7 @@ var list_manager_specifics = {
         {"name": "view", "func": "view_func", "button_class": "btn-primary"},
         {"name": "view", "func": "view_func", "button_class": "btn-primary"},
         {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-success"},
+        {"name": "share", "func": "send_repository_func", "button_class": "btn-warning"},
         {"name": "delete", "func": "delete_func", "button_class": "btn-danger"}
     ],
     repository_buttons: [
@@ -252,6 +253,7 @@ var col_manager_specifics = {
         {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-success"},
         {"name": "combine_collections", "func": "combineCollections", "button_class": "btn-primary"},
         {"name": "download", "func": "downloadCollection", "button_class": "btn btn-primary"},
+        {"name": "share", "func": "send_repository_func", "button_class": "btn-warning"},
         {"name": "delete", "func": "delete_func", "button_class": "btn-danger"}
     ],
     import_as_table: function (event) {
@@ -333,6 +335,7 @@ var project_manager_specifics = {
     double_click_func: "load_func",
     buttons: [
         {"name": "load", "func": "load_func", "button_class": "btn-primary"},
+        {"name": "share", "func": "send_repository_func", "button_class": "btn-warning"},
         {"name": "delete", "func": "delete_func", "button_class": "btn-danger"}
     ],
     load_func: function (event) {
@@ -371,6 +374,7 @@ var tile_manager_specifics = {
         {"name": "view", "func": "view_func", "button_class": "btn-primary"},
         {"name": "load", "func": "load_func", "button_class": "btn-primary"},
         {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-success"},
+        {"name": "share", "func": "send_repository_func", "button_class": "btn-warning"},
         {"name": "unload", "func": "unload_func", "button_class": "btn-warning"},
         {"name": "delete", "func": "delete_func", "button_class": "btn-danger"}
     ],
@@ -460,6 +464,7 @@ var code_manager_specifics = {
     buttons: [
         {"name": "view", "func": "view_func", "button_class": "btn-primary"},
         {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-success"},
+        {"name": "share", "func": "send_repository_func", "button_class": "btn-warning"},
         {"name": "delete", "func": "delete_func", "button_class": "btn-danger"}
     ],
 
