@@ -72,6 +72,14 @@ function runConsoleCode(e) {
     postWithCallback(main_id, "exec_console_code", {"the_code": the_code, "console_id": uid})
 }
 
+function clearConsoleCode(e) {
+    el = $(e.parentElement.parentElement);
+    uid = el.find(".console-code")[0].id;
+    el = $("#" + uid).parent().find(".log-code-output");
+    el.html("");
+}
+
+
 function addBlankConsoleText() {
     var print_string = "<div contenteditable='true'></div>";
     var task_data = {"print_string": print_string};
