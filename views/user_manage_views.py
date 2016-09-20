@@ -407,6 +407,7 @@ class CollectionManager(ResourceManager):
             else:
                 doc_names.append(fname)
 
+        doc_names.sort()
         return render_template("main.html",
                                collection_name=cname,
                                window_title=short_collection_name,

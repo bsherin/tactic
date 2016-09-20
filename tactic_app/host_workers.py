@@ -246,6 +246,7 @@ class HostWorker(QWorker):
         doc_names = template_data["doc_names"]
         # why is this fix needed here when I did it upstream?
         fixed_doc_names = [str(doc_name) for doc_name in doc_names]
+        fixed_doc_names.sort()
         template_data["doc_names"] = fixed_doc_names
         self.temp_dict[unique_id] = template_data
         socketio.emit("window-open", {"the_id": unique_id}, namespace='/user_manage', room=data["user_manage_id"])
