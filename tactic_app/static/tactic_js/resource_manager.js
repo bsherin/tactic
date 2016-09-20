@@ -38,6 +38,7 @@ ResourceManager.prototype = {
     file_adders: [],
     show_multiple:false,
     repository_copy_view: '/copy_from_repository',
+    send_repository_view: '/send_to_repository',
     show_loaded_list: false,
     add_listeners: function () {
         var self = this;
@@ -159,6 +160,32 @@ ResourceManager.prototype = {
             $("#" + manager.res_type + "-notes").html("");
             $.post($SCRIPT_ROOT + manager.delete_view + String(res_name))
         })
+    },
+
+    send_repository_func: function (event) {
+        var manager = event.data.manager;
+        var res_name = manager.check_for_selection(manager.res_type);
+        if (res_name == "") {
+            doFlash({"message": "Select a " + res_type + " first.", "alert_type": "alert-info"})
+        }
+        showModal("Share " + manager.res_type, "New " + manager.res_type + " Name", function (new_name) {
+            var result_dict = {
+                "res_type": manager.res_type,
+                "res_name": res_name,
+                "new_res_name": new_name
+            };
+
+            $.ajax({
+                url: $SCRIPT_ROOT + manager.send_repository_view,
+                contentType: 'application/json',
+                type: 'POST',
+                async: true,
+                data: JSON.stringify(result_dict),
+                dataType: 'json',
+                success: doFlash
+            });
+        });
+        return res_name
     },
 
     repository_view_func: function (event) {

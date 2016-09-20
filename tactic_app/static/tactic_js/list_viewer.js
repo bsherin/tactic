@@ -141,3 +141,23 @@ function copyToLibrary() {
         });
     });
 }
+
+function sendToRepository() {
+    showModal("Share list", "New list name", function (new_name) {
+        var result_dict = {
+            "res_type": "list",
+            "res_name": list_name,
+            "new_res_name": new_name
+        };
+
+        $.ajax({
+            url: $SCRIPT_ROOT + 'send_to_repository',
+            contentType: 'application/json',
+            type: 'POST',
+            async: true,
+            data: JSON.stringify(result_dict),
+            dataType: 'json',
+            success: doFlash
+        });
+    });
+}
