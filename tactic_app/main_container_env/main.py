@@ -223,7 +223,7 @@ class docInfo(object):
 class mainWindow(QWorker):
     save_attrs = ["short_collection_name", "collection_name", "current_tile_id", "tile_sort_list", "left_fraction",
                   "is_shrunk", "doc_dict", "project_name", "loaded_modules", "user_id",
-                  "hidden_columns_list", "console_html", "doc_type"]
+                  "hidden_columns_list", "console_html", "console_cm_code", "doc_type"]
     update_events = ["CellChange", "FreeformTextChange","CreateColumn", "SearchTable", "SaveTableSpec", "MainClose", "DisplayCreateErrors",
                      "DehighlightTable", "SetCellContent", "RemoveTile", "ColorTextInCell",
                      "FilterTable", "UnfilterTable", "TextSelect", "UpdateSortList", "UpdateLeftFraction",
@@ -274,6 +274,7 @@ class mainWindow(QWorker):
             self.short_collection_name = re.sub("^.*?\.data_collection\.", "", self.collection_name)
             self.project_name = None
             self.console_html = None
+            self.console_cm_code = {}
             self.user_id = data_dict["user_id"]
             self.doc_dict = self._build_doc_dict()
             self.visible_doc_name = self.doc_dict.keys()[0]
@@ -504,6 +505,11 @@ class mainWindow(QWorker):
         return tile_results
 
     @task_worthy
+    def get_saved_console_code(self, data_dict):
+        print "entering saved console code with console_cm_code " + str(self.console_cm_code)
+        return {"saved_console_code": self.console_cm_code}
+
+    @task_worthy
     def save_new_project(self, data_dict):
         # noinspection PyBroadException
         try:
@@ -511,6 +517,7 @@ class mainWindow(QWorker):
             if self.doc_type == "table":
                 self.hidden_columns_list = data_dict["hidden_columns_list"]
             self.console_html = data_dict["console_html"]
+            self.console_cm_code = data_dict["console_cm_code"]
             tspec_dict = data_dict["tablespec_dict"]
             for (dname, spec) in tspec_dict.items():
                 self.doc_dict[dname].table_spec = spec
@@ -551,6 +558,7 @@ class mainWindow(QWorker):
             if self.doc_type == "table":
                 self.hidden_columns_list = data_dict["hidden_columns_list"]
             self.console_html = data_dict["console_html"]
+            self.console_cm_code = data_dict["console_cm_code"]
             tspec_dict = data_dict["tablespec_dict"]
             for (dname, spec) in tspec_dict.items():
                 self.doc_dict[dname].table_spec = spec

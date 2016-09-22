@@ -72,6 +72,15 @@ function runConsoleCode(e) {
     postWithCallback(main_id, "exec_console_code", {"the_code": the_code, "console_id": uid})
 }
 
+function getConsoleCMCode() {
+    result = {};
+    for (var cmi in consoleCMObjects) {
+        if (!consoleCMObjects.hasOwnProperty(cmi)) continue;
+        result[cmi] = consoleCMObjects[cmi].getValue();
+    }
+    return result
+}
+
 function clearConsoleCode(e) {
     el = $(e.parentElement.parentElement);
     uid = el.find(".console-code")[0].id;
@@ -98,8 +107,31 @@ function check_for_element(elstring, callback) {
             } else
                 rec();
         }, 10);
-    }
+    };
     rec();
+}
+
+function createConsoleCodeInCodearea(uid, codearea) {
+    consoleCMObjects[uid] = CodeMirror(codearea, {
+        lineNumbers: true,
+        matchBrackets: true,
+        autoCloseBrackets: true,
+        indentUnit: 4,
+        readOnly: false,
+        extraKeys: {
+            'Ctrl-Enter': function(cm) {
+                the_code = cm.getValue();
+                postWithCallback(main_id, "exec_console_code", {"the_code": the_code, "console_id": cm.tactic_uid})
+            },
+            'Cmd-Enter': function (cm) {
+                the_code = cm.getValue();
+                postWithCallback(main_id, "exec_console_code", {"the_code": the_code, "console_id": cm.tactic_uid})
+            }
+        }
+    });
+    consoleCMObjects[uid].tactic_uid = uid;
+    $(codearea).find(".CodeMirror").resizable({handles: "se"});
+    $(codearea).find(".CodeMirror").height(100)
 }
 
 function addConsoleCodearea() {
@@ -110,26 +142,7 @@ function addConsoleCodearea() {
         else {
             check_for_element("#" + data["unique_id"], function () {
                 var codearea = document.getElementById(data["unique_id"]);
-                consoleCMObjects[data["unique_id"]] = CodeMirror(codearea, {
-                            lineNumbers: true,
-                            matchBrackets: true,
-                            autoCloseBrackets: true,
-                            indentUnit: 4,
-                            readOnly: false,
-                            extraKeys: {
-                                'Ctrl-Enter': function(cm) {
-                                    the_code = cm.getValue();
-                                    postWithCallback(main_id, "exec_console_code", {"the_code": the_code, "console_id": cm.tactic_uid})
-                                },
-                                'Cmd-Enter': function (cm) {
-                                    the_code = cm.getValue();
-                                    postWithCallback(main_id, "exec_console_code", {"the_code": the_code, "console_id": cm.tactic_uid})
-                                }
-                            }
-                });
-                consoleCMObjects[data["unique_id"]].tactic_uid = data["unique_id"]
-                $(codearea).find(".CodeMirror").resizable({handles: "se"});
-                $(codearea).find(".CodeMirror").height(100)
+                createConsoleCodeInCodearea(data["unique_id"], codearea)
             })
         }
     })
@@ -239,6 +252,21 @@ function continue_loading() {
                     tablespec_dict[spec] = create_tablespec(data.tablespec_dict[spec])
                 }
                 tableObject.initialize_table(data);
+                postWithCallback(main_id, "get_saved_console_code", {}, function (data) {
+                    console.log("en callback for get_saved_console_code");
+                    var saved_console_code = data["saved_console_code"];
+
+                    console.log(String(Object.keys(saved_console_code).length));
+                    for (uid in saved_console_code) {
+                        if (!saved_console_code.hasOwnProperty(uid)) continue;
+                        var codearea = document.getElementById(data["unique_id"]);
+
+                        $(codearea).html("");
+                        createConsoleCodeInCodearea(uid, codearea);
+                        consoleCMObjects[uid].setValue(saved_console_code[uid])
+                    }
+
+                });
 
                 // Note that the visible doc has to be definitely set
                 // before creating the tiles. It is needed in order to set the list of column headers

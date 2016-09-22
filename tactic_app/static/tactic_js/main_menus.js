@@ -258,6 +258,7 @@ function saveProjectAs() {
                     "main_id": main_id,
                     "tablespec_dict": tablespec_dict,
                     "console_html": $("#console").html(),
+                    "console_cm_code": getConsoleCMCode(),
                     "doc_type": DOC_TYPE
                 };
                 if (DOC_TYPE == "table") {
@@ -297,7 +298,8 @@ function save_project() {
     var result_dict = {
         "main_id": main_id,
         "tablespec_dict": tablespec_dict,
-        "console_html": $("#console").html()
+        "console_html": $("#console").html(),
+        "console_cm_code": getConsoleCMCode()
     };
     if (DOC_TYPE == "table") {
         result_dict.hidden_columns_list = hidden_columns_list
