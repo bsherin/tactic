@@ -8,6 +8,7 @@ from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import Required, Length, Regexp, EqualTo
 from tactic_app.global_tile_management import global_tile_manager
 from tactic_app import app # global_stuff
+from tactic_app.host_workers import host_worker
 
 @app.route('/direct_user_manage/<username>/<password>', methods=['GET', 'POST'])
 def direct_user_manage(username, password):
