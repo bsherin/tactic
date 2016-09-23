@@ -366,7 +366,7 @@ class CollectionManager(ResourceManager):
                          login_required(self.duplicate_collection), methods=['post', 'get'])
         app.add_url_rule('/download_collection/<collection_name>/<new_name>', "download_collection",
                          login_required(self.download_collection), methods=['post', 'get'])
-        app.add_url_rule('/combine_collections/<base_collection>/<collection_to_add>', "combine_collections",
+        app.add_url_rule('/combine_collections/<base_collection_name>/<collection_to_add>', "combine_collections",
                          login_required(self.combine_collections), methods=['post', 'get'])
 
     def main(self, collection_name):
