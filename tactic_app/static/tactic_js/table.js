@@ -257,9 +257,10 @@ var tableObject = {
         $("td.column-__filename__").attr("contenteditable", false);
         this.color_all_bgs();
         $("#project-name").html(this.project_name);
-        setup_resize_listeners();
+
         this.resize_table_area();
-        this.freeze_column_widths(this.table_id);
+        this.freeze_column_widths();
+        setup_resize_listeners();
         //broadcast_event_to_server("SaveTableSpec", {"tablespec": this.current_spec})
          $('#table-area td').blur(handle_cell_change);
         this.active_row = null;
@@ -345,9 +346,16 @@ var tableObject = {
                 resize: handle_resize,
                 stop: save_column_widths
             });
+
+            if ($("#table-area").hasClass("ui-resizable")){
+                $("#table-area").resizable("destroy"); // This is needed in the case where we're changing docs.
+            }
             $("#table-area").resizable({
                 handles: "e",
-                stop: save_column_widths
+                stop: function () {
+                    self.current_spec.column_widths = null;
+                    self.freeze_column_widths();
+                }
             });
             $("#main-panel").resizable({
                 handles: "e",
@@ -427,15 +435,15 @@ var tableObject = {
     },
 
 
-    freeze_column_widths: function (table_id) {
+    freeze_column_widths: function () {
         // This modifies this.column_widths and this.table_width
         // This is only called by initialize_table.
         // But I split it out because it's so big.
-        var tidstr = "#" + table_id;
-        var ncols = this.current_spec.header_list.length;
+        self = tableObject;
+        var tidstr = "#table-area";
+        var ncols = self.current_spec.header_list.length;
         var all_rows = $(tidstr).find("tr");
-        var column_widths = [];
-        //this.big_fields = []
+        var saved_table_width = $(tidstr).width();
  
         var the_row;
         var the_width;
@@ -445,22 +453,17 @@ var tableObject = {
         var panel_width = $("#main-panel").width();
         var max_field_width = panel_width * MAX_BIGFIELD_FRACTION;
 
-        if (this.current_spec.column_widths == null){
-            this.current_spec.column_widths = []
-        }
-        // Within the code below we are trying to deal with the case where columns have been added to the end
-        var cws = this.current_spec.column_widths.length;
-        if (cws < ncols) {
-            column_widths = this.current_spec.column_widths;
-            for (var c = cws; c < ncols; ++c) {
+
+        if (self.current_spec.column_widths == null) {
+            column_widths = [];
+            for (var c = 0; c < ncols; ++c) {
                 column_widths.push(0);
-                //this.big_fields.push(0)
             }
             // Get the max width of each column
             for (var r = 0; r < all_rows.length; ++r) {
                 the_row = all_rows[r];
 
-                for (c = cws; c < ncols; ++c) {
+                for (c = 0; c < ncols; ++c) {
                     the_child = the_row.cells[c];
                     the_width = the_child.offsetWidth + ADDED_HEADER_WIDTH;
                     the_text = the_child.innerHTML;
@@ -474,17 +477,26 @@ var tableObject = {
                     }
                 }
             }
-            this.current_spec.column_widths = column_widths;
+
             var total = 0;
-            $.each(this.current_spec.column_widths, function() {
+            $.each(column_widths, function () {
                 total += this;
             });
-            //this.table_width = total
-            this.current_spec.table_width = total;
-            $("#" + this.table_id).width(String(total));
+
+            // Since the largest entry in each column might not be from the same row, the total might be too big
+            // Also, if we have made the table wider there might be extra space
+            // So rescale each column to fit in the space vailable
+            // I substract 35 because something is taking up extra space there.
+            var fract = (saved_table_width - 35) / total;
+            for (var c = 0; c < column_widths.length; ++c) {
+                column_widths[c] = fract * column_widths[c]
+            }
+            self.current_spec.table_width = saved_table_width;
+            self.current_spec.column_widths = column_widths;
         }
 
-        $("#" + this.table_id).width(String(this.current_spec.table_width));
+        $("#table-area").width(String(self.current_spec.table_width));
+
         // Set all column widths
         var new_width;
         for (r = 0; r < all_rows.length; ++r) {
@@ -492,7 +504,7 @@ var tableObject = {
             c = 0;
             while (c < ncols){
                 the_child = the_row.cells[c];
-                new_width = this.current_spec.column_widths[c];
+                new_width = self.current_spec.column_widths[c];
                 the_child.style.width = String(new_width) + "px";
                 the_child.style.maxWidth = String(new_width) + "px";
                 c += 1
