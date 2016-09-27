@@ -1,9 +1,11 @@
 
-$main-panel-heading-background: #f5f5f5;
+$main-panel-heading-background: #dff0d8;
 $main-panel-heading-height: 35px;
 $main-panel-heading-padding: 5px;
+$main-panel-heading-font-color: #4f8950;
+$main-panel-border-color: #dff0d8;
 
-$column-header-background: #f4f5f6;
+$column-header-background: #f5f5f5;
 $table-header-font-size: 15px;
 $table-header-font-color: #4b4963;
 $table-header-font-weight: normal;
@@ -30,11 +32,13 @@ $selected-column-background: #e0e0e0;
 // Panel header stuff for main table
 #main-panel {
     margin: 5px;
+    border-color: $main-panel-border-color;
 
     .panel-heading {
         padding-top: $main-panel-heading-padding;
         padding-bottom: $main-panel-heading-padding;
         background-color: $main-panel-heading-background;
+        color: $main-panel-heading-font-color;
 
         .main-heading-element {
             height: $main-panel-heading-height;
