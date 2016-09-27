@@ -81,6 +81,7 @@ $selected-column-background: #e0e0e0;
 
 #table-area {
     display: block;
+    border-right: $table-border-style;
     thead {
         background-color: $column-header-background;
         display: block;
@@ -149,7 +150,7 @@ $selected-column-background: #e0e0e0;
     border-bottom: $table-border-style
 }
 
-#table-area tr td:last-child  {
+#table-area tr td:last-child, #table-area tr th:last-child{
     border-right: $table-border-style
 }
 

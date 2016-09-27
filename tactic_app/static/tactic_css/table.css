@@ -34,7 +34,8 @@
   border-top: 1px solid #ddd; }
 
 #table-area {
-  display: block; }
+  display: block;
+  border-right: 1px solid #ddd; }
   #table-area thead {
     background-color: #f4f5f6;
     display: block;
@@ -81,7 +82,7 @@
 #table-area > tbody > tr:last-child {
   border-bottom: 1px solid #ddd; }
 
-#table-area tr td:last-child {
+#table-area tr td:last-child, #table-area tr th:last-child {
   border-right: 1px solid #ddd; }
 
 .ui-resizable-e {
