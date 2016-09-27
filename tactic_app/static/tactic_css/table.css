@@ -1,6 +1,7 @@
 #main-panel {
   margin: 5px;
-  border-color: #dff0d8; }
+  border-color: #4f8950;
+  font-family: Arial, Helvetica, sans-serif; }
   #main-panel .panel-heading {
     padding-top: 5px;
     padding-bottom: 5px;
@@ -54,11 +55,12 @@
   #table-area th {
     /*display: inline-block;*/
     cursor: pointer;
-    font-weight: normal;
-    font-size: 15px;
+    font-weight: bold;
+    font-size: 12px;
     padding: 5px 10px;
     vertical-align: top;
-    color: #4b4963;
+    color: #666;
+    text-shadow: 1px 1px 0px #fff;
     overflow: hidden; }
   #table-area tr {
     display: block;
@@ -68,12 +70,12 @@
     padding: 5px 10px;
     font-size: 10pt;
     vertical-align: top;
-    color: #000; }
+    color: #616161; }
   #table-area td:focus {
     outline: none;
     border-color: #9ecaed; }
   #table-area .selected-header {
-    background-color: #9d9d9d; }
+    background-color: #f5f5f5; }
   #table-area .selected-column {
     background-color: #e0e0e0; }
   #table-area .selected-row {

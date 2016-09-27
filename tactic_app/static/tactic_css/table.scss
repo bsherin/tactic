@@ -3,12 +3,14 @@ $main-panel-heading-background: #dff0d8;
 $main-panel-heading-height: 35px;
 $main-panel-heading-padding: 5px;
 $main-panel-heading-font-color: #4f8950;
-$main-panel-border-color: #dff0d8;
+$main-panel-border-color: #4f8950;
+
+$table-font-family: Arial, Helvetica, sans-serif;
 
 $column-header-background: #f5f5f5;
-$table-header-font-size: 15px;
-$table-header-font-color: #4b4963;
-$table-header-font-weight: normal;
+$table-header-font-size: 12px;
+$table-header-font-color: #666;
+$table-header-font-weight: bold;
 
 $admin-table-row-font-size: 12px;
 
@@ -20,12 +22,12 @@ $table-border-style: $table-border-thickness solid $table-border-color;
 $cell-padding-left-right: 10px;  // applies to td and th
 $cell-padding-top-bottom: 5px; // applies to td and th
 $cell-max-width: 700px;
-$cell-font-color: #000;
+$cell-font-color: #616161;
 
 $cell-focus-outline: none;
 $cell-focus-border-color: #9ecaed;
 
-$selected-header-background: #9d9d9d;
+$selected-header-background: $column-header-background;
 $selected-row-background: #dddddd;
 $selected-column-background: #e0e0e0;
 
@@ -33,6 +35,7 @@ $selected-column-background: #e0e0e0;
 #main-panel {
     margin: 5px;
     border-color: $main-panel-border-color;
+    font-family: $table-font-family;
 
     .panel-heading {
         padding-top: $main-panel-heading-padding;
@@ -112,6 +115,7 @@ $selected-column-background: #e0e0e0;
         padding: $cell-padding-top-bottom $cell-padding-left-right;
         vertical-align: top;
         color: $table-header-font-color;
+        text-shadow: 1px 1px 0px #fff;
         overflow: hidden
     }
     tr {
