@@ -1,4 +1,34 @@
+/* main navbar */
+$main-navbar-foreground-color: #5f5f5f;
 
+
+/* tile parameters */
+$tile-header-background-color: #d9edf7; // bootstrap default is #d9edf7
+$tile-header-foreground-color: #31708f; // boostrap default is #31708f
+$tile-panel-border-style: 2px solid #BCE8F1;
+$tile-panel-background-color: white;
+$tile-panel-foreground-color: #333; // bootstrap default is #333
+
+$search-highlight-color: yellow;
+
+
+/* console related */
+$console-header-background-color: #f5f5f5; // bootstrap default is #f5f5f5
+$console-header-foreground-color: #333; // bootstrap default is #333
+$console-font-family: Arial, Helvetica, sans-serif;
+$console-header-font-size: 16px;
+$console-notclose-opacity: 80;
+
+$console-panel-border-style: 1px solid #c7c7c7;
+
+$log-panel-border-style: 1px solid #c7c7c7;
+$log-panel-header-background-color: #f5f5f5;
+$log-panel-header-foreground-color: #333;
+$log-panel-header-background-hover-color: #f5f5f5;
+$log-panel-font-color: #616161;
+
+
+/* resource management and table related */
 $repository-title-color: #4EA818;
 
 $sortable-table-header-background: #eee;
@@ -7,8 +37,6 @@ $sortable-table-header-text-color: #666666;
 $resource-action-button-border-style: solid white 1px;
 $resource-manager-tab-font-size: 20px;
 
-$tile-header-background-color: #d9edf7; // bootstrap default is #d9edf7
-$tile-header-foreground-color: #31708f; // boostrap default is #31708f
 
 /* General resources */
 
@@ -17,6 +45,53 @@ table.sortable thead {
     color:$sortable-table-header-text-color;
     font-weight: bold;
     cursor: default;
+}
+
+/* navbar */
+
+#main-tactic-navbar {
+    color: $main-navbar-foreground-color !important;
+}
+
+#menu-area {
+    a {
+        color: $main-navbar-foreground-color !important;
+        font-size: 16px;
+    }
+    .dropdown-toggle {
+        padding-right: 6px;
+        padding-left: 6px
+    }
+}
+
+#mybrand {
+    font-size: 20px !important;
+}
+
+#my-navbar-right {
+    font-size: 16px;
+    a {
+        padding-right: 10px;
+        padding-left: 10px
+    }
+}
+
+/* user manage and  resource viewers*/
+
+.repository-title {
+    color: $repository-title-color;
+}
+
+a[role="tab"] {
+    font-size: $resource-manager-tab-font-size
+}
+
+.nav-tabs a {
+    outline: 0px;
+}
+
+.resource-module {
+    margin: 10px
 }
 
 .selector-button:hover {
@@ -42,51 +117,11 @@ table.sortable thead {
     color: #1b6d85;
 }
 
-/* navbar */
-
-#menu-area {
-    a {
-        //color: $menu-text-color;
-        font-size: 16px;
-    }
-    .dropdown-toggle {
-        padding-right: 6px;
-        padding-left: 6px
-    }
+.CodeMirror {
+    border: 1px solid #eee;
+    height: auto;
+    width: auto;
 }
-
-#mybrand {
-    font-size: 20px !important;
-}
-
-#my-navbar-right {
-    font-size: 16px;
-    a {
-        padding-right: 10px;
-        padding-left: 10px
-    }
-}
-
-/* user manage */
-
-.repository-title {
-    color: $repository-title-color;
-}
-
-a[role="tab"] {
-    font-size: $resource-manager-tab-font-size
-}
-
-.nav-tabs a {
-    outline: 0px;
-}
-
-.resource-module {
-    margin: 10px
-}
-
-
-/* resource module */
 
 .action-button {
     border: $resource-action-button-border-style
@@ -109,305 +144,304 @@ a[role="tab"] {
 
     /* Tile related */
 
-    .tile-panel-heading {
-        .close .glyphicon {
-            font-size: 17px
-        }
-        .notclose .glyphicon {
-            font-size: 17px
-        }
+.tile-panel-heading {
+    .close .glyphicon {
+        font-size: 17px
     }
-
-
-
-    /* plot related */
-    .d3plot { font: 10px Arial;}
-
-    .d3plot path {
-        stroke: steelblue;
-        stroke-width: 2;
-        fill: none;
+    .notclose .glyphicon {
+        font-size: 17px
     }
+}
 
-    .d3plot path.domain {
-        fill: none;
-        stroke: #a4a4a4;
-        shape-rendering: crispEdges;
+/* plot related */
+.d3plot { font: 10px Arial;}
+
+.d3plot path {
+    stroke: steelblue;
+    stroke-width: 2;
+    fill: none;
+}
+
+.d3plot path.domain {
+    fill: none;
+    stroke: #a4a4a4;
+    shape-rendering: crispEdges;
+}
+
+.d3plot line {
+    stroke: black;
+}
+
+.d3plot .axis path,
+.d3plot .axis line {
+    fill: none;
+    stroke: grey;
+    stroke-width: 2;
+    shape-rendering: crispEdges;
+}
+
+.d3plot .heatmap-cell-border {
+    stroke: #eee;
+    stroke-width:0.3px;
+}
+
+.d3plot .heatmap-colLabel {
+    fill: #aaa;
+}
+
+.d3plot .heatmap-rowLabel {
+    fill: #aaa;
+}
+
+.d3plot-title {
+    font-size: 14px;
+}
+
+/* tooltips */
+
+$tooltip-background-color: #fde930;
+$tooltip-text-color: #66431a;
+
+.tooltip .tooltip-inner {background-color: $tooltip-background-color;
+    color: $tooltip-text-color}
+
+.tooltip.top .tooltip-arrow { border-top-color:$tooltip-background-color}
+
+.tooltip.bottom .tooltip-arrow { border-bottom-color:$tooltip-background-color}
+
+.tooltip-inner{
+    -moz-box-shadow: 0px 1px 5px 1px rgba(0,0,0,0.4);
+    -webkit-box-shadow: 0px 1px 5px 1px rgba(0,0,0,0.4);
+    box-shadow: 0px 1px 5px 1px rgba(0,0,0,0.4);
+    zoom: 1;
+}
+
+
+/* Tile table related*/
+
+.tile-table td {
+    padding-top: 1px !important;
+    padding-bottom: 1px !important;
+}
+
+.sidebyside-table {
+    display: inline-block;
+    margin-right: 10px;
+    border: none;
+}
+
+
+.row-clickable:hover {
+    background-color: #5bc0de !important
+}
+
+.row-clickable:active {
+    background-color: #1b6d85 !important
+}
+
+td.cell-clickable:hover {
+    background-color: #5bc0de !important
+}
+
+td.cell-clickable:active {
+    background-color: #1b6d85 !important
+}
+
+.element-clickable:hover {
+    background-color: #5bc0de !important
+}
+
+.element-clickable:active {
+    background-color: #1b6d85 !important
+}
+
+/* console */
+
+#console {
+    text-align: left;
+    font-size: 14px;
+    overflow: auto;
+    padding: 5px;
+}
+
+#console-panel {
+    margin-left: 5px;
+    margin-right: 5px;
+    border: $console-panel-border-style !important;
+}
+
+#console-heading {
+    font-size: $console-header-font-size;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    text-align: left;
+    color: $console-header-foreground-color !important;
+    background-color: $console-header-background-color !important;
+    font-family: $console-font-family;
+
+    .notclose {
+        opacity: $console-notclose-opacity !important
     }
+}
 
-    .d3plot line {
-        stroke: black;
-    }
+.log-panel {
+    border: $log-panel-border-style !important;
+    margin: 1px;
+    box-shadow: none;
 
-    .d3plot .axis path,
-    .d3plot .axis line {
-        fill: none;
-        stroke: grey;
-        stroke-width: 2;
-        shape-rendering: crispEdges;
-    }
-
-    .d3plot .heatmap-cell-border {
-        stroke: #eee;
-        stroke-width:0.3px;
-    }
-
-    .d3plot .heatmap-colLabel {
-        fill: #aaa;
-    }
-
-    .d3plot .heatmap-rowLabel {
-        fill: #aaa;
-    }
-
-    .d3plot-title {
-        font-size: 14px;
-    }
-
-    /* tooltips */
-
-    $tooltip-background-color: #fde930;
-    $tooltip-text-color: #66431a;
-
-    .tooltip .tooltip-inner {background-color: $tooltip-background-color;
-        color: $tooltip-text-color}
-
-    .tooltip.top .tooltip-arrow { border-top-color:$tooltip-background-color}
-
-    .tooltip.bottom .tooltip-arrow { border-bottom-color:$tooltip-background-color}
-
-    .tooltip-inner{
-        -moz-box-shadow: 0px 1px 5px 1px rgba(0,0,0,0.4);
-        -webkit-box-shadow: 0px 1px 5px 1px rgba(0,0,0,0.4);
-        box-shadow: 0px 1px 5px 1px rgba(0,0,0,0.4);
-        zoom: 1;
-    }
-
-
-    /* Tile table related*/
-
-    .tile-table td {
-        padding-top: 1px !important;
-        padding-bottom: 1px !important;
-    }
-
-    .sidebyside-table {
-        display: inline-block;
-        margin-right: 10px;
-        border: none;
-    }
-
-
-    .row-clickable:hover {
-        background-color: #5bc0de !important
-    }
-
-    .row-clickable:active {
-        background-color: #1b6d85 !important
-    }
-
-    td.cell-clickable:hover {
-        background-color: #5bc0de !important
-    }
-
-    td.cell-clickable:active {
-        background-color: #1b6d85 !important
-    }
-
-    .element-clickable:hover {
-        background-color: #5bc0de !important
-    }
-
-    .element-clickable:active {
-        background-color: #1b6d85 !important
-    }
-
-    /* console */
-
-    #console {
-        text-align: left;
-        font-size: 14px;
-        overflow: auto;
-        padding: 5px;
-    }
-
-    #console-panel {
-        margin-left: 5px;
-        margin-right: 5px
-    }
-
-
-    #console-heading {
-        font-size: 16px;
-        padding-top: 2px;
-        padding-bottom: 2px;
-        text-align: left
-    }
-
-    .log-panel {
-        border: none;
-        margin: 1px;
-        box-shadow: none
-    }
-
-    .log-panel-body {
-        padding-left: 15px;
-        padding-right: 15px;
-        padding-top: 0px;
-        padding-bottom: 0px;
-    }
-
-    .log-code-output {
-        padding-left: 15px;
-        padding-right: 15px;
-        padding-top: 10px;
-        padding-bottom: 10px;
-    }
-
-    .log-panel .panel-heading {
-        background-color: white;
-        border: none;
+    .panel-heading {
+        background-color: $log-panel-header-background-color important;
+        color: $log-panel-header-foreground-color !important;
         padding: 2px;
+
+        .notclose {
+            opacity: $console-notclose-opacity !important;
+        }
     }
 
-    .log-panel:hover {
-        border: 1px solid #ddd!important;
+    .panel-heading:hover {
+        background-color: $log-panel-header-background-hover-color !important
     }
 
-    .log-panel .panel-heading:hover {
-        background-color: #f5f5f5;
+    .notclose {
+        padding-left: 6px;
     }
+}
 
-    .log-panel .notclose {
-        padding-left: 6px
-    }
+.log-panel-body {
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    color: $log-panel-font-color !important;
+}
 
-    /* module viewer */
+.log-code-output {
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
 
-    .CodeMirror {
-        border: 1px solid #eee;
-        height: auto;
-        width: auto;
-    }
+/*main window*/
 
-    /*main window*/
+.grid-left {
+    display: inline-block;
+    width: 500px;
+    vertical-align:top
+}
 
-    .grid-left {
-        display: inline-block;
-        width: 500px;
-        vertical-align:top
-    }
+.grid-right {
+    display: inline-block;
+    width: 300px;
+    vertical-align:top
+}
 
-    .grid-right {
-        display: inline-block;
-        width: 300px;
-        vertical-align:top
-    }
+.outer-container {
+    padding: 25px;
+}
 
-    .outer-container {
-        padding: 25px;
-    }
+#tile-div {
+    padding: 5px;
+}
 
-    #tile-div {
-        padding: 5px;
-    }
+#tile-area {
+    margin: 0px;
+    border: 0px;
+    overflow: auto;
+}
 
-    #tile-area {
-        margin: 0px;
-        border: 0px;
-        overflow: auto;
-    }
+/* tile */
 
-    /* tile */
+.tile-panel {
+    height: 265px;
+    margin: 7px;
+    border: $tile-panel-border-style !important;
+    background-color: $tile-panel-background-color !important;
+    color: $tile-panel-foreground-color !important;
+}
 
-    .tile-panel {
-        height: 265px;
-        margin: 7px;
-        border: 2px solid #BCE8F1;
-        background-color: white;
-    }
+.tile-panel-float {
+    float: left;
+}
 
-    .tile-panel-float {
-        float: left;
-    }
-
-    .tile-panel-heading {
-        color: $tile-header-foreground-color !important;
-        cursor: move;
-        padding: 5px 7px;
-        background-color: $tile-header-background-color !important;
-    }
-
-
-    #spin-place {
-        position: relative;
-    }
-
-    .tile-display-area {
-        overflow: auto;
-        padding: 0;
-        margin: 15px 15px 15px 15px;
-    }
-
-    .back {
-        padding: 20px;
-        margin: 0px;
-        overflow: auto
-    }
-
-    .front {
-        padding: 0px;
-        margin: 0px;
-    }
-
-    .tile-log {
-          padding: 20px;
-          margin: 0px;
-          overflow: auto
-    }
+.tile-panel-heading {
+    color: $tile-header-foreground-color !important;
+    cursor: move;
+    padding: 5px 7px;
+    background-color: $tile-header-background-color !important;
+}
 
 
-    .tile-body {
-        padding: 0px;
-    }
+#spin-place {
+    position: relative;
+}
 
-    .tile-body img {
-        cursor: pointer
-    }
+.tile-display-area {
+    overflow: auto;
+    padding: 0;
+    margin: 15px 15px 15px 15px;
+}
 
-    .output-plot {
-        max-width: 100%;
-        max-height: 100%
-    }
+.back {
+    padding: 20px;
+    margin: 0px;
+    overflow: auto
+}
 
-    /* Other*/
+.front {
+    padding: 0px;
+    margin: 0px;
+}
 
-    .status-msg {
-        font-size: 16px;
-        color: dimgray;
-    }
+.tile-log {
+      padding: 20px;
+      margin: 0px;
+      overflow: auto
+}
 
-    .highlight {
-        background: yellow;
-    }
 
-    button.notclose {
-        -webkit-appearance: none;
-        padding: 0;
-        cursor: pointer;
-        background: transparent;
-        opacity: .5;
-        border: 0;
-    }
+.tile-body {
+    padding: 0px;
+}
 
-    button.notclose:hover {
-        opacity: .8;
-    }
-    .monospace {
-        font-family: monospace
-    }
+.tile-body img {
+    cursor: pointer
+}
 
-    .hide-important {
-        display: none !important
-    }
+.output-plot {
+    max-width: 100%;
+    max-height: 100%
+}
+
+/* Other*/
+
+.status-msg {
+    font-size: 16px;
+    color: dimgray;
+}
+
+.highlight {
+    background: $search-highlight-color;
+}
+
+button.notclose {
+    -webkit-appearance: none;
+    padding: 0;
+    cursor: pointer;
+    background: transparent;
+    opacity: .5;
+    border: 0;
+}
+
+button.notclose:hover {
+    opacity: .8;
+}
+.monospace {
+    font-family: monospace
+}
+
+.hide-important {
+    display: none !important
+}
 
