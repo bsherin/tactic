@@ -3,7 +3,7 @@ $main-panel-heading-background: #dff0d8;
 $main-panel-heading-height: 35px;
 $main-panel-heading-padding: 5px;
 $main-panel-heading-font-color: #4f8950;
-$main-panel-border-color: #4f8950;
+$main-panel-border-color: #cef0c0;
 
 $table-font-family: Arial, Helvetica, sans-serif;
 
@@ -34,7 +34,7 @@ $selected-column-background: #e0e0e0;
 // Panel header stuff for main table
 #main-panel {
     margin: 5px;
-    border-color: $main-panel-border-color;
+    border: 2px solid $main-panel-border-color;
     font-family: $table-font-family;
 
     .panel-heading {
@@ -87,8 +87,8 @@ $selected-column-background: #e0e0e0;
 #table-area {
     display: block;
     border-right: $table-border-style;
-    border-left: $table-border-style;
-    border-top: $table-border-style;
+    border-left: none;
+    border-top: none;
 
     thead {
         background-color: $column-header-background;
