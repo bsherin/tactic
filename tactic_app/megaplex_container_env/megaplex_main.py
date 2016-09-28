@@ -39,6 +39,7 @@ container_registry = {}
 app = Flask(__name__)
 
 MAX_QUEUE_LENGTH = int(os.environ.get("MAX_QUEUE_LENGTH"))
+print "max_queue_length is " + str(MAX_QUEUE_LENGTH)
 
 @app.route('/')
 def hello():
