@@ -12,12 +12,15 @@ $tile-panel-foreground-color: #333; // bootstrap default is #333
 $search-highlight-color: yellow;
 
 
+/* general use */
+$button-notclose-opacity: .9;
+$button-notclose-hover-opacity: .3;
+
 /* console related */
 $console-header-background-color: #f5f5f5; // bootstrap default is #f5f5f5
 $console-header-foreground-color: #333; // bootstrap default is #333
 $console-font-family: Arial, Helvetica, sans-serif;
 $console-header-font-size: 16px;
-$console-notclose-opacity: 80;
 
 $console-panel-border-style: 1px solid #c7c7c7;
 
@@ -279,9 +282,6 @@ td.cell-clickable:active {
     background-color: $console-header-background-color !important;
     font-family: $console-font-family;
 
-    .notclose {
-        opacity: $console-notclose-opacity !important
-    }
 }
 
 .log-panel {
@@ -294,9 +294,6 @@ td.cell-clickable:active {
         color: $log-panel-header-foreground-color !important;
         padding: 2px;
 
-        .notclose {
-            opacity: $console-notclose-opacity !important;
-        }
     }
 
     .panel-heading:hover {
@@ -430,12 +427,12 @@ button.notclose {
     padding: 0;
     cursor: pointer;
     background: transparent;
-    opacity: .5;
+    opacity: $button-notclose-opacity;
     border: 0;
 }
 
 button.notclose:hover {
-    opacity: .8;
+    opacity: $button-notclose-hover-opacity !important;
 }
 .monospace {
     font-family: monospace
