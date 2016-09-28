@@ -12,7 +12,8 @@
       #main-panel .panel-heading .main-heading-element .glyphicon {
         font-size: 15px; }
       #main-panel .panel-heading .main-heading-element label[for=doc-selector] {
-        padding-left: 5px; }
+        padding-left: 5px;
+        font-weight: normal; }
 
 .admin-table-row {
   font-size: 12px; }
@@ -100,8 +101,5 @@
   border-color: #ddd; }
   #table-icon .glyphicon {
     font-size: 15px; }
-
-#table-icon:hover {
-  opacity: .8; }
 
 /*# sourceMappingURL=table.css.map */

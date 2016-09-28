@@ -46,11 +46,14 @@ $selected-column-background: #e0e0e0;
         .main-heading-element {
             height: $main-panel-heading-height;
 
+
             .glyphicon {
-                font-size: 15px
+                font-size: 15px;
+
             }
             label[for=doc-selector] {
-                padding-left: 5px
+                padding-left: 5px;
+                font-weight: normal;
             }
         }
     }
@@ -181,6 +184,3 @@ $selected-column-background: #e0e0e0;
     }
 }
 
-#table-icon:hover {
-    opacity: .8;
-}

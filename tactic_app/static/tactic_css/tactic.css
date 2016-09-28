@@ -1,5 +1,6 @@
 /* main navbar */
 /* tile parameters */
+/* general use */
 /* console related */
 /* resource management and table related */
 /* General resources */
@@ -186,8 +187,6 @@ td.cell-clickable:active {
   color: #333 !important;
   background-color: #f5f5f5 !important;
   font-family: Arial, Helvetica, sans-serif; }
-  #console-heading .notclose {
-    opacity: 80 !important; }
 
 .log-panel {
   border: 1px solid #c7c7c7 !important;
@@ -197,8 +196,6 @@ td.cell-clickable:active {
     background-color: #f5f5f5 important;
     color: #333 !important;
     padding: 2px; }
-    .log-panel .panel-heading .notclose {
-      opacity: 80 !important; }
   .log-panel .panel-heading:hover {
     background-color: #f5f5f5 !important; }
   .log-panel .notclose {
@@ -301,11 +298,11 @@ button.notclose {
   padding: 0;
   cursor: pointer;
   background: transparent;
-  opacity: .5;
+  opacity: 0.9;
   border: 0; }
 
 button.notclose:hover {
-  opacity: .8; }
+  opacity: 0.3 !important; }
 
 .monospace {
   font-family: monospace; }
