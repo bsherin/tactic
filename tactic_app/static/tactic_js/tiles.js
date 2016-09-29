@@ -348,7 +348,13 @@ TileObject.prototype = {
         $(this.full_selector()).on('click touchstart', ".header-but", function (e) {
             the_id = $(e.target).closest(".tile-panel").attr("id");
             tobject = tile_dict[the_id];
-            tobject[tobject.tileHeaderButtons[e.target.parentElement.id]]()
+            if ($(e.target).hasClass("header-but")){ // this is necessary to make this work on firefox
+                var the_id = e.target.id
+            }
+            else {
+                var the_id = e.target.parentElement.id
+            }
+            tobject[tobject.tileHeaderButtons[the_id]]()
         });
 
         $(full_frontal_selector).on('click', '.word-clickable', function(e) {
