@@ -341,15 +341,16 @@ var tableObject = {
         }
 
         function setup_resize_listeners() {
+            if ($("#table-area").hasClass("ui-resizable")){
+                $("#table-area").resizable("destroy"); // This is needed in the case where we're changing docs.
+            }
             $(".can-resize").resizable({
                 handles: "e",
                 resize: handle_resize,
                 stop: save_column_widths
             });
 
-            if ($("#table-area").hasClass("ui-resizable")){
-                $("#table-area").resizable("destroy"); // This is needed in the case where we're changing docs.
-            }
+
             $("#table-area").resizable({
                 handles: "e",
                 stop: function () {
