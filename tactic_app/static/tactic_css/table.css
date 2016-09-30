@@ -1,12 +1,12 @@
 #main-panel {
   margin: 5px;
-  border: 2px solid #cef0c0;
+  border: 2px solid #c3e5b6;
   font-family: Arial, Helvetica, sans-serif; }
   #main-panel .panel-heading {
     padding-top: 5px;
     padding-bottom: 5px;
     background-color: #dff0d8;
-    color: #4f8950; }
+    color: #306030; }
     #main-panel .panel-heading .main-heading-element {
       height: 35px; }
       #main-panel .panel-heading .main-heading-element .glyphicon {
