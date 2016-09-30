@@ -626,6 +626,7 @@ class TileBase(QWorker):
             old_stdout = sys.stdout
             redirected_output = StringIO.StringIO()
             sys.stdout = redirected_output
+            self._pipe_dict = data["pipe_dict"]
             exec(data["the_code"])
             sys.stdout = old_stdout
             data["result_string"] = redirected_output.getvalue()
@@ -1121,6 +1122,7 @@ class TileBase(QWorker):
                                             tries=RETRIES)
                 encoded_val = result["encoded_val"]
                 val = cPickle.loads(encoded_val.decode("utf-8", "ignore").encode("ascii"))
+                self.restore_stdout()
                 return val
         self.restore_stdout()
         return None

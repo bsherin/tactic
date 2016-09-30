@@ -59,9 +59,17 @@ function expandConsole(){
                 $("#console").outerHeight(ui.size.height- $("#console-heading").outerHeight())
             }
         });
+    for (uid in consoleCMObjects) {
+        if (!consoleCMObjects.hasOwnProperty(uid)) continue;
+        consoleCMObjects[uid].refresh()
+    }
+
 }
 
 function closeLogItem(e) {
+    el = $(e.parentElement.parentElement);
+    uid = el.find(".console-code")[0].id;
+    delete consoleCMObjects[uid];
     $(e.parentElement.parentElement).remove()
 }
 
@@ -259,11 +267,12 @@ function continue_loading() {
                     console.log(String(Object.keys(saved_console_code).length));
                     for (uid in saved_console_code) {
                         if (!saved_console_code.hasOwnProperty(uid)) continue;
-                        var codearea = document.getElementById(data["unique_id"]);
-
-                        $(codearea).html("");
+                        console.log("getting codearea " + uid);
+                        var codearea = document.getElementById(uid);
+                        codearea.innerHTML = "";
                         createConsoleCodeInCodearea(uid, codearea);
-                        consoleCMObjects[uid].setValue(saved_console_code[uid])
+                        consoleCMObjects[uid].doc.setValue(saved_console_code[uid]);
+                        consoleCMObjects[uid].refresh();
                     }
 
                 });
