@@ -356,6 +356,11 @@ class CollectionManager(ResourceManager):
 
     def add_rules(self):
         app.add_url_rule('/main/<collection_name>', "main", login_required(self.main), methods=['get'])
+        app.add_url_rule('/get_collection_names', "get_collection_names", login_required(self.get_collection_names), methods=['get'])
+        app.add_url_rule('/get_tile_module_names', "get_tile_module_names", login_required(self.get_tile_module_names),
+                         methods=['get'])
+        app.add_url_rule('/get_code_names', "get_code_names", login_required(self.get_code_names),
+                         methods=['get'])
         app.add_url_rule('/import_as_table/<collection_name>', "import_as_table",
                          login_required(self.import_as_table), methods=['get', "post"])
         app.add_url_rule('/import_as_freeform/<collection_name>', "import_as_freeform",
@@ -368,6 +373,19 @@ class CollectionManager(ResourceManager):
                          login_required(self.download_collection), methods=['post', 'get'])
         app.add_url_rule('/combine_collections/<base_collection_name>/<collection_to_add>', "combine_collections",
                          login_required(self.combine_collections), methods=['post', 'get'])
+
+    # tactic_change geting resource naes
+    def get_collection_names(self):
+        user_obj = current_user
+        return jsonify({"success": True, "collection_names": user_obj.data_collections})
+
+    def get_tile_module_names(self):
+        user_obj = current_user
+        return jsonify({"success": True, "tile_module_names": user_obj.tile_module_names})
+
+    def get_code_names(self):
+        user_obj = current_user
+        return jsonify({"success": True, "code_resource_names": user_obj.code_names})
 
     def main(self, collection_name):
         user_obj = current_user

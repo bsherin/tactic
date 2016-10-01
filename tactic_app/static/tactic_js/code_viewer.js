@@ -91,9 +91,18 @@ function changeTheme() {
     }
 }
 
-function renameCode() {
-    console.log("entering rename")
-    showModal("Rename code resource", "Name for this code resource", function (new_name) {
+function renameCode() {  // tactic_change renaming cod
+    console.log("entering rename");
+    $.getJSON($SCRIPT_ROOT + "get_code_names", function(data) {
+            code_names = data["code_resource_names"];
+            var index = code_names.indexOf(code_name);
+            if (index >= 0) {
+              code_names.splice(index, 1);
+            }
+            showModal("Rename code resource", "Name for this code resource", RenameCodeResource, code_name, code_names)
+        }
+    );
+    function RenameCodeResource (new_name) {
         the_data = {"new_name": new_name};
         $.ajax({
             url: $SCRIPT_ROOT + "/rename_code/" + code_name,
@@ -114,7 +123,7 @@ function renameCode() {
             }
 
         }
-    });
+    }
 }
 
 function updateCode() {
@@ -151,8 +160,12 @@ function saveCodeAs() {
     doFlash({"message": "not implemented yet"})
 }
 
-function copyToLibrary() {
-    showModal("Import code resource", "New code resource name", function (new_name) {
+function copyToLibrary() { // tactic_change import code resource
+    $.getJSON($SCRIPT_ROOT + "get_code_names", function(data) {
+            showModal("Import code resource", "New Code Resource Name", ImportCodeResource, code_name, data["code_resource_names"])
+        }
+    );
+    function ImportCodeResource (new_name) {
         var result_dict = {
             "res_type": "code",
             "res_name": code_name,
@@ -168,7 +181,7 @@ function copyToLibrary() {
             dataType: 'json',
             success: doFlash
         });
-    });
+    }
 }
 
 function sendToRepository() {

@@ -137,21 +137,23 @@ function confirmDialog(modal_title, modal_text, cancel_text, submit_text, submit
 }
 
 // tactic_change tile_names
-function showModal(modal_title, field_title, submit_function, default_value, existing_names, warning_message) {
+function showModal(modal_title, field_title, submit_function, default_value, existing_names) {
     data_dict = {"modal_title": modal_title, "field_title": field_title};
 
     if (typeof existing_names == "undefined") {
         existing_names = []
     }
 
-    if (typeof warning_message == "undefined") {
-        warning_message = ""
+    name_counter = 1;
+    var default_name = default_value;
+    while (name_exists(default_name)) {
+        name_counter += 1;
+        default_name = default_value + String(name_counter)
     }
 
     var res = Mustache.to_html(modal_template, {
         "modal_title": modal_title,
-        "field_title": field_title,
-        "warning_message": warning_message
+        "field_title": field_title
     });
     $("#modal-area").html(res);
     $('#modal-dialog').on('shown.bs.modal', function () {
@@ -159,8 +161,8 @@ function showModal(modal_title, field_title, submit_function, default_value, exi
     });
     $("#modal-dialog").modal();
 
-    if (!(default_value == undefined)) {
-        $("#modal-text-input-field").val(default_value)
+    if (!(default_name == undefined)) {
+        $("#modal-text-input-field").val(default_name)
     }
 
     $("#modal-submit-button").on("click", submit_handler);
@@ -173,10 +175,18 @@ function showModal(modal_title, field_title, submit_function, default_value, exi
         }
     });
 
+    function name_exists(name) {
+        return (existing_names.indexOf(name) > -1)
+    }
+
     function submit_handler() {
         result = $("#modal-text-input-field").val();
-        if (existing_names.indexOf(result) > -1) {
+        if (name_exists(result)) {
             msg = "That name already exists";
+            $("#warning_field").html(msg)
+        }
+        else if (result == "") { // tactic_change test this
+            msg = "An empty name is not allowed here.";
             $("#warning_field").html(msg)
         }
         else {

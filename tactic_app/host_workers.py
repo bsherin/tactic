@@ -190,6 +190,14 @@ class HostWorker(QWorker):
             result[old_tile_id] = global_tile_manager.get_tile_code(tile_type, user_id)
         return result
 
+    # tactic_change
+    @task_worthy
+    def get_project_names(self, data):
+        user_id = data["user_id"]
+        user_obj = load_user(user_id)
+        return {"project_names": user_obj.project_names}
+
+
     @task_worthy
     def delete_container(self, data):
         container_id = data["container_id"]

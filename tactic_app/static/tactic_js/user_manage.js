@@ -256,10 +256,14 @@ var col_manager_specifics = {
         {"name": "share", "func": "send_repository_func", "button_class": "btn-warning"},
         {"name": "delete", "func": "delete_func", "button_class": "btn-danger"}
     ],
-    import_as_table: function (event) {
+    import_as_table: function (event) { // tactic_change colleciton_names
         var manager = event.data.manager;
         var the_data = new FormData(this);
-        showModal("Create Collection", "Name for this collection", function (new_name) {
+        $.getJSON($SCRIPT_ROOT + "get_collection_names", function(data) {
+                showModal("Import as table", "New collection Name", CreateNewCollection, "NewCollection", data["collection_names"])
+            }
+        );
+        function CreateNewCollection(new_name) {
             startSpinner();
             $.ajax({
                 url: $SCRIPT_ROOT + "/import_as_table/" + new_name,
@@ -273,13 +277,17 @@ var col_manager_specifics = {
                 stopSpinner();
                 doFlash(data)
             }
-        });
+        }
         event.preventDefault();
     },
-    import_as_freeform: function (event) {
+    import_as_freeform: function (event) { // tactic_change colleciton_names
         var manager = event.data.manager;
         var the_data = new FormData(this);
-        showModal("Create Collection", "Name for this collection", function (new_name) {
+       $.getJSON($SCRIPT_ROOT + "get_collection_names", function(data) {
+                showModal("Import as table", "New collection Name", CreateNewCollection, "NewCollection", data["collection_names"])
+            }
+        );
+        function CreateNewCollection(new_name) {
             startSpinner();
             $.ajax({
                 url: $SCRIPT_ROOT + "/import_as_freeform/" + new_name,
@@ -293,7 +301,7 @@ var col_manager_specifics = {
                 stopSpinner();
                 doFlash(data)
             }
-        });
+        }
         event.preventDefault();
     },
     downloadCollection: function (event) {
@@ -412,10 +420,14 @@ var tile_manager_specifics = {
         event.preventDefault();
     },
 
-    new_tile: function (event) {
+    new_tile: function (event) {  // tactic_change new tile module creations
         var manager = event.data.manager;
         var template_name = event.data.opt_name;
-        showModal("New Tile", "New Tile Name", function (new_name) {
+        $.getJSON($SCRIPT_ROOT + "get_tile_module_names", function(data) {
+                showModal("New Tile", "New Tile Name", CreateNewTileModule, "NewTileModule", data["tile_module_names"])
+            }
+        );
+        function CreateNewTileModule (new_name) {
             var result_dict = {
                 "template_name": template_name,
                 "new_res_name": new_name
@@ -437,7 +449,7 @@ var tile_manager_specifics = {
                     }
                 }
             });
-        });
+        }
         event.preventDefault();
     }
 };
@@ -487,10 +499,15 @@ var code_manager_specifics = {
         });
         event.preventDefault();
     },
-    new_code: function (event) {
+    new_code: function (event) { // tactic_change new_code
         var manager = event.data.manager;
         var template_name = event.data.opt_name;
-        showModal("New Code Resource", "New Code Resource Name", function (new_name) {
+        $.getJSON($SCRIPT_ROOT + "get_code_names", function(data) {
+                showModal("New Code Resource", "New Code Resource Name", CreateNewCodeResource, "NewCodeResource", data["code_resource_names"])
+            }
+        );
+
+        function CreateNewCodeResource (new_name) {
             var result_dict = {
                 "template_name": template_name,
                 "new_res_name": new_name
@@ -512,7 +529,7 @@ var code_manager_specifics = {
                     }
                 }
             });
-        });
+        }
         event.preventDefault();
     }
 };

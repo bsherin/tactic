@@ -251,19 +251,24 @@ function createColumn() {
     })
 }
 
+// tactic_change project_names
 function saveProjectAs() {
-    showModal("Save Project As", "New Project Name", function (new_name) {
-                var result_dict = {
-                    "project_name": new_name,
-                    "main_id": main_id,
-                    "tablespec_dict": tablespec_dict,
-                    "console_html": $("#console").html(),
-                    "console_cm_code": getConsoleCMCode(),
-                    "doc_type": DOC_TYPE
-                };
-                if (DOC_TYPE == "table") {
-                    result_dict.hidden_columns_list = hidden_columns_list
-                }
+    postWithCallback("host", "get_project_names", {"user_id": user_id}, function (data) {
+        showModal("Save Project As", "New Project Name", CreateNewProject, "NewProject", data["project_names"])
+    });
+
+    function CreateNewProject (new_name) {
+            var result_dict = {
+                "project_name": new_name,
+                "main_id": main_id,
+                "tablespec_dict": tablespec_dict,
+                "console_html": $("#console").html(),
+                "console_cm_code": getConsoleCMCode(),
+                "doc_type": DOC_TYPE
+            };
+            if (DOC_TYPE == "table") {
+                result_dict.hidden_columns_list = hidden_columns_list
+            }
 
             tableObject.startTableSpinner();
             postWithCallback(main_id, "save_new_project", result_dict, save_as_success);
@@ -291,7 +296,7 @@ function saveProjectAs() {
                     doFlash(data_object)
                 }
             }
-    })
+    }
 }
 
 function save_project() {
