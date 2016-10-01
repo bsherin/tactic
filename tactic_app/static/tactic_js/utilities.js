@@ -136,12 +136,22 @@ function confirmDialog(modal_title, modal_text, cancel_text, submit_text, submit
     }
 }
 
-function showModal(modal_title, field_title, submit_function, default_value) {
+// tactic_change tile_names
+function showModal(modal_title, field_title, submit_function, default_value, existing_names, warning_message) {
     data_dict = {"modal_title": modal_title, "field_title": field_title};
+
+    if (typeof existing_names == "undefined") {
+        existing_names = []
+    }
+
+    if (typeof warning_message == "undefined") {
+        warning_message = ""
+    }
 
     var res = Mustache.to_html(modal_template, {
         "modal_title": modal_title,
-        "field_title": field_title
+        "field_title": field_title,
+        "warning_message": warning_message
     });
     $("#modal-area").html(res);
     $('#modal-dialog').on('shown.bs.modal', function () {
@@ -164,8 +174,15 @@ function showModal(modal_title, field_title, submit_function, default_value) {
     });
 
     function submit_handler() {
-        $("#modal-dialog").modal("hide");
-        submit_function($("#modal-text-input-field").val())
+        result = $("#modal-text-input-field").val();
+        if (existing_names.indexOf(result) > -1) {
+            msg = "That name already exists";
+            $("#warning_field").html(msg)
+        }
+        else {
+            $("#modal-dialog").modal("hide");
+            submit_function(result)
+        }
     }
 }
 

@@ -9,10 +9,11 @@ function showZoomedImage(el) {
     $("#image-modal").modal()
 }
 
-
-function TileObject(tile_id, html, is_new_tile) {
+// tactic_change tile_name
+function TileObject(tile_id, html, is_new_tile, tile_name) {
     this.tile_id = tile_id;
     this.codeMirrorObjects = {};
+    this.tile_name = tile_name;
 
     $("#tile-div").append(html);  // This append has to be after the flip or weird things happen
 
@@ -24,8 +25,8 @@ function TileObject(tile_id, html, is_new_tile) {
             autoCloseBrackets: true,
             indentUnit: 4
         });
-        cm_element = $($(this).siblings(".CodeMirror")[0])
-        cm_element.resizable({handles: "se"})
+        cm_element = $($(this).siblings(".CodeMirror")[0]);
+        cm_element.resizable({handles: "se"});
         cm_element.height(100)
     });
     $(this.full_selector()).resizable({

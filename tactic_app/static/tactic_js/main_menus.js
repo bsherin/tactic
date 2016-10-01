@@ -372,14 +372,20 @@ function exportDataTable() {
 
 function tile_command(menu_id) {
 
-    showModal("Create " + menu_id, "New Tile Name", createNewTile, menu_id);
+    // tactic_change tile_name
+    existing_tile_names = [];
+    for (tile_id in tile_dict) {
+        if (!tile_dict.hasOwnProperty(tile_id)) continue;
+        existing_tile_names.push(tile_dict[tile_id].tile_name)
+    }
+    showModal("Create " + menu_id, "New Tile Name", createNewTile, menu_id, existing_tile_names);
 
     function createNewTile(tile_name) {
         var data_dict = {};
         var tile_type = menu_id;
         data_dict["tile_name"] = tile_name;
         data_dict["tile_type"] = tile_type;
-        data_dict["user_id"] = user_id
+        data_dict["user_id"] = user_id;
         postWithCallback("host", "create_tile_container", data_dict, function (data) {
             var tile_id = data["tile_id"];
             data_dict["tile_id"] = tile_id;
@@ -394,7 +400,7 @@ function tile_command(menu_id) {
                         if (data.success) {
                             data_dict["form_html"] = data["html"] ;
                             postWithCallback("host", "render_tile", data_dict, function(data) {
-                                var new_tile_object = new TileObject(tile_id, data.html, true);
+                                var new_tile_object = new TileObject(tile_id, data.html, true, tile_name); //tactic_change tile_name
                                 tile_dict[tile_id] = new_tile_object;
                                 new_tile_object.spin_and_refresh();
                                 dirty = true;
