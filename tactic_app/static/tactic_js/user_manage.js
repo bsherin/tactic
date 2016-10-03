@@ -120,20 +120,20 @@ function start_post_load() {
         $(".resource-module").on("click", ".repository-resource-unfilter-button", unfilter_repository_resource);
         $(".resource-module").on("keypress", ".search-field", function(e) {
             if (e.which == 13) {
-                the_id = e.target.id;
+                var the_id = e.target.id;
                 var regexp = /^(\w+?)-/;
                 var res_type = regexp.exec(the_id)[1];
-                fake_event = {"target": {"value": res_type}};
+                var fake_event = {"target": {"value": res_type}};
                 search_resource(fake_event);
                 e.preventDefault();
             }
         });
         $(".resource-module").on("keypress", ".repository-search-field", function(e) {
             if (e.which == 13) {
-                the_id = e.target.id;
+                var the_id = e.target.id;
                 var regexp = /^repository-(\w+?)-/;
                 var res_type = regexp.exec(the_id)[1];
-                fake_event = {"target": {"value": res_type}};
+                var fake_event = {"target": {"value": res_type}};
                 search_repository_resource(fake_event);
                 e.preventDefault();
             }
@@ -188,7 +188,7 @@ function resize_window() {
     res_types.forEach(function (val, ind, array) {
         var h = window.innerHeight - 50 - $("#" + val + "-selector-row").offset().top;
         $("#" + val + "-selector-row").outerHeight(h);
-        var h = window.innerHeight - 50 - $("#repository-" + val + "-selector-row").offset().top;
+        h = window.innerHeight - 50 - $("#repository-" + val + "-selector-row").offset().top;
         $("#repository-" + val + "-selector-row").outerHeight(h);
     })
 }
@@ -230,7 +230,7 @@ var list_manager_specifics = {
             }
         });
         event.preventDefault();
-    },
+    }
 };
 
 var listManager = new ResourceManager("list", list_manager_specifics);

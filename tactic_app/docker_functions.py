@@ -45,15 +45,15 @@ def create_container(image_name, container_name=None, network_mode="bridge",
         environ[key] = val
     if container_name is None:
         container = cli.create_container(image=image_name,
-                                            host_config=cli.create_host_config(network_mode=network_mode),
-                                            environment=environ
-                                            )
+                                         host_config=cli.create_host_config(network_mode=network_mode),
+                                         environment=environ
+                                         )
     else:
         container = cli.create_container(image=image_name,
-                                            name=container_name,
-                                            host_config=cli.create_host_config(network_mode=network_mode),
-                                            environment=environ
-                                            )
+                                         name=container_name,
+                                         host_config=cli.create_host_config(network_mode=network_mode),
+                                         environment=environ
+                                         )
     container_id = container.get('Id')
     cli.start(container_id)
     print "status " + str(cli.inspect_container(container_id)["State"]["Status"])
@@ -81,10 +81,12 @@ def destroy_container(cname):
     except:
         return -1
 
+
 def destroy_user_containers(owner_id):
     for cont, owner in container_owners.items():
         if owner == owner_id:
             destroy_container(cont)
+
 
 def send_direct_request_to_container(container_id, msg_type, data_dict, wait_for_success=True,
                                      timeout=3, tries=RETRIES, wait_time=.1):
@@ -97,7 +99,8 @@ def send_direct_request_to_container(container_id, msg_type, data_dict, wait_for
             except:
                 time.sleep(wait_time)
                 continue
-        error_string = "Send direct container request timed out with msg_type {} and container {} ".format(msg_type, container_id)
+        error_string = "Send direct container request timed out with msg_type {} and container {} ".format(msg_type,
+                                                                                                           container_id)
         raise Exception(error_string)
     else:
         return requests.post("http://{0}:5000/{1}".format(maddress, msg_type), timeout=timeout, json=data_dict)

@@ -399,7 +399,7 @@ class CollectionManager(ResourceManager):
     def main(self, collection_name):
         user_obj = current_user
         cname = user_obj.build_data_collection_name(collection_name)
-        main_id = create_container("tactic_main_image", network_mode="bridge", owner=user_obj.get_id())
+        main_id = create_container("tactic_main_image", owner=user_obj.get_id())
         caddress = get_address(main_id, "bridge")
         send_direct_request_to_container(tactic_app.megaplex_id, "register_container",
                                          {"container_id": main_id, "address": caddress})
@@ -444,7 +444,7 @@ class CollectionManager(ResourceManager):
                                doc_names=doc_names,
                                use_ssl=str(use_ssl),
                                console_html="",
-                               is_table = (doc_type == "table"),
+                               is_table=(doc_type == "table"),
                                short_collection_name=short_collection_name,
                                new_tile_info="")
 
@@ -538,7 +538,7 @@ class CollectionManager(ResourceManager):
                     continue
                 base_collection.insert_one(f)
             db[base_full_name].update_one({"name": "__metadata__"},
-                                 {'$set': {"updated": datetime.datetime.today()}})
+                                          {'$set': {"updated": datetime.datetime.today()}})
             self.update_selector_list(base_collection_name)
             return jsonify({"message": "Collections successfull combined", "alert_type": "alert-success"})
         except:
@@ -605,7 +605,8 @@ class CollectionManager(ResourceManager):
         mdata = global_tile_manager.create_initial_metadata()
         try:
             db[full_collection_name].insert_one({"name": "__metadata__", "datetime": mdata["datetime"],
-                                                 "updated": mdata["updated"], "tags": "", "notes": "", "type": "freeform"})
+                                                 "updated": mdata["updated"], "tags": "",
+                                                 "notes": "", "type": "freeform"})
         except:
             error_string = "Error creating collection: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
             return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
@@ -776,8 +777,9 @@ class TileManager(ResourceManager):
                 user_obj = current_user
             tile_module = user_obj.get_tile_module(tile_module_name)
 
-            result = send_direct_request_to_container(global_tile_manager.test_tile_container_id, "load_source", {"tile_code": tile_module,
-                                                                                              "megaplex_address": tactic_app.megaplex_address})
+            result = send_direct_request_to_container(global_tile_manager.test_tile_container_id, "load_source",
+                                                      {"tile_code": tile_module,
+                                                       "megaplex_address": tactic_app.megaplex_address})
             res_dict = result.json()
 
             if not res_dict["success"]:
@@ -785,16 +787,17 @@ class TileManager(ResourceManager):
             category = res_dict["category"]
 
             global_tile_manager.add_user_tile_module(user_obj.username,
-                                              category,
-                                              res_dict["tile_name"],
-                                              tile_module,
-                                              tile_module_name)
+                                                     category,
+                                                     res_dict["tile_name"],
+                                                     tile_module,
+                                                     tile_module_name)
 
             socketio.emit('update-loaded-tile-list', {"html": self.render_loaded_tile_list(user_obj)},
                           namespace='/user_manage', room=user_obj.get_id())
             socketio.emit('update-menus', {}, namespace='/main', room=user_obj.get_id())
             if return_json:
-                return jsonify({"success": True, "message": "Tile module successfully loaded", "alert_type": "alert-success"})
+                return jsonify({"success": True, "message": "Tile module successfully loaded",
+                                "alert_type": "alert-success"})
             else:
                 return {"success": True}
         except:
@@ -837,7 +840,8 @@ class TileManager(ResourceManager):
                             "message": "A tile with that name already exists"})
         old_tile_dict = db[user_obj.tile_collection_name].find_one({"tile_module_name": tile_to_copy})
         metadata = global_tile_manager.create_initial_metadata()
-        new_tile_dict = {"tile_module_name": new_tile_name, "tile_module": old_tile_dict["tile_module"], "metadata": metadata}
+        new_tile_dict = {"tile_module_name": new_tile_name, "tile_module": old_tile_dict["tile_module"],
+                         "metadata": metadata}
         db[user_obj.tile_collection_name].insert_one(new_tile_dict)
         self.update_selector_list(select=new_tile_name)
         return jsonify({"success": True})
@@ -1054,6 +1058,7 @@ def user_manage():
 
 # Metadata views
 
+
 @app.route('/grab_metadata', methods=['POST'])
 @login_required
 def grab_metadata():
@@ -1124,7 +1129,7 @@ def search_resource():
         manager = get_manager_for_type(res_type, is_repository=True)
     else:
         user_obj = current_user
-        manager = get_manager_for_type(res_type, is_repository=False)
+        manager = get_manager_for_type(res_type)
     if search_type == "search":
         the_list = user_obj.get_resource_names(res_type, search_filter=txt)
     else:
@@ -1133,6 +1138,7 @@ def search_resource():
     res_array = manager.build_resource_array(the_list)
     result = manager.build_html_table_from_data_list(res_array)
     return jsonify({"html": result})
+
 
 @app.route('/update_module', methods=['post'])
 @login_required
@@ -1165,7 +1171,7 @@ def rename_module(old_name):
     try:
         new_name = request.json["new_name"]
         db[current_user.tile_collection_name].update_one({"tile_module_name": old_name},
-                                                             {'$set': {"tile_module_name": new_name}})
+                                                         {'$set': {"tile_module_name": new_name}})
         tile_manager.update_selector_list()
         return jsonify({"success": True, "message": "Module Successfully Saved", "alert_type": "alert-success"})
     except:
@@ -1232,6 +1238,7 @@ def update_code():
         error_string = "Error saving code resource " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
+
 @app.route('/update_list', methods=['post'])
 @login_required
 def update_list():
@@ -1284,4 +1291,3 @@ def on_join(data):
     room = data["user_manage_id"]
     join_room(room)
     print "user joined room " + room
-
