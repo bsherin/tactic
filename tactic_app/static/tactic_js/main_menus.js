@@ -251,7 +251,6 @@ function createColumn() {
     })
 }
 
-// tactic_change project_names
 function saveProjectAs() {
     postWithCallback("host", "get_project_names", {"user_id": user_id}, function (data) {
         showModal("Save Project As", "New Project Name", CreateNewProject, "NewProject", data["project_names"])
@@ -376,10 +375,8 @@ function exportDataTable() {
 }
 
 function tile_command(menu_id) {
-
-    // tactic_change tile_name
-    existing_tile_names = [];
-    for (tile_id in tile_dict) {
+    var existing_tile_names = [];
+    for (var tile_id in tile_dict) {
         if (!tile_dict.hasOwnProperty(tile_id)) continue;
         existing_tile_names.push(tile_dict[tile_id].tile_name)
     }
@@ -405,7 +402,7 @@ function tile_command(menu_id) {
                         if (data.success) {
                             data_dict["form_html"] = data["html"] ;
                             postWithCallback("host", "render_tile", data_dict, function(data) {
-                                var new_tile_object = new TileObject(tile_id, data.html, true, tile_name); //tactic_change tile_name
+                                var new_tile_object = new TileObject(tile_id, data.html, true, tile_name);
                                 tile_dict[tile_id] = new_tile_object;
                                 new_tile_object.spin_and_refresh();
                                 dirty = true;

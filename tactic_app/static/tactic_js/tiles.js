@@ -9,7 +9,6 @@ function showZoomedImage(el) {
     $("#image-modal").modal()
 }
 
-// tactic_change tile_name
 function TileObject(tile_id, html, is_new_tile, tile_name) {
     this.tile_id = tile_id;
     this.codeMirrorObjects = {};

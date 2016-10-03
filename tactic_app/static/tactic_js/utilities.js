@@ -136,7 +136,6 @@ function confirmDialog(modal_title, modal_text, cancel_text, submit_text, submit
     }
 }
 
-// tactic_change tile_names
 function showModal(modal_title, field_title, submit_function, default_value, existing_names) {
     data_dict = {"modal_title": modal_title, "field_title": field_title};
 
@@ -185,7 +184,7 @@ function showModal(modal_title, field_title, submit_function, default_value, exi
             msg = "That name already exists";
             $("#warning_field").html(msg)
         }
-        else if (result == "") { // tactic_change test this
+        else if (result == "") {
             msg = "An empty name is not allowed here.";
             $("#warning_field").html(msg)
         }

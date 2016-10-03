@@ -91,10 +91,10 @@ function changeTheme() {
     }
 }
 
-function renameCode() {  // tactic_change renaming cod
+function renameCode() {
     console.log("entering rename");
-    $.getJSON($SCRIPT_ROOT + "get_code_names", function(data) {
-            code_names = data["code_resource_names"];
+    $.getJSON($SCRIPT_ROOT + "get_resource_names/code", function(data) {
+            code_names = data["resource_names"];
             var index = code_names.indexOf(code_name);
             if (index >= 0) {
               code_names.splice(index, 1);
@@ -160,9 +160,9 @@ function saveCodeAs() {
     doFlash({"message": "not implemented yet"})
 }
 
-function copyToLibrary() { // tactic_change import code resource
-    $.getJSON($SCRIPT_ROOT + "get_code_names", function(data) {
-            showModal("Import code resource", "New Code Resource Name", ImportCodeResource, code_name, data["code_resource_names"])
+function copyToLibrary() {
+    $.getJSON($SCRIPT_ROOT + "get_resource_names/code", function(data) {
+            showModal("Import code resource", "New Code Resource Name", ImportCodeResource, code_name, data["resource_names"])
         }
     );
     function ImportCodeResource (new_name) {
@@ -184,8 +184,12 @@ function copyToLibrary() { // tactic_change import code resource
     }
 }
 
-function sendToRepository() {
-    showModal("Share code resource", "New code resource name", function (new_name) {
+function sendToRepository() {   // tactic change sendtorepository code
+    $.getJSON($SCRIPT_ROOT + "get_repository_resource_names/code", function(data) {
+        showModal("Share code resource", "New Code Resource Name", ShareCodeResource, code_name, data["resource_names"])
+        }
+    );
+    function ShareCodeResource(new_name) {
         var result_dict = {
             "res_type": "code",
             "res_name": code_name,
@@ -201,5 +205,5 @@ function sendToRepository() {
             dataType: 'json',
             success: doFlash
         });
-    });
+    }
 }

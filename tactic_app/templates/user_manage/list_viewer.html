@@ -26,7 +26,7 @@
                             {% endif %}
                             <button type="button" class="btn btn-default" onclick="window.close()">Close</button>
                         </div>
-                        <button id="list-Name" type="button" class="btn btn-default res-name-button" onclick="renameList()">{{ list_name }}</button>
+                        <button id="list-name" type="button" class="btn btn-default res-name-button" onclick="renameList()">{{ list_name }}</button>
                     </div>
                 </div>
                 <textarea id="listarea" {{read_only_string}}>{{the_list_as_string | safe}}</textarea>

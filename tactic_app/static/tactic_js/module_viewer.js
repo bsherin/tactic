@@ -73,12 +73,7 @@ function dirty() {
     var the_code = myCodeMirror.getDoc().getValue();
     var tags = $("#tile-tags").val();
     var notes = $("#tile-notes").val();
-    if ((the_code == savedCode) && (tags == savedTags) && (notes == savedNotes)) {
-        return false
-    }
-    else {
-        return true
-    }
+    return !((the_code == savedCode) && (tags == savedTags) && (notes == savedNotes));
 }
 
 function changeTheme() {
@@ -95,9 +90,18 @@ function changeTheme() {
 }
 
 function renameModule() {
-    console.log("entering rename")
-    showModal("Rename module", "Name for this module", function (new_name) {
-        the_data = {"new_name": new_name};
+    console.log("entering rename");
+    $.getJSON($SCRIPT_ROOT + "get_resource_names/tile", function(data) {
+            var module_names = data["resource_names"];
+            var index = module_names.indexOf(module_name);
+            if (index >= 0) {
+              module_names.splice(index, 1);
+            }
+            showModal("Rename Module", "Name for this module", RenameModuleResource, module_name, module_names)
+        }
+    );
+    function RenameModuleResource (new_name) {
+        var the_data = {"new_name": new_name};
         $.ajax({
             url: $SCRIPT_ROOT + "/rename_module/" + module_name,
             contentType : 'application/json',
@@ -117,7 +121,7 @@ function renameModule() {
             }
 
         }
-    });
+    }
 }
 
 function updateModule() {
@@ -194,7 +198,11 @@ function saveModuleAs() {
 }
 
 function copyToLibrary() {
-    showModal("Import tile", "New tile Name", function (new_name) {
+    $.getJSON($SCRIPT_ROOT + "get_resource_names/tile", function(data) {
+        showModal("Import Tile", "New Tile Name", ImportTileModule, module_name, data["resource_names"])
+        }
+    );
+    function ImportTileModule(new_name) {
         var result_dict = {
             "res_type": "tile",
             "res_name": module_name,
@@ -210,11 +218,15 @@ function copyToLibrary() {
             dataType: 'json',
             success: doFlash
         });
-    });
+    }
 }
 
 function sendToRepository() {
-    showModal("Share tile", "New tile name", function (new_name) {
+    $.getJSON($SCRIPT_ROOT + "get_repository_resource_names/tile", function(data) {
+        showModal("Share tile", "New Tile Name", ShareTileResource, module_name, data["resource_names"])
+        }
+    );
+    function ShareTileResource(new_name) {
         var result_dict = {
             "res_type": "tile",
             "res_name": module_name,
@@ -230,5 +242,5 @@ function sendToRepository() {
             dataType: 'json',
             success: doFlash
         });
-    });
+    }
 }
