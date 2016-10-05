@@ -7,7 +7,6 @@ from gevent import monkey; monkey.patch_all()
 from flask import render_template
 import pymongo
 import gridfs
-import gridfs
 import cPickle
 from bson.binary import Binary
 # noinspection PyUnresolvedReferences
@@ -19,7 +18,6 @@ import traceback
 import zlib
 import os
 import uuid
-from cStringIO import StringIO
 
 INITIAL_LEFT_FRACTION = .69
 CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
@@ -30,7 +28,7 @@ else:
     RETRIES = 60
 
 
-class freeformDocInfo(object):
+class FreeformDocInfo(object):
     def __init__(self, name, data_text):
         self.name = name
         self.data_text = data_text
@@ -62,8 +60,8 @@ class freeformDocInfo(object):
 
     @staticmethod
     def recreate_from_save(save_dict):
-        new_instance = freeformDocInfo(save_dict["name"],
-                               save_dict["data_text"])
+        new_instance = FreeformDocInfo(save_dict["name"],
+                                       save_dict["data_text"])
         new_instance.table_spec = save_dict["table_spec"]
         return new_instance
 
@@ -195,7 +193,7 @@ class docInfo(object):
         if self.is_first_chunk:
             return None
         old_start = self.start_of_current_chunk
-        self.start_of_current_chunk = self.start_of_current_chunk - STEP_SIZE
+        self.start_of_current_chunk -= STEP_SIZE
         self.is_last_chunk = False
         if self.start_of_current_chunk <= 0:
             self.start_of_current_chunk = 0
@@ -219,13 +217,13 @@ class docInfo(object):
         return new_instance
 
 
-# noinspection PyPep8Naming
+# noinspection PyPep8Naming,PyUnusedLocal
 class mainWindow(QWorker):
     save_attrs = ["short_collection_name", "collection_name", "current_tile_id", "tile_sort_list", "left_fraction",
                   "is_shrunk", "doc_dict", "project_name", "loaded_modules", "user_id",
                   "hidden_columns_list", "console_html", "console_cm_code", "doc_type"]
-    update_events = ["CellChange", "FreeformTextChange","CreateColumn", "SearchTable", "SaveTableSpec", "MainClose", "DisplayCreateErrors",
-                     "DehighlightTable", "SetCellContent", "RemoveTile", "ColorTextInCell",
+    update_events = ["CellChange", "FreeformTextChange", "CreateColumn", "SearchTable", "SaveTableSpec", "MainClose",
+                     "DisplayCreateErrors", "DehighlightTable", "SetCellContent", "RemoveTile", "ColorTextInCell",
                      "FilterTable", "UnfilterTable", "TextSelect", "UpdateSortList", "UpdateLeftFraction",
                      "UpdateTableShrinkState"]
 
@@ -262,6 +260,8 @@ class mainWindow(QWorker):
         self.mdata = None
         self.pseudo_tile_id = None
         self.pseudo_tile_address = None
+        self.hidden_columns_list = None
+        self.loaded_modules = None
 
         if "project_name" not in data_dict:
             self.doc_type = data_dict["doc_type"]
@@ -354,14 +354,16 @@ class mainWindow(QWorker):
         tile_containers = []
         try:
             print "Entering do_full_recreation"
-            self.show_um_message("Entering do_full_recreation", data_dict["user_manage_id"], None)
+            self.show_um_message("Entering do_full_recreation", data_dict["user_manage_id"])
             tile_info_dict, loaded_modules = self.recreate_from_save(data_dict["project_collection_name"],
                                                                      data_dict["project_name"])
-            self.post_and_wait("host", "load_modules", {"loaded_modules": loaded_modules, "user_id": data_dict["user_id"]})
+            self.post_and_wait("host", "load_modules",
+                               {"loaded_modules": loaded_modules, "user_id": data_dict["user_id"]})
             doc_names = [str(doc_name) for doc_name in self.doc_names]
             self.show_um_message("Creating empty containers", data_dict["user_manage_id"])
             tile_containers = self.post_and_wait("host", "get_empty_tile_containers",
-                                                 {"number": len(tile_info_dict.keys()), "user_id": data_dict["user_id"]})
+                                                 {"number": len(tile_info_dict.keys()),
+                                                  "user_id": data_dict["user_id"]})
             self.show_um_message("Getting tile code", data_dict["user_manage_id"])
             tile_code_dict = self.post_and_wait("host", "get_tile_code", {"tile_info_dict": tile_info_dict,
                                                                           "user_id": data_dict["user_id"]})
@@ -412,7 +414,7 @@ class mainWindow(QWorker):
         project_dict["metadata"] = save_dict["metadata"]
         self.mdata = save_dict["metadata"]
         error_messages = []
-        if "doc_type" not in project_dict: # This is for backward compatibility
+        if "doc_type" not in project_dict:  # This is for backward compatibility
             project_dict["doc_type"] = "table"
         for (attr, attr_val) in project_dict.items():
             if str(attr) != "tile_instances":
@@ -489,7 +491,7 @@ class mainWindow(QWorker):
                         self._pipe_dict[tile_id][tile_result["tile_name"] + "_" + export] = {
                             "export_name": export,
                             "tile_id": tile_id,
-                            "tile_address": self.tile_instances[tile_id],}
+                            "tile_address": self.tile_instances[tile_id]}
 
         # We have to wait to here to actually render the tiles because
         # the pipe_dict needs to be complete to build the forms.
@@ -529,9 +531,8 @@ class mainWindow(QWorker):
             self.show_main_status_message("compiling save dictionary")
             project_dict = self.compile_save_dict()
 
-            save_dict = {}
-            save_dict["metadata"] = self.create_initial_metadata()
-            save_dict["project_name"] = project_dict["project_name"]
+            save_dict = {"metadata": self.create_initial_metadata(),
+                         "project_name": project_dict["project_name"]}
             self.show_main_status_message("Pickle, convert, compress")
             pdict = cPickle.dumps(project_dict)
             pdict = Binary(zlib.compress(pdict))
@@ -610,7 +611,7 @@ class mainWindow(QWorker):
                     result[fname] = docInfo(fname, f["data_rows"], [])
             else:
 
-                result[fname] = freeformDocInfo(fname, self.fs.get(f["file_id"]).read())
+                result[fname] = FreeformDocInfo(fname, self.fs.get(f["file_id"]).read())
         return result
 
     def _set_row_column_data(self, doc_name, the_id, column_header, new_content):
@@ -719,7 +720,7 @@ class mainWindow(QWorker):
         self.debug_log(error_string)
         if print_to_console:
             self.print_to_console(error_string, force_open=True)
-        return
+        return error_string
 
     def highlight_table_text(self, txt):
         if self.doc_type == "table":
@@ -910,14 +911,12 @@ class mainWindow(QWorker):
         data = self.post_and_wait("host", "create_tile_container", {"user_id": self.user_id})
         self.pseudo_tile_id = data["tile_id"]
         self.pseudo_tile_address = data["tile_address"]
-        data_dict = {}
-        data_dict["user_id"] = self.user_id
-        data_dict["base_figure_url"] = self.base_figure_url.replace("tile_id", self.pseudo_tile_id)
-        data_dict["main_id"] = self.my_id
-        data_dict["megaplex_address"] = self.megaplex_address
-        data_dict["doc_type"] = self.doc_type
-        data_dict["tile_id"] = self.pseudo_tile_id
-        instantiate_result = send_request_to_container(self.pseudo_tile_address, "instantiate_as_pseudo_tile", data_dict).json()
+        data_dict = {"user_id": self.user_id,
+                     "base_figure_url": self.base_figure_url.replace("tile_id", self.pseudo_tile_id),
+                     "main_id": self.my_id, "megaplex_address": self.megaplex_address, "doc_type": self.doc_type,
+                     "tile_id": self.pseudo_tile_id}
+        instantiate_result = send_request_to_container(self.pseudo_tile_address,
+                                                       "instantiate_as_pseudo_tile", data_dict).json()
         if not instantiate_result["success"]:
             self.debug_log("got an exception " + instantiate_result["message_string"])
             raise Exception(instantiate_result["message_string"])
@@ -951,7 +950,8 @@ class mainWindow(QWorker):
         new_name = data["name"]
         doc_dict = data["doc_dict"]
         doc_type = data["doc_type"]
-        full_collection_name = self.post_and_wait("host", "get_full_collection_name", {"name": new_name, "user_id": self.user_id})["full_collection_name"]
+        full_collection_name = self.post_and_wait("host", "get_full_collection_name",
+                                                  {"name": new_name, "user_id": self.user_id})["full_collection_name"]
         if doc_type == "table":
             mdata["type"] = "table"
             self.db[full_collection_name].insert_one(mdata)
@@ -1061,16 +1061,16 @@ class mainWindow(QWorker):
         saved_options = copy.copy(self.get_tile_property(tile_id, "current_options"))
         reload_dict.update(saved_options)
         result = send_request_to_container(self.tile_instances[tile_id], "load_source",
-                                  {"tile_code": module_code, "megaplex_address": self.megaplex_address}).json()
+                                           {"tile_code": module_code, "megaplex_address": self.megaplex_address}).json()
         if not result["success"]:
             raise Exception(result["message_string"])
 
         form_info = {"current_header_list": self.current_header_list,
-                 "pipe_dict": self._pipe_dict,
-                 "doc_names": self.doc_names,
-                 "list_names": the_lists["list_names"],
-                 "class_names": the_lists["class_names"],
-                 "function_names": the_lists["function_names"]}
+                     "pipe_dict": self._pipe_dict,
+                     "doc_names": self.doc_names,
+                     "list_names": the_lists["list_names"],
+                     "class_names": the_lists["class_names"],
+                     "function_names": the_lists["function_names"]}
         reload_dict["form_info"] = form_info
         reload_dict["main_id"] = self.my_id
         result = send_request_to_container(self.tile_instances[tile_id], "reinstantiate_tile", reload_dict).json()
@@ -1209,11 +1209,11 @@ class mainWindow(QWorker):
             cellchange = data["cellchange"]
 
             current_doc_dict = self.doc_dict[doc_name].data_rows
-            for id, r in new_doc_dict.items():
-                old_r = current_doc_dict[id]
+            for the_id, r in new_doc_dict.items():
+                old_r = current_doc_dict[the_id]
                 for key, val in r.items():
                     if not val == old_r[key]:
-                        self._set_cell_content(doc_name, id, key, val, cellchange)
+                        self._set_cell_content(doc_name, the_id, key, val, cellchange)
         else:
             new_doc_text = data["new_data"]
             self._set_freeform_data(doc_name, new_doc_text)
@@ -1301,7 +1301,7 @@ class mainWindow(QWorker):
 
     @task_worthy
     def update_document(self, data):
-        new_data= data["new_data"]
+        new_data = data["new_data"]
         doc_name = data["document_name"]
         doc = self.doc_dict[doc_name]
         if self.doc_type == "table":
@@ -1392,4 +1392,3 @@ class mainWindow(QWorker):
                         "column_header": column_header,
                         "color": color}
                 self.emit_table_message("setCellBackground", data)
-

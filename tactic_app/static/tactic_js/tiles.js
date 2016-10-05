@@ -9,23 +9,23 @@ function showZoomedImage(el) {
     $("#image-modal").modal()
 }
 
-
-function TileObject(tile_id, html, is_new_tile) {
+function TileObject(tile_id, html, is_new_tile, tile_name) {
     this.tile_id = tile_id;
     this.codeMirrorObjects = {};
+    this.tile_name = tile_name;
 
     $("#tile-div").append(html);  // This append has to be after the flip or weird things happen
 
-    self = this;
+    var self = this;
     $(this.full_selector() + " .codearea").each( function () {
-        theId = $(this).attr("id");
+        var theId = $(this).attr("id");
         self.codeMirrorObjects[theId] = CodeMirror.fromTextArea(this, {
             matchBrackets: true,
             autoCloseBrackets: true,
             indentUnit: 4
         });
-        cm_element = $($(this).siblings(".CodeMirror")[0])
-        cm_element.resizable({handles: "se"})
+        var cm_element = $($(this).siblings(".CodeMirror")[0]);
+        cm_element.resizable({handles: "se"});
         cm_element.height(100)
     });
     $(this.full_selector()).resizable({
@@ -60,6 +60,7 @@ function TileObject(tile_id, html, is_new_tile) {
     }
 }
 
+//noinspection JSUnusedGlobalSymbols
 TileObject.prototype = {
     spinner: null,
     full_selector: function() {
@@ -148,21 +149,21 @@ TileObject.prototype = {
     },
 
     logParams: function() {
-        data_dict = {};
+        var data_dict = {};
         data_dict["main_id"] = main_id;
         data_dict["tile_id"] = this.tile_id;
         postWithCallback(this.tile_id, "LogParams", data_dict)
     },
 
     logMe: function() {
-        data_dict = {};
+        var data_dict = {};
         data_dict["main_id"] = main_id;
         data_dict["tile_id"] = this.tile_id;
         postWithCallback(this.tile_id, "LogTile", data_dict)
     },
 
     showContainerLog: function() {
-        data_dict = {};
+        var data_dict = {};
         data_dict["main_id"] = main_id;
         data_dict["tile_id"] = this.tile_id;
         postWithCallback(this.tile_id, "ShowContainerLog", data_dict)
@@ -308,7 +309,7 @@ TileObject.prototype = {
     showTileLog: function() {
         var self = this;
         postWithCallback("host", "get_container_log", {"container_id": self.tile_id}, function (res) {
-            the_html = "<pre>" + res["log_text"] + "</pre>";
+            var the_html = "<pre>" + res["log_text"] + "</pre>";
             $("#tile_body_" + self.tile_id + " .tile-log-area").html(the_html);
             $("#tile_body_" + self.tile_id + " .tile-log").show("blind");
         })
@@ -344,15 +345,16 @@ TileObject.prototype = {
 
     listen_for_clicks: function() {
         var full_frontal_selector = this.full_selector() + " .front";
+        var the_id;
 
         $(this.full_selector()).on('click touchstart', ".header-but", function (e) {
             the_id = $(e.target).closest(".tile-panel").attr("id");
-            tobject = tile_dict[the_id];
+            var tobject = tile_dict[the_id];
             if ($(e.target).hasClass("header-but")){ // this is necessary to make this work on firefox
-                var the_id = e.target.id
+                the_id = e.target.id
             }
             else {
-                var the_id = e.target.parentElement.id
+                the_id = e.target.parentElement.id
             }
             tobject[tobject.tileHeaderButtons[the_id]]()
         });
@@ -419,9 +421,9 @@ TileObject.prototype = {
             var data_dict = {};
             var p = $(e.target).closest(".tile-panel")[0];
             data_dict["tile_id"] = $(p).data("my_tile_id");
-            dset = e.target.dataset;
+            var dset = e.target.dataset;
             data_dict.dataset = {};
-            for (key in dset) {
+            for (var key in dset) {
                 if (!dset.hasOwnProperty(key)) continue;
                 data_dict.dataset[key] = dset[key]
             }

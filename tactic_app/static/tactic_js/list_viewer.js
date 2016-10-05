@@ -64,10 +64,19 @@ function dirty() {
 
 function renameList() {
     console.log("entering rename")
-    showModal("Rename list", "Name for this list", function (new_name) {
-        the_data = {"new_name": new_name};
+    $.getJSON($SCRIPT_ROOT + "get_resource_names/list", function(data) {
+        var list_names = data["resource_names"];
+        var index = list_names.indexOf(list_name);
+        if (index >= 0) {
+          list_names.splice(index, 1);
+        }
+        showModal("Rename List", "Name for this list", RenameListResource, list_name, list_names)
+    }
+    );
+    function RenameListResource(new_name) {
+        var the_data = {"new_name": new_name};
         $.ajax({
-            url: $SCRIPT_ROOT + "/rename_module/" + module_name,
+            url: $SCRIPT_ROOT + "/rename_list/" + list_name,
             contentType : 'application/json',
             type : 'POST',
             async: true,
@@ -77,15 +86,15 @@ function renameList() {
         });
         function renameSuccess(data) {
             if (data.success) {
-                module_name = new_name;
-                $("#module-name").text(module_name)
+                list_name = new_name;
+                $("#list-name").text(list_name)
             }
             else {
                 doFlash(data)
             }
 
         }
-    });
+    }
 }
 
 function updateList() {
@@ -123,7 +132,11 @@ function saveListAs() {
 }
 
 function copyToLibrary() {
-    showModal("Import list", "New list Name", function (new_name) {
+    $.getJSON($SCRIPT_ROOT + "get_resource_names/list", function(data) {
+        showModal("Import list", "New list Name", ImportListResource, list_name, data["resource_names"])
+        }
+    );
+    function ImportListResource(new_name) {
         var result_dict = {
             "res_type": "list",
             "res_name": list_name,
@@ -139,11 +152,15 @@ function copyToLibrary() {
             dataType: 'json',
             success: doFlash
         });
-    });
+    }
 }
 
 function sendToRepository() {
-    showModal("Share list", "New list name", function (new_name) {
+    $.getJSON($SCRIPT_ROOT + "get_repository_resource_names/list", function(data) {
+        showModal("Share list", "New list Name", ShareListResource, list_name, data["resource_names"])
+        }
+    );
+    function ShareListResource(new_name) {
         var result_dict = {
             "res_type": "list",
             "res_name": list_name,
@@ -159,5 +176,5 @@ function sendToRepository() {
             dataType: 'json',
             success: doFlash
         });
-    });
+    }
 }

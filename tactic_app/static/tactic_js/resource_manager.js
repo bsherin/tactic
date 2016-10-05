@@ -99,8 +99,14 @@ ResourceManager.prototype = {
     duplicate_func: function (event) {
         var manager = event.data.manager;
         var res_name = manager.check_for_selection(manager.res_type);
+        var the_type = manager.res_type;
         if (res_name == "") return;
-        showModal("Duplicate " + manager.res_type, "New " + manager.res_type + " Name", function (new_name) {
+        $.getJSON($SCRIPT_ROOT + "get_resource_names/" + the_type, function(data) {
+                showModal("Duplicate " + manager.res_type, "New Tile Name", DuplicateResource, res_name, data["resource_names"])
+            }
+        );
+
+        function DuplicateResource(new_name) {
             var result_dict = {
                 "new_res_name": new_name,
                 "res_to_copy": res_name
@@ -119,40 +125,14 @@ ResourceManager.prototype = {
                     }
                 }
             });
-        })
-    },
-
-    new_func: function (event) {
-        var manager = event.data.manager;
-        showModal("New " + manager.res_type, "New " + manager.res_type + " Name", function (new_name) {
-            var result_dict = {
-                "new_res_name": new_name
-            };
-
-            $.ajax({
-                url: $SCRIPT_ROOT + manager.new_view,
-                contentType: 'application/json',
-                type: 'POST',
-                async: true,
-                data: JSON.stringify(result_dict),
-                dataType: 'json',
-                success: function(data) {
-                    if (data.success){
-                        window.open($SCRIPT_ROOT + manager.view_view + String(new_name))
-                    }
-                    else {
-                        doFlash(data)
-                    }
-                }
-            });
-        })
+        }
     },
 
     delete_func: function (event) {
         var manager = event.data.manager;
         var res_name = manager.check_for_selection(manager.res_type);
         if (res_name == "") return;
-        confirm_text = "Are you sure that you want to delete " + res_name + "?";
+        var confirm_text = "Are you sure that you want to delete " + res_name + "?";
         confirmDialog("Delete " + manager.res_type, confirm_text, "do nothing", "delete", function () {
             $('#list-selector .' + manager.res_type + '-selector-button.active').fadeOut();
             $("#" + manager.res_type + "-module .created").html("");
@@ -166,9 +146,13 @@ ResourceManager.prototype = {
         var manager = event.data.manager;
         var res_name = manager.check_for_selection(manager.res_type);
         if (res_name == "") {
-            doFlash({"message": "Select a " + res_type + " first.", "alert_type": "alert-info"})
+            doFlash({"message": "Select a " + manager.res_type + " first.", "alert_type": "alert-info"})
         }
-        showModal("Share " + manager.res_type, "New " + manager.res_type + " Name", function (new_name) {
+        $.getJSON($SCRIPT_ROOT + "get_repository_resource_names/" + manager.res_type, function(data) {
+            showModal("Share " + manager.res_type, "New " + manager.res_type + " Name", ShareResource, res_name, data["resource_names"])
+            }
+        );
+        function ShareResource(new_name) {
             var result_dict = {
                 "res_type": manager.res_type,
                 "res_name": res_name,
@@ -184,7 +168,7 @@ ResourceManager.prototype = {
                 dataType: 'json',
                 success: doFlash
             });
-        });
+        }
         return res_name
     },
 
@@ -199,9 +183,13 @@ ResourceManager.prototype = {
         var manager = event.data.manager;
         var res_name = manager.check_for_repository_selection(manager.res_type);
         if (res_name == "") {
-            doFlash({"message": "Select a " + res_type + " first.", "alert_type": "alert-info"})
+            doFlash({"message": "Select a " + manager.res_type + " first.", "alert_type": "alert-info"})
         }
-        showModal("Import " + manager.res_type, "New " + manager.res_type + " Name", function (new_name) {
+        $.getJSON($SCRIPT_ROOT + "get_resource_names/" + manager.res_type, function(data) {
+            showModal("Import " + manager.res_type, "New Name", ImportResource, res_name, data["resource_names"])
+            }
+        );
+        function ImportResource(new_name) {
             var result_dict = {
                 "res_type": manager.res_type,
                 "res_name": res_name,
@@ -217,7 +205,7 @@ ResourceManager.prototype = {
                 dataType: 'json',
                 success: doFlash
             });
-        });
+        }
         return res_name
     },
 

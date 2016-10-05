@@ -14,6 +14,7 @@ from flask.ext.socketio import SocketIO
 from flask_wtf.csrf import CsrfProtect
 from docker_functions import create_container, get_address
 from communication_utils import send_request_to_container
+from integrated_docs import api_array
 
 csrf = CsrfProtect()
 
@@ -32,13 +33,14 @@ db = None
 fs = None
 socketio = None
 
+
 def print_message():
     print "got to the message"
 
+
 def create_megaplex():
     global megaplex_address, megaplex_id
-    # multiple_worker_issue Create the megaplex in a separate script when multiple workers
-    megaplex_id = create_container("tactic_megaplex_image", network_mode="bridge")
+    megaplex_id = create_container("tactic_megaplex_image")
     megaplex_address = get_address(megaplex_id, "bridge")
 
 # noinspection PyUnresolvedReferences

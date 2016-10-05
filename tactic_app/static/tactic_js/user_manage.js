@@ -120,20 +120,20 @@ function start_post_load() {
         $(".resource-module").on("click", ".repository-resource-unfilter-button", unfilter_repository_resource);
         $(".resource-module").on("keypress", ".search-field", function(e) {
             if (e.which == 13) {
-                the_id = e.target.id;
+                var the_id = e.target.id;
                 var regexp = /^(\w+?)-/;
                 var res_type = regexp.exec(the_id)[1];
-                fake_event = {"target": {"value": res_type}};
+                var fake_event = {"target": {"value": res_type}};
                 search_resource(fake_event);
                 e.preventDefault();
             }
         });
         $(".resource-module").on("keypress", ".repository-search-field", function(e) {
             if (e.which == 13) {
-                the_id = e.target.id;
+                var the_id = e.target.id;
                 var regexp = /^repository-(\w+?)-/;
                 var res_type = regexp.exec(the_id)[1];
-                fake_event = {"target": {"value": res_type}};
+                var fake_event = {"target": {"value": res_type}};
                 search_repository_resource(fake_event);
                 e.preventDefault();
             }
@@ -188,7 +188,7 @@ function resize_window() {
     res_types.forEach(function (val, ind, array) {
         var h = window.innerHeight - 50 - $("#" + val + "-selector-row").offset().top;
         $("#" + val + "-selector-row").outerHeight(h);
-        var h = window.innerHeight - 50 - $("#repository-" + val + "-selector-row").offset().top;
+        h = window.innerHeight - 50 - $("#repository-" + val + "-selector-row").offset().top;
         $("#repository-" + val + "-selector-row").outerHeight(h);
     })
 }
@@ -230,7 +230,7 @@ var list_manager_specifics = {
             }
         });
         event.preventDefault();
-    },
+    }
 };
 
 var listManager = new ResourceManager("list", list_manager_specifics);
@@ -259,7 +259,11 @@ var col_manager_specifics = {
     import_as_table: function (event) {
         var manager = event.data.manager;
         var the_data = new FormData(this);
-        showModal("Create Collection", "Name for this collection", function (new_name) {
+        $.getJSON($SCRIPT_ROOT + "get_resource_names/collection", function(data) {
+                showModal("Import as table", "New collection Name", CreateNewCollection, "NewCollection", data["resource_names"])
+            }
+        );
+        function CreateNewCollection(new_name) {
             startSpinner();
             $.ajax({
                 url: $SCRIPT_ROOT + "/import_as_table/" + new_name,
@@ -273,13 +277,17 @@ var col_manager_specifics = {
                 stopSpinner();
                 doFlash(data)
             }
-        });
+        }
         event.preventDefault();
     },
     import_as_freeform: function (event) {
         var manager = event.data.manager;
         var the_data = new FormData(this);
-        showModal("Create Collection", "Name for this collection", function (new_name) {
+       $.getJSON($SCRIPT_ROOT + "get_resource_names/collection", function(data) {
+                showModal("Import as table", "New collection Name", CreateNewCollection, "NewCollection", data["resource_names"])
+            }
+        );
+        function CreateNewCollection(new_name) {
             startSpinner();
             $.ajax({
                 url: $SCRIPT_ROOT + "/import_as_freeform/" + new_name,
@@ -293,7 +301,7 @@ var col_manager_specifics = {
                 stopSpinner();
                 doFlash(data)
             }
-        });
+        }
         event.preventDefault();
     },
     downloadCollection: function (event) {
@@ -415,7 +423,11 @@ var tile_manager_specifics = {
     new_tile: function (event) {
         var manager = event.data.manager;
         var template_name = event.data.opt_name;
-        showModal("New Tile", "New Tile Name", function (new_name) {
+        $.getJSON($SCRIPT_ROOT + "get_resource_names/tile", function(data) {
+                showModal("New Tile", "New Tile Name", CreateNewTileModule, "NewTileModule", data["resource_names"])
+            }
+        );
+        function CreateNewTileModule (new_name) {
             var result_dict = {
                 "template_name": template_name,
                 "new_res_name": new_name
@@ -437,7 +449,7 @@ var tile_manager_specifics = {
                     }
                 }
             });
-        });
+        }
         event.preventDefault();
     }
 };
@@ -490,7 +502,12 @@ var code_manager_specifics = {
     new_code: function (event) {
         var manager = event.data.manager;
         var template_name = event.data.opt_name;
-        showModal("New Code Resource", "New Code Resource Name", function (new_name) {
+        $.getJSON($SCRIPT_ROOT + "get_resource_names/code", function(data) {
+                showModal("New Code Resource", "New Code Resource Name", CreateNewCodeResource, "NewCodeResource", data["resource_names"])
+            }
+        );
+
+        function CreateNewCodeResource (new_name) {
             var result_dict = {
                 "template_name": template_name,
                 "new_res_name": new_name
@@ -512,7 +529,7 @@ var code_manager_specifics = {
                     }
                 }
             });
-        });
+        }
         event.preventDefault();
     }
 };

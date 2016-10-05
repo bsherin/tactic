@@ -8,18 +8,23 @@ from tactic_app.docker_functions import cli, destroy_container, container_owners
 from docker_cleanup import do_docker_cleanup
 import traceback
 
+
 repository_user = User.get_user_by_username("repository")
+
 
 class ContainerManager(ResourceManager):
 
     def add_rules(self):
         app.add_url_rule('/reset_server/<user_manage_id>', "reset_server", login_required(self.reset_server),
                          methods=['get'])
-        app.add_url_rule('/clear_user_containers/<user_manage_id>', "clear_user_containers", login_required(self.clear_user_containers), methods=['get'])
-        app.add_url_rule('/destroy_container/<container_id>', "kill_container", login_required(self.kill_container), methods=['get'])
-        app.add_url_rule('/container_logs/<container_id>', "container_logs", login_required(self.container_logs), methods=['get'])
-        app.add_url_rule('/refresh_container_table', "refresh_container_table", login_required(self.refresh_container_table),
-                         methods=['get'])
+        app.add_url_rule('/clear_user_containers/<user_manage_id>', "clear_user_containers",
+                         login_required(self.clear_user_containers), methods=['get'])
+        app.add_url_rule('/destroy_container/<container_id>', "kill_container",
+                         login_required(self.kill_container), methods=['get'])
+        app.add_url_rule('/container_logs/<container_id>', "container_logs",
+                         login_required(self.container_logs), methods=['get'])
+        app.add_url_rule('/refresh_container_table', "refresh_container_table",
+                         login_required(self.refresh_container_table), methods=['get'])
 
     def clear_user_containers(self, user_manage_id):
         if not (current_user.get_id() == repository_user.get_id()):
@@ -125,8 +130,7 @@ class ContainerManager(ResourceManager):
             the_html += "<th>{0}</th>".format(c)
         the_html += "</tr><tbody>"
         for r in data_list[1:]:
-            the_html += "<tr class='selector-button {0}-selector-button admin-table-row' id='{0}-selector-{1}'>".format(self.res_type,
-                                                                                                        r[0])
+            the_html += "<tr class='selector-button {0}-selector-button admin-table-row' id='{0}-selector-{1}'>".format(self.res_type, r[0])
             for c in r:
                 the_html += "<td>{0}</td>".format(c)
             the_html += "</tr>"
@@ -139,6 +143,7 @@ class ContainerManager(ResourceManager):
         return result
 
 container_manager = ContainerManager("container")
+
 
 @app.route('/request_update_admin_selector_list/<res_type>', methods=['GET'])
 @login_required

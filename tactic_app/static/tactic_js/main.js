@@ -68,8 +68,10 @@ function expandConsole(){
 
 function closeLogItem(e) {
     el = $(e.parentElement.parentElement);
-    uid = el.find(".console-code")[0].id;
-    delete consoleCMObjects[uid];
+    if (!(el.find(".console-code").length == 0)) {
+        uid = el.find(".console-code")[0].id;
+        delete consoleCMObjects[uid];
+    }
     $(e.parentElement.parentElement).remove()
 }
 

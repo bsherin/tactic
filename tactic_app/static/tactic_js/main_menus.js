@@ -37,14 +37,15 @@ MenuObject.prototype = {
 
         function create_options_list() {
             var result = [];
+            var key_text;
             var scuts = menus[self.menu_name].shortcuts;
             for (var i = 0; i < self.options.length; ++i) {
                 var opt = self.options[i];
                 if (scuts.hasOwnProperty(opt)){
-                    var key_text = scuts[opt].keys[0]
+                    key_text = scuts[opt].keys[0]
                 }
                 else {
-                    var key_text = ""
+                    key_text = ""
                 }
                 result.push({"option_name": opt, "key_text": key_text})
             }
@@ -252,18 +253,22 @@ function createColumn() {
 }
 
 function saveProjectAs() {
-    showModal("Save Project As", "New Project Name", function (new_name) {
-                var result_dict = {
-                    "project_name": new_name,
-                    "main_id": main_id,
-                    "tablespec_dict": tablespec_dict,
-                    "console_html": $("#console").html(),
-                    "console_cm_code": getConsoleCMCode(),
-                    "doc_type": DOC_TYPE
-                };
-                if (DOC_TYPE == "table") {
-                    result_dict.hidden_columns_list = hidden_columns_list
-                }
+    postWithCallback("host", "get_project_names", {"user_id": user_id}, function (data) {
+        showModal("Save Project As", "New Project Name", CreateNewProject, "NewProject", data["project_names"])
+    });
+
+    function CreateNewProject (new_name) {
+            var result_dict = {
+                "project_name": new_name,
+                "main_id": main_id,
+                "tablespec_dict": tablespec_dict,
+                "console_html": $("#console").html(),
+                "console_cm_code": getConsoleCMCode(),
+                "doc_type": DOC_TYPE
+            };
+            if (DOC_TYPE == "table") {
+                result_dict.hidden_columns_list = hidden_columns_list
+            }
 
             tableObject.startTableSpinner();
             postWithCallback(main_id, "save_new_project", result_dict, save_as_success);
@@ -287,11 +292,11 @@ function saveProjectAs() {
                 else {
                     tableObject.stopTableSpinner();
                     clearStatusMessage();
-                    data_object["message"] = data_object["message_string"]
+                    data_object["message"] = data_object["message_string"];
                     doFlash(data_object)
                 }
             }
-    })
+    }
 }
 
 function save_project() {
@@ -371,15 +376,19 @@ function exportDataTable() {
 }
 
 function tile_command(menu_id) {
-
-    showModal("Create " + menu_id, "New Tile Name", createNewTile, menu_id);
+    var existing_tile_names = [];
+    for (var tile_id in tile_dict) {
+        if (!tile_dict.hasOwnProperty(tile_id)) continue;
+        existing_tile_names.push(tile_dict[tile_id].tile_name)
+    }
+    showModal("Create " + menu_id, "New Tile Name", createNewTile, menu_id, existing_tile_names);
 
     function createNewTile(tile_name) {
         var data_dict = {};
         var tile_type = menu_id;
         data_dict["tile_name"] = tile_name;
         data_dict["tile_type"] = tile_type;
-        data_dict["user_id"] = user_id
+        data_dict["user_id"] = user_id;
         postWithCallback("host", "create_tile_container", data_dict, function (data) {
             var tile_id = data["tile_id"];
             data_dict["tile_id"] = tile_id;
@@ -394,7 +403,7 @@ function tile_command(menu_id) {
                         if (data.success) {
                             data_dict["form_html"] = data["html"] ;
                             postWithCallback("host", "render_tile", data_dict, function(data) {
-                                var new_tile_object = new TileObject(tile_id, data.html, true);
+                                var new_tile_object = new TileObject(tile_id, data.html, true, tile_name);
                                 tile_dict[tile_id] = new_tile_object;
                                 new_tile_object.spin_and_refresh();
                                 dirty = true;

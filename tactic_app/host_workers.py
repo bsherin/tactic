@@ -15,6 +15,7 @@ import datetime
 
 check_for_dead_time = 300
 
+
 class HostWorker(QWorker):
     def __init__(self, app, megaplex_address):
         QWorker.__init__(self, app, megaplex_address, "host")
@@ -189,6 +190,12 @@ class HostWorker(QWorker):
         for old_tile_id, tile_type in tile_info_dict.items():
             result[old_tile_id] = global_tile_manager.get_tile_code(tile_type, user_id)
         return result
+
+    @task_worthy
+    def get_project_names(self, data):
+        user_id = data["user_id"]
+        user_obj = load_user(user_id)
+        return {"project_names": user_obj.project_names}
 
     @task_worthy
     def delete_container(self, data):

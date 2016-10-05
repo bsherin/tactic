@@ -8,11 +8,9 @@ from flask_login import login_required, current_user
 from flask_socketio import join_room
 import openpyxl
 import cStringIO
-import cPickle
-from bson.binary import Binary
 
 import tactic_app
-from tactic_app import app, db, fs, socketio, use_ssl, mongo_uri # global_stuff
+from tactic_app import app, db, fs, socketio, use_ssl, mongo_uri  # global_stuff
 from tactic_app.file_handling import read_csv_file_to_dict, read_tsv_file_to_dict, read_txt_file_to_dict, load_a_list
 from tactic_app.file_handling import read_freeform_file
 
@@ -21,10 +19,12 @@ from tactic_app.users import User
 from tactic_app.docker_functions import send_direct_request_to_container
 
 from tactic_app.docker_functions import create_container, get_address
+from tactic_app.integrated_docs import  api_html
 import traceback
 
 AUTOSPLIT = True
 AUTOSPLIT_SIZE = 10000
+
 
 def start_spinner(user_id=None):
     if user_id is None:
@@ -45,6 +45,23 @@ def doflash(message, alert_type='alert-info', user_id=None):
     socketio.emit('stop-spinner', data, namespace='/user_manage', room=user_id)
 
 
+@app.route('/get_resource_names/<res_type>', methods=['get', 'post'])
+@login_required
+def get_resource_names(res_type):
+    manager = managers[res_type][0]
+    resource_names = manager.get_resource_list()
+    return jsonify({"success": True, "resource_names": resource_names})
+
+
+@app.route('/get_repository_resource_names/<res_type>', methods=['get', 'post'])
+@login_required
+def get_repository_resource_names(res_type):
+    manager = managers[res_type][1]
+    resource_names = manager.get_resource_list()
+    return jsonify({"success": True, "resource_names": resource_names})
+
+
+# noinspection PyMethodMayBeStatic
 class ResourceManager(object):
     is_repository = False
     rep_string = ""
@@ -79,7 +96,9 @@ class ResourceManager(object):
                           namespace='/user_manage', room=user_obj.get_id())
         else:
             socketio.emit('update-selector-list',
-                          {"html": self.request_update_selector_list(user_obj=user_obj), "select": select, "res_type": self.res_type},
+                          {"html": self.request_update_selector_list(user_obj=user_obj),
+                           "select": select,
+                           "res_type": self.res_type},
                           namespace='/user_manage', room=user_obj.get_id())
 
     def get_resource_list(self):
@@ -156,7 +175,8 @@ class ResourceManager(object):
                     updatestring = datestring
                     updatestring_for_sort = datestring_for_sort
                 tagstring = str(mdata["tags"])
-            larray.append([res_item[0], [datestring, datestring_for_sort], [updatestring, updatestring_for_sort], tagstring])
+            larray.append([res_item[0], [datestring, datestring_for_sort],
+                           [updatestring, updatestring_for_sort], tagstring])
         return larray
 
 
@@ -167,6 +187,8 @@ def get_manager_for_type(res_type, is_repository=False):
     else:
         return managers[res_type][0]
 
+
+# noinspection PyBroadException
 @app.route('/copy_from_repository', methods=['GET', 'POST'])
 @login_required
 def copy_from_repository():
@@ -202,6 +224,8 @@ def copy_from_repository():
         error_string = "Error copying resource" + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
+
+# noinspection PyBroadException
 @app.route('/send_to_repository', methods=['GET', 'POST'])
 @login_required
 def send_to_repository():
@@ -243,12 +267,14 @@ def send_to_repository():
 def request_update_selector_list(res_type):
     return managers[res_type][0].request_update_selector_list()
 
+
 @app.route('/request_update_repository_selector_list/<res_type>', methods=['GET'])
 @login_required
 def request_update_repository_selector_list(res_type):
     return managers[res_type][1].request_update_selector_list()
 
 
+# noinspection PyMethodMayBeStatic
 class ListManager(ResourceManager):
     collection_list = "list_names"
     collection_list_with_metadata = "list_names_with_metadata"
@@ -257,7 +283,8 @@ class ListManager(ResourceManager):
 
     def add_rules(self):
         app.add_url_rule('/view_list/<list_name>', "view_list", login_required(self.view_list), methods=['get'])
-        app.add_url_rule('/repository_view_list/<list_name>', "repository_view_list", login_required(self.repository_view_list), methods=['get'])
+        app.add_url_rule('/repository_view_list/<list_name>', "repository_view_list",
+                         login_required(self.repository_view_list), methods=['get'])
         app.add_url_rule('/add_list', "add_list", login_required(self.add_list), methods=['get', "post"])
         app.add_url_rule('/delete_list/<list_name>', "delete_list", login_required(self.delete_list), methods=['post'])
         app.add_url_rule('/create_duplicate_list', "create_duplicate_list",
@@ -348,6 +375,7 @@ class RepositoryListManager(ListManager):
         pass
 
 
+# noinspection PyMethodMayBeStatic,PyBroadException
 class CollectionManager(ResourceManager):
     collection_list = "data_collections"
     collection_list_with_metadata = "data_collection_names_with_metadata"
@@ -372,9 +400,10 @@ class CollectionManager(ResourceManager):
     def main(self, collection_name):
         user_obj = current_user
         cname = user_obj.build_data_collection_name(collection_name)
-        main_id = create_container("tactic_main_image", network_mode="bridge", owner=user_obj.get_id())
+        main_id = create_container("tactic_main_image", owner=user_obj.get_id())
         caddress = get_address(main_id, "bridge")
-        send_direct_request_to_container(tactic_app.megaplex_id, "register_container", {"container_id": main_id, "address": caddress})
+        send_direct_request_to_container(tactic_app.megaplex_id, "register_container",
+                                         {"container_id": main_id, "address": caddress})
         global_tile_manager.add_user(user_obj.username)
 
         the_collection = db[cname]
@@ -416,10 +445,9 @@ class CollectionManager(ResourceManager):
                                doc_names=doc_names,
                                use_ssl=str(use_ssl),
                                console_html="",
-                               is_table = (doc_type == "table"),
+                               is_table=(doc_type == "table"),
                                short_collection_name=short_collection_name,
                                new_tile_info="")
-
 
     def download_collection(self, collection_name, new_name):
         user_obj = current_user
@@ -454,7 +482,6 @@ class CollectionManager(ResourceManager):
         return send_file(str_io,
                          attachment_filename=new_name,
                          as_attachment=True)
-
 
     def grab_metadata(self, res_name):
         if self.is_repository:
@@ -512,7 +539,7 @@ class CollectionManager(ResourceManager):
                     continue
                 base_collection.insert_one(f)
             db[base_full_name].update_one({"name": "__metadata__"},
-                                 {'$set': {"updated": datetime.datetime.today()}})
+                                          {'$set': {"updated": datetime.datetime.today()}})
             self.update_selector_list(base_collection_name)
             return jsonify({"message": "Collections successfull combined", "alert_type": "alert-success"})
         except:
@@ -579,7 +606,8 @@ class CollectionManager(ResourceManager):
         mdata = global_tile_manager.create_initial_metadata()
         try:
             db[full_collection_name].insert_one({"name": "__metadata__", "datetime": mdata["datetime"],
-                                                 "updated": mdata["updated"], "tags": "", "notes": "", "type": "freeform"})
+                                                 "updated": mdata["updated"], "tags": "",
+                                                 "notes": "", "type": "freeform"})
         except:
             error_string = "Error creating collection: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
             return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
@@ -593,8 +621,7 @@ class CollectionManager(ResourceManager):
                 return jsonify({"message": e.message, "alert_type": "alert-danger"})
 
             try:
-                save_dict = {"name": filename}
-                save_dict["file_id"] = fs.put(result_txt)
+                save_dict = {"name": filename, "file_id": fs.put(result_txt)}
                 db[full_collection_name].insert_one(save_dict)
             except:
                 error_string = "Error creating collection: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
@@ -643,6 +670,8 @@ class ProjectManager(ResourceManager):
 
     def delete_project(self, project_name):
         user_obj = current_user
+        save_dict = db[user_obj.project_collection_name].find_one({"project_name": project_name})
+        fs.delete(save_dict["file_id"])
         db[user_obj.project_collection_name].delete_one({"project_name": project_name})
         self.update_selector_list()
         return jsonify({"success": True})
@@ -679,6 +708,7 @@ class RepositoryProjectManager(ProjectManager):
         pass
 
 
+# noinspection PyMethodMayBeStatic,PyBroadException
 class TileManager(ResourceManager):
     collection_list = "tile_module_names"
     collection_list_with_metadata = "tile_module_names_with_metadata"
@@ -734,7 +764,8 @@ class TileManager(ResourceManager):
         return render_template("user_manage/module_viewer.html",
                                module_name=module_name,
                                module_code=module_code,
-                               read_only_string="")
+                               read_only_string="",
+                               api_html = api_html)
 
     def repository_view_module(self, module_name):
         user_obj = repository_user
@@ -742,7 +773,8 @@ class TileManager(ResourceManager):
         return render_template("user_manage/module_viewer.html",
                                module_name=module_name,
                                module_code=module_code,
-                               read_only_string="readonly")
+                               read_only_string="readonly",
+                               api_html = api_html)
 
     def load_tile_module(self, tile_module_name, return_json=True, user_obj=None):
         try:
@@ -750,8 +782,9 @@ class TileManager(ResourceManager):
                 user_obj = current_user
             tile_module = user_obj.get_tile_module(tile_module_name)
 
-            result = send_direct_request_to_container(global_tile_manager.test_tile_container_id, "load_source", {"tile_code": tile_module,
-                                                                                              "megaplex_address": tactic_app.megaplex_address})
+            result = send_direct_request_to_container(global_tile_manager.test_tile_container_id, "load_source",
+                                                      {"tile_code": tile_module,
+                                                       "megaplex_address": tactic_app.megaplex_address})
             res_dict = result.json()
 
             if not res_dict["success"]:
@@ -759,16 +792,17 @@ class TileManager(ResourceManager):
             category = res_dict["category"]
 
             global_tile_manager.add_user_tile_module(user_obj.username,
-                                              category,
-                                              res_dict["tile_name"],
-                                              tile_module,
-                                              tile_module_name)
+                                                     category,
+                                                     res_dict["tile_name"],
+                                                     tile_module,
+                                                     tile_module_name)
 
             socketio.emit('update-loaded-tile-list', {"html": self.render_loaded_tile_list(user_obj)},
                           namespace='/user_manage', room=user_obj.get_id())
             socketio.emit('update-menus', {}, namespace='/main', room=user_obj.get_id())
             if return_json:
-                return jsonify({"success": True, "message": "Tile module successfully loaded", "alert_type": "alert-success"})
+                return jsonify({"success": True, "message": "Tile module successfully loaded",
+                                "alert_type": "alert-success"})
             else:
                 return {"success": True}
         except:
@@ -811,7 +845,8 @@ class TileManager(ResourceManager):
                             "message": "A tile with that name already exists"})
         old_tile_dict = db[user_obj.tile_collection_name].find_one({"tile_module_name": tile_to_copy})
         metadata = global_tile_manager.create_initial_metadata()
-        new_tile_dict = {"tile_module_name": new_tile_name, "tile_module": old_tile_dict["tile_module"], "metadata": metadata}
+        new_tile_dict = {"tile_module_name": new_tile_name, "tile_module": old_tile_dict["tile_module"],
+                         "metadata": metadata}
         db[user_obj.tile_collection_name].insert_one(new_tile_dict)
         self.update_selector_list(select=new_tile_name)
         return jsonify({"success": True})
@@ -1028,6 +1063,7 @@ def user_manage():
 
 # Metadata views
 
+
 @app.route('/grab_metadata', methods=['POST'])
 @login_required
 def grab_metadata():
@@ -1098,7 +1134,7 @@ def search_resource():
         manager = get_manager_for_type(res_type, is_repository=True)
     else:
         user_obj = current_user
-        manager = get_manager_for_type(res_type, is_repository=False)
+        manager = get_manager_for_type(res_type)
     if search_type == "search":
         the_list = user_obj.get_resource_names(res_type, search_filter=txt)
     else:
@@ -1107,6 +1143,7 @@ def search_resource():
     res_array = manager.build_resource_array(the_list)
     result = manager.build_html_table_from_data_list(res_array)
     return jsonify({"html": result})
+
 
 @app.route('/update_module', methods=['post'])
 @login_required
@@ -1139,11 +1176,25 @@ def rename_module(old_name):
     try:
         new_name = request.json["new_name"]
         db[current_user.tile_collection_name].update_one({"tile_module_name": old_name},
-                                                             {'$set': {"tile_module_name": new_name}})
+                                                         {'$set': {"tile_module_name": new_name}})
         tile_manager.update_selector_list()
         return jsonify({"success": True, "message": "Module Successfully Saved", "alert_type": "alert-success"})
     except:
         error_string = "Error renaming module " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+
+
+@app.route('/rename_list/<old_name>', methods=['post'])
+@login_required
+def rename_list(old_name):
+    try:
+        new_name = request.json["new_name"]
+        db[current_user.list_collection_name].update_one({"list_name": old_name},
+                                                         {'$set': {"list_name": new_name}})
+        list_manager.update_selector_list()
+        return jsonify({"success": True, "message": "List name changed", "alert_type": "alert-success"})
+    except:
+        error_string = "Error renaming list " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
 
@@ -1191,6 +1242,7 @@ def update_code():
     except:
         error_string = "Error saving code resource " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+
 
 @app.route('/update_list', methods=['post'])
 @login_required
@@ -1244,4 +1296,3 @@ def on_join(data):
     room = data["user_manage_id"]
     join_room(room)
     print "user joined room " + room
-

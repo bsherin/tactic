@@ -92,8 +92,17 @@ function changeTheme() {
 }
 
 function renameCode() {
-    console.log("entering rename")
-    showModal("Rename code resource", "Name for this code resource", function (new_name) {
+    console.log("entering rename");
+    $.getJSON($SCRIPT_ROOT + "get_resource_names/code", function(data) {
+            code_names = data["resource_names"];
+            var index = code_names.indexOf(code_name);
+            if (index >= 0) {
+              code_names.splice(index, 1);
+            }
+            showModal("Rename code resource", "Name for this code resource", RenameCodeResource, code_name, code_names)
+        }
+    );
+    function RenameCodeResource (new_name) {
         the_data = {"new_name": new_name};
         $.ajax({
             url: $SCRIPT_ROOT + "/rename_code/" + code_name,
@@ -114,7 +123,7 @@ function renameCode() {
             }
 
         }
-    });
+    }
 }
 
 function updateCode() {
@@ -152,7 +161,11 @@ function saveCodeAs() {
 }
 
 function copyToLibrary() {
-    showModal("Import code resource", "New code resource name", function (new_name) {
+    $.getJSON($SCRIPT_ROOT + "get_resource_names/code", function(data) {
+            showModal("Import code resource", "New Code Resource Name", ImportCodeResource, code_name, data["resource_names"])
+        }
+    );
+    function ImportCodeResource (new_name) {
         var result_dict = {
             "res_type": "code",
             "res_name": code_name,
@@ -168,11 +181,15 @@ function copyToLibrary() {
             dataType: 'json',
             success: doFlash
         });
-    });
+    }
 }
 
-function sendToRepository() {
-    showModal("Share code resource", "New code resource name", function (new_name) {
+function sendToRepository() {   // tactic change sendtorepository code
+    $.getJSON($SCRIPT_ROOT + "get_repository_resource_names/code", function(data) {
+        showModal("Share code resource", "New Code Resource Name", ShareCodeResource, code_name, data["resource_names"])
+        }
+    );
+    function ShareCodeResource(new_name) {
         var result_dict = {
             "res_type": "code",
             "res_name": code_name,
@@ -188,5 +205,5 @@ function sendToRepository() {
             dataType: 'json',
             success: doFlash
         });
-    });
+    }
 }
