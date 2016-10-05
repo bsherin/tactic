@@ -3,7 +3,8 @@
  */
 
 var modal_template;
-var tooltips_
+var confirm_template;
+var tooltips;
 
 $.get($SCRIPT_ROOT + "/get_modal_template", function(template){
     modal_template = $(template).filter('#modal-template').html();
@@ -21,6 +22,7 @@ alertbox = alertify.alert()
         });
 
 function statusMessage(data) {
+    var timeout;
     if (data.hasOwnProperty("timeout") && (data.timeout != null)) {
         timeout = data.timeout
     } else {
@@ -42,6 +44,10 @@ function doFlash(data) {
     // Flash a bootstrap-styled warning in status-area
     // data should be a dict with message and type fields.
     // type can be alert-success, alert-warning, alert-info, alert-danger
+    var alert_type;
+    var message;
+    var timeout;
+    var msg;
     if (!data.hasOwnProperty("alert_type")){
         alert_type = "alert-info"
     }
@@ -61,13 +67,13 @@ function doFlash(data) {
     }
 
     if (alert_type == "alert-success") {
-        var msg = alertify.success(message, timeout);
+        msg = alertify.success(message, timeout);
 
     } else if(alert_type =="alert-warning") {
-        var msg = alertify.error(message, timeout);
+        msg = alertify.error(message, timeout);
 
     } else {
-        var msg = alertify.message(message, timeout);
+        msg = alertify.message(message, timeout);
     }
 
      $('body').one('click', function(){
@@ -109,7 +115,7 @@ function initializeTooltips() {
 }
 
 function toggleTooltips() {
-    $('[data-toggle="tooltip"]').tooltip('toggle')
+    $('[data-toggle="tooltip"]').tooltip('toggle');
     return (false)
 }
 
@@ -137,13 +143,13 @@ function confirmDialog(modal_title, modal_text, cancel_text, submit_text, submit
 }
 
 function showModal(modal_title, field_title, submit_function, default_value, existing_names) {
-    data_dict = {"modal_title": modal_title, "field_title": field_title};
+    var data_dict = {"modal_title": modal_title, "field_title": field_title};
 
     if (typeof existing_names == "undefined") {
         existing_names = []
     }
 
-    name_counter = 1;
+    var name_counter = 1;
     var default_name = default_value;
     while (name_exists(default_name)) {
         name_counter += 1;
@@ -179,7 +185,8 @@ function showModal(modal_title, field_title, submit_function, default_value, exi
     }
 
     function submit_handler() {
-        result = $("#modal-text-input-field").val();
+        var result = $("#modal-text-input-field").val();
+        var msg;
         if (name_exists(result)) {
             msg = "That name already exists";
             $("#warning_field").html(msg)

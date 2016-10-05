@@ -37,14 +37,15 @@ MenuObject.prototype = {
 
         function create_options_list() {
             var result = [];
+            var key_text;
             var scuts = menus[self.menu_name].shortcuts;
             for (var i = 0; i < self.options.length; ++i) {
                 var opt = self.options[i];
                 if (scuts.hasOwnProperty(opt)){
-                    var key_text = scuts[opt].keys[0]
+                    key_text = scuts[opt].keys[0]
                 }
                 else {
-                    var key_text = ""
+                    key_text = ""
                 }
                 result.push({"option_name": opt, "key_text": key_text})
             }
@@ -291,7 +292,7 @@ function saveProjectAs() {
                 else {
                     tableObject.stopTableSpinner();
                     clearStatusMessage();
-                    data_object["message"] = data_object["message_string"]
+                    data_object["message"] = data_object["message_string"];
                     doFlash(data_object)
                 }
             }

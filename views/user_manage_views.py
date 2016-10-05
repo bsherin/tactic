@@ -19,6 +19,7 @@ from tactic_app.users import User
 from tactic_app.docker_functions import send_direct_request_to_container
 
 from tactic_app.docker_functions import create_container, get_address
+from tactic_app.integrated_docs import  api_html
 import traceback
 
 AUTOSPLIT = True
@@ -669,6 +670,8 @@ class ProjectManager(ResourceManager):
 
     def delete_project(self, project_name):
         user_obj = current_user
+        save_dict = db[user_obj.project_collection_name].find_one({"project_name": project_name})
+        fs.delete(save_dict["file_id"])
         db[user_obj.project_collection_name].delete_one({"project_name": project_name})
         self.update_selector_list()
         return jsonify({"success": True})
@@ -761,7 +764,8 @@ class TileManager(ResourceManager):
         return render_template("user_manage/module_viewer.html",
                                module_name=module_name,
                                module_code=module_code,
-                               read_only_string="")
+                               read_only_string="",
+                               api_html = api_html)
 
     def repository_view_module(self, module_name):
         user_obj = repository_user
@@ -769,7 +773,8 @@ class TileManager(ResourceManager):
         return render_template("user_manage/module_viewer.html",
                                module_name=module_name,
                                module_code=module_code,
-                               read_only_string="readonly")
+                               read_only_string="readonly",
+                               api_html = api_html)
 
     def load_tile_module(self, tile_module_name, return_json=True, user_obj=None):
         try:

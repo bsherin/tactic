@@ -63,7 +63,7 @@ def logout():
     socketio.emit('close-user-windows', {}, namespace='/user_manage', room=user_id)
     socketio.emit('close-user-windows', {}, namespace='/main', room=user_id)
     global_tile_manager.remove_user(current_user.username)
-    destroy_user_containers(user_id) # They should be gone by this point. But make sure.
+    destroy_user_containers(user_id)  # They should be gone by this point. But make sure.
     logout_user()
     return render_template('auth/login.html', show_message="yes",
                            message="You have been logged out.", alert_type="alert-info")

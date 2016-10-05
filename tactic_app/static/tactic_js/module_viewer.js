@@ -41,6 +41,10 @@ function start_post_load() {
     savedCode = myCodeMirror.getDoc().getValue();
 
     var result_dict = {"res_type": "tile", "res_name": module_name};
+    $( "#api-area" ).accordion({
+        collapsible: true,
+        active: false
+    });
     $.ajax({
             url: $SCRIPT_ROOT + "/grab_metadata",
             contentType : 'application/json',
@@ -49,6 +53,7 @@ function start_post_load() {
             data: JSON.stringify(result_dict),
             dataType: 'json',
             success: got_metadata
+
     });
     function got_metadata(data) {
         if (data.success) {
@@ -87,6 +92,10 @@ function changeTheme() {
         document.body.style.backgroundColor = "white";
         current_theme = "default"
     }
+}
+
+function showAPI(){
+        $("#api-area").toggle()
 }
 
 function renameModule() {
