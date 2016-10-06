@@ -40,6 +40,78 @@ $sortable-table-header-text-color: #666666;
 $resource-action-button-border-style: solid white 1px;
 $resource-manager-tab-font-size: 20px;
 
+/* accordion api related parameters */
+$api-border-style: none;
+
+$accordion-button-padding: 7px;
+$accordion-button-border-style: $tile-panel-border-style;
+$accordian-button-background-color: $tile-header-background-color;
+$accordian-button-active-background-color: #ddd;
+$accordian-button-foreground-color: $tile-header-foreground-color;
+$accordian-button-font-size: 14px;
+$accordion-icon-color: #777;
+
+$accordion-panel-border-style: none;
+$accordian-panel-background-color: #f1f1f1;
+$accordian-panel-foreground-color: #555;
+$accordion-panel-font-size: 14px;
+
+#api-area {
+    border: $api-border-style;
+}
+
+/* accordion related */
+button.accordion {
+    background-color: $accordian-button-background-color;
+    color: $accordian-button-foreground-color;
+    //cursor: pointer;
+    //padding: $accordion-button-padding;
+    width: 100%;
+    text-align: left;
+    border: $accordion-button-border-style;
+    margin: 2px;
+    //outline: none;
+    //font-size: $accordian-button-font-size;
+    transition: 0.4s;
+}
+
+button.accordion:after {
+    content: '\02795'; /* Unicode character for "plus" sign (+) */
+    font-size: 13px;
+    color: $accordion-icon-color;
+    float: right;
+    margin-left: 5px;
+}
+
+button.accordion.active:after {
+    content: "\2796"; /* Unicode character for "minus" sign (-) */
+}
+
+button.accordion.active, button.accordion:hover {
+    background-color: $accordian-button-active-background-color;
+}
+
+div.accordion-panel {
+    padding: 0 18px;
+    background-color: $accordian-panel-background-color;
+    color: $accordian-panel-foreground-color;
+    max-height: 0;
+    overflow: hidden;
+    transition: 0.1s ease-in-out;
+    opacity: 0;
+    margin: 0 4px;
+    border: $accordion-panel-border-style;
+    font-size: $accordion-panel-font-size;
+
+    p {
+        margin: 10px 0;
+    }
+}
+
+div.accordion-panel.show {
+    opacity: 1;
+    max-height: 500px;
+}
 
 /* General resources */
 
@@ -90,7 +162,7 @@ a[role="tab"] {
 }
 
 .nav-tabs a {
-    outline: 0px;
+    outline: 0;
 }
 
 .resource-module {
@@ -137,7 +209,7 @@ a[role="tab"] {
 
 
 .resource-module h2 {
-    margin-top:0px;
+    margin-top: 0;
 }
 
 
@@ -213,9 +285,9 @@ $tooltip-text-color: #66431a;
 .tooltip.bottom .tooltip-arrow { border-bottom-color:$tooltip-background-color}
 
 .tooltip-inner{
-    -moz-box-shadow: 0px 1px 5px 1px rgba(0,0,0,0.4);
-    -webkit-box-shadow: 0px 1px 5px 1px rgba(0,0,0,0.4);
-    box-shadow: 0px 1px 5px 1px rgba(0,0,0,0.4);
+    -moz-box-shadow: 0 1px 5px 1px rgba(0,0,0,0.4);
+    -webkit-box-shadow: 0 1px 5px 1px rgba(0,0,0,0.4);
+    box-shadow: 0 1px 5px 1px rgba(0,0,0,0.4);
     zoom: 1;
 }
 
@@ -343,8 +415,8 @@ td.cell-clickable:active {
 }
 
 #tile-area {
-    margin: 0px;
-    border: 0px;
+    margin: 0;
+    border: 0;
     overflow: auto;
 }
 
@@ -382,24 +454,24 @@ td.cell-clickable:active {
 
 .back {
     padding: 20px;
-    margin: 0px;
+    margin: 0;
     overflow: auto
 }
 
 .front {
-    padding: 0px;
-    margin: 0px;
+    padding: 0;
+    margin: 0;
 }
 
 .tile-log {
       padding: 20px;
-      margin: 0px;
+      margin: 0;
       overflow: auto
 }
 
 
 .tile-body {
-    padding: 0px;
+    padding: 0;
 }
 
 .tile-body img {

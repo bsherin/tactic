@@ -3,6 +3,53 @@
 /* general use */
 /* console related */
 /* resource management and table related */
+/* accordion api related parameters */
+#api-area {
+  border: none; }
+
+/* accordion related */
+button.accordion {
+  background-color: #d9edf7;
+  color: #31708f;
+  width: 100%;
+  text-align: left;
+  border: 2px solid #BCE8F1;
+  margin: 2px;
+  transition: 0.4s; }
+
+button.accordion:after {
+  content: '\02795';
+  /* Unicode character for "plus" sign (+) */
+  font-size: 13px;
+  color: #777;
+  float: right;
+  margin-left: 5px; }
+
+button.accordion.active:after {
+  content: "\2796";
+  /* Unicode character for "minus" sign (-) */ }
+
+button.accordion.active, button.accordion:hover {
+  background-color: #ddd; }
+
+div.accordion-panel {
+  padding: 0 18px;
+  background-color: #f1f1f1;
+  color: #555;
+  max-height: 0;
+  overflow: hidden;
+  transition: 0.1s ease-in-out;
+  opacity: 0;
+  margin: 0 4px;
+  border: none;
+  font-size: 14px; }
+  div.accordion-panel p {
+    margin: 10px 0; }
+
+div.accordion-panel.show {
+  opacity: 1;
+  max-height: 500px; }
+
 /* General resources */
 table.sortable thead {
   background-color: #eee;
@@ -38,7 +85,7 @@ a[role="tab"] {
   font-size: 20px; }
 
 .nav-tabs a {
-  outline: 0px; }
+  outline: 0; }
 
 .resource-module {
   margin: 10px; }
@@ -74,7 +121,7 @@ a[role="tab"] {
   margin-bottom: 20px; }
 
 .resource-module h2 {
-  margin-top: 0px; }
+  margin-top: 0; }
 
 .metadata-field {
   width: 350px; }
@@ -134,9 +181,9 @@ a[role="tab"] {
   border-bottom-color: #fde930; }
 
 .tooltip-inner {
-  -moz-box-shadow: 0px 1px 5px 1px rgba(0, 0, 0, 0.4);
-  -webkit-box-shadow: 0px 1px 5px 1px rgba(0, 0, 0, 0.4);
-  box-shadow: 0px 1px 5px 1px rgba(0, 0, 0, 0.4);
+  -moz-box-shadow: 0 1px 5px 1px rgba(0, 0, 0, 0.4);
+  -webkit-box-shadow: 0 1px 5px 1px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 1px 5px 1px rgba(0, 0, 0, 0.4);
   zoom: 1; }
 
 /* Tile table related*/
@@ -232,8 +279,8 @@ td.cell-clickable:active {
   padding: 5px; }
 
 #tile-area {
-  margin: 0px;
-  border: 0px;
+  margin: 0;
+  border: 0;
   overflow: auto; }
 
 /* tile */
@@ -263,20 +310,20 @@ td.cell-clickable:active {
 
 .back {
   padding: 20px;
-  margin: 0px;
+  margin: 0;
   overflow: auto; }
 
 .front {
-  padding: 0px;
-  margin: 0px; }
+  padding: 0;
+  margin: 0; }
 
 .tile-log {
   padding: 20px;
-  margin: 0px;
+  margin: 0;
   overflow: auto; }
 
 .tile-body {
-  padding: 0px; }
+  padding: 0; }
 
 .tile-body img {
   cursor: pointer; }

@@ -19,7 +19,7 @@ from tactic_app.users import User
 from tactic_app.docker_functions import send_direct_request_to_container
 
 from tactic_app.docker_functions import create_container, get_address
-from tactic_app.integrated_docs import  api_html
+from tactic_app.integrated_docs import api_html
 import traceback
 
 AUTOSPLIT = True
@@ -460,13 +460,13 @@ class CollectionManager(ResourceManager):
             doc_name = f["name"].encode("ascii", "ignore")
             if doc_name == "__metadata__":
                 continue
-
+            sheet_name = re.sub(r"[\[\]\*\/\\ \?\:]", r"-", doc_name)[:25]
             if first:
                 ws = wb.active
-                ws.title = doc_name
+                ws.title = sheet_name
                 first = False
             else:
-                ws = wb.create_sheet(title=doc_name)
+                ws = wb.create_sheet(title=sheet_name)
             data_rows = f["data_rows"]
             header_list = f["header_list"]
             for c, header in enumerate(header_list, start=1):
@@ -765,7 +765,7 @@ class TileManager(ResourceManager):
                                module_name=module_name,
                                module_code=module_code,
                                read_only_string="",
-                               api_html = api_html)
+                               api_html=api_html)
 
     def repository_view_module(self, module_name):
         user_obj = repository_user
