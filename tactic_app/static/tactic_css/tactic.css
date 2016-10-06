@@ -3,6 +3,53 @@
 /* general use */
 /* console related */
 /* resource management and table related */
+/* accordion api related parameters */
+#api-area {
+  border: none; }
+
+/* accordion related */
+button.accordion {
+  background-color: #d9edf7;
+  color: #31708f;
+  width: 100%;
+  text-align: left;
+  border: 2px solid #BCE8F1;
+  margin: 2px;
+  transition: 0.4s; }
+
+button.accordion:after {
+  content: '\02795';
+  /* Unicode character for "plus" sign (+) */
+  font-size: 13px;
+  color: #777;
+  float: right;
+  margin-left: 5px; }
+
+button.accordion.active:after {
+  content: "\2796";
+  /* Unicode character for "minus" sign (-) */ }
+
+button.accordion.active, button.accordion:hover {
+  background-color: #ddd; }
+
+div.accordion-panel {
+  padding: 0 18px;
+  background-color: #f1f1f1;
+  color: #555;
+  max-height: 0;
+  overflow: hidden;
+  transition: 0.1s ease-in-out;
+  opacity: 0;
+  margin: 0 4px;
+  border: none;
+  font-size: 14px; }
+  div.accordion-panel p {
+    margin: 10px 0px; }
+
+div.accordion-panel.show {
+  opacity: 1;
+  max-height: 500px; }
+
 /* General resources */
 table.sortable thead {
   background-color: #eee;

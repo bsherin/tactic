@@ -38,13 +38,18 @@ function start_post_load() {
       }
     });
     $(".CodeMirror").css('height', window.innerHeight - $(".CodeMirror").offset().top - 20);
+    $("#api-area").css('height', window.innerHeight - $("#api-area").offset().top - 20);
     savedCode = myCodeMirror.getDoc().getValue();
 
     var result_dict = {"res_type": "tile", "res_name": module_name};
-    $( "#api-area" ).accordion({
-        collapsible: true,
-        active: false
-    });
+    var acc = document.getElementsByClassName("accordion");
+    var i;
+    for (i = 0; i < acc.length; i++) {
+        acc[i].onclick = function(){
+            this.classList.toggle("active");
+            this.nextElementSibling.classList.toggle("show");
+        }
+    }
     $.ajax({
             url: $SCRIPT_ROOT + "/grab_metadata",
             contentType : 'application/json',
@@ -96,6 +101,7 @@ function changeTheme() {
 
 function showAPI(){
         $("#api-area").toggle()
+        $("#api-area").css('height', window.innerHeight - $("#api-area").offset().top - 20);
 }
 
 function renameModule() {

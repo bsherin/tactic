@@ -28,8 +28,9 @@ def get_api_from_wiki():
 def get_api_html(ar):
     result = ""
     for section in ar:
+        result += "<h4>{}</h4>\n".format(section[0])
         for entry in section[1]:
-            result += "<h3>{}</h3>\n<div>{}</div>\n".format(entry[0], entry[1])
+            result += "<button class='accordion btn btn-info'>{}</button>\n<div class='accordion-panel'><p>{}</p></div>\n".format(entry[0], entry[1])
     return result
 
 
