@@ -44,7 +44,7 @@ div.accordion-panel {
   border: none;
   font-size: 14px; }
   div.accordion-panel p {
-    margin: 10px 0px; }
+    margin: 10px 0; }
 
 div.accordion-panel.show {
   opacity: 1;
@@ -85,7 +85,7 @@ a[role="tab"] {
   font-size: 20px; }
 
 .nav-tabs a {
-  outline: 0px; }
+  outline: 0; }
 
 .resource-module {
   margin: 10px; }
@@ -121,7 +121,7 @@ a[role="tab"] {
   margin-bottom: 20px; }
 
 .resource-module h2 {
-  margin-top: 0px; }
+  margin-top: 0; }
 
 .metadata-field {
   width: 350px; }
@@ -181,9 +181,9 @@ a[role="tab"] {
   border-bottom-color: #fde930; }
 
 .tooltip-inner {
-  -moz-box-shadow: 0px 1px 5px 1px rgba(0, 0, 0, 0.4);
-  -webkit-box-shadow: 0px 1px 5px 1px rgba(0, 0, 0, 0.4);
-  box-shadow: 0px 1px 5px 1px rgba(0, 0, 0, 0.4);
+  -moz-box-shadow: 0 1px 5px 1px rgba(0, 0, 0, 0.4);
+  -webkit-box-shadow: 0 1px 5px 1px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 1px 5px 1px rgba(0, 0, 0, 0.4);
   zoom: 1; }
 
 /* Tile table related*/
@@ -279,8 +279,8 @@ td.cell-clickable:active {
   padding: 5px; }
 
 #tile-area {
-  margin: 0px;
-  border: 0px;
+  margin: 0;
+  border: 0;
   overflow: auto; }
 
 /* tile */
@@ -310,20 +310,20 @@ td.cell-clickable:active {
 
 .back {
   padding: 20px;
-  margin: 0px;
+  margin: 0;
   overflow: auto; }
 
 .front {
-  padding: 0px;
-  margin: 0px; }
+  padding: 0;
+  margin: 0; }
 
 .tile-log {
   padding: 20px;
-  margin: 0px;
+  margin: 0;
   overflow: auto; }
 
 .tile-body {
-  padding: 0px; }
+  padding: 0; }
 
 .tile-body img {
   cursor: pointer; }
