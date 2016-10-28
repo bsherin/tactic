@@ -36,7 +36,3 @@ def get_api_html(ar):
 
 api_array = get_api_from_wiki()
 api_html = get_api_html(api_array)
-
-
-
-

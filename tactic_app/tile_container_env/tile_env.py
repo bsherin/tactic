@@ -21,10 +21,12 @@ class_info = {"class_name": "",
 tile_name = ""
 tile_class = None
 
+
 def user_tile(tclass):
     class_info["class_name"] = tclass.__name__
     class_info["tile_class"] = tclass
     return tclass
+
 
 def exec_tile_code(tile_code):
     try:

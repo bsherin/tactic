@@ -11,9 +11,11 @@ $.get($SCRIPT_ROOT + "/get_modal_template", function(template){
     confirm_template = $(template).filter('#confirm-template').html();
 });
 
+alertify.set('notifier','position', 'top-right');
+
 alertbox = alertify.alert()
         .setting({
-            'basic': true,
+             'basic': true,
             'modal': false,
             'frameless': true,
             'closable': false,
@@ -30,7 +32,7 @@ function statusMessage(data) {
     }
 
     if (!alertbox.isOpen()){
-        alertbox.setContent(data.message).show().resizeTo("100%", 50).moveTo(0,0)
+        alertbox.setContent(data.message).show().resizeTo("25%", 50).moveTo(0,0)
     } else {
         alertbox.setContent(data.message)
     }

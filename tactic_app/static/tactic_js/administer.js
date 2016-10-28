@@ -11,7 +11,7 @@ mousetrap.bind("esc", function() {
     clearStatusMessage();
 });
 
-var res_types = ["container"];
+var res_types = ["container", "user"];
 var resource_managers = {};
 
 function start_post_load() {
@@ -62,6 +62,7 @@ function start_post_load() {
     $.get($SCRIPT_ROOT + "/get_admin_resource_module_template", function(template) {
             admin_resource_module_template = $(template).filter('#admin-resource-module-template').html();
             containerManager.create_module_html();
+            userManager.create_module_html();
 
             res_types.forEach(function (element, index, array) {
                 $("#" + element + "-selector").load($SCRIPT_ROOT + "/request_update_admin_selector_list/" + element, function () {
@@ -75,6 +76,7 @@ function start_post_load() {
             });
 
             containerManager.add_listeners();
+            userManager.add_listeners();
             $(".resource-module").on("click", ".resource-selector .selector-button", selector_click);
             $(".resource-module").on("dblclick", ".resource-selector .selector-button", selector_double_click);
 
@@ -156,7 +158,30 @@ var container_manager_specifics = {
 };
 
 var containerManager = new ResourceManager("container", container_manager_specifics);
+
+var user_manager_specifics = {
+
+    buttons: [
+        {"name": "refresh", "func": "refresh_user_table", "button_class": "btn btn-info"}
+    ],
+
+    refresh_user_table: function (event) {
+        var manager = event.data.manager;
+        $.getJSON($SCRIPT_ROOT + '/refresh_user_table');
+        event.preventDefault();
+    },
+
+    create_module_html: function () {
+        var res = Mustache.to_html(admin_resource_module_template, this);
+        $("#" + this.res_type + "-module").html(res);
+    }
+
+};
+
+var userManager = new ResourceManager("user", user_manager_specifics);
+
 resource_managers["container"] = containerManager;
+resource_managers["user"] = userManager;
 
 function resize_window() {
     res_types.forEach(function (val, ind, array) {

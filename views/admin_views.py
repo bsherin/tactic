@@ -2,7 +2,7 @@ from flask import render_template, jsonify, send_file
 from flask_login import login_required, current_user
 from tactic_app import app, use_ssl, create_megaplex
 from tactic_app.global_tile_management import global_tile_manager
-from tactic_app.users import User, load_user
+from tactic_app.users import User, load_user, get_all_users
 from user_manage_views import ResourceManager
 from tactic_app.docker_functions import cli, destroy_container, container_owners
 from docker_cleanup import do_docker_cleanup
@@ -121,21 +121,21 @@ class ContainerManager(ResourceManager):
             larray.append([cont["Names"][0], cont["Image"], owner_name, cont["Status"], cont["Id"]])
         return larray
 
-    def build_html_table_from_data_list(self, data_list, title=None):
-        the_html = "<table class='tile-table table sortable table-striped table-bordered table-condensed'>"
-        if title is not None:
-            the_html += "<caption>{0}</caption>".format(title)
-        the_html += "<thead><tr>"
-        for c in data_list[0]:
-            the_html += "<th>{0}</th>".format(c)
-        the_html += "</tr><tbody>"
-        for r in data_list[1:]:
-            the_html += "<tr class='selector-button {0}-selector-button admin-table-row' id='{0}-selector-{1}'>".format(self.res_type, r[0])
-            for c in r:
-                the_html += "<td>{0}</td>".format(c)
-            the_html += "</tr>"
-        the_html += "</tbody></table>"
-        return the_html
+    # def build_html_table_from_data_list(self, data_list, title=None):
+    #     the_html = "<table class='tile-table table sortable table-striped table-bordered table-condensed'>"
+    #     if title is not None:
+    #         the_html += "<caption>{0}</caption>".format(title)
+    #     the_html += "<thead><tr>"
+    #     for c in data_list[0]:
+    #         the_html += "<th>{0}</th>".format(c)
+    #     the_html += "</tr><tbody>"
+    #     for r in data_list[1:]:
+    #         the_html += "<tr class='selector-button {0}-selector-button admin-table-row' id='{0}-selector-{1}'>".format(self.res_type, r[0])
+    #         for c in r:
+    #             the_html += "<td>{0}</td>".format(c)
+    #         the_html += "</tr>"
+    #     the_html += "</tbody></table>"
+    #     return the_html
 
     def request_update_selector_list(self, user_obj=None):
         res_array = self.build_resource_array()
@@ -145,11 +145,44 @@ class ContainerManager(ResourceManager):
 container_manager = ContainerManager("container")
 
 
+class UserManager(ResourceManager):
+    def add_rules(self):
+        app.add_url_rule('/refresh_user_table', "refresh_user_table",
+                         login_required(self.refresh_user_table), methods=['get'])
+        pass
+
+    def refresh_user_table(self):
+        self.update_selector_list()
+        return jsonify({"success": True})
+
+    def build_resource_array(self):
+        user_list = get_all_users()
+        larray = [["_id", "username", "full_name", "email"]]
+        for user in user_list:
+            urow = []
+            for field in larray[0]:
+                if field in user:
+                    urow.append(str(user[field]))
+                else:
+                    urow.append("")
+            larray.append(urow)
+        return larray
+
+    def request_update_selector_list(self, user_obj=None):
+        res_array = self.build_resource_array()
+        result = self.build_html_table_from_data_list(res_array)
+        return result
+
+user_manager = UserManager("user")
+
+
 @app.route('/request_update_admin_selector_list/<res_type>', methods=['GET'])
 @login_required
 def request_update_admin_selector_list(res_type):
     if res_type == "container":
         return container_manager.request_update_selector_list()
+    elif res_type == "user":
+        return user_manager.request_update_selector_list()
     return ""
 
 

@@ -27,6 +27,10 @@ def load_user(userid):
         return User(result)
 
 
+def get_all_users():
+    return db.user_collection.find()
+
+
 class User(UserMixin):
     def __init__(self, user_dict):
         self.username = ""  # This is just to be make introspection happy
