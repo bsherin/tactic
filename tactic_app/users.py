@@ -67,8 +67,8 @@ def process_exception(ex):
 def copy_between_accounts(source_user, dest_user, res_type, new_res_name, res_name):
     try:
         if res_type == "collection":
-            collection_to_copy = source_user.full_collection_name(request.json['res_name'])
-            new_collection_name = dest_user.full_collection_name(request.json['new_res_name'])
+            collection_to_copy = source_user.full_collection_name(res_name)
+            new_collection_name = dest_user.full_collection_name(new_res_name)
             for doc in db[collection_to_copy].find():
                 del doc["_id"]
                 if "file_id" in doc:
