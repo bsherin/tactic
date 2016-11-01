@@ -162,12 +162,29 @@ var containerManager = new ResourceManager("container", container_manager_specif
 var user_manager_specifics = {
 
     buttons: [
+        {"name": "create_user", "func": "create_user_func", "button_class": "btn btn-success"},
+        {"name": "delete_user", "func": "delete_user_func", "button_class": "btn btn-danger"},
         {"name": "refresh", "func": "refresh_user_table", "button_class": "btn btn-info"}
     ],
 
     refresh_user_table: function (event) {
         var manager = event.data.manager;
         $.getJSON($SCRIPT_ROOT + '/refresh_user_table');
+        event.preventDefault();
+    },
+
+    delete_user_func: function (event) {
+        var manager = event.data.manager;
+        user_id = manager.check_for_selection("user", 0);
+        var confirm_text = "Are you sure that you want to delete user " + String(user_id) + "?";
+        confirmDialog("Delete User", confirm_text, "do nothing", "delete", function () {
+            $.getJSON($SCRIPT_ROOT + '/delete_user/' + user_id, doFlash);
+        });
+        event.preventDefault();
+    },
+
+    create_user_func: function (event) {
+        window.open($SCRIPT_ROOT + '/register');
         event.preventDefault();
     },
 

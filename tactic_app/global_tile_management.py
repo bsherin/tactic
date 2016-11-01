@@ -1,8 +1,9 @@
 import datetime
 from docker_functions import create_container, get_address, send_direct_request_to_container
-from users import User, load_user
+from users import User, load_user, initial_metadata
 
 # global_stuff
+
 
 class GlobalTileManager(object):
 
@@ -14,8 +15,8 @@ class GlobalTileManager(object):
         self.user_tiles = {}
         self.loaded_user_modules = {}
         self.test_tile_container_id = create_container("tactic_tile_image",
-                                                  network_mode="bridge",
-                                                  container_name="tile_test_container")
+                                                        network_mode="bridge",
+                                                        container_name="tile_test_container")
         self.test_tile_container_address = get_address(self.test_tile_container_id, "bridge")
 
     def get_all_default_tiles(self):
@@ -25,8 +26,8 @@ class GlobalTileManager(object):
 
             for tm in tm_list:
                 module_code = repository_user.get_tile_module(tm)
-                result = send_direct_request_to_container(self.test_tile_container_id, "load_source", {"tile_code": module_code,
-                                                                                                  "megaplex_address": None})
+                result = send_direct_request_to_container(self.test_tile_container_id, "load_source",
+                                                          {"tile_code": module_code, "megaplex_address": None})
                 res_dict = result.json()
                 if res_dict["success"]:
                     category = res_dict["category"]
@@ -77,10 +78,7 @@ class GlobalTileManager(object):
 
     @staticmethod
     def create_initial_metadata():
-        mdata = {"datetime": datetime.datetime.today(),
-                 "updated": datetime.datetime.today(),
-                 "tags": "",
-                 "notes": ""}
+        mdata = initial_metadata
         return mdata
 
     def get_loaded_user_tiles_list(self, username):

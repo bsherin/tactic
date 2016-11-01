@@ -2,11 +2,11 @@ from flask import render_template, request, jsonify
 from flask.ext.login import login_user, login_required, logout_user
 from flask_login import current_user
 
-from tactic_app.users import User
+from tactic_app.users import User, res_types, copy_between_accounts
 from flask.ext.wtf import Form
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import Required, Length, Regexp, EqualTo
-from tactic_app import app, socketio, csrf
+from tactic_app import app, socketio, csrf, db
 from wtforms.validators import ValidationError
 from tactic_app import ANYONE_CAN_REGISTER
 from tactic_app.global_tile_management import global_tile_manager
@@ -15,6 +15,7 @@ from tactic_app.docker_functions import destroy_user_containers
 # @app.before_request
 # def mark_sess_modified():
 #   session.modified = True
+
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/login', methods=['GET', 'POST'])
@@ -77,6 +78,21 @@ def register():
         return render_template
 
 
+@app.route('/attempt_register', methods=['GET', 'POST'])
+def attempt_register():
+    data = request.json
+    result_dict = User.create_new({"username": data["username"], "password": data["password"]})
+    if result_dict["success"]:
+        # Copy over all of the starter resources for the new user
+        repository_user = User.get_user_by_username("repository")
+        new_user = User.get_user_by_username(data["username"])
+        for res_type in res_types:
+            starters = repository_user.get_resource_names(res_type, tag_filter="starter")
+            for rname in starters:
+                copy_between_accounts(repository_user, new_user, res_type, rname, rname)
+    return jsonify(result_dict)
+
+
 @app.route('/account_info', methods=['GET', 'POST'])
 @login_required
 def account_info():
@@ -86,13 +102,6 @@ def account_info():
         if not key == "username":
             field_list.append({"name": key, "val": val})
     return render_template('auth/account.html', fields=field_list)
-
-
-@app.route('/attempt_register', methods=['GET', 'POST'])
-def attempt_register():
-    data = request.json
-    result_dict = User.create_new({"username": data["username"], "password": data["password"]})
-    return jsonify(result_dict)
 
 
 @app.route('/update_account_info', methods=['GET', 'POST'])
