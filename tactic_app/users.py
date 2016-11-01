@@ -2,13 +2,24 @@
 # This module contains the User class machinery required by flask-login
 
 import re
+import sys
+import datetime
 from collections import OrderedDict
+from flask import jsonify, request
 from flask.ext.login import UserMixin
-from tactic_app import login_manager, db # global_stuff db
+from tactic_app import login_manager, db, fs  # global_stuff db
 from bson.objectid import ObjectId
 from werkzeug.security import generate_password_hash, check_password_hash
+import traceback
+
+initial_metadata = {"datetime": datetime.datetime.today(),
+                    "updated": datetime.datetime.today(),
+                    "tags": "",
+                    "notes": ""}
 
 user_data_fields = ["username", "email", "full_name", "favorite_dumpling"]
+res_types = ["list", "collection", "project", "tile", "code"]
+name_keys = {"tile": "tile_module_name", "list": "list_name", "project": "project_name", "code": "code_name"}
 
 
 def put_docs_in_collection(collection_name, dict_list):
@@ -27,7 +38,75 @@ def load_user(userid):
         return User(result)
 
 
+def remove_user(userid):
+    try:
+        user = load_user(userid)
+        db.drop_collection(user.list_collection_name)
+        db.drop_collection(user.tile_collection_name)
+        db.drop_collection(user.code_collection_name)
+        user.delete_all_data_collections()  # have to do this because of gridfs pointers
+        user.delete_all_projects()  # have to do this because of gridfs pointers
+        db.drop_collection(user.project_collection_name)
+        db.user_collection.delete_one({"_id": ObjectId(userid)})
+        return {"success": True, "message": "User successfully revmoed."}
+    except Exception as ex:
+        return process_exception(ex)
+
+
+def get_all_users():
+    return db.user_collection.find()
+
+
+def process_exception(ex):
+    template = "<pre>An exception of type {0} occured. Arguments:\n{1!r}</pre>"
+    error_string = template.format(type(ex).__name__, ex.args)
+    error_string += traceback.format_exc()
+    return {"success": False, "message": error_string, "alert_type": "alert-warning"}
+
+
+def copy_between_accounts(source_user, dest_user, res_type, new_res_name, res_name):
+    try:
+        if res_type == "collection":
+            collection_to_copy = source_user.full_collection_name(request.json['res_name'])
+            new_collection_name = dest_user.full_collection_name(request.json['new_res_name'])
+            for doc in db[collection_to_copy].find():
+                del doc["_id"]
+                if "file_id" in doc:
+                    doc_text = fs.get(doc["file_id"]).read()
+                    doc["file_id"] = fs.put(doc_text)
+                db[new_collection_name].insert_one(doc)
+            db[new_collection_name].update_one({"name": "__metadata__"},
+                                               {'$set': {"datatime": datetime.datetime.today()}})
+        else:
+            name_field = name_keys[res_type]
+            collection_name = source_user.resource_collection_name(res_type)
+            old_dict = db[collection_name].find_one({name_field: res_name})
+            new_res_dict = {name_field: new_res_name}
+            for (key, val) in old_dict.items():
+                if (key == "_id") or (key == name_field):
+                    continue
+                new_res_dict[key] = val
+            if "metadata" not in new_res_dict:
+                mdata = {"datetime": datetime.datetime.today(),
+                         "updated": datetime.datetime.today(),
+                         "tags": "",
+                         "notes": ""}
+                new_res_dict["metadata"] = initial_metadata
+            else:
+                new_res_dict["metadata"]["datetime"] = datetime.datetime.today()
+            if "file_id" in new_res_dict:
+                doc_text = fs.get(new_res_dict["file_id"]).read()
+                new_res_dict["file_id"] = fs.put(doc_text)
+            new_collection_name = dest_user.resource_collection_name(res_type)
+            db[new_collection_name].insert_one(new_res_dict)
+        return jsonify({"success": True, "message": "Resource Successfully Copied", "alert_type": "alert-success"})
+    except:
+        error_string = "Error copying resource" + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+
+
 class User(UserMixin):
+
     def __init__(self, user_dict):
         self.username = ""  # This is just to be make introspection happy
         for key in user_data_fields:
@@ -65,6 +144,11 @@ class User(UserMixin):
             "collection_type": collection_type
         }
         return result
+
+    def resource_collection_name(self, res_type):
+        cnames = {"tile": self.tile_collection_name, "list": self.list_collection_name,
+                  "project": self.project_collection_name, "code": self.code_collection_name}
+        return cnames[res_type]
 
     def update_account(self, data_dict):
         update_dict = {}
@@ -156,11 +240,36 @@ class User(UserMixin):
 
         return sorted(my_collection_names, key=self.sort_data_list_key)
 
+    def delete_all_data_collections(self):
+        for dcol in self.data_collections:
+            self.remove_collection(dcol)
+        return
+
     def full_collection_name(self, cname):
         return self.username + ".data_collection." + cname
 
     def build_data_collection_name(self, collection_name):
         return '{}.data_collection.{}'.format(self.username, collection_name)
+
+    def remove_collection(self, collection_name):
+        fcname = self.full_collection_name(collection_name)
+        for doc in db[fcname].find():
+            if "file_id" in doc:
+                fs.delete(doc["file_id"])
+        db.drop_collection(fcname)
+        return True
+
+    def delete_all_projects(self):
+        for proj in self.project_names:
+            self.remove_project(proj)
+        return
+
+    def remove_project(self, project_name):
+        save_dict = db[self.project_collection_name].find_one({"project_name": project_name})
+        if "file_id" in save_dict:
+            fs.delete(save_dict["file_id"])
+        db[self.project_collection_name].delete_one({"project_name": project_name})
+        return
 
     @property
     def project_names(self):
@@ -302,10 +411,7 @@ class User(UserMixin):
                 else:
                     res_names.append(dcol)
         else:
-            cnames = {"tile": self.tile_collection_name, "list": self.list_collection_name,
-                      "project": self.project_collection_name, "code": self.code_collection_name}
-            name_keys = {"tile": "tile_module_name", "list": "list_name", "project": "project_name", "code": "code_name"}
-            cname = cnames[res_type]
+            cname = self.resource_collection_name(res_type)
             name_key = name_keys[res_type]
             if cname not in db.collection_names():
                 db.create_collection(cname)

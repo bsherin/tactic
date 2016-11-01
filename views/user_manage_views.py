@@ -15,7 +15,7 @@ from tactic_app.file_handling import read_csv_file_to_dict, read_tsv_file_to_dic
 from tactic_app.file_handling import read_freeform_file
 
 from tactic_app.global_tile_management import global_tile_manager
-from tactic_app.users import User
+from tactic_app.users import User, copy_between_accounts
 from tactic_app.docker_functions import send_direct_request_to_container
 
 from tactic_app.docker_functions import create_container, get_address
@@ -90,7 +90,13 @@ class ResourceManager(object):
     def update_selector_list(self, select=None, user_obj=None):
         if user_obj is None:
             user_obj = current_user
-        if select is None:
+
+        if self.is_repository:
+            socketio.emit('update-selector-list',
+                          {"html": self.request_update_selector_list(user_obj=repository_user),
+                           "res_type": "repository-" + self.res_type},
+                          namespace='/user_manage', room=user_obj.get_id())
+        elif select is None:
             socketio.emit('update-selector-list',
                           {"html": self.request_update_selector_list(user_obj=user_obj), "res_type": self.res_type},
                           namespace='/user_manage', room=user_obj.get_id())
@@ -192,74 +198,26 @@ def get_manager_for_type(res_type, is_repository=False):
 @app.route('/copy_from_repository', methods=['GET', 'POST'])
 @login_required
 def copy_from_repository():
-    try:
-        res_type = request.json['res_type']
-
-        new_res_name = request.json['new_res_name']
-        res_name = request.json['res_name']
-        manager = get_manager_for_type(res_type)
-        if res_type == "collection":
-            collection_to_copy = repository_user.full_collection_name(request.json['res_name'])
-            new_collection_name = current_user.full_collection_name(request.json['new_res_name'])
-            for doc in db[collection_to_copy].find():
-                db[new_collection_name].insert_one(doc)
-            db[new_collection_name].update_one({"name": "__metadata__"},
-                                               {'$set': {"datatime": datetime.datetime.today()}})
-        else:
-            repo_manager = get_manager_for_type(res_type, is_repository=True)
-            old_dict = db[getattr(repository_user, repo_manager.collection_name)].find_one({manager.name_field: res_name})
-            new_res_dict = {manager.name_field: new_res_name}
-            for (key, val) in old_dict.items():
-                if (key == "_id") or (key == manager.name_field):
-                    continue
-                new_res_dict[key] = val
-            if "metadata" not in new_res_dict:
-                new_res_dict["metadata"] = global_tile_manager.create_initial_metadata()
-            else:
-                new_res_dict["metadata"]["datetime"] = datetime.datetime.today()
-            db[getattr(current_user, repo_manager.collection_name)].insert_one(new_res_dict)
-        manager.update_selector_list(select=new_res_name)
-        return jsonify({"success": True, "message": "Resource Successfully Copied", "alert_type": "alert-success"})
-    except:
-        error_string = "Error copying resource" + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+    res_type = request.json["res_type"]
+    new_res_name = request.json['new_res_name']
+    res_name = request.json['res_name']
+    result = copy_between_accounts(repository_user, current_user, res_type, new_res_name, res_name)
+    manager = get_manager_for_type(res_type)
+    manager.update_selector_list(select=new_res_name)
+    return result
 
 
 # noinspection PyBroadException
 @app.route('/send_to_repository', methods=['GET', 'POST'])
 @login_required
 def send_to_repository():
-    try:
-        res_type = request.json['res_type']
-
-        new_res_name = request.json['new_res_name']
-        res_name = request.json['res_name']
-        manager = get_manager_for_type(res_type)
-        repo_manager = get_manager_for_type(res_type, is_repository=True)
-        if res_type == "collection":
-            collection_to_copy = current_user.full_collection_name(request.json['res_name'])
-            new_collection_name = repository_user.full_collection_name(request.json['new_res_name'])
-            for doc in db[collection_to_copy].find():
-                db[new_collection_name].insert_one(doc)
-            db[new_collection_name].update_one({"name": "__metadata__"},
-                                               {'$set': {"datatime": datetime.datetime.today()}})
-        else:
-            old_dict = db[getattr(current_user, manager.collection_name)].find_one({repo_manager.name_field: res_name})
-            new_res_dict = {repo_manager.name_field: new_res_name}
-            for (key, val) in old_dict.items():
-                if (key == "_id") or (key == repo_manager.name_field):
-                    continue
-                new_res_dict[key] = val
-            if "metadata" not in new_res_dict:
-                new_res_dict["metadata"] = global_tile_manager.create_initial_metadata()
-            else:
-                new_res_dict["metadata"]["datetime"] = datetime.datetime.today()
-            db[getattr(repository_user, manager.collection_name)].insert_one(new_res_dict)
-        repo_manager.update_selector_list(select=new_res_name)
-        return jsonify({"success": True, "message": "Resource Successfully Copied", "alert_type": "alert-success"})
-    except:
-        error_string = "Error copying resource" + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+    res_type = request.json['res_type']
+    new_res_name = request.json['new_res_name']
+    res_name = request.json['res_name']
+    result = copy_between_accounts(current_user, repository_user, res_type, new_res_name, res_name)
+    manager = get_manager_for_type(res_type, is_repository=True)
+    manager.update_selector_list(select=new_res_name)
+    return result
 
 
 @app.route('/request_update_selector_list/<res_type>', methods=['GET'])
@@ -633,9 +591,9 @@ class CollectionManager(ResourceManager):
 
     def delete_collection(self, collection_name):
         user_obj = current_user
-        db.drop_collection(user_obj.full_collection_name(collection_name))
+        result = user_obj.remove_collection()
         self.update_selector_list()
-        return jsonify({"success": True})
+        return jsonify({"success": result})
 
     def duplicate_collection(self):
         user_obj = current_user
@@ -644,7 +602,11 @@ class CollectionManager(ResourceManager):
         if new_collection_name in db.collection_names():
             return jsonify({"success": False, "message": "There is already a collection with that name.",
                             "alert_type": "alert-warning"})
+
         for doc in db[collection_to_copy].find():
+            if "file_id" in doc:
+                doc_text = fs.get(doc["file_id"]).read()
+                doc["file_id"] = fs.put(doc_text)
             db[new_collection_name].insert_one(doc)
         self.update_selector_list(request.json['new_res_name'])
         return jsonify({"success": True})
@@ -669,10 +631,7 @@ class ProjectManager(ResourceManager):
                          methods=['post'])
 
     def delete_project(self, project_name):
-        user_obj = current_user
-        save_dict = db[user_obj.project_collection_name].find_one({"project_name": project_name})
-        fs.delete(save_dict["file_id"])
-        db[user_obj.project_collection_name].delete_one({"project_name": project_name})
+        current_user.remove_project(project_name)
         self.update_selector_list()
         return jsonify({"success": True})
 
