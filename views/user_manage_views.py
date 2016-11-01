@@ -591,7 +591,7 @@ class CollectionManager(ResourceManager):
 
     def delete_collection(self, collection_name):
         user_obj = current_user
-        result = user_obj.remove_collection()
+        result = user_obj.remove_collection(collection_name)
         self.update_selector_list()
         return jsonify({"success": result})
 
