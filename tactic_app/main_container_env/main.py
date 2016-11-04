@@ -351,7 +351,7 @@ class mainWindow(QWorker):
 
     @task_worthy
     def do_full_recreation(self, data_dict):
-        tile_containers = []
+        tile_containers = {}
         try:
             print "Entering do_full_recreation"
             self.show_um_message("Entering do_full_recreation", data_dict["user_manage_id"])
@@ -360,25 +360,41 @@ class mainWindow(QWorker):
             self.post_and_wait("host", "load_modules",
                                {"loaded_modules": loaded_modules, "user_id": data_dict["user_id"]})
             doc_names = [str(doc_name) for doc_name in self.doc_names]
+
+            self.show_um_message("Getting tile code", data_dict["user_manage_id"])
+            tile_code_dict = self.post_and_wait("host", "get_tile_code", {"tile_info_dict": tile_info_dict,
+                                                                          "user_id": data_dict["user_id"]})
+            self.show_um_message("Checking tile Code", data_dict["user_manage_id"])
+            for old_tile_id in tile_code_dict.keys():
+                if tile_code_dict[old_tile_id] is None:
+                    self.recreate_errors.append("problem getting tile code for " +
+                                                tile_info_dict[old_tile_id] + "\n")
+                    del tile_info_dict[old_tile_id]
+                    del tile_code_dict[old_tile_id]
             self.show_um_message("Creating empty containers", data_dict["user_manage_id"])
             tile_containers = self.post_and_wait("host", "get_empty_tile_containers",
                                                  {"number": len(tile_info_dict.keys()),
                                                   "user_id": data_dict["user_id"]})
-            self.show_um_message("Getting tile code", data_dict["user_manage_id"])
-            tile_code_dict = self.post_and_wait("host", "get_tile_code", {"tile_info_dict": tile_info_dict,
-                                                                          "user_id": data_dict["user_id"]})
             new_tile_info = {}
             new_tile_keys = tile_containers.keys()
+            error_messages = ""
             for i, old_tile_id in enumerate(tile_info_dict.keys()):
                 new_id = new_tile_keys[i]
                 new_address = tile_containers[new_tile_keys[i]]
                 new_tile_info[old_tile_id] = {"new_tile_id": new_id,
                                               "tile_container_address": new_address}
+
                 result = send_request_to_container(new_address, "load_source",
                                                    {"tile_code": tile_code_dict[old_tile_id],
                                                     "megaplex_address": self.megaplex_address}).json()
                 if not result["success"]:
-                    raise Exception(result["message_string"])
+                    self.recreate_errors.append("problem loading source into container for "
+                                                "{}: {}".format(tile_info_dict[old_tile_id], result["message_string"]))
+                    del new_tile_info[old_tile_id]
+                    del tile_info_dict[old_tile_id]
+                    del tile_code_dict[old_tile_id]
+                    del self.project_dict["tile_instances"][old_tile_id]
+                    # raise Exception(result["message_string"])
             self.show_um_message("Recreating the tiles", data_dict["user_manage_id"])
             # Note data_dict has class, function, and list_names
             self.tile_save_results = self.recreate_project_tiles(data_dict, new_tile_info)
@@ -458,6 +474,8 @@ class mainWindow(QWorker):
         self.tile_instances = {}
         tile_results = {}
         for old_tile_id, tile_save_dict in self.project_dict["tile_instances"].items():
+            if old_tile_id not in new_tile_info:
+                continue
             new_tile_id = new_tile_info[old_tile_id]["new_tile_id"]
             new_tile_address = new_tile_info[old_tile_id]["tile_container_address"]
             self.tile_instances[new_tile_id] = new_tile_address

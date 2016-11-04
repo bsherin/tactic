@@ -133,7 +133,7 @@ mousetrap.bind("esc", function() {
 
 function build_and_render_menu_objects() {
     // Create the column_menu object
-    column_menu = new MenuObject("Column", column_command,["shift-left", "shift-right", "hide", "unhide", "add-column"]);
+    column_menu = new MenuObject("Column", column_command,["shift-left", "shift-right", "hide", "unhide", "add-column", "add-column-all-docs"]);
     menus[column_menu.menu_name] = column_menu;
     column_menu.add_options_to_index();
 
@@ -226,20 +226,40 @@ function column_command(menu_id) {
         tableObject.build_table();
         dirty = true;
     }
-    else if (menu_id == "add-column") {
+    else if (menu_id == "add-column-all-docs") {
         createColumn();
+        dirty = true;
+    }
+    else if (menu_id == "add-column") {
+        createColumnThisDoc();
         dirty = true;
     }
 }
 
 function createColumn() {
-    showModal("Create Columnm", "New Column Name", function (new_name) {
+    showModal("Create Column All Docs", "New Column Name", function (new_name) {
         var column_name = new_name;
         for (var doc in tablespec_dict) {
             if (tablespec_dict.hasOwnProperty(doc)) {
                 tablespec_dict[doc].header_list.push(column_name)
             }
         }
+        // Then rebuild the table
+        tableObject.build_table();
+        get_column(column_name).text(" ");  // This seems to be necessary for the column to be editable
+
+        // Then change the current data_dict back on the server
+        var data_dict = {"column_name": column_name};
+        broadcast_event_to_server("CreateColumn", data_dict, function () {
+            dirty = true
+        })
+    })
+}
+
+function createColumnThisDoc() {
+    showModal("Create Column This Doc", "New Column Name", function (new_name) {
+        var column_name = new_name;
+        tableObject.current_spec.header_list.push(column_name)
         // Then rebuild the table
         tableObject.build_table();
         get_column(column_name).text(" ");  // This seems to be necessary for the column to be editable
