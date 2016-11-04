@@ -144,11 +144,15 @@ function confirmDialog(modal_title, modal_text, cancel_text, submit_text, submit
     }
 }
 
-function showModal(modal_title, field_title, submit_function, default_value, existing_names) {
+function showModal(modal_title, field_title, submit_function, default_value, existing_names, checkboxes) {
     var data_dict = {"modal_title": modal_title, "field_title": field_title};
 
     if (typeof existing_names == "undefined") {
         existing_names = []
+    }
+
+    if (typeof checkboxes == "undefined") {
+        checkboxes = []
     }
 
     var name_counter = 1;
@@ -160,7 +164,8 @@ function showModal(modal_title, field_title, submit_function, default_value, exi
 
     var res = Mustache.to_html(modal_template, {
         "modal_title": modal_title,
-        "field_title": field_title
+        "field_title": field_title,
+        "checkboxes": checkboxes
     });
     $("#modal-area").html(res);
     $('#modal-dialog').on('shown.bs.modal', function () {
@@ -188,6 +193,11 @@ function showModal(modal_title, field_title, submit_function, default_value, exi
 
     function submit_handler() {
         var result = $("#modal-text-input-field").val();
+        checkresults = {};
+        for (var i = 0; i < checkboxes.length; i++) {
+            cname = checkboxes[i]["checkname"]
+            checkresults[cname] = $("#" + cname).is(":checked")
+        }
         var msg;
         if (name_exists(result)) {
             msg = "That name already exists";
@@ -199,7 +209,12 @@ function showModal(modal_title, field_title, submit_function, default_value, exi
         }
         else {
             $("#modal-dialog").modal("hide");
-            submit_function(result)
+            if (checkboxes.length > 0) {
+                submit_function(result, checkresults)
+            }
+            else {
+               submit_function(result)
+            }
         }
     }
 }

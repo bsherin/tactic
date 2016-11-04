@@ -320,6 +320,12 @@ class HostWorker(QWorker):
         return {"module_code": module_code, "megaplex_address": self.megaplex_address}
 
     @task_worthy
+    def get_module_from_tile_type(self, data):
+        user_obj = load_user(data["user_id"])
+        module_name = global_tile_manager.get_module_from_type(user_obj.username, data["tile_type"])
+        return {"module_name": module_name}
+
+    @task_worthy
     def render_tile(self, data):
         tile_id = data["tile_id"]
         form_html = data["form_html"]

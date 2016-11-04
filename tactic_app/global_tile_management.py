@@ -18,6 +18,7 @@ class GlobalTileManager(object):
                                                         network_mode="bridge",
                                                         container_name="tile_test_container")
         self.test_tile_container_address = get_address(self.test_tile_container_id, "bridge")
+        self.tile_module_index = {}
 
     def get_all_default_tiles(self):
         repository_user = User.get_user_by_username("repository")
@@ -92,6 +93,13 @@ class GlobalTileManager(object):
         self.loaded_user_modules[username] = []
         self.user_tiles[username] = {}
 
+    def get_module_from_type(self, username, tile_type):
+        # First check to see if this is actually one of the default tiles
+        if tile_type not in self.tile_module_index[username]:
+            return None
+        else:
+            return self.tile_module_index[tile_type]
+
     def add_user_tile_module(self, username, category, tile_name, tile_module, tile_module_name):
         self.add_user(username)
         if category not in self.user_tiles[username]:
@@ -100,7 +108,12 @@ class GlobalTileManager(object):
 
         if username not in self.loaded_user_modules:
             self.loaded_user_modules[username] = []
+
         if tile_module_name not in self.loaded_user_modules[username]:
             self.loaded_user_modules[username].append(tile_module_name)
+
+        if username not in self.tile_module_index:
+            self.tile_module_index[username] = {}
+        self.tile_module_index[username][tile_name] = tile_module_name
 
 global_tile_manager = GlobalTileManager()

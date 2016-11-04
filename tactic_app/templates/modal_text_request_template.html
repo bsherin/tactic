@@ -12,6 +12,13 @@
                 <label for="recipient-name" class="control-label">{{field_title}}</label>
                 <input type="text" class="form-control submitter-field" id="modal-text-input-field">
               </div>
+              {{#checkboxes}}
+                  <div class="checkbox">
+                    <label>
+                      <input type="checkbox" id={{checkname}}> {{checktext}}
+                    </label>
+                  </div>
+              {{/checkboxes}}
           </form>
       </div>
       <div class="modal-footer">
