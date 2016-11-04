@@ -225,7 +225,7 @@ class docInfo(object):
 class mainWindow(QWorker):
     save_attrs = ["short_collection_name", "collection_name", "current_tile_id", "tile_sort_list", "left_fraction",
                   "is_shrunk", "doc_dict", "project_name", "loaded_modules", "user_id",
-                  "hidden_columns_list", "console_html", "console_cm_code", "doc_type"]
+                  "hidden_columns_list", "console_html", "console_cm_code", "doc_type", "purgetiles"]
     update_events = ["CellChange", "FreeformTextChange", "CreateColumn", "SearchTable", "SaveTableSpec", "MainClose",
                      "DisplayCreateErrors", "DehighlightTable", "SetCellContent", "RemoveTile", "ColorTextInCell",
                      "FilterTable", "UnfilterTable", "TextSelect", "UpdateSortList", "UpdateLeftFraction",
@@ -282,6 +282,7 @@ class mainWindow(QWorker):
             self.user_id = data_dict["user_id"]
             self.doc_dict = self._build_doc_dict()
             self.visible_doc_name = self.doc_dict.keys()[0]
+            self.purgetiles = False
 
     # Communication Methods
 
@@ -335,6 +336,15 @@ class mainWindow(QWorker):
             tile_save_dict = self.post_and_wait(tile_id, "compile_save_dict")
             tile_instances[tile_id] = tile_save_dict  # tile_id isn't meaningful going forward.
         result["tile_instances"] = tile_instances
+        if self.purgetiles:
+            used_modules = []
+            for tile_id in self.tile_instances.keys():
+                tile_type = self.get_tile_property(tile_id, "tile_type")
+                data = {"tile_type": tile_type, "user_id": self.user_id}
+                module_name = self.post_and_wait("host", "get_module_from_tile_type", data)["module_name"]
+                if module_name is not None:
+                    used_modules.append(module_name)
+            result["loaded_modules"] = used_modules
         return result
 
     def show_um_message(self, message, user_manage_id, timeout=None):
@@ -538,6 +548,7 @@ class mainWindow(QWorker):
         # noinspection PyBroadException
         try:
             self.project_name = data_dict["project_name"]
+            self.purgetiles = data_dict["purgetiles"]
             if self.doc_type == "table":
                 self.hidden_columns_list = data_dict["hidden_columns_list"]
             self.console_html = data_dict["console_html"]
@@ -550,6 +561,7 @@ class mainWindow(QWorker):
             self.loaded_modules = self.post_and_wait("host", "get_loaded_user_modules", {"user_id": self.user_id})[
                 "loaded_modules"]
             self.loaded_modules = [str(module) for module in self.loaded_modules]
+
             self.show_main_status_message("compiling save dictionary")
             project_dict = self.compile_save_dict()
 
