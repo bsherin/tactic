@@ -43,6 +43,8 @@ class GlobalTileManager(object):
             self.loaded_user_modules[username] = []
         if username not in self.user_tiles:
             self.user_tiles[username] = {}
+        if username not in self.tile_module_index:
+            self.tile_module_index[username] = {}
 
     def remove_user(self, username):
         if username in self.user_tiles:
@@ -95,25 +97,17 @@ class GlobalTileManager(object):
 
     def get_module_from_type(self, username, tile_type):
         # First check to see if this is actually one of the default tiles
+        self.add_user(username)
         if tile_type not in self.tile_module_index[username]:
             return None
         else:
-            return self.tile_module_index[tile_type]
+            return self.tile_module_index[username][tile_type]
 
     def add_user_tile_module(self, username, category, tile_name, tile_module, tile_module_name):
         self.add_user(username)
         if category not in self.user_tiles[username]:
             self.user_tiles[username][category] = {}
         self.user_tiles[username][category][tile_name] = tile_module
-
-        if username not in self.loaded_user_modules:
-            self.loaded_user_modules[username] = []
-
-        if tile_module_name not in self.loaded_user_modules[username]:
-            self.loaded_user_modules[username].append(tile_module_name)
-
-        if username not in self.tile_module_index:
-            self.tile_module_index[username] = {}
         self.tile_module_index[username][tile_name] = tile_module_name
 
 global_tile_manager = GlobalTileManager()
