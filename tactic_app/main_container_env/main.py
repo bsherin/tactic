@@ -73,7 +73,11 @@ class docInfo(object):
         self.name = name
         self.data_rows = copy.deepcopy(data_rows)  # All the data rows in the doc
         self.current_data_rows = self.data_rows  # The current filtered set of data rows
-        self.header_list = header_list
+        # Get rid of any duplicate headers without changing the order
+        self.header_list = []
+        for h in header_list:
+            if h not in self.header_list:
+                self.header_list.append(h)
         self.table_spec = {}
         self.start_of_current_chunk = None
         self.is_first_chunk = None
