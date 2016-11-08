@@ -363,6 +363,7 @@ class mainWindow(QWorker):
         data = {"main_id": self.my_id}
         self.post_task("host", "clear_main_status_message", data)
 
+    # tactic_change making this more robust
     @task_worthy
     def do_full_recreation(self, data_dict):
         tile_containers = {}
@@ -404,6 +405,7 @@ class mainWindow(QWorker):
                 if not result["success"]:
                     self.recreate_errors.append("problem loading source into container for "
                                                 "{}: {}".format(tile_info_dict[old_tile_id], result["message_string"]))
+                    self.ask_host("delete_container", {"container_id": new_id})
                     del new_tile_info[old_tile_id]
                     del tile_info_dict[old_tile_id]
                     del tile_code_dict[old_tile_id]
@@ -413,12 +415,15 @@ class mainWindow(QWorker):
             # Note data_dict has class, function, and list_names
             errors, self.tile_save_results = self.recreate_project_tiles(data_dict, new_tile_info)
             for tid, error in errors.items():
+                print "problem recreating tile for {}: {}".format(tile_info_dict[tid], error)
                 self.recreate_errors.append("problem recreating tile for "
                                             "{}: {}".format(tile_info_dict[tid], error))
+                self.ask_host("delete_container", {"container_id": new_tile_info[tid]["new_tile_id"]})
                 del new_tile_info[tid]
                 del tile_info_dict[tid]
                 del tile_code_dict[tid]
                 del self.project_dict["tile_instances"][tid]
+
             template_data = {"collection_name": self.collection_name,
                              "project_name": self.project_name,
                              "window_title": self.project_name,
@@ -513,6 +518,7 @@ class mainWindow(QWorker):
             tile_result = tresult.json()
             if not tile_result["success"]:
                 errors[old_tile_id] = tile_result["message_string"]
+                del self.tile_instances[new_tile_id]
             else:
                 tile_results[new_tile_id] = tile_result
 
