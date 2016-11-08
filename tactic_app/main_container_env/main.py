@@ -411,7 +411,14 @@ class mainWindow(QWorker):
                     # raise Exception(result["message_string"])
             self.show_um_message("Recreating the tiles", data_dict["user_manage_id"])
             # Note data_dict has class, function, and list_names
-            self.tile_save_results = self.recreate_project_tiles(data_dict, new_tile_info)
+            errors, self.tile_save_results = self.recreate_project_tiles(data_dict, new_tile_info)
+            for tid, error in errors.items():
+                self.recreate_errors.append("problem recreating tile for "
+                                            "{}: {}".format(tile_info_dict[tid], error))
+                del new_tile_info[tid]
+                del tile_info_dict[tid]
+                del tile_code_dict[tid]
+                del self.project_dict["tile_instances"][tid]
             template_data = {"collection_name": self.collection_name,
                              "project_name": self.project_name,
                              "window_title": self.project_name,
@@ -487,6 +494,7 @@ class mainWindow(QWorker):
         function_names = data_dict["function_names"]
         self.tile_instances = {}
         tile_results = {}
+        errors = {}
         for old_tile_id, tile_save_dict in self.project_dict["tile_instances"].items():
             if old_tile_id not in new_tile_info:
                 continue
@@ -504,8 +512,9 @@ class mainWindow(QWorker):
                                                 timeout=60, tries=RETRIES)
             tile_result = tresult.json()
             if not tile_result["success"]:
-                raise Exception(tile_result["message_string"])
-            tile_results[new_tile_id] = tile_result
+                errors[old_tile_id] = tile_result["message_string"]
+            else:
+                tile_results[new_tile_id] = tile_result
 
         for tile in self.tile_sort_list:
             if tile not in self.tile_instances:
@@ -536,7 +545,7 @@ class mainWindow(QWorker):
                      "function_names": function_names}
         for tile_id, tile_result in tile_results.items():
             tile_result["tile_html"] = self.post_and_wait(tile_id, "render_tile", form_info)["tile_html"]
-        return tile_results
+        return errors, tile_results
 
     @task_worthy
     def get_saved_console_code(self, data_dict):
