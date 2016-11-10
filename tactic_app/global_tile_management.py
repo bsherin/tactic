@@ -109,5 +109,7 @@ class GlobalTileManager(object):
             self.user_tiles[username][category] = {}
         self.user_tiles[username][category][tile_name] = tile_module
         self.tile_module_index[username][tile_name] = tile_module_name
+        if tile_module_name not in self.loaded_user_modules[username]:
+            self.loaded_user_modules[username].append(tile_module_name)
 
 global_tile_manager = GlobalTileManager()
