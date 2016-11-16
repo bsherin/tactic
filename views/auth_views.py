@@ -57,12 +57,13 @@ def check_if_admin():
     return jsonify(result_dict)
 
 
-@app.route('/logout')
+@app.route('/logout/<page_id>')
 @login_required
-def logout():
+def logout(page_id):
+    print "in logout"
     user_id = current_user.get_id()
-    socketio.emit('close-user-windows', {}, namespace='/user_manage', room=user_id)
-    socketio.emit('close-user-windows', {}, namespace='/main', room=user_id)
+    socketio.emit('close-user-windows', {"originator": page_id}, namespace='/user_manage', room=user_id)
+    socketio.emit('close-user-windows', {"originator": page_id}, namespace='/main', room=user_id)
     global_tile_manager.remove_user(current_user.username)
     destroy_user_containers(user_id)  # They should be gone by this point. But make sure.
     logout_user()

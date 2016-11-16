@@ -45,6 +45,7 @@
     <script>
         current_user = "{{current_user.username}}"
         var _show_message = "{{show_message}}";
+        var page_id = guid();
         window.onload = function() {
                 if (_show_message == "yes") {
                     doFlash({"message": "{{message}}" })

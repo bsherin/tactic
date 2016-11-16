@@ -198,7 +198,9 @@ function start_post_load() {
                     contentType: 'application/json',
                     type: 'POST'
                 });
-                window.close()
+                if (!(data["originator"] == main_id)) {
+                    window.close()
+                }
             });
     socket.on('finish-post-load', function (data) {
         postWithCallback("host", "get_tile_types", {"user_id": user_id}, function (data) {
