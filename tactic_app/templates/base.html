@@ -22,7 +22,7 @@
                     {% if current_user.is_authenticated() %}
                         <li><a href="{{ url_for('user_manage') }}">Resources</a></li>
                         <li class="hidden-sm hidden-xs"><a href="{{ url_for('account_info') }}">{{current_user.username}}</a></li>
-                        <li><a href="" onclick="return doSignOut();">Sign Out</a></li>
+                        <li><a href="" onclick="return doSignOut(page_id);">Sign Out</a></li>
                     {% else %}
                     <li><a href="{{ url_for('login') }}">Sign In</a></li>
                     {% endif %}

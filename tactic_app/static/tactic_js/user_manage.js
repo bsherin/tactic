@@ -7,6 +7,7 @@ var repository_module_template;
 var mousetrap = new Mousetrap();
 var repository_visible = false;
 var user_manage_id = guid();
+var page_id = user_manage_id;
 
 mousetrap.bind("esc", function() {
     clearStatusArea();
@@ -68,7 +69,10 @@ function start_post_load() {
     });
 
     socket.on('close-user-windows', function(data){
-        window.close()
+        if (!(data["originator"] == user_manage_id)) {
+            window.close()
+        }
+
     });
     
     socket.on('doflash', doFlash);

@@ -117,7 +117,7 @@ function return_from_submit_register(data) {
     }
 }
 
-function doSignOut() {
-    window.open($SCRIPT_ROOT + "/logout", "_self");
+function doSignOut(page_id) {
+    window.open($SCRIPT_ROOT + "/logout/" + page_id, "_self");
     return (false)
 }

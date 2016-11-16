@@ -458,3 +458,48 @@ class User(UserMixin):
                 return doc["the_code"]
         return None
 
+def load_remote_user(userid, db):
+    # This expects that userid will be a string
+    # If it's an ObjectId, rather than a string, I get an error likely having to do with login_manager
+    result = db.user_collection.find_one({"_id": ObjectId(userid)})
+
+    if result is None:
+        return None
+    else:
+        return User(result)
+
+class RemoteUser(User):
+    def __init__(self, user_dict, remote_db):
+        self.username = ""  # This is just to be make introspection happy
+        for key in user_data_fields:
+            if key in user_dict:
+                setattr(self, key, user_dict[key])
+            else:
+                setattr(self, key, "")
+        self.password_hash = user_dict["password_hash"]
+        self.remote_db = remote_db
+
+    @staticmethod
+    def get_user_by_username(username, remote_db):
+        result = remote_db.user_collection.find_one({"username": username})
+        if result is None:
+            return None
+        else:
+            return RemoteUser(result, remote_db)
+
+    @property
+    def tile_module_names_with_metadata(self):
+        if self.tile_collection_name not in self.remote_db.collection_names():
+            self.remote_db.create_collection(self.tile_collection_name)
+            return []
+        my_tile_names = []
+        for doc in self.remote_db[self.tile_collection_name].find(projection=["tile_module_name", "metadata"]):
+            if "metadata" in doc:
+                my_tile_names.append([doc["tile_module_name"], doc["metadata"]])
+            else:
+                my_tile_names.append([doc["tile_module_name"], None])
+        return sorted(my_tile_names, key=self.sort_data_list_key)
+
+    def get_tile_module(self, tile_module_name):
+        tile_dict = self.remote_db[self.tile_collection_name].find_one({"tile_module_name": tile_module_name})
+        return tile_dict["tile_module"]
