@@ -9,7 +9,7 @@ def remove_lt_whitespace(txt):
 
 
 def get_api_from_wiki():
-    r = requests.get("https://raw.githubusercontent.com/wiki/bsherin/tactic/Tile-Commands.md")
+    r = requests.get("https://raw.githubusercontent.com/wiki/bsherin/tactic/Tile-Commands.md", timeout=3)
     the_source = r.text
 
     res = re.findall(r"\#\#(.*)([\s\S]*?)(?=\#\#)|$", the_source)
@@ -33,6 +33,9 @@ def get_api_html(ar):
             result += "<button class='accordion btn btn-info'>{}</button>\n<div class='accordion-panel'><p>{}</p></div>\n".format(entry[0], entry[1])
     return result
 
-
-api_array = get_api_from_wiki()
-api_html = get_api_html(api_array)
+try:
+    api_array = get_api_from_wiki()
+    api_html = get_api_html(api_array)
+except:
+    api_array = []
+    api_html = ""

@@ -13,7 +13,6 @@ docker_cleanup.do_docker_cleanup()
 from tactic_app import app, socketio # global_stuff ?
 
 from tactic_app import host_workers  # this creates the host_worker and client_worker
-
 from tactic_app import users
 from views import auth_views, main_views, user_manage_views, admin_views
 

@@ -50,26 +50,15 @@ try:
     STEP_SIZE = int(os.environ.get("STEP_SIZE"))
 
     # Now the local server branch is what executes on the remote server
-    if ("USE_LOCAL_SERVER" in os.environ) and (os.environ.get("USE_LOCAL_SERVER") == "True"):
-        client = MongoClient("localhost", serverSelectionTimeoutMS=10)
-        # force connection on a request as the
-        # connect=True parameter of MongoClient seems
-        # to be useless here
-        client.server_info()
-        # noinspection PyUnresolvedReferences
-        db = client.tacticdb
-        # mongo_uri = "localhost"
-        mongo_uri ="mongodb://{}:27017/tacticdb".format(host_ip)
-
-    else:
-        client = MongoClient(host=os.environ.get("MONGOLAB_URI"))
-        # force connection on a request as the
-        # connect=True parameter of MongoClient seems
-        # to be useless here
-        client.server_info()
-        # noinspection PyUnresolvedReferences
-        db = client.heroku_4ncbq1zd
-        mongo_uri = os.environ.get("MONGOLAB_URI")
+    client = MongoClient("localhost", serverSelectionTimeoutMS=10)
+    # force connection on a request as the
+    # connect=True parameter of MongoClient seems
+    # to be useless here
+    client.server_info()
+    # noinspection PyUnresolvedReferences
+    db = client.tacticdb
+    # mongo_uri = "localhost"
+    mongo_uri ="mongodb://{}:27017/tacticdb".format(host_ip)
 
     if ("ANYONE_CAN_REGISTER" in os.environ) and (os.environ.get("ANYONE_CAN_REGISTER") == "True"):
         ANYONE_CAN_REGISTER = True

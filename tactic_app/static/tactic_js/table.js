@@ -702,7 +702,17 @@ var tableObject = {
     },
 
     clearConsole: function(data_object) {
-        $("#console").html("");
+        // $("#console").html("");
+        $(".log-panel-body").each(function () {
+            if ($(this).hasClass("console-code")) {
+                uid = $(this).attr("id")
+                el = $("#" + uid).parent().find(".log-code-output")
+                el.html("")
+            }
+            else {
+                $($(this).closest(".log-panel")).remove()
+            }
+        });
         $("#console")[0].scrollTop = $("#console")[0].scrollHeight
     },
 

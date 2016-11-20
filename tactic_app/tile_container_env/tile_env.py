@@ -1,8 +1,8 @@
 import sys
 import nltk
 import numpy
-import wordcloud
-from sentiment_tools import vader_sentiment_analyzer, sentiwordnet
+# import wordcloud
+# from sentiment_tools import vader_sentiment_analyzer, sentiwordnet, TacticVader
 import warnings
 
 with warnings.catch_warnings():
