@@ -57,7 +57,6 @@ try:
     client.server_info()
     # noinspection PyUnresolvedReferences
     db = client.tacticdb
-    # mongo_uri = "localhost"
     mongo_uri ="mongodb://{}:27017/tacticdb".format(host_ip)
 
     if ("ANYONE_CAN_REGISTER" in os.environ) and (os.environ.get("ANYONE_CAN_REGISTER") == "True"):

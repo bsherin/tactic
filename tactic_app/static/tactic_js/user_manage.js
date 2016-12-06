@@ -384,6 +384,7 @@ var tile_manager_specifics = {
     ],
     buttons: [
         {"name": "view", "func": "view_func", "button_class": "btn-primary"},
+        {"name": "creator", "func": "creator_view_func", "button_class": "btn-primary"},
         {"name": "load", "func": "load_func", "button_class": "btn-primary"},
         {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-success"},
         {"name": "share", "func": "send_repository_func", "button_class": "btn-warning"},
@@ -394,6 +395,14 @@ var tile_manager_specifics = {
     repository_buttons: [
         {"name": "view", "func": "repository_view_func", "button_class": "btn-primary"}
     ],
+
+    creator_view_func: function (event) {
+        var manager = event.data.manager;
+        var res_name = manager.check_for_selection(manager.res_type);
+        if (res_name == "") return;
+        window.open($SCRIPT_ROOT + '/view_in_creator/' + String(res_name))
+    },
+
     load_func: function (event) {
         var manager = event.data.manager;
         var res_name = manager.check_for_selection("tile");

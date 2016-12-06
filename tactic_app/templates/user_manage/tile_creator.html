@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}{{module_name}}{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{{url_for('static', filename='css/codemirrorthemes/codemirror.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/codemirrorthemes/pastel-on-dark.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/codemirrorthemes/dialog.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/tactic.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/alertify_css/alertify.min.css')}}"/>
+    <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/tactic_alertify_theme.css')}}" />
+    <link rel="stylesheet" href="{{url_for('static', filename='css/jquery-ui.min.css')}}">
+{% endblock %}
+
+{% block morenavbar %}
+    <li><a href="https://github.com/bsherin/tactic/wiki/Module%20Viewer%20Keyboard%20Shortcuts">Keyboard Shortcuts</a></li>
+{% endblock %}
+
+{% block page_content %}
+    <div id="modal-area">
+    </div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-xs-12">
+                <div id="status-area"></div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-8">
+                <div class="row" style="margin-top: 10px">
+                    <div class="btn-toolbar col-xs-12" role="toolbar" >
+                        <div class="btn-group btn-group-sm" role="group">
+                            {% if read_only_string == "" %}
+                            <button type="button" class="btn btn-default" onclick="updateModule()">Save</button>
+                            <button type="button" class="btn btn-default" onclick="saveModuleAs()">Save as ...</button>
+                            <button type="button" class="btn btn-default" onclick="loadModule()">Save and Load</button>
+                            <button type="button" class="btn btn-default" onclick="sendToRepository()">Share</button>
+                            {% else %}
+                            <button type="button" class="btn btn-default" onclick="copyToLibrary()">Copy to Library</button>
+                            {% endif %}
+                            <button type="button" class="btn btn-default" onclick="window.close()">Close</button>
+                        </div>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-default" onclick="changeTheme()">Toggle Theme</button>
+                            <button type="button" class="btn btn-default" onclick="showAPI()">Show API</button>
+                        </div>
+                        <div style="float: right">
+                            <button id="module-name" type="button" class="btn btn-default res-name-button" onclick="renameModule()">{{ module_name }}</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="codearea"></div>
+            </div>
+            <div class="col-xs-4">
+                <div  style="vertical-align: top; margin-left: 5px; margin-top: 10px">
+                    <div class="created"></div>
+                    <div class="form-group" style="margin-bottom: 7px">
+                        <textarea type="text" class="form-control metadata-field" id="tile-tags" rows="1" placeholder="tags" {{read_only_string}}></textarea>
+                    </div>
+                    <div class="form-group">
+                        <textarea class="form-control metadata-field" id="tile-notes" rows="10" placeholder="notes" {{read_only_string}}></textarea>
+                    </div>
+                    <div id="api-area" style="display:none; overflow:scroll">{{api_html | safe}}</div>
+                </div>
+                    <div>
+                      <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active"><a href="#option-module" aria-controls="options" role="tab" data-toggle="tab" value="option">options</a></li>
+                        <li role="presentation"><a href="#export-module" aria-controls="exports" role="tab" data-toggle="tab" value="export">exports</a></li>
+
+                      </ul>
+                        <div class="tab-content">
+                            <div class="resource-module tab-pane fade in active" id="option-module"></div>
+                            <div class="resource-module tab-pane fade" id="export-module"></div>
+                        </div>
+                    </div>
+
+            </div>
+        </div>
+    </div>
+{%  endblock %}
+
+{% block scripts %}
+    <script src="{{url_for('static', filename='js/alertify.js')}}"></script>
+    <script src="{{url_for('static', filename='js/socket.io.js')}}"></script>
+    <script src="{{url_for('static', filename='js/sorttable.js')}}"></script>
+    <script src="{{url_for('static', filename='js/codemirror.js')}}"></script>
+    <script src="{{url_for('static', filename='js/codemirror/search.js')}}"></script>
+    <script src="{{url_for('static', filename='js/codemirror/searchcursor.js')}}"></script>
+    <script src="{{url_for('static', filename='js/codemirror/jump-to-line.js')}}"></script>
+    <script src="{{url_for('static', filename='js/codemirror/dialog.js')}}"></script>
+    <script src="{{url_for('static', filename='js/python.js')}}"></script>
+    <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
+    <script src="{{url_for('static', filename='js/matchbrackets.js')}}"></script>
+    <script src="{{url_for('static', filename='js/closebrackets.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/utilities.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/admin_resource_manager.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/tile_creator.js')}}"></script>
+    <script>
+        var user_id = "{{current_user.get_id()}}";
+        var module_name = "{{module_name}}";
+        console.log(module_name);
+        var view_only = false;
+
+        window.onload = start_post_load;
+        window.onbeforeunload = function(e) {
+            if (dirty()) {
+                return "Any unsaved changes will be lost."
+            }
+        };
+        window.onresize = function () {
+            $(".CodeMirror").css('height', window.innerHeight - $(".CodeMirror").offset().top - 20);
+            $("#api-area").css('height', window.innerHeight - $("#api-area").offset().top - 20);
+        }
+    </script>
+{% endblock %}

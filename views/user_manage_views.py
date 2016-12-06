@@ -677,6 +677,8 @@ class TileManager(ResourceManager):
     def add_rules(self):
         app.add_url_rule('/view_module/<module_name>', "view_module",
                          login_required(self.view_module), methods=['get'])
+        app.add_url_rule('/view_in_creator/<module_name>', "view_in_creator",
+                         login_required(self.view_in_creator), methods=['get'])
         app.add_url_rule('/repository_view_module/<module_name>', "repository_view_module",
                          login_required(self.repository_view_module), methods=['get'])
         app.add_url_rule('/load_tile_module/<tile_module_name>', "load_tile_module",
@@ -723,6 +725,14 @@ class TileManager(ResourceManager):
         return render_template("user_manage/module_viewer.html",
                                module_name=module_name,
                                module_code=module_code,
+                               read_only_string="",
+                               api_html=api_html)
+
+    def view_in_creator(self, module_name):
+        user_obj = current_user
+        module_code = user_obj.get_tile_module(module_name)
+        return render_template("user_manage/tile_creator.html",
+                               module_name=module_name,
                                read_only_string="",
                                api_html=api_html)
 
