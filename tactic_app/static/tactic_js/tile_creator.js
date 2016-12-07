@@ -8,9 +8,9 @@ var savedCode = null;
 var savedTags = null;
 var savedNotes = null;
 var creator_resource_module_template;
-var res_types = ["option"];
-var opt_dict = null;
+var res_types = ["option", "export"];
 var rt_code = null;
+var user_manage_id = guid();
 
 mousetrap.bind("esc", function() {
     clearStatusArea();
@@ -26,7 +26,32 @@ mousetrap.bind(['command+l', 'ctrl+l'], function(e) {
     e.preventDefault()
 });
 
+$("#option-create-button").on("click", createNewOption);
+$("#export-create-button").on("click", createNewExport);
+
 function start_post_load() {
+    if (use_ssl) {
+        socket = io.connect('https://'+ document.domain + ':' + location.port  + '/user_manage');
+    }
+    else {
+        socket = io.connect('http://'+document.domain + ':' + location.port  + '/user_manage');
+    }
+    socket.emit('join', {"user_id":  user_id, "user_manage_id":  user_manage_id});
+    socket.on('update-selector-list', function(data) {
+        var res_type = data.res_type;
+        $("#" + res_type + "-selector").html(data.html);
+        if (data.hasOwnProperty("select")) {
+            select_resource_button(res_type, data.select)
+        }
+        else {
+            select_resource_button(res_type, null)
+        }
+        sorttable.makeSortable($("#" + res_type + "-selector table")[0]);
+        var updated_header = $("#" + res_type + "-selector table th")[0];
+        sorttable.innerSortFunction.apply(updated_header, []);
+    });
+
+    socket.on('doflash', doFlash);
     var data = {};
     data.module_name = module_name;
     $.ajax({
@@ -41,37 +66,75 @@ function start_post_load() {
 }
 
 function parse_success(data) {
-    opt_dict = data.option_dict;
     rt_code = data.render_template_code;
     $.get($SCRIPT_ROOT + "/get_creator_resource_module_template", function(template) {
-        creator_resource_module_template = $(template).filter('#creator-resource-module-template').html(); // tactic_todo problem is here
+        creator_resource_module_template = $(template).filter('#creator-resource-module-template').html();
         optionManager.create_module_html();
+        exportManager.create_module_html();
         // exportManager.create_module_html();
         res_types.forEach(function (element, index, array) {
                 $("#" + element + "-selector").load($SCRIPT_ROOT + "/request_update_creator_selector_list/" + element, function () {
                     select_resource_button(element, null);
                     sorttable.makeSortable($("#" + element + "-selector table")[0]);
-                    var updated_header = $("#" + element + "-selector table th")[2];
-                    // We do the sort below twice to get the most recent dates first.
-                    sorttable.innerSortFunction.apply(updated_header, []);
+                    var updated_header = $("#" + element + "-selector table th")[0];
                     sorttable.innerSortFunction.apply(updated_header, []);
                 })
             });
         $(".resource-module").on("click", ".resource-selector .selector-button", selector_click);
+        optionManager.add_listeners();
+        exportManager.add_listeners();
         continue_loading()
     })
+}
+
+function createNewOption() {
+    var data = {};
+    data.option_name = $("#option-name-input").val();
+    data.option_type = $("#option-type-input").val();
+    $.ajax({
+        url: $SCRIPT_ROOT + "/create_option",
+        contentType : 'application/json',
+        type : 'POST',
+        async: true,
+        data: JSON.stringify(data),
+        dataType: 'json'
+    });
+}
+
+function createNewExport() {
+    var data = {};
+    data.export_name = $("#export-name-input").val();
+    $.ajax({
+        url: $SCRIPT_ROOT + "/create_export",
+        contentType : 'application/json',
+        type : 'POST',
+        async: true,
+        data: JSON.stringify(data),
+        dataType: 'json'
+    });
 }
 
 var option_manager_specifics = {
 
     buttons: [
-        {"name": "refresh", "func": "refresh_container_table", "button_class": "btn btn-info"}
+        {"name": "delete", "func": "delete_option_func", "button_class": "btn btn-danger"},
+        {"name": "refresh", "func": "refresh_option_table", "button_class": "btn btn-info"}
     ],
 
 
-    refresh_container_table: function (event) {
+    refresh_option_table: function (event) {
         var manager = event.data.manager;
-        $.getJSON($SCRIPT_ROOT + '/refresh_container_table');
+        $.getJSON($SCRIPT_ROOT + '/refresh_option_table');
+        event.preventDefault();
+    },
+
+    delete_option_func: function (event) {
+        var manager = event.data.manager;
+        option_name = manager.check_for_selection("option", 0);
+        var confirm_text = "Are you sure that you want to delete option " + option_name + "?";
+        confirmDialog("Delete Option", confirm_text, "do nothing", "delete", function () {
+            $.getJSON($SCRIPT_ROOT + '/delete_option/' + option_name, doFlash);
+        });
         event.preventDefault();
     },
 
@@ -83,6 +146,40 @@ var option_manager_specifics = {
 };
 
 var optionManager = new ResourceManager("option", option_manager_specifics);
+
+var export_manager_specifics = {
+
+    buttons: [
+        {"name": "delete", "func": "delete_export_func", "button_class": "btn btn-danger"},
+        {"name": "refresh", "func": "refresh_export_table", "button_class": "btn btn-info"}
+    ],
+
+
+    refresh_export_table: function (event) {
+        var manager = event.data.manager;
+        $.getJSON($SCRIPT_ROOT + '/refresh_export_table');
+        event.preventDefault();
+    },
+
+    delete_export_func: function (event) {
+        var manager = event.data.manager;
+        export_name = manager.check_for_selection("export", 0);
+        var confirm_text = "Are you sure that you want to delete export " + export_name + "?";
+        confirmDialog("Delete Export", confirm_text, "do nothing", "delete", function () {
+            $.getJSON($SCRIPT_ROOT + '/delete_export/' + export_name, doFlash);
+        });
+        event.preventDefault();
+    },
+
+    create_module_html: function () {
+        var res = Mustache.to_html(creator_resource_module_template, this);
+        $("#" + this.res_type + "-module").html(res);
+    }
+
+};
+
+var exportManager = new ResourceManager("export", export_manager_specifics);
+
 
 function continue_loading() {
     var codearea = document.getElementById("codearea");

@@ -27,7 +27,7 @@
         </div>
 
         <div class="row">
-            <div class="col-xs-8">
+            <div class="col-xs-6">
                 <div class="row" style="margin-top: 10px">
                     <div class="btn-toolbar col-xs-12" role="toolbar" >
                         <div class="btn-group btn-group-sm" role="group">
@@ -53,7 +53,7 @@
 
                 <div id="codearea"></div>
             </div>
-            <div class="col-xs-4">
+            <div class="col-xs-6">
                 <div  style="vertical-align: top; margin-left: 5px; margin-top: 10px">
                     <div class="created"></div>
                     <div class="form-group" style="margin-bottom: 7px">
@@ -66,13 +66,39 @@
                 </div>
                     <div>
                       <ul class="nav nav-tabs" role="tablist">
-                        <li role="presentation" class="active"><a href="#option-module" aria-controls="options" role="tab" data-toggle="tab" value="option">options</a></li>
-                        <li role="presentation"><a href="#export-module" aria-controls="exports" role="tab" data-toggle="tab" value="export">exports</a></li>
+                        <li role="presentation" class="active"><a href="#option-module-outer" aria-controls="options" role="tab" data-toggle="tab" value="option">options</a></li>
+                        <li role="presentation"><a href="#export-module-outer" aria-controls="exports" role="tab" data-toggle="tab" value="export">exports</a></li>
 
                       </ul>
                         <div class="tab-content">
-                            <div class="resource-module tab-pane fade in active" id="option-module"></div>
-                            <div class="resource-module tab-pane fade" id="export-module"></div>
+                            <div class="tab-pane fade in active row" id="option-module-outer">
+                                <form class="form-inline row indent-row" style= "margin-top: 15px">
+                                      <div class="form-group">
+                                        <label for="option-name-input">Name</label>
+                                        <input type="text" class="form-control" id="option-name-input" placeholder="opt_name">
+                                      </div>
+                                    <div class="form-group">
+                                        <label for="option-type-input">type</label>
+                                        <select class="form-control" id="option-type-input">
+                                            <option value="int">int</option>
+                                            <option value="list_select">list_select</option>
+                                        </select>
+
+                                      </div>
+                                    <button type="button" id="option-create-button" class="btn btn-default">Create</button>
+                                </form>
+                                <div class="resource-module" id="option-module"></div>
+                            </div>
+                            <div class="tab-pane fade row" id="export-module-outer">
+                                <form class="form-inline row indent-row" style= "margin-top: 15px">
+                                      <div class="form-group">
+                                        <label for="export-name-input">Name</label>
+                                        <input type="text" class="form-control" id="export-name-input" placeholder="export_name">
+                                      </div>
+                                    <button type="button" id="export-create-button" class="btn btn-default">Create</button>
+                                </form>
+                                <div class="resource-module" id="export-module"></div>
+                            </div>
                         </div>
                     </div>
 
@@ -100,6 +126,7 @@
     <script>
         var user_id = "{{current_user.get_id()}}";
         var module_name = "{{module_name}}";
+        var use_ssl = "{{use_ssl}}"=="True";
         console.log(module_name);
         var view_only = false;
 

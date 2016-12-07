@@ -734,7 +734,8 @@ class TileManager(ResourceManager):
         return render_template("user_manage/tile_creator.html",
                                module_name=module_name,
                                read_only_string="",
-                               api_html=api_html)
+                               api_html=api_html,
+                               use_ssl=use_ssl)
 
     def repository_view_module(self, module_name):
         user_obj = repository_user

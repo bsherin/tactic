@@ -45,6 +45,16 @@ def load_source():
         return handle_exception(ex, "Error loading source")
     return jsonify(result)
 
+@app.route('/get_options', methods=["get", "post"])
+def get_options():
+    try:
+        tile_instance = class_info["tile_class"](0, 0)
+        opt_dict = tile_instance.options
+        export_list = tile_instance.exports
+    except Exception as ex:
+        return handle_exception(ex, "Error extracting options from source")
+    return jsonify({"success": True, "opt_dict": opt_dict, "export_list": export_list})
+
 # This should only be used in the tester tile.
 @app.route('/clear_and_load_code', methods=["get", "post"])
 def clear_and_load_code():
