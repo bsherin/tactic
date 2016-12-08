@@ -2,6 +2,7 @@
  * Created by bls910 on 10/4/15.
  */
 var current_theme = "default";
+var current_theme = "default";
 var mousetrap = new Mousetrap();
 var myCodeMirror;
 var savedCode = null;
@@ -65,26 +66,45 @@ function start_post_load() {
     });
 }
 
+function createCMArea(codearea) {
+    cmobject = CodeMirror(codearea, {
+        lineNumbers: true,
+        matchBrackets: true,
+        autoCloseBrackets: true,
+        indentUnit: 4,
+        readOnly: false
+    });
+    $(codearea).find(".CodeMirror").resizable({handles: "se"});
+    $(codearea).find(".CodeMirror").height(100)
+    return cmobject
+}
+
 function parse_success(data) {
-    rt_code = data.render_template_code;
-    $.get($SCRIPT_ROOT + "/get_creator_resource_module_template", function(template) {
-        creator_resource_module_template = $(template).filter('#creator-resource-module-template').html();
-        optionManager.create_module_html();
-        exportManager.create_module_html();
-        // exportManager.create_module_html();
-        res_types.forEach(function (element, index, array) {
-                $("#" + element + "-selector").load($SCRIPT_ROOT + "/request_update_creator_selector_list/" + element, function () {
-                    select_resource_button(element, null);
-                    sorttable.makeSortable($("#" + element + "-selector table")[0]);
-                    var updated_header = $("#" + element + "-selector table th")[0];
-                    sorttable.innerSortFunction.apply(updated_header, []);
-                })
-            });
-        $(".resource-module").on("click", ".resource-selector .selector-button", selector_click);
-        optionManager.add_listeners();
-        exportManager.add_listeners();
-        continue_loading()
-    })
+    if (!data.success) {
+        doFlash(data)
+    }
+    else {
+        rt_code = data.render_template_code;
+        $.get($SCRIPT_ROOT + "/get_creator_resource_module_template", function(template) {
+            creator_resource_module_template = $(template).filter('#creator-resource-module-template').html();
+            optionManager.create_module_html();
+            exportManager.create_module_html();
+            // exportManager.create_module_html();
+            res_types.forEach(function (element, index, array) {
+                    $("#" + element + "-selector").load($SCRIPT_ROOT + "/request_update_creator_selector_list/" + element, function () {
+                        select_resource_button(element, null);
+                        sorttable.makeSortable($("#" + element + "-selector table")[0]);
+                        var updated_header = $("#" + element + "-selector table th")[0];
+                        sorttable.innerSortFunction.apply(updated_header, []);
+                    })
+                });
+            $(".resource-module").on("click", ".resource-selector .selector-button", selector_click);
+            optionManager.add_listeners();
+            exportManager.add_listeners();
+            continue_loading()
+        })
+    }
+
 }
 
 function createNewOption() {

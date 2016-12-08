@@ -6,6 +6,7 @@ import tactic_app
 from tactic_app import app
 from tactic_app.global_tile_management import global_tile_manager
 from tactic_app.docker_functions import send_direct_request_to_container
+from tactic_app.function_recognizer import get_functions_full_code
 import re
 
 
@@ -57,7 +58,15 @@ def parse_code():
     render_template_code = re.findall(r"def render_content.*\n([\s\S]*?)(def|$)", module_code)[0][0]
     render_template_code = re.sub(r"\n        ", "\n", render_template_code)
     render_template_code = re.sub(r"^        ", "", render_template_code)
-    return jsonify({"success": True, "option_dict": option_manager.option_dict, "render_template_code": render_template_code})
+
+    func_dict = get_functions_full_code(module_code)
+    extra_functions = ""
+    for func_name, func_code in func_dict.items():
+        if func_name not in ["__init__", "render_content"]:
+            extra_functions = func_code + "\n"
+    return jsonify({"success": True, "option_dict": option_manager.option_dict,
+                    "render_template_code": render_template_code,
+                    "extra_functions": extra_functions})
 
 class OptionManager(ResourceManager):
 

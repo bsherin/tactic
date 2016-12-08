@@ -7,6 +7,7 @@ from tile_base import clear_and_exec_user_code, TileBase
 import cPickle
 from bson.binary import Binary
 import inspect
+import types
 import gevent
 import sys
 sys.stdout = sys.stderr
@@ -48,9 +49,11 @@ def load_source():
 @app.route('/get_options', methods=["get", "post"])
 def get_options():
     try:
-        tile_instance = class_info["tile_class"](0, 0)
+        the_class = class_info["tile_class"]
+        tile_instance = the_class(0, 0)
         opt_dict = tile_instance.options
         export_list = tile_instance.exports
+
     except Exception as ex:
         return handle_exception(ex, "Error extracting options from source")
     return jsonify({"success": True, "opt_dict": opt_dict, "export_list": export_list})
