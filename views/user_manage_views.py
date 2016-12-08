@@ -729,13 +729,27 @@ class TileManager(ResourceManager):
                                api_html=api_html)
 
     def view_in_creator(self, module_name):
+        option_types = [{"name": "text"},
+                        {"name": "int"},
+                        {"name": "boolean"},
+                        {"name": "textarea"},
+                        {"name": "codearea"},
+                        {"name": "document_select"},
+                        {"name": "list_select"},
+                        {"name": "palette_select"},
+                        {"name": "pipe_select"},
+                        {"name": "custom_list"},
+                        {"name": "function_select"},
+                        {"name": "class_select"},
+                        {"name": "pipe_select"}]
         user_obj = current_user
         module_code = user_obj.get_tile_module(module_name)
         return render_template("user_manage/tile_creator.html",
                                module_name=module_name,
                                read_only_string="",
                                api_html=api_html,
-                               use_ssl=use_ssl)
+                               use_ssl=use_ssl,
+                               option_types=option_types)
 
     def repository_view_module(self, module_name):
         user_obj = repository_user

@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 from user_manage_views import ResourceManager
 
 import tactic_app
-from tactic_app import app
+from tactic_app import app, socketio
 from tactic_app.global_tile_management import global_tile_manager
 from tactic_app.docker_functions import send_direct_request_to_container
 from tactic_app.function_recognizer import get_functions_full_code
@@ -41,6 +41,14 @@ def retrieve_options():
     res_dict = result.json()
     return res_dict
 
+def remove_indents(the_str, number_indents):
+    indent_unit = "    "
+    total_indent = indent_unit * number_indents
+    result = re.sub(r"\n" + total_indent, "\n", the_str)
+    result = re.sub(r"^" + total_indent, "", result)
+    return result
+
+
 @app.route('/parse_code', methods=['GET', 'POST'])
 @login_required
 def parse_code():
@@ -56,14 +64,21 @@ def parse_code():
 
     module_code = current_user.get_tile_module(module_name)
     render_template_code = re.findall(r"def render_content.*\n([\s\S]*?)(def|$)", module_code)[0][0]
-    render_template_code = re.sub(r"\n        ", "\n", render_template_code)
-    render_template_code = re.sub(r"^        ", "", render_template_code)
+    # render_template_code = re.sub(r"\n        ", "\n", render_template_code)
+    # render_template_code = re.sub(r"^        ", "", render_template_code)
+    render_template_code = remove_indents(render_template_code, 2)
 
     func_dict = get_functions_full_code(module_code)
     extra_functions = ""
     for func_name, func_code in func_dict.items():
-        if func_name not in ["__init__", "render_content"]:
-            extra_functions = func_code + "\n"
+        if func_name not in ["__init__", "render_content", "options"]:
+            if len(extra_functions) != 0 and extra_functions[-1] != "\n":
+                extra_functions += "\n"
+            extra_functions += func_code
+
+    extra_functions = remove_indents(extra_functions, 1)
+
+    method_manager.extra_code = extra_functions
     return jsonify({"success": True, "option_dict": option_manager.option_dict,
                     "render_template_code": render_template_code,
                     "extra_functions": extra_functions})
@@ -155,3 +170,31 @@ class ExportManager(ResourceManager):
 
 export_manager = ExportManager("export")
 export_manager.export_list = {}
+
+class MethodManager(ResourceManager):
+
+    def add_rules(self):
+        app.add_url_rule('/refresh_methods', "refresh_methods",
+                         login_required(self.refresh_methods), methods=['get'])
+        app.add_url_rule('/get_extra_code', "get_extra_code",
+                         login_required(self.get_extra_code), methods=['get'])
+
+
+    def refresh_methods(self):
+        self.update_selector_list()
+        return jsonify({"success": True})
+
+
+    def get_extra_code(self, user_obj=None):
+        return jsonify({"success": True, "extra_code": self.extra_code})
+
+    def update_selector_list(self, select=None, user_obj=None):
+        if user_obj is None:
+            user_obj = current_user
+
+        socketio.emit('update-extra-methods',
+                      {"extra_code": self.get_extra_code(user_obj=user_obj)},
+                      namespace='/user_manage', room=user_obj.get_id())
+
+method_manager = MethodManager("method")
+method_manager.raw_code = ""

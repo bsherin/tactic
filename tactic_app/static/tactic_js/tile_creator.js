@@ -1,7 +1,7 @@
 /**
  * Created by bls910 on 10/4/15.
  */
-var current_theme = "default";
+
 var current_theme = "default";
 var mousetrap = new Mousetrap();
 var myCodeMirror;
@@ -9,9 +9,15 @@ var savedCode = null;
 var savedTags = null;
 var savedNotes = null;
 var creator_resource_module_template;
-var res_types = ["option", "export"];
+var res_types = ["option", "export", "method"];
 var rt_code = null;
 var user_manage_id = guid();
+
+$(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function (e) {
+    if ($(e.currentTarget).attr("value") == "method") {
+        methodManager.cmobject.refresh()
+    }
+});
 
 mousetrap.bind("esc", function() {
     clearStatusArea();
@@ -51,6 +57,11 @@ function start_post_load() {
         var updated_header = $("#" + res_type + "-selector table th")[0];
         sorttable.innerSortFunction.apply(updated_header, []);
     });
+    socket.on("update-extra-methods", function(data){
+        methodManager.raw_code = data.extra_code;
+        methodManager.cmobject.setValue(methodManager.raw_code);
+        methodManager.cmobject.refresh()
+    });
 
     socket.on('doflash', doFlash);
     var data = {};
@@ -66,18 +77,7 @@ function start_post_load() {
     });
 }
 
-function createCMArea(codearea) {
-    cmobject = CodeMirror(codearea, {
-        lineNumbers: true,
-        matchBrackets: true,
-        autoCloseBrackets: true,
-        indentUnit: 4,
-        readOnly: false
-    });
-    $(codearea).find(".CodeMirror").resizable({handles: "se"});
-    $(codearea).find(".CodeMirror").height(100)
-    return cmobject
-}
+
 
 function parse_success(data) {
     if (!data.success) {
@@ -89,14 +89,25 @@ function parse_success(data) {
             creator_resource_module_template = $(template).filter('#creator-resource-module-template').html();
             optionManager.create_module_html();
             exportManager.create_module_html();
+            methodManager.create_module_html();
             // exportManager.create_module_html();
             res_types.forEach(function (element, index, array) {
-                    $("#" + element + "-selector").load($SCRIPT_ROOT + "/request_update_creator_selector_list/" + element, function () {
+                    if (element == "method") {
+                        $.getJSON($SCRIPT_ROOT + "/get_extra_code", function (data) {
+                            methodManager.raw_code = data.extra_code;
+                            methodManager.cmobject.setValue(methodManager.raw_code);
+                            methodManager.cmobject.refresh()
+                        })
+                    }
+                    else {
+                        $("#" + element + "-selector").load($SCRIPT_ROOT + "/request_update_creator_selector_list/" + element, function () {
                         select_resource_button(element, null);
                         sorttable.makeSortable($("#" + element + "-selector table")[0]);
                         var updated_header = $("#" + element + "-selector table th")[0];
                         sorttable.innerSortFunction.apply(updated_header, []);
                     })
+                    }
+
                 });
             $(".resource-module").on("click", ".resource-selector .selector-button", selector_click);
             optionManager.add_listeners();
@@ -167,6 +178,7 @@ var option_manager_specifics = {
 
 var optionManager = new ResourceManager("option", option_manager_specifics);
 
+
 var export_manager_specifics = {
 
     buttons: [
@@ -196,9 +208,51 @@ var export_manager_specifics = {
         $("#" + this.res_type + "-module").html(res);
     }
 
+
 };
 
 var exportManager = new ResourceManager("export", export_manager_specifics);
+
+
+function createCMArea(codearea) {
+    cmobject = CodeMirror(codearea, {
+        lineNumbers: true,
+        matchBrackets: true,
+        autoCloseBrackets: true,
+        indentUnit: 4,
+        readOnly: false
+    });
+    $(codearea).find(".CodeMirror").resizable({handles: "se"});
+    $(codearea).find(".CodeMirror").height(100);
+    return cmobject
+}
+
+var method_manager_specifics = {
+
+    // buttons: [,
+    //     {"name": "refresh", "func": "refresh_methods", "button_class": "btn btn-info"}
+    // ],
+
+    add_listeners: function () {
+        var x = 3
+    },
+
+
+    refresh_methods: function (event) {
+        var manager = event.data.manager;
+        $.getJSON($SCRIPT_ROOT + '/refresh_methods');
+        event.preventDefault();
+    },
+
+
+    create_module_html: function () {
+        var codearea = document.getElementById("method-module");
+        this.cmobject = createCMArea(codearea);
+    }
+
+};
+
+var methodManager = new ResourceManager("method", method_manager_specifics);
 
 
 function continue_loading() {

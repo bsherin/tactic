@@ -68,6 +68,7 @@
                       <ul class="nav nav-tabs" role="tablist">
                         <li role="presentation" class="active"><a href="#option-module-outer" aria-controls="options" role="tab" data-toggle="tab" value="option">options</a></li>
                         <li role="presentation"><a href="#export-module-outer" aria-controls="exports" role="tab" data-toggle="tab" value="export">exports</a></li>
+                       <li role="presentation"><a href="#method-module-outer" aria-controls="methods" role="tab" data-toggle="tab" value="method">methods</a></li>
 
                       </ul>
                         <div class="tab-content">
@@ -80,8 +81,9 @@
                                     <div class="form-group">
                                         <label for="option-type-input">type</label>
                                         <select class="form-control" id="option-type-input">
-                                            <option value="int">int</option>
-                                            <option value="list_select">list_select</option>
+                                            {% for option_type in option_types %}
+                                                <option value="{{option_type.name|e}}">{{option_type.name|e}}</option>
+                                            {% endfor %}
                                         </select>
 
                                       </div>
@@ -98,6 +100,9 @@
                                     <button type="button" id="export-create-button" class="btn btn-default">Create</button>
                                 </form>
                                 <div class="resource-module" id="export-module"></div>
+                            </div>
+                            <div class="tab-pane fade row" id="method-module-outer">
+                                <div class="resource-module" id="method-module"></div>
                             </div>
                         </div>
                     </div>
