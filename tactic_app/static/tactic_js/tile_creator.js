@@ -154,7 +154,7 @@ var option_manager_specifics = {
     },
 
     createNewOption: function (event) {
-        manager = event.data.manager;
+        manager = optionManager;
         var data = {};
         option_name = $("#option-name-input").val();
         option_type = $("#option-type-input").val();
@@ -239,7 +239,7 @@ var export_manager_specifics = {
     },
 
     createNewExport: function (event) {
-        manager = event.data.manager;
+        manager = exportManager;
         var data = {};
         export_name = $("#export-name-input").val();
         if (manager.export_list.indexOf(export_name) != -1) {
