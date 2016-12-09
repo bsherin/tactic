@@ -20,6 +20,7 @@ from tactic_app.docker_functions import send_direct_request_to_container
 
 from tactic_app.docker_functions import create_container, get_address
 from tactic_app.integrated_docs import api_html
+from tactic_app.function_recognizer import get_functions_full_code
 import traceback
 
 AUTOSPLIT = True
@@ -743,7 +744,6 @@ class TileManager(ResourceManager):
                         {"name": "class_select"},
                         {"name": "pipe_select"}]
         user_obj = current_user
-        module_code = user_obj.get_tile_module(module_name)
         return render_template("user_manage/tile_creator.html",
                                module_name=module_name,
                                read_only_string="",

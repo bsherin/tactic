@@ -1,0 +1,17 @@
+@user_tile
+class {{class_name}}(TileBase):
+    category = {{category}}
+    exports = {{export_list}}
+
+    def __init__(self, main_id, tile_id, tile_name=None):
+{{init_body}}
+        return
+
+    @property
+    def options(self):
+{{options_body}}
+
+{{extra_methods}}
+
+    def render_content(self):
+{{render_content_body}}

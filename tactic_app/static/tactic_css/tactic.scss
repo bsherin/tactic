@@ -217,6 +217,21 @@ a[role="tab"] {
     width: 350px
 }
 
+/* creator */
+
+#creator-resources {
+    label {
+        margin-bottom: 0px;
+        margin-left: 4px
+    }
+    .indent-row {
+        margin-bottom: 0px
+    }
+    .resource-module {
+        margin: 0px;
+    }
+}
+
     /* Tile related */
 
 .tile-panel-heading {

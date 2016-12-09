@@ -706,7 +706,7 @@ var tableObject = {
         $(".log-panel-body").each(function () {
             if ($(this).hasClass("console-code")) {
 
-                uid = $(this).attr("id")
+                uid = $(this).attr("id");
                 el = $("#" + uid).parent().find(".log-code-output")
                 el.html("")
             }

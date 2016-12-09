@@ -33,8 +33,6 @@ mousetrap.bind(['command+l', 'ctrl+l'], function(e) {
     e.preventDefault()
 });
 
-$("#option-create-button").on("click", createNewOption);
-$("#export-create-button").on("click", createNewExport);
 
 function start_post_load() {
     if (use_ssl) {
@@ -44,24 +42,6 @@ function start_post_load() {
         socket = io.connect('http://'+document.domain + ':' + location.port  + '/user_manage');
     }
     socket.emit('join', {"user_id":  user_id, "user_manage_id":  user_manage_id});
-    socket.on('update-selector-list', function(data) {
-        var res_type = data.res_type;
-        $("#" + res_type + "-selector").html(data.html);
-        if (data.hasOwnProperty("select")) {
-            select_resource_button(res_type, data.select)
-        }
-        else {
-            select_resource_button(res_type, null)
-        }
-        sorttable.makeSortable($("#" + res_type + "-selector table")[0]);
-        var updated_header = $("#" + res_type + "-selector table th")[0];
-        sorttable.innerSortFunction.apply(updated_header, []);
-    });
-    socket.on("update-extra-methods", function(data){
-        methodManager.raw_code = data.extra_code;
-        methodManager.cmobject.setValue(methodManager.raw_code);
-        methodManager.cmobject.refresh()
-    });
 
     socket.on('doflash', doFlash);
     var data = {};
@@ -77,37 +57,22 @@ function start_post_load() {
     });
 }
 
-
-
 function parse_success(data) {
     if (!data.success) {
         doFlash(data)
     }
     else {
         rt_code = data.render_template_code;
+        optionManager.option_dict = data.option_dict;
+        exportManager.export_list = data.export_list;
+        methodManager.extra_functions = data.extra_functions;
         $.get($SCRIPT_ROOT + "/get_creator_resource_module_template", function(template) {
             creator_resource_module_template = $(template).filter('#creator-resource-module-template').html();
-            optionManager.create_module_html();
-            exportManager.create_module_html();
-            methodManager.create_module_html();
-            // exportManager.create_module_html();
-            res_types.forEach(function (element, index, array) {
-                    if (element == "method") {
-                        $.getJSON($SCRIPT_ROOT + "/get_extra_code", function (data) {
-                            methodManager.raw_code = data.extra_code;
-                            methodManager.cmobject.setValue(methodManager.raw_code);
-                            methodManager.cmobject.refresh()
-                        })
-                    }
-                    else {
-                        $("#" + element + "-selector").load($SCRIPT_ROOT + "/request_update_creator_selector_list/" + element, function () {
-                        select_resource_button(element, null);
-                        sorttable.makeSortable($("#" + element + "-selector table")[0]);
-                        var updated_header = $("#" + element + "-selector table th")[0];
-                        sorttable.innerSortFunction.apply(updated_header, []);
-                    })
-                    }
+            res_managers = [optionManager, exportManager, methodManager];
 
+            res_managers.forEach(function (manager, index, array) {
+                manager.create_module_html();
+                manager.fill_content();
                 });
             $(".resource-module").on("click", ".resource-selector .selector-button", selector_click);
             optionManager.add_listeners();
@@ -118,32 +83,6 @@ function parse_success(data) {
 
 }
 
-function createNewOption() {
-    var data = {};
-    data.option_name = $("#option-name-input").val();
-    data.option_type = $("#option-type-input").val();
-    $.ajax({
-        url: $SCRIPT_ROOT + "/create_option",
-        contentType : 'application/json',
-        type : 'POST',
-        async: true,
-        data: JSON.stringify(data),
-        dataType: 'json'
-    });
-}
-
-function createNewExport() {
-    var data = {};
-    data.export_name = $("#export-name-input").val();
-    $.ajax({
-        url: $SCRIPT_ROOT + "/create_export",
-        contentType : 'application/json',
-        type : 'POST',
-        async: true,
-        data: JSON.stringify(data),
-        dataType: 'json'
-    });
-}
 
 var option_manager_specifics = {
 
@@ -152,31 +91,100 @@ var option_manager_specifics = {
         {"name": "refresh", "func": "refresh_option_table", "button_class": "btn btn-info"}
     ],
 
+    fill_content: function () {
+        data = {"option_dict": this.option_dict}
+        $.ajax({
+            url: $SCRIPT_ROOT + "/get_option_table",
+            contentType : 'application/json',
+            type : 'POST',
+            async: true,
+            data: JSON.stringify(data),
+            dataType: 'json',
+            success: function (result) {
+                if (!result.success) {
+                    doFlash(result)
+                }
+                else {
+                    $("#option-selector").html(result.html);
+                select_resource_button("option", null)
+                sorttable.makeSortable($("#option-selector table")[0]);
+                var updated_header = $("#option-selector table th")[0];
+                sorttable.innerSortFunction.apply(updated_header, []);
+                }
+            }
+        });
+    },
 
-    refresh_option_table: function (event) {
-        var manager = event.data.manager;
-        $.getJSON($SCRIPT_ROOT + '/refresh_option_table');
-        event.preventDefault();
+    refresh_option_table: function () {
+        this.fill_content()
     },
 
     delete_option_func: function (event) {
-        var manager = event.data.manager;
+        manager = event.data.manager;
         option_name = manager.check_for_selection("option", 0);
         var confirm_text = "Are you sure that you want to delete option " + option_name + "?";
         confirmDialog("Delete Option", confirm_text, "do nothing", "delete", function () {
-            $.getJSON($SCRIPT_ROOT + '/delete_option/' + option_name, doFlash);
+            var index = manager.option_index(option_name);
+            manager.option_dict.splice(index, 1);
+            manager.fill_content()
         });
-        event.preventDefault();
     },
 
     create_module_html: function () {
         var res = Mustache.to_html(creator_resource_module_template, this);
-        $("#" + this.res_type + "-module").html(res);
-    }
+        $("#option-module").html(res);
+    },
 
+    option_index: function(option_name) {
+        for (i=0; i < this.option_dict.length; ++i) {
+            if (option_name == this.option_dict[i].name) {
+                return i
+            }
+        }
+        return -1
+    },
+
+    option_exists: function(option_name) {
+        for (i=0; i < this.option_dict.length; ++i) {
+            if (option_name == this.option_dict[i].name) {
+                return true
+            }
+        }
+        return false
+    },
+
+    createNewOption: function (event) {
+        manager = event.data.manager;
+        var data = {};
+        option_name = $("#option-name-input").val();
+        option_type = $("#option-type-input").val();
+        option_default = $("#option-default-input").val();
+        if (option_name.length == 0) {
+            doFlash({"message": "Specify an option name.", "alert_type": "alert-warning"})
+        }
+        else if (manager.option_exists(option_name)) {
+            doFlash({"message": "Option name exists.", "alert_type": "alert-warning"})
+        }
+        else {
+            new_option = {"name": option_name, "type": option_type};
+            if (option_default.length > 0) {
+                if (option_type == "int") {
+                    option_default = parseInt(option_default)
+                }
+                else if (option_type == "boolean") {
+                    option_default = (option_default == "true") || (option_default == "True");
+                    option_default = bool(option_default)
+                }
+                new_option["default"] = option_default;
+            }
+            manager.option_dict.push(new_option);
+            optionManager.fill_content();
+        }
+    }
 };
 
 var optionManager = new ResourceManager("option", option_manager_specifics);
+$("#option-create-button").on("click", optionManager.createNewOption);
 
 
 var export_manager_specifics = {
@@ -186,11 +194,32 @@ var export_manager_specifics = {
         {"name": "refresh", "func": "refresh_export_table", "button_class": "btn btn-info"}
     ],
 
+    fill_content: function () {
+        data = {"export_list": this.export_list};
+        $.ajax({
+            url: $SCRIPT_ROOT + "/get_export_table",
+            contentType : 'application/json',
+            type : 'POST',
+            async: true,
+            data: JSON.stringify(data),
+            dataType: 'json',
+            success: function (result) {
+                if (!result.success) {
+                    doFlash(result)
+                }
+                else {
+                    $("#export-selector").html(result.html);
+                select_resource_button("export", null)
+                sorttable.makeSortable($("#export-selector table")[0]);
+                var updated_header = $("export-selector table th")[0];
+                sorttable.innerSortFunction.apply(updated_header, []);
+                }
+            }
+        });
+    },
 
-    refresh_export_table: function (event) {
-        var manager = event.data.manager;
-        $.getJSON($SCRIPT_ROOT + '/refresh_export_table');
-        event.preventDefault();
+    refresh_export_table: function () {
+        this.fill_content()
     },
 
     delete_export_func: function (event) {
@@ -198,21 +227,33 @@ var export_manager_specifics = {
         export_name = manager.check_for_selection("export", 0);
         var confirm_text = "Are you sure that you want to delete export " + export_name + "?";
         confirmDialog("Delete Export", confirm_text, "do nothing", "delete", function () {
-            $.getJSON($SCRIPT_ROOT + '/delete_export/' + export_name, doFlash);
+            var index = manager.export_list.indexOf(export_name);
+            manager.export_list.splice(index, 1);
+            manager.fill_content()
         });
-        event.preventDefault();
     },
 
     create_module_html: function () {
         var res = Mustache.to_html(creator_resource_module_template, this);
-        $("#" + this.res_type + "-module").html(res);
+        $("#export-module").html(res);
+    },
+
+    createNewExport: function (event) {
+        manager = event.data.manager;
+        var data = {};
+        export_name = $("#export-name-input").val();
+        if (manager.export_list.indexOf(export_name) != -1) {
+            doFlash({"message": "Export already exists.", "alert_type": "alert-warning"})
+        }
+        else {
+            manager.export_list.push(export_name);
+            manager.fill_content()
+        }
     }
-
-
 };
 
 var exportManager = new ResourceManager("export", export_manager_specifics);
-
+$("#export-create-button").on("click", exportManager.createNewExport);
 
 function createCMArea(codearea) {
     cmobject = CodeMirror(codearea, {
@@ -229,21 +270,17 @@ function createCMArea(codearea) {
 
 var method_manager_specifics = {
 
-    // buttons: [,
-    //     {"name": "refresh", "func": "refresh_methods", "button_class": "btn btn-info"}
-    // ],
-
     add_listeners: function () {
         var x = 3
     },
 
-
-    refresh_methods: function (event) {
-        var manager = event.data.manager;
-        $.getJSON($SCRIPT_ROOT + '/refresh_methods');
-        event.preventDefault();
+    fill_content: function () {
+        this.cmobject.setValue(this.extra_functions)
     },
 
+    refresh_methods: function () {
+        this.fill_content()
+    },
 
     create_module_html: function () {
         var codearea = document.getElementById("method-module");
