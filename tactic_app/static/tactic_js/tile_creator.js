@@ -117,6 +117,7 @@ var option_manager_specifics = {
 
     refresh_option_table: function () {
         this.fill_content()
+        return false
     },
 
     delete_option_func: function (event) {
@@ -128,6 +129,7 @@ var option_manager_specifics = {
             manager.option_dict.splice(index, 1);
             manager.fill_content()
         });
+        return false
     },
 
     create_module_html: function () {
@@ -180,6 +182,7 @@ var option_manager_specifics = {
             manager.option_dict.push(new_option);
             optionManager.fill_content();
         }
+        return false
     }
 };
 
@@ -211,7 +214,7 @@ var export_manager_specifics = {
                     $("#export-selector").html(result.html);
                 select_resource_button("export", null)
                 sorttable.makeSortable($("#export-selector table")[0]);
-                var updated_header = $("export-selector table th")[0];
+                var updated_header = $("#export-selector table th")[0];
                 sorttable.innerSortFunction.apply(updated_header, []);
                 }
             }
@@ -220,6 +223,7 @@ var export_manager_specifics = {
 
     refresh_export_table: function () {
         this.fill_content()
+        return false
     },
 
     delete_export_func: function (event) {
@@ -231,6 +235,7 @@ var export_manager_specifics = {
             manager.export_list.splice(index, 1);
             manager.fill_content()
         });
+        return false
     },
 
     create_module_html: function () {
@@ -249,6 +254,7 @@ var export_manager_specifics = {
             manager.export_list.push(export_name);
             manager.fill_content()
         }
+        return false
     }
 };
 
