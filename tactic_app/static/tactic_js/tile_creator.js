@@ -135,6 +135,15 @@ var option_manager_specifics = {
     create_module_html: function () {
         var res = Mustache.to_html(creator_resource_module_template, this);
         $("#option-module").html(res);
+        $("#option-type-input").on("change", function () {
+            option_type = $("#option-type-input").val();
+            if (option_type == "custom_list") {
+                $("#special-list-group").css("display", "inline-block")
+            }
+            else {
+                $("#special-list-group").css("display", "none")
+            }
+        })
     },
 
     option_index: function(option_name) {
@@ -155,6 +164,16 @@ var option_manager_specifics = {
         return false
     },
 
+    getInteger: function(val) {
+        i = parseInt(val);
+        if (isNaN(i) ||  i != parseFloat(val)) {
+            return false
+        }
+        else {
+            return i
+        }
+    },
+
     createNewOption: function (event) {
         manager = optionManager;
         var data = {};
@@ -171,13 +190,23 @@ var option_manager_specifics = {
             new_option = {"name": option_name, "type": option_type};
             if (option_default.length > 0) {
                 if (option_type == "int") {
-                    option_default = parseInt(option_default)
+                    option_default = manager.getInteger(option_default);
+                    if (!option_default) {
+                        doFlash({"message": "Invalid default value.", "alert_type": "alert-warning"})
+                        return false
+                    }
                 }
                 else if (option_type == "boolean") {
+                    if (["true", "True", "false", "false"].indexOf(option_default) == -1) {
+                        doFlash({"message": "Invalid default value.", "alert_type": "alert-warning"})
+                        return false
+                    }
                     option_default = (option_default == "true") || (option_default == "True");
-                    option_default = bool(option_default)
                 }
                 new_option["default"] = option_default;
+            }
+            if (option_type == "custom_list"){
+                new_option["special_list"] = $("#option-list-input").val();
             }
             manager.option_dict.push(new_option);
             optionManager.fill_content();
@@ -249,6 +278,7 @@ var export_manager_specifics = {
         export_name = $("#export-name-input").val();
         if (manager.export_list.indexOf(export_name) != -1) {
             doFlash({"message": "Export already exists.", "alert_type": "alert-warning"})
+            return false
         }
         else {
             manager.export_list.push(export_name);

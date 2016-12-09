@@ -134,6 +134,8 @@ a[role="tab"] {
   margin-bottom: 0px; }
 #creator-resources .resource-module {
   margin: 0px; }
+#creator-resources input {
+  width: 150px; }
 
 /* Tile related */
 .tile-panel-heading .close .glyphicon {

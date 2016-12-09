@@ -82,7 +82,7 @@ class OptionManager(ResourceManager):
 
     # noinspection PyMethodOverriding
     def build_resource_array(self, option_dict):
-        fields = ["name", "type", "default", "spec_list", "tags"]
+        fields = ["name", "type", "default", "special_list", "tags"]
         larray = [["Name", "Type", "Default", "Special List", "Tags"]]
         for opt in option_dict:
             for f in fields:
