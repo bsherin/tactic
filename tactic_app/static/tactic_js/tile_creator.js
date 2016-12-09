@@ -16,6 +16,7 @@ var user_manage_id = guid();
 $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function (e) {
     if ($(e.currentTarget).attr("value") == "method") {
         methodManager.cmobject.refresh()
+        $("#method-module .CodeMirror").css('height', window.innerHeight - $("#method-module .CodeMirror").offset().top - 20);
     }
 });
 
@@ -42,6 +43,12 @@ function start_post_load() {
         socket = io.connect('http://'+document.domain + ':' + location.port  + '/user_manage');
     }
     socket.emit('join', {"user_id":  user_id, "user_manage_id":  user_manage_id});
+
+    window.onresize = function () {
+        $("#codearea .CodeMirror").css('height', window.innerHeight - $("#codearea .CodeMirror").offset().top - 20);
+        $("#api-area").css('height', window.innerHeight - $("#api-area").offset().top - 20);
+        $("#method-module .CodeMirror").css('height', window.innerHeight - $("#method-module .CodeMirror").offset().top - 20);
+    };
 
     socket.on('doflash', doFlash);
     var data = {};
@@ -138,12 +145,19 @@ var option_manager_specifics = {
         $("#option-type-input").on("change", function () {
             option_type = $("#option-type-input").val();
             if (option_type == "custom_list") {
-                $("#special-list-group").css("display", "inline-block")
+                $("#special-list-group").css("display", "inline-block");
+                $("#option-tag-group").css("display", "none")
             }
-            else {
+            else if ((option_type == "class_select") || (option_type == "function_select")) {
+                $("#option-tag-group").css("display", "inline-block");
                 $("#special-list-group").css("display", "none")
             }
+            else {
+                $("#special-list-group").css("display", "none");
+                $("#option-tag-group").css("display", "none")
+            }
         })
+
     },
 
     option_index: function(option_name) {
@@ -207,6 +221,9 @@ var option_manager_specifics = {
             }
             if (option_type == "custom_list"){
                 new_option["special_list"] = $("#option-list-input").val();
+            }
+            else if ((option_type == "class_select") || (option_type == "function_select")) {
+                new_option["tag"] = $("#option-tag-input").val()
             }
             manager.option_dict.push(new_option);
             optionManager.fill_content();
