@@ -73,6 +73,13 @@ function parse_success(data) {
         optionManager.option_dict = data.option_dict;
         exportManager.export_list = data.export_list;
         methodManager.extra_functions = data.extra_functions;
+        $(".created").html(data.datestring);
+        $("#tile-tags")[0].value = data.tags;
+        $("#tile-notes")[0].value = data.notes;
+        $("#tile-category")[0].value = data.category;
+        savedTags = data.tags;
+        savedNotes = data.notes
+
         $.get($SCRIPT_ROOT + "/get_creator_resource_module_template", function(template) {
             creator_resource_module_template = $(template).filter('#creator-resource-module-template').html();
             res_managers = [optionManager, exportManager, methodManager];
@@ -328,7 +335,11 @@ var method_manager_specifics = {
     },
 
     fill_content: function () {
-        this.cmobject.setValue(this.extra_functions)
+        methodManager.cmobject.setValue(this.extra_functions)
+    },
+
+    get_extra_functions: function () {
+        return methodManager.cmobject.getValue()
     },
 
     refresh_methods: function () {
@@ -466,15 +477,23 @@ function renameModule() {
 function updateModule() {
     var new_code = myCodeMirror.getDoc().getValue();
     var tags = $("#tile-tags").val();
+    var category = $("#tile-category").val();
+    if (category.length == 0) {
+        category = "basic"
+    }
     var notes = $("#tile-notes").val();
     var result_dict = {
         "module_name": module_name,
-        "new_code": new_code,
+        "category": category,
         "tags": tags,
-        "notes": notes
-        };
+        "notes": notes,
+        "exports": exportManager.export_list,
+        "options": optionManager.option_dict,
+        "extra_methods": methodManager.get_extra_functions(),
+        "render_content_body": new_code
+    };
     $.ajax({
-        url: $SCRIPT_ROOT + "/update_module",
+        url: $SCRIPT_ROOT + "/creator_update_module",
         contentType : 'application/json',
         type : 'POST',
         async: true,
