@@ -474,7 +474,7 @@ function renameModule() {
     }
 }
 
-function updateModule() {
+function doSave(update_success) {
     var new_code = myCodeMirror.getDoc().getValue();
     var tags = $("#tile-tags").val();
     var category = $("#tile-category").val();
@@ -499,9 +499,16 @@ function updateModule() {
         async: true,
         data: JSON.stringify(result_dict),
         dataType: 'json',
-        success: update_success
+        success: success_func
     });
-    function update_success(data) {
+    function success_func(data) {
+        update_success(data, new_code, tags, notes)
+    }
+}
+
+function updateModule() {
+    doSave(update_success);
+    function update_success(data, new_code, tags, notes) {
         if (data.success) {
             savedCode = new_code;
             savedTags = tags;
@@ -513,23 +520,8 @@ function updateModule() {
 }
 
 function loadModule() {
-    var new_code = myCodeMirror.getDoc().getValue();
-    var tags = $("#tile-tags").val();
-    var notes = $("#tile-notes").val();
-    var result_dict = {
-        "module_name": module_name,
-        "new_code": new_code,
-        "tags": tags,
-        "notes": notes
-        };
-    $.ajax({
-        url: $SCRIPT_ROOT + "/update_module",
-        contentType : 'application/json',
-        type : 'POST',
-        async: true,
-        data: JSON.stringify(result_dict),
-        dataType: 'json',
-        success: function (data) {
+    doSave(save_success);
+    function save_success(dat, new_code, tags, notes) {
             if (data.success) {
                 savedCode = new_code;
                 savedTags = tags;
@@ -540,9 +532,7 @@ function loadModule() {
             else {
                 doFlash(data)
             }
-        }
-
-    });
+    }
     function load_success(data) {
         if (data.success) {
             data.timeout = 2000;

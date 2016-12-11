@@ -367,6 +367,7 @@ var tile_manager_specifics = {
     show_multiple: false,
     new_view: '/create_tile_module',
     view_view: '/view_module/',
+    creator_view: '/view_in_creator/',
     repository_view_view: '/repository_view_module/',
     delete_view: "/delete_tile_module/",
     duplicate_view: '/create_duplicate_tile',
@@ -375,7 +376,8 @@ var tile_manager_specifics = {
     show_loaded_list: true,
     popup_buttons: [{"name": "new",
                     "button_class": "btn-success",
-                    "option_list": [{"opt_name": "BasicTileTemplate", "opt_func": "new_tile"},
+                    "option_list": [{"opt_name": "New_In_Creator", "opt_func": "new_in_creator"},
+                                    {"opt_name": "BasicTileTemplate", "opt_func": "new_tile"},
                                     {"opt_name": "ExpandedTileTemplate", "opt_func": "new_tile"},
                                     {"opt_name": "MatplotlibTileTemplate", "opt_func": "new_tile"}]}],
 
@@ -400,7 +402,7 @@ var tile_manager_specifics = {
         var manager = event.data.manager;
         var res_name = manager.check_for_selection(manager.res_type);
         if (res_name == "") return;
-        window.open($SCRIPT_ROOT + '/view_in_creator/' + String(res_name))
+        window.open($SCRIPT_ROOT + manager.creator_view + String(res_name))
     },
 
     load_func: function (event) {
@@ -430,6 +432,39 @@ var tile_manager_specifics = {
                 }
             }
         });
+        event.preventDefault();
+    },
+
+    new_in_creator: function (event) {
+        var manager = event.data.manager;
+        var template_name = "BasicTileTemplate";
+        $.getJSON($SCRIPT_ROOT + "get_resource_names/tile", function(data) {
+                showModal("New Tile", "New Tile Name", CreateNewTileModule, "NewTileModule", data["resource_names"])
+            }
+        );
+        function CreateNewTileModule (new_name) {
+            var result_dict = {
+                "template_name": template_name,
+                "new_res_name": new_name
+            };
+
+            $.ajax({
+                url: $SCRIPT_ROOT + manager.new_view,
+                contentType: 'application/json',
+                type: 'POST',
+                async: true,
+                data: JSON.stringify(result_dict),
+                dataType: 'json',
+                success: function(data) {
+                    if (data.success){
+                        window.open($SCRIPT_ROOT + manager.creator_view + String(new_name))
+                    }
+                    else {
+                        doFlash(data)
+                    }
+                }
+            });
+        }
         event.preventDefault();
     },
 

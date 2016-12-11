@@ -67,6 +67,7 @@ def convert_default(it):
         return None
     return remove_quotes(it)
 
+# tactic_todo This isn't general yet. It doesn't handle triple quotes and doesn't check for matching quotes
 def get_assignments_from_init(the_str):
     tups = ass_rx.findall(extract_init(the_str))
     res = {}

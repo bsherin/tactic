@@ -6,7 +6,7 @@ import tactic_app
 from tactic_app import app, db, socketio
 from tactic_app.global_tile_management import global_tile_manager
 from tactic_app.docker_functions import send_direct_request_to_container
-from tactic_app.function_recognizer import get_functions_full_code
+from tactic_app.function_recognizer import get_functions_full_code, get_assignments_from_init
 import re, sys, datetime
 
 
@@ -123,6 +123,11 @@ def parse_code():
     module_code = current_user.get_tile_module(module_name)
     render_template_code = re.findall(r"def render_content.*\n([\s\S]*?)(def|$)", module_code)[0][0]
     render_template_code = remove_indents(render_template_code, 2)
+
+    default_dict = get_assignments_from_init(module_code)
+    for option in option_dict:
+        if option["name"] in default_dict:
+            option["default"] = default_dict[option["name"]]
 
     func_dict = get_functions_full_code(module_code)
     extra_functions = ""
