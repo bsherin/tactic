@@ -56,6 +56,8 @@ def build_code(data_dict):
     for opt_dict in options:
         if "default" not in opt_dict:
             opt_dict["default"] = "None"
+        elif isinstance(opt_dict["default"], basestring):
+            opt_dict["default"] = '"' + opt_dict["default"] + '"'
         opt_dict["default"] = str(opt_dict["default"])
         if "special_list" in opt_dict:
             opt_dict["special_list"] = "[" + opt_dict["special_list"] + "]"

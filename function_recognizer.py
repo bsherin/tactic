@@ -20,17 +20,59 @@ PARAM_LIST_NO_CAPTURE = '\(' + IDENT_WITH_DEFAULT+'?' + '(?:' + COMMA+IDENT_WITH
 BODY = ':.*\n([\s\S]*?(?=$|\sdef ))'
 BODY_NO_CAPTURE = '.*\n[\s\S]*?'
 DEF = 'def\s+(' + IDENT + ')\s*' + PARAM_LIST + BODY
+QUOTE = r'\'|\"|\"\"\"'
+
 
 DECORATOR = ' *@' + IDENT + '\n'
 DEF_LINE = ' *def\s+(' + IDENT + ')\s*' + PARAM_LIST_NO_CAPTURE + ":"
 
-DEF_FULL_CODE = '(?:\n|^)([\s\S]*?def\s+(' + IDENT + ')\s*' + PARAM_LIST_NO_CAPTURE + BODY_NO_CAPTURE + ")(?=(?:$|\sdef |@))"
-DEF_FULL_CODE2 = '((?:' + DECORATOR + ')?' + DEF_LINE + '[\s\S]*?)(?=(?:$| *?def | *?@))'
-DEF_FULL_CODE3 = '[\s\S]*?(' + DEF_LINE + '[\s\S]*?)(?=(?:$|\sdef |@))'
+INIT_METHOD = '( *def *__init__[\s\S]*?)(?=(?:$| *?def | *?@))'
+ASSIGNMENTS = 'self\.(' + IDENT + ') *\= *([\S]+)'
+
+DEF_FULL_CODE = '((?:' + DECORATOR + ')?' + DEF_LINE + '[\s\S]*?)(?=(?:$| *?def | *?@))'
 
 ident_rx = re.compile(IDENT)
 def_rx = re.compile(DEF)
-def_fc = re.compile(DEF_FULL_CODE2)
+def_fc = re.compile(DEF_FULL_CODE)
+
+init_rx = re.compile(INIT_METHOD)
+ass_rx = re.compile(ASSIGNMENTS)
+
+def RepresentsInt(s):
+    try:
+        int(s)
+        return True
+    except ValueError:
+        return False
+
+def RepresentsFloat(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
+
+def extract_init(the_str):
+    return init_rx.findall(the_str)[0]
+
+def remove_quotes(the_str):
+    return re.findall('[\'|\"](.*)[\'|\"]', the_str)[0]
+
+def convert_default(it):
+    if RepresentsInt(it):
+        return int(it)
+    elif RepresentsFloat(it):
+        return float(it)
+    elif it == "None":
+        return None
+    return remove_quotes(it)
+
+def get_assignments_from_init(the_str):
+    tups = ass_rx.findall(extract_init(the_str))
+    res = {}
+    for tup in tups:
+        res[tup[0]] = convert_default(tup[1])
+    return res
 
 # This function returns a tuple with (function_name, args, function_body)
 def get_functions_parse(code):
@@ -57,6 +99,10 @@ def run_test(tstr):
     for i, m in enumerate(res):
         print "match " + str(i) + "\n"
         print m[0]
+
+def run_ass_test(tstr):
+    res = get_assignments_from_init(tstr)
+    print res
 
 test_string = """def test(s):
     match = def_rx.match(s)
@@ -94,6 +140,7 @@ class WordFreqDist(TileBase):
         self.number_to_display = 50
         self.save_attrs += self.exports + ["logging_html"]
         self.logging_html = ""
+        self.teststing = "blah"
         return
 
     @property
@@ -172,7 +219,7 @@ class WordFreqDist(TileBase):
 
 """
 
-# from function_recognizer import test_string, def_rx, def_fc, ts2, run_test
+# from function_recognizer import test_string, def_rx, def_fc, ts2, run_test, run_ass_test
 # def_rx.findall(test_string)
 # res = def_fc.findall(ts2)
 
