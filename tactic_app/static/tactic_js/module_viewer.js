@@ -91,7 +91,7 @@ function changeTheme() {
 }
 
 function showAPI(){
-        $("#api-area").toggle()
+        $("#api-area").toggle();
         $("#api-area").css('height', window.innerHeight - $("#api-area").offset().top - 20);
 }
 
