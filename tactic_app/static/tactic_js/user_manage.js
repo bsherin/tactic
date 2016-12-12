@@ -349,7 +349,7 @@ var tile_manager_specifics = {
     ],
     buttons: [
         {"name": "view", "func": "view_func", "button_class": "btn-primary"},
-        {"name": "creator", "func": "creator_view_func", "button_class": "btn-primary"},
+        {"name": "view_in_creator", "func": "creator_view_func", "button_class": "btn-primary"},
         {"name": "load", "func": "load_func", "button_class": "btn-primary"},
         {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-success"},
         {"name": "share", "func": "send_repository_func", "button_class": "btn-warning"},
