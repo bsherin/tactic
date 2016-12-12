@@ -20,6 +20,7 @@ from tactic_app.docker_functions import send_direct_request_to_container
 
 from tactic_app.docker_functions import create_container, get_address
 from tactic_app.integrated_docs import api_html
+from tactic_app.function_recognizer import get_functions_full_code
 import traceback
 
 AUTOSPLIT = True
@@ -677,6 +678,8 @@ class TileManager(ResourceManager):
     def add_rules(self):
         app.add_url_rule('/view_module/<module_name>', "view_module",
                          login_required(self.view_module), methods=['get'])
+        app.add_url_rule('/view_in_creator/<module_name>', "view_in_creator",
+                         login_required(self.view_in_creator), methods=['get'])
         app.add_url_rule('/repository_view_module/<module_name>', "repository_view_module",
                          login_required(self.repository_view_module), methods=['get'])
         app.add_url_rule('/load_tile_module/<tile_module_name>', "load_tile_module",
@@ -725,6 +728,28 @@ class TileManager(ResourceManager):
                                module_code=module_code,
                                read_only_string="",
                                api_html=api_html)
+
+    def view_in_creator(self, module_name):
+        option_types = [{"name": "text"},
+                        {"name": "int"},
+                        {"name": "boolean"},
+                        {"name": "textarea"},
+                        {"name": "codearea"},
+                        {"name": "document_select"},
+                        {"name": "list_select"},
+                        {"name": "palette_select"},
+                        {"name": "pipe_select"},
+                        {"name": "custom_list"},
+                        {"name": "function_select"},
+                        {"name": "class_select"},
+                        {"name": "pipe_select"}]
+        user_obj = current_user
+        return render_template("user_manage/tile_creator.html",
+                               module_name=module_name,
+                               read_only_string="",
+                               api_html=api_html,
+                               use_ssl=use_ssl,
+                               option_types=option_types)
 
     def repository_view_module(self, module_name):
         user_obj = repository_user

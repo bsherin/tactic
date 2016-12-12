@@ -63,18 +63,8 @@ ResourceManager.prototype = {
 
     add_func: function (event) {
         var manager = event.data.manager;
-        $.ajax({
-            url: $SCRIPT_ROOT + manager.add_view,
-            type: 'POST',
-            data: new FormData(this),
-            processData: false,
-            contentType: false,
-            success: function(data) {
-                if (!data.success) {
-                    doFlash(data)
-                }
-            }
-        });
+        form_data = new FormData(this);
+        postAjaxUpload(manager.add_view, form_data, doFlashOnFailure);
         event.preventDefault();
     },
 
@@ -105,26 +95,12 @@ ResourceManager.prototype = {
                 showModal("Duplicate " + manager.res_type, "New Tile Name", DuplicateResource, res_name, data["resource_names"])
             }
         );
-
         function DuplicateResource(new_name) {
             var result_dict = {
                 "new_res_name": new_name,
                 "res_to_copy": res_name
             };
-
-            $.ajax({
-                url: $SCRIPT_ROOT + manager.duplicate_view,
-                contentType: 'application/json',
-                type: 'POST',
-                async: true,
-                data: JSON.stringify(result_dict),
-                dataType: 'json',
-                success: function(data) {
-                    if (!data.success) {
-                        doFlash(data)
-                    }
-                }
-            });
+            postAjax(manager.duplicate_view, result_dict, doFlashOnFailure)
         }
     },
 
@@ -158,16 +134,7 @@ ResourceManager.prototype = {
                 "res_name": res_name,
                 "new_res_name": new_name
             };
-
-            $.ajax({
-                url: $SCRIPT_ROOT + manager.send_repository_view,
-                contentType: 'application/json',
-                type: 'POST',
-                async: true,
-                data: JSON.stringify(result_dict),
-                dataType: 'json',
-                success: doFlash
-            });
+            postAjax(manager.send_repository_view, result_dict, doFlashAlways)
         }
         return res_name
     },
@@ -195,16 +162,7 @@ ResourceManager.prototype = {
                 "res_name": res_name,
                 "new_res_name": new_name
             };
-
-            $.ajax({
-                url: $SCRIPT_ROOT + manager.repository_copy_view,
-                contentType: 'application/json',
-                type: 'POST',
-                async: true,
-                data: JSON.stringify(result_dict),
-                dataType: 'json',
-                success: doFlash
-            });
+            postAjax(manager.repository_copy_view, result_dict, doFlashAlways)
         }
         return res_name
     },
@@ -286,15 +244,7 @@ function selector_click(event) {
     row_element.addClass("active");
     //var res_name = $('.resource-selector .' + res_type + '-selector-button.active')[0].value;
     var result_dict = {"res_type": res_type, "res_name": res_name};
-    $.ajax({
-            url: $SCRIPT_ROOT + "/grab_metadata",
-            contentType : 'application/json',
-            type : 'POST',
-            async: true,
-            data: JSON.stringify(result_dict),
-            dataType: 'json',
-            success: got_metadata
-    });
+    postAjax("grab_metadata", result_dict, got_metadata);
     function got_metadata(data) {
         if (data.success) {
             $("#" + res_type + "-module .created").html(data.datestring);
@@ -356,15 +306,7 @@ function repository_selector_click(event) {
     $(".repository-selector ." + res_type + "-selector-button").removeClass("active");
     row_element.addClass("active");
     var result_dict = {"res_type": res_type, "res_name": res_name};
-    $.ajax({
-            url: $SCRIPT_ROOT + "/grab_repository_metadata",
-            contentType : 'application/json',
-            type : 'POST',
-            async: true,
-            data: JSON.stringify(result_dict),
-            dataType: 'json',
-            success: got_metadata
-    });
+    postAjax("grab_repository_metadata", result_dict, got_metadata);
     function got_metadata(data) {
         if (data.success) {
             $("#" + res_type + "-module .repository-created").html(data.datestring);
@@ -461,13 +403,5 @@ function save_metadata(event) {
     var tags = $("#" + res_type + "-tags").val();
     var notes = $("#" + res_type + "-notes").val();
     var result_dict = {"res_type": res_type, "res_name": res_name, "tags": tags, "notes": notes};
-        $.ajax({
-            url: $SCRIPT_ROOT + "/save_metadata",
-            contentType : 'application/json',
-            type : 'POST',
-            async: true,
-            data: JSON.stringify(result_dict),
-            dataType: 'json',
-            success: doFlash
-    });
+    postAjax("save_metadata", result_dict, doFlashAlways);
 }

@@ -7,6 +7,34 @@ function handleCallback (task_packet) {
     func(task_packet.response_data);
 }
 
+function postAjax(target, data, callback) {
+    if (target[0] == "/") {
+        target = target.slice(1)
+    }
+    $.ajax({
+        url: $SCRIPT_ROOT + "/" + target,
+        contentType: 'application/json',
+        type: 'POST',
+        async: true,
+        data: JSON.stringify(data),
+        dataType: 'json',
+        success: callback
+    });
+}
+
+function postAjaxUpload(target, form_data, callback) {
+    if (target[0] == "/") {
+        target = target.slice(1)
+    }
+    $.ajax({
+        url: $SCRIPT_ROOT + "/" + target,
+        type: 'POST',
+        data: form_data,
+        contentType: false,
+        processData: false,
+        success: callback
+    });
+}
 
 function postWithCallback(dest_id, task_type, task_data, callback_func){
     var task_packet =  {

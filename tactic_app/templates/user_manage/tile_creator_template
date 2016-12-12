@@ -1,0 +1,23 @@
+@user_tile
+class {{class_name}}(TileBase):
+    category = "{{category}}"
+    exports = [{% for exp in exports %}"{{exp.name | e}}"{% if not loop.last %}, {% endif %}{%endfor%}]
+
+    def __init__(self, main_id, tile_id, tile_name=None):
+        TileBase.__init__(self, main_id, tile_id, tile_name)
+        self.save_attrs += self.exports
+        {% for option in options -%}
+        self.{{option.name|e}} = {{option.default}}
+        {% endfor %}
+        return
+
+    @property
+    def options(self):
+        return  [
+        {% for option in options -%}
+        {"name": "{{option.name|e}}", "type": "{{option.type|e}}"{% if option.special_list %}", special_list":{{option.special_list|e}}, {% endif %}{% if option.tag %}", tag":{{option.tag|e}}{% endif %}}{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ]
+{{extra_methods -}}
+    def render_content(self):
+{{render_content_body}}

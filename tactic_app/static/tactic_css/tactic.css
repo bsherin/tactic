@@ -126,6 +126,17 @@ a[role="tab"] {
 .metadata-field {
   width: 350px; }
 
+/* creator */
+#creator-resources label {
+  margin-bottom: 0px;
+  margin-left: 4px; }
+#creator-resources .indent-row {
+  margin-bottom: 0px; }
+#creator-resources .resource-module {
+  margin: 0px; }
+#creator-resources input {
+  width: 150px; }
+
 /* Tile related */
 .tile-panel-heading .close .glyphicon {
   font-size: 17px; }
