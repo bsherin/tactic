@@ -22,15 +22,7 @@ function start_post_load() {
     saveList = the_list_as_string;
 
     var result_dict = {"res_type": "list", "res_name": list_name};
-    $.ajax({
-            url: $SCRIPT_ROOT + "/grab_metadata",
-            contentType : 'application/json',
-            type : 'POST',
-            async: true,
-            data: JSON.stringify(result_dict),
-            dataType: 'json',
-            success: got_metadata
-    });
+    postAjax("grab_metadata", result_dict, got_metadata);
     function got_metadata(data) {
         if (data.success) {
             $(".created").html(data.datestring);
@@ -75,15 +67,7 @@ function renameList() {
     );
     function RenameListResource(new_name) {
         var the_data = {"new_name": new_name};
-        $.ajax({
-            url: $SCRIPT_ROOT + "/rename_list/" + list_name,
-            contentType : 'application/json',
-            type : 'POST',
-            async: true,
-            data: JSON.stringify(the_data),
-            dataType: 'json',
-            success: renameSuccess
-        });
+        postAjax("rename_list/" + list_name, the_data, renameSuccess);
         function renameSuccess(data) {
             if (data.success) {
                 list_name = new_name;
@@ -107,15 +91,7 @@ function updateList() {
         "tags": tags,
         "notes": notes
         };
-    $.ajax({
-        url: $SCRIPT_ROOT + "/update_list",
-        contentType : 'application/json',
-        type : 'POST',
-        async: true,
-        data: JSON.stringify(result_dict),
-        dataType: 'json',
-        success: update_success
-    });
+    postAjax("update_list", result_dict, update_success);
     function update_success(data) {
         if (data.success) {
             savedList = new_list_as_string;
@@ -142,16 +118,7 @@ function copyToLibrary() {
             "res_name": list_name,
             "new_res_name": new_name
         };
-
-        $.ajax({
-            url: $SCRIPT_ROOT + 'copy_from_repository',
-            contentType: 'application/json',
-            type: 'POST',
-            async: true,
-            data: JSON.stringify(result_dict),
-            dataType: 'json',
-            success: doFlash
-        });
+        postAjax("copy_from_repository", result_dict, doFlashAlways);
     }
 }
 
@@ -166,15 +133,6 @@ function sendToRepository() {
             "res_name": list_name,
             "new_res_name": new_name
         };
-
-        $.ajax({
-            url: $SCRIPT_ROOT + 'send_to_repository',
-            contentType: 'application/json',
-            type: 'POST',
-            async: true,
-            data: JSON.stringify(result_dict),
-            dataType: 'json',
-            success: doFlash
-        });
+        postAjax("send_to_repository", result_dict, doFlashAlways)
     }
 }

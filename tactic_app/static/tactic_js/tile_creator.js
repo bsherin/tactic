@@ -53,15 +53,7 @@ function start_post_load() {
     socket.on('doflash', doFlash);
     var data = {};
     data.module_name = module_name;
-    $.ajax({
-        url: $SCRIPT_ROOT + "/parse_code",
-        contentType: 'application/json',
-        type: 'POST',
-        async: true,
-        data: JSON.stringify(data),
-        dataType: 'json',
-        success: parse_success
-    });
+    postAjax("parse_code", data, parse_success)
 }
 
 function parse_success(data) {
@@ -106,15 +98,8 @@ var option_manager_specifics = {
     ],
 
     fill_content: function () {
-        data = {"option_dict": this.option_dict}
-        $.ajax({
-            url: $SCRIPT_ROOT + "/get_option_table",
-            contentType : 'application/json',
-            type : 'POST',
-            async: true,
-            data: JSON.stringify(data),
-            dataType: 'json',
-            success: function (result) {
+        data = {"option_dict": this.option_dict};
+        postAjax("get_option_table", data, function (result) {
                 if (!result.success) {
                     doFlash(result)
                 }
@@ -125,7 +110,6 @@ var option_manager_specifics = {
                 var updated_header = $("#option-selector table th")[0];
                 sorttable.innerSortFunction.apply(updated_header, []);
                 }
-            }
         });
     },
 
@@ -252,24 +236,16 @@ var export_manager_specifics = {
 
     fill_content: function () {
         data = {"export_list": this.export_list};
-        $.ajax({
-            url: $SCRIPT_ROOT + "/get_export_table",
-            contentType : 'application/json',
-            type : 'POST',
-            async: true,
-            data: JSON.stringify(data),
-            dataType: 'json',
-            success: function (result) {
-                if (!result.success) {
-                    doFlash(result)
-                }
-                else {
-                    $("#export-selector").html(result.html);
+        postAjax("get_export_table", data, function (result) {
+            if (!result.success) {
+                doFlash(result)
+            }
+            else {
+                $("#export-selector").html(result.html);
                 select_resource_button("export", null)
                 sorttable.makeSortable($("#export-selector table")[0]);
                 var updated_header = $("#export-selector table th")[0];
                 sorttable.innerSortFunction.apply(updated_header, []);
-                }
             }
         });
     },
@@ -385,16 +361,7 @@ function continue_loading() {
             this.nextElementSibling.classList.toggle("show");
         }
     }
-    $.ajax({
-            url: $SCRIPT_ROOT + "/grab_metadata",
-            contentType : 'application/json',
-            type : 'POST',
-            async: true,
-            data: JSON.stringify(result_dict),
-            dataType: 'json',
-            success: got_metadata
-
-    });
+    postAjax("grab_metadata", result_dict, get_metadata);
     function got_metadata(data) {
         if (data.success) {
             $(".created").html(data.datestring);
@@ -452,15 +419,7 @@ function renameModule() {
     );
     function RenameModuleResource (new_name) {
         var the_data = {"new_name": new_name};
-        $.ajax({
-            url: $SCRIPT_ROOT + "/rename_module/" + module_name,
-            contentType : 'application/json',
-            type : 'POST',
-            async: true,
-            data: JSON.stringify(the_data),
-            dataType: 'json',
-            success: renameSuccess
-        });
+        postAjax("rename_module/" + module_name, the_data, renameSuccess);
         function renameSuccess(data) {
             if (data.success) {
                 module_name = new_name;
@@ -492,15 +451,7 @@ function doSave(update_success) {
         "extra_methods": methodManager.get_extra_functions(),
         "render_content_body": new_code
     };
-    $.ajax({
-        url: $SCRIPT_ROOT + "/creator_update_module",
-        contentType : 'application/json',
-        type : 'POST',
-        async: true,
-        data: JSON.stringify(result_dict),
-        dataType: 'json',
-        success: success_func
-    });
+    postAjax("creator_update_module", result_dict, success_func);
     function success_func(data) {
         update_success(data, new_code, tags, notes)
     }
@@ -556,16 +507,7 @@ function copyToLibrary() {
             "res_name": module_name,
             "new_res_name": new_name
         };
-
-        $.ajax({
-            url: $SCRIPT_ROOT + 'copy_from_repository',
-            contentType: 'application/json',
-            type: 'POST',
-            async: true,
-            data: JSON.stringify(result_dict),
-            dataType: 'json',
-            success: doFlash
-        });
+        postAjax("copy_from_repository", result_dict, doFlash)
     }
 }
 
@@ -580,15 +522,6 @@ function sendToRepository() {
             "res_name": module_name,
             "new_res_name": new_name
         };
-
-        $.ajax({
-            url: $SCRIPT_ROOT + 'send_to_repository',
-            contentType: 'application/json',
-            type: 'POST',
-            async: true,
-            data: JSON.stringify(result_dict),
-            dataType: 'json',
-            success: doFlash
-        });
+        postAjax("send_to_repository", result_dict, doFlash)
     }
 }

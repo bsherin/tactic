@@ -188,6 +188,11 @@ function stopSpinner() {
     $("#spinner").css("display", "none")
 }
 
+function doFlashStopSpinner(data) {
+    stopSpinner();
+    doFlash(data)
+}
+
 function resize_window() {
     res_types.forEach(function (val, ind, array) {
         var h = window.innerHeight - 50 - $("#" + val + "-selector-row").offset().top;
@@ -211,7 +216,6 @@ var list_manager_specifics = {
     ],
     buttons: [
         {"name": "view", "func": "view_func", "button_class": "btn-primary"},
-        {"name": "view", "func": "view_func", "button_class": "btn-primary"},
         {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-success"},
         {"name": "share", "func": "send_repository_func", "button_class": "btn-warning"},
         {"name": "delete", "func": "delete_func", "button_class": "btn-danger"}
@@ -221,18 +225,8 @@ var list_manager_specifics = {
     ],
     add_list: function (event) {
         var manager = event.data.manager;
-        $.ajax({
-            url: $SCRIPT_ROOT + "add_list",
-            type: 'POST',
-            data: new FormData(this),
-            processData: false,
-            contentType: false,
-            success: function(data) {
-                if (!data.success) {
-                    doFlash(data)
-                }
-            }
-        });
+        fdata = new FormData(this);
+        postAjaxUpload("add_list", fdata, doFlashOnFailure(data));
         event.preventDefault();
     }
 };
@@ -269,18 +263,7 @@ var col_manager_specifics = {
         );
         function CreateNewCollection(new_name) {
             startSpinner();
-            $.ajax({
-                url: $SCRIPT_ROOT + "/import_as_table/" + new_name,
-                type: 'POST',
-                data: the_data,
-                processData: false,
-                contentType: false,
-                success: addSuccess
-            });
-            function addSuccess(data) {
-                stopSpinner();
-                doFlash(data)
-            }
+            postAjaxUpload("import_as_table/" + new_name, the_data, doFlashStopSpinner);
         }
         event.preventDefault();
     },
@@ -293,18 +276,7 @@ var col_manager_specifics = {
         );
         function CreateNewCollection(new_name) {
             startSpinner();
-            $.ajax({
-                url: $SCRIPT_ROOT + "/import_as_freeform/" + new_name,
-                type: 'POST',
-                data: the_data,
-                processData: false,
-                contentType: false,
-                success: addSuccess
-            });
-            function addSuccess(data) {
-                stopSpinner();
-                doFlash(data)
-            }
+            postAjaxUpload("import_as_freeform/" + new_name, the_data, doFlashStopSpinner);
         }
         event.preventDefault();
     },
@@ -322,17 +294,8 @@ var col_manager_specifics = {
         if (res_name == "") return;
         showModal("Name of collection to combine with " + res_name, "collection Name", function (other_name) {
             startSpinner();
-            $.ajax({
-                url: $SCRIPT_ROOT + "/combine_collections/" + res_name + "/" + other_name,
-                type: 'POST',
-                processData: false,
-                contentType: false,
-                success: combineSuccess
-            });
-            function combineSuccess(data) {
-                stopSpinner();
-                doFlash(data)
-            }
+            target =$SCRIPT_ROOT + "/combine_collections/" + res_name + "/" + other_name;
+            $.post(target, doFlashStopSpinner);
         })
     }
 };
@@ -420,18 +383,8 @@ var tile_manager_specifics = {
 
     add_tile_module: function (event) {
         var manager = event.data.manager;
-        $.ajax({
-            url: $SCRIPT_ROOT + "add_tile_module",
-            type: 'POST',
-            data: new FormData(this),
-            processData: false,
-            contentType: false,
-            success: function(data) {
-                if (!data.success) {
-                    doFlash(data)
-                }
-            }
-        });
+        form_data = new FormData(this);
+        postAjaxUpload("add_tile_module", form_data, doFlashOnFailure(data));
         event.preventDefault();
     },
 
@@ -447,22 +400,13 @@ var tile_manager_specifics = {
                 "template_name": template_name,
                 "new_res_name": new_name
             };
-
-            $.ajax({
-                url: $SCRIPT_ROOT + manager.new_view,
-                contentType: 'application/json',
-                type: 'POST',
-                async: true,
-                data: JSON.stringify(result_dict),
-                dataType: 'json',
-                success: function(data) {
+            postAjax(manager.new_view, result_dict, function(data) {
                     if (data.success){
                         window.open($SCRIPT_ROOT + manager.creator_view + String(new_name))
                     }
                     else {
                         doFlash(data)
                     }
-                }
             });
         }
         event.preventDefault();
@@ -480,23 +424,14 @@ var tile_manager_specifics = {
                 "template_name": template_name,
                 "new_res_name": new_name
             };
-
-            $.ajax({
-                url: $SCRIPT_ROOT + manager.new_view,
-                contentType: 'application/json',
-                type: 'POST',
-                async: true,
-                data: JSON.stringify(result_dict),
-                dataType: 'json',
-                success: function(data) {
+            postAjax(manager.new_view, result_dict, function(data) {
                     if (data.success){
                         window.open($SCRIPT_ROOT + manager.view_view + String(new_name))
                     }
                     else {
                         doFlash(data)
                     }
-                }
-            });
+            })
         }
         event.preventDefault();
     }
@@ -533,18 +468,8 @@ var code_manager_specifics = {
     ],
     add_code: function (event) {
         var manager = event.data.manager;
-        $.ajax({
-            url: $SCRIPT_ROOT + "add_code",
-            type: 'POST',
-            data: new FormData(this),
-            processData: false,
-            contentType: false,
-            success: function(data) {
-                if (!data.success) {
-                    doFlash(data)
-                }
-            }
-        });
+        form_data = new FormData(this);
+        postAjaxUpload("add_code", form_data, doFlashOnFailure(data));
         event.preventDefault();
     },
     new_code: function (event) {
@@ -560,21 +485,12 @@ var code_manager_specifics = {
                 "template_name": template_name,
                 "new_res_name": new_name
             };
-
-            $.ajax({
-                url: $SCRIPT_ROOT + manager.new_view,
-                contentType: 'application/json',
-                type: 'POST',
-                async: true,
-                data: JSON.stringify(result_dict),
-                dataType: 'json',
-                success: function(data) {
-                    if (data.success){
-                        window.open($SCRIPT_ROOT + manager.view_view + String(new_name))
-                    }
-                    else {
-                        doFlash(data)
-                    }
+            postAjaxUpload(manager.new_view, result_dict, function(data) {
+                if (data.success){
+                    window.open($SCRIPT_ROOT + manager.view_view + String(new_name))
+                }
+                else {
+                    doFlash(data)
                 }
             });
         }

@@ -38,15 +38,7 @@ function start_post_load() {
     savedCode = myCodeMirror.getDoc().getValue();
 
     var result_dict = {"res_type": "code", "res_name": code_name};
-    $.ajax({
-            url: $SCRIPT_ROOT + "/grab_metadata",
-            contentType : 'application/json',
-            type : 'POST',
-            async: true,
-            data: JSON.stringify(result_dict),
-            dataType: 'json',
-            success: got_metadata
-    });
+    postAjax("grab_metadata", result_dict, got_metadata);
     function got_metadata(data) {
         if (data.success) {
             $(".created").html(data.datestring);
@@ -104,15 +96,7 @@ function renameCode() {
     );
     function RenameCodeResource (new_name) {
         the_data = {"new_name": new_name};
-        $.ajax({
-            url: $SCRIPT_ROOT + "/rename_code/" + code_name,
-            contentType : 'application/json',
-            type : 'POST',
-            async: true,
-            data: JSON.stringify(the_data),
-            dataType: 'json',
-            success: renameSuccess
-        });
+        postAjax("rename_code/" + code_name, the_data, renameSuccess);
         function renameSuccess(data) {
             if (data.success) {
                 code_name = new_name;
@@ -136,15 +120,7 @@ function updateCode() {
         "tags": tags,
         "notes": notes
         };
-    $.ajax({
-        url: $SCRIPT_ROOT + "/update_code",
-        contentType : 'application/json',
-        type : 'POST',
-        async: true,
-        data: JSON.stringify(result_dict),
-        dataType: 'json',
-        success: update_success
-    });
+    postAjax("update_code", result_dict, update_success);
     function update_success(data) {
         if (data.success) {
             savedCode = new_code;
@@ -171,22 +147,13 @@ function copyToLibrary() {
             "res_name": code_name,
             "new_res_name": new_name
         };
-
-        $.ajax({
-            url: $SCRIPT_ROOT + 'copy_from_repository',
-            contentType: 'application/json',
-            type: 'POST',
-            async: true,
-            data: JSON.stringify(result_dict),
-            dataType: 'json',
-            success: doFlash
-        });
+        postAjax("copy_from_repository", result_dict, doFlashAlways)
     }
 }
 
 function sendToRepository() {   // tactic change sendtorepository code
-    $.getJSON($SCRIPT_ROOT + "get_repository_resource_names/code", function(data) {
-        showModal("Share code resource", "New Code Resource Name", ShareCodeResource, code_name, data["resource_names"])
+    $.getJSON($SCRIPT_ROOT + "get_repository_resource_names/code", function (data) {
+            showModal("Share code resource", "New Code Resource Name", ShareCodeResource, code_name, data["resource_names"])
         }
     );
     function ShareCodeResource(new_name) {
@@ -195,15 +162,6 @@ function sendToRepository() {   // tactic change sendtorepository code
             "res_name": code_name,
             "new_res_name": new_name
         };
-
-        $.ajax({
-            url: $SCRIPT_ROOT + 'send_to_repository',
-            contentType: 'application/json',
-            type: 'POST',
-            async: true,
-            data: JSON.stringify(result_dict),
-            dataType: 'json',
-            success: doFlash
-        });
+        postAjax("send_to_repository", result_dict, doFlashAlways)
     }
 }

@@ -15,16 +15,7 @@ function submit_login_info() {
     data.username = $("#username").val();
     data.password = $("#password").val();
     data.remember_me = $("#remember_me")[0].checked;
-
-    $.ajax({
-        url: $SCRIPT_ROOT + "/attempt_login",
-        contentType : 'application/json',
-        type : 'POST',
-        async: true,
-        data: JSON.stringify(data),
-        dataType: 'json',
-        success: return_from_submit_login
-    });
+    postAjax("attempt_login", data, return_from_submit_login)
 }
 
 function attempt_open_register() {
@@ -63,15 +54,7 @@ function submit_account_info() {
     $(".info-field").each(function () {
         data[$(this).attr("id")] = $(this).val()
     });
-
-    $.ajax({
-        url: $SCRIPT_ROOT + "/update_account_info",
-        contentType : 'application/json',
-        type : 'POST',
-        async: true,
-        data: JSON.stringify(data),
-        dataType: 'json',
-        success: function (result) {
+    postAjax("update_account_info", data, function (result) {
             if (result.success) {
                 doFlash({"message": "Account successfully updated", "alert_type": "alert-success"});
             }
@@ -79,7 +62,6 @@ function submit_account_info() {
                 data.alert_type = "alert-warning";
                 doFlash(data);
             }
-        }
     })
 }
 
@@ -96,15 +78,7 @@ function submit_register_info() {
     }
     data.password = $("#password").val();
 
-    $.ajax({
-        url: $SCRIPT_ROOT + "/attempt_register",
-        contentType : 'application/json',
-        type : 'POST',
-        async: true,
-        data: JSON.stringify(data),
-        dataType: 'json',
-        success: return_from_submit_register
-    });
+    postAjax("attempt_register", data, return_from_submit_register);
 }
 
 function return_from_submit_register(data) {
