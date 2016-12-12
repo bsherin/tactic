@@ -361,7 +361,7 @@ function continue_loading() {
             this.nextElementSibling.classList.toggle("show");
         }
     }
-    postAjax("grab_metadata", result_dict, get_metadata);
+    postAjax("grab_metadata", result_dict, got_metadata);
     function got_metadata(data) {
         if (data.success) {
             $(".created").html(data.datestring);
@@ -472,7 +472,7 @@ function updateModule() {
 
 function loadModule() {
     doSave(save_success);
-    function save_success(dat, new_code, tags, notes) {
+    function save_success(data, new_code, tags, notes) {
             if (data.success) {
                 savedCode = new_code;
                 savedTags = tags;

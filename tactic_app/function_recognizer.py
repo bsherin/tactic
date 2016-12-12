@@ -24,12 +24,12 @@ QUOTE = r'\'|\"|\"\"\"'
 
 
 DECORATOR = ' *@' + IDENT + '\n'
-DEF_LINE = ' *def\s+(' + IDENT + ')\s*' + PARAM_LIST_NO_CAPTURE + ":"
+DEF_LINE = '\n    *def\s+(' + IDENT + ')\s*' + PARAM_LIST_NO_CAPTURE + ":"
 
 INIT_METHOD = '( *def *__init__[\s\S]*?)(?=(?:$| *?def | *?@))'
 ASSIGNMENTS = 'self\.(' + IDENT + ') *\= *([\S]+)'
 
-DEF_FULL_CODE = '((?:' + DECORATOR + ')?' + DEF_LINE + '[\s\S]*?)(?=(?:$| *?def | *?@))'
+DEF_FULL_CODE = '((?:' + DECORATOR + ')?' + DEF_LINE + '[\s\S]*?)(?=(?:$|\n    def |\n    @))'
 
 ident_rx = re.compile(IDENT)
 def_rx = re.compile(DEF)
@@ -200,6 +200,9 @@ class WordFreqDist(TileBase):
         self.dm(self.logging_html)
 
     def render_content(self):
+        def embedded_func(a, b, c):
+            x = 3 + 2
+            return x
         slist = self.get_user_list(self.stop_list)
         raw_rows = self.get_column_data(self.column_source)
         tokenized_rows = self.tokenize_rows(raw_rows, self.tokenizer)

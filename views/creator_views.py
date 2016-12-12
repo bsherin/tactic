@@ -121,15 +121,15 @@ def parse_code():
     mdata = grab_metadata(module_name)
 
     module_code = current_user.get_tile_module(module_name)
-    render_template_code = re.findall(r"def render_content.*\n([\s\S]*?)(def|$)", module_code)[0][0]
-    render_template_code = remove_indents(render_template_code, 2)
-
     default_dict = get_assignments_from_init(module_code)
     for option in option_dict:
         if option["name"] in default_dict:
             option["default"] = default_dict[option["name"]]
 
     func_dict = get_functions_full_code(module_code)
+    render_template_code = func_dict["render_content"]
+    render_template_code = re.sub("([\s\S]*?\n    def [\S\s]*?\: *?\n)", "", render_template_code)
+    render_template_code = remove_indents(render_template_code, 2)
     extra_functions = ""
     for func_name, func_code in func_dict.items():
         if func_name not in ["__init__", "render_content", "options"]:
