@@ -54,29 +54,38 @@
                 <div id="codearea"></div>
             </div>
             <div class="col-xs-5">
-                <div  style="vertical-align: top; margin-left: 5px; margin-top: 10px">
-                    <div class="created"></div>
-                    <div class="form-group" style="margin-bottom: 7px">
-                        <textarea type="text" class="form-control metadata-field" id="tile-category" rows="1" placeholder="category" {{read_only_string}}></textarea>
-                    </div>
-                    <div class="form-group" style="margin-bottom: 7px">
-                        <textarea type="text" class="form-control metadata-field" id="tile-tags" rows="1" placeholder="tags" {{read_only_string}}></textarea>
-                    </div>
-                    <div class="form-group">
-                        <textarea class="form-control metadata-field" id="tile-notes" rows="10" placeholder="notes" {{read_only_string}}></textarea>
-                    </div>
                     <div id="api-area" style="display:none; overflow:scroll">{{api_html | safe}}</div>
-                </div>
-                    <div id="resource-area" style="diplay:inline-block">
-                      <ul class="nav nav-tabs" role="tablist">
-                        <li role="presentation" class="active"><a href="#option-module-outer" aria-controls="options" role="tab" data-toggle="tab" value="option">options</a></li>
+                    <div id="resource-area" style="diplay:inline-block; margin-top: 25px">
+                      <ul class="nav nav-tabs" style="border-bottom: none" role="tablist">
+                          <li role="presentation" class="active"><a href="#metadata-module-outer" aria-controls="metadata" role="tab" data-toggle="tab" value="option">metadata</a></li>
+                        <li role="presentation"><a href="#option-module-outer" aria-controls="options" role="tab" data-toggle="tab" value="option">options</a></li>
                         <li role="presentation"><a href="#export-module-outer" aria-controls="exports" role="tab" data-toggle="tab" value="export">exports</a></li>
                        <li role="presentation"><a href="#method-module-outer" aria-controls="methods" role="tab" data-toggle="tab" value="method">methods</a></li>
 
                       </ul>
-                        <div class="tab-content" id="creator-resources">
-                            <div class="tab-pane fade in active row" id="option-module-outer">
-                                <form class="form-inline row indent-row" style= "margin-top: 15px">
+                            <div class="tab-content" id="creator-resources">
+                            <div class="tab-pane fade in active row" id="metadata-module-outer">
+                                <div class="row indent-row">
+                                    <div class="created" style="margin-bottom: 15px"></div>
+                                    <div class="form-group" style="margin-bottom: 7px">
+                                        <label for="tile-category">Category</label>
+                                        <textarea type="text" class="form-control metadata-field" id="tile-category" rows="1" placeholder="category" {{read_only_string}}></textarea>
+                                    </div>
+                                    <div class="form-group" style="margin-bottom: 7px">
+                                        <label for="tile-tags">Tags</label>
+                                        <textarea type="text" class="form-control metadata-field" id="tile-tags" rows="1" placeholder="tags" {{read_only_string}}></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="tile-notes">Notes</label>
+                                        <textarea class="form-control metadata-field" id="tile-notes" rows="10" placeholder="notes" {{read_only_string}}></textarea>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade row" id="option-module-outer">
+                                <div class="resource-module" id="option-module"></div>
+                                <form class="form-inline row indent-row" style="display:inline-block">
                                       <div class="form-group">
                                             <label for="option-name-input">Name</label><br>
                                             <input type="text" class="form-control" id="option-name-input">
@@ -101,19 +110,26 @@
                                         <label for="option-tag-input">Tag</label><br>
                                         <input type="text" class="form-control" id="option-tag-input" placeholder="">
                                       </div>
-                                    <button type="button" id="option-create-button" class="btn btn-default">Create</button>
+                                    <div class="form-group">
+                                          <label for="option-create-button"> </label><br>
+                                         <button type="button" id="option-create-button" class="btn btn-default">Create</button>
+                                        </div>
                                 </form>
-                                <div class="resource-module" id="option-module"></div>
+
                             </div>
                             <div class="tab-pane fade row" id="export-module-outer">
-                                <form class="form-inline row indent-row" style= "margin-top: 15px">
+                                <div class="resource-module" id="export-module"></div>
+                                <form class="form-inline row indent-row" style="display:inline-block">
                                       <div class="form-group">
-                                        <label for="export-name-input">Name</label>
+                                        <label for="export-name-input">Name</label><br>
                                         <input type="text" class="form-control" id="export-name-input" placeholder="export_name">
                                       </div>
-                                    <button type="button" id="export-create-button" class="btn btn-default">Create</button>
+                                    <div class="form-group">
+                                          <label for="export-create-button"> </label><br>
+                                        <button type="button" id="export-create-button" class="btn btn-default">Create</button>
+                                    </div>
                                 </form>
-                                <div class="resource-module" id="export-module"></div>
+
                             </div>
                             <div class="tab-pane fade row" id="method-module-outer">
                                 <div class="resource-module" id="method-module"></div>

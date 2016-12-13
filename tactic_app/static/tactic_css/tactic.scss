@@ -220,12 +220,21 @@ a[role="tab"] {
 /* creator */
 
 #creator-resources {
-    label {
+    .tab-pane {
+        padding: 10px;
+        border-style: solid;
+        border-color: rgb(221, 221, 221);
+        border-width: 1px;
+        margin-right: 10px;
+
+    }
+
+    .form-inline label {
         margin-bottom: 0px;
         margin-left: 4px
     }
     .indent-row {
-        margin-bottom: 0px
+        margin-bottom: 10px
     }
     .resource-module {
         margin: 0px;
