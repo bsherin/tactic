@@ -72,7 +72,10 @@ def get_assignments_from_init(the_str):
     tups = ass_rx.findall(extract_init(the_str))
     res = {}
     for tup in tups:
-        res[tup[0]] = convert_default(tup[1])
+        try:
+            res[tup[0]] = convert_default(tup[1])
+        except:
+            print "error converting default assignment " + str(tup)
     return res
 
 # This function returns a tuple with (function_name, args, function_body)

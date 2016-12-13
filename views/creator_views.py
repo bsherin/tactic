@@ -164,8 +164,11 @@ class OptionManager(ResourceManager):
 
     def get_option_table(self):
         option_dict = request.json["option_dict"]
-        res_array = self.build_resource_array(option_dict)
-        result = self.build_html_table_from_data_list(res_array)
+        if len(option_dict) == 0:
+            result = "No options defined."
+        else:
+            res_array = self.build_resource_array(option_dict)
+            result = self.build_html_table_from_data_list(res_array)
         return jsonify({"success": True, "html": result})
 
 
@@ -186,8 +189,11 @@ class ExportManager(ResourceManager):
 
     def get_export_table(self):
         export_list = request.json["export_list"]
-        res_array = self.build_resource_array(export_list)
-        result = self.build_html_table_from_data_list(res_array)
+        if len(export_list) == 0:
+            result = "No exports defined."
+        else:
+            res_array = self.build_resource_array(export_list)
+            result = self.build_html_table_from_data_list(res_array)
         return jsonify({"success": True, "html": result})
 
 
