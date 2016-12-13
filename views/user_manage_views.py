@@ -20,7 +20,7 @@ from tactic_app.docker_functions import send_direct_request_to_container
 
 from tactic_app.docker_functions import create_container, get_address
 from tactic_app.integrated_docs import api_html
-from tactic_app.function_recognizer import get_functions_full_code
+from tactic_app.tile_code_parser import get_functions_full_code
 import traceback
 
 AUTOSPLIT = True

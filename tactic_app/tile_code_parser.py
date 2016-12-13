@@ -15,6 +15,8 @@ COMMA = '\s*,\s*'
 PARAM_LIST = '\((' + IDENT+'?' + '(?:' + COMMA+IDENT + ')*'+ ')?\)'
 PARAM_LIST_NO_CAPTURE = '\(' + IDENT_WITH_DEFAULT+'?' + '(?:' + COMMA+IDENT_WITH_DEFAULT + ')*'+ '?\)'
 
+PARAM_LIST_CAPTURE_ITEMS = '\((' + IDENT + ')?' + '(?:' + COMMA + '(' + IDENT + '))*'+ '\)'
+
 # Definition starts with 'def', then identifier, some space, and param list.
 
 BODY = ':.*\n([\s\S]*?(?=$|\sdef ))'
@@ -30,13 +32,19 @@ INIT_METHOD = '( *def *__init__[\s\S]*?)(?=(?:$| *?def | *?@))'
 ASSIGNMENTS = 'self\.(' + IDENT + ') *\= *([\S]+)'
 
 DEF_FULL_CODE = '((?:' + DECORATOR + ')?' + DEF_LINE + '[\s\S]*?)(?=(?:$|\n    def |\n    @))'
+CLASS_LINE = "\nclass *" + IDENT +" *?" + PARAM_LIST_CAPTURE_ITEMS
 
 ident_rx = re.compile(IDENT)
 def_rx = re.compile(DEF)
 def_fc = re.compile(DEF_FULL_CODE)
+def_cl = re.compile(CLASS_LINE)
 
 init_rx = re.compile(INIT_METHOD)
 ass_rx = re.compile(ASSIGNMENTS)
+
+def get_base_classes(the_code):
+    return def_cl.findall(the_code)[0]
+
 
 def RepresentsInt(s):
     try:
@@ -226,8 +234,9 @@ class WordFreqDist(TileBase):
 
 """
 
-# from function_recognizer import test_string, def_rx, def_fc, ts2, run_test, run_ass_test
+# from tile_code_parser import test_string, def_rx, def_fc, ts2, run_test, run_ass_test, get_base_classes
 # def_rx.findall(test_string)
 # res = def_fc.findall(ts2)
+# res = get_base_classes(ts2)
 
 

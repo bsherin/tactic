@@ -339,11 +339,13 @@ var tile_manager_specifics = {
     show_loaded_list: true,
     popup_buttons: [{"name": "new",
                     "button_class": "btn-success",
-                    "option_list": [{"opt_name": "New_In_Creator", "opt_func": "new_in_creator"},
-                                    {"opt_name": "BasicTileTemplate", "opt_func": "new_tile"},
+                    "option_list": [{"opt_name": "BasicTileTemplate", "opt_func": "new_tile"},
                                     {"opt_name": "ExpandedTileTemplate", "opt_func": "new_tile"},
-                                    {"opt_name": "MatplotlibTileTemplate", "opt_func": "new_tile"}]}],
-
+                                    {"opt_name": "MatplotlibTileTemplate", "opt_func": "new_tile"}]},
+                    {"name": "new_in_creator",
+                    "button_class": "btn-success",
+                    "option_list": [{"opt_name": "StandardTile", "opt_func": "new_basic_in_creator"},
+                                    {"opt_name": "MatplotlibTile", "opt_func": "new_mpl_in_creator"}]}],
     file_adders: [
         {"name": "add_module", "func": "add_tile_module", "button_class": "btn-success" }
     ],
@@ -388,9 +390,8 @@ var tile_manager_specifics = {
         event.preventDefault();
     },
 
-    new_in_creator: function (event) {
+    new_in_creator: function (event, template_name) {
         var manager = event.data.manager;
-        var template_name = "BasicTileTemplate";
         $.getJSON($SCRIPT_ROOT + "get_resource_names/tile", function(data) {
                 showModal("New Tile", "New Tile Name", CreateNewTileModule, "NewTileModule", data["resource_names"])
             }
@@ -409,6 +410,17 @@ var tile_manager_specifics = {
                     }
             });
         }
+        event.preventDefault();
+    },
+
+    new_basic_in_creator: function (event) {
+        console.log("i and here")
+        tileManager.new_in_creator(event, "BasicTileTemplate")
+        event.preventDefault();
+    },
+
+    new_mpl_in_creator: function (event) {
+        tileManager.new_in_creator(event, "MatplotlibTileTemplate");
         event.preventDefault();
     },
 

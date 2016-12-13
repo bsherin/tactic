@@ -6,7 +6,7 @@ import tactic_app
 from tactic_app import app, db, socketio
 from tactic_app.global_tile_management import global_tile_manager
 from tactic_app.docker_functions import send_direct_request_to_container
-from tactic_app.function_recognizer import get_functions_full_code, get_assignments_from_init
+from tactic_app.tile_code_parser import get_functions_full_code, get_assignments_from_init, get_base_classes
 import re, sys, datetime
 
 
@@ -52,6 +52,10 @@ def build_code(data_dict):
     export_list_of_dicts = [{"name": exp_name} for exp_name in export_list]
     extra_methods = insert_indents(data_dict["extra_methods"], 1)
     render_content_body = insert_indents(data_dict["render_content_body"], 2)
+    if data_dict["is_mpl"]:
+        draw_plot_body = insert_indents(data_dict["draw_plot_body"], 2)
+    else:
+        draw_plot_body = ""
     options = data_dict["options"]
     for opt_dict in options:
         if "default" not in opt_dict:
@@ -66,8 +70,10 @@ def build_code(data_dict):
                                 category=data_dict["category"],
                                 exports=export_list_of_dicts,
                                 options=data_dict["options"],
+                                is_mpl=data_dict["is_mpl"],
                                 extra_methods=extra_methods,
-                                render_content_body=render_content_body)
+                                render_content_body=render_content_body,
+                                draw_plot_body=draw_plot_body)
     return full_code
 
 @app.route('/creator_update_module', methods=['post'])
@@ -127,12 +133,28 @@ def parse_code():
             option["default"] = default_dict[option["name"]]
 
     func_dict = get_functions_full_code(module_code)
-    render_template_code = func_dict["render_content"]
-    render_template_code = re.sub("([\s\S]*?\n    def [\S\s]*?\: *?\n)", "", render_template_code)
-    render_template_code = remove_indents(render_template_code, 2)
+    if "render_content" in func_dict:
+        render_content_code = func_dict["render_content"]
+        render_content_code = re.sub("([\s\S]*?\n    def [\S\s]*?\: *?\n)", "", render_content_code)
+        render_content_code = remove_indents(render_content_code, 2)
+    else:
+        render_content_code = ""
+
+    base_classes = get_base_classes(module_code)
+    is_mpl = "MplFigure" in base_classes
+
+    if is_mpl and "draw_plot" in func_dict:
+            draw_plot_code = func_dict["draw_plot"]
+            draw_plot_code = re.sub("([\s\S]*?\n    def [\S\s]*?\: *?\n)", "", draw_plot_code)
+            draw_plot_code = remove_indents(draw_plot_code, 2)
+    else:
+        draw_plot_code = ""
+
     extra_functions = ""
     for func_name, func_code in func_dict.items():
         if func_name not in ["__init__", "render_content", "options"]:
+            if is_mpl and func_name == "draw_plot":
+                continue
             if len(extra_functions) != 0 and extra_functions[-1] != "\n":
                 extra_functions += "\n"
             extra_functions += func_code
@@ -140,10 +162,12 @@ def parse_code():
     extra_functions = remove_indents(extra_functions, 1)
 
     return jsonify({"success": True, "option_dict": option_dict, "export_list": export_list,
-                    "render_template_code": render_template_code,
+                    "render_content_code": render_content_code,
                     "extra_functions": extra_functions,
                     "category": category,
-                    "metadata": mdata})
+                    "metadata": mdata,
+                    "is_mpl": is_mpl,
+                    "draw_plot_code": draw_plot_code})
 
 class OptionManager(ResourceManager):
 

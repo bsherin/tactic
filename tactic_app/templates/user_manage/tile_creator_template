@@ -1,5 +1,5 @@
 @user_tile
-class {{class_name}}(TileBase):
+class {{class_name}}(TileBase{% if is_mpl %}, MplFigure{% endif %}):
     category = "{{category}}"
     exports = [{% for exp in exports %}"{{exp.name | e}}"{% if not loop.last %}, {% endif %}{%endfor%}]
 
@@ -16,8 +16,12 @@ class {{class_name}}(TileBase):
         return  [
         {% for option in options -%}
         {"name": "{{option.name|e}}", "type": "{{option.type|e}}"{% if option.special_list %}", special_list":{{option.special_list|e}}, {% endif %}{% if option.tag %}", tag":{{option.tag|e}}{% endif %}}{% if not loop.last %},{% endif %}
-        {% endfor %}
+        {% endfor -%}
     ]
 {{extra_methods -}}
+{% if is_mpl %}
+    def draw_plot(self):
+{{draw_plot_body -}}
+{% endif %}
     def render_content(self):
 {{render_content_body}}
