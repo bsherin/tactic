@@ -48,6 +48,7 @@ function start_post_load() {
         $("#codearea .CodeMirror").css('height', window.innerHeight - $("#codearea .CodeMirror").offset().top - 20);
         $("#api-area").css('height', window.innerHeight - $("#api-area").offset().top - 20);
         $("#method-module .CodeMirror").css('height', window.innerHeight - $("#method-module .CodeMirror").offset().top - 20);
+        $(".tab-pane").css('height', window.innerHeight - $(".tab-pane").offset().top - 20);
     };
 
     socket.on('doflash', doFlash);
@@ -350,6 +351,7 @@ function continue_loading() {
     });
     $(".CodeMirror").css('height', window.innerHeight - $(".CodeMirror").offset().top - 20);
     $("#api-area").css('height', window.innerHeight - $("#api-area").offset().top - 20);
+    $(".tab-pane").css('height', window.innerHeight - $(".tab-pane").offset().top - 20);
     savedCode = myCodeMirror.getDoc().getValue();
 
     var result_dict = {"res_type": "tile", "res_name": module_name};
