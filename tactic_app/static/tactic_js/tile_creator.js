@@ -49,9 +49,9 @@ function start_post_load() {
 
     window.onresize = function () {
         if (is_mpl) {
-            $("#drawplotcodearea .CodeMirror").css('height', [window.innerHeight - $("#drawplotcodearea .CodeMirror").offset().top - 20] / 2);
+            $("#drawplotboundingarea").css('height', [window.innerHeight - $("#drawplotboundingarea").offset().top - 20] / 2);
         }
-        $("#codearea .CodeMirror").css('height', window.innerHeight - $("#codearea .CodeMirror").offset().top - 20);
+        $("#codearea").css('height', window.innerHeight - $("#codearea").offset().top - 20);
         $("#api-area").css('height', window.innerHeight - $("#api-area").offset().top - 20);
         $("#method-module .CodeMirror").css('height', window.innerHeight - $("#method-module .CodeMirror").offset().top - 20);
         $(".tab-pane").css('height', window.innerHeight - $(".tab-pane").offset().top - 20);
@@ -373,12 +373,23 @@ function continue_loading() {
             cm.replaceSelection(spaces);
           }
         });
-        $("#drawplotboundingarea").css("display", "block");
+        dpba = $("#drawplotboundingarea");
+        dpba.css("display", "block");
         myDPCodeMirror.refresh();
-        $("#drawplotcodearea .CodeMirror").css('height', [window.innerHeight - $("#drawplotcodearea .CodeMirror").offset().top - 20] / 2);
+        dpba.css('height', [window.innerHeight - dpba.offset().top - 20] / 2);
         savedDPCode = myDPCodeMirror.getDoc().getValue();
+        dpba.resizable({
+                handles: "s",
+                resize: function (event, ui) {
+                    // ui.position.top = 0;
+                    dpba.css('height', ui.size.height);
+                    $("#drawplotcodearea").css('height', ui.size.height - ($("#drawplotcodearea").offset().top - dpba.offset().top ))
+                    $("#codearea").css('height', window.innerHeight - $("#codearea").offset().top - 20);
+                }
+                // resize: handle_resize
+            });
     }
-    $("#codearea .CodeMirror").css('height', window.innerHeight - $(".CodeMirror").offset().top - 20);
+    $("#codearea").css('height', window.innerHeight - $("#codearea").offset().top - 20);
     $("#api-area").css('height', window.innerHeight - $("#api-area").offset().top - 20);
     $(".tab-pane").css('height', window.innerHeight - $(".tab-pane").offset().top - 20);
     savedCode = myCodeMirror.getDoc().getValue();
@@ -428,11 +439,13 @@ function dirty() {
 function changeTheme() {
     if (current_theme == "default") {
         myCodeMirror.setOption("theme", "pastel-on-dark");
+        myDPCodeMirror.setOption("theme", "pastel-on-dark");
         document.body.style.backgroundColor = "grey";
         current_theme = "dark"
     }
     else {
         myCodeMirror.setOption("theme", "default");
+        myDPCodeMirror.setOption("theme", "default");
         document.body.style.backgroundColor = "white";
         current_theme = "default"
     }

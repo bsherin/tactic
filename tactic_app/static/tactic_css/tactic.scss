@@ -56,8 +56,14 @@ $accordian-panel-background-color: #f1f1f1;
 $accordian-panel-foreground-color: #555;
 $accordion-panel-font-size: 14px;
 
+$bootstrap-border-color: rgb(221, 221, 221);
+
 #api-area {
     border: $api-border-style;
+}
+
+.bootstrap-border {
+    border-color: $bootstrap-border-color
 }
 
 /* accordion related */
@@ -219,11 +225,14 @@ a[role="tab"] {
 
 /* creator */
 
+.ui-resizable-s {
+  width: 15px; }
+
 #creator-resources {
     .tab-pane {
         padding: 10px;
         border-style: solid;
-        border-color: rgb(221, 221, 221);
+        border-color: $bootstrap-border-color;
         border-width: 1px;
         margin-right: 10px;
 
