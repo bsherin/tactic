@@ -7,6 +7,9 @@
 #api-area {
   border: none; }
 
+.bootstrap-border {
+  border-color: #dddddd; }
+
 /* accordion related */
 button.accordion {
   background-color: #d9edf7;
@@ -127,6 +130,9 @@ a[role="tab"] {
   width: 350px; }
 
 /* creator */
+.ui-resizable-s {
+  width: 15px; }
+
 #creator-resources .tab-pane {
   padding: 10px;
   border-style: solid;

@@ -31,7 +31,8 @@ function objectKeys(obj) {
 function ResourceManager(res_type, specifics) {
     this.res_type = res_type;
     updateObject(this, specifics);
-    this.add_listeners()
+    this.add_listeners();
+    this.textify_button_names();
 }
 
 ResourceManager.prototype = {
@@ -59,6 +60,31 @@ ResourceManager.prototype = {
                 $("#{0}-{1}-button".format(opt.opt_name, self.res_type)).click({"manager": self, "opt_name": opt.opt_name}, self[opt.opt_func])
             })
         });
+    },
+
+    textify_button_names: function () {
+        var but;
+        var i;
+      for (i=0; i < this.buttons.length; ++i) {
+          but = this.buttons[i];
+          but_text = but["name"].replace(/_/g, ' ');
+          this.buttons[i]["name_text"] = but_text
+      }
+      for (i=0; i < this.popup_buttons.length; ++i) {
+          but = this.popup_buttons[i];
+          but_text = but["name"].replace(/_/g, ' ');
+          this.popup_buttons[i]["name_text"] = but_text
+      }
+      for (i=0; i < this.repository_buttons.length; ++i) {
+          but = this.repository_buttons[i];
+          but_text = but["name"].replace(/_/g, ' ');
+          this.repository_buttons[i]["name_text"] = but_text
+      }
+      for (i=0; i < this.file_adders.length; ++i) {
+          but = this.file_adders[i];
+          but_text = but["name"].replace(/_/g, ' ');
+          this.file_adders[i]["name_text"] = but_text
+      }
     },
 
     add_func: function (event) {
