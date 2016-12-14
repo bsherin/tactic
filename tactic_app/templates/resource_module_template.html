@@ -18,7 +18,7 @@
     <div class="row indent-row" style="margin-top: 10px">
         <div class="col-xs-12">
             <form action="" method="post" target="_self" id="{{name}}-{{res_type}}-form" enctype="multipart/form-data">
-                <input class="btn add-button btn-success" style="display: inline" type="submit" value="{{name}}">
+                <input class="btn add-button btn-success" style="display: inline" type="submit" value="{{name_text}}">
                 <input id="file-inputter" style="display: inline" type="file" name="file" {{#show_multiple}}multiple{{/show_multiple}}>
             </form>
         </div>
@@ -29,7 +29,7 @@
             <div class="btn-group" style= "margin-top: 5px; margin-bottom: 5px" role="group">
                 {{#popup_buttons}}
                 <div class="btn-group">
-                    <button type="button" id="{{name}}-{{res_type}}-button" class="btn {{button_class}} dropdown-toggle action-button" data-toggle="dropdown">{{name}}<span class="caret"></span></button>
+                    <button type="button" id="{{name}}-{{res_type}}-button" class="btn {{button_class}} dropdown-toggle action-button" data-toggle="dropdown">{{name_text}}<span class="caret"></span></button>
                       <ul class="dropdown-menu">
                           {{#option_list}}
                             <li><a id="{{opt_name}}-{{res_type}}-button" class="popup_item" href="#">{{opt_name}}</a></li>
@@ -38,7 +38,7 @@
                 </div>
                 {{/popup_buttons}}
                 {{#buttons}}
-                <button type="button" id="{{name}}-{{res_type}}-button" class="btn {{button_class}} action-button">{{name}}</button>
+                <button type="button" id="{{name}}-{{res_type}}-button" class="btn {{button_class}} action-button">{{name_text}}</button>
                 {{/buttons}}
             </div>
 
@@ -92,7 +92,7 @@
             <div class="btn-group" style= "margin-top: 5px; margin-bottom: 5px" role="group">
                 <button type="button" id="repository-copy-{{res_type}}-button" class="btn btn-success">Copy to Library</button>
                 {{#repository_buttons}}
-                <button type="button" id="repository-{{name}}-{{res_type}}-button" class="btn {{button_class}} action-button">{{name}}</button>
+                <button type="button" id="repository-{{name}}-{{res_type}}-button" class="btn {{button_class}} action-button">{{name_text}}</button>
                 {{/repository_buttons}}
             </div>
         </div>

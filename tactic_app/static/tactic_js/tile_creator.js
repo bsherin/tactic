@@ -48,6 +48,9 @@ function start_post_load() {
     socket.emit('join', {"user_id":  user_id, "user_manage_id":  user_manage_id});
 
     window.onresize = function () {
+        if (is_mpl) {
+            $("#drawplotcodearea .CodeMirror").css('height', [window.innerHeight - $("#drawplotcodearea .CodeMirror").offset().top - 20] / 2);
+        }
         $("#codearea .CodeMirror").css('height', window.innerHeight - $("#codearea .CodeMirror").offset().top - 20);
         $("#api-area").css('height', window.innerHeight - $("#api-area").offset().top - 20);
         $("#method-module .CodeMirror").css('height', window.innerHeight - $("#method-module .CodeMirror").offset().top - 20);
