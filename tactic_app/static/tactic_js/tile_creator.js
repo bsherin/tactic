@@ -18,7 +18,7 @@ var draw_plot_code = null;
 
 $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function (e) {
     if ($(e.currentTarget).attr("value") == "method") {
-        methodManager.cmobject.refresh()
+        methodManager.cmobject.refresh();
         $("#method-module .CodeMirror").css('height', window.innerHeight - $("#method-module .CodeMirror").offset().top - 20);
     }
 });
@@ -62,6 +62,7 @@ function start_post_load() {
     data.module_name = module_name;
     postAjax("parse_code", data, parse_success)
 }
+
 
 function parse_success(data) {
     if (!data.success) {
@@ -308,8 +309,13 @@ function createCMArea(codearea) {
         indentUnit: 4,
         readOnly: false
     });
-    $(codearea).find(".CodeMirror").resizable({handles: "se"});
-    $(codearea).find(".CodeMirror").height(100);
+    cmobject.setOption("extraKeys", {
+          Tab: function(cm) {
+            var spaces = Array(5).join(" ");
+            cm.replaceSelection(spaces);
+          },
+          "Ctrl-Space": "autocomplete"
+        });
     return cmobject
 }
 
@@ -334,6 +340,8 @@ var method_manager_specifics = {
     create_module_html: function () {
         var codearea = document.getElementById("method-module");
         this.cmobject = createCMArea(codearea);
+        $(codearea).find(".CodeMirror").resizable({handles: "se"});
+        $(codearea).find(".CodeMirror").height(100);
     }
 
 };
@@ -342,37 +350,16 @@ var methodManager = new ResourceManager("method", method_manager_specifics);
 
 
 function continue_loading() {
+    CodeMirror.commands.autocomplete = function(cm) {
+        cm.showHint({hint: CodeMirror.hint.anyword});
+    };
     var codearea = document.getElementById("codearea");
-    myCodeMirror = CodeMirror(codearea, {
-        lineNumbers: true,
-        matchBrackets: true,
-        autoCloseBrackets: true,
-        indentUnit: 4,
-        readOnly: view_only
-        });
-    myCodeMirror.setValue(rt_code);
-    myCodeMirror.setOption("extraKeys", {
-      Tab: function(cm) {
-        var spaces = Array(5).join(" ");
-        cm.replaceSelection(spaces);
-      }
-    });
+    myCodeMirror = createCMArea(codearea);
+    myCodeMirror.setValue(rt_code)
     if (is_mpl) {
         var drawplotcodearea = document.getElementById("drawplotcodearea");
-        myDPCodeMirror = CodeMirror(drawplotcodearea, {
-            lineNumbers: true,
-            matchBrackets: true,
-            autoCloseBrackets: true,
-            indentUnit: 4,
-            readOnly: view_only
-            });
+        myDPCodeMirror = createCMArea(drawplotcodearea)
         myDPCodeMirror.setValue(draw_plot_code);
-        myDPCodeMirror.setOption("extraKeys", {
-          Tab: function(cm) {
-            var spaces = Array(5).join(" ");
-            cm.replaceSelection(spaces);
-          }
-        });
         dpba = $("#drawplotboundingarea");
         dpba.css("display", "block");
         myDPCodeMirror.refresh();
