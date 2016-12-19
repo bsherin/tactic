@@ -46,16 +46,44 @@
                             <button type="button" class="btn btn-default" onclick="changeTheme()">Toggle Theme</button>
                             <button type="button" class="btn btn-default" onclick="showAPI()">Show API</button>
                         </div>
+
+
                         <div style="float: right">
                             <button id="module-name" type="button" class="btn btn-default res-name-button" onclick="renameModule()">{{ module_name }}</button>
                         </div>
                     </div>
                 </div>
                 <div id="drawplotboundingarea" class="bootstrap-border" style="display: none; border-bottom-width: 1px; border-bottom-style: solid; margin-bottom: 20px">
-                    <h4>draw_plot</h4>
+                    <h4 style="display:inline-block">draw_plot</h4>
+                        <div class="btn-group" style= "margin-top: 5px; margin-bottom: 5px; float:right" role="group">
+                           {% for catdict in api_dlist%}
+
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">{{catdict.cat_name}}<span class="caret"></span></button>
+                                  <ul class="dropdown-menu">
+                                      {% for api_item in catdict.cat_list %}
+                                        <li><a class="popup_item" onclick="insertApiItemDP('{{api_item.name}}')">{{api_item.name}}</a></li>
+                                      {% endfor %}
+                                  </ul>
+                            </div>
+                           {% endfor %}
+                    </div>
                     <div id="drawplotcodearea" style="overflow-y: scroll"></div>
                 </div>
-                <h4>render_content</h4>
+                <h4 style="display:inline-block">render_content</h4>
+                    <div class="btn-group" style= "margin-top: 5px; margin-bottom: 5px; float:right" role="group">
+                           {% for catdict in api_dlist%}
+
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">{{catdict.cat_name}}<span class="caret"></span></button>
+                                  <ul class="dropdown-menu">
+                                      {% for api_item in catdict.cat_list %}
+                                        <li><a class="popup_item" onclick="insertApiItem('{{api_item.name}}')">{{api_item.name}}</a></li>
+                                      {% endfor %}
+                                  </ul>
+                            </div>
+                           {% endfor %}
+                    </div>
                 <div id="codearea" style="overflow-y: scroll"></div>
             </div>
             <div class="col-xs-5">

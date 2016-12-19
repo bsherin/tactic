@@ -15,6 +15,8 @@ var rt_code = null;
 var user_manage_id = guid();
 var is_mpl = null;
 var draw_plot_code = null;
+var api_dict_by_name = null;
+var api_dict_by_category = null;
 
 $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function (e) {
     if ($(e.currentTarget).attr("value") == "method") {
@@ -55,11 +57,11 @@ function start_post_load() {
         $("#api-area").css('height', window.innerHeight - $("#api-area").offset().top - 20);
         $("#method-module .CodeMirror").css('height', window.innerHeight - $("#method-module .CodeMirror").offset().top - 20);
         $(".tab-pane").css('height', window.innerHeight - $(".tab-pane").offset().top - 20);
-    };
+    }
 
     socket.on('doflash', doFlash);
     var data = {};
-    data.module_name = module_name
+    data.module_name = module_name;
     postAjax("parse_code", data, parse_success)
 }
 
@@ -350,11 +352,16 @@ var methodManager = new ResourceManager("method", method_manager_specifics);
 
 
 function continue_loading(data) {
-    var api_dict = data.api_dict;
+    api_dict_by_category = data.api_dict_by_category;
+    api_dict_by_name = data.api_dict_by_name;
+    ordered_api_categories = data.ordered_api_categories
     var api_list = [];
-    for (var cat in api_dict) {
-        if (!api_dict.hasOwnProperty(cat)) continue;
-        api_list = api_list.concat(api_dict[cat])
+    for (var catnum = 0; catnum < ordered_api_categories.length; catnum += 1) {
+        cat = ordered_api_categories[catnum];
+        for (var i = 0; i < api_dict_by_category[cat].length; i += 1) {
+            entry = api_dict_by_category[cat][i];
+            api_list.push(entry["name"]);
+        }
     }
 
     CodeMirror.commands.autocomplete = function(cm) {
@@ -551,6 +558,16 @@ function loadModule() {
 
 function saveModuleAs() {
     doFlash({"message": "not implemented yet"})
+}
+
+function insertApiItem(the_item) {
+    myCodeMirror.getDoc().replaceSelection("self." + api_dict_by_name[the_item].signature);
+    return false
+}
+
+function insertApiItemDP(the_item) {
+    myDPCodeMirror.getDoc().replaceSelection("self." + api_dict_by_name[the_item].signature);
+    return false
 }
 
 function copyToLibrary() {

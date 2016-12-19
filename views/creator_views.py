@@ -7,7 +7,7 @@ from tactic_app import app, db, socketio
 from tactic_app.global_tile_management import global_tile_manager
 from tactic_app.docker_functions import send_direct_request_to_container
 from tactic_app.tile_code_parser import get_functions_full_code, get_assignments_from_init, get_base_classes
-from tactic_app.integrated_docs import api_array
+from tactic_app.integrated_docs import api_array, api_dict_by_category, api_dict_by_name, ordered_api_categories
 import re, sys, datetime
 
 
@@ -114,17 +114,9 @@ def grab_metadata(module_name):
 @app.route('/get_api_dict', methods=['GET', 'POST'])
 @login_required
 def get_api_dict():
-    api_dict = {}
-    for cat_array in api_array:
-        cat_list = []
-        for entry in cat_array[1]:
-            cat_list += entry[0].split(", self\.")
-        revised_cat_list = []
-        for ent in cat_list:
-            ent_revised = re.sub("self\.", "", ent)
-            revised_cat_list.append(ent_revised)
-        api_dict[cat_array[0]] = revised_cat_list
-    return jsonify({"success": True, "api_dict": api_dict})
+    return jsonify({"success": True, "api_dict_by_name": api_dict_by_name,
+                    "api_dict_by_category": api_dict_by_category,
+                    "ordered_api_categories": ordered_api_categories})
 
 @app.route('/parse_code', methods=['GET', 'POST'])
 @login_required

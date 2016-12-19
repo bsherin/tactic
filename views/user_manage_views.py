@@ -19,7 +19,7 @@ from tactic_app.users import User, copy_between_accounts
 from tactic_app.docker_functions import send_direct_request_to_container
 
 from tactic_app.docker_functions import create_container, get_address
-from tactic_app.integrated_docs import api_html
+from tactic_app.integrated_docs import api_html, api_dict_by_category, ordered_api_categories
 from tactic_app.tile_code_parser import get_functions_full_code
 import traceback
 
@@ -743,12 +743,20 @@ class TileManager(ResourceManager):
                         {"name": "function_select"},
                         {"name": "class_select"},
                         {"name": "pipe_select"}]
-        user_obj = current_user
+        revised_api_dlist = []
+        for cat in ordered_api_categories:
+            the_list = api_dict_by_category[cat]
+            new_list = []
+            for api_item in the_list:
+                new_list.append({"name": api_item["name"]})
+            if len(new_list) > 0:
+                revised_api_dlist.append({"cat_name": cat, "cat_list": new_list})
         return render_template("user_manage/tile_creator.html",
                                module_name=module_name,
                                read_only_string="",
                                api_html=api_html,
                                use_ssl=use_ssl,
+                               api_dlist=revised_api_dlist,
                                option_types=option_types)
 
     def repository_view_module(self, module_name):
