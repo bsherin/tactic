@@ -59,7 +59,7 @@ function start_post_load() {
 
     socket.on('doflash', doFlash);
     var data = {};
-    data.module_name = module_name;
+    data.module_name = module_name
     postAjax("parse_code", data, parse_success)
 }
 
@@ -93,7 +93,7 @@ function parse_success(data) {
             $(".resource-module").on("click", ".resource-selector .selector-button", selector_click);
             optionManager.add_listeners();
             exportManager.add_listeners();
-            continue_loading()
+            postAjax("get_api_dict", {}, continue_loading)
         })
     }
 
@@ -349,16 +349,23 @@ var method_manager_specifics = {
 var methodManager = new ResourceManager("method", method_manager_specifics);
 
 
-function continue_loading() {
+function continue_loading(data) {
+    var api_dict = data.api_dict;
+    var api_list = [];
+    for (var cat in api_dict) {
+        if (!api_dict.hasOwnProperty(cat)) continue;
+        api_list = api_list.concat(api_dict[cat])
+    }
+
     CodeMirror.commands.autocomplete = function(cm) {
-        cm.showHint({hint: CodeMirror.hint.anyword});
+        cm.showHint({hint: CodeMirror.hint.anyword, api_list: api_list});
     };
     var codearea = document.getElementById("codearea");
     myCodeMirror = createCMArea(codearea);
-    myCodeMirror.setValue(rt_code)
+    myCodeMirror.setValue(rt_code);
     if (is_mpl) {
         var drawplotcodearea = document.getElementById("drawplotcodearea");
-        myDPCodeMirror = createCMArea(drawplotcodearea)
+        myDPCodeMirror = createCMArea(drawplotcodearea);
         myDPCodeMirror.setValue(draw_plot_code);
         dpba = $("#drawplotboundingarea");
         dpba.css("display", "block");
