@@ -1,4 +1,4 @@
-import requests
+import requests, markdown
 import re
 
 
@@ -20,7 +20,7 @@ def get_api_from_wiki():
             sectext[i] = list(re.findall(r"([\s\S]*?)```([\s\S]*)", sectext[i])[0])
             sectext[i][0] = remove_lt_whitespace(sectext[i][0])
             sectext[i][0] = re.sub(r"(\n\s*)", r", ", sectext[i][0])
-            sectext[i][1] = remove_lt_whitespace(sectext[i][1])
+            sectext[i][1] = markdown.markdown(remove_lt_whitespace(sectext[i][1]))
         newres.append([r[0], sectext])
     return newres
 
@@ -39,7 +39,7 @@ def create_api_dict_by_category(api_array):
     for cat_array in api_array:
         cat_list = []
         for entry in cat_array[1]:
-            cat_list += entry[0].split(", self\.")
+            cat_list += entry[0].split(", self.")
         revised_cat_list = []
         for ent in cat_list:
             signature = re.sub("self\.", "", ent)

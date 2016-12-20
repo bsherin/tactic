@@ -55,7 +55,7 @@
                 </div>
                 <div id="drawplotboundingarea" class="bootstrap-border" style="display: none; border-bottom-width: 1px; border-bottom-style: solid; margin-bottom: 20px">
                     <h4 style="display:inline-block">draw_plot</h4>
-                        <div class="btn-group" style= "margin-top: 5px; margin-bottom: 5px; float:right" role="group">
+                        <div class="btn-group" style= "margin-top: 10px; margin-bottom: 5px; float:right" role="group">
                            {% for catdict in api_dlist%}
 
                             <div class="btn-group">
@@ -68,10 +68,10 @@
                             </div>
                            {% endfor %}
                     </div>
-                    <div id="drawplotcodearea" style="overflow-y: scroll"></div>
+                    <div id="drawplotcodearea" style="overflow-y: auto"></div>
                 </div>
                 <h4 style="display:inline-block">render_content</h4>
-                    <div class="btn-group" style= "margin-top: 5px; margin-bottom: 5px; float:right" role="group">
+                    <div class="btn-group" style= "margin-top: 10px; margin-bottom: 5px; float:right" role="group">
                            {% for catdict in api_dlist%}
 
                             <div class="btn-group">
@@ -84,7 +84,7 @@
                             </div>
                            {% endfor %}
                     </div>
-                <div id="codearea" style="overflow-y: scroll"></div>
+                <div id="codearea" style="overflow-y: auto"></div>
             </div>
             <div class="col-xs-5">
                     <div id="api-area" style="display:none; overflow:scroll">{{api_html | safe}}</div>

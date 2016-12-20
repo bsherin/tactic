@@ -51,13 +51,16 @@ function start_post_load() {
 
     window.onresize = function () {
         if (is_mpl) {
-            $("#drawplotboundingarea").css('height', [window.innerHeight - $("#drawplotboundingarea").offset().top - 20] / 2);
+            dpba = $("#drawplotboundingarea");
+            the_height = [window.innerHeight - dpba.offset().top - 20] / 2
+            dpba.css('height', the_height);
+            $("#drawplotcodearea").css('height', the_height - ($("#drawplotcodearea").offset().top - dpba.offset().top ));
         }
         $("#codearea").css('height', window.innerHeight - $("#codearea").offset().top - 20);
         $("#api-area").css('height', window.innerHeight - $("#api-area").offset().top - 20);
         $("#method-module .CodeMirror").css('height', window.innerHeight - $("#method-module .CodeMirror").offset().top - 20);
         $(".tab-pane").css('height', window.innerHeight - $(".tab-pane").offset().top - 20);
-    }
+    };
 
     socket.on('doflash', doFlash);
     var data = {};
@@ -384,7 +387,7 @@ function continue_loading(data) {
                 resize: function (event, ui) {
                     // ui.position.top = 0;
                     dpba.css('height', ui.size.height);
-                    $("#drawplotcodearea").css('height', ui.size.height - ($("#drawplotcodearea").offset().top - dpba.offset().top ))
+                    $("#drawplotcodearea").css('height', ui.size.height - ($("#drawplotcodearea").offset().top - dpba.offset().top ));
                     $("#codearea").css('height', window.innerHeight - $("#codearea").offset().top - 20);
                 }
                 // resize: handle_resize
@@ -405,6 +408,7 @@ function continue_loading(data) {
         }
     }
     postAjax("grab_metadata", result_dict, got_metadata);
+    window.onresize();
     function got_metadata(data) {
         if (data.success) {
             $(".created").html(data.datestring);
