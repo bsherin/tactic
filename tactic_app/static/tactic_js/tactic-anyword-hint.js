@@ -40,17 +40,12 @@
       }
     }
     var api_list = options.api_list || [];
-    // var worddot = WORDDOT;
-    // end = cur.ch;
-    // start = end;
-    // while (start && worddot.test(curLine.charAt(start - 1))) --start;
-    // curWord = start != end && curLine.slice(start, end);
-    for (var i = 0; i < api_list.length; i += 1) {
-        var entry = api_list[i];
+
+    api_list.forEach(function (entry) {
         if (entry.lastIndexOf(curWord, 0) == 0) {
-          list.push(entry)
+            list.push(entry)
         }
-    }
+    });
     return {list: list, from: CodeMirror.Pos(cur.line, start), to: CodeMirror.Pos(cur.line, end)};
   });
 });

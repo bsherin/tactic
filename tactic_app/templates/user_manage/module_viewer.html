@@ -3,12 +3,6 @@
 {% block title %}{{module_name}}{% endblock %}
 
 {% block styles %}
-    <link rel="stylesheet" href="{{url_for('static', filename='css/codemirrorthemes/codemirror.css')}}">
-    <link rel="stylesheet" href="{{url_for('static', filename='css/codemirrorthemes/pastel-on-dark.css')}}">
-    <link rel="stylesheet" href="{{url_for('static', filename='css/codemirrorthemes/dialog.css')}}">
-    <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/tactic.css')}}">
-    <link rel="stylesheet" href="{{url_for('static', filename='css/alertify_css/alertify.min.css')}}"/>
-    <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/tactic_alertify_theme.css')}}" />
     <link rel="stylesheet" href="{{url_for('static', filename='css/jquery-ui.min.css')}}">
 {% endblock %}
 
@@ -69,19 +63,7 @@
 {%  endblock %}
 
 {% block scripts %}
-    <script src="{{url_for('static', filename='js/alertify.js')}}"></script>
-    <script src="{{url_for('static', filename='js/socket.io.js')}}"></script>
-    <script src="{{url_for('static', filename='js/codemirror.js')}}"></script>
-    <script src="{{url_for('static', filename='js/codemirror/search.js')}}"></script>
-    <script src="{{url_for('static', filename='js/codemirror/searchcursor.js')}}"></script>
-    <script src="{{url_for('static', filename='js/codemirror/jump-to-line.js')}}"></script>
-    <script src="{{url_for('static', filename='js/codemirror/dialog.js')}}"></script>
-    <script src="{{url_for('static', filename='js/python.js')}}"></script>
-    <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
-    <script src="{{url_for('static', filename='js/matchbrackets.js')}}"></script>
-    <script src="{{url_for('static', filename='js/closebrackets.js')}}"></script>
-    <script src="{{url_for('static', filename='tactic_js/utilities.js')}}"></script>
-    <script src="{{url_for('static', filename='tactic_js/communication.js')}}"></script>
+
     <script src="{{url_for('static', filename='tactic_js/module_viewer.js')}}"></script>
     <script>
         var user_id = "{{current_user.get_id()}}";

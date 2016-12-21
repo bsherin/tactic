@@ -41,6 +41,7 @@ function start_post_load() {
     $("#api-area").css('height', window.innerHeight - $("#api-area").offset().top - 20);
     savedCode = myCodeMirror.getDoc().getValue();
 
+
     var result_dict = {"res_type": "tile", "res_name": module_name};
     var acc = document.getElementsByClassName("accordion");
     var i;
@@ -68,6 +69,7 @@ function start_post_load() {
             $("#tile-notes").html("");
         }
     }
+    myCodeMirror.refresh()
 }
 
 function dirty() {

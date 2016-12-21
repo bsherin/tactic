@@ -246,6 +246,7 @@ class HostWorker(QWorker):
         unique_id = str(uuid.uuid4())
         template_data = data["template_data"]
         template_data["template_name"] = "main.html"
+        template_data["uses_codemirror"] = "True"
         if data["doc_type"] == "table":
             template_data["is_table"] = True
         else:
@@ -274,6 +275,7 @@ class HostWorker(QWorker):
         template_data = copy.copy(data)
         template_data["template_name"] = "error_window_template.html"
         template_data["error_string"] = str(template_data["error_string"])
+        template_data["uses_codemirror"] = "True"
         self.temp_dict[unique_id] = template_data
         socketio.emit("window-open", {"the_id": unique_id}, namespace='/user_manage', room=data["user_manage_id"])
         socketio.emit('stop-spinner', {}, namespace='/user_manage', room=data["user_manage_id"])
@@ -285,6 +287,7 @@ class HostWorker(QWorker):
         unique_id = str(uuid.uuid4())
         template_data = copy.copy(data)
         template_data["template_name"] = "log_window_template.html"
+        template_data["uses_codemirror"] = "True"
         self.temp_dict[unique_id] = template_data
         socketio.emit("window-open", {"the_id": unique_id}, namespace='/main', room=data["main_id"])
         return {"success": True}

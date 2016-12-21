@@ -30,11 +30,9 @@
 {%  endblock %}
 
 {% block scripts %}
-    <script src="{{url_for('static', filename='js/socket.io.js')}}"></script>
     <script src="{{url_for('static', filename='js/epiceditor.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/resource_manager.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/doc_manager.js')}}"></script>
-    <script src="{{url_for('static', filename='tactic_js/utilities.js')}}"></script>
     <script>
     var use_ssl = "{{use_ssl}}"=="True";
     var user_id = "{{current_user.get_id()}}";

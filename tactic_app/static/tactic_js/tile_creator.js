@@ -359,14 +359,11 @@ function continue_loading(data) {
     api_dict_by_name = data.api_dict_by_name;
     ordered_api_categories = data.ordered_api_categories
     var api_list = [];
-    for (var catnum = 0; catnum < ordered_api_categories.length; catnum += 1) {
-        cat = ordered_api_categories[catnum];
-        for (var i = 0; i < api_dict_by_category[cat].length; i += 1) {
-            entry = api_dict_by_category[cat][i];
-            api_list.push(entry["name"]);
-        }
-    }
-
+    ordered_api_categories.forEach(function(cat) {
+        api_dict_by_category[cat].forEach(function (entry) {
+            api_list.push(entry["name"])
+        })
+    });
     CodeMirror.commands.autocomplete = function(cm) {
         cm.showHint({hint: CodeMirror.hint.anyword, api_list: api_list});
     };

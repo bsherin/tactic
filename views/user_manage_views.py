@@ -406,7 +406,8 @@ class CollectionManager(ResourceManager):
                                console_html="",
                                is_table=(doc_type == "table"),
                                short_collection_name=short_collection_name,
-                               new_tile_info="")
+                               new_tile_info="",
+                               uses_codemirror="True")
 
     def download_collection(self, collection_name, new_name):
         user_obj = current_user
@@ -727,7 +728,8 @@ class TileManager(ResourceManager):
                                module_name=module_name,
                                module_code=module_code,
                                read_only_string="",
-                               api_html=api_html)
+                               api_html=api_html,
+                               uses_codemirror="True")
 
     def view_in_creator(self, module_name):
         option_types = [{"name": "text"},
@@ -757,7 +759,8 @@ class TileManager(ResourceManager):
                                api_html=api_html,
                                use_ssl=use_ssl,
                                api_dlist=revised_api_dlist,
-                               option_types=option_types)
+                               option_types=option_types,
+                               uses_codemirror="True")
 
     def repository_view_module(self, module_name):
         user_obj = repository_user
@@ -766,7 +769,8 @@ class TileManager(ResourceManager):
                                module_name=module_name,
                                module_code=module_code,
                                read_only_string="readonly",
-                               api_html = api_html)
+                               api_html=api_html,
+                               uses_codemirror=True)
 
     def load_tile_module(self, tile_module_name, return_json=True, user_obj=None):
         try:
@@ -934,7 +938,8 @@ class CodeManager(ResourceManager):
         return render_template("user_manage/code_viewer.html",
                                code_name=code_name,
                                the_code=the_code,
-                               read_only_string="")
+                               read_only_string="",
+                               uses_codemirror="True")
 
     def repository_view_code(self, code_name):
         user_obj = repository_user
@@ -942,7 +947,8 @@ class CodeManager(ResourceManager):
         return render_template("user_manage/code_viewer.html",
                                code_name=code_name,
                                the_code=the_code,
-                               read_only_string="readonly")
+                               read_only_string="readonly",
+                               uses_codemirror="True")
 
     def load_code(self, the_code):
         result = send_direct_request_to_container(global_tile_manager.test_tile_container_id, "clear_and_load_code",

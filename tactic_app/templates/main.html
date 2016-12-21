@@ -9,11 +9,7 @@
     <link rel="stylesheet" href="{{url_for('static', filename='css/jquery-ui.min.css')}}">
     <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/loader.css')}}">
     <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/table.css')}}">
-    <link rel="stylesheet" href="{{url_for('static', filename='css/codemirrorthemes/codemirror.css')}}">
-    <link rel="stylesheet" href="{{url_for('static', filename='css/codemirrorthemes/pastel-on-dark.css')}}">
-    <link rel="stylesheet" href="{{url_for('static', filename='css/codemirrorthemes/dialog.css')}}">
-     <link rel="stylesheet" href="{{url_for('static', filename='css/alertify_css/alertify.min.css')}}"/>
-    <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/tactic_alertify_theme.css')}}" />
+
 {% endblock %}
 
 {% block page_content %}
@@ -108,22 +104,12 @@
 
 {% endblock %}
 {% block scripts %}
-    <script src="{{url_for('static', filename='js/alertify.js')}}"></script>
     <script src="{{url_for('static', filename='js/jquery.isonscreen.js')}}"></script>
-    <script src="{{url_for('static', filename='js/socket.io.js')}}"></script>
     <script src="{{url_for('static', filename='js/d3.js')}}"></script>
     <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
     <script src="{{url_for('static', filename='js/transition.js')}}"></script>
     <script src="{{url_for('static', filename='js/collapse.js')}}"></script>
     <script src="{{url_for('static', filename='js/sorttable.js')}}"></script>
-    <script src="{{url_for('static', filename='js/codemirror.js')}}"></script>
-    <script src="{{url_for('static', filename='js/codemirror/search.js')}}"></script>
-    <script src="{{url_for('static', filename='js/codemirror/searchcursor.js')}}"></script>
-    <script src="{{url_for('static', filename='js/codemirror/jump-to-line.js')}}"></script>
-    <script src="{{url_for('static', filename='js/codemirror/dialog.js')}}"></script>
-    <script src="{{url_for('static', filename='js/python.js')}}"></script>
-    <script src="{{url_for('static', filename='tactic_js/utilities.js')}}"></script>
-    <script src="{{url_for('static', filename='tactic_js/communication.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/main_menus.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/d3figures.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/tiles.js')}}"></script>

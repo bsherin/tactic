@@ -7,8 +7,6 @@
 
 {% block styles %}
     <link rel="stylesheet" href="{{url_for('static', filename='css/jquery-ui.min.css')}}">
-    <link rel="stylesheet" href="{{url_for('static', filename='css/codemirrorthemes/codemirror.css')}}">
-    <link rel="stylesheet" href="{{url_for('static', filename='css/codemirrorthemes/pastel-on-dark.css')}}">
 {% endblock %}
 
 {% block page_content %}
@@ -33,17 +31,9 @@
 
 {% endblock %}
 {% block scripts %}
-    <script src="{{url_for('static', filename='js/socket.io.js')}}"></script>
     <script src="{{url_for('static', filename='js/d3.js')}}"></script>
     <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
     <script src="{{url_for('static', filename='js/sorttable.js')}}"></script>
-    <script src="{{url_for('static', filename='js/codemirror.js')}}"></script>
-    <script src="{{url_for('static', filename='js/codemirror/search.js')}}"></script>
-    <script src="{{url_for('static', filename='js/codemirror/searchcursor.js')}}"></script>
-    <script src="{{url_for('static', filename='js/codemirror/jump-to-line.js')}}"></script>
-    <script src="{{url_for('static', filename='js/codemirror/dialog.js')}}"></script>
-    <script src="{{url_for('static', filename='js/python.js')}}"></script>
-    <script src="{{url_for('static', filename='tactic_js/utilities.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/d3figures.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/logwindow.js')}}"></script>
     <script>
