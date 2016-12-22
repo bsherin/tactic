@@ -94,7 +94,7 @@ def creator_update_module():
         mdata["updated"] = datetime.datetime.today()
 
         db[current_user.tile_collection_name].update_one({"tile_module_name": module_name},
-                                                         {'$set': {"tile_module": module_code, "metadata": mdata}})
+                                                         {'$set': {"tile_module": module_code, "metadata": mdata, "last_saved": "creator"}})
         tile_manager.update_selector_list()
         return jsonify({"success": True, "message": "Module Successfully Saved", "alert_type": "alert-success"})
     except:

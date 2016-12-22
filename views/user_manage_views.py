@@ -681,6 +681,8 @@ class TileManager(ResourceManager):
                          login_required(self.view_module), methods=['get'])
         app.add_url_rule('/view_in_creator/<module_name>', "view_in_creator",
                          login_required(self.view_in_creator), methods=['get'])
+        app.add_url_rule('/last_saved_view/<module_name>', "last_saved_view",
+                         login_required(self.last_saved_view), methods=['get'])
         app.add_url_rule('/repository_view_module/<module_name>', "repository_view_module",
                          login_required(self.repository_view_module), methods=['get'])
         app.add_url_rule('/load_tile_module/<tile_module_name>', "load_tile_module",
@@ -730,6 +732,15 @@ class TileManager(ResourceManager):
                                read_only_string="",
                                api_html=api_html,
                                uses_codemirror="True")
+
+    def last_saved_view(self, module_name):
+        tile_dict = current_user.get_tile_dict(module_name)
+        if "last_saved" in tile_dict and tile_dict["last_saved"] == "creator":
+            result = self.view_in_creator(module_name)
+        else:
+            result = self.view_module(module_name)
+        return result
+
 
     def view_in_creator(self, module_name):
         option_types = [{"name": "text"},
@@ -851,6 +862,7 @@ class TileManager(ResourceManager):
         user_obj = current_user
         new_tile_name = request.json['new_res_name']
         template_name = request.json["template_name"]
+        last_saved = request.json["last_saved"]
         if db[user_obj.tile_collection_name].find_one({"tile_module_name": new_tile_name}) is not None:
             return jsonify({"success": False, "alert_type": "alert-warning",
                             "message": "A module with that name already exists"})
@@ -858,7 +870,8 @@ class TileManager(ResourceManager):
         template = mongo_dict["tile_module"]
 
         metadata = global_tile_manager.create_initial_metadata()
-        data_dict = {"tile_module_name": new_tile_name, "tile_module": template, "metadata": metadata}
+        data_dict = {"tile_module_name": new_tile_name, "tile_module": template, "metadata": metadata,
+                     "last_saved": last_saved}
         db[current_user.tile_collection_name].insert_one(data_dict)
         self.update_selector_list(new_tile_name)
         return jsonify({"success": True})
@@ -1160,7 +1173,8 @@ def update_module():
         mdata["updated"] = datetime.datetime.today()
 
         db[current_user.tile_collection_name].update_one({"tile_module_name": module_name},
-                                                         {'$set': {"tile_module": module_code, "metadata": mdata}})
+                                                         {'$set': {"tile_module": module_code, "metadata": mdata,
+                                                                   "last_saved": "viewer"}})
         tile_manager.update_selector_list()
         return jsonify({"success": True, "message": "Module Successfully Saved", "alert_type": "alert-success"})
     except:

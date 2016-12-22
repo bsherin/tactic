@@ -331,10 +331,11 @@ var tile_manager_specifics = {
     new_view: '/create_tile_module',
     view_view: '/view_module/',
     creator_view: '/view_in_creator/',
+    last_saved_view: '/last_saved_view/',
     repository_view_view: '/repository_view_module/',
     delete_view: "/delete_tile_module/",
     duplicate_view: '/create_duplicate_tile',
-    double_click_func: "view_func",
+    double_click_func: "dc_view_func",
     repository_double_click_func: "repository_view_func",
     show_loaded_list: true,
     popup_buttons: [{"name": "new",
@@ -370,6 +371,13 @@ var tile_manager_specifics = {
         window.open($SCRIPT_ROOT + manager.creator_view + String(res_name))
     },
 
+    dc_view_func: function (event) {
+        var manager = event.data.manager;
+        var res_name = manager.check_for_selection(manager.res_type);
+        if (res_name == "") return;
+        window.open($SCRIPT_ROOT + manager.last_saved_view + String(res_name))
+    },
+
     load_func: function (event) {
         var manager = event.data.manager;
         var res_name = manager.check_for_selection("tile");
@@ -399,7 +407,8 @@ var tile_manager_specifics = {
         function CreateNewTileModule (new_name) {
             var result_dict = {
                 "template_name": template_name,
-                "new_res_name": new_name
+                "new_res_name": new_name,
+                "last_saved": "creator"
             };
             postAjax(manager.new_view, result_dict, function(data) {
                     if (data.success){
@@ -434,7 +443,8 @@ var tile_manager_specifics = {
         function CreateNewTileModule (new_name) {
             var result_dict = {
                 "template_name": template_name,
-                "new_res_name": new_name
+                "new_res_name": new_name,
+                "last_saved": "viewer"
             };
             postAjax(manager.new_view, result_dict, function(data) {
                     if (data.success){

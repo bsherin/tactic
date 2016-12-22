@@ -10,7 +10,6 @@ var savedCode = null;
 var savedTags = null;
 var savedNotes = null;
 var creator_resource_module_template;
-var res_types = ["option", "export", "method"];
 var rt_code = null;
 var user_manage_id = guid();
 var is_mpl = null;
@@ -56,7 +55,7 @@ function start_post_load() {
             dpba.css('height', the_height);
             dpca_height = the_height - ($("#drawplotcodearea").offset().top - dpba.offset().top);
             $("#drawplotcodearea").css('height', dpca_height);
-            $("#drawplotcodearea .CodeMirror").css('height', dpca_height)
+            $("#drawplotcodearea .CodeMirror").css('height', dpca_height);
             myDPCodeMirror.refresh();
         }
         resize_dom_to_bottom("#codearea", 20);
@@ -218,13 +217,13 @@ var option_manager_specifics = {
                 if (option_type == "int") {
                     option_default = manager.getInteger(option_default);
                     if (!option_default) {
-                        doFlash({"message": "Invalid default value.", "alert_type": "alert-warning"})
+                        doFlash({"message": "Invalid default value.", "alert_type": "alert-warning"});
                         return false
                     }
                 }
                 else if (option_type == "boolean") {
                     if (["true", "True", "false", "false"].indexOf(option_default) == -1) {
-                        doFlash({"message": "Invalid default value.", "alert_type": "alert-warning"})
+                        doFlash({"message": "Invalid default value.", "alert_type": "alert-warning"});
                         return false
                     }
                     option_default = (option_default == "true") || (option_default == "True");
@@ -263,7 +262,7 @@ var export_manager_specifics = {
             }
             else {
                 $("#export-selector").html(result.html);
-                select_resource_button("export", null)
+                select_resource_button("export", null);
                 sorttable.makeSortable($("#export-selector table")[0]);
                 var updated_header = $("#export-selector table th")[0];
                 sorttable.innerSortFunction.apply(updated_header, []);
@@ -272,7 +271,7 @@ var export_manager_specifics = {
     },
 
     refresh_export_table: function () {
-        this.fill_content()
+        this.fill_content();
         return false
     },
 
@@ -298,7 +297,7 @@ var export_manager_specifics = {
         var data = {};
         export_name = $("#export-name-input").val();
         if (manager.export_list.indexOf(export_name) != -1) {
-            doFlash({"message": "Export already exists.", "alert_type": "alert-warning"})
+            doFlash({"message": "Export already exists.", "alert_type": "alert-warning"});
             return false
         }
         else {
@@ -363,7 +362,7 @@ var methodManager = new ResourceManager("method", method_manager_specifics);
 function continue_loading(data) {
     api_dict_by_category = data.api_dict_by_category;
     api_dict_by_name = data.api_dict_by_name;
-    ordered_api_categories = data.ordered_api_categories
+    ordered_api_categories = data.ordered_api_categories;
     var api_list = [];
     ordered_api_categories.forEach(function(cat) {
         api_dict_by_category[cat].forEach(function (entry) {
@@ -387,7 +386,7 @@ function continue_loading(data) {
         dpba.css('height', the_height);
         dpca_height = the_height - ($("#drawplotcodearea").offset().top - dpba.offset().top);
         $("#drawplotcodearea").css('height', dpca_height);
-        $("#drawplotcodearea .CodeMirror").css('height', dpca_height)
+        $("#drawplotcodearea .CodeMirror").css('height', dpca_height);
         savedDPCode = myDPCodeMirror.getDoc().getValue();
         dpba.resizable({
                 handles: "s",
@@ -399,7 +398,7 @@ function continue_loading(data) {
                     dpba.css('height', the_height);
                     dpca_height = the_height - ($("#drawplotcodearea").offset().top - dpba.offset().top);
                     $("#drawplotcodearea").css('height', dpca_height);
-                    $("#drawplotcodearea .CodeMirror").css('height', dpca_height)
+                    $("#drawplotcodearea .CodeMirror").css('height', dpca_height);
 
                     resize_dom_to_bottom("#codearea", 20);
                     resize_dom_to_bottom("#codearea .CodeMirror", 20);
@@ -519,11 +518,12 @@ function doSave(update_success) {
         category = "basic"
     }
     var notes = $("#tile-notes").val();
+    var new_dp_code;
     if (is_mpl) {
-        var new_dp_code = myDPCodeMirror.getDoc().getValue();
+        new_dp_code = myDPCodeMirror.getDoc().getValue();
     }
     else {
-        var new_dp_code = ""
+        new_dp_code = ""
     }
     var result_dict = {
         "module_name": module_name,
