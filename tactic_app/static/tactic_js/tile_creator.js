@@ -3,7 +3,6 @@
  */
 
 var current_theme = "default";
-var mousetrap = new Mousetrap();
 var myCodeMirror;
 var myDPCodeMirror;
 var savedCode = null;
@@ -14,8 +13,7 @@ var rt_code = null;
 var user_manage_id = guid();
 var is_mpl = null;
 var draw_plot_code = null;
-var api_dict_by_name = null;
-var api_dict_by_category = null;
+var this_viewer = "creator";
 
 $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function (e) {
     if ($(e.currentTarget).attr("value") == "method") {
@@ -23,21 +21,6 @@ $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function (e) {
         methodManager.cmobject.refresh();
     }
 });
-
-mousetrap.bind("esc", function() {
-    clearStatusArea();
-});
-
-mousetrap.bind(['command+s', 'ctrl+s'], function(e) {
-    updateModule();
-    e.preventDefault()
-});
-
-mousetrap.bind(['command+l', 'ctrl+l'], function(e) {
-    loadModule();
-    e.preventDefault()
-});
-
 
 function start_post_load() {
     if (use_ssl) {
@@ -73,6 +56,15 @@ function start_post_load() {
     postAjax("parse_code", data, parse_success)
 }
 
+function rebuild_autocomplete_list() {
+    extra_autocomplete_list = [];
+    optionManager.option_dict.forEach(function(entry) {
+        extra_autocomplete_list.push(entry.name)
+    });
+    exportManager.export_list.forEach(function(entry) {
+        extra_autocomplete_list.push(entry)
+    })
+}
 
 function parse_success(data) {
     if (!data.success) {
@@ -110,6 +102,7 @@ function parse_success(data) {
 }
 
 
+
 var option_manager_specifics = {
 
     buttons: [
@@ -119,6 +112,7 @@ var option_manager_specifics = {
 
     fill_content: function () {
         data = {"option_dict": this.option_dict};
+        rebuild_autocomplete_list();
         postAjax("get_option_table", data, function (result) {
                 if (!result.success) {
                     doFlash(result)
@@ -256,6 +250,7 @@ var export_manager_specifics = {
 
     fill_content: function () {
         data = {"export_list": this.export_list};
+        rebuild_autocomplete_list();
         postAjax("get_export_table", data, function (result) {
             if (!result.success) {
                 doFlash(result)
@@ -311,23 +306,7 @@ var export_manager_specifics = {
 var exportManager = new ResourceManager("export", export_manager_specifics);
 $("#export-create-button").on("click", exportManager.createNewExport);
 
-function createCMArea(codearea) {
-    cmobject = CodeMirror(codearea, {
-        lineNumbers: true,
-        matchBrackets: true,
-        autoCloseBrackets: true,
-        indentUnit: 4,
-        readOnly: false
-    });
-    cmobject.setOption("extraKeys", {
-          Tab: function(cm) {
-            var spaces = Array(5).join(" ");
-            cm.replaceSelection(spaces);
-          },
-          "Ctrl-Space": "autocomplete"
-        });
-    return cmobject
-}
+
 
 var method_manager_specifics = {
 
@@ -360,18 +339,6 @@ var methodManager = new ResourceManager("method", method_manager_specifics);
 
 
 function continue_loading(data) {
-    api_dict_by_category = data.api_dict_by_category;
-    api_dict_by_name = data.api_dict_by_name;
-    ordered_api_categories = data.ordered_api_categories;
-    var api_list = [];
-    ordered_api_categories.forEach(function(cat) {
-        api_dict_by_category[cat].forEach(function (entry) {
-            api_list.push(entry["name"])
-        })
-    });
-    CodeMirror.commands.autocomplete = function(cm) {
-        cm.showHint({hint: CodeMirror.hint.anyword, api_list: api_list});
-    };
     var codearea = document.getElementById("codearea");
     myCodeMirror = createCMArea(codearea);
     myCodeMirror.setValue(rt_code);
@@ -448,143 +415,6 @@ function continue_loading(data) {
     }
 }
 
-function dirty() {
-    var the_code = myCodeMirror.getDoc().getValue();
-    var tags = $("#tile-tags").val();
-    var notes = $("#tile-notes").val();
-    if (is_mpl) {
-        var dp_code = myDPCodeMirror.getDoc().getValue();
-        return !((the_code == savedCode) && (dpt == savedDPCode) && (tags == savedTags) && (notes == savedNotes));
-    }
-    else {
-        return !((the_code == savedCode) && (tags == savedTags) && (notes == savedNotes));
-    }
-}
-
-function changeTheme() {
-    if (current_theme == "default") {
-        myCodeMirror.setOption("theme", "pastel-on-dark");
-        myDPCodeMirror.setOption("theme", "pastel-on-dark");
-        document.body.style.backgroundColor = "grey";
-        current_theme = "dark"
-    }
-    else {
-        myCodeMirror.setOption("theme", "default");
-        myDPCodeMirror.setOption("theme", "default");
-        document.body.style.backgroundColor = "white";
-        current_theme = "default"
-    }
-}
-
-function showAPI(){
-        $("#resource-area").toggle();
-        $("#api-area").toggle();
-        resize_dom_to_bottom("#api-area", 20);
-}
-
-function renameModule() {
-    console.log("entering rename");
-    $.getJSON($SCRIPT_ROOT + "get_resource_names/tile", function(data) {
-            var module_names = data["resource_names"];
-            var index = module_names.indexOf(module_name);
-            if (index >= 0) {
-              module_names.splice(index, 1);
-            }
-            showModal("Rename Module", "Name for this module", RenameModuleResource, module_name, module_names)
-        }
-    );
-    function RenameModuleResource (new_name) {
-        var the_data = {"new_name": new_name};
-        postAjax("rename_module/" + module_name, the_data, renameSuccess);
-        function renameSuccess(data) {
-            if (data.success) {
-                module_name = new_name;
-                $("#module-name").text(module_name)
-            }
-            else {
-                doFlash(data)
-            }
-
-        }
-    }
-}
-
-function doSave(update_success) {
-    var new_code = myCodeMirror.getDoc().getValue();
-
-    var tags = $("#tile-tags").val();
-    var category = $("#tile-category").val();
-    if (category.length == 0) {
-        category = "basic"
-    }
-    var notes = $("#tile-notes").val();
-    var new_dp_code;
-    if (is_mpl) {
-        new_dp_code = myDPCodeMirror.getDoc().getValue();
-    }
-    else {
-        new_dp_code = ""
-    }
-    var result_dict = {
-        "module_name": module_name,
-        "category": category,
-        "tags": tags,
-        "notes": notes,
-        "exports": exportManager.export_list,
-        "options": optionManager.option_dict,
-        "extra_methods": methodManager.get_extra_functions(),
-        "render_content_body": new_code,
-        "is_mpl": is_mpl,
-        "draw_plot_body": new_dp_code
-    };
-
-    postAjax("creator_update_module", result_dict, success_func);
-    function success_func(data) {
-        update_success(data, new_code, new_dp_code, tags, notes)
-    }
-}
-
-function updateModule() {
-    doSave(update_success);
-    function update_success(data, new_code, new_dp_code, tags, notes) {
-        if (data.success) {
-            savedCode = new_code;
-            savedDPCode = new_dp_code;
-            savedTags = tags;
-            savedNotes = notes;
-            data.timeout = 2000;
-        }
-        doFlash(data)
-    }
-}
-
-function loadModule() {
-    doSave(save_success);
-    function save_success(data, new_code, new_dp_code, tags, notes) {
-            if (data.success) {
-                savedCode = new_code;
-                savedDPCode = new_dp_code;
-                savedTags = tags;
-                savedNotes = notes;
-                data.timeout = 2000;
-                $.getJSON($SCRIPT_ROOT + '/load_tile_module/' + String(module_name), load_success)
-            }
-            else {
-                doFlash(data)
-            }
-    }
-    function load_success(data) {
-        if (data.success) {
-            data.timeout = 2000;
-        }
-        doFlash(data)
-    }
-}
-
-function saveModuleAs() {
-    doFlash({"message": "not implemented yet"})
-}
-
 function insertApiItem(the_item) {
     myCodeMirror.getDoc().replaceSelection("self." + api_dict_by_name[the_item].signature);
     return false
@@ -593,34 +423,4 @@ function insertApiItem(the_item) {
 function insertApiItemDP(the_item) {
     myDPCodeMirror.getDoc().replaceSelection("self." + api_dict_by_name[the_item].signature);
     return false
-}
-
-function copyToLibrary() {
-    $.getJSON($SCRIPT_ROOT + "get_resource_names/tile", function(data) {
-        showModal("Import Tile", "New Tile Name", ImportTileModule, module_name, data["resource_names"])
-        }
-    );
-    function ImportTileModule(new_name) {
-        var result_dict = {
-            "res_type": "tile",
-            "res_name": module_name,
-            "new_res_name": new_name
-        };
-        postAjax("copy_from_repository", result_dict, doFlash)
-    }
-}
-
-function sendToRepository() {
-    $.getJSON($SCRIPT_ROOT + "get_repository_resource_names/tile", function(data) {
-        showModal("Share tile", "New Tile Name", ShareTileResource, module_name, data["resource_names"])
-        }
-    );
-    function ShareTileResource(new_name) {
-        var result_dict = {
-            "res_type": "tile",
-            "res_name": module_name,
-            "new_res_name": new_name
-        };
-        postAjax("send_to_repository", result_dict, doFlash)
-    }
 }

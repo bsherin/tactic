@@ -46,6 +46,14 @@
             list.push(entry)
         }
     });
+
+    var extra_autocomplete_list = options.extra_autocomplete_list || [];
+    extra_autocomplete_list.forEach(function (entry) {
+        if (entry.lastIndexOf(curWord, 0) == 0) {
+            list.push(entry)
+        }
+    });
+
     return {list: list, from: CodeMirror.Pos(cur.line, start), to: CodeMirror.Pos(cur.line, end)};
   });
 });
