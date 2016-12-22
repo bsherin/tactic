@@ -142,6 +142,10 @@ function clearStatusArea() {
     $("#status-area").fadeOut()
 }
 
+function resize_dom_to_bottom(selector, bottom_margin) {
+    $(selector).css('height', window.innerHeight - $(selector).offset().top - bottom_margin)
+}
+
 function confirmDialog(modal_title, modal_text, cancel_text, submit_text, submit_function) {
     var res = Mustache.to_html(confirm_template, {
         "modal_title": modal_title,

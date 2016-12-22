@@ -20,8 +20,8 @@ var api_dict_by_category = null;
 
 $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function (e) {
     if ($(e.currentTarget).attr("value") == "method") {
+        resize_dom_to_bottom("#method-module .CodeMirror", 20);
         methodManager.cmobject.refresh();
-        $("#method-module .CodeMirror").css('height', window.innerHeight - $("#method-module .CodeMirror").offset().top - 20);
     }
 });
 
@@ -52,14 +52,20 @@ function start_post_load() {
     window.onresize = function () {
         if (is_mpl) {
             dpba = $("#drawplotboundingarea");
-            the_height = [window.innerHeight - dpba.offset().top - 20] / 2
+            the_height = [window.innerHeight - dpba.offset().top - 20] / 2;
             dpba.css('height', the_height);
-            $("#drawplotcodearea").css('height', the_height - ($("#drawplotcodearea").offset().top - dpba.offset().top ));
+            dpca_height = the_height - ($("#drawplotcodearea").offset().top - dpba.offset().top);
+            $("#drawplotcodearea").css('height', dpca_height);
+            $("#drawplotcodearea .CodeMirror").css('height', dpca_height)
+            myDPCodeMirror.refresh();
         }
-        $("#codearea").css('height', window.innerHeight - $("#codearea").offset().top - 20);
-        $("#api-area").css('height', window.innerHeight - $("#api-area").offset().top - 20);
-        $("#method-module .CodeMirror").css('height', window.innerHeight - $("#method-module .CodeMirror").offset().top - 20);
-        $(".tab-pane").css('height', window.innerHeight - $(".tab-pane").offset().top - 20);
+        resize_dom_to_bottom("#codearea", 20);
+        resize_dom_to_bottom("#codearea .CodeMirror", 20);
+        resize_dom_to_bottom("#api-area", 20);
+        resize_dom_to_bottom("#method-module .CodeMirror", 20);
+        resize_dom_to_bottom(".tab-pane", 20);
+        myCodeMirror.refresh();
+        methodManager.cmobject.refresh();
     };
 
     socket.on('doflash', doFlash);
@@ -377,22 +383,40 @@ function continue_loading(data) {
         dpba = $("#drawplotboundingarea");
         dpba.css("display", "block");
         myDPCodeMirror.refresh();
-        dpba.css('height', [window.innerHeight - dpba.offset().top - 20] / 2);
+        the_height = [window.innerHeight - dpba.offset().top - 20] / 2;
+        dpba.css('height', the_height);
+        dpca_height = the_height - ($("#drawplotcodearea").offset().top - dpba.offset().top);
+        $("#drawplotcodearea").css('height', dpca_height);
+        $("#drawplotcodearea .CodeMirror").css('height', dpca_height)
         savedDPCode = myDPCodeMirror.getDoc().getValue();
         dpba.resizable({
                 handles: "s",
                 resize: function (event, ui) {
                     // ui.position.top = 0;
                     dpba.css('height', ui.size.height);
-                    $("#drawplotcodearea").css('height', ui.size.height - ($("#drawplotcodearea").offset().top - dpba.offset().top ));
-                    $("#codearea").css('height', window.innerHeight - $("#codearea").offset().top - 20);
+
+                    the_height = ui.size.height;
+                    dpba.css('height', the_height);
+                    dpca_height = the_height - ($("#drawplotcodearea").offset().top - dpba.offset().top);
+                    $("#drawplotcodearea").css('height', dpca_height);
+                    $("#drawplotcodearea .CodeMirror").css('height', dpca_height)
+
+                    resize_dom_to_bottom("#codearea", 20);
+                    resize_dom_to_bottom("#codearea .CodeMirror", 20);
+
+                    myDPCodeMirror.refresh();
                 }
                 // resize: handle_resize
             });
     }
-    $("#codearea").css('height', window.innerHeight - $("#codearea").offset().top - 20);
-    $("#api-area").css('height', window.innerHeight - $("#api-area").offset().top - 20);
-    $(".tab-pane").css('height', window.innerHeight - $(".tab-pane").offset().top - 20);
+
+    resize_dom_to_bottom("#codearea", 20);
+    resize_dom_to_bottom("#codearea .CodeMirror", 20);
+    resize_dom_to_bottom("#api-area", 20);
+    resize_dom_to_bottom("#method-module .CodeMirror", 20);
+    resize_dom_to_bottom(".tab-pane", 20);
+    myCodeMirror.refresh();
+
     savedCode = myCodeMirror.getDoc().getValue();
 
     var result_dict = {"res_type": "tile", "res_name": module_name};
@@ -456,7 +480,7 @@ function changeTheme() {
 function showAPI(){
         $("#resource-area").toggle();
         $("#api-area").toggle();
-        $("#api-area").css('height', window.innerHeight - $("#api-area").offset().top - 20);
+        resize_dom_to_bottom("#api-area", 20);
 }
 
 function renameModule() {
