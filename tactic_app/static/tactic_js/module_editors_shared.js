@@ -19,6 +19,22 @@ mousetrap.bind(['command+l', 'ctrl+l'], function(e) {
     e.preventDefault()
 });
 
+postAjax("get_api_dict", {}, function (data) {
+    api_dict_by_category = data.api_dict_by_category;
+    api_dict_by_name = data.api_dict_by_name;
+    ordered_api_categories = data.ordered_api_categories;
+    var api_list = [];
+    ordered_api_categories.forEach(function(cat) {
+        api_dict_by_category[cat].forEach(function (entry) {
+            api_list.push(entry["name"])
+        })
+    });
+    CodeMirror.commands.autocomplete = function(cm) {
+        cm.showHint({hint: CodeMirror.hint.anyword, api_list: api_list,
+            extra_autocomplete_list: extra_autocomplete_list});
+    };
+});
+
 function createCMArea(codearea) {
     cmobject = CodeMirror(codearea, {
         lineNumbers: true,
@@ -36,22 +52,6 @@ function createCMArea(codearea) {
         });
     return cmobject
 }
-
-postAjax("get_api_dict", {}, function (data) {
-    api_dict_by_category = data.api_dict_by_category;
-    api_dict_by_name = data.api_dict_by_name;
-    ordered_api_categories = data.ordered_api_categories;
-    var api_list = [];
-    ordered_api_categories.forEach(function(cat) {
-        api_dict_by_category[cat].forEach(function (entry) {
-            api_list.push(entry["name"])
-        })
-    });
-    CodeMirror.commands.autocomplete = function(cm) {
-        cm.showHint({hint: CodeMirror.hint.anyword, api_list: api_list,
-            extra_autocomplete_list: extra_autocomplete_list});
-    };
-});
 
 function doSave(update_success) {
     var new_code = myCodeMirror.getDoc().getValue();

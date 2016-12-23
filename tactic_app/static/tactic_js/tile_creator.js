@@ -56,16 +56,6 @@ function start_post_load() {
     postAjax("parse_code", data, parse_success)
 }
 
-function rebuild_autocomplete_list() {
-    extra_autocomplete_list = [];
-    optionManager.option_dict.forEach(function(entry) {
-        extra_autocomplete_list.push(entry.name)
-    });
-    exportManager.export_list.forEach(function(entry) {
-        extra_autocomplete_list.push(entry)
-    })
-}
-
 function parse_success(data) {
     if (!data.success) {
         doFlash(data)
@@ -101,6 +91,16 @@ function parse_success(data) {
 
 }
 
+
+function rebuild_autocomplete_list() {
+    extra_autocomplete_list = [];
+    optionManager.option_dict.forEach(function(entry) {
+        extra_autocomplete_list.push(entry.name)
+    });
+    exportManager.export_list.forEach(function(entry) {
+        extra_autocomplete_list.push(entry)
+    })
+}
 
 
 var option_manager_specifics = {
