@@ -3,40 +3,24 @@
  */
 
 var current_theme = "default";
-var mousetrap = new Mousetrap();
 var myCodeMirror;
 var myDPCodeMirror;
 var savedCode = null;
 var savedTags = null;
 var savedNotes = null;
 var creator_resource_module_template;
-var res_types = ["option", "export", "method"];
 var rt_code = null;
 var user_manage_id = guid();
 var is_mpl = null;
 var draw_plot_code = null;
+var this_viewer = "creator";
 
 $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function (e) {
     if ($(e.currentTarget).attr("value") == "method") {
-        methodManager.cmobject.refresh()
-        $("#method-module .CodeMirror").css('height', window.innerHeight - $("#method-module .CodeMirror").offset().top - 20);
+        resize_dom_to_bottom("#method-module .CodeMirror", 20);
+        methodManager.cmobject.refresh();
     }
 });
-
-mousetrap.bind("esc", function() {
-    clearStatusArea();
-});
-
-mousetrap.bind(['command+s', 'ctrl+s'], function(e) {
-    updateModule();
-    e.preventDefault()
-});
-
-mousetrap.bind(['command+l', 'ctrl+l'], function(e) {
-    loadModule();
-    e.preventDefault()
-});
-
 
 function start_post_load() {
     if (use_ssl) {
@@ -49,12 +33,21 @@ function start_post_load() {
 
     window.onresize = function () {
         if (is_mpl) {
-            $("#drawplotboundingarea").css('height', [window.innerHeight - $("#drawplotboundingarea").offset().top - 20] / 2);
+            dpba = $("#drawplotboundingarea");
+            the_height = [window.innerHeight - dpba.offset().top - 20] / 2;
+            dpba.css('height', the_height);
+            dpca_height = the_height - ($("#drawplotcodearea").offset().top - dpba.offset().top);
+            $("#drawplotcodearea").css('height', dpca_height);
+            $("#drawplotcodearea .CodeMirror").css('height', dpca_height);
+            myDPCodeMirror.refresh();
         }
-        $("#codearea").css('height', window.innerHeight - $("#codearea").offset().top - 20);
-        $("#api-area").css('height', window.innerHeight - $("#api-area").offset().top - 20);
-        $("#method-module .CodeMirror").css('height', window.innerHeight - $("#method-module .CodeMirror").offset().top - 20);
-        $(".tab-pane").css('height', window.innerHeight - $(".tab-pane").offset().top - 20);
+        resize_dom_to_bottom("#codearea", 20);
+        resize_dom_to_bottom("#codearea .CodeMirror", 20);
+        resize_dom_to_bottom("#api-area", 20);
+        resize_dom_to_bottom("#method-module .CodeMirror", 20);
+        resize_dom_to_bottom(".tab-pane", 20);
+        myCodeMirror.refresh();
+        methodManager.cmobject.refresh();
     };
 
     socket.on('doflash', doFlash);
@@ -92,10 +85,21 @@ function parse_success(data) {
             $(".resource-module").on("click", ".resource-selector .selector-button", selector_click);
             optionManager.add_listeners();
             exportManager.add_listeners();
-            continue_loading()
+            postAjax("get_api_dict", {}, continue_loading)
         })
     }
 
+}
+
+
+function rebuild_autocomplete_list() {
+    extra_autocomplete_list = [];
+    optionManager.option_dict.forEach(function(entry) {
+        extra_autocomplete_list.push(entry.name)
+    });
+    exportManager.export_list.forEach(function(entry) {
+        extra_autocomplete_list.push(entry)
+    })
 }
 
 
@@ -108,6 +112,7 @@ var option_manager_specifics = {
 
     fill_content: function () {
         data = {"option_dict": this.option_dict};
+        rebuild_autocomplete_list();
         postAjax("get_option_table", data, function (result) {
                 if (!result.success) {
                     doFlash(result)
@@ -206,13 +211,13 @@ var option_manager_specifics = {
                 if (option_type == "int") {
                     option_default = manager.getInteger(option_default);
                     if (!option_default) {
-                        doFlash({"message": "Invalid default value.", "alert_type": "alert-warning"})
+                        doFlash({"message": "Invalid default value.", "alert_type": "alert-warning"});
                         return false
                     }
                 }
                 else if (option_type == "boolean") {
                     if (["true", "True", "false", "false"].indexOf(option_default) == -1) {
-                        doFlash({"message": "Invalid default value.", "alert_type": "alert-warning"})
+                        doFlash({"message": "Invalid default value.", "alert_type": "alert-warning"});
                         return false
                     }
                     option_default = (option_default == "true") || (option_default == "True");
@@ -245,13 +250,14 @@ var export_manager_specifics = {
 
     fill_content: function () {
         data = {"export_list": this.export_list};
+        rebuild_autocomplete_list();
         postAjax("get_export_table", data, function (result) {
             if (!result.success) {
                 doFlash(result)
             }
             else {
                 $("#export-selector").html(result.html);
-                select_resource_button("export", null)
+                select_resource_button("export", null);
                 sorttable.makeSortable($("#export-selector table")[0]);
                 var updated_header = $("#export-selector table th")[0];
                 sorttable.innerSortFunction.apply(updated_header, []);
@@ -260,7 +266,7 @@ var export_manager_specifics = {
     },
 
     refresh_export_table: function () {
-        this.fill_content()
+        this.fill_content();
         return false
     },
 
@@ -286,7 +292,7 @@ var export_manager_specifics = {
         var data = {};
         export_name = $("#export-name-input").val();
         if (manager.export_list.indexOf(export_name) != -1) {
-            doFlash({"message": "Export already exists.", "alert_type": "alert-warning"})
+            doFlash({"message": "Export already exists.", "alert_type": "alert-warning"});
             return false
         }
         else {
@@ -300,18 +306,7 @@ var export_manager_specifics = {
 var exportManager = new ResourceManager("export", export_manager_specifics);
 $("#export-create-button").on("click", exportManager.createNewExport);
 
-function createCMArea(codearea) {
-    cmobject = CodeMirror(codearea, {
-        lineNumbers: true,
-        matchBrackets: true,
-        autoCloseBrackets: true,
-        indentUnit: 4,
-        readOnly: false
-    });
-    $(codearea).find(".CodeMirror").resizable({handles: "se"});
-    $(codearea).find(".CodeMirror").height(100);
-    return cmobject
-}
+
 
 var method_manager_specifics = {
 
@@ -334,6 +329,8 @@ var method_manager_specifics = {
     create_module_html: function () {
         var codearea = document.getElementById("method-module");
         this.cmobject = createCMArea(codearea);
+        $(codearea).find(".CodeMirror").resizable({handles: "se"});
+        $(codearea).find(".CodeMirror").height(100);
     }
 
 };
@@ -341,57 +338,51 @@ var method_manager_specifics = {
 var methodManager = new ResourceManager("method", method_manager_specifics);
 
 
-function continue_loading() {
+function continue_loading(data) {
     var codearea = document.getElementById("codearea");
-    myCodeMirror = CodeMirror(codearea, {
-        lineNumbers: true,
-        matchBrackets: true,
-        autoCloseBrackets: true,
-        indentUnit: 4,
-        readOnly: view_only
-        });
+    myCodeMirror = createCMArea(codearea);
     myCodeMirror.setValue(rt_code);
-    myCodeMirror.setOption("extraKeys", {
-      Tab: function(cm) {
-        var spaces = Array(5).join(" ");
-        cm.replaceSelection(spaces);
-      }
-    });
     if (is_mpl) {
         var drawplotcodearea = document.getElementById("drawplotcodearea");
-        myDPCodeMirror = CodeMirror(drawplotcodearea, {
-            lineNumbers: true,
-            matchBrackets: true,
-            autoCloseBrackets: true,
-            indentUnit: 4,
-            readOnly: view_only
-            });
+        myDPCodeMirror = createCMArea(drawplotcodearea);
         myDPCodeMirror.setValue(draw_plot_code);
-        myDPCodeMirror.setOption("extraKeys", {
-          Tab: function(cm) {
-            var spaces = Array(5).join(" ");
-            cm.replaceSelection(spaces);
-          }
-        });
         dpba = $("#drawplotboundingarea");
         dpba.css("display", "block");
         myDPCodeMirror.refresh();
-        dpba.css('height', [window.innerHeight - dpba.offset().top - 20] / 2);
+        the_height = [window.innerHeight - dpba.offset().top - 20] / 2;
+        dpba.css('height', the_height);
+        dpca_height = the_height - ($("#drawplotcodearea").offset().top - dpba.offset().top);
+        $("#drawplotcodearea").css('height', dpca_height);
+        $("#drawplotcodearea .CodeMirror").css('height', dpca_height);
         savedDPCode = myDPCodeMirror.getDoc().getValue();
         dpba.resizable({
                 handles: "s",
                 resize: function (event, ui) {
                     // ui.position.top = 0;
                     dpba.css('height', ui.size.height);
-                    $("#drawplotcodearea").css('height', ui.size.height - ($("#drawplotcodearea").offset().top - dpba.offset().top ))
-                    $("#codearea").css('height', window.innerHeight - $("#codearea").offset().top - 20);
+
+                    the_height = ui.size.height;
+                    dpba.css('height', the_height);
+                    dpca_height = the_height - ($("#drawplotcodearea").offset().top - dpba.offset().top);
+                    $("#drawplotcodearea").css('height', dpca_height);
+                    $("#drawplotcodearea .CodeMirror").css('height', dpca_height);
+
+                    resize_dom_to_bottom("#codearea", 20);
+                    resize_dom_to_bottom("#codearea .CodeMirror", 20);
+
+                    myDPCodeMirror.refresh();
                 }
                 // resize: handle_resize
             });
     }
-    $("#codearea").css('height', window.innerHeight - $("#codearea").offset().top - 20);
-    $("#api-area").css('height', window.innerHeight - $("#api-area").offset().top - 20);
-    $(".tab-pane").css('height', window.innerHeight - $(".tab-pane").offset().top - 20);
+
+    resize_dom_to_bottom("#codearea", 20);
+    resize_dom_to_bottom("#codearea .CodeMirror", 20);
+    resize_dom_to_bottom("#api-area", 20);
+    resize_dom_to_bottom("#method-module .CodeMirror", 20);
+    resize_dom_to_bottom(".tab-pane", 20);
+    myCodeMirror.refresh();
+
     savedCode = myCodeMirror.getDoc().getValue();
 
     var result_dict = {"res_type": "tile", "res_name": module_name};
@@ -404,6 +395,7 @@ function continue_loading() {
         }
     }
     postAjax("grab_metadata", result_dict, got_metadata);
+    window.onresize();
     function got_metadata(data) {
         if (data.success) {
             $(".created").html(data.datestring);
@@ -423,168 +415,12 @@ function continue_loading() {
     }
 }
 
-function dirty() {
-    var the_code = myCodeMirror.getDoc().getValue();
-    var tags = $("#tile-tags").val();
-    var notes = $("#tile-notes").val();
-    if (is_mpl) {
-        var dp_code = myDPCodeMirror.getDoc().getValue();
-        return !((the_code == savedCode) && (dpt == savedDPCode) && (tags == savedTags) && (notes == savedNotes));
-    }
-    else {
-        return !((the_code == savedCode) && (tags == savedTags) && (notes == savedNotes));
-    }
+function insertApiItem(the_item) {
+    myCodeMirror.getDoc().replaceSelection("self." + api_dict_by_name[the_item].signature);
+    return false
 }
 
-function changeTheme() {
-    if (current_theme == "default") {
-        myCodeMirror.setOption("theme", "pastel-on-dark");
-        myDPCodeMirror.setOption("theme", "pastel-on-dark");
-        document.body.style.backgroundColor = "grey";
-        current_theme = "dark"
-    }
-    else {
-        myCodeMirror.setOption("theme", "default");
-        myDPCodeMirror.setOption("theme", "default");
-        document.body.style.backgroundColor = "white";
-        current_theme = "default"
-    }
-}
-
-function showAPI(){
-        $("#resource-area").toggle();
-        $("#api-area").toggle();
-        $("#api-area").css('height', window.innerHeight - $("#api-area").offset().top - 20);
-}
-
-function renameModule() {
-    console.log("entering rename");
-    $.getJSON($SCRIPT_ROOT + "get_resource_names/tile", function(data) {
-            var module_names = data["resource_names"];
-            var index = module_names.indexOf(module_name);
-            if (index >= 0) {
-              module_names.splice(index, 1);
-            }
-            showModal("Rename Module", "Name for this module", RenameModuleResource, module_name, module_names)
-        }
-    );
-    function RenameModuleResource (new_name) {
-        var the_data = {"new_name": new_name};
-        postAjax("rename_module/" + module_name, the_data, renameSuccess);
-        function renameSuccess(data) {
-            if (data.success) {
-                module_name = new_name;
-                $("#module-name").text(module_name)
-            }
-            else {
-                doFlash(data)
-            }
-
-        }
-    }
-}
-
-function doSave(update_success) {
-    var new_code = myCodeMirror.getDoc().getValue();
-
-    var tags = $("#tile-tags").val();
-    var category = $("#tile-category").val();
-    if (category.length == 0) {
-        category = "basic"
-    }
-    var notes = $("#tile-notes").val();
-    if (is_mpl) {
-        var new_dp_code = myDPCodeMirror.getDoc().getValue();
-    }
-    else {
-        var new_dp_code = ""
-    }
-    var result_dict = {
-        "module_name": module_name,
-        "category": category,
-        "tags": tags,
-        "notes": notes,
-        "exports": exportManager.export_list,
-        "options": optionManager.option_dict,
-        "extra_methods": methodManager.get_extra_functions(),
-        "render_content_body": new_code,
-        "is_mpl": is_mpl,
-        "draw_plot_body": new_dp_code
-    };
-
-    postAjax("creator_update_module", result_dict, success_func);
-    function success_func(data) {
-        update_success(data, new_code, new_dp_code, tags, notes)
-    }
-}
-
-function updateModule() {
-    doSave(update_success);
-    function update_success(data, new_code, new_dp_code, tags, notes) {
-        if (data.success) {
-            savedCode = new_code;
-            savedDPCode = new_dp_code;
-            savedTags = tags;
-            savedNotes = notes;
-            data.timeout = 2000;
-        }
-        doFlash(data)
-    }
-}
-
-function loadModule() {
-    doSave(save_success);
-    function save_success(data, new_code, new_dp_code, tags, notes) {
-            if (data.success) {
-                savedCode = new_code;
-                savedDPCode = new_dp_code;
-                savedTags = tags;
-                savedNotes = notes;
-                data.timeout = 2000;
-                $.getJSON($SCRIPT_ROOT + '/load_tile_module/' + String(module_name), load_success)
-            }
-            else {
-                doFlash(data)
-            }
-    }
-    function load_success(data) {
-        if (data.success) {
-            data.timeout = 2000;
-        }
-        doFlash(data)
-    }
-}
-
-function saveModuleAs() {
-    doFlash({"message": "not implemented yet"})
-}
-
-function copyToLibrary() {
-    $.getJSON($SCRIPT_ROOT + "get_resource_names/tile", function(data) {
-        showModal("Import Tile", "New Tile Name", ImportTileModule, module_name, data["resource_names"])
-        }
-    );
-    function ImportTileModule(new_name) {
-        var result_dict = {
-            "res_type": "tile",
-            "res_name": module_name,
-            "new_res_name": new_name
-        };
-        postAjax("copy_from_repository", result_dict, doFlash)
-    }
-}
-
-function sendToRepository() {
-    $.getJSON($SCRIPT_ROOT + "get_repository_resource_names/tile", function(data) {
-        showModal("Share tile", "New Tile Name", ShareTileResource, module_name, data["resource_names"])
-        }
-    );
-    function ShareTileResource(new_name) {
-        var result_dict = {
-            "res_type": "tile",
-            "res_name": module_name,
-            "new_res_name": new_name
-        };
-        postAjax("send_to_repository", result_dict, doFlash)
-    }
+function insertApiItemDP(the_item) {
+    myDPCodeMirror.getDoc().replaceSelection("self." + api_dict_by_name[the_item].signature);
+    return false
 }

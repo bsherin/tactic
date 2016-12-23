@@ -7,6 +7,14 @@
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap.min.css')}}">
       <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/tactic.css')}}">
+      <link rel="stylesheet" href="{{url_for('static', filename='css/alertify_css/alertify.min.css')}}"/>
+      <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/tactic_alertify_theme.css')}}" />
+      {% if uses_codemirror == "True" %}
+          <link rel="stylesheet" href="{{url_for('static', filename='css/codemirrorthemes/codemirror.css')}}">
+          <link rel="stylesheet" href="{{url_for('static', filename='css/codemirrorthemes/pastel-on-dark.css')}}">
+          <link rel="stylesheet" href="{{url_for('static', filename='css/codemirrorthemes/dialog.css')}}">
+          <link rel="stylesheet" href="{{url_for('static', filename='css/show-hint.css')}}">
+      {%  endif %}
       {% block head %}{% endblock %}
       {% block styles %}{% endblock %}
       <title>{% block title %}Tactic{% endblock %}</title>
@@ -29,12 +37,6 @@
                 </ul>
             </div>
             <div class="navbar-header" style="display:inline-block !important">
-{#                 <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#collapse-area">#}
-{#                    <span class="sr-only">Toggle navigation</span>#}
-{#                    <span class="icon-bar"></span>#}
-{#                    <span class="icon-bar"></span>#}
-{#                    <span class="icon-bar"></span>#}
-{#                  </button>#}
                 <a id="mybrand" class="navbar-brand hidden-xs" href="/">Tactic</a>
                 <a id="mybrand" class="navbar-brand visible-xs" href="/"> </a>
             </div>
@@ -52,13 +54,27 @@
     <script type=text/javascript>
         $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
     </script>
+    <script src="{{url_for('static', filename='js/alertify.js')}}"></script>
+    <script src="{{url_for('static', filename='js/socket.io.js')}}"></script>
     <script src="static/js/jquery.js"></script>
     <script src="static/js/jquery-ui.min.js"></script>
     <script src="static/js/jquery.ui.touch-punch.min.js"></script>
-{#    <script src="static/js/jquery.ui.touch-punch.js"></script>#}
     <script src="static/js/bootstrap.min.js"></script>
     <script src="static/js/mustache.js"></script>
-    <script src="{{url_for('static', filename='tactic_js/auth.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/utilities.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/communication.js')}}"></script>
+    {% if uses_codemirror == "True" %}
+        <script src="{{url_for('static', filename='js/codemirror.js')}}"></script>
+        <script src="{{url_for('static', filename='js/codemirror/search.js')}}"></script>
+        <script src="{{url_for('static', filename='js/codemirror/searchcursor.js')}}"></script>
+        <script src="{{url_for('static', filename='js/codemirror/jump-to-line.js')}}"></script>
+        <script src="{{url_for('static', filename='js/codemirror/dialog.js')}}"></script>
+        <script src="{{url_for('static', filename='js/python.js')}}"></script>
+        <script src="{{url_for('static', filename='js/matchbrackets.js')}}"></script>
+        <script src="{{url_for('static', filename='js/show-hint.js')}}"></script>
+        <script src="{{url_for('static', filename='tactic_js/tactic-anyword-hint.js')}}"></script>
+        <script src="{{url_for('static', filename='js/closebrackets.js')}}"></script>
+    {% endif %}
     <script type="text/javascript">
         var csrftoken = "{{ csrf_token() }}"
         $.ajaxSetup({

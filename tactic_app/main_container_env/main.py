@@ -363,7 +363,7 @@ class mainWindow(QWorker):
         data = {"main_id": self.my_id}
         self.post_task("host", "clear_main_status_message", data)
 
-    # tactic_change making this more robust
+
     @task_worthy
     def do_full_recreation(self, data_dict):
         tile_containers = {}

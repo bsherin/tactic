@@ -4,9 +4,6 @@
 
 {% block styles %}
     <!--suppress ALL -->
-<link rel="stylesheet" href="{{url_for('static', filename='tactic_css/tactic.css')}}">
-    <link rel="stylesheet" href="{{url_for('static', filename='css/alertify_css/alertify.min.css')}}"/>
-    <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/tactic_alertify_theme.css')}}" />
 {% endblock %}
 
 {% block page_content %}
@@ -45,11 +42,7 @@
 {%  endblock %}
 
 {% block scripts %}
-    <script src="{{url_for('static', filename='js/alertify.js')}}"></script>
-    <script src="{{url_for('static', filename='js/socket.io.js')}}"></script>
     <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
-    <script src="{{url_for('static', filename='tactic_js/utilities.js')}}"></script>
-    <script src="{{url_for('static', filename='tactic_js/communication.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/list_viewer.js')}}"></script>
     <script>
         var user_id = "{{current_user.get_id()}}";

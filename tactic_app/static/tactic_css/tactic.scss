@@ -38,6 +38,11 @@ $sortable-table-header-background: #eee;
 $sortable-table-header-text-color: #666666;
 
 $resource-action-button-border-style: solid white 1px;
+$resource-popup-button-separator-style: solid white .5px;
+
+$resource-action-button-border-radius: 4px;
+$resource-action-button-margin: 2px;
+
 $resource-manager-tab-font-size: 20px;
 
 /* accordion api related parameters */
@@ -205,8 +210,30 @@ a[role="tab"] {
 }
 
 .action-button {
-    border: $resource-action-button-border-style
+    //border: $resource-action-button-border-style;
+    margin-right: $resource-action-button-margin !important;
+    border-radius: $resource-action-button-border-radius !important
 }
+
+.action-popup {
+    //border-left: $resource-action-button-border-style;
+    //border-top: $resource-action-button-border-style;
+    //border-bottom: $resource-action-button-border-style;
+    //border-right: $resource-popup-button-separator-style;
+    border-bottom-left-radius: $resource-action-button-border-radius !important;
+    border-top-left-radius: $resource-action-button-border-radius !important
+}
+
+.action-caret {
+    //border-right: $resource-action-button-border-style;
+    //border-top: $resource-action-button-border-style;
+    //border-bottom: $resource-action-button-border-style;
+    //border-left: $resource-popup-button-separator-style;
+    margin-right: $resource-action-button-margin;
+    border-bottom-right-radius: $resource-action-button-border-radius !important;
+    border-top-right-radius: $resource-action-button-border-radius !important
+}
+
 
 .indent-row {
     margin-left: 5px;

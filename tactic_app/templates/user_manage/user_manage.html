@@ -6,10 +6,7 @@
 {% endblock %}
 
 {% block styles %}
-    <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/tactic.css')}}">
     <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/loader.css')}}">
-    <link rel="stylesheet" href="{{url_for('static', filename='css/alertify_css/alertify.min.css')}}"/>
-    <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/tactic_alertify_theme.css')}}" />
 {% endblock %}
 
 {% block page_content %}
@@ -37,8 +34,7 @@
                 <li role="presentation"><a href="#project-module" aria-controls="projects" role="tab" data-toggle="tab" value="project">projects</a></li>
                 <li role="presentation"><a href="#tile-module" aria-controls="tiles" role="tab" data-toggle="tab" value="tile">tiles</a></li>
                 <li role="presentation"><a href="#list-module" aria-controls="lists" role="tab" data-toggle="tab" value="list">lists</a></li>
-                  <li role="presentation"><a href="#code-module" aria-controls="code" role="tab" data-toggle="tab" value="code">code</a></li>
-
+                <li role="presentation"><a href="#code-module" aria-controls="code" role="tab" data-toggle="tab" value="code">code</a></li>
               </ul>
                 <div class="tab-content">
                     <div class="resource-module tab-pane fade in active" id="collection-module"></div>
@@ -52,11 +48,7 @@
     </div>
 {% endblock %}
 {% block scripts %}
-    <script src="{{url_for('static', filename='js/alertify.js')}}"></script>
-    <script src="{{url_for('static', filename='js/socket.io.js')}}"></script>
     <script src="{{url_for('static', filename='js/sorttable.js')}}"></script>
-    <script src="{{url_for('static', filename='tactic_js/utilities.js')}}"></script>
-    <script src="{{url_for('static', filename='tactic_js/communication.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/resource_manager.js')}}"></script>
     <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
     <script src="{{url_for('static', filename='js/tab.js')}}"></script>

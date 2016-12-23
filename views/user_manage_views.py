@@ -19,7 +19,7 @@ from tactic_app.users import User, copy_between_accounts
 from tactic_app.docker_functions import send_direct_request_to_container
 
 from tactic_app.docker_functions import create_container, get_address
-from tactic_app.integrated_docs import api_html
+from tactic_app.integrated_docs import api_html, api_dict_by_category, ordered_api_categories
 from tactic_app.tile_code_parser import get_functions_full_code
 import traceback
 
@@ -406,7 +406,8 @@ class CollectionManager(ResourceManager):
                                console_html="",
                                is_table=(doc_type == "table"),
                                short_collection_name=short_collection_name,
-                               new_tile_info="")
+                               new_tile_info="",
+                               uses_codemirror="True")
 
     def download_collection(self, collection_name, new_name):
         user_obj = current_user
@@ -678,8 +679,12 @@ class TileManager(ResourceManager):
     def add_rules(self):
         app.add_url_rule('/view_module/<module_name>', "view_module",
                          login_required(self.view_module), methods=['get'])
+        app.add_url_rule('/get_module_code/<module_name>', "get_module_code",
+                         login_required(self.get_module_code), methods=['get', 'post'])
         app.add_url_rule('/view_in_creator/<module_name>', "view_in_creator",
                          login_required(self.view_in_creator), methods=['get'])
+        app.add_url_rule('/last_saved_view/<module_name>', "last_saved_view",
+                         login_required(self.last_saved_view), methods=['get'])
         app.add_url_rule('/repository_view_module/<module_name>', "repository_view_module",
                          login_required(self.repository_view_module), methods=['get'])
         app.add_url_rule('/load_tile_module/<tile_module_name>', "load_tile_module",
@@ -721,13 +726,25 @@ class TileManager(ResourceManager):
         self.update_selector_list()
 
     def view_module(self, module_name):
-        user_obj = current_user
-        module_code = user_obj.get_tile_module(module_name)
         return render_template("user_manage/module_viewer.html",
                                module_name=module_name,
-                               module_code=module_code,
                                read_only_string="",
-                               api_html=api_html)
+                               api_html=api_html,
+                               uses_codemirror="True")
+
+    def get_module_code(self, module_name):
+        user_obj = current_user
+        module_code = user_obj.get_tile_module(module_name)
+        return jsonify({"success": True, "module_code": module_code})
+
+    def last_saved_view(self, module_name):
+        tile_dict = current_user.get_tile_dict(module_name)
+        if "last_saved" in tile_dict and tile_dict["last_saved"] == "creator":
+            result = self.view_in_creator(module_name)
+        else:
+            result = self.view_module(module_name)
+        return result
+
 
     def view_in_creator(self, module_name):
         option_types = [{"name": "text"},
@@ -735,6 +752,7 @@ class TileManager(ResourceManager):
                         {"name": "boolean"},
                         {"name": "textarea"},
                         {"name": "codearea"},
+                        {"name": "column_select"},
                         {"name": "document_select"},
                         {"name": "list_select"},
                         {"name": "palette_select"},
@@ -743,13 +761,22 @@ class TileManager(ResourceManager):
                         {"name": "function_select"},
                         {"name": "class_select"},
                         {"name": "pipe_select"}]
-        user_obj = current_user
+        revised_api_dlist = []
+        for cat in ordered_api_categories:
+            the_list = api_dict_by_category[cat]
+            new_list = []
+            for api_item in the_list:
+                new_list.append({"name": api_item["name"]})
+            if len(new_list) > 0:
+                revised_api_dlist.append({"cat_name": cat, "cat_list": new_list})
         return render_template("user_manage/tile_creator.html",
                                module_name=module_name,
                                read_only_string="",
                                api_html=api_html,
                                use_ssl=use_ssl,
-                               option_types=option_types)
+                               api_dlist=revised_api_dlist,
+                               option_types=option_types,
+                               uses_codemirror="True")
 
     def repository_view_module(self, module_name):
         user_obj = repository_user
@@ -758,7 +785,8 @@ class TileManager(ResourceManager):
                                module_name=module_name,
                                module_code=module_code,
                                read_only_string="readonly",
-                               api_html = api_html)
+                               api_html=api_html,
+                               uses_codemirror="True")
 
     def load_tile_module(self, tile_module_name, return_json=True, user_obj=None):
         try:
@@ -839,6 +867,7 @@ class TileManager(ResourceManager):
         user_obj = current_user
         new_tile_name = request.json['new_res_name']
         template_name = request.json["template_name"]
+        last_saved = request.json["last_saved"]
         if db[user_obj.tile_collection_name].find_one({"tile_module_name": new_tile_name}) is not None:
             return jsonify({"success": False, "alert_type": "alert-warning",
                             "message": "A module with that name already exists"})
@@ -846,7 +875,8 @@ class TileManager(ResourceManager):
         template = mongo_dict["tile_module"]
 
         metadata = global_tile_manager.create_initial_metadata()
-        data_dict = {"tile_module_name": new_tile_name, "tile_module": template, "metadata": metadata}
+        data_dict = {"tile_module_name": new_tile_name, "tile_module": template, "metadata": metadata,
+                     "last_saved": last_saved}
         db[current_user.tile_collection_name].insert_one(data_dict)
         self.update_selector_list(new_tile_name)
         return jsonify({"success": True})
@@ -926,7 +956,8 @@ class CodeManager(ResourceManager):
         return render_template("user_manage/code_viewer.html",
                                code_name=code_name,
                                the_code=the_code,
-                               read_only_string="")
+                               read_only_string="",
+                               uses_codemirror="True")
 
     def repository_view_code(self, code_name):
         user_obj = repository_user
@@ -934,7 +965,8 @@ class CodeManager(ResourceManager):
         return render_template("user_manage/code_viewer.html",
                                code_name=code_name,
                                the_code=the_code,
-                               read_only_string="readonly")
+                               read_only_string="readonly",
+                               uses_codemirror="True")
 
     def load_code(self, the_code):
         result = send_direct_request_to_container(global_tile_manager.test_tile_container_id, "clear_and_load_code",
@@ -1129,13 +1161,59 @@ def search_resource():
     return jsonify({"html": result})
 
 
+indent_unit = "    "
+def remove_indents(the_str, number_indents):
+    total_indent = indent_unit * number_indents
+    result = re.sub(r"\n" + total_indent, "\n", the_str)
+    result = re.sub(r"^" + total_indent, "", result)
+    return result
+
+def insert_indents(the_str, number_indents):
+    total_indent = indent_unit * number_indents
+    result = re.sub(r"\n", r"\n" + total_indent, the_str)
+    result = total_indent + result
+    return result
+
+def build_code(data_dict):
+    export_list = data_dict["exports"]
+    export_list_of_dicts = [{"name": exp_name} for exp_name in export_list]
+    extra_methods = insert_indents(data_dict["extra_methods"], 1)
+    render_content_body = insert_indents(data_dict["render_content_body"], 2)
+    if data_dict["is_mpl"]:
+        draw_plot_body = insert_indents(data_dict["draw_plot_body"], 2)
+    else:
+        draw_plot_body = ""
+    options = data_dict["options"]
+    for opt_dict in options:
+        if "default" not in opt_dict:
+            opt_dict["default"] = "None"
+        elif isinstance(opt_dict["default"], basestring):
+            opt_dict["default"] = '"' + opt_dict["default"] + '"'
+        opt_dict["default"] = str(opt_dict["default"])
+        if "special_list" in opt_dict:
+            opt_dict["special_list"] = "[" + opt_dict["special_list"] + "]"
+    full_code = render_template("user_manage/tile_creator_template",
+                                class_name=data_dict["module_name"],
+                                category=data_dict["category"],
+                                exports=export_list_of_dicts,
+                                options=data_dict["options"],
+                                is_mpl=data_dict["is_mpl"],
+                                extra_methods=extra_methods,
+                                render_content_body=render_content_body,
+                                draw_plot_body=draw_plot_body)
+    return full_code
+
 @app.route('/update_module', methods=['post'])
 @login_required
 def update_module():
     try:
         data_dict = request.json
         module_name = data_dict["module_name"]
-        module_code = data_dict["new_code"]
+        last_saved = data_dict["last_saved"]
+        if last_saved == "viewer":
+            module_code = data_dict["new_code"]
+        else:
+            module_code = build_code(data_dict)
         doc = db[current_user.tile_collection_name].find_one({"tile_module_name": module_name})
         if "metadata" in doc:
             mdata = doc["metadata"]
@@ -1145,8 +1223,10 @@ def update_module():
         mdata["notes"] = data_dict["notes"]
         mdata["updated"] = datetime.datetime.today()
 
+
         db[current_user.tile_collection_name].update_one({"tile_module_name": module_name},
-                                                         {'$set': {"tile_module": module_code, "metadata": mdata}})
+                                                         {'$set': {"tile_module": module_code, "metadata": mdata,
+                                                                   "last_saved": last_saved}})
         tile_manager.update_selector_list()
         return jsonify({"success": True, "message": "Module Successfully Saved", "alert_type": "alert-success"})
     except:

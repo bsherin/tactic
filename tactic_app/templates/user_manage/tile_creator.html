@@ -3,12 +3,6 @@
 {% block title %}{{module_name}}{% endblock %}
 
 {% block styles %}
-    <link rel="stylesheet" href="{{url_for('static', filename='css/codemirrorthemes/codemirror.css')}}">
-    <link rel="stylesheet" href="{{url_for('static', filename='css/codemirrorthemes/pastel-on-dark.css')}}">
-    <link rel="stylesheet" href="{{url_for('static', filename='css/codemirrorthemes/dialog.css')}}">
-    <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/tactic.css')}}">
-    <link rel="stylesheet" href="{{url_for('static', filename='css/alertify_css/alertify.min.css')}}"/>
-    <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/tactic_alertify_theme.css')}}" />
     <link rel="stylesheet" href="{{url_for('static', filename='css/jquery-ui.min.css')}}">
 {% endblock %}
 
@@ -45,17 +39,45 @@
                             <button type="button" class="btn btn-default" onclick="changeTheme()">Toggle Theme</button>
                             <button type="button" class="btn btn-default" onclick="showAPI()">Show API</button>
                         </div>
+
+
                         <div style="float: right">
                             <button id="module-name" type="button" class="btn btn-default res-name-button" onclick="renameModule()">{{ module_name }}</button>
                         </div>
                     </div>
                 </div>
                 <div id="drawplotboundingarea" class="bootstrap-border" style="display: none; border-bottom-width: 1px; border-bottom-style: solid; margin-bottom: 20px">
-                    <h4>draw_plot</h4>
-                    <div id="drawplotcodearea" style="overflow-y: scroll"></div>
+                    <h4 style="display:inline-block">draw_plot</h4>
+                        <div class="btn-group" style= "margin-top: 10px; margin-bottom: 5px; float:right" role="group">
+                           {% for catdict in api_dlist%}
+
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">{{catdict.cat_name}}<span class="caret"></span></button>
+                                  <ul class="dropdown-menu">
+                                      {% for api_item in catdict.cat_list %}
+                                        <li><a class="popup_item" onclick="insertApiItemDP('{{api_item.name}}')">{{api_item.name}}</a></li>
+                                      {% endfor %}
+                                  </ul>
+                            </div>
+                           {% endfor %}
+                    </div>
+                    <div id="drawplotcodearea" style="overflow-y: auto"></div>
                 </div>
-                <h4>render_content</h4>
-                <div id="codearea" style="overflow-y: scroll"></div>
+                <h4 style="display:inline-block">render_content</h4>
+                    <div class="btn-group" style= "margin-top: 10px; margin-bottom: 5px; float:right" role="group">
+                           {% for catdict in api_dlist%}
+
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">{{catdict.cat_name}}<span class="caret"></span></button>
+                                  <ul class="dropdown-menu">
+                                      {% for api_item in catdict.cat_list %}
+                                        <li><a class="popup_item" onclick="insertApiItem('{{api_item.name}}')">{{api_item.name}}</a></li>
+                                      {% endfor %}
+                                  </ul>
+                            </div>
+                           {% endfor %}
+                    </div>
+                <div id="codearea" style="overflow-y: auto"></div>
             </div>
             <div class="col-xs-5">
                     <div id="api-area" style="display:none; overflow:scroll">{{api_html | safe}}</div>
@@ -147,21 +169,10 @@
 {%  endblock %}
 
 {% block scripts %}
-    <script src="{{url_for('static', filename='js/alertify.js')}}"></script>
-    <script src="{{url_for('static', filename='js/socket.io.js')}}"></script>
     <script src="{{url_for('static', filename='js/sorttable.js')}}"></script>
-    <script src="{{url_for('static', filename='js/codemirror.js')}}"></script>
-    <script src="{{url_for('static', filename='js/codemirror/search.js')}}"></script>
-    <script src="{{url_for('static', filename='js/codemirror/searchcursor.js')}}"></script>
-    <script src="{{url_for('static', filename='js/codemirror/jump-to-line.js')}}"></script>
-    <script src="{{url_for('static', filename='js/codemirror/dialog.js')}}"></script>
-    <script src="{{url_for('static', filename='js/python.js')}}"></script>
     <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
-    <script src="{{url_for('static', filename='js/matchbrackets.js')}}"></script>
-    <script src="{{url_for('static', filename='js/closebrackets.js')}}"></script>
-    <script src="{{url_for('static', filename='tactic_js/utilities.js')}}"></script>
-    <script src="{{url_for('static', filename='tactic_js/communication.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/admin_resource_manager.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/module_editors_shared.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/tile_creator.js')}}"></script>
     <script>
         var user_id = "{{current_user.get_id()}}";
