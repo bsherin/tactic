@@ -752,6 +752,7 @@ class TileManager(ResourceManager):
                         {"name": "boolean"},
                         {"name": "textarea"},
                         {"name": "codearea"},
+                        {"name": "column_select"},
                         {"name": "document_select"},
                         {"name": "list_select"},
                         {"name": "palette_select"},
@@ -785,7 +786,7 @@ class TileManager(ResourceManager):
                                module_code=module_code,
                                read_only_string="readonly",
                                api_html=api_html,
-                               uses_codemirror=True)
+                               uses_codemirror="True")
 
     def load_tile_module(self, tile_module_name, return_json=True, user_obj=None):
         try:
