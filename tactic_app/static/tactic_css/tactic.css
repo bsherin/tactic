@@ -117,7 +117,17 @@ a[role="tab"] {
   width: auto; }
 
 .action-button {
-  border: solid white 1px; }
+  margin-right: 2px !important;
+  border-radius: 4px !important; }
+
+.action-popup {
+  border-bottom-left-radius: 4px !important;
+  border-top-left-radius: 4px !important; }
+
+.action-caret {
+  margin-right: 2px;
+  border-bottom-right-radius: 4px !important;
+  border-top-right-radius: 4px !important; }
 
 .indent-row {
   margin-left: 5px;
