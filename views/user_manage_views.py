@@ -1191,7 +1191,7 @@ def build_code(data_dict):
             opt_dict["default"] = '"' + opt_dict["default"] + '"'
         opt_dict["default"] = str(opt_dict["default"])
         if "special_list" in opt_dict:
-            opt_dict["special_list"] = "[" + opt_dict["special_list"] + "]"
+            opt_dict["special_list"] = str(opt_dict["special_list"])
     full_code = render_template("user_manage/tile_creator_template",
                                 class_name=data_dict["module_name"],
                                 category=data_dict["category"],
