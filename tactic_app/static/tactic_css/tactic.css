@@ -116,10 +116,6 @@ a[role="tab"] {
   height: auto;
   width: auto; }
 
-.action-button {
-  margin-right: 2px !important;
-  border-radius: 4px !important; }
-
 .action-popup {
   border-bottom-left-radius: 4px !important;
   border-top-left-radius: 4px !important; }
@@ -135,6 +131,10 @@ a[role="tab"] {
 
 .resource-module h2 {
   margin-top: 0; }
+.resource-module .btn-toolbar {
+  padding: 5px; }
+.resource-module form {
+  padding: 5px; }
 
 .metadata-field {
   width: 350px; }

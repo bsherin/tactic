@@ -8,12 +8,15 @@ var myDPCodeMirror;
 var savedCode = null;
 var savedTags = null;
 var savedNotes = null;
+var savedCategory = null;
+var savedMethods = null;
 var creator_resource_module_template;
 var rt_code = null;
 var user_manage_id = guid();
 var is_mpl = null;
 var draw_plot_code = null;
 var this_viewer = "creator";
+
 
 $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function (e) {
     if ($(e.currentTarget).attr("value") == "method") {
@@ -65,12 +68,14 @@ function parse_success(data) {
         optionManager.option_dict = data.option_dict;
         exportManager.export_list = data.export_list;
         methodManager.extra_functions = data.extra_functions;
+        savedMethods = data.extra_functions;
         $(".created").html(data.datestring);
         $("#tile-tags")[0].value = data.tags;
         $("#tile-notes")[0].value = data.notes;
         $("#tile-category")[0].value = data.category;
         savedTags = data.tags;
         savedNotes = data.notes;
+        savedCategory = data.category;
         is_mpl = data.is_mpl;
         draw_plot_code = data.draw_plot_code;
 
@@ -104,6 +109,8 @@ function rebuild_autocomplete_list() {
 
 
 var option_manager_specifics = {
+
+    changed: false,
 
     buttons: [
         {"name": "delete", "func": "delete_option_func", "button_class": "btn btn-danger"},
@@ -139,6 +146,7 @@ var option_manager_specifics = {
         confirmDialog("Delete Option", confirm_text, "do nothing", "delete", function () {
             var index = manager.option_index(option_name);
             manager.option_dict.splice(index, 1);
+            manager.changed = true;
             manager.fill_content()
         });
         return false
@@ -231,6 +239,7 @@ var option_manager_specifics = {
                 new_option["tag"] = $("#option-tag-input").val()
             }
             manager.option_dict.push(new_option);
+            manager.changed = true;
             optionManager.fill_content();
         }
         return false
@@ -242,6 +251,8 @@ $("#option-create-button").on("click", optionManager.createNewOption);
 
 
 var export_manager_specifics = {
+
+    changed: false,
 
     buttons: [
         {"name": "delete", "func": "delete_export_func", "button_class": "btn btn-danger"},
@@ -277,6 +288,7 @@ var export_manager_specifics = {
         confirmDialog("Delete Export", confirm_text, "do nothing", "delete", function () {
             var index = manager.export_list.indexOf(export_name);
             manager.export_list.splice(index, 1);
+            manager.changed = true;
             manager.fill_content()
         });
         return false
@@ -297,6 +309,7 @@ var export_manager_specifics = {
         }
         else {
             manager.export_list.push(export_name);
+            manager.changed = true;
             manager.fill_content()
         }
         return false
