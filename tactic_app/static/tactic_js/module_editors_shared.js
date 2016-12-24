@@ -58,8 +58,10 @@ function doSave(update_success) {
     var tags = $("#tile-tags").val();
     var notes = $("#tile-notes").val();
     var result_dict;
+    var category;
 
     if (this_viewer == "viewer") {
+        category = null;
         result_dict = {
             "module_name": module_name,
             "category": category,
@@ -70,7 +72,7 @@ function doSave(update_success) {
         };
     }
     else {
-        var category = $("#tile-category").val();
+        category = $("#tile-category").val();
         if (category.length == 0) {
             category = "basic"
         }
@@ -95,19 +97,20 @@ function doSave(update_success) {
 
     postAjax("update_module", result_dict, success_func);
     function success_func(data) {
-        update_success(data, new_code, tags, notes)
+        update_success(data, new_code, tags, notes, category)
     }
 }
 
 function updateModule() {
     doSave(update_success);
-    function update_success(data, new_code, tags, notes) {
+    function update_success(data, new_code, tags, notes, category) {
         if (data.success) {
             savedCode = new_code;
             savedTags = tags;
             savedNotes = notes;
             data.timeout = 2000;
             if (this_viewer == "creator"){
+                savedCategory = category;
                 var new_dp_code = "";
                 if (is_mpl) {
                     savedDPCode = myDPCodeMirror.getDoc().getValue();
@@ -120,13 +123,14 @@ function updateModule() {
 
 function loadModule() {
     doSave(save_success);
-    function save_success(data, new_code, tags, notes) {
+    function save_success(data, new_code, tags, notes, category) {
             if (data.success) {
                 savedCode = new_code;
                 savedTags = tags;
                 savedNotes = notes;
                 data.timeout = 2000;
                 if (this_viewer == "creator"){
+                    savedCategory = category;
                     var new_dp_code = "";
                     if (is_mpl) {
                         savedDPCode = myDPCodeMirror.getDoc().getValue();
@@ -239,11 +243,17 @@ function dirty() {
     var the_code = myCodeMirror.getDoc().getValue();
     var tags = $("#tile-tags").val();
     var notes = $("#tile-notes").val();
-    if ((this_viewer == "creator") && is_mpl) {
-        var dp_code = myDPCodeMirror.getDoc().getValue();
-        return !((the_code == savedCode) && (dp_code == savedDPCode) && (tags == savedTags) && (notes == savedNotes));
+
+    var is_clean = (the_code == savedCode) && (tags == savedTags) && (notes == savedNotes);
+    if (this_viewer == "creator") {
+        new_methods = methodManager.cmobject.getValue();
+        var category = $("#tile-category").val();
+        is_clean = is_clean && (new_methods == savedMethods) && !optionManager.changed &&
+            !exportManager.changed && (category == savedCategory);
+        if (is_mpl) {
+            var dp_code = myDPCodeMirror.getDoc().getValue();
+            is_clean = is_clean && (dp_code == savedDPCode);
+        }
     }
-    else {
-        return !((the_code == savedCode) && (tags == savedTags) && (notes == savedNotes));
-    }
+    return !is_clean
 }
