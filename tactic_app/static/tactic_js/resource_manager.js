@@ -43,9 +43,14 @@ ResourceManager.prototype = {
     show_loaded_list: false,
     add_listeners: function () {
         var self = this;
-        $.each(this.buttons, function (index, value) {
-            $("#{0}-{1}-button".format(value.name, self.res_type)).click({"manager": self}, self[value.func])
+        this.button_groups.forEach(function(bgroup) {
+            bgroup.buttons.forEach(function(value){
+                $("#{0}-{1}-button".format(value.name, self.res_type)).click({"manager": self}, self[value.func])
+            })
         });
+        // $.each(this.buttons, function (index, value) {
+        //     $("#{0}-{1}-button".format(value.name, self.res_type)).click({"manager": self}, self[value.func])
+        // });
         $.each(this.repository_buttons, function (index, value) {
             $("#repository-{0}-{1}-button".format(value.name, self.res_type)).click({"manager": self}, self[value.func])
         });
@@ -65,11 +70,13 @@ ResourceManager.prototype = {
     textify_button_names: function () {
         var but;
         var i;
-      for (i=0; i < this.buttons.length; ++i) {
-          but = this.buttons[i];
-          but_text = but["name"].replace(/_/g, ' ');
-          this.buttons[i]["name_text"] = but_text
-      }
+        this.button_groups.forEach(function(bgroup) {
+              for (i=0; i < bgroup.buttons.length; ++i) {
+                  but = bgroup.buttons[i];
+                  but_text = but["name"].replace(/_/g, ' ');
+                  bgroup.buttons[i]["name_text"] = but_text
+              }
+        });
       for (i=0; i < this.popup_buttons.length; ++i) {
           but = this.popup_buttons[i];
           but_text = but["name"].replace(/_/g, ' ');

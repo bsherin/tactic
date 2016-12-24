@@ -41,9 +41,13 @@
                       </ul>
                 </div>
                 {{/popup_buttons}}
-                {{#buttons}}
-                <button type="button" id="{{name}}-{{res_type}}-button" class="btn {{button_class}} action-button">{{name_text}}</button>
-                {{/buttons}}
+                {{#button_groups}}
+                     <div class="btn-group">
+                         {{#buttons}}
+                            <button type="button" id="{{name}}-{{res_type}}-button" class="btn {{button_class}} action-button">{{name_text}}</button>
+                         {{/buttons}}
+                     </div>
+                {{/button_groups}}
             </div>
             </div>
 
