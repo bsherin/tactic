@@ -212,16 +212,16 @@ var list_manager_specifics = {
     double_click_func: "view_func",
     repository_double_click_func: "repository_view_func",
     file_adders: [
-        {"name": "add_list", "func": "add_list", "button_class": "btn-success" }
+        {"name": "add_list", "func": "add_list", "button_class": "btn-default" }
     ],
     button_groups: [
-        {"buttons": [{"name": "view", "func": "view_func", "button_class": "btn-primary"}]},
-        {"buttons": [{"name": "duplicate", "func": "duplicate_func", "button_class": "btn-success"},
-                     {"name": "share", "func": "send_repository_func", "button_class": "btn-warning"}]},
-        {"buttons": [{"name": "delete", "func": "delete_func", "button_class": "btn-danger"}]}
+        {"buttons": [{"name": "view", "func": "view_func", "button_class": "btn-default"}]},
+        {"buttons": [{"name": "duplicate", "func": "duplicate_func", "button_class": "btn-default"}]},
+        {"buttons": [{"name": "share", "func": "send_repository_func", "button_class": "btn-default"}]},
+        {"buttons": [{"name": "delete", "func": "delete_func", "button_class": "btn-default"}]}
     ],
     repository_buttons: [
-        {"name": "view", "func": "repository_view_func", "button_class": "btn-primary"}
+        {"name": "view", "func": "repository_view_func", "button_class": "btn-default"}
     ],
     add_list: function (event) {
         var manager = event.data.manager;
@@ -243,17 +243,20 @@ var col_manager_specifics = {
     load_view: "/main/",
     double_click_func: "load_func",
     file_adders: [
-        {"name": "import_as_table", "func": "import_as_table", "button_class": "btn-success" },
-        {"name": "import_as_freeform", "func": "import_as_freeform", "button_class": "btn-success" }
+        {"name": "import_as_table", "func": "import_as_table", "button_class": "btn-default" },
+        {"name": "import_as_freeform", "func": "import_as_freeform", "button_class": "btn-default" }
     ],
     button_groups: [
         {buttons: [
-            {"name": "load", "func": "load_func", "button_class": "btn btn-primary"},
-            {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-success"},
-            {"name": "combine_collections", "func": "combineCollections", "button_class": "btn-primary"},
-            {"name": "download", "func": "downloadCollection", "button_class": "btn btn-primary"},
-            {"name": "share", "func": "send_repository_func", "button_class": "btn-warning"},
-            {"name": "delete", "func": "delete_func", "button_class": "btn-danger"}]}
+            {"name": "load", "func": "load_func", "button_class": "btn btn-default"},
+            ]},
+        {buttons: [
+            {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-default"},
+            {"name": "combine_collections", "func": "combineCollections", "button_class": "btn-default"}]},
+        {buttons: [{"name": "download", "func": "downloadCollection", "button_class": "btn btn-default"},
+            {"name": "share", "func": "send_repository_func", "button_class": "btn-default"}]},
+        {buttons: [
+            {"name": "delete", "func": "delete_func", "button_class": "btn-default"}]}
     ],
     import_as_table: function (event) {
         var manager = event.data.manager;
@@ -309,10 +312,16 @@ var project_manager_specifics = {
     load_view: "",
     delete_view: "/delete_project/",
     double_click_func: "load_func",
-    button_groups: [{buttons: [
-        {"name": "load", "func": "load_func", "button_class": "btn-primary"},
-        {"name": "share", "func": "send_repository_func", "button_class": "btn-warning"},
-        {"name": "delete", "func": "delete_func", "button_class": "btn-danger"}]}
+    button_groups: [
+        {buttons: [
+            {"name": "load", "func": "load_func", "button_class": "btn-default"}
+        ]},
+        {buttons: [
+            {"name": "share", "func": "send_repository_func", "button_class": "btn-default"}
+        ]},
+        {buttons: [
+            {"name": "delete", "func": "delete_func", "button_class": "btn-default"}
+        ]}
     ],
 
     load_func: function (event) {
@@ -341,29 +350,37 @@ var tile_manager_specifics = {
     repository_double_click_func: "repository_view_func",
     show_loaded_list: true,
     popup_buttons: [{"name": "new",
-                    "button_class": "btn-success",
+                    "button_class": "btn-default",
                     "option_list": [{"opt_name": "BasicTileTemplate", "opt_func": "new_tile"},
                                     {"opt_name": "ExpandedTileTemplate", "opt_func": "new_tile"},
                                     {"opt_name": "MatplotlibTileTemplate", "opt_func": "new_tile"}]},
                     {"name": "new_in_creator",
-                    "button_class": "btn-success",
+                    "button_class": "btn-default",
                     "option_list": [{"opt_name": "StandardTile", "opt_func": "new_basic_in_creator"},
                                     {"opt_name": "MatplotlibTile", "opt_func": "new_mpl_in_creator"}]}],
     file_adders: [
-        {"name": "add_module", "func": "add_tile_module", "button_class": "btn-success" }
+        {"name": "add_module", "func": "add_tile_module", "button_class": "btn-default" }
     ],
-    button_groups: [{buttons: [
-        {"name": "view", "func": "view_func", "button_class": "btn-primary"},
-        {"name": "view_in_creator", "func": "creator_view_func", "button_class": "btn-primary"},
-        {"name": "load", "func": "load_func", "button_class": "btn-primary"},
-        {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-success"},
-        {"name": "share", "func": "send_repository_func", "button_class": "btn-warning"},
-        {"name": "unload", "func": "unload_func", "button_class": "btn-warning"},
-        {"name": "delete", "func": "delete_func", "button_class": "btn-danger"}]}
+    button_groups: [
+        {buttons: [
+            {"name": "view", "func": "view_func", "button_class": "btn-default"},
+            {"name": "view_in_creator", "func": "creator_view_func", "button_class": "btn-default"},
+            {"name": "load", "func": "load_func", "button_class": "btn-default"},
+            {"name": "unload", "func": "unload_func", "button_class": "btn-default"},
+        ]},
+        {buttons: [
+            {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-default"}
+        ]},
+        {buttons: [
+            {"name": "share", "func": "send_repository_func", "button_class": "btn-default"}
+        ]},
+        {buttons: [
+            {"name": "delete", "func": "delete_func", "button_class": "btn-default"}
+        ]}
     ],
 
     repository_buttons: [
-        {"name": "view", "func": "repository_view_func", "button_class": "btn-primary"}
+        {"name": "view", "func": "repository_view_func", "button_class": "btn-default"}
     ],
 
     creator_view_func: function (event) {
@@ -425,8 +442,7 @@ var tile_manager_specifics = {
     },
 
     new_basic_in_creator: function (event) {
-        console.log("i and here")
-        tileManager.new_in_creator(event, "BasicTileTemplate")
+        tileManager.new_in_creator(event, "BasicTileTemplate");
         event.preventDefault();
     },
 
@@ -475,20 +491,28 @@ var code_manager_specifics = {
     repository_double_click_func: "repository_view_func",
     show_loaded_list: true,
     popup_buttons: [{"name": "new",
-                    "button_class": "btn-success",
+                    "button_class": "btn-default",
                     "option_list": [{"opt_name": "BasicCodeTemplate", "opt_func": "new_code"}]}],
     file_adders: [
-        {"name": "add_code", "func": "add_code", "button_class": "btn-success" }
+        {"name": "add_code", "func": "add_code", "button_class": "btn-default" }
     ],
-    button_groups: [{buttons: [
-        {"name": "view", "func": "view_func", "button_class": "btn-primary"},
-        {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-success"},
-        {"name": "share", "func": "send_repository_func", "button_class": "btn-warning"},
-        {"name": "delete", "func": "delete_func", "button_class": "btn-danger"}]}]
-    ,
+    button_groups: [
+        {buttons: [
+            {"name": "view", "func": "view_func", "button_class": "btn-default"}
+        ]},
+        {buttons: [
+            {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-default"}
+        ]},
+        {buttons: [
+            {"name": "share", "func": "send_repository_func", "button_class": "btn-default"}
+        ]},
+        {buttons: [
+            {"name": "delete", "func": "delete_func", "button_class": "btn-default"}
+        ]}
+    ],
 
     repository_buttons: [
-        {"name": "view", "func": "repository_view_func", "button_class": "btn-primary"}
+        {"name": "view", "func": "repository_view_func", "button_class": "btn-default"}
     ],
     add_code: function (event) {
         var manager = event.data.manager;

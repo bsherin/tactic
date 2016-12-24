@@ -211,8 +211,8 @@ a[role="tab"] {
 
 .action-button {
     //border: $resource-action-button-border-style;
-    margin-right: $resource-action-button-margin !important;
-    border-radius: $resource-action-button-border-radius !important
+    //margin-right: $resource-action-button-margin !important;
+    //border-radius: $resource-action-button-border-radius !important
 }
 
 .action-popup {
@@ -241,339 +241,346 @@ a[role="tab"] {
 }
 
 
-.resource-module h2 {
-    margin-top: 0;
-}
-
-
-.metadata-field {
-    width: 350px
-}
-
-/* creator */
-
-.ui-resizable-s {
-  width: 15px; }
-
-#creator-resources {
-    .tab-pane {
-        padding: 10px;
-        border-style: solid;
-        border-color: $bootstrap-border-color;
-        border-width: 1px;
-        margin-right: 10px;
-
+.resource-module {
+    h2 {
+        margin-top: 0;
     }
-
-    .form-inline label {
-        margin-bottom: 0px;
-        margin-left: 4px
+    .btn-toolbar {
+        padding: 5px;
     }
-    .indent-row {
-        margin-bottom: 10px
-    }
-    .resource-module {
-        margin: 0px;
-    }
-    input {
-        width: 150px;
+    form {
+        padding: 5px;
     }
 }
+
+    .metadata-field {
+        width: 350px
+    }
+
+    /* creator */
+
+    .ui-resizable-s {
+        width: 15px; }
+
+    #creator-resources {
+        .tab-pane {
+            padding: 10px;
+            border-style: solid;
+            border-color: $bootstrap-border-color;
+            border-width: 1px;
+            margin-right: 10px;
+
+        }
+
+        .form-inline label {
+            margin-bottom: 0px;
+            margin-left: 4px
+        }
+        .indent-row {
+            margin-bottom: 10px
+        }
+        .resource-module {
+            margin: 0px;
+        }
+        input {
+            width: 150px;
+        }
+    }
 
     /* Tile related */
 
-.tile-panel-heading {
-    .close .glyphicon {
-        font-size: 17px
+    .tile-panel-heading {
+        .close .glyphicon {
+            font-size: 17px
+        }
+        .notclose .glyphicon {
+            font-size: 17px
+        }
     }
-    .notclose .glyphicon {
-        font-size: 17px
+
+    /* plot related */
+    .d3plot { font: 10px Arial;}
+
+    .d3plot path {
+        stroke: steelblue;
+        stroke-width: 2;
+        fill: none;
     }
-}
 
-/* plot related */
-.d3plot { font: 10px Arial;}
+    .d3plot path.domain {
+        fill: none;
+        stroke: #a4a4a4;
+        shape-rendering: crispEdges;
+    }
 
-.d3plot path {
-    stroke: steelblue;
-    stroke-width: 2;
-    fill: none;
-}
+    .d3plot line {
+        stroke: black;
+    }
 
-.d3plot path.domain {
-    fill: none;
-    stroke: #a4a4a4;
-    shape-rendering: crispEdges;
-}
+    .d3plot .axis path,
+    .d3plot .axis line {
+        fill: none;
+        stroke: grey;
+        stroke-width: 2;
+        shape-rendering: crispEdges;
+    }
 
-.d3plot line {
-    stroke: black;
-}
+    .d3plot .heatmap-cell-border {
+        stroke: #eee;
+        stroke-width:0.3px;
+    }
 
-.d3plot .axis path,
-.d3plot .axis line {
-    fill: none;
-    stroke: grey;
-    stroke-width: 2;
-    shape-rendering: crispEdges;
-}
+    .d3plot .heatmap-colLabel {
+        fill: #aaa;
+    }
 
-.d3plot .heatmap-cell-border {
-    stroke: #eee;
-    stroke-width:0.3px;
-}
+    .d3plot .heatmap-rowLabel {
+        fill: #aaa;
+    }
 
-.d3plot .heatmap-colLabel {
-    fill: #aaa;
-}
+    .d3plot-title {
+        font-size: 14px;
+    }
 
-.d3plot .heatmap-rowLabel {
-    fill: #aaa;
-}
+    /* tooltips */
 
-.d3plot-title {
-    font-size: 14px;
-}
+    $tooltip-background-color: #fde930;
+    $tooltip-text-color: #66431a;
 
-/* tooltips */
+    .tooltip .tooltip-inner {background-color: $tooltip-background-color;
+        color: $tooltip-text-color}
 
-$tooltip-background-color: #fde930;
-$tooltip-text-color: #66431a;
+    .tooltip.top .tooltip-arrow { border-top-color:$tooltip-background-color}
 
-.tooltip .tooltip-inner {background-color: $tooltip-background-color;
-    color: $tooltip-text-color}
+    .tooltip.bottom .tooltip-arrow { border-bottom-color:$tooltip-background-color}
 
-.tooltip.top .tooltip-arrow { border-top-color:$tooltip-background-color}
-
-.tooltip.bottom .tooltip-arrow { border-bottom-color:$tooltip-background-color}
-
-.tooltip-inner{
-    -moz-box-shadow: 0 1px 5px 1px rgba(0,0,0,0.4);
-    -webkit-box-shadow: 0 1px 5px 1px rgba(0,0,0,0.4);
-    box-shadow: 0 1px 5px 1px rgba(0,0,0,0.4);
-    zoom: 1;
-}
+    .tooltip-inner{
+        -moz-box-shadow: 0 1px 5px 1px rgba(0,0,0,0.4);
+        -webkit-box-shadow: 0 1px 5px 1px rgba(0,0,0,0.4);
+        box-shadow: 0 1px 5px 1px rgba(0,0,0,0.4);
+        zoom: 1;
+    }
 
 
-/* Tile table related*/
+    /* Tile table related*/
 
-.tile-table td {
-    padding-top: 1px !important;
-    padding-bottom: 1px !important;
-}
+    .tile-table td {
+        padding-top: 1px !important;
+        padding-bottom: 1px !important;
+    }
 
-.sidebyside-table {
-    display: inline-block;
-    margin-right: 10px;
-    border: none;
-}
+    .sidebyside-table {
+        display: inline-block;
+        margin-right: 10px;
+        border: none;
+    }
 
 
-.row-clickable:hover {
-    background-color: #5bc0de !important
-}
+    .row-clickable:hover {
+        background-color: #5bc0de !important
+    }
 
-.row-clickable:active {
-    background-color: #1b6d85 !important
-}
+    .row-clickable:active {
+        background-color: #1b6d85 !important
+    }
 
-td.cell-clickable:hover {
-    background-color: #5bc0de !important
-}
+    td.cell-clickable:hover {
+        background-color: #5bc0de !important
+    }
 
-td.cell-clickable:active {
-    background-color: #1b6d85 !important
-}
+    td.cell-clickable:active {
+        background-color: #1b6d85 !important
+    }
 
-.element-clickable:hover {
-    background-color: #5bc0de !important
-}
+    .element-clickable:hover {
+        background-color: #5bc0de !important
+    }
 
-.element-clickable:active {
-    background-color: #1b6d85 !important
-}
+    .element-clickable:active {
+        background-color: #1b6d85 !important
+    }
 
-/* console */
+    /* console */
 
-#console {
-    text-align: left;
-    font-size: 14px;
-    overflow: auto;
-    padding: 5px;
-}
+    #console {
+        text-align: left;
+        font-size: 14px;
+        overflow: auto;
+        padding: 5px;
+    }
 
-#console-panel {
-    margin-left: 5px;
-    margin-right: 5px;
-    border: $console-panel-border-style !important;
-}
+    #console-panel {
+        margin-left: 5px;
+        margin-right: 5px;
+        border: $console-panel-border-style !important;
+    }
 
-#console-heading {
-    font-size: $console-header-font-size;
-    padding-top: 2px;
-    padding-bottom: 2px;
-    text-align: left;
-    color: $console-header-foreground-color !important;
-    background-color: $console-header-background-color !important;
-    font-family: $console-font-family;
-
-}
-
-.log-panel {
-    border: $log-panel-border-style !important;
-    margin: 1px;
-    box-shadow: none;
-
-    .panel-heading {
-        background-color: $log-panel-header-background-color important;
-        color: $log-panel-header-foreground-color !important;
-        padding: 2px;
+    #console-heading {
+        font-size: $console-header-font-size;
+        padding-top: 2px;
+        padding-bottom: 2px;
+        text-align: left;
+        color: $console-header-foreground-color !important;
+        background-color: $console-header-background-color !important;
+        font-family: $console-font-family;
 
     }
 
-    .panel-heading:hover {
-        background-color: $log-panel-header-background-hover-color !important
+    .log-panel {
+        border: $log-panel-border-style !important;
+        margin: 1px;
+        box-shadow: none;
+
+        .panel-heading {
+            background-color: $log-panel-header-background-color important;
+            color: $log-panel-header-foreground-color !important;
+            padding: 2px;
+
+        }
+
+        .panel-heading:hover {
+            background-color: $log-panel-header-background-hover-color !important
+        }
+
+        .notclose {
+            padding-left: 6px;
+        }
     }
 
-    .notclose {
-        padding-left: 6px;
+    .log-panel-body {
+        padding-left: 15px;
+        padding-right: 15px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        color: $log-panel-font-color !important;
     }
-}
 
-.log-panel-body {
-    padding-left: 15px;
-    padding-right: 15px;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    color: $log-panel-font-color !important;
-}
+    .log-code-output {
+        padding-left: 15px;
+        padding-right: 15px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
 
-.log-code-output {
-    padding-left: 15px;
-    padding-right: 15px;
-    padding-top: 10px;
-    padding-bottom: 10px;
-}
+    /*main window*/
 
-/*main window*/
+    .grid-left {
+        display: inline-block;
+        width: 500px;
+        vertical-align:top
+    }
 
-.grid-left {
-    display: inline-block;
-    width: 500px;
-    vertical-align:top
-}
+    .grid-right {
+        display: inline-block;
+        width: 300px;
+        vertical-align:top
+    }
 
-.grid-right {
-    display: inline-block;
-    width: 300px;
-    vertical-align:top
-}
+    .outer-container {
+        padding: 25px;
+    }
 
-.outer-container {
-    padding: 25px;
-}
+    #tile-div {
+        padding: 5px;
+    }
 
-#tile-div {
-    padding: 5px;
-}
+    #tile-area {
+        margin: 0;
+        border: 0;
+        overflow: auto;
+    }
 
-#tile-area {
-    margin: 0;
-    border: 0;
-    overflow: auto;
-}
+    /* tile */
 
-/* tile */
+    .tile-panel {
+        height: 265px;
+        margin: 7px;
+        border: $tile-panel-border-style !important;
+        background-color: $tile-panel-background-color !important;
+        color: $tile-panel-foreground-color !important;
+    }
 
-.tile-panel {
-    height: 265px;
-    margin: 7px;
-    border: $tile-panel-border-style !important;
-    background-color: $tile-panel-background-color !important;
-    color: $tile-panel-foreground-color !important;
-}
+    .tile-panel-float {
+        float: left;
+    }
 
-.tile-panel-float {
-    float: left;
-}
-
-.tile-panel-heading {
-    color: $tile-header-foreground-color !important;
-    cursor: move;
-    padding: 5px 7px;
-    background-color: $tile-header-background-color !important;
-}
+    .tile-panel-heading {
+        color: $tile-header-foreground-color !important;
+        cursor: move;
+        padding: 5px 7px;
+        background-color: $tile-header-background-color !important;
+    }
 
 
-#spin-place {
-    position: relative;
-}
+    #spin-place {
+        position: relative;
+    }
 
-.tile-display-area {
-    overflow: auto;
-    padding: 0;
-    margin: 15px 15px 15px 15px;
-}
+    .tile-display-area {
+        overflow: auto;
+        padding: 0;
+        margin: 15px 15px 15px 15px;
+    }
 
-.back {
-    padding: 20px;
-    margin: 0;
-    overflow: auto
-}
+    .back {
+        padding: 20px;
+        margin: 0;
+        overflow: auto
+    }
 
-.front {
-    padding: 0;
-    margin: 0;
-}
+    .front {
+        padding: 0;
+        margin: 0;
+    }
 
-.tile-log {
-      padding: 20px;
-      margin: 0;
-      overflow: auto
-}
+    .tile-log {
+        padding: 20px;
+        margin: 0;
+        overflow: auto
+    }
 
 
-.tile-body {
-    padding: 0;
-}
+    .tile-body {
+        padding: 0;
+    }
 
-.tile-body img {
-    cursor: pointer
-}
+    .tile-body img {
+        cursor: pointer
+    }
 
-.output-plot {
-    max-width: 100%;
-    max-height: 100%
-}
+    .output-plot {
+        max-width: 100%;
+        max-height: 100%
+    }
 
-/* Other*/
+    /* Other*/
 
-.status-msg {
-    font-size: 16px;
-    color: dimgray;
-}
+    .status-msg {
+        font-size: 16px;
+        color: dimgray;
+    }
 
-.highlight {
-    background: $search-highlight-color;
-}
+    .highlight {
+        background: $search-highlight-color;
+    }
 
-button.notclose {
-    -webkit-appearance: none;
-    padding: 0;
-    cursor: pointer;
-    background: transparent;
-    opacity: $button-notclose-opacity;
-    border: 0;
-}
+    button.notclose {
+        -webkit-appearance: none;
+        padding: 0;
+        cursor: pointer;
+        background: transparent;
+        opacity: $button-notclose-opacity;
+        border: 0;
+    }
 
-button.notclose:hover {
-    opacity: $button-notclose-hover-opacity !important;
-}
-.monospace {
-    font-family: monospace
-}
+    button.notclose:hover {
+        opacity: $button-notclose-hover-opacity !important;
+    }
+    .monospace {
+        font-family: monospace
+    }
 
-.hide-important {
-    display: none !important
-}
+    .hide-important {
+        display: none !important
+    }
 
