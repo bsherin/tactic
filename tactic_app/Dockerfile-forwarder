@@ -1,0 +1,9 @@
+FROM python:2.7.11
+WORKDIR /code
+ADD ./forwarder_container_env/requirements.txt /code/requirements.txt
+RUN pip install -r requirements.txt
+MAINTAINER "Bruce L Sherin"
+ADD  ./forwarder_container_env /code
+ADD ./qworker.py /code
+add ./communication_utils.py /code
+CMD ["python", "-u", "forwarder_main.py"]

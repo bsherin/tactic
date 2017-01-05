@@ -24,5 +24,5 @@ global_tile_manager.get_all_default_tiles()
 
 from views import tester_views
 
-socketio.run(app, host="0.0.0.0")
+socketio.run(app, host="0.0.0.0", port=8000)
 
