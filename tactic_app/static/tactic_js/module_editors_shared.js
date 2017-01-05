@@ -35,6 +35,16 @@ postAjax("get_api_dict", {}, function (data) {
     };
 });
 
+is_mac = CodeMirror.keyMap["default"].hasOwnProperty("Cmd-S");
+if (is_mac) {
+    key_string = "Cmd-S"
+}
+else {
+    key_string = "Ctrl-S"
+}
+
+CodeMirror.keyMap["default"][key_string] = updateModule;
+
 function createCMArea(codearea) {
     cmobject = CodeMirror(codearea, {
         lineNumbers: true,
@@ -257,3 +267,26 @@ function dirty() {
     }
     return !is_clean
 }
+
+tactic_keymap_pcDefault = {
+"Ctrl-A": "selectAll", "Ctrl-D": "deleteLine", "Ctrl-Z": "undo", "Shift-Ctrl-Z": "redo", "Ctrl-Y": "redo",
+"Ctrl-Home": "goDocStart", "Ctrl-End": "goDocEnd", "Ctrl-Up": "goLineUp", "Ctrl-Down": "goLineDown",
+"Ctrl-Left": "goGroupLeft", "Ctrl-Right": "goGroupRight", "Alt-Left": "goLineStart", "Alt-Right": "goLineEnd",
+"Ctrl-Backspace": "delGroupBefore", "Ctrl-Delete": "delGroupAfter", "Ctrl-S": updateModule, "Ctrl-F": "find",
+"Ctrl-G": "findNext", "Shift-Ctrl-G": "findPrev", "Shift-Ctrl-F": "replace", "Shift-Ctrl-R": "replaceAll",
+"Ctrl-[": "indentLess", "Ctrl-]": "indentMore",
+"Ctrl-U": "undoSelection", "Shift-Ctrl-U": "redoSelection", "Alt-U": "redoSelection",
+fallthrough: "basic"
+};
+// Very basic readline/emacs-style bindings, which are standard on Mac.
+
+tactic_keymap_macDefault = {
+"Cmd-A": "selectAll", "Cmd-D": "deleteLine", "Cmd-Z": "undo", "Shift-Cmd-Z": "redo", "Cmd-Y": "redo",
+"Cmd-Home": "goDocStart", "Cmd-Up": "goDocStart", "Cmd-End": "goDocEnd", "Cmd-Down": "goDocEnd", "Alt-Left": "goGroupLeft",
+"Alt-Right": "goGroupRight", "Cmd-Left": "goLineLeft", "Cmd-Right": "goLineRight", "Alt-Backspace": "delGroupBefore",
+"Ctrl-Alt-Backspace": "delGroupAfter", "Alt-Delete": "delGroupAfter", "Cmd-S": updateModule, "Cmd-F": "find",
+"Cmd-G": "findNext", "Shift-Cmd-G": "findPrev", "Cmd-Alt-F": "replace", "Shift-Cmd-Alt-F": "replaceAll",
+"Cmd-[": "indentLess", "Cmd-]": "indentMore", "Cmd-Backspace": "delWrappedLineLeft", "Cmd-Delete": "delWrappedLineRight",
+"Cmd-U": "undoSelection", "Shift-Cmd-U": "redoSelection", "Ctrl-Up": "goDocStart", "Ctrl-Down": "goDocEnd",
+fallthrough: ["basic", "emacsy"]
+};
