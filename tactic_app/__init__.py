@@ -13,15 +13,18 @@ from flask.ext.bootstrap import Bootstrap
 from flask.ext.socketio import SocketIO
 from flask_wtf.csrf import CsrfProtect
 from docker_functions import create_container, get_address
-from communication_utils import send_request_to_container
+from communication_utils import send_request_to_container, USE_FORWARDER
 from integrated_docs import api_array
 
 csrf = CsrfProtect()
 
 # ip_info is only used as a step to getting the host_ip
-# ip_info = subprocess.check_output(['ip', '-4', 'addr', 'show', 'scope', 'global', 'dev', 'docker0'])
 
-ip_info = subprocess.check_output(['/usr/local/bin/ip', '-4', 'addr', 'show', 'en0'])
+if USE_FORWARDER: # This means we're working on the mac
+    ip_info = subprocess.check_output(['/usr/local/bin/ip', '-4', 'addr', 'show', 'en0'])
+else:
+    ip_info = subprocess.check_output(['ip', '-4', 'addr', 'show', 'scope', 'global', 'dev', 'docker0'])
+
 
 # global_stuff
 # these variables are imported by other modules
