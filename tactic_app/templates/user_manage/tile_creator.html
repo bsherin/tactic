@@ -22,8 +22,9 @@
 
         <div class="row">
             <div class="col-xs-7">
-                <div class="row" style="margin-top: 10px">
-                    <div class="btn-toolbar col-xs-12" role="toolbar" >
+                <div style="margin-top: 10px">
+                    <button id="module-name" type="button" class="btn btn-default res-name-button" onclick="renameModule()">{{ module_name }}</button>
+                    <div class="btn-toolbar" style="float:right" role="toolbar" >
                         <div class="btn-group btn-group-sm" role="group">
                             {% if read_only_string == "" %}
                             <button type="button" class="btn btn-default" onclick="updateModule()">Save</button>
@@ -39,15 +40,10 @@
                             <button type="button" class="btn btn-default" onclick="changeTheme()">Toggle Theme</button>
                             <button type="button" class="btn btn-default" onclick="showAPI()">Show API</button>
                         </div>
-
-
-                        <div style="float: right">
-                            <button id="module-name" type="button" class="btn btn-default res-name-button" onclick="renameModule()">{{ module_name }}</button>
-                        </div>
                     </div>
                 </div>
                 <div id="drawplotboundingarea" class="bootstrap-border" style="display: none; border-bottom-width: 1px; border-bottom-style: solid; margin-bottom: 20px">
-                    <h4 style="display:inline-block">draw_plot</h4>
+                    <h4 style="display:inline-block; margin-bottom:0px">draw_plot</h4>
                         <div class="btn-group" style= "margin-top: 10px; margin-bottom: 5px; float:right" role="group">
                            {% for catdict in api_dlist%}
 
@@ -61,23 +57,22 @@
                             </div>
                            {% endfor %}
                     </div>
-                    <div id="drawplotcodearea" style="overflow-y: auto"></div>
+                    <div id="drawplotcodearea" style="overflow-y: auto; clear:right"></div>
                 </div>
-                <h4 style="display:inline-block">render_content</h4>
-                    <div class="btn-group" style= "margin-top: 10px; margin-bottom: 5px; float:right" role="group">
-                           {% for catdict in api_dlist%}
-
-                            <div class="btn-group">
-                                <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">{{catdict.cat_name}}<span class="caret"></span></button>
-                                  <ul class="dropdown-menu">
-                                      {% for api_item in catdict.cat_list %}
-                                        <li><a class="popup_item" onclick="insertApiItem('{{api_item.name}}')">{{api_item.name}}</a></li>
-                                      {% endfor %}
-                                  </ul>
-                            </div>
-                           {% endfor %}
-                    </div>
-                <div id="codearea" style="overflow-y: auto"></div>
+                <h4 style="display:inline-block; margin-bottom:0px">render_content</h4>
+                <div class="btn-group" style= "margin-top: 10px; margin-bottom: 5px; float:right" role="group">
+                       {% for catdict in api_dlist%}
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">{{catdict.cat_name}}<span class="caret"></span></button>
+                              <ul class="dropdown-menu">
+                                  {% for api_item in catdict.cat_list %}
+                                    <li><a class="popup_item" onclick="insertApiItem('{{api_item.name}}')">{{api_item.name}}</a></li>
+                                  {% endfor %}
+                              </ul>
+                        </div>
+                       {% endfor %}
+                </div>
+                <div id="codearea" style="overflow-y: auto; clear:right"></div>
             </div>
             <div class="col-xs-5">
                     <div id="api-area" style="display:none; overflow:scroll">{{api_html | safe}}</div>
