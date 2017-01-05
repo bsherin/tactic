@@ -4,6 +4,8 @@ import time
 import requests
 import os
 import sys
+forwarder_address = None
+forwarder_id = None
 sys.stdout = sys.stderr
 
 print os.environ
@@ -18,12 +20,16 @@ if "RETRIES" in os.environ:
 else:
     RETRIES = 60
 
-
 # multiple_worker_issue global variables here
 
 # global_stuff
 # container_owners is imported by admin_views
 container_owners = {}
+
+def create_forwarder():
+    global forwarder_address, forwarder_id
+    forwarder_id = create_container("forwarder_image", port_bindings={5000: 8080})
+    forwarder_address = get_address(forwarder_id, "bridge")
 
 cli = docker.Client(base_url='unix://var/run/docker.sock')
 
@@ -34,7 +40,7 @@ def get_address(container_identifier, network_name):
 
 
 def create_container(image_name, container_name=None, network_mode="bridge",
-                     wait_until_running=True, owner="host", env_vars={}):
+                     wait_until_running=True, owner="host", env_vars={}, port_bindings=None):
     environ = {"SHORT_SLEEP_PERIOD": SHORT_SLEEP_PERIOD,
                "LONG_SLEEP_PERIOD": LONG_SLEEP_PERIOD,
                "MAX_QUEUE_LENGTH": MAX_QUEUE_LENGTH,
@@ -43,16 +49,23 @@ def create_container(image_name, container_name=None, network_mode="bridge",
                "STEP_SIZE": STEP_SIZE}
     for key, val in env_vars.items():
         environ[key] = val
+
+    if port_bindings is None:
+        host_config = cli.create_host_config(network_mode=network_mode)
+    else:
+        host_config = cli.create_host_config(network_mode=network_mode, port_bindings=port_bindings)
     if container_name is None:
         container = cli.create_container(image=image_name,
-                                         host_config=cli.create_host_config(network_mode=network_mode),
-                                         environment=environ
+                                         host_config=host_config,
+                                         environment=environ,
+                                         ports=[5000]
                                          )
     else:
         container = cli.create_container(image=image_name,
                                          name=container_name,
-                                         host_config=cli.create_host_config(network_mode=network_mode),
-                                         environment=environ
+                                         host_config=host_config,
+                                         environment=environ,
+                                         ports=[5000]
                                          )
     container_id = container.get('Id')
     cli.start(container_id)
@@ -90,11 +103,22 @@ def destroy_user_containers(owner_id):
 
 def send_direct_request_to_container(container_id, msg_type, data_dict, wait_for_success=True,
                                      timeout=3, tries=RETRIES, wait_time=.1):
-    maddress = get_address(container_id, "bridge")
+    if USE_FORWARDER:
+        if data_dict is None:
+            data_dict = {}
+        maddress = get_address(container_id, "bridge")
+        data_dict["msg_type"] = msg_type
+        data_dict["forwarding_address"] = maddress
+        msg_type = "forward_message"
+        port = "8080"
+        maddress = "0.0.0.0"
+    else:
+        port = "5000"
+        maddress = get_address(container_id, "bridge")
     if wait_for_success:
         for attempt in range(tries):
             try:
-                res = requests.post("http://{0}:5000/{1}".format(maddress, msg_type), timeout=timeout, json=data_dict)
+                res = requests.post("http://{0}:{1}/{2}".format(maddress, port, msg_type), timeout=timeout, json=data_dict)
                 return res
             except:
                 time.sleep(wait_time)
@@ -108,3 +132,12 @@ def send_direct_request_to_container(container_id, msg_type, data_dict, wait_for
 
 def connect_to_network(container, network):
     return cli.connect_container_to_network(container, network)
+
+
+if ("USE_FORWARDER" in os.environ) and (os.environ.get("USE_FORWARDER") == "True"):
+    USE_FORWARDER = True
+else:
+    USE_FORWARDER = False
+
+if USE_FORWARDER:
+    create_forwarder()

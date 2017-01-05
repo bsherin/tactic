@@ -6,7 +6,7 @@ def do_docker_cleanup():
     all_containers = cli.containers(all=True)
 
     for cont in all_containers:
-        if cont["Image"] in ["tactic_tile_image", "tactic_main_image", "tactic_megaplex_image"]:
+        if cont["Image"] in ["tactic_tile_image", "tactic_main_image", "tactic_megaplex_image", "forwarder_image"]:
             cli.remove_container(cont["Id"], force=True)
             continue
         if cont["Image"] == cont["ImageID"]:

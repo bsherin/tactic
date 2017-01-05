@@ -19,7 +19,9 @@ from integrated_docs import api_array
 csrf = CsrfProtect()
 
 # ip_info is only used as a step to getting the host_ip
-ip_info = subprocess.check_output(['ip', '-4', 'addr', 'show', 'scope', 'global', 'dev', 'docker0'])
+# ip_info = subprocess.check_output(['ip', '-4', 'addr', 'show', 'scope', 'global', 'dev', 'docker0'])
+
+ip_info = subprocess.check_output(['/usr/local/bin/ip', '-4', 'addr', 'show', 'en0'])
 
 # global_stuff
 # these variables are imported by other modules
@@ -42,6 +44,7 @@ def create_megaplex():
     global megaplex_address, megaplex_id
     megaplex_id = create_container("tactic_megaplex_image")
     megaplex_address = get_address(megaplex_id, "bridge")
+
 
 # noinspection PyUnresolvedReferences
 try:

@@ -20,3 +20,10 @@ services:
     image: tactic_tile_image
     environment:
       PYTHONUNBUFFERED: 0
+
+  forwarder:
+    build:
+      context: .
+      dockerfile: Dockerfile-forwarder
+    image: forwarder_image
+
