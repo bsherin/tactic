@@ -22,8 +22,10 @@
 
         <div class="row">
             <div class="col-xs-8">
-                <div class="row" style="margin-top: 10px">
-                    <div class="btn-toolbar col-xs-12" role="toolbar" >
+                <div class="" style="margin-top: 10px">
+                    <button id="module-name" type="button" class="btn btn-default res-name-button" onclick="renameModule()">{{ module_name }}</button>
+                    <div class="btn-toolbar" role="toolbar" style="float:right">
+
                         <div class="btn-group btn-group-sm" role="group">
                             {% if read_only_string == "" %}
                             <button type="button" class="btn btn-default" onclick="updateModule()">Save</button>
@@ -39,9 +41,7 @@
                             <button type="button" class="btn btn-default" onclick="changeTheme()">Toggle Theme</button>
                             <button type="button" class="btn btn-default" onclick="showAPI()">Show API</button>
                         </div>
-                        <div style="float: right">
-                            <button id="module-name" type="button" class="btn btn-default res-name-button" onclick="renameModule()">{{ module_name }}</button>
-                        </div>
+
                     </div>
                 </div>
                 <div id="codearea" style="overflow-y: auto"></div>
