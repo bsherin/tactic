@@ -436,5 +436,10 @@ function save_metadata(event) {
     var tags = $("#" + res_type + "-tags").val();
     var notes = $("#" + res_type + "-notes").val();
     var result_dict = {"res_type": res_type, "res_name": res_name, "tags": tags, "notes": notes};
-    postAjax("save_metadata", result_dict, doFlashAlways);
+    postAjax("save_metadata", result_dict, function(data) {
+        if (data.success) {
+            $('.resource-selector .' + res_type + '-selector-button.active').children()[3].innerHTML = tags
+        }
+        doFlashAlways(data)
+    });
 }

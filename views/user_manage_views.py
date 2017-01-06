@@ -290,7 +290,6 @@ class ListManager(ResourceManager):
         mdata["tags"] = tags
         mdata["notes"] = notes
         db[current_user.list_collection_name].update_one({"list_name": res_name}, {'$set': {"metadata": mdata}})
-        self.update_selector_list()
 
     def add_list(self):
         user_obj = current_user
@@ -460,7 +459,6 @@ class CollectionManager(ResourceManager):
         else:
             db[cname].update_one({"name": "__metadata__"},
                                  {'$set': {"tags": tags, "notes": notes}})
-        self.update_selector_list()
 
     def autosplit_doc(self, filename, full_dict):
         sorted_int_keys = sorted([int(key) for key in full_dict.keys()])
@@ -658,7 +656,6 @@ class ProjectManager(ResourceManager):
         mdata["tags"] = tags
         mdata["notes"] = notes
         db[current_user.project_collection_name].update_one({"project_name": res_name}, {'$set': {"metadata": mdata}})
-        self.update_selector_list()
 
 
 class RepositoryProjectManager(ProjectManager):
@@ -723,7 +720,6 @@ class TileManager(ResourceManager):
         mdata["tags"] = tags
         mdata["notes"] = notes
         db[current_user.tile_collection_name].update_one({"tile_module_name": res_name}, {'$set': {"metadata": mdata}})
-        self.update_selector_list()
 
     def view_module(self, module_name):
         return render_template("user_manage/module_viewer.html",
@@ -948,7 +944,6 @@ class CodeManager(ResourceManager):
         mdata["tags"] = tags
         mdata["notes"] = notes
         db[current_user.code_collection_name].update_one({"code_name": res_name}, {'$set': {"metadata": mdata}})
-        self.update_selector_list()
 
     def view_code(self, code_name):
         user_obj = current_user
