@@ -3,21 +3,15 @@
  */
 
 var extra_autocomplete_list = [];
+var cmobjects_to_search = [];
+var cmobjects = [];
 
 var mousetrap = new Mousetrap();
 mousetrap.bind("esc", function() {
     clearStatusArea();
 });
 
-mousetrap.bind(['command+s', 'ctrl+s'], function(e) {
-    updateModule();
-    e.preventDefault()
-});
 
-mousetrap.bind(['command+l', 'ctrl+l'], function(e) {
-    loadModule();
-    e.preventDefault()
-});
 
 postAjax("get_api_dict", {}, function (data) {
     api_dict_by_category = data.api_dict_by_category;
@@ -35,17 +29,60 @@ postAjax("get_api_dict", {}, function (data) {
     };
 });
 
+function searchInAll() {
+    cmobjects_to_search.forEach(function(cm) {
+        CodeMirror.commands.find(cm)
+    })
+}
+
+function clearSelections() {
+    cmobjects.forEach(function (cm){
+        CodeMirror.commands.clearSearch(cm);
+        CodeMirror.commands.singleSelection(cm);
+    })
+}
+
+CodeMirror.keyMap["default"]["Esc"] = clearSelections;
 is_mac = CodeMirror.keyMap["default"].hasOwnProperty("Cmd-S");
+mousetrap.bind(['esc'], function(e) {
+    clearSelections();
+    e.preventDefault()
+});
+
 if (is_mac) {
-    key_string = "Cmd-S"
+    CodeMirror.keyMap["default"]["Cmd-S"] = updateModule;
+    mousetrap.bind(['command+s'], function(e) {
+        updateModule();
+        e.preventDefault()
+    });
+
+    mousetrap.bind(['command+l'], function(e) {
+        loadModule();
+        e.preventDefault()
+    });
+    mousetrap.bind(['command+f'], function(e) {
+        searchInAll();
+        e.preventDefault()
+    });
 }
 else {
-    key_string = "Ctrl-S"
+    CodeMirror.keyMap["default"]["Ctrl-S"] = updateModule;
+    mousetrap.bind(['ctrl+s'], function(e) {
+        updateModule();
+        e.preventDefault()
+    });
+
+    mousetrap.bind(['ctrl+l'], function(e) {
+        loadModule();
+        e.preventDefault()
+    });
+    mousetrap.bind(['ctrl+f'], function(e) {
+        searchInAll();
+        e.preventDefault()
+    });
 }
 
-CodeMirror.keyMap["default"][key_string] = updateModule;
-
-function createCMArea(codearea) {
+function createCMArea(codearea, include_in_global_search) {
     cmobject = CodeMirror(codearea, {
         lineNumbers: true,
         matchBrackets: true,
@@ -60,6 +97,10 @@ function createCMArea(codearea) {
           },
           "Ctrl-Space": "autocomplete"
         });
+    if (include_in_global_search) {
+        cmobjects_to_search.push(cmobject);
+    }
+    cmobjects.push(cmobject);
     return cmobject
 }
 

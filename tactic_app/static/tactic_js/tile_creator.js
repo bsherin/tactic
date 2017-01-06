@@ -341,7 +341,7 @@ var method_manager_specifics = {
 
     create_module_html: function () {
         var codearea = document.getElementById("method-module");
-        this.cmobject = createCMArea(codearea);
+        this.cmobject = createCMArea(codearea, false);
         $(codearea).find(".CodeMirror").resizable({handles: "se"});
         $(codearea).find(".CodeMirror").height(100);
     }
@@ -353,11 +353,11 @@ var methodManager = new ResourceManager("method", method_manager_specifics);
 
 function continue_loading(data) {
     var codearea = document.getElementById("codearea");
-    myCodeMirror = createCMArea(codearea);
+    myCodeMirror = createCMArea(codearea, true);
     myCodeMirror.setValue(rt_code);
     if (is_mpl) {
         var drawplotcodearea = document.getElementById("drawplotcodearea");
-        myDPCodeMirror = createCMArea(drawplotcodearea);
+        myDPCodeMirror = createCMArea(drawplotcodearea, false);
         myDPCodeMirror.setValue(draw_plot_code);
         dpba = $("#drawplotboundingarea");
         dpba.css("display", "block");

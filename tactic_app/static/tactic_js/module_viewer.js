@@ -18,7 +18,7 @@ function start_post_load() {
 function continue_loading(data) {
     savedCode = data.module_code;
     var codearea = document.getElementById("codearea");
-    myCodeMirror = createCMArea(codearea);
+    myCodeMirror = createCMArea(codearea, true);
     myCodeMirror.setValue(savedCode);
 
     $(".CodeMirror").css('height', window.innerHeight - $(".CodeMirror").offset().top - 20);
