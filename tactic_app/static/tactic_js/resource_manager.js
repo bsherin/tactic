@@ -70,6 +70,7 @@ ResourceManager.prototype = {
     textify_button_names: function () {
         var but;
         var i;
+        var but_text;
         this.button_groups.forEach(function(bgroup) {
               for (i=0; i < bgroup.buttons.length; ++i) {
                   but = bgroup.buttons[i];
@@ -293,30 +294,22 @@ function selector_click(event) {
 
 function selector_double_click(event) {
     var row_element = $(event.target).closest('tr');
-    var cells = row_element.children();
-    var res_name = $(cells[0]).text();
     var tab_parent = $(event.target).closest(".tab-pane");
     var regexp = /^(\w+?)-/;
     var res_type = regexp.exec(tab_parent.attr("id"))[1];
     $(".resource-selector ." + res_type + "-selector-button").removeClass("active");
     row_element.addClass("active");
-    //var res_name = $('.resource-selector .' + res_type + '-selector-button.active')[0].value;
-    var result_dict = {"res_type": res_type, "res_name": res_name};
     var the_manager = resource_managers[res_type];
     the_manager[the_manager.double_click_func]({data: {manager: the_manager}})
 }
 
 function repository_selector_double_click(event) {
     var row_element = $(event.target).closest('tr');
-    var cells = row_element.children();
-    var res_name = $(cells[0]).text();
     var tab_parent = $(event.target).closest(".tab-pane");
     var regexp = /^(\w+?)-/;
     var res_type = regexp.exec(tab_parent.attr("id"))[1];
     $(".repository-selector ." + res_type + "-selector-button").removeClass("active");
     row_element.addClass("active");
-    //var res_name = $('.resource-selector .' + res_type + '-selector-button.active')[0].value;
-    var result_dict = {"res_type": res_type, "res_name": res_name};
     var the_manager = resource_managers[res_type];
     the_manager[the_manager.repository_double_click_func]({data: {manager: the_manager}})
 }
@@ -354,7 +347,7 @@ function repository_selector_click(event) {
 }
 
 function search_resource(event) {
-    unfilter_resource(event)
+    unfilter_resource(event);
     var res_type = event.target.value;
     var txt = document.getElementById(res_type + '-search').value.toLowerCase();
     var all_rows = $("#" + res_type + "-selector tbody tr");
@@ -369,7 +362,7 @@ function search_resource(event) {
 }
 
 function search_repository_resource(event) {
-    unfilter_repository_resource(event)
+    unfilter_repository_resource(event);
     var res_type = event.target.value;
     var txt = document.getElementById("repository-" + res_type + '-search').value.toLowerCase();
     var all_rows = $("#repository-" + res_type + "-selector tbody tr");
@@ -384,7 +377,7 @@ function search_repository_resource(event) {
 }
 
 function search_resource_tags(event) {
-    unfilter_resource(event)
+    unfilter_resource(event);
     var res_type = event.target.value;
     var txt = document.getElementById(res_type + '-search').value.toLowerCase();
     var all_rows = $("#" + res_type + "-selector tbody tr");
@@ -398,8 +391,23 @@ function search_resource_tags(event) {
     select_resource_button(res_type, null)
 }
 
+function tag_button_clicked(event) {
+    unfilter_resource(event);
+    var res_type = event.target.value;
+    var txt = event.target.innerHTML;
+    var all_rows = $("#" + res_type + "-selector tbody tr");
+    $.each(all_rows, function (index, row_element) {
+        var cells = $(row_element).children();
+        var tag_text = $(cells[3]).text().toLowerCase();
+        if (tag_text.search(txt) == -1) {
+            $(row_element).fadeOut()
+        }
+    });
+    select_resource_button(res_type, null)
+}
+
 function search_repository_resource_tags(event) {
-    unfilter_repository_resource(event)
+    unfilter_repository_resource(event);
     var res_type = event.target.value;
     var txt = document.getElementById("repository-" + res_type + '-search').value.toLowerCase();
     var all_rows = $("#repository-" + res_type + "-selector tbody tr");

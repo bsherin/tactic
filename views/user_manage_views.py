@@ -123,6 +123,24 @@ class ResourceManager(object):
                 user_obj = current_user
         return getattr(user_obj, self.collection_list_with_metadata)
 
+    def get_tag_list(self, user_obj=None):
+        res_list = self.get_resource_list_with_metadata()
+        result = []
+        for res_item in res_list:
+            mdata = res_item[1]
+            if mdata and "tags" in mdata:
+                result += str(mdata["tags"].lower()).split()
+        return sorted(list(set(result)))
+
+    def request_update_tag_list(self, user_obj=None):
+        tag_list = self.get_tag_list(user_obj)
+        result = self.create_button_list(tag_list)
+        return result
+
+    def create_button_list(self, the_list):
+        the_html = render_template("user_manage/button_list_template.html", button_list=the_list, res_type=self.res_type)
+        return the_html
+
     def request_update_selector_list(self, user_obj=None):
         res_list_with_metadata = self.get_resource_list_with_metadata(user_obj)
         res_array = self.build_resource_array(res_list_with_metadata)
@@ -225,6 +243,12 @@ def send_to_repository():
 @login_required
 def request_update_selector_list(res_type):
     return managers[res_type][0].request_update_selector_list()
+
+
+@app.route('/request_update_tag_list/<res_type>', methods=['GET'])
+@login_required
+def request_update_tag_list(res_type):
+    return managers[res_type][0].request_update_tag_list()
 
 
 @app.route('/request_update_repository_selector_list/<res_type>', methods=['GET'])
@@ -740,7 +764,6 @@ class TileManager(ResourceManager):
         else:
             result = self.view_module(module_name)
         return result
-
 
     def view_in_creator(self, module_name):
         option_types = [{"name": "text"},

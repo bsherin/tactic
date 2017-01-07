@@ -94,7 +94,8 @@ function start_post_load() {
                 // We do the sort below twice to get the most recent dates first.
                 sorttable.innerSortFunction.apply(updated_header, []);
                 sorttable.innerSortFunction.apply(updated_header, []);
-            })
+            });
+            $("#" + element + "-tag-buttons").load($SCRIPT_ROOT + "/request_update_tag_list/" + element)
         });
 
         $("#loaded-tile-list").load($SCRIPT_ROOT + "/request_update_loaded_tile_list");
@@ -122,6 +123,7 @@ function start_post_load() {
         $(".resource-module").on("click", ".search-repository-resource-button", search_repository_resource);
         $(".resource-module").on("click", ".search-repository-tags-button", search_repository_resource_tags);
         $(".resource-module").on("click", ".repository-resource-unfilter-button", unfilter_repository_resource);
+        $(".resource-module").on("click", ".tag-button-list button", tag_button_clicked);
         $(".resource-module").on("keypress", ".search-field", function(e) {
             if (e.which == 13) {
                 var the_id = e.target.id;
