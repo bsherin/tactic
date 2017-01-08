@@ -12,6 +12,7 @@ var page_id = user_manage_id;
 mousetrap.bind("esc", function() {
     clearStatusArea();
     clearStatusMessage();
+    unfilter_resource_type(get_current_res_type())
 });
 
 var res_types = ["list", "collection", "project", "tile", "code"];
@@ -46,6 +47,28 @@ function start_post_load() {
         // We do the sort below twice to get the most recent dates first.
         sorttable.innerSortFunction.apply(updated_header, []);
         sorttable.innerSortFunction.apply(updated_header, []);
+    });
+
+    socket.on('update-tag-list', function (data) {
+        var res_type = data.res_type;
+
+        var active_tag_button = null;
+        var all_tag_buttons = $("#" + res_type + "-tag-buttons button");
+        $.each(all_tag_buttons, function (index, but) {
+            if ($(but).hasClass("active")) {
+                active_tag_button = $(but).html()
+            }
+        });
+        $("#" + res_type + "-tag-buttons").html(data.html)
+        var all_tag_buttons = $("#" + res_type + "-tag-buttons button");
+        if (active_tag_button != null) {
+            $.each(all_tag_buttons, function (index, but) {
+                if ($(but).html() == active_tag_button) {
+                    $(but).addClass("active")
+                }
+            });
+        }
+
     });
 
     socket.on('stop-spinner', function () {
@@ -199,8 +222,11 @@ function resize_window() {
     res_types.forEach(function (val, ind, array) {
         var h = window.innerHeight - 50 - $("#" + val + "-selector-row").offset().top;
         $("#" + val + "-selector-row").outerHeight(h);
-        h = window.innerHeight - 50 - $("#repository-" + val + "-selector-row").offset().top;
-        $("#repository-" + val + "-selector-row").outerHeight(h);
+        var srowh = window.innerHeight - 50 - $("#repository-" + val + "-selector-row").offset().top;
+        $("#repository-" + val + "-selector-row").outerHeight(srowh);
+        tselector = $("#" + val + "-tag-buttons");
+        tselector_height = srowh - tselector.offset().top;
+        tselector.outerHeight(tselector_height)
     })
 }
 

@@ -376,10 +376,7 @@ function search_repository_resource(event) {
     select_repository_button(res_type, null);
 }
 
-function search_resource_tags(event) {
-    unfilter_resource(event);
-    var res_type = event.target.value;
-    var txt = document.getElementById(res_type + '-search').value.toLowerCase();
+function search_given_tag(txt, res_type) {
     var all_rows = $("#" + res_type + "-selector tbody tr");
     $.each(all_rows, function (index, row_element) {
         var cells = $(row_element).children();
@@ -391,19 +388,20 @@ function search_resource_tags(event) {
     select_resource_button(res_type, null)
 }
 
+function search_resource_tags(event) {
+    unfilter_resource(event);
+    var res_type = event.target.value;
+    var txt = document.getElementById(res_type + '-search').value.toLowerCase();
+    search_given_tag(txt, res_type)
+}
+
+
 function tag_button_clicked(event) {
     unfilter_resource(event);
     var res_type = event.target.value;
     var txt = event.target.innerHTML;
-    var all_rows = $("#" + res_type + "-selector tbody tr");
-    $.each(all_rows, function (index, row_element) {
-        var cells = $(row_element).children();
-        var tag_text = $(cells[3]).text().toLowerCase();
-        if (tag_text.search(txt) == -1) {
-            $(row_element).fadeOut()
-        }
-    });
-    select_resource_button(res_type, null)
+    $(event.target).addClass("active");
+    search_given_tag(txt, res_type)
 }
 
 function search_repository_resource_tags(event) {
@@ -421,12 +419,26 @@ function search_repository_resource_tags(event) {
     select_repository_button(res_type, null)
 }
 
-function unfilter_resource(event) {
-    var res_type = event.target.value;
+function get_current_res_type() {
+    var module_id_str = $(".nav-tabs .active a").attr("href")
+    var reg_exp = /\#(\S*)?\-/
+    return module_id_str.match(reg_exp)[1]
+}
+
+function unfilter_resource_type(res_type) {
     var all_rows = $("#" + res_type + "-selector tbody tr");
     $.each(all_rows, function (index, row_element) {
             $(row_element).fadeIn()
+    });
+    var all_tag_buttons = $("#" + res_type + "-tag-buttons button");
+    $.each(all_tag_buttons, function (index, but) {
+        $(but).removeClass("active")
     })
+}
+
+function unfilter_resource(event) {
+    var res_type = event.target.value;
+    unfilter_resource_type(res_type)
 }
 
 function unfilter_repository_resource(event) {

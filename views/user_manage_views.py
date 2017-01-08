@@ -74,6 +74,7 @@ class ResourceManager(object):
     def __init__(self, res_type):
         self.res_type = res_type
         self.add_rules()
+        self.tag_list = []
 
     def handle_exception(self, ex, special_string=None):
         if special_string is None:
@@ -133,8 +134,8 @@ class ResourceManager(object):
         return sorted(list(set(result)))
 
     def request_update_tag_list(self, user_obj=None):
-        tag_list = self.get_tag_list(user_obj)
-        result = self.create_button_list(tag_list)
+        self.tag_list = self.get_tag_list(user_obj)
+        result = self.create_button_list(self.tag_list)
         return result
 
     def create_button_list(self, the_list):
@@ -305,7 +306,7 @@ class ListManager(ResourceManager):
             mdata = None
         return mdata
 
-    def save_metadata(self, res_name, tags, notes):
+    def save_metadata(self, res_name, tags, notes, user_obj=None):
         doc = db[current_user.list_collection_name].find_one({"list_name": res_name})
         if "metadata" in doc:
             mdata = doc["metadata"]
@@ -1150,6 +1151,13 @@ def save_metadata():
         notes = request.json["notes"]
         manager = get_manager_for_type(res_type)
         manager.save_metadata(res_name, tags, notes)
+        tag_list = manager.get_tag_list()
+        if not tag_list == manager.tag_list:
+            socketio.emit('update-tag-list',
+                          {"html": manager.request_update_tag_list(),
+                           "res_type": res_type},
+                           namespace='/user_manage', room=current_user.get_id())
+
         return jsonify({"success": True, "message": "Saved metadata", "alert_type": "alert-success"})
     except:
         error_string = "Error saving metadata: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
