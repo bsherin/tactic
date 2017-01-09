@@ -205,7 +205,7 @@ a[role="tab"] {
     color: #1b6d85;
 }
 
-.tag-button-list {
+.tag-button-list, .resource-tag-button-list {
     vertical-align: top;
     overflow-y: auto;
     border-top: .1px solid $resource-manager-border-color;

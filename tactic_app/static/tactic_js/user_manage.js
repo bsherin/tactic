@@ -15,6 +15,13 @@ mousetrap.bind("esc", function() {
     unfilter_resource_type(get_current_res_type())
 });
 
+
+mousetrap.bind(['command+f', 'ctrl+f'], function(e) {
+    res_type = get_current_res_type();
+    document.getElementById(res_type + "-search").focus();
+    e.preventDefault()
+});
+
 var res_types = ["list", "collection", "project", "tile", "code"];
 var resource_managers = {};
 
@@ -68,7 +75,6 @@ function start_post_load() {
                 }
             });
         }
-
     });
 
     socket.on('stop-spinner', function () {
@@ -128,6 +134,7 @@ function start_post_load() {
                 select_repository_button(element, null);
                 sorttable.makeSortable($("#repository-" + element + "-selector table")[0])
             })
+            $("#repository-" + element + "-tag-buttons").load($SCRIPT_ROOT + "/request_update_repository_tag_list/" + element)
         });
 
         listManager.add_listeners();
@@ -147,6 +154,7 @@ function start_post_load() {
         $(".resource-module").on("click", ".search-repository-tags-button", search_repository_resource_tags);
         $(".resource-module").on("click", ".repository-resource-unfilter-button", unfilter_repository_resource);
         $(".resource-module").on("click", ".tag-button-list button", tag_button_clicked);
+        $(".resource-module").on("click", ".repository-tag-button-list button", repository_tag_button_clicked);
         $(".resource-module").on("keyup", ".search-field", function(e) {
             if (e.which == 13) {
                 var the_id = e.target.id;
@@ -164,7 +172,7 @@ function start_post_load() {
                 search_resource(fake_event);
             }
         });
-        $(".resource-module").on("keypress", ".repository-search-field", function(e) {
+        $(".resource-module").on("keyup", ".repository-search-field", function(e) {
             if (e.which == 13) {
                 var the_id = e.target.id;
                 var regexp = /^repository-(\w+?)-/;
@@ -172,6 +180,13 @@ function start_post_load() {
                 var fake_event = {"target": {"value": res_type}};
                 search_repository_resource(fake_event);
                 e.preventDefault();
+            }
+            else {
+                var the_id = e.target.id;
+                var regexp = /^repository-(\w+?)-/;
+                var res_type = regexp.exec(the_id)[1];
+                var fake_event = {"target": {"value": res_type}};
+                search_repository_resource(fake_event);
             }
         });
         resize_window();

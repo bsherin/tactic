@@ -380,6 +380,7 @@ function search_repository_resource(event) {
         else {
             $(row_element).show()
         }
+        show_hide_repository_tag_buttons(res_type, txt)
     })
 }
 
@@ -400,30 +401,9 @@ function search_given_tag(txt, res_type) {
     set_tag_button_state(res_type, txt);
 }
 
-function search_resource_tags(event) {
-    var res_type = event.target.value;
-    var txt = document.getElementById(res_type + '-search').value.toLowerCase();
-    search_given_tag(txt, res_type);
-    show_hide_tag_buttons(res_type, txt)
-}
-
-
-function tag_button_clicked(event) {
-    var res_type = event.target.value;
-    var txt = event.target.innerHTML;
-    var all_tag_buttons = $("#" + res_type + "-tag-buttons button");
-    $.each(all_tag_buttons, function (index, but) {
-        $(but).removeClass("active")
-    });
-    search_given_tag(txt, res_type);
-
-}
-
-function search_repository_resource_tags(event) {
-    unfilter_repository_resource(event);
-    var res_type = event.target.value;
-    var txt = document.getElementById("repository-" + res_type + '-search').value.toLowerCase();
+function search_given_repository_tag(txt, res_type) {
     var all_rows = $("#repository-" + res_type + "-selector tbody tr");
+    deactivate_repository_tag_buttons();
     $.each(all_rows, function (index, row_element) {
         var cells = $(row_element).children();
         var tag_text = $(cells[3]).text().toLowerCase();
@@ -434,7 +414,39 @@ function search_repository_resource_tags(event) {
             $(row_element).show()
         }
     });
+    set_repository_tag_button_state(res_type, txt);
 }
+
+
+function search_resource_tags(event) {
+    var res_type = event.target.value;
+    var txt = document.getElementById(res_type + '-search').value.toLowerCase();
+    search_given_tag(txt, res_type);
+    show_hide_tag_buttons(res_type, txt)
+}
+
+function search_repository_resource_tags(event) {
+    var res_type = event.target.value;
+    var txt = document.getElementById("repository-" + res_type + '-search').value.toLowerCase()
+    search_given_repository_tag(txt, res_type);
+}
+
+
+function tag_button_clicked(event) {
+    var res_type = event.target.value;
+    var txt = event.target.innerHTML;
+    var all_tag_buttons = $("#" + res_type + "-tag-buttons button");
+    search_given_tag(txt, res_type);
+
+}
+
+function repository_tag_button_clicked(event) {
+    var res_type = event.target.value;
+    var txt = event.target.innerHTML;
+    search_given_repository_tag(txt, res_type);
+
+}
+
 
 function get_current_res_type() {
     var module_id_str = $(".nav-tabs .active a").attr("href")
@@ -451,8 +463,25 @@ function unfilter_resource_type(res_type) {
     show_all_tag_buttons(res_type)
 }
 
+function unfilter_repository_resource_type(res_type) {
+    var all_rows = $("#repository-" + res_type + "-selector tbody tr");
+    $.each(all_rows, function (index, row_element) {
+            $(row_element).show()
+    });
+    deactivate_repository_tag_buttons(res_type);
+    show_all_repository_tag_buttons(res_type)
+}
+
+
 function deactivate_tag_buttons(res_type) {
     var all_tag_buttons = $("#" + res_type + "-tag-buttons button");
+    $.each(all_tag_buttons, function (index, but) {
+        $(but).removeClass("active")
+    })
+}
+
+function deactivate_repository_tag_buttons(res_type) {
+    var all_tag_buttons = $("#repository-" + res_type + "-tag-buttons button");
     $.each(all_tag_buttons, function (index, but) {
         $(but).removeClass("active")
     })
@@ -470,12 +499,33 @@ function set_tag_button_state(res_type, txt) {
     })
 }
 
+function set_repository_tag_button_state(res_type, txt) {
+    var all_tag_buttons = $("#repository-" + res_type + "-tag-buttons button");
+    $.each(all_tag_buttons, function (index, but) {
+        if (but.innerHTML == txt) {
+            $(but).addClass("active")
+        }
+        else {
+            $(but).removeClass("active")
+        }
+    })
+}
+
+
 function show_all_tag_buttons(res_type) {
     var all_tag_buttons = $("#" + res_type + "-tag-buttons button");
     $.each(all_tag_buttons, function (index, but) {
             $(but).show()
     })
 }
+
+function show_all_repository_tag_buttons(res_type) {
+    var all_tag_buttons = $("#repository-" + res_type + "-tag-buttons button");
+    $.each(all_tag_buttons, function (index, but) {
+            $(but).show()
+    })
+}
+
 
 function show_hide_tag_buttons(res_type, txt) {
     var all_tag_buttons = $("#" + res_type + "-tag-buttons button");
@@ -490,6 +540,20 @@ function show_hide_tag_buttons(res_type, txt) {
     })
 }
 
+function show_hide_repository_tag_buttons(res_type, txt) {
+    var all_tag_buttons = $("#repository-" + res_type + "-tag-buttons button");
+    $.each(all_tag_buttons, function (index, but) {
+        tag_text = but.innerHTML;
+        if (tag_text.search(txt) == -1) {
+            $(but).hide()
+        }
+        else {
+            $(but).show()
+        }
+    })
+}
+
+
 
 function unfilter_resource(event) {
     var res_type = event.target.value;
@@ -498,11 +562,7 @@ function unfilter_resource(event) {
 
 function unfilter_repository_resource(event) {
     var res_type = event.target.value;
-    var all_rows = $("#repository-" + res_type + "-selector tbody tr");
-    $.each(all_rows, function (index, row_element) {
-            $(row_element).fadeIn()
-        });
-    select_repository_button(res_type, null);
+    unfilter_repository_resource_type(res_type);
 }
 
 function save_metadata(event) {
