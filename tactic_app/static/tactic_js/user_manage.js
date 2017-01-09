@@ -147,7 +147,7 @@ function start_post_load() {
         $(".resource-module").on("click", ".search-repository-tags-button", search_repository_resource_tags);
         $(".resource-module").on("click", ".repository-resource-unfilter-button", unfilter_repository_resource);
         $(".resource-module").on("click", ".tag-button-list button", tag_button_clicked);
-        $(".resource-module").on("keypress", ".search-field", function(e) {
+        $(".resource-module").on("keyup", ".search-field", function(e) {
             if (e.which == 13) {
                 var the_id = e.target.id;
                 var regexp = /^(\w+?)-/;
@@ -155,6 +155,13 @@ function start_post_load() {
                 var fake_event = {"target": {"value": res_type}};
                 search_resource(fake_event);
                 e.preventDefault();
+            }
+            else {
+                var the_id = e.target.id;
+                var regexp = /^(\w+?)-/;
+                var res_type = regexp.exec(the_id)[1];
+                var fake_event = {"target": {"value": res_type}};
+                search_resource(fake_event);
             }
         });
         $(".resource-module").on("keypress", ".repository-search-field", function(e) {

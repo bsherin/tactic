@@ -346,62 +346,77 @@ function repository_selector_click(event) {
     }
 }
 
-function search_resource(event) {
-    unfilter_resource(event);
+function search_resource(event){
     var res_type = event.target.value;
+    deactivate_tag_buttons();
     var txt = document.getElementById(res_type + '-search').value.toLowerCase();
     var all_rows = $("#" + res_type + "-selector tbody tr");
     $.each(all_rows, function (index, row_element) {
         var cells = $(row_element).children();
         var res_name = $(cells[0]).text().toLowerCase();
-        if (res_name.search(txt) == -1) {
-            $(row_element).fadeOut()
+        var tag_text = $(cells[3]).text().toLowerCase();
+        if ((res_name.search(txt) == -1) && (tag_text.search(txt) == -1)) {
+            $(row_element).hide()
         }
-    });
-    select_resource_button(res_type, null)
+        else {
+            $(row_element).show()
+        }
+    })
+    show_hide_tag_buttons(res_type, txt)
 }
 
+
 function search_repository_resource(event) {
-    unfilter_repository_resource(event);
     var res_type = event.target.value;
     var txt = document.getElementById("repository-" + res_type + '-search').value.toLowerCase();
     var all_rows = $("#repository-" + res_type + "-selector tbody tr");
     $.each(all_rows, function (index, row_element) {
         var cells = $(row_element).children();
         var res_name = $(cells[0]).text().toLowerCase();
-        if (res_name.search(txt) == -1) {
-            $(row_element).fadeOut()
+        var tag_text = $(cells[3]).text().toLowerCase();
+        if ((res_name.search(txt) == -1) && (tag_text.search(txt) == -1)) {
+            $(row_element).hide()
         }
-    });
-    select_repository_button(res_type, null);
+        else {
+            $(row_element).show()
+        }
+    })
 }
+
 
 function search_given_tag(txt, res_type) {
     var all_rows = $("#" + res_type + "-selector tbody tr");
+    deactivate_tag_buttons();
     $.each(all_rows, function (index, row_element) {
         var cells = $(row_element).children();
         var tag_text = $(cells[3]).text().toLowerCase();
         if (tag_text.search(txt) == -1) {
-            $(row_element).fadeOut()
+            $(row_element).hide()
+        }
+        else {
+            $(row_element).show()
         }
     });
-    select_resource_button(res_type, null)
+    set_tag_button_state(res_type, txt);
 }
 
 function search_resource_tags(event) {
-    unfilter_resource(event);
     var res_type = event.target.value;
     var txt = document.getElementById(res_type + '-search').value.toLowerCase();
-    search_given_tag(txt, res_type)
+    search_given_tag(txt, res_type);
+    show_hide_tag_buttons(res_type, txt)
 }
 
 
 function tag_button_clicked(event) {
-    unfilter_resource(event);
     var res_type = event.target.value;
     var txt = event.target.innerHTML;
-    $(event.target).addClass("active");
-    search_given_tag(txt, res_type)
+    var all_tag_buttons = $("#" + res_type + "-tag-buttons button");
+    $.each(all_tag_buttons, function (index, but) {
+        $(but).removeClass("active")
+    });
+    search_given_tag(txt, res_type);
+
 }
 
 function search_repository_resource_tags(event) {
@@ -413,10 +428,12 @@ function search_repository_resource_tags(event) {
         var cells = $(row_element).children();
         var tag_text = $(cells[3]).text().toLowerCase();
         if (tag_text.search(txt) == -1) {
-            $(row_element).fadeOut()
+            $(row_element).hide()
+        }
+        else {
+            $(row_element).show()
         }
     });
-    select_repository_button(res_type, null)
 }
 
 function get_current_res_type() {
@@ -428,13 +445,51 @@ function get_current_res_type() {
 function unfilter_resource_type(res_type) {
     var all_rows = $("#" + res_type + "-selector tbody tr");
     $.each(all_rows, function (index, row_element) {
-            $(row_element).fadeIn()
+            $(row_element).show()
     });
+    deactivate_tag_buttons(res_type);
+    show_all_tag_buttons(res_type)
+}
+
+function deactivate_tag_buttons(res_type) {
     var all_tag_buttons = $("#" + res_type + "-tag-buttons button");
     $.each(all_tag_buttons, function (index, but) {
         $(but).removeClass("active")
     })
 }
+
+function set_tag_button_state(res_type, txt) {
+    var all_tag_buttons = $("#" + res_type + "-tag-buttons button");
+    $.each(all_tag_buttons, function (index, but) {
+        if (but.innerHTML == txt) {
+            $(but).addClass("active")
+        }
+        else {
+            $(but).removeClass("active")
+        }
+    })
+}
+
+function show_all_tag_buttons(res_type) {
+    var all_tag_buttons = $("#" + res_type + "-tag-buttons button");
+    $.each(all_tag_buttons, function (index, but) {
+            $(but).show()
+    })
+}
+
+function show_hide_tag_buttons(res_type, txt) {
+    var all_tag_buttons = $("#" + res_type + "-tag-buttons button");
+    $.each(all_tag_buttons, function (index, but) {
+        tag_text = but.innerHTML;
+        if (tag_text.search(txt) == -1) {
+            $(but).hide()
+        }
+        else {
+            $(but).show()
+        }
+    })
+}
+
 
 function unfilter_resource(event) {
     var res_type = event.target.value;
