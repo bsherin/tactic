@@ -231,8 +231,12 @@ var tableObject = {
             $(".grid-left").width(usable_width * this.left_fraction);
         }
         $(".grid-right").width(usable_width * (1 - this.left_fraction));
-        $("#freeform-area .CodeMirror").css('height', window.innerHeight - $("#console-panel").outerHeight() - 30- $("#freeform-area .CodeMirror").offset().top);
-        $("#tile-area").height(window.innerHeight - $("#console-panel").outerHeight() - 30 - $("#tile-area").offset().top);
+        if ($("#freeform-area .CodeMirror").length > 0) {
+            $("#freeform-area .CodeMirror").css('height', window.innerHeight - $("#console-panel").outerHeight() - 30- $("#freeform-area .CodeMirror").offset().top);
+        }
+        if ($("#tile-area").lenght > 0) {
+            $("#tile-area").height(window.innerHeight - $("#console-panel").outerHeight() - 30 - $("#tile-area").offset().top);
+        }
         $("#main-panel").width(""); // We do this so that this will resize when the window is resized.
         myCodeMirror.refresh()
     },

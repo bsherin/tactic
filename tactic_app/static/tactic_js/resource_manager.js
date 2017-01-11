@@ -2,31 +2,21 @@
  * Created by bls910 on 11/1/15.
  */
 
-function updateObject(o1, o2) {
-    for (var prop in o2) {
-        if (o2.hasOwnProperty(prop)){
-            o1[prop] = o2[prop]
-        }
+function get_current_res_type() {
+    var module_id_str = $(".nav-tabs .active a").attr("href");
+    var reg_exp = /\#(\S*)?\-/;
+    return module_id_str.match(reg_exp)[1]
+}
+
+function current_manager_kind() {
+    if (repository_visible) {
+        return "repository"
+    }
+    else {
+        return "resource"
     }
 }
 
-String.prototype.format = function() {
-  var str = this;
-  for (var i = 0; i < arguments.length; i++) {
-    var reg = new RegExp("\\{" + i + "\\}", "gm");
-    str = str.replace(reg, arguments[i]);
-  }
-  return str;
-};
-
-function objectKeys(obj) {
-    var result = [];
-    for (var key in obj){
-        if (!obj.hasOwnProperty(key)) continue;
-        result.push(key)
-    }
-    return result
-}
 
 function ResourceManager(res_type, specifics) {
     this.res_type = res_type;
@@ -43,33 +33,218 @@ ResourceManager.prototype = {
     show_loaded_list: false,
     add_listeners: function () {
         var self = this;
-        this.button_groups.forEach(function(bgroup) {
+        self.button_groups.forEach(function(bgroup) {
             bgroup.buttons.forEach(function(value){
-                $("#{0}-{1}-button".format(value.name, self.res_type)).click({"manager": self}, self[value.func])
+                self.bind_button(value, "resource");
             })
         });
-        // $.each(this.buttons, function (index, value) {
-        //     $("#{0}-{1}-button".format(value.name, self.res_type)).click({"manager": self}, self[value.func])
-        // });
+
         $.each(this.repository_buttons, function (index, value) {
-            $("#repository-{0}-{1}-button".format(value.name, self.res_type)).click({"manager": self}, self[value.func])
+            self.bind_button(value, "repository")
         });
         $.each(this.file_adders, function(index, value) {
-                $("#{0}-{1}-form".format(value.name, self.res_type)).submit({"manager": self}, self[value.func])
+            self.bind_form(value, "resource")
             }
         );
-        $("#repository-copy-" + self.res_type + "-button").click({"manager": self}, self.repository_copy_func);
+        self.bind_button({"name": "repository-copy", "func": "repository_copy_func"}, "repository");
 
-        $.each(this.popup_buttons, function (index, value) {
+        $.each(self.popup_buttons, function (index, value) {
             $.each(value.option_list, function (index, opt) {
-                $("#{0}-{1}-button".format(opt.opt_name, self.res_type)).click({"manager": self, "opt_name": opt.opt_name}, self[opt.opt_func])
+                self.bind_option({"name": opt.opt_name, "func": opt.opt_func}, "resource")
             })
         });
     },
 
+   add_func: function (event) {
+        var manager = event.data.manager;
+        form_data = new FormData(this);
+        postAjaxUpload(manager.add_view, form_data, doFlashOnFailure);
+        event.preventDefault();
+    },
+
+    popup_buttons: [],
+
+    repository_buttons: [],
+
+    load_func: function (event) {
+        var manager = event.data.manager;
+        var res_name = manager.check_for_selection("resource");
+        if (res_name == "") return;
+        window.open($SCRIPT_ROOT + manager.load_view + String(res_name))
+    },
+
+    view_func: function (event) {
+        var manager = event.data.manager;
+        var res_name = manager.check_for_selection("resource");
+        if (res_name == "") return;
+        window.open($SCRIPT_ROOT + manager.view_view + String(res_name))
+    },
+
+    duplicate_func: function (event) {
+        var manager = event.data.manager;
+        var res_name = manager.check_for_selection("resource");
+        var the_type = manager.res_type;
+        if (res_name == "") return;
+        $.getJSON($SCRIPT_ROOT + "get_resource_names/" + the_type, function(data) {
+                showModal("Duplicate " + manager.res_type, "New Tile Name", DuplicateResource, res_name, data["resource_names"])
+            }
+        );
+        function DuplicateResource(new_name) {
+            var result_dict = {
+                "new_res_name": new_name,
+                "res_to_copy": res_name
+            };
+            postAjax(manager.duplicate_view, result_dict, doFlashOnFailure)
+        }
+    },
+
+    delete_func: function (event) {
+        var manager = event.data.manager;
+        var res_name = manager.check_for_selection("resource");
+        if (res_name == "") return;
+        var confirm_text = "Are you sure that you want to delete " + res_name + "?";
+        confirmDialog("Delete " + manager.res_type, confirm_text, "do nothing", "delete", function () {
+            manager.get_active_selector_button("resource").fadeOut();
+            manager.get_tags_field("resource").html("");
+            manager.get_notes_field("resource").html("");
+            $.post($SCRIPT_ROOT + manager.delete_view + String(res_name))
+        })
+    },
+
+    send_repository_func: function (event) {
+        var manager = event.data.manager;
+        var res_name = manager.check_for_selection("resource");
+        if (res_name == "") {
+            doFlash({"message": "Select a " + manager.res_type + " first.", "alert_type": "alert-info"})
+        }
+        $.getJSON($SCRIPT_ROOT + "get_repository_resource_names/" + manager.res_type, function(data) {
+            showModal("Share " + manager.res_type, "New " + manager.res_type + " Name", ShareResource, res_name, data["resource_names"])
+            }
+        );
+        function ShareResource(new_name) {
+            var result_dict = {
+                "res_type": manager.res_type,
+                "res_name": res_name,
+                "new_res_name": new_name
+            };
+            postAjax(manager.send_repository_view, result_dict, doFlashAlways)
+        }
+        return res_name
+    },
+
+    repository_view_func: function (event) {
+        var manager = event.data.manager;
+        var res_name = manager.check_for_selection("repository");
+        if (res_name == "") return;
+        window.open($SCRIPT_ROOT + manager.repository_view_view + String(res_name))
+    },
+
+    repository_copy_func: function (event) {
+        var manager = event.data.manager;
+        var res_name = manager.check_for_selection("repository");
+        if (res_name == "") {
+            doFlash({"message": "Select a " + manager.res_type + " first.", "alert_type": "alert-info"})
+        }
+        $.getJSON($SCRIPT_ROOT + "get_resource_names/" + manager.res_type, function(data) {
+            showModal("Import " + manager.res_type, "New Name", ImportResource, res_name, data["resource_names"])
+            }
+        );
+        function ImportResource(new_name) {
+            var result_dict = {
+                "res_type": manager.res_type,
+                "res_name": res_name,
+                "new_res_name": new_name
+            };
+            postAjax(manager.repository_copy_view, result_dict, doFlashAlways)
+        }
+        return res_name
+    },
+
+    // Functions to access the various parts of a resource manager dom
+
+    bind_button: function (value, manager_kind) {
+        var button_value = value.name + "-" + this.res_type;
+        var bselector = "button[value='" + button_value + "']";
+        get_manager_outer(this.res_type, manager_kind).on("click", bselector, {"manager": this}, this[value.func])
+    },
+
+    bind_option: function (value, manager_kind) {
+        var button_value = value.name + "-" + this.res_type;
+        var bselector = "a[value='" + button_value + "']";
+        get_manager_outer(this.res_type, manager_kind).on("click", bselector, {"manager": this}, this[value.func])
+    },
+
+    bind_form: function (value, manager_kind) {
+        var form_value = value.name + "-" + this.res_type + "-form";
+        var fselector = "form[value='" + form_value + "']";
+        get_manager_outer(this.res_type, manager_kind).on("submit", fselector, {"manager": this}, this[value.func])
+    },
+
+
+    get_resource_selector_dom: function (manager_kind) {
+        return get_manager_dom(this.res_type, manager_kind, ".resource-selector")
+    },
+
+    get_resource_selector_row: function (manager_kind) {
+        return get_manager_dom(this.res_type, manager_kind, ".selector-row ")
+    },
+
+    get_resource_table: function (manager_kind) {
+        return get_manager_dom(this.res_type, manager_kind, ".resource-selector table")
+    },
+
+    get_button: function(manager_kind, name) { // not currently used
+        var button_value = name + "-" + this.res_type;
+        return get_manager_dom(this.res_type, manager_kind, "button[value='" + button_value + "']")
+    },
+
+    get_form: function(manager_kind, name){ // not currently used
+        var form_value = name + "-" + this.res_type + "-form";
+        return get_manager_dom(this.res_type, manager_kind, "form[value='" + form_value + "']")
+    },
+
+    get_created_field: function(manager_kind) {
+        return get_manager_dom(this.res_type, manager_kind, ".created");
+    },
+
+    get_notes_field: function(manager_kind) {
+        return get_manager_dom(this.res_type, manager_kind, ".notes-field")
+    },
+
+    get_tags_field: function(manager_kind) {
+         return get_manager_dom(this.res_type, manager_kind, ".tags-field")
+    },
+
+    get_search_field: function(manager_kind) {
+        return get_manager_dom(this.res_type, manager_kind, ".search-field")
+    },
+
+    get_active_selector_button: function(manager_kind) {
+        return get_manager_dom(this.res_type, manager_kind, ".selector-button.active");
+    },
+
+    get_all_selector_buttons: function(manager_kind) {
+        return get_manager_dom(this.res_type, manager_kind, ".selector-button")
+    },
+
+    get_named_selector_button: function(manager_kind, name) {
+        return get_manager_dom(this.res_type, manager_kind, ".selector-button[value='" + name + "']")
+    },
+
+    get_all_tag_buttons: function (manager_kind) {
+        return get_manager_dom(this.res_type, manager_kind, ".tag-button-list button")
+    },
+
+    get_tag_button_dom: function (manager_kind) {
+        return get_manager_dom(this.res_type, manager_kind, ".tag-button-list")
+    },
+
+    // a couple of utility functions
+
     textify_button_names: function () {
         var but;
         var i;
+        var but_text;
         this.button_groups.forEach(function(bgroup) {
               for (i=0; i < bgroup.buttons.length; ++i) {
                   but = bgroup.buttons[i];
@@ -94,347 +269,235 @@ ResourceManager.prototype = {
       }
     },
 
-    add_func: function (event) {
-        var manager = event.data.manager;
-        form_data = new FormData(this);
-        postAjaxUpload(manager.add_view, form_data, doFlashOnFailure);
-        event.preventDefault();
-    },
-
-    popup_buttons: [],
-
-    repository_buttons: [],
-
-    load_func: function (event) {
-        var manager = event.data.manager;
-        var res_name = manager.check_for_selection(manager.res_type);
-        if (res_name == "") return;
-        window.open($SCRIPT_ROOT + manager.load_view + String(res_name))
-    },
-
-    view_func: function (event) {
-        var manager = event.data.manager;
-        var res_name = manager.check_for_selection(manager.res_type);
-        if (res_name == "") return;
-        window.open($SCRIPT_ROOT + manager.view_view + String(res_name))
-    },
-
-    duplicate_func: function (event) {
-        var manager = event.data.manager;
-        var res_name = manager.check_for_selection(manager.res_type);
-        var the_type = manager.res_type;
-        if (res_name == "") return;
-        $.getJSON($SCRIPT_ROOT + "get_resource_names/" + the_type, function(data) {
-                showModal("Duplicate " + manager.res_type, "New Tile Name", DuplicateResource, res_name, data["resource_names"])
-            }
-        );
-        function DuplicateResource(new_name) {
-            var result_dict = {
-                "new_res_name": new_name,
-                "res_to_copy": res_name
-            };
-            postAjax(manager.duplicate_view, result_dict, doFlashOnFailure)
-        }
-    },
-
-    delete_func: function (event) {
-        var manager = event.data.manager;
-        var res_name = manager.check_for_selection(manager.res_type);
-        if (res_name == "") return;
-        var confirm_text = "Are you sure that you want to delete " + res_name + "?";
-        confirmDialog("Delete " + manager.res_type, confirm_text, "do nothing", "delete", function () {
-            $('#list-selector .' + manager.res_type + '-selector-button.active').fadeOut();
-            $("#" + manager.res_type + "-module .created").html("");
-            $("#" + manager.res_type + "-tags").html("");
-            $("#" + manager.res_type + "-notes").html("");
-            $.post($SCRIPT_ROOT + manager.delete_view + String(res_name))
-        })
-    },
-
-    send_repository_func: function (event) {
-        var manager = event.data.manager;
-        var res_name = manager.check_for_selection(manager.res_type);
-        if (res_name == "") {
-            doFlash({"message": "Select a " + manager.res_type + " first.", "alert_type": "alert-info"})
-        }
-        $.getJSON($SCRIPT_ROOT + "get_repository_resource_names/" + manager.res_type, function(data) {
-            showModal("Share " + manager.res_type, "New " + manager.res_type + " Name", ShareResource, res_name, data["resource_names"])
-            }
-        );
-        function ShareResource(new_name) {
-            var result_dict = {
-                "res_type": manager.res_type,
-                "res_name": res_name,
-                "new_res_name": new_name
-            };
-            postAjax(manager.send_repository_view, result_dict, doFlashAlways)
-        }
-        return res_name
-    },
-
-    repository_view_func: function (event) {
-        var manager = event.data.manager;
-        var res_name = manager.check_for_repository_selection(manager.res_type);
-        if (res_name == "") return;
-        window.open($SCRIPT_ROOT + manager.repository_view_view + String(res_name))
-    },
-
-    repository_copy_func: function (event) {
-        var manager = event.data.manager;
-        var res_name = manager.check_for_repository_selection(manager.res_type);
-        if (res_name == "") {
-            doFlash({"message": "Select a " + manager.res_type + " first.", "alert_type": "alert-info"})
-        }
-        $.getJSON($SCRIPT_ROOT + "get_resource_names/" + manager.res_type, function(data) {
-            showModal("Import " + manager.res_type, "New Name", ImportResource, res_name, data["resource_names"])
-            }
-        );
-        function ImportResource(new_name) {
-            var result_dict = {
-                "res_type": manager.res_type,
-                "res_name": res_name,
-                "new_res_name": new_name
-            };
-            postAjax(manager.repository_copy_view, result_dict, doFlashAlways)
-        }
-        return res_name
-    },
-
-    check_for_selection: function (res_type) {
+    check_for_selection: function (manager_kind) {
         //var res_name = $('#' + res_type + '-selector > .btn.active').text().trim();
-        var res_name = $('.resource-selector .' + res_type + '-selector-button.active').children()[0].innerHTML;
+        var res_name = this.get_active_selector_button(manager_kind).attr("value");
         if (res_name == "") {
-            doFlash({"message": "Select a " + res_type + " first.", "alert_type": "alert-info"})
-        }
-        return res_name
-    },
-
-    check_for_repository_selection: function (res_type) {
-        //var res_name = $('#' + res_type + '-selector > .btn.active').text().trim();
-        var res_name = $('.repository-selector .' + res_type + '-selector-button.active').children()[0].innerHTML;
-        if (res_name == "") {
-            doFlash({"message": "Select a " + res_type + " first.", "alert_type": "alert-info"})
+            doFlash({"message": "Select a " + this.res_type + " first.", "alert_type": "alert-info"})
         }
         return res_name
     },
 
     create_module_html: function () {
+        this.prefix = "resource";
+        this.is_repository = false;
+        this.is_not_repository = true;
         var res = Mustache.to_html(resource_module_template, this);
-        var repos_res = Mustache.to_html(repository_module_template, this);
+        this.prefix = "repository";
+        this.is_repository = true;
+        this.is_not_repository = false;
+        var repos_res = Mustache.to_html(resource_module_template, this);
         res = res + repos_res;
         $("#" + this.res_type + "-module").html(res);
+    },
+
+    select_resource_button: function(manager_kind, res_name) {
+        if (res_name == null) {
+            var all_selectors = this.get_all_selector_buttons(manager_kind);
+            if (all_selectors.length > 0) {
+                selector_click({"target": all_selectors[0]});
+            }
+            else {
+                this.clear_resource_metadata(manager_kind)
+            }
+        }
+        else {
+            this.get_resource_selector_dom(manager_kind).scrollTop(this.get_named_selector_button(manager_kind, res_name).position().top);
+            selector_click({"target": this.get_named_selector_button(manager_kind, res_name)[0]})
+        }
+    },
+
+    // metadata related functions
+
+   clear_resource_metadata: function(manager_kind) {
+        this.set_resource_metadata(manager_kind, "", "", "")
+    },
+
+    set_resource_metadata: function(manager_kind, created, tags, notes) {
+        this.get_created_field(manager_kind).html(created);
+        this.get_tags_field(manager_kind).html("");
+        this.get_tags_field(manager_kind)[0].value = tags;
+        this.get_notes_field(manager_kind).html("");
+        this.get_notes_field(manager_kind)[0].value = notes;
+    },
+
+    save_my_metadata: function () {
+        var res_name = this.get_active_selector_button("resource").attr("value");
+        var tags = this.get_tags_field("resource").val();
+        var notes = this.get_notes_field("resource").val();
+        var result_dict = {"res_type": this.res_type, "res_name": res_name, "tags": tags, "notes": notes};
+        var self = this;
+        postAjax("save_metadata", result_dict, function(data) {
+            if (data.success) {
+                self.get_active_selector_button("resource").children()[3].innerHTML = tags
+            }
+            doFlashAlways(data)
+        });
+    },
+
+
+    // Search, tag button
+
+    search_my_resource: function (manager_kind){
+        this.deactivate_tag_buttons(manager_kind);
+        var txt = this.get_search_field(manager_kind)[0].value.toLowerCase();
+        var all_rows = this.get_all_selector_buttons(manager_kind);
+        $.each(all_rows, function (index, row_element) {
+            var cells = $(row_element).children();
+            var res_name = row_element.getAttribute("value").toLowerCase();
+            var tag_text = $(cells[3]).text().toLowerCase();
+            if ((res_name.search(txt) == -1) && (tag_text.search(txt) == -1)) {
+                $(row_element).hide()
+            }
+            else {
+                $(row_element).show()
+            }
+        });
+        this.show_hide_tag_buttons(manager_kind, txt)
+    },
+
+    search_given_tag: function (manager_kind, txt) {
+        var all_rows = this.get_all_selector_buttons(manager_kind);
+        this.deactivate_tag_buttons(manager_kind);
+        $.each(all_rows, function (index, row_element) {
+            var cells = $(row_element).children();
+            var tag_text = $(cells[3]).text().toLowerCase();
+            if (tag_text.search(txt) == -1) {
+                $(row_element).hide()
+            }
+            else {
+                $(row_element).show()
+            }
+        });
+        this.set_tag_button_state(txt, manager_kind);
+    },
+
+    unfilter_me: function () {
+        var manager_kind = current_manager_kind();
+        var all_rows = this.get_all_selector_buttons(manager_kind);
+        $.each(all_rows, function (index, row_element) {
+                $(row_element).show()
+        });
+        this.deactivate_tag_buttons(manager_kind);
+        this.show_all_tag_buttons(manager_kind)
+    },
+
+    set_tag_button_state: function (txt, manager_kind) {
+        var all_tag_buttons = this.get_all_tag_buttons(manager_kind);
+        $.each(all_tag_buttons, function (index, but) {
+            if (but.innerHTML == txt) {
+                $(but).addClass("active")
+            }
+            else {
+                $(but).removeClass("active")
+            }
+        })
+    },
+
+    show_hide_tag_buttons: function (manager_kind, txt) {
+        var all_tag_buttons = this.get_all_tag_buttons(manager_kind);
+        $.each(all_tag_buttons, function (index, but) {
+            var tag_text = but.innerHTML;
+            if (tag_text.search(txt) == -1) {
+                $(but).hide()
+            }
+            else {
+                $(but).show()
+            }
+        })
+    },
+
+    show_all_tag_buttons: function (manager_kind) {
+        var all_tag_buttons = this.get_all_tag_buttons(manager_kind);
+        $.each(all_tag_buttons, function (index, but) {
+                $(but).show()
+        })
+    },
+
+    deactivate_tag_buttons: function (manager_kind) {
+        var all_tag_buttons = this.get_all_tag_buttons(manager_kind);
+        $.each(all_tag_buttons, function (index, but) {
+            $(but).removeClass("active")
+        })
     }
+
 };
-
-
-function select_resource_button(res_type, res_name) {
-    if (res_name == null) {
-        if ($("#" + res_type + "-selector").children().length > 0) {
-            selector_click({"target": $("#" + res_type + "-module tbody tr")[0]});
-        }
-        else {
-            clear_resource_metadata(res_type)
-        }
-    }
-    else {
-        $("#" + res_type + "-selector").scrollTop($("#" + res_type + "-selector-" + res_name).position().top);
-        selector_click({"target": document.getElementById(res_type + "-selector-" + res_name)})
-    }
-}
-
-function select_repository_button(res_type, res_name) {
-    if (res_name == null) {
-        if ($("#repository-" + res_type + "-selector").children().length > 0) {
-            repository_selector_click({"target": $("#repository-" + res_type + "-selector-row tbody tr")[0]});
-        }
-        else {
-            clear_repository_resource_metadata(res_type)
-        }
-    }
-    else {
-        $("#" + res_type + "-selector").scrollTop($("#repository-" + res_type + "-selector-" + res_name).position().top);
-        repository_selector_click({"target": document.getElementById("repository-" + res_type + "-selector-" + res_name)})
-    }
-}
-
-function clear_resource_metadata(res_type) {
-    $("#" + res_type + "-module .created").html("");
-    $("#" + res_type + "-tags")[0].value = "";
-    $("#" + res_type + "-tags").html("");
-    $("#" + res_type + "-notes")[0].value = "";
-    $("#" + res_type + "-notes").html("");
-}
 
 
 function selector_click(event) {
     var row_element = $(event.target).closest('tr');
-    var cells = row_element.children();
-    var res_name = $(cells[0]).text();
-    var tab_parent = $(event.target).closest(".tab-pane");
-    var regexp = /^(\w+?)-/;
-    var res_type = regexp.exec(tab_parent.attr("id"))[1];
-    $(".resource-selector ." + res_type + "-selector-button").removeClass("active");
-    row_element.addClass("active");
-    //var res_name = $('.resource-selector .' + res_type + '-selector-button.active')[0].value;
+    var res_name = row_element[0].getAttribute("value");
+    var res_type = get_current_res_type();
+
     var result_dict = {"res_type": res_type, "res_name": res_name};
-    postAjax("grab_metadata", result_dict, got_metadata);
+    var manager_kind;
+    var manager = resource_managers[res_type];
+    if (repository_visible) {
+        manager_kind = "repository";
+        manager.get_all_selector_buttons(manager_kind).removeClass("active");
+        postAjax("grab_repository_metadata", result_dict, got_metadata);
+    }
+    else {
+        manager_kind = "resource";
+        manager.get_all_selector_buttons(manager_kind).removeClass("active");
+        postAjax("grab_metadata", result_dict, got_metadata)
+    }
+
+    row_element.addClass("active");
+
     function got_metadata(data) {
         if (data.success) {
-            $("#" + res_type + "-module .created").html(data.datestring);
-            $("#" + res_type + "-tags")[0].value = data.tags;
-            $("#" + res_type + "-notes")[0].value = data.notes;
+            manager.set_resource_metadata(manager_kind, data.datestring, data.tags, data.notes);
         }
         else {
             // doFlash(data)
-            clear_resource_metadata(res_type)
+            manager.clear_resource_metadata(manager_kind)
         }
     }
 }
 
 function selector_double_click(event) {
     var row_element = $(event.target).closest('tr');
-    var cells = row_element.children();
-    var res_name = $(cells[0]).text();
-    var tab_parent = $(event.target).closest(".tab-pane");
-    var regexp = /^(\w+?)-/;
-    var res_type = regexp.exec(tab_parent.attr("id"))[1];
-    $(".resource-selector ." + res_type + "-selector-button").removeClass("active");
-    row_element.addClass("active");
-    //var res_name = $('.resource-selector .' + res_type + '-selector-button.active')[0].value;
-    var result_dict = {"res_type": res_type, "res_name": res_name};
-    var the_manager = resource_managers[res_type];
-    the_manager[the_manager.double_click_func]({data: {manager: the_manager}})
-}
+    var res_type = get_current_res_type();
+    var manager = resource_managers[res_type];
+    var manager_kind = current_manager_kind();
 
-function repository_selector_double_click(event) {
-    var row_element = $(event.target).closest('tr');
-    var cells = row_element.children();
-    var res_name = $(cells[0]).text();
-    var tab_parent = $(event.target).closest(".tab-pane");
-    var regexp = /^(\w+?)-/;
-    var res_type = regexp.exec(tab_parent.attr("id"))[1];
-    $(".repository-selector ." + res_type + "-selector-button").removeClass("active");
+    manager.get_all_selector_buttons(manager_kind).removeClass("active");
     row_element.addClass("active");
-    //var res_name = $('.resource-selector .' + res_type + '-selector-button.active')[0].value;
-    var result_dict = {"res_type": res_type, "res_name": res_name};
-    var the_manager = resource_managers[res_type];
-    the_manager[the_manager.repository_double_click_func]({data: {manager: the_manager}})
-}
-
-function clear_repository_resource_metadata(res_type) {
-    $("#" + res_type + "-module .repository-created").html("");
-    $("#" + res_type + "-repository-tags")[0].value = "";
-    $("#" + res_type + "-repository-tags").html("");
-    $("#" + res_type + "-repository-notes")[0].value = "";
-    $("#" + res_type + "-repository-notes").html("");
-}
-
-function repository_selector_click(event) {
-    var row_element = $(event.target).closest('tr');
-    var cells = row_element.children();
-    var res_name = $(cells[0]).text();
-    var tab_parent = $(event.target).closest(".tab-pane");
-    var regexp = /^(\w+?)-/;
-    var res_type = regexp.exec(tab_parent.attr("id"))[1];
-    $(".repository-selector ." + res_type + "-selector-button").removeClass("active");
-    row_element.addClass("active");
-    var result_dict = {"res_type": res_type, "res_name": res_name};
-    postAjax("grab_repository_metadata", result_dict, got_metadata);
-    function got_metadata(data) {
-        if (data.success) {
-            $("#" + res_type + "-module .repository-created").html(data.datestring);
-            $("#" + res_type + "-repository-tags")[0].value = data.tags;
-            $("#" + res_type + "-repository-notes")[0].value = data.notes;
-        }
-        else {
-            // doFlash(data)
-            clear_repository_resource_metadata(res_type)
-        }
+    if (repository_visible) {
+        manager[manager.repository_double_click_func]({data: {manager: manager}})
     }
+    else {
+        manager[manager.double_click_func]({data: {manager: manager}})
+    }
+
 }
 
-function search_resource(event) {
-    unfilter_resource(event)
-    var res_type = event.target.value;
-    var txt = document.getElementById(res_type + '-search').value.toLowerCase();
-    var all_rows = $("#" + res_type + "-selector tbody tr");
-    $.each(all_rows, function (index, row_element) {
-        var cells = $(row_element).children();
-        var res_name = $(cells[0]).text().toLowerCase();
-        if (res_name.search(txt) == -1) {
-            $(row_element).fadeOut()
-        }
-    });
-    select_resource_button(res_type, null)
-}
-
-function search_repository_resource(event) {
-    unfilter_repository_resource(event)
-    var res_type = event.target.value;
-    var txt = document.getElementById("repository-" + res_type + '-search').value.toLowerCase();
-    var all_rows = $("#repository-" + res_type + "-selector tbody tr");
-    $.each(all_rows, function (index, row_element) {
-        var cells = $(row_element).children();
-        var res_name = $(cells[0]).text().toLowerCase();
-        if (res_name.search(txt) == -1) {
-            $(row_element).fadeOut()
-        }
-    });
-    select_repository_button(res_type, null);
+function search_resource(event){
+    resource_managers[event.target.value].search_my_resource(current_manager_kind())
 }
 
 function search_resource_tags(event) {
-    unfilter_resource(event)
     var res_type = event.target.value;
-    var txt = document.getElementById(res_type + '-search').value.toLowerCase();
-    var all_rows = $("#" + res_type + "-selector tbody tr");
-    $.each(all_rows, function (index, row_element) {
-        var cells = $(row_element).children();
-        var tag_text = $(cells[3]).text().toLowerCase();
-        if (tag_text.search(txt) == -1) {
-            $(row_element).fadeOut()
-        }
-    });
-    select_resource_button(res_type, null)
+    var manager_kind = current_manager_kind();
+    var manager = resource_managers[res_type];
+    var txt = manager.get_search_field(manager_kind)[0].value.toLowerCase();
+    manager.search_given_tag(manager_kind, txt);
+    manager.show_hide_tag_buttons(manager_kind, txt)
 }
 
-function search_repository_resource_tags(event) {
-    unfilter_repository_resource(event)
+
+function tag_button_clicked(event) {
     var res_type = event.target.value;
-    var txt = document.getElementById("repository-" + res_type + '-search').value.toLowerCase();
-    var all_rows = $("#repository-" + res_type + "-selector tbody tr");
-    $.each(all_rows, function (index, row_element) {
-        var cells = $(row_element).children();
-        var tag_text = $(cells[3]).text().toLowerCase();
-        if (tag_text.search(txt) == -1) {
-            $(row_element).fadeOut()
-        }
-    });
-    select_repository_button(res_type, null)
+    var txt = event.target.innerHTML;
+    resource_managers[res_type].search_given_tag(current_manager_kind(), txt)
 }
 
 function unfilter_resource(event) {
     var res_type = event.target.value;
-    var all_rows = $("#" + res_type + "-selector tbody tr");
-    $.each(all_rows, function (index, row_element) {
-            $(row_element).fadeIn()
-    })
-}
-
-function unfilter_repository_resource(event) {
-    var res_type = event.target.value;
-    var all_rows = $("#repository-" + res_type + "-selector tbody tr");
-    $.each(all_rows, function (index, row_element) {
-            $(row_element).fadeIn()
-        });
-    select_repository_button(res_type, null);
+    resource_managers[res_type].unfilter_me(current_manager_kind())
 }
 
 function save_metadata(event) {
-    var res_type = event.target.value;
-    var res_name = $('.resource-selector .' + res_type + '-selector-button.active').children()[0].innerHTML;
-    var tags = $("#" + res_type + "-tags").val();
-    var notes = $("#" + res_type + "-notes").val();
-    var result_dict = {"res_type": res_type, "res_name": res_name, "tags": tags, "notes": notes};
-    postAjax("save_metadata", result_dict, doFlashAlways);
+    resource_managers[event.target.value].save_my_metadata();
 }

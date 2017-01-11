@@ -20,7 +20,6 @@ from tactic_app.docker_functions import send_direct_request_to_container
 
 from tactic_app.docker_functions import create_container, get_address
 from tactic_app.integrated_docs import api_html, api_dict_by_category, ordered_api_categories
-from tactic_app.tile_code_parser import get_functions_full_code
 import traceback
 
 AUTOSPLIT = True
@@ -74,6 +73,7 @@ class ResourceManager(object):
     def __init__(self, res_type):
         self.res_type = res_type
         self.add_rules()
+        self.tag_list = []
 
     def handle_exception(self, ex, special_string=None):
         if special_string is None:
@@ -123,6 +123,25 @@ class ResourceManager(object):
                 user_obj = current_user
         return getattr(user_obj, self.collection_list_with_metadata)
 
+    def get_tag_list(self, user_obj=None):
+        res_list = self.get_resource_list_with_metadata(user_obj)
+        result = []
+        for res_item in res_list:
+            mdata = res_item[1]
+            if mdata and "tags" in mdata:
+                result += str(mdata["tags"].lower()).split()
+        return sorted(list(set(result)))
+
+    def request_update_tag_list(self, user_obj=None):
+        self.tag_list = self.get_tag_list(user_obj)
+        result = self.create_button_list(self.tag_list)
+        return result
+
+    def create_button_list(self, the_list):
+        the_html = render_template("user_manage/button_list_template.html",
+                                   button_list=the_list, res_type=self.res_type)
+        return the_html
+
     def request_update_selector_list(self, user_obj=None):
         res_list_with_metadata = self.get_resource_list_with_metadata(user_obj)
         res_array = self.build_resource_array(res_list_with_metadata)
@@ -146,8 +165,7 @@ class ResourceManager(object):
             the_html += "<th>{0}</th>".format(c)
         the_html += "</tr><tbody>"
         for r in data_list[1:]:
-            the_html += "<tr class='selector-button {0}-selector-button' id='{0}-selector-{1}'>".format(self.res_type,
-                                                                                                        r[0])
+            the_html += "<tr class='selector-button' value={1} >".format(self.res_type, r[0])
             for c in r:
                 if isinstance(c, list):
                     the_html += "<td sorttable_customkey='{0}'>{1}</td>".format(c[1], c[0])
@@ -227,6 +245,18 @@ def request_update_selector_list(res_type):
     return managers[res_type][0].request_update_selector_list()
 
 
+@app.route('/request_update_tag_list/<res_type>', methods=['GET'])
+@login_required
+def request_update_tag_list(res_type):
+    return managers[res_type][0].request_update_tag_list()
+
+
+@app.route('/request_update_repository_tag_list/<res_type>', methods=['GET'])
+@login_required
+def request_update_repositorytag_list(res_type):
+    return managers[res_type][1].request_update_tag_list()
+
+
 @app.route('/request_update_repository_selector_list/<res_type>', methods=['GET'])
 @login_required
 def request_update_repository_selector_list(res_type):
@@ -290,7 +320,6 @@ class ListManager(ResourceManager):
         mdata["tags"] = tags
         mdata["notes"] = notes
         db[current_user.list_collection_name].update_one({"list_name": res_name}, {'$set': {"metadata": mdata}})
-        self.update_selector_list()
 
     def add_list(self):
         user_obj = current_user
@@ -460,7 +489,6 @@ class CollectionManager(ResourceManager):
         else:
             db[cname].update_one({"name": "__metadata__"},
                                  {'$set': {"tags": tags, "notes": notes}})
-        self.update_selector_list()
 
     def autosplit_doc(self, filename, full_dict):
         sorted_int_keys = sorted([int(key) for key in full_dict.keys()])
@@ -658,7 +686,6 @@ class ProjectManager(ResourceManager):
         mdata["tags"] = tags
         mdata["notes"] = notes
         db[current_user.project_collection_name].update_one({"project_name": res_name}, {'$set': {"metadata": mdata}})
-        self.update_selector_list()
 
 
 class RepositoryProjectManager(ProjectManager):
@@ -723,7 +750,6 @@ class TileManager(ResourceManager):
         mdata["tags"] = tags
         mdata["notes"] = notes
         db[current_user.tile_collection_name].update_one({"tile_module_name": res_name}, {'$set': {"metadata": mdata}})
-        self.update_selector_list()
 
     def view_module(self, module_name):
         return render_template("user_manage/module_viewer.html",
@@ -744,7 +770,6 @@ class TileManager(ResourceManager):
         else:
             result = self.view_module(module_name)
         return result
-
 
     def view_in_creator(self, module_name):
         option_types = [{"name": "text"},
@@ -948,7 +973,6 @@ class CodeManager(ResourceManager):
         mdata["tags"] = tags
         mdata["notes"] = notes
         db[current_user.code_collection_name].update_one({"code_name": res_name}, {'$set': {"metadata": mdata}})
-        self.update_selector_list()
 
     def view_code(self, code_name):
         user_obj = current_user
@@ -1132,6 +1156,13 @@ def save_metadata():
         notes = request.json["notes"]
         manager = get_manager_for_type(res_type)
         manager.save_metadata(res_name, tags, notes)
+        tag_list = manager.get_tag_list()
+        if not tag_list == manager.tag_list:
+            socketio.emit('update-tag-list',
+                          {"html": manager.request_update_tag_list(),
+                           "res_type": res_type},
+                          namespace='/user_manage', room=current_user.get_id())
+
         return jsonify({"success": True, "message": "Saved metadata", "alert_type": "alert-success"})
     except:
         error_string = "Error saving metadata: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
@@ -1162,17 +1193,21 @@ def search_resource():
 
 
 indent_unit = "    "
+
+
 def remove_indents(the_str, number_indents):
     total_indent = indent_unit * number_indents
     result = re.sub(r"\n" + total_indent, "\n", the_str)
     result = re.sub(r"^" + total_indent, "", result)
     return result
 
+
 def insert_indents(the_str, number_indents):
     total_indent = indent_unit * number_indents
     result = re.sub(r"\n", r"\n" + total_indent, the_str)
     result = total_indent + result
     return result
+
 
 def build_code(data_dict):
     export_list = data_dict["exports"]
@@ -1203,6 +1238,7 @@ def build_code(data_dict):
                                 draw_plot_body=draw_plot_body)
     return full_code
 
+
 @app.route('/update_module', methods=['post'])
 @login_required
 def update_module():
@@ -1222,8 +1258,6 @@ def update_module():
         mdata["tags"] = data_dict["tags"]
         mdata["notes"] = data_dict["notes"]
         mdata["updated"] = datetime.datetime.today()
-
-
         db[current_user.tile_collection_name].update_one({"tile_module_name": module_name},
                                                          {'$set': {"tile_module": module_code, "metadata": mdata,
                                                                    "last_saved": last_saved}})

@@ -12,10 +12,26 @@ var page_id = user_manage_id;
 mousetrap.bind("esc", function() {
     clearStatusArea();
     clearStatusMessage();
+    resource_managers[get_current_res_type()].unfilter_me(current_manager_kind())
+});
+
+
+mousetrap.bind(['command+f', 'ctrl+f'], function(e) {
+    var res_type = get_current_res_type();
+    document.getElementById(res_type + "-search").focus();
+    e.preventDefault()
 });
 
 var res_types = ["list", "collection", "project", "tile", "code"];
 var resource_managers = {};
+
+function get_manager_outer(res_type, manager_type) {
+    return $("#" + manager_type + "-" + res_type + "-outer")
+}
+
+function get_manager_dom(res_type, manager_type, selector) {
+    return $("#" + manager_type + "-" + res_type + "-outer").find(selector)
+}
 
 function start_post_load() {
     if (use_ssl) {
@@ -34,18 +50,40 @@ function start_post_load() {
 
     socket.on('update-selector-list', function(data) {
         var res_type = data.res_type;
-        $("#" + res_type + "-selector").html(data.html);
+        var manager = resource_managers[res_type];
+        manager.get_resource_selector_dom("resource").html(data.html);
         if (data.hasOwnProperty("select")) {
-            select_resource_button(res_type, data.select)
+            manager.select_resource_button("resource", data.select)
         }
         else {
-            select_resource_button(res_type, null)
+            manager.select_resource_button("resource", null)
         }
-        sorttable.makeSortable($("#" + res_type + "-selector table")[0]);
-        var updated_header = $("#" + res_type + "-selector table th")[2];
+        sorttable.makeSortable(manager.get_resource_table("resource")[0]);
+        var updated_header = manager.get_resource_selector_dom("resource").find("table th")[2];
         // We do the sort below twice to get the most recent dates first.
         sorttable.innerSortFunction.apply(updated_header, []);
         sorttable.innerSortFunction.apply(updated_header, []);
+    });
+
+    socket.on('update-tag-list', function (data) {
+        var res_type = data.res_type;
+        var manager = resource_managers[res_type];
+        var active_tag_button = null;
+        var all_tag_buttons = manager.get_all_tag_buttons("resource");
+        $.each(all_tag_buttons, function (index, but) {
+            if ($(but).hasClass("active")) {
+                active_tag_button = $(but).html()
+            }
+        });
+        manager.get_tag_button_dom("resource").html(data.html);
+        all_tag_buttons = manager.get_all_tag_buttons("resource");
+        if (active_tag_button != null) {
+            $.each(all_tag_buttons, function (index, but) {
+                if ($(but).html() == active_tag_button) {
+                    $(but).addClass("active")
+                }
+            });
+        }
     });
 
     socket.on('stop-spinner', function () {
@@ -60,7 +98,7 @@ function start_post_load() {
         statusMessage(data)
     });
 
-    socket.on("clear-status-msg", function (data){
+    socket.on("clear-status-msg", function (){
        clearStatusMessage()
     });
 
@@ -79,31 +117,36 @@ function start_post_load() {
     console.log("about to create");
     $.get($SCRIPT_ROOT + "/get_resource_module_template", function(template) {
         resource_module_template = $(template).filter('#resource-module-template').html();
-        repository_module_template = $(template).filter('#repository-module-template').html();
         listManager.create_module_html();
         collectionManager.create_module_html();
         projectManager.create_module_html();
         tileManager.create_module_html();
         codeManager.create_module_html();
 
-        res_types.forEach(function (element, index, array) {
-            $("#" + element + "-selector").load($SCRIPT_ROOT + "/request_update_selector_list/" + element, function () {
-                select_resource_button(element, null);
-                sorttable.makeSortable($("#" + element + "-selector table")[0]);
-                var updated_header = $("#" + element + "-selector table th")[2];
+        var manager_kind = "resource";
+        res_types.forEach(function (res_type) {
+            var manager = resource_managers[res_type];
+            manager.get_resource_selector_dom(manager_kind).load($SCRIPT_ROOT + "/request_update_selector_list/" + res_type, function () {
+                manager.select_resource_button(manager_kind, null);
+                sorttable.makeSortable(manager.get_resource_table(manager_kind)[0]);
+                var updated_header = manager.get_resource_selector_dom(manager_kind).find("table th")[2];
                 // We do the sort below twice to get the most recent dates first.
                 sorttable.innerSortFunction.apply(updated_header, []);
                 sorttable.innerSortFunction.apply(updated_header, []);
-            })
+            });
+            manager.get_tag_button_dom(manager_kind).load($SCRIPT_ROOT + "/request_update_tag_list/" + res_type)
         });
 
-        $("#loaded-tile-list").load($SCRIPT_ROOT + "/request_update_loaded_tile_list");
+        get_manager_dom("tile", "resource", ".loaded-tile-list").load($SCRIPT_ROOT + "/request_update_loaded_tile_list");
 
-        res_types.forEach(function (element, index, array) {
-            $("#repository-" + element + "-selector").load($SCRIPT_ROOT + "/request_update_repository_selector_list/" + element, function () {
-                select_repository_button(element, null);
-                sorttable.makeSortable($("#repository-" + element + "-selector table")[0])
-            })
+        var repository_manager_kind = "repository";
+        res_types.forEach(function (element) {
+            var rep_manager = resource_managers[element];
+            rep_manager.get_resource_selector_dom(repository_manager_kind).load($SCRIPT_ROOT + "/request_update_repository_selector_list/" + element, function () {
+                rep_manager.select_resource_button(repository_manager_kind, null);
+                sorttable.makeSortable(rep_manager.get_resource_table(repository_manager_kind)[0])
+            });
+            rep_manager.get_tag_button_dom(repository_manager_kind).load($SCRIPT_ROOT + "/request_update_repository_tag_list/" + element)
         });
 
         listManager.add_listeners();
@@ -111,39 +154,35 @@ function start_post_load() {
         projectManager.add_listeners();
         tileManager.add_listeners();
         codeManager.add_listeners();
+
+
         $(".resource-module").on("click", ".resource-selector .selector-button", selector_click);
         $(".resource-module").on("dblclick", ".resource-selector .selector-button", selector_double_click);
-        $(".resource-module").on("click", ".repository-selector .selector-button", repository_selector_click);
-        $(".resource-module").on("dblclick", ".repository-selector .selector-button", repository_selector_double_click);
         $(".resource-module").on("click", ".search-resource-button", search_resource);
+
         $(".resource-module").on("click", ".search-tags-button", search_resource_tags);
         $(".resource-module").on("click", ".resource-unfilter-button", unfilter_resource);
+
         $(".resource-module").on("click", ".save-metadata-button", save_metadata);
-        $(".resource-module").on("click", ".search-repository-resource-button", search_repository_resource);
-        $(".resource-module").on("click", ".search-repository-tags-button", search_repository_resource_tags);
-        $(".resource-module").on("click", ".repository-resource-unfilter-button", unfilter_repository_resource);
-        $(".resource-module").on("keypress", ".search-field", function(e) {
+        $(".resource-module").on("click", ".tag-button-list button", tag_button_clicked);
+
+        $(".resource-module").on("keyup", ".search-field", function(e) {
+            var res_type;
+            var fake_event;
             if (e.which == 13) {
-                var the_id = e.target.id;
-                var regexp = /^(\w+?)-/;
-                var res_type = regexp.exec(the_id)[1];
-                var fake_event = {"target": {"value": res_type}};
+                res_type = get_current_res_type();
+                fake_event = {"target": {"value": res_type}};
                 search_resource(fake_event);
                 e.preventDefault();
             }
-        });
-        $(".resource-module").on("keypress", ".repository-search-field", function(e) {
-            if (e.which == 13) {
-                var the_id = e.target.id;
-                var regexp = /^repository-(\w+?)-/;
-                var res_type = regexp.exec(the_id)[1];
-                var fake_event = {"target": {"value": res_type}};
-                search_repository_resource(fake_event);
-                e.preventDefault();
+            else {
+                res_type = get_current_res_type();
+                fake_event = {"target": {"value": res_type}};
+                search_resource(fake_event);
             }
         });
         resize_window();
-        $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+        $('a[data-toggle="tab"]').on('shown.bs.tab', function () {
             resize_window()
         });
         stopSpinner()
@@ -194,11 +233,28 @@ function doFlashStopSpinner(data) {
 }
 
 function resize_window() {
-    res_types.forEach(function (val, ind, array) {
-        var h = window.innerHeight - 50 - $("#" + val + "-selector-row").offset().top;
-        $("#" + val + "-selector-row").outerHeight(h);
-        h = window.innerHeight - 50 - $("#repository-" + val + "-selector-row").offset().top;
-        $("#repository-" + val + "-selector-row").outerHeight(h);
+    res_types.forEach(function (res_type) {
+        var manager = resource_managers[res_type];
+        var rsw_row = manager.get_resource_selector_row("resource");
+        if (rsw_row.length > 0) {
+            var h = window.innerHeight - 50 - rsw_row.offset().top;
+            rsw_row.outerHeight(h);
+        }
+        var rep_row = manager.get_resource_selector_row("resource");
+        if (rep_row.length > 0) {
+            var srowh = window.innerHeight - 50 - rep_row.offset().top;
+            rep_row.outerHeight(srowh);
+        }
+        var tselector = manager.get_tag_button_dom("resource");
+        if (tselector.length > 0) {
+            var tselector_height = window.innerHeight - 50 - tselector.offset().top;
+            tselector.outerHeight(tselector_height);
+        }
+        var trepselector = manager.get_tag_button_dom("repository");
+        if (trepselector.length > 0) {
+            var trepselector_height = window.innerHeight - 50 - trepselector.offset().top;
+            trepselector.outerHeight(trepselector_height)
+        }
     })
 }
 
@@ -224,8 +280,7 @@ var list_manager_specifics = {
         {"name": "view", "func": "repository_view_func", "button_class": "btn-default"}
     ],
     add_list: function (event) {
-        var manager = event.data.manager;
-        fdata = new FormData(this);
+        var fdata = new FormData(this);
         postAjaxUpload("add_list", fdata, doFlashOnFailure(data));
         event.preventDefault();
     }
@@ -248,7 +303,7 @@ var col_manager_specifics = {
     ],
     button_groups: [
         {buttons: [
-            {"name": "load", "func": "load_func", "button_class": "btn btn-default"},
+            {"name": "load", "func": "load_func", "button_class": "btn btn-default"}
             ]},
         {buttons: [
             {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-default"},
@@ -259,7 +314,6 @@ var col_manager_specifics = {
             {"name": "delete", "func": "delete_func", "button_class": "btn-default"}]}
     ],
     import_as_table: function (event) {
-        var manager = event.data.manager;
         var the_data = new FormData(this);
         $.getJSON($SCRIPT_ROOT + "get_resource_names/collection", function(data) {
                 showModal("Import as table", "New collection Name", CreateNewCollection, "NewCollection", data["resource_names"])
@@ -272,7 +326,6 @@ var col_manager_specifics = {
         event.preventDefault();
     },
     import_as_freeform: function (event) {
-        var manager = event.data.manager;
         var the_data = new FormData(this);
        $.getJSON($SCRIPT_ROOT + "get_resource_names/collection", function(data) {
                 showModal("Import as table", "New collection Name", CreateNewCollection, "NewCollection", data["resource_names"])
@@ -286,7 +339,7 @@ var col_manager_specifics = {
     },
     downloadCollection: function (event) {
         var manager = event.data.manager;
-        var res_name = manager.check_for_selection(manager.res_type);
+        var res_name = manager.check_for_selection("resource");
         if (res_name == "") return;
         showModal("Download Collection as Excel Notebook", "New File Name", function (new_name) {
             window.open($SCRIPT_ROOT + "/download_collection/" + res_name + "/" + new_name)
@@ -294,11 +347,11 @@ var col_manager_specifics = {
     },
     combineCollections: function (event) {
         var manager = event.data.manager;
-        var res_name = manager.check_for_selection(manager.res_type);
+        var res_name = manager.check_for_selection("resource");
         if (res_name == "") return;
         showModal("Name of collection to combine with " + res_name, "collection Name", function (other_name) {
             startSpinner();
-            target =$SCRIPT_ROOT + "/combine_collections/" + res_name + "/" + other_name;
+            var target =$SCRIPT_ROOT + "/combine_collections/" + res_name + "/" + other_name;
             $.post(target, doFlashStopSpinner);
         })
     }
@@ -326,7 +379,7 @@ var project_manager_specifics = {
 
     load_func: function (event) {
         var manager = event.data.manager;
-        var res_name = manager.check_for_selection(manager.res_type);
+        var res_name = manager.check_for_selection("resource");
         if (res_name == "") return;
         var data = {"project_name": res_name, "user_id": user_id, "user_manage_id": user_manage_id};
         startSpinner();
@@ -351,9 +404,9 @@ var tile_manager_specifics = {
     show_loaded_list: true,
     popup_buttons: [{"name": "new",
                     "button_class": "btn-default",
-                    "option_list": [{"opt_name": "BasicTileTemplate", "opt_func": "new_tile"},
-                                    {"opt_name": "ExpandedTileTemplate", "opt_func": "new_tile"},
-                                    {"opt_name": "MatplotlibTileTemplate", "opt_func": "new_tile"}]},
+                    "option_list": [{"opt_name": "BasicTileTemplate", "opt_func": "new_basic_tile"},
+                                    {"opt_name": "ExpandedTileTemplate", "opt_func": "new_expanded_tile"},
+                                    {"opt_name": "MatplotlibTileTemplate", "opt_func": "new_matplotlib_tile"}]},
                     {"name": "new_in_creator",
                     "button_class": "btn-default",
                     "option_list": [{"opt_name": "StandardTile", "opt_func": "new_basic_in_creator"},
@@ -366,7 +419,7 @@ var tile_manager_specifics = {
             {"name": "view", "func": "view_func", "button_class": "btn-default"},
             {"name": "view_in_creator", "func": "creator_view_func", "button_class": "btn-default"},
             {"name": "load", "func": "load_func", "button_class": "btn-default"},
-            {"name": "unload", "func": "unload_func", "button_class": "btn-default"},
+            {"name": "unload", "func": "unload_func", "button_class": "btn-default"}
         ]},
         {buttons: [
             {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-default"}
@@ -385,34 +438,33 @@ var tile_manager_specifics = {
 
     creator_view_func: function (event) {
         var manager = event.data.manager;
-        var res_name = manager.check_for_selection(manager.res_type);
+        var res_name = manager.check_for_selection("resource");
         if (res_name == "") return;
         window.open($SCRIPT_ROOT + manager.creator_view + String(res_name))
     },
 
     dc_view_func: function (event) {
         var manager = event.data.manager;
-        var res_name = manager.check_for_selection(manager.res_type);
+        var res_name = manager.check_for_selection("resource");
         if (res_name == "") return;
         window.open($SCRIPT_ROOT + manager.last_saved_view + String(res_name))
     },
 
     load_func: function (event) {
         var manager = event.data.manager;
-        var res_name = manager.check_for_selection("tile");
+        var res_name = manager.check_for_selection("resource");
         if (res_name == "") return;
         $.getJSON($SCRIPT_ROOT + '/load_tile_module/' + String(res_name), doFlash)
     },
     unload_func: function (event) {
         var manager = event.data.manager;
-        var res_name = manager.check_for_selection("tile");
+        var res_name = manager.check_for_selection("resource");
         if (res_name == "") return;
         $.getJSON($SCRIPT_ROOT + '/unload_all_tiles', doFlash)
     },
 
     add_tile_module: function (event) {
-        var manager = event.data.manager;
-        form_data = new FormData(this);
+        var form_data = new FormData(this);
         postAjaxUpload("add_tile_module", form_data, doFlashOnFailure(data));
         event.preventDefault();
     },
@@ -451,9 +503,20 @@ var tile_manager_specifics = {
         event.preventDefault();
     },
 
-    new_tile: function (event) {
+    new_basic_tile: function (event) {
+        tileManager.new_tile (event, "BasicTileTemplate");
+    },
+
+    new_expanded_tile: function (event) {
+        tileManager.new_tile (event, "ExpandedTileTemplate");
+    },
+
+    new_matplotlib_tile: function (event) {
+        tileManager.new_tile (event, "MatplotlibTileTemplate");
+    },
+
+    new_tile: function (event, template_name) {
         var manager = event.data.manager;
-        var template_name = event.data.opt_name;
         $.getJSON($SCRIPT_ROOT + "get_resource_names/tile", function(data) {
                 showModal("New Tile", "New Tile Name", CreateNewTileModule, "NewTileModule", data["resource_names"])
             }
@@ -515,14 +578,13 @@ var code_manager_specifics = {
         {"name": "view", "func": "repository_view_func", "button_class": "btn-default"}
     ],
     add_code: function (event) {
-        var manager = event.data.manager;
-        form_data = new FormData(this);
+        var form_data = new FormData(this);
         postAjaxUpload("add_code", form_data, doFlashOnFailure(data));
         event.preventDefault();
     },
     new_code: function (event) {
         var manager = event.data.manager;
-        var template_name = event.data.opt_name;
+        var template_name = "BasicCodeTemplate";
         $.getJSON($SCRIPT_ROOT + "get_resource_names/code", function(data) {
                 showModal("New Code Resource", "New Code Resource Name", CreateNewCodeResource, "NewCodeResource", data["resource_names"])
             }
@@ -533,7 +595,7 @@ var code_manager_specifics = {
                 "template_name": template_name,
                 "new_res_name": new_name
             };
-            postAjaxUpload(manager.new_view, result_dict, function(data) {
+            postAjax(manager.new_view, result_dict, function(data) {
                 if (data.success){
                     window.open($SCRIPT_ROOT + manager.view_view + String(new_name))
                 }
