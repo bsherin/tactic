@@ -17,7 +17,7 @@ mousetrap.bind("esc", function() {
 
 
 mousetrap.bind(['command+f', 'ctrl+f'], function(e) {
-    res_type = get_current_res_type();
+    var res_type = get_current_res_type();
     document.getElementById(res_type + "-search").focus();
     e.preventDefault()
 });
@@ -50,7 +50,7 @@ function start_post_load() {
 
     socket.on('update-selector-list', function(data) {
         var res_type = data.res_type;
-        manager = resource_managers[res_type];
+        var manager = resource_managers[res_type];
         manager.get_resource_selector_dom("resource").html(data.html);
         if (data.hasOwnProperty("select")) {
             manager.select_resource_button("resource", data.select)
@@ -67,7 +67,7 @@ function start_post_load() {
 
     socket.on('update-tag-list', function (data) {
         var res_type = data.res_type;
-        manager = resource_managers[res_type];
+        var manager = resource_managers[res_type];
         var active_tag_button = null;
         var all_tag_buttons = manager.get_all_tag_buttons("resource");
         $.each(all_tag_buttons, function (index, but) {
@@ -76,7 +76,7 @@ function start_post_load() {
             }
         });
         manager.get_tag_button_dom("resource").html(data.html);
-        var all_tag_buttons = manager.get_all_tag_buttons("resource");
+        all_tag_buttons = manager.get_all_tag_buttons("resource");
         if (active_tag_button != null) {
             $.each(all_tag_buttons, function (index, but) {
                 if ($(but).html() == active_tag_button) {
@@ -98,7 +98,7 @@ function start_post_load() {
         statusMessage(data)
     });
 
-    socket.on("clear-status-msg", function (data){
+    socket.on("clear-status-msg", function (){
        clearStatusMessage()
     });
 
@@ -124,7 +124,7 @@ function start_post_load() {
         codeManager.create_module_html();
 
         var manager_kind = "resource";
-        res_types.forEach(function (res_type, index, array) {
+        res_types.forEach(function (res_type) {
             var manager = resource_managers[res_type];
             manager.get_resource_selector_dom(manager_kind).load($SCRIPT_ROOT + "/request_update_selector_list/" + res_type, function () {
                 manager.select_resource_button(manager_kind, null);
@@ -139,8 +139,8 @@ function start_post_load() {
 
         get_manager_dom("tile", "resource", ".loaded-tile-list").load($SCRIPT_ROOT + "/request_update_loaded_tile_list");
 
-        repository_manager_kind = "repository";
-        res_types.forEach(function (element, index, array) {
+        var repository_manager_kind = "repository";
+        res_types.forEach(function (element) {
             var rep_manager = resource_managers[element];
             rep_manager.get_resource_selector_dom(repository_manager_kind).load($SCRIPT_ROOT + "/request_update_repository_selector_list/" + element, function () {
                 rep_manager.select_resource_button(repository_manager_kind, null);
@@ -167,20 +167,22 @@ function start_post_load() {
         $(".resource-module").on("click", ".tag-button-list button", tag_button_clicked);
 
         $(".resource-module").on("keyup", ".search-field", function(e) {
+            var res_type;
+            var fake_event;
             if (e.which == 13) {
-                var res_type = get_current_res_type();
-                var fake_event = {"target": {"value": res_type}};
+                res_type = get_current_res_type();
+                fake_event = {"target": {"value": res_type}};
                 search_resource(fake_event);
                 e.preventDefault();
             }
             else {
-                var res_type = get_current_res_type();
-                var fake_event = {"target": {"value": res_type}};
+                res_type = get_current_res_type();
+                fake_event = {"target": {"value": res_type}};
                 search_resource(fake_event);
             }
         });
         resize_window();
-        $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+        $('a[data-toggle="tab"]').on('shown.bs.tab', function () {
             resize_window()
         });
         stopSpinner()
@@ -231,18 +233,28 @@ function doFlashStopSpinner(data) {
 }
 
 function resize_window() {
-    res_types.forEach(function (res_type, ind, array) {
-        manager = resource_managers[res_type];
-        var h = window.innerHeight - 50 - manager.get_resource_selector_row("resource").offset().top;
-        manager.get_resource_selector_row("resource").outerHeight(h);
-        var srowh = window.innerHeight - 50 - manager.get_resource_selector_row("repository").offset().top;
-        manager.get_resource_selector_row("repository").outerHeight(srowh);
+    res_types.forEach(function (res_type) {
+        var manager = resource_managers[res_type];
+        var rsw_row = manager.get_resource_selector_row("resource");
+        if (rsw_row.length > 0) {
+            var h = window.innerHeight - 50 - rsw_row.offset().top;
+            rsw_row.outerHeight(h);
+        }
+        var rep_row = manager.get_resource_selector_row("resource");
+        if (rep_row.length > 0) {
+            var srowh = window.innerHeight - 50 - rep_row.offset().top;
+            rep_row.outerHeight(srowh);
+        }
         var tselector = manager.get_tag_button_dom("resource");
-        tselector_height = srowh - tselector.offset().top;
-        tselector.outerHeight(tselector_height)
-        tselector = manager.get_tag_button_dom("repository");
-        tselector_height = srowh - tselector.offset().top;
-        tselector.outerHeight(tselector_height)
+        if (tselector.length > 0) {
+            var tselector_height = window.innerHeight - 50 - tselector.offset().top;
+            tselector.outerHeight(tselector_height);
+        }
+        var trepselector = manager.get_tag_button_dom("repository");
+        if (trepselector.length > 0) {
+            var trepselector_height = window.innerHeight - 50 - trepselector.offset().top;
+            trepselector.outerHeight(trepselector_height)
+        }
     })
 }
 
@@ -268,8 +280,7 @@ var list_manager_specifics = {
         {"name": "view", "func": "repository_view_func", "button_class": "btn-default"}
     ],
     add_list: function (event) {
-        var manager = event.data.manager;
-        fdata = new FormData(this);
+        var fdata = new FormData(this);
         postAjaxUpload("add_list", fdata, doFlashOnFailure(data));
         event.preventDefault();
     }
@@ -292,7 +303,7 @@ var col_manager_specifics = {
     ],
     button_groups: [
         {buttons: [
-            {"name": "load", "func": "load_func", "button_class": "btn btn-default"},
+            {"name": "load", "func": "load_func", "button_class": "btn btn-default"}
             ]},
         {buttons: [
             {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-default"},
@@ -303,7 +314,6 @@ var col_manager_specifics = {
             {"name": "delete", "func": "delete_func", "button_class": "btn-default"}]}
     ],
     import_as_table: function (event) {
-        var manager = event.data.manager;
         var the_data = new FormData(this);
         $.getJSON($SCRIPT_ROOT + "get_resource_names/collection", function(data) {
                 showModal("Import as table", "New collection Name", CreateNewCollection, "NewCollection", data["resource_names"])
@@ -316,7 +326,6 @@ var col_manager_specifics = {
         event.preventDefault();
     },
     import_as_freeform: function (event) {
-        var manager = event.data.manager;
         var the_data = new FormData(this);
        $.getJSON($SCRIPT_ROOT + "get_resource_names/collection", function(data) {
                 showModal("Import as table", "New collection Name", CreateNewCollection, "NewCollection", data["resource_names"])
@@ -342,7 +351,7 @@ var col_manager_specifics = {
         if (res_name == "") return;
         showModal("Name of collection to combine with " + res_name, "collection Name", function (other_name) {
             startSpinner();
-            target =$SCRIPT_ROOT + "/combine_collections/" + res_name + "/" + other_name;
+            var target =$SCRIPT_ROOT + "/combine_collections/" + res_name + "/" + other_name;
             $.post(target, doFlashStopSpinner);
         })
     }
@@ -395,9 +404,9 @@ var tile_manager_specifics = {
     show_loaded_list: true,
     popup_buttons: [{"name": "new",
                     "button_class": "btn-default",
-                    "option_list": [{"opt_name": "BasicTileTemplate", "opt_func": "new_tile"},
-                                    {"opt_name": "ExpandedTileTemplate", "opt_func": "new_tile"},
-                                    {"opt_name": "MatplotlibTileTemplate", "opt_func": "new_tile"}]},
+                    "option_list": [{"opt_name": "BasicTileTemplate", "opt_func": "new_basic_tile"},
+                                    {"opt_name": "ExpandedTileTemplate", "opt_func": "new_expanded_tile"},
+                                    {"opt_name": "MatplotlibTileTemplate", "opt_func": "new_matplotlib_tile"}]},
                     {"name": "new_in_creator",
                     "button_class": "btn-default",
                     "option_list": [{"opt_name": "StandardTile", "opt_func": "new_basic_in_creator"},
@@ -410,7 +419,7 @@ var tile_manager_specifics = {
             {"name": "view", "func": "view_func", "button_class": "btn-default"},
             {"name": "view_in_creator", "func": "creator_view_func", "button_class": "btn-default"},
             {"name": "load", "func": "load_func", "button_class": "btn-default"},
-            {"name": "unload", "func": "unload_func", "button_class": "btn-default"},
+            {"name": "unload", "func": "unload_func", "button_class": "btn-default"}
         ]},
         {buttons: [
             {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-default"}
@@ -455,8 +464,7 @@ var tile_manager_specifics = {
     },
 
     add_tile_module: function (event) {
-        var manager = event.data.manager;
-        form_data = new FormData(this);
+        var form_data = new FormData(this);
         postAjaxUpload("add_tile_module", form_data, doFlashOnFailure(data));
         event.preventDefault();
     },
@@ -495,9 +503,20 @@ var tile_manager_specifics = {
         event.preventDefault();
     },
 
-    new_tile: function (event) {
+    new_basic_tile: function (event) {
+        tileManager.new_tile (event, "BasicTileTemplate");
+    },
+
+    new_expanded_tile: function (event) {
+        tileManager.new_tile (event, "ExpandedTileTemplate");
+    },
+
+    new_matplotlib_tile: function (event) {
+        tileManager.new_tile (event, "MatplotlibTileTemplate");
+    },
+
+    new_tile: function (event, template_name) {
         var manager = event.data.manager;
-        var template_name = event.data.opt_name;
         $.getJSON($SCRIPT_ROOT + "get_resource_names/tile", function(data) {
                 showModal("New Tile", "New Tile Name", CreateNewTileModule, "NewTileModule", data["resource_names"])
             }
@@ -559,14 +578,13 @@ var code_manager_specifics = {
         {"name": "view", "func": "repository_view_func", "button_class": "btn-default"}
     ],
     add_code: function (event) {
-        var manager = event.data.manager;
-        form_data = new FormData(this);
+        var form_data = new FormData(this);
         postAjaxUpload("add_code", form_data, doFlashOnFailure(data));
         event.preventDefault();
     },
     new_code: function (event) {
         var manager = event.data.manager;
-        var template_name = event.data.opt_name;
+        var template_name = "BasicCodeTemplate";
         $.getJSON($SCRIPT_ROOT + "get_resource_names/code", function(data) {
                 showModal("New Code Resource", "New Code Resource Name", CreateNewCodeResource, "NewCodeResource", data["resource_names"])
             }
@@ -577,7 +595,7 @@ var code_manager_specifics = {
                 "template_name": template_name,
                 "new_res_name": new_name
             };
-            postAjaxUpload(manager.new_view, result_dict, function(data) {
+            postAjax(manager.new_view, result_dict, function(data) {
                 if (data.success){
                     window.open($SCRIPT_ROOT + manager.view_view + String(new_name))
                 }

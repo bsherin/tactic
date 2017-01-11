@@ -3,8 +3,8 @@
  */
 
 function get_current_res_type() {
-    var module_id_str = $(".nav-tabs .active a").attr("href")
-    var reg_exp = /\#(\S*)?\-/
+    var module_id_str = $(".nav-tabs .active a").attr("href");
+    var reg_exp = /\#(\S*)?\-/;
     return module_id_str.match(reg_exp)[1]
 }
 
@@ -46,11 +46,11 @@ ResourceManager.prototype = {
             self.bind_form(value, "resource")
             }
         );
-        self.bind_button({"name": "repository-copy", "func": "repository_copy_func"}, "repository")
+        self.bind_button({"name": "repository-copy", "func": "repository_copy_func"}, "repository");
 
         $.each(self.popup_buttons, function (index, value) {
             $.each(value.option_list, function (index, opt) {
-                self.bind_button({"name": opt.opt_name, "func": opt.opt_func}, "resource")
+                self.bind_option({"name": opt.opt_name, "func": opt.opt_func}, "resource")
             })
         });
     },
@@ -168,8 +168,14 @@ ResourceManager.prototype = {
         get_manager_outer(this.res_type, manager_kind).on("click", bselector, {"manager": this}, this[value.func])
     },
 
+    bind_option: function (value, manager_kind) {
+        var button_value = value.name + "-" + this.res_type;
+        var bselector = "a[value='" + button_value + "']";
+        get_manager_outer(this.res_type, manager_kind).on("click", bselector, {"manager": this}, this[value.func])
+    },
+
     bind_form: function (value, manager_kind) {
-        var form_value = value.name + "-" + this.res_type + "-form"
+        var form_value = value.name + "-" + this.res_type + "-form";
         var fselector = "form[value='" + form_value + "']";
         get_manager_outer(this.res_type, manager_kind).on("submit", fselector, {"manager": this}, this[value.func])
     },
@@ -187,14 +193,14 @@ ResourceManager.prototype = {
         return get_manager_dom(this.res_type, manager_kind, ".resource-selector table")
     },
 
-    get_button: function(manager_kind, name) {
-        button_value = name + "-" + this.res_type
+    get_button: function(manager_kind, name) { // not currently used
+        var button_value = name + "-" + this.res_type;
         return get_manager_dom(this.res_type, manager_kind, "button[value='" + button_value + "']")
     },
 
-    get_form: function(manager_kind, name){
-        form_value = name + "-" + this.res_type + "-form";
-        return get_manager_dom(this.res_type, manager_kind, "button[value='" + form_value + "']")
+    get_form: function(manager_kind, name){ // not currently used
+        var form_value = name + "-" + this.res_type + "-form";
+        return get_manager_dom(this.res_type, manager_kind, "form[value='" + form_value + "']")
     },
 
     get_created_field: function(manager_kind) {
@@ -287,8 +293,8 @@ ResourceManager.prototype = {
 
     select_resource_button: function(manager_kind, res_name) {
         if (res_name == null) {
-            all_selectors = this.get_all_selector_buttons(manager_kind)
-            if (all_selectors.legnth > 0) {
+            var all_selectors = this.get_all_selector_buttons(manager_kind);
+            if (all_selectors.length > 0) {
                 selector_click({"target": all_selectors[0]});
             }
             else {
@@ -346,7 +352,7 @@ ResourceManager.prototype = {
             else {
                 $(row_element).show()
             }
-        })
+        });
         this.show_hide_tag_buttons(manager_kind, txt)
     },
 
@@ -367,7 +373,7 @@ ResourceManager.prototype = {
     },
 
     unfilter_me: function () {
-        manager_kind = current_manager_kind()
+        var manager_kind = current_manager_kind();
         var all_rows = this.get_all_selector_buttons(manager_kind);
         $.each(all_rows, function (index, row_element) {
                 $(row_element).show()
@@ -389,9 +395,9 @@ ResourceManager.prototype = {
     },
 
     show_hide_tag_buttons: function (manager_kind, txt) {
-        var all_tag_buttons = this.get_all_tag_buttons(manager_kind)
+        var all_tag_buttons = this.get_all_tag_buttons(manager_kind);
         $.each(all_tag_buttons, function (index, but) {
-            tag_text = but.innerHTML;
+            var tag_text = but.innerHTML;
             if (tag_text.search(txt) == -1) {
                 $(but).hide()
             }
@@ -413,8 +419,7 @@ ResourceManager.prototype = {
         $.each(all_tag_buttons, function (index, but) {
             $(but).removeClass("active")
         })
-    },
-
+    }
 
 };
 
@@ -422,11 +427,11 @@ ResourceManager.prototype = {
 function selector_click(event) {
     var row_element = $(event.target).closest('tr');
     var res_name = row_element[0].getAttribute("value");
-    var res_type = get_current_res_type()
+    var res_type = get_current_res_type();
 
     var result_dict = {"res_type": res_type, "res_name": res_name};
     var manager_kind;
-    manager = resource_managers[res_type];
+    var manager = resource_managers[res_type];
     if (repository_visible) {
         manager_kind = "repository";
         manager.get_all_selector_buttons(manager_kind).removeClass("active");
@@ -454,7 +459,7 @@ function selector_click(event) {
 function selector_double_click(event) {
     var row_element = $(event.target).closest('tr');
     var res_type = get_current_res_type();
-    manager = resource_managers[res_type];
+    var manager = resource_managers[res_type];
     var manager_kind = current_manager_kind();
 
     manager.get_all_selector_buttons(manager_kind).removeClass("active");
@@ -475,7 +480,7 @@ function search_resource(event){
 function search_resource_tags(event) {
     var res_type = event.target.value;
     var manager_kind = current_manager_kind();
-    manager = resource_managers[res_type];
+    var manager = resource_managers[res_type];
     var txt = manager.get_search_field(manager_kind)[0].value.toLowerCase();
     manager.search_given_tag(manager_kind, txt);
     manager.show_hide_tag_buttons(manager_kind, txt)
@@ -494,7 +499,5 @@ function unfilter_resource(event) {
 }
 
 function save_metadata(event) {
-    var res_type = event.target.value;
     resource_managers[event.target.value].save_my_metadata();
-
 }

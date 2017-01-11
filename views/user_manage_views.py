@@ -20,7 +20,6 @@ from tactic_app.docker_functions import send_direct_request_to_container
 
 from tactic_app.docker_functions import create_container, get_address
 from tactic_app.integrated_docs import api_html, api_dict_by_category, ordered_api_categories
-from tactic_app.tile_code_parser import get_functions_full_code
 import traceback
 
 AUTOSPLIT = True
@@ -125,7 +124,7 @@ class ResourceManager(object):
         return getattr(user_obj, self.collection_list_with_metadata)
 
     def get_tag_list(self, user_obj=None):
-        res_list = self.get_resource_list_with_metadata()
+        res_list = self.get_resource_list_with_metadata(user_obj)
         result = []
         for res_item in res_list:
             mdata = res_item[1]
@@ -139,7 +138,8 @@ class ResourceManager(object):
         return result
 
     def create_button_list(self, the_list):
-        the_html = render_template("user_manage/button_list_template.html", button_list=the_list, res_type=self.res_type)
+        the_html = render_template("user_manage/button_list_template.html",
+                                   button_list=the_list, res_type=self.res_type)
         return the_html
 
     def request_update_selector_list(self, user_obj=None):
@@ -250,6 +250,7 @@ def request_update_selector_list(res_type):
 def request_update_tag_list(res_type):
     return managers[res_type][0].request_update_tag_list()
 
+
 @app.route('/request_update_repository_tag_list/<res_type>', methods=['GET'])
 @login_required
 def request_update_repositorytag_list(res_type):
@@ -310,7 +311,7 @@ class ListManager(ResourceManager):
             mdata = None
         return mdata
 
-    def save_metadata(self, res_name, tags, notes, user_obj=None):
+    def save_metadata(self, res_name, tags, notes):
         doc = db[current_user.list_collection_name].find_one({"list_name": res_name})
         if "metadata" in doc:
             mdata = doc["metadata"]
@@ -1160,7 +1161,7 @@ def save_metadata():
             socketio.emit('update-tag-list',
                           {"html": manager.request_update_tag_list(),
                            "res_type": res_type},
-                           namespace='/user_manage', room=current_user.get_id())
+                          namespace='/user_manage', room=current_user.get_id())
 
         return jsonify({"success": True, "message": "Saved metadata", "alert_type": "alert-success"})
     except:
@@ -1192,17 +1193,21 @@ def search_resource():
 
 
 indent_unit = "    "
+
+
 def remove_indents(the_str, number_indents):
     total_indent = indent_unit * number_indents
     result = re.sub(r"\n" + total_indent, "\n", the_str)
     result = re.sub(r"^" + total_indent, "", result)
     return result
 
+
 def insert_indents(the_str, number_indents):
     total_indent = indent_unit * number_indents
     result = re.sub(r"\n", r"\n" + total_indent, the_str)
     result = total_indent + result
     return result
+
 
 def build_code(data_dict):
     export_list = data_dict["exports"]
@@ -1233,6 +1238,7 @@ def build_code(data_dict):
                                 draw_plot_body=draw_plot_body)
     return full_code
 
+
 @app.route('/update_module', methods=['post'])
 @login_required
 def update_module():
@@ -1252,8 +1258,6 @@ def update_module():
         mdata["tags"] = data_dict["tags"]
         mdata["notes"] = data_dict["notes"]
         mdata["updated"] = datetime.datetime.today()
-
-
         db[current_user.tile_collection_name].update_one({"tile_module_name": module_name},
                                                          {'$set': {"tile_module": module_code, "metadata": mdata,
                                                                    "last_saved": last_saved}})
