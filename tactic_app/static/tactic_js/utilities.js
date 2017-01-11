@@ -6,6 +6,32 @@ var modal_template;
 var confirm_template;
 var tooltips;
 
+function updateObject(o1, o2) {
+    for (var prop in o2) {
+        if (o2.hasOwnProperty(prop)){
+            o1[prop] = o2[prop]
+        }
+    }
+}
+
+String.prototype.format = function() {
+  var str = this;
+  for (var i = 0; i < arguments.length; i++) {
+    var reg = new RegExp("\\{" + i + "\\}", "gm");
+    str = str.replace(reg, arguments[i]);
+  }
+  return str;
+};
+
+function objectKeys(obj) {
+    var result = [];
+    for (var key in obj){
+        if (!obj.hasOwnProperty(key)) continue;
+        result.push(key)
+    }
+    return result
+}
+
 $.get($SCRIPT_ROOT + "/get_modal_template", function(template){
     modal_template = $(template).filter('#modal-template').html();
     confirm_template = $(template).filter('#confirm-template').html();
