@@ -17,7 +17,6 @@ function current_manager_kind() {
     }
 }
 
-
 function ResourceManager(res_type, specifics) {
     this.res_type = res_type;
     updateObject(this, specifics);
