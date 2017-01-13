@@ -47,7 +47,7 @@ ResourceManager.prototype = {
             col_num = 0
         }
         //var res_name = $('#' + res_type + '-selector > .btn.active').text().trim();
-        var res_name = $('.resource-selector .' + res_type + '-selector-button.active').children()[col_num].innerHTML;
+        var res_name = $("#" + res_type + '-selector .selector-button.active').children()[col_num].innerHTML;
         if (res_name == "") {
             doFlash({"message": "Select a " + res_type + " first.", "alert_type": "alert-info"})
         }
@@ -90,7 +90,7 @@ function selector_click(event) {
     var tab_parent = $(event.target).closest(".tab-pane");
     var regexp = /^(\w+?)-/;
     var res_type = regexp.exec(tab_parent.attr("id"))[1];
-    $(".resource-selector ." + res_type + "-selector-button").removeClass("active");
+    $("#" + res_type + '-selector .selector-button').removeClass("active")
     row_element.addClass("active");
     //var res_name = $('.resource-selector .' + res_type + '-selector-button.active')[0].value;
     var result_dict = {"res_type": res_type, "res_name": res_name};

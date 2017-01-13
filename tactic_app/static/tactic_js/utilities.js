@@ -69,18 +69,23 @@ function clearStatusMessage() {
 }
 
 function doFlashOnFailure(data) {
-    doFlash(data, false)
+    if (!data.success) {
+        doFlash(data, false)
+    }
+
 }
 
 function doFlashOnSuccess(data) {
-    doFlash(data, true)
+    if (!data.success) {
+        doFlash(data, true)
+    }
 }
 
 function doFlashAlways(data) {
     doFlash(data)
 }
 
-function doFlash(data, success) {
+function doFlash(data) {
     // Flash a bootstrap-styled warning in status-area
     // data should be a dict with message and type fields.
     // type can be alert-success, alert-warning, alert-info, alert-danger
@@ -88,11 +93,6 @@ function doFlash(data, success) {
     var message;
     var timeout;
     var msg;
-    if (arguments.length != 1) {
-        if (data.success != success) {
-            return
-        }
-    }
     if (!data.hasOwnProperty("alert_type")){
         alert_type = "alert-info"
     }
