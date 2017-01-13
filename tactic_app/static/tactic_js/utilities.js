@@ -68,6 +68,11 @@ function clearStatusMessage() {
     alertbox.close();
 }
 
+function doSignOut(page_id) {
+    window.open($SCRIPT_ROOT + "/logout/" + page_id, "_self");
+    return (false)
+}
+
 function doFlashOnFailure(data) {
     if (!data.success) {
         doFlash(data, false)
