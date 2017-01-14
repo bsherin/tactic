@@ -423,6 +423,15 @@ class TileBase(QWorker):
                         else:
                             form_html += self.select_option_template.format(choice)
                     form_html += '</select></div>'
+                elif option["type"] == "collection_select":
+                    the_template = self.input_start_template + self.select_base_template
+                    form_html += the_template.format(att_name)
+                    for choice in data["collection_names"]:
+                        if choice == starting_value:
+                            form_html += self.select_option_selected_template.format(choice)
+                        else:
+                            form_html += self.select_option_template.format(choice)
+                    form_html += '</select></div>'
                 elif option["type"] == "function_select":
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
@@ -666,7 +675,6 @@ class TileBase(QWorker):
                                      triangle_right_display_string=dsr_string,
                                      triangle_bottom_display_string=dbr_string,
                                      front_back_display_string=bda_string
-
                                  )
         return result
 
@@ -1097,6 +1105,13 @@ class TileBase(QWorker):
         result = exec_user_code(the_code)
         self.restore_stdout()
         return code_names["classes"][class_name]
+
+    def get_user_collection(self, collection_name):
+        self.save_stdout()
+        result = self.post_and_wait(self.main_id, "get_user_collection", {"user_id": self.user_id,
+                                                                          "collection_name": collection_name})
+        self.restore_stdout()
+        return result["the_collection"]
 
     # deprecated
     def get_tokenizer(self, tokenizer_name):

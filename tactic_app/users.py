@@ -434,6 +434,10 @@ class User(UserMixin):
         list_dict = db[self.list_collection_name].find_one({"list_name": list_name})
         return list_dict["the_list"]
 
+    def get_collection(self, collection_name):
+        full_collection_name = self.build_data_collection_name(collection_name)
+
+
     def get_tile_dict(self, tile_module_name):
         tile_dict = db[self.tile_collection_name].find_one({"tile_module_name": tile_module_name})
         return tile_dict

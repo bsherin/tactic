@@ -422,6 +422,7 @@ function tile_command(menu_id) {
                     data_dict["list_names"] = data["list_names"];
                     data_dict["class_names"] = data["class_names"];
                     data_dict["function_names"] = data["function_names"];
+                    data_dict["collection_names"] = data["collection_names"];
                     postWithCallback(main_id, "create_tile", data_dict, function (data) {
                         if (data.success) {
                             data_dict["form_html"] = data["html"] ;

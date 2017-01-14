@@ -73,6 +73,7 @@ class HostWorker(QWorker):
         list_names = self.get_list_names({"user_id": user_obj.get_id()})["list_names"]
         class_names = self.get_class_names({"user_id": user_obj.get_id()})["class_names"]
         function_names = self.get_function_tags_dict({"user_id": user_obj.get_id()})["function_names"]
+        collection_names = self.get_collection_names({"user_id": user_obj.get_id()})["collection_names"]
 
         with self.app.test_request_context():
             bf_url = url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1]
@@ -88,6 +89,7 @@ class HostWorker(QWorker):
                      "list_names": list_names,
                      "class_names": class_names,
                      "function_names": function_names,
+                     "collection_names": collection_names,
                      "user_manage_id": user_manage_id,
                      "base_figure_url": bf_url,
                      "use_ssl": use_ssl}
@@ -118,13 +120,20 @@ class HostWorker(QWorker):
         the_user = load_user(user_id)
         return {"list_names": the_user.list_names,
                 "class_names": the_user.class_tags_dict,
-                "function_names": the_user.function_tags_dict}
+                "function_names": the_user.function_tags_dict,
+                "collection_names": the_user.data_collections}
 
     @task_worthy
     def get_list_names(self, data):
         user_id = data["user_id"]
         the_user = load_user(user_id)
         return {"list_names": the_user.list_names}
+
+    @task_worthy
+    def get_collection_names(self, data):
+        user_id = data["user_id"]
+        the_user = load_user(user_id)
+        return {"collection_names": the_user.data_collections}
 
     @task_worthy
     def get_class_names(self, data):
@@ -216,6 +225,13 @@ class HostWorker(QWorker):
         list_name = data["list_name"]
         the_user = load_user(user_id)
         return {"the_list": the_user.get_list(list_name)}
+
+    @task_worthy
+    def get_full_collection_name(self, data):
+        user_id = data["user_id"]
+        collection_name = data["collection_name"]
+        the_user = load_user(user_id)
+        return {"full_collection_name": the_user.build_data_collection_name(collection_name)}
 
     @task_worthy
     def get_code_with_function(self, data):
