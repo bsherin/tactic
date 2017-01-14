@@ -497,6 +497,7 @@ class mainWindow(QWorker):
         list_names = data_dict["list_names"]
         class_names = data_dict["class_names"]
         function_names = data_dict["function_names"]
+        collection_names = data_dict["collection_names"]
         self.tile_instances = {}
         tile_results = {}
         errors = {}
@@ -548,6 +549,7 @@ class mainWindow(QWorker):
                      "doc_names": self.doc_names,
                      "list_names": list_names,
                      "class_names": class_names,
+                     "collection_names": collection_names,
                      "function_names": function_names}
         for tile_id, tile_result in tile_results.items():
             tile_result["tile_html"] = self.post_and_wait(tile_id, "render_tile", form_info)["tile_html"]
@@ -744,7 +746,8 @@ class mainWindow(QWorker):
                      "doc_names": self.doc_names,
                      "list_names": the_lists["list_names"],
                      "class_names": the_lists["class_names"],
-                     "function_names": the_lists["function_names"]}
+                     "function_names": the_lists["function_names"],
+                     "collection_names": the_lists["collection_names"]}
         if tile_id in self._pipe_dict:
             del self._pipe_dict[tile_id]
             for tid in self.tile_instances.keys():
@@ -813,7 +816,8 @@ class mainWindow(QWorker):
                      "doc_names": self.doc_names,
                      "list_names": data_dict["list_names"],
                      "function_names": data_dict["function_names"],
-                     "class_names": data_dict["class_names"]}
+                     "class_names": data_dict["class_names"],
+                     "collection_names": data_dict["collection_names"]}
         # data_dict["form_info"] = form_info
         tile_address = data_dict["tile_address"]
         result = send_request_to_container(tile_address, "load_source", data_dict).json()
@@ -852,6 +856,33 @@ class mainWindow(QWorker):
             ddata["doc_name"] = doc_name
             result = result + self.get_column_data_for_doc(ddata)
         return result
+
+    def sort_rows(self, row_dict):
+        result = []
+        sorted_int_keys = sorted([int(key) for key in row_dict.keys()])
+        for r in sorted_int_keys:
+            result.append(row_dict[str(r)])
+        return result
+
+    @task_worthy
+    def get_user_collection(self, data):
+        full_collection_name = self.post_and_wait("host", "get_full_collection_name", data)["full_collection_name"]
+        result = {}
+        the_collection = self.db[full_collection_name]
+        mdata = the_collection.find_one({"name": "__metadata__"})
+        if "type" in mdata and mdata["type"] == "freeform":
+            doc_type = "freeform"
+        else:
+            doc_type = "table"
+        for f in the_collection.find():
+            fname = f["name"].encode("ascii", "ignore")
+            if fname == "__metadata__":
+                continue
+            if doc_type == "table":
+                result[fname] = self.sort_rows(f["data_rows"])
+            else:
+                result[fname] = self.fs.get(f["file_id"]).read()
+        return {"the_collection": result}
 
     @task_worthy
     def get_document_data(self, data):
@@ -1119,7 +1150,8 @@ class mainWindow(QWorker):
                      "doc_names": self.doc_names,
                      "list_names": the_lists["list_names"],
                      "class_names": the_lists["class_names"],
-                     "function_names": the_lists["function_names"]}
+                     "function_names": the_lists["function_names"],
+                     "collection_names": the_lists["collection_names"]}
         reload_dict["form_info"] = form_info
         reload_dict["main_id"] = self.my_id
         result = send_request_to_container(self.tile_instances[tile_id], "reinstantiate_tile", reload_dict).json()
@@ -1205,7 +1237,8 @@ class mainWindow(QWorker):
                      "doc_names": self.doc_names,
                      "list_names": the_lists["list_names"],
                      "class_names": the_lists["class_names"],
-                     "function_names": the_lists["function_names"]}
+                     "function_names": the_lists["function_names"],
+                     "collection_names": the_lists["collection_names"]}
         for tid in self.tile_instances.keys():
             self.post_task(tid, "RebuildTileForms", form_info)
         return None

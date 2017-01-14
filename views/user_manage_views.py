@@ -780,6 +780,7 @@ class TileManager(ResourceManager):
                         {"name": "column_select"},
                         {"name": "document_select"},
                         {"name": "list_select"},
+                        {"name": "collection_select"},
                         {"name": "palette_select"},
                         {"name": "pipe_select"},
                         {"name": "custom_list"},
