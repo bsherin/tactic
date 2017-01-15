@@ -1251,6 +1251,16 @@ def update_module():
             module_code = data_dict["new_code"]
         else:
             module_code = build_code(data_dict)
+        start_stuff = re.findall(r"([\s\S]*?)def render_content", module_code)
+        if len(start_stuff) > 0:
+            render_content_line_number = start_stuff[0].count("\n") + 1
+        else:
+            render_content_line_number = 0
+        start_dp_stuff = re.findall(r"([\s\S]*?)def draw_plot", module_code)
+        if len(start_dp_stuff) > 0:
+            draw_plot_line_number = start_dp_stuff[0].count("\n") + 1
+        else:
+            draw_plot_line_number = 0
         doc = db[current_user.tile_collection_name].find_one({"tile_module_name": module_name})
         if "metadata" in doc:
             mdata = doc["metadata"]
@@ -1263,10 +1273,14 @@ def update_module():
                                                          {'$set': {"tile_module": module_code, "metadata": mdata,
                                                                    "last_saved": last_saved}})
         tile_manager.update_selector_list()
-        return jsonify({"success": True, "message": "Module Successfully Saved", "alert_type": "alert-success"})
+        return jsonify({"success": True, "message": "Module Successfully Saved",
+                        "alert_type": "alert-success", "render_content_line_number": render_content_line_number,
+                        "draw_plot_line_number": draw_plot_line_number})
     except:
         error_string = "Error saving module " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning",
+                        "render_content_line_number": render_content_line_number,
+                        "draw_plot_line_number": draw_plot_line_number})
 
 
 @app.route('/rename_module/<old_name>', methods=['post'])

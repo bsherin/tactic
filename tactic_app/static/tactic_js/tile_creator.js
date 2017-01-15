@@ -12,6 +12,8 @@ var savedCategory = null;
 var savedMethods = null;
 var creator_resource_module_template;
 var rt_code = null;
+var render_content_line_number = 0;
+var draw_plot_line_number = 0;
 var user_manage_id = guid();
 var is_mpl = null;
 var draw_plot_code = null;
@@ -65,6 +67,8 @@ function parse_success(data) {
     }
     else {
         rt_code = data.render_content_code;
+        render_content_line_number = data.render_content_line_number;
+        draw_plot_line_number = data.draw_plot_line_number;
         optionManager.option_dict = data.option_dict;
         exportManager.export_list = data.export_list;
         methodManager.extra_functions = data.extra_functions;
@@ -354,11 +358,17 @@ var methodManager = new ResourceManager("method", method_manager_specifics);
 function continue_loading(data) {
     var codearea = document.getElementById("codearea");
     myCodeMirror = createCMArea(codearea, true);
+    if (render_content_line_number != 0) {
+        myCodeMirror.setOption("firstLineNumber", render_content_line_number + 1)
+    }
     myCodeMirror.setValue(rt_code);
     if (is_mpl) {
         var drawplotcodearea = document.getElementById("drawplotcodearea");
         myDPCodeMirror = createCMArea(drawplotcodearea, false);
         myDPCodeMirror.setValue(draw_plot_code);
+        if (draw_plot_line_number != 0) {
+            myDPCodeMirror.setOption("firstLineNumber", draw_plot_line_number + 1)
+        }
         dpba = $("#drawplotboundingarea");
         dpba.css("display", "block");
         myDPCodeMirror.refresh();

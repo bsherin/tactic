@@ -155,6 +155,15 @@ function doSave(update_success) {
 function updateModule() {
     doSave(update_success);
     function update_success(data, new_code, tags, notes, category) {
+        if ((this_viewer == "creator") && (data.render_content_line_number != 0)) {
+            myCodeMirror.setOption("firstLineNumber", data.render_content_line_number + 1)
+            myCodeMirror.refresh()
+        }
+        if ((this_viewer == "creator") && (is_mpl) && (data.draw_plot_line_number != 0)) {
+            myDPCodeMirror.setOption("firstLineNumber", data.draw_plot_line_number + 1)
+            myDPCodeMirror.refresh()
+        }
+
         if (data.success) {
             savedCode = new_code;
             savedTags = tags;
@@ -175,6 +184,14 @@ function updateModule() {
 function loadModule() {
     doSave(save_success);
     function save_success(data, new_code, tags, notes, category) {
+            if ((this_viewer == "creator") && (data.render_content_line_number != 0)) {
+                myCodeMirror.setOption("firstLineNumber", data.render_content_line_number + 1)
+                myCodeMirror.refresh()
+            }
+            if ((this_viewer == "creator") && (is_mpl) && (data.draw_plot_line_number != 0)) {
+                myDPCodeMirror.setOption("firstLineNumber", data.draw_plot_line_number + 1)
+                myDPCodeMirror.refresh()
+            }
             if (data.success) {
                 savedCode = new_code;
                 savedTags = tags;

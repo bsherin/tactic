@@ -558,7 +558,7 @@ class TileBase(QWorker):
                 if not self.configured:
                     new_html = "Tile not configured"
                 else:
-                    new_html = self.render_content()
+                    new_html = str(self.render_content())
             self.current_html = new_html
             self.emit_tile_message("displayTileContent", {"html": new_html})
         except Exception as ex:
