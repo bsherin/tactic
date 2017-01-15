@@ -101,6 +101,17 @@ def parse_code():
             extra_functions += func_code
 
     extra_functions = remove_indents(extra_functions, 1)
+    start_stuff = re.findall(r"([\s\S]*?)def render_content", module_code)
+    if len(start_stuff) > 0:
+        render_content_line_number = start_stuff[0].count("\n") + 1
+    else:
+        render_content_line_number = 0
+
+    start_dp_stuff = re.findall(r"([\s\S]*?)def draw_plot", module_code)
+    if len(start_dp_stuff) > 0:
+        draw_plot_line_number = start_dp_stuff[0].count("\n") + 1
+    else:
+        draw_plot_line_number = 0
 
     return jsonify({"success": True, "option_dict": option_dict, "export_list": export_list,
                     "render_content_code": render_content_code,
@@ -108,7 +119,9 @@ def parse_code():
                     "category": category,
                     "metadata": mdata,
                     "is_mpl": is_mpl,
-                    "draw_plot_code": draw_plot_code})
+                    "draw_plot_code": draw_plot_code,
+                    "render_content_line_number": render_content_line_number,
+                    "draw_plot_line_number": draw_plot_line_number})
 
 class OptionManager(ResourceManager):
 
