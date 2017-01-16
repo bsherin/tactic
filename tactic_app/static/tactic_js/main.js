@@ -125,6 +125,7 @@ function createConsoleCodeInCodearea(uid, codearea) {
     consoleCMObjects[uid] = CodeMirror(codearea, {
         lineNumbers: true,
         matchBrackets: true,
+        highlightSelectionMatches: false,
         autoCloseBrackets: true,
         indentUnit: 4,
         readOnly: false,

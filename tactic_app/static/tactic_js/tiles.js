@@ -21,6 +21,7 @@ function TileObject(tile_id, html, is_new_tile, tile_name) {
         var theId = $(this).attr("id");
         self.codeMirrorObjects[theId] = CodeMirror.fromTextArea(this, {
             matchBrackets: true,
+            highlightSelectionMatches: false,
             autoCloseBrackets: true,
             indentUnit: 4
         });

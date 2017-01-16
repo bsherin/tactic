@@ -202,10 +202,8 @@ resource_managers["user"] = userManager;
 
 function resize_window() {
     res_types.forEach(function (val, ind, array) {
-        var h = window.innerHeight - 50 - $("#" + val + "-selector-row").offset().top;
-        $("#" + val + "-selector-row").outerHeight(h);
-        var auxh = window.innerHeight - 50 - $("#" + val + "-aux-area").offset().top;
-        $("#" + val + "-aux-area").outerHeight(auxh);
+        resize_dom_to_bottom($("#" + val + "-selector-row"), 50);
+        resize_dom_to_bottom($("#" + val + "-aux-area"), 50);
     })
 }
 

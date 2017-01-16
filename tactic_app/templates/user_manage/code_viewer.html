@@ -72,7 +72,7 @@
             }
         };
         window.onresize = function () {
-            $(".CodeMirror").css('height', window.innerHeight - $(".CodeMirror").offset().top - 20)
+            resize_dom_to_bottom_given_selector(".CodeMirror", 20);
         }
     </script>
 {% endblock %}

@@ -10,7 +10,7 @@ $tile-panel-background-color: white;
 $tile-panel-foreground-color: #333; // bootstrap default is #333
 
 $search-highlight-color: yellow;
-
+.cm-matchhighlight {background-color: lightgreen}
 
 /* general use */
 $button-notclose-opacity: .9;

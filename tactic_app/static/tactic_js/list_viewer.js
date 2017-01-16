@@ -16,9 +16,7 @@ mousetrap.bind(['command+s', 'ctrl+s'], function(e) {
 
 
 function start_post_load() {
-    var listarea = document.getElementById("listarea");
-
-    $("#listarea").css('height', window.innerHeight - $("#listarea").offset().top - 40);
+    resize_dom_to_bottom_given_selector("#listarea", 40);
     saveList = the_list_as_string;
 
     var result_dict = {"res_type": "list", "res_name": list_name};

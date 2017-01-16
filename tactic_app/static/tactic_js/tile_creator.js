@@ -22,7 +22,7 @@ var this_viewer = "creator";
 
 $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function (e) {
     if ($(e.currentTarget).attr("value") == "method") {
-        resize_dom_to_bottom("#method-module .CodeMirror", 20);
+        resize_dom_to_bottom_given_selector("#method-module .CodeMirror", 20);
         methodManager.cmobject.refresh();
     }
 });
@@ -39,20 +39,31 @@ function start_post_load() {
     window.onresize = function () {
         if (is_mpl) {
             dpba = $("#drawplotboundingarea");
-            the_height = [window.innerHeight - dpba.offset().top - 20] / 2;
-            dpba.css('height', the_height);
-            dpca_height = the_height - ($("#drawplotcodearea").offset().top - dpba.offset().top);
-            $("#drawplotcodearea").css('height', dpca_height);
-            $("#drawplotcodearea .CodeMirror").css('height', dpca_height);
-            myDPCodeMirror.refresh();
+            if (dpba.length > 0) {
+                the_height = [window.innerHeight - dpba.offset().top - 20] / 2;
+                dpba.css('height', the_height);
+            }
+            dpca = $("#drawplotcodearea")
+            if (dpca.length > 0) {
+                dpca_height = the_height - (dpca.offset().top - dpba.offset().top);
+                dpca.css('height', dpca_height);
+                $("#drawplotcodearea .CodeMirror").css('height', dpca_height);
+            }
+            if (myDPCodeMirror != null) {
+                myDPCodeMirror.refresh();
+            }
         }
-        resize_dom_to_bottom("#codearea", 20);
-        resize_dom_to_bottom("#codearea .CodeMirror", 20);
-        resize_dom_to_bottom("#api-area", 20);
-        resize_dom_to_bottom("#method-module .CodeMirror", 20);
-        resize_dom_to_bottom(".tab-pane", 20);
-        myCodeMirror.refresh();
-        methodManager.cmobject.refresh();
+        resize_dom_to_bottom_given_selector("#codearea", 20);
+        resize_dom_to_bottom_given_selector("#codearea .CodeMirror", 20);
+        resize_dom_to_bottom_given_selector("#api-area", 20);
+        resize_dom_to_bottom_given_selector("#method-module .CodeMirror", 20);
+        resize_dom_to_bottom_given_selector(".tab-pane", 20);
+        if (myCodeMirror != null) {
+            myCodeMirror.refresh();
+        }
+        if (methodManager.cmobject != null) {
+            methodManager.cmobject.refresh();
+        }
     };
 
     socket.on('doflash', doFlash);
@@ -273,9 +284,13 @@ var export_manager_specifics = {
             else {
                 $("#export-selector").html(result.html);
                 select_resource_button("export", null);
-                sorttable.makeSortable($("#export-selector table")[0]);
-                var updated_header = $("#export-selector table th")[0];
-                sorttable.innerSortFunction.apply(updated_header, []);
+                if ($("#export-selector table").length > 0) {
+                    sorttable.makeSortable($("#export-selector table")[0]);
+                }
+                if ($("#export-selector table th").length > 0) {
+                    var updated_header = $("#export-selector table th")[0];
+                    sorttable.innerSortFunction.apply(updated_header, []);
+                }
             }
         });
     },
@@ -372,11 +387,17 @@ function continue_loading(data) {
         dpba = $("#drawplotboundingarea");
         dpba.css("display", "block");
         myDPCodeMirror.refresh();
-        the_height = [window.innerHeight - dpba.offset().top - 20] / 2;
-        dpba.css('height', the_height);
-        dpca_height = the_height - ($("#drawplotcodearea").offset().top - dpba.offset().top);
-        $("#drawplotcodearea").css('height', dpca_height);
-        $("#drawplotcodearea .CodeMirror").css('height', dpca_height);
+        if (dpba.length > 0) {
+            the_height = [window.innerHeight - dpba.offset().top - 20] / 2;
+            dpba.css('height', the_height);
+        }
+        dpca = $("#drawplotcodearea");
+        if (dpca.length > 0) {
+            dpca_height = the_height - (dpca.offset().top - dpba.offset().top);
+            dpca.css('height', dpca_height);
+            $("#drawplotcodearea .CodeMirror").css('height', dpca_height);
+        }
+
         savedDPCode = myDPCodeMirror.getDoc().getValue();
         dpba.resizable({
                 handles: "s",
@@ -390,8 +411,8 @@ function continue_loading(data) {
                     $("#drawplotcodearea").css('height', dpca_height);
                     $("#drawplotcodearea .CodeMirror").css('height', dpca_height);
 
-                    resize_dom_to_bottom("#codearea", 20);
-                    resize_dom_to_bottom("#codearea .CodeMirror", 20);
+                    resize_dom_to_bottom_given_selector("#codearea", 20);
+                    resize_dom_to_bottom_given_selector("#codearea .CodeMirror", 20);
 
                     myDPCodeMirror.refresh();
                 }
@@ -399,11 +420,11 @@ function continue_loading(data) {
             });
     }
 
-    resize_dom_to_bottom("#codearea", 20);
-    resize_dom_to_bottom("#codearea .CodeMirror", 20);
-    resize_dom_to_bottom("#api-area", 20);
-    resize_dom_to_bottom("#method-module .CodeMirror", 20);
-    resize_dom_to_bottom(".tab-pane", 20);
+    resize_dom_to_bottom_given_selector("#codearea", 20);
+    resize_dom_to_bottom_given_selector("#codearea .CodeMirror", 20);
+    resize_dom_to_bottom_given_selector("#api-area", 20);
+    resize_dom_to_bottom_given_selector("#method-module .CodeMirror", 20);
+    resize_dom_to_bottom_given_selector(".tab-pane", 20);
     myCodeMirror.refresh();
 
     savedCode = myCodeMirror.getDoc().getValue();

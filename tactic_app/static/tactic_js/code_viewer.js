@@ -24,6 +24,7 @@ function start_post_load() {
     myCodeMirror = CodeMirror.fromTextArea(codearea, {
         lineNumbers: true,
         matchBrackets: true,
+        highlightSelectionMatches: true,
         autoCloseBrackets: true,
         indentUnit: 4,
         readOnly: view_only
@@ -34,7 +35,7 @@ function start_post_load() {
         cm.replaceSelection(spaces);
       }
     });
-    $(".CodeMirror").css('height', window.innerHeight - $(".CodeMirror").offset().top - 20);
+    resize_dom_to_bottom_given_selector(".CodeMirror", 20);
     savedCode = myCodeMirror.getDoc().getValue();
 
     var result_dict = {"res_type": "code", "res_name": code_name};

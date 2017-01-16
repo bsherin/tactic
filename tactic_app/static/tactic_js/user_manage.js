@@ -236,25 +236,13 @@ function resize_window() {
     res_types.forEach(function (res_type) {
         var manager = resource_managers[res_type];
         var rsw_row = manager.get_resource_selector_row("resource");
-        if (rsw_row.length > 0) {
-            var h = window.innerHeight - 50 - rsw_row.offset().top;
-            rsw_row.outerHeight(h);
-        }
+        resize_dom_to_bottom(rsw_row, 50);
         var rep_row = manager.get_resource_selector_row("resource");
-        if (rep_row.length > 0) {
-            var srowh = window.innerHeight - 50 - rep_row.offset().top;
-            rep_row.outerHeight(srowh);
-        }
+        resize_dom_to_bottom(rep_row, 50);
         var tselector = manager.get_tag_button_dom("resource");
-        if (tselector.length > 0) {
-            var tselector_height = window.innerHeight - 50 - tselector.offset().top;
-            tselector.outerHeight(tselector_height);
-        }
+        resize_dom_to_bottom(tselector, 50);
         var trepselector = manager.get_tag_button_dom("repository");
-        if (trepselector.length > 0) {
-            var trepselector_height = window.innerHeight - 50 - trepselector.offset().top;
-            trepselector.outerHeight(trepselector_height)
-        }
+        resize_dom_to_bottom(trepselector, 50);
     })
 }
 
