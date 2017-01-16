@@ -86,6 +86,7 @@ function createCMArea(codearea, include_in_global_search) {
     cmobject = CodeMirror(codearea, {
         lineNumbers: true,
         matchBrackets: true,
+        highlightSelectionMatches: true,
         autoCloseBrackets: true,
         indentUnit: 4,
         readOnly: false
@@ -228,7 +229,7 @@ function showAPI(){
     }
 
     $("#api-area").toggle();
-    resize_dom_to_bottom("#api-area", 20);
+    resize_dom_to_bottom_given_selector("#api-area", 20);
 }
 
 function renameModule() {

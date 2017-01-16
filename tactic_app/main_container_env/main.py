@@ -19,6 +19,7 @@ import zlib
 import os
 import uuid
 
+# getting environment variables
 INITIAL_LEFT_FRACTION = .69
 CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
 STEP_SIZE = int(os.environ.get("STEP_SIZE"))

@@ -20,10 +20,8 @@ function continue_loading(data) {
     var codearea = document.getElementById("codearea");
     myCodeMirror = createCMArea(codearea, true);
     myCodeMirror.setValue(savedCode);
-
-    $(".CodeMirror").css('height', window.innerHeight - $(".CodeMirror").offset().top - 20);
-    $("#api-area").css('height', window.innerHeight - $("#api-area").offset().top - 20);
-    
+    resize_dom_to_bottom_given_selector(".CodeMirror", 20);
+    resize_dom_to_bottom_given_selector("#api-area", 20);
 
     var result_dict = {"res_type": "tile", "res_name": module_name};
     var acc = document.getElementsByClassName("accordion");

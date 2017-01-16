@@ -173,9 +173,19 @@ function clearStatusArea() {
     $("#status-area").fadeOut()
 }
 
-function resize_dom_to_bottom(selector, bottom_margin) {
-    $(selector).css('height', window.innerHeight - $(selector).offset().top - bottom_margin)
+function resize_dom_to_bottom_given_selector(selector, bottom_margin) {
+    if ($(selector).length > 0) {
+        $(selector).css('height', window.innerHeight - $(selector).offset().top - bottom_margin)
+    }
 }
+
+function resize_dom_to_bottom(dom, bottom_margin) {
+    if (dom.length > 0) {
+        var h = window.innerHeight - bottom_margin - dom.offset().top;
+        dom.outerHeight(h);
+    }
+}
+
 
 function confirmDialog(modal_title, modal_text, cancel_text, submit_text, submit_function) {
     var res = Mustache.to_html(confirm_template, {

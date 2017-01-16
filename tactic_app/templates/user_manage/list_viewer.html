@@ -55,7 +55,7 @@
             }
         };
         window.onresize = function () {
-            $("#listarea").css('height', window.innerHeight - $("#listarea").offset().top - 40)
+            resize_dom_to_bottom_given_selector("#listarea", 40)
         }
     </script>
 {% endblock %}
