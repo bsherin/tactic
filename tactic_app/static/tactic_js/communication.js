@@ -22,6 +22,28 @@ function postAjax(target, data, callback) {
     });
 }
 
+function postAjaxPromise(target, data) {
+    return new Promise (function(resolve, reject) {
+        if (target[0] == "/") {
+            target = target.slice(1)
+        }
+        $.ajax({
+            url: $SCRIPT_ROOT + "/" + target,
+            contentType: 'application/json',
+            type: 'POST',
+            async: true,
+            data: JSON.stringify(data),
+            dataType: 'json',
+            success: (data) => {
+                if (data.success) {
+                    resolve(data)
+                }
+                reject(data)
+            }
+        })
+    });
+}
+
 function postAjaxUpload(target, form_data, callback) {
     if (target[0] == "/") {
         target = target.slice(1)

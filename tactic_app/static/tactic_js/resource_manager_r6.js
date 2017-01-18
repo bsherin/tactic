@@ -3,8 +3,8 @@
  */
 
 function get_current_res_type() {
-    var module_id_str = $(".nav-tabs .active a").attr("href");
-    var reg_exp = /\#(\S*)?\-/;
+    const module_id_str = $(".nav-tabs .active a").attr("href");
+    const reg_exp = /\#(\S*)?\-/;
     return module_id_str.match(reg_exp)[1]
 }
 
@@ -17,27 +17,27 @@ function current_manager_kind() {
     }
 }
 
-function ResourceManager(res_type, specifics) {
-    this.res_type = res_type;
-    updateObject(this, specifics);
-    // this.add_listeners();
-    this.textify_button_names();
-}
+class ResourceManager {
+    constructor (res_type, specifics) {
+        this.res_type = res_type;
+        this.file_adders = [];
+        this.show_multiple = false;
+        this.repository_copy_view = '/copy_from_repository';
+        this.send_repository_view = '/send_to_repository';
+        this.show_loaded_list = false;
+        this.popup_buttons = [];
+        this.repository_buttons = [];
+        updateObject(this, specifics);
+        this.textify_button_names();
+    }
 
-ResourceManager.prototype = {
-    file_adders: [],
-    show_multiple:false,
-    repository_copy_view: '/copy_from_repository',
-    send_repository_view: '/send_to_repository',
-    show_loaded_list: false,
-    add_listeners: function () {
-        var self = this;
-        self.button_groups.forEach(function(bgroup) {
-            bgroup.buttons.forEach(function(value){
-                self.bind_button(value, "resource");
-            })
-        });
-
+    add_listeners() {
+        for (let bgroup of this.button_groups) {
+            for (let value of bgroup.buttons) {
+                this.bind_button(value, "resource");
+            }
+        }
+        self = this;
         $.each(this.repository_buttons, function (index, value) {
             self.bind_button(value, "repository")
         });
@@ -52,67 +52,65 @@ ResourceManager.prototype = {
                 self.bind_option({"name": opt.opt_name, "func": opt.opt_func}, "resource")
             })
         });
-    },
+    }
 
-   add_func: function (event) {
-        var manager = event.data.manager;
+   add_func(event) {
+        const manager = event.data.manager;
         form_data = new FormData(this);
         postAjaxUpload(manager.add_view, form_data, doFlashOnFailure);
         event.preventDefault();
-    },
+    }
 
-    popup_buttons: [],
-
-    repository_buttons: [],
-
-    load_func: function (event) {
-        var manager = event.data.manager;
-        var res_name = manager.check_for_selection("resource");
+    load_func (event) {
+        const manager = event.data.manager;
+        const res_name = manager.check_for_selection("resource");
         if (res_name == "") return;
         window.open($SCRIPT_ROOT + manager.load_view + String(res_name))
-    },
+    }
 
-    view_func: function (event) {
-        var manager = event.data.manager;
-        var res_name = manager.check_for_selection("resource");
+    view_func (event) {
+        const manager = event.data.manager;
+        const res_name = manager.check_for_selection("resource");
         if (res_name == "") return;
         window.open($SCRIPT_ROOT + manager.view_view + String(res_name))
-    },
+    }
 
-    duplicate_func: function (event) {
-        var manager = event.data.manager;
-        var res_name = manager.check_for_selection("resource");
-        var the_type = manager.res_type;
+    duplicate_func (event) {
+        const manager = event.data.manager;
+        const res_name = manager.check_for_selection("resource");
+        const the_type = manager.res_type;
         if (res_name == "") return;
         $.getJSON($SCRIPT_ROOT + "get_resource_names/" + the_type, function(data) {
                 showModal("Duplicate " + manager.res_type, "New Tile Name", DuplicateResource, res_name, data["resource_names"])
             }
         );
         function DuplicateResource(new_name) {
-            var result_dict = {
+            const result_dict = {
                 "new_res_name": new_name,
                 "res_to_copy": res_name
             };
-            postAjax(manager.duplicate_view, result_dict, doFlashOnFailure)
+            postAjaxPromise(manager.duplicate_view, result_dict)
+                .then(() => {let x = 3})
+                .catch(doFlash)
         }
-    },
+    }
 
-    delete_func: function (event) {
-        var manager = event.data.manager;
-        var res_name = manager.check_for_selection("resource");
+    delete_func (event) {
+        const manager = event.data.manager;
+        const res_name = manager.check_for_selection("resource");
         if (res_name == "") return;
-        var confirm_text = "Are you sure that you want to delete " + res_name + "?";
+        const confirm_text = "Are you sure that you want to delete " + res_name + "?";
         confirmDialog("Delete " + manager.res_type, confirm_text, "do nothing", "delete", function () {
             manager.get_active_selector_button("resource").fadeOut();
             manager.get_tags_field("resource").html("");
             manager.get_notes_field("resource").html("");
             $.post($SCRIPT_ROOT + manager.delete_view + String(res_name))
         })
-    },
+    }
 
-    send_repository_func: function (event) {
-        var manager = event.data.manager;
-        var res_name = manager.check_for_selection("resource");
+    send_repository_func (event) {
+        const manager = event.data.manager;
+        const res_name = manager.check_for_selection("resource");
         if (res_name == "") {
             doFlash({"message": "Select a " + manager.res_type + " first.", "alert_type": "alert-info"})
         }
@@ -121,26 +119,28 @@ ResourceManager.prototype = {
             }
         );
         function ShareResource(new_name) {
-            var result_dict = {
+            const result_dict = {
                 "res_type": manager.res_type,
                 "res_name": res_name,
                 "new_res_name": new_name
             };
-            postAjax(manager.send_repository_view, result_dict, doFlashAlways)
+            postAjaxPromise(manager.send_repository_view, result_dict)
+                .then(doFlash)
+                .catch(doFlash);
         }
         return res_name
-    },
+    }
 
-    repository_view_func: function (event) {
-        var manager = event.data.manager;
-        var res_name = manager.check_for_selection("repository");
+    repository_view_func (event) {
+        const manager = event.data.manager;
+        const res_name = manager.check_for_selection("repository");
         if (res_name == "") return;
         window.open($SCRIPT_ROOT + manager.repository_view_view + String(res_name))
-    },
+    }
 
-    repository_copy_func: function (event) {
-        var manager = event.data.manager;
-        var res_name = manager.check_for_selection("repository");
+    repository_copy_func (event) {
+        const manager = event.data.manager;
+        const res_name = manager.check_for_selection("repository");
         if (res_name == "") {
             doFlash({"message": "Select a " + manager.res_type + " first.", "alert_type": "alert-info"})
         }
@@ -149,101 +149,103 @@ ResourceManager.prototype = {
             }
         );
         function ImportResource(new_name) {
-            var result_dict = {
+            const result_dict = {
                 "res_type": manager.res_type,
                 "res_name": res_name,
                 "new_res_name": new_name
             };
-            postAjax(manager.repository_copy_view, result_dict, doFlashAlways)
+            postAjaxPromise(manager.repository_copy_view, result_dict)
+                .then(doFlash)
+                .catch(doFlash);
         }
         return res_name
-    },
+    }
 
     // Functions to access the various parts of a resource manager dom
 
-    bind_button: function (value, manager_kind) {
-        var button_value = value.name + "-" + this.res_type;
-        var bselector = "button[value='" + button_value + "']";
+    bind_button (value, manager_kind) {
+        const button_value = value.name + "-" + this.res_type;
+        const bselector = "button[value='" + button_value + "']";
         get_manager_outer(this.res_type, manager_kind).on("click", bselector, {"manager": this}, this[value.func])
-    },
+    }
 
-    bind_option: function (value, manager_kind) {
-        var button_value = value.name + "-" + this.res_type;
-        var bselector = "a[value='" + button_value + "']";
+    bind_option (value, manager_kind) {
+        const button_value = value.name + "-" + this.res_type;
+        const bselector = "a[value='" + button_value + "']";
         get_manager_outer(this.res_type, manager_kind).on("click", bselector, {"manager": this}, this[value.func])
-    },
+    }
 
-    bind_form: function (value, manager_kind) {
-        var form_value = value.name + "-" + this.res_type + "-form";
-        var fselector = "form[value='" + form_value + "']";
+    bind_form (value, manager_kind) {
+        const form_value = value.name + "-" + this.res_type + "-form";
+        const fselector = "form[value='" + form_value + "']";
         get_manager_outer(this.res_type, manager_kind).on("submit", fselector, {"manager": this}, this[value.func])
-    },
+    }
 
 
-    get_resource_selector_dom: function (manager_kind) {
+    get_resource_selector_dom (manager_kind) {
         return get_manager_dom(this.res_type, manager_kind, ".resource-selector")
-    },
+    }
 
-    get_resource_selector_row: function (manager_kind) {
+    get_resource_selector_row (manager_kind) {
         return get_manager_dom(this.res_type, manager_kind, ".selector-row ")
-    },
+    }
 
-    get_resource_table: function (manager_kind) {
+    get_resource_table (manager_kind) {
         return get_manager_dom(this.res_type, manager_kind, ".resource-selector table")
-    },
+    }
 
-    get_button: function(manager_kind, name) { // not currently used
-        var button_value = name + "-" + this.res_type;
+    get_button(manager_kind, name) { // not currently used
+        const button_value = name + "-" + this.res_type;
         return get_manager_dom(this.res_type, manager_kind, "button[value='" + button_value + "']")
-    },
+    }
 
-    get_form: function(manager_kind, name){ // not currently used
-        var form_value = name + "-" + this.res_type + "-form";
+    get_form(manager_kind, name){ // not currently used
+        const form_value = name + "-" + this.res_type + "-form";
         return get_manager_dom(this.res_type, manager_kind, "form[value='" + form_value + "']")
-    },
+    }
 
-    get_created_field: function(manager_kind) {
+    get_created_field(manager_kind) {
         return get_manager_dom(this.res_type, manager_kind, ".created");
-    },
+    }
 
-    get_notes_field: function(manager_kind) {
+    get_notes_field(manager_kind) {
         return get_manager_dom(this.res_type, manager_kind, ".notes-field")
-    },
+    }
 
-    get_tags_field: function(manager_kind) {
+    get_tags_field(manager_kind) {
          return get_manager_dom(this.res_type, manager_kind, ".tags-field")
-    },
+    }
 
-    get_search_field: function(manager_kind) {
+    get_search_field(manager_kind) {
         return get_manager_dom(this.res_type, manager_kind, ".search-field")
-    },
+    }
 
-    get_active_selector_button: function(manager_kind) {
+    get_active_selector_button(manager_kind) {
         return get_manager_dom(this.res_type, manager_kind, ".selector-button.active");
-    },
+    }
 
-    get_all_selector_buttons: function(manager_kind) {
+    get_all_selector_buttons(manager_kind) {
         return get_manager_dom(this.res_type, manager_kind, ".selector-button")
-    },
+    }
 
-    get_named_selector_button: function(manager_kind, name) {
+    get_named_selector_button(manager_kind, name) {
         return get_manager_dom(this.res_type, manager_kind, ".selector-button[value='" + name + "']")
-    },
+    }
 
-    get_all_tag_buttons: function (manager_kind) {
+    get_all_tag_buttons (manager_kind) {
         return get_manager_dom(this.res_type, manager_kind, ".tag-button-list button")
-    },
+    }
 
-    get_tag_button_dom: function (manager_kind) {
+    get_tag_button_dom (manager_kind) {
         return get_manager_dom(this.res_type, manager_kind, ".tag-button-list")
-    },
+    }
 
     // a couple of utility functions
 
-    textify_button_names: function () {
-        var but;
-        var i;
-        var but_text;
+    textify_button_names () {
+        let but;
+        let i;
+        let but_text;
         this.button_groups.forEach(function(bgroup) {
               for (i=0; i < bgroup.buttons.length; ++i) {
                   but = bgroup.buttons[i];
@@ -266,33 +268,33 @@ ResourceManager.prototype = {
           but_text = but["name"].replace(/_/g, ' ');
           this.file_adders[i]["name_text"] = but_text
       }
-    },
+    }
 
-    check_for_selection: function (manager_kind) {
+    check_for_selection (manager_kind) {
         //var res_name = $('#' + res_type + '-selector > .btn.active').text().trim();
-        var res_name = this.get_active_selector_button(manager_kind).attr("value");
+        const res_name = this.get_active_selector_button(manager_kind).attr("value");
         if (res_name == "") {
             doFlash({"message": "Select a " + this.res_type + " first.", "alert_type": "alert-info"})
         }
         return res_name
-    },
+    }
 
-    create_module_html: function () {
+    create_module_html () {
         this.prefix = "resource";
         this.is_repository = false;
         this.is_not_repository = true;
-        var res = Mustache.to_html(resource_module_template, this);
+        let res = Mustache.to_html(resource_module_template, this);
         this.prefix = "repository";
         this.is_repository = true;
         this.is_not_repository = false;
-        var repos_res = Mustache.to_html(resource_module_template, this);
+        const repos_res = Mustache.to_html(resource_module_template, this);
         res = res + repos_res;
         $("#" + this.res_type + "-module").html(res);
-    },
+    }
 
-    select_resource_button: function(manager_kind, res_name) {
+    select_resource_button(manager_kind, res_name) {
         if (res_name == null) {
-            var all_selectors = this.get_all_selector_buttons(manager_kind);
+            const all_selectors = this.get_all_selector_buttons(manager_kind);
             if (all_selectors.length > 0) {
                 selector_click({"target": all_selectors[0]});
             }
@@ -304,47 +306,47 @@ ResourceManager.prototype = {
             this.get_resource_selector_dom(manager_kind).scrollTop(this.get_named_selector_button(manager_kind, res_name).position().top);
             selector_click({"target": this.get_named_selector_button(manager_kind, res_name)[0]})
         }
-    },
+    }
 
     // metadata related functions
 
-   clear_resource_metadata: function(manager_kind) {
+   clear_resource_metadata(manager_kind) {
         this.set_resource_metadata(manager_kind, "", "", "")
-    },
+    }
 
-    set_resource_metadata: function(manager_kind, created, tags, notes) {
+    set_resource_metadata(manager_kind, created, tags, notes) {
         this.get_created_field(manager_kind).html(created);
         this.get_tags_field(manager_kind).html("");
         this.get_tags_field(manager_kind)[0].value = tags;
         this.get_notes_field(manager_kind).html("");
         this.get_notes_field(manager_kind)[0].value = notes;
-    },
+    }
 
-    save_my_metadata: function () {
-        var res_name = this.get_active_selector_button("resource").attr("value");
-        var tags = this.get_tags_field("resource").val();
-        var notes = this.get_notes_field("resource").val();
-        var result_dict = {"res_type": this.res_type, "res_name": res_name, "tags": tags, "notes": notes};
-        var self = this;
-        postAjax("save_metadata", result_dict, function(data) {
-            if (data.success) {
-                self.get_active_selector_button("resource").children()[3].innerHTML = tags
-            }
-            doFlashAlways(data)
-        });
-    },
+    save_my_metadata () {
+        const res_name = this.get_active_selector_button("resource").attr("value");
+        const tags = this.get_tags_field("resource").val();
+        const notes = this.get_notes_field("resource").val();
+        const result_dict = {"res_type": this.res_type, "res_name": res_name, "tags": tags, "notes": notes};
+        const self = this;
+        postAjaxPromise("save_metadata", result_dict)
+            .then(function(data) {
+                self.get_active_selector_button("resource").children()[3].innerHTML = tags;
+                doFlash(data)
+            })
+            .catch(doFlash)
+    }
 
 
     // Search, tag button
 
-    search_my_resource: function (manager_kind){
+    search_my_resource (manager_kind){
         this.deactivate_tag_buttons(manager_kind);
-        var txt = this.get_search_field(manager_kind)[0].value.toLowerCase();
-        var all_rows = this.get_all_selector_buttons(manager_kind);
+        const txt = this.get_search_field(manager_kind)[0].value.toLowerCase();
+        const all_rows = this.get_all_selector_buttons(manager_kind);
         $.each(all_rows, function (index, row_element) {
-            var cells = $(row_element).children();
-            var res_name = row_element.getAttribute("value").toLowerCase();
-            var tag_text = $(cells[3]).text().toLowerCase();
+            const cells = $(row_element).children();
+            const res_name = row_element.getAttribute("value").toLowerCase();
+            const tag_text = $(cells[3]).text().toLowerCase();
             if ((res_name.search(txt) == -1) && (tag_text.search(txt) == -1)) {
                 $(row_element).hide()
             }
@@ -353,14 +355,14 @@ ResourceManager.prototype = {
             }
         });
         this.show_hide_tag_buttons(manager_kind, txt)
-    },
+    }
 
-    search_given_tag: function (manager_kind, txt) {
-        var all_rows = this.get_all_selector_buttons(manager_kind);
+    search_given_tag (manager_kind, txt) {
+        const all_rows = this.get_all_selector_buttons(manager_kind);
         this.deactivate_tag_buttons(manager_kind);
         $.each(all_rows, function (index, row_element) {
-            var cells = $(row_element).children();
-            var tag_text = $(cells[3]).text().toLowerCase();
+            const cells = $(row_element).children();
+            const tag_text = $(cells[3]).text().toLowerCase();
             if (tag_text.search(txt) == -1) {
                 $(row_element).hide()
             }
@@ -369,20 +371,20 @@ ResourceManager.prototype = {
             }
         });
         this.set_tag_button_state(txt, manager_kind);
-    },
+    }
 
-    unfilter_me: function () {
-        var manager_kind = current_manager_kind();
-        var all_rows = this.get_all_selector_buttons(manager_kind);
+    unfilter_me () {
+        const manager_kind = current_manager_kind();
+        const all_rows = this.get_all_selector_buttons(manager_kind);
         $.each(all_rows, function (index, row_element) {
                 $(row_element).show()
         });
         this.deactivate_tag_buttons(manager_kind);
         this.show_all_tag_buttons(manager_kind)
-    },
+    }
 
-    set_tag_button_state: function (txt, manager_kind) {
-        var all_tag_buttons = this.get_all_tag_buttons(manager_kind);
+    set_tag_button_state (txt, manager_kind) {
+        const all_tag_buttons = this.get_all_tag_buttons(manager_kind);
         $.each(all_tag_buttons, function (index, but) {
             if (but.innerHTML == txt) {
                 $(but).addClass("active")
@@ -391,12 +393,12 @@ ResourceManager.prototype = {
                 $(but).removeClass("active")
             }
         })
-    },
+    }
 
-    show_hide_tag_buttons: function (manager_kind, txt) {
-        var all_tag_buttons = this.get_all_tag_buttons(manager_kind);
+    show_hide_tag_buttons (manager_kind, txt) {
+        const all_tag_buttons = this.get_all_tag_buttons(manager_kind);
         $.each(all_tag_buttons, function (index, but) {
-            var tag_text = but.innerHTML;
+            const tag_text = but.innerHTML;
             if (tag_text.search(txt) == -1) {
                 $(but).hide()
             }
@@ -404,42 +406,42 @@ ResourceManager.prototype = {
                 $(but).show()
             }
         })
-    },
+    }
 
-    show_all_tag_buttons: function (manager_kind) {
-        var all_tag_buttons = this.get_all_tag_buttons(manager_kind);
+    show_all_tag_buttons (manager_kind) {
+        const all_tag_buttons = this.get_all_tag_buttons(manager_kind);
         $.each(all_tag_buttons, function (index, but) {
                 $(but).show()
         })
-    },
+    }
 
-    deactivate_tag_buttons: function (manager_kind) {
-        var all_tag_buttons = this.get_all_tag_buttons(manager_kind);
+    deactivate_tag_buttons (manager_kind) {
+        const all_tag_buttons = this.get_all_tag_buttons(manager_kind);
         $.each(all_tag_buttons, function (index, but) {
             $(but).removeClass("active")
         })
     }
-
-};
-
+}
 
 function selector_click(event) {
-    var row_element = $(event.target).closest('tr');
-    var res_name = row_element[0].getAttribute("value");
-    var res_type = get_current_res_type();
+    const row_element = $(event.target).closest('tr');
+    const res_name = row_element[0].getAttribute("value");
+    const res_type = get_current_res_type();
 
-    var result_dict = {"res_type": res_type, "res_name": res_name};
-    var manager_kind;
-    var manager = resource_managers[res_type];
+    const result_dict = {"res_type": res_type, "res_name": res_name};
+    let manager_kind;
+    const manager = resource_managers[res_type];
     if (repository_visible) {
         manager_kind = "repository";
         manager.get_all_selector_buttons(manager_kind).removeClass("active");
-        postAjax("grab_repository_metadata", result_dict, got_metadata);
+        postAjaxPromise("grab_repository_metadata", result_dict)
+            .then(got_metadata)
     }
     else {
         manager_kind = "resource";
         manager.get_all_selector_buttons(manager_kind).removeClass("active");
-        postAjax("grab_metadata", result_dict, got_metadata)
+        postAjaxPromise("grab_metadata", result_dict)
+            .then(got_metadata)
     }
 
     row_element.addClass("active");
@@ -456,10 +458,10 @@ function selector_click(event) {
 }
 
 function selector_double_click(event) {
-    var row_element = $(event.target).closest('tr');
-    var res_type = get_current_res_type();
-    var manager = resource_managers[res_type];
-    var manager_kind = current_manager_kind();
+    const row_element = $(event.target).closest('tr');
+    const res_type = get_current_res_type();
+    const manager = resource_managers[res_type];
+    const manager_kind = current_manager_kind();
 
     manager.get_all_selector_buttons(manager_kind).removeClass("active");
     row_element.addClass("active");
@@ -477,23 +479,23 @@ function search_resource(event){
 }
 
 function search_resource_tags(event) {
-    var res_type = event.target.value;
-    var manager_kind = current_manager_kind();
-    var manager = resource_managers[res_type];
-    var txt = manager.get_search_field(manager_kind)[0].value.toLowerCase();
+    const res_type = event.target.value;
+    const manager_kind = current_manager_kind();
+    const manager = resource_managers[res_type];
+    const txt = manager.get_search_field(manager_kind)[0].value.toLowerCase();
     manager.search_given_tag(manager_kind, txt);
     manager.show_hide_tag_buttons(manager_kind, txt)
 }
 
 
 function tag_button_clicked(event) {
-    var res_type = event.target.value;
-    var txt = event.target.innerHTML;
+    const res_type = event.target.value;
+    const txt = event.target.innerHTML;
     resource_managers[res_type].search_given_tag(current_manager_kind(), txt)
 }
 
 function unfilter_resource(event) {
-    var res_type = event.target.value;
+    const res_type = event.target.value;
     resource_managers[res_type].unfilter_me(current_manager_kind())
 }
 
