@@ -13,7 +13,7 @@ const resource_managers = {};
 mousetrap.bind("esc", () => {
     clearStatusArea();
     clearStatusMessage();
-    resource_managers[get_current_res_type()].unfilter_me(current_manager_kind())
+    resource_managers[get_current_res_type()].unfilter_me()
 });
 
 mousetrap.bind(['command+f', 'ctrl+f'], (e) => {
@@ -21,14 +21,6 @@ mousetrap.bind(['command+f', 'ctrl+f'], (e) => {
     resource_managers[res_type].get_search_field(current_manager_kind()).focus();
     e.preventDefault()
 });
-
-function get_manager_outer(res_type, manager_type) {
-    return $("#" + manager_type + "-" + res_type + "-outer")
-}
-
-function get_manager_dom(res_type, manager_type, selector) {
-    return $("#" + manager_type + "-" + res_type + "-outer").find(selector)
-}
 
 function start_post_load() {
     if (use_ssl) {
@@ -48,24 +40,7 @@ function start_post_load() {
     });
 
     socket.on('update-tag-list', (data) => {
-        const res_type = data.res_type;
-        const manager = resource_managers[res_type];
-        let active_tag_button = null;
-        let all_tag_buttons = manager.get_all_tag_buttons("resource");
-        $.each(all_tag_buttons, (index, but) => {
-            if ($(but).hasClass("active")) {
-                active_tag_button = $(but).html()
-            }
-        });
-        manager.get_tag_button_dom("resource").html(data.html);
-        all_tag_buttons = manager.get_all_tag_buttons("resource");
-        if (active_tag_button != null) {
-            $.each(all_tag_buttons, function (index, but) {
-                if ($(but).html() == active_tag_button) {
-                    $(but).addClass("active")
-                }
-            });
-        }
+        resource_managers[data.res_type].refresh_tag_buttons("resource", data.html)
     });
 
     socket.on('stop-spinner', stopSpinner);
@@ -93,27 +68,18 @@ function start_post_load() {
 
         $(".resource-module").on("click", ".resource-selector .selector-button", selector_click);
         $(".resource-module").on("dblclick", ".resource-selector .selector-button", selector_double_click);
-        $(".resource-module").on("click", ".search-resource-button", search_resource);
-
-        $(".resource-module").on("click", ".search-tags-button", search_resource_tags);
-        $(".resource-module").on("click", ".resource-unfilter-button", unfilter_resource);
-
-        $(".resource-module").on("click", ".save-metadata-button", save_metadata);
         $(".resource-module").on("click", ".tag-button-list button", tag_button_clicked);
 
         $(".resource-module").on("keyup", ".search-field", function(e) {
             let res_type;
-            let fake_event;
             if (e.which == 13) {
                 res_type = get_current_res_type();
-                fake_event = {"target": {"value": res_type}};
-                search_resource(fake_event);
+                resource_managers[res_type].search_my_resource();
                 e.preventDefault();
             }
             else {
                 res_type = get_current_res_type();
-                fake_event = {"target": {"value": res_type}};
-                search_resource(fake_event);
+                resource_managers[res_type].search_my_resource();
             }
         });
         resize_window();
@@ -168,16 +134,19 @@ function doFlashStopSpinner(data) {
 }
 
 function resize_window() {
-    for (res_type of res_types) {
-        const manager = resource_managers[res_type];
-        const rsw_row = manager.get_resource_selector_row("resource");
-        resize_dom_to_bottom(rsw_row, 50);
-        const rep_row = manager.get_resource_selector_row("resource");
-        resize_dom_to_bottom(rep_row, 50);
-        const tselector = manager.get_tag_button_dom("resource");
-        resize_dom_to_bottom(tselector, 50);
-        const trepselector = manager.get_tag_button_dom("repository");
-        resize_dom_to_bottom(trepselector, 50);
+
+    for (let res_type of res_types) {
+        if (resource_managers.hasOwnProperty(res_type)) {
+            const manager = resource_managers[res_type];
+            const rsw_row = manager.get_resource_selector_row("resource");
+            resize_dom_to_bottom(rsw_row, 50);
+            const rep_row = manager.get_resource_selector_row("resource");
+            resize_dom_to_bottom(rep_row, 50);
+            const tselector = manager.get_tag_button_dom("resource");
+            resize_dom_to_bottom(tselector, 50);
+            const trepselector = manager.get_tag_button_dom("repository");
+            resize_dom_to_bottom(trepselector, 50);
+        }
     }
 }
 
@@ -205,7 +174,7 @@ const list_manager_specifics = {
     add_list (event) {
         const fdata = new FormData(this);
         postAjaxUploadPromise("add_list", fdata)
-            .then(() => {;})
+            .then(() => {})
             .catch(doFlash);
         event.preventDefault();
     }

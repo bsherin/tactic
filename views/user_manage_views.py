@@ -251,13 +251,13 @@ def request_update_selector_list(res_type):
 @app.route('/request_update_tag_list/<res_type>', methods=['GET'])
 @login_required
 def request_update_tag_list(res_type):
-    return managers[res_type][0].request_update_tag_list()
+    return jsonify({"html": managers[res_type][0].request_update_tag_list()})
 
 
 @app.route('/request_update_repository_tag_list/<res_type>', methods=['GET'])
 @login_required
 def request_update_repositorytag_list(res_type):
-    return managers[res_type][1].request_update_tag_list()
+    return jsonify({"html": managers[res_type][1].request_update_tag_list()})
 
 
 @app.route('/request_update_repository_selector_list/<res_type>', methods=['GET'])

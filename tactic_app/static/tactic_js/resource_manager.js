@@ -17,9 +17,20 @@ function current_manager_kind() {
     }
 }
 
+function get_manager_outer(res_type, manager_type) {
+    return $("#" + manager_type + "-" + res_type + "-outer")
+}
+
+function get_manager_dom(res_type, manager_type, selector) {
+    return $("#" + manager_type + "-" + res_type + "-outer").find(selector)
+}
+
+const manager_kinds = ["resource", "repository"];
+
 class ResourceManager {
     constructor (res_type, resource_module_template, specifics) {
         this.res_type = res_type;
+        this.module_id = res_type + "-module";
         this.file_adders = [];
         this.show_multiple = false;
         this.repository_copy_view = '/copy_from_repository';
@@ -32,9 +43,9 @@ class ResourceManager {
         this.resource_module_template = resource_module_template;
         this.create_module_html();
         this.update_selector("resource");
-        this.update_tag_buttons("resource");
+        this.create_tag_buttons("resource");
         this.update_selector("repository");
-        this.update_tag_buttons("repository");
+        this.create_tag_buttons("repository");
         this.add_listeners()
     }
 
@@ -44,7 +55,7 @@ class ResourceManager {
                 this.bind_button(value, "resource");
             }
         }
-        self = this;
+        let self = this;
         $.each(this.repository_buttons, function (index, value) {
             self.bind_button(value, "repository")
         });
@@ -59,6 +70,19 @@ class ResourceManager {
                 self.bind_option({"name": opt.opt_name, "func": opt.opt_func}, "resource")
             })
         });
+
+        this.bind_standard_button(".search-resource-button", this.search_my_resource);
+        this.bind_standard_button(".search-tags-button", this.search_my_tags);
+        this.bind_standard_button(".resource-unfilter-button", this.unfilter_me);
+        this.bind_standard_button(".save-metadata-button", this.save_my_metadata);
+    }
+
+    get_this_module() {
+        return $("#" + this.module_id)
+    }
+
+    bind_standard_button(bselector, func) {
+        this.get_this_module().on("click", bselector, func.bind(this));
     }
 
     update_selector(manager_kind) {
@@ -84,20 +108,10 @@ class ResourceManager {
             sorttable.innerSortFunction.apply(updated_header, []);
     }
 
-    update_tag_buttons(manager_kind) {
-        let url_string;
-        if (manager_kind == "resource") {
-            url_string = "request_update_tag_list"
-        }
-        else {
-            url_string = "request_update_repository_tag_list"
-        }
-        this.get_tag_button_dom(manager_kind).load(`${$SCRIPT_ROOT}/${url_string}/${this.res_type}`)
-    }
 
    add_func(event) {
         const manager = event.data.manager;
-        form_data = new FormData(this);
+        const form_data = new FormData(this);
         postAjaxUploadPromise(manager.add_view, form_data)
             .then(doNothing)
             .catch(doFlash);
@@ -263,6 +277,10 @@ class ResourceManager {
         return get_manager_dom(this.res_type, manager_kind, ".search-field")
     }
 
+    get_search_button(manager_kind) {
+        return get_manager_dom(this.res_type, manager_kind, ".search-resource-button")
+    }
+
     get_active_selector_button(manager_kind) {
         return get_manager_dom(this.res_type, manager_kind, ".selector-button.active");
     }
@@ -335,11 +353,45 @@ class ResourceManager {
         $("#" + this.res_type + "-module").html(res);
     }
 
+    selector_click(row_element) {
+        const res_name = row_element.getAttribute("value");
+        const result_dict = {"res_type": this.res_type, "res_name": res_name};
+        let manager_kind = current_manager_kind();
+        this.get_all_selector_buttons(manager_kind).removeClass("active");
+        const self = this;
+        if (repository_visible) {
+            postAjaxPromise("grab_repository_metadata", result_dict)
+                .then(got_metadata)
+                .catch(got_metadata)
+        }
+        else {
+            manager_kind = "resource";
+            this.get_all_selector_buttons(manager_kind).removeClass("active");
+            postAjaxPromise("grab_metadata", result_dict)
+                .then(got_metadata)
+                .catch(got_metadata)
+        }
+
+
+        $(row_element).addClass("active");
+
+        function got_metadata(data) {
+            if (data.success) {
+                self.set_resource_metadata(manager_kind, data.datestring, data.tags, data.notes);
+            }
+            else {
+                // doFlash(data)
+                self.clear_resource_metadata(manager_kind)
+            }
+        }
+    }
+
+
     select_resource_button(manager_kind, res_name) {
         if (res_name == null) {
             const all_selectors = this.get_all_selector_buttons(manager_kind);
             if (all_selectors.length > 0) {
-                selector_click({"target": all_selectors[0]});
+                this.selector_click(all_selectors[0]);
             }
             else {
                 this.clear_resource_metadata(manager_kind)
@@ -347,7 +399,7 @@ class ResourceManager {
         }
         else {
             this.get_resource_selector_dom(manager_kind).scrollTop(this.get_named_selector_button(manager_kind, res_name).position().top);
-            selector_click({"target": this.get_named_selector_button(manager_kind, res_name)[0]})
+            this.selector_click(this.get_named_selector_button(manager_kind, res_name)[0])
         }
     }
 
@@ -382,7 +434,8 @@ class ResourceManager {
 
     // Search, tag button
 
-    search_my_resource (manager_kind){
+    search_my_resource (){
+        const manager_kind = current_manager_kind();
         this.deactivate_tag_buttons(manager_kind);
         const txt = this.get_search_field(manager_kind)[0].value.toLowerCase();
         const all_rows = this.get_all_selector_buttons(manager_kind);
@@ -398,6 +451,37 @@ class ResourceManager {
             }
         });
         this.show_hide_tag_buttons(manager_kind, txt)
+    }
+
+    search_my_tags() {
+        const manager_kind = current_manager_kind();
+        const txt = this.get_search_field(manager_kind)[0].value.toLowerCase();
+        this.search_given_tag(manager_kind, txt);
+        this.show_hide_tag_buttons(manager_kind, txt)
+    }
+
+    create_tag_buttons(manager_kind) {
+        let url_string;
+        const self = this;
+        if (manager_kind == "resource") {
+            url_string = "request_update_tag_list"
+        }
+        else {
+            url_string = "request_update_repository_tag_list"
+        }
+        $.getJSON(`${$SCRIPT_ROOT}/${url_string}/${this.res_type}`, function (data) {
+            self.fill_tag_buttons(manager_kind, data.html, null);
+        })
+    }
+
+    fill_tag_buttons(manager_kind, the_html) {
+        this.get_tag_button_dom(manager_kind).html(the_html)
+    }
+
+    refresh_tag_buttons(manager_kind, the_html) {
+        let active_tag_button = this.get_active_tag_button(manager_kind);
+        manager.fill_tag_buttons(manager_kind, the_html);
+        manager.set_tag_button_state(active_tag_button, manager_kind);
     }
 
     search_given_tag (manager_kind, txt) {
@@ -438,6 +522,17 @@ class ResourceManager {
         })
     }
 
+    get_active_tag_button (manager_kind) {
+        let all_tag_buttons = this.get_all_tag_buttons(manager_kind);
+        let active_tag_button = null;
+        $.each(all_tag_buttons, (index, but) => {
+            if ($(but).hasClass("active")) {
+                active_tag_button = $(but).html()
+            }
+        });
+        return active_tag_button
+    }
+
     show_hide_tag_buttons (manager_kind, txt) {
         const all_tag_buttons = this.get_all_tag_buttons(manager_kind);
         $.each(all_tag_buttons, function (index, but) {
@@ -468,38 +563,8 @@ class ResourceManager {
 
 function selector_click(event) {
     const row_element = $(event.target).closest('tr');
-    const res_name = row_element[0].getAttribute("value");
-    const res_type = get_current_res_type();
+    resource_managers[get_current_res_type()].selector_click(row_element[0])
 
-    const result_dict = {"res_type": res_type, "res_name": res_name};
-    let manager_kind;
-    const manager = resource_managers[res_type];
-    if (repository_visible) {
-        manager_kind = "repository";
-        manager.get_all_selector_buttons(manager_kind).removeClass("active");
-        postAjaxPromise("grab_repository_metadata", result_dict)
-            .then(got_metadata)
-            .catch(got_metadata)
-    }
-    else {
-        manager_kind = "resource";
-        manager.get_all_selector_buttons(manager_kind).removeClass("active");
-        postAjaxPromise("grab_metadata", result_dict)
-            .then(got_metadata)
-            .catch(got_metadata)
-    }
-
-    row_element.addClass("active");
-
-    function got_metadata(data) {
-        if (data.success) {
-            manager.set_resource_metadata(manager_kind, data.datestring, data.tags, data.notes);
-        }
-        else {
-            // doFlash(data)
-            manager.clear_resource_metadata(manager_kind)
-        }
-    }
 }
 
 function selector_double_click(event) {
@@ -516,34 +581,10 @@ function selector_double_click(event) {
     else {
         manager[manager.double_click_func]({data: {manager: manager}})
     }
-
 }
-
-function search_resource(event){
-    resource_managers[event.target.value].search_my_resource(current_manager_kind())
-}
-
-function search_resource_tags(event) {
-    const res_type = event.target.value;
-    const manager_kind = current_manager_kind();
-    const manager = resource_managers[res_type];
-    const txt = manager.get_search_field(manager_kind)[0].value.toLowerCase();
-    manager.search_given_tag(manager_kind, txt);
-    manager.show_hide_tag_buttons(manager_kind, txt)
-}
-
 
 function tag_button_clicked(event) {
     const res_type = event.target.value;
     const txt = event.target.innerHTML;
     resource_managers[res_type].search_given_tag(current_manager_kind(), txt)
-}
-
-function unfilter_resource(event) {
-    const res_type = event.target.value;
-    resource_managers[res_type].unfilter_me(current_manager_kind())
-}
-
-function save_metadata(event) {
-    resource_managers[event.target.value].save_my_metadata();
 }
