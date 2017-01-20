@@ -49,14 +49,14 @@
 {% endblock %}
 {% block scripts %}
     <script src="{{url_for('static', filename='js/sorttable.js')}}"></script>
-    <script src="{{url_for('static', filename='tactic_js/resource_manager_r6.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/resource_manager.js')}}"></script>
     <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
     <script src="{{url_for('static', filename='js/tab.js')}}"></script>
-    <script src="{{url_for('static', filename='tactic_js/user_manage_r6.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/user_manage.js')}}"></script>
     <script>
-        var user_id = "{{current_user.get_id()}}";
-        var use_ssl = "{{use_ssl}}"=="True";
-        var saved_title = $("#view-title").text();
+        let user_id = "{{current_user.get_id()}}";
+        let use_ssl = "{{use_ssl}}"=="True";
+        let saved_title = $("#view-title").text();
         window.onload = start_post_load;
     </script>
 {% endblock %}

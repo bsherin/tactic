@@ -58,6 +58,27 @@ function postAjaxUpload(target, form_data, callback) {
     });
 }
 
+function postAjaxUploadPromise(target, form_data) {
+    return new Promise(function(resolve, reject) {
+        if (target[0] == "/") {
+            target = target.slice(1)
+        }
+        $.ajax({
+            url: $SCRIPT_ROOT + "/" + target,
+            type: 'POST',
+            data: form_data,
+            contentType: false,
+            processData: false,
+            success: (data) => {
+                if (data.success) {
+                    resolve(data)
+                }
+                reject(data)
+            }
+        })
+    })
+}
+
 function postWithCallback(dest_id, task_type, task_data, callback_func){
     var task_packet =  {
         "source": "client",

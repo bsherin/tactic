@@ -11,7 +11,7 @@ $('.submitter-field').keypress(function(e) {
 });
 
 function submit_login_info() {
-    var data = {};
+    const data = {};
     data.username = $("#username").val();
     data.password = $("#password").val();
     data.remember_me = $("#remember_me")[0].checked;
@@ -39,9 +39,9 @@ function return_from_submit_login(data) {
 }
 
 function submit_account_info() {
-    var pwd = $("#password").val();
-    var pwd2 = $("#password2").val();
-    var data = {};
+    const pwd = $("#password").val();
+    const pwd2 = $("#password2").val();
+    const data = {};
     if (pwd != "") {
         if (pwd != pwd2) {
             doFlash({"message": "Passwords don't match", "alert_type": "alert-warning"});
@@ -66,10 +66,10 @@ function submit_account_info() {
 }
 
 function submit_register_info() {
-    var data = {};
+    const data = {};
     data.username = $("#username").val();
-    var pwd = $("#password").val();
-    var pwd2 = $("#password2").val();
+    const pwd = $("#password").val();
+    const pwd2 = $("#password2").val();
     if (pwd != pwd2) {
         $("#message-area").html("passwords don't match");
         $("#password").val("");

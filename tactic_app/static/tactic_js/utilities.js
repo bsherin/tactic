@@ -14,6 +14,8 @@ function updateObject(o1, o2) {
     }
 }
 
+function doNothing() {;}
+
 String.prototype.format = function() {
   var str = this;
   for (var i = 0; i < arguments.length; i++) {
