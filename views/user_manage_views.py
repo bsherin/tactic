@@ -95,11 +95,14 @@ class ResourceManager(object):
         if self.is_repository:
             socketio.emit('update-selector-list',
                           {"html": self.request_update_selector_list(user_obj=repository_user),
+                           "select": None,
                            "res_type": "repository-" + self.res_type},
                           namespace='/user_manage', room=user_obj.get_id())
         elif select is None:
             socketio.emit('update-selector-list',
-                          {"html": self.request_update_selector_list(user_obj=user_obj), "res_type": self.res_type},
+                          {"html": self.request_update_selector_list(user_obj=user_obj),
+                           "select": None,
+                           "res_type": self.res_type},
                           namespace='/user_manage', room=user_obj.get_id())
         else:
             socketio.emit('update-selector-list',
@@ -242,7 +245,7 @@ def send_to_repository():
 @app.route('/request_update_selector_list/<res_type>', methods=['GET'])
 @login_required
 def request_update_selector_list(res_type):
-    return managers[res_type][0].request_update_selector_list()
+    return jsonify({"html": managers[res_type][0].request_update_selector_list()})
 
 
 @app.route('/request_update_tag_list/<res_type>', methods=['GET'])
@@ -260,7 +263,7 @@ def request_update_repositorytag_list(res_type):
 @app.route('/request_update_repository_selector_list/<res_type>', methods=['GET'])
 @login_required
 def request_update_repository_selector_list(res_type):
-    return managers[res_type][1].request_update_selector_list()
+    return jsonify({"html": managers[res_type][1].request_update_selector_list()})
 
 
 # noinspection PyMethodMayBeStatic

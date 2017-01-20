@@ -44,20 +44,7 @@ function start_post_load() {
     socket.on("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
 
     socket.on('update-selector-list', (data) => {
-        const res_type = data.res_type;
-        const manager = resource_managers[res_type];
-        manager.get_resource_selector_dom("resource").html(data.html);
-        if (data.hasOwnProperty("select")) {
-            manager.select_resource_button("resource", data.select)
-        }
-        else {
-            manager.select_resource_button("resource", null)
-        }
-        sorttable.makeSortable(manager.get_resource_table("resource")[0]);
-        const updated_header = manager.get_resource_selector_dom("resource").find("table th")[2];
-        // We do the sort below twice to get the most recent dates first.
-        sorttable.innerSortFunction.apply(updated_header, []);
-        sorttable.innerSortFunction.apply(updated_header, []);
+        resource_managers[data.res_type].fill_selector("resource", data.html, data.select)
     });
 
     socket.on('update-tag-list', (data) => {
@@ -95,41 +82,14 @@ function start_post_load() {
     console.log("about to create");
     $.get(`${$SCRIPT_ROOT}/get_resource_module_template`, function(template) {
         resource_module_template = $(template).filter('#resource-module-template').html();
-        listManager.create_module_html();
-        collectionManager.create_module_html();
-        projectManager.create_module_html();
-        tileManager.create_module_html();
-        codeManager.create_module_html();
+        resource_managers["list"] = new ResourceManager("list", resource_module_template, list_manager_specifics);
+        resource_managers["collection"] = new ResourceManager("collection", resource_module_template, col_manager_specifics);
+        resource_managers["project"] = new ResourceManager("project", resource_module_template, project_manager_specifics);
+        resource_managers["tile"] = new ResourceManager("tile", resource_module_template, tile_manager_specifics);
+        resource_managers["code"] = new ResourceManager("code", resource_module_template, code_manager_specifics);
 
-        const manager_kind = "resource";
-        for (let res_type of res_types) {
-            const manager = resource_managers[res_type];
-            manager.get_resource_selector_dom(manager_kind).load(`${$SCRIPT_ROOT}/request_update_selector_list/${res_type}`, function () {
-                manager.select_resource_button(manager_kind, null);
-                sorttable.makeSortable(manager.get_resource_table(manager_kind)[0]);
-                const updated_header = manager.get_resource_selector_dom(manager_kind).find("table th")[2];
-                // We do the sort below twice to get the most recent dates first.
-                sorttable.innerSortFunction.apply(updated_header, []);
-                sorttable.innerSortFunction.apply(updated_header, []);
-            });
-            manager.get_tag_button_dom(manager_kind).load(`${$SCRIPT_ROOT}/request_update_tag_list/${res_type}`)
-        }
 
         get_manager_dom("tile", "resource", ".loaded-tile-list").load(`${$SCRIPT_ROOT}/request_update_loaded_tile_list`);
-
-        const repository_manager_kind = "repository";
-        for (let element of res_types) {
-            const rep_manager = resource_managers[element];
-            rep_manager.get_resource_selector_dom(repository_manager_kind).load(`${$SCRIPT_ROOT}/request_update_repository_selector_list/${element}`, function () {
-                rep_manager.select_resource_button(repository_manager_kind, null);
-                sorttable.makeSortable(rep_manager.get_resource_table(repository_manager_kind)[0])
-            });
-            rep_manager.get_tag_button_dom(repository_manager_kind).load(`${$SCRIPT_ROOT}/request_update_repository_tag_list/${element}`)
-        }
-
-        for (let res_type in resource_managers) {
-            resource_managers[res_type].add_listeners()
-        }
 
         $(".resource-module").on("click", ".resource-selector .selector-button", selector_click);
         $(".resource-module").on("dblclick", ".resource-selector .selector-button", selector_double_click);
@@ -251,9 +211,6 @@ const list_manager_specifics = {
     }
 };
 
-const listManager = new ResourceManager("list", list_manager_specifics);
-resource_managers["list"] = listManager;
-
 //noinspection JSUnusedGlobalSymbols
 const col_manager_specifics = {
     show_add: true,
@@ -332,9 +289,6 @@ const col_manager_specifics = {
     }
 };
 
-const collectionManager = new ResourceManager("collection", col_manager_specifics);
-resource_managers["collection"] = collectionManager;
-
 const project_manager_specifics = {
     show_add: false,
     load_view: "",
@@ -367,9 +321,6 @@ const project_manager_specifics = {
         postWithCallbackNoMain("host", "main_project", data)
     }
 };
-
-const projectManager = new ResourceManager("project", project_manager_specifics);
-resource_managers["project"] = projectManager;
 
 const tile_manager_specifics = {
     show_multiple: false,
@@ -523,9 +474,6 @@ const tile_manager_specifics = {
     }
 };
 
-const tileManager = new ResourceManager("tile", tile_manager_specifics);
-resource_managers["tile"] = tileManager;
-
 const code_manager_specifics = {
     show_multiple: false,
     new_view: '/create_code',
@@ -595,6 +543,3 @@ const code_manager_specifics = {
         event.preventDefault();
     }
 };
-
-const codeManager = new ResourceManager("code", code_manager_specifics);
-resource_managers["code"] = codeManager;

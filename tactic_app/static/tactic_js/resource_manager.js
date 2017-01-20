@@ -18,7 +18,7 @@ function current_manager_kind() {
 }
 
 class ResourceManager {
-    constructor (res_type, specifics) {
+    constructor (res_type, resource_module_template, specifics) {
         this.res_type = res_type;
         this.file_adders = [];
         this.show_multiple = false;
@@ -29,6 +29,13 @@ class ResourceManager {
         this.repository_buttons = [];
         Object.assign(this, specifics);
         this.textify_button_names();
+        this.resource_module_template = resource_module_template;
+        this.create_module_html();
+        this.update_selector("resource");
+        this.update_tag_buttons("resource");
+        this.update_selector("repository");
+        this.update_tag_buttons("repository");
+        this.add_listeners()
     }
 
     add_listeners() {
@@ -52,6 +59,40 @@ class ResourceManager {
                 self.bind_option({"name": opt.opt_name, "func": opt.opt_func}, "resource")
             })
         });
+    }
+
+    update_selector(manager_kind) {
+        const self = this;
+        let url_string;
+        if (manager_kind == "resource") {
+            url_string = "request_update_selector_list"
+        }
+        else {
+            url_string = "request_update_repository_selector_list"
+        }
+        $.getJSON(`${$SCRIPT_ROOT}/${url_string}/${this.res_type}`, function (data) {
+            self.fill_selector(manager_kind, data.html, null);
+        })
+    }
+
+    fill_selector(manager_kind, the_html, select) {
+            this.get_resource_selector_dom(manager_kind).html(the_html);
+            this.select_resource_button(manager_kind, select);
+            sorttable.makeSortable(this.get_resource_table(manager_kind)[0]);
+            const updated_header = this.get_resource_selector_dom(manager_kind).find("table th")[2];
+            sorttable.innerSortFunction.apply(updated_header, []);
+            sorttable.innerSortFunction.apply(updated_header, []);
+    }
+
+    update_tag_buttons(manager_kind) {
+        let url_string;
+        if (manager_kind == "resource") {
+            url_string = "request_update_tag_list"
+        }
+        else {
+            url_string = "request_update_repository_tag_list"
+        }
+        this.get_tag_button_dom(manager_kind).load(`${$SCRIPT_ROOT}/${url_string}/${this.res_type}`)
     }
 
    add_func(event) {
@@ -285,11 +326,11 @@ class ResourceManager {
         this.prefix = "resource";
         this.is_repository = false;
         this.is_not_repository = true;
-        let res = Mustache.to_html(resource_module_template, this);
+        let res = Mustache.to_html(this.resource_module_template, this);
         this.prefix = "repository";
         this.is_repository = true;
         this.is_not_repository = false;
-        const repos_res = Mustache.to_html(resource_module_template, this);
+        const repos_res = Mustache.to_html(this.resource_module_template, this);
         res = res + repos_res;
         $("#" + this.res_type + "-module").html(res);
     }
