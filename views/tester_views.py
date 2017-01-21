@@ -25,6 +25,13 @@ def direct_creator(module_name, username, password):
         login_user(user, remember=False)
     return redirect(url_for("view_in_creator", module_name=module_name))
 
+@app.route('/direct_module_viewer/<module_name>/<username>/<password>', methods=['GET', 'POST'])
+def direct_module_viewer(module_name, username, password):
+    user = User.get_user_by_username(username)
+    if user is not None and user.verify_password(password):
+        login_user(user, remember=False)
+    return redirect(url_for("view_module", module_name=module_name))
+
 
 
 @app.route('/direct_administer/<password>', methods=['GET', 'POST'])

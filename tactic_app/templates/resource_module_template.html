@@ -63,6 +63,7 @@
             </div>
             <div style="display: inline-block; vertical-align: top; max-height: 100%; overflow-y: scroll; line-height: 1" class="list-group resource-selector"data-toggle="buttons">
             </div>
+            {{#include_metadata}}
             <div style="display: inline-block; vertical-align: top; margin-left: 5px">
                 <button type="button" class="btn btn-sm btn-warning save-metadata-button" style="margin-bottom: 7px" value="{{res_type}}">Save Metadata</button>
                 <div class="created"></div>
@@ -73,6 +74,7 @@
                     <textarea class="form-control metadata-field notes-field" id="{{res_type}}-notes" rows="10" placeholder="notes"></textarea>
                 </div>
             </div>
+            {{/include_metadata}}
             {{#is_not_repository}}
                 {{#show_loaded_list}}
                 <div style="display: inline-block; vertical-align: top; margin-left: 10px; max-height: 100%; overflow: hidden">
@@ -82,6 +84,11 @@
                 </div>
                 {{/show_loaded_list}}
             {{/is_not_repository}}
+            {{ #show_aux_area }}
+            <div id="{{res_type}}-aux-area" style="display: inline-block; vertical-align: top; margin-left: 5px; overflow-y: scroll">
+            {{ /show_aux_area }}
+
+            </div>
         </div>
     </div>
     </div>

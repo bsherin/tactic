@@ -8,15 +8,6 @@ function get_current_res_type() {
     return module_id_str.match(reg_exp)[1]
 }
 
-function current_manager_kind() {
-    if (repository_visible) {
-        return "repository"
-    }
-    else {
-        return "resource"
-    }
-}
-
 function get_manager_outer(res_type, manager_type) {
     return $("#" + manager_type + "-" + res_type + "-outer")
 }
@@ -31,22 +22,22 @@ class ResourceManager {
     constructor (res_type, resource_module_template, specifics) {
         this.res_type = res_type;
         this.module_id = res_type + "-module";
-        this.file_adders = [];
         this.show_multiple = false;
-        this.repository_copy_view = '/copy_from_repository';
-        this.send_repository_view = '/send_to_repository';
         this.show_loaded_list = false;
         this.popup_buttons = [];
         this.repository_buttons = [];
+        this.file_adders = [];
         Object.assign(this, specifics);
+        this.set_extra_properties()
         this.textify_button_names();
         this.resource_module_template = resource_module_template;
         this.create_module_html();
-        this.update_selector("resource");
-        this.create_tag_buttons("resource");
-        this.update_selector("repository");
-        this.create_tag_buttons("repository");
         this.add_listeners()
+    }
+
+    set_extra_properties() {
+        this.repository_copy_view = '/copy_from_repository';
+        this.send_repository_view = '/send_to_repository';
     }
 
     add_listeners() {
@@ -344,13 +335,19 @@ class ResourceManager {
         this.prefix = "resource";
         this.is_repository = false;
         this.is_not_repository = true;
+        this.include_metadata = true;
         let res = Mustache.to_html(this.resource_module_template, this);
         this.prefix = "repository";
         this.is_repository = true;
         this.is_not_repository = false;
+        this.show_aux_area = false;
         const repos_res = Mustache.to_html(this.resource_module_template, this);
         res = res + repos_res;
         $("#" + this.res_type + "-module").html(res);
+        this.update_selector("resource");
+        this.create_tag_buttons("resource");
+        this.update_selector("repository");
+        this.create_tag_buttons("repository");
     }
 
     selector_click(row_element) {

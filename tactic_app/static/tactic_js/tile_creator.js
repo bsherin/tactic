@@ -1,23 +1,23 @@
 /**
  * Created by bls910 on 10/4/15.
  */
-
-var current_theme = "default";
-var myCodeMirror;
-var myDPCodeMirror;
-var savedCode = null;
-var savedTags = null;
-var savedNotes = null;
-var savedCategory = null;
-var savedMethods = null;
-var creator_resource_module_template;
-var rt_code = null;
-var render_content_line_number = 0;
-var draw_plot_line_number = 0;
-var user_manage_id = guid();
-var is_mpl = null;
-var draw_plot_code = null;
-var this_viewer = "creator";
+const current_theme = "default";
+let myCodeMirror;
+let myDPCodeMirror;
+let savedCode = null;
+let savedTags = null;
+let savedNotes = null;
+let savedCategory = null;
+let savedMethods = null;
+let creator_resource_module_template;
+let rt_code = null;
+let render_content_line_number = 0;
+let draw_plot_line_number = 0;
+const user_manage_id = guid();
+let is_mpl = null;
+let draw_plot_code = null;
+let this_viewer = "creator";
+let savedDPCode;
 
 
 $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function (e) {
@@ -38,14 +38,14 @@ function start_post_load() {
 
     window.onresize = function () {
         if (is_mpl) {
-            dpba = $("#drawplotboundingarea");
+            let dpba = $("#drawplotboundingarea");
             if (dpba.length > 0) {
-                the_height = [window.innerHeight - dpba.offset().top - 20] / 2;
+                let the_height = [window.innerHeight - dpba.offset().top - 20] / 2;
                 dpba.css('height', the_height);
             }
-            dpca = $("#drawplotcodearea")
+            let dpca = $("#drawplotcodearea");
             if (dpca.length > 0) {
-                dpca_height = the_height - (dpca.offset().top - dpba.offset().top);
+                let dpca_height = the_height - (dpca.offset().top - dpba.offset().top);
                 dpca.css('height', dpca_height);
                 $("#drawplotcodearea .CodeMirror").css('height', dpca_height);
             }
@@ -67,7 +67,7 @@ function start_post_load() {
     };
 
     socket.on('doflash', doFlash);
-    var data = {};
+    const data = {};
     data.module_name = module_name;
     postAjax("parse_code", data, parse_success)
 }
@@ -111,7 +111,6 @@ function parse_success(data) {
 
 }
 
-
 function rebuild_autocomplete_list() {
     extra_autocomplete_list = [];
     optionManager.option_dict.forEach(function(entry) {
@@ -122,8 +121,7 @@ function rebuild_autocomplete_list() {
     })
 }
 
-
-var option_manager_specifics = {
+const option_manager_specifics = {
 
     changed: false,
 
@@ -136,16 +134,16 @@ var option_manager_specifics = {
         data = {"option_dict": this.option_dict};
         rebuild_autocomplete_list();
         postAjax("get_option_table", data, function (result) {
-                if (!result.success) {
-                    doFlash(result)
-                }
-                else {
-                    $("#option-selector").html(result.html);
+            if (!result.success) {
+                doFlash(result)
+            }
+            else {
+                $("#option-selector").html(result.html);
                 select_resource_button("option", null);
                 sorttable.makeSortable($("#option-selector table")[0]);
-                var updated_header = $("#option-selector table th")[0];
+                const updated_header = $("#option-selector table th")[0];
                 sorttable.innerSortFunction.apply(updated_header, []);
-                }
+            }
         });
     },
 
@@ -157,9 +155,9 @@ var option_manager_specifics = {
     delete_option_func: function (event) {
         manager = event.data.manager;
         option_name = manager.check_for_selection("option", 0);
-        var confirm_text = "Are you sure that you want to delete option " + option_name + "?";
+        const confirm_text = "Are you sure that you want to delete option " + option_name + "?";
         confirmDialog("Delete Option", confirm_text, "do nothing", "delete", function () {
-            var index = manager.option_index(option_name);
+            const index = manager.option_index(option_name);
             manager.option_dict.splice(index, 1);
             manager.changed = true;
             manager.fill_content()
@@ -168,7 +166,7 @@ var option_manager_specifics = {
     },
 
     create_module_html: function () {
-        var res = Mustache.to_html(creator_resource_module_template, this);
+        const res = Mustache.to_html(creator_resource_module_template, this);
         $("#option-module").html(res);
         $("#option-type-input").on("change", function () {
             option_type = $("#option-type-input").val();
@@ -188,8 +186,8 @@ var option_manager_specifics = {
 
     },
 
-    option_index: function(option_name) {
-        for (i=0; i < this.option_dict.length; ++i) {
+    option_index: function (option_name) {
+        for (i = 0; i < this.option_dict.length; ++i) {
             if (option_name == this.option_dict[i].name) {
                 return i
             }
@@ -197,8 +195,8 @@ var option_manager_specifics = {
         return -1
     },
 
-    option_exists: function(option_name) {
-        for (i=0; i < this.option_dict.length; ++i) {
+    option_exists: function (option_name) {
+        for (i = 0; i < this.option_dict.length; ++i) {
             if (option_name == this.option_dict[i].name) {
                 return true
             }
@@ -206,9 +204,9 @@ var option_manager_specifics = {
         return false
     },
 
-    getInteger: function(val) {
+    getInteger: function (val) {
         i = parseInt(val);
-        if (isNaN(i) ||  i != parseFloat(val)) {
+        if (isNaN(i) || i != parseFloat(val)) {
             return false
         }
         else {
@@ -218,7 +216,7 @@ var option_manager_specifics = {
 
     createNewOption: function (event) {
         manager = optionManager;
-        var data = {};
+        const data = {};
         option_name = $("#option-name-input").val();
         option_type = $("#option-type-input").val();
         option_default = $("#option-default-input").val();
@@ -247,7 +245,7 @@ var option_manager_specifics = {
                 }
                 new_option["default"] = option_default;
             }
-            if (option_type == "custom_list"){
+            if (option_type == "custom_list") {
                 new_option["special_list"] = $("#option-list-input").val();
             }
             else if ((option_type == "class_select") || (option_type == "function_select")) {
@@ -261,11 +259,11 @@ var option_manager_specifics = {
     }
 };
 
-var optionManager = new ResourceManager("option", option_manager_specifics);
+const optionManager = new ResourceManager("option", option_manager_specifics);
 $("#option-create-button").on("click", optionManager.createNewOption);
 
 
-var export_manager_specifics = {
+const export_manager_specifics = {
 
     changed: false,
 
@@ -288,7 +286,7 @@ var export_manager_specifics = {
                     sorttable.makeSortable($("#export-selector table")[0]);
                 }
                 if ($("#export-selector table th").length > 0) {
-                    var updated_header = $("#export-selector table th")[0];
+                    const updated_header = $("#export-selector table th")[0];
                     sorttable.innerSortFunction.apply(updated_header, []);
                 }
             }
@@ -301,11 +299,11 @@ var export_manager_specifics = {
     },
 
     delete_export_func: function (event) {
-        var manager = event.data.manager;
+        const manager = event.data.manager;
         export_name = manager.check_for_selection("export", 0);
-        var confirm_text = "Are you sure that you want to delete export " + export_name + "?";
+        const confirm_text = "Are you sure that you want to delete export " + export_name + "?";
         confirmDialog("Delete Export", confirm_text, "do nothing", "delete", function () {
-            var index = manager.export_list.indexOf(export_name);
+            const index = manager.export_list.indexOf(export_name);
             manager.export_list.splice(index, 1);
             manager.changed = true;
             manager.fill_content()
@@ -314,13 +312,13 @@ var export_manager_specifics = {
     },
 
     create_module_html: function () {
-        var res = Mustache.to_html(creator_resource_module_template, this);
+        const res = Mustache.to_html(creator_resource_module_template, this);
         $("#export-module").html(res);
     },
 
     createNewExport: function (event) {
         manager = exportManager;
-        var data = {};
+        const data = {};
         export_name = $("#export-name-input").val();
         if (manager.export_list.indexOf(export_name) != -1) {
             doFlash({"message": "Export already exists.", "alert_type": "alert-warning"});
@@ -335,15 +333,15 @@ var export_manager_specifics = {
     }
 };
 
-var exportManager = new ResourceManager("export", export_manager_specifics);
+const exportManager = new ResourceManager("export", export_manager_specifics);
 $("#export-create-button").on("click", exportManager.createNewExport);
 
 
 
-var method_manager_specifics = {
+const method_manager_specifics = {
 
     add_listeners: function () {
-        var x = 3
+        let x = 3;
     },
 
     fill_content: function () {
@@ -359,7 +357,7 @@ var method_manager_specifics = {
     },
 
     create_module_html: function () {
-        var codearea = document.getElementById("method-module");
+        const codearea = document.getElementById("method-module");
         this.cmobject = createCMArea(codearea, false);
         $(codearea).find(".CodeMirror").resizable({handles: "se"});
         $(codearea).find(".CodeMirror").height(100);
@@ -367,33 +365,32 @@ var method_manager_specifics = {
 
 };
 
-var methodManager = new ResourceManager("method", method_manager_specifics);
-
+const methodManager = new ResourceManager("method", method_manager_specifics);
 
 function continue_loading(data) {
-    var codearea = document.getElementById("codearea");
-    myCodeMirror = createCMArea(codearea, true);
+    const codearea = document.getElementById("codearea");
+    myCodeMirror = createCMArea(codearea, false);
     if (render_content_line_number != 0) {
         myCodeMirror.setOption("firstLineNumber", render_content_line_number + 1)
     }
     myCodeMirror.setValue(rt_code);
     if (is_mpl) {
-        var drawplotcodearea = document.getElementById("drawplotcodearea");
+        const drawplotcodearea = document.getElementById("drawplotcodearea");
         myDPCodeMirror = createCMArea(drawplotcodearea, false);
         myDPCodeMirror.setValue(draw_plot_code);
         if (draw_plot_line_number != 0) {
             myDPCodeMirror.setOption("firstLineNumber", draw_plot_line_number + 1)
         }
-        dpba = $("#drawplotboundingarea");
+        let dpba = $("#drawplotboundingarea");
         dpba.css("display", "block");
         myDPCodeMirror.refresh();
         if (dpba.length > 0) {
             the_height = [window.innerHeight - dpba.offset().top - 20] / 2;
             dpba.css('height', the_height);
         }
-        dpca = $("#drawplotcodearea");
+        let dpca = $("#drawplotcodearea");
         if (dpca.length > 0) {
-            dpca_height = the_height - (dpca.offset().top - dpba.offset().top);
+            let dpca_height = the_height - (dpca.offset().top - dpba.offset().top);
             dpca.css('height', dpca_height);
             $("#drawplotcodearea .CodeMirror").css('height', dpca_height);
         }
@@ -405,9 +402,9 @@ function continue_loading(data) {
                     // ui.position.top = 0;
                     dpba.css('height', ui.size.height);
 
-                    the_height = ui.size.height;
+                    let the_height = ui.size.height;
                     dpba.css('height', the_height);
-                    dpca_height = the_height - ($("#drawplotcodearea").offset().top - dpba.offset().top);
+                    let dpca_height = the_height - ($("#drawplotcodearea").offset().top - dpba.offset().top);
                     $("#drawplotcodearea").css('height', dpca_height);
                     $("#drawplotcodearea .CodeMirror").css('height', dpca_height);
 
@@ -429,11 +426,11 @@ function continue_loading(data) {
 
     savedCode = myCodeMirror.getDoc().getValue();
 
-    var result_dict = {"res_type": "tile", "res_name": module_name};
-    var acc = document.getElementsByClassName("accordion");
-    var i;
-    for (i = 0; i < acc.length; i++) {
-        acc[i].onclick = function(){
+    const result_dict = {"res_type": "tile", "res_name": module_name};
+    const acc = document.getElementsByClassName("accordion");
+    let i;
+    for (let element of acc) {
+        element.onclick = function(){
             this.classList.toggle("active");
             this.nextElementSibling.classList.toggle("show");
         }

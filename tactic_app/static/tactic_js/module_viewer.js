@@ -1,14 +1,13 @@
 /**
  * Created by bls910 on 10/4/15.
  */
-var current_theme = "default";
-var mousetrap = new Mousetrap();
-var myCodeMirror;
-var savedCode = null;
-var savedTags = null;
-var savedNotes = null;
-var this_viewer = "viewer";
-var module_code = null;
+let current_theme = "default";
+let myCodeMirror;
+let savedCode = null;
+let savedTags = null;
+let savedNotes = null;
+const this_viewer = "viewer";
+let module_code = null;
 
 
 function start_post_load() {
@@ -17,15 +16,15 @@ function start_post_load() {
 
 function continue_loading(data) {
     savedCode = data.module_code;
-    var codearea = document.getElementById("codearea");
+    const codearea = document.getElementById("codearea");
     myCodeMirror = createCMArea(codearea, true);
     myCodeMirror.setValue(savedCode);
     resize_dom_to_bottom_given_selector(".CodeMirror", 20);
     resize_dom_to_bottom_given_selector("#api-area", 20);
 
-    var result_dict = {"res_type": "tile", "res_name": module_name};
-    var acc = document.getElementsByClassName("accordion");
-    var i;
+    const result_dict = {"res_type": "tile", "res_name": module_name};
+    const acc = document.getElementsByClassName("accordion");
+    let i;
     for (i = 0; i < acc.length; i++) {
         acc[i].onclick = function(){
             this.classList.toggle("active");

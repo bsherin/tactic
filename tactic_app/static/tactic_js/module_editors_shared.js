@@ -2,11 +2,11 @@
  * Created by parallels on 12/22/16.
  */
 
-var extra_autocomplete_list = [];
-var cmobjects_to_search = [];
-var cmobjects = [];
+let extra_autocomplete_list = [];
+let cmobjects_to_search = [];
+let cmobjects = [];
 
-var mousetrap = new Mousetrap();
+const mousetrap = new Mousetrap();
 mousetrap.bind("esc", function() {
     clearStatusArea();
 });
@@ -14,10 +14,10 @@ mousetrap.bind("esc", function() {
 
 
 postAjax("get_api_dict", {}, function (data) {
-    api_dict_by_category = data.api_dict_by_category;
-    api_dict_by_name = data.api_dict_by_name;
-    ordered_api_categories = data.ordered_api_categories;
-    var api_list = [];
+    let api_dict_by_category = data.api_dict_by_category;
+    let api_dict_by_name = data.api_dict_by_name;
+    let ordered_api_categories = data.ordered_api_categories;
+    let api_list = [];
     ordered_api_categories.forEach(function(cat) {
         api_dict_by_category[cat].forEach(function (entry) {
             api_list.push(entry["name"])
@@ -83,7 +83,7 @@ else {
 }
 
 function createCMArea(codearea, include_in_global_search) {
-    cmobject = CodeMirror(codearea, {
+    let cmobject = CodeMirror(codearea, {
         lineNumbers: true,
         matchBrackets: true,
         highlightSelectionMatches: true,
@@ -93,7 +93,7 @@ function createCMArea(codearea, include_in_global_search) {
     });
     cmobject.setOption("extraKeys", {
           Tab: function(cm) {
-            var spaces = Array(5).join(" ");
+            let spaces = Array(5).join(" ");
             cm.replaceSelection(spaces);
           },
           "Ctrl-Space": "autocomplete"
@@ -106,11 +106,11 @@ function createCMArea(codearea, include_in_global_search) {
 }
 
 function doSave(update_success) {
-    var new_code = myCodeMirror.getDoc().getValue();
-    var tags = $("#tile-tags").val();
-    var notes = $("#tile-notes").val();
-    var result_dict;
-    var category;
+    const new_code = myCodeMirror.getDoc().getValue();
+    const tags = $("#tile-tags").val();
+    const notes = $("#tile-notes").val();
+    let result_dict;
+    let category;
 
     if (this_viewer == "viewer") {
         category = null;
@@ -128,7 +128,7 @@ function doSave(update_success) {
         if (category.length == 0) {
             category = "basic"
         }
-        var new_dp_code = "";
+        let new_dp_code = "";
         if (is_mpl) {
             new_dp_code = myDPCodeMirror.getDoc().getValue();
         }
@@ -157,11 +157,11 @@ function updateModule() {
     doSave(update_success);
     function update_success(data, new_code, tags, notes, category) {
         if ((this_viewer == "creator") && (data.render_content_line_number != 0)) {
-            myCodeMirror.setOption("firstLineNumber", data.render_content_line_number + 1)
+            myCodeMirror.setOption("firstLineNumber", data.render_content_line_number + 1);
             myCodeMirror.refresh()
         }
         if ((this_viewer == "creator") && (is_mpl) && (data.draw_plot_line_number != 0)) {
-            myDPCodeMirror.setOption("firstLineNumber", data.draw_plot_line_number + 1)
+            myDPCodeMirror.setOption("firstLineNumber", data.draw_plot_line_number + 1);
             myDPCodeMirror.refresh()
         }
 
@@ -172,7 +172,6 @@ function updateModule() {
             data.timeout = 2000;
             if (this_viewer == "creator"){
                 savedCategory = category;
-                var new_dp_code = "";
                 if (is_mpl) {
                     savedDPCode = myDPCodeMirror.getDoc().getValue();
                 }
@@ -200,7 +199,6 @@ function loadModule() {
                 data.timeout = 2000;
                 if (this_viewer == "creator"){
                     savedCategory = category;
-                    var new_dp_code = "";
                     if (is_mpl) {
                         savedDPCode = myDPCodeMirror.getDoc().getValue();
                     }
@@ -235,8 +233,8 @@ function showAPI(){
 function renameModule() {
     console.log("entering rename");
     $.getJSON($SCRIPT_ROOT + "get_resource_names/tile", function(data) {
-            var module_names = data["resource_names"];
-            var index = module_names.indexOf(module_name);
+            const module_names = data["resource_names"];
+            const index = module_names.indexOf(module_name);
             if (index >= 0) {
               module_names.splice(index, 1);
             }
@@ -244,7 +242,7 @@ function renameModule() {
         }
     );
     function RenameModuleResource (new_name) {
-        var the_data = {"new_name": new_name};
+        const the_data = {"new_name": new_name};
         postAjax("rename_module/" + module_name, the_data, renameSuccess);
         function renameSuccess(data) {
             if (data.success) {
@@ -284,7 +282,7 @@ function copyToLibrary() {
         }
     );
     function ImportTileModule(new_name) {
-        var result_dict = {
+        const result_dict = {
             "res_type": "tile",
             "res_name": module_name,
             "new_res_name": new_name
@@ -299,7 +297,7 @@ function sendToRepository() { // Note this shares the last saved version
         }
     );
     function ShareTileResource(new_name) {
-        var result_dict = {
+        const result_dict = {
             "res_type": "tile",
             "res_name": module_name,
             "new_res_name": new_name
@@ -309,18 +307,18 @@ function sendToRepository() { // Note this shares the last saved version
 }
 
 function dirty() {
-    var the_code = myCodeMirror.getDoc().getValue();
-    var tags = $("#tile-tags").val();
-    var notes = $("#tile-notes").val();
+    const the_code = myCodeMirror.getDoc().getValue();
+    const tags = $("#tile-tags").val();
+    const notes = $("#tile-notes").val();
 
-    var is_clean = (the_code == savedCode) && (tags == savedTags) && (notes == savedNotes);
+    let is_clean = (the_code == savedCode) && (tags == savedTags) && (notes == savedNotes);
     if (this_viewer == "creator") {
         new_methods = methodManager.cmobject.getValue();
-        var category = $("#tile-category").val();
+        const category = $("#tile-category").val();
         is_clean = is_clean && (new_methods == savedMethods) && !optionManager.changed &&
             !exportManager.changed && (category == savedCategory);
         if (is_mpl) {
-            var dp_code = myDPCodeMirror.getDoc().getValue();
+            const dp_code = myDPCodeMirror.getDoc().getValue();
             is_clean = is_clean && (dp_code == savedDPCode);
         }
     }

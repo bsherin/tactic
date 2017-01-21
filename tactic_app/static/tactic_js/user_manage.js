@@ -22,6 +22,15 @@ mousetrap.bind(['command+f', 'ctrl+f'], (e) => {
     e.preventDefault()
 });
 
+function current_manager_kind() {
+    if (repository_visible) {
+        return "repository"
+    }
+    else {
+        return "resource"
+    }
+}
+
 function start_post_load() {
     if (use_ssl) {
         socket = io.connect(`https://${document.domain}:${location.port}/user_manage`);
@@ -117,7 +126,7 @@ function toggleRepository() {
 }
 
 function showAdmin() {
-    window.open(`{$SCRIPT_ROOT}/admin_interface`)
+    window.open(`${$SCRIPT_ROOT}/admin_interface`)
 }
 
 function startSpinner() {
