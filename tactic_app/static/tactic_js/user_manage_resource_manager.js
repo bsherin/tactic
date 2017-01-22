@@ -4,8 +4,8 @@
 
 class UserManagerResourceManager extends ResourceManager{
 
-    constructor (module_id, res_type, resource_module_template, specifics, destination_selector) {
-        super(module_id, res_type, resource_module_template, specifics, destination_selector)
+    constructor (module_id, res_type, resource_module_template, destination_selector) {
+        super(module_id, res_type, resource_module_template, destination_selector)
     }
 
     set_extra_properties() {
@@ -73,11 +73,9 @@ class UserManagerResourceManager extends ResourceManager{
         this.get_aux_left_dom().append(the_html)
     }
 
-
     get_all_tag_buttons () {
         return this.get_module_element(".tag-button-list button")
     }
-
 
     search_given_tag (txt) {
         const all_rows = this.get_all_selector_buttons();
@@ -101,15 +99,11 @@ class UserManagerResourceManager extends ResourceManager{
         this.show_hide_tag_buttons(txt)
     }
 
-
-
     refresh_tag_buttons(the_html) {
         let active_tag_button = this.get_active_tag_button();
         manager.fill_tag_buttons(the_html);
         manager.set_tag_button_state(active_tag_button);
     }
-
-
 
     set_tag_button_state (txt) {
         const all_tag_buttons = this.get_all_tag_buttons();

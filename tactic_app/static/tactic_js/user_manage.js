@@ -59,16 +59,16 @@ function start_post_load() {
     console.log("about to create");
     $.get(`${$SCRIPT_ROOT}/get_resource_module_template`, function(template) {
         resource_module_template = $(template).filter('#resource-module-template').html();
-        resource_managers["list_module"] = new UserManagerResourceManager("list_module", "list", resource_module_template, list_manager_specifics, "#list-module-outer");
-        resource_managers["repository_list_module"] = new UserManagerResourceManager("repository_list_module", "list", resource_module_template, repository_list_manager_specifics, "#list-module-outer");
-        resource_managers["collection_module"] = new UserManagerResourceManager("collection_module", "collection", resource_module_template, collection_manager_specifics, "#collection-module-outer");
-        resource_managers["repository_collection_module"] = new UserManagerResourceManager("repository_collection_module", "collection", resource_module_template, repository_collection_manager_specifics, "#collection-module-outer");
-        resource_managers["project_module"] = new UserManagerResourceManager("project_module", "project", resource_module_template, project_manager_specifics, "#project-module-outer");
-        resource_managers["repository_project_module"] = new UserManagerResourceManager("repository_project_module", "project", resource_module_template, repository_project_manager_specifics, "#project-module-outer");
-        resource_managers["tile_module"] = new UserManagerResourceManager("tile_module", "tile", resource_module_template, tile_manager_specifics, "#tile-module-outer");
-        resource_managers["repository_tile_module"] = new UserManagerResourceManager("repository_tile_module", "tile", resource_module_template, repository_tile_manager_specifics, "#tile-module-outer");
-        resource_managers["code_module"] = new UserManagerResourceManager("code_module", "code", resource_module_template, code_manager_specifics, "#code-module-outer");
-        resource_managers["repository_code_module"] = new UserManagerResourceManager("repository_code_module", "code", resource_module_template, repository_code_manager_specifics, "#code-module-outer");
+        resource_managers["list_module"] = new ListManager("list_module", "list", resource_module_template, "#list-module-outer");
+        resource_managers["repository_list_module"] = new RepositoryListManager("repository_list_module", "list", resource_module_template, "#list-module-outer");
+        resource_managers["collection_module"] = new CollectionManager("collection_module", "collection", resource_module_template, "#collection-module-outer");
+        resource_managers["repository_collection_module"] = new RepositoryCollectionManager("repository_collection_module", "collection", resource_module_template, "#collection-module-outer");
+        resource_managers["project_module"] = new ProjectManager("project_module", "project", resource_module_template, "#project-module-outer");
+        resource_managers["repository_project_module"] = new RepositoryProjectManager("repository_project_module", "project", resource_module_template, "#project-module-outer");
+        resource_managers["tile_module"] = new TileManager("tile_module", "tile", resource_module_template, "#tile-module-outer");
+        resource_managers["repository_tile_module"] = new RepositoryTileManager("repository_tile_module", "tile", resource_module_template, "#tile-module-outer");
+        resource_managers["code_module"] = new CodeManager("code_module", "code", resource_module_template, "#code-module-outer");
+        resource_managers["repository_code_module"] = new RepositoryCodeManager("repository_code_module", "code", resource_module_template, "#code-module-outer");
 
         //get_manager_dom("tile", "resource", ".loaded-tile-list").load(`${$SCRIPT_ROOT}/request_update_loaded_tile_list`);
 
@@ -163,24 +163,27 @@ function resize_window() {
     }
 }
 
-const list_manager_specifics = {
-    start_hidden: false,
-    update_view: "request_update_selector_list",
-    update_tag_view: "request_update_tag_list",
-    view_view: '/view_list/',
-    delete_view: '/delete_list/',
-    double_click_func: "view_func",
-    duplicate_view: '/create_duplicate_list',
+class ListManager extends UserManagerResourceManager {
+    set_extra_properties() {
+        super.set_extra_properties();
+        this.start_hidden = false;
+        this.update_view = "request_update_selector_list";
+        this.update_tag_view = "request_update_tag_list";
+        this.view_view = '/view_list/';
+        this.delete_view = `/delete_list/`;
+        this.double_click_func = "view_func";
+        this.duplicate_view = '/create_duplicate_list';
 
-    file_adders: [
-        {"name": "add_list", "func": "add_list", "button_class": "btn-default", "show_multiple": false}
-    ],
-    button_groups: [
-        {"buttons": [{"name": "view", "func": "view_func", "button_class": "btn-default"}]},
-        {"buttons": [{"name": "duplicate", "func": "duplicate_func", "button_class": "btn-default"}]},
-        {"buttons": [{"name": "share", "func": "send_repository_func", "button_class": "btn-default"}]},
-        {"buttons": [{"name": "delete", "func": "delete_func", "button_class": "btn-default"}]}
-    ],
+        this.file_adders =[
+            {"name": "add_list", "func": "add_list", "button_class": "btn-default", "show_multiple": false}
+        ];
+        this.button_groups = [
+            {"buttons": [{"name": "view", "func": "view_func", "button_class": "btn-default"}]},
+            {"buttons": [{"name": "duplicate", "func": "duplicate_func", "button_class": "btn-default"}]},
+            {"buttons": [{"name": "share", "func": "send_repository_func", "button_class": "btn-default"}]},
+            {"buttons": [{"name": "delete", "func": "delete_func", "button_class": "btn-default"}]}
+        ]
+    }
 
     add_list (event) {
         const fdata = new FormData(this);
@@ -189,54 +192,65 @@ const list_manager_specifics = {
             .catch(doFlash);
         event.preventDefault();
     }
+}
+
+class RepositoryListManager extends UserManagerResourceManager {
+    set_extra_properties() {
+        super.set_extra_properties();
+        this.start_hidden = true;
+        this.update_view = "request_update_repository_selector_list";
+        this.update_tag_view = "request_update_repository_tag_list";
+        this.view_view = '/repository_view_list/';
+        this.double_click_func = "view_func";
+        this.button_groups = [
+            {"buttons": [{"name": "view", "func": "view_func", "button_class": "btn-default"},
+                        {"name": "copy_to_libary", "func": "repository_copy_func", "button_class": "btn-default"}
+            ]}
+        ]
+    }
 };
 
-const repository_list_manager_specifics = {
-    start_hidden: true,
-    update_view: "request_update_repository_selector_list",
-    update_tag_view: "request_update_repository_tag_list",
-    view_view: '/repository_view_list/',
-    double_click_func: "view_func",
-    button_groups: [
-        {"buttons": [{"name": "view", "func": "view_func", "button_class": "btn-default"},
-                    {"name": "copy_to_libary", "func": "repository_copy_func", "button_class": "btn-default"}
-        ]}
-    ],
-};
+class CollectionManager extends UserManagerResourceManager {
+    set_extra_properties() {
+        super.set_extra_properties();
+        this.start_hidden = false;
+        this.update_view = "request_update_selector_list";
+        this.update_tag_view = "request_update_tag_list";
+        this.delete_view = `/delete_collection/`;
+        this.double_click_func = "load_func";
+        this.duplicate_view = '/duplicate_collection';
+        this.load_view = "/main/";
 
-//noinspection JSUnusedGlobalSymbols
-const collection_manager_specifics = {
-    start_hidden: false,
-    update_view: "request_update_selector_list",
-    update_tag_view: "request_update_tag_list",
-    duplicate_view: '/duplicate_collection',
-    delete_view: '/delete_collection/',
-    load_view: "/main/",
-    double_click_func: "load_func",
-    file_adders: [
-        {"name": "import_as_table", "func": "import_as_table", "button_class": "btn-default", show_multiple: true},
-        {"name": "import_as_freeform", "func": "import_as_freeform", "button_class": "btn-default", show_multiple: true}
-    ],
-    button_groups: [
-        {
-            buttons: [
-                {"name": "load", "func": "load_func", "button_class": "btn btn-default"}
-            ]
-        },
-        {
-            buttons: [
-                {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-default"},
-                {"name": "combine_collections", "func": "combineCollections", "button_class": "btn-default"}]
-        },
-        {
-            buttons: [{"name": "download", "func": "downloadCollection", "button_class": "btn btn-default"},
-                {"name": "share", "func": "send_repository_func", "button_class": "btn-default"}]
-        },
-        {
-            buttons: [
-                {"name": "delete", "func": "delete_func", "button_class": "btn-default"}]
-        }
-    ],
+        this.file_adders = [
+            {"name": "import_as_table", "func": "import_as_table", "button_class": "btn-default", show_multiple: true},
+            {
+                "name": "import_as_freeform",
+                "func": "import_as_freeform",
+                "button_class": "btn-default",
+                show_multiple: true
+            }
+        ];
+        this.button_groups = [
+            {
+                buttons: [
+                    {"name": "load", "func": "load_func", "button_class": "btn btn-default"}
+                ]
+            },
+            {
+                buttons: [
+                    {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-default"},
+                    {"name": "combine_collections", "func": "combineCollections", "button_class": "btn-default"}]
+            },
+            {
+                buttons: [{"name": "download", "func": "downloadCollection", "button_class": "btn btn-default"},
+                    {"name": "share", "func": "send_repository_func", "button_class": "btn-default"}]
+            },
+            {
+                buttons: [
+                    {"name": "delete", "func": "delete_func", "button_class": "btn-default"}]
+            }
+        ];
+    }
     import_as_table (event) {
         const the_data = new FormData(this);
         $.getJSON(`${$SCRIPT_ROOT}get_resource_names/collection`, function (data) {
@@ -249,7 +263,7 @@ const collection_manager_specifics = {
         }
 
         event.preventDefault();
-    },
+    };
     import_as_freeform (event) {
         const the_data = new FormData(this);
         $.getJSON(`${$SCRIPT_ROOT}get_resource_names/collection`, function (data) {
@@ -262,7 +276,7 @@ const collection_manager_specifics = {
         }
 
         event.preventDefault();
-    },
+    };
     downloadCollection (event) {
         const manager = event.data.manager;
         const res_name = manager.check_for_selection("resource");
@@ -270,7 +284,7 @@ const collection_manager_specifics = {
         showModal("Download Collection as Excel Notebook", "New File Name", function (new_name) {
             window.open(`${$SCRIPT_ROOT}/download_collection/` + res_name + "/" + new_name)
         }, res_name + ".xls")
-    },
+    };
     combineCollections (event) {
         const manager = event.data.manager;
         const res_name = manager.check_for_selection("resource");
@@ -283,39 +297,45 @@ const collection_manager_specifics = {
     }
 };
 
-const repository_collection_manager_specifics = {
-    start_hidden: true,
-    update_view: "request_update_repository_selector_list",
-    update_tag_view: "request_update_repository_tag_list",
-    button_groups: [
-        {"buttons": [{"name": "copy_to_libary", "func": "repository_copy_func", "button_class": "btn-default"}]}
-    ],
-};
+class RepositoryCollectionManager extends UserManagerResourceManager {
+    set_extra_properties() {
+        super.set_extra_properties();
+        this.start_hidden = true;
+        this.update_view = "request_update_repository_selector_list";
+        this.update_tag_view = "request_update_repository_tag_list";
+        this.button_groups = [
+            {"buttons": [{"name": "copy_to_libary", "func": "repository_copy_func", "button_class": "btn-default"}]}
+        ]
+    }
+}
 
-const project_manager_specifics = {
-    start_hidden: false,
-    update_view: "request_update_selector_list",
-    update_tag_view: "request_update_tag_list",
-    load_view: "",
-    delete_view: "/delete_project/",
-    double_click_func: "load_func",
-    button_groups: [
-        {
-            buttons: [
-                {"name": "load", "func": "load_func", "button_class": "btn-default"}
-            ]
-        },
-        {
-            buttons: [
-                {"name": "share", "func": "send_repository_func", "button_class": "btn-default"}
-            ]
-        },
-        {
-            buttons: [
-                {"name": "delete", "func": "delete_func", "button_class": "btn-default"}
-            ]
-        }
-    ],
+class ProjectManager extends UserManagerResourceManager {
+    set_extra_properties() {
+        super.set_extra_properties();
+        this.start_hidden = false;
+        this.update_view = "request_update_selector_list";
+        this.update_tag_view = "request_update_tag_list";
+        this.load_view = "";
+        this.delete_view = "/delete_project/";
+        this.double_click_func = "load_func";
+        this.button_groups = [
+            {
+                buttons: [
+                    {"name": "load", "func": "load_func", "button_class": "btn-default"}
+                ]
+            },
+            {
+                buttons: [
+                    {"name": "share", "func": "send_repository_func", "button_class": "btn-default"}
+                ]
+            },
+            {
+                buttons: [
+                    {"name": "delete", "func": "delete_func", "button_class": "btn-default"}
+                ]
+            }
+        ];
+    }
 
     load_func (event) {
         const manager = event.data.manager;
@@ -327,102 +347,112 @@ const project_manager_specifics = {
     }
 };
 
-const repository_project_manager_specifics = {
-    start_hidden: true,
-    update_view: "request_update_repository_selector_list",
-    update_tag_view: "request_update_repository_tag_list",
-    button_groups: [
-        {"buttons": [{"name": "copy_to_libary", "func": "repository_copy_func", "button_class": "btn-default"}]}
-    ],
-};
+class RepositoryProjectManager extends UserManagerResourceManager {
+    set_extra_properties() {
+        super.set_extra_properties();
+        this.start_hidden = true;
+        this.update_view = "request_update_repository_selector_list";
+        this.update_tag_view = "request_update_repository_tag_list";
+        this.button_groups = [
+            {"buttons": [{"name": "copy_to_libary", "func": "repository_copy_func", "button_class": "btn-default"}]}
+        ]
+    }
+}
 
-const tile_manager_specifics = {
-    start_hidden: false,
-    update_view: "request_update_selector_list",
-    update_tag_view: "request_update_tag_list",
-    new_view: '/create_tile_module',
-    view_view: '/view_module/',
-    creator_view: '/view_in_creator/',
-    last_saved_view: '/last_saved_view/',
-    delete_view: "/delete_tile_module/",
-    duplicate_view: '/create_duplicate_tile',
-    double_click_func: "dc_view_func",
-    repository_double_click_func: "repository_view_func",
-    popup_buttons: [{
-        "name": "new",
-        "button_class": "btn-default",
-        "option_list": [{"opt_name": "BasicTileTemplate", "opt_func": "new_basic_tile"},
-            {"opt_name": "ExpandedTileTemplate", "opt_func": "new_expanded_tile"},
-            {"opt_name": "MatplotlibTileTemplate", "opt_func": "new_matplotlib_tile"}]
-    },
-        {
-            "name": "new_in_creator",
+class TileManager extends UserManagerResourceManager {
+    set_extra_properties() {
+        super.set_extra_properties();
+        this.start_hidden = false;
+        this.update_view = "request_update_selector_list";
+        this.update_tag_view = "request_update_tag_list";
+        this.new_view = '/create_tile_module';
+        this.view_view = '/view_module/';
+        this.creator_view = '/view_in_creator/';
+        this.last_saved_view = '/last_saved_view/';
+        this.delete_view = "/delete_tile_module/";
+        this.duplicate_view = '/create_duplicate_tile';
+        this.double_click_func = "dc_view_func";
+        this.repository_double_click_func = "repository_view_func";
+        this.popup_buttons = [{
+            "name": "new",
             "button_class": "btn-default",
-            "option_list": [{"opt_name": "StandardTile", "opt_func": "new_basic_in_creator"},
-                {"opt_name": "MatplotlibTile", "opt_func": "new_mpl_in_creator"}]
-        }],
-    file_adders: [
-        {"name": "add_module", "func": "add_tile_module", "button_class": "btn-default", "show_multiple": false,}
-    ],
-    button_groups: [
-        {
-            buttons: [
-                {"name": "view", "func": "view_func", "button_class": "btn-default"},
-                {"name": "view_in_creator", "func": "creator_view_func", "button_class": "btn-default"},
-                {"name": "load", "func": "load_func", "button_class": "btn-default"},
-                {"name": "unload", "func": "unload_func", "button_class": "btn-default"}
-            ]
-        },
-        {
-            buttons: [
-                {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-default"}
-            ]
-        },
-        {
-            buttons: [
-                {"name": "share", "func": "send_repository_func", "button_class": "btn-default"}
-            ]
-        },
-        {
-            buttons: [
-                {"name": "delete", "func": "delete_func", "button_class": "btn-default"}
-            ]
-        }
-    ],
-
+            "option_list": [{"opt_name": "BasicTileTemplate", "opt_func": "new_basic_tile"},
+                {"opt_name": "ExpandedTileTemplate", "opt_func": "new_expanded_tile"},
+                {"opt_name": "MatplotlibTileTemplate", "opt_func": "new_matplotlib_tile"}]
+            },
+            {
+                "name": "new_in_creator",
+                "button_class": "btn-default",
+                "option_list": [{"opt_name": "StandardTile", "opt_func": "new_basic_in_creator"},
+                    {"opt_name": "MatplotlibTile", "opt_func": "new_mpl_in_creator"}]
+            }];
+        this.file_adders = [
+            {
+                "name": "add_module",
+                "func": "add_tile_module",
+                "button_class": "btn-default",
+                "show_multiple": false,
+            }
+        ];
+        this.button_groups = [
+            {
+                buttons: [
+                    {"name": "view", "func": "view_func", "button_class": "btn-default"},
+                    {"name": "view_in_creator", "func": "creator_view_func", "button_class": "btn-default"},
+                    {"name": "load", "func": "load_func", "button_class": "btn-default"},
+                    {"name": "unload", "func": "unload_func", "button_class": "btn-default"}
+                ]
+            },
+            {
+                buttons: [
+                    {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-default"}
+                ]
+            },
+            {
+                buttons: [
+                    {"name": "share", "func": "send_repository_func", "button_class": "btn-default"}
+                ]
+            },
+            {
+                buttons: [
+                    {"name": "delete", "func": "delete_func", "button_class": "btn-default"}
+                ]
+            }
+        ]
+}
 
     creator_view_func (event) {
         const manager = event.data.manager;
         const res_name = manager.check_for_selection("resource");
         if (res_name == "") return;
         window.open($SCRIPT_ROOT + manager.creator_view + String(res_name))
-    },
+    }
 
     dc_view_func (event) {
         const manager = event.data.manager;
         const res_name = manager.check_for_selection("resource");
         if (res_name == "") return;
         window.open($SCRIPT_ROOT + manager.last_saved_view + String(res_name))
-    },
+    }
 
     load_func (event) {
         const manager = event.data.manager;
         const res_name = manager.check_for_selection("resource");
         if (res_name == "") return;
         $.getJSON(`${$SCRIPT_ROOT}/load_tile_module/${res_name}`, doFlash)
-    },
+    }
     unload_func (event) {
         const manager = event.data.manager;
         const res_name = manager.check_for_selection("resource");
         if (res_name == "") return;
         $.getJSON(`${$SCRIPT_ROOT}/unload_all_tiles`, doFlash)
-    },
+    }
 
     add_tile_module (event) {
         const form_data = new FormData(this);
         postAjaxUpload("add_tile_module", form_data, doFlashOnFailure(data));
         event.preventDefault();
-    },
+    }
 
     new_in_creator (event, template_name) {
         const manager = event.data.manager;
@@ -441,29 +471,29 @@ const tile_manager_specifics = {
                 .catch(doFlash)
             }
         event.preventDefault();
-    },
+    }
 
     new_basic_in_creator (event) {
         event.data.manager.new_in_creator(event, "BasicTileTemplate");
         event.preventDefault();
-    },
+    }
 
     new_mpl_in_creator (event) {
         event.data.manager.new_in_creator(event, "MatplotlibTileTemplate");
         event.preventDefault();
-    },
+    }
 
     new_basic_tile (event) {
         event.data.manager.new_tile(event, "BasicTileTemplate");
-    },
+    }
 
     new_expanded_tile (event) {
         event.data.manager.new_tile(event, "ExpandedTileTemplate");
-    },
+    }
 
     new_matplotlib_tile (event) {
         event.data.manager.new_tile(event, "MatplotlibTileTemplate");
-    },
+    }
 
     new_tile (event, template_name) {
         const manager = event.data.manager;
@@ -485,67 +515,72 @@ const tile_manager_specifics = {
     }
 };
 
-
-const repository_tile_manager_specifics = {
-    start_hidden: true,
-    update_view: "request_update_repository_selector_list",
-    update_tag_view: "request_update_repository_tag_list",
-    view_view: '/repository_view_module/',
-    double_click_func: "repository_view_func",
-    button_groups: [
-        {"buttons": [{"name": "view", "func": "view_func", "button_class": "btn-default"},
+class RepositoryTileManager extends UserManagerResourceManager {
+    set_extra_properties() {
+        super.set_extra_properties();
+        this.start_hidden = true;
+        this.update_view = "request_update_repository_selector_list";
+        this.update_tag_view = "request_update_repository_tag_list";
+        this.view_view = '/repository_view_module/';
+        this.double_click_func = "repository_view_func";
+        this.button_groups = [
+            {
+                "buttons": [{"name": "view", "func": "view_func", "button_class": "btn-default"},
                     {"name": "copy_to_libary", "func": "repository_copy_func", "button_class": "btn-default"}
-        ]}
-    ],
-};
+                ]
+            }
+        ]
+    };
+}
 
-
-const code_manager_specifics = {
-    start_hidden: false,
-    update_view: "request_update_selector_list",
-    update_tag_view: "request_update_tag_list",
-    new_view: '/create_code',
-    view_view: '/view_code/',
-    delete_view: "/delete_code/",
-    duplicate_view: '/create_duplicate_code',
-    double_click_func: "view_func",
-    repository_double_click_func: "repository_view_func",
-    popup_buttons: [{
-        "name": "new",
-        "button_class": "btn-default",
-        "option_list": [{"opt_name": "BasicCodeTemplate", "opt_func": "new_code"}]
-    }],
-    file_adders: [
-        {"name": "add_code", "func": "add_code", "button_class": "btn-default", show_multiple: false}
-    ],
-    button_groups: [
-        {
-            buttons: [
-                {"name": "view", "func": "view_func", "button_class": "btn-default"}
-            ]
-        },
-        {
-            buttons: [
-                {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-default"}
-            ]
-        },
-        {
-            buttons: [
-                {"name": "share", "func": "send_repository_func", "button_class": "btn-default"}
-            ]
-        },
-        {
-            buttons: [
-                {"name": "delete", "func": "delete_func", "button_class": "btn-default"}
-            ]
-        }
-    ],
-
+class CodeManager extends UserManagerResourceManager {
+    set_extra_properties() {
+        super.set_extra_properties();
+        this.start_hidden = false;
+        this.update_view = "request_update_selector_list";
+        this.update_tag_view = "request_update_tag_list";
+        this.new_view = '/create_code';
+        this.view_view = '/view_code/';
+        this.delete_view = "/delete_code/";
+        this.duplicate_view = '/create_duplicate_code';
+        this.double_click_func = "view_func";
+        this.repository_double_click_func = "repository_view_func";
+        this.popup_buttons = [{
+            "name": "new",
+            "button_class": "btn-default",
+            "option_list": [{"opt_name": "BasicCodeTemplate", "opt_func": "new_code"}]
+        }];
+        this.file_adders = [
+            {"name": "add_code", "func": "add_code", "button_class": "btn-default", show_multiple: false}
+        ];
+        this.button_groups = [
+            {
+                buttons: [
+                    {"name": "view", "func": "view_func", "button_class": "btn-default"}
+                ]
+            },
+            {
+                buttons: [
+                    {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-default"}
+                ]
+            },
+            {
+                buttons: [
+                    {"name": "share", "func": "send_repository_func", "button_class": "btn-default"}
+                ]
+            },
+            {
+                buttons: [
+                    {"name": "delete", "func": "delete_func", "button_class": "btn-default"}
+                ]
+            }
+        ];
+    }
     add_code (event) {
         const form_data = new FormData(this);
         postAjaxUpload("add_code", form_data, doFlashOnFailure(data));
         event.preventDefault();
-    },
+    }
     new_code (event) {
         const manager = event.data.manager;
         const template_name = "BasicCodeTemplate";
@@ -565,18 +600,22 @@ const code_manager_specifics = {
         }
         event.preventDefault();
     }
-};
+}
 
-
-const repository_code_manager_specifics = {
-    start_hidden: true,
-    update_view: "request_update_repository_selector_list",
-    update_tag_view: "request_update_repository_tag_list",
-    view_view: '/repository_view_code/',
-    double_click_func: "repository_view_func",
-    button_groups: [
-        {"buttons": [{"name": "view", "func": "view_func", "button_class": "btn-default"},
+class RepositoryCodeManager extends UserManagerResourceManager {
+    set_extra_properties() {
+        super.set_extra_properties();
+        this.start_hidden = true;
+        this.update_view = "request_update_repository_selector_list";
+        this.update_tag_view = "request_update_repository_tag_list";
+        this.view_view = '/repository_view_code/';
+        this.double_click_func = "repository_view_func";
+        this.button_groups = [
+            {
+                "buttons": [{"name": "view", "func": "view_func", "button_class": "btn-default"},
                     {"name": "copy_to_libary", "func": "repository_copy_func", "button_class": "btn-default"}
-        ]}
-    ],
-};
+                ]
+            }
+        ]
+    };
+}

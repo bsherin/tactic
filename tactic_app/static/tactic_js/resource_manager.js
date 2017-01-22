@@ -20,17 +20,21 @@ function get_current_module_id() {
 
 
 class ResourceManager {
-    constructor (module_id, res_type, resource_module_template, specifics, destination_selector) {
+    constructor (module_id, res_type, resource_module_template, destination_selector) {
         this.destination_selector = destination_selector;
         this.res_type = res_type;
         this.module_id = module_id;
 
-
+        // This additional parameters are relevant to the rendering of the template
+        this.include_metadata = false;
+        this.start_hidden = false;
+        this.include_search_toolbar = true;
         this.popup_buttons = [];
-        this.buttons=[];
+        this.buttons_groups=[];
         this.file_adders = [];
+        this.aux_left = false;
+        this.aux_right = false;
 
-        Object.assign(this, specifics);
         this.set_extra_properties();
         this.textify_button_names();
         this.resource_module_template = resource_module_template;
@@ -39,9 +43,22 @@ class ResourceManager {
     }
 
     set_extra_properties() {
-        this.include_metadata = false;
-        this.start_hidden = false;
-        this.include_search_toolbar = true;
+
+    }
+
+    create_module_html () {
+        let res = Mustache.to_html(this.resource_module_template, this);
+        $(this.destination_selector).append(res);
+        this.update_main_content();
+        this.update_aux_content();
+    }
+
+    update_main_content() {
+
+    }
+
+    update_aux_content() {
+
     }
 
     add_listeners() {
@@ -62,10 +79,12 @@ class ResourceManager {
             })
         });
 
-        this.bind_standard_button(".search-resource-button", this.search_my_resource);
-        this.bind_standard_button(".search-tags-button", this.search_my_tags);
-        this.bind_standard_button(".resource-unfilter-button", this.unfilter_me);
-        this.bind_standard_button(".save-metadata-button", this.save_my_metadata);
+        if (this.include_search_toolbar) {
+            this.bind_standard_button(".search-resource-button", this.search_my_resource);
+            this.bind_standard_button(".search-tags-button", this.search_my_tags);
+            this.bind_standard_button(".resource-unfilter-button", this.unfilter_me);
+            this.bind_standard_button(".save-metadata-button", this.save_my_metadata);
+        }
     }
 
     bind_standard_button(bselector, func) {
@@ -163,7 +182,6 @@ class ResourceManager {
         return this.get_module_element(".aux-right")
     }
 
-
     // a couple of utility functions
 
     textify_button_names () {
@@ -177,28 +195,19 @@ class ResourceManager {
                   bgroup.buttons[i]["name_text"] = but_text
               }
         });
-      for (i=0; i < this.popup_buttons.length; ++i) {
+        for (i=0; i < this.popup_buttons.length; ++i) {
           but = this.popup_buttons[i];
           but_text = but["name"].replace(/_/g, ' ');
           this.popup_buttons[i]["name_text"] = but_text
-      }
-      for (i=0; i < this.file_adders.length; ++i) {
+        }
+        for (i=0; i < this.file_adders.length; ++i) {
           but = this.file_adders[i];
           but_text = but["name"].replace(/_/g, ' ');
           this.file_adders[i]["name_text"] = but_text
-      }
+        }
     }
 
-    create_module_html () {
-        let res = Mustache.to_html(this.resource_module_template, this);
-        $(this.destination_selector).append(res);
-        this.update_main_content();
-        this.update_aux_content();
-    }
 
-    update_aux_content() {
-
-    }
 
     selector_click(row_element) {
         const res_name = row_element.getAttribute("value");
