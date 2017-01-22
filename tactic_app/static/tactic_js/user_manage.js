@@ -13,23 +13,14 @@ const resource_managers = {};
 mousetrap.bind("esc", () => {
     clearStatusArea();
     clearStatusMessage();
-    resource_managers[get_current_res_type()].unfilter_me()
+    resource_managers[get_current_module_id()].unfilter_me()
 });
 
 mousetrap.bind(['command+f', 'ctrl+f'], (e) => {
-    const res_type = get_current_res_type();
-    resource_managers[res_type].get_search_field(current_manager_kind()).focus();
+    const mod_id = get_current_module();
+    resource_managers[mod_id].get_search_field().focus();
     e.preventDefault()
 });
-
-function current_manager_kind() {
-    if (repository_visible) {
-        return "repository"
-    }
-    else {
-        return "resource"
-    }
-}
 
 function start_post_load() {
     if (use_ssl) {
@@ -45,11 +36,13 @@ function start_post_load() {
     socket.on("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
 
     socket.on('update-selector-list', (data) => {
-        resource_managers[data.res_type].fill_selector("resource", data.html, data.select)
+        manager = resource_managers[data.module_id];
+        manager.fill_content(data.html);
+        manager.select_resource_button(data.select)
     });
 
     socket.on('update-tag-list', (data) => {
-        resource_managers[data.res_type].refresh_tag_buttons("resource", data.html)
+        resource_managers[data.module_id].refresh_tag_buttons(data.html)
     });
 
     socket.on('stop-spinner', stopSpinner);
@@ -66,16 +59,16 @@ function start_post_load() {
     console.log("about to create");
     $.get(`${$SCRIPT_ROOT}/get_resource_module_template`, function(template) {
         resource_module_template = $(template).filter('#resource-module-template').html();
-        resource_managers["list"] = new UserManagerResourceManager("list_module", "list", resource_module_template, list_manager_specifics, "#list-module-outer");
-        // resource_managers["repository_list"] = new UserManagerResourceManager("repository_list_module", "repository_list", resource_module_template, repository_list_manager_specifics, dselector);
-        resource_managers["collection"] = new UserManagerResourceManager("collection_module", "collection", resource_module_template, collection_manager_specifics, "#collection-module-outer");
-        // resource_managers["repository_collection"] = new UserManagerResourceManager("repository_collection_module", "repository_collection", resource_module_template, repository_collection_manager_specifics, dselector);
-        resource_managers["project"] = new UserManagerResourceManager("project_module", "project", resource_module_template, project_manager_specifics, "#project-module-outer");
-        // resource_managers["repository_project"] = new UserManagerResourceManager("repository_project_module", "repository_project", resource_module_template, project_manager_specifics, dselector);
-        resource_managers["tile"] = new UserManagerResourceManager("tile_module", "tile", resource_module_template, tile_manager_specifics, "#tile-module-outer");
-        // resource_managers["repository_tile"] = new UserManagerResourceManager("repository_tile_module", "repository_tile", resource_module_template, tile_manager_specifics, dselector);
-        resource_managers["code"] = new UserManagerResourceManager("code_module", "code", resource_module_template, code_manager_specifics, "#code-module-outer");
-        // resource_managers["repository_code"] = new UserManagerResourceManager("repository_code_module", "repository_code", resource_module_template, code_manager_specifics, dselector);
+        resource_managers["list_module"] = new UserManagerResourceManager("list_module", "list", resource_module_template, list_manager_specifics, "#list-module-outer");
+        resource_managers["repository_list_module"] = new UserManagerResourceManager("repository_list_module", "list", resource_module_template, repository_list_manager_specifics, "#list-module-outer");
+        resource_managers["collection_module"] = new UserManagerResourceManager("collection_module", "collection", resource_module_template, collection_manager_specifics, "#collection-module-outer");
+        resource_managers["repository_collection_module"] = new UserManagerResourceManager("repository_collection_module", "collection", resource_module_template, repository_collection_manager_specifics, "#collection-module-outer");
+        resource_managers["project_module"] = new UserManagerResourceManager("project_module", "project", resource_module_template, project_manager_specifics, "#project-module-outer");
+        resource_managers["repository_project_module"] = new UserManagerResourceManager("repository_project_module", "project", resource_module_template, repository_project_manager_specifics, "#project-module-outer");
+        resource_managers["tile_module"] = new UserManagerResourceManager("tile_module", "tile", resource_module_template, tile_manager_specifics, "#tile-module-outer");
+        resource_managers["repository_tile_module"] = new UserManagerResourceManager("repository_tile_module", "tile", resource_module_template, repository_tile_manager_specifics, "#tile-module-outer");
+        resource_managers["code_module"] = new UserManagerResourceManager("code_module", "code", resource_module_template, code_manager_specifics, "#code-module-outer");
+        resource_managers["repository_code_module"] = new UserManagerResourceManager("repository_code_module", "code", resource_module_template, repository_code_manager_specifics, "#code-module-outer");
 
         //get_manager_dom("tile", "resource", ".loaded-tile-list").load(`${$SCRIPT_ROOT}/request_update_loaded_tile_list`);
 
@@ -86,13 +79,13 @@ function start_post_load() {
         $(".resource-module").on("keyup", ".search-field", function(e) {
             let res_type;
             if (e.which == 13) {
-                res_type = get_current_res_type();
-                resource_managers[res_type].search_my_resource();
+                mod_id = get_current_module_id();
+                resource_managers[mod_id].search_my_resource();
                 e.preventDefault();
             }
             else {
-                res_type = get_current_res_type();
-                resource_managers[res_type].search_my_resource();
+                mode_id = get_current_module_id();
+                resource_managers[mod_id].search_my_resource();
             }
         });
         resize_window();
@@ -104,28 +97,39 @@ function start_post_load() {
 }
 
 function toggleRepository() {
+    for (let res_type of res_types) {
+        let old_manager;
+        let new_manager;
+        if (repository_visible) {
+            old_manager = resource_managers[`repository_${res_type}_module`];
+            new_manager = resource_managers[`${res_type}_module`];
+        }
+        else {
+            new_manager = resource_managers[`repository_${res_type}_module`];
+            old_manager = resource_managers[`${res_type}_module`];
+
+        }
+        old_manager.get_module_dom().css("display", "none");
+        new_manager.get_module_dom().css("display", "block");
+        // fadeOut(function () {
+        //     new_manager.get_module_dom().fadeIn(function () {
+        //         resize_window();
+        //     })
+        // });
+    }
     if (repository_visible) {
-        $(".repository-outer").fadeOut(function (){
-            $(".resource-outer").fadeIn(function() {
-                repository_visible = false;
-                $("#view-title").text(saved_title);
-                $("#toggle-repository-button").text("Show Repository");
-                $(".page-header").removeClass("repository-title");
-                resize_window()
-            })
-        })
-    }
+        repository_visible = false;
+        $("#toggle-repository-button").text("Show Repository");
+        $("#view_title").text(saved_title);
+        $(".page-header").removeClass("repository-title");
+        }
     else {
-        $(".resource-outer").fadeOut(function(){
-            $(".repository-outer").fadeIn(function () {
-                repository_visible = true;
-                $("#view-title").text("Repository");
-                $("#toggle-repository-button").text("Hide Repository");
-                $(".page-header").addClass("repository-title");
-                resize_window()
-            })
-        })
+        repository_visible = true;
+        $("#toggle-repository-button").text("Hide Repository");
+        $("#view_title").text("Repository");
+        $(".page-header").addClass("repository-title");
     }
+    resize_window();
     return(false)
 }
 
@@ -148,22 +152,21 @@ function doFlashStopSpinner(data) {
 
 function resize_window() {
 
-    for (let res_type of res_types) {
-        if (resource_managers.hasOwnProperty(res_type)) {
-            const manager = resource_managers[res_type];
-            const rsw_row = manager.get_main_content_row();
-            resize_dom_to_bottom(rsw_row, 50);
-            const tselector = manager.get_aux_left_dom("resource");
-            resize_dom_to_bottom(tselector, 50);
-            const rselector = manager.get_aux_right_dom("");
-            resize_dom_to_bottom(rselector, 50);
-
-        }
+    for (let module_id in resource_managers) {
+        const manager = resource_managers[module_id];
+        const rsw_row = manager.get_main_content_row();
+        resize_dom_to_bottom(rsw_row, 50);
+        const tselector = manager.get_aux_left_dom();
+        resize_dom_to_bottom(tselector, 50);
+        const rselector = manager.get_aux_right_dom();
+        resize_dom_to_bottom(rselector, 50);
     }
 }
 
 const list_manager_specifics = {
     start_hidden: false,
+    update_view: "request_update_selector_list",
+    update_tag_view: "request_update_tag_list",
     view_view: '/view_list/',
     delete_view: '/delete_list/',
     double_click_func: "view_func",
@@ -190,8 +193,10 @@ const list_manager_specifics = {
 
 const repository_list_manager_specifics = {
     start_hidden: true,
+    update_view: "request_update_repository_selector_list",
+    update_tag_view: "request_update_repository_tag_list",
     view_view: '/repository_view_list/',
-    double_click_func: "repository_view_func",
+    double_click_func: "view_func",
     button_groups: [
         {"buttons": [{"name": "view", "func": "view_func", "button_class": "btn-default"},
                     {"name": "copy_to_libary", "func": "repository_copy_func", "button_class": "btn-default"}
@@ -202,6 +207,8 @@ const repository_list_manager_specifics = {
 //noinspection JSUnusedGlobalSymbols
 const collection_manager_specifics = {
     start_hidden: false,
+    update_view: "request_update_selector_list",
+    update_tag_view: "request_update_tag_list",
     duplicate_view: '/duplicate_collection',
     delete_view: '/delete_collection/',
     load_view: "/main/",
@@ -278,6 +285,8 @@ const collection_manager_specifics = {
 
 const repository_collection_manager_specifics = {
     start_hidden: true,
+    update_view: "request_update_repository_selector_list",
+    update_tag_view: "request_update_repository_tag_list",
     button_groups: [
         {"buttons": [{"name": "copy_to_libary", "func": "repository_copy_func", "button_class": "btn-default"}]}
     ],
@@ -285,6 +294,8 @@ const repository_collection_manager_specifics = {
 
 const project_manager_specifics = {
     start_hidden: false,
+    update_view: "request_update_selector_list",
+    update_tag_view: "request_update_tag_list",
     load_view: "",
     delete_view: "/delete_project/",
     double_click_func: "load_func",
@@ -318,6 +329,8 @@ const project_manager_specifics = {
 
 const repository_project_manager_specifics = {
     start_hidden: true,
+    update_view: "request_update_repository_selector_list",
+    update_tag_view: "request_update_repository_tag_list",
     button_groups: [
         {"buttons": [{"name": "copy_to_libary", "func": "repository_copy_func", "button_class": "btn-default"}]}
     ],
@@ -325,6 +338,8 @@ const repository_project_manager_specifics = {
 
 const tile_manager_specifics = {
     start_hidden: false,
+    update_view: "request_update_selector_list",
+    update_tag_view: "request_update_tag_list",
     new_view: '/create_tile_module',
     view_view: '/view_module/',
     creator_view: '/view_in_creator/',
@@ -473,6 +488,8 @@ const tile_manager_specifics = {
 
 const repository_tile_manager_specifics = {
     start_hidden: true,
+    update_view: "request_update_repository_selector_list",
+    update_tag_view: "request_update_repository_tag_list",
     view_view: '/repository_view_module/',
     double_click_func: "repository_view_func",
     button_groups: [
@@ -485,6 +502,8 @@ const repository_tile_manager_specifics = {
 
 const code_manager_specifics = {
     start_hidden: false,
+    update_view: "request_update_selector_list",
+    update_tag_view: "request_update_tag_list",
     new_view: '/create_code',
     view_view: '/view_code/',
     delete_view: "/delete_code/",
@@ -551,6 +570,8 @@ const code_manager_specifics = {
 
 const repository_code_manager_specifics = {
     start_hidden: true,
+    update_view: "request_update_repository_selector_list",
+    update_tag_view: "request_update_repository_tag_list",
     view_view: '/repository_view_code/',
     double_click_func: "repository_view_func",
     button_groups: [

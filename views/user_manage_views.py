@@ -72,6 +72,10 @@ class ResourceManager(object):
 
     def __init__(self, res_type):
         self.res_type = res_type
+        if self.is_repository:
+            self.module_id = "repository_" + self.res_type + "_module"
+        else:
+            self.module_id = self.res_type + "_module"
         self.add_rules()
         self.tag_list = []
 
@@ -96,18 +100,21 @@ class ResourceManager(object):
             socketio.emit('update-selector-list',
                           {"html": self.request_update_selector_list(user_obj=repository_user),
                            "select": None,
-                           "res_type": "repository-" + self.res_type},
+                           "module_id": self.module_id,
+                           "res_type": self.res_type},
                           namespace='/user_manage', room=user_obj.get_id())
         elif select is None:
             socketio.emit('update-selector-list',
                           {"html": self.request_update_selector_list(user_obj=user_obj),
                            "select": None,
+                           "module_id": self.module_id,
                            "res_type": self.res_type},
                           namespace='/user_manage', room=user_obj.get_id())
         else:
             socketio.emit('update-selector-list',
                           {"html": self.request_update_selector_list(user_obj=user_obj),
                            "select": select,
+                           "module_id": self.module_id,
                            "res_type": self.res_type},
                           namespace='/user_manage', room=user_obj.get_id())
 
@@ -137,7 +144,7 @@ class ResourceManager(object):
 
     def request_update_tag_list(self, user_obj=None):
         self.tag_list = self.get_tag_list(user_obj)
-        result = self.create_button_list(self.tag_list)
+        result = "<div class='tag-button-list'>" + self.create_button_list(self.tag_list) + "</div>"
         return result
 
     def create_button_list(self, the_list):

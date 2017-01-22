@@ -10,14 +10,14 @@ class UserManagerResourceManager extends ResourceManager{
 
     set_extra_properties() {
         this.include_metadata = true;
-        self.include_search_toolbar = true;
+        this.include_search_toolbar = true;
+        this.aux_left = true;
         this.repository_copy_view = '/copy_from_repository';
         this.send_repository_view = '/send_to_repository';
     }
     update_main_content() {
         const self = this;
-        let url_string = "request_update_selector_list";
-        $.getJSON(`${$SCRIPT_ROOT}/${url_string}/${this.res_type}`, function (data) {
+        $.getJSON(`${$SCRIPT_ROOT}/${this.update_view}/${this.res_type}`, function (data) {
             self.fill_content(data.html, null);
             self.select_resource_button(null);
         })
@@ -55,8 +55,29 @@ class UserManagerResourceManager extends ResourceManager{
                 $(row_element).show()
             }
         });
-        this.show_hide_tag_buttons(manager_kind, txt)
+        this.show_hide_tag_buttons(txt)
     }
+
+    update_aux_content() {
+        this.create_tag_buttons(this.update_tag_view);
+    }
+
+    create_tag_buttons(url_string) {
+        const self = this;
+        $.getJSON(`${$SCRIPT_ROOT}/${url_string}/${this.res_type}`, function (data) {
+            self.fill_tag_buttons(data.html, null);
+        })
+    }
+
+    fill_tag_buttons(the_html) {
+        this.get_aux_left_dom().append(the_html)
+    }
+
+
+    get_all_tag_buttons () {
+        return this.get_module_element(".tag-button-list button")
+    }
+
 
     search_given_tag (txt) {
         const all_rows = this.get_all_selector_buttons();
@@ -72,6 +93,72 @@ class UserManagerResourceManager extends ResourceManager{
             }
         });
         this.set_tag_button_state(txt);
+    }
+
+     search_my_tags() {
+        const txt = this.get_search_field()[0].value.toLowerCase();
+        this.search_given_tag(txt);
+        this.show_hide_tag_buttons(txt)
+    }
+
+
+
+    refresh_tag_buttons(the_html) {
+        let active_tag_button = this.get_active_tag_button();
+        manager.fill_tag_buttons(the_html);
+        manager.set_tag_button_state(active_tag_button);
+    }
+
+
+
+    set_tag_button_state (txt) {
+        const all_tag_buttons = this.get_all_tag_buttons();
+        $.each(all_tag_buttons, function (index, but) {
+            if (but.innerHTML == txt) {
+                $(but).addClass("active")
+            }
+            else {
+                $(but).removeClass("active")
+            }
+        })
+    }
+
+    get_active_tag_button () {
+        let all_tag_buttons = this.get_all_tag_buttons();
+        let active_tag_button = null;
+        $.each(all_tag_buttons, (index, but) => {
+            if ($(but).hasClass("active")) {
+                active_tag_button = $(but).html()
+            }
+        });
+        return active_tag_button
+    }
+
+    show_hide_tag_buttons (txt) {
+        const all_tag_buttons = this.get_all_tag_buttons();
+        $.each(all_tag_buttons, function (index, but) {
+            const tag_text = but.innerHTML;
+            if (tag_text.search(txt) == -1) {
+                $(but).hide()
+            }
+            else {
+                $(but).show()
+            }
+        })
+    }
+
+    show_all_tag_buttons () {
+        const all_tag_buttons = this.get_all_tag_buttons();
+        $.each(all_tag_buttons, function (index, but) {
+                $(but).show()
+        })
+    }
+
+    deactivate_tag_buttons () {
+        const all_tag_buttons = this.get_all_tag_buttons();
+        $.each(all_tag_buttons, function (index, but) {
+            $(but).removeClass("active")
+        })
     }
 
     add_func(event) {

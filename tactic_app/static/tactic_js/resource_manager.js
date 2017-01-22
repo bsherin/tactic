@@ -4,19 +4,20 @@
 
 function get_current_res_type() {
     const module_id_str = $(".nav-tabs .active a").attr("href");
-    const reg_exp = /\#(\S*)?\-/;
+    const reg_exp = /\#(\S*?)\-module/;
     return module_id_str.match(reg_exp)[1]
 }
 
-function get_manager_outer(res_type, manager_type) {
-    return $("#" + manager_type + "-" + res_type + "-outer")
+function get_current_module_id() {
+    res_type = get_current_res_type();
+    if (repository_visible) {
+        return `repository_${res_type}_module`
+    }
+    else {
+        return `${res_type}_module`
+    }
 }
 
-function get_manager_dom(res_type, manager_type, selector) {
-    return $("#" + manager_type + "-" + res_type + "-outer").find(selector)
-}
-
-const manager_kinds = ["resource", "repository"];
 
 class ResourceManager {
     constructor (module_id, res_type, resource_module_template, specifics, destination_selector) {
@@ -40,7 +41,7 @@ class ResourceManager {
     set_extra_properties() {
         this.include_metadata = false;
         this.start_hidden = false;
-        self.include_search_toolbar = true;
+        this.include_search_toolbar = true;
     }
 
     add_listeners() {
@@ -67,7 +68,6 @@ class ResourceManager {
         this.bind_standard_button(".save-metadata-button", this.save_my_metadata);
     }
 
-
     bind_standard_button(bselector, func) {
         this.get_module_dom().on("click", bselector, func.bind(this));
     }
@@ -77,19 +77,19 @@ class ResourceManager {
     bind_button (value, manager_kind) {
         const button_value = value.name + "-" + this.res_type;
         const bselector = `button[value='${button_value}']`;
-        get_manager_outer(this.res_type, manager_kind).on("click", bselector, {"manager": this}, this[value.func])
+        this.get_module_dom().on("click", bselector, {"manager": this}, this[value.func])
     }
 
     bind_option (value, manager_kind) {
         const button_value = value.name + "-" + this.res_type;
         const bselector = `a[value='${button_value}']`;
-        get_manager_outer(this.res_type, manager_kind).on("click", bselector, {"manager": this}, this[value.func])
+        this.get_module_dom().on("click", bselector, {"manager": this}, this[value.func])
     }
 
     bind_form (value, manager_kind) {
         const form_value = value.name + "-" + this.res_type + "-form";
         const fselector = `form[value='${form_value}']`;
-        get_manager_outer(this.res_type, manager_kind).on("submit", fselector, {"manager": this}, this[value.func])
+        this.get_module_dom().on("submit", fselector, {"manager": this}, this[value.func])
     }
 
     get_module_dom() {
@@ -153,10 +153,6 @@ class ResourceManager {
 
     get_named_selector_button(name) {
         return this.get_module_element(`.selector-button[value='${name}']`)
-    }
-
-    get_all_tag_buttons () {
-        return this.get_module_element(".tag-button-list button")
     }
 
     get_aux_left_dom () {
@@ -299,106 +295,33 @@ class ResourceManager {
         })
     }
 
-    search_my_tags() {
-        const txt = this.get_search_field()[0].value.toLowerCase();
-        this.search_given_tag(txt);
-        this.show_hide_tag_buttons(txt)
-    }
-
-    create_tag_buttons(url_string) {
-        const self = this;
-        $.getJSON(`${$SCRIPT_ROOT}/${url_string}/${this.res_type}`, function (data) {
-            self.fill_tag_buttons(data.html, null);
-        })
-    }
-
-    fill_tag_buttons(manager_kind, the_html) {
-        this.get_aux_left().append(the_html)
-    }
-
-    refresh_tag_buttons(the_html) {
-        let active_tag_button = this.get_active_tag_button();
-        manager.fill_tag_buttons(the_html);
-        manager.set_tag_button_state(active_tag_button);
-    }
-
     unfilter_me () {
         const all_rows = this.get_all_selector_buttons();
         $.each(all_rows, function (index, row_element) {
                 $(row_element).show()
         });
-        this.deactivate_tag_buttons();
-        this.show_all_tag_buttons()
+        this.deactivate_tag_buttons()
     }
 
-    set_tag_button_state (txt) {
-        const all_tag_buttons = this.get_all_tag_buttons();
-        $.each(all_tag_buttons, function (index, but) {
-            if (but.innerHTML == txt) {
-                $(but).addClass("active")
-            }
-            else {
-                $(but).removeClass("active")
-            }
-        })
-    }
-
-    get_active_tag_button () {
-        let all_tag_buttons = this.get_all_tag_buttons();
-        let active_tag_button = null;
-        $.each(all_tag_buttons, (index, but) => {
-            if ($(but).hasClass("active")) {
-                active_tag_button = $(but).html()
-            }
-        });
-        return active_tag_button
-    }
-
-    show_hide_tag_buttons (txt) {
-        const all_tag_buttons = this.get_all_tag_buttons();
-        $.each(all_tag_buttons, function (index, but) {
-            const tag_text = but.innerHTML;
-            if (tag_text.search(txt) == -1) {
-                $(but).hide()
-            }
-            else {
-                $(but).show()
-            }
-        })
-    }
-
-    show_all_tag_buttons () {
-        const all_tag_buttons = this.get_all_tag_buttons();
-        $.each(all_tag_buttons, function (index, but) {
-                $(but).show()
-        })
-    }
-
-    deactivate_tag_buttons () {
-        const all_tag_buttons = this.get_all_tag_buttons();
-        $.each(all_tag_buttons, function (index, but) {
-            $(but).removeClass("active")
-        })
-    }
 }
 
 function selector_click(event) {
     const row_element = $(event.target).closest('tr');
-    resource_managers[get_current_res_type()].selector_click(row_element[0])
+    resource_managers[get_module_id()].selector_click(row_element[0])
 
 }
 
 function selector_double_click(event) {
     const row_element = $(event.target).closest('tr');
     const res_type = get_current_res_type();
-
+    manager = resource_managers[get_current_module_id()];
     manager.get_all_selector_buttons().removeClass("active");
     row_element.addClass("active");
-    manager[manager.double_click_func]({})
+    event.data = {"manager": manager, "res_type": res_type};
+    manager[manager.double_click_func](event)
 }
 
 function tag_button_clicked(event) {
-    const res_type = event.target.value;
     const txt = event.target.innerHTML;
-    resource_managers[res_type].search_given_tag( txt)
+    resource_managers[get_current_module_id()].search_given_tag( txt)
 }
