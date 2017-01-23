@@ -17,7 +17,7 @@ mousetrap.bind("esc", () => {
 });
 
 mousetrap.bind(['command+f', 'ctrl+f'], (e) => {
-    const mod_id = get_current_module();
+    const mod_id = get_current_module_id();
     resource_managers[mod_id].get_search_field().focus();
     e.preventDefault()
 });
@@ -135,13 +135,12 @@ function toggleRepository() {
 function selector_click(event) {
     const row_element = $(event.target).closest('tr');
     resource_managers[get_current_module_id()].selector_click(row_element[0])
-
 }
 
 function selector_double_click(event) {
     const row_element = $(event.target).closest('tr');
     const res_type = get_current_res_type();
-    manager = resource_managers[get_current_module_id()];
+    let manager = resource_managers[get_current_module_id()];
     manager.get_all_selector_buttons().removeClass("active");
     row_element.addClass("active");
     event.data = {"manager": manager, "res_type": res_type};
@@ -152,7 +151,6 @@ function tag_button_clicked(event) {
     const txt = event.target.innerHTML;
     resource_managers[get_current_module_id()].search_given_tag( txt)
 }
-
 
 function showAdmin() {
     window.open(`${$SCRIPT_ROOT}/admin_interface`)
@@ -172,7 +170,6 @@ function doFlashStopSpinner(data) {
 }
 
 function resize_window() {
-
     for (let module_id in resource_managers) {
         const manager = resource_managers[module_id];
         const rsw_row = manager.get_main_content_row();
@@ -229,7 +226,7 @@ class RepositoryListManager extends UserManagerResourceManager {
             ]}
         ]
     }
-};
+}
 
 class CollectionManager extends UserManagerResourceManager {
     set_extra_properties() {
@@ -252,22 +249,17 @@ class CollectionManager extends UserManagerResourceManager {
             }
         ];
         this.button_groups = [
-            {
-                buttons: [
-                    {"name": "load", "func": "load_func", "button_class": "btn btn-default"}
-                ]
+            {buttons: [
+                    {"name": "load", "func": "load_func", "button_class": "btn btn-default"}]
             },
-            {
-                buttons: [
+            {buttons: [
                     {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-default"},
                     {"name": "combine_collections", "func": "combineCollections", "button_class": "btn-default"}]
             },
-            {
-                buttons: [{"name": "download", "func": "downloadCollection", "button_class": "btn btn-default"},
+            {buttons: [{"name": "download", "func": "downloadCollection", "button_class": "btn btn-default"},
                     {"name": "share", "func": "send_repository_func", "button_class": "btn-default"}]
             },
-            {
-                buttons: [
+            {buttons: [
                     {"name": "delete", "func": "delete_func", "button_class": "btn-default"}]
             }
         ];
@@ -316,7 +308,7 @@ class CollectionManager extends UserManagerResourceManager {
             $.post(target, doFlashStopSpinner);
         })
     }
-};
+}
 
 class RepositoryCollectionManager extends UserManagerResourceManager {
     set_extra_properties() {
@@ -340,20 +332,14 @@ class ProjectManager extends UserManagerResourceManager {
         this.delete_view = "/delete_project/";
         this.double_click_func = "load_func";
         this.button_groups = [
-            {
-                buttons: [
-                    {"name": "load", "func": "load_func", "button_class": "btn-default"}
-                ]
+            {buttons: [
+                    {"name": "load", "func": "load_func", "button_class": "btn-default"}]
             },
-            {
-                buttons: [
-                    {"name": "share", "func": "send_repository_func", "button_class": "btn-default"}
-                ]
+            {buttons: [
+                    {"name": "share", "func": "send_repository_func", "button_class": "btn-default"}]
             },
-            {
-                buttons: [
-                    {"name": "delete", "func": "delete_func", "button_class": "btn-default"}
-                ]
+            {buttons: [
+                    {"name": "delete", "func": "delete_func", "button_class": "btn-default"}]
             }
         ];
     }
@@ -366,7 +352,7 @@ class ProjectManager extends UserManagerResourceManager {
         startSpinner();
         postWithCallbackNoMain("host", "main_project", data)
     }
-};
+}
 
 class RepositoryProjectManager extends UserManagerResourceManager {
     set_extra_properties() {
@@ -417,28 +403,20 @@ class TileManager extends UserManagerResourceManager {
             }
         ];
         this.button_groups = [
-            {
-                buttons: [
+            {buttons: [
                     {"name": "view", "func": "view_func", "button_class": "btn-default"},
                     {"name": "view_in_creator", "func": "creator_view_func", "button_class": "btn-default"},
                     {"name": "load", "func": "load_func", "button_class": "btn-default"},
-                    {"name": "unload", "func": "unload_func", "button_class": "btn-default"}
-                ]
+                    {"name": "unload", "func": "unload_func", "button_class": "btn-default"}]
             },
-            {
-                buttons: [
-                    {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-default"}
-                ]
+            {buttons: [
+                    {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-default"}]
             },
-            {
-                buttons: [
-                    {"name": "share", "func": "send_repository_func", "button_class": "btn-default"}
-                ]
+            {buttons: [
+                    {"name": "share", "func": "send_repository_func", "button_class": "btn-default"}]
             },
-            {
-                buttons: [
-                    {"name": "delete", "func": "delete_func", "button_class": "btn-default"}
-                ]
+            {buttons: [
+                    {"name": "delete", "func": "delete_func", "button_class": "btn-default"}]
             }
         ]
     }
@@ -540,7 +518,7 @@ class TileManager extends UserManagerResourceManager {
             }
         event.preventDefault();
     }
-};
+}
 
 class RepositoryTileManager extends UserManagerResourceManager {
     set_extra_properties() {
@@ -551,10 +529,8 @@ class RepositoryTileManager extends UserManagerResourceManager {
         this.view_view = '/repository_view_module/';
         this.double_click_func = "repository_view_func";
         this.button_groups = [
-            {
-                "buttons": [{"name": "view", "func": "view_func", "button_class": "btn-default"},
-                    {"name": "copy_to_libary", "func": "repository_copy_func", "button_class": "btn-default"}
-                ]
+            {"buttons": [{"name": "view", "func": "view_func", "button_class": "btn-default"},
+                    {"name": "copy_to_libary", "func": "repository_copy_func", "button_class": "btn-default"}]
             }
         ]
     };
@@ -581,25 +557,17 @@ class CodeManager extends UserManagerResourceManager {
             {"name": "add_code", "func": "add_code", "button_class": "btn-default", show_multiple: false}
         ];
         this.button_groups = [
-            {
-                buttons: [
-                    {"name": "view", "func": "view_func", "button_class": "btn-default"}
-                ]
+            {buttons: [
+                    {"name": "view", "func": "view_func", "button_class": "btn-default"}]
             },
-            {
-                buttons: [
-                    {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-default"}
-                ]
+            {buttons: [
+                    {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-default"}]
             },
-            {
-                buttons: [
-                    {"name": "share", "func": "send_repository_func", "button_class": "btn-default"}
-                ]
+            {buttons: [
+                    {"name": "share", "func": "send_repository_func", "button_class": "btn-default"}]
             },
-            {
-                buttons: [
-                    {"name": "delete", "func": "delete_func", "button_class": "btn-default"}
-                ]
+            {buttons: [
+                    {"name": "delete", "func": "delete_func", "button_class": "btn-default"}]
             }
         ];
     }
@@ -638,10 +606,8 @@ class RepositoryCodeManager extends UserManagerResourceManager {
         this.view_view = '/repository_view_code/';
         this.double_click_func = "repository_view_func";
         this.button_groups = [
-            {
-                "buttons": [{"name": "view", "func": "view_func", "button_class": "btn-default"},
-                    {"name": "copy_to_libary", "func": "repository_copy_func", "button_class": "btn-default"}
-                ]
+            {"buttons": [{"name": "view", "func": "view_func", "button_class": "btn-default"},
+                    {"name": "copy_to_libary", "func": "repository_copy_func", "button_class": "btn-default"}]
             }
         ]
     };

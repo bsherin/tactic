@@ -40,7 +40,7 @@ class UserManagerResourceManager extends ResourceManager{
         return res_name
     }
 
-     search_my_resource (){
+    search_my_resource (){
         this.deactivate_tag_buttons();
         const txt = this.get_search_field()[0].value.toLowerCase();
         const all_rows = this.get_all_selector_buttons();

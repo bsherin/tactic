@@ -9,7 +9,7 @@ function get_current_res_type() {
 }
 
 function get_current_module_id() {
-    res_type = get_current_res_type();
+    let res_type = get_current_res_type();
     if (repository_visible) {
         return `repository_${res_type}_module`
     }
@@ -41,9 +41,7 @@ class ResourceManager {
         this.add_listeners()
     }
 
-    set_extra_properties() {
-
-    }
+    set_extra_properties() { }
 
     create_module_html () {
         let res = Mustache.to_html(this.resource_module_template, this);
@@ -52,13 +50,9 @@ class ResourceManager {
         this.update_aux_content();
     }
 
-    update_main_content() {
+    update_main_content() { }
 
-    }
-
-    update_aux_content() {
-
-    }
+    update_aux_content() { }
 
     add_listeners() {
         for (let bgroup of this.button_groups) {
@@ -90,25 +84,25 @@ class ResourceManager {
         this.get_module_dom().on("click", bselector, func.bind(this));
     }
 
-    // Functions to access the various parts of a resource manager dom
-
-    bind_button (value, manager_kind) {
+    bind_button (value) {
         const button_value = value.name + "-" + this.res_type;
         const bselector = `button[value='${button_value}']`;
         this.get_module_dom().on("click", bselector, {"manager": this}, this[value.func])
     }
 
-    bind_option (value, manager_kind) {
+    bind_option (value) {
         const button_value = value.name + "-" + this.res_type;
         const bselector = `a[value='${button_value}']`;
         this.get_module_dom().on("click", bselector, {"manager": this}, this[value.func])
     }
 
-    bind_form (value, manager_kind) {
+    bind_form (value) {
         const form_value = value.name + "-" + this.res_type + "-form";
         const fselector = `form[value='${form_value}']`;
         this.get_module_dom().on("submit", fselector, {"manager": this}, this[value.func])
     }
+
+    // Functions to access the various parts of a resource manager dom
 
     get_module_dom() {
         return $("#" + this.module_id)
@@ -206,14 +200,11 @@ class ResourceManager {
         }
     }
 
-
-
     selector_click(row_element) {
         const res_name = row_element.getAttribute("value");
         const result_dict = {"res_type": this.res_type, "res_name": res_name};
         this.get_all_selector_buttons().removeClass("active");
         const self = this;
-        this.get_all_selector_buttons().removeClass("active");
         if (this.include_metadata) {
             postAjaxPromise("grab_metadata", result_dict)
             .then(got_metadata)
@@ -240,7 +231,7 @@ class ResourceManager {
                 this.selector_click(all_selectors[0]);
             }
             else {
-                this.clear_resource_metadata(manager_kind)
+                this.clear_resource_metadata()
             }
         }
         else {
@@ -277,13 +268,11 @@ class ResourceManager {
             .catch(doFlash)
     }
 
-
-    // Search, tag button
+    // Search
 
    search_my_resource  () {
-        const manager_kind = "resource";
-        const txt = this.get_search_field(manager_kind)[0].value.toLowerCase();
-        const all_rows = this.get_all_selector_buttons(manager_kind);
+        const txt = this.get_search_field()[0].value.toLowerCase();
+        const all_rows = this.get_all_selector_buttons();
         $.each(all_rows, function (index, row_element) {
             const cells = $(row_element).children();
             let found = false;

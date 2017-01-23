@@ -16,10 +16,6 @@ const resource_managers = {};
 const repository_visible = false;
 
 
-function current_manager_kind() {
-    return "resource"
-}
-
 function start_post_load() {
     if (use_ssl) {
         socket = io.connect('https://'+ document.domain + ':' + location.port  + '/user_manage');
@@ -49,14 +45,14 @@ function start_post_load() {
     });
 
     socket.on('update-selector-list', function(data) {
-        resource_managers[data.res_type].fill_selector("resource", data.html, data.select)
+        resource_managers[data.res_type + "_module"].fill_content(data.html, data.select)
     });
 
     socket.on('doflash', doFlash);
     $.get($SCRIPT_ROOT + "/get_resource_module_template", function(template) {
         resource_module_template = $(template).filter('#resource-module-template').html();
-        resource_managers["container"] = new AdminResourceManager("container", resource_module_template, container_manager_specifics);
-        resource_managers["user"] = new AdminResourceManager("user", resource_module_template, user_manager_specifics);
+        resource_managers["container_module"] = new ContainerManager("container_module", "container", resource_module_template, "#container-module");
+        resource_managers["user_module"] = new UserManager("user_module", "user", resource_module_template, "#user-module");
 
         $(".resource-module").on("click", ".resource-selector .selector-button", selector_click);
         $(".resource-module").on("dblclick", ".resource-selector .selector-button", selector_double_click);
@@ -64,13 +60,11 @@ function start_post_load() {
         $(".resource-module").on("keyup", ".search-field", function(e) {
             let res_type;
             if (e.which == 13) {
-                res_type = get_current_res_type();
-                resource_managers[res_type].search_my_resource();
+                resource_managers[get_current_module_id()].search_my_resource();
                 e.preventDefault();
             }
             else {
-                res_type = get_current_res_type();
-                resource_managers[res_type].search_my_resource();
+                resource_managers[get_current_module_id()].search_my_resource();
             }
             });
             resize_window();
@@ -81,69 +75,82 @@ function start_post_load() {
         })
 }
 
-let container_manager_specifics = {
+function selector_click(event) {
+    const row_element = $(event.target).closest('tr');
+    resource_managers[get_current_module_id()].selector_click(row_element[0])
+}
 
-    button_groups: [
-        {"buttons": [
-            {"name": "reset-server", "func": "reset_server_func", "button_class": "btn-default"},
-            {"name": "clear-user-containers", "func": "clear_user_func", "button_class": "btn-default"},
-            {"name": "destroy-container", "func": "destroy_container", "button_class": "btn-default"},
-            ]},
-        {"buttons": [
-            {"name": "container-logs", "func": "container_logs", "button_class": "btn-default"},
-            {"name": "refresh", "func": "refresh_container_table", "button_class": "btn-default"}
-        ]}
-    ],
-    clear_user_func: function (event) {
+class ContainerManager extends AdminResourceManager {
+    set_extra_properties() {
+        super.set_extra_properties();
+        this.button_groups = [
+            {
+                "buttons": [
+                    {"name": "reset-server", "func": "reset_server_func", "button_class": "btn-default"},
+                    {"name": "clear-user-containers", "func": "clear_user_func", "button_class": "btn-default"},
+                    {"name": "destroy-container", "func": "destroy_container", "button_class": "btn-default"},
+                ]
+            },
+            {
+                "buttons": [
+                    {"name": "container-logs", "func": "container_logs", "button_class": "btn-default"},
+                    {"name": "refresh", "func": "refresh_container_table", "button_class": "btn-default"}
+                ]
+            }
+        ]
+    }
+    clear_user_func (event) {
         $.getJSON($SCRIPT_ROOT + '/clear_user_containers/' + user_manage_id, doFlash);
         event.preventDefault();
-    },
-    reset_server_func: function (event) {
+    }
+    reset_server_func (event) {
         $.getJSON($SCRIPT_ROOT + '/reset_server/' + user_manage_id, doFlash);
         event.preventDefault();
-    },
-    destroy_container: function (event) {
+    }
+    destroy_container (event) {
         let manager = event.data.manager;
-        cont_id = manager.check_for_selection("container", 4);
+        let cont_id = manager.check_for_selection("container", 4);
         $.getJSON($SCRIPT_ROOT + '/destroy_container/' + cont_id, doFlash);
         event.preventDefault();
-    },
+    }
 
-    container_logs: function (event) {
+    container_logs (event) {
         let manager = event.data.manager;
-        cont_id = manager.check_for_selection("resource");
+        let cont_id = manager.check_for_selection();
         $.getJSON($SCRIPT_ROOT + '/container_logs/' + cont_id, function (data) {
-            the_html = "<pre><small>" + data.log_text + "</small></pre>";
+            let the_html = "<pre><small>" + data.log_text + "</small></pre>";
             $("#container-aux-area").html(the_html)
         });
         event.preventDefault();
-    },
+    }
 
-    refresh_container_table: function (event) {
-        let manager = event.data.manager;
+    refresh_container_table (event) {
         $.getJSON($SCRIPT_ROOT + '/refresh_container_table');
         event.preventDefault();
-    },
+    }
 
-};
+}
 
-let user_manager_specifics = {
+class UserManager extends AdminResourceManager {
+    set_extra_properties() {
+        super.set_extra_properties();
+        this.button_groups = [
+            {
+                "buttons": [
+                    {"name": "create_user", "func": "create_user_func", "button_class": "btn-default"},
+                    {"name": "delete_user", "func": "delete_user_func", "button_class": "btn-default"},
+                    {"name": "refresh", "func": "refresh_user_table", "button_class": "btn-default"}
+                ]
+            }
+        ]
+    }
 
-    button_groups: [
-        {"buttons": [
-            {"name": "create_user", "func": "create_user_func", "button_class": "btn-default"},
-            {"name": "delete_user", "func": "delete_user_func", "button_class": "btn-default"},
-            {"name": "refresh", "func": "refresh_user_table", "button_class": "btn-default"}
-        ]}
-    ],
-
-    refresh_user_table: function (event) {
-        const manager = event.data.manager;
+    refresh_user_table (event) {
         $.getJSON($SCRIPT_ROOT + '/refresh_user_table');
         event.preventDefault();
-    },
+    }
 
-    delete_user_func: function (event) {
+    delete_user_func (event) {
         const manager = event.data.manager;
         user_id = manager.check_for_selection("user", 0);
         const confirm_text = "Are you sure that you want to delete user " + String(user_id) + "?";
@@ -151,24 +158,21 @@ let user_manager_specifics = {
             $.getJSON($SCRIPT_ROOT + '/delete_user/' + user_id, doFlash);
         });
         event.preventDefault();
-    },
+    }
 
-    create_user_func: function (event) {
+    create_user_func (event) {
         window.open($SCRIPT_ROOT + '/register');
         event.preventDefault();
-    },
-};
-
+    }
+}
 
 function resize_window() {
-
-    for (let res_type of res_types) {
-        if (resource_managers.hasOwnProperty(res_type)) {
-            const manager = resource_managers[res_type];
-            const rsw_row = manager.get_resource_selector_row("resource");
-            resize_dom_to_bottom(rsw_row, 50);;
-            resize_dom_to_bottom($("#" + res_type + "-aux-area"), 50);
-        }
+    for (let module_id in resource_managers) {
+        const manager = resource_managers[module_id];
+        const rsw_row = manager.get_main_content_row();
+        resize_dom_to_bottom(rsw_row, 50);
+        const rselector = manager.get_aux_right_dom();
+        resize_dom_to_bottom(rselector, 50);
     }
 }
 
