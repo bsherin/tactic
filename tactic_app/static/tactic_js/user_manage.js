@@ -49,7 +49,9 @@ function start_post_load() {
     socket.on('start-spinner', startSpinner);
     socket.on('show-status-msg', statusMessage);
     socket.on("clear-status-msg", clearStatusMessage);
-    socket.on('update-loaded-tile-list', (data) => $("#loaded-tile-list").html(data.html));
+    socket.on('update-loaded-tile-list', (data) => {
+        resource_managers["tile_module"].get_aux_right_dom().html(data.html)
+    });
     socket.on('close-user-windows', (data) => {
         if (!(data["originator"] == user_manage_id)) {
             window.close()
@@ -69,8 +71,6 @@ function start_post_load() {
         resource_managers["repository_tile_module"] = new RepositoryTileManager("repository_tile_module", "tile", resource_module_template, "#tile-module-outer");
         resource_managers["code_module"] = new CodeManager("code_module", "code", resource_module_template, "#code-module-outer");
         resource_managers["repository_code_module"] = new RepositoryCodeManager("repository_code_module", "code", resource_module_template, "#code-module-outer");
-
-        //get_manager_dom("tile", "resource", ".loaded-tile-list").load(`${$SCRIPT_ROOT}/request_update_loaded_tile_list`);
 
         $(".resource-module").on("click", ".main-content .selector-button", selector_click);
         $(".resource-module").on("dblclick", ".main-content .selector-button", selector_double_click);
@@ -134,7 +134,7 @@ function toggleRepository() {
 
 function selector_click(event) {
     const row_element = $(event.target).closest('tr');
-    resource_managers[get_module_id()].selector_click(row_element[0])
+    resource_managers[get_current_module_id()].selector_click(row_element[0])
 
 }
 
@@ -383,6 +383,7 @@ class RepositoryProjectManager extends UserManagerResourceManager {
 class TileManager extends UserManagerResourceManager {
     set_extra_properties() {
         super.set_extra_properties();
+        this.aux_right = true;
         this.start_hidden = false;
         this.update_view = "request_update_selector_list";
         this.update_tag_view = "request_update_tag_list";
@@ -440,7 +441,12 @@ class TileManager extends UserManagerResourceManager {
                 ]
             }
         ]
-}
+    }
+
+    update_aux_content() {
+        super.update_aux_content();
+        this.get_aux_right_dom().load(`${$SCRIPT_ROOT}/request_update_loaded_tile_list`)
+    }
 
     creator_view_func (event) {
         const manager = event.data.manager;

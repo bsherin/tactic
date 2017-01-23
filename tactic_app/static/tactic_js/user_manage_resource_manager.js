@@ -67,9 +67,6 @@ class UserManagerResourceManager extends ResourceManager{
         this.show_all_tag_buttons();
     }
 
-
-
-
     update_aux_content() {
         this.create_tag_buttons(this.update_tag_view);
     }
