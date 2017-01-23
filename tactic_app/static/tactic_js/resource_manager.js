@@ -18,14 +18,13 @@ function get_current_module_id() {
     }
 }
 
-
 class ResourceManager {
     constructor (module_id, res_type, resource_module_template, destination_selector) {
         this.destination_selector = destination_selector;
         this.res_type = res_type;
         this.module_id = module_id;
 
-        // This additional parameters are relevant to the rendering of the template
+        // These additional parameters are relevant to the rendering of the template
         this.include_metadata = false;
         this.start_hidden = false;
         this.include_search_toolbar = true;
@@ -309,28 +308,6 @@ class ResourceManager {
         $.each(all_rows, function (index, row_element) {
                 $(row_element).show()
         });
-        this.deactivate_tag_buttons()
     }
 
-}
-
-function selector_click(event) {
-    const row_element = $(event.target).closest('tr');
-    resource_managers[get_module_id()].selector_click(row_element[0])
-
-}
-
-function selector_double_click(event) {
-    const row_element = $(event.target).closest('tr');
-    const res_type = get_current_res_type();
-    manager = resource_managers[get_current_module_id()];
-    manager.get_all_selector_buttons().removeClass("active");
-    row_element.addClass("active");
-    event.data = {"manager": manager, "res_type": res_type};
-    manager[manager.double_click_func](event)
-}
-
-function tag_button_clicked(event) {
-    const txt = event.target.innerHTML;
-    resource_managers[get_current_module_id()].search_given_tag( txt)
 }

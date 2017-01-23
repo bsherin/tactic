@@ -36,7 +36,7 @@ function start_post_load() {
     socket.on("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
 
     socket.on('update-selector-list', (data) => {
-        manager = resource_managers[data.module_id];
+        const manager = resource_managers[data.module_id];
         manager.fill_content(data.html);
         manager.select_resource_button(data.select)
     });
@@ -77,14 +77,13 @@ function start_post_load() {
         $(".resource-module").on("click", ".tag-button-list button", tag_button_clicked);
 
         $(".resource-module").on("keyup", ".search-field", function(e) {
-            let res_type;
             if (e.which == 13) {
-                mod_id = get_current_module_id();
+                let mod_id = get_current_module_id();
                 resource_managers[mod_id].search_my_resource();
                 e.preventDefault();
             }
             else {
-                mode_id = get_current_module_id();
+                let mod_id = get_current_module_id();
                 resource_managers[mod_id].search_my_resource();
             }
         });
@@ -132,6 +131,28 @@ function toggleRepository() {
     resize_window();
     return(false)
 }
+
+function selector_click(event) {
+    const row_element = $(event.target).closest('tr');
+    resource_managers[get_module_id()].selector_click(row_element[0])
+
+}
+
+function selector_double_click(event) {
+    const row_element = $(event.target).closest('tr');
+    const res_type = get_current_res_type();
+    manager = resource_managers[get_current_module_id()];
+    manager.get_all_selector_buttons().removeClass("active");
+    row_element.addClass("active");
+    event.data = {"manager": manager, "res_type": res_type};
+    manager[manager.double_click_func](event)
+}
+
+function tag_button_clicked(event) {
+    const txt = event.target.innerHTML;
+    resource_managers[get_current_module_id()].search_given_tag( txt)
+}
+
 
 function showAdmin() {
     window.open(`${$SCRIPT_ROOT}/admin_interface`)

@@ -58,6 +58,18 @@ class UserManagerResourceManager extends ResourceManager{
         this.show_hide_tag_buttons(txt)
     }
 
+    unfilter_me () {
+        const all_rows = this.get_all_selector_buttons();
+        $.each(all_rows, function (index, row_element) {
+                $(row_element).show()
+        });
+        this.deactivate_tag_buttons();
+        this.show_all_tag_buttons();
+    }
+
+
+
+
     update_aux_content() {
         this.create_tag_buttons(this.update_tag_view);
     }
@@ -93,7 +105,7 @@ class UserManagerResourceManager extends ResourceManager{
         this.set_tag_button_state(txt);
     }
 
-     search_my_tags() {
+    search_my_tags() {
         const txt = this.get_search_field()[0].value.toLowerCase();
         this.search_given_tag(txt);
         this.show_hide_tag_buttons(txt)
