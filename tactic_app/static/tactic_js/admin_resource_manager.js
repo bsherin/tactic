@@ -11,14 +11,6 @@ class AdminResourceManager extends ResourceManager {
         this.aux_right = true
     }
 
-    add_listeners () {
-        for (let bgroup of this.button_groups) {
-            for (let value of bgroup.buttons) {
-                this.bind_button(value, "resource");
-            }
-        }
-    }
-
     update_main_content() {
         const self = this;
         let url_string = "request_update_admin_selector_list";
@@ -34,6 +26,15 @@ class AdminResourceManager extends ResourceManager {
         const updated_header = this.get_main_content_dom().find("table th")[2];
         sorttable.innerSortFunction.apply(updated_header, []);
         sorttable.innerSortFunction.apply(updated_header, []);
+    }
+
+    check_for_selection () {
+        //var res_name = $('#' + res_type + '-selector > .btn.active').text().trim();
+        const res_name = this.get_active_selector_button().attr("value");
+        if (res_name == "") {
+            doFlash({"message": `Select a ${this.res_type} first.`, "alert_type": "alert-info"})
+        }
+        return res_name
     }
 
 

@@ -9,12 +9,18 @@ const user_manage_id = guid();
 mousetrap.bind("esc", function() {
     clearStatusArea();
     clearStatusMessage();
+    resource_managers[get_current_module_id()].unfilter_me()
 });
 
 const res_types = ["container", "user"];
 const resource_managers = {};
 const repository_visible = false;
 
+
+function get_current_module_id() {
+    let res_type = get_current_res_type();
+    return `${res_type}_module`
+}
 
 function start_post_load() {
     if (use_ssl) {
@@ -54,8 +60,8 @@ function start_post_load() {
         resource_managers["container_module"] = new ContainerManager("container_module", "container", resource_module_template, "#container-module");
         resource_managers["user_module"] = new UserManager("user_module", "user", resource_module_template, "#user-module");
 
-        $(".resource-module").on("click", ".resource-selector .selector-button", selector_click);
-        $(".resource-module").on("dblclick", ".resource-selector .selector-button", selector_double_click);
+        $(".resource-module").on("click", ".main-content .selector-button", selector_click);
+        $(".resource-module").on("dblclick", ".main-content .selector-button", selector_double_click);
 
         $(".resource-module").on("keyup", ".search-field", function(e) {
             let res_type;
@@ -80,9 +86,20 @@ function selector_click(event) {
     resource_managers[get_current_module_id()].selector_click(row_element[0])
 }
 
+function selector_double_click(event) {
+    const row_element = $(event.target).closest('tr');
+    const res_type = get_current_res_type();
+    let manager = resource_managers[get_current_module_id()];
+    manager.get_all_selector_buttons().removeClass("active");
+    row_element.addClass("active");
+    event.data = {"manager": manager, "res_type": res_type};
+    manager.double_click_func(event)
+}
+
 class ContainerManager extends AdminResourceManager {
     set_extra_properties() {
         super.set_extra_properties();
+        this.double_click_func = this.container_logs;
         this.button_groups = [
             {
                 "buttons": [
@@ -119,7 +136,7 @@ class ContainerManager extends AdminResourceManager {
         let cont_id = manager.check_for_selection();
         $.getJSON($SCRIPT_ROOT + '/container_logs/' + cont_id, function (data) {
             let the_html = "<pre><small>" + data.log_text + "</small></pre>";
-            $("#container-aux-area").html(the_html)
+            manager.get_aux_right_dom().html(the_html)
         });
         event.preventDefault();
     }
@@ -134,6 +151,7 @@ class ContainerManager extends AdminResourceManager {
 class UserManager extends AdminResourceManager {
     set_extra_properties() {
         super.set_extra_properties();
+        this.double_click_func = function () {}
         this.button_groups = [
             {
                 "buttons": [

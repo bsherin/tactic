@@ -22,6 +22,16 @@ mousetrap.bind(['command+f', 'ctrl+f'], (e) => {
     e.preventDefault()
 });
 
+function get_current_module_id() {
+    let res_type = get_current_res_type();
+    if (repository_visible) {
+        return `repository_${res_type}_module`
+    }
+    else {
+        return `${res_type}_module`
+    }
+}
+
 function start_post_load() {
     if (use_ssl) {
         socket = io.connect(`https://${document.domain}:${location.port}/user_manage`);

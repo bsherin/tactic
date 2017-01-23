@@ -8,16 +8,6 @@ function get_current_res_type() {
     return module_id_str.match(reg_exp)[1]
 }
 
-function get_current_module_id() {
-    let res_type = get_current_res_type();
-    if (repository_visible) {
-        return `repository_${res_type}_module`
-    }
-    else {
-        return `${res_type}_module`
-    }
-}
-
 class ResourceManager {
     constructor (module_id, res_type, resource_module_template, destination_selector) {
         this.destination_selector = destination_selector;
@@ -74,8 +64,8 @@ class ResourceManager {
 
         if (this.include_search_toolbar) {
             this.bind_standard_button(".search-resource-button", this.search_my_resource);
-            this.bind_standard_button(".search-tags-button", this.search_my_tags);
             this.bind_standard_button(".resource-unfilter-button", this.unfilter_me);
+            this.bind_standard_button(".search-tags-button", this.search_my_tags);
             this.bind_standard_button(".save-metadata-button", this.save_my_metadata);
         }
     }
@@ -298,5 +288,7 @@ class ResourceManager {
                 $(row_element).show()
         });
     }
+
+    search_my_tags () {}
 
 }
