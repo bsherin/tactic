@@ -260,7 +260,7 @@ function renameModule() {
 function changeTheme() {
     if (current_theme == "default") {
         myCodeMirror.setOption("theme", "pastel-on-dark");
-        if (this_viewer == "creator") {
+        if ((this_viewer == "creator") && is_mpl) {
             myDPCodeMirror.setOption("theme", "pastel-on-dark");
         }
         document.body.style.backgroundColor = "grey";
@@ -268,7 +268,7 @@ function changeTheme() {
     }
     else {
         myCodeMirror.setOption("theme", "default");
-        if (this_viewer == "creator") {
+        if ((this_viewer == "creator") && is_mpl) {
             myDPCodeMirror.setOption("theme", "default");
         }
         document.body.style.backgroundColor = "white";

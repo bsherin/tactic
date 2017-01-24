@@ -185,8 +185,3 @@ def admin_interface():
     else:
         return "not authorized"
 
-
-@app.route('/get_admin_resource_module_template', methods=['get'])
-@login_required
-def get_admin_resource_module_template():
-    return send_file("templates/admin_resource_module_template.html")

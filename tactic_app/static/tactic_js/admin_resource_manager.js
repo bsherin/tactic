@@ -37,9 +37,8 @@ class AdminResourceManager extends ResourceManager {
         return res_name
     }
 
+    clear_resource_metadata() {
 
-    clear_resource_metadata(manager_kind) {
-        ;
     }
 
 }

@@ -16,6 +16,7 @@
             </div>
         </div>
         {{/include_search_toolbar}}
+    {{#include_button_well}}
     <div class="well well-sm" style="display:inline-block; margin-left:10px; margin-bottom:10px">
         {{#file_adders}}
             <form action="" class="file-adder" method="post" target="_self" value="{{name}}-{{res_type}}-form" enctype="multipart/form-data">
@@ -46,6 +47,7 @@
             {{/button_groups}}
         </div>
     </div>
+    {{/include_button_well}}
     <div class="indent-row main-content-row" style="margin-top: 7px; height: 100%; overflow: hidden">
         <div class="" style="height: 100%; overflow: hidden">
             {{#aux_left}}

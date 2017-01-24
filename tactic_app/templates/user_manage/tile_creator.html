@@ -103,9 +103,8 @@
 
                                 </div>
                             </div>
-
                             <div class="tab-pane fade row" id="option-module-outer">
-                                <div class="resource-module" id="option-module"></div>
+                                <div class="resource-module" id="option-module-holder"></div>
                                 <form class="form-inline row indent-row" style="display:inline-block">
                                       <div class="form-group">
                                             <label for="option-name-input">Name</label><br>
@@ -136,10 +135,10 @@
                                          <button type="button" id="option-create-button" class="btn btn-default">Create</button>
                                         </div>
                                 </form>
+                                </div>
 
-                            </div>
                             <div class="tab-pane fade row" id="export-module-outer">
-                                <div class="resource-module" id="export-module"></div>
+                                <div class="resource-module" id="export-module-holder"></div>
                                 <form class="form-inline row indent-row" style="display:inline-block">
                                       <div class="form-group">
                                         <label for="export-name-input">Name</label><br>
@@ -153,7 +152,7 @@
 
                             </div>
                             <div class="tab-pane fade row" id="method-module-outer">
-                                <div class="resource-module" id="method-module"></div>
+                                <div class="resource-module" id="method-module-holder"></div>
                             </div>
                         </div>
                     </div>
@@ -166,7 +165,8 @@
 {% block scripts %}
     <script src="{{url_for('static', filename='js/sorttable.js')}}"></script>
     <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
-    <script src="{{url_for('static', filename='tactic_js/admin_resource_manager.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/resource_manager.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/creator_resource_manager.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/module_editors_shared.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/tile_creator.js')}}"></script>
     <script>

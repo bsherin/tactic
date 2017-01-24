@@ -16,10 +16,11 @@ class ResourceManager {
 
         // These additional parameters are relevant to the rendering of the template
         this.include_metadata = false;
+        this.include_button_well = true;
         this.start_hidden = false;
         this.include_search_toolbar = true;
         this.popup_buttons = [];
-        this.buttons_groups=[];
+        this.button_groups=[];
         this.file_adders = [];
         this.aux_left = false;
         this.aux_right = false;
@@ -171,22 +172,19 @@ class ResourceManager {
         let but;
         let i;
         let but_text;
-        this.button_groups.forEach(function(bgroup) {
-              for (i=0; i < bgroup.buttons.length; ++i) {
-                  but = bgroup.buttons[i];
+        for (let bgroup of this.button_groups) {
+            for (let but of bgroup.buttons) {
                   but_text = but["name"].replace(/_/g, ' ');
-                  bgroup.buttons[i]["name_text"] = but_text
+                  but["name_text"] = but_text
               }
-        });
-        for (i=0; i < this.popup_buttons.length; ++i) {
-          but = this.popup_buttons[i];
-          but_text = but["name"].replace(/_/g, ' ');
-          this.popup_buttons[i]["name_text"] = but_text
         }
-        for (i=0; i < this.file_adders.length; ++i) {
-          but = this.file_adders[i];
+        for (let but of this.popup_buttons) {
           but_text = but["name"].replace(/_/g, ' ');
-          this.file_adders[i]["name_text"] = but_text
+          but["name_text"] = but_text
+        }
+        for (let but of this.file_adders) {
+          but_text = but["name"].replace(/_/g, ' ');
+          but["name_text"] = but_text
         }
     }
 

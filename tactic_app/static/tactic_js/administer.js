@@ -46,7 +46,7 @@ function start_post_load() {
         statusMessage(data)
     });
 
-    socket.on("clear-status-msg", function (data){
+    socket.on("clear-status-msg", function (){
        clearStatusMessage()
     });
 
@@ -64,7 +64,6 @@ function start_post_load() {
         $(".resource-module").on("dblclick", ".main-content .selector-button", selector_double_click);
 
         $(".resource-module").on("keyup", ".search-field", function(e) {
-            let res_type;
             if (e.which == 13) {
                 resource_managers[get_current_module_id()].search_my_resource();
                 e.preventDefault();
@@ -74,7 +73,7 @@ function start_post_load() {
             }
             });
             resize_window();
-            $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+            $('a[data-toggle="tab"]').on('shown.bs.tab', function () {
             resize_window()
             });
             stopSpinner()
@@ -151,7 +150,7 @@ class ContainerManager extends AdminResourceManager {
 class UserManager extends AdminResourceManager {
     set_extra_properties() {
         super.set_extra_properties();
-        this.double_click_func = function () {}
+        this.double_click_func = function () {};
         this.button_groups = [
             {
                 "buttons": [

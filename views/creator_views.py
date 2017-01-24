@@ -11,12 +11,6 @@ from tactic_app.integrated_docs import api_array, api_dict_by_category, api_dict
 import re, sys, datetime
 
 
-@app.route('/get_creator_resource_module_template', methods=['get'])
-@login_required
-def get_creator_resource_module_template():
-    return send_file("templates/creator_resource_module_template.html")
-
-
 def load_tile_module(module_name):
     user_obj = current_user
     tile_module = user_obj.get_tile_module(module_name)
