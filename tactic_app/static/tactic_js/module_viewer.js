@@ -19,7 +19,7 @@ function continue_loading(data) {
     const codearea = document.getElementById("codearea");
     myCodeMirror = createCMArea(codearea, true);
     myCodeMirror.setValue(savedCode);
-    resize_dom_to_bottom_given_selector(".CodeMirror", 20);
+    resize_code_area();
     resize_dom_to_bottom_given_selector("#api-area", 20);
 
     const result_dict = {"res_type": "tile", "res_name": module_name};

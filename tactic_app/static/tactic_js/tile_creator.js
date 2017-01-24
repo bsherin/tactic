@@ -9,23 +9,14 @@ let savedTags = null;
 let savedNotes = null;
 let savedCategory = null;
 let savedMethods = null;
-let rt_code = null;
-let render_content_line_number = 0;
-let draw_plot_line_number = 0;
 const user_manage_id = guid();
 let is_mpl = null;
-let draw_plot_code = null;
 let this_viewer = "creator";
 let savedDPCode;
 
+let parsed_data;
 const resource_managers = {};
 
-$(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function (e) {
-    if ($(e.currentTarget).attr("value") == "method") {
-        resize_dom_to_bottom_given_selector("#method-module .CodeMirror", 20);
-        resource_managers["method_module"].cmobject.refresh();
-    }
-});
 
 function start_post_load() {
     if (use_ssl) {
@@ -37,153 +28,74 @@ function start_post_load() {
     socket.emit('join', {"user_id":  user_id, "user_manage_id":  user_manage_id});
 
     window.onresize = function () {
-        if (is_mpl) {
-            let dpba = $("#drawplotboundingarea");
-            if (dpba.length > 0) {
-                let the_height = [window.innerHeight - dpba.offset().top - 20] / 2;
-                dpba.css('height', the_height);
-            }
-            let dpca = $("#drawplotcodearea");
-            if (dpca.length > 0) {
-                let dpca_height = the_height - (dpca.offset().top - dpba.offset().top);
-                dpca.css('height', dpca_height);
-                $("#drawplotcodearea .CodeMirror").css('height', dpca_height);
-            }
-            if (myDPCodeMirror != null) {
-                myDPCodeMirror.refresh();
-            }
-        }
-        resize_dom_to_bottom_given_selector("#codearea", 20);
-        resize_dom_to_bottom_given_selector("#codearea .CodeMirror", 20);
-        resize_dom_to_bottom_given_selector("#api-area", 20);
-        resize_dom_to_bottom_given_selector("#method_module .CodeMirror", 20);
-        resize_dom_to_bottom_given_selector(".tab-pane", 20);
-        if (myCodeMirror != null) {
-            myCodeMirror.refresh();
-        }
-        if (resource_managers["method_module"] != null) {
-            resource_managers["method_module"].cmobject.refresh();
-        }
+        resize_all_areas();
     };
-    $("#option-type-input").on("change", function () {
-        let option_type = $("#option-type-input").val();
-        if (option_type == "custom_list") {
-            $("#special-list-group").css("display", "inline-block");
-            $("#option-tag-group").css("display", "none")
-        }
-        else if ((option_type == "class_select") || (option_type == "function_select")) {
-            $("#option-tag-group").css("display", "inline-block");
-            $("#special-list-group").css("display", "none")
-        }
-        else {
-            $("#special-list-group").css("display", "none");
-            $("#option-tag-group").css("display", "none")
+
+    $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function (e) {
+        if ($(e.currentTarget).attr("value") == "method") {
+            resize_method_module();
+            resource_managers["method_module"].cmobject.refresh();
         }
     });
 
     socket.on('doflash', doFlash);
-    const data = {};
-    data.module_name = module_name;
-    postAjax("parse_code", data, parse_success)
+
+    postAjaxPromise("parse_code", {"module_name": module_name})
+        .then((result) => {
+            setup_code_areas(result);
+            setup_resource_modules();
+            create_api_listeners()
+        })
+        .catch(doFlash)
 }
 
-let parsed_data;
+function setup_code_areas(result) {
+    parsed_data = result;
+    savedMethods = parsed_data.extra_functions;
+    savedTags = parsed_data.tags;
+    savedNotes = parsed_data.notes;
+    savedCategory = parsed_data.category;
+    is_mpl = parsed_data.is_mpl;
 
-function parse_success(data) {
-    if (!data.success) {
-        doFlash(data)
-    }
-    else {
-        parsed_data = data;
-        rt_code = data.render_content_code;
-        render_content_line_number = data.render_content_line_number;
-        draw_plot_line_number = data.draw_plot_line_number;
-        savedMethods = data.extra_functions;
-        $(".created").html(data.datestring);
-        $("#tile-tags")[0].value = data.tags;
-        $("#tile-notes")[0].value = data.notes;
-        $("#tile-category")[0].value = data.category;
-        savedTags = data.tags;
-        savedNotes = data.notes;
-        savedCategory = data.category;
-        is_mpl = data.is_mpl;
-        draw_plot_code = data.draw_plot_code;
+    set_metadata_fields(parsed_data.datestring, parsed_data.tags, parsed_data.notes, parsed_data.category);
 
-        $.get($SCRIPT_ROOT + "/get_resource_module_template", function(template) {
-            resource_module_template = $(template).filter('#resource-module-template').html();
-
-            resource_managers["option_module"] = new OptionManager("option_module", "option", resource_module_template, "#option-module-holder");
-            resource_managers["export_module"] = new ExportManager("export_module", "export", resource_module_template, "#export-module-holder");
-            resource_managers["method_module"] = new MethodManager("method_module", "method", resource_module_template, "#method-module-holder");
-
-            $(".resource-module").on("click", ".main-content .selector-button", selector_click);
-            $("#export-create-button").on("click", {"manager": resource_managers["export_module"]}, resource_managers["export_module"].createNewExport);
-            postAjax("get_api_dict", {}, continue_loading);
-            $("#option-create-button").on("click", {"manager": resource_managers["option_module"]}, resource_managers["option_module"].createNewOption);
-        });
-
-    }
-}
-function continue_loading() {
     const codearea = document.getElementById("codearea");
-    myCodeMirror = createCMArea(codearea, false);
-    if (render_content_line_number != 0) {
-        myCodeMirror.setOption("firstLineNumber", render_content_line_number + 1)
-    }
-    myCodeMirror.setValue(rt_code);
+    myCodeMirror = createCMArea(codearea, false, parsed_data.render_content_code, parsed_data.render_content_line_number + 1);
+    savedCode = myCodeMirror.getDoc().getValue();
+
     if (is_mpl) {
         const drawplotcodearea = document.getElementById("drawplotcodearea");
-        myDPCodeMirror = createCMArea(drawplotcodearea, false);
-        myDPCodeMirror.setValue(draw_plot_code);
-        if (draw_plot_line_number != 0) {
-            myDPCodeMirror.setOption("firstLineNumber", draw_plot_line_number + 1)
-        }
+        myDPCodeMirror = createCMArea(drawplotcodearea, false, parsed_data.draw_plot_code, parsed_data.draw_plot_line_number + 1);
         let dpba = $("#drawplotboundingarea");
         dpba.css("display", "block");
-        myDPCodeMirror.refresh();
-        if (dpba.length > 0) {
-            the_height = [window.innerHeight - dpba.offset().top - 20] / 2;
-            dpba.css('height', the_height);
-        }
-        let dpca = $("#drawplotcodearea");
-        if (dpca.length > 0) {
-            let dpca_height = the_height - (dpca.offset().top - dpba.offset().top);
-            dpca.css('height', dpca_height);
-            $("#drawplotcodearea .CodeMirror").css('height', dpca_height);
-        }
-
         savedDPCode = myDPCodeMirror.getDoc().getValue();
         dpba.resizable({
                 handles: "s",
                 resize: function (event, ui) {
-                    // ui.position.top = 0;
-                    dpba.css('height', ui.size.height);
-
-                    let the_height = ui.size.height;
-                    dpba.css('height', the_height);
-                    let dpca_height = the_height - ($("#drawplotcodearea").offset().top - dpba.offset().top);
-                    $("#drawplotcodearea").css('height', dpca_height);
-                    $("#drawplotcodearea .CodeMirror").css('height', dpca_height);
-
-                    resize_dom_to_bottom_given_selector("#codearea", 20);
-                    resize_dom_to_bottom_given_selector("#codearea .CodeMirror", 20);
-
-                    myDPCodeMirror.refresh();
+                    resize_dparea_from_height(ui.size.height);
+                    resize_code_area();
                 }
-                // resize: handle_resize
             });
     }
+}
 
-    resize_dom_to_bottom_given_selector("#codearea", 20);
-    resize_dom_to_bottom_given_selector("#codearea .CodeMirror", 20);
-    resize_dom_to_bottom_given_selector("#api-area", 20);
-    resize_dom_to_bottom_given_selector("#method_module .CodeMirror", 20);
-    resize_dom_to_bottom_given_selector(".tab-pane", 20);
-    myCodeMirror.refresh();
+function setup_resource_modules() {
+    $.get($SCRIPT_ROOT + "/get_resource_module_template", function(template) {
+        resource_module_template = $(template).filter('#resource-module-template').html();
 
-    savedCode = myCodeMirror.getDoc().getValue();
+        // Note there's a kluge here: these managers require the global variable parsed_data to be set.
+        resource_managers["option_module"] = new OptionManager("option_module", "option", resource_module_template, "#option-module-holder");
+        resource_managers["export_module"] = new ExportManager("export_module", "export", resource_module_template, "#export-module-holder");
+        resource_managers["method_module"] = new MethodManager("method_module", "method", resource_module_template, "#method-module-holder");
 
-    const result_dict = {"res_type": "tile", "res_name": module_name};
+        $(".resource-module").on("click", ".main-content .selector-button", selector_click);
+        $("#export-create-button").on("click", {"manager": resource_managers["export_module"]}, resource_managers["export_module"].createNewExport);
+        $("#option-create-button").on("click", {"manager": resource_managers["option_module"]}, resource_managers["option_module"].createNewOption);
+
+    });
+}
+
+function create_api_listeners() {
     const acc = document.getElementsByClassName("accordion");
     for (let element of acc) {
         element.onclick = function(){
@@ -191,25 +103,7 @@ function continue_loading() {
             this.nextElementSibling.classList.toggle("show");
         }
     }
-    postAjax("grab_metadata", result_dict, got_metadata);
-    window.onresize();
-    function got_metadata(data) {
-        if (data.success) {
-            $(".created").html(data.datestring);
-            $("#tile-tags")[0].value = data.tags;
-            $("#tile-notes")[0].value = data.notes;
-            savedTags = data.tags;
-            savedNotes = data.notes
-        }
-        else {
-            // doFlash(data)
-            $(".created").html("");
-            $("#tile-tags")[0].value = "";
-            $("#tile-tags").html("");
-            $("#tile-notes")[0].value = "";
-            $("#tile-notes").html("");
-        }
-    }
+    resize_all_areas();
 }
 
 function rebuild_autocomplete_list() {
@@ -220,7 +114,6 @@ function rebuild_autocomplete_list() {
 }
 
 class OptionManager extends CreatorResourceManager {
-
     set_extra_properties() {
         super.set_extra_properties();
         this.update_view = "get_option_table";
@@ -234,6 +127,25 @@ class OptionManager extends CreatorResourceManager {
                 ]
             }
         ]
+    }
+
+    add_listeners() {
+        super.add_listeners();
+        $("#option-type-input").on("change", function () {
+            let option_type = $("#option-type-input").val();
+            if (option_type == "custom_list") {
+                $("#special-list-group").css("display", "inline-block");
+                $("#option-tag-group").css("display", "none")
+            }
+            else if ((option_type == "class_select") || (option_type == "function_select")) {
+                $("#option-tag-group").css("display", "inline-block");
+                $("#special-list-group").css("display", "none")
+            }
+            else {
+                $("#special-list-group").css("display", "none");
+                $("#option-tag-group").css("display", "none")
+            }
+            });
     }
 
     refresh_option_table (event) {
@@ -392,13 +304,13 @@ class MethodManager extends CreatorResourceManager {
         this.data_attr = "extra_functions";
         this.include_button_well = false;
     }
+
     update_main_content() {
         this.cmobject = createCMArea(this.get_main_content_dom()[0], false);
         this.get_main_content_dom().find(".CodeMirror").resizable({handles: "se"});
         this.get_main_content_dom().find(".CodeMirror").height(100);
         this.fill_content();
     }
-
 
     fill_content () {
         this.cmobject.setValue(this.extra_functions)
@@ -411,8 +323,63 @@ class MethodManager extends CreatorResourceManager {
     refresh_methods () {
         this.fill_content()
     }
+}
 
+function resize_dparea() {
+    let dpba = $("#drawplotboundingarea");
+    if (dpba.length > 0) {
+        let the_height = [window.innerHeight - dpba.offset().top - 20] / 2;
+        resize_dparea_from_height(the_height)
+    }
+}
 
+function resize_dparea_from_height(the_height) {
+    let dpba = $("#drawplotboundingarea");
+    dpba.css('height', the_height);
+    let dpca = $("#drawplotcodearea");
+    if (dpca.length > 0) {
+        let dpca_height = the_height - (dpca.offset().top - dpba.offset().top);
+        dpca.css('height', dpca_height);
+        $("#drawplotcodearea .CodeMirror").css('height', dpca_height);
+    }
+    if (myDPCodeMirror != null) {
+        myDPCodeMirror.refresh();
+    }
+}
+
+function resize_code_area() {
+    resize_dom_to_bottom_given_selector("#codearea", 20);
+    resize_dom_to_bottom_given_selector("#codearea .CodeMirror", 20);
+    if (myCodeMirror != null) {
+        myCodeMirror.refresh();
+    }
+}
+
+function resize_method_module() {
+    resize_dom_to_bottom_given_selector("#method_module .CodeMirror", 20);
+}
+
+function resize_api_and_tab_areas() {
+    resize_dom_to_bottom_given_selector("#api-area", 20);
+    resize_dom_to_bottom_given_selector(".tab-pane", 20);
+}
+
+function resize_all_areas() {
+    if (is_mpl) {
+        resize_dparea()
+    }
+    resize_code_area();
+    resize_method_module();
+    resize_api_and_tab_areas()
+}
+
+function set_metadata_fields(created, tags, notes, category = null) {
+    $(".created").html(created);
+    $("#tile-tags")[0].value = tags;
+    $("#tile-notes")[0].value = notes;
+    if (category != null) {
+        $("#tile-category")[0].value = category;
+    }
 }
 
 function selector_click(event) {

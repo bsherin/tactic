@@ -5,6 +5,9 @@
 let extra_autocomplete_list = [];
 let cmobjects_to_search = [];
 let cmobjects = [];
+let api_dict_by_name;
+let api_dict_by_category;
+let ordered_api_categories;
 
 const mousetrap = new Mousetrap();
 mousetrap.bind("esc", function() {
@@ -14,9 +17,9 @@ mousetrap.bind("esc", function() {
 
 
 postAjax("get_api_dict", {}, function (data) {
-    let api_dict_by_category = data.api_dict_by_category;
-    let api_dict_by_name = data.api_dict_by_name;
-    let ordered_api_categories = data.ordered_api_categories;
+    api_dict_by_category = data.api_dict_by_category;
+    api_dict_by_name = data.api_dict_by_name;
+    ordered_api_categories = data.ordered_api_categories;
     let api_list = [];
     ordered_api_categories.forEach(function(cat) {
         api_dict_by_category[cat].forEach(function (entry) {
@@ -82,7 +85,7 @@ else {
     });
 }
 
-function createCMArea(codearea, include_in_global_search) {
+function createCMArea(codearea, include_in_global_search = false, initial_value = null, first_line_number = 1) {
     let cmobject = CodeMirror(codearea, {
         lineNumbers: true,
         matchBrackets: true,
@@ -91,6 +94,13 @@ function createCMArea(codearea, include_in_global_search) {
         indentUnit: 4,
         readOnly: false
     });
+    if (first_line_number != 1) {
+        cmobject.setOption("firstLineNumber", first_line_number)
+    }
+    if (initial_value != null) {
+        cmobject.setValue(initial_value);
+    }
+
     cmobject.setOption("extraKeys", {
           Tab: function(cm) {
             let spaces = Array(5).join(" ");
