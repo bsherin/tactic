@@ -13,10 +13,10 @@ let module_viewer;
 
 function start_post_load() {
     if (is_repository) {
-            module_viewer = new RepositoryModuleViewer(resource_name, "repository_get_module_code")
+            module_viewer = new RepositoryModuleViewer(resource_name, "tile", "repository_get_module_code")
         }
         else {
-            module_viewer = new ModuleViewer(resource_name, "get_module_code")
+            module_viewer = new ModuleViewer(resource_name, "tile", "get_module_code")
         }
     }
 
@@ -27,12 +27,12 @@ class ModuleViewer extends ModuleViewerAbstract {
     }
 
     get button_bindings() {
-        return {"save_button": this.updateModule,
+        return {"save_button": this.saveMe,
             "save_as_button": this.saveModuleAs,
             "load_button": this.loadModule,
             "share_button": this.sendToRepository,
             "change_theme_button": this.changeTheme,
-            "show_api_button": this.showApi}
+            "show_api_button": this.showAPI}
     }
 
     get_current_content () {
@@ -44,47 +44,25 @@ class ModuleViewer extends ModuleViewerAbstract {
     }
 
     set_main_content(the_content) {
-        codearea = document.getElementById("#main_content")
-        this.myCodeMirror = this.createCMArea(codearea, true, the_content, 1)
-        this.myCodemirror.setValue(the_content);
+        let codearea = document.getElementById("main_content");
+        this.myCodeMirror = this.createCMArea(codearea, true, the_content, 1);
+        if (is_repository) {
+            this.myCodeMirror.setOption("readOnly", true)
+        }
+        this.myCodeMirror.refresh();
+        postAjaxPromise("get_api_html", {})
+            .then(function (data) {
+                $("#aux-area").html(data.api_html)
+            })
+            .catch(doFlash)
     }
-
 }
 
-function continue_loading(data) {
-    savedCode = data.module_code;
-    const codearea = document.getElementById("codearea");
-    myCodeMirror = createCMArea(codearea, true);
-    myCodeMirror.setValue(savedCode);
-    resize_code_area();
-    resize_dom_to_bottom_given_selector("#api-area", 20);
 
-    const result_dict = {"res_type": "tile", "res_name": module_name};
-    const acc = document.getElementsByClassName("accordion");
-    let i;
-    for (i = 0; i < acc.length; i++) {
-        acc[i].onclick = function(){
-            this.classList.toggle("active");
-            this.nextElementSibling.classList.toggle("show");
-        }
+class RepositoryModuleViewer extends ModuleViewer {
+
+    get button_bindings() {
+        return {"copy_button": this.copyToLibrary};
     }
-    postAjax("grab_metadata", result_dict, got_metadata);
-    function got_metadata(data) {
-        if (data.success) {
-            $(".created").html(data.datestring);
-            $("#tile-tags")[0].value = data.tags;
-            $("#tile-notes")[0].value = data.notes;
-            savedTags = data.tags;
-            savedNotes = data.notes
-        }
-        else {
-            // doFlash(data)
-            $(".created").html("");
-            $("#tile-tags")[0].value = "";
-            $("#tile-tags").html("");
-            $("#tile-notes")[0].value = "";
-            $("#tile-notes").html("");
-        }
-    }
-    myCodeMirror.refresh()
+
 }

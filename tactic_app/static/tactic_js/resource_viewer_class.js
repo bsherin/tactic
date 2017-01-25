@@ -3,8 +3,9 @@
  */
 
 class ResourceViewer {
-    constructor(resource_name, get_url) {
+    constructor(resource_name, res_type, get_url) {
         this.resource_name = resource_name;
+        this.res_type = res_type;
         this.mousetrap = new Mousetrap();
         this.savedContent = null;
         this.do_extra_setup();
@@ -78,6 +79,38 @@ class ResourceViewer {
             .catch(function () {
                 self.set_metadata_fields("", "", "")
             })
+    }
+
+    sendToRepository() {
+        self = this;
+        $.getJSON($SCRIPT_ROOT + `get_repository_resource_names/${this.res_type}`, function(data) {
+            showModal(`Share ${self.res_type}`, `New ${self.res_type} Name`, ShareResource, self.resource_name, data["resource_names"])
+            }
+        );
+        function ShareResource(new_name) {
+            const result_dict = {
+                "res_type": self.res_type,
+                "res_name": self.resource_name,
+                "new_res_name": new_name
+            };
+            postAjax("send_to_repository", result_dict, doFlashAlways)
+        }
+    }
+
+    copyToLibrary() {
+        self = this;
+        $.getJSON($SCRIPT_ROOT + `get_resource_names/${this.res_type}`, function(data) {
+            showModal(`Import ${self.res_type}`, `New ${self.res_type} Name`, ImportResource, self.resource_name, data["resource_names"])
+            }
+        );
+        function ImportResource(new_name) {
+            const result_dict = {
+                "res_type": self.res_type,
+                "res_name": self.resource_name,
+                "new_res_name": new_name
+            };
+            postAjax("copy_from_repository", result_dict, doFlashAlways);
+        }
     }
 
     dirty() {

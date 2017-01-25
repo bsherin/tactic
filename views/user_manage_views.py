@@ -280,7 +280,8 @@ class ListManager(ResourceManager):
     collection_name = "list_collection_name"
     name_field = "list_name"
     button_groups = [[{"name": "save_button", "button_class": "btn-default", "name_text": "Save"},
-                      {"name": "save_as_button", "button_class": "btn-default", "name_text": "Save as ..."}
+                      {"name": "save_as_button", "button_class": "btn-default", "name_text": "Save as ..."},
+                      {"name": "share_button", "button_class": "btn-default", "name_text": "Share"}
                       ]]
 
     def add_rules(self):
@@ -735,6 +736,13 @@ class TileManager(ResourceManager):
     collection_list_with_metadata = "tile_module_names_with_metadata"
     collection_name = "tile_collection_name"
     name_field = "tile_module_name"
+    button_groups = [[{"name": "save_button", "button_class": "btn-default", "name_text": "Save"},
+                      {"name": "save_as_button", "button_class": "btn-default", "name_text": "Save as ..."},
+                      {"name": "load_button", "button_class": "btn-default", "name_text": "Save and load"},
+                      {"name": "share_button", "button_class": "btn-default", "name_text": "Share"}
+                      ],
+                     [{"name": "change_theme_button", "button_class": "btn-default", "name_text": "Toggle theme"},
+                      {"name": "show_api_button", "button_class": "btn-default", "name_text": "Show API"}]]
 
     def add_rules(self):
         app.add_url_rule('/view_module/<module_name>', "view_module",
@@ -743,10 +751,12 @@ class TileManager(ResourceManager):
                          login_required(self.get_module_code), methods=['get', 'post'])
         app.add_url_rule('/view_in_creator/<module_name>', "view_in_creator",
                          login_required(self.view_in_creator), methods=['get'])
+
         app.add_url_rule('/last_saved_view/<module_name>', "last_saved_view",
                          login_required(self.last_saved_view), methods=['get'])
-        app.add_url_rule('/repository_view_module/<module_name>', "repository_view_module",
-                         login_required(self.repository_view_module), methods=['get'])
+        app.add_url_rule('/get_api_html', "get_api_html",
+                         login_required(self.get_api_html), methods=['get', 'post'])
+
         app.add_url_rule('/load_tile_module/<tile_module_name>', "load_tile_module",
                          login_required(self.load_tile_module), methods=['get', 'post'])
         app.add_url_rule('/unload_all_tiles', "unload_all_tiles",
@@ -784,17 +794,26 @@ class TileManager(ResourceManager):
         mdata["notes"] = notes
         db[current_user.tile_collection_name].update_one({"tile_module_name": res_name}, {'$set': {"metadata": mdata}})
 
+    def get_api_html(self):
+        return jsonify({"success": True, "api_html": api_html})
+
     def view_module(self, module_name):
-        return render_template("user_manage/module_viewer.html",
-                               module_name=module_name,
-                               read_only_string="",
-                               api_html=api_html,
-                               uses_codemirror="True")
+        javascript_source = url_for('static', filename='tactic_js/module_viewer.js')
+        return render_template("user_manage/resource_viewer.html",
+                               resource_name=module_name,
+                               include_metadata=True,
+                               readonly = False,
+                               is_repository = False,
+                               javascript_source=javascript_source,
+                               uses_codemirror = "True",
+                               button_groups=self.button_groups)
+
+
 
     def get_module_code(self, module_name):
         user_obj = current_user
         module_code = user_obj.get_tile_module(module_name)
-        return jsonify({"success": True, "module_code": module_code})
+        return jsonify({"success": True, "the_content": module_code})
 
     def last_saved_view(self, module_name):
         tile_dict = current_user.get_tile_dict(module_name)
@@ -837,15 +856,6 @@ class TileManager(ResourceManager):
                                option_types=option_types,
                                uses_codemirror="True")
 
-    def repository_view_module(self, module_name):
-        user_obj = repository_user
-        module_code = user_obj.get_tile_module(module_name)
-        return render_template("user_manage/module_viewer.html",
-                               module_name=module_name,
-                               module_code=module_code,
-                               read_only_string="readonly",
-                               api_html=api_html,
-                               uses_codemirror="True")
 
     def load_tile_module(self, tile_module_name, return_json=True, user_obj=None):
         try:
@@ -961,9 +971,32 @@ class TileManager(ResourceManager):
 class RepositoryTileManager(TileManager):
     rep_string = "repository-"
     is_repository = True
+    button_groups = [[{"name": "copy_button", "button_class": "btn-default", "name_text": "Copy to library"}
+                      ]]
 
     def add_rules(self):
-        pass
+        app.add_url_rule('/repository_view_module/<module_name>', "repository_view_module",
+                         login_required(self.repository_view_module), methods=['get'])
+        app.add_url_rule('/repository_get_module_code/<module_name>', "repository_get_module_code",
+                         login_required(self.repository_get_module_code), methods=['get', 'post'])
+
+
+    def repository_view_module(self, module_name):
+        javascript_source = url_for('static', filename='tactic_js/module_viewer.js')
+        return render_template("user_manage/resource_viewer.html",
+                               resource_name=module_name,
+                               include_metadata=True,
+                               readonly=True,
+                               is_repository=True,
+                               javascript_source=javascript_source,
+                               uses_codemirror="True",
+                               button_groups=self.button_groups)
+
+
+    def repository_get_module_code(self, module_name):
+        user_obj = repository_user
+        module_code = user_obj.get_tile_module(module_name)
+        return jsonify({"success": True, "the_content": module_code})
 
 
 class CodeManager(ResourceManager):

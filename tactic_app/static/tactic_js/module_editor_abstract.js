@@ -17,14 +17,16 @@ class ModuleViewerAbstract extends ResourceViewer {
         this.myDPCodeMirror = null;
         this.current_theme = "default";
         self = this;
+
         postAjax("get_api_dict", {}, function (data) {
             self.api_dict_by_category = data.api_dict_by_category;
             self.api_dict_by_name = data.api_dict_by_name;
             self.ordered_api_categories = data.ordered_api_categories;
+
             let api_list = [];
             self.ordered_api_categories.forEach(function (cat) {
                 self.api_dict_by_category[cat].forEach(function (entry) {
-                    self.api_list.push(entry["name"])
+                    api_list.push(entry["name"])
                 })
             });
             CodeMirror.commands.autocomplete = function (cm) {
@@ -36,39 +38,39 @@ class ModuleViewerAbstract extends ResourceViewer {
         });
         CodeMirror.keyMap["default"]["Esc"] = this.clearSelections;
         let is_mac = CodeMirror.keyMap["default"].hasOwnProperty("Cmd-S");
-        mousetrap.bind(['esc'], function (e) {
+        this.mousetrap.bind(['esc'], function (e) {
             this.clearSelections();
             e.preventDefault()
         });
 
         if (is_mac) {
             CodeMirror.keyMap["default"]["Cmd-S"] = self.updateModule;
-            mousetrap.bind(['command+s'], function (e) {
+            this.mousetrap.bind(['command+s'], function (e) {
                 self.updateModule();
                 e.preventDefault()
             });
 
-            mousetrap.bind(['command+l'], function (e) {
+            this.mousetrap.bind(['command+l'], function (e) {
                 self.loadModule();
                 e.preventDefault()
             });
-            mousetrap.bind(['command+f'], function (e) {
+            this.mousetrap.bind(['command+f'], function (e) {
                 self.searchInAll();
                 e.preventDefault()
             });
         }
         else {
             CodeMirror.keyMap["default"]["Ctrl-S"] = self.updateModule;
-            mousetrap.bind(['ctrl+s'], function (e) {
+            this.mousetrap.bind(['ctrl+s'], function (e) {
                 self.updateModule();
                 e.preventDefault()
             });
 
-            mousetrap.bind(['ctrl+l'], function (e) {
+            this.mousetrap.bind(['ctrl+l'], function (e) {
                 self.loadModule();
                 e.preventDefault()
             });
-            mousetrap.bind(['ctrl+f'], function (e) {
+            this.mousetrap.bind(['ctrl+f'], function (e) {
                 sself.earchInAll();
                 e.preventDefault()
             });
@@ -111,6 +113,7 @@ class ModuleViewerAbstract extends ResourceViewer {
             },
             "Ctrl-Space": "autocomplete"
         });
+        $(".CodeMirror").css("height", "100%");
         if (include_in_global_search) {
             this.cmobjects_to_search.push(cmobject);
         }
@@ -120,8 +123,8 @@ class ModuleViewerAbstract extends ResourceViewer {
 
     doSave(update_success) {
         const new_code = this.myCodeMirror.getDoc().getValue();
-        const tags = $("#tile-tags").val();
-        const notes = $("#tile-notes").val();
+        const tags = $("#tags").val();
+        const notes = $("#notes").val();
         let result_dict;
         let category;
 
@@ -146,7 +149,7 @@ class ModuleViewerAbstract extends ResourceViewer {
                 new_dp_code = this.myDPCodeMirror.getDoc().getValue();
             }
             result_dict = {
-                "module_name": module_name,
+                "module_name": this.resource_name,
                 "category": category,
                 "tags": tags,
                 "notes": notes,
@@ -167,7 +170,7 @@ class ModuleViewerAbstract extends ResourceViewer {
     }
 
     saveMe() {
-        doSave(update_success);
+        this.doSave(update_success);
         self = this;
         function update_success(data, new_code, tags, notes, category) {
             if ((self.this_viewer == "creator") && (data.render_content_line_number != 0)) {
@@ -196,7 +199,7 @@ class ModuleViewerAbstract extends ResourceViewer {
     }
 
     loadModule() {
-        doSave(save_success);
+        this.doSave(save_success);
         function save_success(data, new_code, tags, notes, category) {
             if ((self.this_viewer == "creator") && (data.render_content_line_number != 0)) {
                 self.myCodeMirror.setOption("firstLineNumber", data.render_content_line_number + 1)
@@ -217,7 +220,7 @@ class ModuleViewerAbstract extends ResourceViewer {
                         savedDPCode = self.myDPCodeMirror.getDoc().getValue();
                     }
                 }
-                $.getJSON($SCRIPT_ROOT + '/load_tile_module/' + String(module_name), load_success)
+                $.getJSON($SCRIPT_ROOT + '/load_tile_module/' + String(self.resource_name), load_success)
             }
             else {
                 doFlash(data)
@@ -233,7 +236,8 @@ class ModuleViewerAbstract extends ResourceViewer {
     }
 
     saveModuleAs() {
-        doFlash({"message": "not implemented yet"})
+        doFlash({"message": "not implemented yet"});
+        return false
     }
 
     showAPI() {
@@ -241,8 +245,8 @@ class ModuleViewerAbstract extends ResourceViewer {
             $("#resource-area").toggle();
         }
 
-        $("#api-area").toggle();
-        resize_dom_to_bottom_given_selector("#api-area", 20);
+        $("#aux-area").toggle();
+        resize_dom_to_bottom_given_selector("#aux-area", 20);
     }
 
     rename_me() {
@@ -250,20 +254,20 @@ class ModuleViewerAbstract extends ResourceViewer {
         self = this;
         $.getJSON($SCRIPT_ROOT + "get_resource_names/tile", function (data) {
                 const module_names = data["resource_names"];
-                const index = module_names.indexOf(module_name);
+                const index = module_names.indexOf(self.resource_name);
                 if (index >= 0) {
                     module_names.splice(index, 1);
                 }
-                showModal("Rename Module", "Name for this module", RenameModuleResource, self.module_name, module_names)
+                showModal("Rename Module", "Name for this module", RenameModuleResource, self.resource_name, module_names)
             }
         );
         function RenameModuleResource(new_name) {
             const the_data = {"new_name": new_name};
-            postAjax("rename_module/" + self.module_name, the_data, renameSuccess);
+            postAjax("rename_module/" + self.resource_name, the_data, renameSuccess);
             function renameSuccess(data) {
                 if (data.success) {
-                    self.module_name = new_name;
-                    $("#module-name").text(self.module_name)
+                    self.resource_name = new_name;
+                    $("#module-name").text(self.resource_name)
                 }
                 else {
                     doFlash(data)
@@ -310,46 +314,9 @@ class ModuleViewerAbstract extends ResourceViewer {
         return !is_clean
     }
 
-    sendToRepository() { // Note this shares the last saved version
-        self = this;
-        $.getJSON($SCRIPT_ROOT + "get_repository_resource_names/tile", function (data) {
-                showModal("Share tile", "New Tile Name", ShareTileResource, self.module_name, data["resource_names"])
-            }
-        );
-        function ShareTileResource(new_name) {
-            const result_dict = {
-                "res_type": "tile",
-                "res_name": self.module_name,
-                "new_res_name": new_name
-            };
-            postAjax("send_to_repository", result_dict, doFlashAlways)
-
-        }
-    }
 }
 
-    class RepositoryModuleViewer extends Module_viewer {
 
-        get button_bindings() {
-            return {"copy_button": this.copyToLibrary};
-        }
-
-        copyToLibrary() {
-            self = this;
-            $.getJSON($SCRIPT_ROOT + "get_resource_names/tile", function(data) {
-                    showModal("Import Tile", "New Tile Name", ImportTileModule, self.module_name, data["resource_names"])
-                }
-            );
-            function ImportTileModule(new_name) {
-                const result_dict = {
-                    "res_type": "tile",
-                    "res_name": self.module_name,
-                    "new_res_name": new_name
-                };
-                postAjax("copy_from_repository", result_dict, doFlashAlways);
-            }
-        }
-    }
 
 
 
@@ -360,7 +327,7 @@ tactic_keymap_pcDefault = {
 "Ctrl-A": "selectAll", "Ctrl-D": "deleteLine", "Ctrl-Z": "undo", "Shift-Ctrl-Z": "redo", "Ctrl-Y": "redo",
 "Ctrl-Home": "goDocStart", "Ctrl-End": "goDocEnd", "Ctrl-Up": "goLineUp", "Ctrl-Down": "goLineDown",
 "Ctrl-Left": "goGroupLeft", "Ctrl-Right": "goGroupRight", "Alt-Left": "goLineStart", "Alt-Right": "goLineEnd",
-"Ctrl-Backspace": "delGroupBefore", "Ctrl-Delete": "delGroupAfter", "Ctrl-S": updateModule, "Ctrl-F": "find",
+"Ctrl-Backspace": "delGroupBefore", "Ctrl-Delete": "delGroupAfter", "Ctrl-S": "saveMe", "Ctrl-F": "find",
 "Ctrl-G": "findNext", "Shift-Ctrl-G": "findPrev", "Shift-Ctrl-F": "replace", "Shift-Ctrl-R": "replaceAll",
 "Ctrl-[": "indentLess", "Ctrl-]": "indentMore",
 "Ctrl-U": "undoSelection", "Shift-Ctrl-U": "redoSelection", "Alt-U": "redoSelection",
@@ -372,7 +339,7 @@ tactic_keymap_macDefault = {
 "Cmd-A": "selectAll", "Cmd-D": "deleteLine", "Cmd-Z": "undo", "Shift-Cmd-Z": "redo", "Cmd-Y": "redo",
 "Cmd-Home": "goDocStart", "Cmd-Up": "goDocStart", "Cmd-End": "goDocEnd", "Cmd-Down": "goDocEnd", "Alt-Left": "goGroupLeft",
 "Alt-Right": "goGroupRight", "Cmd-Left": "goLineLeft", "Cmd-Right": "goLineRight", "Alt-Backspace": "delGroupBefore",
-"Ctrl-Alt-Backspace": "delGroupAfter", "Alt-Delete": "delGroupAfter", "Cmd-S": updateModule, "Cmd-F": "find",
+"Ctrl-Alt-Backspace": "delGroupAfter", "Alt-Delete": "delGroupAfter", "Cmd-S": "saveMe", "Cmd-F": "find",
 "Cmd-G": "findNext", "Shift-Cmd-G": "findPrev", "Cmd-Alt-F": "replace", "Shift-Cmd-Alt-F": "replaceAll",
 "Cmd-[": "indentLess", "Cmd-]": "indentMore", "Cmd-Backspace": "delWrappedLineLeft", "Cmd-Delete": "delWrappedLineRight",
 "Cmd-U": "undoSelection", "Shift-Cmd-U": "redoSelection", "Ctrl-Up": "goDocStart", "Ctrl-Down": "goDocEnd",

@@ -6,10 +6,10 @@ let list_viewer;
 
 function start_post_load ()  {
     if (is_repository) {
-        list_viewer = new RepositoryListViewer(resource_name, "repository_get_list")
+        list_viewer = new RepositoryListViewer(resource_name, "list", "repository_get_list")
     }
     else {
-        list_viewer = new ListViewer(resource_name, "get_list")
+        list_viewer = new ListViewer(resource_name, "list", "get_list")
     }
 }
 
@@ -24,7 +24,7 @@ class ListViewer extends ResourceViewer {
     }
 
     get button_bindings() {
-        return {"save_button": this.saveMe, "save_as_button": this.saveMeAs};
+        return {"save_button": this.saveMe, "save_as_button": this.saveMeAs, "share_button": this.sendToRepository};
     }
 
     rename_me() {
@@ -84,20 +84,6 @@ class ListViewer extends ResourceViewer {
         return false
     }
 
-    sendToRepository() {
-        $.getJSON($SCRIPT_ROOT + "get_repository_resource_names/list", function(data) {
-            showModal("Share list", "New list Name", ShareListResource, resource_name, data["resource_names"])
-            }
-        );
-        function ShareListResource(new_name) {
-            const result_dict = {
-                "res_type": "list",
-                "res_name": resource_name,
-                "new_res_name": new_name
-            };
-            postAjax("send_to_repository", result_dict, doFlashAlways)
-        }
-    }
 }
 
 class RepositoryListViewer extends ListViewer {
@@ -114,19 +100,5 @@ class RepositoryListViewer extends ListViewer {
         return $("#listarea").val();
     }
 
-    copyToLibrary() {
-        self = this;
-        $.getJSON($SCRIPT_ROOT + "get_resource_names/list", function(data) {
-            showModal("Import list", "New list Name", ImportListResource, resource_name, data["resource_names"])
-            }
-        );
-        function ImportListResource(new_name) {
-            const result_dict = {
-                "res_type": "list",
-                "res_name": self.resource_name,
-                "new_res_name": new_name
-            };
-            postAjax("copy_from_repository", result_dict, doFlashAlways);
-        }
-    }
+
 }
