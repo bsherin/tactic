@@ -18,7 +18,7 @@ class ResourceViewer {
             e.preventDefault()
         });
         this.bind_buttons();
-        $("#rename-button").click(this.rename_me);
+        $("#rename-button").click(this.rename_me.bind(this));
 
         let self = this;
         postAjaxPromise(`${get_url}/${resource_name}`, {})
@@ -79,6 +79,35 @@ class ResourceViewer {
             .catch(function () {
                 self.set_metadata_fields("", "", "")
             })
+    }
+
+    rename_me() {
+        console.log("entering rename");
+        self = this;
+        $.getJSON($SCRIPT_ROOT + `get_resource_names/${this.res_type}`, function (data) {
+                const res_names = data["resource_names"];
+                const index = res_names.indexOf(self.resource_name);
+                if (index >= 0) {
+                    res_names.splice(index, 1);
+                }
+                showModal(`Rename ${this.res_type}`, `Name for this ${this.res_type}`, RenameResource, self.resource_name, res_names)
+            }
+        );
+        function RenameResource(new_name) {
+            const the_data = {"new_name": new_name};
+            postAjax(`rename_resource/${self.res_type}/${self.resource_name}`, the_data, renameSuccess);
+            function renameSuccess(data) {
+                if (data.success) {
+                    self.resource_name = new_name;
+                    $("#rename-button").text(self.resource_name)
+                }
+                else {
+                    doFlash(data);
+                    return false
+                }
+
+            }
+        }
     }
 
     sendToRepository() {

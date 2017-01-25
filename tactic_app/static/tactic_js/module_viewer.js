@@ -7,18 +7,17 @@ let savedCode = null;
 let savedTags = null;
 let savedNotes = null;
 const this_viewer = "viewer";
-let module_code = null;
 
 let module_viewer;
 
 function start_post_load() {
     if (is_repository) {
             module_viewer = new RepositoryModuleViewer(resource_name, "tile", "repository_get_module_code")
-        }
-        else {
-            module_viewer = new ModuleViewer(resource_name, "tile", "get_module_code")
-        }
     }
+    else {
+            module_viewer = new ModuleViewer(resource_name, "tile", "get_module_code")
+    }
+}
 
 class ModuleViewer extends ModuleViewerAbstract {
 
@@ -50,9 +49,11 @@ class ModuleViewer extends ModuleViewerAbstract {
             this.myCodeMirror.setOption("readOnly", true)
         }
         this.myCodeMirror.refresh();
+        self = this;
         postAjaxPromise("get_api_html", {})
             .then(function (data) {
-                $("#aux-area").html(data.api_html)
+                $("#aux-area").html(data.api_html);
+                self.create_api_listeners();
             })
             .catch(doFlash)
     }

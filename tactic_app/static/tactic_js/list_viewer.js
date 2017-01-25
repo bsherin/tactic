@@ -27,33 +27,6 @@ class ListViewer extends ResourceViewer {
         return {"save_button": this.saveMe, "save_as_button": this.saveMeAs, "share_button": this.sendToRepository};
     }
 
-    rename_me() {
-        console.log("entering rename");
-        self = this;
-        $.getJSON($SCRIPT_ROOT + "get_resource_names/list", function(data) {
-            const list_names = data["resource_names"];
-            const index = list_names.indexOf(self.resource_name);
-            if (index >= 0) {
-              list_names.splice(index, 1);
-            }
-            showModal("Rename List", "Name for this list", RenameListResource, self.resource_name, list_names)
-        }
-        );
-        function RenameListResource(new_name) {
-            const the_data = {"new_name": new_name};
-            postAjax("rename_list/" + self.resource_name, the_data, renameSuccess);
-            function renameSuccess(data) {
-                if (data.success) {
-                    self.resource_name = new_name;
-                    $("#rename-button").text(self.resource_name)
-                }
-                else {
-                    doFlash(data)
-                }
-
-            }
-        }
-    }
 
     saveMe() {
         const new_list_as_string = $("#listarea").val();

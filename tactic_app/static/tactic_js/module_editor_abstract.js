@@ -5,6 +5,7 @@
 
 class ModuleViewerAbstract extends ResourceViewer {
 
+
     do_extra_setup() {
         this.extra_autocomplete_list = [];
         this.cmobjects_to_search = [];
@@ -16,26 +17,46 @@ class ModuleViewerAbstract extends ResourceViewer {
         this.myCodemirror = null;
         this.myDPCodeMirror = null;
         this.current_theme = "default";
-        self = this;
 
+        this.create_api();
+        this.create_keymap()
+
+    }
+
+    create_api() {
+        self = this;
         postAjax("get_api_dict", {}, function (data) {
             self.api_dict_by_category = data.api_dict_by_category;
             self.api_dict_by_name = data.api_dict_by_name;
             self.ordered_api_categories = data.ordered_api_categories;
 
             let api_list = [];
-            self.ordered_api_categories.forEach(function (cat) {
-                self.api_dict_by_category[cat].forEach(function (entry) {
+            for (let cat in self.ordered_api_categories) {
+                for (let entry in self.api_dict_by_category[cat]) {
                     api_list.push(entry["name"])
-                })
-            });
+                }
+            }
+
             CodeMirror.commands.autocomplete = function (cm) {
                 cm.showHint({
                     hint: CodeMirror.hint.anyword, api_list: api_list,
                     extra_autocomplete_list: self.extra_autocomplete_list
                 });
             };
-        });
+        })
+    }
+
+    create_api_listeners() {
+        const acc = document.getElementsByClassName("accordion");
+        for (let element of acc) {
+            element.onclick = function(){
+                this.classList.toggle("active");
+                this.nextElementSibling.classList.toggle("show");
+            }
+        }
+    }
+
+    create_keymap() {
         CodeMirror.keyMap["default"]["Esc"] = this.clearSelections;
         let is_mac = CodeMirror.keyMap["default"].hasOwnProperty("Cmd-S");
         this.mousetrap.bind(['esc'], function (e) {
@@ -78,16 +99,16 @@ class ModuleViewerAbstract extends ResourceViewer {
     }
 
     searchInAll() {
-        this.cmobjects_to_search.forEach(function (cm) {
+        for (let cm in this.cmobjects_to_search) {
             CodeMirror.commands.find(cm)
-        })
+        }
     }
 
     clearSelections() {
-        this.cmobjects.forEach(function (cm) {
+        for (let cm in this.cmobjects_to_search)  {
             CodeMirror.commands.clearSearch(cm);
             CodeMirror.commands.singleSelection(cm);
-        })
+        }
     }
 
     createCMArea(codearea, include_in_global_search = false, initial_value = null, first_line_number = 1) {
@@ -108,7 +129,7 @@ class ModuleViewerAbstract extends ResourceViewer {
 
         cmobject.setOption("extraKeys", {
             Tab: function (cm) {
-                let spaces = Array(5).join(" ");
+                let spaces = new Array(5).join(" ");
                 cm.replaceSelection(spaces);
             },
             "Ctrl-Space": "autocomplete"
@@ -231,7 +252,8 @@ class ModuleViewerAbstract extends ResourceViewer {
             if (data.success) {
                 data.timeout = 2000;
             }
-            doFlash(data)
+            doFlash(data);
+            return false
         }
     }
 
@@ -249,33 +271,6 @@ class ModuleViewerAbstract extends ResourceViewer {
         resize_dom_to_bottom_given_selector("#aux-area", 20);
     }
 
-    rename_me() {
-        console.log("entering rename");
-        self = this;
-        $.getJSON($SCRIPT_ROOT + "get_resource_names/tile", function (data) {
-                const module_names = data["resource_names"];
-                const index = module_names.indexOf(self.resource_name);
-                if (index >= 0) {
-                    module_names.splice(index, 1);
-                }
-                showModal("Rename Module", "Name for this module", RenameModuleResource, self.resource_name, module_names)
-            }
-        );
-        function RenameModuleResource(new_name) {
-            const the_data = {"new_name": new_name};
-            postAjax("rename_module/" + self.resource_name, the_data, renameSuccess);
-            function renameSuccess(data) {
-                if (data.success) {
-                    self.resource_name = new_name;
-                    $("#module-name").text(self.resource_name)
-                }
-                else {
-                    doFlash(data)
-                }
-
-            }
-        }
-    }
 
     changeTheme() {
         if (current_theme == "default") {

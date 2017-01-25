@@ -1004,12 +1004,19 @@ class CodeManager(ResourceManager):
     collection_list_with_metadata = "code_names_with_metadata"
     collection_name = "code_collection_name"
     name_field = "code_name"
+    button_groups = [[{"name": "save_button", "button_class": "btn-default", "name_text": "Save"},
+                      {"name": "save_as_button", "button_class": "btn-default", "name_text": "Save as ..."},
+                      {"name": "share_button", "button_class": "btn-default", "name_text": "Share"}
+                      ],
+                     [{"name": "change_theme_button", "button_class": "btn-default", "name_text": "Toggle theme"},
+                      {"name": "show_api_button", "button_class": "btn-default", "name_text": "Show API"}]]
 
     def add_rules(self):
         app.add_url_rule('/view_code/<code_name>', "view_code",
-                         login_required(self.view_code), methods=['get'])
-        app.add_url_rule('/repository_view_code/<code_name>', "repository_view_code",
-                         login_required(self.repository_view_code), methods=['get'])
+                         login_required(self.view_code), methods=['get', "post"])
+
+        app.add_url_rule('/get_code_code/<code_name>', "get_code_code",
+                         login_required(self.get_code_code), methods=['get', "post"])
         app.add_url_rule('/add_code', "add_code",
                          login_required(self.add_code), methods=['get', "post"])
         app.add_url_rule('/delete_code/<code_name>', "delete_code",
@@ -1042,22 +1049,21 @@ class CodeManager(ResourceManager):
         db[current_user.code_collection_name].update_one({"code_name": res_name}, {'$set': {"metadata": mdata}})
 
     def view_code(self, code_name):
+        javascript_source = url_for('static', filename='tactic_js/code_viewer.js')
+        return render_template("user_manage/resource_viewer.html",
+                               resource_name=code_name,
+                               include_metadata=True,
+                               readonly=False,
+                               is_repository=False,
+                               javascript_source=javascript_source,
+                               uses_codemirror="True",
+                               button_groups=self.button_groups)
+
+    def get_code_code(self, code_name):
         user_obj = current_user
         the_code = user_obj.get_code(code_name)
-        return render_template("user_manage/code_viewer.html",
-                               code_name=code_name,
-                               the_code=the_code,
-                               read_only_string="",
-                               uses_codemirror="True")
+        return jsonify({"success": True, "the_content": the_code})
 
-    def repository_view_code(self, code_name):
-        user_obj = repository_user
-        the_code = user_obj.get_code(code_name)
-        return render_template("user_manage/code_viewer.html",
-                               code_name=code_name,
-                               the_code=the_code,
-                               read_only_string="readonly",
-                               uses_codemirror="True")
 
     def load_code(self, the_code):
         result = send_direct_request_to_container(global_tile_manager.test_tile_container_id, "clear_and_load_code",
@@ -1132,9 +1138,30 @@ class CodeManager(ResourceManager):
 class RepositoryCodeManager(CodeManager):
     rep_string = "repository-"
     is_repository = True
+    button_groups = [[{"name": "copy_button", "button_class": "btn-default", "name_text": "Copy to library"}
+                      ]]
 
     def add_rules(self):
-        pass
+        app.add_url_rule('/repository_view_code/<code_name>', "repository_view_code",
+                         login_required(self.repository_view_code), methods=['get', "post"])
+        app.add_url_rule('/repository_get_code_code/<module_name>', "repository_get_code_code",
+                         login_required(self.repository_get_code_code), methods=['get', 'post'])
+
+    def repository_view_code(self, code_name):
+        javascript_source = url_for('static', filename='tactic_js/code_viewer.js')
+        return render_template("user_manage/resource_viewer.html",
+                               resource_name=code_name,
+                               include_metadata=True,
+                               readonly=True,
+                               is_repository=True,
+                               javascript_source=javascript_source,
+                               uses_codemirror="True",
+                               button_groups=self.button_groups)
+
+    def repository_get_code_code(self, code_name):
+        user_obj = repository_user
+        module_code = user_obj.get_code(code_name)
+        return jsonify({"success": True, "the_content": code_name})
 
 repository_user = User.get_user_by_username("repository")
 
@@ -1349,9 +1376,14 @@ def update_module():
                         "draw_plot_line_number": draw_plot_line_number})
 
 
-@app.route('/rename_module/<old_name>', methods=['post'])
+@app.route('/rename_resource/<res_type>/<old_name>', methods=['post'])
 @login_required
-def rename_module(old_name):
+def rename_resource(res_type, old_name):
+    return globals()["rename_" + res_type](old_name)
+
+@app.route('/rename_tile/<old_name>', methods=['post'])
+@login_required
+def rename_tile(old_name):
     try:
         new_name = request.json["new_name"]
         db[current_user.tile_collection_name].update_one({"tile_module_name": old_name},
