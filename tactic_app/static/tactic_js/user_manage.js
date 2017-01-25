@@ -120,11 +120,6 @@ function toggleRepository() {
         }
         old_manager.get_module_dom().css("display", "none");
         new_manager.get_module_dom().css("display", "block");
-        // fadeOut(function () {
-        //     new_manager.get_module_dom().fadeIn(function () {
-        //         resize_window();
-        //     })
-        // });
     }
     if (repository_visible) {
         repository_visible = false;

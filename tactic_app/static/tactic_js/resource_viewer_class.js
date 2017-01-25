@@ -1,5 +1,7 @@
 /**
  * Created by bls910 on 1/24/17.
+ * This class corresponds to one of the windows for viewing and editing
+ * the contents of a resource.
  */
 
 class ResourceViewer {
