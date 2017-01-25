@@ -390,7 +390,6 @@ class TileManager extends UserManagerResourceManager {
         this.delete_view = "/delete_tile_module/";
         this.duplicate_view = '/create_duplicate_tile';
         this.double_click_func = "dc_view_func";
-        this.repository_double_click_func = "repository_view_func";
         this.popup_buttons = [{
             "name": "new",
             "button_class": "btn-default",
@@ -537,7 +536,7 @@ class RepositoryTileManager extends UserManagerResourceManager {
         this.update_view = "request_update_repository_selector_list";
         this.update_tag_view = "request_update_repository_tag_list";
         this.view_view = '/repository_view_module/';
-        this.double_click_func = "repository_view_func";
+        this.double_click_func = "view_func";
         this.button_groups = [
             {"buttons": [{"name": "view", "func": "view_func", "button_class": "btn-default"},
                     {"name": "copy_to_libary", "func": "repository_copy_func", "button_class": "btn-default"}]
@@ -557,7 +556,6 @@ class CodeManager extends UserManagerResourceManager {
         this.delete_view = "/delete_code/";
         this.duplicate_view = '/create_duplicate_code';
         this.double_click_func = "view_func";
-        this.repository_double_click_func = "repository_view_func";
         this.popup_buttons = [{
             "name": "new",
             "button_class": "btn-default",
@@ -614,7 +612,7 @@ class RepositoryCodeManager extends UserManagerResourceManager {
         this.update_view = "request_update_repository_selector_list";
         this.update_tag_view = "request_update_repository_tag_list";
         this.view_view = '/repository_view_code/';
-        this.double_click_func = "repository_view_func";
+        this.double_click_func = "view_func";
         this.button_groups = [
             {"buttons": [{"name": "view", "func": "view_func", "button_class": "btn-default"},
                     {"name": "copy_to_libary", "func": "repository_copy_func", "button_class": "btn-default"}]

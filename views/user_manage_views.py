@@ -1144,7 +1144,7 @@ class RepositoryCodeManager(CodeManager):
     def add_rules(self):
         app.add_url_rule('/repository_view_code/<code_name>', "repository_view_code",
                          login_required(self.repository_view_code), methods=['get', "post"])
-        app.add_url_rule('/repository_get_code_code/<module_name>', "repository_get_code_code",
+        app.add_url_rule('/repository_get_code_code/<code_name>', "repository_get_code_code",
                          login_required(self.repository_get_code_code), methods=['get', 'post'])
 
     def repository_view_code(self, code_name):
@@ -1158,10 +1158,11 @@ class RepositoryCodeManager(CodeManager):
                                uses_codemirror="True",
                                button_groups=self.button_groups)
 
+
     def repository_get_code_code(self, code_name):
         user_obj = repository_user
-        module_code = user_obj.get_code(code_name)
-        return jsonify({"success": True, "the_content": code_name})
+        the_code = user_obj.get_code(code_name)
+        return jsonify({"success": True, "the_content": the_code})
 
 repository_user = User.get_user_by_username("repository")
 

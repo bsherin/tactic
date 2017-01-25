@@ -88,7 +88,7 @@ class CodeViewer extends ModuleViewerAbstract {
 
 }
 
-class RepositoryModuleViewer extends CodeViewer {
+class RepositoryCodeViewer extends CodeViewer {
 
     get button_bindings() {
         return {"copy_button": this.copyToLibrary};

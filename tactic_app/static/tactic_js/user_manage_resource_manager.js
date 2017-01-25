@@ -243,13 +243,6 @@ class UserManagerResourceManager extends ResourceManager{
         return res_name
     }
 
-    repository_view_func (event) {
-        const manager = event.data.manager;
-        const res_name = manager.check_for_selection("repository");
-        if (res_name == "") return;
-        window.open($SCRIPT_ROOT + manager.repository_view_view + String(res_name))
-    }
-
     repository_copy_func (event) {
         const manager = event.data.manager;
         const res_name = manager.check_for_selection();
