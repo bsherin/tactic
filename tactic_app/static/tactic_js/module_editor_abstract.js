@@ -1,0 +1,380 @@
+/**
+ * Created by parallels on 12/22/16.
+ */
+
+
+class ModuleViewerAbstract extends ResourceViewer {
+
+    do_extra_setup() {
+        this.extra_autocomplete_list = [];
+        this.cmobjects_to_search = [];
+        this.cmobjects = [];
+        this.api_dict_by_name = {};
+        this.api_dict_by_category = {};
+        this.ordered_api_categories = [];
+        this.this_viewer = "viewer";
+        this.myCodemirror = null;
+        this.myDPCodeMirror = null;
+        this.current_theme = "default";
+        self = this;
+        postAjax("get_api_dict", {}, function (data) {
+            self.api_dict_by_category = data.api_dict_by_category;
+            self.api_dict_by_name = data.api_dict_by_name;
+            self.ordered_api_categories = data.ordered_api_categories;
+            let api_list = [];
+            self.ordered_api_categories.forEach(function (cat) {
+                self.api_dict_by_category[cat].forEach(function (entry) {
+                    self.api_list.push(entry["name"])
+                })
+            });
+            CodeMirror.commands.autocomplete = function (cm) {
+                cm.showHint({
+                    hint: CodeMirror.hint.anyword, api_list: api_list,
+                    extra_autocomplete_list: self.extra_autocomplete_list
+                });
+            };
+        });
+        CodeMirror.keyMap["default"]["Esc"] = this.clearSelections;
+        let is_mac = CodeMirror.keyMap["default"].hasOwnProperty("Cmd-S");
+        mousetrap.bind(['esc'], function (e) {
+            this.clearSelections();
+            e.preventDefault()
+        });
+
+        if (is_mac) {
+            CodeMirror.keyMap["default"]["Cmd-S"] = self.updateModule;
+            mousetrap.bind(['command+s'], function (e) {
+                self.updateModule();
+                e.preventDefault()
+            });
+
+            mousetrap.bind(['command+l'], function (e) {
+                self.loadModule();
+                e.preventDefault()
+            });
+            mousetrap.bind(['command+f'], function (e) {
+                self.searchInAll();
+                e.preventDefault()
+            });
+        }
+        else {
+            CodeMirror.keyMap["default"]["Ctrl-S"] = self.updateModule;
+            mousetrap.bind(['ctrl+s'], function (e) {
+                self.updateModule();
+                e.preventDefault()
+            });
+
+            mousetrap.bind(['ctrl+l'], function (e) {
+                self.loadModule();
+                e.preventDefault()
+            });
+            mousetrap.bind(['ctrl+f'], function (e) {
+                sself.earchInAll();
+                e.preventDefault()
+            });
+        }
+    }
+
+    searchInAll() {
+        this.cmobjects_to_search.forEach(function (cm) {
+            CodeMirror.commands.find(cm)
+        })
+    }
+
+    clearSelections() {
+        this.cmobjects.forEach(function (cm) {
+            CodeMirror.commands.clearSearch(cm);
+            CodeMirror.commands.singleSelection(cm);
+        })
+    }
+
+    createCMArea(codearea, include_in_global_search = false, initial_value = null, first_line_number = 1) {
+        let cmobject = CodeMirror(codearea, {
+            lineNumbers: true,
+            matchBrackets: true,
+            highlightSelectionMatches: true,
+            autoCloseBrackets: true,
+            indentUnit: 4,
+            readOnly: false
+        });
+        if (first_line_number != 1) {
+            cmobject.setOption("firstLineNumber", first_line_number)
+        }
+        if (initial_value != null) {
+            cmobject.setValue(initial_value);
+        }
+
+        cmobject.setOption("extraKeys", {
+            Tab: function (cm) {
+                let spaces = Array(5).join(" ");
+                cm.replaceSelection(spaces);
+            },
+            "Ctrl-Space": "autocomplete"
+        });
+        if (include_in_global_search) {
+            this.cmobjects_to_search.push(cmobject);
+        }
+        this.cmobjects.push(cmobject);
+        return cmobject
+    }
+
+    doSave(update_success) {
+        const new_code = this.myCodeMirror.getDoc().getValue();
+        const tags = $("#tile-tags").val();
+        const notes = $("#tile-notes").val();
+        let result_dict;
+        let category;
+
+        if (this.this_viewer == "viewer") {
+            category = null;
+            result_dict = {
+                "module_name": this.resource_name,
+                "category": category,
+                "tags": tags,
+                "notes": notes,
+                "new_code": new_code,
+                "last_saved": this.this_viewer
+            };
+        }
+        else {
+            category = $("#tile-category").val();
+            if (category.length == 0) {
+                category = "basic"
+            }
+            let new_dp_code = "";
+            if (this.is_mpl) {
+                new_dp_code = this.myDPCodeMirror.getDoc().getValue();
+            }
+            result_dict = {
+                "module_name": module_name,
+                "category": category,
+                "tags": tags,
+                "notes": notes,
+                "exports": this.exportManager.export_list,
+                "options": this.optionManager.option_dict,
+                "extra_methods": this.methodManager.get_extra_functions(),
+                "render_content_body": new_code,
+                "is_mpl": this.is_mpl,
+                "draw_plot_body": new_dp_code,
+                "last_saved": this.this_viewer
+            };
+        }
+
+        postAjax("update_module", result_dict, success_func);
+        function success_func(data) {
+            update_success(data, new_code, tags, notes, category)
+        }
+    }
+
+    saveMe() {
+        doSave(update_success);
+        self = this;
+        function update_success(data, new_code, tags, notes, category) {
+            if ((self.this_viewer == "creator") && (data.render_content_line_number != 0)) {
+                self.myCodeMirror.setOption("firstLineNumber", data.render_content_line_number + 1);
+                self.myCodeMirror.refresh()
+            }
+            if ((self.this_viewer == "creator") && (self.is_mpl) && (data.draw_plot_line_number != 0)) {
+                self.myDPCodeMirror.setOption("firstLineNumber", data.draw_plot_line_number + 1);
+                self.myDPCodeMirror.refresh()
+            }
+
+            if (data.success) {
+                self.savedContent = new_code;
+                self.savedTags = tags;
+                self.savedNotes = notes;
+                data.timeout = 2000;
+                if (self.this_viewer == "creator") {
+                    self.savedCategory = category;
+                    if (self.is_mpl) {
+                        savedDPCode = self.myDPCodeMirror.getDoc().getValue();
+                    }
+                }
+            }
+            doFlash(data)
+        }
+    }
+
+    loadModule() {
+        doSave(save_success);
+        function save_success(data, new_code, tags, notes, category) {
+            if ((self.this_viewer == "creator") && (data.render_content_line_number != 0)) {
+                self.myCodeMirror.setOption("firstLineNumber", data.render_content_line_number + 1)
+                self.myCodeMirror.refresh()
+            }
+            if ((self.this_viewer == "creator") && (self.is_mpl) && (data.draw_plot_line_number != 0)) {
+                self.myDPCodeMirror.setOption("firstLineNumber", data.draw_plot_line_number + 1)
+                self.myDPCodeMirror.refresh()
+            }
+            if (data.success) {
+                self.savedContent = new_code;
+                self.savedTags = tags;
+                self.savedNotes = notes;
+                data.timeout = 2000;
+                if (self.this_viewer == "creator") {
+                    savedCategory = category;
+                    if (self.is_mpl) {
+                        savedDPCode = self.myDPCodeMirror.getDoc().getValue();
+                    }
+                }
+                $.getJSON($SCRIPT_ROOT + '/load_tile_module/' + String(module_name), load_success)
+            }
+            else {
+                doFlash(data)
+            }
+        }
+
+        function load_success(data) {
+            if (data.success) {
+                data.timeout = 2000;
+            }
+            doFlash(data)
+        }
+    }
+
+    saveModuleAs() {
+        doFlash({"message": "not implemented yet"})
+    }
+
+    showAPI() {
+        if (this.this_viewer == "creator") {
+            $("#resource-area").toggle();
+        }
+
+        $("#api-area").toggle();
+        resize_dom_to_bottom_given_selector("#api-area", 20);
+    }
+
+    rename_me() {
+        console.log("entering rename");
+        self = this;
+        $.getJSON($SCRIPT_ROOT + "get_resource_names/tile", function (data) {
+                const module_names = data["resource_names"];
+                const index = module_names.indexOf(module_name);
+                if (index >= 0) {
+                    module_names.splice(index, 1);
+                }
+                showModal("Rename Module", "Name for this module", RenameModuleResource, self.module_name, module_names)
+            }
+        );
+        function RenameModuleResource(new_name) {
+            const the_data = {"new_name": new_name};
+            postAjax("rename_module/" + self.module_name, the_data, renameSuccess);
+            function renameSuccess(data) {
+                if (data.success) {
+                    self.module_name = new_name;
+                    $("#module-name").text(self.module_name)
+                }
+                else {
+                    doFlash(data)
+                }
+
+            }
+        }
+    }
+
+    changeTheme() {
+        if (current_theme == "default") {
+            this.myCodeMirror.setOption("theme", "pastel-on-dark");
+            if ((this.this_viewer == "creator") && this.is_mpl) {
+                this.myDPCodeMirror.setOption("theme", "pastel-on-dark");
+            }
+            document.body.style.backgroundColor = "grey";
+            current_theme = "dark"
+        }
+        else {
+            this.myCodeMirror.setOption("theme", "default");
+            if ((this.this_viewer == "creator") && this.is_mpl) {
+                this.myDPCodeMirror.setOption("theme", "default");
+            }
+            document.body.style.backgroundColor = "white";
+            current_theme = "default"
+        }
+    }
+
+    dirty() {
+        const the_code = this.myCodeMirror.getDoc().getValue();
+        const tags = $("#tile-tags").val();
+        const notes = $("#tile-notes").val();
+
+        let is_clean = (the_code == this.savedContent) && (tags == this.savedTags) && (notes == this.savedNotes);
+        if (this.this_viewer == "creator") {
+            new_methods = this.methodManager.cmobject.getValue();
+            const category = $("#tile-category").val();
+            is_clean = is_clean && (new_methods == savedMethods) && !optionManager.changed && !this.exportManager.changed && (category == this.savedCategory);
+            if (this.is_mpl) {
+                const dp_code = this.myDPCodeMirror.getDoc().getValue();
+                is_clean = is_clean && (dp_code == this.savedDPCode);
+            }
+        }
+        return !is_clean
+    }
+
+    sendToRepository() { // Note this shares the last saved version
+        self = this;
+        $.getJSON($SCRIPT_ROOT + "get_repository_resource_names/tile", function (data) {
+                showModal("Share tile", "New Tile Name", ShareTileResource, self.module_name, data["resource_names"])
+            }
+        );
+        function ShareTileResource(new_name) {
+            const result_dict = {
+                "res_type": "tile",
+                "res_name": self.module_name,
+                "new_res_name": new_name
+            };
+            postAjax("send_to_repository", result_dict, doFlashAlways)
+
+        }
+    }
+}
+
+    class RepositoryModuleViewer extends Module_viewer {
+
+        get button_bindings() {
+            return {"copy_button": this.copyToLibrary};
+        }
+
+        copyToLibrary() {
+            self = this;
+            $.getJSON($SCRIPT_ROOT + "get_resource_names/tile", function(data) {
+                    showModal("Import Tile", "New Tile Name", ImportTileModule, self.module_name, data["resource_names"])
+                }
+            );
+            function ImportTileModule(new_name) {
+                const result_dict = {
+                    "res_type": "tile",
+                    "res_name": self.module_name,
+                    "new_res_name": new_name
+                };
+                postAjax("copy_from_repository", result_dict, doFlashAlways);
+            }
+        }
+    }
+
+
+
+
+
+
+tactic_keymap_pcDefault = {
+"Ctrl-A": "selectAll", "Ctrl-D": "deleteLine", "Ctrl-Z": "undo", "Shift-Ctrl-Z": "redo", "Ctrl-Y": "redo",
+"Ctrl-Home": "goDocStart", "Ctrl-End": "goDocEnd", "Ctrl-Up": "goLineUp", "Ctrl-Down": "goLineDown",
+"Ctrl-Left": "goGroupLeft", "Ctrl-Right": "goGroupRight", "Alt-Left": "goLineStart", "Alt-Right": "goLineEnd",
+"Ctrl-Backspace": "delGroupBefore", "Ctrl-Delete": "delGroupAfter", "Ctrl-S": updateModule, "Ctrl-F": "find",
+"Ctrl-G": "findNext", "Shift-Ctrl-G": "findPrev", "Shift-Ctrl-F": "replace", "Shift-Ctrl-R": "replaceAll",
+"Ctrl-[": "indentLess", "Ctrl-]": "indentMore",
+"Ctrl-U": "undoSelection", "Shift-Ctrl-U": "redoSelection", "Alt-U": "redoSelection",
+fallthrough: "basic"
+};
+// Very basic readline/emacs-style bindings, which are standard on Mac.
+
+tactic_keymap_macDefault = {
+"Cmd-A": "selectAll", "Cmd-D": "deleteLine", "Cmd-Z": "undo", "Shift-Cmd-Z": "redo", "Cmd-Y": "redo",
+"Cmd-Home": "goDocStart", "Cmd-Up": "goDocStart", "Cmd-End": "goDocEnd", "Cmd-Down": "goDocEnd", "Alt-Left": "goGroupLeft",
+"Alt-Right": "goGroupRight", "Cmd-Left": "goLineLeft", "Cmd-Right": "goLineRight", "Alt-Backspace": "delGroupBefore",
+"Ctrl-Alt-Backspace": "delGroupAfter", "Alt-Delete": "delGroupAfter", "Cmd-S": updateModule, "Cmd-F": "find",
+"Cmd-G": "findNext", "Shift-Cmd-G": "findPrev", "Cmd-Alt-F": "replace", "Shift-Cmd-Alt-F": "replaceAll",
+"Cmd-[": "indentLess", "Cmd-]": "indentMore", "Cmd-Backspace": "delWrappedLineLeft", "Cmd-Delete": "delWrappedLineRight",
+"Cmd-U": "undoSelection", "Shift-Cmd-U": "redoSelection", "Ctrl-Up": "goDocStart", "Ctrl-Down": "goDocEnd",
+fallthrough: ["basic", "emacsy"]
+};

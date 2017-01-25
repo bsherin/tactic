@@ -1,0 +1,89 @@
+/**
+ * Created by bls910 on 1/24/17.
+ */
+
+class ResourceViewer {
+    constructor(resource_name, get_url) {
+        this.resource_name = resource_name;
+        this.mousetrap = new Mousetrap();
+        this.savedContent = null;
+        this.do_extra_setup();
+        this.mousetrap.bind("esc", function () {
+            clearStatusArea();
+        });
+
+        this.mousetrap.bind(['command+s', 'ctrl+s'], function (e) {
+            updateList();
+            e.preventDefault()
+        });
+        this.bind_buttons();
+        $("#rename-button").click(this.rename_me);
+
+        let self = this;
+        postAjaxPromise(`${get_url}/${resource_name}`, {})
+            .then(function (data) {
+                self.got_resource(data.the_content)
+            })
+            .catch(doFlash);
+    }
+
+    set_metadata_fields(created, tags, notes) {
+        $(".created").html(created);
+        $("#tags")[0].value = tags;
+        $("#notes")[0].value = notes;
+        this.savedTags = tags;
+        this.savedNotes = notes;
+    }
+
+    bind_buttons() {
+        for (let but_name in this.button_bindings) {
+            const bselector = `button[value='${but_name}']`;
+            $(bselector).click(this.button_bindings[but_name].bind(this))
+        }
+    }
+
+    do_extra_setup() {
+    };
+    get button_bindings() {
+    };
+
+    get_current_content() {
+    };
+
+    construct_html_from_the_content(the_content) {
+    };
+
+    saveMe() {
+    };
+
+    saveMeAs() {
+    };
+
+    set_main_content(the_content) {
+        $("#main_content").html(the_content)
+    }
+
+    got_resource(the_content) {
+        this.saved_content = the_content;
+        let the_html = this.construct_html_from_the_content(the_content);
+        this.set_main_content(the_html);
+        resize_dom_to_bottom_given_selector("#main_content", 40);
+
+        let result_dict = {"res_type": "list", "res_name": this.resource_name};
+        self = this;
+        postAjaxPromise("grab_metadata", result_dict)
+            .then(function (data) {
+                self.set_metadata_fields(data.date_string, data.tags, data.notes)
+            })
+            .catch(function () {
+                self.set_metadata_fields("", "", "")
+            })
+    }
+
+    dirty() {
+        let current_content = this.get_current_content();
+        const tags = $("#tags").val();
+        const notes = $("#notes").val();
+        return !((current_content == this.saved_content) && (tags == this.savedTags) && (notes == this.savedNotes))
+    }
+}

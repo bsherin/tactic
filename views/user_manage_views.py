@@ -279,35 +279,39 @@ class ListManager(ResourceManager):
     collection_list_with_metadata = "list_names_with_metadata"
     collection_name = "list_collection_name"
     name_field = "list_name"
+    button_groups = [[{"name": "save_button", "button_class": "btn-default", "name_text": "Save"},
+                      {"name": "save_as_button", "button_class": "btn-default", "name_text": "Save as ..."}
+                      ]]
 
     def add_rules(self):
         app.add_url_rule('/view_list/<list_name>', "view_list", login_required(self.view_list), methods=['get'])
-        app.add_url_rule('/repository_view_list/<list_name>', "repository_view_list",
-                         login_required(self.repository_view_list), methods=['get'])
+
+        app.add_url_rule('/get_list/<list_name>', "get_list", login_required(self.get_list), methods=['get', 'post'])
         app.add_url_rule('/add_list', "add_list", login_required(self.add_list), methods=['get', "post"])
         app.add_url_rule('/delete_list/<list_name>', "delete_list", login_required(self.delete_list), methods=['post'])
         app.add_url_rule('/create_duplicate_list', "create_duplicate_list",
                          login_required(self.create_duplicate_list), methods=['get', 'post'])
 
     def view_list(self, list_name):
+        javascript_source = url_for('static', filename='tactic_js/list_viewer.js')
+        return render_template("user_manage/resource_viewer.html",
+                               resource_name=list_name,
+                               include_metadata=True,
+                               readonly = False,
+                               is_repository = False,
+                               javascript_source=javascript_source,
+                               button_groups=self.button_groups)
+
+
+
+    def get_list(self, list_name):
         the_list = current_user.get_list(list_name)
         lstring = ""
         for w in the_list:
             lstring += w + "\n"
-        return render_template("user_manage/list_viewer.html",
-                               list_name=list_name,
-                               the_list_as_string=lstring,
-                               read_only_string="")
+        return jsonify({"success": True, "the_content": lstring})
 
-    def repository_view_list(self, list_name):
-        the_list = repository_user.get_list(list_name)
-        lstring = ""
-        for w in the_list:
-            lstring += w + "\n"
-        return render_template("user_manage/list_viewer.html",
-                               list_name=list_name,
-                               the_list_as_string=lstring,
-                               read_only_string="readonly")
+
 
     def grab_metadata(self, res_name):
         if self.is_repository:
@@ -368,10 +372,29 @@ class ListManager(ResourceManager):
 class RepositoryListManager(ListManager):
     rep_string = "repository-"
     is_repository = True
+    button_groups = [[{"name": "copy_button", "button_class": "btn-default", "name_text": "Copy to library"}
+                      ]]
 
     def add_rules(self):
-        pass
+        app.add_url_rule('/repository_view_list/<list_name>', "repository_view_list", login_required(self.repository_view_list), methods=['get'])
+        app.add_url_rule('/repository_get_list/<list_name>', "repository_get_list", login_required(self.repository_get_list), methods=['get', 'post'])
 
+    def repository_view_list(self, list_name):
+        javascript_source = url_for('static', filename='tactic_js/list_viewer.js')
+        return render_template("user_manage/resource_viewer.html",
+                               resource_name=list_name,
+                               include_metadata=True,
+                               readonly = True,
+                               is_repository = True,
+                               javascript_source=javascript_source,
+                               button_groups=self.button_groups)
+
+    def repository_get_list(self, list_name):
+        the_list = repository_user.get_list(list_name)
+        lstring = ""
+        for w in the_list:
+            lstring += w + "\n"
+        return jsonify({"success": True, "the_content": lstring})
 
 # noinspection PyMethodMayBeStatic,PyBroadException
 class CollectionManager(ResourceManager):

@@ -24,4 +24,4 @@ class {{class_name}}(TileBase{% if is_mpl %}, MplFigure{% endif %}):
 {{draw_plot_body -}}
 {% endif %}
     def render_content(self):
-{{render_content_body}}
+{{render_content_body}

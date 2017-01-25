@@ -32,7 +32,19 @@ def direct_module_viewer(module_name, username, password):
         login_user(user, remember=False)
     return redirect(url_for("view_module", module_name=module_name))
 
+@app.route('/direct_list_viewer/<list_name>/<username>/<password>', methods=['GET', 'POST'])
+def direct_list_viewer(list_name, username, password):
+    user = User.get_user_by_username(username)
+    if user is not None and user.verify_password(password):
+        login_user(user, remember=False)
+    return redirect(url_for("view_list", list_name=list_name))
 
+@app.route('/direct_repository_list_viewer/<list_name>/<username>/<password>', methods=['GET', 'POST'])
+def direct_repository_list_viewer(list_name, username, password):
+    user = User.get_user_by_username(username)
+    if user is not None and user.verify_password(password):
+        login_user(user, remember=False)
+    return redirect(url_for("repository_view_list", list_name=list_name))
 
 @app.route('/direct_administer/<password>', methods=['GET', 'POST'])
 def direct_administer(password):

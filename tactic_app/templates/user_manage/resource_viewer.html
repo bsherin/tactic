@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}{{resource_name}}{% endblock %}
+
+{% block styles %}
+    <!--suppress ALL -->
+{% endblock %}
+
+{% block page_content %}
+    <div id="modal-area">
+    </div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-xs-12" style="margin-left: 40px">
+                <div class="row" style="margin-top: 35px">
+                    <div class="btn-toolbar col-xs-12" role="toolbar" >
+                            {% for group in button_groups -%}
+                                 <div class="btn-group" role="group">
+                                     {% for button in group -%}
+                                        <button type="button" value="{{button.name|e}}" class="btn {{button.button_class|e}} action-button">{{button.name_text}}</button>
+                                     {% endfor -%}
+                                 </div>
+                                <button id="rename-button" type="button" class="btn btn-default res-name-button">{{resource_name}}</button>
+                            {% endfor -%}
+                        </div>
+                    </div>
+                 <div id="main_content" style="display: inline-block"></div>
+                {% if include_metadata %}
+                <div  style="display: inline-block; vertical-align: top; margin-left: 5px; margin-top: 10px">
+                    <div class="created"></div>
+                    <div class="form-group" style="margin-bottom: 7px">
+                        <textarea type="text" class="form-control metadata-field" id="tags" rows="1" placeholder="tags" {% if readonly %} readonly {% endif %}></textarea>
+                    </div>
+                    <div class="form-group">
+                        <textarea class="form-control metadata-field" id="notes" rows="10" placeholder="notes" {% if readonly %} readonly {% endif %}></textarea>
+                    </div>
+                </div>
+                {% endif -%}
+            </div>
+        </div>
+{%  endblock %}
+
+{% block scripts %}
+    <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/resource_viewer_class.js')}}"></script>
+    <script src="{{javascript_source}}"></script>
+    <script>
+        let user_id = "{{current_user.get_id()}}";
+        let resource_name = "{{resource_name}}";
+        let is_repository = "{{is_repository}}" == "True";
+        window.onload = start_post_load;
+        window.onbeforeunload = function(e) {
+            if (dirty()) {
+                return "Any unsaved changes will be lost."
+            }
+        };
+        window.onresize = function () {
+            resize_dom_to_bottom_given_selector("#main_content", 40)
+        }
+    </script>
+{% endblock %}
