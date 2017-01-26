@@ -169,8 +169,6 @@ class ResourceManager {
     // a couple of utility functions
 
     textify_button_names () {
-        let but;
-        let i;
         let but_text;
         for (let bgroup of this.button_groups) {
             for (let but of bgroup.buttons) {

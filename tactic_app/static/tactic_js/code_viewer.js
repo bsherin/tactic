@@ -9,7 +9,7 @@ let savedTags = null;
 let savedNotes = null;
 const this_viewer = "viewer";
 
-let module_viewer;
+let code_viewer;
 
 function start_post_load() {
     if (is_repository) {
@@ -28,7 +28,7 @@ class CodeViewer extends ModuleViewerAbstract {
 
     get button_bindings() {
         return {"save_button": this.saveMe,
-            "save_as_button": this.saveModuleAs,
+            "save_as_button": this.saveCodeAs,
             "share_button": this.sendToRepository,
             "change_theme_button": this.changeTheme,
             "show_api_button": this.showAPI}
@@ -49,7 +49,7 @@ class CodeViewer extends ModuleViewerAbstract {
             this.myCodeMirror.setOption("readOnly", true)
         }
         this.myCodeMirror.refresh();
-        self = this;
+        let self = this;
         postAjaxPromise("get_api_html", {})
             .then(function (data) {
                 $("#aux-area").html(data.api_html);
@@ -76,13 +76,13 @@ class CodeViewer extends ModuleViewerAbstract {
                 savedNotes = notes;
                 data.timeout = 2000;
             }
-            doFlash(data)
+            doFlash(data);
             return false
         }
     }
 
     saveCodeAs() {
-        doFlash({"message": "not implemented yet"})
+        doFlash({"message": "not implemented yet"});
         return false
     }
 

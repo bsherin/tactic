@@ -11,12 +11,9 @@ class ResourceViewer {
         this.mousetrap = new Mousetrap();
         this.savedContent = null;
         this.do_extra_setup();
-        this.mousetrap.bind("esc", function () {
-            clearStatusArea();
-        });
 
         this.mousetrap.bind(['command+s', 'ctrl+s'], function (e) {
-            updateList();
+            saveMe();
             e.preventDefault()
         });
         this.bind_buttons();

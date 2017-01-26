@@ -39,7 +39,6 @@ class ListViewer extends ResourceViewer {
             "notes": notes
         };
         postAjax("update_list", result_dict, update_success);
-        self = this;
         function update_success(data) {
             if (data.success) {
                 this.savedContent = new_list_as_string;

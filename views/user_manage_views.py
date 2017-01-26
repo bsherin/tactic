@@ -298,12 +298,10 @@ class ListManager(ResourceManager):
         return render_template("user_manage/resource_viewer.html",
                                resource_name=list_name,
                                include_metadata=True,
-                               readonly = False,
-                               is_repository = False,
+                               readonly=False,
+                               is_repository=False,
                                javascript_source=javascript_source,
                                button_groups=self.button_groups)
-
-
 
     def get_list(self, list_name):
         the_list = current_user.get_list(list_name)
@@ -311,8 +309,6 @@ class ListManager(ResourceManager):
         for w in the_list:
             lstring += w + "\n"
         return jsonify({"success": True, "the_content": lstring})
-
-
 
     def grab_metadata(self, res_name):
         if self.is_repository:
@@ -377,16 +373,18 @@ class RepositoryListManager(ListManager):
                       ]]
 
     def add_rules(self):
-        app.add_url_rule('/repository_view_list/<list_name>', "repository_view_list", login_required(self.repository_view_list), methods=['get'])
-        app.add_url_rule('/repository_get_list/<list_name>', "repository_get_list", login_required(self.repository_get_list), methods=['get', 'post'])
+        app.add_url_rule('/repository_view_list/<list_name>', "repository_view_list",
+                         login_required(self.repository_view_list), methods=['get'])
+        app.add_url_rule('/repository_get_list/<list_name>', "repository_get_list",
+                         login_required(self.repository_get_list), methods=['get', 'post'])
 
     def repository_view_list(self, list_name):
         javascript_source = url_for('static', filename='tactic_js/list_viewer.js')
         return render_template("user_manage/resource_viewer.html",
                                resource_name=list_name,
                                include_metadata=True,
-                               readonly = True,
-                               is_repository = True,
+                               readonly=True,
+                               is_repository=True,
                                javascript_source=javascript_source,
                                button_groups=self.button_groups)
 
@@ -396,6 +394,7 @@ class RepositoryListManager(ListManager):
         for w in the_list:
             lstring += w + "\n"
         return jsonify({"success": True, "the_content": lstring})
+
 
 # noinspection PyMethodMayBeStatic,PyBroadException
 class CollectionManager(ResourceManager):
@@ -802,13 +801,11 @@ class TileManager(ResourceManager):
         return render_template("user_manage/resource_viewer.html",
                                resource_name=module_name,
                                include_metadata=True,
-                               readonly = False,
-                               is_repository = False,
+                               readonly=False,
+                               is_repository=False,
                                javascript_source=javascript_source,
-                               uses_codemirror = "True",
+                               uses_codemirror="True",
                                button_groups=self.button_groups)
-
-
 
     def get_module_code(self, module_name):
         user_obj = current_user
@@ -855,7 +852,6 @@ class TileManager(ResourceManager):
                                api_dlist=revised_api_dlist,
                                option_types=option_types,
                                uses_codemirror="True")
-
 
     def load_tile_module(self, tile_module_name, return_json=True, user_obj=None):
         try:
@@ -980,7 +976,6 @@ class RepositoryTileManager(TileManager):
         app.add_url_rule('/repository_get_module_code/<module_name>', "repository_get_module_code",
                          login_required(self.repository_get_module_code), methods=['get', 'post'])
 
-
     def repository_view_module(self, module_name):
         javascript_source = url_for('static', filename='tactic_js/module_viewer.js')
         return render_template("user_manage/resource_viewer.html",
@@ -1063,7 +1058,6 @@ class CodeManager(ResourceManager):
         user_obj = current_user
         the_code = user_obj.get_code(code_name)
         return jsonify({"success": True, "the_content": the_code})
-
 
     def load_code(self, the_code):
         result = send_direct_request_to_container(global_tile_manager.test_tile_container_id, "clear_and_load_code",
@@ -1157,7 +1151,6 @@ class RepositoryCodeManager(CodeManager):
                                javascript_source=javascript_source,
                                uses_codemirror="True",
                                button_groups=self.button_groups)
-
 
     def repository_get_code_code(self, code_name):
         user_obj = repository_user
@@ -1381,6 +1374,7 @@ def update_module():
 @login_required
 def rename_resource(res_type, old_name):
     return globals()["rename_" + res_type](old_name)
+
 
 @app.route('/rename_tile/<old_name>', methods=['post'])
 @login_required

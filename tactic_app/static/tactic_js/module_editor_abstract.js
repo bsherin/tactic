@@ -5,7 +5,6 @@
 
 class ModuleViewerAbstract extends ResourceViewer {
 
-
     do_extra_setup() {
         this.extra_autocomplete_list = [];
         this.cmobjects_to_search = [];
@@ -24,7 +23,7 @@ class ModuleViewerAbstract extends ResourceViewer {
     }
 
     create_api() {
-        self = this;
+        let self = this;
         postAjax("get_api_dict", {}, function (data) {
             self.api_dict_by_category = data.api_dict_by_category;
             self.api_dict_by_name = data.api_dict_by_name;
@@ -57,19 +56,17 @@ class ModuleViewerAbstract extends ResourceViewer {
     }
 
     create_keymap() {
-        CodeMirror.keyMap["default"]["Esc"] = this.clearSelections;
+        let self = this;
+        CodeMirror.keyMap["default"]["Esc"] = function () {self.clearSelections()};
         let is_mac = CodeMirror.keyMap["default"].hasOwnProperty("Cmd-S");
-        this.mousetrap.bind(['esc'], function (e) {
-            this.clearSelections();
+
+        this.mousetrap.bind(['escape'], function (e) {
+            self.clearSelections();
             e.preventDefault()
         });
 
         if (is_mac) {
-            CodeMirror.keyMap["default"]["Cmd-S"] = self.updateModule;
-            this.mousetrap.bind(['command+s'], function (e) {
-                self.updateModule();
-                e.preventDefault()
-            });
+            CodeMirror.keyMap["default"]["Cmd-S"] = self.saveMe;
 
             this.mousetrap.bind(['command+l'], function (e) {
                 self.loadModule();
@@ -81,31 +78,27 @@ class ModuleViewerAbstract extends ResourceViewer {
             });
         }
         else {
-            CodeMirror.keyMap["default"]["Ctrl-S"] = self.updateModule;
-            this.mousetrap.bind(['ctrl+s'], function (e) {
-                self.updateModule();
-                e.preventDefault()
-            });
+            CodeMirror.keyMap["default"]["Ctrl-S"] = self.saveMe;
 
             this.mousetrap.bind(['ctrl+l'], function (e) {
                 self.loadModule();
                 e.preventDefault()
             });
             this.mousetrap.bind(['ctrl+f'], function (e) {
-                sself.earchInAll();
+                self.searchInAll();
                 e.preventDefault()
             });
         }
     }
 
     searchInAll() {
-        for (let cm in this.cmobjects_to_search) {
+        for (let cm of this.cmobjects_to_search) {
             CodeMirror.commands.find(cm)
         }
     }
 
     clearSelections() {
-        for (let cm in this.cmobjects_to_search)  {
+        for (let cm of this.cmobjects_to_search)  {
             CodeMirror.commands.clearSearch(cm);
             CodeMirror.commands.singleSelection(cm);
         }
@@ -192,7 +185,7 @@ class ModuleViewerAbstract extends ResourceViewer {
 
     saveMe() {
         this.doSave(update_success);
-        self = this;
+        let self = this;
         function update_success(data, new_code, tags, notes, category) {
             if ((self.this_viewer == "creator") && (data.render_content_line_number != 0)) {
                 self.myCodeMirror.setOption("firstLineNumber", data.render_content_line_number + 1);
@@ -223,12 +216,12 @@ class ModuleViewerAbstract extends ResourceViewer {
         this.doSave(save_success);
         function save_success(data, new_code, tags, notes, category) {
             if ((self.this_viewer == "creator") && (data.render_content_line_number != 0)) {
-                self.myCodeMirror.setOption("firstLineNumber", data.render_content_line_number + 1)
+                self.myCodeMirror.setOption("firstLineNumber", data.render_content_line_number + 1);
                 self.myCodeMirror.refresh()
             }
             if ((self.this_viewer == "creator") && (self.is_mpl) && (data.draw_plot_line_number != 0)) {
-                self.myDPCodeMirror.setOption("firstLineNumber", data.draw_plot_line_number + 1)
-                self.myDPCodeMirror.refresh()
+                self.myDPCodeMirror.setOption("firstLineNumber", data.draw_plot_line_number + 1);
+                self.myDPCodeMirror.refresh();
             }
             if (data.success) {
                 self.savedContent = new_code;
@@ -271,7 +264,6 @@ class ModuleViewerAbstract extends ResourceViewer {
         resize_dom_to_bottom_given_selector("#aux-area", 20);
     }
 
-
     changeTheme() {
         if (current_theme == "default") {
             this.myCodeMirror.setOption("theme", "pastel-on-dark");
@@ -298,7 +290,7 @@ class ModuleViewerAbstract extends ResourceViewer {
 
         let is_clean = (the_code == this.savedContent) && (tags == this.savedTags) && (notes == this.savedNotes);
         if (this.this_viewer == "creator") {
-            new_methods = this.methodManager.cmobject.getValue();
+            let new_methods = this.methodManager.cmobject.getValue();
             const category = $("#tile-category").val();
             is_clean = is_clean && (new_methods == savedMethods) && !optionManager.changed && !this.exportManager.changed && (category == this.savedCategory);
             if (this.is_mpl) {
@@ -310,13 +302,6 @@ class ModuleViewerAbstract extends ResourceViewer {
     }
 
 }
-
-
-
-
-
-
-
 
 tactic_keymap_pcDefault = {
 "Ctrl-A": "selectAll", "Ctrl-D": "deleteLine", "Ctrl-Z": "undo", "Shift-Ctrl-Z": "redo", "Ctrl-Y": "redo",

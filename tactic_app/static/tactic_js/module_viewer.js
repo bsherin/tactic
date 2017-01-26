@@ -49,7 +49,7 @@ class ModuleViewer extends ModuleViewerAbstract {
             this.myCodeMirror.setOption("readOnly", true)
         }
         this.myCodeMirror.refresh();
-        self = this;
+        let self = this;
         postAjaxPromise("get_api_html", {})
             .then(function (data) {
                 $("#aux-area").html(data.api_html);
