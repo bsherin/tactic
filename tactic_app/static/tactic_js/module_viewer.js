@@ -1,12 +1,6 @@
 /**
  * Created by bls910 on 10/4/15.
  */
-let current_theme = "default";
-let myCodeMirror;
-let savedCode = null;
-let savedTags = null;
-let savedNotes = null;
-const this_viewer = "viewer";
 
 let module_viewer;
 

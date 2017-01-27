@@ -9,7 +9,7 @@ function get_current_res_type() {
 }
 
 class ResourceManager {
-    constructor (module_id, res_type, resource_module_template, destination_selector) {
+    constructor (module_id, res_type, resource_module_template, destination_selector, extras_dict=null) {
         this.destination_selector = destination_selector;
         this.res_type = res_type;
         this.module_id = module_id;
@@ -24,12 +24,13 @@ class ResourceManager {
         this.file_adders = [];
         this.aux_left = false;
         this.aux_right = false;
-
+        this.extras_dict = extras_dict;
         this.set_extra_properties();
         this.textify_button_names();
         this.resource_module_template = resource_module_template;
         this.create_module_html();
         this.add_listeners()
+
     }
 
     set_extra_properties() { }

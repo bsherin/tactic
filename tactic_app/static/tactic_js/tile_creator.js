@@ -1,115 +1,198 @@
 /**
  * Created by bls910 on 10/4/15.
  */
-let current_theme = "default";
-let myCodeMirror;
-let myDPCodeMirror;
-let savedCode = null;
-let savedTags = null;
-let savedNotes = null;
-let savedCategory = null;
-let savedMethods = null;
-const user_manage_id = guid();
-let is_mpl = null;
-let this_viewer = "creator";
-let savedDPCode;
 
-let parsed_data;
-const resource_managers = {};
-
+let creator_viewer;
 
 function start_post_load() {
-    if (use_ssl) {
-        socket = io.connect('https://'+ document.domain + ':' + location.port  + '/user_manage');
-    }
-    else {
-        socket = io.connect('http://'+document.domain + ':' + location.port  + '/user_manage');
-    }
-    socket.emit('join', {"user_id":  user_id, "user_manage_id":  user_manage_id});
-
-    window.onresize = function () {
-        resize_all_areas();
-    };
-
-    $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function (e) {
-        if ($(e.currentTarget).attr("value") == "method") {
-            resize_method_module();
-            resource_managers["method_module"].cmobject.refresh();
-        }
-    });
-
-    socket.on('doflash', doFlash);
-
-    postAjaxPromise("parse_code", {"module_name": module_name})
-        .then((result) => {
-            setup_code_areas(result);
-            setup_resource_modules();
-            create_api_listeners()
-        })
-        .catch(doFlash)
+    creator_viewer = new CreatorViewer(module_name, "tile", "parse_code");
+    creator_viewer.resize_all_areas();
 }
 
-function setup_code_areas(result) {
-    parsed_data = result;
-    savedMethods = parsed_data.extra_functions;
-    savedTags = parsed_data.tags;
-    savedNotes = parsed_data.notes;
-    savedCategory = parsed_data.category;
-    is_mpl = parsed_data.is_mpl;
+class CreatorViewer extends ModuleViewerAbstract {
+    do_extra_setup () {
+        super.do_extra_setup();
+        this.this_viewer = "creator";
+        this.savedCategory = null;
+        this.savedMethods = null;
+        this.resource_managers = {};
+        this.is_mpl = false;
+        this.savedCode = null;
+        this.savedDPCode = null;
+        this.myCodeMirror = null;
+        this.myDPCodeMirror = null;
+        self = this;
+        $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function (e) {
+            if ($(e.currentTarget).attr("value") == "method") {
+                self.resize_method_module();
+                self.resource_managers["method_module"].cmobject.refresh();
+            }
+        });
+        window.onresize = function () {
+            self.resize_all_areas();
+        };
 
-    set_metadata_fields(parsed_data.datestring, parsed_data.tags, parsed_data.notes, parsed_data.category);
+    }
 
-    const codearea = document.getElementById("codearea");
-    myCodeMirror = createCMArea(codearea, false, parsed_data.render_content_code, parsed_data.render_content_line_number + 1);
-    savedCode = myCodeMirror.getDoc().getValue();
+    get exportManager() {
+        return this.resource_managers["export_module"]
+    }
 
-    if (is_mpl) {
-        const drawplotcodearea = document.getElementById("drawplotcodearea");
-        myDPCodeMirror = createCMArea(drawplotcodearea, false, parsed_data.draw_plot_code, parsed_data.draw_plot_line_number + 1);
-        let dpba = $("#drawplotboundingarea");
-        dpba.css("display", "block");
-        savedDPCode = myDPCodeMirror.getDoc().getValue();
-        dpba.resizable({
-                handles: "s",
-                resize: function (event, ui) {
-                    resize_dparea_from_height(ui.size.height);
-                    resize_code_area();
-                }
+    get optionManager() {
+        return this.resource_managers["option_module"]
+    }
+
+    get methodManager() {
+        return this.resource_managers["method_module"]
+    }
+
+    get button_bindings() {
+        return {"save_button": this.saveMe,
+            "save_as_button": this.saveModuleAs,
+            "load_button": this.loadModule,
+            "share_button": this.sendToRepository,
+            "change_theme_button": this.changeTheme,
+            "show_api_button": this.showAPI}
+    }
+
+
+    got_resource (the_content) {
+        this.parsed_data = the_content;
+        this.setup_code_areas();
+        this.setup_resource_modules();
+        let self = this;
+        postAjaxPromise("get_api_html", {})
+            .then(function (data) {
+                $("#aux-area").html(data.api_html);
+                self.create_api_listeners();
+            })
+            .catch(doFlash);
+    }
+
+    setup_code_areas() {
+        this.savedMethods = this.parsed_data.extra_functions;
+        this.is_mpl = this.parsed_data.is_mpl;
+
+        const codearea = document.getElementById("codearea");
+        this.myCodeMirror = this.createCMArea(codearea, false, this.parsed_data.render_content_code, this.parsed_data.render_content_line_number + 1);
+        this.savedCode = this.myCodeMirror.getDoc().getValue();
+
+        if (this.is_mpl) {
+            const drawplotcodearea = document.getElementById("drawplotcodearea");
+            this.myDPCodeMirror = createCMArea(drawplotcodearea, false, this.parsed_data.draw_plot_code, this.parsed_data.draw_plot_line_number + 1);
+            let dpba = $("#drawplotboundingarea");
+            dpba.css("display", "block");
+            this.savedDPCode = this.myDPCodeMirror.getDoc().getValue();
+            let self = this;
+            dpba.resizable({
+                    handles: "s",
+                    resize: function (event, ui) {
+                        self.resize_dparea_from_height(ui.size.height);
+                        self.resize_code_area();
+                    }
+                });
+        }
+    }
+
+    setup_resource_modules() {
+        let self = this;
+        let result_dict = {"res_type": this.res_type, "res_name": this.resource_name};
+        postAjaxPromise("grab_metadata", result_dict)
+            .then(function (data) {
+                self.set_metadata_fields(data.date_string, data.tags, data.notes, self.parsed_data.category)
+            })
+            .catch(function () {
+                self.set_metadata_fields("", "", "", "")
             });
+        $.get($SCRIPT_ROOT + "/get_resource_module_template", function(template) {
+            const resource_module_template = $(template).filter('#resource-module-template').html();
+
+            // Note there's a kluge here: these managers require the global variable parsed_data to be set.
+            self.resource_managers["option_module"] = new OptionManager("option_module", "option", resource_module_template, "#option-module-holder", {"viewer": self});
+            self.resource_managers["export_module"] = new ExportManager("export_module", "export", resource_module_template, "#export-module-holder", {"viewer": self});
+            self.resource_managers["method_module"] = new MethodManager("method_module", "method", resource_module_template, "#method-module-holder", {"viewer": self});
+
+            $(".resource-module").on("click", ".main-content .selector-button", {"viewer": self}, self.selector_click);
+            $("#export-create-button").on("click", {"manager": self.resource_managers["export_module"]}, self.resource_managers["export_module"].createNewExport);
+            $("#option-create-button").on("click", {"manager": self.resource_managers["option_module"]}, self.resource_managers["option_module"].createNewOption);
+
+        });
     }
-}
 
-function setup_resource_modules() {
-    $.get($SCRIPT_ROOT + "/get_resource_module_template", function(template) {
-        resource_module_template = $(template).filter('#resource-module-template').html();
-
-        // Note there's a kluge here: these managers require the global variable parsed_data to be set.
-        resource_managers["option_module"] = new OptionManager("option_module", "option", resource_module_template, "#option-module-holder");
-        resource_managers["export_module"] = new ExportManager("export_module", "export", resource_module_template, "#export-module-holder");
-        resource_managers["method_module"] = new MethodManager("method_module", "method", resource_module_template, "#method-module-holder");
-
-        $(".resource-module").on("click", ".main-content .selector-button", selector_click);
-        $("#export-create-button").on("click", {"manager": resource_managers["export_module"]}, resource_managers["export_module"].createNewExport);
-        $("#option-create-button").on("click", {"manager": resource_managers["option_module"]}, resource_managers["option_module"].createNewOption);
-
-    });
-}
-
-function create_api_listeners() {
-    const acc = document.getElementsByClassName("accordion");
-    for (let element of acc) {
-        element.onclick = function(){
-            this.classList.toggle("active");
-            this.nextElementSibling.classList.toggle("show");
+    set_metadata_fields(created, tags, notes, category=null) {
+        super.set_metadata_fields(created, tags, notes);
+        if (category != null) {
+            $("#category")[0].value = category;
+            this.savedCategory = category;
         }
     }
-    resize_all_areas();
-}
 
-function rebuild_autocomplete_list() {
-    if (resource_managers.hasOwnProperty("option_module") && resource_managers.hasOwnProperty("export_module")) {
-        extra_autocomplete_list = resource_managers["option_module"].get_option_names();
-        extra_autocomplete_list.concat(resource_managers["export_module"].export_list)
+    rebuild_autocomplete_list() {
+        if (this.resource_managers.hasOwnProperty("option_module") && this.resource_managers.hasOwnProperty("export_module")) {
+            this.extra_autocomplete_list = this.resource_managers["option_module"].get_option_names();
+            this.extra_autocomplete_list.concat(this.resource_managers["export_module"].export_list)
+        }
+    }
+
+    resize_dparea() {
+        let dpba = $("#drawplotboundingarea");
+        if (dpba.length > 0) {
+            let the_height = [window.innerHeight - dpba.offset().top - 20] / 2;
+            this.resize_dparea_from_height(the_height)
+        }
+    }
+    resize_dparea_from_height(the_height) {
+        let dpba = $("#drawplotboundingarea");
+        dpba.css('height', the_height);
+        let dpca = $("#drawplotcodearea");
+        if (dpca.length > 0) {
+            let dpca_height = the_height - (dpca.offset().top - dpba.offset().top);
+            dpca.css('height', dpca_height);
+            $("#drawplotcodearea .CodeMirror").css('height', dpca_height);
+        }
+        if (this.myDPCodeMirror != null) {
+            this.myDPCodeMirror.refresh();
+        }
+    }
+    resize_code_area() {
+        resize_dom_to_bottom_given_selector("#codearea", 20);
+        resize_dom_to_bottom_given_selector("#codearea .CodeMirror", 20);
+        if (this.myCodeMirror != null) {
+            this.myCodeMirror.refresh();
+        }
+    }
+
+    resize_method_module() {
+        resize_dom_to_bottom_given_selector("#method_module .CodeMirror", 20);
+    }
+
+    resize_api_and_tab_areas() {
+        resize_dom_to_bottom_given_selector("#aux-area", 20);
+        resize_dom_to_bottom_given_selector(".tab-pane", 20);
+    }
+
+    resize_all_areas() {
+        if (this.is_mpl) {
+            this.resize_dparea()
+        }
+        this.resize_code_area();
+        this.resize_method_module();
+        this.resize_api_and_tab_areas()
+    }
+
+    selector_click(event) {
+        const row_element = $(event.target).closest('tr');
+        event.data.viewer.resource_managers[get_current_res_type() + "_module"].selector_click(row_element[0])
+    }
+
+    insertApiItem(the_item) {
+        this.myCodeMirror.getDoc().replaceSelection("self." + this.api_dict_by_name[the_item].signature);
+        return false
+    }
+
+    insertApiItemDP(the_item) {
+        this.myDPCodeMirror.getDoc().replaceSelection("self." + this.api_dict_by_name[the_item].signature);
+        return false
     }
 }
 
@@ -117,7 +200,7 @@ class OptionManager extends CreatorResourceManager {
     set_extra_properties() {
         super.set_extra_properties();
         this.update_view = "get_option_table";
-        this.option_dict = parsed_data.option_dict;
+        this.option_dict = this.viewer.parsed_data.option_dict;
         this.data_attr = "option_dict";
         this.button_groups = [
             {
@@ -253,7 +336,7 @@ class ExportManager extends CreatorResourceManager {
     set_extra_properties() {
         super.set_extra_properties();
         this.update_view = "get_export_table";
-        this.export_list = parsed_data.export_list;
+        this.export_list = this.viewer.parsed_data.export_list;
         this.data_attr = "export_list";
         this.button_groups = [
             {"buttons": [
@@ -300,13 +383,13 @@ class MethodManager extends CreatorResourceManager {
 
     set_extra_properties() {
         super.set_extra_properties();
-        this.extra_functions = parsed_data.extra_functions;
+        this.extra_functions = this.viewer.parsed_data.extra_functions;
         this.data_attr = "extra_functions";
         this.include_button_well = false;
     }
 
     update_main_content() {
-        this.cmobject = createCMArea(this.get_main_content_dom()[0], false);
+        this.cmobject = this.viewer.createCMArea(this.get_main_content_dom()[0], false);
         this.get_main_content_dom().find(".CodeMirror").resizable({handles: "se"});
         this.get_main_content_dom().find(".CodeMirror").height(100);
         this.fill_content();
@@ -325,74 +408,3 @@ class MethodManager extends CreatorResourceManager {
     }
 }
 
-function resize_dparea() {
-    let dpba = $("#drawplotboundingarea");
-    if (dpba.length > 0) {
-        let the_height = [window.innerHeight - dpba.offset().top - 20] / 2;
-        resize_dparea_from_height(the_height)
-    }
-}
-
-function resize_dparea_from_height(the_height) {
-    let dpba = $("#drawplotboundingarea");
-    dpba.css('height', the_height);
-    let dpca = $("#drawplotcodearea");
-    if (dpca.length > 0) {
-        let dpca_height = the_height - (dpca.offset().top - dpba.offset().top);
-        dpca.css('height', dpca_height);
-        $("#drawplotcodearea .CodeMirror").css('height', dpca_height);
-    }
-    if (myDPCodeMirror != null) {
-        myDPCodeMirror.refresh();
-    }
-}
-
-function resize_code_area() {
-    resize_dom_to_bottom_given_selector("#codearea", 20);
-    resize_dom_to_bottom_given_selector("#codearea .CodeMirror", 20);
-    if (myCodeMirror != null) {
-        myCodeMirror.refresh();
-    }
-}
-
-function resize_method_module() {
-    resize_dom_to_bottom_given_selector("#method_module .CodeMirror", 20);
-}
-
-function resize_api_and_tab_areas() {
-    resize_dom_to_bottom_given_selector("#api-area", 20);
-    resize_dom_to_bottom_given_selector(".tab-pane", 20);
-}
-
-function resize_all_areas() {
-    if (is_mpl) {
-        resize_dparea()
-    }
-    resize_code_area();
-    resize_method_module();
-    resize_api_and_tab_areas()
-}
-
-function set_metadata_fields(created, tags, notes, category = null) {
-    $(".created").html(created);
-    $("#tile-tags")[0].value = tags;
-    $("#tile-notes")[0].value = notes;
-    if (category != null) {
-        $("#tile-category")[0].value = category;
-    }
-}
-
-function selector_click(event) {
-    const row_element = $(event.target).closest('tr');
-    resource_managers[get_current_res_type() + "_module"].selector_click(row_element[0])
-}
-
-function insertApiItem(the_item) {
-    myCodeMirror.getDoc().replaceSelection("self." + api_dict_by_name[the_item].signature);
-    return false
-}
-
-function insertApiItemDP(the_item) {
-    myDPCodeMirror.getDoc().replaceSelection("self." + api_dict_by_name[the_item].signature);
-    return false
-}

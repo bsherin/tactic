@@ -16,6 +16,7 @@ class ModuleViewerAbstract extends ResourceViewer {
         this.myCodemirror = null;
         this.myDPCodeMirror = null;
         this.current_theme = "default";
+        this.api_list = null;
 
         this.create_api();
         this.create_keymap()
@@ -29,16 +30,16 @@ class ModuleViewerAbstract extends ResourceViewer {
             self.api_dict_by_name = data.api_dict_by_name;
             self.ordered_api_categories = data.ordered_api_categories;
 
-            let api_list = [];
-            for (let cat in self.ordered_api_categories) {
-                for (let entry in self.api_dict_by_category[cat]) {
-                    api_list.push(entry["name"])
+            self.api_list = [];
+            for (let cat of self.ordered_api_categories) {
+                for (let entry of self.api_dict_by_category[cat]) {
+                    self.api_list.push(entry["name"])
                 }
             }
 
             CodeMirror.commands.autocomplete = function (cm) {
                 cm.showHint({
-                    hint: CodeMirror.hint.anyword, api_list: api_list,
+                    hint: CodeMirror.hint.anyword, api_list: self.api_list,
                     extra_autocomplete_list: self.extra_autocomplete_list
                 });
             };
@@ -66,7 +67,7 @@ class ModuleViewerAbstract extends ResourceViewer {
         });
 
         if (is_mac) {
-            CodeMirror.keyMap["default"]["Cmd-S"] = self.saveMe;
+            CodeMirror.keyMap["default"]["Cmd-S"] = function () {self.saveMe()};
 
             this.mousetrap.bind(['command+l'], function (e) {
                 self.loadModule();
@@ -78,7 +79,7 @@ class ModuleViewerAbstract extends ResourceViewer {
             });
         }
         else {
-            CodeMirror.keyMap["default"]["Ctrl-S"] = self.saveMe;
+            CodeMirror.keyMap["default"]["Ctrl-S"] = function () {self.saveMe()};
 
             this.mousetrap.bind(['ctrl+l'], function (e) {
                 self.loadModule();
@@ -154,7 +155,7 @@ class ModuleViewerAbstract extends ResourceViewer {
             };
         }
         else {
-            category = $("#tile-category").val();
+            category = $("#category").val();
             if (category.length == 0) {
                 category = "basic"
             }
@@ -229,7 +230,7 @@ class ModuleViewerAbstract extends ResourceViewer {
                 self.savedNotes = notes;
                 data.timeout = 2000;
                 if (self.this_viewer == "creator") {
-                    savedCategory = category;
+                    self.savedCategory = category;
                     if (self.is_mpl) {
                         savedDPCode = self.myDPCodeMirror.getDoc().getValue();
                     }
@@ -265,13 +266,13 @@ class ModuleViewerAbstract extends ResourceViewer {
     }
 
     changeTheme() {
-        if (current_theme == "default") {
+        if (this.current_theme == "default") {
             this.myCodeMirror.setOption("theme", "pastel-on-dark");
             if ((this.this_viewer == "creator") && this.is_mpl) {
                 this.myDPCodeMirror.setOption("theme", "pastel-on-dark");
             }
             document.body.style.backgroundColor = "grey";
-            current_theme = "dark"
+            this.current_theme = "dark"
         }
         else {
             this.myCodeMirror.setOption("theme", "default");
@@ -279,7 +280,7 @@ class ModuleViewerAbstract extends ResourceViewer {
                 this.myDPCodeMirror.setOption("theme", "default");
             }
             document.body.style.backgroundColor = "white";
-            current_theme = "default"
+            this.current_theme = "default"
         }
     }
 

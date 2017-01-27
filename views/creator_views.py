@@ -45,10 +45,9 @@ def get_api_dict():
                     "api_dict_by_category": api_dict_by_category,
                     "ordered_api_categories": ordered_api_categories})
 
-@app.route('/parse_code', methods=['GET', 'POST'])
+@app.route('/parse_code/<module_name>', methods=['GET', 'POST'])
 @login_required
-def parse_code():
-    module_name = request.json["module_name"]
+def parse_code(module_name):
     res_dict = load_tile_module(module_name)
     if not res_dict["success"]:
         return jsonify({"success": False, "message": "Error loading source"})
@@ -107,7 +106,7 @@ def parse_code():
     else:
         draw_plot_line_number = 0
 
-    return jsonify({"success": True, "option_dict": option_dict, "export_list": export_list,
+    parsed_data = {"option_dict": option_dict, "export_list": export_list,
                     "render_content_code": render_content_code,
                     "extra_functions": extra_functions,
                     "category": category,
@@ -115,7 +114,9 @@ def parse_code():
                     "is_mpl": is_mpl,
                     "draw_plot_code": draw_plot_code,
                     "render_content_line_number": render_content_line_number,
-                    "draw_plot_line_number": draw_plot_line_number})
+                    "draw_plot_line_number": draw_plot_line_number}
+
+    return jsonify({"success": True, "the_content": parsed_data})
 
 class OptionManager(ResourceManager):
 

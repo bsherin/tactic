@@ -11,15 +11,15 @@ class ResourceViewer {
         this.mousetrap = new Mousetrap();
         this.savedContent = null;
         this.do_extra_setup();
-
+        let self = this;
         this.mousetrap.bind(['command+s', 'ctrl+s'], function (e) {
-            saveMe();
+            self.saveMe();
             e.preventDefault()
         });
         this.bind_buttons();
         $("#rename-button").click(this.rename_me.bind(this));
 
-        let self = this;
+
         postAjaxPromise(`${get_url}/${resource_name}`, {})
             .then(function (data) {
                 self.got_resource(data.the_content)

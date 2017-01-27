@@ -116,16 +116,16 @@ function createCMArea(codearea, include_in_global_search = false, initial_value 
 }
 
 function doSave(update_success) {
-    const new_code = myCodeMirror.getDoc().getValue();
-    const tags = $("#tile-tags").val();
-    const notes = $("#tile-notes").val();
+    const new_code = this.myCodeMirror.getDoc().getValue();
+    const tags = $("#tags").val();
+    const notes = $("#notes").val();
     let result_dict;
     let category;
 
     if (this_viewer == "viewer") {
         category = null;
         result_dict = {
-            "module_name": module_name,
+            "module_name": this.resource_name,
             "category": category,
             "tags": tags,
             "notes": notes,
@@ -134,26 +134,26 @@ function doSave(update_success) {
         };
     }
     else {
-        category = $("#tile-category").val();
+        category = $("#category").val();
         if (category.length == 0) {
             category = "basic"
         }
         let new_dp_code = "";
         if (is_mpl) {
-            new_dp_code = myDPCodeMirror.getDoc().getValue();
+            new_dp_code = this.myDPCodeMirror.getDoc().getValue();
         }
         result_dict = {
-            "module_name": module_name,
+            "module_name": this.resource_name,
             "category": category,
             "tags": tags,
             "notes": notes,
-            "exports": exportManager.export_list,
-            "options": optionManager.option_dict,
-            "extra_methods": methodManager.get_extra_functions(),
+            "exports": this.exportManager.export_list,
+            "options": this.optionManager.option_dict,
+            "extra_methods": this.methodManager.get_extra_functions(),
             "render_content_body": new_code,
-            "is_mpl": is_mpl,
+            "is_mpl": this.is_mpl,
             "draw_plot_body": new_dp_code,
-            "last_saved": this_viewer
+            "last_saved": this.this_viewer
         };
     }
 

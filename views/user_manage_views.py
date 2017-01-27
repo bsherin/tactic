@@ -847,10 +847,9 @@ class TileManager(ResourceManager):
         return render_template("user_manage/tile_creator.html",
                                module_name=module_name,
                                read_only_string="",
-                               api_html=api_html,
                                use_ssl=use_ssl,
-                               api_dlist=revised_api_dlist,
                                option_types=option_types,
+                               api_dlist=revised_api_dlist,
                                uses_codemirror="True")
 
     def load_tile_module(self, tile_module_name, return_json=True, user_obj=None):
@@ -1315,7 +1314,7 @@ def build_code(data_dict):
         opt_dict["default"] = str(opt_dict["default"])
         if "special_list" in opt_dict:
             opt_dict["special_list"] = str(opt_dict["special_list"])
-    full_code = render_template("user_manage/tile_creator_template",
+    full_code = render_template("user_manage/tile_creator_template.html",
                                 class_name=data_dict["module_name"],
                                 category=data_dict["category"],
                                 exports=export_list_of_dicts,
@@ -1365,9 +1364,7 @@ def update_module():
                         "draw_plot_line_number": draw_plot_line_number})
     except:
         error_string = "Error saving module " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning",
-                        "render_content_line_number": render_content_line_number,
-                        "draw_plot_line_number": draw_plot_line_number})
+        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
 
 @app.route('/rename_resource/<res_type>/<old_name>', methods=['post'])

@@ -2,14 +2,6 @@
  * Created by bls910 on 10/4/15.
  */
 
-let current_theme = "default";
-let myCodeMirror;
-let savedCode = null;
-let savedTags = null;
-let savedNotes = null;
-const this_viewer = "viewer";
-
-let code_viewer;
 
 function start_post_load() {
     if (is_repository) {
@@ -69,9 +61,10 @@ class CodeViewer extends ModuleViewerAbstract {
             "notes": notes
             };
         postAjax("update_code", result_dict, update_success);
+        const self = this;
         function update_success(data) {
             if (data.success) {
-                savedCode = new_code;
+                this.savedCode = new_code;
                 savedTags = tags;
                 savedNotes = notes;
                 data.timeout = 2000;

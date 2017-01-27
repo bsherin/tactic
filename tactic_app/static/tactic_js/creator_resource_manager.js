@@ -10,12 +10,18 @@ class CreatorResourceManager extends ResourceManager {
         this.include_search_toolbar = false;
         this.aux_right = false;
         this.change = false;
+        this.viewer = this.extras_dict["viewer"];
+
+    }
+
+    set_viewer(the_viewer) {
+        this.viewer = the_viewer;
     }
 
     update_main_content () {
         let data = {};
         data[this.data_attr] = this[this.data_attr];
-        rebuild_autocomplete_list();
+        this.viewer.rebuild_autocomplete_list();
         let self = this;
         postAjaxPromise(this.update_view, data)
             .then(function (result) {
