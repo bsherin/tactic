@@ -18,7 +18,7 @@ class {{class_name}}(TileBase{% if is_mpl %}, MplFigure{% endif %}):
         {"name": "{{option.name|e}}", "type": "{{option.type|e}}"{% if option.special_list %}, "special_list": {{option.special_list}}{% endif %}{% if option.tag %}, "tag":"{{option.tag|e}}"{% endif %}}{% if not loop.last %},{% endif %}
         {% endfor -%}
     ]
-{{extra_methods -}}
+{{extra_methods|safe -}}
 {% if is_mpl %}
     def draw_plot(self):
 {{draw_plot_body -}}

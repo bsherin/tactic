@@ -1,4 +1,4 @@
-from flask import render_template, request, jsonify, send_file, url_for
+from flask import request, jsonify, send_file, url_for
 from flask_login import login_required, current_user
 from user_manage_views import ResourceManager
 from module_viewer_views import remove_indents

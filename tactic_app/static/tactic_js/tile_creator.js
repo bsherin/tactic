@@ -21,7 +21,7 @@ class CreatorViewer extends ModuleViewerAbstract {
         this.savedDPCode = null;
         this.myCodeMirror = null;
         this.myDPCodeMirror = null;
-        self = this;
+        let self = this;
         $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function (e) {
             if ($(e.currentTarget).attr("value") == "method") {
                 self.resize_method_module();
@@ -31,7 +31,6 @@ class CreatorViewer extends ModuleViewerAbstract {
         window.onresize = function () {
             self.resize_all_areas();
         };
-
     }
 
     get exportManager() {
@@ -54,7 +53,6 @@ class CreatorViewer extends ModuleViewerAbstract {
             "change_theme_button": this.changeTheme,
             "show_api_button": this.showAPI}
     }
-
 
     got_resource (the_content) {
         this.parsed_data = the_content;
@@ -400,7 +398,7 @@ class MethodManager extends CreatorResourceManager {
     }
 
     get_extra_functions () {
-        return this.cmobject.getValue()
+        return this.cmobject.getDoc().getValue()
     }
 
     refresh_methods () {

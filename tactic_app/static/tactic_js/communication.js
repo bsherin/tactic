@@ -1,8 +1,8 @@
-var callbacks = {};
+let callbacks = {};
 
 function handleCallback (task_packet) {
-    var task_id = task_packet.callback_id;
-    var func = callbacks[task_id];
+    let task_id = task_packet.callback_id;
+    let func = callbacks[task_id];
     delete callbacks[task_id];
     func(task_packet.response_data);
 }
@@ -80,7 +80,7 @@ function postAjaxUploadPromise(target, form_data) {
 }
 
 function postWithCallback(dest_id, task_type, task_data, callback_func){
-    var task_packet =  {
+    const task_packet =  {
         "source": "client",
         "dest": dest_id,
         "task_type": task_type,
@@ -89,7 +89,7 @@ function postWithCallback(dest_id, task_type, task_data, callback_func){
         "main_id": main_id
     };
     if ((typeof callback_func != "undefined") && (callback_func != null)) {
-        var unique_id = guid();
+        const unique_id = guid();
         callbacks[unique_id] = callback_func;
         task_packet.callback_id = unique_id
     }
@@ -107,7 +107,7 @@ function postWithCallback(dest_id, task_type, task_data, callback_func){
 }
 
 function postWithCallbackNoMain(dest_id, task_type, task_data, callback_func){
-    var task_packet =  {
+    const task_packet =  {
         "source": "client",
         "dest": dest_id,
         "task_type": task_type,
@@ -115,7 +115,7 @@ function postWithCallbackNoMain(dest_id, task_type, task_data, callback_func){
         "response_data": null
     };
     if (typeof callback_func != "undefined") {
-        var unique_id = guid();
+        const unique_id = guid();
         callbacks[unique_id] = callback_func;
         task_packet.callback_id = unique_id
     }
@@ -135,7 +135,7 @@ function postWithCallbackNoMain(dest_id, task_type, task_data, callback_func){
 
 function broadcast_event_to_server(event_name, data_dict, callback) {
     data_dict.main_id = main_id;
-    data_dict.event_name = event_name
+    data_dict.event_name = event_name;
     data_dict.doc_name = tableObject.current_spec.doc_name;
     data_dict.active_row_index = tableObject.active_row;
     data_dict.active_row_id = tableObject.active_row_id;

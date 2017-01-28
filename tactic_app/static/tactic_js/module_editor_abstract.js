@@ -48,10 +48,11 @@ class ModuleViewerAbstract extends ResourceViewer {
 
     create_api_listeners() {
         const acc = document.getElementsByClassName("accordion");
-        for (let element of acc) {
+        for (let i=0; i < acc.length; ++i) {
+            let element = acc[i];
             element.onclick = function(){
-                this.classList.toggle("active");
-                this.nextElementSibling.classList.toggle("show");
+            this.classList.toggle("active");
+            this.nextElementSibling.classList.toggle("show");
             }
         }
     }
@@ -215,6 +216,7 @@ class ModuleViewerAbstract extends ResourceViewer {
 
     loadModule() {
         this.doSave(save_success);
+        let self = this;
         function save_success(data, new_code, tags, notes, category) {
             if ((self.this_viewer == "creator") && (data.render_content_line_number != 0)) {
                 self.myCodeMirror.setOption("firstLineNumber", data.render_content_line_number + 1);
@@ -232,7 +234,7 @@ class ModuleViewerAbstract extends ResourceViewer {
                 if (self.this_viewer == "creator") {
                     self.savedCategory = category;
                     if (self.is_mpl) {
-                        savedDPCode = self.myDPCodeMirror.getDoc().getValue();
+                        self.savedDPCode = self.myDPCodeMirror.getDoc().getValue();
                     }
                 }
                 $.getJSON($SCRIPT_ROOT + '/load_tile_module/' + String(self.resource_name), load_success)
@@ -293,7 +295,7 @@ class ModuleViewerAbstract extends ResourceViewer {
         if (this.this_viewer == "creator") {
             let new_methods = this.methodManager.cmobject.getValue();
             const category = $("#tile-category").val();
-            is_clean = is_clean && (new_methods == savedMethods) && !optionManager.changed && !this.exportManager.changed && (category == this.savedCategory);
+            is_clean = is_clean && (new_methods == this.savedMethods) && !this.optionManager.changed && !this.exportManager.changed && (category == this.savedCategory);
             if (this.is_mpl) {
                 const dp_code = this.myDPCodeMirror.getDoc().getValue();
                 is_clean = is_clean && (dp_code == this.savedDPCode);
