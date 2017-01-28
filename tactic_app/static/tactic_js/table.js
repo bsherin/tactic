@@ -111,7 +111,6 @@ class TableSpec {
             }
         }
     }
-
 }
 
 class TableObjectClass {
