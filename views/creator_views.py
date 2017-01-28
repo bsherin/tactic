@@ -1,6 +1,7 @@
-from flask import render_template, request, jsonify, send_file, url_for
+from flask import request, jsonify, send_file, url_for
 from flask_login import login_required, current_user
-from user_manage_views import ResourceManager, tile_manager, remove_indents, insert_indents
+from user_manage_views import ResourceManager
+from module_viewer_views import remove_indents
 
 import tactic_app
 from tactic_app import app, db, socketio
@@ -11,13 +12,7 @@ from tactic_app.integrated_docs import api_array, api_dict_by_category, api_dict
 import re, sys, datetime
 
 
-@app.route('/get_creator_resource_module_template', methods=['get'])
-@login_required
-def get_creator_resource_module_template():
-    return send_file("templates/creator_resource_module_template.html")
-
-
-def load_tile_module(module_name):
+def creator_load_source(module_name):
     user_obj = current_user
     tile_module = user_obj.get_tile_module(module_name)
 
@@ -51,11 +46,10 @@ def get_api_dict():
                     "api_dict_by_category": api_dict_by_category,
                     "ordered_api_categories": ordered_api_categories})
 
-@app.route('/parse_code', methods=['GET', 'POST'])
+@app.route('/parse_code/<module_name>', methods=['GET', 'POST'])
 @login_required
-def parse_code():
-    module_name = request.json["module_name"]
-    res_dict = load_tile_module(module_name)
+def parse_code(module_name):
+    res_dict = creator_load_source(module_name)
     if not res_dict["success"]:
         return jsonify({"success": False, "message": "Error loading source"})
     category = res_dict["category"]
@@ -113,7 +107,7 @@ def parse_code():
     else:
         draw_plot_line_number = 0
 
-    return jsonify({"success": True, "option_dict": option_dict, "export_list": export_list,
+    parsed_data = {"option_dict": option_dict, "export_list": export_list,
                     "render_content_code": render_content_code,
                     "extra_functions": extra_functions,
                     "category": category,
@@ -121,7 +115,9 @@ def parse_code():
                     "is_mpl": is_mpl,
                     "draw_plot_code": draw_plot_code,
                     "render_content_line_number": render_content_line_number,
-                    "draw_plot_line_number": draw_plot_line_number})
+                    "draw_plot_line_number": draw_plot_line_number}
+
+    return jsonify({"success": True, "the_content": parsed_data})
 
 class OptionManager(ResourceManager):
 

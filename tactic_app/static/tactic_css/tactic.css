@@ -7,7 +7,7 @@
 /* console related */
 /* resource management and table related */
 /* accordion api related parameters */
-#api-area {
+#api-area, #aux-area{
   border: none; }
 
 .bootstrap-border {

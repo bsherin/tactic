@@ -21,6 +21,7 @@ csrf = CsrfProtect()
 # ip_info is only used as a step to getting the host_ip
 
 if USE_FORWARDER: # This means we're working on the mac
+    # I used to have en0 here. Now it seems to need to be en3
     ip_info = subprocess.check_output(['/usr/local/bin/ip', '-4', 'addr', 'show', 'en0'])
 else:
     ip_info = subprocess.check_output(['ip', '-4', 'addr', 'show', 'scope', 'global', 'dev', 'docker0'])

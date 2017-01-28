@@ -1,31 +1,32 @@
 /**
  * Created by bls910 on 6/12/15.
  */
-
-var modal_template;
-var confirm_template;
-var tooltips;
+let modal_template;
+let confirm_template;
+let tooltips;
 
 function updateObject(o1, o2) {
-    for (var prop in o2) {
+    for (let prop in o2) {
         if (o2.hasOwnProperty(prop)){
             o1[prop] = o2[prop]
         }
     }
 }
 
+function doNothing() {;}
+
 String.prototype.format = function() {
-  var str = this;
-  for (var i = 0; i < arguments.length; i++) {
-    var reg = new RegExp("\\{" + i + "\\}", "gm");
+  let str = this;
+  for (let i = 0; i < arguments.length; i++) {
+    const reg = new RegExp("\\{" + i + "\\}", "gm");
     str = str.replace(reg, arguments[i]);
   }
   return str;
 };
 
 function objectKeys(obj) {
-    var result = [];
-    for (var key in obj){
+    const result = [];
+    for (let key in obj){
         if (!obj.hasOwnProperty(key)) continue;
         result.push(key)
     }
@@ -50,7 +51,7 @@ alertbox = alertify.alert()
         });
 
 function statusMessage(data) {
-    var timeout;
+    let timeout;
     if (data.hasOwnProperty("timeout") && (data.timeout != null)) {
         timeout = data.timeout
     } else {
@@ -94,10 +95,10 @@ function doFlash(data) {
     // Flash a bootstrap-styled warning in status-area
     // data should be a dict with message and type fields.
     // type can be alert-success, alert-warning, alert-info, alert-danger
-    var alert_type;
-    var message;
-    var timeout;
-    var msg;
+    let alert_type;
+    let message;
+    let timeout;
+    let msg;
     if (!data.hasOwnProperty("alert_type")){
         alert_type = "alert-info"
     }
@@ -132,10 +133,10 @@ function doFlash(data) {
 }
 
 function scrollIntoView(element, container) {
-  var containerTop = $(container).scrollTop();
-  var containerBottom = containerTop + $(container).height();
-  var elemTop = element.offsetTop;
-  var elemBottom = elemTop + $(element).height();
+  const containerTop = $(container).scrollTop();
+  const containerBottom = containerTop + $(container).height();
+  const elemTop = element.offsetTop;
+  const elemBottom = elemTop + $(element).height();
   if (elemTop < containerTop) {
     $(container).scrollTop(elemTop);
   } else if (elemBottom > containerBottom) {
@@ -181,14 +182,14 @@ function resize_dom_to_bottom_given_selector(selector, bottom_margin) {
 
 function resize_dom_to_bottom(dom, bottom_margin) {
     if (dom.length > 0) {
-        var h = window.innerHeight - bottom_margin - dom.offset().top;
+        const h = window.innerHeight - bottom_margin - dom.offset().top;
         dom.outerHeight(h);
     }
 }
 
 
 function confirmDialog(modal_title, modal_text, cancel_text, submit_text, submit_function) {
-    var res = Mustache.to_html(confirm_template, {
+    const res = Mustache.to_html(confirm_template, {
         "modal_title": modal_title,
         "modal_text": modal_text,
         "cancel_text": cancel_text,
@@ -207,7 +208,6 @@ function confirmDialog(modal_title, modal_text, cancel_text, submit_text, submit
 }
 
 function showModal(modal_title, field_title, submit_function, default_value, existing_names, checkboxes) {
-    var data_dict = {"modal_title": modal_title, "field_title": field_title};
 
     if (typeof existing_names == "undefined") {
         existing_names = []
@@ -217,14 +217,14 @@ function showModal(modal_title, field_title, submit_function, default_value, exi
         checkboxes = []
     }
 
-    var name_counter = 1;
-    var default_name = default_value;
+    let name_counter = 1;
+    let default_name = default_value;
     while (name_exists(default_name)) {
         name_counter += 1;
         default_name = default_value + String(name_counter)
     }
 
-    var res = Mustache.to_html(modal_template, {
+    const res = Mustache.to_html(modal_template, {
         "modal_title": modal_title,
         "field_title": field_title,
         "checkboxes": checkboxes
@@ -254,13 +254,13 @@ function showModal(modal_title, field_title, submit_function, default_value, exi
     }
 
     function submit_handler() {
-        var result = $("#modal-text-input-field").val();
+        const result = $("#modal-text-input-field").val();
         checkresults = {};
-        for (var i = 0; i < checkboxes.length; i++) {
-            cname = checkboxes[i]["checkname"]
+        for (let i = 0; i < checkboxes.length; i++) {
+            cname = checkboxes[i]["checkname"];
             checkresults[cname] = $("#" + cname).is(":checked")
         }
-        var msg;
+        let msg;
         if (name_exists(result)) {
             msg = "That name already exists";
             $("#warning_field").html(msg)

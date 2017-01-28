@@ -45,5 +45,24 @@
       <option name="workingDir" value="$FileDir$" />
       <envs />
     </TaskOptions>
+    <TaskOptions isEnabled="true">
+      <option name="arguments" value="$FileDir$ --out-dir tactic_app/static/tactic_js --source-maps --presets es2015" />
+      <option name="checkSyntaxErrors" value="true" />
+      <option name="description" />
+      <option name="exitCodeBehavior" value="ALWAYS" />
+      <option name="fileExtension" value="js" />
+      <option name="immediateSync" value="true" />
+      <option name="name" value="Babel" />
+      <option name="output" value="dist/$FileDirRelativeToProjectRoot$/$FileNameWithoutExtension$.js:dist/$FileDirRelativeToProjectRoot$/$FileNameWithoutExtension$.js.map" />
+      <option name="outputFilters">
+        <array />
+      </option>
+      <option name="outputFromStdout" value="false" />
+      <option name="program" value="$PROJECT_DIR$/tactic_app/node_modules/babel-cli/bin/babel.js" />
+      <option name="scopeName" value="tactic_js6_scope" />
+      <option name="trackOnlyRoot" value="false" />
+      <option name="workingDir" value="$ContentRoot$" />
+      <envs />
+    </TaskOptions>
   </component>
 </project>

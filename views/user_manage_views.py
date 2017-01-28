@@ -72,6 +72,10 @@ class ResourceManager(object):
 
     def __init__(self, res_type):
         self.res_type = res_type
+        if self.is_repository:
+            self.module_id = "repository_" + self.res_type + "_module"
+        else:
+            self.module_id = self.res_type + "_module"
         self.add_rules()
         self.tag_list = []
 
@@ -95,16 +99,22 @@ class ResourceManager(object):
         if self.is_repository:
             socketio.emit('update-selector-list',
                           {"html": self.request_update_selector_list(user_obj=repository_user),
-                           "res_type": "repository-" + self.res_type},
+                           "select": None,
+                           "module_id": self.module_id,
+                           "res_type": self.res_type},
                           namespace='/user_manage', room=user_obj.get_id())
         elif select is None:
             socketio.emit('update-selector-list',
-                          {"html": self.request_update_selector_list(user_obj=user_obj), "res_type": self.res_type},
+                          {"html": self.request_update_selector_list(user_obj=user_obj),
+                           "select": None,
+                           "module_id": self.module_id,
+                           "res_type": self.res_type},
                           namespace='/user_manage', room=user_obj.get_id())
         else:
             socketio.emit('update-selector-list',
                           {"html": self.request_update_selector_list(user_obj=user_obj),
                            "select": select,
+                           "module_id": self.module_id,
                            "res_type": self.res_type},
                           namespace='/user_manage', room=user_obj.get_id())
 
@@ -134,7 +144,7 @@ class ResourceManager(object):
 
     def request_update_tag_list(self, user_obj=None):
         self.tag_list = self.get_tag_list(user_obj)
-        result = self.create_button_list(self.tag_list)
+        result = "<div class='tag-button-list'>" + self.create_button_list(self.tag_list) + "</div>"
         return result
 
     def create_button_list(self, the_list):
@@ -242,25 +252,25 @@ def send_to_repository():
 @app.route('/request_update_selector_list/<res_type>', methods=['GET'])
 @login_required
 def request_update_selector_list(res_type):
-    return managers[res_type][0].request_update_selector_list()
+    return jsonify({"html": managers[res_type][0].request_update_selector_list()})
 
 
 @app.route('/request_update_tag_list/<res_type>', methods=['GET'])
 @login_required
 def request_update_tag_list(res_type):
-    return managers[res_type][0].request_update_tag_list()
+    return jsonify({"html": managers[res_type][0].request_update_tag_list()})
 
 
 @app.route('/request_update_repository_tag_list/<res_type>', methods=['GET'])
 @login_required
 def request_update_repositorytag_list(res_type):
-    return managers[res_type][1].request_update_tag_list()
+    return jsonify({"html": managers[res_type][1].request_update_tag_list()})
 
 
 @app.route('/request_update_repository_selector_list/<res_type>', methods=['GET'])
 @login_required
 def request_update_repository_selector_list(res_type):
-    return managers[res_type][1].request_update_selector_list()
+    return jsonify({"html": managers[res_type][1].request_update_selector_list()})
 
 
 # noinspection PyMethodMayBeStatic
@@ -269,35 +279,36 @@ class ListManager(ResourceManager):
     collection_list_with_metadata = "list_names_with_metadata"
     collection_name = "list_collection_name"
     name_field = "list_name"
+    button_groups = [[{"name": "save_button", "button_class": "btn-default", "name_text": "Save"},
+                      {"name": "save_as_button", "button_class": "btn-default", "name_text": "Save as ..."},
+                      {"name": "share_button", "button_class": "btn-default", "name_text": "Share"}
+                      ]]
 
     def add_rules(self):
         app.add_url_rule('/view_list/<list_name>', "view_list", login_required(self.view_list), methods=['get'])
-        app.add_url_rule('/repository_view_list/<list_name>', "repository_view_list",
-                         login_required(self.repository_view_list), methods=['get'])
+
+        app.add_url_rule('/get_list/<list_name>', "get_list", login_required(self.get_list), methods=['get', 'post'])
         app.add_url_rule('/add_list', "add_list", login_required(self.add_list), methods=['get', "post"])
         app.add_url_rule('/delete_list/<list_name>', "delete_list", login_required(self.delete_list), methods=['post'])
         app.add_url_rule('/create_duplicate_list', "create_duplicate_list",
                          login_required(self.create_duplicate_list), methods=['get', 'post'])
 
     def view_list(self, list_name):
+        javascript_source = url_for('static', filename='tactic_js/list_viewer.js')
+        return render_template("user_manage/resource_viewer.html",
+                               resource_name=list_name,
+                               include_metadata=True,
+                               readonly=False,
+                               is_repository=False,
+                               javascript_source=javascript_source,
+                               button_groups=self.button_groups)
+
+    def get_list(self, list_name):
         the_list = current_user.get_list(list_name)
         lstring = ""
         for w in the_list:
             lstring += w + "\n"
-        return render_template("user_manage/list_viewer.html",
-                               list_name=list_name,
-                               the_list_as_string=lstring,
-                               read_only_string="")
-
-    def repository_view_list(self, list_name):
-        the_list = repository_user.get_list(list_name)
-        lstring = ""
-        for w in the_list:
-            lstring += w + "\n"
-        return render_template("user_manage/list_viewer.html",
-                               list_name=list_name,
-                               the_list_as_string=lstring,
-                               read_only_string="readonly")
+        return jsonify({"success": True, "the_content": lstring})
 
     def grab_metadata(self, res_name):
         if self.is_repository:
@@ -358,9 +369,31 @@ class ListManager(ResourceManager):
 class RepositoryListManager(ListManager):
     rep_string = "repository-"
     is_repository = True
+    button_groups = [[{"name": "copy_button", "button_class": "btn-default", "name_text": "Copy to library"}
+                      ]]
 
     def add_rules(self):
-        pass
+        app.add_url_rule('/repository_view_list/<list_name>', "repository_view_list",
+                         login_required(self.repository_view_list), methods=['get'])
+        app.add_url_rule('/repository_get_list/<list_name>', "repository_get_list",
+                         login_required(self.repository_get_list), methods=['get', 'post'])
+
+    def repository_view_list(self, list_name):
+        javascript_source = url_for('static', filename='tactic_js/list_viewer.js')
+        return render_template("user_manage/resource_viewer.html",
+                               resource_name=list_name,
+                               include_metadata=True,
+                               readonly=True,
+                               is_repository=True,
+                               javascript_source=javascript_source,
+                               button_groups=self.button_groups)
+
+    def repository_get_list(self, list_name):
+        the_list = repository_user.get_list(list_name)
+        lstring = ""
+        for w in the_list:
+            lstring += w + "\n"
+        return jsonify({"success": True, "the_content": lstring})
 
 
 # noinspection PyMethodMayBeStatic,PyBroadException
@@ -702,6 +735,13 @@ class TileManager(ResourceManager):
     collection_list_with_metadata = "tile_module_names_with_metadata"
     collection_name = "tile_collection_name"
     name_field = "tile_module_name"
+    button_groups = [[{"name": "save_button", "button_class": "btn-default", "name_text": "Save"},
+                      {"name": "save_as_button", "button_class": "btn-default", "name_text": "Save as ..."},
+                      {"name": "load_button", "button_class": "btn-default", "name_text": "Save and load"},
+                      {"name": "share_button", "button_class": "btn-default", "name_text": "Share"}
+                      ],
+                     [{"name": "change_theme_button", "button_class": "btn-default", "name_text": "Toggle theme"},
+                      {"name": "show_api_button", "button_class": "btn-default", "name_text": "Show API"}]]
 
     def add_rules(self):
         app.add_url_rule('/view_module/<module_name>', "view_module",
@@ -710,10 +750,12 @@ class TileManager(ResourceManager):
                          login_required(self.get_module_code), methods=['get', 'post'])
         app.add_url_rule('/view_in_creator/<module_name>', "view_in_creator",
                          login_required(self.view_in_creator), methods=['get'])
+
         app.add_url_rule('/last_saved_view/<module_name>', "last_saved_view",
                          login_required(self.last_saved_view), methods=['get'])
-        app.add_url_rule('/repository_view_module/<module_name>', "repository_view_module",
-                         login_required(self.repository_view_module), methods=['get'])
+        app.add_url_rule('/get_api_html', "get_api_html",
+                         login_required(self.get_api_html), methods=['get', 'post'])
+
         app.add_url_rule('/load_tile_module/<tile_module_name>', "load_tile_module",
                          login_required(self.load_tile_module), methods=['get', 'post'])
         app.add_url_rule('/unload_all_tiles', "unload_all_tiles",
@@ -751,17 +793,24 @@ class TileManager(ResourceManager):
         mdata["notes"] = notes
         db[current_user.tile_collection_name].update_one({"tile_module_name": res_name}, {'$set': {"metadata": mdata}})
 
+    def get_api_html(self):
+        return jsonify({"success": True, "api_html": api_html})
+
     def view_module(self, module_name):
-        return render_template("user_manage/module_viewer.html",
-                               module_name=module_name,
-                               read_only_string="",
-                               api_html=api_html,
-                               uses_codemirror="True")
+        javascript_source = url_for('static', filename='tactic_js/module_viewer.js')
+        return render_template("user_manage/resource_viewer.html",
+                               resource_name=module_name,
+                               include_metadata=True,
+                               readonly=False,
+                               is_repository=False,
+                               javascript_source=javascript_source,
+                               uses_codemirror="True",
+                               button_groups=self.button_groups)
 
     def get_module_code(self, module_name):
         user_obj = current_user
         module_code = user_obj.get_tile_module(module_name)
-        return jsonify({"success": True, "module_code": module_code})
+        return jsonify({"success": True, "the_content": module_code})
 
     def last_saved_view(self, module_name):
         tile_dict = current_user.get_tile_dict(module_name)
@@ -798,20 +847,9 @@ class TileManager(ResourceManager):
         return render_template("user_manage/tile_creator.html",
                                module_name=module_name,
                                read_only_string="",
-                               api_html=api_html,
                                use_ssl=use_ssl,
-                               api_dlist=revised_api_dlist,
                                option_types=option_types,
-                               uses_codemirror="True")
-
-    def repository_view_module(self, module_name):
-        user_obj = repository_user
-        module_code = user_obj.get_tile_module(module_name)
-        return render_template("user_manage/module_viewer.html",
-                               module_name=module_name,
-                               module_code=module_code,
-                               read_only_string="readonly",
-                               api_html=api_html,
+                               api_dlist=revised_api_dlist,
                                uses_codemirror="True")
 
     def load_tile_module(self, tile_module_name, return_json=True, user_obj=None):
@@ -928,9 +966,31 @@ class TileManager(ResourceManager):
 class RepositoryTileManager(TileManager):
     rep_string = "repository-"
     is_repository = True
+    button_groups = [[{"name": "copy_button", "button_class": "btn-default", "name_text": "Copy to library"}
+                      ]]
 
     def add_rules(self):
-        pass
+        app.add_url_rule('/repository_view_module/<module_name>', "repository_view_module",
+                         login_required(self.repository_view_module), methods=['get'])
+        app.add_url_rule('/repository_get_module_code/<module_name>', "repository_get_module_code",
+                         login_required(self.repository_get_module_code), methods=['get', 'post'])
+
+    def repository_view_module(self, module_name):
+        javascript_source = url_for('static', filename='tactic_js/module_viewer.js')
+        return render_template("user_manage/resource_viewer.html",
+                               resource_name=module_name,
+                               include_metadata=True,
+                               readonly=True,
+                               is_repository=True,
+                               javascript_source=javascript_source,
+                               uses_codemirror="True",
+                               button_groups=self.button_groups)
+
+
+    def repository_get_module_code(self, module_name):
+        user_obj = repository_user
+        module_code = user_obj.get_tile_module(module_name)
+        return jsonify({"success": True, "the_content": module_code})
 
 
 class CodeManager(ResourceManager):
@@ -938,12 +998,19 @@ class CodeManager(ResourceManager):
     collection_list_with_metadata = "code_names_with_metadata"
     collection_name = "code_collection_name"
     name_field = "code_name"
+    button_groups = [[{"name": "save_button", "button_class": "btn-default", "name_text": "Save"},
+                      {"name": "save_as_button", "button_class": "btn-default", "name_text": "Save as ..."},
+                      {"name": "share_button", "button_class": "btn-default", "name_text": "Share"}
+                      ],
+                     [{"name": "change_theme_button", "button_class": "btn-default", "name_text": "Toggle theme"},
+                      {"name": "show_api_button", "button_class": "btn-default", "name_text": "Show API"}]]
 
     def add_rules(self):
         app.add_url_rule('/view_code/<code_name>', "view_code",
-                         login_required(self.view_code), methods=['get'])
-        app.add_url_rule('/repository_view_code/<code_name>', "repository_view_code",
-                         login_required(self.repository_view_code), methods=['get'])
+                         login_required(self.view_code), methods=['get', "post"])
+
+        app.add_url_rule('/get_code_code/<code_name>', "get_code_code",
+                         login_required(self.get_code_code), methods=['get', "post"])
         app.add_url_rule('/add_code', "add_code",
                          login_required(self.add_code), methods=['get', "post"])
         app.add_url_rule('/delete_code/<code_name>', "delete_code",
@@ -976,22 +1043,20 @@ class CodeManager(ResourceManager):
         db[current_user.code_collection_name].update_one({"code_name": res_name}, {'$set': {"metadata": mdata}})
 
     def view_code(self, code_name):
+        javascript_source = url_for('static', filename='tactic_js/code_viewer.js')
+        return render_template("user_manage/resource_viewer.html",
+                               resource_name=code_name,
+                               include_metadata=True,
+                               readonly=False,
+                               is_repository=False,
+                               javascript_source=javascript_source,
+                               uses_codemirror="True",
+                               button_groups=self.button_groups)
+
+    def get_code_code(self, code_name):
         user_obj = current_user
         the_code = user_obj.get_code(code_name)
-        return render_template("user_manage/code_viewer.html",
-                               code_name=code_name,
-                               the_code=the_code,
-                               read_only_string="",
-                               uses_codemirror="True")
-
-    def repository_view_code(self, code_name):
-        user_obj = repository_user
-        the_code = user_obj.get_code(code_name)
-        return render_template("user_manage/code_viewer.html",
-                               code_name=code_name,
-                               the_code=the_code,
-                               read_only_string="readonly",
-                               uses_codemirror="True")
+        return jsonify({"success": True, "the_content": the_code})
 
     def load_code(self, the_code):
         result = send_direct_request_to_container(global_tile_manager.test_tile_container_id, "clear_and_load_code",
@@ -1066,9 +1131,30 @@ class CodeManager(ResourceManager):
 class RepositoryCodeManager(CodeManager):
     rep_string = "repository-"
     is_repository = True
+    button_groups = [[{"name": "copy_button", "button_class": "btn-default", "name_text": "Copy to library"}
+                      ]]
 
     def add_rules(self):
-        pass
+        app.add_url_rule('/repository_view_code/<code_name>', "repository_view_code",
+                         login_required(self.repository_view_code), methods=['get', "post"])
+        app.add_url_rule('/repository_get_code_code/<code_name>', "repository_get_code_code",
+                         login_required(self.repository_get_code_code), methods=['get', 'post'])
+
+    def repository_view_code(self, code_name):
+        javascript_source = url_for('static', filename='tactic_js/code_viewer.js')
+        return render_template("user_manage/resource_viewer.html",
+                               resource_name=code_name,
+                               include_metadata=True,
+                               readonly=True,
+                               is_repository=True,
+                               javascript_source=javascript_source,
+                               uses_codemirror="True",
+                               button_groups=self.button_groups)
+
+    def repository_get_code_code(self, code_name):
+        user_obj = repository_user
+        the_code = user_obj.get_code(code_name)
+        return jsonify({"success": True, "the_content": the_code})
 
 repository_user = User.get_user_by_username("repository")
 
@@ -1193,99 +1279,15 @@ def search_resource():
     return jsonify({"html": result})
 
 
-indent_unit = "    "
-
-
-def remove_indents(the_str, number_indents):
-    total_indent = indent_unit * number_indents
-    result = re.sub(r"\n" + total_indent, "\n", the_str)
-    result = re.sub(r"^" + total_indent, "", result)
-    return result
-
-
-def insert_indents(the_str, number_indents):
-    total_indent = indent_unit * number_indents
-    result = re.sub(r"\n", r"\n" + total_indent, the_str)
-    result = total_indent + result
-    return result
-
-
-def build_code(data_dict):
-    export_list = data_dict["exports"]
-    export_list_of_dicts = [{"name": exp_name} for exp_name in export_list]
-    extra_methods = insert_indents(data_dict["extra_methods"], 1)
-    render_content_body = insert_indents(data_dict["render_content_body"], 2)
-    if data_dict["is_mpl"]:
-        draw_plot_body = insert_indents(data_dict["draw_plot_body"], 2)
-    else:
-        draw_plot_body = ""
-    options = data_dict["options"]
-    for opt_dict in options:
-        if "default" not in opt_dict:
-            opt_dict["default"] = "None"
-        elif isinstance(opt_dict["default"], basestring):
-            opt_dict["default"] = '"' + opt_dict["default"] + '"'
-        opt_dict["default"] = str(opt_dict["default"])
-        if "special_list" in opt_dict:
-            opt_dict["special_list"] = str(opt_dict["special_list"])
-    full_code = render_template("user_manage/tile_creator_template",
-                                class_name=data_dict["module_name"],
-                                category=data_dict["category"],
-                                exports=export_list_of_dicts,
-                                options=data_dict["options"],
-                                is_mpl=data_dict["is_mpl"],
-                                extra_methods=extra_methods,
-                                render_content_body=render_content_body,
-                                draw_plot_body=draw_plot_body)
-    return full_code
-
-
-@app.route('/update_module', methods=['post'])
+@app.route('/rename_resource/<res_type>/<old_name>', methods=['post'])
 @login_required
-def update_module():
-    try:
-        data_dict = request.json
-        module_name = data_dict["module_name"]
-        last_saved = data_dict["last_saved"]
-        if last_saved == "viewer":
-            module_code = data_dict["new_code"]
-        else:
-            module_code = build_code(data_dict)
-        start_stuff = re.findall(r"([\s\S]*?)def render_content", module_code)
-        if len(start_stuff) > 0:
-            render_content_line_number = start_stuff[0].count("\n") + 1
-        else:
-            render_content_line_number = 0
-        start_dp_stuff = re.findall(r"([\s\S]*?)def draw_plot", module_code)
-        if len(start_dp_stuff) > 0:
-            draw_plot_line_number = start_dp_stuff[0].count("\n") + 1
-        else:
-            draw_plot_line_number = 0
-        doc = db[current_user.tile_collection_name].find_one({"tile_module_name": module_name})
-        if "metadata" in doc:
-            mdata = doc["metadata"]
-        else:
-            mdata = {}
-        mdata["tags"] = data_dict["tags"]
-        mdata["notes"] = data_dict["notes"]
-        mdata["updated"] = datetime.datetime.today()
-        db[current_user.tile_collection_name].update_one({"tile_module_name": module_name},
-                                                         {'$set': {"tile_module": module_code, "metadata": mdata,
-                                                                   "last_saved": last_saved}})
-        tile_manager.update_selector_list()
-        return jsonify({"success": True, "message": "Module Successfully Saved",
-                        "alert_type": "alert-success", "render_content_line_number": render_content_line_number,
-                        "draw_plot_line_number": draw_plot_line_number})
-    except:
-        error_string = "Error saving module " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning",
-                        "render_content_line_number": render_content_line_number,
-                        "draw_plot_line_number": draw_plot_line_number})
+def rename_resource(res_type, old_name):
+    return globals()["rename_" + res_type](old_name)
 
 
-@app.route('/rename_module/<old_name>', methods=['post'])
+@app.route('/rename_tile/<old_name>', methods=['post'])
 @login_required
-def rename_module(old_name):
+def rename_tile(old_name):
     try:
         new_name = request.json["new_name"]
         db[current_user.tile_collection_name].update_one({"tile_module_name": old_name},

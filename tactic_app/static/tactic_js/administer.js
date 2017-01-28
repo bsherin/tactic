@@ -2,17 +2,25 @@
  * Created by bls910 on 7/18/15.
  */
 
-var admin_resource_module_template;
-var mousetrap = new Mousetrap();
-var user_manage_id = guid();
+let resource_module_template;
+const mousetrap = new Mousetrap();
+const user_manage_id = guid();
 
 mousetrap.bind("esc", function() {
     clearStatusArea();
     clearStatusMessage();
+    resource_managers[get_current_module_id()].unfilter_me()
 });
 
-var res_types = ["container", "user"];
-var resource_managers = {};
+const res_types = ["container", "user"];
+const resource_managers = {};
+const repository_visible = false;
+
+
+function get_current_module_id() {
+    let res_type = get_current_res_type();
+    return `${res_type}_module`
+}
 
 function start_post_load() {
     if (use_ssl) {
@@ -38,173 +46,151 @@ function start_post_load() {
         statusMessage(data)
     });
 
-    socket.on("clear-status-msg", function (data){
+    socket.on("clear-status-msg", function (){
        clearStatusMessage()
     });
 
     socket.on('update-selector-list', function(data) {
-        var res_type = data.res_type;
-        $("#" + res_type + "-selector").html(data.html);
-        if (data.hasOwnProperty("select")) {
-            select_resource_button(res_type, data.select)
-        }
-        else {
-            select_resource_button(res_type, null)
-        }
-        sorttable.makeSortable($("#" + res_type + "-selector table")[0]);
-        var updated_header = $("#" + res_type + "-selector table th")[2];
-        // We do the sort below twice to get the most recent dates first.
-        sorttable.innerSortFunction.apply(updated_header, []);
-        sorttable.innerSortFunction.apply(updated_header, []);
+        resource_managers[data.res_type + "_module"].fill_content(data.html, data.select)
     });
 
     socket.on('doflash', doFlash);
-    $.get($SCRIPT_ROOT + "/get_admin_resource_module_template", function(template) {
-            admin_resource_module_template = $(template).filter('#admin-resource-module-template').html();
-            containerManager.create_module_html();
-            userManager.create_module_html();
+    $.get($SCRIPT_ROOT + "/get_resource_module_template", function(template) {
+        resource_module_template = $(template).filter('#resource-module-template').html();
+        resource_managers["container_module"] = new ContainerManager("container_module", "container", resource_module_template, "#container-module");
+        resource_managers["user_module"] = new UserManager("user_module", "user", resource_module_template, "#user-module");
 
-            res_types.forEach(function (element, index, array) {
-                $("#" + element + "-selector").load($SCRIPT_ROOT + "/request_update_admin_selector_list/" + element, function () {
-                    select_resource_button(element, null);
-                    sorttable.makeSortable($("#" + element + "-selector table")[0]);
-                    var updated_header = $("#" + element + "-selector table th")[2];
-                    // We do the sort below twice to get the most recent dates first.
-                    sorttable.innerSortFunction.apply(updated_header, []);
-                    sorttable.innerSortFunction.apply(updated_header, []);
-                })
-            });
+        $(".resource-module").on("click", ".main-content .selector-button", selector_click);
+        $(".resource-module").on("dblclick", ".main-content .selector-button", selector_double_click);
 
-            containerManager.add_listeners();
-            userManager.add_listeners();
-            $(".resource-module").on("click", ".resource-selector .selector-button", selector_click);
-            $(".resource-module").on("dblclick", ".resource-selector .selector-button", selector_double_click);
-
-            $(".resource-module").on("click", ".resource-unfilter-button", unfilter_resource);
-
-            $(".resource-module").on("keypress", ".search-field", function(e) {
-                if (e.which == 13) {
-                    the_id = e.target.id;
-                    var regexp = /^(\w+?)-/;
-                    var res_type = regexp.exec(the_id)[1];
-                    fake_event = {"target": {"value": res_type}};
-                    search_resource(fake_event);
-                    e.preventDefault();
-                }
-            });
-            $(".resource-module").on("keypress", ".repository-search-field", function(e) {
-                if (e.which == 13) {
-                    the_id = e.target.id;
-                    var regexp = /^repository-(\w+?)-/;
-                    var res_type = regexp.exec(the_id)[1];
-                    fake_event = {"target": {"value": res_type}};
-                    search_repository_resource(fake_event);
-                    e.preventDefault();
-                }
+        $(".resource-module").on("keyup", ".search-field", function(e) {
+            if (e.which == 13) {
+                resource_managers[get_current_module_id()].search_my_resource();
+                e.preventDefault();
+            }
+            else {
+                resource_managers[get_current_module_id()].search_my_resource();
+            }
             });
             resize_window();
-            $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-                resize_window()
+            $('a[data-toggle="tab"]').on('shown.bs.tab', function () {
+            resize_window()
             });
             stopSpinner()
         })
 }
 
-var container_manager_specifics = {
+function selector_click(event) {
+    const row_element = $(event.target).closest('tr');
+    resource_managers[get_current_module_id()].selector_click(row_element[0])
+}
 
-    buttons: [
-        {"name": "reset-server", "func": "reset_server_func", "button_class": "btn btn-danger"},
-        {"name": "clear-user-containers", "func": "clear_user_func", "button_class": "btn btn-danger"},
-        {"name": "destroy-container", "func": "destroy_container", "button_class": "btn btn-warning"},
-        {"name": "container-logs", "func": "container_logs", "button_class": "btn btn-info"},
-        {"name": "refresh", "func": "refresh_container_table", "button_class": "btn btn-info"}
-    ],
-    clear_user_func: function (event) {
+function selector_double_click(event) {
+    const row_element = $(event.target).closest('tr');
+    const res_type = get_current_res_type();
+    let manager = resource_managers[get_current_module_id()];
+    manager.get_all_selector_buttons().removeClass("active");
+    row_element.addClass("active");
+    event.data = {"manager": manager, "res_type": res_type};
+    manager.double_click_func(event)
+}
+
+class ContainerManager extends AdminResourceManager {
+    set_extra_properties() {
+        super.set_extra_properties();
+        this.double_click_func = this.container_logs;
+        this.button_groups = [
+            {
+                "buttons": [
+                    {"name": "reset-server", "func": "reset_server_func", "button_class": "btn-default"},
+                    {"name": "clear-user-containers", "func": "clear_user_func", "button_class": "btn-default"},
+                    {"name": "destroy-container", "func": "destroy_container", "button_class": "btn-default"},
+                ]
+            },
+            {
+                "buttons": [
+                    {"name": "container-logs", "func": "container_logs", "button_class": "btn-default"},
+                    {"name": "refresh", "func": "refresh_container_table", "button_class": "btn-default"}
+                ]
+            }
+        ]
+    }
+    clear_user_func (event) {
         $.getJSON($SCRIPT_ROOT + '/clear_user_containers/' + user_manage_id, doFlash);
         event.preventDefault();
-    },
-    reset_server_func: function (event) {
+    }
+    reset_server_func (event) {
         $.getJSON($SCRIPT_ROOT + '/reset_server/' + user_manage_id, doFlash);
         event.preventDefault();
-    },
-    destroy_container: function (event) {
-        var manager = event.data.manager;
-        cont_id = manager.check_for_selection("container", 4);
+    }
+    destroy_container (event) {
+        let manager = event.data.manager;
+        let cont_id = manager.check_for_selection("container", 4);
         $.getJSON($SCRIPT_ROOT + '/destroy_container/' + cont_id, doFlash);
         event.preventDefault();
-    },
-
-    container_logs: function (event) {
-        var manager = event.data.manager;
-        cont_id = manager.check_for_selection("container", 4);
-        $.getJSON($SCRIPT_ROOT + '/container_logs/' + cont_id, function (data) {
-            the_html = "<pre><small>" + data.log_text + "</small></pre>";
-            $("#container-aux-area").html(the_html)
-        });
-        event.preventDefault();
-    },
-
-    refresh_container_table: function (event) {
-        var manager = event.data.manager;
-        $.getJSON($SCRIPT_ROOT + '/refresh_container_table');
-        event.preventDefault();
-    },
-
-    create_module_html: function () {
-        var res = Mustache.to_html(admin_resource_module_template, this);
-        $("#" + this.res_type + "-module").html(res);
     }
 
-};
+    container_logs (event) {
+        let manager = event.data.manager;
+        let cont_id = manager.check_for_selection();
+        $.getJSON($SCRIPT_ROOT + '/container_logs/' + cont_id, function (data) {
+            let the_html = "<pre><small>" + data.log_text + "</small></pre>";
+            manager.get_aux_right_dom().html(the_html)
+        });
+        event.preventDefault();
+    }
 
-var containerManager = new ResourceManager("container", container_manager_specifics);
+    refresh_container_table (event) {
+        $.getJSON($SCRIPT_ROOT + '/refresh_container_table');
+        event.preventDefault();
+    }
 
-var user_manager_specifics = {
+}
 
-    buttons: [
-        {"name": "create_user", "func": "create_user_func", "button_class": "btn btn-success"},
-        {"name": "delete_user", "func": "delete_user_func", "button_class": "btn btn-danger"},
-        {"name": "refresh", "func": "refresh_user_table", "button_class": "btn btn-info"}
-    ],
+class UserManager extends AdminResourceManager {
+    set_extra_properties() {
+        super.set_extra_properties();
+        this.double_click_func = function () {};
+        this.button_groups = [
+            {
+                "buttons": [
+                    {"name": "create_user", "func": "create_user_func", "button_class": "btn-default"},
+                    {"name": "delete_user", "func": "delete_user_func", "button_class": "btn-default"},
+                    {"name": "refresh", "func": "refresh_user_table", "button_class": "btn-default"}
+                ]
+            }
+        ]
+    }
 
-    refresh_user_table: function (event) {
-        var manager = event.data.manager;
+    refresh_user_table (event) {
         $.getJSON($SCRIPT_ROOT + '/refresh_user_table');
         event.preventDefault();
-    },
+    }
 
-    delete_user_func: function (event) {
-        var manager = event.data.manager;
+    delete_user_func (event) {
+        const manager = event.data.manager;
         user_id = manager.check_for_selection("user", 0);
-        var confirm_text = "Are you sure that you want to delete user " + String(user_id) + "?";
+        const confirm_text = "Are you sure that you want to delete user " + String(user_id) + "?";
         confirmDialog("Delete User", confirm_text, "do nothing", "delete", function () {
             $.getJSON($SCRIPT_ROOT + '/delete_user/' + user_id, doFlash);
         });
         event.preventDefault();
-    },
-
-    create_user_func: function (event) {
-        window.open($SCRIPT_ROOT + '/register');
-        event.preventDefault();
-    },
-
-    create_module_html: function () {
-        var res = Mustache.to_html(admin_resource_module_template, this);
-        $("#" + this.res_type + "-module").html(res);
     }
 
-};
-
-var userManager = new ResourceManager("user", user_manager_specifics);
-
-resource_managers["container"] = containerManager;
-resource_managers["user"] = userManager;
+    create_user_func (event) {
+        window.open($SCRIPT_ROOT + '/register');
+        event.preventDefault();
+    }
+}
 
 function resize_window() {
-    res_types.forEach(function (val, ind, array) {
-        resize_dom_to_bottom($("#" + val + "-selector-row"), 50);
-        resize_dom_to_bottom($("#" + val + "-aux-area"), 50);
-    })
+    for (let module_id in resource_managers) {
+        const manager = resource_managers[module_id];
+        const rsw_row = manager.get_main_content_row();
+        resize_dom_to_bottom(rsw_row, 50);
+        const rselector = manager.get_aux_right_dom();
+        resize_dom_to_bottom(rselector, 50);
+    }
 }
 
 function startSpinner() {

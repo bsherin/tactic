@@ -30,18 +30,18 @@
         <div class="row">
             <div class="col-xs-12">
               <ul class="nav nav-tabs" role="tablist">
-                <li role="presentation" class="active"><a href="#collection-module" aria-controls="collections" role="tab" data-toggle="tab" value="collection">collections</a></li>
-                <li role="presentation"><a href="#project-module" aria-controls="projects" role="tab" data-toggle="tab" value="project">projects</a></li>
-                <li role="presentation"><a href="#tile-module" aria-controls="tiles" role="tab" data-toggle="tab" value="tile">tiles</a></li>
-                <li role="presentation"><a href="#list-module" aria-controls="lists" role="tab" data-toggle="tab" value="list">lists</a></li>
-                <li role="presentation"><a href="#code-module" aria-controls="code" role="tab" data-toggle="tab" value="code">code</a></li>
+                <li role="presentation" class="active"><a href="#collection-module-outer" aria-controls="collections" role="tab" data-toggle="tab" value="collection">collections</a></li>
+                <li role="presentation"><a href="#project-module-outer" aria-controls="projects" role="tab" data-toggle="tab" value="project">projects</a></li>
+                <li role="presentation"><a href="#tile-module-outer" aria-controls="tiles" role="tab" data-toggle="tab" value="tile">tiles</a></li>
+                <li role="presentation"><a href="#list-module-outer" aria-controls="lists" role="tab" data-toggle="tab" value="list">lists</a></li>
+                <li role="presentation"><a href="#code-module-outer" aria-controls="code" role="tab" data-toggle="tab" value="code">code</a></li>
               </ul>
-                <div class="tab-content">
-                    <div class="resource-module tab-pane fade in active" id="collection-module"></div>
-                    <div class="resource-module tab-pane fade" id="project-module"></div>
-                    <div class="resource-module tab-pane fade" id="tile-module"></div>
-                    <div class="resource-module tab-pane fade" id="list-module"></div>
-                    <div class="resource-module tab-pane fade" id="code-module"></div>
+                <div class="tab-content" id="module-area">
+                    <div class="resource-module tab-pane fade in active" id="collection-module-outer"></div>
+                    <div class="resource-module tab-pane fade" id="project-module-outer"></div>
+                    <div class="resource-module tab-pane fade" id="tile-module-outer"></div>
+                    <div class="resource-module tab-pane fade" id="list-module-outer"></div>
+                    <div class="resource-module tab-pane fade" id="code-module-outer"></div>
                 </div>
             </div>
         </div>
@@ -50,13 +50,14 @@
 {% block scripts %}
     <script src="{{url_for('static', filename='js/sorttable.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/resource_manager.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/user_manage_resource_manager.js')}}"></script>
     <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
     <script src="{{url_for('static', filename='js/tab.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/user_manage.js')}}"></script>
     <script>
-        var user_id = "{{current_user.get_id()}}";
-        var use_ssl = "{{use_ssl}}"=="True";
-        var saved_title = $("#view-title").text();
+        let user_id = "{{current_user.get_id()}}";
+        let use_ssl = "{{use_ssl}}"=="True";
+        let saved_title = $("#view-title").text();
         window.onload = start_post_load;
     </script>
 {% endblock %}

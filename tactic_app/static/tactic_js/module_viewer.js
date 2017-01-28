@@ -1,54 +1,63 @@
 /**
  * Created by bls910 on 10/4/15.
  */
-var current_theme = "default";
-var mousetrap = new Mousetrap();
-var myCodeMirror;
-var savedCode = null;
-var savedTags = null;
-var savedNotes = null;
-var this_viewer = "viewer";
-var module_code = null;
 
+let module_viewer;
 
 function start_post_load() {
-    postAjax("get_module_code/" + module_name, {}, continue_loading)
+    if (is_repository) {
+            module_viewer = new RepositoryModuleViewer(resource_name, "tile", "repository_get_module_code")
+    }
+    else {
+            module_viewer = new ModuleViewer(resource_name, "tile", "get_module_code")
+    }
 }
 
-function continue_loading(data) {
-    savedCode = data.module_code;
-    var codearea = document.getElementById("codearea");
-    myCodeMirror = createCMArea(codearea, true);
-    myCodeMirror.setValue(savedCode);
-    resize_dom_to_bottom_given_selector(".CodeMirror", 20);
-    resize_dom_to_bottom_given_selector("#api-area", 20);
+class ModuleViewer extends ModuleViewerAbstract {
 
-    var result_dict = {"res_type": "tile", "res_name": module_name};
-    var acc = document.getElementsByClassName("accordion");
-    var i;
-    for (i = 0; i < acc.length; i++) {
-        acc[i].onclick = function(){
-            this.classList.toggle("active");
-            this.nextElementSibling.classList.toggle("show");
-        }
+    do_extra_setup () {
+        super.do_extra_setup();
     }
-    postAjax("grab_metadata", result_dict, got_metadata);
-    function got_metadata(data) {
-        if (data.success) {
-            $(".created").html(data.datestring);
-            $("#tile-tags")[0].value = data.tags;
-            $("#tile-notes")[0].value = data.notes;
-            savedTags = data.tags;
-            savedNotes = data.notes
-        }
-        else {
-            // doFlash(data)
-            $(".created").html("");
-            $("#tile-tags")[0].value = "";
-            $("#tile-tags").html("");
-            $("#tile-notes")[0].value = "";
-            $("#tile-notes").html("");
-        }
+
+    get button_bindings() {
+        return {"save_button": this.saveMe,
+            "save_as_button": this.saveModuleAs,
+            "load_button": this.loadModule,
+            "share_button": this.sendToRepository,
+            "change_theme_button": this.changeTheme,
+            "show_api_button": this.showAPI}
     }
-    myCodeMirror.refresh()
+
+    get_current_content () {
+         return this.myCodeMirror.getDoc().getValue();
+    }
+
+    construct_html_from_the_content(the_content) {
+        return the_content;
+    }
+
+    set_main_content(the_content) {
+        let codearea = document.getElementById("main_content");
+        this.myCodeMirror = this.createCMArea(codearea, true, the_content, 1);
+        if (is_repository) {
+            this.myCodeMirror.setOption("readOnly", true)
+        }
+        this.myCodeMirror.refresh();
+        let self = this;
+        postAjaxPromise("get_api_html", {})
+            .then(function (data) {
+                $("#aux-area").html(data.api_html);
+                self.create_api_listeners();
+            })
+            .catch(doFlash)
+    }
+}
+
+
+class RepositoryModuleViewer extends ModuleViewer {
+
+    get button_bindings() {
+        return {"copy_button": this.copyToLibrary};
+    }
+
 }

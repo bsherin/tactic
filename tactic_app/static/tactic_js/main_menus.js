@@ -1,15 +1,25 @@
 /**
  * Created by bls910 on 8/1/15.
  */
+let menus = {};
+let menu_item_index = {};
+let column_menu;
+let project_menu;
+const mousetrap = new Mousetrap();
+let menu_template;
 
-var menus = {};
-var menu_item_index = {};
-var column_menu;
-var project_menu;
-var mousetrap = new Mousetrap();
-var menu_template;
+
 $.get($SCRIPT_ROOT + "/get_menu_template", function(template){
     menu_template = $(template).filter('#menu-template').html();
+});
+
+mousetrap.bind("esc", function() {
+    if (tableObject.selected_header != null) {
+        deselect_header(tableObject.selected_header)
+    }
+    broadcast_event_to_server("DehighlightTable", {});
+    clearStatusArea();
+    clearStatusMessage();
 });
 
 function clear_all_menus() {
@@ -18,73 +28,71 @@ function clear_all_menus() {
     $("#menu-area").html(" ")
 }
 
-function MenuObject(menu_name, menu_function, options) {
-    this.menu_name = menu_name;
-    this.options = options;
-    this.perform_menu_item = menu_function
-}
+class MenuObject {
+    constructor (menu_name, menu_function, options) {
+        this.menu_name = menu_name;
+        this.options = options;
+        this.perform_menu_item = menu_function
+        this.shortcuts = {}
+    }
 
-// This is the menu_object base prototype
-MenuObject.prototype = {
-    shortcuts: {},
-    render_menu: function () {
-        var self = this;
-        var options_list = create_options_list();
+    render_menu () {
+        const options_list = this.create_options_list();
         return Mustache.to_html(menu_template, {
-            "menu_name": this.menu_name ,
-            "options": options_list
-        });
+                "menu_name": this.menu_name,
+                "options": options_list
+        })
+    }
 
-        function create_options_list() {
-            var result = [];
-            var key_text;
-            var scuts = menus[self.menu_name].shortcuts;
-            for (var i = 0; i < self.options.length; ++i) {
-                var opt = self.options[i];
-                if (scuts.hasOwnProperty(opt)){
-                    key_text = scuts[opt].keys[0]
-                }
-                else {
-                    key_text = ""
-                }
-                result.push({"option_name": opt, "key_text": key_text})
+    create_options_list() {
+        const result = [];
+        let key_text;
+        const scuts = menus[this.menu_name].shortcuts;
+        for (let i = 0; i < this.options.length; ++i) {
+            const opt = this.options[i];
+            if (scuts.hasOwnProperty(opt)){
+                key_text = scuts[opt].keys[0]
             }
-            return result
+            else {
+                key_text = ""
+            }
+            result.push({"option_name": opt, "key_text": key_text})
         }
-    },
+        return result
+    }
 
-    add_options_to_index: function () {
-        for (var i = 0; i < this.options.length; ++i) {
+    add_options_to_index () {
+        for (let i = 0; i < this.options.length; ++i) {
             menu_item_index[this.options[i]] = this.menu_name
         }
-    },
+    }
 
-    remove_options_from_index: function() {
-        for (var i = 0; i < this.options.length; ++i) {
+    remove_options_from_index() {
+        for (let i = 0; i < this.options.length; ++i) {
             delete menu_item_index[this.options[i]]
         }
-    },
+    }
 
-    disable_items: function (disable_list) {
-        for (var i = 0; i < disable_list.length; ++i) {
+    disable_items (disable_list) {
+        for (let i = 0; i < disable_list.length; ++i) {
             this.disable_menu_item(disable_list[i])
         }
-    },
+    }
 
-    enable_items: function (enable_list) {
-        for (var i = 0; i < enable_list.length; ++i) {
+    enable_items (enable_list) {
+        for (let i = 0; i < enable_list.length; ++i) {
             this.enable_menu_item(enable_list[i])
         }
-    },
+    }
 
-    perform_menu_item: function (menu_id) {
-    },
+    perform_menu_item (menu_id) {
+    }
 
-    disable_menu_item: function (item_id) {
+    disable_menu_item (item_id) {
         $("#" + item_id).closest('li').addClass("disabled");
-        var menu = menus[menu_item_index[item_id]];
+        const menu = menus[menu_item_index[item_id]];
         if (menu.shortcuts.hasOwnProperty(item_id)) {
-            var scut = menu.shortcuts[item_id];
+            const scut = menu.shortcuts[item_id];
             mousetrap.unbind(scut.keys);
             if (scut.hasOwnProperty("fallthrough")) {
                 mousetrap.bind(scut.keys, function (e) {
@@ -93,12 +101,12 @@ MenuObject.prototype = {
                 })
             }
         }
-    },
-    enable_menu_item: function (item_id) {
+    }
+    enable_menu_item (item_id) {
         $("#" + item_id).closest('li').removeClass("disabled");
-        var menu = menus[menu_item_index[item_id]];
+        const menu = menus[menu_item_index[item_id]];
         if (menu.shortcuts.hasOwnProperty(item_id)) {
-            var scut = menu.shortcuts[item_id];
+            const scut = menu.shortcuts[item_id];
             //mousetrap.unbind(scut.keys);
             mousetrap.bind(scut.keys, function (e) {
                 scut.command();
@@ -106,10 +114,10 @@ MenuObject.prototype = {
             })
         }
     }
-};
+}
 
 function bind_to_keys(shortcuts) {
-    for (var option in shortcuts) {
+    for (let option in shortcuts) {
         if (!shortcuts.hasOwnProperty(option)) continue;
         mousetrap.bind(shortcuts[option].keys, function(e) {
             option.command();
@@ -121,15 +129,6 @@ function bind_to_keys(shortcuts) {
         e.preventDefault()
     })
 }
-
-mousetrap.bind("esc", function() {
-    if (tableObject.selected_header != null) {
-        deselect_header(tableObject.selected_header)
-    }
-    broadcast_event_to_server("DehighlightTable", {});
-    clearStatusArea();
-    clearStatusMessage();
-});
 
 function build_and_render_menu_objects() {
     // Create the column_menu object
@@ -152,11 +151,11 @@ function build_and_render_menu_objects() {
     bind_to_keys(project_menu.shortcuts);
 
     // Create the tile_menus
-    for (var category in tile_types) {
+    for (let category in tile_types) {
         if (!tile_types.hasOwnProperty(category)) {
             continue;
         }
-        var new_tile_menu = new MenuObject(category, tile_command, tile_types[category]);
+        const new_tile_menu = new MenuObject(category, tile_command, tile_types[category]);
         menus[new_tile_menu.menu_name] = new_tile_menu;
         new_tile_menu.add_options_to_index();
     }
@@ -164,14 +163,14 @@ function build_and_render_menu_objects() {
     render_menus();
 
     function render_menus() {
-        for (var m in menus) {
+        for (let m in menus) {
             if (menus.hasOwnProperty(m)) {
                 $("#menu-area").append(menus[m].render_menu())
             }
         }
         $(".menu-item").click(function(e) {
-            var item_id = e.currentTarget.id;
-            var menu_name = menu_item_index[item_id];
+            const item_id = e.currentTarget.id;
+            const menu_name = menu_item_index[item_id];
             //$(e.currentTarget).parents(".dropdown-menu").dropdown("toggle")s;
             if (!is_disabled(item_id)) {
                 menus[menu_name].perform_menu_item(item_id)
@@ -190,7 +189,7 @@ function build_and_render_menu_objects() {
 }
 
 function column_command(menu_id) {
-    var column_header = tableObject.selected_header;
+    const column_header = tableObject.selected_header;
     if (column_header != null) {
         switch (menu_id) {
             case "shift-left":
@@ -212,7 +211,7 @@ function column_command(menu_id) {
             case "hide":
             {
                 deselect_header(column_header);
-                var col_class = ".column-" + column_header;
+                const col_class = ".column-" + column_header;
                 $(col_class).fadeOut();
                 //tableObject.current_spec.hidden_list.push(column_header);
                 hidden_columns_list.push(column_header);
@@ -238,8 +237,8 @@ function column_command(menu_id) {
 
 function createColumn() {
     showModal("Create Column All Docs", "New Column Name", function (new_name) {
-        var column_name = new_name;
-        for (var doc in tablespec_dict) {
+        const column_name = new_name;
+        for (let doc in tablespec_dict) {
             if (tablespec_dict.hasOwnProperty(doc)) {
                 tablespec_dict[doc].header_list.push(column_name)
             }
@@ -249,7 +248,7 @@ function createColumn() {
         get_column(column_name).text(" ");  // This seems to be necessary for the column to be editable
 
         // Then change the current data_dict back on the server
-        var data_dict = {"column_name": column_name};
+        const data_dict = {"column_name": column_name};
         broadcast_event_to_server("CreateColumn", data_dict, function () {
             dirty = true
         })
@@ -258,14 +257,14 @@ function createColumn() {
 
 function createColumnThisDoc() {
     showModal("Create Column This Doc", "New Column Name", function (new_name) {
-        var column_name = new_name;
+        const column_name = new_name;
         tableObject.current_spec.header_list.push(column_name)
         // Then rebuild the table
         tableObject.build_table();
         get_column(column_name).text(" ");  // This seems to be necessary for the column to be editable
 
         // Then change the current data_dict back on the server
-        var data_dict = {"column_name": column_name};
+        const data_dict = {"column_name": column_name};
         broadcast_event_to_server("CreateColumn", data_dict, function () {
             dirty = true
         })
@@ -280,7 +279,7 @@ function saveProjectAs() {
     });
 
     function CreateNewProject (new_name, checkresults) {
-            var result_dict = {
+            const result_dict = {
                 "project_name": new_name,
                 "main_id": main_id,
                 "tablespec_dict": tablespec_dict,
@@ -323,7 +322,7 @@ function saveProjectAs() {
 }
 
 function save_project() {
-    var result_dict = {
+    const result_dict = {
         "main_id": main_id,
         "tablespec_dict": tablespec_dict,
         "console_html": $("#console").html(),
@@ -382,7 +381,7 @@ function downloadVisibleDocument() {
 
 function exportDataTable() {
     showModal("Export Data", "New Collection Name", function (new_name) {
-            var result_dict = {
+            const result_dict = {
                 "export_name": new_name,
                 "main_id": main_id,
                 "user_id": user_id
@@ -399,21 +398,21 @@ function exportDataTable() {
 }
 
 function tile_command(menu_id) {
-    var existing_tile_names = [];
-    for (var tile_id in tile_dict) {
+    const existing_tile_names = [];
+    for (let tile_id in tile_dict) {
         if (!tile_dict.hasOwnProperty(tile_id)) continue;
         existing_tile_names.push(tile_dict[tile_id].tile_name)
     }
     showModal("Create " + menu_id, "New Tile Name", createNewTile, menu_id, existing_tile_names);
 
     function createNewTile(tile_name) {
-        var data_dict = {};
-        var tile_type = menu_id;
+        const data_dict = {};
+        const tile_type = menu_id;
         data_dict["tile_name"] = tile_name;
         data_dict["tile_type"] = tile_type;
         data_dict["user_id"] = user_id;
         postWithCallback("host", "create_tile_container", data_dict, function (data) {
-            var tile_id = data["tile_id"];
+            const tile_id = data["tile_id"];
             data_dict["tile_id"] = tile_id;
             data_dict["tile_address"] = data["tile_address"];
             postWithCallback("host", "get_module_code", data_dict, function (data) {
@@ -427,7 +426,7 @@ function tile_command(menu_id) {
                         if (data.success) {
                             data_dict["form_html"] = data["html"] ;
                             postWithCallback("host", "render_tile", data_dict, function(data) {
-                                var new_tile_object = new TileObject(tile_id, data.html, true, tile_name);
+                                const new_tile_object = new TileObject(tile_id, data.html, true, tile_name);
                                 tile_dict[tile_id] = new_tile_object;
                                 new_tile_object.spin_and_refresh();
                                 dirty = true;

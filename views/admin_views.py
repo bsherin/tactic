@@ -108,7 +108,7 @@ class ContainerManager(ResourceManager):
 
     # noinspection PyMethodOverriding
     def build_resource_array(self):
-        larray = [["Name", "Image", "Owner", "Status", "Id"]]
+        larray = [["Id", "Name", "Image", "Owner", "Status"]]
         all_containers = cli.containers(all=True)
         for cont in all_containers:
             if cont["Id"] in container_owners:
@@ -119,7 +119,7 @@ class ContainerManager(ResourceManager):
                     owner_name = load_user(owner_id).username
             else:
                 owner_name = "system"
-            larray.append([cont["Names"][0], cont["Image"], owner_name, cont["Status"], cont["Id"]])
+            larray.append([cont["Id"], cont["Names"][0], cont["Image"], owner_name, cont["Status"]])
         return larray
 
     def request_update_selector_list(self, user_obj=None):
@@ -171,10 +171,10 @@ user_manager = UserManager("user")
 @login_required
 def request_update_admin_selector_list(res_type):
     if res_type == "container":
-        return container_manager.request_update_selector_list()
+        the_html = container_manager.request_update_selector_list()
     elif res_type == "user":
-        return user_manager.request_update_selector_list()
-    return ""
+        the_html = user_manager.request_update_selector_list()
+    return jsonify({"html": the_html})
 
 
 @app.route('/admin_interface', methods=['GET', 'POST'])
@@ -185,8 +185,3 @@ def admin_interface():
     else:
         return "not authorized"
 
-
-@app.route('/get_admin_resource_module_template', methods=['get'])
-@login_required
-def get_admin_resource_module_template():
-    return send_file("templates/admin_resource_module_template.html")

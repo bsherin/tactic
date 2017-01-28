@@ -1,6 +1,7 @@
 <script id="resource-module-template" type="text/html">
-    <div class="col-xs-12 {{prefix}}-outer" id="{{prefix}}-{{res_type}}-outer"style="height: 100%; overflow: hidden; {{#is_repository}}display:none{{/is_repository}}">
-        <div class="row indent-row" style="margin-top: 10px">
+    <div class="col-xs-12" id="{{module_id}}" style="height: 100%; overflow: hidden; {{#start_hidden}}display:none{{/start_hidden}}">
+        {{#include_search_toolbar}}
+        <div class="search-toolbar row indent-row" style="margin-top: 10px">
             <div class="col-xs-12">
                 <form class="form-inline" style="display:inline">
                     <div class="input-group">
@@ -14,23 +15,16 @@
                </form>
             </div>
         </div>
+        {{/include_search_toolbar}}
+    {{#include_button_well}}
     <div class="well well-sm" style="display:inline-block; margin-left:10px; margin-bottom:10px">
-        {{#is_not_repository}}
-            {{#file_adders}}
-                <form action="" method="post" target="_self" value="{{name}}-{{res_type}}-form" enctype="multipart/form-data">
-                    <input class="btn add-button btn-default" style="display: inline" type="submit" value="{{name_text}}">
-                    <input style="display: inline" type="file" name="file" {{#show_multiple}}multiple{{/show_multiple}}>
-                </form>
-            {{/file_adders}}
-        {{/is_not_repository}}
+        {{#file_adders}}
+            <form action="" class="file-adder" method="post" target="_self" value="{{name}}-{{res_type}}-form" enctype="multipart/form-data">
+                <input class="btn add-button btn-default" style="display: inline" type="submit" value="{{name_text}}">
+                <input style="display: inline" type="file" name="file" {{#show_multiple}}multiple{{/show_multiple}}>
+            </form>
+        {{/file_adders}}
         <div class="btn-toolbar" role="toolbar">
-            {{#is_repository}}
-                <button type="button" value="repository-copy-{{res_type}}" class="btn btn-success action-button">Copy to Library</button>
-                {{#repository_buttons}}
-                <button type="button" value="{{name}}-{{res_type}}" class="btn {{button_class}} action-button">{{name_text}}</button>
-                {{/repository_buttons}}
-            {{/is_repository}}
-            {{#is_not_repository}}
             {{#popup_buttons}}
                 <div class="btn-group" role="group">
                     <button class="btn {{button_class}} action-popup" type="button">{{name_text}}</button>
@@ -43,45 +37,41 @@
                           {{/option_list}}
                       </ul>
                 </div>
-                {{/popup_buttons}}
-                {{#button_groups}}
-                     <div class="btn-group" role="group">
-                         {{#buttons}}
-                            <button type="button" value="{{name}}-{{res_type}}" class="btn {{button_class}} action-button">{{name_text}}</button>
-                         {{/buttons}}
+            {{/popup_buttons}}
+            {{#button_groups}}
+                 <div class="btn-group" role="group">
+                     {{#buttons}}
+                        <button type="button" value="{{name}}-{{res_type}}" class="btn {{button_class}} action-button">{{name_text}}</button>
+                     {{/buttons}}
                      </div>
-                {{/button_groups}}
-            {{/is_not_repository}}
+            {{/button_groups}}
         </div>
     </div>
-    <div class="indent-row selector-row" style="margin-top: 7px; height: 100%; overflow: hidden">
+    {{/include_button_well}}
+    <div class="indent-row main-content-row" style="margin-top: 7px; height: 100%; overflow: hidden">
         <div class="" style="height: 100%; overflow: hidden">
-            <div style="display: inline-block; vertical-align: top; margin-left: 5px; margin-right: 5px; max-height: 100%">
-                <h5 style="text-align:center">Tags</h5>
-                <div class="tag-button-list">
-                </div>
+            {{#aux_left}}
+            <div class="aux-left" style="display: inline-block; vertical-align: top; margin-left: 5px; margin-right: 5px; max-height: 100%">
             </div>
-            <div style="display: inline-block; vertical-align: top; max-height: 100%; overflow-y: scroll; line-height: 1" class="list-group resource-selector"data-toggle="buttons">
+            {{ /aux_left }}
+            <div style="display: inline-block; vertical-align: top; max-height: 100%; overflow-y: scroll; line-height: 1" class="list-group main-content" data-toggle="buttons">
             </div>
+            {{#include_metadata}}
             <div style="display: inline-block; vertical-align: top; margin-left: 5px">
                 <button type="button" class="btn btn-sm btn-warning save-metadata-button" style="margin-bottom: 7px" value="{{res_type}}">Save Metadata</button>
                 <div class="created"></div>
                 <div class="form-group" style="margin-bottom: 7px">
-                    <textarea type="text" class="form-control metadata-field tags-field" id="{{res_type}}-tags" rows="1" placeholder="tags"></textarea>
+                    <textarea type="text" class="form-control metadata-field tags-field" rows="1" placeholder="tags"></textarea>
                 </div>
                 <div class="form-group">
-                    <textarea class="form-control metadata-field notes-field" id="{{res_type}}-notes" rows="10" placeholder="notes"></textarea>
+                    <textarea class="form-control metadata-field notes-field" rows="10" placeholder="notes"></textarea>
                 </div>
             </div>
-            {{#is_not_repository}}
-                {{#show_loaded_list}}
-                <div style="display: inline-block; vertical-align: top; margin-left: 10px; max-height: 100%; overflow: hidden">
-                    <h5 style="text-align:center; margin-top: 0px">Loaded {{res_type}}s</h5>
-                    <div style="max-height: 100%; overflow-y: scroll" class="loaded-tile-list" id="loaded-{{res_type}}-list">
-                    </div>
-                </div>
-                {{/show_loaded_list}}
-            {{/is_not_repository}}
+            {{/include_metadata}}
+            {{ #aux_right}}
+            <div class="aux-right" style="display: inline-block; vertical-align: top; margin-left: 5px; overflow-y: scroll">
+            {{ /aux_right }}
+            </div>
         </div>
     </div>
     </div>

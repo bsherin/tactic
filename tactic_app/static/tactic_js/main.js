@@ -1,11 +1,12 @@
-var socket;
-var console_visible;
-var saved_console_size;
-var dirty;
-var tile_types;
-var consoleCMObjects = {};
+let socket;
+let console_visible;
+let saved_console_size;
+let dirty;
+let tile_types;
+const consoleCMObjects = {};
+let tableObject;
 
-var tooltip_dict = {
+let tooltip_dict = {
     "shrink-table-button": "shrink/expand table",
     "doc-selector": "select document",
     "search-button": "highlight matching text",
@@ -18,20 +19,19 @@ var tooltip_dict = {
 
 function initializeConsole() {
     saved_console_size = 150;
-    var pan = $("#console-panel");
+    const pan = $("#console-panel");
     $("#console").fadeOut();
-    var hheight = $('#console-heading').outerHeight();
+    const hheight = $('#console-heading').outerHeight();
     pan.outerHeight(hheight);
     pan.find(".triangle-bottom").hide();
     pan.find(".triangle-right").show();
     console_visible = false
-
 }
 
 function shrinkConsole (){
     saved_console_size = $("#console-panel").outerHeight();
-    var pan = $("#console-panel");
-    var hheight = $("#console-heading").outerHeight();
+    const pan = $("#console-panel");
+    const hheight = $("#console-heading").outerHeight();
     $("#console").fadeOut("fast", function () {
         pan.outerHeight(hheight);
         pan.resizable('destroy');
@@ -43,7 +43,7 @@ function shrinkConsole (){
 }
 
 function expandConsole(){
-    var pan = $("#console-panel");
+    const pan = $("#console-panel");
     pan.outerHeight(saved_console_size);
     pan.find(".triangle-right").hide();
     pan.find(".triangle-bottom").show();
@@ -59,7 +59,7 @@ function expandConsole(){
                 $("#console").outerHeight(ui.size.height- $("#console-heading").outerHeight())
             }
         });
-    for (uid in consoleCMObjects) {
+    for (let uid in consoleCMObjects) {
         if (!consoleCMObjects.hasOwnProperty(uid)) continue;
         consoleCMObjects[uid].refresh()
     }
@@ -67,24 +67,24 @@ function expandConsole(){
 }
 
 function closeLogItem(e) {
-    el = $(e.parentElement.parentElement);
+    const el = $(e.parentElement.parentElement);
     if (!(el.find(".console-code").length == 0)) {
-        uid = el.find(".console-code")[0].id;
+        let uid = el.find(".console-code")[0].id;
         delete consoleCMObjects[uid];
     }
     $(e.parentElement.parentElement).remove()
 }
 
 function runConsoleCode(e) {
-    el = $(e.parentElement.parentElement);
-    uid = el.find(".console-code")[0].id;
-    the_code = consoleCMObjects[uid].getValue();
+    const el = $(e.parentElement.parentElement);
+    const uid = el.find(".console-code")[0].id;
+    const the_code = consoleCMObjects[uid].getValue();
     postWithCallback(main_id, "exec_console_code", {"the_code": the_code, "console_id": uid})
 }
 
 function getConsoleCMCode() {
-    result = {};
-    for (var cmi in consoleCMObjects) {
+    const result = {};
+    for (let cmi in consoleCMObjects) {
         if (!consoleCMObjects.hasOwnProperty(cmi)) continue;
         result[cmi] = consoleCMObjects[cmi].getValue();
     }
@@ -92,16 +92,16 @@ function getConsoleCMCode() {
 }
 
 function clearConsoleCode(e) {
-    el = $(e.parentElement.parentElement);
-    uid = el.find(".console-code")[0].id;
+    let el = $(e.parentElement.parentElement);
+    const uid = el.find(".console-code")[0].id;
     el = $("#" + uid).parent().find(".log-code-output");
     el.html("");
 }
 
 
 function addBlankConsoleText() {
-    var print_string = "<div contenteditable='true'></div>";
-    var task_data = {"print_string": print_string};
+    const print_string = "<div contenteditable='true'></div>";
+    const task_data = {"print_string": print_string};
     postWithCallback(main_id, "print_to_console_event", task_data, function(data) {
         if (!data.success) {
             doFlash(data)
@@ -110,8 +110,8 @@ function addBlankConsoleText() {
 }
 
 function check_for_element(elstring, callback) {
-    var rec = function() {
-        setTimeout(function() {
+    const rec = function () {
+        setTimeout(function () {
             if ($(elstring).length > 0) {
                 callback()
             } else
@@ -131,11 +131,11 @@ function createConsoleCodeInCodearea(uid, codearea) {
         readOnly: false,
         extraKeys: {
             'Ctrl-Enter': function(cm) {
-                the_code = cm.getValue();
+                let the_code = cm.getValue();
                 postWithCallback(main_id, "exec_console_code", {"the_code": the_code, "console_id": cm.tactic_uid})
             },
             'Cmd-Enter': function (cm) {
-                the_code = cm.getValue();
+                let the_code = cm.getValue();
                 postWithCallback(main_id, "exec_console_code", {"the_code": the_code, "console_id": cm.tactic_uid})
             }
         }
@@ -152,7 +152,7 @@ function addConsoleCodearea() {
         }
         else {
             check_for_element("#" + data["unique_id"], function () {
-                var codearea = document.getElementById(data["unique_id"]);
+                const codearea = document.getElementById(data["unique_id"]);
                 createConsoleCodeInCodearea(data["unique_id"], codearea)
             })
         }
@@ -160,7 +160,7 @@ function addConsoleCodearea() {
 }
 
 function openLogWindow() {
-    var task_data = {
+    const task_data = {
         "console_html": $('#console').html()
     };
     postWithCallback(main_id, "open_log_window", task_data)
@@ -171,6 +171,7 @@ function start_post_load() {
     //spinner = new Spinner({scale: 1.0}).spin();
     //$("#loading-message").html(spinner.el);
     console.log("entering start_post_load");
+    console.log("in new version");
     dirty = false;
     $("#outer-container").css({"margin-left": String(MARGIN_SIZE) + "px"});
     $("#outer-container").css({"margin-right": String(MARGIN_SIZE) + "px"});
@@ -203,7 +204,7 @@ function start_post_load() {
                     window.close()
                 }
             });
-    socket.on('finish-post-load', function (data) {
+    socket.on('finish-post-load', function () {
         postWithCallback("host", "get_tile_types", {"user_id": user_id}, function (data) {
             tile_types = data.tile_types;
             build_and_render_menu_objects();
@@ -220,7 +221,7 @@ function start_post_load() {
         statusMessage(data)
     });
 
-    socket.on("clear-status-msg", function (data){
+    socket.on("clear-status-msg", function (){
        clearStatusMessage()
     });
 }
@@ -249,7 +250,7 @@ function continue_loading() {
     });
     if (_project_name != "") {
         postWithCallback(main_id, "grab_project_data", {"doc_name":String(doc_names[0])}, function(data) {
-                console.log("Entering grab_project_data callback")
+                console.log("Entering grab_project_data callback");
                 $("#loading-message").css("display", "none");
                 $("#reload-message").css("display", "none");
                 $("#outer-container").css("display", "block");
@@ -258,22 +259,22 @@ function continue_loading() {
                     hidden_columns_list = data.hidden_columns_list;
                 }
                 tablespec_dict = {};
-                for (var spec in data.tablespec_dict) {
+                for (let spec in data.tablespec_dict) {
                     if (!data.tablespec_dict.hasOwnProperty(spec)){
                         continue;
                     }
-                    tablespec_dict[spec] = create_tablespec(data.tablespec_dict[spec])
+                    tablespec_dict[spec] = new TableSpec(data.tablespec_dict[spec])
                 }
-                tableObject.initialize_table(data);
+                tableObject = new TableObjectClass((data));
                 postWithCallback(main_id, "get_saved_console_code", {}, function (data) {
                     console.log("en callback for get_saved_console_code");
-                    var saved_console_code = data["saved_console_code"];
+                    const saved_console_code = data["saved_console_code"];
 
                     console.log(String(Object.keys(saved_console_code).length));
-                    for (uid in saved_console_code) {
+                    for (let uid in saved_console_code) {
                         if (!saved_console_code.hasOwnProperty(uid)) continue;
                         console.log("getting codearea " + uid);
-                        var codearea = document.getElementById(uid);
+                        const codearea = document.getElementById(uid);
                         codearea.innerHTML = "";
                         createConsoleCodeInCodearea(uid, codearea);
                         consoleCMObjects[uid].doc.setValue(saved_console_code[uid]);
@@ -300,11 +301,11 @@ function continue_loading() {
                     postWithCallback(main_id, "DisplayCreateErrors", {});
 
                     function create_tile_from_save(tile_id) {
-                        var tile_html = data.tile_save_results[tile_id].tile_html;
-                        var new_tile_object = new TileObject(tile_id, tile_html, false);
+                        const tile_html = data.tile_save_results[tile_id].tile_html;
+                        const new_tile_object = new TileObject(tile_id, tile_html, false);
                         tile_dict[tile_id] = new_tile_object;
                         new_tile_object.saved_size = data.tile_save_results[tile_id].saved_size;
-                        var sortable_tables = $(new_tile_object.full_selector() + " table.sortable");
+                        const sortable_tables = $(new_tile_object.full_selector() + " table.sortable");
                         $.each(sortable_tables, function (index, the_table) {
                             sorttable.makeSortable(the_table)
                         });
@@ -321,7 +322,7 @@ function continue_loading() {
                 $("#outer-container").css("display", "block");
                 $("#table-area").css("display", "block");
                 tablespec_dict = {};
-                tableObject.initialize_table(data);
+                tableObject = new TableObjectClass((data));
                 set_visible_doc(doc_names[0], null)
             })
         }
@@ -331,8 +332,8 @@ function continue_loading() {
         tolerance: 'pointer',
         revert: 'invalid',
         forceHelperSize: true,
-        stop: function( event, ui ) {
-            var new_sort_list = $("#tile-div").sortable("toArray");
+        stop: function() {
+            const new_sort_list = $("#tile-div").sortable("toArray");
             postWithCallback(main_id, "UpdateSortList", {"sort_list": new_sort_list})
         }
     });
@@ -349,7 +350,7 @@ function continue_loading() {
 }
 
 function set_visible_doc(doc_name, func) {
-    var data_dict = {"doc_name": doc_name};
+    const data_dict = {"doc_name": doc_name};
     if (func === null) {
         postWithCallback(main_id, "set_visible_doc", data_dict)
     }
@@ -361,7 +362,7 @@ function set_visible_doc(doc_name, func) {
 function change_doc(el, row_id) {
     $("#table-area").css("display", "none");
     $("#reload-message").css("display", "block");
-    var doc_name = $(el).val();
+    const doc_name = $(el).val();
     if (row_id == null) {
         postWithCallback(main_id, "grab_data", {"doc_name":doc_name}, function (data) {
         $("#loading-message").css("display", "none");
@@ -373,7 +374,7 @@ function change_doc(el, row_id) {
         })
     }
     else {
-        var data_dict = {"doc_name": doc_name, "row_id": row_id};
+        const data_dict = {"doc_name": doc_name, "row_id": row_id};
         if (DOC_TYPE == "table") {
             postWithCallback(main_id, "grab_chunk_with_row", data_dict, function (data) {
                 $("#loading-message").css("display", "none");
@@ -381,7 +382,7 @@ function change_doc(el, row_id) {
                 $("#outer-container").css("display", "block");
                 $("#table-area").css("display", "block");
                 tableObject.initialize_table(data);
-                var tr_element = $("#table-area tbody")[0].rows[data.actual_row];
+                const tr_element = $("#table-area tbody")[0].rows[data.actual_row];
                 scrollIntoView(tr_element, $("#table-area tbody"));
                 $(tr_element).addClass("selected-row");
                 tableObject.active_row = data.actual_row;
@@ -397,7 +398,7 @@ function change_doc(el, row_id) {
                 $("#table-area").css("display", "block");
                 tableObject.initialize_table(data);
                 myCodeMirror.scrollIntoView(row_id);
-                tableOject.active_row = row_id;
+                tableObject.active_row = row_id;
                 set_visible_doc(doc_name, null)
                 })
             }
