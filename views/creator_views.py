@@ -1,6 +1,7 @@
 from flask import render_template, request, jsonify, send_file, url_for
 from flask_login import login_required, current_user
-from user_manage_views import ResourceManager, tile_manager, remove_indents, insert_indents
+from user_manage_views import ResourceManager
+from module_viewer_views import remove_indents
 
 import tactic_app
 from tactic_app import app, db, socketio
@@ -11,7 +12,7 @@ from tactic_app.integrated_docs import api_array, api_dict_by_category, api_dict
 import re, sys, datetime
 
 
-def load_tile_module(module_name):
+def creator_load_source(module_name):
     user_obj = current_user
     tile_module = user_obj.get_tile_module(module_name)
 
@@ -48,7 +49,7 @@ def get_api_dict():
 @app.route('/parse_code/<module_name>', methods=['GET', 'POST'])
 @login_required
 def parse_code(module_name):
-    res_dict = load_tile_module(module_name)
+    res_dict = creator_load_source(module_name)
     if not res_dict["success"]:
         return jsonify({"success": False, "message": "Error loading source"})
     category = res_dict["category"]
