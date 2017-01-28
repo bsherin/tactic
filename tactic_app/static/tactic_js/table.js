@@ -11,11 +11,12 @@ INITIAL_LEFT_FRACTION = .69;
 
 DOC_TYPE = "table";
 
-var header_template;
-var body_template;
-var body_template_hidden;
-
-var table_is_shrunk = false;
+let header_template;
+let body_template;
+let body_template_hidden;
+let tablespec_dict = {};
+let hidden_columns_list = ["__filename__"];
+let table_is_shrunk = false;
 
 $.get($SCRIPT_ROOT + "/get_table_templates", function(template){
     header_template = $(template).filter('#header-template').html();
@@ -25,7 +26,7 @@ $.get($SCRIPT_ROOT + "/get_table_templates", function(template){
 
 function doSearch(t) {
     console.log("do search on " + t);
-    var data_dict = {"text_to_find": t};
+    const data_dict = {"text_to_find": t};
     broadcast_event_to_server("DehighlightTable", data_dict, function () {
         if (t !== "") {
             broadcast_event_to_server("SearchTable", data_dict);
@@ -36,7 +37,7 @@ function doSearch(t) {
 
 function doFilter(t) {
     console.log("do filter on " + t);
-    var data_dict = {"text_to_find": t};
+    const data_dict = {"text_to_find": t};
     broadcast_event_to_server("UnfilterTable", data_dict, function () {
         if (t !== "") {
             broadcast_event_to_server("FilterTable", data_dict);
@@ -73,14 +74,17 @@ function select_header(header_name) {
 
 // This object stores information that defines how a table is displayed
 // There will be one for each document in a table.
-tableSpec = {
-    "doc_name": null,
-    "header_list": null,
-    "table_width": null,
-    "column_widths": null,
-    shift_column_left: function (column_name) {
-        var i;
-        for (i = 0; i < this.header_list.length; ++i) {
+
+class TableSpec {
+    constructor(dict) {
+        this.doc_name = dict.doc_name;
+        this.header_list = dict.header_list;
+        this.table_width = dict.table_width;
+        this.column_widths = dict.column_widths;
+    }
+
+    shift_column_left (column_name) {
+        for (let i = 0; i < this.header_list.length; ++i) {
             if (this.header_list[i] == column_name) {
                 if (i == 0) {
                     return;
@@ -88,48 +92,39 @@ tableSpec = {
                 else {
                     this.header_list.splice(i, 1);
                     this.header_list.splice(i - 1, 0, column_name);
-                    var column_width = this.column_widths[i];
+                    let column_width = this.column_widths[i];
                     this.column_widths.splice(i, 1);
                     this.column_widths.splice(i - 1, 0, column_width)
                 }
             }
         }
-    },
-    shift_column_right: function (column_name) {
-        var i;
-        for (i = 0; i < (this.header_list.length - 1); ++i) {
+    }
+
+    shift_column_right (column_name) {
+        for (let i = 0; i < (this.header_list.length - 1); ++i) {
             if (this.header_list[i] == column_name) {
                 this.header_list.splice(i, 1);
                 this.header_list.splice(i + 1, 0, column_name);
-                var column_width = this.column_widths[i];
+                let column_width = this.column_widths[i];
                 this.column_widths.splice(i, 1);
                 this.column_widths.splice(i + 1, 0, column_width)
             }
         }
     }
-};
 
-function create_tablespec(dict) {
-    var spec = Object.create(tableSpec);
-    spec.doc_name = dict.doc_name;
-    spec.header_list = dict.header_list;
-    spec.table_width = dict.table_width;
-    spec.column_widths = dict.column_widths;
-    return spec
 }
 
-var tablespec_dict = {};
-var hidden_columns_list = ["__filename__"];
-
-var tableObject = {
-    table_id: "table-area",
-    collection_name: null,
-    data_rows: null,
-    selected_header: null,
-    highlighted_cells: [],
-
-    initialize_table: function (data_object){
+class TableObjectClass {
+    constructor (data_object) {
+        this.table_id = "table-area";
+        this.collection_name = null;
+        this.data_rows = null;
+        this.selected_header = null;
         this.highlighted_cells = [];
+        this.initialize_table (data_object);
+    }
+
+    initialize_table (data_object){
         if (data_object.hasOwnProperty("left_fraction")) {
             this.left_fraction = data_object.left_fraction
         }
@@ -148,7 +143,7 @@ var tableObject = {
         this.getting_new_chunk = false;
 
         if (!tablespec_dict.hasOwnProperty(this.current_doc_name)) {
-            this.current_spec = create_tablespec(
+            this.current_spec = new TableSpec (
                 {"doc_name": this.current_doc_name,
                 "header_list": data_object["header_list"],
 
@@ -165,7 +160,7 @@ var tableObject = {
         }
         //noinspection JSUnresolvedVariable
         this.build_table(data_object.max_table_size); // This is separated out because it is called from elsewhere.
-        var self = this;
+        const self = this;
         $("#table-area tbody").scroll(function(){
             if (self.getting_new_chunk) {
                 return false
@@ -173,14 +168,14 @@ var tableObject = {
             if ($('#table-area tbody tr:last').isOnScreen()){
                 if (!self.is_last_chunk ) {
                     self.getting_new_chunk = true;
-                    var nrows = $('#table-area tbody tr').length;
+                    const nrows = $('#table-area tbody tr').length;
                     postWithCallback(main_id, "grab_next_chunk", {"doc_name": self.current_doc_name}, function (data) {
-                        var top_edge_pos = $("#table-area tbody tr:last").position().top;
+                        const top_edge_pos = $("#table-area tbody tr:last").position().top;
                         tableObject.refill_table(data);
                         // The last row will now be at this position
                         //noinspection JSUnresolvedVariable
-                        var old_last_row = $('#table-area tbody tr')[nrows - data.step_size - 1];
-                        var rowpos = $(old_last_row).position();
+                        const old_last_row = $('#table-area tbody tr')[nrows - data.step_size - 1];
+                        const rowpos = $(old_last_row).position();
                         $('#table-area tbody').scrollTop(rowpos.top - top_edge_pos);
                         self.getting_new_chunk = false;
                     })
@@ -190,88 +185,88 @@ var tableObject = {
                 if (!self.is_first_chunk) {
                     self.getting_new_chunk = true;
                     postWithCallback(main_id, "grab_previous_chunk", {"doc_name": self.current_doc_name}, function (data) {
-                        var top_edge_pos = $("#table-area tbody tr:first").position().top;
+                        const top_edge_pos = $("#table-area tbody tr:first").position().top;
                         tableObject.refill_table(data);
                         // The last row will now be at this position
                         //noinspection JSUnresolvedVariable
-                        var old_last_row = $('#table-area tbody tr')[data.step_size - 1];
-                        var rowpos = $(old_last_row).position();
+                        const old_last_row = $('#table-area tbody tr')[data.step_size - 1];
+                        const rowpos = $(old_last_row).position();
                         $('#table-area tbody').scrollTop(rowpos.top - top_edge_pos);
                         self.getting_new_chunk = false;
                     })
                 }
             }
         })
-    },
+    }
 
-    refill_table: function(data_object) {
+    refill_table (data_object) {
         this.data_rows = data_object["data_rows"];
         this.current_doc_name = data_object["doc_name"];
         this.is_first_chunk = data_object["is_first_chunk"];
         this.is_last_chunk = data_object["is_last_chunk"];
         this.background_colors = data_object["background_colors"];
-        var header_list = this.current_spec.header_list;
-        var all_rows = $("#table-area tbody tr");
+        const header_list = this.current_spec.header_list;
+        const all_rows = $("#table-area tbody tr");
         all_rows.removeClass("hidden-row");
-        var nrows = all_rows.length;
+        const nrows = all_rows.length;
 
-        var rowpos = $('#table-area tr:first').position();
+        const rowpos = $('#table-area tr:first').position();
         $('#table-area tbody').scrollTop(rowpos.top);
-        for (var i = 0; i < this.data_rows.length; ++i) {
-            for (var c = 0; c < header_list.length; ++c) {
-                var td_element = $("#table-area tbody")[0].rows[i].cells[c];
-                var new_content = this.data_rows[i][header_list[c]];
+        for (let i = 0; i < this.data_rows.length; ++i) {
+            for (let c = 0; c < header_list.length; ++c) {
+                const td_element = $("#table-area tbody")[0].rows[i].cells[c];
+                const new_content = this.data_rows[i][header_list[c]];
                 $(td_element).html(new_content)
             }
         }
         this.color_all_bgs();
+        let i;
         for (; i < nrows; ++i) {
             $(all_rows[i]).addClass("hidden-row")
         }
-    },
+     }
 
-    clear_all_bgs: function() {
+    clear_all_bgs () {
       $("#table-area tbody td").css("background-color", "")
-    },
+     }
 
-    color_all_bgs: function() {
+    color_all_bgs () {
         this.clear_all_bgs();
-        for (var row in this.background_colors) {
+        for (let row in this.background_colors) {
             if (!this.background_colors.hasOwnProperty(row)) continue;
-            for (var cheader in this.background_colors[row]) {
+            for (let cheader in this.background_colors[row]) {
                 if (!this.background_colors[row].hasOwnProperty(cheader)) continue;
                 tableObject.colorCellBackground(row, cheader, this.background_colors[row][cheader])
             }
         }
-    },
+     }
 
-    build_table: function (max_table_size) {
-        var self = this;
+    build_table  (max_table_size) {
+        const self = this;
         initializeConsole();
-        var html_result = create_all_html(this.table_id, this.data_rows, this.current_spec.header_list, max_table_size, this.is_last_chunk);
+        const html_result = create_all_html(this.table_id, this.data_rows, this.current_spec.header_list, max_table_size, this.is_last_chunk);
         $("#" + this.table_id).html(html_result);
-        for (var i = 0; i < hidden_columns_list.length; ++i) {
+        for (let i = 0; i < hidden_columns_list.length; ++i) {
             $(".column-" + hidden_columns_list[i]).css("display", "none");
         }
         $("td.column-__id__").attr("contenteditable", false);
         $("td.column-__filename__").attr("contenteditable", false);
         this.color_all_bgs();
         $("#project-name").html(this.project_name);
-
         this.resize_table_area();
         this.freeze_column_widths();
         setup_resize_listeners();
         //broadcast_event_to_server("SaveTableSpec", {"tablespec": this.current_spec})
          $('#table-area td').blur(handle_cell_change);
         this.active_row = null;
-        this.active_row_id = null
+        this.active_row_id = null;
 
         // Listen for the cursor to be placed in row
         $("#table-area").on('focus', 'td', function() {
-              var row_index = $(this).closest("tr")[0].rowIndex - 1; //Substract one for the header row
-              var old_row = $("#table-area tbody tr")[self.active_row];
+              const row_index = $(this).closest("tr")[0].rowIndex - 1; //Substract one for the header row
+              const old_row = $("#table-area tbody tr")[self.active_row];
               $(old_row).removeClass("selected-row");
-              var new_row = $("#table-area tbody tr")[row_index];
+              const new_row = $("#table-area tbody tr")[row_index];
               $(new_row).addClass("selected-row");
               self.active_row = row_index;
               self.active_row_id = self.data_rows[row_index]["__id__"]
@@ -279,8 +274,8 @@ var tableObject = {
 
         // Listen for the user to click on a header
         $("#table-area th").on("click", function (event) {
-            var el = event.target;
-            var the_header = $(el).attr("id");
+            const el = event.target;
+            const the_header = $(el).attr("id");
             if (the_header === self.selected_header) {
                 deselect_header(the_header);
             }
@@ -293,8 +288,8 @@ var tableObject = {
         });
 
         $("#table-area td").mouseup(function () {
-            var the_text = document.getSelection().toString();
-            var the_dict;
+            const the_text = document.getSelection().toString();
+            let the_dict;
             if (the_text.length > 0) {
                 the_dict = {"selected_text": the_text};
                 broadcast_event_to_server("TextSelect", the_dict)
@@ -304,32 +299,33 @@ var tableObject = {
         function create_all_html(table_id, data_rows, header_list, max_table_size, is_last_chunk) {
             //This method constructs all of the table html
 
-            var headers = [];
-            for (var i = 0; i < header_list.length; ++i) {
+            const headers = [];
+            for (let i = 0; i < header_list.length; ++i) {
                 headers.push({"header": header_list[i]})
             }
-            var html_result = Mustache.to_html(header_template, {"headers": headers});
+            let html_result = Mustache.to_html(header_template, {"headers": headers});
 
-            var body_html = "";
+            let body_html = "";
+            let i;
 
             for (i = 0; i < data_rows.length; ++i) {
-                var cell_list = [];
-                for (var c = 0; c < header_list.length; ++c) {
+                let cell_list = [];
+                for (let c = 0; c < header_list.length; ++c) {
                     cell_list.push({"rownumber": String(i), "header": header_list[c], "value": data_rows[i][header_list[c]]})
                 }
-                var row_html = Mustache.to_html(body_template, {
+                let row_html = Mustache.to_html(body_template, {
                     "row_id": data_rows[i]["__id__"].toString(),
                     "cells": cell_list
                 });
                 body_html = body_html + row_html;
             }
             if (i < max_table_size) {
-                cell_list = [];
-                for (var c = 0; c < header_list.length; ++c) {
+                let cell_list = [];
+                for (let c = 0; c < header_list.length; ++c) {
                     cell_list.push({"rownumber": String(i), "header": header_list[c], "value": ""})
                 }
                 for (; i < max_table_size; ++i) {
-                    row_html = Mustache.to_html(body_template_hidden, {
+                    let row_html = Mustache.to_html(body_template_hidden, {
                     "row_id": "",
                     "cells": cell_list
                     });
@@ -347,13 +343,12 @@ var tableObject = {
             $(".can-resize").resizable({
                 handles: "e",
                 resize: handle_resize,
-                stop: save_column_widths
+                stop: save_column_widths.bind(self)
             });
-
 
             $("#table-area").resizable({
                 handles: "e",
-                stop: function () {
+                stop  () {
                     self.current_spec.column_widths = null;
                     self.freeze_column_widths();
                 }
@@ -365,16 +360,17 @@ var tableObject = {
 
             function handle_resize(event, ui) {
                 dirty = true;
+                let header_element;
                 if (this.tagName == "TH") {
-                    var header_element = ui.element;
+                    header_element = ui.element;
                 }
                 if (this.tagName == "TD") {
-                    var cellIndex = ui.element[0].cellIndex;
-                    var header_row_element = $("#table-area thead tr")[0];
-                    var header_element = $(header_row_element.children[cellIndex])
+                    const cellIndex = ui.element[0].cellIndex;
+                    const header_row_element = $("#table-area thead tr")[0];
+                    header_element = $(header_row_element.children[cellIndex])
                 }
                 if ((this.tagName == "TH") || (this.tagName == "TD")) {
-                    var h_class = "column-" + header_element.attr("id");
+                    const h_class = "column-" + header_element.attr("id");
                     $("." + h_class).innerWidth(ui.size.width);
                     $("." + h_class).css("maxWidth", ui.size.width);
                     self.current_spec.column_widths[ui.element[0].cellIndex] = ui.element[0].offsetWidth;
@@ -388,14 +384,13 @@ var tableObject = {
         }
 
         function save_column_widths() {
-            resize = true;
-            var col_cells = $("#table-area tbody tr:first td");
-            var result = [];
-            for (var i = 0; i < col_cells.length; ++i) {
+            const col_cells = $("#table-area tbody tr:first td");
+            const result = [];
+            for (let i = 0; i < col_cells.length; ++i) {
                 result.push(col_cells[i].offsetWidth)
             }
-            self.current_spec.column_widths = result;
-            self.current_spec.table_width = $("#table-area").width();
+            this.current_spec.column_widths = result;
+            this.current_spec.table_width = $("#table-area").width();
 
             //broadcast_event_to_server("SaveTableSpec", {"tablespec": self.current_spec})
         }
@@ -403,10 +398,10 @@ var tableObject = {
             // This is called when the user directly edits a cell.
             // It is assumed that this points to the DOM element that was changed.
             dirty = true;
-            var current_content = $(this).html();
+            let current_content = $(this).html();
 
             // turn any brs in the middle into newlines
-            var rexp = new RegExp("\<br\>([\\w\\s])", "g");
+            let rexp = new RegExp("\<br\>([\\w\\s])", "g");
             current_content = current_content.replace(rexp, "\\n");
 
             // get rid of any other tags and trim
@@ -414,57 +409,55 @@ var tableObject = {
             current_content = current_content.replace(rexp, " ");
             current_content = current_content.trim();
 
-            var rindex = this.parentElement.rowIndex - 1;
-            var cindex = this.cellIndex;
-            var column_header = self.current_spec.header_list[cindex];
-            var old_content = self.data_rows[rindex][column_header];
-            var id_selector = "#row-" + String(rindex) + "-col-__id__";
-            var row_id = parseInt($(this.parentElement).children(id_selector).text());
+            const rindex = this.parentElement.rowIndex - 1;
+            const cindex = this.cellIndex;
+            const column_header = self.current_spec.header_list[cindex];
+            const old_content = self.data_rows[rindex][column_header];
+            const id_selector = "#row-" + String(rindex) + "-col-__id__";
+            const row_id = parseInt($(this.parentElement).children(id_selector).text());
             if (current_content != old_content) {
-                var shorter_sig = [];
-                //self.table_array[rindex][cindex] = current_content;
                 self.data_rows[rindex][column_header] = current_content;
-                var data_dict = {
+                const data_dict = {
                     "id": row_id,
                     "column_header": column_header,
                     "old_content": old_content,
                     "new_content": current_content,
-                    "doc_name": self.current_doc_name};
+                    "doc_name": self.current_doc_name
+                };
                 broadcast_event_to_server("CellChange", data_dict, null)
             }
         }
-    },
+     }
 
 
-    freeze_column_widths: function () {
+    freeze_column_widths () {
         // This modifies this.column_widths and this.table_width
         // This is only called by initialize_table.
         // But I split it out because it's so big.
-        self = tableObject;
-        var tidstr = "#table-area";
-        var ncols = self.current_spec.header_list.length;
-        var all_rows = $(tidstr).find("tr");
-        var saved_table_width = $(tidstr).width();
+        const tidstr = "#table-area";
+        const ncols = this.current_spec.header_list.length;
+        const all_rows = $(tidstr).find("tr");
+        const saved_table_width = $(tidstr).width();
  
-        var the_row;
-        var the_width;
-        var the_text;
-        var the_child;
+        let the_row;
+        let the_width;
+        let the_text;
+        let the_child;
 
-        var panel_width = $("#main-panel").width();
-        var max_field_width = panel_width * MAX_BIGFIELD_FRACTION;
+        const panel_width = $("#main-panel").width();
+        const max_field_width = panel_width * MAX_BIGFIELD_FRACTION;
 
 
-        if (self.current_spec.column_widths == null) {
-            column_widths = [];
-            for (var c = 0; c < ncols; ++c) {
+        if (this.current_spec.column_widths == null) {
+            let column_widths = [];
+            for (let c = 0; c < ncols; ++c) {
                 column_widths.push(0);
             }
             // Get the max width of each column
-            for (var r = 0; r < all_rows.length; ++r) {
+            for (let r = 0; r < all_rows.length; ++r) {
                 the_row = all_rows[r];
 
-                for (c = 0; c < ncols; ++c) {
+                for (let c = 0; c < ncols; ++c) {
                     the_child = the_row.cells[c];
                     the_width = the_child.offsetWidth + ADDED_HEADER_WIDTH;
                     the_text = the_child.innerHTML;
@@ -479,7 +472,7 @@ var tableObject = {
                 }
             }
 
-            var total = 0;
+            let total = 0;
             $.each(column_widths, function () {
                 total += this;
             });
@@ -488,33 +481,33 @@ var tableObject = {
             // Also, if we have made the table wider there might be extra space
             // So rescale each column to fit in the space vailable
             // I substract 35 because something is taking up extra space there.
-            var fract = (saved_table_width - 35) / total;
-            for (var c = 0; c < column_widths.length; ++c) {
+            const fract = (saved_table_width - 35) / total;
+            for (let c = 0; c < column_widths.length; ++c) {
                 column_widths[c] = fract * column_widths[c]
             }
-            self.current_spec.table_width = saved_table_width;
-            self.current_spec.column_widths = column_widths;
+            this.current_spec.table_width = saved_table_width;
+            this.current_spec.column_widths = column_widths;
         }
 
-        $("#table-area").width(String(self.current_spec.table_width));
+        $("#table-area").width(String(this.current_spec.table_width));
 
         // Set all column widths
-        var new_width;
-        for (r = 0; r < all_rows.length; ++r) {
-            the_row = all_rows[r];
-            c = 0;
+        let new_width;
+        for (let r = 0; r < all_rows.length; ++r) {
+            let the_row = all_rows[r];
+            let c = 0;
             while (c < ncols){
                 the_child = the_row.cells[c];
-                new_width = self.current_spec.column_widths[c];
+                new_width = this.current_spec.column_widths[c];
                 the_child.style.width = String(new_width) + "px";
                 the_child.style.maxWidth = String(new_width) + "px";
                 c += 1
             }
         }
-    },
+     }
 
-    resize_table_area: function () {
-        var usable_width = window.innerWidth - 2 * MARGIN_SIZE - 30;
+    resize_table_area  () {
+        const usable_width = window.innerWidth - 2 * MARGIN_SIZE - 30;
         if (!(this.left_fraction == 0)) {
             $(".grid-left").width(usable_width * this.left_fraction);
         }
@@ -528,53 +521,51 @@ var tableObject = {
             $("#tile-area").height(window.innerHeight - $("#console-panel").outerHeight() - 30 - $("#tile-area").offset().top);
         }
         $("#main-panel").width(""); // We do this so that this will resize when the window is resized.
-    },
+     }
 
-    hideRows: function(hide_list) {
-        var rows = $('#table-area tbody tr');
-        for (var i = 0; i < hide_list.length; ++i) {
-            var rnum = hide_list[i];
+    hideRows (hide_list) {
+        const rows = $('#table-area tbody tr');
+        for (let i = 0; i < hide_list.length; ++i) {
+            const rnum = hide_list[i];
             rows.eq(rnum).addClass("hidden-row")
         }
-    },
+     }
 
-    getCellElementByRowColIndex: function(rindex, cindex) {
+    getCellElementByRowColIndex (rindex, cindex) {
         return $("#table-area tbody")[0].rows[rindex].cells[cindex]
-    },
+     }
 
-    dehighlightTxtInCell: function(data_object) {
-        var rindex = data_object.row_index;
-        var cheader = data_object.column_header;
-        var cindex = this.current_spec.header_list.indexOf(cheader);
+    dehighlightTxtInCell (data_object) {
+        const rindex = data_object.row_index;
+        const cheader = data_object.column_header;
+        const cindex = this.current_spec.header_list.indexOf(cheader);
         try {
-            var el = this.getCellElementByRowColIndex(rindex, cindex);
-            var td_element = $("#table-area tbody")[0].rows[rindex].cells[cindex];
+            const td_element = $("#table-area tbody")[0].rows[rindex].cells[cindex];
             $(td_element).text(this.data_rows[rindex][cheader]);
-            //el.innerHTML = el.innerHTML.replace(/<\/?span[^>]*>/g, "");
         }
         catch (err) {
             console.log(err.message + " row index " + rindex + "_col_index_ " + cindex)
         }
-    },
+     }
 
     /* shrinkTable and expandTable are called from html inline */
 
-    shrinkTable: function() {
+    shrinkTable () {
         dirty = true;
         this.left_fraction_save = this.left_fraction;
 
         //$(".grid-left")[0].classList.add("scaling-style");
         $("#main-panel").css("display", "none");
         $("#table-icon").css("display", "block");
-        var usable_width = window.innerWidth - 2 * MARGIN_SIZE - 10;
+        const usable_width = window.innerWidth - 2 * MARGIN_SIZE - 10;
         this.left_fraction = ($("#table-icon").outerWidth() + MARGIN_SIZE) / usable_width;
         table_is_shrunk = true;
         broadcast_event_to_server("UpdateTableShrinkState", {"is_shrunk": true});
         this.resize_table_area();
         $(".tile-panel").addClass("tile-panel-float")
-    },
+     }
 
-    expandTable: function() {
+    expandTable () {
         this.left_fraction = this.left_fraction_save;
         $("#table-icon").css("display", "none");
         $("#main-panel").css("display", "block");
@@ -582,59 +573,58 @@ var tableObject = {
         table_is_shrunk = false;
         broadcast_event_to_server("UpdateTableShrinkState", {"is_shrunk": false});
         $(".tile-panel").removeClass("tile-panel-float")
-    },
+     }
 
     /* The commands below will be called by the server with emit_table_message */
 
-    setCellContent: function(data) {
+    setCellContent (data) {
         //It is assumed that this is called on the currently visible document only.
         //It will be called by the server, when the server wants to tell the client
         //there is a change in a cell in the visible document
         dirty = true;
-        var cheader = data.column_header;
-        var new_content = data.new_content;
-        var row_index = data.row;
-        var cell_index = this.current_spec.header_list.indexOf(cheader);
+        const cheader = data.column_header;
+        const new_content = data.new_content;
+        const row_index = data.row;
+        const cell_index = this.current_spec.header_list.indexOf(cheader);
         if (cell_index == -1) {
             console.log("invalid signature");
             return
         }
-        var td_element = $("#table-area tbody")[0].rows[row_index].cells[cell_index];
+        const td_element = $("#table-area tbody")[0].rows[row_index].cells[cell_index];
         $(td_element).html(new_content);
         this.data_rows[row_index][cheader]= new_content
-    },
+     }
 
     // setCellBackground assumes this is intended for the current document
-    setCellBackground: function(data) {
+    setCellBackground (data) {
         dirty = true;
-        var cheader = data.column_header;
-        var row = data.row;
-        var bcolor = data.color;
+        const cheader = data.column_header;
+        const row = data.row;
+        const bcolor = data.color;
         this.colorCellBackground(row, cheader, bcolor)
-    },
+     }
 
     // It is assumed that this is coloring the currently visible document.
-    colorCellBackground: function(rindex, cheader, bcolor) {
+    colorCellBackground (rindex, cheader, bcolor) {
         dirty = true;
-        var cindex = this.current_spec.header_list.indexOf(cheader);
+        const cindex = this.current_spec.header_list.indexOf(cheader);
         try {
-
-            var el = this.getCellElementByRowColIndex(rindex, cindex);
+            const el = this.getCellElementByRowColIndex(rindex, cindex);
             $(el).css("background-color", bcolor);
         }
         catch(err) {
             console.log(err.message + " row index " + rindex + "_col_index_ " + cindex)
         }
-    },
+     }
 
-    highlightTxtInDocument: function(data_object) {
-        var rindex = data_object.row_index;
-        var cheader = data_object.column_header;
-        var text_to_find = data_object.text_to_find;
-        var cindex = this.current_spec.header_list.indexOf(cheader);
+    highlightTxtInDocument (data_object) {
+        const rindex = data_object.row_index;
+        const cheader = data_object.column_header;
+        const text_to_find = data_object.text_to_find;
+        const cindex = this.current_spec.header_list.indexOf(cheader);
         try {
-            var el = this.getCellElementByRowColIndex(rindex, cindex);
-            var regex = new RegExp(text_to_find, "gi");
+            const el = this.getCellElementByRowColIndex(rindex, cindex);
+            const regex = new RegExp(text_to_find, "gi");
             el.innerHTML = el.innerHTML.replace(regex, function (matched) {
                     return "<span class=\"highlight \">" + matched + "</span>";
                 });
@@ -643,20 +633,20 @@ var tableObject = {
         catch(err) {
             console.log(err.message + " row index " + rindex + "_col_index_ " + cindex)
         }
-    },
+     }
 
-    colorTxtInCell: function(data_object) {
-        var rindex = data_object.row_index;
-        var cheader = data_object.column_header;
-        var token_text = data_object.token_text;
-        var color_dict = data_object.color_dict;
-        var cindex = this.current_spec.header_list.indexOf(cheader);
+    colorTxtInCell (data_object) {
+        const rindex = data_object.row_index;
+        const cheader = data_object.column_header;
+        const token_text = data_object.token_text;
+        const color_dict = data_object.color_dict;
+        const cindex = this.current_spec.header_list.indexOf(cheader);
 
-        var result = "";
+        let result = "";
 
         try {
-            var el = this.getCellElementByRowColIndex(rindex, cindex);
-            for (var i = 0; i < token_text.length; ++i) {
+            const el = this.getCellElementByRowColIndex(rindex, cindex);
+            for (let i = 0; i < token_text.length; ++i) {
                 w = token_text[i];
                 if (color_dict.hasOwnProperty(w)) {
                     result = result + "<span style='background-color: " + color_dict[w] + "' > " + w + "</span>";
@@ -672,26 +662,26 @@ var tableObject = {
         catch(err) {
             console.log(err.message + " row index " + rindex + "_col_index_ " + cindex)
         }
-    },
+     }
 
-    consoleLog: function(data_object) {
-        var force_open = data_object.force_open;
+    consoleLog (data_object) {
+        const force_open = data_object.force_open;
         $("#console").append(data_object.message_string);
         if (force_open && !console_visible) {
             expandConsole()
         }
         $("#console")[0].scrollTop = $("#console")[0].scrollHeight;
-        var child_array = $("#console").children();
-        var last_child = child_array[child_array.length - 1];
-        var scripts = $(last_child).find(".resize-rerun");
-        for (var i = 0; i < scripts.length; i = i+1) {
+        const child_array = $("#console").children();
+        const last_child = child_array[child_array.length - 1];
+        const scripts = $(last_child).find(".resize-rerun");
+        for (let i = 0; i < scripts.length; i = i+1) {
             eval(scripts[i].innerHTML)
         }
-    },
+     }
 
-    consoleCodeLog: function(data_object) {
-        var force_open = data_object.force_open;
-        el = $("#" + data_object.console_id).parent().find(".log-code-output");
+    consoleCodeLog (data_object) {
+        const force_open = data_object.force_open;
+        let el = $("#" + data_object.console_id).parent().find(".log-code-output");
         el.html(data_object.message_string);
         if (force_open && !console_visible) {
             expandConsole()
@@ -699,19 +689,18 @@ var tableObject = {
         // $("#console")[0].scrollTop = $("#console")[0].scrollHeight;
         // var child_array = $("#console").children();
         // var last_child = child_array[child_array.length - 1];
-        var scripts = el.find(".resize-rerun");
-        for (var i = 0; i < scripts.length; i = i+1) {
+        const scripts = el.find(".resize-rerun");
+        for (let i = 0; i < scripts.length; i = i+1) {
             eval(scripts[i].innerHTML)
         }
-    },
+     }
 
-    clearConsole: function(data_object) {
-        // $("#console").html("");
+    clearConsole () {
         $(".log-panel-body").each(function () {
             if ($(this).hasClass("console-code")) {
 
                 uid = $(this).attr("id");
-                el = $("#" + uid).parent().find(".log-code-output")
+                let el = $("#" + uid).parent().find(".log-code-output");
                 el.html("")
             }
             else {
@@ -719,34 +708,34 @@ var tableObject = {
             }
         });
         $("#console")[0].scrollTop = $("#console")[0].scrollHeight
-    },
+     }
 
-    dehighlightAllText: function() {
-        var self = this;
+    dehighlightAllText () {
+        const self = this;
         this.highlighted_cells.forEach(function(c){
             self.dehighlightTxtInCell(c)
         });
         this.highlighted_cells = []
-    },
+     }
 
-    startTableSpinner: function () {
+    startTableSpinner  () {
         $("#table-spin-place").html(spinner_html);
-    },
+     }
 
-    stopTableSpinner: function () {
+    stopTableSpinner  () {
         $("#table-spin-place").html("");
-    },
+     }
 
-    rowup: function (clicked_element) {
-          var $row = $(clicked_element).parents('tr');
+    rowup  (clicked_element) {
+          const $row = $(clicked_element).parents('tr');
           if ($row.index() === 1) return; // Don't go above the header
           $row.prev().before($row.get(0));
-    },
-    rowdown: function (clicked_element) {
-          var $row = $(clicked_element).parents('tr');
+     }
+    rowdown  (clicked_element) {
+          const $row = $(clicked_element).parents('tr');
           $row.next().after($row.get(0));
-    },
-    rowremove: function (clicked_element) {
+     }
+    rowremove  (clicked_element) {
         $(clicked_element).parents('tr').detach();
     }
-};
+}
