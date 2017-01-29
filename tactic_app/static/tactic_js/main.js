@@ -73,8 +73,6 @@ function start_post_load() {
     });
 }
 
-
-
 function continue_loading() {
     socket.on('update-menus', function() {
         postWithCallback("host", "get_tile_types", {"user_id": user_id}, function (data) {
