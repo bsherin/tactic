@@ -1,10 +1,7 @@
+
 let socket;
-let console_visible;
-let saved_console_size;
 let dirty;
 let tile_types;
-const consoleCMObjects = {};
-let tableObject;
 
 let tooltip_dict = {
     "shrink-table-button": "shrink/expand table",
@@ -16,156 +13,6 @@ let tooltip_dict = {
     "hide-console-button": "show/hide the console",
     "clear-console-button": "clear console output"
 };
-
-function initializeConsole() {
-    saved_console_size = 150;
-    const pan = $("#console-panel");
-    $("#console").fadeOut();
-    const hheight = $('#console-heading').outerHeight();
-    pan.outerHeight(hheight);
-    pan.find(".triangle-bottom").hide();
-    pan.find(".triangle-right").show();
-    console_visible = false
-}
-
-function shrinkConsole (){
-    saved_console_size = $("#console-panel").outerHeight();
-    const pan = $("#console-panel");
-    const hheight = $("#console-heading").outerHeight();
-    $("#console").fadeOut("fast", function () {
-        pan.outerHeight(hheight);
-        pan.resizable('destroy');
-        pan.find(".triangle-bottom").hide();
-        pan.find(".triangle-right").show();
-        tableObject.resize_table_area();
-        console_visible = false
-    });
-}
-
-function expandConsole(){
-    const pan = $("#console-panel");
-    pan.outerHeight(saved_console_size);
-    pan.find(".triangle-right").hide();
-    pan.find(".triangle-bottom").show();
-    $("#console").fadeIn();
-    $("#console").outerHeight(pan.innerHeight()- $("#console-heading").outerHeight());
-    console_visible = true;
-    tableObject.resize_table_area();
-    pan.resizable({
-            handles: "n",
-            resize: function (event, ui) {
-                ui.position.top = 0;
-                tableObject.resize_table_area();
-                $("#console").outerHeight(ui.size.height- $("#console-heading").outerHeight())
-            }
-        });
-    for (let uid in consoleCMObjects) {
-        if (!consoleCMObjects.hasOwnProperty(uid)) continue;
-        consoleCMObjects[uid].refresh()
-    }
-
-}
-
-function closeLogItem(e) {
-    const el = $(e.parentElement.parentElement);
-    if (!(el.find(".console-code").length == 0)) {
-        let uid = el.find(".console-code")[0].id;
-        delete consoleCMObjects[uid];
-    }
-    $(e.parentElement.parentElement).remove()
-}
-
-function runConsoleCode(e) {
-    const el = $(e.parentElement.parentElement);
-    const uid = el.find(".console-code")[0].id;
-    const the_code = consoleCMObjects[uid].getValue();
-    postWithCallback(main_id, "exec_console_code", {"the_code": the_code, "console_id": uid})
-}
-
-function getConsoleCMCode() {
-    const result = {};
-    for (let cmi in consoleCMObjects) {
-        if (!consoleCMObjects.hasOwnProperty(cmi)) continue;
-        result[cmi] = consoleCMObjects[cmi].getValue();
-    }
-    return result
-}
-
-function clearConsoleCode(e) {
-    let el = $(e.parentElement.parentElement);
-    const uid = el.find(".console-code")[0].id;
-    el = $("#" + uid).parent().find(".log-code-output");
-    el.html("");
-}
-
-
-function addBlankConsoleText() {
-    const print_string = "<div contenteditable='true'></div>";
-    const task_data = {"print_string": print_string};
-    postWithCallback(main_id, "print_to_console_event", task_data, function(data) {
-        if (!data.success) {
-            doFlash(data)
-        }
-    })
-}
-
-function check_for_element(elstring, callback) {
-    const rec = function () {
-        setTimeout(function () {
-            if ($(elstring).length > 0) {
-                callback()
-            } else
-                rec();
-        }, 10);
-    };
-    rec();
-}
-
-function createConsoleCodeInCodearea(uid, codearea) {
-    consoleCMObjects[uid] = CodeMirror(codearea, {
-        lineNumbers: true,
-        matchBrackets: true,
-        highlightSelectionMatches: false,
-        autoCloseBrackets: true,
-        indentUnit: 4,
-        readOnly: false,
-        extraKeys: {
-            'Ctrl-Enter': function(cm) {
-                let the_code = cm.getValue();
-                postWithCallback(main_id, "exec_console_code", {"the_code": the_code, "console_id": cm.tactic_uid})
-            },
-            'Cmd-Enter': function (cm) {
-                let the_code = cm.getValue();
-                postWithCallback(main_id, "exec_console_code", {"the_code": the_code, "console_id": cm.tactic_uid})
-            }
-        }
-    });
-    consoleCMObjects[uid].tactic_uid = uid;
-    $(codearea).find(".CodeMirror").resizable({handles: "se"});
-    $(codearea).find(".CodeMirror").height(100)
-}
-
-function addConsoleCodearea() {
-    postWithCallback(main_id, "create_console_code_area", {}, function(data) {
-        if (!data.success) {
-            doFlash(data)
-        }
-        else {
-            check_for_element("#" + data["unique_id"], function () {
-                const codearea = document.getElementById(data["unique_id"]);
-                createConsoleCodeInCodearea(data["unique_id"], codearea)
-            })
-        }
-    })
-}
-
-function openLogWindow() {
-    const task_data = {
-        "console_html": $('#console').html()
-    };
-    postWithCallback(main_id, "open_log_window", task_data)
-}
-
 
 function start_post_load() {
     //spinner = new Spinner({scale: 1.0}).spin();
@@ -265,20 +112,19 @@ function continue_loading() {
                     }
                     tablespec_dict[spec] = new TableSpec(data.tablespec_dict[spec])
                 }
-                tableObject = new TableObjectClass((data));
+                tableObject = new TableObjectClass((data)); // consoleObject is created in here;
                 postWithCallback(main_id, "get_saved_console_code", {}, function (data) {
                     console.log("en callback for get_saved_console_code");
                     const saved_console_code = data["saved_console_code"];
 
-                    console.log(String(Object.keys(saved_console_code).length));
-                    for (let uid in saved_console_code) {
-                        if (!saved_console_code.hasOwnProperty(uid)) continue;
+                    for (let uid in consoleObject.saved_console_code) {
+                        if (!consoleObject.saved_console_code.hasOwnProperty(uid)) continue;
                         console.log("getting codearea " + uid);
                         const codearea = document.getElementById(uid);
                         codearea.innerHTML = "";
-                        createConsoleCodeInCodearea(uid, codearea);
-                        consoleCMObjects[uid].doc.setValue(saved_console_code[uid]);
-                        consoleCMObjects[uid].refresh();
+                        consoleObject.createConsoleCodeInCodearea(uid, codearea);
+                        consoleObject.consoleCMObjects[uid].doc.setValue(saved_console_code[uid]);
+                        consoleObject.consoleCMObjects[uid].refresh();
                     }
 
                 });
@@ -338,12 +184,6 @@ function continue_loading() {
         }
     });
 
-    $("#console").sortable({
-        handle: '.panel-heading',
-        tolerance: 'pointer',
-        revert: 'invalid',
-        forceHelperSize: true
-    });
 
     initializeTooltips();
     

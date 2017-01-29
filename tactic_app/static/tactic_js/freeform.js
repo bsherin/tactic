@@ -149,7 +149,7 @@ class TableObjectClass {
     build_table (max_table_size) {
         const self = this;
         this.active_line = null;
-        initializeConsole();
+        consoleObject = new ConsoleObjectClass();
         let html_result = create_all_html(this.data_text);
         myCodeMirror.setValue(html_result);
         this.old_content = html_result;
@@ -221,10 +221,10 @@ class TableObjectClass {
         }
         $(".grid-right").width(usable_width * (1 - this.left_fraction));
         if ($("#freeform-area .CodeMirror").length > 0) {
-            $("#freeform-area .CodeMirror").css('height', window.innerHeight - $("#console-panel").outerHeight() - 30 - $("#freeform-area .CodeMirror").offset().top);
+            $("#freeform-area .CodeMirror").css('height', window.innerHeight - consoleObject.console_panel.outerHeight() - 30 - $("#freeform-area .CodeMirror").offset().top);
         }
         if ($("#tile-area").length > 0) {
-            $("#tile-area").height(window.innerHeight - $("#console-panel").outerHeight() - 30 - $("#tile-area").offset().top);
+            $("#tile-area").height(window.innerHeight - consoleObject.console_panel.outerHeight() - 30 - $("#tile-area").offset().top);
         }
         $("#main-panel").width(""); // We do this so that this will resize when the window is resized.
         myCodeMirror.refresh()
@@ -261,35 +261,16 @@ class TableObjectClass {
 
 
     consoleLog (data_object) {
-        const force_open = data_object.force_open;
-        $("#console").append(data_object.message_string);
-        if (force_open && !console_visible) {
-            expandConsole()
-        }
-        $("#console")[0].scrollTop = $("#console")[0].scrollHeight;
-        const child_array = $("#console").children();
-        const last_child = child_array[child_array.length - 1];
-        const scripts = $(last_child).find(".resize-rerun");
-        for (let i = 0; i < scripts.length; i = i + 1) {
-            eval(scripts[i].innerHTML)
-        }
+        consoleObject.consoleLog(data_object);
     }
 
     consoleCodeLog (data_object) {
-        const force_open = data_object.force_open;
-        let el = $("#" + data_object.console_id).parent().find(".log-code-output");
-        el.html(data_object.message_string);
-        if (force_open && !console_visible) {
-            expandConsole()
-        }
-        // $("#console")[0].scrollTop = $("#console")[0].scrollHeight;
-        // var child_array = $("#console").children();
-        // var last_child = child_array[child_array.length - 1];
-        const scripts = el.find(".resize-rerun");
-        for (let i = 0; i < scripts.length; i = i + 1) {
-            eval(scripts[i].innerHTML)
-        }
+        consoleObject.consoleCodeLog(data_object)
     }
+
+    clearConsole () {
+        consoleObject.clearConsole()
+     }
 
     setFreeformContent (data_object) {
         if (data_object["doc_name"] == this.current_doc_name) {
@@ -297,10 +278,6 @@ class TableObjectClass {
         }
     }
 
-    clearConsole (data_object) {
-        $("#console").html("");
-        $("#console")[0].scrollTop = $("#console")[0].scrollHeight
-    }
 
     startTableSpinner () {
         $("#table-spin-place").html(spinner_html);
