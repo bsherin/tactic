@@ -242,7 +242,9 @@ class TableObjectClass {
 
     build_table  (max_table_size) {
         const self = this;
-        consoleObject = new ConsoleObjectClass();
+        if (consoleObject == null) {
+            consoleObject = new ConsoleObjectClass()
+        }
         const html_result = create_all_html(this.table_id, this.data_rows, this.current_spec.header_list, max_table_size, this.is_last_chunk);
         $("#" + this.table_id).html(html_result);
         for (let i = 0; i < hidden_columns_list.length; ++i) {

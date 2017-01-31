@@ -1,4 +1,4 @@
-let consoleObject;
+let consoleObject = null;
 
 class ConsoleObjectClass {
     constructor () {

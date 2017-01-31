@@ -114,9 +114,9 @@ function continue_loading() {
                 postWithCallback(main_id, "get_saved_console_code", {}, function (data) {
                     console.log("en callback for get_saved_console_code");
                     const saved_console_code = data["saved_console_code"];
-
-                    for (let uid in consoleObject.saved_console_code) {
-                        if (!consoleObject.saved_console_code.hasOwnProperty(uid)) continue;
+                    global_scc = saved_console_code;
+                    for (let uid in saved_console_code) {
+                        if (!saved_console_code.hasOwnProperty(uid)) continue;
                         console.log("getting codearea " + uid);
                         const codearea = document.getElementById(uid);
                         codearea.innerHTML = "";
@@ -124,7 +124,6 @@ function continue_loading() {
                         consoleObject.consoleCMObjects[uid].doc.setValue(saved_console_code[uid]);
                         consoleObject.consoleCMObjects[uid].refresh();
                     }
-
                 });
 
                 // Note that the visible doc has to be definitely set
@@ -238,9 +237,9 @@ function change_doc(el, row_id) {
                 myCodeMirror.scrollIntoView(row_id);
                 tableObject.active_row = row_id;
                 set_visible_doc(doc_name, null)
-                })
-            }
+            })
         }
+    }
 }
 
 

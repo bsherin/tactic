@@ -284,7 +284,7 @@ function saveProjectAs() {
                 "main_id": main_id,
                 "tablespec_dict": tablespec_dict,
                 "console_html": $("#console").html(),
-                "console_cm_code": getConsoleCMCode(),
+                "console_cm_code": consoleObject.getConsoleCMCode(),
                 "doc_type": DOC_TYPE,
                 "purgetiles": checkresults["purgetiles"]
             };
@@ -326,7 +326,7 @@ function save_project() {
         "main_id": main_id,
         "tablespec_dict": tablespec_dict,
         "console_html": $("#console").html(),
-        "console_cm_code": getConsoleCMCode()
+        "console_cm_code": consoleObject.getConsoleCMCode()
     };
     if (DOC_TYPE == "table") {
         result_dict.hidden_columns_list = hidden_columns_list

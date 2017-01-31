@@ -28,18 +28,65 @@ if "RETRIES" in os.environ:
 else:
     RETRIES = 60
 
+PROTECTED_METADATA_KEYS = ["_id", "file_id", "name", "my_class_for_recreate", "table_spec", "data_text", "length",
+                           "data_rows", "header_list", "number_of_rows"]
 
-class FreeformDocInfo(object):
-    def __init__(self, name, data_text):
-        self.name = name
-        self.data_text = data_text
+
+class DocInfoAbstract(object):
+    def __init__(self, f):
+        self.name = f["name"]
         self.table_spec = {}
+        self.metadata = None
+        return
+
+    def compile_metadata(self, f):
+        mdata = {"name": self.name}
+        for key, val in f.items():
+            if key not in PROTECTED_METADATA_KEYS:
+                mdata[key] = val
+        return mdata
+
+    def set_additional_metadata(self, mdict):
+        for k, d in mdict.items():
+            if k not in PROTECTED_METADATA_KEYS:
+                self.metadata[k] = d
+        return
+
+    @property
+    def additional_metadata(self):
+        result = {"name": self.name}
+        for k, val in self.metadata.items():
+            if k not in PROTECTED_METADATA_KEYS:
+                result[k] = val
+        return result
 
     def compile_save_dict(self):
-        return ({"name": self.name,
-                 "data_text": self.data_text,
-                 "table_spec": self.table_spec,
-                 "my_class_for_recreate": "freeformDocInfo"})
+        result = {"name": self.name,
+                  "table_spec": self.table_spec}
+        result.update(self.additional_metadata)
+        return result
+
+
+class FreeformDocInfo(DocInfoAbstract):
+
+    def __init__(self, f, data_text=None):
+        DocInfoAbstract.__init__(self, f)
+        if data_text is None:
+            self.data_text = f["data_text"]
+        else:
+            self.data_text = data_text
+        self.metadata = self.compile_metadata(f)
+
+    def compile_metadata(self, f):
+        mdata = DocInfoAbstract.compile_metadata(self, f)
+        mdata.update({"length": len(self.data_text)})
+        return mdata
+
+    def compile_save_dict(self):
+        result = DocInfoAbstract.compile_save_dict(self)
+        result.update({"data_text": self.data_text,
+                       "my_class_for_recreate": "FreeformDocInfo"})
+        return result
 
     @property
     def all_data(self):
@@ -61,38 +108,45 @@ class FreeformDocInfo(object):
 
     @staticmethod
     def recreate_from_save(save_dict):
-        new_instance = FreeformDocInfo(save_dict["name"],
-                                       save_dict["data_text"])
+        new_instance = FreeformDocInfo(save_dict)
         new_instance.table_spec = save_dict["table_spec"]
         return new_instance
 
 
 # noinspection PyPep8Naming
-class docInfo(object):
-    def __init__(self, name, data_rows, header_list=None, cell_backgrounds=None):
-
-        self.name = name
-        self.data_rows = copy.deepcopy(data_rows)  # All the data rows in the doc
+class docInfo(DocInfoAbstract):
+    def __init__(self, f):
+        DocInfoAbstract.__init__(self, f)
+        self.data_rows = copy.deepcopy(f["data_rows"])  # All the data rows in the doc
         self.current_data_rows = self.data_rows  # The current filtered set of data rows
         # Get rid of any duplicate headers without changing the order
         self.header_list = []
-        for h in header_list:
-            if h not in self.header_list:
-                self.header_list.append(h)
-        self.table_spec = {}
+        if "header_list" in f:
+            for h in f["header_list"]:
+                if h not in self.header_list:
+                    self.header_list.append(h)
+
         self.start_of_current_chunk = None
         self.is_first_chunk = None
         self.infinite_scroll_required = None
         self.is_last_chunk = None
-        if cell_backgrounds is None:
-            self.cell_backgrounds = {}
+        if "cell_backgrounds" in f:
+            self.cell_backgrounds = f["cell_backgrounds"]
         else:
-            self.cell_backgrounds = cell_backgrounds
+            self.cell_backgrounds = {}
+
         self.configure_for_current_data()
         if len(self.data_rows.keys()) > CHUNK_SIZE:
             self.max_table_size = CHUNK_SIZE
         else:
             self.max_table_size = len(self.data_rows.keys())
+        self.metadata = self.compile_metadata(f)
+
+    def compile_metadata(self, f):
+        mdata = DocInfoAbstract.compile_metadata(self, f)
+        mdata.update({"number_of_rows": len(f["data_rows"].keys()),
+                      "header_list": f["header_list"]})
+        return mdata
 
     def set_background_color(self, row, column_header, color):
         if not str(row) in self.cell_backgrounds:
@@ -132,12 +186,12 @@ class docInfo(object):
         return None
 
     def compile_save_dict(self):
-        return ({"name": self.name,
-                 "data_rows": self.data_rows,
-                 "table_spec": self.table_spec,
-                 "cell_backgrounds": self.cell_backgrounds,
-                 "my_class_for_recreate": "docInfo",
-                 "header_list": self.header_list})
+        result = DocInfoAbstract.compile_save_dict(self)
+        result.update({"data_rows": self.data_rows,
+                       "cell_backgrounds": self.cell_backgrounds,
+                       "my_class_for_recreate": "docInfo",
+                       "header_list": self.header_list})
+        return result
 
     def get_id_from_actual_row(self, actual_row):
         return self.sorted_data_rows[actual_row]["__id__"]
@@ -214,10 +268,7 @@ class docInfo(object):
 
     @staticmethod
     def recreate_from_save(save_dict):
-        new_instance = docInfo(save_dict["name"],
-                               save_dict["data_rows"],
-                               save_dict["header_list"],
-                               save_dict["cell_backgrounds"])
+        new_instance = docInfo(save_dict)
         new_instance.table_spec = save_dict["table_spec"]
         return new_instance
 
@@ -235,6 +286,7 @@ class mainWindow(QWorker):
     # noinspection PyUnresolvedReferences
     def __init__(self, app, data_dict):
         QWorker.__init__(self, app, data_dict["megaplex_address"], data_dict["main_id"])
+        print "entering mainwindow_init"
         try:
             client = pymongo.MongoClient(data_dict["mongo_uri"], serverSelectionTimeoutMS=10)
             client.server_info()
@@ -269,13 +321,16 @@ class mainWindow(QWorker):
         self.loaded_modules = None
 
         if "project_name" not in data_dict:
+            print "determined not a project"
             self.doc_type = data_dict["doc_type"]
+            print "doc type is " + self.doc_type
             self.current_tile_id = 0
             self.tile_instances = {}
             self.tile_sort_list = []
             self.left_fraction = INITIAL_LEFT_FRACTION
             self.is_shrunk = False
             self.collection_name = data_dict["collection_name"]
+            print "collection_name is " + self.collection_name
             self.short_collection_name = re.sub("^.*?\.data_collection\.", "", self.collection_name)
             self.project_name = None
             self.console_html = None
@@ -284,6 +339,7 @@ class mainWindow(QWorker):
             self.doc_dict = self._build_doc_dict()
             self.visible_doc_name = self.doc_dict.keys()[0]
             self.purgetiles = False
+        print "done with init"
 
     # Communication Methods
 
@@ -363,7 +419,6 @@ class mainWindow(QWorker):
     def clear_main_status_message(self):
         data = {"main_id": self.my_id}
         self.post_task("host", "clear_main_status_message", data)
-
 
     @task_worthy
     def do_full_recreation(self, data_dict):
@@ -656,14 +711,9 @@ class mainWindow(QWorker):
             if fname == "__metadata__":
                 continue
             if self.doc_type == "table":
-                if "header_list" in f:
-                    # Note conversion of unicode filenames to strings
-                    result[fname] = docInfo(fname, f["data_rows"], f["header_list"])
-                else:
-                    result[fname] = docInfo(fname, f["data_rows"], [])
+                result[fname] = docInfo(f)
             else:
-
-                result[fname] = FreeformDocInfo(fname, self.fs.get(f["file_id"]).read())
+                result[fname] = FreeformDocInfo(f, self.fs.get(f["file_id"]).read())
         return result
 
     def _set_row_column_data(self, doc_name, the_id, column_header, new_content):
@@ -891,6 +941,19 @@ class mainWindow(QWorker):
         return self.doc_dict[doc_name].all_data
 
     @task_worthy
+    def get_document_metadata(self, data):
+        doc_name = data["document_name"]
+        return self.doc_dict[doc_name].metadata
+
+    @task_worthy
+    def set_document_metadata(self, data):
+        print "In set_document_metadat in main with data " + str(data)
+        doc_name = data["document_name"]
+        self.doc_dict[doc_name].set_additional_metadata(data["metadata"])
+        print "set the document_metadata"
+        return None
+
+    @task_worthy
     def get_document_data_as_list(self, data):
         doc_name = data["document_name"]
         data_list = self.doc_dict[doc_name].all_sorted_data_rows
@@ -955,6 +1018,8 @@ class mainWindow(QWorker):
     @task_worthy
     def set_visible_doc(self, data):
         doc_name = data["doc_name"]
+        if not doc_name == self.visible_doc_name:
+            self.distribute_event("DocChange", data)
         self.visible_doc_name = doc_name
         return {"success": True}
 
@@ -1011,17 +1076,20 @@ class mainWindow(QWorker):
         val = getattr(self, prop_name)
         return {"success": True, "val": val}
 
-    # tactic_todo work with freeform
     @task_worthy
     def export_data(self, data):
         mdata = self.create_initial_metadata()
         mdata["name"] = "__metadata__"
+        mdata["type"] = self.doc_type
         full_collection_name = data["full_collection_name"]
         self.db[full_collection_name].insert_one(mdata)
         for docinfo in self.doc_dict.values():
-            self.db[full_collection_name].insert_one({"name": docinfo.name,
-                                                      "data_rows": docinfo.data_rows,
-                                                      "header_list": docinfo.header_list})
+            if self.doc_type == "freeform":
+                ddict = {"name": docinfo.name, "data_text": docinfo.data_text}
+            else:
+                ddict = {"name": docinfo.name, "data_rows": docinfo.data_rows, "header_list": docinfo.header_list}
+            ddict.update(docinfo.additional_metadata)
+            self.db[full_collection_name].insert_one(ddict)
         return {"success": True}
 
     @task_worthy
@@ -1031,8 +1099,11 @@ class mainWindow(QWorker):
         new_name = data["name"]
         doc_dict = data["doc_dict"]
         doc_type = data["doc_type"]
+        document_metadata = data["doc_metadata"]
+        if document_metadata is None:
+            document_metadata = {}
         full_collection_name = self.post_and_wait("host", "get_full_collection_name",
-                                                  {"name": new_name, "user_id": self.user_id})["full_collection_name"]
+                                                  {"collection_name": new_name, "user_id": self.user_id})["full_collection_name"]
         if doc_type == "table":
             mdata["type"] = "table"
             self.db[full_collection_name].insert_one(mdata)
@@ -1044,16 +1115,23 @@ class mainWindow(QWorker):
                     the_row["__filename__"] = docname
                     doc_as_dict[str(r)] = the_row
                 header_list = ["__id__", "__filename__"] + header_list
-                self.db[full_collection_name].insert_one({"name": docname,
-                                                          "data_rows": doc_as_dict,
-                                                          "header_list": header_list})
+                ddict = {"name": docname, "data_rows": doc_as_dict, "header_list": header_list}
+                if docname in document_metadata:
+                    for k, val in document_metadata[docname].items():
+                        if k not in PROTECTED_METADATA_KEYS:
+                            ddict[k] = val
+                self.db[full_collection_name].insert_one(ddict)
         else:
             mdata["type"] = "freeform"
             self.db[full_collection_name].insert_one(mdata)
             for docname, doc in doc_dict.items():
                 file_id = self.fs.put(str(doc))
-                self.db[full_collection_name].insert_one({"name": docname,
-                                                         "file_id": file_id})
+                ddict = {"name": docname, "file_id": file_id}
+                if docname in document_metadata:
+                    for k, val in document_metadata[docname].items():
+                        if k not in PROTECTED_METADATA_KEYS:
+                            ddict[k] = val
+                self.db[full_collection_name].insert_one(ddict)
         self.ask_host("update_collection_selector_list", {"user_id": self.user_id})
         return {"success": True}
 

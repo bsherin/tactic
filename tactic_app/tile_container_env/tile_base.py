@@ -35,8 +35,9 @@ jsonizable_types = {
     "NoneType": NoneType
 }
 
-code_names = {"classes":{},
+code_names = {"classes": {},
               "functions": {}}
+
 
 def user_function(the_func):
     code_names["functions"][the_func.__name__] = the_func
@@ -62,8 +63,10 @@ def clear_and_exec_user_code(the_code):
     code_names["functions"] = {}
     return exec_user_code(the_code)
 
+
 # noinspection PyMiss
 # ingConstructor
+# noinspection PyUnusedLocal
 class TileBase(QWorker):
     category = "basic"
     exports = []
@@ -127,7 +130,7 @@ class TileBase(QWorker):
         self.list_names = []
         self.class_names = []
         self.function_names = []
-        self._pipe_dict = None # This is set when the form is created
+        self._pipe_dict = None  # This is set when the form is created
         self.is_pseudo = False
         return
 
@@ -167,7 +170,8 @@ class TileBase(QWorker):
 
     @task_worthy
     def get_function_names(self, tag=None):
-        func_tag_dict = self.post_and_wait("host", "get_function_tags_dict", {"user_id": self.user_id})["function_names"]
+        func_tag_dict = self.post_and_wait("host", "get_function_tags_dict",
+                                           {"user_id": self.user_id})["function_names"]
         if tag is None:
             fnames = func_tag_dict.keys()
         else:
@@ -198,6 +202,7 @@ class TileBase(QWorker):
         log_text = self.post_and_wait("host", "get_container_log", {"container_id": self.my_id})["log_text"]
         return log_text
 
+    # noinspection PyAttributeOutsideInit
     @task_worthy
     def TileSizeChange(self, data):
         self.width = data["width"]
@@ -263,6 +268,11 @@ class TileBase(QWorker):
     @task_worthy
     def TextSelect(self, data):
         self.handle_text_select(data["selected_text"])
+        return None
+
+    @task_worthy
+    def DocChange(self, data):
+        self.handle_doc_change(data["doc_name"])
         return None
 
     @task_worthy
@@ -357,7 +367,7 @@ class TileBase(QWorker):
                         else:
                             form_html += self.select_option_template.format(choice)
                     form_html += '</select></div>'
-                elif option["type"] == "tokenizer_select": # for backward compatibility
+                elif option["type"] == "tokenizer_select":  # for backward compatibility
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
                     fnames = []
@@ -370,7 +380,7 @@ class TileBase(QWorker):
                         else:
                             form_html += self.select_option_template.format(choice)
                     form_html += '</select></div>'
-                elif option["type"] == "weight_function_select": # for backward compatibility
+                elif option["type"] == "weight_function_select":  # for backward compatibility
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
                     fnames = []
@@ -383,7 +393,7 @@ class TileBase(QWorker):
                         else:
                             form_html += self.select_option_template.format(choice)
                     form_html += '</select></div>'
-                elif option["type"] == "cluster_metric": # for backward comptibility
+                elif option["type"] == "cluster_metric":  # for backward comptibility
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
                     cmetricnames = []
@@ -735,6 +745,9 @@ class TileBase(QWorker):
     def handle_text_select(self, selected_text):
         return
 
+    def handle_doc_change(self, doc_name):
+        return
+
     def handle_pipe_update(self, pipe_name):
         return
 
@@ -822,6 +835,19 @@ class TileBase(QWorker):
         result = self.post_and_wait(self.main_id, "get_document_data", {"document_name": document_name})
         self.restore_stdout()
         return result
+
+    def get_document_metadata(self, document_name):
+        self.save_stdout()
+        result = self.post_and_wait(self.main_id, "get_document_metadata", {"document_name": document_name})
+        self.restore_stdout()
+        return result
+
+    def set_document_metadata(self, document_name, metadata):
+        self.save_stdout()
+        self.post_task(self.main_id, "set_document_metadata", {"document_name": document_name,
+                                                                    "metadata": metadata})
+        self.restore_stdout()
+        return
 
     def get_document_data_as_list(self, document_name):
         self.save_stdout()
@@ -1162,11 +1188,13 @@ class TileBase(QWorker):
         self.data_dict[dataname] = data
         return dataname
 
-    def create_collection(self, name, doc_dict, doc_type="table"):
+    def create_collection(self, name, doc_dict, doc_type="table", doc_metadata=None):
         self.save_stdout()
         data = {"name": name,
                 "doc_dict": doc_dict,
                 "doc_type": doc_type}
+        if doc_metadata is not None:
+            data["doc_metadata"] = doc_metadata
         self.post_task(self.main_id, "create_collection", data)
         self.restore_stdout()
         return
