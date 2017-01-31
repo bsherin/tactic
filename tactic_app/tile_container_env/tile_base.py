@@ -261,6 +261,14 @@ class TileBase(QWorker):
         return None
 
     @task_worthy
+    def TileFormSubmit(self, data):
+        try:
+            self.handle_form_submit(data["form_data"], data["doc_name"], data["active_row_id"])
+        except Exception as ex:
+            self.handle_exception(ex)
+        return None
+
+    @task_worthy
     def TileTextAreaChange(self, data):
         self.handle_textarea_change(data["text_value"])
         return None
@@ -752,6 +760,9 @@ class TileBase(QWorker):
         return
 
     def handle_button_click(self, value, doc_name, active_row_id):
+        return
+
+    def handle_form_submit(self, form_data, doc_name, active_row_id):
         return
 
     def handle_textarea_change(self, value):

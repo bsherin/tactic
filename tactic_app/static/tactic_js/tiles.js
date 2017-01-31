@@ -486,6 +486,31 @@ class TileObject {
             postWithCallback(data["tile_id"], "TileButtonClick", data)
         });
 
+        $(full_frontal_selector).on('submit', 'form', function(e) {
+            const form_data = {};
+            let the_form = e.target;
+            let data = {};
+            const p = $(e.target).closest(".tile-panel")[0];
+            data["tile_id"] = $(p).data("my_tile_id");
+            for (let i = 0; i < the_form.length; i += 1) {
+                form_data[the_form[i]["name"]] = the_form[i]["value"]
+            }
+            data.main_id = main_id;
+            data.doc_name = tableObject.current_spec.doc_name;
+            if (DOC_TYPE == "table") {
+                data.active_row_index = tableObject.active_row;
+                data.active_row_id = tableObject.active_row_id;
+            }
+            else {
+                data.active_row_id = tableObject.active_line;
+            }
+            data["form_data"] = form_data;
+            postWithCallback(data["tile_id"], "TileFormSubmit", data);
+            return false
+
+        });
+
+
         $(full_frontal_selector).on('change', 'textarea', function(e) {
             const p = $(e.target).closest(".tile-panel")[0];
             const data = {};
