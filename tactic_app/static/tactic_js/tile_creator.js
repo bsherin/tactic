@@ -63,6 +63,7 @@ class CreatorViewer extends ModuleViewerAbstract {
             .then(function (data) {
                 $("#aux-area").html(data.api_html);
                 self.create_api_listeners();
+                self.resize_all_areas()
             })
             .catch(doFlash);
     }
@@ -77,7 +78,7 @@ class CreatorViewer extends ModuleViewerAbstract {
 
         if (this.is_mpl) {
             const drawplotcodearea = document.getElementById("drawplotcodearea");
-            this.myDPCodeMirror = createCMArea(drawplotcodearea, false, this.parsed_data.draw_plot_code, this.parsed_data.draw_plot_line_number + 1);
+            this.myDPCodeMirror = this.createCMArea(drawplotcodearea, false, this.parsed_data.draw_plot_code, this.parsed_data.draw_plot_line_number + 1);
             let dpba = $("#drawplotboundingarea");
             dpba.css("display", "block");
             this.savedDPCode = this.myDPCodeMirror.getDoc().getValue();
