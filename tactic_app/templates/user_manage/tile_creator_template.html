@@ -7,7 +7,7 @@ class {{class_name}}(TileBase{% if is_mpl %}, MplFigure{% endif %}):
         TileBase.__init__(self, main_id, tile_id, tile_name)
         self.save_attrs += self.exports
         {% for option in options -%}
-        self.{{option.name|e}} = {{option.default}}
+        self.{{option.name|e}} = {{option.default|safe}}
         {% endfor %}
         return
 
@@ -15,7 +15,7 @@ class {{class_name}}(TileBase{% if is_mpl %}, MplFigure{% endif %}):
     def options(self):
         return  [
         {% for option in options -%}
-        {"name": "{{option.name|e}}", "type": "{{option.type|e}}"{% if option.special_list %}, "special_list": {{option.special_list}}{% endif %}{% if option.tag %}, "tag":"{{option.tag|e}}"{% endif %}}{% if not loop.last %},{% endif %}
+        {"name": "{{option.name|e}}", "type": "{{option.type|e}}"{% if option.special_list %}, "special_list": {{option.special_list|safe}}{% endif %}{% if option.tag %}, "tag":"{{option.tag|safe}}"{% endif %}}{% if not loop.last %},{% endif %}
         {% endfor -%}
     ]
 {{extra_methods|safe -}}
