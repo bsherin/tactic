@@ -108,11 +108,13 @@ class HostWorker(QWorker):
         container_id = data["container_id"]
         return {"success": True, "log_text": cli.logs(container_id)}
 
+
     @task_worthy
     def get_full_collection_name(self, data):
-        short_name = data["name"]
-        the_user = load_user(data["user_id"])
-        return {"full_collection_name": the_user.build_data_collection_name(short_name)}
+        user_id = data["user_id"]
+        collection_name = data["collection_name"]
+        the_user = load_user(user_id)
+        return {"full_collection_name": the_user.build_data_collection_name(collection_name)}
 
     @task_worthy
     def get_lists_classes_functions(self, data):
@@ -225,13 +227,6 @@ class HostWorker(QWorker):
         list_name = data["list_name"]
         the_user = load_user(user_id)
         return {"the_list": the_user.get_list(list_name)}
-
-    @task_worthy
-    def get_full_collection_name(self, data):
-        user_id = data["user_id"]
-        collection_name = data["collection_name"]
-        the_user = load_user(user_id)
-        return {"full_collection_name": the_user.build_data_collection_name(collection_name)}
 
     @task_worthy
     def get_code_with_function(self, data):

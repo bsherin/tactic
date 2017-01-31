@@ -54,12 +54,15 @@ def direct_administer(password):
     return redirect(url_for("admin_interface"))
 
 
+# this isn't even close to working
 @app.route('/direct_project/<project_name>/<username>/<password>', methods=['GET', 'POST'])
 def direct_project(project_name, username, password):
     user = User.get_user_by_username(username)
     if user is not None and user.verify_password(password):
         login_user(user, remember=False)
-    return redirect(url_for("main_project", project_name=project_name))
+    data = {"project_name": project_name, "user_id": user.get_id(), "user_manage_id": 0};
+    host_worker.main_project(data)
+    return
 
 
 @app.route('/direct_collection/<collection_name>/<username>/<password>', methods=['GET', 'POST'])

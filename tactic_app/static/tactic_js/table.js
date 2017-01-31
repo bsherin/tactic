@@ -242,7 +242,9 @@ class TableObjectClass {
 
     build_table  (max_table_size) {
         const self = this;
-        initializeConsole();
+        if (consoleObject == null) {
+            consoleObject = new ConsoleObjectClass()
+        }
         const html_result = create_all_html(this.table_id, this.data_rows, this.current_spec.header_list, max_table_size, this.is_last_chunk);
         $("#" + this.table_id).html(html_result);
         for (let i = 0; i < hidden_columns_list.length; ++i) {
@@ -513,11 +515,11 @@ class TableObjectClass {
         $(".grid-right").width(usable_width * (1 - this.left_fraction));
 
         if ($("#table-area tbody").length > 0) {
-            $("#table-area tbody").height(window.innerHeight - $("#console-panel").outerHeight() - 30 - $("#table-area tbody").offset().top);
+            $("#table-area tbody").height(window.innerHeight - consoleObject.console_panel.outerHeight() - 30 - $("#table-area tbody").offset().top);
         }
 
         if ($("#tile-area").length > 0) {
-            $("#tile-area").height(window.innerHeight - $("#console-panel").outerHeight() - 30 - $("#tile-area").offset().top);
+            $("#tile-area").height(window.innerHeight - consoleObject.console_panel.outerHeight() - 30 - $("#tile-area").offset().top);
         }
         $("#main-panel").width(""); // We do this so that this will resize when the window is resized.
      }
@@ -664,49 +666,15 @@ class TableObjectClass {
      }
 
     consoleLog (data_object) {
-        const force_open = data_object.force_open;
-        $("#console").append(data_object.message_string);
-        if (force_open && !console_visible) {
-            expandConsole()
-        }
-        $("#console")[0].scrollTop = $("#console")[0].scrollHeight;
-        const child_array = $("#console").children();
-        const last_child = child_array[child_array.length - 1];
-        const scripts = $(last_child).find(".resize-rerun");
-        for (let i = 0; i < scripts.length; i = i+1) {
-            eval(scripts[i].innerHTML)
-        }
-     }
+        consoleObject.consoleLog(data_object);
+    }
 
     consoleCodeLog (data_object) {
-        const force_open = data_object.force_open;
-        let el = $("#" + data_object.console_id).parent().find(".log-code-output");
-        el.html(data_object.message_string);
-        if (force_open && !console_visible) {
-            expandConsole()
-        }
-        // $("#console")[0].scrollTop = $("#console")[0].scrollHeight;
-        // var child_array = $("#console").children();
-        // var last_child = child_array[child_array.length - 1];
-        const scripts = el.find(".resize-rerun");
-        for (let i = 0; i < scripts.length; i = i+1) {
-            eval(scripts[i].innerHTML)
-        }
-     }
+        consoleObject.consoleCodeLog(data_object)
+    }
 
     clearConsole () {
-        $(".log-panel-body").each(function () {
-            if ($(this).hasClass("console-code")) {
-
-                uid = $(this).attr("id");
-                let el = $("#" + uid).parent().find(".log-code-output");
-                el.html("")
-            }
-            else {
-                $($(this).closest(".log-panel")).remove()
-            }
-        });
-        $("#console")[0].scrollTop = $("#console")[0].scrollHeight
+        consoleObject.clearConsole()
      }
 
     dehighlightAllText () {
