@@ -5,6 +5,7 @@ import datetime
 from flask import render_template, request, jsonify
 from flask_login import login_required, current_user
 from tactic_app import app, db
+from tactic_app.tile_code_parser import get_functions_full_code, get_starting_lines
 from user_manage_views import tile_manager
 
 
@@ -62,18 +63,13 @@ def update_module():
         last_saved = data_dict["last_saved"]
         if last_saved == "viewer":
             module_code = data_dict["new_code"]
+            extra_methods_line_number = None
+            render_content_line_number = None
+            draw_plot_line_number = None
         else:
             module_code = build_code(data_dict)
-        start_stuff = re.findall(r"([\s\S]*?)def render_content", module_code)
-        if len(start_stuff) > 0:
-            render_content_line_number = start_stuff[0].count("\n") + 1
-        else:
-            render_content_line_number = 0
-        start_dp_stuff = re.findall(r"([\s\S]*?)def draw_plot", module_code)
-        if len(start_dp_stuff) > 0:
-            draw_plot_line_number = start_dp_stuff[0].count("\n") + 1
-        else:
-            draw_plot_line_number = 0
+            func_dict = get_functions_full_code(module_code)
+            (render_content_line_number, draw_plot_line_number, extra_methods_line_number) = get_starting_lines(module_code, func_dict)
         doc = db[current_user.tile_collection_name].find_one({"tile_module_name": module_name})
         if "metadata" in doc:
             mdata = doc["metadata"]
@@ -88,7 +84,8 @@ def update_module():
         tile_manager.update_selector_list()
         return jsonify({"success": True, "message": "Module Successfully Saved",
                         "alert_type": "alert-success", "render_content_line_number": render_content_line_number,
-                        "draw_plot_line_number": draw_plot_line_number})
+                        "draw_plot_line_number": draw_plot_line_number,
+                        "extra_methods_line_number": extra_methods_line_number})
     except:
         error_string = "Error saving module " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})

@@ -20,7 +20,6 @@ class ModuleViewerAbstract extends ResourceViewer {
 
         this.create_api();
         this.create_keymap()
-
     }
 
     create_api() {
@@ -36,8 +35,9 @@ class ModuleViewerAbstract extends ResourceViewer {
                     self.api_list.push(entry["name"])
                 }
             }
-
+            //noinspection JSUnresolvedVariable
             CodeMirror.commands.autocomplete = function (cm) {
+                //noinspection JSUnresolvedFunction
                 cm.showHint({
                     hint: CodeMirror.hint.anyword, api_list: self.api_list,
                     extra_autocomplete_list: self.extra_autocomplete_list
@@ -137,112 +137,103 @@ class ModuleViewerAbstract extends ResourceViewer {
         return cmobject
     }
 
-    doSave(update_success) {
-        const new_code = this.myCodeMirror.getDoc().getValue();
-        const tags = $("#tags").val();
-        const notes = $("#notes").val();
-        let result_dict;
-        let category;
+    doSavePromise() {
+        self = this;
+        return new Promise (function (resolve, reject) {
+            const new_code = self.myCodeMirror.getDoc().getValue();
+            const tags = $("#tags").val();
+            const notes = $("#notes").val();
+            let result_dict;
+            let category;
 
-        if (this.this_viewer == "viewer") {
-            category = null;
-            result_dict = {
-                "module_name": this.resource_name,
-                "category": category,
-                "tags": tags,
-                "notes": notes,
-                "new_code": new_code,
-                "last_saved": this.this_viewer
-            };
-        }
-        else {
-            category = $("#category").val();
-            if (category.length == 0) {
-                category = "basic"
+            if (self.this_viewer == "viewer") {
+                category = null;
+                result_dict = {
+                    "module_name": self.resource_name,
+                    "category": category,
+                    "tags": tags,
+                    "notes": notes,
+                    "new_code": new_code,
+                    "last_saved": self.this_viewer
+                };
             }
-            let new_dp_code = "";
-            if (this.is_mpl) {
-                new_dp_code = this.myDPCodeMirror.getDoc().getValue();
+            else {
+                category = $("#category").val();
+                if (category.length == 0) {
+                    category = "basic"
+                }
+                let new_dp_code = "";
+                if (self.is_mpl) {
+                    new_dp_code = self.myDPCodeMirror.getDoc().getValue();
+                }
+                result_dict = {
+                    "module_name": self.resource_name,
+                    "category": category,
+                    "tags": tags,
+                    "notes": notes,
+                    "exports": self.exportManager.export_list,
+                    "options": self.optionManager.option_dict,
+                    "extra_methods": self.methodManager.get_extra_functions(),
+                    "render_content_body": new_code,
+                    "is_mpl": self.is_mpl,
+                    "draw_plot_body": new_dp_code,
+                    "last_saved": self.this_viewer
+                };
             }
-            result_dict = {
-                "module_name": this.resource_name,
-                "category": category,
-                "tags": tags,
-                "notes": notes,
-                "exports": this.exportManager.export_list,
-                "options": this.optionManager.option_dict,
-                "extra_methods": this.methodManager.get_extra_functions(),
-                "render_content_body": new_code,
-                "is_mpl": this.is_mpl,
-                "draw_plot_body": new_dp_code,
-                "last_saved": this.this_viewer
-            };
-        }
 
-        postAjax("update_module", result_dict, success_func);
-        function success_func(data) {
-            update_success(data, new_code, tags, notes, category)
+            postAjax("update_module", result_dict, function (data) {
+                if (data.success) {
+                    self.save_success(data, new_code, tags, notes, category);
+                    resolve(data)
+                }
+                else {
+                    reject(data)
+                }
+            });
+        })
+    }
+
+    save_success(data, new_code, tags, notes, category) {
+        self = this;
+        if ((self.this_viewer == "creator") && (data.render_content_line_number != 0)) {
+            self.myCodeMirror.setOption("firstLineNumber", data.render_content_line_number + 1);
+            self.myCodeMirror.refresh()
+        }
+        if ((self.this_viewer == "creator") && (data.extra_methods_line_number != 0)) {
+            self.methodManager.extra_methods_line_number = data.extra_methods_line_number;
+            self.methodManager.cmobject.setOption("firstLineNumber", data.extra_methods_line_number);
+            self.methodManager.cmobject.refresh()
+        }
+        if ((self.this_viewer == "creator") && (self.is_mpl) && (data.draw_plot_line_number != 0)) {
+            self.myDPCodeMirror.setOption("firstLineNumber", data.draw_plot_line_number + 1);
+            self.myDPCodeMirror.refresh();
+        }
+        self.savedContent = new_code;
+        self.savedTags = tags;
+        self.savedNotes = notes;
+        data.timeout = 2000;
+        if (self.this_viewer == "creator") {
+            self.savedCategory = category;
+            if (self.is_mpl) {
+                self.savedDPCode = self.myDPCodeMirror.getDoc().getValue();
+            }
         }
     }
 
     saveMe() {
-        this.doSave(update_success);
-        let self = this;
-        function update_success(data, new_code, tags, notes, category) {
-            if ((self.this_viewer == "creator") && (data.render_content_line_number != 0)) {
-                self.myCodeMirror.setOption("firstLineNumber", data.render_content_line_number + 1);
-                self.myCodeMirror.refresh()
-            }
-            if ((self.this_viewer == "creator") && (self.is_mpl) && (data.draw_plot_line_number != 0)) {
-                self.myDPCodeMirror.setOption("firstLineNumber", data.draw_plot_line_number + 1);
-                self.myDPCodeMirror.refresh()
-            }
-
-            if (data.success) {
-                self.savedContent = new_code;
-                self.savedTags = tags;
-                self.savedNotes = notes;
-                data.timeout = 2000;
-                if (self.this_viewer == "creator") {
-                    self.savedCategory = category;
-                    if (self.is_mpl) {
-                        savedDPCode = self.myDPCodeMirror.getDoc().getValue();
-                    }
-                }
-            }
-            doFlash(data)
-        }
+        this.doSavePromise()
+            .then(doFlash)
+            .catch(doFlash)
+        return false
     }
 
     loadModule() {
-        this.doSave(save_success);
         let self = this;
-        function save_success(data, new_code, tags, notes, category) {
-            if ((self.this_viewer == "creator") && (data.render_content_line_number != 0)) {
-                self.myCodeMirror.setOption("firstLineNumber", data.render_content_line_number + 1);
-                self.myCodeMirror.refresh()
-            }
-            if ((self.this_viewer == "creator") && (self.is_mpl) && (data.draw_plot_line_number != 0)) {
-                self.myDPCodeMirror.setOption("firstLineNumber", data.draw_plot_line_number + 1);
-                self.myDPCodeMirror.refresh();
-            }
-            if (data.success) {
-                self.savedContent = new_code;
-                self.savedTags = tags;
-                self.savedNotes = notes;
-                data.timeout = 2000;
-                if (self.this_viewer == "creator") {
-                    self.savedCategory = category;
-                    if (self.is_mpl) {
-                        self.savedDPCode = self.myDPCodeMirror.getDoc().getValue();
-                    }
-                }
+        this.doSavePromise()
+            .then(function () {
                 $.getJSON($SCRIPT_ROOT + '/load_tile_module/' + String(self.resource_name), load_success)
-            }
-            else {
-                doFlash(data)
-            }
-        }
+            })
+            .catch(doFlash);
 
         function load_success(data) {
             if (data.success) {
