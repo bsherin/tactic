@@ -111,6 +111,8 @@ class CreatorViewer extends ModuleViewerAbstract {
             self.resource_managers["export_module"] = new ExportManager("export_module", "export", resource_module_template, "#export-module-holder", {"viewer": self});
             self.resource_managers["method_module"] = new MethodManager("method_module", "method", resource_module_template, "#method-module-holder", {"viewer": self});
 
+
+
             $(".resource-module").on("click", ".main-content .selector-button", {"viewer": self}, self.selector_click);
             $("#export-create-button").on("click", {"manager": self.resource_managers["export_module"]}, self.resource_managers["export_module"].createNewExport);
             $("#option-create-button").on("click", {"manager": self.resource_managers["option_module"]}, self.resource_managers["option_module"].createNewOption);
@@ -383,14 +385,16 @@ class MethodManager extends CreatorResourceManager {
     set_extra_properties() {
         super.set_extra_properties();
         this.extra_functions = this.viewer.parsed_data.extra_functions;
+        this.extra_methods_line_number = this.viewer.parsed_data.extra_methods_line_number;
         this.data_attr = "extra_functions";
         this.include_button_well = false;
     }
 
     update_main_content() {
-        this.cmobject = this.viewer.createCMArea(this.get_main_content_dom()[0], false);
+        this.cmobject = this.viewer.createCMArea(this.get_main_content_dom()[0], false, null, this.extra_methods_line_number);
         this.get_main_content_dom().find(".CodeMirror").resizable({handles: "se"});
         this.get_main_content_dom().find(".CodeMirror").height(100);
+        this.get_main_content_dom().width("100%")
         this.fill_content();
     }
 

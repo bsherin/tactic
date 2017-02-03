@@ -1,4 +1,5 @@
 import re
+from collections import OrderedDict
 
 # Python identifiers start with a letter or _,
 #and continue with these or digits.
@@ -100,7 +101,7 @@ def remove_trailing_spaces(the_str):
 # This function returns a dictionary where the keys are function names and the values are the full function code
 def get_functions_full_code(code):
     matches = def_fc.findall(code)
-    func_dict = {}
+    func_dict = OrderedDict()
     for tup in matches:
         func_dict[tup[1]] = remove_trailing_spaces(tup[0])
     return func_dict

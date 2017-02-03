@@ -85,12 +85,16 @@ def parse_code(module_name):
     else:
         draw_plot_code = ""
 
+    for func_name in func_dict.keys():
+        if func_name not in ["__init__", "render_content", "options"]:
+            first_func = func_name
+            break
     extra_functions = ""
     for func_name, func_code in func_dict.items():
         if func_name not in ["__init__", "render_content", "options"]:
             if is_mpl and func_name == "draw_plot":
                 continue
-            if len(extra_functions) != 0 and extra_functions[-1] != "\n":
+            if len(extra_functions) != 0 and extra_functions[-1] != "\n" and func_name != first_func:
                 extra_functions += "\n"
             extra_functions += func_code
 
@@ -107,6 +111,17 @@ def parse_code(module_name):
     else:
         draw_plot_line_number = 0
 
+    for func_name in func_dict.keys():
+        if func_name not in ["__init__", "render_content", "options"]:
+            first_func = func_name
+            break;
+
+    start_extra_methods_stuff = re.findall(r"([\s\S]*?)def {}".format(first_func), module_code)
+    if len(start_extra_methods_stuff) > 0:
+        extra_methods_line_number = start_extra_methods_stuff[0].count("\n") + 1
+    else:
+        extra_methods_line_number = 0
+
     parsed_data = {"option_dict": option_dict, "export_list": export_list,
                     "render_content_code": render_content_code,
                     "extra_functions": extra_functions,
@@ -115,7 +130,8 @@ def parse_code(module_name):
                     "is_mpl": is_mpl,
                     "draw_plot_code": draw_plot_code,
                     "render_content_line_number": render_content_line_number,
-                    "draw_plot_line_number": draw_plot_line_number}
+                    "draw_plot_line_number": draw_plot_line_number,
+                   "extra_methods_line_number": extra_methods_line_number}
 
     return jsonify({"success": True, "the_content": parsed_data})
 
