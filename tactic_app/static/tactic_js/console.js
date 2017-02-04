@@ -18,6 +18,9 @@ class ConsoleObjectClass {
             forceHelperSize: true
         });
         this.add_listeners();
+        this.console_panel.width();
+        this.update_width(.5);
+
     }
 
     get console_panel () {
@@ -30,6 +33,12 @@ class ConsoleObjectClass {
 
     get console_dom () {
         return $("#console")
+    }
+
+    update_width(new_width_fraction) {
+        const usable_width = window.innerWidth - 2 * MARGIN_SIZE - 30;
+        this.console_panel.width(usable_width * new_width)
+
     }
 
     add_listeners () {
@@ -67,7 +76,8 @@ class ConsoleObjectClass {
             pan.find(".triangle-bottom").hide();
             pan.find(".triangle-right").show();
             tableObject.resize_table_area();
-            this.console_visible = false
+            this.console_visible = false;
+            exportViewerObject.turn_of_horizontal_resize();
         });
     }
 
@@ -77,7 +87,8 @@ class ConsoleObjectClass {
         pan.find(".triangle-right").hide();
         pan.find(".triangle-bottom").show();
         this.console_dom.fadeIn();
-        this.console_dom.outerHeight(pan.innerHeight()- this.console_heading.outerHeight());
+        this.console_dom.outerHeight(pan.innerHeight() - this.console_heading.outerHeight());
+        exportViewerObject.update_height(pan.innerHeight());
         this.console_visible = true;
         tableObject.resize_table_area();
         self = this;
@@ -86,9 +97,12 @@ class ConsoleObjectClass {
                 resize: function (event, ui) {
                     ui.position.top = 0;
                     tableObject.resize_table_area();
-                    self.console_dom.outerHeight(ui.size.height- self.console_heading.outerHeight())
+
+                    self.console_dom.outerHeight(ui.size.height - self.console_heading.outerHeight());
+                    exportViewerObject.update_height(ui.size.height)
                 }
             });
+        exportViewerObject.turn_on_horizontal_resize();
         for (let uid in this.consoleCMObjects) {
             if (!this.consoleCMObjects.hasOwnProperty(uid)) continue;
             this.consoleCMObjects[uid].refresh()

@@ -1053,6 +1053,51 @@ class mainWindow(QWorker):
         self.post_task(self.pseudo_tile_id, "exec_console_code", data, self.got_console_result)
         return {"success": True}
 
+    @task_worthy
+    def get_exports_list_html(self, data):
+        the_html = ""
+        for pname in self._pipe_dict.keys():
+            the_html += "<option>{}</option>\n".format(pname)
+            return {"success": True, "the_html": the_html}
+
+    def get_pipe_value(self, pipe_key):
+        for (tile_id, tile_entry) in self._pipe_dict.items():
+            if pipe_key in tile_entry:
+                result = self.post_and_wait(tile_entry[pipe_key]["tile_id"],
+                                            "transfer_pipe_value", {"export_name": tile_entry[pipe_key]["export_name"]},
+                                            timeout=60,
+                                            tries=RETRIES)
+                encoded_val = result["encoded_val"]
+                val = cPickle.loads(encoded_val.decode("utf-8", "ignore").encode("ascii"))
+                return val
+        return None
+
+    @task_worthy
+    def get_export_info(self, data):
+        ename = data["export_name"]
+        pipe_value = self.get_pipe_value(ename)
+        result = {"success": True}
+        if type(pipe_value) is dict:
+            result["type"] = "dict"
+            result["info_string"] = "dict with {} keys".format(str(len(pipe_value.keys())))
+            keys_html = ""
+            for kname in self.pipe_value.keys():
+                keys_html += "<option>{}</option>\n".format(kname)
+            result["keys_html"] = keys_html
+        elif type(pipe_value) is list:
+            result["type"] = "list"
+            result["info_string"] = "list with {} elements".format(str(len(pipe_value)))
+        elif type(pipe_value) is set:
+            result["type"] = "set"
+            result["info_string"] = "set with {} elements".format(str(len(pipe_value)))
+        elif type(pipe_value) is str:
+            result["type"] = "string"
+            result["info_string"] = "string with {} elements".format(str(len(pipe_value)))
+        else:
+            result["type"] = type(pipe_value)
+            result["info_string"] = str(type(pipe_value))
+        return result
+
     def create_pseudo_tile(self):
         data = self.post_and_wait("host", "create_tile_container", {"user_id": self.user_id})
         self.pseudo_tile_id = data["tile_id"]

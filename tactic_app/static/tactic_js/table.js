@@ -245,6 +245,9 @@ class TableObjectClass {
         if (consoleObject == null) {
             consoleObject = new ConsoleObjectClass()
         }
+        if (exportViewerObject == null) {
+            exportViewerObject = new exportViewerObjectClass()
+        }
         const html_result = create_all_html(this.table_id, this.data_rows, this.current_spec.header_list, max_table_size, this.is_last_chunk);
         $("#" + this.table_id).html(html_result);
         for (let i = 0; i < hidden_columns_list.length; ++i) {

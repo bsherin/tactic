@@ -88,7 +88,7 @@
             </div>
         </div>
         <div id="grid-bottom" style="display:block">
-            <div id="console-panel" class="panel panel-default" style="display:inline-block; vertical-align:top; width:47%">
+            <div id="console-panel" class="panel panel-default" style="display:inline-block; vertical-align:top">
                 <div id="console-heading" class="panel-heading">
                     <button type='button' id="show-console-button" data-toggle="tooltip" class='notclose triangle-right tooltip-top'><span style="font-size:12px" class="glyphicon glyphicon-triangle-right"></span></button>
                     <button type='button' id="hide-console-button" data-toggle="tooltip" class='notclose triangle-bottom tooltip-top' ><span style="font-size:12px" class="glyphicon glyphicon-triangle-bottom"></span></button>
@@ -100,13 +100,13 @@
                 </div>
                 <div id="console" class="panel-body">{{ console_html | safe }}</div>
             </div>
-            <div id="exports-panel" class="panel panel-default" style="display:inline-block; vertical-align:top; width:47%">
+            <div id="exports-panel" class="panel panel-default" style="display:inline-block; vertical-align:top">
                 <div id="exports-heading" class="panel-heading">
                     <button type='button' id="exports-show-button" class='notclose'> Show </button>
-                     <form class="form-inline" style="display:inline">
+                     <form class="form-inline" style="display:inline-block">
                             <select id="exports-popup" class="form-control input-sm" style="font-size:12px">
                             </select>
-                           <select id="keys-popup" class="form-control input-sm">
+                           <select id="keys-popup" class="form-control input-sm" style="display:none">
                             </select>
                             <input type="text" id="exports-tail" class="form-control input-sm" size="8">
                      </form>
