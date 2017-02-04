@@ -31,8 +31,18 @@ class exportViewerObjectClass {
     update_exports_popup() {
         let self = this;
         postWithCallback(main_id, "get_exports_list_html", {}, function (data) {
-            self.populate_exports(data.the_html)
+            self.populate_exports(data.the_html);
+            self.set_exports_popup(self.current_export);
+            new_export = self.exports_popup.val();
+            if (new_export != self.current_export) {
+                self.set_new_export(new_export)
+            }
+
         })
+    }
+
+    set_exports_popup (the_val) {
+        this.exports_popup.val(the_val)
     }
 
     populate_exports(new_html) {
