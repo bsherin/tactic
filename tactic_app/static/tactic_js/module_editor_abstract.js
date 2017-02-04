@@ -194,7 +194,7 @@ class ModuleViewerAbstract extends ResourceViewer {
     }
 
     save_success(data, new_code, tags, notes, category) {
-        self = this;
+        let self = this;
         if ((self.this_viewer == "creator") && (data.render_content_line_number != 0)) {
             self.myCodeMirror.setOption("firstLineNumber", data.render_content_line_number + 1);
             self.myCodeMirror.refresh()
@@ -223,7 +223,7 @@ class ModuleViewerAbstract extends ResourceViewer {
     saveMe() {
         this.doSavePromise()
             .then(doFlash)
-            .catch(doFlash)
+            .catch(doFlash);
         return false
     }
 

@@ -87,7 +87,8 @@
                 </div>
             </div>
         </div>
-        <div id="console-panel" class="panel panel-default" style="display:block">
+        <div id="grid-bottom" style="display:block">
+            <div id="console-panel" class="panel panel-default" style="display:inline-block; vertical-align:top; width:47%">
                 <div id="console-heading" class="panel-heading">
                     <button type='button' id="show-console-button" data-toggle="tooltip" class='notclose triangle-right tooltip-top'><span style="font-size:12px" class="glyphicon glyphicon-triangle-right"></span></button>
                     <button type='button' id="hide-console-button" data-toggle="tooltip" class='notclose triangle-bottom tooltip-top' ><span style="font-size:12px" class="glyphicon glyphicon-triangle-bottom"></span></button>
@@ -96,9 +97,31 @@
                     <button type='button' id="add-blank-code-button" data-toggle="tooltip" class='notclose tooltip-top'> +code </button>
                     <button type='button' id="add-blank-text-button" data-toggle="tooltip" class='notclose tooltip-top'> +text </button>
                     <button type='button' id="clear-console-button" data-toggle="tooltip" class='notclose tooltip-top' style="float:right"><span style="font-size:12px" class="glyphicon glyphicon-trash"></span></button>
-
                 </div>
-              <div id="console" class="panel-body">{{ console_html | safe }}</div>
+                <div id="console" class="panel-body">{{ console_html | safe }}</div>
+            </div>
+            <div id="exports-panel" class="panel panel-default" style="display:inline-block; vertical-align:top; width:47%">
+                <div id="exports-heading" class="panel-heading">
+                    <button type='button' id="exports-show-button" class='notclose'> Show </button>
+                     <form class="form-inline" style="display:inline">
+                          <span class="form-group">
+                            <label for="exports-popup" class="hidden-sm hidden-xs">Pipe: </label>
+                            <select id="exports-popup" class="form-control" style="font-size:12px">
+                            </select>
+                          </span>
+                          <span class="form-group">
+                              <label for="keys-popup" class="hidden-sm hidden-xs">Key: </label>
+                              <select id="keys-popup" class="form-control">
+                                </select>
+                          </span>
+                         <span class="form-group">
+                            <label for="exports-tail" class="hidden-sm hidden-xs">Tale: </label>
+                            <input type="text" id="exports-tail" class="form-control" size="8">
+                         </span>
+                     </form>
+                    <span id="exports-info" style="font-size:12px"></span>
+                </div>
+            </div>
         </div>
 </div>
 
