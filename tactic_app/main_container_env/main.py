@@ -1056,9 +1056,12 @@ class mainWindow(QWorker):
     @task_worthy
     def get_exports_list_html(self, data):
         the_html = ""
-        for pname in self._pipe_dict.keys():
-            the_html += "<option>{}</option>\n".format(pname)
-            return {"success": True, "the_html": the_html}
+        export_list = []
+        for (tile_id, tile_entry) in self._pipe_dict.items():
+            for pname in tile_entry.keys():
+                the_html += "<option>{}</option>\n".format(pname)
+                export_list.append(pname)
+        return {"success": True, "the_html": the_html, "export_list": export_list}
 
     def get_pipe_value(self, pipe_key):
         for (tile_id, tile_entry) in self._pipe_dict.items():
@@ -1070,19 +1073,42 @@ class mainWindow(QWorker):
                 encoded_val = result["encoded_val"]
                 val = cPickle.loads(encoded_val.decode("utf-8", "ignore").encode("ascii"))
                 return val
-        return None
+        return "__none__"
+
+    @task_worthy
+    def evaluate_export(self, data):
+        pipe_val = self.get_pipe_value(data["export_name"])
+        if pipe_val == "__none__":
+            success = False
+            the_html = "pipe not found"
+        else:
+            ev_string = "pipe_val"
+            if "key" in data:
+                ev_string += "[{}]".format(data["key"])
+            ev_string += data["tail"]
+            try:
+                success = True
+                the_html = str(eval(ev_string))
+            except:
+                succcess = False
+                the_html = "error evaluating"
+        return {"success": success, "the_html": the_html}
 
     @task_worthy
     def get_export_info(self, data):
         ename = data["export_name"]
         pipe_value = self.get_pipe_value(ename)
         result = {"success": True}
-        if type(pipe_value) is dict:
+        if pipe_value == "__none__":
+            result["type"] = "none"
+            result["info_string"] = "not set"
+        elif type(pipe_value) is dict:
             result["type"] = "dict"
             result["info_string"] = "dict with {} keys".format(str(len(pipe_value.keys())))
             keys_html = ""
             for kname in self.pipe_value.keys():
                 keys_html += "<option>{}</option>\n".format(kname)
+            result["key_list"] = self.pipe_value.keys()
             result["keys_html"] = keys_html
         elif type(pipe_value) is list:
             result["type"] = "list"
@@ -1092,10 +1118,19 @@ class mainWindow(QWorker):
             result["info_string"] = "set with {} elements".format(str(len(pipe_value)))
         elif type(pipe_value) is str:
             result["type"] = "string"
-            result["info_string"] = "string with {} elements".format(str(len(pipe_value)))
+            result["info_string"] = "string with {} characters".format(str(len(pipe_value)))
         else:
-            result["type"] = type(pipe_value)
-            result["info_string"] = str(type(pipe_value))
+            findtype = re.findall("(?:type|class) \'(.*?)\'", str(type(pipe_value)))
+            if len(findtype) > 0:
+                result["type"] = findtype[0]
+            else:
+                result["type"] = "no type"
+            try:
+                l = len(pipe_value)
+                result["info_string"] = "{} of length {}".format(result["type"], l)
+            except:
+                result["info_string"] = result["type"]
+
         return result
 
     def create_pseudo_tile(self):

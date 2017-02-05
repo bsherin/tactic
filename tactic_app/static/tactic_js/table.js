@@ -518,11 +518,11 @@ class TableObjectClass {
         $(".grid-right").width(usable_width * (1 - this.left_fraction));
 
         if ($("#table-area tbody").length > 0) {
-            $("#table-area tbody").height(window.innerHeight - consoleObject.console_panel.outerHeight() - 30 - $("#table-area tbody").offset().top);
+            $("#table-area tbody").height(window.innerHeight - $("#grid-bottom").outerHeight() - 30 - $("#table-area tbody").offset().top);
         }
 
         if ($("#tile-area").length > 0) {
-            $("#tile-area").height(window.innerHeight - consoleObject.console_panel.outerHeight() - 30 - $("#tile-area").offset().top);
+            $("#tile-area").height(window.innerHeight - $("#grid-bottom").outerHeight() - 30 - $("#tile-area").offset().top);
         }
         $("#main-panel").width(""); // We do this so that this will resize when the window is resized.
      }

@@ -108,10 +108,11 @@
                             </select>
                            <select id="keys-popup" class="form-control input-sm" style="display:none">
                             </select>
-                            <input type="text" id="exports-tail" class="form-control input-sm" size="8">
+                            <input type="text" id="exports-tail" class="form-control input-sm">
                      </form>
                     <span id="exports-info" style="font-size:12px"></span>
                 </div>
+                <div id="exports-body" class="panel-body" style="display: none"></div>
             </div>
         </div>
 </div>
@@ -128,6 +129,7 @@
     <script src="{{url_for('static', filename='tactic_js/d3figures.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/tiles.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/console.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/export_viewer.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/main.js')}}"></script>
     {% if is_table %}
         <script src="{{url_for('static', filename='tactic_js/table.js')}}"></script>
@@ -147,7 +149,9 @@
     var new_tile_info = "{{new_tile_info | safe}}";
     window.onload = start_post_load;
     window.onresize = function () {
-        tableObject.resize_table_area()
+        tableObject.resize_table_area();
+        consoleObject.resize_to_window();
+        exportViewerObject.resize_to_window()
     };
     window.onbeforeunload = function(e) {
         if (dirty) {
