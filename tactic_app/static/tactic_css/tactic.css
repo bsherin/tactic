@@ -7,7 +7,7 @@
 /* console related */
 /* resource management and table related */
 /* accordion api related parameters */
-#api-area, #aux-area{
+#api-area, #aux-area {
   border: none; }
 
 .bootstrap-border {
@@ -260,6 +260,9 @@ td.cell-clickable:active {
   background-color: #1b6d85 !important; }
 
 /* console */
+.bottom-heading-element {
+  height: 30px !important; }
+
 #console {
   text-align: left;
   font-size: 14px;
@@ -268,7 +271,7 @@ td.cell-clickable:active {
 
 #console-panel {
   margin-left: 5px;
-  margin-right: 5px;
+  margin-right: 0px;
   border: 1px solid #c7c7c7 !important; }
 
 #console-heading {

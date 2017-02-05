@@ -1106,9 +1106,9 @@ class mainWindow(QWorker):
             result["type"] = "dict"
             result["info_string"] = "dict with {} keys".format(str(len(pipe_value.keys())))
             keys_html = ""
-            for kname in self.pipe_value.keys():
+            for kname in pipe_value.keys():
                 keys_html += "<option>{}</option>\n".format(kname)
-            result["key_list"] = self.pipe_value.keys()
+            result["key_list"] = pipe_value.keys()
             result["keys_html"] = keys_html
         elif type(pipe_value) is list:
             result["type"] = "list"

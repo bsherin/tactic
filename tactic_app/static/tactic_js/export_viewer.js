@@ -67,7 +67,7 @@ class exportViewerObjectClass {
     }
 
     get exports_keys () {
-        return $("#exports-keys");
+        return $("#keys-popup");
     }
 
     populate_keys(new_html) {
@@ -112,6 +112,12 @@ class exportViewerObjectClass {
         this.exports_show_button.click(function ()  {
             self.show_value()
         })
+        this.exports_tail.keypress(function(e) {
+            if (e.which == 13) {
+                self.show_value();
+                e.preventDefault();
+            }
+        });
 
     }
 
