@@ -56,11 +56,11 @@
     </script>
     <script src="{{url_for('static', filename='js/alertify.js')}}"></script>
     <script src="{{url_for('static', filename='js/socket.io.js')}}"></script>
-    <script src="static/js/jquery.js"></script>
-    <script src="static/js/jquery-ui.min.js"></script>
-    <script src="static/js/jquery.ui.touch-punch.min.js"></script>
-    <script src="static/js/bootstrap.min.js"></script>
-    <script src="static/js/mustache.js"></script>
+    <script src="{{url_for('static', filename='js/jquery.js')}}"></script>
+    <script src="{{url_for('static', filename='js/jquery-ui.min.js')}}"></script>
+    <script src="{{url_for('static', filename='js/jquery.ui.touch-punch.min.js')}}"></script>
+    <script src="{{url_for('static', filename='js/bootstrap.min.js')}}"></script>
+    <script src="{{url_for('static', filename='js/mustache.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/utilities.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/communication.js')}}"></script>
     {% if uses_codemirror == "True" %}

@@ -87,18 +87,34 @@
                 </div>
             </div>
         </div>
-        <div id="console-panel" class="panel panel-default" style="display:block">
+        <div id="grid-bottom" style="display:block">
+            <div id="console-panel" class="panel panel-default" style="display:inline-block; vertical-align:top">
                 <div id="console-heading" class="panel-heading">
-                    <button type='button' id="show-console-button" data-toggle="tooltip" class='notclose triangle-right tooltip-top'><span style="font-size:12px" class="glyphicon glyphicon-triangle-right"></span></button>
-                    <button type='button' id="hide-console-button" data-toggle="tooltip" class='notclose triangle-bottom tooltip-top' ><span style="font-size:12px" class="glyphicon glyphicon-triangle-bottom"></span></button>
-                    <button type='button' id="open-log-button" data-toggle="tooltip" class='notclose tooltip-top'><span style="font-size:12px" class="glyphicon glyphicon-open"></span></button>
+                    <button type='button' id="show-console-button" data-toggle="tooltip" class='notclose triangle-right bottom-heading-element tooltip-top'><span style="font-size:12px" class="glyphicon glyphicon-triangle-right"></span></button>
+                    <button type='button' id="hide-console-button" data-toggle="tooltip" class='notclose triangle-bottom bottom-heading-element tooltip-top' ><span style="font-size:12px" class="glyphicon glyphicon-triangle-bottom"></span></button>
+                    <button type='button' id="open-log-button" data-toggle="tooltip" class='notclose tooltip-top bottom-heading-element'><span style="font-size:12px" class="glyphicon glyphicon-open"></span></button>
                     Log
-                    <button type='button' id="add-blank-code-button" data-toggle="tooltip" class='notclose tooltip-top'> +code </button>
-                    <button type='button' id="add-blank-text-button" data-toggle="tooltip" class='notclose tooltip-top'> +text </button>
-                    <button type='button' id="clear-console-button" data-toggle="tooltip" class='notclose tooltip-top' style="float:right"><span style="font-size:12px" class="glyphicon glyphicon-trash"></span></button>
-
+                    <button type='button' id="add-blank-code-button" data-toggle="tooltip" class='notclose tooltip-top bottom-heading-element'> +code </button>
+                    <button type='button' id="add-blank-text-button" data-toggle="tooltip" class='notclose tooltip-top bottom-heading-element'> +text </button>
+                    <button type='button' id="clear-console-button" data-toggle="tooltip" class='notclose tooltip-top bottom-heading-element' style="float:right"><span style="font-size:12px" class="glyphicon glyphicon-trash"></span></button>
                 </div>
-              <div id="console" class="panel-body">{{ console_html | safe }}</div>
+                <div id="console" class="panel-body">{{ console_html | safe }}</div>
+            </div>
+            <div id="exports-panel" class="panel panel-default" style="display:inline-block; vertical-align:top">
+                <div id="exports-heading" class="panel-heading" style="padding-top:2px; padding-bottom:2px">
+                    <button type='button' id="exports-refresh-button" data-toggle="tooltip" class='notclose bottom-heading-element'><span style="font-size:12px" class="glyphicon glyphicon-repeat"></span></button>
+                    <button type='button' id="exports-show-button" class='notclose bottom-heading-element'> Eval </button>
+                     <form class="form-inline" style="display:inline-block">
+                            <select id="exports-popup" class="form-control input-sm bottom-heading-element" style="font-size:11px">
+                            </select>
+                           <select id="keys-popup" class="form-control input-sm bottom-heading-element" style="display:none; font-size:11px">
+                            </select>
+                            <input type="text" id="exports-tail" class="form-control input-sm bottom-heading-element">
+                     </form>
+                    <span id="exports-info" class="bottom-heading-element"></span>
+                </div>
+                <div id="exports-body" class="panel-body" style="display: none; overflow-y:scroll"></div>
+            </div>
         </div>
 </div>
 
@@ -114,6 +130,7 @@
     <script src="{{url_for('static', filename='tactic_js/d3figures.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/tiles.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/console.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/export_viewer.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/main.js')}}"></script>
     {% if is_table %}
         <script src="{{url_for('static', filename='tactic_js/table.js')}}"></script>
@@ -133,7 +150,9 @@
     var new_tile_info = "{{new_tile_info | safe}}";
     window.onload = start_post_load;
     window.onresize = function () {
-        tableObject.resize_table_area()
+        tableObject.resize_table_area();
+        consoleObject.resize_to_window();
+        exportViewerObject.resize_to_window()
     };
     window.onbeforeunload = function(e) {
         if (dirty) {

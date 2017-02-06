@@ -7,7 +7,7 @@ import tactic_app
 from tactic_app import app, db, socketio
 from tactic_app.global_tile_management import global_tile_manager
 from tactic_app.docker_functions import send_direct_request_to_container
-from tactic_app.tile_code_parser import get_functions_full_code, get_assignments_from_init, get_base_classes
+from tactic_app.tile_code_parser import get_functions_full_code, get_assignments_from_init, get_base_classes, get_starting_lines
 from tactic_app.integrated_docs import api_array, api_dict_by_category, api_dict_by_name, ordered_api_categories
 import re, sys, datetime
 
@@ -85,27 +85,23 @@ def parse_code(module_name):
     else:
         draw_plot_code = ""
 
+    for func_name in func_dict.keys():
+        if func_name not in ["__init__", "render_content", "options"]:
+            first_func = func_name
+            break
     extra_functions = ""
     for func_name, func_code in func_dict.items():
         if func_name not in ["__init__", "render_content", "options"]:
             if is_mpl and func_name == "draw_plot":
                 continue
-            if len(extra_functions) != 0 and extra_functions[-1] != "\n":
+            if len(extra_functions) != 0 and extra_functions[-1] != "\n" and func_name != first_func:
                 extra_functions += "\n"
             extra_functions += func_code
 
     extra_functions = remove_indents(extra_functions, 1)
-    start_stuff = re.findall(r"([\s\S]*?)def render_content", module_code)
-    if len(start_stuff) > 0:
-        render_content_line_number = start_stuff[0].count("\n") + 1
-    else:
-        render_content_line_number = 0
 
-    start_dp_stuff = re.findall(r"([\s\S]*?)def draw_plot", module_code)
-    if len(start_dp_stuff) > 0:
-        draw_plot_line_number = start_dp_stuff[0].count("\n") + 1
-    else:
-        draw_plot_line_number = 0
+    (render_content_line_number, draw_plot_line_number, extra_methods_line_number) = get_starting_lines(module_code,
+                                                                                                        func_dict)
 
     parsed_data = {"option_dict": option_dict, "export_list": export_list,
                     "render_content_code": render_content_code,
@@ -115,7 +111,8 @@ def parse_code(module_name):
                     "is_mpl": is_mpl,
                     "draw_plot_code": draw_plot_code,
                     "render_content_line_number": render_content_line_number,
-                    "draw_plot_line_number": draw_plot_line_number}
+                    "draw_plot_line_number": draw_plot_line_number,
+                    "extra_methods_line_number": extra_methods_line_number}
 
     return jsonify({"success": True, "the_content": parsed_data})
 

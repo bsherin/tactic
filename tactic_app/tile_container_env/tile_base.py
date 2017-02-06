@@ -1183,7 +1183,11 @@ class TileBase(QWorker):
     def transfer_pipe_value(self, data):
         self.save_stdout()
         export_name = data["export_name"]
-        encoded_val = Binary(cPickle.dumps(getattr(self, export_name)))
+        if hasattr(self, export_name):
+            res = getattr(self, export_name)
+        else:
+            res = "__none__"
+        encoded_val = Binary(cPickle.dumps(res))
         self.restore_stdout()
         return {"encoded_val": encoded_val}
 

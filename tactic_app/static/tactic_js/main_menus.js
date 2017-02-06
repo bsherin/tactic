@@ -429,6 +429,7 @@ function tile_command(menu_id) {
                                 const new_tile_object = new TileObject(tile_id, data.html, true, tile_name);
                                 tile_dict[tile_id] = new_tile_object;
                                 new_tile_object.spin_and_refresh();
+                                exportViewerObject.update_exports_popup();
                                 dirty = true;
                             })
                         }

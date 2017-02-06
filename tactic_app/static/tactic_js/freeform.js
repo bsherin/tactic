@@ -149,7 +149,12 @@ class TableObjectClass {
     build_table (max_table_size) {
         const self = this;
         this.active_line = null;
-        consoleObject = new ConsoleObjectClass();
+        if (consoleObject == null) {
+            consoleObject = new ConsoleObjectClass()
+        }
+        if (exportViewerObject == null) {
+            exportViewerObject = new exportViewerObjectClass()
+        }
         let html_result = create_all_html(this.data_text);
         myCodeMirror.setValue(html_result);
         this.old_content = html_result;
@@ -221,10 +226,10 @@ class TableObjectClass {
         }
         $(".grid-right").width(usable_width * (1 - this.left_fraction));
         if ($("#freeform-area .CodeMirror").length > 0) {
-            $("#freeform-area .CodeMirror").css('height', window.innerHeight - consoleObject.console_panel.outerHeight() - 30 - $("#freeform-area .CodeMirror").offset().top);
+            $("#freeform-area .CodeMirror").height(window.innerHeight - $("#grid-bottom").outerHeight() - 30 - $("#freeform-area .CodeMirror").offset().top);
         }
         if ($("#tile-area").length > 0) {
-            $("#tile-area").height(window.innerHeight - consoleObject.console_panel.outerHeight() - 30 - $("#tile-area").offset().top);
+            $("#tile-area").height(window.innerHeight - $("#grid-bottom").outerHeight() - 30 - $("#tile-area").offset().top);
         }
         $("#main-panel").width(""); // We do this so that this will resize when the window is resized.
         myCodeMirror.refresh()

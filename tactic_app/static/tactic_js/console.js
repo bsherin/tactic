@@ -6,7 +6,7 @@ class ConsoleObjectClass {
         const pan = this.console_panel;
         this.console_dom.fadeOut();
         const hheight = this.console_heading.outerHeight();
-        pan.outerHeight(hheight);
+        // pan.outerHeight(hheight);
         pan.find(".triangle-bottom").hide();
         pan.find(".triangle-right").show();
         this.console_visible = false;
@@ -18,6 +18,9 @@ class ConsoleObjectClass {
             forceHelperSize: true
         });
         this.add_listeners();
+        this.console_panel.width();
+        this.update_width(.5);
+
     }
 
     get console_panel () {
@@ -30,6 +33,16 @@ class ConsoleObjectClass {
 
     get console_dom () {
         return $("#console")
+    }
+
+    update_width(new_width_fraction) {
+        const usable_width = window.innerWidth - 2 * MARGIN_SIZE - 30;
+        this.current_width_fraction = new_width_fraction;
+        this.console_panel.width(usable_width * new_width_fraction)
+    }
+
+    resize_to_window() {
+        this.update_width(this.current_width_fraction)
     }
 
     add_listeners () {
@@ -57,43 +70,75 @@ class ConsoleObjectClass {
         this.console_dom.on("click", ".clear-code-button", {"cobject": this}, this.clearConsoleCode);
     }
 
-    shrinkConsole (){
-        const pan = this.console_panel;
-        this.saved_console_size = pan.outerHeight();
-        const hheight = $("#console-heading").outerHeight();
-        this.console_dom.fadeOut("fast", function () {
-            pan.outerHeight(hheight);
-            pan.resizable('destroy');
-            pan.find(".triangle-bottom").hide();
-            pan.find(".triangle-right").show();
-            tableObject.resize_table_area();
-            this.console_visible = false
+    update_height(hgt) {
+        this.console_dom.outerHeight(hgt - this.console_heading.outerHeight())
+    }
+
+    turn_on_resize () {
+        self = this;
+        this.console_panel.resizable({
+            handles: "e",
+            resize: function (event, ui) {
+                const usable_width = window.innerWidth - 2 * MARGIN_SIZE - 30;
+                let new_width_fraction = 1.0 * ui.size.width / usable_width;
+                // self.update_width(new_width_fraction)
+                ui.position.left = ui.originalPosition.left;
+                self.current_width_fraction = new_width_fraction;
+                exportViewerObject.update_width(1 - new_width_fraction)
+            }
         });
+
+        $("#grid-bottom").resizable({
+            handles: "n",
+            resize: function (event, ui) {
+                ui.position.top = 0;
+                tableObject.resize_table_area();
+                consoleObject.update_height(ui.size.height);
+                exportViewerObject.update_height(ui.size.height)
+            }
+        });
+
+    }
+
+    turn_off_resize() {
+        this.console_panel.resizable('destroy');
+        $("#grid-bottom").resizable('destroy')
+    }
+
+    update_grid_bottom_height() {
+        $("#grid-bottom").innerHeight(Math.max(exportViewerObject.exports_panel.outerHeight(), consoleObject.console_panel.outerHeight()))
+    }
+
+    shrinkConsole () {
+        const pan = this.console_panel;
+        this.saved_console_size = $("#grid-bottom").outerHeight();
+        exportViewerObject.exports_body.css("display", "none");
+        this.console_dom.css("display", "none");
+        pan.find(".triangle-bottom").hide();
+        pan.find(".triangle-right").show();
+        this.update_grid_bottom_height();
+        tableObject.resize_table_area();
+        this.console_visible = false;
+        this.turn_off_resize()
     }
 
     expandConsole(){
         const pan = this.console_panel;
-        pan.outerHeight(this.saved_console_size);
+        const gb = $("#grid-bottom");
+        gb.outerHeight(this.saved_console_size);
         pan.find(".triangle-right").hide();
         pan.find(".triangle-bottom").show();
+        exportViewerObject.exports_body.fadeIn();
         this.console_dom.fadeIn();
-        this.console_dom.outerHeight(pan.innerHeight()- this.console_heading.outerHeight());
+        consoleObject.update_height(gb.innerHeight());
+        exportViewerObject.update_height(gb.innerHeight());
         this.console_visible = true;
         tableObject.resize_table_area();
-        self = this;
-        pan.resizable({
-                handles: "n",
-                resize: function (event, ui) {
-                    ui.position.top = 0;
-                    tableObject.resize_table_area();
-                    self.console_dom.outerHeight(ui.size.height- self.console_heading.outerHeight())
-                }
-            });
+        this.turn_on_resize();
         for (let uid in this.consoleCMObjects) {
             if (!this.consoleCMObjects.hasOwnProperty(uid)) continue;
             this.consoleCMObjects[uid].refresh()
         }
-
     }
 
     closeLogItem(e) {

@@ -415,6 +415,10 @@ a[role="tab"] {
 
     /* console */
 
+    .bottom-heading-element {
+        height: 30px !important
+    }
+
     #console {
         text-align: left;
         font-size: 14px;
@@ -424,7 +428,7 @@ a[role="tab"] {
 
     #console-panel {
         margin-left: 5px;
-        margin-right: 5px;
+        margin-right: 0px;
         border: $console-panel-border-style !important;
     }
 

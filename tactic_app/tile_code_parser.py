@@ -1,4 +1,5 @@
 import re
+from collections import OrderedDict
 
 # Python identifiers start with a letter or _,
 #and continue with these or digits.
@@ -100,11 +101,33 @@ def remove_trailing_spaces(the_str):
 # This function returns a dictionary where the keys are function names and the values are the full function code
 def get_functions_full_code(code):
     matches = def_fc.findall(code)
-    func_dict = {}
+    func_dict = OrderedDict()
     for tup in matches:
         func_dict[tup[1]] = remove_trailing_spaces(tup[0])
     return func_dict
 
+def get_starting_lines(module_code, func_dict):
+    first_func = ""
+    for func_name in func_dict.keys():
+        if func_name not in ["__init__", "render_content", "options"]:
+            first_func = func_name
+            break
+    start_extra_methods_stuff = re.findall(r"([\s\S]*?)def {}".format(first_func), module_code)
+    if len(start_extra_methods_stuff) > 0:
+        extra_methods_line_number = start_extra_methods_stuff[0].count("\n") + 1
+    else:
+        extra_methods_line_number = 0
+    start_stuff = re.findall(r"([\s\S]*?)def render_content", module_code)
+    if len(start_stuff) > 0:
+        render_content_line_number = start_stuff[0].count("\n") + 1
+    else:
+        render_content_line_number = 0
+    start_dp_stuff = re.findall(r"([\s\S]*?)def draw_plot", module_code)
+    if len(start_dp_stuff) > 0:
+        draw_plot_line_number = start_dp_stuff[0].count("\n") + 1
+    else:
+        draw_plot_line_number = 0
+    return (render_content_line_number, draw_plot_line_number, extra_methods_line_number)
 
 def run_test(tstr):
     res = def_fc.findall(tstr)
