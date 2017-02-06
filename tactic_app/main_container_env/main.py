@@ -1084,10 +1084,11 @@ class mainWindow(QWorker):
         else:
             ev_string = "pipe_val"
             if "key" in data:
-                ev_string += "[{}]".format(data["key"])
+                ev_string += "['{}']".format(data["key"])
             ev_string += data["tail"]
             try:
                 success = True
+                print "evaluating string " + ev_string
                 the_html = str(eval(ev_string))
             except:
                 succcess = False

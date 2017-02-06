@@ -147,7 +147,6 @@ class exportViewerObjectClass {
         let send_data = {"export_name": this.current_export, "tail": tail}
         if (!(this.key_list == null)) {
             send_data["key"] = this.exports_keys.val()
-
         }
         let self = this;
         postWithCallback(main_id, "evaluate_export", send_data, function (data) {
