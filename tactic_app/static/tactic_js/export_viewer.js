@@ -10,7 +10,7 @@ class exportViewerObjectClass {
         this.current_export = null;
         this.add_listeners();
         this.update_exports_popup();
-        this.export_list = []
+        this.export_list = [];
         this.key_list = null
     }
 
@@ -28,6 +28,10 @@ class exportViewerObjectClass {
 
     get exports_show_button() {
         return $("#exports-show-button")
+    }
+
+    get exports_refresh_button() {
+        return $("#exports-refresh-button")
     }
 
     get exports_popup () {
@@ -106,12 +110,15 @@ class exportViewerObjectClass {
 
     add_listeners () {
         let self = this;
+        this.exports_refresh_button.click(function () {
+            self.set_new_export(self.exports_popup.val())
+        });
         this.exports_popup.change(function () {
             self.set_new_export(this.value)
         });
         this.exports_show_button.click(function ()  {
             self.show_value()
-        })
+        });
         this.exports_tail.keypress(function(e) {
             if (e.which == 13) {
                 self.show_value();
