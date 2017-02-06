@@ -2,6 +2,7 @@ import cPickle
 import exceptions
 import json
 import sys
+import re
 import time
 import requests
 from gevent import monkey; monkey.patch_all()
@@ -646,6 +647,41 @@ class TileBase(QWorker):
     def render_tile(self, data):
         return {"tile_html": self.render_me(data)}
 
+    def get_type_info(self, avar):
+        result = {}
+        if avar == "__none__":
+            result["type"] = "none"
+            result["info_string"] = "Not set"
+        elif type(avar) is dict:
+            result["type"] = "dict"
+            result["info_string"] = "Dict with {} keys".format(str(len(avar.keys())))
+            keys_html = ""
+            for kname in avar.keys():
+                keys_html += "<option>{}</option>\n".format(kname)
+            result["key_list"] = avar.keys()
+            result["keys_html"] = keys_html
+        elif type(avar) is list:
+            result["type"] = "list"
+            result["info_string"] = "List with {} elements".format(str(len(avar)))
+        elif type(avar) is set:
+            result["type"] = "set"
+            result["info_string"] = "Set with {} elements".format(str(len(avar)))
+        elif type(avar) is str:
+            result["type"] = "string"
+            result["info_string"] = "String with {} characters".format(str(len(avar)))
+        else:
+            findtype = re.findall("(?:type|class) \'(.*?)\'", str(type(avar)))
+            if len(findtype) > 0:
+                result["type"] = findtype[0]
+            else:
+                result["type"] = "no type"
+            try:
+                l = len(avar)
+                result["info_string"] = "{} of length {}".format(result["type"], l)
+            except:
+                result["info_string"] = result["type"]
+        return result
+
     @task_worthy
     def exec_console_code(self, data):
         import StringIO
@@ -660,6 +696,56 @@ class TileBase(QWorker):
         except Exception as ex:
             data["result_string"] = self.handle_exception(ex, "Error executing console code", print_to_console = False)
         return data
+
+    @task_worthy
+    def get_export_info(self, data):
+        try:
+            ename = data["export_name"]
+            self._pipe_dict = data["pipe_dict"]
+            pipe_value = self.get_pipe_value(ename)
+            result = self.get_type_info(pipe_value)
+            result["success"] = True
+        except Exception as Ex:
+            result = {"success": False,
+                      "info_string": self.handle_exception(Ex, "", print_to_console = False)}
+        return result
+
+    @task_worthy
+    def evaluate_export(self, data):
+        self._pipe_dict = data["pipe_dict"]
+        pipe_val = self.get_pipe_value(data["export_name"])
+        success = True
+        if pipe_val == "__none__":
+            success = False
+            the_html = "pipe not found"
+        else:
+            ev_string = "pipe_val"
+            if "key" in data:
+                ev_string += "['{}']".format(data["key"])
+            ev_string += data["tail"]
+            try:
+                print "evaluating string " + ev_string
+                eval_result = eval(ev_string)
+                eval_type_info = self.get_type_info(eval_result)
+                if eval_type_info["type"] == "dict":
+                    the_array = []
+                    for key, the_val in eval_result.items():
+                        the_array.append([key, the_val])
+                    the_html = self.build_html_table_for_exports(the_array, title=eval_type_info["info_string"],
+                                                                    has_header=False)
+                elif eval_type_info["type"] == "list":
+                    the_array = []
+                    for i, the_val in enumerate(eval_result):
+                        the_array.append([i, the_val])
+                    the_html = self.build_html_table_for_exports(the_array, title=eval_type_info["info_string"],
+                                                                    has_header=False)
+                else:
+                    the_html = "<h5>{}</h5>".format(eval_type_info["info_string"])
+                    the_html += str(eval_result)
+            except:
+                succcess = False
+                the_html = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+        return {"success": success, "the_html": the_html}
 
     def render_me(self, form_info):
         form_html = self.create_form_html(form_info)["form_html"]
@@ -1271,7 +1357,7 @@ class TileBase(QWorker):
             result += it
         return result
 
-    def build_html_table_from_data_list(self, data_list, title=None, click_type="word-clickable", sortable=True, sidebyside=False):
+    def build_html_table_from_data_list(self, data_list, title=None, click_type="word-clickable", sortable=True, sidebyside=False, has_header=True):
         self.save_stdout()
         if sortable:
             if not sidebyside:
@@ -1286,10 +1372,12 @@ class TileBase(QWorker):
 
         if title is not None:
             the_html += "<caption>{0}</caption>".format(title)
-        the_html += "<thead><tr>"
-        for c in data_list[0]:
-            the_html += "<th>{0}</th>".format(c)
-        the_html += "</tr><tbody>"
+        if has_header:
+            the_html += "<thead><tr>"
+            for c in data_list[0]:
+                the_html += "<th>{0}</th>".format(c)
+            the_html += "</tr></thead>"
+        the_html += "<tbody>"
         for rnum, r in enumerate(data_list[1:]):
             if click_type == "row-clickable":
                 the_html += "<tr class='row-clickable'>"
@@ -1309,4 +1397,26 @@ class TileBase(QWorker):
                 the_html += "</tr>"
         the_html += "</tbody></table>"
         self.restore_stdout()
+        return the_html
+
+
+    def build_html_table_for_exports(self, data_list, has_header=False, title=None):
+        the_html = "<table class='tile-table table sortable table-striped table-bordered table-condensed'>"
+        if title is not None:
+            the_html += "<caption>{0}</caption>".format(title)
+        if has_header:
+            the_html += "<thead><tr>"
+            for c in data_list[0]:
+                the_html += "<th>{0}</th>".format(c)
+            the_html += "</tr><tbody>"
+            start = 1
+        else:
+            start = 0
+        for r in data_list[start:]:
+            the_html += "<tr>".format()
+            for c in r:
+                the_html += "<td>{0}</td>".format(str(c))
+            the_html += "</tr>"
+
+        the_html += "</tbody></table>"
         return the_html
