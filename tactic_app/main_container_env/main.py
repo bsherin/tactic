@@ -1055,6 +1055,15 @@ class mainWindow(QWorker):
         return {"success": True}
 
     @task_worthy
+    def exec_console_code(self, data):
+        if self.pseudo_tile_id is None:
+            self.create_pseudo_tile()
+        the_code = data["the_code"]
+        data["pipe_dict"] = self._pipe_dict
+        self.post_task(self.pseudo_tile_id, "exec_console_code", data, self.got_console_result)
+        return {"success": True}
+
+    @task_worthy
     def get_exports_list_html(self, data):
         the_html = ""
         export_list = []
@@ -1063,18 +1072,6 @@ class mainWindow(QWorker):
                 the_html += "<option>{}</option>\n".format(pname)
                 export_list.append(pname)
         return {"success": True, "the_html": the_html, "export_list": export_list}
-
-    def get_pipe_value(self, pipe_key):
-        for (tile_id, tile_entry) in self._pipe_dict.items():
-            if pipe_key in tile_entry:
-                result = self.post_and_wait(tile_entry[pipe_key]["tile_id"],
-                                            "transfer_pipe_value", {"export_name": tile_entry[pipe_key]["export_name"]},
-                                            timeout=60,
-                                            tries=RETRIES)
-                encoded_val = result["encoded_val"]
-                val = cPickle.loads(encoded_val.decode("utf-8", "ignore").encode("ascii"))
-                return val
-        return "__none__"
 
     @task_worthy
     def evaluate_export(self, data):
@@ -1098,15 +1095,6 @@ class mainWindow(QWorker):
         ndata["pipe_dict"] = self._pipe_dict
         result = self.post_and_wait(self.pseudo_tile_id, "get_export_info", ndata)
         return result
-
-    @task_worthy
-    def exec_console_code(self, data):
-        if self.pseudo_tile_id is None:
-            self.create_pseudo_tile()
-        the_code = data["the_code"]
-        data["pipe_dict"] = self._pipe_dict
-        self.post_task(self.pseudo_tile_id, "exec_console_code", data, self.got_console_result)
-        return {"success": True}
 
     def create_pseudo_tile(self):
         data = self.post_and_wait("host", "create_tile_container", {"user_id": self.user_id})

@@ -736,6 +736,7 @@ class TileManager(ResourceManager):
     collection_name = "tile_collection_name"
     name_field = "tile_module_name"
     button_groups = [[{"name": "save_button", "button_class": "btn-default", "name_text": "Save"},
+                      {"name": "checkpoint_button", "button_class": "btn-default", "name_text": "Save and checkpoint"},
                       {"name": "save_as_button", "button_class": "btn-default", "name_text": "Save as ..."},
                       {"name": "load_button", "button_class": "btn-default", "name_text": "Save and load"},
                       {"name": "share_button", "button_class": "btn-default", "name_text": "Share"}

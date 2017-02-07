@@ -137,6 +137,20 @@ class ModuleViewerAbstract extends ResourceViewer {
         return cmobject
     }
 
+    doCheckpointPromise() {
+        self = this;
+        return new Promise (function (resolve, reject) {
+            postAjax("checkpoint_module", {"module_name": self.resource_name}, function (data) {
+                if (data.success) {
+                    resolve(data)
+                }
+                else {
+                    reject(data)
+                }
+            });
+        })
+    }
+
     doSavePromise() {
         self = this;
         return new Promise (function (resolve, reject) {
@@ -184,6 +198,7 @@ class ModuleViewerAbstract extends ResourceViewer {
             postAjax("update_module", result_dict, function (data) {
                 if (data.success) {
                     self.save_success(data, new_code, tags, notes, category);
+                    data.new_code = new_code;
                     resolve(data)
                 }
                 else {
@@ -225,6 +240,19 @@ class ModuleViewerAbstract extends ResourceViewer {
             .then(doFlash)
             .catch(doFlash);
         return false
+    }
+
+    saveAndCheckpoint() {
+        let self = this;
+        this.doSavePromise()
+            .then(function (){
+                self.doCheckpointPromise()
+                    .then(doFlash)
+                    .catch(doFlash)
+            })
+            .catch(doFlash);
+        return false
+
     }
 
     loadModule() {

@@ -446,6 +446,10 @@ class User(UserMixin):
         tile_dict = db[self.tile_collection_name].find_one({"tile_module_name": tile_module_name})
         return tile_dict["tile_module"]
 
+    def get_tile_module_dict(self, tile_module_name):
+        tile_dict = db[self.tile_collection_name].find_one({"tile_module_name": tile_module_name})
+        return tile_dict
+
     def get_code(self, code_name):
         code_dict = db[self.code_collection_name].find_one({"code_name": code_name})
         return code_dict["the_code"]

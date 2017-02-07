@@ -54,6 +54,28 @@ def build_code(data_dict):
                                 draw_plot_body=draw_plot_body)
     return full_code
 
+
+@app.route('/checkpoint_module', methods=['post'])
+@login_required
+def checkpoint_module():
+    try:
+        data_dict = request.json
+        module_name = data_dict["module_name"]
+        tile_dict = db[current_user.tile_collection_name].find_one({"tile_module_name": module_name})
+        if "history" in tile_dict:
+            history = tile_dict["history"]
+        else:
+            history = []
+        history.append({"updated": tile_dict["metadata"]["updated"],
+                        "tile_module": tile_dict["tile_module"]})
+        db[current_user.tile_collection_name].update_one({"tile_module_name": module_name},
+                                                         {'$set': {"history": history}})
+        return jsonify({"success": True, "message": "Module successfully saved and checkpointed"})
+
+    except:
+        error_string = "Error checkpointing module " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+
 @app.route('/update_module', methods=['post'])
 @login_required
 def update_module():
