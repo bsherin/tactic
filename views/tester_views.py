@@ -32,6 +32,13 @@ def direct_module_viewer(module_name, username, password):
         login_user(user, remember=False)
     return redirect(url_for("view_module", module_name=module_name))
 
+@app.route('/direct_history_viewer/<module_name>/<username>/<password>', methods=['GET', 'POST'])
+def direct_history_viewer(module_name, username, password):
+    user = User.get_user_by_username(username)
+    if user is not None and user.verify_password(password):
+        login_user(user, remember=False)
+    return redirect(url_for("show_history_viewer", module_name=module_name))
+
 @app.route('/direct_list_viewer/<list_name>/<username>/<password>', methods=['GET', 'POST'])
 def direct_list_viewer(list_name, username, password):
     user = User.get_user_by_username(username)

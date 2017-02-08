@@ -16,6 +16,7 @@ class ResourceManager {
 
         // These additional parameters are relevant to the rendering of the template
         this.include_metadata = false;
+        this.include_above_main_area = false;
         this.include_button_well = true;
         this.start_hidden = false;
         this.include_search_toolbar = true;

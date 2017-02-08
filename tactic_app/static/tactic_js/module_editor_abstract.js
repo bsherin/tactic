@@ -151,6 +151,11 @@ class ModuleViewerAbstract extends ResourceViewer {
         })
     }
 
+    // tactic_change show_history_viewer
+    showHistoryViewer () {
+        window.open(`${$SCRIPT_ROOT}/show_history_viewer/${this.resource_name}`)
+    }
+
     doSavePromise() {
         self = this;
         return new Promise (function (resolve, reject) {

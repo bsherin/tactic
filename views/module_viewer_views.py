@@ -2,7 +2,7 @@
 import re
 import sys
 import datetime
-from flask import render_template, request, jsonify
+from flask import render_template, request, jsonify, url_for
 from flask_login import login_required, current_user
 from tactic_app import app, db
 from tactic_app.tile_code_parser import get_functions_full_code, get_starting_lines
@@ -70,11 +70,30 @@ def checkpoint_module():
                         "tile_module": tile_dict["tile_module"]})
         db[current_user.tile_collection_name].update_one({"tile_module_name": module_name},
                                                          {'$set': {"history": history}})
-        return jsonify({"success": True, "message": "Module successfully saved and checkpointed"})
+        return jsonify({"success": True, "message": "Module successfully saved and checkpointed",
+                        "alert_type": "alert-success"})
 
     except:
         error_string = "Error checkpointing module " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+
+# tactic_change show_history_viewer
+@app.route('/show_history_viewer/<module_name>', methods=['get', 'post'])
+@login_required
+def show_history_viewer(module_name):
+    button_groups = [[{"name": "save_button", "button_class": "btn-default", "name_text": "Save"}]]
+    data_dict = request.json
+    javascript_source = url_for('static', filename='tactic_js/history_viewer.js')
+    return render_template("user_manage/resource_viewer.html",
+                           resource_name=module_name,
+                           include_metadata=False,
+                           include_above_main_area = True,
+                           include_right = False,
+                           readonly=False,
+                           is_repository=False,
+                           javascript_source=javascript_source,
+                           uses_codemirror="True",
+                           button_groups=button_groups)
 
 @app.route('/update_module', methods=['post'])
 @login_required
