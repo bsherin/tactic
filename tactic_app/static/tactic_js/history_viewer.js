@@ -108,7 +108,7 @@ class HistoryViewer extends ModuleViewerAbstract {
 
     populateHistoryList() {
         let self = this;
-        let hl = '<select id="history_popup" class="form-control">';
+        let hl = '<select id="history_popup" class="form-control" style="margin-bottom: 5px">';
         for (let item of this.history_list) {
             hl += `<option>${item["updatestring"]}</option>\n`
         }
@@ -121,10 +121,10 @@ class HistoryViewer extends ModuleViewerAbstract {
 
     refreshAreas() {
         let right_width = $($(".CodeMirror-merge-right")[0]).width();
-        let left_pos = $($(".CodeMirror-merge-right")[0]).position().left
+        let left_pos = $($(".CodeMirror-merge-right")[0]).offset().left;
         $("#history_popup").width(right_width);
         $("#history_popup").offset({"left": left_pos});
-        this.myCodeMirror.edit.refresh()
+        this.myCodeMirror.edit.refresh();
         this.myCodeMirror.right.orig.refresh()
     }
 

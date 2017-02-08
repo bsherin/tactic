@@ -33,6 +33,8 @@ def get_checkpoint_dates():
         data_dict = request.json
         module_name = data_dict["module_name"]
         checkpoints = get_checkpoint_history(module_name, False)
+        if len(checkpoints) == 0:
+            return jsonify({"success": False, "message": "no history found", "alert_type": "alert-warning"})
         return jsonify({"success": True, "checkpoints": checkpoints})
     except:
         error_string = "Error getting checktpoint dates " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
