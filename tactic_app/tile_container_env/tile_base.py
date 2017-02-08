@@ -686,13 +686,34 @@ class TileBase(QWorker):
     def exec_console_code(self, data):
         import StringIO
         try:
+            self._pipe_dict = data["pipe_dict"]
+            the_code = data["the_code"]
+            the_code = re.sub("(\s*)$", "", the_code) # remove trailing whie space
+            last_line_matches = re.findall("\n.*$", the_code) # extract the last line
+            if len(last_line_matches) == 0:
+                last_line = the_code
+                the_code = None
+            else:
+                last_line = last_line_matches[0]
+                last_line = re.sub("^\s*", "", last_line) # remove initial white space from the last line
+                the_code = re.sub("\n.*$", "", the_code) # remove last line
+
+            additional_output = ""
             old_stdout = sys.stdout
             redirected_output = StringIO.StringIO()
             sys.stdout = redirected_output
-            self._pipe_dict = data["pipe_dict"]
-            exec(data["the_code"])
-            sys.stdout = old_stdout
-            data["result_string"] = redirected_output.getvalue()
+            try:
+                if the_code is not None:
+                    exec(the_code)
+                result = eval(last_line)
+                additional_output = str(result)
+                data["result_string"] = redirected_output.getvalue() + "\n" + additional_output
+                sys.stdout = old_stdout
+            except:
+                exec(data["the_code"])
+                data["result_string"] = redirected_output.getvalue()
+                sys.stdout = old_stdout
+
         except Exception as ex:
             data["result_string"] = self.handle_exception(ex, "Error executing console code", print_to_console = False)
         return data
