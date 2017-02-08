@@ -1055,15 +1055,6 @@ class mainWindow(QWorker):
         return {"success": True}
 
     @task_worthy
-    def exec_console_code(self, data):
-        if self.pseudo_tile_id is None:
-            self.create_pseudo_tile()
-        the_code = data["the_code"]
-        data["pipe_dict"] = self._pipe_dict
-        self.post_task(self.pseudo_tile_id, "exec_console_code", data, self.got_console_result)
-        return {"success": True}
-
-    @task_worthy
     def get_exports_list_html(self, data):
         the_html = ""
         export_list = []
