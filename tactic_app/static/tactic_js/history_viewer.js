@@ -30,6 +30,13 @@ class HistoryViewer extends ModuleViewerAbstract {
             readOnly: false,
             orig: initial_right
         });
+        cmobject.edit.setOption("extraKeys", {
+            Tab: function (cm) {
+                let spaces = new Array(5).join(" ");
+                cm.replaceSelection(spaces);
+            },
+            "Ctrl-Space": "autocomplete"
+        });
 
         $(".CodeMirror").css("height", "100%");
         $(".CodeMirror-merge").css("height", "100%");
@@ -50,8 +57,17 @@ class HistoryViewer extends ModuleViewerAbstract {
 
     checkpointThenSaveFromLeft() {
         self = this;
+        let current_popup_val = this.history_popup.val();
         this.doCheckpointPromise()
             .then(function () {
+                postAjaxPromise("get_checkpoint_dates", {"module_name": self.resource_name})
+                    .then((data) => {
+                        self.history_list = data.checkpoints;
+                        self.populateHistoryList();
+                        self.history_popup.val(current_popup_val)
+                        self.refreshAreas();
+                    })
+                    .catch(doFlash);
                 self.saveFromLeft()
             })
             .catch(doFlash)
@@ -70,6 +86,10 @@ class HistoryViewer extends ModuleViewerAbstract {
 
     get_current_content () {
          return this.myCodeMirror.edit.getValue();
+    }
+
+    get history_popup() {
+        return $("#history_popup")
     }
 
     construct_html_from_the_content(the_content) {
@@ -112,7 +132,7 @@ class HistoryViewer extends ModuleViewerAbstract {
         }
         hl += "</select>";
         $("#above_main").html(hl);
-        $("#history_popup").change(function () {
+        this.history_popup.change(function () {
             self.update_right_viewer(this.value)
         });
     }
@@ -120,8 +140,8 @@ class HistoryViewer extends ModuleViewerAbstract {
     refreshAreas() {
         let right_width = $($(".CodeMirror-merge-right")[0]).width();
         let left_pos = $($(".CodeMirror-merge-right")[0]).offset().left;
-        $("#history_popup").width(right_width);
-        $("#history_popup").offset({"left": left_pos});
+        this.history_popup.width(right_width);
+        this.history_popup.offset({"left": left_pos});
         this.myCodeMirror.edit.refresh();
         this.myCodeMirror.right.orig.refresh()
     }

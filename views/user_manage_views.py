@@ -802,7 +802,38 @@ class TileManager(ResourceManager):
     def get_api_html(self):
         return jsonify({"success": True, "api_html": api_html})
 
+    def clear_old_recent_history(self, module_name):
+        tile_dict = db[current_user.tile_collection_name].find_one({"tile_module_name": module_name})
+        if "recent_history" not in tile_dict:
+            return
+
+        recent_history = []
+        yesterday = datetime.datetime.today() - datetime.timedelta(days=1)
+        yesterday_date = yesterday.date()
+        # We want to keep every element of the recent history from yesterday or today
+        # Plus we want to keep the last entry from each date taht appears.
+        for cp in tile_dict["recent_history"]:
+            cp_date = cp["updated"].date()
+            if  cp_date > yesterday_date:
+                recent_history.append(cp)
+            else:
+                found = False
+                for i, rh_item in enumerate(recent_history):
+                    if cp_date == rh_item["updated"].date():
+                        if cp_date > rh_item["updated"]:
+                            recent_history[i] = cp
+                        found = True
+                        break
+                if not found:
+                    recent_history.append(cp)
+        recent_history.sort(key=lambda x: x["updated"].strftime("%Y%m%d%H%M%S"))
+
+        db[current_user.tile_collection_name].update_one({"tile_module_name": module_name},
+                                                         {'$set': {"recent_history": recent_history}})
+        return
+
     def view_module(self, module_name):
+        self.clear_old_recent_history(module_name)
         javascript_source = url_for('static', filename='tactic_js/module_viewer.js')
         return render_template("user_manage/resource_viewer.html",
                                resource_name=module_name,
@@ -829,6 +860,7 @@ class TileManager(ResourceManager):
         return result
 
     def view_in_creator(self, module_name):
+        self.clear_old_recent_history(module_name)
         option_types = [{"name": "text"},
                         {"name": "int"},
                         {"name": "boolean"},
