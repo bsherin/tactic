@@ -89,7 +89,7 @@ class ResourceViewer {
                 if (index >= 0) {
                     res_names.splice(index, 1);
                 }
-                showModal(`Rename ${this.res_type}`, `Name for this ${this.res_type}`, RenameResource, self.resource_name, res_names)
+                showModal(`Rename ${self.res_type}`, `Name for this ${self.res_type}`, RenameResource, self.resource_name, res_names)
             }
         );
         function RenameResource(new_name) {
