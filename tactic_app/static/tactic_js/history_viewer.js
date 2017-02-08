@@ -12,9 +12,7 @@ class HistoryViewer extends ModuleViewerAbstract {
 
     do_extra_setup() {
         super.do_extra_setup();
-        window.onresize = function () {
-            resize_dom_to_bottom_given_selector("#main_content", 40)
-        }
+        self = this;
     }
 
     get button_bindings() {
@@ -108,7 +106,7 @@ class HistoryViewer extends ModuleViewerAbstract {
 
     populateHistoryList() {
         let self = this;
-        let hl = '<select id="history_popup" class="form-control" style="margin-bottom: 5px">';
+        let hl = '<span style="position: absolute; bottom: 0">Current</span><select id="history_popup" class="form-control" style="margin-bottom: 5px">';
         for (let item of this.history_list) {
             hl += `<option>${item["updatestring"]}</option>\n`
         }
@@ -138,7 +136,12 @@ class HistoryViewer extends ModuleViewerAbstract {
                         postAjaxPromise("get_checkpoint_code", {"module_name": self.resource_name, "updatestring_for_sort": self.history_list[0]["updatestring_for_sort"]})
                             .then((data) => {
                                     self.myCodeMirror = self.createMergeArea(codearea, true, the_content, data.module_code);
+                                    resize_dom_to_bottom_given_selector("#main_content", 40);
                                     self.refreshAreas();
+                                    window.onresize = function () {
+                                        resize_dom_to_bottom_given_selector("#main_content", 40);
+                                        self.refreshAreas();
+                                    }
                                 })
                             .catch(doFlash)
                 })
