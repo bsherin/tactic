@@ -14,6 +14,7 @@
           <link rel="stylesheet" href="{{url_for('static', filename='css/codemirrorthemes/pastel-on-dark.css')}}">
           <link rel="stylesheet" href="{{url_for('static', filename='css/codemirrorthemes/dialog.css')}}">
           <link rel="stylesheet" href="{{url_for('static', filename='css/show-hint.css')}}">
+          <link rel="stylesheet" href="{{url_for('static', filename='css/merge.css')}}">
       {%  endif %}
       {% block head %}{% endblock %}
       {% block styles %}{% endblock %}
@@ -67,6 +68,8 @@
         <script src="{{url_for('static', filename='js/codemirror.js')}}"></script>
         <script src="{{url_for('static', filename='js/codemirror/search.js')}}"></script>
         <script src="{{url_for('static', filename='js/codemirror/searchcursor.js')}}"></script>
+        <script src="{{url_for('static', filename='js/diff_match_patch.js')}}"></script>
+        <script src="{{url_for('static', filename='js/codemirror/merge.js')}}"></script>
         <script src="{{url_for('static', filename='js/codemirror/jump-to-line.js')}}"></script>
         <script src="{{url_for('static', filename='js/codemirror/dialog.js')}}"></script>
         <script src="{{url_for('static', filename='js/python.js')}}"></script>

@@ -22,10 +22,12 @@ class ModuleViewer extends ModuleViewerAbstract {
     get button_bindings() {
         return {"save_button": this.saveMe,
             "save_as_button": this.saveModuleAs,
+            "checkpoint_button": this.saveAndCheckpoint,
             "load_button": this.loadModule,
             "share_button": this.sendToRepository,
             "change_theme_button": this.changeTheme,
-            "show_api_button": this.showAPI}
+            "show_api_button": this.showAPI,
+            "history_button": this.showHistoryViewer}
     }
 
     get_current_content () {

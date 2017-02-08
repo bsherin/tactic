@@ -2,7 +2,7 @@
 import re
 import sys
 import datetime
-from flask import render_template, request, jsonify
+from flask import render_template, request, jsonify, url_for
 from flask_login import login_required, current_user
 from tactic_app import app, db
 from tactic_app.tile_code_parser import get_functions_full_code, get_starting_lines
@@ -54,6 +54,72 @@ def build_code(data_dict):
                                 draw_plot_body=draw_plot_body)
     return full_code
 
+
+@app.route('/checkpoint_module', methods=['post'])
+@login_required
+def checkpoint_module():
+    try:
+        data_dict = request.json
+        module_name = data_dict["module_name"]
+        tile_dict = db[current_user.tile_collection_name].find_one({"tile_module_name": module_name})
+        if "history" in tile_dict:
+            history = tile_dict["history"]
+        else:
+            history = []
+        history.append({"updated": tile_dict["metadata"]["updated"],
+                        "tile_module": tile_dict["tile_module"]})
+        db[current_user.tile_collection_name].update_one({"tile_module_name": module_name},
+                                                         {'$set': {"history": history}})
+        return jsonify({"success": True, "message": "Module successfully saved and checkpointed",
+                        "alert_type": "alert-success"})
+
+    except:
+        error_string = "Error checkpointing module " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+
+
+def create_recent_checkpoint(module_name):
+    try:
+        tile_dict = db[current_user.tile_collection_name].find_one({"tile_module_name": module_name})
+        if "recent_history" in tile_dict:
+            recent_history = tile_dict["recent_history"]
+        else:
+            recent_history = []
+        recent_history.append({"updated": tile_dict["metadata"]["updated"],
+                                   "tile_module": tile_dict["tile_module"]})
+        db[current_user.tile_collection_name].update_one({"tile_module_name": module_name},
+                                                         {'$set': {"recent_history": recent_history}})
+        return jsonify({"success": True})
+
+    except:
+        error_string = "Error checkpointing module to recent" + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+
+@app.route('/checkpoint_to_recent', methods=['post'])
+@login_required
+def checkpoint_to_recent():
+    data_dict = request.json
+    module_name = data_dict["module_name"]
+    return create_recent_checkpoint(module_name)
+
+
+# tactic_change show_history_viewer
+@app.route('/show_history_viewer/<module_name>', methods=['get', 'post'])
+@login_required
+def show_history_viewer(module_name):
+    button_groups = [[{"name": "save_button", "button_class": "btn-default", "name_text": "Save"}]]
+    javascript_source = url_for('static', filename='tactic_js/history_viewer.js')
+    return render_template("user_manage/resource_viewer.html",
+                           resource_name=module_name,
+                           include_metadata=False,
+                           include_above_main_area = True,
+                           include_right = False,
+                           readonly=False,
+                           is_repository=False,
+                           javascript_source=javascript_source,
+                           uses_codemirror="True",
+                           button_groups=button_groups)
+
 @app.route('/update_module', methods=['post'])
 @login_required
 def update_module():
@@ -81,6 +147,7 @@ def update_module():
         db[current_user.tile_collection_name].update_one({"tile_module_name": module_name},
                                                          {'$set': {"tile_module": module_code, "metadata": mdata,
                                                                    "last_saved": last_saved}})
+        create_recent_checkpoint(module_name)
         tile_manager.update_selector_list()
         return jsonify({"success": True, "message": "Module Successfully Saved",
                         "alert_type": "alert-success", "render_content_line_number": render_content_line_number,

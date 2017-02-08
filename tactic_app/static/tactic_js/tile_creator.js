@@ -47,6 +47,7 @@ class CreatorViewer extends ModuleViewerAbstract {
 
     get button_bindings() {
         return {"save_button": this.saveMe,
+            "checkpoint_button": this.saveAndCheckpoint,
             "save_as_button": this.saveModuleAs,
             "load_button": this.loadModule,
             "share_button": this.sendToRepository,

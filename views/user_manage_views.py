@@ -298,6 +298,8 @@ class ListManager(ResourceManager):
         return render_template("user_manage/resource_viewer.html",
                                resource_name=list_name,
                                include_metadata=True,
+                               include_above_main_area=False,
+                               include_right=True,
                                readonly=False,
                                is_repository=False,
                                javascript_source=javascript_source,
@@ -383,6 +385,8 @@ class RepositoryListManager(ListManager):
         return render_template("user_manage/resource_viewer.html",
                                resource_name=list_name,
                                include_metadata=True,
+                               include_above_main_area=False,
+                               include_right=True,
                                readonly=True,
                                is_repository=True,
                                javascript_source=javascript_source,
@@ -736,10 +740,12 @@ class TileManager(ResourceManager):
     collection_name = "tile_collection_name"
     name_field = "tile_module_name"
     button_groups = [[{"name": "save_button", "button_class": "btn-default", "name_text": "Save"},
+                      {"name": "checkpoint_button", "button_class": "btn-default", "name_text": "Save and checkpoint"},
                       {"name": "save_as_button", "button_class": "btn-default", "name_text": "Save as ..."},
                       {"name": "load_button", "button_class": "btn-default", "name_text": "Save and load"},
-                      {"name": "share_button", "button_class": "btn-default", "name_text": "Share"}
-                      ],
+                      {"name": "share_button", "button_class": "btn-default", "name_text": "Share"}],
+
+                      [{"name": "history_button", "button_class": "btn-default", "name_text": "View History"}],
                      [{"name": "change_theme_button", "button_class": "btn-default", "name_text": "Toggle theme"},
                       {"name": "show_api_button", "button_class": "btn-default", "name_text": "Show API"}]]
 
@@ -796,11 +802,44 @@ class TileManager(ResourceManager):
     def get_api_html(self):
         return jsonify({"success": True, "api_html": api_html})
 
+    def clear_old_recent_history(self, module_name):
+        tile_dict = db[current_user.tile_collection_name].find_one({"tile_module_name": module_name})
+        if "recent_history" not in tile_dict:
+            return
+
+        recent_history = []
+        yesterday = datetime.datetime.today() - datetime.timedelta(days=1)
+        yesterday_date = yesterday.date()
+        # We want to keep every element of the recent history from yesterday or today
+        # Plus we want to keep the last entry from each date taht appears.
+        for cp in tile_dict["recent_history"]:
+            cp_date = cp["updated"].date()
+            if  cp_date > yesterday_date:
+                recent_history.append(cp)
+            else:
+                found = False
+                for i, rh_item in enumerate(recent_history):
+                    if cp_date == rh_item["updated"].date():
+                        if cp_date > rh_item["updated"]:
+                            recent_history[i] = cp
+                        found = True
+                        break
+                if not found:
+                    recent_history.append(cp)
+        recent_history.sort(key=lambda x: x["updated"].strftime("%Y%m%d%H%M%S"))
+
+        db[current_user.tile_collection_name].update_one({"tile_module_name": module_name},
+                                                         {'$set': {"recent_history": recent_history}})
+        return
+
     def view_module(self, module_name):
+        self.clear_old_recent_history(module_name)
         javascript_source = url_for('static', filename='tactic_js/module_viewer.js')
         return render_template("user_manage/resource_viewer.html",
                                resource_name=module_name,
                                include_metadata=True,
+                               include_right=True,
+                               include_above_main_area=False,
                                readonly=False,
                                is_repository=False,
                                javascript_source=javascript_source,
@@ -821,6 +860,7 @@ class TileManager(ResourceManager):
         return result
 
     def view_in_creator(self, module_name):
+        self.clear_old_recent_history(module_name)
         option_types = [{"name": "text"},
                         {"name": "int"},
                         {"name": "boolean"},
@@ -980,6 +1020,8 @@ class RepositoryTileManager(TileManager):
         return render_template("user_manage/resource_viewer.html",
                                resource_name=module_name,
                                include_metadata=True,
+                               include_right=True,
+                               include_above_main_area=False,
                                readonly=True,
                                is_repository=True,
                                javascript_source=javascript_source,
@@ -1047,6 +1089,8 @@ class CodeManager(ResourceManager):
         return render_template("user_manage/resource_viewer.html",
                                resource_name=code_name,
                                include_metadata=True,
+                               include_right=True,
+                               include_above_main_area=False,
                                readonly=False,
                                is_repository=False,
                                javascript_source=javascript_source,
@@ -1145,6 +1189,8 @@ class RepositoryCodeManager(CodeManager):
         return render_template("user_manage/resource_viewer.html",
                                resource_name=code_name,
                                include_metadata=True,
+                               include_right=True,
+                               include_above_main_area=False,
                                readonly=True,
                                is_repository=True,
                                javascript_source=javascript_source,
