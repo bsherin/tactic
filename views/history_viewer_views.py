@@ -1,10 +1,8 @@
-import re
 import sys
 import datetime
-from flask import render_template, request, jsonify, url_for
+from flask import request, jsonify
 from flask_login import login_required, current_user
 from tactic_app import app, db
-from tactic_app.tile_code_parser import get_functions_full_code, get_starting_lines
 from user_manage_views import tile_manager
 from module_viewer_views import create_recent_checkpoint
 

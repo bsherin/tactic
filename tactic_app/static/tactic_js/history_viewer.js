@@ -12,7 +12,6 @@ class HistoryViewer extends ModuleViewerAbstract {
 
     do_extra_setup() {
         super.do_extra_setup();
-        self = this;
     }
 
     get button_bindings() {
@@ -56,7 +55,7 @@ class HistoryViewer extends ModuleViewerAbstract {
     }
 
     checkpointThenSaveFromLeft() {
-        self = this;
+        let self = this;
         let current_popup_val = this.history_popup.val();
         this.doCheckpointPromise()
             .then(function () {
@@ -64,7 +63,7 @@ class HistoryViewer extends ModuleViewerAbstract {
                     .then((data) => {
                         self.history_list = data.checkpoints;
                         self.populateHistoryList();
-                        self.history_popup.val(current_popup_val)
+                        self.history_popup.val(current_popup_val);
                         self.refreshAreas();
                     })
                     .catch(doFlash);
