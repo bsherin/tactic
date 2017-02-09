@@ -744,8 +744,7 @@ class TileManager(ResourceManager):
                       {"name": "save_as_button", "button_class": "btn-default", "name_text": "Save as ..."},
                       {"name": "load_button", "button_class": "btn-default", "name_text": "Save and load"},
                       {"name": "share_button", "button_class": "btn-default", "name_text": "Share"}],
-
-                      [{"name": "history_button", "button_class": "btn-default", "name_text": "View History"}],
+                     [{"name": "history_button", "button_class": "btn-default", "name_text": "View History"}],
                      [{"name": "change_theme_button", "button_class": "btn-default", "name_text": "Toggle theme"},
                       {"name": "show_api_button", "button_class": "btn-default", "name_text": "Show API"}]]
 
@@ -814,7 +813,7 @@ class TileManager(ResourceManager):
         # Plus we want to keep the last entry from each date taht appears.
         for cp in tile_dict["recent_history"]:
             cp_date = cp["updated"].date()
-            if  cp_date > yesterday_date:
+            if cp_date > yesterday_date:
                 recent_history.append(cp)
             else:
                 found = False
@@ -1027,7 +1026,6 @@ class RepositoryTileManager(TileManager):
                                javascript_source=javascript_source,
                                uses_codemirror="True",
                                button_groups=self.button_groups)
-
 
     def repository_get_module_code(self, module_name):
         user_obj = repository_user

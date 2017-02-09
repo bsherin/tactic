@@ -25,6 +25,7 @@ def insert_indents(the_str, number_indents):
     result = total_indent + result
     return result
 
+
 def build_code(data_dict):
     export_list = data_dict["exports"]
     export_list_of_dicts = [{"name": exp_name} for exp_name in export_list]
@@ -86,7 +87,7 @@ def create_recent_checkpoint(module_name):
         else:
             recent_history = []
         recent_history.append({"updated": tile_dict["metadata"]["updated"],
-                                   "tile_module": tile_dict["tile_module"]})
+                               "tile_module": tile_dict["tile_module"]})
         db[current_user.tile_collection_name].update_one({"tile_module_name": module_name},
                                                          {'$set': {"recent_history": recent_history}})
         return jsonify({"success": True})
@@ -94,6 +95,7 @@ def create_recent_checkpoint(module_name):
     except:
         error_string = "Error checkpointing module to recent" + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+
 
 @app.route('/checkpoint_to_recent', methods=['post'])
 @login_required
@@ -103,7 +105,6 @@ def checkpoint_to_recent():
     return create_recent_checkpoint(module_name)
 
 
-# tactic_change show_history_viewer
 @app.route('/show_history_viewer/<module_name>', methods=['get', 'post'])
 @login_required
 def show_history_viewer(module_name):
@@ -112,13 +113,14 @@ def show_history_viewer(module_name):
     return render_template("user_manage/resource_viewer.html",
                            resource_name=module_name,
                            include_metadata=False,
-                           include_above_main_area = True,
-                           include_right = False,
+                           include_above_main_area=True,
+                           include_right=False,
                            readonly=False,
                            is_repository=False,
                            javascript_source=javascript_source,
                            uses_codemirror="True",
                            button_groups=button_groups)
+
 
 @app.route('/update_module', methods=['post'])
 @login_required
@@ -135,7 +137,9 @@ def update_module():
         else:
             module_code = build_code(data_dict)
             func_dict = get_functions_full_code(module_code)
-            (render_content_line_number, draw_plot_line_number, extra_methods_line_number) = get_starting_lines(module_code, func_dict)
+            (render_content_line_number,
+             draw_plot_line_number,
+             extra_methods_line_number) = get_starting_lines(module_code, func_dict)
         doc = db[current_user.tile_collection_name].find_one({"tile_module_name": module_name})
         if "metadata" in doc:
             mdata = doc["metadata"]
@@ -156,4 +160,3 @@ def update_module():
     except:
         error_string = "Error saving module " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
-

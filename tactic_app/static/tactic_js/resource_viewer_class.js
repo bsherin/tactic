@@ -69,8 +69,8 @@ class ResourceViewer {
         this.set_main_content(the_html);
         resize_dom_to_bottom_given_selector("#main_content", 40);
 
-        let result_dict = {"res_type": "list", "res_name": this.resource_name};
-        self = this;
+        let result_dict = {"res_type": this.res_type, "res_name": this.resource_name};
+        let self = this;
         postAjaxPromise("grab_metadata", result_dict)
             .then(function (data) {
                 self.set_metadata_fields(data.date_string, data.tags, data.notes)
