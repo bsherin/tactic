@@ -1060,8 +1060,10 @@ class mainWindow(QWorker):
         export_list = []
         for (tile_id, tile_entry) in self._pipe_dict.items():
             for pname in tile_entry.keys():
-                the_html += "<option>{}</option>\n".format(pname)
                 export_list.append(pname)
+        export_list.sort()
+        for pname in export_list:
+            the_html += "<option>{}</option>\n".format(pname)
         return {"success": True, "the_html": the_html, "export_list": export_list}
 
     @task_worthy

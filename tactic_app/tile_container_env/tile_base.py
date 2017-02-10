@@ -656,9 +656,11 @@ class TileBase(QWorker):
             result["type"] = "dict"
             result["info_string"] = "Dict with {} keys".format(str(len(avar.keys())))
             keys_html = ""
-            for kname in avar.keys():
+            klist = avar.keys()
+            klist.sort()
+            for kname in klist:
                 keys_html += "<option>{}</option>\n".format(kname)
-            result["key_list"] = avar.keys()
+            result["key_list"] = klist
             result["keys_html"] = keys_html
         elif type(avar) is list:
             result["type"] = "list"
