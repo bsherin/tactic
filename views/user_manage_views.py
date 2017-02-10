@@ -813,13 +813,13 @@ class TileManager(ResourceManager):
         # Plus we want to keep the last entry from each date taht appears.
         for cp in tile_dict["recent_history"]:
             cp_date = cp["updated"].date()
-            if cp_date > yesterday_date:
+            if cp_date > yesterday_date: # If it's more recent than yesterday, keep it.
                 recent_history.append(cp)
             else:
                 found = False
                 for i, rh_item in enumerate(recent_history):
                     if cp_date == rh_item["updated"].date():
-                        if cp_date > rh_item["updated"]:
+                        if cp["updated"] > rh_item["updated"]:
                             recent_history[i] = cp
                         found = True
                         break
