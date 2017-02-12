@@ -150,9 +150,11 @@
     var new_tile_info = "{{new_tile_info | safe}}";
     window.onload = start_post_load;
     window.onresize = function () {
-        tableObject.resize_table_area();
-        consoleObject.resize_to_window();
-        exportViewerObject.resize_to_window()
+        if (tableObject != null) {
+            tableObject.resize_table_area();
+            consoleObject.resize_to_window();
+            exportViewerObject.resize_to_window()
+        }
     };
     window.onbeforeunload = function(e) {
         if (dirty) {
