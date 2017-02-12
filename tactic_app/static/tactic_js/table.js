@@ -211,7 +211,8 @@ class TableObjectClass {
 
         const rowpos = $('#table-area tr:first').position();
         $('#table-area tbody').scrollTop(rowpos.top);
-        for (let i = 0; i < this.data_rows.length; ++i) {
+        let i;
+        for (i = 0; i < this.data_rows.length; ++i) {
             for (let c = 0; c < header_list.length; ++c) {
                 const td_element = $("#table-area tbody")[0].rows[i].cells[c];
                 const new_content = this.data_rows[i][header_list[c]];
@@ -219,7 +220,6 @@ class TableObjectClass {
             }
         }
         this.color_all_bgs();
-        let i;
         for (; i < nrows; ++i) {
             $(all_rows[i]).addClass("hidden-row")
         }

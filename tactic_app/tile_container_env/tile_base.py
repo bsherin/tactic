@@ -712,8 +712,11 @@ class TileBase(QWorker):
                 data["result_string"] = redirected_output.getvalue() + "\n" + additional_output
                 sys.stdout = old_stdout
             except:
+                redirected_output.close()
+                new_redirected_output = StringIO.StringIO()
+                sys.stdout = new_redirected_output
                 exec(data["the_code"])
-                data["result_string"] = redirected_output.getvalue()
+                data["result_string"] = new_redirected_output.getvalue()
                 sys.stdout = old_stdout
 
         except Exception as ex:

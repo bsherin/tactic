@@ -110,7 +110,7 @@ function continue_loading() {
                     }
                     tablespec_dict[spec] = new TableSpec(data.tablespec_dict[spec])
                 }
-                tableObject = new TableObjectClass((data)); // consoleObject is created in here;
+                tableObject = new TableObjectClass((data)); // consoleObject is created in here
                 postWithCallback(main_id, "get_saved_console_code", {}, function (data) {
                     console.log("en callback for get_saved_console_code");
                     const saved_console_code = data["saved_console_code"];
