@@ -4,7 +4,7 @@ class ConsoleObjectClass {
     constructor () {
         this.saved_console_size = 150;
         const pan = this.console_panel;
-        this.console_dom.fadeOut();
+        this.console_dom.css("display", "none");
         const hheight = this.console_heading.outerHeight();
         // pan.outerHeight(hheight);
         pan.find(".triangle-bottom").hide();
