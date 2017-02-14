@@ -11,6 +11,9 @@ from tactic_app import login_manager, db, fs  # global_stuff db
 from bson.objectid import ObjectId
 from werkzeug.security import generate_password_hash, check_password_hash
 import traceback
+import zlib
+import cPickle
+from bson.binary import Binary
 
 initial_metadata = {"datetime": datetime.datetime.today(),
                     "updated": datetime.datetime.today(),
@@ -91,10 +94,16 @@ def copy_between_accounts(source_user, dest_user, res_type, new_res_name, res_na
                          "updated": datetime.datetime.today(),
                          "tags": "",
                          "notes": ""}
-                new_res_dict["metadata"] = initial_metadata
+                new_res_dict["metadata"] = mdata
             else:
                 new_res_dict["metadata"]["datetime"] = datetime.datetime.today()
-            if "file_id" in new_res_dict:
+            if res_type == "project":
+                project_dict = cPickle.loads(zlib.decompress(fs.get(old_dict["file_id"]).read()).decode("utf-8", "ignore").encode("ascii"))
+                project_dict["user_id"] = dest_user.get_id()
+                pdict = cPickle.dumps(project_dict)
+                pdict = Binary(zlib.compress(pdict))
+                new_res_dict["file_id"] = fs.put(pdict)
+            elif "file_id" in new_res_dict:
                 doc_text = fs.get(new_res_dict["file_id"]).read()
                 new_res_dict["file_id"] = fs.put(doc_text)
             new_collection_name = dest_user.resource_collection_name(res_type)

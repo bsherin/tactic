@@ -81,6 +81,23 @@ function submit_register_info() {
     postAjax("attempt_register", data, return_from_submit_register);
 }
 
+function submit_duplicate_info() {
+    const data = {};
+    data.username = $("#username").val();
+    data.old_username = $("#old_username").val();
+    const pwd = $("#password").val();
+    const pwd2 = $("#password2").val();
+    if (pwd != pwd2) {
+        $("#message-area").html("passwords don't match");
+        $("#password").val("");
+        $("#password2").val("");
+        return
+    }
+    data.password = $("#password").val();
+
+    postAjax("attempt_duplicate", data, doFlash);
+}
+
 function return_from_submit_register(data) {
     if (data.success) {
          window.open($SCRIPT_ROOT + "/login_after_register", "_self")
