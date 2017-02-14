@@ -79,6 +79,14 @@ def register():
         return render_template
 
 
+@app.route('/user_duplicate', methods=['GET', 'POST'])
+def user_duplicate():
+    if ANYONE_CAN_REGISTER or (current_user.username == "repository"):
+        return render_template('auth/duplicate_user.html')
+    else:
+        return render_template
+
+
 @app.route('/attempt_register', methods=['GET', 'POST'])
 def attempt_register():
     data = request.json
@@ -91,6 +99,29 @@ def attempt_register():
             starters = repository_user.get_resource_names(res_type, tag_filter="starter")
             for rname in starters:
                 copy_between_accounts(repository_user, new_user, res_type, rname, rname)
+    return jsonify(result_dict)
+
+
+@app.route('/attempt_duplicate', methods=['GET', 'POST'])
+def attempt_duplicate():
+    data = request.json
+    result_dict = User.create_new({"username": data["username"], "password": data["password"]})
+    if result_dict["success"]:
+        # Copy over all of the starter resources for the new user
+        repository_user = User.get_user_by_username("repository")
+        new_user = User.get_user_by_username(data["username"])
+        for res_type in res_types:
+            starters = repository_user.get_resource_names(res_type, tag_filter="starter")
+            for rname in starters:
+                copy_between_accounts(repository_user, new_user, res_type, rname, rname)
+        old_user = User.get_user_by_username(data["old_username"])
+        for res_type in res_types:
+            starters = old_user.get_resource_names(res_type)
+            for rname in starters:
+                copy_between_accounts(old_user, new_user, res_type, rname, rname)
+        result_dict["message"] = "user duplicated apparently"
+    else:
+        result_dict["message"] = "something went wrong"
     return jsonify(result_dict)
 
 

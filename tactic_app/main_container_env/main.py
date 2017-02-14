@@ -510,6 +510,7 @@ class mainWindow(QWorker):
     def recreate_from_save(self, project_collection_name, project_name):
         save_dict = self.db[project_collection_name].find_one({"project_name": project_name})
         project_dict = cPickle.loads(zlib.decompress(self.fs.get(save_dict["file_id"]).read()).decode("utf-8", "ignore").encode("ascii"))
+        print "got project dict with keys " + str(project_dict.keys())
         project_dict["metadata"] = save_dict["metadata"]
         self.mdata = save_dict["metadata"]
         error_messages = []
@@ -672,6 +673,7 @@ class mainWindow(QWorker):
             for (dname, spec) in tspec_dict.items():
                 self.doc_dict[dname].table_spec = spec
             self.show_main_status_message("Getting loaded modules")
+            print "user_id is " + str(self.user_id)
             self.loaded_modules = self.post_and_wait("host", "get_loaded_user_modules", {"user_id": self.user_id})[
                 "loaded_modules"]
             self.loaded_modules = [str(module) for module in self.loaded_modules]

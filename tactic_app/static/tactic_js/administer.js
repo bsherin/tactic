@@ -155,6 +155,7 @@ class UserManager extends AdminResourceManager {
             {
                 "buttons": [
                     {"name": "create_user", "func": "create_user_func", "button_class": "btn-default"},
+                    {"name": "duplicate_user", "func": "duplicate_user_func", "button_class": "btn-default"},
                     {"name": "delete_user", "func": "delete_user_func", "button_class": "btn-default"},
                     {"name": "refresh", "func": "refresh_user_table", "button_class": "btn-default"}
                 ]
@@ -179,6 +180,11 @@ class UserManager extends AdminResourceManager {
 
     create_user_func (event) {
         window.open($SCRIPT_ROOT + '/register');
+        event.preventDefault();
+    }
+
+    duplicate_user_func (event) {
+        window.open($SCRIPT_ROOT + '/user_duplicate');
         event.preventDefault();
     }
 }

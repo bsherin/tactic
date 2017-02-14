@@ -164,6 +164,7 @@ class UserManager(ResourceManager):
         result = self.build_html_table_from_data_list(res_array)
         return result
 
+
 user_manager = UserManager("user")
 
 
