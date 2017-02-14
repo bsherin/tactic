@@ -202,7 +202,8 @@ class ListManager extends UserManagerResourceManager {
         ];
         this.button_groups = [
             {"buttons": [{"name": "view", "func": "view_func", "button_class": "btn-default"}]},
-            {"buttons": [{"name": "duplicate", "func": "duplicate_func", "button_class": "btn-default"}]},
+            {"buttons": [{"name": "duplicate", "func": "duplicate_func", "button_class": "btn-default"},
+                         {"name": "rename", "func": "rename_func", "button_class": "btn-default"}]},
             {"buttons": [{"name": "share", "func": "send_repository_func", "button_class": "btn-default"}]},
             {"buttons": [{"name": "delete", "func": "delete_func", "button_class": "btn-default"}]}
         ]
@@ -259,6 +260,7 @@ class CollectionManager extends UserManagerResourceManager {
             },
             {buttons: [
                     {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-default"},
+                    {"name": "rename", "func": "rename_func", "button_class": "btn-default"},
                     {"name": "combine_collections", "func": "combineCollections", "button_class": "btn-default"}]
             },
             {buttons: [{"name": "download", "func": "downloadCollection", "button_class": "btn btn-default"},
@@ -341,6 +343,7 @@ class ProjectManager extends UserManagerResourceManager {
                     {"name": "load", "func": "load_func", "button_class": "btn-default"}]
             },
             {buttons: [
+                    {"name": "rename", "func": "rename_func", "button_class": "btn-default"},
                     {"name": "share", "func": "send_repository_func", "button_class": "btn-default"}]
             },
             {buttons: [
@@ -414,7 +417,8 @@ class TileManager extends UserManagerResourceManager {
                     {"name": "unload", "func": "unload_func", "button_class": "btn-default"}]
             },
             {buttons: [
-                    {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-default"}]
+                    {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-default"},
+                    {"name": "rename", "func": "rename_func", "button_class": "btn-default"}]
             },
             {buttons: [
                     {"name": "share", "func": "send_repository_func", "button_class": "btn-default"}]
@@ -564,7 +568,8 @@ class CodeManager extends UserManagerResourceManager {
                     {"name": "view", "func": "view_func", "button_class": "btn-default"}]
             },
             {buttons: [
-                    {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-default"}]
+                    {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-default"},
+                    {"name": "rename", "func": "rename_func", "button_class": "btn-default"}]
             },
             {buttons: [
                     {"name": "share", "func": "send_repository_func", "button_class": "btn-default"}]

@@ -193,7 +193,7 @@ class UserManagerResourceManager extends ResourceManager{
         const the_type = manager.res_type;
         if (res_name == "") return;
         $.getJSON($SCRIPT_ROOT + "get_resource_names/" + the_type, function(data) {
-                showModal(`Duplicate ${manager.res_type}`, "New Tile Name", DuplicateResource, res_name, data["resource_names"])
+                showModal(`Duplicate ${manager.res_type}`, "New Name", DuplicateResource, res_name, data["resource_names"])
             }
         );
         function DuplicateResource(new_name) {
@@ -206,6 +206,38 @@ class UserManagerResourceManager extends ResourceManager{
                 .catch(doFlash)
         }
     }
+
+    rename_func (event) {
+        const manager = event.data.manager;
+        const res_name = manager.check_for_selection("resource");
+        const the_type = manager.res_type;
+        if (res_name == "") return;
+        $.getJSON($SCRIPT_ROOT + "get_resource_names/" + the_type, function(data) {
+                const res_names = data["resource_names"];
+                const index = res_names.indexOf(res_name);
+                if (index >= 0) {
+                    res_names.splice(index, 1);
+                }
+                showModal(`Rename ${manager.res_type}`, "New Name", RenameResource, res_name, res_names)
+            }
+        );
+        function RenameResource(new_name) {
+            const the_data = {"new_name": new_name};
+            postAjax(`rename_resource/${the_type}/${res_name}`, the_data, renameSuccess);
+            function renameSuccess(data) {
+                if (data.success) {
+                    self.resource_name = new_name;
+                    $("#rename-button").text(self.resource_name)
+                }
+                else {
+                    doFlash(data);
+                    return false
+                }
+
+            }
+        }
+    }
+
 
     delete_func (event) {
         const manager = event.data.manager;

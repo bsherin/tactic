@@ -1329,6 +1329,31 @@ def rename_resource(res_type, old_name):
     return globals()["rename_" + res_type](old_name)
 
 
+def rename_collection(old_name):
+    try:
+        new_name = request.json["new_name"]
+        full_old_name = current_user.build_data_collection_name(old_name)
+        full_new_name = current_user.build_data_collection_name(new_name)
+        db[full_old_name] .rename(full_new_name)
+        collection_manager.update_selector_list()
+        return jsonify({"success": True, "message": "collection name changed", "alert_type": "alert-success"})
+    except:
+        error_string = "Error renaming collection " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+
+
+def rename_project(old_name):
+    try:
+        new_name = request.json["new_name"]
+        db[current_user.project_collection_name].update_one({"project_name": old_name},
+                                                            {'$set': {"project_name": new_name}})
+        project_manager.update_selector_list()
+        return jsonify({"success": True, "message": "project name changed", "alert_type": "alert-success"})
+    except:
+        error_string = "Error renaming project " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+
+
 @app.route('/rename_tile/<old_name>', methods=['post'])
 @login_required
 def rename_tile(old_name):
