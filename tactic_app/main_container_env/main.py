@@ -1174,6 +1174,8 @@ class mainWindow(QWorker):
     @task_worthy
     def get_tile_ids(self, data):
         tile_ids = self.tile_instances.keys()
+        if self.pseudo_tile_id is not None:
+            tile_ids.append(self.pseudo_tile_id)
         return {"success": True, "tile_ids": tile_ids}
 
     @task_worthy

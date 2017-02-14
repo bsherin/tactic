@@ -242,9 +242,17 @@ function change_doc(el, row_id) {
     }
 }
 
-
 function removeMainwindow() {
-    $.getJSON($SCRIPT_ROOT + "/remove_mainwindow/" + String(main_id))
+    target = "/remove_mainwindow/" + String(main_id)
+
+    // Note that the async: false  below is important.
+    // That's why I don't use postAjax
+    $.ajax({
+        url: $SCRIPT_ROOT + target,
+        contentType: 'application/json',
+        type: 'POST',
+        async: false
+    });
 }
 
 spinner_html = '<span class="loader-small"></span>';
