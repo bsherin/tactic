@@ -312,7 +312,7 @@ class OptionManager extends CreatorResourceManager {
                     }
                 }
                 else if (option_type == "boolean") {
-                    if (["true", "True", "false", "false"].indexOf(option_default) == -1) {
+                    if (["true", "True", "false", "False"].indexOf(option_default) == -1) {
                         doFlash({"message": "Invalid default value.", "alert_type": "alert-warning"});
                         return false
                     }
