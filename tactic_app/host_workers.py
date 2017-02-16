@@ -4,7 +4,7 @@ from flask_login import url_for
 from users import load_user
 import gevent
 from communication_utils import send_request_to_container
-from docker_functions import create_container, get_address, destroy_container, cli, container_owners, destroy_user_containers
+from docker_functions import create_container, get_address, destroy_container, cli
 from tactic_app.global_tile_management import global_tile_manager
 from tactic_app import app, socketio, mongo_uri, megaplex_address, use_ssl # global_stuff
 from views.user_manage_views import tile_manager, project_manager, collection_manager

@@ -27,24 +27,29 @@ class ContainerManager(ResourceManager):
                          login_required(self.refresh_container_table), methods=['get'])
 
     def clear_user_containers(self, user_manage_id):
+        tactic_image_names = ["tactic_tile_image", "tactic_main_image"]
+        tactic_image_ids = {}
+        for iname in tactic_image_names:
+            tactic_image_ids[iname] = cli.images.get(iname).id
+
         if not (current_user.get_id() == repository_user.get_id()):
             return jsonify({"success": False, "message": "not authorized", "alert_type": "alert-warning"})
         try:
             self.show_um_message("removing user containers", user_manage_id)
-            all_containers = cli.containers(all=True)
+            all_containers = cli.containers.list(all=True)
             for cont in all_containers:
-                if cont["Image"] in ["tactic_main_image"]:
-                    self.show_um_message("removing main container " + cont["Id"], user_manage_id)
-                    cli.remove_container(cont["Id"], force=True)
+                if cont.attrs["Image"] == tactic_image_ids["tactic_main_image"]:
+                    self.show_um_message("removing main container " + cont.id, user_manage_id)
+                    cont.remove(force=True)
                     continue
-                if cont["Image"] in ["tactic_tile_image"]:
-                    if not cont["Id"] == global_tile_manager.test_tile_container_id:
-                        self.show_um_message("removing tile container " + cont["Id"], user_manage_id)
-                        cli.remove_container(cont["Id"], force=True)
+                if cont.attrs["Image"] == tactic_image_ids["tactic_tile_image"]:
+                    if not cont.id == global_tile_manager.test_tile_container_id:
+                        self.show_um_message("removing tile container " + cont.id, user_manage_id)
+                        cont.remove(force=True)
                     continue
-                if cont["Image"] == cont["ImageID"]:
-                    self.show_um_message("removing image container " + cont["Id"], user_manage_id)
-                    cli.remove_container(cont["Id"], force=True)
+                # if cont.attrs["Image"] == cont.attrs["ImageID"]:
+                #     self.show_um_message("removing image container " + cont["Id"], user_manage_id)
+                #     cli.remove_container(cont["Id"], force=True)
         except Exception as ex:
             template = "<pre>An exception of type {0} occured. Arguments:\n{1!r}</pre>"
             error_string = template.format(type(ex).__name__, ex.args)
@@ -94,7 +99,7 @@ class ContainerManager(ResourceManager):
         if not (current_user.get_id() == repository_user.get_id()):
             return jsonify({"success": False, "message": "not authorized", "alert_type": "alert-warning"})
         try:
-            log_text = cli.logs(container_id)
+            log_text = cli.containers.get(container_id).logs()
         except Exception as ex:
             template = "<pre>An exception of type {0} occured. Arguments:\n{1!r}</pre>"
             error_string = template.format(type(ex).__name__, ex.args)
@@ -108,18 +113,25 @@ class ContainerManager(ResourceManager):
 
     # noinspection PyMethodOverriding
     def build_resource_array(self):
-        larray = [["Id", "Name", "Image", "Owner", "Status"]]
-        all_containers = cli.containers(all=True)
+        tactic_image_names = ["tactic_tile_image", "tactic_main_image", "tactic_megaplex_image", "forwarder_image"]
+        image_id_names = {}
+        for iname in tactic_image_names:
+            image_id_names[cli.images.get(iname).id] = iname
+
+        larray = [["Id", "Name", "Image", "Owner", "Status", "Created"]]
+        all_containers = cli.containers.list(all=True)
         for cont in all_containers:
-            if cont["Id"] in container_owners:
-                owner_id = container_owners[cont["Id"]]
+            if cont.id in container_owners:
+                owner_id = container_owners[cont.id]
                 if owner_id == "host":
                     owner_name = "host"
                 else:
                     owner_name = load_user(owner_id).username
             else:
                 owner_name = "system"
-            larray.append([cont["Id"], cont["Names"][0], cont["Image"], owner_name, cont["Status"]])
+            larray.append([cont.short_id, cont.attrs["Name"],
+                           image_id_names[cont.attrs["Image"]],
+                           owner_name, cont.status, cont.attrs["Created"]])
         return larray
 
     def request_update_selector_list(self, user_obj=None):
