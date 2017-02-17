@@ -24,6 +24,7 @@ def send_request_to_container(taddress, msg_type, data_dict=None, wait_for_succe
             data_dict = {}
         data_dict["msg_type"] = msg_type
         data_dict["forwarding_address"] = taddress
+        data_dict["wait_for_success"] = wait_for_success
         msg_type = "forward_message"
         taddress = "0.0.0.0"
         port = "8080"

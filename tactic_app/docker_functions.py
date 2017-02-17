@@ -39,7 +39,7 @@ def get_address(container_identifier, network_name):
 
 
 def create_container(image_name, container_name=None, network_mode="bridge",
-                     wait_until_running=True, owner="host", env_vars={}, port_bindings=None):
+                     wait_until_running=True, owner="host", env_vars={}, port_bindings=None, wait_retries=50):
     environ = {"SHORT_SLEEP_PERIOD": SHORT_SLEEP_PERIOD,
                "LONG_SLEEP_PERIOD": LONG_SLEEP_PERIOD,
                "MAX_QUEUE_LENGTH": MAX_QUEUE_LENGTH,
@@ -72,8 +72,16 @@ def create_container(image_name, container_name=None, network_mode="bridge",
     # container.start()
     container = cli.containers.get(container_id)
     print "status " + str(container.status)
+
+    # tactic_change create_container can now return -1
+    retries = 0
     if wait_until_running:
         while not container.status == "running":
+            retries += 1
+            if retries > wait_retries:
+                print "container failed to start"
+                return -1
+            print "sleeping while waiting for container {} to run".format(str(container_id))
             time.sleep(0.1)
     container_owners[container_id] = owner
     return container_id
