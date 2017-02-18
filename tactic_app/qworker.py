@@ -3,7 +3,8 @@ import uuid
 import time
 import datetime
 import os
-from communication_utils import send_request_to_container
+from communication_utils import send_request_to_megaplex
+import communication_utils
 import cPickle
 from bson.binary import Binary
 
@@ -18,6 +19,14 @@ blank_packet = {"source": None,
 
 SHORT_SLEEP_PERIOD = float(os.environ.get("SHORT_SLEEP_PERIOD"))
 LONG_SLEEP_PERIOD = float(os.environ.get("LONG_SLEEP_PERIOD"))
+
+if "MEGAPLEX_ADDRESS" in os.environ:
+    communication_utils.megaplex_address = os.environ.get("MEGAPLEX_ADDRESS")
+else:
+    communication_utils.megaplex_address = None
+
+print "got megaplex " + str(communication_utils.megaplex_address)
+
 if "RETRIES" in os.environ:
     RETRIES = int(os.environ.get("RETRIES"))
 else:
@@ -30,13 +39,13 @@ def task_worthy(m):
     task_worthy_methods.append(m.__name__)
     return m
 
-
 class QWorker(gevent.Greenlet):
-    def __init__(self, app, megaplex_address, my_id):
+    def __init__(self):
         gevent.Greenlet.__init__(self)
-        self.megaplex_address = megaplex_address
-        self.my_id = my_id
-        self.app = app
+        if "MY_ID" in os.environ:
+            self.my_id = os.environ.get("MY_ID")
+        else:
+            self.my_id = "host"
 
     def debug_log(self, msg):
         timestring = datetime.datetime.today().strftime("%b %d, %Y, %H:%M:%S")
@@ -45,7 +54,7 @@ class QWorker(gevent.Greenlet):
         #     self.app.logger.debug(msg)
 
     def get_next_task(self):
-        raw_result = send_request_to_container(self.megaplex_address, "get_next_task/" + self.my_id)
+        raw_result = send_request_to_megaplex("get_next_task/" + str(self.my_id))
         task_packet = raw_result.json()
         return task_packet
 
@@ -58,9 +67,9 @@ class QWorker(gevent.Greenlet):
                       "response_data": None,
                       "callback_id": callback_id}
         # self.debug_log("in post and wait with new_packet " + str(new_packet))
-        result = send_request_to_container(self.megaplex_address, "post_wait_task", new_packet)
+        result = send_request_to_megaplex("post_wait_task", new_packet)
         for i in range(tries):
-            res = send_request_to_container(self.megaplex_address, "check_wait_task", new_packet).json()
+            res = send_request_to_megaplex("check_wait_task", new_packet).json()
             if res["success"]:
                 # self.debug_log("Got result to post_and_wait")
                 return res["result"]
@@ -83,7 +92,7 @@ class QWorker(gevent.Greenlet):
                       "task_data": task_data,
                       "response_data": None,
                       "callback_id": callback_id}
-        result = send_request_to_container(self.megaplex_address, "post_task", new_packet).json()
+        result = send_request_to_megaplex("post_task", new_packet).json()
         if not result["success"]:
             error_string = "Error posting task with msg_type {} dest {} source {}. Error: {}".format(task_type,
                                                                                                      dest_id,
@@ -93,7 +102,7 @@ class QWorker(gevent.Greenlet):
         return result
 
     def submit_response(self, task_packet):
-        send_request_to_container(self.megaplex_address, "submit_response", task_packet)
+        send_request_to_megaplex("submit_response", task_packet)
         return
 
     def special_long_sleep_function(self):

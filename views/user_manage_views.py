@@ -14,9 +14,8 @@ from tactic_app import app, db, fs, socketio, use_ssl, mongo_uri  # global_stuff
 from tactic_app.file_handling import read_csv_file_to_dict, read_tsv_file_to_dict, read_txt_file_to_dict, load_a_list
 from tactic_app.file_handling import read_freeform_file
 
-from tactic_app.global_tile_management import global_tile_manager
 from tactic_app.users import User, copy_between_accounts
-from tactic_app.docker_functions import send_direct_request_to_container
+from tactic_app.communication_utils import send_request_to_megaplex
 
 from tactic_app.docker_functions import create_container, get_address
 from tactic_app.integrated_docs import api_html, api_dict_by_category, ordered_api_categories
@@ -25,6 +24,7 @@ import traceback
 AUTOSPLIT = True
 AUTOSPLIT_SIZE = 10000
 
+global_tile_manager = tactic_app.shared_dict["global_tile_manager"]
 
 def start_spinner(user_id=None):
     if user_id is None:
@@ -425,10 +425,9 @@ class CollectionManager(ResourceManager):
     def main(self, collection_name):
         user_obj = current_user
         cname = user_obj.build_data_collection_name(collection_name)
-        main_id = create_container("tactic_main_image", owner=user_obj.get_id())
-        caddress = get_address(main_id, "bridge")
-        send_direct_request_to_container(tactic_app.megaplex_id, "register_container",
-                                         {"container_id": main_id, "address": caddress})
+        main_id, container_id = create_container("tactic_main_image", owner=user_obj.get_id())
+        caddress = get_address(container_id, "bridge")
+        send_request_to_megaplex("register_container", {"container_id": main_id, "address": caddress})
         global_tile_manager.add_user(user_obj.username)
 
         the_collection = db[cname]
@@ -441,13 +440,12 @@ class CollectionManager(ResourceManager):
         data_dict = {"collection_name": cname,
                      "main_id": main_id,
                      "user_id": current_user.get_id(),
-                     "megaplex_address": tactic_app.megaplex_address,
                      "project_collection_name": user_obj.project_collection_name,
                      "mongo_uri": mongo_uri,
                      "doc_type": doc_type,
                      "base_figure_url": url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1]}
 
-        result = send_direct_request_to_container(main_id, "initialize_mainwindow", data_dict).json()
+        result = tactic_app.shared_dict["host_worker"].post_and_wait(main_id, "initialize_mainwindow", data_dict)
         if not result["success"]:
             return result["message_string"]
         short_collection_name = re.sub("^.*?\.data_collection\.", "", collection_name)
@@ -897,11 +895,8 @@ class TileManager(ResourceManager):
                 user_obj = current_user
             tile_module = user_obj.get_tile_module(tile_module_name)
 
-            result = send_direct_request_to_container(global_tile_manager.test_tile_container_id, "load_source",
-                                                      {"tile_code": tile_module,
-                                                       "megaplex_address": tactic_app.megaplex_address})
-            res_dict = result.json()
-
+            res_dict = tactic_app.shared_dict["host_worker"].post_and_wait(global_tile_manager.test_tile_container_id, "load_source",
+                                               {"tile_code": tile_module})
             if not res_dict["success"]:
                 return jsonify({"success": False, "message": res_dict["message_string"], "alert_type": "alert-warning"})
             category = res_dict["category"]
@@ -1101,10 +1096,8 @@ class CodeManager(ResourceManager):
         return jsonify({"success": True, "the_content": the_code})
 
     def load_code(self, the_code):
-        result = send_direct_request_to_container(global_tile_manager.test_tile_container_id, "clear_and_load_code",
-                                                  {"the_code": the_code,
-                                                   "megaplex_address": tactic_app.megaplex_address})
-        res_dict = result.json()
+        res_dict = tactic_app.shared_dict["host_worker"].post_and_wait(global_tile_manager.test_tile_container_id, "clear_and_load_code",
+                                           {"the_code": the_code})
         return res_dict
 
     def add_code(self):

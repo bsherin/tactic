@@ -196,6 +196,7 @@ def check_wait_task():
 
 @app.route('/get_next_task/<requester_id>', methods=["get", "post"])
 def get_next_task(requester_id):
+    # dmsg("got get_next_task request from " + str(requester_id))
     update_last_passive_contact(requester_id)
     if requester_id not in queue_dict:
         queue_dict[requester_id] = {"tasks": Queue.Queue(),

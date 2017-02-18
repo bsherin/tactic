@@ -13,6 +13,7 @@ from flask.ext.bootstrap import Bootstrap
 from flask.ext.socketio import SocketIO
 from flask_wtf.csrf import CsrfProtect
 from docker_functions import create_container, get_address
+import docker_functions
 from communication_utils import send_request_to_container, USE_FORWARDER
 from integrated_docs import api_array
 
@@ -31,23 +32,24 @@ else:
 # these variables are imported by other modules
 host_ip = re.search("inet (.*?)/", ip_info).group(1)
 mongo_uri = None
-megaplex_address = None
 megaplex_id = None
 use_ssl = os.environ.get("USE_SSL")
 app = None
 db = None
 fs = None
 socketio = None
+shared_dict = {}
 
 
 def print_message():
     print "got to the message"
 
 
+# tactic_change create_megaplex
 def create_megaplex():
-    global megaplex_address, megaplex_id
-    megaplex_id = create_container("tactic_megaplex_image")
-    megaplex_address = get_address(megaplex_id, "bridge")
+    unique_id, megaplex_id = create_container("tactic_megaplex_image", port_bindings={5000: 8080})
+    docker_functions.megaplex_address = get_address(megaplex_id, "bridge")
+    shared_dict["megaplex_id"] = megaplex_id
 
 
 # noinspection PyUnresolvedReferences

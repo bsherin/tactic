@@ -1,16 +1,17 @@
 from flask import render_template, jsonify, send_file
 from flask_login import login_required, current_user
 from tactic_app import app, use_ssl, create_megaplex
-from tactic_app.global_tile_management import global_tile_manager
+from tactic_app.host_workers import global_tile_manager
 from tactic_app.users import User, load_user, get_all_users, remove_user
 from user_manage_views import ResourceManager
 from tactic_app.docker_functions import cli, destroy_container, container_owners
 from docker_cleanup import do_docker_cleanup
+import tactic_app
 import traceback
 
 
 repository_user = User.get_user_by_username("repository")
-
+global_tile_manager = tactic_app.shared_dict["global_tile_manager"]
 
 class ContainerManager(ResourceManager):
 

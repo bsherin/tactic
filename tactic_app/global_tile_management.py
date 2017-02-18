@@ -1,9 +1,7 @@
 import datetime
-from docker_functions import create_container, get_address, send_direct_request_to_container
+from docker_functions import create_container, get_address
 from users import User, load_user, initial_metadata
-
-# global_stuff
-
+import tactic_app
 
 class GlobalTileManager(object):
 
@@ -14,10 +12,10 @@ class GlobalTileManager(object):
         self.tile_classes = {}
         self.user_tiles = {}
         self.loaded_user_modules = {}
-        self.test_tile_container_id = create_container("tactic_tile_image",
+        self.test_tile_container_id, container_id = create_container("tactic_tile_image",
                                                         network_mode="bridge",
                                                         container_name="tile_test_container")
-        self.test_tile_container_address = get_address(self.test_tile_container_id, "bridge")
+
         self.tile_module_index = {}
 
     def get_all_default_tiles(self):
@@ -27,9 +25,8 @@ class GlobalTileManager(object):
 
             for tm in tm_list:
                 module_code = repository_user.get_tile_module(tm)
-                result = send_direct_request_to_container(self.test_tile_container_id, "load_source",
-                                                          {"tile_code": module_code, "megaplex_address": None})
-                res_dict = result.json()
+                res_dict = tactic_app.shared_dict["host_worker"].post_and_wait(self.test_tile_container_id, "load_source",
+                                                  {"tile_code": module_code})
                 if res_dict["success"]:
                     category = res_dict["category"]
                     if category not in self.tile_classes:
@@ -112,4 +109,4 @@ class GlobalTileManager(object):
         if tile_module_name not in self.loaded_user_modules[username]:
             self.loaded_user_modules[username].append(tile_module_name)
 
-global_tile_manager = GlobalTileManager()
+tactic_app.shared_dict["global_tile_manager"] = GlobalTileManager()

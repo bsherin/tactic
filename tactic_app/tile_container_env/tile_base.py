@@ -8,9 +8,7 @@ import requests
 from gevent import monkey; monkey.patch_all()
 import numpy as np
 from bson.binary import Binary
-from flask import render_template
 # noinspection PyUnresolvedReferences
-from qworker import QWorker, task_worthy
 
 from matplotlib_utilities import MplFigure, Mpld3Figure, color_palette_names
 from types import NoneType
@@ -68,7 +66,7 @@ def clear_and_exec_user_code(the_code):
 # noinspection PyMiss
 # ingConstructor
 # noinspection PyUnusedLocal
-class TileBase(QWorker):
+class TileBase(object):
     category = "basic"
     exports = []
     input_start_template = '<div class="form-group form-group-sm"">' \
@@ -92,7 +90,7 @@ class TileBase(QWorker):
                     "full_tile_height", "is_shrunk", "configured"
                     ]
 
-    def __init__(self, main_id, tile_id, tile_name=None):
+    def __init__(self, tworker, main_id, tile_name=None):
         # from tile_main import app, megaplex_address
         # QWorker.__init__(self, app, megaplex_address, tile_id)
         self._sleepperiod = .0001
@@ -103,7 +101,7 @@ class TileBase(QWorker):
                            "full_tile_width", "full_tile_height", "is_shrunk", "img_dict", "current_fig_id"]
         # These define the state of a tile and should be saved
 
-        self.tile_id = tile_id
+        self.tworker = tworker
         self.tile_type = self.__class__.__name__
         if tile_name is None:
             self.tile_name = self.tile_type
@@ -133,18 +131,16 @@ class TileBase(QWorker):
         self.function_names = []
         self._pipe_dict = None  # This is set when the form is created
         self.is_pseudo = False
+        self.current_html = None
+        self.old_stdout = None
         return
 
     """
     Basic Machinery to make the tile work.
     """
 
-    def init_qworker(self, app, megaplex_address):
-        QWorker.__init__(self, app, megaplex_address, self.tile_id)
-        return
-
     def post_event(self, event_name):
-        self.post_task(self.my_id, event_name)
+        self.tworker.post_task(self.tworker.my_id, event_name)
         return
 
     @property
@@ -159,20 +155,17 @@ class TileBase(QWorker):
         # with self.app.test_request_context():
         #     self.app.logger.debug(msg)
 
-    @task_worthy
     def RefreshTile(self, data):
         self.do_the_refresh()
         return None
 
-    @task_worthy
     def get_property(self, data):
         data["val"] = getattr(self, data["property"])
         return data
 
-    @task_worthy
     def get_function_names(self, tag=None):
-        func_tag_dict = self.post_and_wait("host", "get_function_tags_dict",
-                                           {"user_id": self.user_id})["function_names"]
+        func_tag_dict = self.tworker.post_and_wait("host", "get_function_tags_dict",
+                                                   {"user_id": self.user_id})["function_names"]
         if tag is None:
             fnames = func_tag_dict.keys()
         else:
@@ -182,9 +175,9 @@ class TileBase(QWorker):
                     fnames.append(func_name)
         return fnames
 
-    @task_worthy
     def get_class_names(self, tag=None):
-        class_tag_dict = self.post_and_wait("host", "get_class_tags_dict", {"user_id": self.user_id})["class_names"]
+        class_tag_dict = self.tworker.post_and_wait("host", "get_class_tags_dict",
+                                                    {"user_id": self.user_id})["class_names"]
         if tag is None:
             cnames = class_tag_dict.keys()
         else:
@@ -194,17 +187,8 @@ class TileBase(QWorker):
                     cnames.append(class_name)
         return cnames
 
-    @task_worthy
-    def ShowContainerLog(self, data):
-        self.log_it("<pre>" + self.get_container_log() + "</pre>")
-        return
-
-    def get_container_log(self):
-        log_text = self.post_and_wait("host", "get_container_log", {"container_id": self.my_id})["log_text"]
-        return log_text
-
     # noinspection PyAttributeOutsideInit
-    @task_worthy
+
     def TileSizeChange(self, data):
         self.width = data["width"]
         self.height = data["height"]
@@ -227,33 +211,27 @@ class TileBase(QWorker):
                 self.handle_size_change()
         return None
 
-    @task_worthy
     def RefreshTileFromSave(self, data):
         self.refresh_from_save()
         return None
 
-    @task_worthy
     def SetSizeFromSave(self, data):
         self.set_tile_size(self.full_tile_width, self.full_tile_height)
         return None
 
-    @task_worthy
     def UpdateOptions(self, data):
         self.update_options(data)
         return None
 
-    @task_worthy
     def CellChange(self, data):
         self.handle_cell_change(data["column_header"], data["id"], data["old_content"],
                                 data["new_content"], data["doc_name"])
         return None
 
-    @task_worthy
     def FreeformTextChange(self, data):
         self.handle_freeform_text_change(data["new_content"], data["doc_name"])
         return None
 
-    @task_worthy
     def TileButtonClick(self, data):
         try:
             self.handle_button_click(data["button_value"], data["doc_name"], data["active_row_id"])
@@ -261,7 +239,6 @@ class TileBase(QWorker):
             self.handle_exception(ex)
         return None
 
-    @task_worthy
     def TileFormSubmit(self, data):
         try:
             self.handle_form_submit(data["form_data"], data["doc_name"], data["active_row_id"])
@@ -269,77 +246,62 @@ class TileBase(QWorker):
             self.handle_exception(ex)
         return None
 
-    @task_worthy
     def TileTextAreaChange(self, data):
         self.handle_textarea_change(data["text_value"])
         return None
 
-    @task_worthy
     def TextSelect(self, data):
         self.handle_text_select(data["selected_text"])
         return None
 
-    @task_worthy
     def DocChange(self, data):
         self.handle_doc_change(data["doc_name"])
         return None
 
-    @task_worthy
     def PipeUpdate(self, data):
         self.handle_pipe_update(data["pipe_name"])
         return None
 
-    @task_worthy
     def TileWordClick(self, data):
         self.handle_tile_word_click(data["clicked_text"], data["doc_name"], data["active_row_id"])
         return None
 
-    @task_worthy
     def TileRowClick(self, data):
         self.handle_tile_row_click(data["clicked_row"], data["doc_name"], data["active_row_id"])
         return None
 
-    @task_worthy
     def TileCellClick(self, data):
         self.handle_tile_cell_click(data["clicked_cell"], data["doc_name"], data["active_row_id"])
         return None
 
-    @task_worthy
     def TileElementClick(self, data):
         self.handle_tile_element_click(data["dataset"], data["doc_name"], data["active_row_id"])
         return None
 
-    @task_worthy
     def HideOptions(self, data):
         self.hide_options()
         return None
 
-    @task_worthy
     def StartSpinner(self, data):
         self.start_spinner()
         return None
 
-    @task_worthy
     def StopSpinner(self, data):
         self.stop_spinner()
         return None
 
-    @task_worthy
     def ShrinkTile(self, data):
         self.is_shrunk = True
         return None
 
-    @task_worthy
     def ExpandTile(self, data):
         self.is_shrunk = False
         return None
 
-    @task_worthy
     def LogTile(self, data):
         self.handle_log_tile()
         return None
 
-    @task_worthy
     def LogParams(self, data):
         parray = [["name", "value"]]
         for opt in self.options:
@@ -347,15 +309,14 @@ class TileBase(QWorker):
 
         self.log_it(self.build_html_table_from_data_list(parray, title=self.tile_name,
                                                          sidebyside=True))
+        return None
 
-    @task_worthy
     def RebuildTileForms(self, data):
         form_html = self.create_form_html(data)["form_html"]
         self.emit_tile_message("displayFormContent", {"html": form_html})
         return None
 
     # Info needed here: list_names, current_header_list, pipe_dict, doc_names
-    @task_worthy
     def create_form_html(self, data):
         self._pipe_dict = data["pipe_dict"]
         try:
@@ -525,12 +486,14 @@ class TileBase(QWorker):
             self.save_attrs = list(set(self.save_attrs))
             return {"form_html": form_html}
         except:
-            error_string = ("error creating form for  " + self.__class__.__name__ + " tile: " + self.my_id + " " +
+            error_string = ("error creating form for  " + self.__class__.__name__ + " tile: "
+                            + self.tworker.my_id + " " +
                             str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
-            self.debug_log("Got an error creating form " + error_string)
+            self.tworker.debug_log("Got an error creating form " + error_string)
             # self.display_message(error_string, True)
             return error_string
 
+    # noinspection PyUnresolvedReferences
     def resize_mpl_tile(self):
         self.draw_plot()
         new_html = self.create_figure_html()
@@ -548,23 +511,23 @@ class TileBase(QWorker):
 
     def distribute_event(self, event_name, data_dict):
         data_dict["event_name"] = event_name
-        self.post_task(self.main_id, "distribute_events_stub", data_dict)
+        self.tworker.post_task(self.main_id, "distribute_events_stub", data_dict)
 
     def get_main_property(self, prop_name):
         data_dict = {"property": prop_name}
-        result = self.post_and_wait(self.main_id, "get_property", data_dict)
+        result = self.tworker.post_and_wait(self.main_id, "get_property", data_dict)
         return result["val"]
 
     def ask_host(self, msg_type, task_data=None, callback_func=None):
         task_data["main_id"] = self.main_id
-        self.post_task("host", msg_type, task_data, callback_func)
+        self.tworker.post_task("host", msg_type, task_data, callback_func)
         return
 
     def emit_tile_message(self, message, data=None):
         if data is None:
             data = {}
         data["tile_message"] = message
-        data["tile_id"] = self.my_id
+        data["tile_id"] = self.tworker.my_id
         self.ask_host("emit_tile_message", data)
         return
 
@@ -588,7 +551,6 @@ class TileBase(QWorker):
         self.do_the_refresh(message)
         return
 
-    @task_worthy
     def compile_save_dict(self, data):
         result = {"my_class_for_recreate": "TileBase"}
         result["binary_attrs"] = []
@@ -611,7 +573,7 @@ class TileBase(QWorker):
                     except (TypeError, exceptions.UnicodeDecodeError) as e:
                         pass
                 try:
-                    self.debug_log("Found non jsonizable attribute " + attr)
+                    self.tworker.debug_log("Found non jsonizable attribute " + attr)
                     result["binary_attrs"].append(attr)
                     bser_attr_val = Binary(cPickle.dumps(attr_val))
                     result[attr] = bser_attr_val
@@ -620,7 +582,6 @@ class TileBase(QWorker):
 
         return result
 
-    @task_worthy
     def recreate_from_save(self, save_dict):
         if "binary_attrs" not in save_dict:
             save_dict["binary_attrs"] = []
@@ -641,9 +602,8 @@ class TileBase(QWorker):
                     setattr(self, attr, decoded_val)
                 else:
                     setattr(self, attr, attr_val)
-        return
+        return None
 
-    @task_worthy
     def render_tile(self, data):
         return {"tile_html": self.render_me(data)}
 
@@ -684,21 +644,20 @@ class TileBase(QWorker):
                 result["info_string"] = result["type"]
         return result
 
-    @task_worthy
     def exec_console_code(self, data):
         import StringIO
         try:
             self._pipe_dict = data["pipe_dict"]
             the_code = data["the_code"]
-            the_code = re.sub("(\s*)$", "", the_code) # remove trailing whie space
-            last_line_matches = re.findall("\n.*$", the_code) # extract the last line
+            the_code = re.sub("(\s*)$", "", the_code)  # remove trailing whie space
+            last_line_matches = re.findall("\n.*$", the_code)  # extract the last line
             if len(last_line_matches) == 0:
                 last_line = the_code
                 the_code = None
             else:
                 last_line = last_line_matches[0]
-                last_line = re.sub("^\s*", "", last_line) # remove initial white space from the last line
-                the_code = re.sub("\n.*$", "", the_code) # remove last line
+                last_line = re.sub("^\s*", "", last_line)  # remove initial white space from the last line
+                the_code = re.sub("\n.*$", "", the_code)  # remove last line
 
             additional_output = ""
             old_stdout = sys.stdout
@@ -706,7 +665,7 @@ class TileBase(QWorker):
             sys.stdout = redirected_output
             try:
                 if the_code is not None:
-                    exec(the_code)
+                    exec the_code
                 result = eval(last_line)
                 additional_output = str(result)
                 data["result_string"] = redirected_output.getvalue() + "\n" + additional_output
@@ -720,10 +679,9 @@ class TileBase(QWorker):
                 sys.stdout = old_stdout
 
         except Exception as ex:
-            data["result_string"] = self.handle_exception(ex, "Error executing console code", print_to_console = False)
+            data["result_string"] = self.handle_exception(ex, "Error executing console code", print_to_console=False)
         return data
 
-    @task_worthy
     def get_export_info(self, data):
         try:
             ename = data["export_name"]
@@ -733,10 +691,9 @@ class TileBase(QWorker):
             result["success"] = True
         except Exception as Ex:
             result = {"success": False,
-                      "info_string": self.handle_exception(Ex, "", print_to_console = False)}
+                      "info_string": self.handle_exception(Ex, "", print_to_console=False)}
         return result
 
-    @task_worthy
     def evaluate_export(self, data):
         self._pipe_dict = data["pipe_dict"]
         pipe_val = self.get_pipe_value(data["export_name"])
@@ -758,13 +715,13 @@ class TileBase(QWorker):
                     for key, the_val in eval_result.items():
                         the_array.append([key, the_val])
                     the_html = self.build_html_table_for_exports(the_array, title=eval_type_info["info_string"],
-                                                                    has_header=False)
+                                                                 has_header=False)
                 elif eval_type_info["type"] == "list":
                     the_array = []
                     for i, the_val in enumerate(eval_result):
                         the_array.append([i, the_val])
                     the_html = self.build_html_table_for_exports(the_array, title=eval_type_info["info_string"],
-                                                                    has_header=False)
+                                                                 has_header=False)
                 else:
                     the_html = "<h5>{}</h5>".format(eval_type_info["info_string"])
                     the_html += str(eval_result)
@@ -785,28 +742,29 @@ class TileBase(QWorker):
             dbr_string = ""
             bda_string = ""
             main_height = self.full_tile_height
-        with self.app.test_request_context():
-            # noinspection PyUnresolvedReferences
-            result = render_template("saved_tile.html", tile_id=self.my_id,
-                                     tile_name=self.tile_name,
-                                     form_text=form_html,
-                                     current_html=self.current_html,
-                                     whole_width=self.full_tile_width,
-                                     whole_height=main_height,
-                                     front_height=self.front_height,
-                                     front_width=self.front_width,
-                                     back_height=self.back_height,
-                                     back_width=self.back_width,
-                                     tile_log_height = self.tile_log_height,
-                                     tile_log_width = self.tile_log_width,
-                                     tda_height=self.tda_height,
-                                     tda_width=self.tda_width,
-                                     is_strunk=self.is_shrunk,
-                                     triangle_right_display_string=dsr_string,
-                                     triangle_bottom_display_string=dbr_string,
-                                     front_back_display_string=bda_string
-                                 )
-        return result
+
+        render_fields = {"tile_id": self.tworker.my_id,
+                         "tile_name": self.tile_name,
+                         "form_text": form_html,
+                         "current_html": self.current_html,
+                         "whole_width": self.full_tile_width,
+                         "whole_height": main_height,
+                         "front_height": self.front_height,
+                         "front_width": self.front_width,
+                         "back_height": self.back_height,
+                         "back_width": self.back_width,
+                         "tile_log_height":  self.tile_log_height,
+                         "tile_log_width":  self.tile_log_width,
+                         "tda_height": self.tda_height,
+                         "tda_width": self.tda_width,
+                         "is_strunk": self.is_shrunk,
+                         "triangle_right_display_string": dsr_string,
+                         "triangle_bottom_display_string": dbr_string,
+                         "front_back_display_string": bda_string}
+        result = self.tworker.post_and_wait("host",
+                                            "request_render",
+                                            {"template": "saved_tile.html", "render_fields": render_fields})
+        return result["render_result"]
 
     def handle_exception(self, ex, special_string=None, print_to_console=True):
         if special_string is None:
@@ -816,7 +774,7 @@ class TileBase(QWorker):
         error_string = template.format(type(ex).__name__, ex.args)
         error_string += traceback.format_exc()
         error_string = "<pre>" + error_string + "</pre>"
-        self.debug_log(error_string)
+        self.tworker.debug_log(error_string)
         if print_to_console:
             self.log_it(error_string, force_open=True)
         return error_string
@@ -901,7 +859,7 @@ class TileBase(QWorker):
         return
 
     def render_content(self):
-        self.debug_log("render_content not implemented")
+        self.tworker.debug_log("render_content not implemented")
         return " "
 
     """
@@ -943,7 +901,7 @@ class TileBase(QWorker):
 
     def get_document_names(self):
         self.save_stdout()
-        result =  self.get_main_property("doc_names")
+        result = self.get_main_property("doc_names")
         self.restore_stdout()
         return result
 
@@ -955,57 +913,57 @@ class TileBase(QWorker):
 
     def get_document_data(self, document_name):
         self.save_stdout()
-        result = self.post_and_wait(self.main_id, "get_document_data", {"document_name": document_name})
+        result = self.tworker.post_and_wait(self.main_id, "get_document_data", {"document_name": document_name})
         self.restore_stdout()
         return result
 
     def get_document_metadata(self, document_name):
         self.save_stdout()
-        result = self.post_and_wait(self.main_id, "get_document_metadata", {"document_name": document_name})
+        result = self.tworker.post_and_wait(self.main_id, "get_document_metadata", {"document_name": document_name})
         self.restore_stdout()
         return result
 
     def set_document_metadata(self, document_name, metadata):
         self.save_stdout()
-        self.post_task(self.main_id, "set_document_metadata", {"document_name": document_name,
-                                                                    "metadata": metadata})
+        self.tworker.post_task(self.main_id, "set_document_metadata", {"document_name": document_name,
+                                                                       "metadata": metadata})
         self.restore_stdout()
         return
 
     def get_document_data_as_list(self, document_name):
         self.save_stdout()
-        result = self.post_and_wait(self.main_id, "get_document_data_as_list", {"document_name": document_name})
+        result = self.tworker.post_and_wait(self.main_id, "get_document_data_as_list", {"document_name": document_name})
         self.restore_stdout()
         return result["data_list"]
 
     def get_column_names(self, document_name):
         self.save_stdout()
-        result = self.post_and_wait(self.main_id, "get_column_names", {"document_name": document_name})
+        result = self.tworker.post_and_wait(self.main_id, "get_column_names", {"document_name": document_name})
         self.restore_stdout()
         return result["header_list"]
 
     def get_number_rows(self, document_name):
         self.save_stdout()
-        result = self.post_and_wait(self.main_id, "get_number_rows", {"document_name": document_name})
+        result = self.tworker.post_and_wait(self.main_id, "get_number_rows", {"document_name": document_name})
         self.restore_stdout()
         return result["number_rows"]
 
     def get_row(self, document_name, row_id):
         self.save_stdout()
         data = {"document_name": document_name, "row_id": row_id}
-        result = self.post_and_wait(self.main_id, "get_row", data)
+        result = self.tworker.post_and_wait(self.main_id, "get_row", data)
         self.restore_stdout()
         return result
 
     def get_line(self, document_name, line_number):
         data = {"document_name": document_name, "line_number": line_number}
-        result = self.post_and_wait(self.main_id, "get_line", data)
+        result = self.tworker.post_and_wait(self.main_id, "get_line", data)
         return result
 
     def get_cell(self, document_name, row_id, column_name):
         self.save_stdout()
         data = {"document_name": document_name, "row_id": row_id, "column_name": column_name}
-        result = self.post_and_wait(self.main_id, "get_cell", data)
+        result = self.tworker.post_and_wait(self.main_id, "get_cell", data)
         self.restore_stdout()
         return result["the_cell"]
 
@@ -1014,10 +972,10 @@ class TileBase(QWorker):
 
         if document_name is not None:
             task_data = {"column_name": column_name, "doc_name": document_name}
-            result = self.post_and_wait(self.main_id, "get_column_data_for_doc", task_data)
+            result = self.tworker.post_and_wait(self.main_id, "get_column_data_for_doc", task_data)
         else:
             task_data = {"column_name": column_name}
-            result = self.post_and_wait(self.main_id, "get_column_data", task_data)
+            result = self.tworker.post_and_wait(self.main_id, "get_column_data", task_data)
 
         self.restore_stdout()
         return result
@@ -1027,7 +985,7 @@ class TileBase(QWorker):
         result = {}
         for doc_name in self.get_document_names():
             task_data = {"column_name": column_name, "doc_name": doc_name}
-            result[doc_name] = self.post_and_wait(self.main_id, "get_column_data_for_doc", task_data)
+            result[doc_name] = self.tworker.post_and_wait(self.main_id, "get_column_data_for_doc", task_data)
         self.restore_stdout()
         return result
 
@@ -1040,7 +998,7 @@ class TileBase(QWorker):
             "new_content": text,
             "cellchange": cellchange
         }
-        self.post_task(self.main_id, "SetCellContent", task_data)
+        self.tworker.post_task(self.main_id, "SetCellContent", task_data)
         self.restore_stdout()
         return
 
@@ -1050,7 +1008,7 @@ class TileBase(QWorker):
                      "row_id": row_id,
                      "column_name": column_name,
                      "color": color}
-        self.post_task(self.main_id, "SetCellBackground", task_data)
+        self.tworker.post_task(self.main_id, "SetCellBackground", task_data)
         self.restore_stdout()
         return
 
@@ -1068,7 +1026,7 @@ class TileBase(QWorker):
             "new_content": data_list_or_dict,
             "cellchange": cellchange
         }
-        self.post_task(self.main_id, "SetColumnData", task_data)
+        self.tworker.post_task(self.main_id, "SetColumnData", task_data)
         self.restore_stdout()
         return
 
@@ -1093,11 +1051,11 @@ class TileBase(QWorker):
 
     def update_document(self, new_data, document_name):
         self.save_stdout()
-        result = self.post_and_wait(self.main_id, "update_document", {"new_data": new_data, "document_name": document_name})
+        result = self.tworker.post_and_wait(self.main_id, "update_document",
+                                            {"new_data": new_data, "document_name": document_name})
         self.restore_stdout()
         return
 
-    @task_worthy
     def display_matching_rows(self, filter_function, document_name=None):
         self.save_stdout()
         if self.doc_type == "table":
@@ -1130,8 +1088,8 @@ class TileBase(QWorker):
                     for rnum, rtxt in enumerate(data_list):
                         if filter_function(rtxt):
                             result[docname].append(rnum)
-        self.post_task(self.main_id, "display_matching_rows",
-                       {"result": result, "document_name": document_name})
+        self.tworker.post_task(self.main_id, "display_matching_rows",
+                               {"result": result, "document_name": document_name})
         self.restore_stdout()
         return
 
@@ -1147,7 +1105,7 @@ class TileBase(QWorker):
 
     def display_all_rows(self):
         self.save_stdout()
-        self.post_task(self.main_id, "UnfilterTable")
+        self.tworker.post_task(self.main_id, "UnfilterTable")
         self.restore_stdout()
         return
 
@@ -1156,8 +1114,8 @@ class TileBase(QWorker):
         if document_name is not None:
             doc_dict = self.get_document_data(document_name)
             new_doc_dict = {}
-            for id, r in doc_dict.items():
-                new_doc_dict[id] = func(r)
+            for the_id, r in doc_dict.items():
+                new_doc_dict[the_id] = func(r)
             self.set_document(document_name, new_doc_dict, cellchange)
             self.restore_stdout()
             return None
@@ -1172,7 +1130,7 @@ class TileBase(QWorker):
         task_data = {"new_data": new_data,
                      "doc_name": document_name,
                      "cellchange": cellchange}
-        self.post_and_wait(self.main_id, "SetDocument", task_data)
+        self.tworker.post_and_wait(self.main_id, "SetDocument", task_data)
         self.restore_stdout()
         return
 
@@ -1203,7 +1161,7 @@ class TileBase(QWorker):
 
     def display_message(self, message_string, force_open=False):
         self.save_stdout()
-        self.post_task(self.main_id, "print_to_console_event", {"print_string": message_string})
+        self.tworker.post_task(self.main_id, "print_to_console_event", {"print_string": message_string})
         self.restore_stdout()
         return
 
@@ -1215,32 +1173,32 @@ class TileBase(QWorker):
 
     def log_it(self, message_string, force_open=False):
         self.save_stdout()
-        self.post_task(self.main_id, "print_to_console_event", {"print_string": message_string})
+        self.tworker.post_task(self.main_id, "print_to_console_event", {"print_string": message_string})
         self.restore_stdout()
         return
 
     def color_cell_text(self, doc_name, row_id, column_name, tokenized_text, color_dict):
-        # actual_row = self.post_and_wait(self.main_id, "get_actual_row", data)["actual_row"]
+        # actual_row = self.tworker.post_and_wait(self.main_id, "get_actual_row", data)["actual_row"]
         self.save_stdout()
         data_dict = {"doc_name": doc_name,
                      "row_id": row_id,
                      "column_header": column_name,
                      "token_text": tokenized_text,
-                      "color_dict": color_dict}
-        self.post_task(self.main_id, "ColorTextInCell", data_dict)
+                     "color_dict": color_dict}
+        self.tworker.post_task(self.main_id, "ColorTextInCell", data_dict)
         self.restore_stdout()
         return
 
     def get_user_list(self, the_list):
         self.save_stdout()
-        result = self.post_and_wait("host", "get_list", {"user_id": self.user_id, "list_name": the_list})
+        result = self.tworker.post_and_wait("host", "get_list", {"user_id": self.user_id, "list_name": the_list})
         self.restore_stdout()
         return result["the_list"]
 
     def get_user_function(self, function_name):
         self.save_stdout()
-        result = self.post_and_wait("host", "get_code_with_function", {"user_id": self.user_id,
-                                                                              "function_name": function_name})
+        result = self.tworker.post_and_wait("host", "get_code_with_function", {"user_id": self.user_id,
+                                                                               "function_name": function_name})
         the_code = result["the_code"]
         result = exec_user_code(the_code)
         self.restore_stdout()
@@ -1248,8 +1206,8 @@ class TileBase(QWorker):
 
     def get_user_class(self, class_name):
         self.save_stdout()
-        result = self.post_and_wait("host", "get_code_with_class", {"user_id": self.user_id,
-                                                                              "class_name": class_name})
+        result = self.tworker.post_and_wait("host", "get_code_with_class", {"user_id": self.user_id,
+                                                                            "class_name": class_name})
         the_code = result["the_code"]
         result = exec_user_code(the_code)
         self.restore_stdout()
@@ -1257,8 +1215,8 @@ class TileBase(QWorker):
 
     def get_user_collection(self, collection_name):
         self.save_stdout()
-        result = self.post_and_wait(self.main_id, "get_user_collection", {"user_id": self.user_id,
-                                                                          "collection_name": collection_name})
+        result = self.tworker.post_and_wait(self.main_id, "get_user_collection",
+                                            {"user_id": self.user_id, "collection_name": collection_name})
         self.restore_stdout()
         return result["the_collection"]
 
@@ -1280,10 +1238,11 @@ class TileBase(QWorker):
         self.save_stdout()
         for(tile_id, tile_entry) in self._pipe_dict.items():
             if pipe_key in tile_entry:
-                result = self.post_and_wait(tile_entry[pipe_key]["tile_id"],
-                                            "transfer_pipe_value", {"export_name": tile_entry[pipe_key]["export_name"]},
-                                            timeout=60,
-                                            tries=RETRIES)
+                result = self.tworker.post_and_wait(tile_entry[pipe_key]["tile_id"],
+                                                    "transfer_pipe_value",
+                                                    {"export_name": tile_entry[pipe_key]["export_name"]},
+                                                    timeout=60,
+                                                    tries=RETRIES)
                 encoded_val = result["encoded_val"]
                 val = cPickle.loads(encoded_val.decode("utf-8", "ignore").encode("ascii"))
                 self.restore_stdout()
@@ -1291,7 +1250,6 @@ class TileBase(QWorker):
         self.restore_stdout()
         return None
 
-    @task_worthy
     def transfer_pipe_value(self, data):
         self.save_stdout()
         export_name = data["export_name"]
@@ -1322,7 +1280,7 @@ class TileBase(QWorker):
                 "doc_type": doc_type}
         if doc_metadata is not None:
             data["doc_metadata"] = doc_metadata
-        self.post_task(self.main_id, "create_collection", data)
+        self.tworker.post_task(self.main_id, "create_collection", data)
         self.restore_stdout()
         return
 
@@ -1334,7 +1292,7 @@ class TileBase(QWorker):
         uid = self.get_unique_div_id()
         the_html = "<div id='{}'><div class='d3plot'></div>".format(str(uid))
 
-        the_script = "createLinePlot('{0}', '{1}', '{2}')".format(self.my_id, data_name, uid)
+        the_script = "createLinePlot('{0}', '{1}', '{2}')".format(self.tworker.my_id, data_name, uid)
         the_html += "<script class='resize-rerun'>{}</script></div>".format(the_script)
         return the_html
 
@@ -1347,7 +1305,7 @@ class TileBase(QWorker):
         uid = self.get_unique_div_id()
         the_html = "<div id='{}'><div class='d3plot'></div>".format(str(uid))
 
-        the_script = "createScatterPlot('{0}', '{1}', '{2}')".format(self.my_id, data_name, uid)
+        the_script = "createScatterPlot('{0}', '{1}', '{2}')".format(self.tworker.my_id, data_name, uid)
         the_html += "<script class='resize-rerun'>{}</script></div>".format(the_script)
         return the_html
 
@@ -1359,15 +1317,16 @@ class TileBase(QWorker):
 
         if domain is None:
             domain = [np.amin(data), np.amax(data)]
-        data_name = self.create_data_source({"data_list": data, "row_labels": row_labels, "margins": margins, "domain": domain, "title": title})
+        data_name = self.create_data_source({"data_list": data, "row_labels": row_labels, "margins": margins,
+                                             "domain": domain, "title": title})
         uid = self.get_unique_div_id()
         the_html = "<div id='{}'><div class='d3plot'></div>".format(str(uid))
-        the_script = "createHeatmap('{0}', '{1}', '{2}')".format(self.my_id, data_name, uid)
+        the_script = "createHeatmap('{0}', '{1}', '{2}')".format(self.tworker.my_id, data_name, uid)
         the_html += "<script class='resize-rerun' >{}</script></div>".format(the_script)
         return the_html
 
     def get_unique_div_id(self):
-        unique_id = "div-{0}-{1}-{2}".format(self.main_id, self.my_id, self.current_unique_id_index)
+        unique_id = "div-{0}-{1}-{2}".format(self.main_id, self.tworker.my_id, self.current_unique_id_index)
         self.current_unique_id_index += 1
         return str(unique_id)
 
@@ -1383,7 +1342,8 @@ class TileBase(QWorker):
             result += it
         return result
 
-    def build_html_table_from_data_list(self, data_list, title=None, click_type="word-clickable", sortable=True, sidebyside=False, has_header=True):
+    def build_html_table_from_data_list(self, data_list, title=None, click_type="word-clickable",
+                                        sortable=True, sidebyside=False, has_header=True):
         self.save_stdout()
         if sortable:
             if not sidebyside:
@@ -1424,7 +1384,6 @@ class TileBase(QWorker):
         the_html += "</tbody></table>"
         self.restore_stdout()
         return the_html
-
 
     def build_html_table_for_exports(self, data_list, has_header=False, title=None):
         the_html = "<table class='tile-table table sortable table-striped table-bordered table-condensed'>"

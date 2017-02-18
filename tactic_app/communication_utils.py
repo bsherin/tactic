@@ -15,21 +15,39 @@ if "RETRIES" in os.environ:
 else:
     RETRIES = 60
 
+megaplex_address = None
 
-def send_request_to_container(taddress, msg_type, data_dict=None, wait_for_success=True,
-                              timeout=3, tries=RETRIES, wait_time=.1):
-    last_fail = ""
-    if USE_FORWARDER:
-        if data_dict is None:
-            data_dict = {}
-        data_dict["msg_type"] = msg_type
-        data_dict["forwarding_address"] = taddress
-        data_dict["wait_for_success"] = wait_for_success
-        msg_type = "forward_message"
+
+def send_request_to_megaplex(msg_type, data_dict=None, wait_for_success=True, timeout=3, tries=RETRIES, wait_time=.1):
+    if megaplex_address is None:  # assume this is the host
         taddress = "0.0.0.0"
         port = "8080"
     else:
+        taddress = megaplex_address
         port = "5000"
+    last_fail = ""
+    if wait_for_success:
+        for attempt in range(tries):
+            try:
+                res = requests.post("http://{0}:{1}/{2}".format(taddress, port, msg_type),
+                                    timeout=timeout, json=data_dict)
+                return res
+            except:
+                last_fail = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+                time.sleep(wait_time)
+                continue
+        error_string = "Send request to megaplex timed out with msg_type {} and last fail {}".format(msg_type, last_fail)
+        raise Exception(error_string)
+    else:
+        return requests.post("http://{0}:{1}/{2}".format(taddress, port, msg_type), timeout=timeout, json=data_dict)
+
+
+
+# tactic_change send_request to container took out forwarder
+def send_request_to_container(taddress, msg_type, data_dict=None, wait_for_success=True,
+                              timeout=3, tries=RETRIES, wait_time=.1):
+    last_fail = ""
+    port = "5000"
 
     if wait_for_success:
         for attempt in range(tries):

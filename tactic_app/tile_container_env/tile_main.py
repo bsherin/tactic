@@ -1,5 +1,7 @@
-from flask import Flask, jsonify, request
+
 import copy
+# noinspection PyUnresolvedReferences
+from qworker import QWorker, task_worthy
 import tile_env
 from tile_env import class_info
 from tile_env import exec_tile_code
@@ -11,186 +13,293 @@ import types
 import gevent
 import sys
 sys.stdout = sys.stderr
-
-app = Flask(__name__)
-
-tile_instance = None
-
-megaplex_address = None
+import time
 
 
-@app.route('/')
-def hello():
-    return 'This is the provider communicating'
+class TileWorker(QWorker):
+    def __init__(self):
+        QWorker.__init__(self)
+        self.tile_instance = None
 
-def handle_exception(ex, special_string=None):
-    if special_string is None:
-        template = "An exception of type {0} occured. Arguments:\n{1!r}"
-    else:
-        template = special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}"
-    error_string = template.format(type(ex).__name__, ex.args)
-    error_string = "<pre>" + error_string + "</pre>"
-    return jsonify({"success": False, "message_string": error_string})
+    @task_worthy
+    def hello(self, data_dict):
+        return {"success": True, "message": 'This is tile communicating'}
 
-# it should return a dict with success, functions, classes
-@app.route('/load_source', methods=["get", "post"])
-def load_source():
-    try:
-        global megaplex_address
-        print("entering load_source")
-        data_dict = request.json
-        megaplex_address = data_dict["megaplex_address"]
-        tile_code = data_dict["tile_code"]
-        result = exec_tile_code(tile_code)
-    except Exception as ex:
-        return handle_exception(ex, "Error loading source")
-    return jsonify(result)
-
-@app.route('/get_options', methods=["get", "post"])
-def get_options():
-    try:
-        the_class = class_info["tile_class"]
-        tile_instance = the_class(0, 0)
-        opt_dict = tile_instance.options
-        export_list = tile_instance.exports
-
-    except Exception as ex:
-        return handle_exception(ex, "Error extracting options from source")
-    return jsonify({"success": True, "opt_dict": opt_dict, "export_list": export_list})
-
-# This should only be used in the tester tile.
-@app.route('/clear_and_load_code', methods=["get", "post"])
-def clear_and_load_code():
-    try:
-        global megaplex_address
-        print("entering load_source")
-        data_dict = request.json
-        megaplex_address = data_dict["megaplex_address"]
-        the_code = data_dict["the_code"]
-        result = clear_and_exec_user_code(the_code)
-    except Exception as ex:
-        return handle_exception(ex, "Error loading source")
-    return jsonify(result)
-
-@app.route("/recreate_from_save", methods=["get", "post"])
-def recreate_from_save():
-    try:
-        print("entering recreate_from_save. class_name is " + class_info["class_name"])
-        global tile_instance
-        data = copy.copy(request.json)
-        tile_instance = class_info["tile_class"](data["main_id"], data["tile_id"],
-                                                 data["tile_name"])
-        tile_instance.init_qworker(app, megaplex_address)
-        if "tile_log_width" not in data:
-            data["tile_log_width"] = data["back_width"]
-            data["tile_log_height"] = data["back_height"]
-        tile_instance.recreate_from_save(data)
-        tile_instance.current_html = tile_instance.current_html.replace(data["base_figure_url"],
-                                                                        data["new_base_figure_url"])
-        tile_instance.base_figure_url = data["new_base_figure_url"]
-        if "doc_type" in data:
-            tile_instance.doc_type = data["doc_type"]
+    def handle_exception(self, ex, special_string=None):
+        if special_string is None:
+            template = "An exception of type {0} occured. Arguments:\n{1!r}"
         else:
-            tile_instance.doc_type = "table"
-        tile_instance.start()
-        print("tile instance started")
-    except Exception as ex:
-        return handle_exception(ex, "Error loading source")
-    return jsonify({"success": True,
-                    "is_shrunk": tile_instance.is_shrunk,
-                    "saved_size": tile_instance.full_tile_height,
-                    "exports": tile_instance.exports,
-                    "tile_name": tile_instance.tile_name})
+            template = special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}"
+        error_string = template.format(type(ex).__name__, ex.args)
+        error_string = "<pre>" + error_string + "</pre>"
+        return {"success": False, "message_string": error_string}
 
+    @task_worthy
+    def load_source(self, data_dict):
+        try:
+            print("entering load_source")
+            tile_code = data_dict["tile_code"]
+            result = exec_tile_code(tile_code)
+        except Exception as ex:
+            return self.handle_exception(ex, "Error loading source")
+        return result
 
-@app.route('/get_image/<figure_name>', methods=["get", "post"])
-def get_image(figure_name):
-    try:
-        encoded_img = Binary(cPickle.dumps(tile_instance.img_dict[figure_name]))
-        return jsonify({"success": True, "img": encoded_img})
-    except Exception as ex:
-        return handle_exception(ex, "Error loading source")
+    @task_worthy
+    def get_options(self, data_dict):
+        try:
+            the_class = class_info["tile_class"]
+            self.tile_instance = the_class(0, 0)
+            opt_dict = self.tile_instance.options
+            export_list = self.tile_instance.exports
+        except Exception as ex:
+            return self.handle_exception(ex, "Error extracting options from source")
+        return {"success": True, "opt_dict": opt_dict, "export_list": export_list}
 
-@app.route('/kill_me', methods=["get", "post"])
-def kill_me():
-    gevent.kill(tile_instance)
-    return
+    # This should only be used in the tester tile.
+    @task_worthy
+    def clear_and_load_code(self, data_dict):
+        try:
+            the_code = data_dict["the_code"]
+            result = clear_and_exec_user_code(the_code)
+        except Exception as ex:
+            return self.handle_exception(ex, "Error loading source")
+        return result
 
+    @task_worthy
+    def recreate_from_save(self, data):
+        try:
+            print("entering recreate_from_save. class_name is " + class_info["class_name"])
+            self.tile_instance = class_info["tile_class"](data["main_id"], data["tile_id"],
+                                                          data["tile_name"])
+            if "tile_log_width" not in data:
+                data["tile_log_width"] = data["back_width"]
+                data["tile_log_height"] = data["back_height"]
+            self.tile_instance.recreate_from_save(data)
+            self.tile_instance.current_html = self.tile_instance.current_html.replace(data["base_figure_url"],
+                                                                                      data["new_base_figure_url"])
+            self.tile_instance.base_figure_url = data["new_base_figure_url"]
+            if "doc_type" in data:
+                self.tile_instance.doc_type = data["doc_type"]
+            else:
+                self.tile_instance.doc_type = "table"
+            self.tile_instance.start()
+            print("tile instance started")
+        except Exception as ex:
+            return self.handle_exception(ex, "Error loading source")
+        return {"success": True,
+                "is_shrunk": self.tile_instance.is_shrunk,
+                "saved_size": self.tile_instance.full_tile_height,
+                "exports": self.tile_instance.exports,
+                "tile_name": self.tile_instance.tile_name}
 
-@app.route('/reinstantiate_tile', methods=["get", "post"])
-def reinstantiate_tile():
-    try:
-        print("entering reinstantiate_tile_class")
-        global tile_instance
-        gevent.kill(tile_instance)
-        reload_dict = copy.copy(request.json)
-        tile_instance = class_info["tile_class"](reload_dict["main_id"], reload_dict["my_id"],
-                                                 reload_dict["tile_name"])
-        tile_instance.init_qworker(app, megaplex_address)
-        for (attr, val) in reload_dict.items():
-            setattr(tile_instance, attr, val)
-        tile_instance.start()
-        form_html = tile_instance.create_form_html(reload_dict["form_info"])["form_html"]
-        print("leaving reinstantiate_tile_class")
-        return jsonify({"success": True, "form_html": form_html})
-    except Exception as ex:
-        return handle_exception(ex, "Error reinstantiating tile")
+    @task_worthy
+    def get_image(self,  data_dict):
+        try:
+            encoded_img = Binary(cPickle.dumps(self.tile_instance.img_dict[data_dict["figure_name"]]))
+            return {"success": True, "img": encoded_img}
+        except Exception as ex:
+            return self.handle_exception(ex, "Error loading source")
 
-@app.route('/instantiate_as_pseudo_tile', methods=["get", "post"])
-def create_as_pseudo_tile():
-    try:
-        global megaplex_address
-        print("entering load_source")
-        data = request.json
-        megaplex_address = data["megaplex_address"]
-        tile_instance = PseudoTileClass(data["main_id"], data["tile_id"])
-        tile_instance.init_qworker(app, megaplex_address)
-        tile_instance.user_id = data["user_id"]
-        tile_instance.base_figure_url = data["base_figure_url"]
-        if "doc_type" in data:
-            tile_instance.doc_type = data["doc_type"]
-        else:
-            tile_instance.doc_type = "table"
-        data["exports"] = []
-        tile_instance.start()
-        print("leaving instantiate_tile_class")
-        data["success"] = True
-        return jsonify(data)
-    except Exception as ex:
-        return handle_exception(ex, "Error initializing pseudo tile")
+    @task_worthy
+    def kill_me(self, data_dict):
+        # gevent.kill(tile_instance)
+        return
 
-@app.route('/instantiate_tile_class', methods=["get", "post"])
-def instantiate_tile_class():
-    try:
-        print("entering instantiate_tile_class")
-        global tile_instance
-        data = copy.copy(request.json)
-        tile_instance = class_info["tile_class"](data["main_id"], data["tile_id"],
-                                   data["tile_name"])
-        tile_instance.init_qworker(app, megaplex_address)
-        tile_instance.user_id = data["user_id"]
-        tile_instance.base_figure_url = data["base_figure_url"]
-        if "doc_type" in data:
-            tile_instance.doc_type = data["doc_type"]
-        else:
-            tile_instance.doc_type = "table"
-        data["exports"] = tile_instance.exports
-        tile_instance.start()
-        print("leaving instantiate_tile_class")
-        data["success"] = True
-        return jsonify(data)
-    except Exception as ex:
-        return handle_exception(ex, "Error instantiating tile class")
+    @task_worthy
+    def reinstantiate_tile(self, reload_dict):
+        try:
+            print("entering reinstantiate_tile_class")
+            self.tile_instance = class_info["tile_class"](self, reload_dict["main_id"], reload_dict["my_id"],
+                                                          reload_dict["tile_name"])
+            for (attr, val) in reload_dict.items():
+                setattr(self.tile_instance, attr, val)
+            form_html = self.tile_instance.create_form_html(reload_dict["form_info"])["form_html"]
+            print("leaving reinstantiate_tile_class")
+            return {"success": True, "form_html": form_html}
+        except Exception as ex:
+            return self.handle_exception(ex, "Error reinstantiating tile")
+
+    @task_worthy
+    def create_as_pseudo_tile(self, data):
+        try:
+            print("entering load_source")
+            self.tile_instance = PseudoTileClass(self, data["main_id"], data["tile_id"])
+            self.tile_instance.user_id = data["user_id"]
+            self.tile_instance.base_figure_url = data["base_figure_url"]
+            if "doc_type" in data:
+                self.tile_instance.doc_type = data["doc_type"]
+            else:
+                self.tile_instance.doc_type = "table"
+            data["exports"] = []
+            print("leaving instantiate_tile_class")
+            data["success"] = True
+            return data
+        except Exception as ex:
+            return self.handle_exception(ex, "Error initializing pseudo tile")
+
+    @task_worthy
+    def instantiate_tile_class(self, data):
+        try:
+            print("entering instantiate_tile_class")
+            self.tile_instance = class_info["tile_class"](data["main_id"],
+                                            data["tile_name"])
+            self.tile_instance.user_id = data["user_id"]
+            self.tile_instance.base_figure_url = data["base_figure_url"]
+            if "doc_type" in data:
+                self.tile_instance.doc_type = data["doc_type"]
+            else:
+                self.tile_instance.doc_type = "table"
+            data["exports"] = self.tile_instance.exports
+            print("leaving instantiate_tile_class")
+            data["success"] = True
+            return data
+        except Exception as ex:
+            return self.handle_exception(ex, "Error instantiating tile class")
+
+    @task_worthy
+    def RefreshTile(self, data):
+        return self.tile_instance.RefreshTile(data)
+
+    @task_worthy
+    def get_property(self, data_dict):
+        return self.tile_instance.get_property(data_dict)
+
+    @task_worthy
+    def TileSizeChange(self, data):
+        return self.tile_instance.TileSizeChange(data)
+
+    @task_worthy
+    def RefreshTileFromSave(self, data):
+        return self.tile_instance.RefreshTileFromSave(data)
+
+    @task_worthy
+    def SetSizeFromSave(self, data_dict):
+        return self.tile_instance.SetSizeFromSave(data_dict)
+
+    @task_worthy
+    def UpdateOptions(self, data_dict):
+        return self.tile_instance.UpdateOptions(data_dict)
+
+    @task_worthy
+    def CellChange(self, data_dict):
+        return self.tile_instance.CellChange(data_dict)
+
+    @task_worthy
+    def FreeformTextChange(self, data_dict):
+        return self.tile_instance.FreeformTextChange(data_dict)
+
+    @task_worthy
+    def TileButtonClick(self, data_dict):
+        return self.tile_instance.TileButtonClick(data_dict)
+
+    @task_worthy
+    def TileFormSubmit(self, data_dict):
+        return self.tile_instance.TileFormSubmit(data_dict)
+
+    @task_worthy
+    def TileTextAreaChange(self, data_dict):
+        return self.tile_instance.TileTextAreaChange(data_dict)
+
+    @task_worthy
+    def TextSelect(self, data_dict):
+        return self.tile_instance.TextSelect(data_dict)
+
+    @task_worthy
+    def DocChange(self, data_dict):
+        return self.tile_instance.DocChange(data_dict)
+
+    @task_worthy
+    def PipeUpdate(self, data_dict):
+        return self.tile_instance.PipeUpdate(data_dict)
+
+    @task_worthy
+    def TileWordClick(self, data_dict):
+        return self.tile_instance.TileWordClick(data_dict)
+
+    @task_worthy
+    def TileRowClick(self, data_dict):
+        return self.tile_instance.TileRowClick(data_dict)
+
+    @task_worthy
+    def TileCellClick(self, data_dict):
+        return self.tile_instance.TileCellClick(data_dict)
+
+    @task_worthy
+    def TileElementClick(self, data_dict):
+        return self.tile_instance.TileElementClick(data_dict)
+
+    @task_worthy
+    def HideOptions(self, data_dict):
+        return self.tile_instance.HideOptions(data_dict)
+
+    @task_worthy
+    def StartSpinner(self, data_dict):
+        return self.tile_instance.StartSpinner(data_dict)
+
+    @task_worthy
+    def StopSpinner(self, data_dict):
+        return self.tile_instance.StopSpinner(data_dict)
+
+    @task_worthy
+    def ShrinkTile(self, data_dict):
+        return self.tile_instance.ShrinkTile(data_dict)
+
+    @task_worthy
+    def ExpandTile(self, data_dict):
+        return self.tile_instance.ExpandTile(data_dict)
+
+    @task_worthy
+    def LogTile(self, data_dict):
+        return self.tile_instance.LogTile(data_dict)
+
+    @task_worthy
+    def LogParams(self, data_dict):
+        return self.tile_instance.LogParams(data_dict)
+
+    @task_worthy
+    def RebuildTileForms(self, data_dict):
+        return self.tile_instance.RebuildTileForms(data_dict)
+
+    @task_worthy
+    def create_form_html(self, data):
+        return self.tile_instance.create_form_html(data)
+
+    @task_worthy
+    def render_tile(self, data):
+        return self.tile_instance.render_tile(data)
+
+    @task_worthy
+    def exec_console_code(self, data):
+        return self.tile_instance.exec_console_code(data)
+
+    @task_worthy
+    def get_export_info(self, data):
+        return self.tile_instance.get_export_info(data)
+
+    @task_worthy
+    def evaluate_export(self, data):
+        return self.tile_instance.evaluate_export(data)
+
+    @task_worthy
+    def transfer_pipe_value(self, data):
+        return self.tile_instance.transfer_pipe_value(data)
+
 
 class PseudoTileClass(TileBase):
     category = "word"
     exports = []
     measures = ["raw_freq", "student_t", "chi_sq", "pmi", "likelihood_ratio"]
 
-    def __init__(self, main_id, tile_id, tile_name=None):
-        TileBase.__init__(self, main_id, tile_id, tile_name)
+    def __init__(self, tworker, main_id, tile_id, tile_name=None):
+        TileBase.__init__(self, tworker, main_id, tile_id, tile_name)
         self.is_pseudo = True
         return
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", debug=True, threaded=True)
+    print "entering main"
+    tworker = TileWorker()
+    print "tworker is created, about to start my_id is " + str(tworker.my_id)
+    tworker.start()
+    print "tworker started, my_id is " + str(tworker.my_id)
+    while True:
+        time.sleep(1000)

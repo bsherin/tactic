@@ -9,8 +9,8 @@ from wtforms.validators import Required, Length, Regexp, EqualTo
 from tactic_app import app, socketio, csrf, db
 from wtforms.validators import ValidationError
 from tactic_app import ANYONE_CAN_REGISTER
-from tactic_app.global_tile_management import global_tile_manager
 from tactic_app.docker_functions import destroy_user_containers
+import tactic_app
 
 # @app.before_request
 # def mark_sess_modified():
@@ -64,7 +64,7 @@ def logout(page_id):
     user_id = current_user.get_id()
     socketio.emit('close-user-windows', {"originator": page_id}, namespace='/user_manage', room=user_id)
     socketio.emit('close-user-windows', {"originator": page_id}, namespace='/main', room=user_id)
-    global_tile_manager.remove_user(current_user.username)
+    tactic_app.shared_dict["global_tile_manager"].remove_user(current_user.username)
     destroy_user_containers(user_id)  # They should be gone by this point. But make sure.
     logout_user()
     return render_template('auth/login.html', show_message="yes",

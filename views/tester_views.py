@@ -6,10 +6,8 @@ from tactic_app.users import User
 from flask.ext.wtf import Form
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import Required, Length, Regexp, EqualTo
-from tactic_app.global_tile_management import global_tile_manager
 from tactic_app import app # global_stuff
-from tactic_app.host_workers import host_worker
-
+import tactic_app
 
 @app.route('/direct_user_manage/<username>/<password>', methods=['GET', 'POST'])
 def direct_user_manage(username, password):
@@ -68,7 +66,7 @@ def direct_project(project_name, username, password):
     if user is not None and user.verify_password(password):
         login_user(user, remember=False)
     data = {"project_name": project_name, "user_id": user.get_id(), "user_manage_id": 0};
-    host_worker.main_project(data)
+    tactic_app.shared_dict["host_worker"].main_project(data)
     return
 
 

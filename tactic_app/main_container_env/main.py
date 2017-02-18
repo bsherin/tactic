@@ -4,16 +4,11 @@ import re
 import requests
 import copy
 from gevent import monkey; monkey.patch_all()
-from flask import render_template
 import pymongo
 import gridfs
 import cPickle
 from bson.binary import Binary
-# noinspection PyUnresolvedReferences
-from qworker import QWorker, task_worthy
 import datetime
-# noinspection PyUnresolvedReferences
-from communication_utils import send_request_to_container
 import traceback
 import zlib
 import os
@@ -275,7 +270,7 @@ class docInfo(DocInfoAbstract):
 
 
 # noinspection PyPep8Naming,PyUnusedLocal
-class mainWindow(QWorker):
+class mainWindow(object):
     save_attrs = ["short_collection_name", "collection_name", "current_tile_id", "tile_sort_list", "left_fraction",
                   "is_shrunk", "doc_dict", "project_name", "loaded_modules", "user_id",
                   "hidden_columns_list", "console_html", "console_cm_code", "doc_type", "purgetiles"]
@@ -285,9 +280,9 @@ class mainWindow(QWorker):
                      "UpdateTableShrinkState"]
 
     # noinspection PyUnresolvedReferences
-    def __init__(self, app, data_dict):
-        QWorker.__init__(self, app, data_dict["megaplex_address"], data_dict["main_id"])
+    def __init__(self, mworker, data_dict):
         print "entering mainwindow_init"
+        self.mworker = mworker
         try:
             client = pymongo.MongoClient(data_dict["mongo_uri"], serverSelectionTimeoutMS=10)
             client.server_info()
@@ -296,7 +291,7 @@ class mainWindow(QWorker):
             self.fs = gridfs.GridFS(self.db)
         except:
             error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-            self.debug_log("error getting pymongo client: " + error_string)
+            self.mworker.debug_log("error getting pymongo client: " + error_string)
             sys.exit()
 
         self.base_figure_url = data_dict["base_figure_url"]
@@ -342,36 +337,6 @@ class mainWindow(QWorker):
             self.purgetiles = False
         print "done with init"
 
-    # Communication Methods
-
-    def ask_host(self, msg_type, task_data=None, callback_func=None):
-        task_data["main_id"] = self.my_id
-        self.post_task("host", msg_type, task_data, callback_func)
-        return
-
-    def ask_tile(self, tile_id, msg_type, task_data=None, callback_func=None):
-        self.post_task(tile_id, msg_type, task_data, callback_func)
-        return
-
-    def emit_table_message(self, message, data=None, callback_func=None):
-        if data is None:
-            data = {}
-        data["table_message"] = message
-        self.ask_host("emit_table_message", data, callback_func)
-        return
-
-    def distribute_event(self, event_name, data_dict=None, tile_id=None):
-        if data_dict is None:
-            data_dict = {}
-        if tile_id is not None:
-            self.ask_tile(tile_id, event_name, data_dict)
-        else:
-            for tile_id in self.tile_instances.keys():
-                self.ask_tile(tile_id, event_name, data_dict)
-        if event_name in self.update_events:
-            self.post_task(self.my_id, event_name, data_dict)
-        return True
-
     # Save and load-related methods
 
     def compile_save_dict(self):
@@ -391,7 +356,7 @@ class mainWindow(QWorker):
                 result[attr] = attr_val
         tile_instances = {}
         for tile_id in self.tile_instances.keys():
-            tile_save_dict = self.post_and_wait(tile_id, "compile_save_dict")
+            tile_save_dict = self.mworker.post_and_wait(tile_id, "compile_save_dict")
             tile_instances[tile_id] = tile_save_dict  # tile_id isn't meaningful going forward.
         result["tile_instances"] = tile_instances
         if self.purgetiles:
@@ -399,7 +364,7 @@ class mainWindow(QWorker):
             for tile_id in self.tile_instances.keys():
                 tile_type = self.get_tile_property(tile_id, "tile_type")
                 data = {"tile_type": tile_type, "user_id": self.user_id}
-                module_name = self.post_and_wait("host", "get_module_from_tile_type", data)["module_name"]
+                module_name = self.mworker.post_and_wait("host", "get_module_from_tile_type", data)["module_name"]
                 if module_name is not None:
                     used_modules.append(module_name)
             result["loaded_modules"] = used_modules
@@ -407,21 +372,20 @@ class mainWindow(QWorker):
 
     def show_um_message(self, message, user_manage_id, timeout=None):
         data = {"message": message, "timeout": timeout, "user_manage_id": user_manage_id}
-        self.post_task("host", "show_um_status_message_task", data)
+        self.mworker.post_task("host", "show_um_status_message_task", data)
 
     def clear_um_message(self, user_manage_id):
         data = {"user_manage_id": user_manage_id}
-        self.post_task("host", "clear_um_status_message_task", data)
+        self.mworker.post_task("host", "clear_um_status_message_task", data)
 
     def show_main_status_message(self, message, timeout=None):
-        data = {"message": message, "timeout": timeout, "main_id": self.my_id}
-        self.post_task("host", "show_main_status_message", data)
+        data = {"message": message, "timeout": timeout, "main_id": self.mworker.my_id}
+        self.mworker.post_task("host", "show_main_status_message", data)
 
     def clear_main_status_message(self):
-        data = {"main_id": self.my_id}
-        self.post_task("host", "clear_main_status_message", data)
+        data = {"main_id": self.mworker.my_id}
+        self.mworker.post_task("host", "clear_main_status_message", data)
 
-    @task_worthy
     def do_full_recreation(self, data_dict):
         tile_containers = {}
         try:
@@ -429,13 +393,14 @@ class mainWindow(QWorker):
             self.show_um_message("Entering do_full_recreation", data_dict["user_manage_id"])
             tile_info_dict, loaded_modules = self.recreate_from_save(data_dict["project_collection_name"],
                                                                      data_dict["project_name"])
-            self.post_and_wait("host", "load_modules",
-                               {"loaded_modules": loaded_modules, "user_id": data_dict["user_id"]})
+            self.mworker.post_and_wait("host", "load_modules",
+                                       {"loaded_modules": loaded_modules, "user_id": data_dict["user_id"]})
             doc_names = [str(doc_name) for doc_name in self.doc_names]
 
             self.show_um_message("Getting tile code", data_dict["user_manage_id"])
-            tile_code_dict = self.post_and_wait("host", "get_tile_code", {"tile_info_dict": tile_info_dict,
-                                                                          "user_id": data_dict["user_id"]})
+            tile_code_dict = self.mworker.post_and_wait("host", "get_tile_code",
+                                                        {"tile_info_dict": tile_info_dict,
+                                                         "user_id": data_dict["user_id"]})
             self.show_um_message("Checking tile Code", data_dict["user_manage_id"])
             for old_tile_id in tile_code_dict.keys():
                 if tile_code_dict[old_tile_id] is None:
@@ -444,9 +409,9 @@ class mainWindow(QWorker):
                     del tile_info_dict[old_tile_id]
                     del tile_code_dict[old_tile_id]
             self.show_um_message("Creating empty containers", data_dict["user_manage_id"])
-            tile_containers = self.post_and_wait("host", "get_empty_tile_containers",
-                                                 {"number": len(tile_info_dict.keys()),
-                                                  "user_id": data_dict["user_id"]})
+            tile_containers = self.mworker.post_and_wait("host", "get_empty_tile_containers",
+                                                         {"number": len(tile_info_dict.keys()),
+                                                          "user_id": data_dict["user_id"]})
             new_tile_info = {}
             new_tile_keys = tile_containers.keys()
             error_messages = ""
@@ -456,13 +421,12 @@ class mainWindow(QWorker):
                 new_tile_info[old_tile_id] = {"new_tile_id": new_id,
                                               "tile_container_address": new_address}
 
-                result = send_request_to_container(new_address, "load_source",
-                                                   {"tile_code": tile_code_dict[old_tile_id],
-                                                    "megaplex_address": self.megaplex_address}).json()
+                result = self.mworker.post_and_wait(new_id, "load_source",
+                                                    {"tile_code": tile_code_dict[old_tile_id]})
                 if not result["success"]:
                     self.recreate_errors.append("problem loading source into container for "
                                                 "{}: {}".format(tile_info_dict[old_tile_id], result["message_string"]))
-                    self.ask_host("delete_container", {"container_id": new_id})
+                    self.mworker.ask_host("delete_container", {"container_id": new_id})
                     del new_tile_info[old_tile_id]
                     del tile_info_dict[old_tile_id]
                     del tile_code_dict[old_tile_id]
@@ -475,7 +439,7 @@ class mainWindow(QWorker):
                 print "problem recreating tile for {}: {}".format(tile_info_dict[tid], error)
                 self.recreate_errors.append("problem recreating tile for "
                                             "{}: {}".format(tile_info_dict[tid], error))
-                self.ask_host("delete_container", {"container_id": new_tile_info[tid]["new_tile_id"]})
+                self.mworker.ask_host("delete_container", {"container_id": new_tile_info[tid]["new_tile_id"]})
                 del new_tile_info[tid]
                 del tile_info_dict[tid]
                 del tile_code_dict[tid]
@@ -484,7 +448,7 @@ class mainWindow(QWorker):
             template_data = {"collection_name": self.collection_name,
                              "project_name": self.project_name,
                              "window_title": self.project_name,
-                             "main_id": self.my_id,
+                             "main_id": self.mworker.my_id,
                              "doc_names": doc_names,
                              "use_ssl": str(data_dict["use_ssl"]),
                              "console_html": self.console_html,
@@ -492,19 +456,19 @@ class mainWindow(QWorker):
                              "new_tile_info": new_tile_info}
 
             self.clear_um_message(data_dict["user_manage_id"])
-            self.post_task("host", "open_project_window", {"user_manage_id": data_dict["user_manage_id"],
-                                                           "template_data": template_data,
-                                                           "message": "window-open",
-                                                           "doc_type": self.doc_type})
+            self.mworker.post_task("host", "open_project_window", {"user_manage_id": data_dict["user_manage_id"],
+                                                                   "template_data": template_data,
+                                                                   "message": "window-open",
+                                                                   "doc_type": self.doc_type})
         except Exception as ex:
-            container_list = [self.my_id] + tile_containers.keys()
-            self.ask_host("delete_container_list", {"container_list": container_list})
+            container_list = [self.mworker.my_id] + tile_containers.keys()
+            self.mworker.ask_host("delete_container_list", {"container_list": container_list})
             template = "An exception of type {0} occured. Arguments:\n{1!r}\n"
             error_string = template.format(type(ex).__name__, ex.args)
             error_string += traceback.format_exc()
             error_string = "<pre>" + error_string + "</pre>"
-            self.post_task("host", "open_error_window", {"user_manage_id": data_dict["user_manage_id"],
-                                                         "error_string": error_string})
+            self.mworker.post_task("host", "open_error_window", {"user_manage_id": data_dict["user_manage_id"],
+                                                                 "error_string": error_string})
         return
 
     def recreate_from_save(self, project_collection_name, project_name):
@@ -568,12 +532,12 @@ class mainWindow(QWorker):
             self.tile_sort_list[self.tile_sort_list.index(old_tile_id)] = new_tile_id
             tile_save_dict = self.project_dict["tile_instances"][old_tile_id]
             tile_save_dict["tile_id"] = new_tile_id
-            tile_save_dict["main_id"] = self.my_id
+            tile_save_dict["main_id"] = self.mworker.my_id
             tile_save_dict["new_base_figure_url"] = self.base_figure_url.replace("tile_id", new_tile_id)
-            tresult = send_request_to_container(new_tile_address,
-                                                "recreate_from_save",
-                                                tile_save_dict,
-                                                timeout=60, tries=RETRIES)
+            tresult = self.mworker.post_and_wait(new_tile_id,
+                                                 "recreate_from_save",
+                                                 tile_save_dict,
+                                                 timeout=60, tries=RETRIES)
             tile_result = tresult.json()
             if not tile_result["success"]:
                 errors[old_tile_id] = tile_result["message_string"]
@@ -610,15 +574,9 @@ class mainWindow(QWorker):
                      "collection_names": collection_names,
                      "function_names": function_names}
         for tile_id, tile_result in tile_results.items():
-            tile_result["tile_html"] = self.post_and_wait(tile_id, "render_tile", form_info)["tile_html"]
+            tile_result["tile_html"] = self.mworker.post_and_wait(tile_id, "render_tile", form_info)["tile_html"]
         return errors, tile_results
 
-    @task_worthy
-    def get_saved_console_code(self, data_dict):
-        print "entering saved console code with console_cm_code " + str(self.console_cm_code)
-        return {"saved_console_code": self.console_cm_code}
-
-    @task_worthy
     def save_new_project(self, data_dict):
         # noinspection PyBroadException
         try:
@@ -633,7 +591,8 @@ class mainWindow(QWorker):
                 self.doc_dict[dname].table_spec = spec
 
             self.show_main_status_message("Getting loaded modules")
-            self.loaded_modules = self.post_and_wait("host", "get_loaded_user_modules", {"user_id": self.user_id})[
+            self.loaded_modules = self.mworker.post_and_wait("host", "get_loaded_user_modules",
+                                                             {"user_id": self.user_id})[
                 "loaded_modules"]
             self.loaded_modules = [str(module) for module in self.loaded_modules]
 
@@ -656,12 +615,11 @@ class mainWindow(QWorker):
                            "message_string": "Project Successfully Saved"}
 
         except Exception as ex:
-            self.debug_log("got an error in save_new_project")
+            self.mworker.debug_log("got an error in save_new_project")
             error_string = self.handle_exception(ex, "<pre>Error saving new project</pre>", print_to_console=False)
             return_data = {"success": False, "message_string": error_string}
         return return_data
 
-    @task_worthy
     def update_project(self, data_dict):
         # noinspection PyBroadException
         try:
@@ -674,8 +632,8 @@ class mainWindow(QWorker):
                 self.doc_dict[dname].table_spec = spec
             self.show_main_status_message("Getting loaded modules")
             print "user_id is " + str(self.user_id)
-            self.loaded_modules = self.post_and_wait("host", "get_loaded_user_modules", {"user_id": self.user_id})[
-                "loaded_modules"]
+            self.loaded_modules = self.mworker.post_and_wait("host", "get_loaded_user_modules",
+                                                             {"user_id": self.user_id})["loaded_modules"]
             self.loaded_modules = [str(module) for module in self.loaded_modules]
             self.show_main_status_message("compiling save dictionary")
             project_dict = self.compile_save_dict()
@@ -727,13 +685,6 @@ class mainWindow(QWorker):
         self.doc_dict[doc_name].data_text = new_content
         return
 
-    def print_to_console(self, message_string, force_open=False):
-        with self.app.test_request_context():
-            # noinspection PyUnresolvedReferences
-            pmessage = render_template("log_item.html", log_item=message_string)
-        self.emit_table_message("consoleLog", {"message_string": pmessage, "force_open": force_open})
-        return {"success": True}
-
     @property
     def doc_names(self):
         return sorted([str(key) for key in self.doc_dict.keys()])
@@ -761,7 +712,7 @@ class mainWindow(QWorker):
         else:
             data_object = {"data_text": doc.data_text, "doc_name": self.visible_doc_name,
                            "background_colors": doc.displayed_background_colors}
-        self.emit_table_message("refill_table", data_object)
+        self.mworker.emit_table_message("refill_table", data_object)
 
     @property
     def tile_ids(self):
@@ -775,23 +726,23 @@ class mainWindow(QWorker):
         return dinfo.header_list
 
     def get_list_names(self):
-        list_names = self.post_and_wait("host", "get_list_names", {"user_id": self.user_id})
+        list_names = self.mworker.post_and_wait("host", "get_list_names", {"user_id": self.user_id})
         return list_names
 
     def get_class_names(self):
-        class_names = self.post_and_wait("host", "get_class_names", {"user_id": self.user_id})
+        class_names = self.mworker.post_and_wait("host", "get_class_names", {"user_id": self.user_id})
         return class_names
 
     def get_function_tags_dict(self):
-        function_tags_dict = self.post_and_wait("host", "get_function_tags_dict", {"user_id": self.user_id})
+        function_tags_dict = self.mworker.post_and_wait("host", "get_function_tags_dict", {"user_id": self.user_id})
         return function_tags_dict
 
     def get_lists_classes_functions(self):
-        result_dict = self.post_and_wait("host", "get_lists_classes_functions", {"user_id": self.user_id})
+        result_dict = self.mworker.post_and_wait("host", "get_lists_classes_functions", {"user_id": self.user_id})
         return result_dict
 
     def _delete_tile_instance(self, tile_id):
-        send_request_to_container(self.tile_instances[tile_id], "kill_me")
+        self.mworker.post_task(self.tile_instances[tile_id], "kill_me")
         del self.tile_instances[tile_id]
         self.tile_sort_list.remove(tile_id)
         the_lists = self.get_lists_classes_functions()
@@ -805,8 +756,8 @@ class mainWindow(QWorker):
         if tile_id in self._pipe_dict:
             del self._pipe_dict[tile_id]
             for tid in self.tile_instances.keys():
-                self.post_task(tid, "RebuildTileForms", form_info)
-        self.ask_host("delete_container", {"container_id": tile_id})
+                self.mworker.post_task(tid, "RebuildTileForms", form_info)
+        self.mworker.ask_host("delete_container", {"container_id": tile_id})
         return
 
     def get_current_pipe_list(self):
@@ -823,9 +774,9 @@ class mainWindow(QWorker):
         error_string = template.format(type(ex).__name__, ex.args)
         error_string += traceback.format_exc()
         error_string = "<pre>" + error_string + "</pre>"
-        self.debug_log(error_string)
+        self.mworker.debug_log(error_string)
         if print_to_console:
-            self.print_to_console(error_string, force_open=True)
+            self.mworker.print_to_console(error_string, force_open=True)
         return error_string
 
     def highlight_table_text(self, txt):
@@ -838,11 +789,13 @@ class mainWindow(QWorker):
                     if cdata is None:
                         continue
                     if str(txt).lower() in str(cdata).lower():
-                        self.emit_table_message("highlightTxtInDocument",
-                                                {"row_index": row_index, "column_header": cheader, "text_to_find": txt})
+                        self.mworker.emit_table_message("highlightTxtInDocument",
+                                                        {"row_index": row_index,
+                                                         "column_header": cheader,
+                                                         "text_to_find": txt})
                 row_index += 1
         else:
-            self.emit_table_message("highlightTxtInDocument", {"text_to_find": txt})
+            self.mworker.emit_table_message("highlightTxtInDocument", {"text_to_find": txt})
 
     @staticmethod
     def txt_in_dict(txt, d):
@@ -855,15 +808,13 @@ class mainWindow(QWorker):
         return False
 
     # Task Worthy methods. These are eligible to be the recipient of posted tasks.
-    @task_worthy
     def create_tile(self, data_dict):
         tile_container_id = data_dict["tile_id"]
         self.tile_instances[tile_container_id] = data_dict["tile_address"]
         tile_name = data_dict["tile_name"]
         data_dict["user_id"] = self.user_id
         data_dict["base_figure_url"] = self.base_figure_url.replace("tile_id", tile_container_id)
-        data_dict["main_id"] = self.my_id
-        data_dict["megaplex_address"] = self.megaplex_address
+        data_dict["main_id"] = self.mworker.my_id
         data_dict["doc_type"] = self.doc_type
         form_info = {"current_header_list": self.current_header_list,
                      "pipe_dict": self._pipe_dict,
@@ -874,14 +825,14 @@ class mainWindow(QWorker):
                      "collection_names": data_dict["collection_names"]}
         # data_dict["form_info"] = form_info
         tile_address = data_dict["tile_address"]
-        result = send_request_to_container(tile_address, "load_source", data_dict).json()
+        result = self.mworker.post_and_wait(tile_address, "load_source", data_dict)
         if not result["success"]:
-            self.debug_log("got an exception " + result["message_string"])
+            self.mworker.debug_log("got an exception " + result["message_string"])
             raise Exception(result["message_string"])
 
-        instantiate_result = send_request_to_container(tile_address, "instantiate_tile_class", data_dict).json()
+        instantiate_result = self.mworker.post_and_wait(tile_address, "instantiate_tile_class", data_dict)
         if not instantiate_result["success"]:
-            self.debug_log("got an exception " + instantiate_result["message_string"])
+            self.mworker.debug_log("got an exception " + instantiate_result["message_string"])
             raise Exception(instantiate_result["message_string"])
 
         exports = instantiate_result["exports"]
@@ -894,15 +845,14 @@ class mainWindow(QWorker):
                     "tile_id": tile_container_id,
                     "tile_address": tile_address}
 
-        form_html = self.post_and_wait(tile_container_id, "create_form_html", form_info)["form_html"]
+        form_html = self.mworker.post_and_wait(tile_container_id, "create_form_html", form_info)["form_html"]
         for tid in self.tile_instances.keys():
             if not tid == tile_container_id:
-                self.post_task(tid, "RebuildTileForms", form_info)
+                self.mworker.post_task(tid, "RebuildTileForms", form_info)
         self.tile_sort_list.append(tile_container_id)
         self.current_tile_id += 1
         return {"success": True, "html": form_html}
 
-    @task_worthy
     def get_column_data(self, data):
         result = []
         ddata = copy.copy(data)
@@ -918,9 +868,10 @@ class mainWindow(QWorker):
             result.append(row_dict[str(r)])
         return result
 
-    @task_worthy
     def get_user_collection(self, data):
-        full_collection_name = self.post_and_wait("host", "get_full_collection_name", data)["full_collection_name"]
+        full_collection_name = self.mworker.post_and_wait("host",
+                                                          "get_full_collection_name",
+                                                          data)["full_collection_name"]
         result = {}
         the_collection = self.db[full_collection_name]
         mdata = the_collection.find_one({"name": "__metadata__"})
@@ -938,17 +889,14 @@ class mainWindow(QWorker):
                 result[fname] = self.fs.get(f["file_id"]).read()
         return {"the_collection": result}
 
-    @task_worthy
     def get_document_data(self, data):
         doc_name = data["document_name"]
         return self.doc_dict[doc_name].all_data
 
-    @task_worthy
     def get_document_metadata(self, data):
         doc_name = data["document_name"]
         return self.doc_dict[doc_name].metadata
 
-    @task_worthy
     def set_document_metadata(self, data):
         print "In set_document_metadat in main with data " + str(data)
         doc_name = data["document_name"]
@@ -956,26 +904,22 @@ class mainWindow(QWorker):
         print "set the document_metadata"
         return None
 
-    @task_worthy
     def get_document_data_as_list(self, data):
         doc_name = data["document_name"]
         data_list = self.doc_dict[doc_name].all_sorted_data_rows
         return {"data_list": data_list}
 
-    @task_worthy
     def get_column_names(self, data):
         doc_name = data["document_name"]
         header_list = self.doc_dict[doc_name].header_list
         return {"header_list": header_list}
 
-    @task_worthy
     def get_number_rows(self, data):
 
         doc_name = data["document_name"]
         nrows = self.doc_dict[doc_name].number_of_rows
         return {"number_rows": nrows}
 
-    @task_worthy
     def get_row(self, data):
         doc_name = data["document_name"]
         if "row_id" in data:
@@ -985,11 +929,9 @@ class mainWindow(QWorker):
         the_row = self.doc_dict[doc_name].get_row(row_id)
         return the_row
 
-    @task_worthy
     def get_line(self, data):
         return self.get_row(data)
 
-    @task_worthy
     def get_cell(self, data):
         doc_name = data["document_name"]
         row_id = data["row_id"]
@@ -997,7 +939,6 @@ class mainWindow(QWorker):
         the_cell = self.doc_dict[doc_name].data_rows_int_keys[int(row_id)][column_name]
         return {"the_cell": the_cell}
 
-    @task_worthy
     def get_column_data_for_doc(self, data):
         column_header = data["column_name"]
         doc_name = data["doc_name"]
@@ -1007,56 +948,43 @@ class mainWindow(QWorker):
             result.append(the_row[column_header])
         return result
 
-    @task_worthy
     def CellChange(self, data):
         self._set_row_column_data(data["doc_name"], data["id"], data["column_header"], data["new_content"])
         self._change_list.append(data["id"])
         return None
 
-    @task_worthy
     def FreeformTextChange(self, data):
         self._set_freeform_data(data["doc_name"], data["new_content"])
         return None
 
-    @task_worthy
     def set_visible_doc(self, data):
         doc_name = data["doc_name"]
         if not doc_name == self.visible_doc_name:
-            self.distribute_event("DocChange", data)
+            self.mworker.distribute_event("DocChange", data)
         self.visible_doc_name = doc_name
         return {"success": True}
 
-    @task_worthy
     def print_to_console_event(self, data):
-        self.print_to_console(data["print_string"], force_open=True)
-        return {"success": True}
+        return self.mworker.print_to_console(data["print_string"], force_open=True)
 
-    @task_worthy
     def create_console_code_area(self, data):
         unique_id = str(uuid.uuid4())
-        with self.app.test_request_context():
-            # noinspection PyUnresolvedReferences
-            pmessage = render_template("code_log_item.html", unique_id=unique_id)
-        self.emit_table_message("consoleLog", {"message_string": pmessage, "force_open": True})
-        return {"success": True, "unique_id": unique_id}
+        return self.mworker.print_code_area_to_console(unique_id, force_open=True)
 
-    @task_worthy
     def got_console_result(self, data):
-        self.emit_table_message("consoleCodeLog", {"message_string": data["result_string"],
-                                                   "console_id": data["console_id"],
-                                                   "force_open": True})
+        self.mworker.emit_table_message("consoleCodeLog", {"message_string": data["result_string"],
+                                                           "console_id": data["console_id"],
+                                                           "force_open": True})
         return {"success": True}
 
-    @task_worthy
     def exec_console_code(self, data):
         if self.pseudo_tile_id is None:
             self.create_pseudo_tile()
         the_code = data["the_code"]
         data["pipe_dict"] = self._pipe_dict
-        self.post_task(self.pseudo_tile_id, "exec_console_code", data, self.got_console_result)
+        self.mworker.post_task(self.pseudo_tile_id, "exec_console_code", data, self.got_console_result)
         return {"success": True}
 
-    @task_worthy
     def get_exports_list_html(self, data):
         the_html = ""
         export_list = []
@@ -1068,7 +996,6 @@ class mainWindow(QWorker):
             the_html += "<option>{}</option>\n".format(pname)
         return {"success": True, "the_html": the_html, "export_list": export_list}
 
-    @task_worthy
     def evaluate_export(self, data):
         if self.pseudo_tile_id is None:
             self.create_pseudo_tile()
@@ -1078,43 +1005,40 @@ class mainWindow(QWorker):
         if "key" in data:
             ndata["key"] = data["key"]
         ndata["tail"] = data["tail"]
-        result = self.post_and_wait(self.pseudo_tile_id, "evaluate_export", ndata)
+        result = self.mworker.post_and_wait(self.pseudo_tile_id, "evaluate_export", ndata)
         return result
 
-    @task_worthy
     def get_export_info(self, data):
         if self.pseudo_tile_id is None:
             self.create_pseudo_tile()
         ndata = {}
         ndata["export_name"] = data["export_name"]
         ndata["pipe_dict"] = self._pipe_dict
-        result = self.post_and_wait(self.pseudo_tile_id, "get_export_info", ndata)
+        result = self.mworker.post_and_wait(self.pseudo_tile_id, "get_export_info", ndata)
         return result
 
     def create_pseudo_tile(self):
-        data = self.post_and_wait("host", "create_tile_container", {"user_id": self.user_id})
+        data = self.mworker.post_and_wait("host", "create_tile_container", {"user_id": self.user_id})
         self.pseudo_tile_id = data["tile_id"]
         self.pseudo_tile_address = data["tile_address"]
         data_dict = {"user_id": self.user_id,
                      "base_figure_url": self.base_figure_url.replace("tile_id", self.pseudo_tile_id),
-                     "main_id": self.my_id, "megaplex_address": self.megaplex_address, "doc_type": self.doc_type,
+                     "main_id": self.mworker.my_id, "doc_type": self.doc_type,
                      "tile_id": self.pseudo_tile_id}
-        instantiate_result = send_request_to_container(self.pseudo_tile_address,
-                                                       "instantiate_as_pseudo_tile", data_dict).json()
+        instantiate_result = self.mworker.post_and_wait(self.pseudo_tile_id,
+                                                        "instantiate_as_pseudo_tile", data_dict)
         if not instantiate_result["success"]:
-            self.debug_log("got an exception " + instantiate_result["message_string"])
+            self.mworker.debug_log("got an exception " + instantiate_result["message_string"])
             raise Exception(instantiate_result["message_string"])
 
         return {"success": True}
 
-    @task_worthy
     def get_property(self, data_dict):
         # tactic_todo eliminate get_property?
         prop_name = data_dict["property"]
         val = getattr(self, prop_name)
         return {"success": True, "val": val}
 
-    @task_worthy
     def export_data(self, data):
         mdata = self.create_initial_metadata()
         mdata["name"] = "__metadata__"
@@ -1130,7 +1054,6 @@ class mainWindow(QWorker):
             self.db[full_collection_name].insert_one(ddict)
         return {"success": True}
 
-    @task_worthy
     def create_collection(self, data):
         mdata = self.create_initial_metadata()
         mdata["name"] = "__metadata__"
@@ -1140,8 +1063,9 @@ class mainWindow(QWorker):
         document_metadata = data["doc_metadata"]
         if document_metadata is None:
             document_metadata = {}
-        full_collection_name = self.post_and_wait("host", "get_full_collection_name",
-                                                  {"collection_name": new_name, "user_id": self.user_id})["full_collection_name"]
+        full_collection_name = self.mworker.post_and_wait("host", "get_full_collection_name",
+                                                          {"collection_name": new_name,
+                                                           "user_id": self.user_id})["full_collection_name"]
         if doc_type == "table":
             mdata["type"] = "table"
             self.db[full_collection_name].insert_one(mdata)
@@ -1170,17 +1094,15 @@ class mainWindow(QWorker):
                         if k not in PROTECTED_METADATA_KEYS:
                             ddict[k] = val
                 self.db[full_collection_name].insert_one(ddict)
-        self.ask_host("update_collection_selector_list", {"user_id": self.user_id})
+        self.mworker.ask_host("update_collection_selector_list", {"user_id": self.user_id})
         return {"success": True}
 
-    @task_worthy
     def get_tile_ids(self, data):
         tile_ids = self.tile_instances.keys()
         if self.pseudo_tile_id is not None:
             tile_ids.append(self.pseudo_tile_id)
         return {"success": True, "tile_ids": tile_ids}
 
-    @task_worthy
     def set_property(self, data_dict):
         # tactic_todo eliminate set_property as task
         prop_name = data_dict["property"]
@@ -1188,19 +1110,17 @@ class mainWindow(QWorker):
         setattr(self, prop_name, val)
         return
 
-    @task_worthy
     def open_log_window(self, task_data):
         self.console_html = task_data["console_html"]
         if self.project_name is None:
             title = self.short_collection_name + " log"
         else:
             title = self.project_name + " log"
-        self.post_task("host", "open_log_window", {"console_html": self.console_html,
-                                                   "title": title,
-                                                   "main_id": self.my_id})
+        self.mworker.post_task("host", "open_log_window", {"console_html": self.console_html,
+                                                           "title": title,
+                                                           "main_id": self.mworker.my_id})
         return
 
-    @task_worthy
     def grab_data(self, data):
         doc_name = data["doc_name"]
         if self.doc_type == "table":
@@ -1219,7 +1139,6 @@ class mainWindow(QWorker):
                     "left_fraction": self.left_fraction,
                     "data_text": self.doc_dict[doc_name].data_text}
 
-    @task_worthy
     def grab_project_data(self, data_dict):
         doc_name = data_dict["doc_name"]
         if self.doc_type == "table":
@@ -1246,21 +1165,19 @@ class mainWindow(QWorker):
                     "tile_save_results": self.tile_save_results}
 
     def get_tile_property(self, tile_id, prop_name):
-        result = self.post_and_wait(tile_id, 'get_property', {"property": prop_name})["val"]
+        result = self.mworker.post_and_wait(tile_id, 'get_property', {"property": prop_name})["val"]
         return result
 
-    @task_worthy
     def reload_tile(self, ddict):
         tile_id = ddict["tile_id"]
         tile_type = self.get_tile_property(tile_id, "tile_type")
         data = {"tile_type": tile_type, "user_id": self.user_id}
-        module_code = self.post_and_wait("host", "get_module_code", data)["module_code"]
+        module_code = self.mworker.post_and_wait("host", "get_module_code", data)["module_code"]
         the_lists = self.get_lists_classes_functions()
         reload_dict = copy.copy(self.get_tile_property(tile_id, "current_reload_attrs"))
         saved_options = copy.copy(self.get_tile_property(tile_id, "current_options"))
         reload_dict.update(saved_options)
-        result = send_request_to_container(self.tile_instances[tile_id], "load_source",
-                                           {"tile_code": module_code, "megaplex_address": self.megaplex_address}).json()
+        result = self.mworker.post_and_wiat(self.tile_instances[tile_id], "load_source", {"tile_code": module_code})
         if not result["success"]:
             raise Exception(result["message_string"])
 
@@ -1272,14 +1189,13 @@ class mainWindow(QWorker):
                      "function_names": the_lists["function_names"],
                      "collection_names": the_lists["collection_names"]}
         reload_dict["form_info"] = form_info
-        reload_dict["main_id"] = self.my_id
-        result = send_request_to_container(self.tile_instances[tile_id], "reinstantiate_tile", reload_dict).json()
+        reload_dict["main_id"] = self.mworker.my_id
+        result = self.mworker.post_and_wait(self.tile_instances[tile_id], "reinstantiate_tile", reload_dict)
         if result["success"]:
             return {"success": True, "html": result["form_html"]}
         else:
             raise Exception(result["message_string"])
 
-    @task_worthy
     def grab_chunk_with_row(self, data_dict):
         doc_name = data_dict["doc_name"]
         row_id = data_dict["row_id"]
@@ -1295,24 +1211,21 @@ class mainWindow(QWorker):
                 "max_table_size": self.doc_dict[doc_name].max_table_size,
                 "actual_row": self.doc_dict[doc_name].get_actual_row(row_id)}
 
-    @task_worthy
     def get_actual_row(self, data):
         doc_name = data["doc_name"]
         row_id = data["row_id"]
         actual_row = self.doc_dict[doc_name].get_actual_row(row_id)
         return actual_row
 
-    @task_worthy
     def distribute_events_stub(self, data_dict):
         event_name = data_dict["event_name"]
         if "tile_id" in data_dict:
             tile_id = data_dict["tile_id"]
         else:
             tile_id = None
-        success = self.distribute_event(event_name, data_dict, tile_id)
+        success = self.mworker.distribute_event(event_name, data_dict, tile_id)
         return {"success": success}
 
-    @task_worthy
     def grab_next_chunk(self, data_dict):
         doc_name = data_dict["doc_name"]
         step_amount = self.doc_dict[doc_name].advance_to_next_chunk()
@@ -1324,7 +1237,6 @@ class mainWindow(QWorker):
                 "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
                 "step_size": step_amount}
 
-    @task_worthy
     def grab_previous_chunk(self, data_dict):
         doc_name = data_dict["doc_name"]
         step_amount = self.doc_dict[doc_name].go_to_previous_chunk()
@@ -1336,12 +1248,10 @@ class mainWindow(QWorker):
                 "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
                 "step_size": step_amount}
 
-    @task_worthy
     def RemoveTile(self, data):
         self._delete_tile_instance(data["tile_id"])
         return None
 
-    @task_worthy
     def CreateColumn(self, data):
         column_name = data["column_name"]
         for doc in self.doc_dict.values():
@@ -1359,27 +1269,23 @@ class mainWindow(QWorker):
                      "function_names": the_lists["function_names"],
                      "collection_names": the_lists["collection_names"]}
         for tid in self.tile_instances.keys():
-            self.post_task(tid, "RebuildTileForms", form_info)
+            self.mworker.post_task(tid, "RebuildTileForms", form_info)
         return None
 
-    @task_worthy
     def SearchTable(self, data):
         self.highlight_table_text(data["text_to_find"])
         return None
 
-    @task_worthy
     def FilterTable(self, data):
         txt = data["text_to_find"]
         self.display_matching_rows_applying_filter(lambda r: self.txt_in_dict(txt, r))
         self.highlight_table_text(txt)
         return None
 
-    @task_worthy
     def DehighlightTable(self, data):
-        self.emit_table_message("dehighlightAllText")
+        self.mworker.emit_table_message("dehighlightAllText")
         return None
 
-    @task_worthy
     def UnfilterTable(self, data):
         for doc in self.doc_dict.values():
             doc.current_data_rows = doc.data_rows
@@ -1387,20 +1293,17 @@ class mainWindow(QWorker):
         self.refill_table()
         return None
 
-    @task_worthy
     def ColorTextInCell(self, data):
         data["row_index"] = self.get_actual_row(data)
         if data["row_index"] is not None:
-            self.emit_table_message("colorTxtInCell", data)
+            self.mworker.emit_table_message("colorTxtInCell", data)
         return None
 
-    @task_worthy
     def SetCellContent(self, data):
         self._set_cell_content(data["doc_name"], data["id"], data["column_header"],
                                data["new_content"], data["cellchange"])
         return None
 
-    @task_worthy
     def SetDocument(self, data):
         # tactic_todo compare to update_document
         doc_name = data["doc_name"]
@@ -1421,10 +1324,9 @@ class mainWindow(QWorker):
             if doc_name == self.visible_doc_name:
                 data = {"new_content": new_doc_text,
                         "doc_name": doc_name}
-                self.emit_table_message("setFreeformContent", data)
+                self.mworker.emit_table_message("setFreeformContent", data)
         return {"success": True}
 
-    @task_worthy
     def SetColumnData(self, data):
         if isinstance(data["new_content"], dict):
             for rid, ntext in data["new_content"].items():
@@ -1439,46 +1341,38 @@ class mainWindow(QWorker):
             raise Exception("Got invalid data type in SetColumnData.")
         return None
 
-    @task_worthy
     def TextSelect(self, data):
         self.selected_text = data["selected_text"]
         return None
 
-    @task_worthy
     def SaveTableSpec(self, data):
         new_spec = data["tablespec"]
         self.doc_dict[new_spec["doc_name"]].table_spec = new_spec
         return None
 
-    @task_worthy
     def UpdateSortList(self, data):
         self.tile_sort_list = data["sort_list"]
         return None
 
-    @task_worthy
     def UpdateLeftFraction(self, data):
         self.left_fraction = data["left_fraction"]
         return None
 
-    @task_worthy
     def UpdateTableShrinkState(self, data):
         self.is_shrunk = data["is_shrunk"]
         return None
 
-    @task_worthy
     def PrintToConsole(self, data):
-        self.print_to_console(data["message"], True)
+        self.mworker.print_to_console(data["message"], True)
         return None
 
-    @task_worthy
     def DisplayCreateErrors(self, data):
         for msg in self.recreate_errors:
-            self.debug_log("Got CreateError: " + msg)
-            self.print_to_console(msg, True)
+            self.mworker.debug_log("Got CreateError: " + msg)
+            self.mworker.print_to_console(msg, True)
         self.recreate_errors = []
         return None
 
-    @task_worthy
     def display_matching_rows(self, data):
         result = data["result"]
         document_name = data["document_name"]
@@ -1500,7 +1394,6 @@ class mainWindow(QWorker):
             self.refill_table()
         return
 
-    @task_worthy
     def update_document(self, data):
         new_data = data["new_data"]
         doc_name = data["document_name"]
@@ -1514,6 +1407,8 @@ class mainWindow(QWorker):
         if doc_name == self.visible_doc_name:
             self.refill_table()
         return {"success": True}
+
+    # stopped here
 
     def display_matching_rows_applying_filter(self, filter_function, document_name=None):
         if document_name is not None:
@@ -1567,7 +1462,7 @@ class mainWindow(QWorker):
             # If cellchange is True then we use a CellChange event to handle any updates.
             # Otherwise just change things right here.
             if cellchange:
-                self.distribute_event("CellChange", data)
+                self.mworker.distribute_event("CellChange", data)
             else:
                 self._set_row_column_data(doc_name, the_id, column_header, new_content)
                 self._change_list.append(the_id)
@@ -1576,9 +1471,8 @@ class mainWindow(QWorker):
                 actual_row = doc.get_actual_row(the_id)
                 if actual_row is not None:
                     data["row"] = actual_row
-                    self.emit_table_message("setCellContent", data)
+                    self.mworker.emit_table_message("setCellContent", data)
 
-    @task_worthy
     def SetCellBackground(self, data):
         self._set_cell_background(data["doc_name"], data["row_id"], data["column_name"], data["color"])
         return None
@@ -1592,4 +1486,4 @@ class mainWindow(QWorker):
                 data = {"row": actual_row,
                         "column_header": column_header,
                         "color": color}
-                self.emit_table_message("setCellBackground", data)
+                self.mworker.emit_table_message("setCellBackground", data)
