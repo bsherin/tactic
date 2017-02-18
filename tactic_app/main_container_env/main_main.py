@@ -80,7 +80,7 @@ class MainWorker(QWorker):
         try:
             print("entering intialize project mainwindow")
             self.my_id = self.data_dict["main_id"]
-            self.mwindow = mainWindow(data_dict)
+            self.mwindow = mainWindow(self, data_dict)
             self.post_task(data_dict["main_id"], "do_full_recreation", data_dict)
             print("leaving initialize_project_mainwindow")
             return {"success": True}

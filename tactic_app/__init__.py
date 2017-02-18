@@ -45,7 +45,6 @@ def print_message():
     print "got to the message"
 
 
-# tactic_change create_megaplex
 def create_megaplex():
     unique_id, megaplex_id = create_container("tactic_megaplex_image", port_bindings={5000: 8080})
     docker_functions.megaplex_address = get_address(megaplex_id, "bridge")

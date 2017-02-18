@@ -411,10 +411,10 @@ function tile_command(menu_id) {
         data_dict["tile_name"] = tile_name;
         data_dict["tile_type"] = tile_type;
         data_dict["user_id"] = user_id;
+        data_dict["parent"] = main_id;
         postWithCallback("host", "create_tile_container", data_dict, function (data) {
             const tile_id = data["tile_id"];
             data_dict["tile_id"] = tile_id;
-            data_dict["tile_address"] = data["tile_address"];
             postWithCallback("host", "get_module_code", data_dict, function (data) {
                 data_dict["tile_code"] = data["module_code"];
                 postWithCallback("host", "get_lists_classes_functions", data_dict, function (data) {

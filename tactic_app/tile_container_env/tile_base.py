@@ -37,6 +37,7 @@ jsonizable_types = {
 code_names = {"classes": {},
               "functions": {}}
 
+tworker = None
 
 def user_function(the_func):
     code_names["functions"][the_func.__name__] = the_func
@@ -90,9 +91,7 @@ class TileBase(object):
                     "full_tile_height", "is_shrunk", "configured"
                     ]
 
-    def __init__(self, tworker, main_id, tile_name=None):
-        # from tile_main import app, megaplex_address
-        # QWorker.__init__(self, app, megaplex_address, tile_id)
+    def __init__(self, main_id_ignored=None, tile_id_ignored=None, tile_name=None):
         self._sleepperiod = .0001
         self.save_attrs = ["current_html", "tile_type", "tile_name", "main_id", "doc_type", "configured",
                            "header_height", "front_height", "front_width", "back_height", "back_width",
@@ -110,7 +109,7 @@ class TileBase(object):
         self.doc_type = None
 
         # These will differ each time the tile is instantiated.
-        self.main_id = main_id
+        self.main_id = os.environ["PARENT"]
         self.figure_id = 0
         self.width = ""
         self.height = ""

@@ -312,7 +312,6 @@ class mainWindow(object):
         self.tile_save_results = None
         self.mdata = None
         self.pseudo_tile_id = None
-        self.pseudo_tile_address = None
         self.hidden_columns_list = None
         self.loaded_modules = None
 
@@ -321,7 +320,7 @@ class mainWindow(object):
             self.doc_type = data_dict["doc_type"]
             print "doc type is " + self.doc_type
             self.current_tile_id = 0
-            self.tile_instances = {}
+            self.tile_instances = []
             self.tile_sort_list = []
             self.left_fraction = INITIAL_LEFT_FRACTION
             self.is_shrunk = False
@@ -331,7 +330,7 @@ class mainWindow(object):
             self.project_name = None
             self.console_html = None
             self.console_cm_code = {}
-            self.user_id = data_dict["user_id"]
+            self.user_id = self.my_id = os.environ.get("OWNER")
             self.doc_dict = self._build_doc_dict()
             self.visible_doc_name = self.doc_dict.keys()[0]
             self.purgetiles = False
@@ -355,13 +354,13 @@ class mainWindow(object):
             else:
                 result[attr] = attr_val
         tile_instances = {}
-        for tile_id in self.tile_instances.keys():
+        for tile_id in self.tile_instances:
             tile_save_dict = self.mworker.post_and_wait(tile_id, "compile_save_dict")
             tile_instances[tile_id] = tile_save_dict  # tile_id isn't meaningful going forward.
         result["tile_instances"] = tile_instances
         if self.purgetiles:
             used_modules = []
-            for tile_id in self.tile_instances.keys():
+            for tile_id in self.tile_instances:
                 tile_type = self.get_tile_property(tile_id, "tile_type")
                 data = {"tile_type": tile_type, "user_id": self.user_id}
                 module_name = self.mworker.post_and_wait("host", "get_module_from_tile_type", data)["module_name"]
@@ -409,17 +408,15 @@ class mainWindow(object):
                     del tile_info_dict[old_tile_id]
                     del tile_code_dict[old_tile_id]
             self.show_um_message("Creating empty containers", data_dict["user_manage_id"])
-            tile_containers = self.mworker.post_and_wait("host", "get_empty_tile_containers",
+            new_tile_keys = self.mworker.post_and_wait("host", "get_empty_tile_containers",
                                                          {"number": len(tile_info_dict.keys()),
-                                                          "user_id": data_dict["user_id"]})
+                                                          "user_id": data_dict["user_id"],
+                                                          "parent": self.mworker.my_id})["tile_containers"]
             new_tile_info = {}
-            new_tile_keys = tile_containers.keys()
             error_messages = ""
             for i, old_tile_id in enumerate(tile_info_dict.keys()):
                 new_id = new_tile_keys[i]
-                new_address = tile_containers[new_tile_keys[i]]
-                new_tile_info[old_tile_id] = {"new_tile_id": new_id,
-                                              "tile_container_address": new_address}
+                new_tile_info[old_tile_id] = {"new_tile_id": new_id}
 
                 result = self.mworker.post_and_wait(new_id, "load_source",
                                                     {"tile_code": tile_code_dict[old_tile_id]})
@@ -520,15 +517,14 @@ class mainWindow(object):
         class_names = data_dict["class_names"]
         function_names = data_dict["function_names"]
         collection_names = data_dict["collection_names"]
-        self.tile_instances = {}
+        self.tile_instances = []
         tile_results = {}
         errors = {}
         for old_tile_id, tile_save_dict in self.project_dict["tile_instances"].items():
             if old_tile_id not in new_tile_info:
                 continue
             new_tile_id = new_tile_info[old_tile_id]["new_tile_id"]
-            new_tile_address = new_tile_info[old_tile_id]["tile_container_address"]
-            self.tile_instances[new_tile_id] = new_tile_address
+            self.tile_instances.append(new_tile_id)
             self.tile_sort_list[self.tile_sort_list.index(old_tile_id)] = new_tile_id
             tile_save_dict = self.project_dict["tile_instances"][old_tile_id]
             tile_save_dict["tile_id"] = new_tile_id
@@ -541,7 +537,7 @@ class mainWindow(object):
             tile_result = tresult.json()
             if not tile_result["success"]:
                 errors[old_tile_id] = tile_result["message_string"]
-                del self.tile_instances[new_tile_id]
+                self.tile_instances.remove(new_tile_id)
             else:
                 tile_results[new_tile_id] = tile_result
 
@@ -560,8 +556,7 @@ class mainWindow(object):
                     for export in tile_result["exports"]:
                         self._pipe_dict[tile_id][tile_result["tile_name"] + "_" + export] = {
                             "export_name": export,
-                            "tile_id": tile_id,
-                            "tile_address": self.tile_instances[tile_id]}
+                            "tile_id": tile_id}
 
         # We have to wait to here to actually render the tiles because
         # the pipe_dict needs to be complete to build the forms.
@@ -742,7 +737,6 @@ class mainWindow(object):
         return result_dict
 
     def _delete_tile_instance(self, tile_id):
-        self.mworker.post_task(self.tile_instances[tile_id], "kill_me")
         del self.tile_instances[tile_id]
         self.tile_sort_list.remove(tile_id)
         the_lists = self.get_lists_classes_functions()
@@ -755,7 +749,7 @@ class mainWindow(object):
                      "collection_names": the_lists["collection_names"]}
         if tile_id in self._pipe_dict:
             del self._pipe_dict[tile_id]
-            for tid in self.tile_instances.keys():
+            for tid in self.tile_instances:
                 self.mworker.post_task(tid, "RebuildTileForms", form_info)
         self.mworker.ask_host("delete_container", {"container_id": tile_id})
         return
@@ -810,11 +804,9 @@ class mainWindow(object):
     # Task Worthy methods. These are eligible to be the recipient of posted tasks.
     def create_tile(self, data_dict):
         tile_container_id = data_dict["tile_id"]
-        self.tile_instances[tile_container_id] = data_dict["tile_address"]
+        self.tile_instances.append(tile_container_id)
         tile_name = data_dict["tile_name"]
-        data_dict["user_id"] = self.user_id
         data_dict["base_figure_url"] = self.base_figure_url.replace("tile_id", tile_container_id)
-        data_dict["main_id"] = self.mworker.my_id
         data_dict["doc_type"] = self.doc_type
         form_info = {"current_header_list": self.current_header_list,
                      "pipe_dict": self._pipe_dict,
@@ -824,13 +816,12 @@ class mainWindow(object):
                      "class_names": data_dict["class_names"],
                      "collection_names": data_dict["collection_names"]}
         # data_dict["form_info"] = form_info
-        tile_address = data_dict["tile_address"]
-        result = self.mworker.post_and_wait(tile_address, "load_source", data_dict)
+        result = self.mworker.post_and_wait(tile_container_id, "load_source", data_dict)
         if not result["success"]:
             self.mworker.debug_log("got an exception " + result["message_string"])
             raise Exception(result["message_string"])
 
-        instantiate_result = self.mworker.post_and_wait(tile_address, "instantiate_tile_class", data_dict)
+        instantiate_result = self.mworker.post_and_wait(tile_container_id, "instantiate_tile_class", data_dict)
         if not instantiate_result["success"]:
             self.mworker.debug_log("got an exception " + instantiate_result["message_string"])
             raise Exception(instantiate_result["message_string"])
@@ -842,11 +833,10 @@ class mainWindow(object):
             for export in exports:
                 self._pipe_dict[tile_container_id][tile_name + "_" + export] = {
                     "export_name": export,
-                    "tile_id": tile_container_id,
-                    "tile_address": tile_address}
+                    "tile_id": tile_container_id}
 
         form_html = self.mworker.post_and_wait(tile_container_id, "create_form_html", form_info)["form_html"]
-        for tid in self.tile_instances.keys():
+        for tid in self.tile_instances:
             if not tid == tile_container_id:
                 self.mworker.post_task(tid, "RebuildTileForms", form_info)
         self.tile_sort_list.append(tile_container_id)
@@ -1018,13 +1008,11 @@ class mainWindow(object):
         return result
 
     def create_pseudo_tile(self):
-        data = self.mworker.post_and_wait("host", "create_tile_container", {"user_id": self.user_id})
+        data = self.mworker.post_and_wait("host", "create_tile_container", {"user_id": self.user_id,
+                                                                            "parent": self.mworker.my_id})
         self.pseudo_tile_id = data["tile_id"]
-        self.pseudo_tile_address = data["tile_address"]
-        data_dict = {"user_id": self.user_id,
-                     "base_figure_url": self.base_figure_url.replace("tile_id", self.pseudo_tile_id),
-                     "main_id": self.mworker.my_id, "doc_type": self.doc_type,
-                     "tile_id": self.pseudo_tile_id}
+        data_dict = {"base_figure_url": self.base_figure_url.replace("tile_id", self.pseudo_tile_id),
+                     "doc_type": self.doc_type}
         instantiate_result = self.mworker.post_and_wait(self.pseudo_tile_id,
                                                         "instantiate_as_pseudo_tile", data_dict)
         if not instantiate_result["success"]:
@@ -1098,7 +1086,7 @@ class mainWindow(object):
         return {"success": True}
 
     def get_tile_ids(self, data):
-        tile_ids = self.tile_instances.keys()
+        tile_ids = self.tile_instances
         if self.pseudo_tile_id is not None:
             tile_ids.append(self.pseudo_tile_id)
         return {"success": True, "tile_ids": tile_ids}
@@ -1177,7 +1165,7 @@ class mainWindow(object):
         reload_dict = copy.copy(self.get_tile_property(tile_id, "current_reload_attrs"))
         saved_options = copy.copy(self.get_tile_property(tile_id, "current_options"))
         reload_dict.update(saved_options)
-        result = self.mworker.post_and_wiat(self.tile_instances[tile_id], "load_source", {"tile_code": module_code})
+        result = self.mworker.post_and_wait(tile_id, "load_source", {"tile_code": module_code})
         if not result["success"]:
             raise Exception(result["message_string"])
 
@@ -1189,8 +1177,7 @@ class mainWindow(object):
                      "function_names": the_lists["function_names"],
                      "collection_names": the_lists["collection_names"]}
         reload_dict["form_info"] = form_info
-        reload_dict["main_id"] = self.mworker.my_id
-        result = self.mworker.post_and_wait(self.tile_instances[tile_id], "reinstantiate_tile", reload_dict)
+        result = self.mworker.post_and_wait(tile_id, "reinstantiate_tile", reload_dict)
         if result["success"]:
             return {"success": True, "html": result["form_html"]}
         else:
@@ -1268,7 +1255,7 @@ class mainWindow(object):
                      "class_names": the_lists["class_names"],
                      "function_names": the_lists["function_names"],
                      "collection_names": the_lists["collection_names"]}
-        for tid in self.tile_instances.keys():
+        for tid in self.tile_instances:
             self.mworker.post_task(tid, "RebuildTileForms", form_info)
         return None
 

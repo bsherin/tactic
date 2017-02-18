@@ -438,8 +438,6 @@ class CollectionManager(ResourceManager):
             doc_type = "table"
 
         data_dict = {"collection_name": cname,
-                     "main_id": main_id,
-                     "user_id": current_user.get_id(),
                      "project_collection_name": user_obj.project_collection_name,
                      "mongo_uri": mongo_uri,
                      "doc_type": doc_type,
@@ -447,7 +445,7 @@ class CollectionManager(ResourceManager):
 
         result = tactic_app.shared_dict["host_worker"].post_and_wait(main_id, "initialize_mainwindow", data_dict)
         if not result["success"]:
-            return result["message_string"]
+            return result["message"]
         short_collection_name = re.sub("^.*?\.data_collection\.", "", collection_name)
 
         doc_names = []

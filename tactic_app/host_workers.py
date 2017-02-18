@@ -65,7 +65,6 @@ class HostWorker(QWorker):
         # noinspection PyTypeChecker
         self.show_um_status_message("creating main container", user_manage_id, None)
         main_id, container_id = create_container("tactic_main_image", network_mode="bridge", owner=user_id)
-        caddress = get_address(container_id, "bridge")
         send_request_to_megaplex("register_container", {"container_id": main_id})
 
         global_tile_manager.add_user(user_obj.username)
@@ -80,9 +79,6 @@ class HostWorker(QWorker):
 
         data_dict = {"project_name": project_name,
                      "project_collection_name": user_obj.project_collection_name,
-                     "main_id": main_id,
-                     "user_id": user_obj.get_id(),
-                     "main_address": caddress,
                      "loaded_user_modules": global_tile_manager.loaded_user_modules,
                      "mongo_uri": mongo_uri,
                      "list_names": list_names,
@@ -98,7 +94,7 @@ class HostWorker(QWorker):
         result = self.post_and_wait(main_id, "initialize_project_mainwindow", data_dict)
         if not result["success"]:
             destroy_container(main_id)
-            raise Exception(result["message_string"])
+            raise Exception(result["message"])
 
         return None
 
@@ -182,15 +178,15 @@ class HostWorker(QWorker):
 
     @task_worthy
     def get_empty_tile_containers(self, data):
-        cdict = {}
+        tile_containers = []
         for i in range(data["number"]):
             tile_container_id, container_id = create_container("tactic_tile_image",
-                                                 network_mode="bridge",
-                                                 owner=data["user_id"])
-            tile_container_address = get_address(container_id, "bridge")
+                                                                network_mode="bridge",
+                                                                owner=data["user_id"],
+                                                                parent=data["parent"])
             send_request_to_megaplex("register_container", {"container_id": tile_container_id})
-            cdict[tile_container_id] = tile_container_address
-        return cdict
+            tile_containers.append(tile_container_id)
+        return {"tile_containers": tile_containers}
 
     @task_worthy
     def get_tile_code(self, data_dict):
@@ -347,10 +343,10 @@ class HostWorker(QWorker):
     @task_worthy
     def create_tile_container(self, data):
         tile_container_id, container_id = create_container("tactic_tile_image", network_mode="bridge",
-                                             owner=data["user_id"])
-        tile_address = get_address(container_id, "bridge")
+                                                            owner=data["user_id"],
+                                                            parent=data["parent"])
         send_request_to_megaplex( "register_container", {"container_id": tile_container_id})
-        return {"tile_id": tile_container_id, "tile_address": tile_address}
+        return {"tile_id": tile_container_id}
 
     @task_worthy
     def get_module_code(self, data):

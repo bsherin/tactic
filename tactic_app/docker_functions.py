@@ -25,15 +25,6 @@ else:
 
 # multiple_worker_issue global variables here
 
-# global_stuff
-# container_owners is imported by admin_views
-container_owners = {}
-
-# tactic change don't need the forwarder
-def create_forwarder():
-    global forwarder_address, forwarder_id
-    forwarder_id = create_container("forwarder_image", port_bindings={5000: 8080})
-    forwarder_address = get_address(forwarder_id, "bridge")
 
 cli = docker.DockerClient(base_url='unix://var/run/docker.sock')
 
@@ -43,7 +34,8 @@ def get_address(container_identifier, network_name):
 
 
 def create_container(image_name, container_name=None, network_mode="bridge",
-                     wait_until_running=True, owner="host", env_vars={}, port_bindings=None, wait_retries=50,
+                     wait_until_running=True, owner="host", parent="host",
+                     env_vars={}, port_bindings=None, wait_retries=50,
                      detach=True):
     unique_id = str(uuid.uuid4())
     environ = {"SHORT_SLEEP_PERIOD": SHORT_SLEEP_PERIOD,
@@ -53,7 +45,9 @@ def create_container(image_name, container_name=None, network_mode="bridge",
                "CHUNK_SIZE": CHUNK_SIZE,
                "STEP_SIZE": STEP_SIZE,
                "MEGAPLEX_ADDRESS": megaplex_address,
-               "MY_ID": unique_id}
+               "MY_ID": unique_id,
+               "OWNER": owner,
+               "PARENT": parent}
     for key, val in env_vars.items():
         environ[key] = val
 
@@ -66,7 +60,7 @@ def create_container(image_name, container_name=None, network_mode="bridge",
                                          network_mode="bridge",
                                          environment=environ,
                                          ports=port_bindings,
-                                         detach=detach
+                                         detach=detach,
                                          )
     else:
         container = cli.containers.run(image=image_name,
@@ -74,7 +68,7 @@ def create_container(image_name, container_name=None, network_mode="bridge",
                                     network_mode="bridge",
                                     environment=environ,
                                     ports=port_bindings,
-                                    detach=detach
+                                    detach=detach,
                                 )
     container_id = container.id
     # container.start()
@@ -91,9 +85,13 @@ def create_container(image_name, container_name=None, network_mode="bridge",
                 return -1
             print "sleeping while waiting for container {} to run".format(str(container_id))
             time.sleep(0.1)
-    container_owners[container_id] = owner
     return unique_id, container_id
 
+def container_owner(container):
+    if "OWNER" in container.attrs["Config"]["Env"]:
+        return container.attrs["Config"]["Env"]["OWNER"]
+    else:
+        return "system"
 
 def create_network(network_name):
     return cli.create_network(network_name, "bridge")
@@ -106,18 +104,14 @@ def remove_network(network_name):
 def destroy_container(cname):
     try:
         result = cli.containers.get(cname).remove(force=True)
-        if cname in container_owners:
-            del container_owners[cname]
-        return result
     except:
         return -1
 
 
 def destroy_user_containers(owner_id):
-    for cont, owner in container_owners.items():
-        if owner == owner_id:
-            destroy_container(cont)
-
+    for cont in cli.containers.list():
+        if container_owner(cont) == owner_id:
+            destroy_container(cont.id)
 
 def connect_to_network(container, network):
     return cli.connect_container_to_network(container, network)

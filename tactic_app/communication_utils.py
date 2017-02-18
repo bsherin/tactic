@@ -5,7 +5,6 @@ import os
 
 if ("USE_FORWARDER" in os.environ) and (os.environ.get("USE_FORWARDER") == "True"):
     USE_FORWARDER = True
-    from docker_functions import forwarder_address
 else:
     USE_FORWARDER = False
 
@@ -42,8 +41,6 @@ def send_request_to_megaplex(msg_type, data_dict=None, wait_for_success=True, ti
         return requests.post("http://{0}:{1}/{2}".format(taddress, port, msg_type), timeout=timeout, json=data_dict)
 
 
-
-# tactic_change send_request to container took out forwarder
 def send_request_to_container(taddress, msg_type, data_dict=None, wait_for_success=True,
                               timeout=3, tries=RETRIES, wait_time=.1):
     last_fail = ""

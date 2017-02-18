@@ -5,13 +5,14 @@ from qworker import QWorker, task_worthy
 import tile_env
 from tile_env import class_info
 from tile_env import exec_tile_code
+import tile_base
 from tile_base import clear_and_exec_user_code, TileBase
 import cPickle
 from bson.binary import Binary
 import inspect
 import types
 import gevent
-import sys
+import sys, os
 sys.stdout = sys.stderr
 import time
 
@@ -69,8 +70,7 @@ class TileWorker(QWorker):
     def recreate_from_save(self, data):
         try:
             print("entering recreate_from_save. class_name is " + class_info["class_name"])
-            self.tile_instance = class_info["tile_class"](data["main_id"], data["tile_id"],
-                                                          data["tile_name"])
+            self.tile_instance = class_info["tile_class"](tile_name=data["tile_name"])
             if "tile_log_width" not in data:
                 data["tile_log_width"] = data["back_width"]
                 data["tile_log_height"] = data["back_height"]
@@ -109,8 +109,7 @@ class TileWorker(QWorker):
     def reinstantiate_tile(self, reload_dict):
         try:
             print("entering reinstantiate_tile_class")
-            self.tile_instance = class_info["tile_class"](self, reload_dict["main_id"], reload_dict["my_id"],
-                                                          reload_dict["tile_name"])
+            self.tile_instance = class_info["tile_class"](tile_name=reload_dict["tile_name"])
             for (attr, val) in reload_dict.items():
                 setattr(self.tile_instance, attr, val)
             form_html = self.tile_instance.create_form_html(reload_dict["form_info"])["form_html"]
@@ -120,11 +119,11 @@ class TileWorker(QWorker):
             return self.handle_exception(ex, "Error reinstantiating tile")
 
     @task_worthy
-    def create_as_pseudo_tile(self, data):
+    def instantiate_as_pseudo_tile(self, data):
         try:
             print("entering load_source")
-            self.tile_instance = PseudoTileClass(self, data["main_id"], data["tile_id"])
-            self.tile_instance.user_id = data["user_id"]
+            self.tile_instance = PseudoTileClass()
+            self.tile_instance.user_id = os.environ["OWNER"]
             self.tile_instance.base_figure_url = data["base_figure_url"]
             if "doc_type" in data:
                 self.tile_instance.doc_type = data["doc_type"]
@@ -141,9 +140,8 @@ class TileWorker(QWorker):
     def instantiate_tile_class(self, data):
         try:
             print("entering instantiate_tile_class")
-            self.tile_instance = class_info["tile_class"](data["main_id"],
-                                            data["tile_name"])
-            self.tile_instance.user_id = data["user_id"]
+            self.tile_instance = class_info["tile_class"](tile_name=data["tile_name"])
+            self.tile_instance.user_id = os.environ["OWNER"]
             self.tile_instance.base_figure_url = data["base_figure_url"]
             if "doc_type" in data:
                 self.tile_instance.doc_type = data["doc_type"]
@@ -159,6 +157,10 @@ class TileWorker(QWorker):
     @task_worthy
     def RefreshTile(self, data):
         return self.tile_instance.RefreshTile(data)
+
+    @task_worthy
+    def compile_save_dict(self, data):
+        return self.tile_instance.compile_save_dict(data)
 
     @task_worthy
     def get_property(self, data_dict):
@@ -290,16 +292,16 @@ class PseudoTileClass(TileBase):
     exports = []
     measures = ["raw_freq", "student_t", "chi_sq", "pmi", "likelihood_ratio"]
 
-    def __init__(self, tworker, main_id, tile_id, tile_name=None):
-        TileBase.__init__(self, tworker, main_id, tile_id, tile_name)
+    def __init__(self, main_id_ignored=None, tile_id_ignored=None, tile_name=None):
+        TileBase.__init__(self, tile_name=tile_name)
         self.is_pseudo = True
         return
 
 if __name__ == "__main__":
     print "entering main"
-    tworker = TileWorker()
-    print "tworker is created, about to start my_id is " + str(tworker.my_id)
-    tworker.start()
-    print "tworker started, my_id is " + str(tworker.my_id)
+    tile_base.tworker = TileWorker()
+    print "tworker is created, about to start my_id is " + str(tile_base.tworker.my_id)
+    tile_base.tworker.start()
+    print "tworker started, my_id is " + str(tile_base.tworker.my_id)
     while True:
         time.sleep(1000)
