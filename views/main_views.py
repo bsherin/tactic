@@ -10,7 +10,7 @@ from bson.binary import Binary
 from flask import request, jsonify, render_template, send_file, url_for
 from flask_login import current_user, login_required
 from flask_socketio import join_room
-from tactic_app import app, db, fs, socketio, megaplex_id
+from tactic_app import app, db, fs, socketio
 from user_manage_views import collection_manager
 from tactic_app.docker_functions import destroy_container, destroy_child_containers
 from tactic_app.users import load_user
@@ -41,7 +41,7 @@ def on_ready_to_finish(data):
 @login_required
 def post_from_client():
     task_packet = request.json
-    tactic_app.shared_dict["client_worker"].forward_client_post(task_packet)
+    tactic_app.client_worker.forward_client_post(task_packet)
     return jsonify({"success": True})
 
 
@@ -58,20 +58,20 @@ def get_table_templates():
 
 
 def set_mainwindow_property(main_id, prop_name, prop_value):
-    tactic_app.shared_dict["host_worker"].post_task(main_id, "set_property", {"property": prop_name, "val": prop_value})
+    tactic_app.host_worker.post_task(main_id, "set_property", {"property": prop_name, "val": prop_value})
     return
 
 
 def get_mainwindow_property(main_id, prop_name, callback):
-    tactic_app.shared_dict["host_worker"].post_task(main_id, "get_property", {"property": prop_name}, callback)
+    tactic_app.host_worker.post_task(main_id, "get_property", {"property": prop_name}, callback)
     return
 
 
 @app.route('/load_temp_page/<the_id>', methods=['get', 'post'])
 @login_required
 def load_temp_page(the_id):
-    template_data = tactic_app.shared_dict["host_worker"].temp_dict[the_id]
-    del tactic_app.shared_dict["host_worker"].temp_dict[the_id]
+    template_data = tactic_app.host_worker.temp_dict[the_id]
+    del tactic_app.host_worker.temp_dict[the_id]
     return render_template(template_data["template_name"], **template_data)
 
 
@@ -94,7 +94,7 @@ def export_data():
         return
     data_dict = request.json
     full_collection_name = current_user.build_data_collection_name(data_dict['export_name'])
-    tactic_app.shared_dict["host_worker"].post_task(data_dict["main_id"], "export_data", {"full_collection_name": full_collection_name},
+    tactic_app.host_worker.post_task(data_dict["main_id"], "export_data", {"full_collection_name": full_collection_name},
                           export_success)
     return jsonify({"success": True})
 
@@ -102,7 +102,7 @@ def export_data():
 @app.route('/figure_source/<tile_id>/<figure_name>', methods=['GET', 'POST'])
 @login_required
 def figure_source(tile_id, figure_name):
-    encoded_img = tactic_app.shared_dict["host_worker"].post_and_wait(tile_id, "get_image", {"figure_name": figure_name})["img"]
+    encoded_img = tactic_app.host_worker.post_and_wait(tile_id, "get_image", {"figure_name": figure_name})["img"]
     img = cPickle.loads(encoded_img.decode("utf-8", "ignore").encode("ascii"))
     img_file = cStringIO.StringIO()
     img_file.write(img)

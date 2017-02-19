@@ -9,18 +9,18 @@ from tactic_app.tile_code_parser import get_functions_full_code, get_assignments
 from tactic_app.integrated_docs import api_array, api_dict_by_category, api_dict_by_name, ordered_api_categories
 import re, sys, datetime
 
-global_tile_manager = tactic_app.shared_dict["global_tile_manager"]
+global_tile_manager = tactic_app.global_tile_manager
 
 def creator_load_source(module_name):
     user_obj = current_user
     tile_module = user_obj.get_tile_module(module_name)
 
-    res_dict = tactic_app.shared_dict["host_worker"].post_and_wait(global_tile_manager.test_tile_container_id, "load_source",
+    res_dict = tactic_app.host_worker.post_and_wait(global_tile_manager.test_tile_container_id, "load_source",
                                          {"tile_code": tile_module})
     return res_dict
 
 def retrieve_options():
-    res_dict = tactic_app.shared_dict["host_worker"].post_and_wait(global_tile_manager.test_tile_container_id, "get_options", {})
+    res_dict = tactic_app.host_worker.post_and_wait(global_tile_manager.test_tile_container_id, "get_options", {})
     return res_dict
 
 

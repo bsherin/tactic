@@ -24,7 +24,7 @@ import traceback
 AUTOSPLIT = True
 AUTOSPLIT_SIZE = 10000
 
-global_tile_manager = tactic_app.shared_dict["global_tile_manager"]
+global_tile_manager = tactic_app.global_tile_manager
 
 def start_spinner(user_id=None):
     if user_id is None:
@@ -442,7 +442,7 @@ class CollectionManager(ResourceManager):
                      "doc_type": doc_type,
                      "base_figure_url": url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1]}
 
-        result = tactic_app.shared_dict["host_worker"].post_and_wait(main_id, "initialize_mainwindow", data_dict)
+        result = tactic_app.host_worker.post_and_wait(main_id, "initialize_mainwindow", data_dict)
         if not result["success"]:
             return result["message"]
         short_collection_name = re.sub("^.*?\.data_collection\.", "", collection_name)
@@ -892,7 +892,7 @@ class TileManager(ResourceManager):
                 user_obj = current_user
             tile_module = user_obj.get_tile_module(tile_module_name)
 
-            res_dict = tactic_app.shared_dict["host_worker"].post_and_wait(global_tile_manager.test_tile_container_id, "load_source",
+            res_dict = tactic_app.host_worker.post_and_wait(global_tile_manager.test_tile_container_id, "load_source",
                                                {"tile_code": tile_module})
             if not res_dict["success"]:
                 return jsonify({"success": False, "message": res_dict["message_string"], "alert_type": "alert-warning"})
@@ -1093,7 +1093,7 @@ class CodeManager(ResourceManager):
         return jsonify({"success": True, "the_content": the_code})
 
     def load_code(self, the_code):
-        res_dict = tactic_app.shared_dict["host_worker"].post_and_wait(global_tile_manager.test_tile_container_id, "clear_and_load_code",
+        res_dict = tactic_app.host_worker.post_and_wait(global_tile_manager.test_tile_container_id, "clear_and_load_code",
                                            {"the_code": the_code})
         return res_dict
 

@@ -12,8 +12,8 @@ docker_cleanup.do_docker_cleanup()
 
 
 from tactic_app import app, socketio
-from tactic_app import users
+from tactic_app import users, global_tile_management
 from views import auth_views, main_views, user_manage_views, admin_views, creator_views, module_viewer_views, history_viewer_views
 
 import tactic_app
-tactic_app.shared_dict["global_tile_manager"].get_all_default_tiles()
+tactic_app.global_tile_manager.get_all_default_tiles()

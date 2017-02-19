@@ -5,15 +5,14 @@ import os
 import sys
 import uuid
 from communication_utils import send_request_to_megaplex
+from qworker import SHORT_SLEEP_PERIOD, LONG_SLEEP_PERIOD
 forwarder_address = None
 forwarder_id = None
 sys.stdout = sys.stderr
 
 
 print os.environ
-SHORT_SLEEP_PERIOD = float(os.environ.get("SHORT_SLEEP_PERIOD"))
-LONG_SLEEP_PERIOD = float(os.environ.get("LONG_SLEEP_PERIOD"))
-MAX_QUEUE_LENGTH = int(os.environ.get("MAX_QUEUE_LENGTH"))
+MAX_QUEUE_LENGTH = 5000
 CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
 STEP_SIZE = int(os.environ.get("STEP_SIZE"))
 

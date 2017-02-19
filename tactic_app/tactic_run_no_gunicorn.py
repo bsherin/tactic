@@ -20,7 +20,7 @@ from views import auth_views, main_views, user_manage_views, admin_views, creato
 print "imported app"
 
 import tactic_app
-tactic_app.shared_dict["global_tile_manager"].get_all_default_tiles()
+tactic_app.global_tile_manager.get_all_default_tiles()
 
 from views import tester_views
 

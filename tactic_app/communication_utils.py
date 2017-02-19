@@ -20,7 +20,7 @@ megaplex_address = None
 def send_request_to_megaplex(msg_type, data_dict=None, wait_for_success=True, timeout=3, tries=RETRIES, wait_time=.1):
     if megaplex_address is None:  # assume this is the host
         taddress = "0.0.0.0"
-        port = "8080"
+        port = "8085"
     else:
         taddress = megaplex_address
         port = "5000"

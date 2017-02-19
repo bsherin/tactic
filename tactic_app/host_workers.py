@@ -14,7 +14,7 @@ import traceback
 import datetime
 
 check_for_dead_time = 300
-global_tile_manager = tactic_app.shared_dict["global_tile_manager"]
+global_tile_manager = tactic_app.global_tile_manager
 
 class HostWorker(QWorker):
     def __init__(self):
@@ -433,7 +433,7 @@ class ClientWorker(QWorker):
                 self.special_long_sleep_function()
                 gevent.sleep(LONG_SLEEP_PERIOD)
 
-tactic_app.shared_dict["host_worker"] = HostWorker()
-tactic_app.shared_dict["client_worker"] = ClientWorker()
-tactic_app.shared_dict["host_worker"].start()
-tactic_app.shared_dict["client_worker"].start()
+tactic_app.host_worker = HostWorker()
+tactic_app.client_worker = ClientWorker()
+tactic_app.host_worker.start()
+tactic_app.client_worker.start()

@@ -66,7 +66,7 @@ def direct_project(project_name, username, password):
     if user is not None and user.verify_password(password):
         login_user(user, remember=False)
     data = {"project_name": project_name, "user_id": user.get_id(), "user_manage_id": 0};
-    tactic_app.shared_dict["host_worker"].main_project(data)
+    tactic_app.host_worker.main_project(data)
     return
 
 

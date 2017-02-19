@@ -17,8 +17,8 @@ blank_packet = {"source": None,
                 "response_data": None,
                 "callback_id": None}
 
-SHORT_SLEEP_PERIOD = float(os.environ.get("SHORT_SLEEP_PERIOD"))
-LONG_SLEEP_PERIOD = float(os.environ.get("LONG_SLEEP_PERIOD"))
+SHORT_SLEEP_PERIOD = .001
+LONG_SLEEP_PERIOD = .1
 
 if "MEGAPLEX_ADDRESS" in os.environ:
     communication_utils.megaplex_address = os.environ.get("MEGAPLEX_ADDRESS")

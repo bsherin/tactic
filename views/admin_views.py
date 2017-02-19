@@ -11,7 +11,7 @@ import traceback
 
 
 repository_user = User.get_user_by_username("repository")
-global_tile_manager = tactic_app.shared_dict["global_tile_manager"]
+global_tile_manager = tactic_app.global_tile_manager
 
 class ContainerManager(ResourceManager):
 

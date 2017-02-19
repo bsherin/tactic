@@ -32,13 +32,14 @@ else:
 # these variables are imported by other modules
 host_ip = re.search("inet (.*?)/", ip_info).group(1)
 mongo_uri = None
-megaplex_id = None
 use_ssl = os.environ.get("USE_SSL")
 app = None
 db = None
 fs = None
 socketio = None
-shared_dict = {}
+global_tile_manager = None
+client_worker = None
+host_worker = None
 
 
 def print_message():
@@ -46,11 +47,11 @@ def print_message():
 
 
 def create_megaplex():
+    global megaplex_id
     unique_id, megaplex_id = create_container("tactic_megaplex_image",
-                                              port_bindings={5000: 8080},
+                                              port_bindings={5000: 8085},
                                               register_container=False)
     docker_functions.megaplex_address = get_address(megaplex_id, "bridge")
-    shared_dict["megaplex_id"] = megaplex_id
 
 
 # noinspection PyUnresolvedReferences
