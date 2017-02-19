@@ -65,8 +65,6 @@ class HostWorker(QWorker):
         # noinspection PyTypeChecker
         self.show_um_status_message("creating main container", user_manage_id, None)
         main_id, container_id = create_container("tactic_main_image", network_mode="bridge", owner=user_id)
-        send_request_to_megaplex("register_container", {"container_id": main_id})
-
         global_tile_manager.add_user(user_obj.username)
 
         list_names = self.get_list_names({"user_id": user_obj.get_id()})["list_names"]
@@ -184,7 +182,6 @@ class HostWorker(QWorker):
                                                                 network_mode="bridge",
                                                                 owner=data["user_id"],
                                                                 parent=data["parent"])
-            send_request_to_megaplex("register_container", {"container_id": tile_container_id})
             tile_containers.append(tile_container_id)
         return {"tile_containers": tile_containers}
 
@@ -307,16 +304,17 @@ class HostWorker(QWorker):
 
     @task_worthy
     def print_to_console(self, data):
-        from tactic_app import socketio
+        from tactic_app import app, socketio
         with app.test_request_context():
             data["message_string"] = render_template("log_item.html", log_item=data["message_string"])
 
-        socketio.emit("table-message", data, namespace='/main', room=data["main_id"])
+        data["table_message"] = "consoleLog"
+        self.emit_table_message(data)
         return {"success": True}
 
     @task_worthy
     def request_render(self, data):
-        with app.test_request_context:
+        with app.test_request_context():
             render_result = render_template(data["template"], **data["render_fields"])
         return {"success": True, "render_result": render_result}
 
@@ -326,7 +324,8 @@ class HostWorker(QWorker):
         with app.test_request_context():
             data["message_string"] = render_template("code_log_item.html", unique_id=data["unique_id"])
 
-        socketio.emit("table-message", data, namespace='/main', room=data["main_id"])
+        data["table_message"] = "consoleLog"
+        self.emit_table_message(data)
         return {"success": True}
 
     @task_worthy
@@ -343,9 +342,8 @@ class HostWorker(QWorker):
     @task_worthy
     def create_tile_container(self, data):
         tile_container_id, container_id = create_container("tactic_tile_image", network_mode="bridge",
-                                                            owner=data["user_id"],
-                                                            parent=data["parent"])
-        send_request_to_megaplex( "register_container", {"container_id": tile_container_id})
+                                                           owner=data["user_id"],
+                                                           parent=data["parent"])
         return {"tile_id": tile_container_id}
 
     @task_worthy
@@ -373,7 +371,6 @@ class HostWorker(QWorker):
         ddict["html"] = the_html
         return ddict
 
-
     def handle_exception(self, ex, special_string=None):
         if special_string is None:
             template = "An exception of type {0} occured. Arguments:\n{1!r}"
@@ -396,6 +393,7 @@ class HostWorker(QWorker):
         if delta_seconds > check_for_dead_time:
             self.last_check_for_dead_containers = current_time
             self.clear_stale_containers()
+
 
 class ClientWorker(QWorker):
     def __init__(self):

@@ -603,9 +603,6 @@ class TileBase(object):
                     setattr(self, attr, attr_val)
         return None
 
-    def render_tile(self, data):
-        return {"tile_html": self.render_me(data)}
-
     def get_type_info(self, avar):
         result = {}
         if avar == "__none__":
@@ -763,7 +760,7 @@ class TileBase(object):
         result = self.tworker.post_and_wait("host",
                                             "request_render",
                                             {"template": "saved_tile.html", "render_fields": render_fields})
-        return result["render_result"]
+        return {"success": True, "tile_html": result["render_result"]}
 
     def handle_exception(self, ex, special_string=None, print_to_console=True):
         if special_string is None:

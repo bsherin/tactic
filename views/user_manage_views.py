@@ -426,8 +426,7 @@ class CollectionManager(ResourceManager):
         user_obj = current_user
         cname = user_obj.build_data_collection_name(collection_name)
         main_id, container_id = create_container("tactic_main_image", owner=user_obj.get_id())
-        caddress = get_address(container_id, "bridge")
-        send_request_to_megaplex("register_container", {"container_id": main_id, "address": caddress})
+
         global_tile_manager.add_user(user_obj.username)
 
         the_collection = db[cname]

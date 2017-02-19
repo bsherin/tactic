@@ -1,13 +1,14 @@
 
 import docker
 import time
-import requests
 import os
 import sys
 import uuid
+from communication_utils import send_request_to_megaplex
 forwarder_address = None
 forwarder_id = None
 sys.stdout = sys.stderr
+
 
 print os.environ
 SHORT_SLEEP_PERIOD = float(os.environ.get("SHORT_SLEEP_PERIOD"))
@@ -16,17 +17,18 @@ MAX_QUEUE_LENGTH = int(os.environ.get("MAX_QUEUE_LENGTH"))
 CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
 STEP_SIZE = int(os.environ.get("STEP_SIZE"))
 
+
 megaplex_address = None
+
 
 if "RETRIES" in os.environ:
     RETRIES = int(os.environ.get("RETRIES"))
 else:
     RETRIES = 60
 
-# multiple_worker_issue global variables here
-
 
 cli = docker.DockerClient(base_url='unix://var/run/docker.sock')
+
 
 # Note that get_address assumes that the network is named usernet
 def get_address(container_identifier, network_name):
@@ -36,7 +38,7 @@ def get_address(container_identifier, network_name):
 def create_container(image_name, container_name=None, network_mode="bridge",
                      wait_until_running=True, owner="host", parent="host",
                      env_vars={}, port_bindings=None, wait_retries=50,
-                     detach=True):
+                     detach=True, register_container=True):
     unique_id = str(uuid.uuid4())
     environ = {"SHORT_SLEEP_PERIOD": SHORT_SLEEP_PERIOD,
                "LONG_SLEEP_PERIOD": LONG_SLEEP_PERIOD,
@@ -51,27 +53,24 @@ def create_container(image_name, container_name=None, network_mode="bridge",
     for key, val in env_vars.items():
         environ[key] = val
 
-    # if port_bindings is None:
-    #     host_config = cli.create_host_config(network_mode=network_mode)
-    # else:
-    #     host_config = cli.create_host_config(network_mode=network_mode, port_bindings=port_bindings)
+
+    labels = {"my_id": unique_id, "owner": owner, "parent": parent}
+
     if container_name is None:
         container = cli.containers.run(image=image_name,
-                                         network_mode="bridge",
-                                         environment=environ,
-                                         ports=port_bindings,
-                                         detach=detach,
-                                         )
+                                       network_mode="bridge",
+                                       environment=environ,
+                                       ports=port_bindings,
+                                       detach=detach,
+                                       labels=labels)
     else:
         container = cli.containers.run(image=image_name,
-                                    name=container_name,
-                                    network_mode="bridge",
-                                    environment=environ,
-                                    ports=port_bindings,
-                                    detach=detach,
-                                )
+                                       name=container_name,
+                                       network_mode="bridge",
+                                       environment=environ,
+                                       ports=port_bindings,
+                                       detach=detach)
     container_id = container.id
-    # container.start()
     container = cli.containers.get(container_id)
     print "status " + str(container.status)
 
@@ -82,14 +81,30 @@ def create_container(image_name, container_name=None, network_mode="bridge",
             retries += 1
             if retries > wait_retries:
                 print "container failed to start"
+                container.remove(force=True)
                 return -1
             print "sleeping while waiting for container {} to run".format(str(container_id))
             time.sleep(0.1)
+    if register_container:
+        send_request_to_megaplex("register_container", {"container_id": unique_id})
     return unique_id, container_id
 
+
 def container_owner(container):
-    if "OWNER" in container.attrs["Config"]["Env"]:
-        return container.attrs["Config"]["Env"]["OWNER"]
+    if "owner" in container.attrs["Config"]["Labels"]:
+        return container.attrs["Config"]["Labels"]["owner"]
+    else:
+        return "system"
+
+def container_parent(container):
+    if "parent" in container.attrs["Config"]["Labels"]:
+        return container.attrs["Config"]["Labels"]["parent"]
+    else:
+        return "system"
+
+def container_id(container):
+    if "my_id" in container.attrs["Config"]["Labels"]:
+        return container.attrs["Config"]["Labels"]["my_id"]
     else:
         return "system"
 
@@ -101,9 +116,22 @@ def remove_network(network_name):
     return cli.remove_network(network_name)
 
 
-def destroy_container(cname):
+def get_container(tactic_id):
+    conts = cli.containers.list()
+    for cont in conts:
+        if container_id(cont) == tactic_id:
+            return cont
+    return None
+
+
+def destroy_container(tactic_id):
     try:
-        result = cli.containers.get(cname).remove(force=True)
+        cont = get_container(tactic_id)
+        if cont is None:
+            return -1
+        else:
+            cont.remove(force=True)
+            send_request_to_megaplex("deregister_container", {"container_id": tactic_id})
     except:
         return -1
 
@@ -111,7 +139,16 @@ def destroy_container(cname):
 def destroy_user_containers(owner_id):
     for cont in cli.containers.list():
         if container_owner(cont) == owner_id:
-            destroy_container(cont.id)
+            uid = container_id(cont)
+            destroy_container(uid)
+
+
+def destroy_child_containers(parent_id):
+    for cont in cli.containers.list():
+        if container_parent(cont) == parent_id:
+            uid = container_id(cont)
+            destroy_container(uid)
+
 
 def connect_to_network(container, network):
     return cli.connect_container_to_network(container, network)

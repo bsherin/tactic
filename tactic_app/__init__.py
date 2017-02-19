@@ -46,7 +46,9 @@ def print_message():
 
 
 def create_megaplex():
-    unique_id, megaplex_id = create_container("tactic_megaplex_image", port_bindings={5000: 8080})
+    unique_id, megaplex_id = create_container("tactic_megaplex_image",
+                                              port_bindings={5000: 8080},
+                                              register_container=False)
     docker_functions.megaplex_address = get_address(megaplex_id, "bridge")
     shared_dict["megaplex_id"] = megaplex_id
 

@@ -14,7 +14,8 @@ class GlobalTileManager(object):
         self.loaded_user_modules = {}
         self.test_tile_container_id, container_id = create_container("tactic_tile_image",
                                                                      network_mode="bridge",
-                                                                     container_name="tile_test_container")
+                                                                     container_name="tile_test_container",
+                                                                     register_container=False)
 
         self.tile_module_index = {}
 

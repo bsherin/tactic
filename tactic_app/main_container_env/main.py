@@ -330,7 +330,7 @@ class mainWindow(object):
             self.project_name = None
             self.console_html = None
             self.console_cm_code = {}
-            self.user_id = self.my_id = os.environ.get("OWNER")
+            self.user_id = os.environ.get("OWNER")
             self.doc_dict = self._build_doc_dict()
             self.visible_doc_name = self.doc_dict.keys()[0]
             self.purgetiles = False
@@ -393,13 +393,13 @@ class mainWindow(object):
             tile_info_dict, loaded_modules = self.recreate_from_save(data_dict["project_collection_name"],
                                                                      data_dict["project_name"])
             self.mworker.post_and_wait("host", "load_modules",
-                                       {"loaded_modules": loaded_modules, "user_id": data_dict["user_id"]})
+                                       {"loaded_modules": loaded_modules, "user_id": self.user_id})
             doc_names = [str(doc_name) for doc_name in self.doc_names]
 
             self.show_um_message("Getting tile code", data_dict["user_manage_id"])
             tile_code_dict = self.mworker.post_and_wait("host", "get_tile_code",
                                                         {"tile_info_dict": tile_info_dict,
-                                                         "user_id": data_dict["user_id"]})
+                                                         "user_id": self.user_id})
             self.show_um_message("Checking tile Code", data_dict["user_manage_id"])
             for old_tile_id in tile_code_dict.keys():
                 if tile_code_dict[old_tile_id] is None:
@@ -410,7 +410,7 @@ class mainWindow(object):
             self.show_um_message("Creating empty containers", data_dict["user_manage_id"])
             new_tile_keys = self.mworker.post_and_wait("host", "get_empty_tile_containers",
                                                          {"number": len(tile_info_dict.keys()),
-                                                          "user_id": data_dict["user_id"],
+                                                          "user_id": self.user_id,
                                                           "parent": self.mworker.my_id})["tile_containers"]
             new_tile_info = {}
             error_messages = ""
@@ -530,11 +530,10 @@ class mainWindow(object):
             tile_save_dict["tile_id"] = new_tile_id
             tile_save_dict["main_id"] = self.mworker.my_id
             tile_save_dict["new_base_figure_url"] = self.base_figure_url.replace("tile_id", new_tile_id)
-            tresult = self.mworker.post_and_wait(new_tile_id,
+            tile_result = self.mworker.post_and_wait(new_tile_id,
                                                  "recreate_from_save",
                                                  tile_save_dict,
                                                  timeout=60, tries=RETRIES)
-            tile_result = tresult.json()
             if not tile_result["success"]:
                 errors[old_tile_id] = tile_result["message_string"]
                 self.tile_instances.remove(new_tile_id)
@@ -569,7 +568,8 @@ class mainWindow(object):
                      "collection_names": collection_names,
                      "function_names": function_names}
         for tile_id, tile_result in tile_results.items():
-            tile_result["tile_html"] = self.mworker.post_and_wait(tile_id, "render_tile", form_info)["tile_html"]
+            res = self.mworker.post_and_wait(tile_id, "render_tile", form_info)
+            tile_result["tile_html"] = res["tile_html"]
         return errors, tile_results
 
     def save_new_project(self, data_dict):

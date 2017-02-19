@@ -12,7 +12,7 @@ from flask_login import current_user, login_required
 from flask_socketio import join_room
 from tactic_app import app, db, fs, socketio, megaplex_id
 from user_manage_views import collection_manager
-from tactic_app.docker_functions import get_address, destroy_container
+from tactic_app.docker_functions import destroy_container, destroy_child_containers
 from tactic_app.users import load_user
 from tactic_app.communication_utils import send_request_to_megaplex
 import tactic_app
@@ -77,14 +77,8 @@ def load_temp_page(the_id):
 
 @app.route('/remove_mainwindow/<main_id>', methods=['get', 'post'])
 def remove_mainwindow(main_id):
-    def do_the_destroys(result):
-        tile_ids = result["tile_ids"]
-        for tile_id in tile_ids:
-            destroy_container(tile_id)
-            send_request_to_megaplex("deregister_container", {"container_id": tile_id})
-        destroy_container(main_id)
-        send_request_to_megaplex("deregister_container", {"container_id": main_id})
-    tactic_app.shared_dict["host_worker"].post_task(main_id, "get_tile_ids", {}, do_the_destroys)
+    destroy_child_containers(main_id)
+    destroy_container(main_id)
     return jsonify({"success": True})
 
 

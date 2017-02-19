@@ -47,9 +47,9 @@ class MainWorker(QWorker):
         if tile_id is not None:
             self.ask_tile(tile_id, event_name, data_dict)
         else:
-            for tile_id in self.tile_instances.keys():
+            for tile_id in self.mwindow.tile_instances:
                 self.ask_tile(tile_id, event_name, data_dict)
-        if event_name in self.update_events:
+        if event_name in self.mwindow.update_events:
             self.post_task(self.my_id, event_name, data_dict)
         return True
 
@@ -79,9 +79,8 @@ class MainWorker(QWorker):
     def initialize_project_mainwindow(self, data_dict):
         try:
             print("entering intialize project mainwindow")
-            self.my_id = self.data_dict["main_id"]
             self.mwindow = mainWindow(self, data_dict)
-            self.post_task(data_dict["main_id"], "do_full_recreation", data_dict)
+            self.post_task(self.my_id, "do_full_recreation", data_dict)
             print("leaving initialize_project_mainwindow")
             return {"success": True}
         except Exception as ex:
@@ -94,7 +93,7 @@ class MainWorker(QWorker):
     @task_worthy
     def get_saved_console_code(self, data_dict):
         print "entering saved console code with console_cm_code " + str(self.mwindow.console_cm_code)
-        return {"saved_console_code": self.console_cm_code}
+        return {"saved_console_code": self.mwindow.console_cm_code}
 
     @task_worthy
     def save_new_project(self, data_dict):
@@ -258,6 +257,7 @@ class MainWorker(QWorker):
 
     @task_worthy
     def SearchTable(self, data_dict):
+        print "Got SearchTable"
         return self.mwindow.SearchTable(data_dict)
 
     @task_worthy
