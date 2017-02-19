@@ -4,7 +4,7 @@ from tactic_app import app, use_ssl, create_megaplex
 from tactic_app.host_workers import global_tile_manager
 from tactic_app.users import User, load_user, get_all_users, remove_user
 from user_manage_views import ResourceManager
-from tactic_app.docker_functions import cli, destroy_container, container_owner
+from tactic_app.docker_functions import cli, destroy_container, container_owner, get_log, container_id
 from docker_cleanup import do_docker_cleanup
 import tactic_app
 import traceback
@@ -100,7 +100,7 @@ class ContainerManager(ResourceManager):
         if not (current_user.get_id() == repository_user.get_id()):
             return jsonify({"success": False, "message": "not authorized", "alert_type": "alert-warning"})
         try:
-            log_text = cli.containers.get(container_id).logs()
+            log_text = get_log(container_id)
         except Exception as ex:
             template = "<pre>An exception of type {0} occured. Arguments:\n{1!r}</pre>"
             error_string = template.format(type(ex).__name__, ex.args)
@@ -122,14 +122,14 @@ class ContainerManager(ResourceManager):
         larray = [["Id", "Name", "Image", "Owner", "Status", "Created"]]
         all_containers = cli.containers.list(all=True)
         for cont in all_containers:
-            owner_id = container_owner[cont.id]
+            owner_id = container_owner(cont)
             if owner_id == "host":
                 owner_name = "host"
             elif owner_id == "system":
                 owner_name = "system"
             else:
                 owner_name = load_user(owner_id).username
-            larray.append([cont.short_id, cont.attrs["Name"],
+            larray.append([container_id(cont), cont.attrs["Name"],
                            image_id_names[cont.attrs["Image"]],
                            owner_name, cont.status, cont.attrs["Created"]])
         return larray
