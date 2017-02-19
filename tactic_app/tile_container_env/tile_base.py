@@ -85,7 +85,7 @@ class TileBase(object):
                        '<input type="checkbox" id="{0}" value="{0}" {1}>{0}</label>' \
                        '</div>'
     reload_attrs = ["tile_name", "tile_type", "base_figure_url", "user_id", "doc_type",
-                    "my_id", "header_height", "front_height", "front_width", "back_height",
+                    "header_height", "front_height", "front_width", "back_height",
                     "back_width", "tda_width", "tda_height", "width", "height", "full_tile_width",
                     "tile_log_height", "tile_log_width",
                     "full_tile_height", "is_shrunk", "configured"
@@ -159,6 +159,7 @@ class TileBase(object):
         return None
 
     def get_property(self, data):
+        print "in get_property with data[property] " + str(data["property"])
         data["val"] = getattr(self, data["property"])
         return data
 

@@ -4,7 +4,7 @@ from flask_login import url_for
 from users import load_user
 import gevent
 from communication_utils import send_request_to_megaplex
-from docker_functions import create_container, get_address, destroy_container, cli
+from docker_functions import create_container, destroy_container, get_log
 from tactic_app import app, socketio, mongo_uri, use_ssl # global_stuff
 from views.user_manage_views import tile_manager, project_manager, collection_manager
 import tactic_app
@@ -99,7 +99,7 @@ class HostWorker(QWorker):
     @task_worthy
     def get_container_log(self, data):
         container_id = data["container_id"]
-        return {"success": True, "log_text": cli.logs(container_id)}
+        return {"success": True, "log_text": get_log(container_id)}
 
 
     @task_worthy

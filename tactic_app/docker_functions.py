@@ -123,6 +123,9 @@ def get_container(tactic_id):
             return cont
     return None
 
+def get_log(tactic_id):
+    cont = get_container(tactic_id)
+    return cont.logs()
 
 def destroy_container(tactic_id):
     try:

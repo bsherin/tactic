@@ -1157,14 +1157,19 @@ class mainWindow(object):
         return result
 
     def reload_tile(self, ddict):
+        print "entering reload tile"
         tile_id = ddict["tile_id"]
         tile_type = self.get_tile_property(tile_id, "tile_type")
         data = {"tile_type": tile_type, "user_id": self.user_id}
+        print "getting code"
         module_code = self.mworker.post_and_wait("host", "get_module_code", data)["module_code"]
+        print "getting lists"
         the_lists = self.get_lists_classes_functions()
+        print "getting tile properties"
         reload_dict = copy.copy(self.get_tile_property(tile_id, "current_reload_attrs"))
         saved_options = copy.copy(self.get_tile_property(tile_id, "current_options"))
         reload_dict.update(saved_options)
+        print "loading source"
         result = self.mworker.post_and_wait(tile_id, "load_source", {"tile_code": module_code})
         if not result["success"]:
             raise Exception(result["message_string"])
@@ -1177,10 +1182,13 @@ class mainWindow(object):
                      "function_names": the_lists["function_names"],
                      "collection_names": the_lists["collection_names"]}
         reload_dict["form_info"] = form_info
+        print "reinstantiating"
         result = self.mworker.post_and_wait(tile_id, "reinstantiate_tile", reload_dict)
         if result["success"]:
+            print "leaving reload tile with success"
             return {"success": True, "html": result["form_html"]}
         else:
+            print "encounterd problem in reload_tile"
             raise Exception(result["message_string"])
 
     def grab_chunk_with_row(self, data_dict):
