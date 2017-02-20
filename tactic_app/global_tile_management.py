@@ -1,5 +1,5 @@
 import datetime
-from docker_functions import create_container
+from docker_functions import create_container, ContainerCreateError
 from users import User, load_user, initial_metadata
 import tactic_app
 
@@ -12,12 +12,15 @@ class GlobalTileManager(object):
         self.tile_classes = {}
         self.user_tiles = {}
         self.loaded_user_modules = {}
-        self.test_tile_container_id, container_id = create_container("tactic_tile_image",
-                                                                     network_mode="bridge",
-                                                                     container_name="tile_test_container",
-                                                                     register_container=False)
-
         self.tile_module_index = {}
+        try:
+            self.test_tile_container_id, container_id = create_container("tactic_tile_image",
+                                                                         network_mode="bridge",
+                                                                         container_name="tile_test_container",
+                                                                         register_container=False)
+        except ContainerCreateError:
+            print "failed to create the test tile_container. That's very bad."
+            exit()
 
     def get_all_default_tiles(self):
         repository_user = User.get_user_by_username("repository")

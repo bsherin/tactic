@@ -413,6 +413,10 @@ function tile_command(menu_id) {
         data_dict["user_id"] = user_id;
         data_dict["parent"] = main_id;
         postWithCallback("host", "create_tile_container", data_dict, function (data) {
+            if (!data.success) {
+                doFlash(data);
+                return
+            }
             const tile_id = data["tile_id"];
             data_dict["tile_id"] = tile_id;
             postWithCallback("host", "get_module_code", data_dict, function (data) {

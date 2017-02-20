@@ -527,8 +527,6 @@ class mainWindow(object):
             self.tile_instances.append(new_tile_id)
             self.tile_sort_list[self.tile_sort_list.index(old_tile_id)] = new_tile_id
             tile_save_dict = self.project_dict["tile_instances"][old_tile_id]
-            tile_save_dict["tile_id"] = new_tile_id
-            tile_save_dict["main_id"] = self.mworker.my_id
             tile_save_dict["new_base_figure_url"] = self.base_figure_url.replace("tile_id", new_tile_id)
             tile_result = self.mworker.post_and_wait(new_tile_id,
                                                  "recreate_from_save",
@@ -1010,6 +1008,8 @@ class mainWindow(object):
     def create_pseudo_tile(self):
         data = self.mworker.post_and_wait("host", "create_tile_container", {"user_id": self.user_id,
                                                                             "parent": self.mworker.my_id})
+        if not data["success"]:
+            raise Exception("Error creating empty tile container")
         self.pseudo_tile_id = data["tile_id"]
         data_dict = {"base_figure_url": self.base_figure_url.replace("tile_id", self.pseudo_tile_id),
                      "doc_type": self.doc_type}

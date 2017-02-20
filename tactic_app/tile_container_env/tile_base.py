@@ -93,7 +93,7 @@ class TileBase(object):
 
     def __init__(self, main_id_ignored=None, tile_id_ignored=None, tile_name=None):
         self._sleepperiod = .0001
-        self.save_attrs = ["current_html", "tile_type", "tile_name", "main_id", "doc_type", "configured",
+        self.save_attrs = ["current_html", "tile_type", "tile_name", "doc_type", "configured",
                            "header_height", "front_height", "front_width", "back_height", "back_width",
                            "tile_log_height", "tile_log_width",
                            "tda_width", "tda_height", "width", "height", "user_id", "base_figure_url",

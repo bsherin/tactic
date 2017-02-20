@@ -17,7 +17,7 @@ CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
 STEP_SIZE = int(os.environ.get("STEP_SIZE"))
 
 
-megaplex_address = None
+megaplex_address = None  # This is set in __init__.py
 
 
 if "RETRIES" in os.environ:
@@ -33,6 +33,8 @@ cli = docker.DockerClient(base_url='unix://var/run/docker.sock')
 def get_address(container_identifier, network_name):
     return cli.containers.get(container_identifier).attrs["NetworkSettings"]["Networks"][network_name]["IPAddress"]
 
+class ContainerCreateError(Exception):
+    pass
 
 def create_container(image_name, container_name=None, network_mode="bridge",
                      wait_until_running=True, owner="host", parent="host",
@@ -81,7 +83,7 @@ def create_container(image_name, container_name=None, network_mode="bridge",
             if retries > wait_retries:
                 print "container failed to start"
                 container.remove(force=True)
-                return -1
+                raise ContainerCreateError("Error creating container with image name " + str(image_name))
             print "sleeping while waiting for container {} to run".format(str(container_id))
             time.sleep(0.1)
     if register_container:

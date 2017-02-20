@@ -22,8 +22,9 @@ LONG_SLEEP_PERIOD = .1
 
 if "MEGAPLEX_ADDRESS" in os.environ:
     communication_utils.megaplex_address = os.environ.get("MEGAPLEX_ADDRESS")
+    communication_utils.am_host = False
 else:
-    communication_utils.megaplex_address = None
+    communication_utils.am_host = True
 
 print "got megaplex " + str(communication_utils.megaplex_address)
 

@@ -12,7 +12,7 @@ from flask.ext.login import LoginManager
 from flask.ext.bootstrap import Bootstrap
 from flask.ext.socketio import SocketIO
 from flask_wtf.csrf import CsrfProtect
-from docker_functions import create_container, get_address
+from docker_functions import create_container, get_address, ContainerCreateError
 import docker_functions
 from communication_utils import send_request_to_container, USE_FORWARDER
 from integrated_docs import api_array
@@ -48,11 +48,14 @@ def print_message():
 
 def create_megaplex():
     global megaplex_id
-    unique_id, megaplex_id = create_container("tactic_megaplex_image",
-                                              port_bindings={5000: 8085},
-                                              register_container=False)
-    docker_functions.megaplex_address = get_address(megaplex_id, "bridge")
-
+    try:
+        unique_id, megaplex_id = create_container("tactic_megaplex_image",
+                                                  port_bindings={5000: 8085},
+                                                  register_container=False)
+        docker_functions.megaplex_address = get_address(megaplex_id, "bridge")
+    except ContainerCreateError:
+        print "Error creating the Megaplex."
+        exit()
 
 # noinspection PyUnresolvedReferences
 try:

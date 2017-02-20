@@ -14,11 +14,12 @@ if "RETRIES" in os.environ:
 else:
     RETRIES = 60
 
+am_host = False
 megaplex_address = None
 
 
 def send_request_to_megaplex(msg_type, data_dict=None, wait_for_success=True, timeout=3, tries=RETRIES, wait_time=.1):
-    if megaplex_address is None:  # assume this is the host
+    if am_host is True:
         taddress = "0.0.0.0"
         port = "8085"
     else:

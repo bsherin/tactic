@@ -4,7 +4,7 @@ from flask_login import url_for
 from users import load_user
 import gevent
 from communication_utils import send_request_to_megaplex
-from docker_functions import create_container, destroy_container, get_log
+from docker_functions import create_container, destroy_container, get_log, ContainerCreateError
 from tactic_app import app, socketio, mongo_uri, use_ssl # global_stuff
 from views.user_manage_views import tile_manager, project_manager, collection_manager
 import tactic_app
@@ -341,10 +341,14 @@ class HostWorker(QWorker):
 
     @task_worthy
     def create_tile_container(self, data):
-        tile_container_id, container_id = create_container("tactic_tile_image", network_mode="bridge",
-                                                           owner=data["user_id"],
-                                                           parent=data["parent"])
-        return {"tile_id": tile_container_id}
+        try:
+            tile_container_id, container_id = create_container("tactic_tile_image", network_mode="bridge",
+                                                               owner=data["user_id"],
+                                                               parent=data["parent"])
+        except ContainerCreateError:
+            print "Error creating tile container"
+            return {"success": False, "message": "Error creating empty tile container."}
+        return {"success": True, "tile_id": tile_container_id}
 
     @task_worthy
     def get_module_code(self, data):

@@ -426,6 +426,10 @@ class CollectionManager(ResourceManager):
         user_obj = current_user
         cname = user_obj.build_data_collection_name(collection_name)
         main_id, container_id = create_container("tactic_main_image", owner=user_obj.get_id())
+        if main_id == -1:
+            render_template("error_window_template.html",
+                            window_tile="Load Failed",
+                            error_string="Load failed: Could not create container")
 
         global_tile_manager.add_user(user_obj.username)
 
