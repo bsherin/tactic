@@ -1,6 +1,7 @@
 from flask import render_template, redirect, request, url_for, flash, jsonify
 from flask.ext.login import login_user, login_required, logout_user
 from flask_login import current_user
+from tactic_app import host_worker
 
 from tactic_app.users import User
 from flask.ext.wtf import Form
@@ -75,4 +76,15 @@ def direct_collection(collection_name, username, password):
     user = User.get_user_by_username(username)
     if user is not None and user.verify_password(password):
         login_user(user, remember=False)
+    return redirect(url_for("main", collection_name=collection_name))
+
+@app.route('/container_create_test/<collection_name>/<n>/<username>/<password>', methods=['GET', 'POST'])
+def container_create_test(collection_name,n, username, password):
+    user = User.get_user_by_username(username)
+    if user is not None and user.verify_password(password):
+        login_user(user, remember=False)
+    data = {"user_id": user.get_id(), "parent": "host"}
+    for i in range(int(n)):
+        res = host_worker.create_tile_container(data)
+        print str(i) + ", " + str(res["success"])
     return redirect(url_for("main", collection_name=collection_name))

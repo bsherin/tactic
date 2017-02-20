@@ -102,11 +102,6 @@ class TileWorker(QWorker):
             return self.handle_exception(ex, "Error loading source")
 
     @task_worthy
-    def kill_me(self, data_dict):
-        # gevent.kill(tile_instance)
-        return
-
-    @task_worthy
     def reinstantiate_tile(self, reload_dict):
         try:
             print("entering reinstantiate_tile_class")
