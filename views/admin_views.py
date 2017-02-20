@@ -129,8 +129,13 @@ class ContainerManager(ResourceManager):
                 owner_name = "system"
             else:
                 owner_name = load_user(owner_id).username
+            image_id = cont.attrs["Image"]
+            if image_id in image_id_names:
+                image_name = image_id_names[image_id]
+            else:
+                image_name = image_id
             larray.append([container_id(cont), cont.attrs["Name"],
-                           image_id_names[cont.attrs["Image"]],
+                           image_name,
                            owner_name, cont.status, cont.attrs["Created"]])
         return larray
 
