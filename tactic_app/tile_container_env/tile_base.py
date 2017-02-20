@@ -602,6 +602,7 @@ class TileBase(object):
                     setattr(self, attr, decoded_val)
                 else:
                     setattr(self, attr, attr_val)
+        self.main_id = os.environ["PARENT"]  # this is for backward compatibility with some old project saves
         return None
 
     def get_type_info(self, avar):
