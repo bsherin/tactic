@@ -1,26 +1,29 @@
-from qworker import QWorker, SHORT_SLEEP_PERIOD, LONG_SLEEP_PERIOD, task_worthy
+from qworker import QWorker, task_worthy
 from flask import render_template
 from flask_login import url_for
 from users import load_user
 import gevent
-from communication_utils import send_request_to_container
-from docker_functions import create_container, get_address, destroy_container, cli, container_owners, destroy_user_containers
-from tactic_app.global_tile_management import global_tile_manager
-from tactic_app import app, socketio, mongo_uri, megaplex_address, use_ssl # global_stuff
+from communication_utils import send_request_to_megaplex
+from docker_functions import create_container, destroy_container, get_log, ContainerCreateError
+from tactic_app import app, socketio, mongo_uri, use_ssl # global_stuff
 from views.user_manage_views import tile_manager, project_manager, collection_manager
+import tactic_app
 import uuid
 import copy
 import traceback
 import datetime
 
 check_for_dead_time = 300
-
+global_tile_manager = tactic_app.global_tile_manager
 
 class HostWorker(QWorker):
-    def __init__(self, app, megaplex_address):
-        QWorker.__init__(self, app, megaplex_address, "host")
+    def __init__(self):
+        QWorker.__init__(self)
         self.temp_dict = {}
         self.last_check_for_dead_containers = datetime.datetime.today()
+        self.short_sleep_period = .01
+        self.hibernate_time = .1
+        self.gap_time_for_hiberate = 60
 
     @task_worthy
     def stop_user_manage_spinner(self, data):
@@ -64,10 +67,7 @@ class HostWorker(QWorker):
         user_obj = load_user(user_id)
         # noinspection PyTypeChecker
         self.show_um_status_message("creating main container", user_manage_id, None)
-        main_id = create_container("tactic_main_image", network_mode="bridge", owner=user_id)
-        caddress = get_address(main_id, "bridge")
-        send_request_to_container(self.megaplex_address, "register_container", {"container_id": main_id})
-
+        main_id, container_id = create_container("tactic_main_image", network_mode="bridge", owner=user_id)
         global_tile_manager.add_user(user_obj.username)
 
         list_names = self.get_list_names({"user_id": user_obj.get_id()})["list_names"]
@@ -75,15 +75,11 @@ class HostWorker(QWorker):
         function_names = self.get_function_tags_dict({"user_id": user_obj.get_id()})["function_names"]
         collection_names = self.get_collection_names({"user_id": user_obj.get_id()})["collection_names"]
 
-        with self.app.test_request_context():
+        with app.test_request_context():
             bf_url = url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1]
 
         data_dict = {"project_name": project_name,
                      "project_collection_name": user_obj.project_collection_name,
-                     "main_id": main_id,
-                     "user_id": user_obj.get_id(),
-                     "megaplex_address": self.megaplex_address,
-                     "main_address": caddress,
                      "loaded_user_modules": global_tile_manager.loaded_user_modules,
                      "mongo_uri": mongo_uri,
                      "list_names": list_names,
@@ -96,17 +92,17 @@ class HostWorker(QWorker):
 
         # noinspection PyTypeChecker
         self.show_um_status_message("start initialize project", user_manage_id, None)
-        result = send_request_to_container(caddress, "initialize_project_mainwindow", data_dict).json()
+        result = self.post_and_wait(main_id, "initialize_project_mainwindow", data_dict)
         if not result["success"]:
             destroy_container(main_id)
-            raise Exception(result["message_string"])
+            raise Exception(result["message"])
 
         return None
 
     @task_worthy
     def get_container_log(self, data):
         container_id = data["container_id"]
-        return {"success": True, "log_text": cli.logs(container_id)}
+        return {"success": True, "log_text": get_log(container_id)}
 
 
     @task_worthy
@@ -183,15 +179,14 @@ class HostWorker(QWorker):
 
     @task_worthy
     def get_empty_tile_containers(self, data):
-        cdict = {}
+        tile_containers = []
         for i in range(data["number"]):
-            tile_container_id = create_container("tactic_tile_image",
-                                                 network_mode="bridge",
-                                                 owner=data["user_id"])
-            tile_container_address = get_address(tile_container_id, "bridge")
-            send_request_to_container(megaplex_address, "register_container", {"container_id": tile_container_id})
-            cdict[tile_container_id] = tile_container_address
-        return cdict
+            tile_container_id, container_id = create_container("tactic_tile_image",
+                                                                network_mode="bridge",
+                                                                owner=data["user_id"],
+                                                                parent=data["parent"])
+            tile_containers.append(tile_container_id)
+        return {"tile_containers": tile_containers}
 
     @task_worthy
     def get_tile_code(self, data_dict):
@@ -306,7 +301,34 @@ class HostWorker(QWorker):
     @task_worthy
     def emit_table_message(self, data):
         from tactic_app import socketio
+
         socketio.emit("table-message", data, namespace='/main', room=data["main_id"])
+        return {"success": True}
+
+    @task_worthy
+    def print_to_console(self, data):
+        from tactic_app import app, socketio
+        with app.test_request_context():
+            data["message_string"] = render_template("log_item.html", log_item=data["message_string"])
+
+        data["table_message"] = "consoleLog"
+        self.emit_table_message(data)
+        return {"success": True}
+
+    @task_worthy
+    def request_render(self, data):
+        with app.test_request_context():
+            render_result = render_template(data["template"], **data["render_fields"])
+        return {"success": True, "render_result": render_result}
+
+    @task_worthy
+    def print_code_area_to_console(self, data):
+        from tactic_app import socketio
+        with app.test_request_context():
+            data["message_string"] = render_template("code_log_item.html", unique_id=data["unique_id"])
+
+        data["table_message"] = "consoleLog"
+        self.emit_table_message(data)
         return {"success": True}
 
     @task_worthy
@@ -322,16 +344,19 @@ class HostWorker(QWorker):
 
     @task_worthy
     def create_tile_container(self, data):
-        tile_container_id = create_container("tactic_tile_image", network_mode="bridge",
-                                             owner=data["user_id"])
-        tile_address = get_address(tile_container_id, "bridge")
-        send_request_to_container(megaplex_address, "register_container", {"container_id": tile_container_id})
-        return {"tile_id": tile_container_id, "tile_address": tile_address}
+        try:
+            tile_container_id, container_id = create_container("tactic_tile_image", network_mode="bridge",
+                                                               owner=data["user_id"],
+                                                               parent=data["parent"])
+        except ContainerCreateError:
+            print "Error creating tile container"
+            return {"success": False, "message": "Error creating empty tile container."}
+        return {"success": True, "tile_id": tile_container_id}
 
     @task_worthy
     def get_module_code(self, data):
         module_code = global_tile_manager.get_tile_code(data["tile_type"], data["user_id"])
-        return {"module_code": module_code, "megaplex_address": self.megaplex_address}
+        return {"module_code": module_code}
 
     @task_worthy
     def get_module_from_tile_type(self, data):
@@ -344,7 +369,7 @@ class HostWorker(QWorker):
         tile_id = data["tile_id"]
         form_html = data["form_html"]
         tname = data["tile_name"]
-        with self.app.test_request_context():
+        with app.test_request_context():
             the_html = render_template("tile.html", tile_id=tile_id,
                                        tile_name=tname,
                                        form_text=form_html)
@@ -352,7 +377,6 @@ class HostWorker(QWorker):
         ddict["success"] = True
         ddict["html"] = the_html
         return ddict
-
 
     def handle_exception(self, ex, special_string=None):
         if special_string is None:
@@ -364,7 +388,7 @@ class HostWorker(QWorker):
         return
 
     def clear_stale_containers(self):
-        res = send_request_to_container(megaplex_address, "get_old_inactive_stalled_containers").json()
+        res = send_request_to_megaplex("get_old_inactive_stalled_containers").json()
         cont_list = res["old_inactive_stalled_containers"]
         for cont_id in cont_list:
             destroy_container(cont_id)
@@ -377,13 +401,17 @@ class HostWorker(QWorker):
             self.last_check_for_dead_containers = current_time
             self.clear_stale_containers()
 
+
 class ClientWorker(QWorker):
-    def __init__(self, app, megaplex_address, socketio):
-        QWorker.__init__(self, app, megaplex_address, "client")
-        self.socketio = socketio
+    def __init__(self):
+        QWorker.__init__(self)
+        self.my_id = "client"
+        self.short_sleep_period = .01
+        self.hibernate_time = .1
+        self.gap_time_for_hiberate = 60
 
     def forward_client_post(self, task_packet):
-        send_request_to_container(self.megaplex_address, "post_task", task_packet)
+        send_request_to_megaplex("post_task", task_packet)
         return
 
     def handle_exception(self, ex, special_string=None):
@@ -406,16 +434,23 @@ class ClientWorker(QWorker):
                 self.handle_exception(ex, special_string)
             if "empty" not in task_packet:
                 if task_packet["callback_id"] is not None:
-                    self.socketio.emit("handle-callback", task_packet, namespace='/main', room=task_packet["main_id"])
+                    socketio.emit("handle-callback", task_packet, namespace='/main', room=task_packet["main_id"])
                 else:
                     task_packet["table_message"] = task_packet["task_type"]
-                    self.socketio.emit("table-message", task_packet, namespace='/main', room=task_packet["main_id"])
-                gevent.sleep(SHORT_SLEEP_PERIOD)
+                    socketio.emit("table-message", task_packet, namespace='/main', room=task_packet["main_id"])
+                self.last_contact = datetime.datetime.now()
+                gevent.sleep(self.short_sleep_period)
             else:
                 self.special_long_sleep_function()
-                gevent.sleep(LONG_SLEEP_PERIOD)
+                current_time = datetime.datetime.today()
+                tdelta = current_time - self.last_contact
+                delta_seconds = tdelta.days * 24 * 60 + tdelta.seconds
+                if delta_seconds > self.gap_time_for_hiberate:
+                    gevent.sleep(self.hibernate_time)
+                else:
+                    gevent.sleep(self.short_sleep_period)
 
-host_worker = HostWorker(app, megaplex_address)
-client_worker = ClientWorker(app, megaplex_address, socketio)
-host_worker.start()
-client_worker.start()
+tactic_app.host_worker = HostWorker()
+tactic_app.client_worker = ClientWorker()
+tactic_app.host_worker.start()
+tactic_app.client_worker.start()

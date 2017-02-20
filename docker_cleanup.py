@@ -1,17 +1,20 @@
 import docker
 
 def do_docker_cleanup():
-    cli = docker.Client(base_url='unix://var/run/docker.sock')
 
-    all_containers = cli.containers(all=True)
+    cli = docker.DockerClient(base_url='unix://var/run/docker.sock')
 
+    all_containers = cli.containers.list(all=True)
+
+    tactic_script_names = ["forwarder_main.py", "megaplex_main:app", "tile_main.py", "main_main.py"]
     for cont in all_containers:
-        if cont["Image"] in ["tactic_tile_image", "tactic_main_image", "tactic_megaplex_image", "forwarder_image"]:
-            cli.remove_container(cont["Id"], force=True)
-            continue
-        if cont["Image"] == cont["ImageID"]:
-            cli.remove_container(cont["Id"], force=True)
+        for arg in cont.attrs["Args"]:
+            if arg in tactic_script_names:
+                cont.remove(force=True)
+                break
+        # if cont["Image"] == cont["ImageID"]:
+        #     cont.remove(force=True)
 
-    dangling_images = cli.images(all=True, filters={"dangling": True})
+    dangling_images = cli.images.list(filters={"dangling": True})
     for img in dangling_images:
-        cli.remove_image(img["Id"], force=True)
+        cli.images.remove(img.id, force=True)

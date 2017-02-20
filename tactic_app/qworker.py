@@ -3,7 +3,8 @@ import uuid
 import time
 import datetime
 import os
-from communication_utils import send_request_to_container
+from communication_utils import send_request_to_megaplex
+import communication_utils
 import cPickle
 from bson.binary import Binary
 
@@ -16,8 +17,18 @@ blank_packet = {"source": None,
                 "response_data": None,
                 "callback_id": None}
 
-SHORT_SLEEP_PERIOD = float(os.environ.get("SHORT_SLEEP_PERIOD"))
-LONG_SLEEP_PERIOD = float(os.environ.get("LONG_SLEEP_PERIOD"))
+SHORT_SLEEP_PERIOD = .01
+HIBERNATE_TIME = 1
+GAP_TIME_FOR_HIBERATE = 10
+
+if "MEGAPLEX_ADDRESS" in os.environ:
+    communication_utils.megaplex_address = os.environ.get("MEGAPLEX_ADDRESS")
+    communication_utils.am_host = False
+else:
+    communication_utils.am_host = True
+
+print "got megaplex " + str(communication_utils.megaplex_address)
+
 if "RETRIES" in os.environ:
     RETRIES = int(os.environ.get("RETRIES"))
 else:
@@ -30,13 +41,18 @@ def task_worthy(m):
     task_worthy_methods.append(m.__name__)
     return m
 
-
 class QWorker(gevent.Greenlet):
-    def __init__(self, app, megaplex_address, my_id):
+    def __init__(self):
+        self.short_sleep_period = SHORT_SLEEP_PERIOD
+        self.hibernate_time = HIBERNATE_TIME
+        self.gap_time_for_hiberate = GAP_TIME_FOR_HIBERATE
         gevent.Greenlet.__init__(self)
-        self.megaplex_address = megaplex_address
-        self.my_id = my_id
-        self.app = app
+        self.last_contact = datetime.datetime.now()
+        if "MY_ID" in os.environ:
+            self.my_id = os.environ.get("MY_ID")
+        else:
+            self.my_id = "host"
+        self.hibernating = False
 
     def debug_log(self, msg):
         timestring = datetime.datetime.today().strftime("%b %d, %Y, %H:%M:%S")
@@ -45,7 +61,7 @@ class QWorker(gevent.Greenlet):
         #     self.app.logger.debug(msg)
 
     def get_next_task(self):
-        raw_result = send_request_to_container(self.megaplex_address, "get_next_task/" + self.my_id)
+        raw_result = send_request_to_megaplex("get_next_task/" + str(self.my_id))
         task_packet = raw_result.json()
         return task_packet
 
@@ -58,9 +74,9 @@ class QWorker(gevent.Greenlet):
                       "response_data": None,
                       "callback_id": callback_id}
         # self.debug_log("in post and wait with new_packet " + str(new_packet))
-        result = send_request_to_container(self.megaplex_address, "post_wait_task", new_packet)
+        result = send_request_to_megaplex("post_wait_task", new_packet)
         for i in range(tries):
-            res = send_request_to_container(self.megaplex_address, "check_wait_task", new_packet).json()
+            res = send_request_to_megaplex("check_wait_task", new_packet).json()
             if res["success"]:
                 # self.debug_log("Got result to post_and_wait")
                 return res["result"]
@@ -83,7 +99,7 @@ class QWorker(gevent.Greenlet):
                       "task_data": task_data,
                       "response_data": None,
                       "callback_id": callback_id}
-        result = send_request_to_container(self.megaplex_address, "post_task", new_packet).json()
+        result = send_request_to_megaplex("post_task", new_packet).json()
         if not result["success"]:
             error_string = "Error posting task with msg_type {} dest {} source {}. Error: {}".format(task_type,
                                                                                                      dest_id,
@@ -93,7 +109,7 @@ class QWorker(gevent.Greenlet):
         return result
 
     def submit_response(self, task_packet):
-        send_request_to_container(self.megaplex_address, "submit_response", task_packet)
+        send_request_to_megaplex("submit_response", task_packet)
         return
 
     def special_long_sleep_function(self):
@@ -123,10 +139,23 @@ class QWorker(gevent.Greenlet):
                             self.handle_exception(ex, special_string)
                     else:
                         self.handle_event(task_packet)
-                    gevent.sleep(SHORT_SLEEP_PERIOD)
+                    if self.hibernating:
+                        print "left hibernation"
+                        self.hibernating = False
+                    self.last_contact = datetime.datetime.now()
+                    gevent.sleep(self.short_sleep_period)
                 else:
                     self.special_long_sleep_function()
-                    gevent.sleep(LONG_SLEEP_PERIOD)
+                    current_time = datetime.datetime.today()
+                    tdelta = current_time - self.last_contact
+                    delta_seconds = tdelta.days * 24 * 60 + tdelta.seconds
+                    if delta_seconds > self.gap_time_for_hiberate:
+                        if not self.hibernating:
+                            print "hibernating"
+                            self.hibernating = True
+                        gevent.sleep(self.hibernate_time)
+                    else:
+                        gevent.sleep(self.short_sleep_period)
 
     def handle_event(self, task_packet):
         if hasattr(self, task_packet["task_type"]):

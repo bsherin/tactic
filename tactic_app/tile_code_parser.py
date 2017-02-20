@@ -72,6 +72,10 @@ def convert_default(it):
         return int(it)
     elif RepresentsFloat(it):
         return float(it)
+    elif it == "True":
+        return True
+    elif it == "False":
+        return False
     elif it == "None":
         return None
     return remove_quotes(it)

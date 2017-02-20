@@ -21,9 +21,4 @@ services:
     environment:
       PYTHONUNBUFFERED: 0
 
-  forwarder:
-    build:
-      context: .
-      dockerfile: Dockerfile-forwarder
-    image: forwarder_image
 

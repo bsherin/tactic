@@ -4,4 +4,5 @@ ADD ./megaplex_container_env/requirements.txt /code/requirements.txt
 RUN pip install -r requirements.txt
 MAINTAINER "Bruce L Sherin"
 ADD  ./megaplex_container_env /code
-CMD ["python", "-u", "megaplex_main.py"]
+ENTRYPOINT ["/usr/local/bin/gunicorn", "-b", "0.0.0.0:5000", "megaplex_main:app"]
+

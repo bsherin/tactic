@@ -5,28 +5,22 @@ from module_viewer_views import remove_indents
 
 import tactic_app
 from tactic_app import app, db, socketio
-from tactic_app.global_tile_management import global_tile_manager
-from tactic_app.docker_functions import send_direct_request_to_container
 from tactic_app.tile_code_parser import get_functions_full_code, get_assignments_from_init, get_base_classes, get_starting_lines
 from tactic_app.integrated_docs import api_array, api_dict_by_category, api_dict_by_name, ordered_api_categories
 import re, sys, datetime
 
+global_tile_manager = tactic_app.global_tile_manager
 
 def creator_load_source(module_name):
     user_obj = current_user
     tile_module = user_obj.get_tile_module(module_name)
 
-    result = send_direct_request_to_container(global_tile_manager.test_tile_container_id, "load_source",
-                                              {"tile_code": tile_module,
-                                               "megaplex_address": tactic_app.megaplex_address})
-    res_dict = result.json()
-
+    res_dict = tactic_app.host_worker.post_and_wait(global_tile_manager.test_tile_container_id, "load_source",
+                                         {"tile_code": tile_module})
     return res_dict
 
 def retrieve_options():
-    result = send_direct_request_to_container(global_tile_manager.test_tile_container_id, "get_options",
-                                              {})
-    res_dict = result.json()
+    res_dict = tactic_app.host_worker.post_and_wait(global_tile_manager.test_tile_container_id, "get_options", {})
     return res_dict
 
 
