@@ -5,7 +5,6 @@ import os
 import sys
 import uuid
 from communication_utils import send_request_to_megaplex
-from qworker import SHORT_SLEEP_PERIOD, LONG_SLEEP_PERIOD
 forwarder_address = None
 forwarder_id = None
 sys.stdout = sys.stderr
@@ -41,9 +40,7 @@ def create_container(image_name, container_name=None, network_mode="bridge",
                      env_vars={}, port_bindings=None, wait_retries=50,
                      detach=True, register_container=True):
     unique_id = str(uuid.uuid4())
-    environ = {"SHORT_SLEEP_PERIOD": SHORT_SLEEP_PERIOD,
-               "LONG_SLEEP_PERIOD": LONG_SLEEP_PERIOD,
-               "MAX_QUEUE_LENGTH": MAX_QUEUE_LENGTH,
+    environ = {"MAX_QUEUE_LENGTH": MAX_QUEUE_LENGTH,
                "RETRIES": RETRIES,
                "CHUNK_SIZE": CHUNK_SIZE,
                "STEP_SIZE": STEP_SIZE,

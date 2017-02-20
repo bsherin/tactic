@@ -122,6 +122,8 @@ def get_old_containers():
 
 @app.route('/get_old_inactive_stalled_containers', methods=["get", "post"])
 def get_old_inactive_stalled_containers():
+    print "checking for old and stalled containers"
+
     res = get_inactive() + get_stalled() + get_old()
     return jsonify({"old_inactive_stalled_containers": res})
 
@@ -232,5 +234,5 @@ def submit_response():
     return jsonify({"success": True})
 
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", debug=True, threaded=True)
+#if __name__ == "__main__":
+ #    app.run(host="0.0.0.0", debug=True, threaded=True)

@@ -1,4 +1,4 @@
-from qworker import QWorker, SHORT_SLEEP_PERIOD, LONG_SLEEP_PERIOD, task_worthy
+from qworker import QWorker, task_worthy
 from flask import render_template
 from flask_login import url_for
 from users import load_user
@@ -21,6 +21,9 @@ class HostWorker(QWorker):
         QWorker.__init__(self)
         self.temp_dict = {}
         self.last_check_for_dead_containers = datetime.datetime.today()
+        self.short_sleep_period = .01
+        self.hibernate_time = .1
+        self.gap_time_for_hiberate = 60
 
     @task_worthy
     def stop_user_manage_spinner(self, data):
@@ -403,6 +406,9 @@ class ClientWorker(QWorker):
     def __init__(self):
         QWorker.__init__(self)
         self.my_id = "client"
+        self.short_sleep_period = .01
+        self.hibernate_time = .1
+        self.gap_time_for_hiberate = 60
 
     def forward_client_post(self, task_packet):
         send_request_to_megaplex("post_task", task_packet)
@@ -432,10 +438,17 @@ class ClientWorker(QWorker):
                 else:
                     task_packet["table_message"] = task_packet["task_type"]
                     socketio.emit("table-message", task_packet, namespace='/main', room=task_packet["main_id"])
-                gevent.sleep(SHORT_SLEEP_PERIOD)
+                self.last_contact = datetime.datetime.now()
+                gevent.sleep(self.short_sleep_period)
             else:
                 self.special_long_sleep_function()
-                gevent.sleep(LONG_SLEEP_PERIOD)
+                current_time = datetime.datetime.today()
+                tdelta = current_time - self.last_contact
+                delta_seconds = tdelta.days * 24 * 60 + tdelta.seconds
+                if delta_seconds > self.gap_time_for_hiberate:
+                    gevent.sleep(self.hibernate_time)
+                else:
+                    gevent.sleep(self.short_sleep_period)
 
 tactic_app.host_worker = HostWorker()
 tactic_app.client_worker = ClientWorker()

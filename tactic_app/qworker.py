@@ -17,8 +17,9 @@ blank_packet = {"source": None,
                 "response_data": None,
                 "callback_id": None}
 
-SHORT_SLEEP_PERIOD = .001
-LONG_SLEEP_PERIOD = .1
+SHORT_SLEEP_PERIOD = .01
+HIBERNATE_TIME = 1
+GAP_TIME_FOR_HIBERATE = 10
 
 if "MEGAPLEX_ADDRESS" in os.environ:
     communication_utils.megaplex_address = os.environ.get("MEGAPLEX_ADDRESS")
@@ -42,11 +43,16 @@ def task_worthy(m):
 
 class QWorker(gevent.Greenlet):
     def __init__(self):
+        self.short_sleep_period = SHORT_SLEEP_PERIOD
+        self.hibernate_time = HIBERNATE_TIME
+        self.gap_time_for_hiberate = GAP_TIME_FOR_HIBERATE
         gevent.Greenlet.__init__(self)
+        self.last_contact = datetime.datetime.now()
         if "MY_ID" in os.environ:
             self.my_id = os.environ.get("MY_ID")
         else:
             self.my_id = "host"
+        self.hibernating = False
 
     def debug_log(self, msg):
         timestring = datetime.datetime.today().strftime("%b %d, %Y, %H:%M:%S")
@@ -133,10 +139,23 @@ class QWorker(gevent.Greenlet):
                             self.handle_exception(ex, special_string)
                     else:
                         self.handle_event(task_packet)
-                    gevent.sleep(SHORT_SLEEP_PERIOD)
+                    if self.hibernating:
+                        print "left hibernation"
+                        self.hibernating = False
+                    self.last_contact = datetime.datetime.now()
+                    gevent.sleep(self.short_sleep_period)
                 else:
                     self.special_long_sleep_function()
-                    gevent.sleep(LONG_SLEEP_PERIOD)
+                    current_time = datetime.datetime.today()
+                    tdelta = current_time - self.last_contact
+                    delta_seconds = tdelta.days * 24 * 60 + tdelta.seconds
+                    if delta_seconds > self.gap_time_for_hiberate:
+                        if not self.hibernating:
+                            print "hibernating"
+                            self.hibernating = True
+                        gevent.sleep(self.hibernate_time)
+                    else:
+                        gevent.sleep(self.short_sleep_period)
 
     def handle_event(self, task_packet):
         if hasattr(self, task_packet["task_type"]):

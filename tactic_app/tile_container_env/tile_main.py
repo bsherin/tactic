@@ -19,7 +19,9 @@ import time
 
 class TileWorker(QWorker):
     def __init__(self):
+        print "about to initialize QWorker"
         QWorker.__init__(self)
+        print "QWorker initialized"
         self.tile_instance = None
 
     @task_worthy
