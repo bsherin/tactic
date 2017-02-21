@@ -34,12 +34,14 @@ if "RETRIES" in os.environ:
 else:
     RETRIES = 60
 
-task_worthy_methods = []
+
+task_worthy_methods = {}
 
 
 def task_worthy(m):
-    task_worthy_methods.append(m.__name__)
+    task_worthy_methods[m.__name__] = "this_worker"
     return m
+
 
 class QWorker(gevent.Greenlet):
     def __init__(self):
@@ -53,6 +55,7 @@ class QWorker(gevent.Greenlet):
         else:
             self.my_id = "host"
         self.hibernating = False
+        self.handler_instances = {"this_worker": self}
 
     def debug_log(self, msg):
         timestring = datetime.datetime.today().strftime("%b %d, %Y, %H:%M:%S")
@@ -157,26 +160,27 @@ class QWorker(gevent.Greenlet):
                     else:
                         gevent.sleep(self.short_sleep_period)
 
+
     def handle_event(self, task_packet):
-        if hasattr(self, task_packet["task_type"]):
-            if task_packet["task_type"] in task_worthy_methods:
+        task_type = task_packet["task_type"]
+        if task_type in task_worthy_methods.keys():
+            try:
+                response_data = getattr(self.handler_instances[task_worthy_methods[task_type]], task_type)(task_packet["task_data"])
+            except Exception as ex:
+                special_string = "Error handling task of type {} for my_id {}".format(task_type,
+                                                                                      self.my_id)
+                response_data = "__ERROR__"
+                self.handle_exception(ex, special_string)
+            if task_packet["callback_id"] is not None:
                 try:
-                    response_data = getattr(self, task_packet["task_type"])(task_packet["task_data"])
+                    task_packet["response_data"] = response_data
+                    self.submit_response(task_packet)
                 except Exception as ex:
-                    special_string = "Error handling task of type {} for my_id {}".format(task_packet["task_type"],
-                                                                                          self.my_id)
-                    response_data = "__ERROR__"
+                    special_string = "Error submitting response for task type {} for my_id {}".format(task_type,
+                                                                                                     self.my_id)
                     self.handle_exception(ex, special_string)
-                if task_packet["callback_id"] is not None:
-                    try:
-                        task_packet["response_data"] = response_data
-                        self.submit_response(task_packet)
-                    except Exception as ex:
-                        special_string = "Error submitting response for task type {} for my_id {}".format(task_packet["task_type"],
-                                                                                                         self.my_id)
-                        self.handle_exception(ex, special_string)
-            else:
-                self.debug_log("Got invalid task type for my_id ".format(self.my_id))
+        else:
+            self.debug_log("Got invalid task type for my_id ".format(self.my_id))
         return
 
     def handle_exception(self, ex, special_string=None):

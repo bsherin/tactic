@@ -28,6 +28,14 @@ PROTECTED_METADATA_KEYS = ["_id", "file_id", "name", "my_class_for_recreate", "t
                            "data_rows", "header_list", "number_of_rows"]
 
 
+# noinspection PyUnresolvedReferences
+from qworker import task_worthy_methods
+
+def task_worthy(m):
+    task_worthy_methods[m.__name__] = "mainwindow"
+    return m
+
+
 class DocInfoAbstract(object):
     def __init__(self, f):
         self.name = f["name"]
@@ -385,6 +393,7 @@ class mainWindow(object):
         data = {"main_id": self.mworker.my_id}
         self.mworker.post_task("host", "clear_main_status_message", data)
 
+    @task_worthy
     def do_full_recreation(self, data_dict):
         tile_containers = {}
         try:
@@ -570,6 +579,7 @@ class mainWindow(object):
             tile_result["tile_html"] = res["tile_html"]
         return errors, tile_results
 
+    @task_worthy
     def save_new_project(self, data_dict):
         # noinspection PyBroadException
         try:
@@ -613,6 +623,7 @@ class mainWindow(object):
             return_data = {"success": False, "message_string": error_string}
         return return_data
 
+    @task_worthy
     def update_project(self, data_dict):
         # noinspection PyBroadException
         try:
@@ -800,6 +811,7 @@ class mainWindow(object):
         return False
 
     # Task Worthy methods. These are eligible to be the recipient of posted tasks.
+    @task_worthy
     def create_tile(self, data_dict):
         tile_container_id = data_dict["tile_id"]
         self.tile_instances.append(tile_container_id)
@@ -841,6 +853,7 @@ class mainWindow(object):
         self.current_tile_id += 1
         return {"success": True, "html": form_html}
 
+    @task_worthy
     def get_column_data(self, data):
         result = []
         ddata = copy.copy(data)
@@ -856,6 +869,7 @@ class mainWindow(object):
             result.append(row_dict[str(r)])
         return result
 
+    @task_worthy
     def get_user_collection(self, data):
         full_collection_name = self.mworker.post_and_wait("host",
                                                           "get_full_collection_name",
@@ -877,14 +891,17 @@ class mainWindow(object):
                 result[fname] = self.fs.get(f["file_id"]).read()
         return {"the_collection": result}
 
+    @task_worthy
     def get_document_data(self, data):
         doc_name = data["document_name"]
         return self.doc_dict[doc_name].all_data
 
+    @task_worthy
     def get_document_metadata(self, data):
         doc_name = data["document_name"]
         return self.doc_dict[doc_name].metadata
 
+    @task_worthy
     def set_document_metadata(self, data):
         print "In set_document_metadat in main with data " + str(data)
         doc_name = data["document_name"]
@@ -892,22 +909,25 @@ class mainWindow(object):
         print "set the document_metadata"
         return None
 
+    @task_worthy
     def get_document_data_as_list(self, data):
         doc_name = data["document_name"]
         data_list = self.doc_dict[doc_name].all_sorted_data_rows
         return {"data_list": data_list}
 
+    @task_worthy
     def get_column_names(self, data):
         doc_name = data["document_name"]
         header_list = self.doc_dict[doc_name].header_list
         return {"header_list": header_list}
 
+    @task_worthy
     def get_number_rows(self, data):
-
         doc_name = data["document_name"]
         nrows = self.doc_dict[doc_name].number_of_rows
         return {"number_rows": nrows}
 
+    @task_worthy
     def get_row(self, data):
         doc_name = data["document_name"]
         if "row_id" in data:
@@ -917,9 +937,11 @@ class mainWindow(object):
         the_row = self.doc_dict[doc_name].get_row(row_id)
         return the_row
 
+    @task_worthy
     def get_line(self, data):
         return self.get_row(data)
 
+    @task_worthy
     def get_cell(self, data):
         doc_name = data["document_name"]
         row_id = data["row_id"]
@@ -927,6 +949,7 @@ class mainWindow(object):
         the_cell = self.doc_dict[doc_name].data_rows_int_keys[int(row_id)][column_name]
         return {"the_cell": the_cell}
 
+    @task_worthy
     def get_column_data_for_doc(self, data):
         column_header = data["column_name"]
         doc_name = data["doc_name"]
@@ -936,15 +959,18 @@ class mainWindow(object):
             result.append(the_row[column_header])
         return result
 
+    @task_worthy
     def CellChange(self, data):
         self._set_row_column_data(data["doc_name"], data["id"], data["column_header"], data["new_content"])
         self._change_list.append(data["id"])
         return None
 
+    @task_worthy
     def FreeformTextChange(self, data):
         self._set_freeform_data(data["doc_name"], data["new_content"])
         return None
 
+    @task_worthy
     def set_visible_doc(self, data):
         doc_name = data["doc_name"]
         if not doc_name == self.visible_doc_name:
@@ -952,19 +978,23 @@ class mainWindow(object):
         self.visible_doc_name = doc_name
         return {"success": True}
 
+    @task_worthy
     def print_to_console_event(self, data):
         return self.mworker.print_to_console(data["print_string"], force_open=True)
 
+    @task_worthy
     def create_console_code_area(self, data):
         unique_id = str(uuid.uuid4())
         return self.mworker.print_code_area_to_console(unique_id, force_open=True)
 
+    @task_worthy
     def got_console_result(self, data):
         self.mworker.emit_table_message("consoleCodeLog", {"message_string": data["result_string"],
                                                            "console_id": data["console_id"],
                                                            "force_open": True})
         return {"success": True}
 
+    @task_worthy
     def exec_console_code(self, data):
         if self.pseudo_tile_id is None:
             self.create_pseudo_tile()
@@ -973,6 +1003,7 @@ class mainWindow(object):
         self.mworker.post_task(self.pseudo_tile_id, "exec_console_code", data, self.got_console_result)
         return {"success": True}
 
+    @task_worthy
     def get_exports_list_html(self, data):
         the_html = ""
         export_list = []
@@ -984,6 +1015,7 @@ class mainWindow(object):
             the_html += "<option>{}</option>\n".format(pname)
         return {"success": True, "the_html": the_html, "export_list": export_list}
 
+    @task_worthy
     def evaluate_export(self, data):
         if self.pseudo_tile_id is None:
             self.create_pseudo_tile()
@@ -1021,12 +1053,14 @@ class mainWindow(object):
 
         return {"success": True}
 
+    @task_worthy
     def get_property(self, data_dict):
         # tactic_todo eliminate get_property?
         prop_name = data_dict["property"]
         val = getattr(self, prop_name)
         return {"success": True, "val": val}
 
+    @task_worthy
     def export_data(self, data):
         mdata = self.create_initial_metadata()
         mdata["name"] = "__metadata__"
@@ -1042,6 +1076,7 @@ class mainWindow(object):
             self.db[full_collection_name].insert_one(ddict)
         return {"success": True}
 
+    @task_worthy
     def create_collection(self, data):
         mdata = self.create_initial_metadata()
         mdata["name"] = "__metadata__"
@@ -1085,12 +1120,14 @@ class mainWindow(object):
         self.mworker.ask_host("update_collection_selector_list", {"user_id": self.user_id})
         return {"success": True}
 
+    @task_worthy
     def get_tile_ids(self, data):
         tile_ids = self.tile_instances
         if self.pseudo_tile_id is not None:
             tile_ids.append(self.pseudo_tile_id)
         return {"success": True, "tile_ids": tile_ids}
 
+    @task_worthy
     def set_property(self, data_dict):
         # tactic_todo eliminate set_property as task
         prop_name = data_dict["property"]
@@ -1098,6 +1135,7 @@ class mainWindow(object):
         setattr(self, prop_name, val)
         return
 
+    @task_worthy
     def open_log_window(self, task_data):
         self.console_html = task_data["console_html"]
         if self.project_name is None:
@@ -1109,6 +1147,7 @@ class mainWindow(object):
                                                            "main_id": self.mworker.my_id})
         return
 
+    @task_worthy
     def grab_data(self, data):
         doc_name = data["doc_name"]
         if self.doc_type == "table":
@@ -1127,6 +1166,7 @@ class mainWindow(object):
                     "left_fraction": self.left_fraction,
                     "data_text": self.doc_dict[doc_name].data_text}
 
+    @task_worthy
     def grab_project_data(self, data_dict):
         doc_name = data_dict["doc_name"]
         if self.doc_type == "table":
@@ -1156,6 +1196,7 @@ class mainWindow(object):
         result = self.mworker.post_and_wait(tile_id, 'get_property', {"property": prop_name})["val"]
         return result
 
+    @task_worthy
     def reload_tile(self, ddict):
         print "entering reload tile"
         tile_id = ddict["tile_id"]
@@ -1191,6 +1232,7 @@ class mainWindow(object):
             print "encounterd problem in reload_tile"
             raise Exception(result["message_string"])
 
+    @task_worthy
     def grab_chunk_with_row(self, data_dict):
         doc_name = data_dict["doc_name"]
         row_id = data_dict["row_id"]
@@ -1212,6 +1254,7 @@ class mainWindow(object):
         actual_row = self.doc_dict[doc_name].get_actual_row(row_id)
         return actual_row
 
+    @task_worthy
     def distribute_events_stub(self, data_dict):
         event_name = data_dict["event_name"]
         if "tile_id" in data_dict:
@@ -1221,6 +1264,7 @@ class mainWindow(object):
         success = self.mworker.distribute_event(event_name, data_dict, tile_id)
         return {"success": success}
 
+    @task_worthy
     def grab_next_chunk(self, data_dict):
         doc_name = data_dict["doc_name"]
         step_amount = self.doc_dict[doc_name].advance_to_next_chunk()
@@ -1232,6 +1276,7 @@ class mainWindow(object):
                 "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
                 "step_size": step_amount}
 
+    @task_worthy
     def grab_previous_chunk(self, data_dict):
         doc_name = data_dict["doc_name"]
         step_amount = self.doc_dict[doc_name].go_to_previous_chunk()
@@ -1243,10 +1288,12 @@ class mainWindow(object):
                 "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
                 "step_size": step_amount}
 
+    @task_worthy
     def RemoveTile(self, data):
         self._delete_tile_instance(data["tile_id"])
         return None
 
+    @task_worthy
     def CreateColumn(self, data):
         column_name = data["column_name"]
         for doc in self.doc_dict.values():
@@ -1267,20 +1314,24 @@ class mainWindow(object):
             self.mworker.post_task(tid, "RebuildTileForms", form_info)
         return None
 
+    @task_worthy
     def SearchTable(self, data):
         self.highlight_table_text(data["text_to_find"])
         return None
 
+    @task_worthy
     def FilterTable(self, data):
         txt = data["text_to_find"]
         self.display_matching_rows_applying_filter(lambda r: self.txt_in_dict(txt, r))
         self.highlight_table_text(txt)
         return None
 
+    @task_worthy
     def DehighlightTable(self, data):
         self.mworker.emit_table_message("dehighlightAllText")
         return None
 
+    @task_worthy
     def UnfilterTable(self, data):
         for doc in self.doc_dict.values():
             doc.current_data_rows = doc.data_rows
@@ -1288,17 +1339,20 @@ class mainWindow(object):
         self.refill_table()
         return None
 
+    @task_worthy
     def ColorTextInCell(self, data):
         data["row_index"] = self.get_actual_row(data)
         if data["row_index"] is not None:
             self.mworker.emit_table_message("colorTxtInCell", data)
         return None
 
+    @task_worthy
     def SetCellContent(self, data):
         self._set_cell_content(data["doc_name"], data["id"], data["column_header"],
                                data["new_content"], data["cellchange"])
         return None
 
+    @task_worthy
     def SetDocument(self, data):
         # tactic_todo compare to update_document
         doc_name = data["doc_name"]
@@ -1322,6 +1376,7 @@ class mainWindow(object):
                 self.mworker.emit_table_message("setFreeformContent", data)
         return {"success": True}
 
+    @task_worthy
     def SetColumnData(self, data):
         if isinstance(data["new_content"], dict):
             for rid, ntext in data["new_content"].items():
@@ -1336,31 +1391,38 @@ class mainWindow(object):
             raise Exception("Got invalid data type in SetColumnData.")
         return None
 
+    @task_worthy
     def TextSelect(self, data):
         self.selected_text = data["selected_text"]
         return None
 
+    @task_worthy
     def SaveTableSpec(self, data):
         new_spec = data["tablespec"]
         self.doc_dict[new_spec["doc_name"]].table_spec = new_spec
         return None
 
+    @task_worthy
     def UpdateSortList(self, data):
         self.tile_sort_list = data["sort_list"]
         return None
 
+    @task_worthy
     def UpdateLeftFraction(self, data):
         self.left_fraction = data["left_fraction"]
         return None
 
+    @task_worthy
     def UpdateTableShrinkState(self, data):
         self.is_shrunk = data["is_shrunk"]
         return None
 
+    @task_worthy
     def PrintToConsole(self, data):
         self.mworker.print_to_console(data["message"], True)
         return None
 
+    @task_worthy
     def DisplayCreateErrors(self, data):
         for msg in self.recreate_errors:
             self.mworker.debug_log("Got CreateError: " + msg)
@@ -1368,6 +1430,7 @@ class mainWindow(object):
         self.recreate_errors = []
         return None
 
+    @task_worthy
     def display_matching_rows(self, data):
         result = data["result"]
         document_name = data["document_name"]
@@ -1389,6 +1452,7 @@ class mainWindow(object):
             self.refill_table()
         return
 
+    @task_worthy
     def update_document(self, data):
         new_data = data["new_data"]
         doc_name = data["document_name"]
@@ -1468,6 +1532,7 @@ class mainWindow(object):
                     data["row"] = actual_row
                     self.mworker.emit_table_message("setCellContent", data)
 
+    @task_worthy
     def SetCellBackground(self, data):
         self._set_cell_background(data["doc_name"], data["row_id"], data["column_name"], data["color"])
         return None

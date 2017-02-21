@@ -9,7 +9,6 @@ from gevent import monkey; monkey.patch_all()
 import numpy as np
 from bson.binary import Binary
 # noinspection PyUnresolvedReferences
-
 from matplotlib_utilities import MplFigure, Mpld3Figure, color_palette_names
 from types import NoneType
 import traceback
@@ -20,6 +19,13 @@ if "RETRIES" in os.environ:
 else:
     RETRIES = 60
 
+
+# noinspection PyUnresolvedReferences
+from qworker import task_worthy_methods
+
+def task_worthy(m):
+    task_worthy_methods[m.__name__] = "tilebase"
+    return m
 
 jsonizable_types = {
     "str": str,
@@ -62,7 +68,6 @@ def clear_and_exec_user_code(the_code):
     code_names["classes"] = {}
     code_names["functions"] = {}
     return exec_user_code(the_code)
-
 
 # noinspection PyMiss
 # ingConstructor
@@ -154,10 +159,12 @@ class TileBase(object):
         # with self.app.test_request_context():
         #     self.app.logger.debug(msg)
 
+    @task_worthy
     def RefreshTile(self, data):
         self.do_the_refresh()
         return None
 
+    @task_worthy
     def get_property(self, data):
         print "in get_property with data[property] " + str(data["property"])
         data["val"] = getattr(self, data["property"])
@@ -189,6 +196,7 @@ class TileBase(object):
 
     # noinspection PyAttributeOutsideInit
 
+    @task_worthy
     def TileSizeChange(self, data):
         self.width = data["width"]
         self.height = data["height"]
@@ -211,27 +219,33 @@ class TileBase(object):
                 self.handle_size_change()
         return None
 
+    @task_worthy
     def RefreshTileFromSave(self, data):
         self.refresh_from_save()
         return None
 
+    @task_worthy
     def SetSizeFromSave(self, data):
         self.set_tile_size(self.full_tile_width, self.full_tile_height)
         return None
 
+    @task_worthy
     def UpdateOptions(self, data):
         self.update_options(data)
         return None
 
+    @task_worthy
     def CellChange(self, data):
         self.handle_cell_change(data["column_header"], data["id"], data["old_content"],
                                 data["new_content"], data["doc_name"])
         return None
 
+    @task_worthy
     def FreeformTextChange(self, data):
         self.handle_freeform_text_change(data["new_content"], data["doc_name"])
         return None
 
+    @task_worthy
     def TileButtonClick(self, data):
         try:
             self.handle_button_click(data["button_value"], data["doc_name"], data["active_row_id"])
@@ -239,6 +253,7 @@ class TileBase(object):
             self.handle_exception(ex)
         return None
 
+    @task_worthy
     def TileFormSubmit(self, data):
         try:
             self.handle_form_submit(data["form_data"], data["doc_name"], data["active_row_id"])
@@ -246,62 +261,77 @@ class TileBase(object):
             self.handle_exception(ex)
         return None
 
+    @task_worthy
     def TileTextAreaChange(self, data):
         self.handle_textarea_change(data["text_value"])
         return None
 
+    @task_worthy
     def TextSelect(self, data):
         self.handle_text_select(data["selected_text"])
         return None
 
+    @task_worthy
     def DocChange(self, data):
         self.handle_doc_change(data["doc_name"])
         return None
 
+    @task_worthy
     def PipeUpdate(self, data):
         self.handle_pipe_update(data["pipe_name"])
         return None
 
+    @task_worthy
     def TileWordClick(self, data):
         self.handle_tile_word_click(data["clicked_text"], data["doc_name"], data["active_row_id"])
         return None
 
+    @task_worthy
     def TileRowClick(self, data):
         self.handle_tile_row_click(data["clicked_row"], data["doc_name"], data["active_row_id"])
         return None
 
+    @task_worthy
     def TileCellClick(self, data):
         self.handle_tile_cell_click(data["clicked_cell"], data["doc_name"], data["active_row_id"])
         return None
 
+    @task_worthy
     def TileElementClick(self, data):
         self.handle_tile_element_click(data["dataset"], data["doc_name"], data["active_row_id"])
         return None
 
+    @task_worthy
     def HideOptions(self, data):
         self.hide_options()
         return None
 
+    @task_worthy
     def StartSpinner(self, data):
         self.start_spinner()
         return None
 
+    @task_worthy
     def StopSpinner(self, data):
         self.stop_spinner()
         return None
 
+    @task_worthy
     def ShrinkTile(self, data):
         self.is_shrunk = True
         return None
 
+    @task_worthy
     def ExpandTile(self, data):
         self.is_shrunk = False
         return None
 
+    @task_worthy
     def LogTile(self, data):
         self.handle_log_tile()
         return None
 
+    @task_worthy
     def LogParams(self, data):
         parray = [["name", "value"]]
         for opt in self.options:
@@ -311,12 +341,14 @@ class TileBase(object):
                                                          sidebyside=True))
         return None
 
+    @task_worthy
     def RebuildTileForms(self, data):
         form_html = self.create_form_html(data)["form_html"]
-        self.emit_tile_message("displayFormContent", {"html": form_html})
+        self.tworker.emit_tile_message("displayFormContent", {"html": form_html})
         return None
 
     # Info needed here: list_names, current_header_list, pipe_dict, doc_names
+    @task_worthy
     def create_form_html(self, data):
         self._pipe_dict = data["pipe_dict"]
         try:
@@ -518,21 +550,8 @@ class TileBase(object):
         result = self.tworker.post_and_wait(self.main_id, "get_property", data_dict)
         return result["val"]
 
-    def ask_host(self, msg_type, task_data=None, callback_func=None):
-        task_data["main_id"] = self.main_id
-        self.tworker.post_task("host", msg_type, task_data, callback_func)
-        return
-
-    def emit_tile_message(self, message, data=None):
-        if data is None:
-            data = {}
-        data["tile_message"] = message
-        data["tile_id"] = self.tworker.my_id
-        self.ask_host("emit_tile_message", data)
-        return
-
     def hide_options(self):
-        self.emit_tile_message("hideOptions")
+        self.tworker.emit_tile_message("hideOptions")
 
     def do_the_refresh(self, new_html=None):
         try:
@@ -542,7 +561,7 @@ class TileBase(object):
                 else:
                     new_html = str(self.render_content())
             self.current_html = new_html
-            self.emit_tile_message("displayTileContent", {"html": new_html})
+            self.tworker.emit_tile_message("displayTileContent", {"html": new_html})
         except Exception as ex:
             self.handle_exception(ex)
         return
@@ -551,9 +570,10 @@ class TileBase(object):
         self.do_the_refresh(message)
         return
 
+    @task_worthy
     def compile_save_dict(self, data):
-        result = {"my_class_for_recreate": "TileBase"}
-        result["binary_attrs"] = []
+        result = {"my_class_for_recreate": "TileBase",
+                  "binary_attrs": []}
         for attr in self.save_attrs:
             attr_val = getattr(self, attr)
             if hasattr(attr_val, "compile_save_dict"):
@@ -642,6 +662,7 @@ class TileBase(object):
                 result["info_string"] = result["type"]
         return result
 
+    @task_worthy
     def exec_console_code(self, data):
         import StringIO
         try:
@@ -680,6 +701,7 @@ class TileBase(object):
             data["result_string"] = self.handle_exception(ex, "Error executing console code", print_to_console=False)
         return data
 
+    @task_worthy
     def get_export_info(self, data):
         try:
             ename = data["export_name"]
@@ -692,6 +714,7 @@ class TileBase(object):
                       "info_string": self.handle_exception(Ex, "", print_to_console=False)}
         return result
 
+    @task_worthy
     def evaluate_export(self, data):
         self._pipe_dict = data["pipe_dict"]
         pipe_val = self.get_pipe_value(data["export_name"])
@@ -784,10 +807,10 @@ class TileBase(object):
         return pipe_list
 
     def refresh_from_save(self):
-        self.emit_tile_message("displayTileContent", {"html": self.current_html})
+        self.tworker.emit_tile_message("displayTileContent", {"html": self.current_html})
 
     def set_tile_size(self, owidth, oheight):
-        self.emit_tile_message("setTileSize", {"width": owidth, "height": oheight})
+        self.tworker.emit_tile_message("setTileSize", {"width": owidth, "height": oheight})
 
     """
     Default Handlers
@@ -875,10 +898,10 @@ class TileBase(object):
         self.post_event("StopSpinner")
 
     def start_spinner(self):
-        self.emit_tile_message("startSpinner")
+        self.tworker.emit_tile_message("startSpinner")
 
     def stop_spinner(self):
-        self.emit_tile_message("stopSpinner")
+        self.tworker.emit_tile_message("stopSpinner")
 
     def refresh_tile_now(self, new_html=None):
         if new_html is None:
@@ -1136,18 +1159,16 @@ class TileBase(object):
 
     def go_to_document(self, doc_name):
         self.save_stdout()
-        data = {}
-        data["doc_name"] = doc_name
-        self.ask_host('go_to_row_in_document', data)
+        data = {"doc_name": doc_name}
+        self.tworker.ask_host('go_to_row_in_document', data)
         self.restore_stdout()
         return
 
     def go_to_row_in_document(self, doc_name, row_id):
         self.save_stdout()
-        data = {}
-        data["doc_name"] = doc_name
-        data["row_id"] = row_id
-        self.ask_host('go_to_row_in_document', data)
+        data = {"doc_name": doc_name,
+                "row_id": row_id}
+        self.tworker.ask_host('go_to_row_in_document', data)
         self.restore_stdout()
         return
 
@@ -1248,6 +1269,7 @@ class TileBase(object):
         self.restore_stdout()
         return None
 
+    @task_worthy
     def transfer_pipe_value(self, data):
         self.save_stdout()
         export_name = data["export_name"]

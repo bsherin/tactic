@@ -1,7 +1,10 @@
 from main import mainWindow
+import main
 
 # noinspection PyUnresolvedReferences
 from qworker import QWorker, task_worthy
+# noinspection PyUnresolvedReferences
+import qworker
 
 import sys
 import time
@@ -71,6 +74,7 @@ class MainWorker(QWorker):
             print("entering intialize mainwindow")
             print("data_dict is " + str(data_dict))
             self.mwindow = mainWindow(self, data_dict)
+            self.handler_instances["mainwindow"] = self.mwindow
             return {"success": True}
         except Exception as Ex:
             return self.handle_exception(Ex, "Error initializing mainwindow")
@@ -80,6 +84,7 @@ class MainWorker(QWorker):
         try:
             print("entering intialize project mainwindow")
             self.mwindow = mainWindow(self, data_dict)
+            self.handler_instances["mainwindow"] = self.mwindow
             self.post_task(self.my_id, "do_full_recreation", data_dict)
             print("leaving initialize_project_mainwindow")
             return {"success": True}
@@ -87,246 +92,9 @@ class MainWorker(QWorker):
             return self.handle_exception(ex, "Error initializing project mainwindow")
 
     @task_worthy
-    def do_full_recreation(self, data_dict):
-        return self.mwindow.do_full_recreation(data_dict)
-
-    @task_worthy
     def get_saved_console_code(self, data_dict):
         print "entering saved console code with console_cm_code " + str(self.mwindow.console_cm_code)
         return {"saved_console_code": self.mwindow.console_cm_code}
-
-    @task_worthy
-    def save_new_project(self, data_dict):
-        return self.mwindow.save_new_project(data_dict)
-
-    @task_worthy
-    def update_project(self, data_dict):
-        return self.mwindow.update_project(data_dict)
-
-    @task_worthy
-    def create_tile(self, data_dict):
-        return self.mwindow.create_tile(data_dict)
-
-    @task_worthy
-    def get_column_data(self, data):
-        return self.mwindow.get_column_data(data)
-
-    @task_worthy
-    def get_user_collection(self, data):
-        return self.mwindow.get_user_collection(data)
-
-    @task_worthy
-    def get_document_data(self, data):
-        return self.mwindow.get_document_data(data)
-
-    @task_worthy
-    def get_document_metadata(self, data):
-        return self.mwindow.get_document_metadata(data)
-
-    @task_worthy
-    def set_document_metadata(self, data):
-        return self.mwindow.set_document_metadata(data)
-
-    @task_worthy
-    def get_document_data_as_list(self, data):
-        return self.mwindow.get_document_data_as_list(data)
-
-    @task_worthy
-    def get_column_names(self, data):
-        return self.mwindow.get_column_names(data)
-
-    @task_worthy
-    def get_number_rows(self, data):
-        return self.mwindow.get_number_rows(data)
-
-    @task_worthy
-    def get_row(self, data):
-        return self.mwindow.get_row(data)
-
-    @task_worthy
-    def get_line(self, data):
-        return self.mwindow.get_line(data)
-
-    @task_worthy
-    def get_cell(self, data):
-        return self.mwindow.get_cell(data)
-
-    @task_worthy
-    def get_column_data_for_doc(self, data):
-        return self.mwindow.get_column_data_for_doc(data)
-
-    @task_worthy
-    def CellChange(self, data):
-        return self.mwindow.CellChange(data)
-
-    @task_worthy
-    def FreeformTextChange(self, data):
-        return self.mwindow.FreeformTextChange(data)
-
-    @task_worthy
-    def set_visible_doc(self, data):
-        return self.mwindow.set_visible_doc(data)
-
-    @task_worthy
-    def print_to_console_event(self, data):
-        return self.mwindow.print_to_console_event(data)
-
-    @task_worthy
-    def create_console_code_area(self, data):
-        return self.mwindow.create_console_code_area(data)
-
-    @task_worthy
-    def got_console_result(self, data_dict):
-        return self.mwindow.got_console_result(data_dict)
-
-    @task_worthy
-    def exec_console_code(self, data):
-        return self.mwindow.exec_console_code(data)
-
-    @task_worthy
-    def get_exports_list_html(self, data_dict):
-        return self.mwindow.get_exports_list_html(data_dict)
-
-    @task_worthy
-    def evaluate_export(self, data_dict):
-        return self.mwindow.evaluate_export(data_dict)
-
-    @task_worthy
-    def get_export_info(self, data_dict):
-        return self.mwindow.get_export_info(data_dict)
-
-    @task_worthy
-    def get_property(self, data_dict):
-        return self.mwindow.get_property(data_dict)
-
-    @task_worthy
-    def export_data(self, data_dict):
-        return self.mwindow.export_data(data_dict)
-
-    @task_worthy
-    def create_collection(self, data_dict):
-        return self.mwindow.create_collection(data_dict)
-
-    @task_worthy
-    def get_tile_ids(self, data_dict):
-        return self.mwindow.get_tile_ids(data_dict)
-
-    @task_worthy
-    def set_property(self, data_dict):
-        return self.mwindow.set_property(data_dict)
-
-    @task_worthy
-    def open_log_window(self, data_dict):
-        return self.mwindow.open_log_window(data_dict)
-
-    @task_worthy
-    def grab_data(self, data_dict):
-        return self.mwindow.grab_data(data_dict)
-
-    @task_worthy
-    def grab_project_data(self, data_dict):
-        return self.mwindow.grab_project_data(data_dict)
-
-    @task_worthy
-    def reload_tile(self, data_dict):
-        return self.mwindow.reload_tile(data_dict)
-
-    @task_worthy
-    def grab_chunk_with_row(self, data_dict):
-        return self.mwindow.grab_chunk_with_row(data_dict)
-
-    @task_worthy
-    def distribute_events_stub(self, data_dict):
-        return self.mwindow.distribute_events_stub(data_dict)
-
-    @task_worthy
-    def grab_next_chunk(self, data_dict):
-        return self.mwindow.grab_next_chunk(data_dict)
-
-    @task_worthy
-    def grab_previous_chunk(self, data_dict):
-        return self.mwindow.grab_previous_chunk(data_dict)
-
-    @task_worthy
-    def RemoveTile(self, data_dict):
-        return self.mwindow.RemoveTile(data_dict)
-
-    @task_worthy
-    def CreateColumn(self, data_dict):
-        return self.mwindow.CreateColumn(data_dict)
-
-    @task_worthy
-    def SearchTable(self, data_dict):
-        print "Got SearchTable"
-        return self.mwindow.SearchTable(data_dict)
-
-    @task_worthy
-    def FilterTable(self, data_dict):
-        return self.mwindow.FilterTable(data_dict)
-
-    @task_worthy
-    def DehighlightTable(self, data_dict):
-        return self.mwindow.DehighlightTable(data_dict)
-
-    @task_worthy
-    def UnfilterTable(self, data_dict):
-        return self.mwindow.UnfilterTable(data_dict)
-
-    @task_worthy
-    def ColorTextInCell(self, data_dict):
-        return self.mwindow.ColorTextInCell(data_dict)
-
-    @task_worthy
-    def SetCellContent(self, data_dict):
-        return self.mwindow.SetCellContent(data_dict)
-
-    @task_worthy
-    def SetDocument(self, data_dict):
-        return self.mwindow.SetDocument(data_dict)
-
-    @task_worthy
-    def SetColumnData(self, data_dict):
-        return self.mwindow.SetColumnData(data_dict)
-
-    @task_worthy
-    def TextSelect(self, data_dict):
-        return self.mwindow.TextSelect(data_dict)
-
-    @task_worthy
-    def SaveTableSpec(self, data_dict):
-        return self.mwindow.SaveTableSpec(data_dict)
-
-    @task_worthy
-    def UpdateSortList(self, data_dict):
-        return self.mwindow.UpdateSortList(data_dict)
-
-    @task_worthy
-    def UpdateLeftFraction(self, data_dict):
-        return self.mwindow.UpdateLeftFraction(data_dict)
-
-    @task_worthy
-    def UpdateTableShrinkState(self, data_dict):
-        return self.mwindow.UpdateTableShrinkState(data_dict)
-
-    @task_worthy
-    def PrintToConsole(self, data_dict):
-        return self.mwindow.PrintToConsole(data_dict)
-
-    @task_worthy
-    def DisplayCreateErrors(self, data_dict):
-        return self.mwindow.DisplayCreateErrors(data_dict)
-
-    @task_worthy
-    def display_matching_rows(self, data_dict):
-        return self.mwindow.display_matching_rows(data_dict)
-
-    @task_worthy
-    def update_document(self, data_dict):
-        return self.mwindow.update_document(data_dict)
-
-    @task_worthy
-    def SetCellBackground(self, data):
-        return self.mwindow.SetCellBackground(data)
 
 
 if __name__ == "__main__":
