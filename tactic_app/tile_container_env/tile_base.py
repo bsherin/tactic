@@ -262,6 +262,14 @@ class TileBase(object):
         return None
 
     @task_worthy
+    def SelectChange(self, data):
+        try:
+            self.handle_select_change(data["select_value"], data["doc_name"], data["active_row_id"])
+        except Exception as ex:
+            self.handle_exception(ex)
+        return None
+
+    @task_worthy
     def TileTextAreaChange(self, data):
         self.handle_textarea_change(data["text_value"])
         return None
@@ -854,6 +862,9 @@ class TileBase(object):
         return
 
     def handle_form_submit(self, form_data, doc_name, active_row_id):
+        return
+
+    def handle_select_change(self, value, doc_name, active_row_id):
         return
 
     def handle_textarea_change(self, value):

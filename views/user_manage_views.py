@@ -38,6 +38,7 @@ managers = {
     "code": [code_manager, repository_code_manager]
 }
 
+
 def get_manager_for_type(res_type, is_repository=False):
     if is_repository:
         return managers[res_type][1]

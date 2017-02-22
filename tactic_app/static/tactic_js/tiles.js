@@ -503,6 +503,23 @@ class TileObject {
 
         });
 
+        $(full_frontal_selector).on("change", 'select', function (e) {
+            const p = $(e.target).closest(".tile-panel")[0];
+            const data = {};
+            data["tile_id"] = $(p).data("my_tile_id");
+            data.select_value = e.target.value;
+            data.main_id = main_id;
+            data.doc_name = tableObject.current_spec.doc_name;
+            if (DOC_TYPE == "table") {
+                data.active_row_index = tableObject.active_row;
+                data.active_row_id = tableObject.active_row_id;
+            }
+            else {
+                data.active_row_id = tableObject.active_line;
+            }
+            postWithCallback(data["tile_id"], "SelectChange", data)
+        });
+
 
         $(full_frontal_selector).on('change', 'textarea', function(e) {
             const p = $(e.target).closest(".tile-panel")[0];
