@@ -31,7 +31,6 @@ class ResourceManager {
         this.resource_module_template = resource_module_template;
         this.create_module_html();
         this.add_listeners()
-
     }
 
     set_extra_properties() { }

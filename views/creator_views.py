@@ -1,13 +1,14 @@
 from flask import request, jsonify, send_file, url_for
 from flask_login import login_required, current_user
-from user_manage_views import ResourceManager
+from resource_manager import ResourceManager
 from module_viewer_views import remove_indents
 
 import tactic_app
-from tactic_app import app, db, socketio
-from tactic_app.tile_code_parser import get_functions_full_code, get_assignments_from_init, get_base_classes, get_starting_lines
-from tactic_app.integrated_docs import api_array, api_dict_by_category, api_dict_by_name, ordered_api_categories
-import re, sys, datetime
+from tactic_app import app, db
+from tactic_app.tile_code_parser import get_functions_full_code, get_assignments_from_init
+from tactic_app.tile_code_parser import get_base_classes, get_starting_lines
+from tactic_app.integrated_docs import api_dict_by_category, api_dict_by_name, ordered_api_categories
+import re
 
 global_tile_manager = tactic_app.global_tile_manager
 

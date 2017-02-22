@@ -32,11 +32,7 @@ class MainWorker(QWorker):
         self.ask_host("emit_table_message", data, callback_func)
         return
 
-    # tactic_change print_to_console is tricky
     def print_to_console(self, message_string, force_open=False):
-        # with self.app.test_request_context():
-        #     # noinspection PyUnresolvedReferences
-        #     pmessage = render_template("log_item.html", log_item=message_string)
         self.ask_host("print_to_console", {"message_string": message_string, "force_open": force_open})
         return {"success": True}
 
