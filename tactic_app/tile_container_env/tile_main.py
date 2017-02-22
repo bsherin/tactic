@@ -2,6 +2,8 @@
 import copy
 # noinspection PyUnresolvedReferences
 from qworker import QWorker, task_worthy
+# noinspection PyUnresolvedReferences
+import qworker
 import tile_env
 from tile_env import class_info
 from tile_env import exec_tile_code
@@ -16,7 +18,6 @@ import sys, os
 sys.stdout = sys.stderr
 import time
 
-
 class TileWorker(QWorker):
     def __init__(self):
         print "about to initialize QWorker"
@@ -26,7 +27,20 @@ class TileWorker(QWorker):
 
     @task_worthy
     def hello(self, data_dict):
-        return {"success": True, "message": 'This is tile communicating'}
+        return {"success": True, "message": 'This is a tile communicating'}
+
+    def ask_host(self, msg_type, task_data=None, callback_func=None):
+        task_data["main_id"] = self.tile_instance.main_id
+        self.post_task("host", msg_type, task_data, callback_func)
+        return
+
+    def emit_tile_message(self, message, data=None):
+        if data is None:
+            data = {}
+        data["tile_message"] = message
+        data["tile_id"] = self.my_id
+        self.ask_host("emit_tile_message", data)
+        return
 
     def handle_exception(self, ex, special_string=None):
         if special_string is None:
@@ -73,6 +87,7 @@ class TileWorker(QWorker):
         try:
             print("entering recreate_from_save. class_name is " + class_info["class_name"])
             self.tile_instance = class_info["tile_class"](None, None, tile_name=data["tile_name"])
+            self.handler_instances["tilebase"] = self.tile_instance
             if "tile_log_width" not in data:
                 data["tile_log_width"] = data["back_width"]
                 data["tile_log_height"] = data["back_height"]
@@ -106,6 +121,7 @@ class TileWorker(QWorker):
         try:
             print("entering reinstantiate_tile_class")
             self.tile_instance = class_info["tile_class"](None, None, tile_name=reload_dict["tile_name"])
+            self.handler_instances["tilebase"] = self.tile_instance
             for (attr, val) in reload_dict.items():
                 setattr(self.tile_instance, attr, val)
             form_html = self.tile_instance.create_form_html(reload_dict["form_info"])["form_html"]
@@ -119,6 +135,7 @@ class TileWorker(QWorker):
         try:
             print("entering load_source")
             self.tile_instance = PseudoTileClass()
+            self.handler_instances["tilebase"] = self.tile_instance
             self.tile_instance.user_id = os.environ["OWNER"]
             self.tile_instance.base_figure_url = data["base_figure_url"]
             if "doc_type" in data:
@@ -137,6 +154,7 @@ class TileWorker(QWorker):
         try:
             print("entering instantiate_tile_class")
             self.tile_instance = class_info["tile_class"](None, None, tile_name=data["tile_name"])
+            self.handler_instances["tilebase"] = self.tile_instance
             self.tile_instance.user_id = os.environ["OWNER"]
             self.tile_instance.base_figure_url = data["base_figure_url"]
             if "doc_type" in data:
@@ -151,136 +169,8 @@ class TileWorker(QWorker):
             return self.handle_exception(ex, "Error instantiating tile class")
 
     @task_worthy
-    def RefreshTile(self, data):
-        return self.tile_instance.RefreshTile(data)
-
-    @task_worthy
-    def compile_save_dict(self, data):
-        return self.tile_instance.compile_save_dict(data)
-
-    @task_worthy
-    def get_property(self, data_dict):
-        return self.tile_instance.get_property(data_dict)
-
-    @task_worthy
-    def TileSizeChange(self, data):
-        return self.tile_instance.TileSizeChange(data)
-
-    @task_worthy
-    def RefreshTileFromSave(self, data):
-        return self.tile_instance.RefreshTileFromSave(data)
-
-    @task_worthy
-    def SetSizeFromSave(self, data_dict):
-        return self.tile_instance.SetSizeFromSave(data_dict)
-
-    @task_worthy
-    def UpdateOptions(self, data_dict):
-        return self.tile_instance.UpdateOptions(data_dict)
-
-    @task_worthy
-    def CellChange(self, data_dict):
-        return self.tile_instance.CellChange(data_dict)
-
-    @task_worthy
-    def FreeformTextChange(self, data_dict):
-        return self.tile_instance.FreeformTextChange(data_dict)
-
-    @task_worthy
-    def TileButtonClick(self, data_dict):
-        return self.tile_instance.TileButtonClick(data_dict)
-
-    @task_worthy
-    def TileFormSubmit(self, data_dict):
-        return self.tile_instance.TileFormSubmit(data_dict)
-
-    @task_worthy
-    def TileTextAreaChange(self, data_dict):
-        return self.tile_instance.TileTextAreaChange(data_dict)
-
-    @task_worthy
-    def TextSelect(self, data_dict):
-        return self.tile_instance.TextSelect(data_dict)
-
-    @task_worthy
-    def DocChange(self, data_dict):
-        return self.tile_instance.DocChange(data_dict)
-
-    @task_worthy
-    def PipeUpdate(self, data_dict):
-        return self.tile_instance.PipeUpdate(data_dict)
-
-    @task_worthy
-    def TileWordClick(self, data_dict):
-        return self.tile_instance.TileWordClick(data_dict)
-
-    @task_worthy
-    def TileRowClick(self, data_dict):
-        return self.tile_instance.TileRowClick(data_dict)
-
-    @task_worthy
-    def TileCellClick(self, data_dict):
-        return self.tile_instance.TileCellClick(data_dict)
-
-    @task_worthy
-    def TileElementClick(self, data_dict):
-        return self.tile_instance.TileElementClick(data_dict)
-
-    @task_worthy
-    def HideOptions(self, data_dict):
-        return self.tile_instance.HideOptions(data_dict)
-
-    @task_worthy
-    def StartSpinner(self, data_dict):
-        return self.tile_instance.StartSpinner(data_dict)
-
-    @task_worthy
-    def StopSpinner(self, data_dict):
-        return self.tile_instance.StopSpinner(data_dict)
-
-    @task_worthy
-    def ShrinkTile(self, data_dict):
-        return self.tile_instance.ShrinkTile(data_dict)
-
-    @task_worthy
-    def ExpandTile(self, data_dict):
-        return self.tile_instance.ExpandTile(data_dict)
-
-    @task_worthy
-    def LogTile(self, data_dict):
-        return self.tile_instance.LogTile(data_dict)
-
-    @task_worthy
-    def LogParams(self, data_dict):
-        return self.tile_instance.LogParams(data_dict)
-
-    @task_worthy
-    def RebuildTileForms(self, data_dict):
-        return self.tile_instance.RebuildTileForms(data_dict)
-
-    @task_worthy
-    def create_form_html(self, data):
-        return self.tile_instance.create_form_html(data)
-
-    @task_worthy
     def render_tile(self, data):
         return self.tile_instance.render_me(data)
-
-    @task_worthy
-    def exec_console_code(self, data):
-        return self.tile_instance.exec_console_code(data)
-
-    @task_worthy
-    def get_export_info(self, data):
-        return self.tile_instance.get_export_info(data)
-
-    @task_worthy
-    def evaluate_export(self, data):
-        return self.tile_instance.evaluate_export(data)
-
-    @task_worthy
-    def transfer_pipe_value(self, data):
-        return self.tile_instance.transfer_pipe_value(data)
 
 
 class PseudoTileClass(TileBase):

@@ -5,7 +5,7 @@ from users import load_user
 import gevent
 from communication_utils import send_request_to_megaplex
 from docker_functions import create_container, destroy_container, get_log, ContainerCreateError
-from tactic_app import app, socketio, mongo_uri, use_ssl # global_stuff
+from tactic_app import app, socketio, mongo_uri, use_ssl
 from views.user_manage_views import tile_manager, project_manager, collection_manager
 import tactic_app
 import uuid

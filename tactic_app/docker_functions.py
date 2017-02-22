@@ -32,8 +32,10 @@ cli = docker.DockerClient(base_url='unix://var/run/docker.sock')
 def get_address(container_identifier, network_name):
     return cli.containers.get(container_identifier).attrs["NetworkSettings"]["Networks"][network_name]["IPAddress"]
 
+
 class ContainerCreateError(Exception):
     pass
+
 
 def create_container(image_name, container_name=None, network_mode="bridge",
                      wait_until_running=True, owner="host", parent="host",
@@ -51,7 +53,6 @@ def create_container(image_name, container_name=None, network_mode="bridge",
     for key, val in env_vars.items():
         environ[key] = val
 
-
     labels = {"my_id": unique_id, "owner": owner, "parent": parent}
 
     if container_name is None:
@@ -68,11 +69,10 @@ def create_container(image_name, container_name=None, network_mode="bridge",
                                        environment=environ,
                                        ports=port_bindings,
                                        detach=detach)
-    container_id = container.id
-    container = cli.containers.get(container_id)
+    cont_id = container.id
+    container = cli.containers.get(cont_id)
     print "status " + str(container.status)
 
-    # tactic_change create_container can now return -1
     retries = 0
     if wait_until_running:
         while not container.status == "running":
@@ -81,11 +81,11 @@ def create_container(image_name, container_name=None, network_mode="bridge",
                 print "container failed to start"
                 container.remove(force=True)
                 raise ContainerCreateError("Error creating container with image name " + str(image_name))
-            print "sleeping while waiting for container {} to run".format(str(container_id))
+            print "sleeping while waiting for container {} to run".format(str(cont_id))
             time.sleep(0.1)
     if register_container:
         send_request_to_megaplex("register_container", {"container_id": unique_id})
-    return unique_id, container_id
+    return unique_id, cont_id
 
 
 def container_owner(container):
@@ -94,17 +94,20 @@ def container_owner(container):
     else:
         return "system"
 
+
 def container_parent(container):
     if "parent" in container.attrs["Config"]["Labels"]:
         return container.attrs["Config"]["Labels"]["parent"]
     else:
         return "system"
 
+
 def container_id(container):
     if "my_id" in container.attrs["Config"]["Labels"]:
         return container.attrs["Config"]["Labels"]["my_id"]
     else:
         return "system"
+
 
 def create_network(network_name):
     return cli.create_network(network_name, "bridge")
@@ -121,9 +124,11 @@ def get_container(tactic_id):
             return cont
     return None
 
+
 def get_log(tactic_id):
     cont = get_container(tactic_id)
     return cont.logs()
+
 
 def destroy_container(tactic_id):
     try:
