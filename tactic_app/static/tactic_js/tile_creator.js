@@ -53,6 +53,7 @@ class CreatorViewer extends ModuleViewerAbstract {
             "share_button": this.sendToRepository,
             "change_theme_button": this.changeTheme,
             "history_button": this.showHistoryViewer,
+            "differ_button": this.showTileDiffer,
             "show_api_button": this.showAPI}
     }
 

@@ -26,7 +26,9 @@ class TileManager(ResourceManager):
                       {"name": "save_as_button", "button_class": "btn-default", "name_text": "Save as ..."},
                       {"name": "load_button", "button_class": "btn-default", "name_text": "Save and load"},
                       {"name": "share_button", "button_class": "btn-default", "name_text": "Share"}],
-                     [{"name": "history_button", "button_class": "btn-default", "name_text": "View History"}],
+                     [{"name": "history_button", "button_class": "btn-default", "name_text": "View History"},
+                      {"name": "differ_button", "button_class": "btn-default", "name_text": "Compare Tiles"}
+                      ],
                      [{"name": "change_theme_button", "button_class": "btn-default", "name_text": "Toggle theme"},
                       {"name": "show_api_button", "button_class": "btn-default", "name_text": "Show API"}]]
 

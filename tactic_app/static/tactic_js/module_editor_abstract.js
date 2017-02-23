@@ -155,6 +155,10 @@ class ModuleViewerAbstract extends ResourceViewer {
         window.open(`${$SCRIPT_ROOT}/show_history_viewer/${this.resource_name}`)
     }
 
+    showTileDiffer () {
+        window.open(`${$SCRIPT_ROOT}/show_tile_differ/${this.resource_name}`)
+    }
+
     doSavePromise() {
         self = this;
         return new Promise (function (resolve, reject) {
