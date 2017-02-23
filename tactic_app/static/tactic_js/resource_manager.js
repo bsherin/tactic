@@ -70,6 +70,9 @@ class ResourceManager {
             this.bind_standard_button(".search-tags-button", this.search_my_tags);
             this.bind_standard_button(".save-metadata-button", this.save_my_metadata);
         }
+        this.get_tags_field().blur(function () {
+            self.save_my_metadata(false)
+        })
     }
 
     bind_standard_button(bselector, func) {
@@ -120,6 +123,10 @@ class ResourceManager {
     get_button(name) { // not currently used
         const button_value = name + "-" + this.res_type;
         return this.get_module_element(`button[value='${button_value}']`)
+    }
+
+    get_selector_table_row(name) {
+        return this.get_module_element(`tr[value='${name}']`)
     }
 
     get_form(name){ // not currently used
@@ -241,7 +248,7 @@ class ResourceManager {
         this.get_notes_field()[0].value = notes;
     }
 
-    save_my_metadata () {
+    save_my_metadata (flash = true) {
         const res_name = this.get_active_selector_button().attr("value");
         const tags = this.get_tags_field().val();
         const notes = this.get_notes_field().val();
@@ -249,11 +256,15 @@ class ResourceManager {
         const self = this;
         postAjaxPromise("save_metadata", result_dict)
             .then(function(data) {
-                self.get_active_selector_button().children()[3].innerHTML = tags;
-                doFlash(data)
+                self.get_selector_table_row(res_name).children()[3].innerHTML = tags;
+                if (flash) {
+                    doFlash(data)
+                }
             })
             .catch(doFlash)
     }
+
+
 
     // Search
 
