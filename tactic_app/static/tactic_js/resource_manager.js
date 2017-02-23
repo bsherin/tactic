@@ -72,7 +72,11 @@ class ResourceManager {
         }
         this.get_tags_field().blur(function () {
             self.save_my_metadata(false)
-        })
+        });
+
+        this.get_notes_field().blur(function () {
+            self.save_my_metadata(false)
+        });
     }
 
     bind_standard_button(bselector, func) {
