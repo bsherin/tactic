@@ -58,6 +58,7 @@ class MainWorker(QWorker):
         else:
             template = "<pre>" + special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}</pre>"
         error_string = template.format(type(ex).__name__, ex.args)
+        print error_string
         return {"success": False, "message": error_string}
 
     @task_worthy

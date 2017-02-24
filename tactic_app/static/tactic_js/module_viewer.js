@@ -27,7 +27,8 @@ class ModuleViewer extends ModuleViewerAbstract {
             "share_button": this.sendToRepository,
             "change_theme_button": this.changeTheme,
             "show_api_button": this.showAPI,
-            "history_button": this.showHistoryViewer}
+            "history_button": this.showHistoryViewer,
+            "differ_button": this.showTileDiffer}
     }
 
     get_current_content () {

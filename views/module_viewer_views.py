@@ -122,6 +122,24 @@ def show_history_viewer(module_name):
                            button_groups=button_groups)
 
 
+@app.route('/show_tile_differ/<module_name>', methods=['get', 'post'])
+@login_required
+def show_tile_differ(module_name):
+    button_groups = [[{"name": "save_button", "button_class": "btn-default", "name_text": "Save"}]]
+    javascript_source = url_for('static', filename='tactic_js/tile_differ.js')
+    return render_template("user_manage/resource_viewer.html",
+                           resource_name=module_name,
+                           include_metadata=False,
+                           include_above_main_area=True,
+                           include_right=False,
+                           readonly=False,
+                           is_repository=False,
+                           javascript_source=javascript_source,
+                           uses_codemirror="True",
+                           button_groups=button_groups)
+
+
+
 @app.route('/update_module', methods=['post'])
 @login_required
 def update_module():

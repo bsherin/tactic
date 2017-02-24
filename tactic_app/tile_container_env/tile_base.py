@@ -1311,6 +1311,8 @@ class TileBase(object):
                 "doc_type": doc_type}
         if doc_metadata is not None:
             data["doc_metadata"] = doc_metadata
+        else:
+            doc_metadata = {}
         self.tworker.post_task(self.main_id, "create_collection", data)
         self.restore_stdout()
         return
