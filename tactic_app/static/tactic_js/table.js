@@ -15,7 +15,6 @@ let header_template;
 let body_template;
 let body_template_hidden;
 let tablespec_dict = {};
-let hidden_columns_list = ["__filename__"];
 let table_is_shrunk = false;
 
 $.get($SCRIPT_ROOT + "/get_table_templates", function(template){
@@ -81,6 +80,7 @@ class TableSpec {
         this.header_list = dict.header_list;
         this.table_width = dict.table_width;
         this.column_widths = dict.column_widths;
+        this.hidden_columns_list = dict.hidden_columns_list
     }
 
     shift_column_left (column_name) {
@@ -145,7 +145,7 @@ class TableObjectClass {
             this.current_spec = new TableSpec (
                 {"doc_name": this.current_doc_name,
                 "header_list": data_object["header_list"],
-
+                "hidden_columns_list": data_object["hidden_columns_list"],
                 "table_width": null,
                 "column_widths": null
                 });
@@ -250,8 +250,8 @@ class TableObjectClass {
         }
         const html_result = create_all_html(this.table_id, this.data_rows, this.current_spec.header_list, max_table_size, this.is_last_chunk);
         $("#" + this.table_id).html(html_result);
-        for (let i = 0; i < hidden_columns_list.length; ++i) {
-            $(".column-" + hidden_columns_list[i]).css("display", "none");
+        for (let i = 0; i < this.current_spec.hidden_columns_list.length; ++i) {
+            $(".column-" + this.current_spec.hidden_columns_list[i]).css("display", "none");
         }
         $("td.column-__id__").attr("contenteditable", false);
         $("td.column-__filename__").attr("contenteditable", false);

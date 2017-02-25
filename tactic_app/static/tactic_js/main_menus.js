@@ -235,6 +235,13 @@ function column_command(menu_id) {
     }
 }
 
+function updateHeaderList() {
+    const data_dict = {"header_list": table_object.current_spec.header_list};
+    broadcast_event_to_server("UpdateHeaderListOrder", data_dict, function () {
+        dirty = true
+    })
+}
+
 function createColumn() {
     showModal("Create Column All Docs", "New Column Name", function (new_name) {
         const column_name = new_name;
@@ -264,7 +271,8 @@ function createColumnThisDoc() {
         get_column(column_name).text(" ");  // This seems to be necessary for the column to be editable
 
         // Then change the current data_dict back on the server
-        const data_dict = {"column_name": column_name};
+        const data_dict = {"column_name": column_name,
+                           "doc_name": this.doc_name};
         broadcast_event_to_server("CreateColumn", data_dict, function () {
             dirty = true
         })

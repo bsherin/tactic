@@ -14,18 +14,16 @@ import zlib
 import os
 import uuid
 
+from doc_info import docInfo, FreeformDocInfo, PROTECTED_METADATA_KEYS
+
 
 # getting environment variables
 INITIAL_LEFT_FRACTION = .69
-CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
-STEP_SIZE = int(os.environ.get("STEP_SIZE"))
+
 if "RETRIES" in os.environ:
     RETRIES = int(os.environ.get("RETRIES"))
 else:
     RETRIES = 60
-
-PROTECTED_METADATA_KEYS = ["_id", "file_id", "name", "my_class_for_recreate", "table_spec", "data_text", "length",
-                           "data_rows", "header_list", "number_of_rows"]
 
 
 # noinspection PyUnresolvedReferences
@@ -35,257 +33,15 @@ def task_worthy(m):
     task_worthy_methods[m.__name__] = "mainwindow"
     return m
 
-
-class DocInfoAbstract(object):
-    def __init__(self, f):
-        self.name = f["name"]
-        self.table_spec = {}
-        self.metadata = None
-        return
-
-    def compile_metadata(self, f):
-        mdata = {"name": self.name}
-        for key, val in f.items():
-            if key not in PROTECTED_METADATA_KEYS:
-                mdata[key] = val
-        return mdata
-
-    def set_additional_metadata(self, mdict):
-        for k, d in mdict.items():
-            if k not in PROTECTED_METADATA_KEYS:
-                self.metadata[k] = d
-        return
-
-    @property
-    def additional_metadata(self):
-        result = {"name": self.name}
-        for k, val in self.metadata.items():
-            if k not in PROTECTED_METADATA_KEYS:
-                result[k] = val
-        return result
-
-    def compile_save_dict(self):
-        result = {"name": self.name,
-                  "table_spec": self.table_spec}
-        result.update(self.additional_metadata)
-        return result
-
-
-class FreeformDocInfo(DocInfoAbstract):
-
-    def __init__(self, f, data_text=None):
-        DocInfoAbstract.__init__(self, f)
-        if data_text is None:
-            self.data_text = f["data_text"]
-        else:
-            self.data_text = data_text
-        self.metadata = self.compile_metadata(f)
-
-    def compile_metadata(self, f):
-        mdata = DocInfoAbstract.compile_metadata(self, f)
-        mdata.update({"length": len(self.data_text)})
-        return mdata
-
-    def compile_save_dict(self):
-        result = DocInfoAbstract.compile_save_dict(self)
-        result.update({"data_text": self.data_text,
-                       "my_class_for_recreate": "FreeformDocInfo"})
-        return result
-
-    @property
-    def all_data(self):
-        return self.data_text
-
-    @property
-    def all_sorted_data_rows(self):
-        return self.data_text.splitlines()
-
-    @property
-    def number_of_rows(self):
-        return len(self.data_text.splitlines())
-
-    def get_row(self, line_number):
-        return self.all_sorted_data_rows[line_number]
-
-    def get_actual_row(self, row_id):
-        return row_id
-
-    @staticmethod
-    def recreate_from_save(save_dict):
-        new_instance = FreeformDocInfo(save_dict)
-        new_instance.table_spec = save_dict["table_spec"]
-        return new_instance
-
-
-# noinspection PyPep8Naming
-class docInfo(DocInfoAbstract):
-    def __init__(self, f):
-        DocInfoAbstract.__init__(self, f)
-        self.data_rows = copy.deepcopy(f["data_rows"])  # All the data rows in the doc
-        self.current_data_rows = self.data_rows  # The current filtered set of data rows
-        # Get rid of any duplicate headers without changing the order
-        self.header_list = []
-        if "header_list" in f:
-            for h in f["header_list"]:
-                if h not in self.header_list:
-                    self.header_list.append(h)
-
-        self.start_of_current_chunk = None
-        self.is_first_chunk = None
-        self.infinite_scroll_required = None
-        self.is_last_chunk = None
-        if "cell_backgrounds" in f:
-            self.cell_backgrounds = f["cell_backgrounds"]
-        else:
-            self.cell_backgrounds = {}
-
-        self.configure_for_current_data()
-        if len(self.data_rows.keys()) > CHUNK_SIZE:
-            self.max_table_size = CHUNK_SIZE
-        else:
-            self.max_table_size = len(self.data_rows.keys())
-        self.metadata = self.compile_metadata(f)
-
-    def compile_metadata(self, f):
-        mdata = DocInfoAbstract.compile_metadata(self, f)
-        mdata.update({"number_of_rows": len(f["data_rows"].keys()),
-                      "header_list": f["header_list"]})
-        return mdata
-
-    def set_background_color(self, row, column_header, color):
-        if not str(row) in self.cell_backgrounds:
-            self.cell_backgrounds[str(row)] = {}
-        self.cell_backgrounds[str(row)][column_header] = color
-
-    @property
-    def displayed_background_colors(self):
-        result = {}
-        sorted_int_keys = sorted([int(key) for key in self.current_data_rows.keys()])
-        for i, r in enumerate(sorted_int_keys[self.start_of_current_chunk:(self.start_of_current_chunk + CHUNK_SIZE)]):
-            if str(r) in self.cell_backgrounds:
-                result[i] = self.cell_backgrounds[str(r)]
-        return result
-
-    @property
-    def number_of_rows(self):
-        return len(self.data_rows.keys())
-
-    def get_row(self, row_id):
-        return self.data_rows_int_keys[int(row_id)]
-
-    def configure_for_current_data(self):
-        self.start_of_current_chunk = 0
-        self.is_first_chunk = True
-        if len(self.current_data_rows.keys()) <= CHUNK_SIZE:
-            self.infinite_scroll_required = False
-            self.is_last_chunk = True
-        else:
-            self.infinite_scroll_required = True
-            self.is_last_chunk = False
-
-    def get_actual_row(self, row_id):
-        for i, the_row in enumerate(self.displayed_data_rows):
-            if str(row_id) == str(the_row["__id__"]):
-                return i
-        return None
-
-    def compile_save_dict(self):
-        result = DocInfoAbstract.compile_save_dict(self)
-        result.update({"data_rows": self.data_rows,
-                       "cell_backgrounds": self.cell_backgrounds,
-                       "my_class_for_recreate": "docInfo",
-                       "header_list": self.header_list})
-        return result
-
-    def get_id_from_actual_row(self, actual_row):
-        return self.sorted_data_rows[actual_row]["__id__"]
-
-    @property
-    def all_data(self):
-        return self.data_rows
-
-    @property
-    def sorted_data_rows(self):
-        result = []
-        sorted_int_keys = sorted([int(key) for key in self.current_data_rows.keys()])
-        for r in sorted_int_keys:
-            result.append(self.data_rows[str(r)])
-        return result
-
-    @property
-    def all_sorted_data_rows(self):
-        result = []
-        sorted_int_keys = sorted([int(key) for key in self.data_rows.keys()])
-        for r in sorted_int_keys:
-            result.append(self.data_rows[str(r)])
-        return result
-
-    @property
-    def displayed_data_rows(self):
-        if not self.infinite_scroll_required:
-            return self.sorted_data_rows
-        result = []
-        sorted_int_keys = sorted([int(key) for key in self.current_data_rows.keys()])
-        for r in sorted_int_keys[self.start_of_current_chunk:(self.start_of_current_chunk + CHUNK_SIZE)]:
-            result.append(self.current_data_rows[str(r)])
-        return result
-
-    def advance_to_next_chunk(self):
-        if self.is_last_chunk:
-            return
-        old_start = self.start_of_current_chunk
-        self.start_of_current_chunk += STEP_SIZE
-        self.is_first_chunk = False
-        if (self.start_of_current_chunk + CHUNK_SIZE) >= len(self.current_data_rows):
-            self.start_of_current_chunk = len(self.current_data_rows) - CHUNK_SIZE
-            self.is_last_chunk = True
-        return self.start_of_current_chunk - old_start
-
-    def row_is_visible(self, row_id):
-        sorted_int_keys = sorted([int(key) for key in self.current_data_rows.keys()])
-        displayed_int_keys = sorted_int_keys[self.start_of_current_chunk:(self.start_of_current_chunk + STEP_SIZE)]
-        return int(row_id) in displayed_int_keys
-
-    def move_to_row(self, row_id):
-        self.current_data_rows = self.data_rows  # Undo any filtering
-        self.configure_for_current_data()
-        while not self.is_last_chunk and not(self.row_is_visible(row_id)):
-            self.advance_to_next_chunk()
-
-    def go_to_previous_chunk(self):
-        if self.is_first_chunk:
-            return None
-        old_start = self.start_of_current_chunk
-        self.start_of_current_chunk -= STEP_SIZE
-        self.is_last_chunk = False
-        if self.start_of_current_chunk <= 0:
-            self.start_of_current_chunk = 0
-            self.is_first_chunk = True
-        return old_start - self.start_of_current_chunk
-
-    @property
-    def data_rows_int_keys(self):
-        result = {}
-        for (key, val) in self.data_rows.items():
-            result[int(key)] = val
-        return result
-
-    @staticmethod
-    def recreate_from_save(save_dict):
-        new_instance = docInfo(save_dict)
-        new_instance.table_spec = save_dict["table_spec"]
-        return new_instance
-
-
 # noinspection PyPep8Naming,PyUnusedLocal
 class mainWindow(object):
     save_attrs = ["short_collection_name", "collection_name", "current_tile_id", "tile_sort_list", "left_fraction",
                   "is_shrunk", "doc_dict", "project_name", "loaded_modules", "user_id",
-                  "hidden_columns_list", "console_html", "console_cm_code", "doc_type", "purgetiles"]
+                  "console_html", "console_cm_code", "doc_type", "purgetiles"]
     update_events = ["CellChange", "FreeformTextChange", "CreateColumn", "SearchTable", "SaveTableSpec", "MainClose",
                      "DisplayCreateErrors", "DehighlightTable", "SetCellContent", "RemoveTile", "ColorTextInCell",
                      "FilterTable", "UnfilterTable", "TextSelect", "UpdateSortList", "UpdateLeftFraction",
-                     "UpdateTableShrinkState"]
+                     "UpdateTableShrinkState", "UpdateHeaderListOrder"]
 
     # noinspection PyUnresolvedReferences
     def __init__(self, mworker, data_dict):
@@ -320,7 +76,6 @@ class mainWindow(object):
         self.tile_save_results = None
         self.mdata = None
         self.pseudo_tile_id = None
-        self.hidden_columns_list = None
         self.loaded_modules = None
 
         if "project_name" not in data_dict:
@@ -349,8 +104,6 @@ class mainWindow(object):
     def compile_save_dict(self):
         result = {}
         for attr in self.save_attrs:
-            if attr == "hidden_columns_list" and self.doc_type == "freeform":
-                continue
             attr_val = getattr(self, attr)
             if hasattr(attr_val, "compile_save_dict"):
                 result[attr] = attr_val.compile_save_dict()
@@ -585,8 +338,6 @@ class mainWindow(object):
         try:
             self.project_name = data_dict["project_name"]
             self.purgetiles = data_dict["purgetiles"]
-            if self.doc_type == "table":
-                self.hidden_columns_list = data_dict["hidden_columns_list"]
             self.console_html = data_dict["console_html"]
             self.console_cm_code = data_dict["console_cm_code"]
             tspec_dict = data_dict["tablespec_dict"]
@@ -697,7 +448,7 @@ class mainWindow(object):
         tdict = {}
         for (key, docinfo) in self.doc_dict.items():
             if docinfo.table_spec:  # This will be false if table_spec == {}
-                tdict[key] = docinfo.table_spec
+                tdict[key] = docinfo.table_spec.compile_save_dict()
         return tdict
 
     def create_initial_metadata(self):
@@ -727,7 +478,7 @@ class mainWindow(object):
         if self.doc_type == "freeform":
             return []
         dinfo = self.doc_dict[self.visible_doc_name]
-        return dinfo.header_list
+        return dinfo.table_spec.header_list
 
     def get_list_names(self):
         list_names = self.mworker.post_and_wait("host", "get_list_names", {"user_id": self.user_id})
@@ -787,7 +538,7 @@ class mainWindow(object):
             row_index = 0
             dinfo = self.doc_dict[self.visible_doc_name]
             for the_row in dinfo.displayed_data_rows:
-                for cheader in dinfo.header_list:
+                for cheader in dinfo.table_spec.header_list:
                     cdata = the_row[cheader]
                     if cdata is None:
                         continue
@@ -918,7 +669,7 @@ class mainWindow(object):
     @task_worthy
     def get_column_names(self, data):
         doc_name = data["document_name"]
-        header_list = self.doc_dict[doc_name].header_list
+        header_list = self.doc_dict[doc_name].table_spec.header_list
         return {"header_list": header_list}
 
     @task_worthy
@@ -1068,11 +819,13 @@ class mainWindow(object):
         full_collection_name = data["full_collection_name"]
         self.db[full_collection_name].insert_one(mdata)
         for docinfo in self.doc_dict.values():
+            tspec = docinfo.table_spec.compile_save_dict()
             if self.doc_type == "freeform":
-                ddict = {"name": docinfo.name, "data_text": docinfo.data_text}
+                ddict = {"name": docinfo.name, "data_text": docinfo.data_text,
+                         "metadata": docinfo.metadata, "table_spec": tspec}
             else:
-                ddict = {"name": docinfo.name, "data_rows": docinfo.data_rows, "header_list": docinfo.header_list}
-            ddict.update(docinfo.additional_metadata)
+                ddict = {"name": docinfo.name, "data_rows": docinfo.data_rows,
+                         "metadata": docinfo.metadata, "table_spec": tspec}
             self.db[full_collection_name].insert_one(ddict)
         return {"success": True}
 
@@ -1100,22 +853,26 @@ class mainWindow(object):
                     the_row["__filename__"] = docname
                     doc_as_dict[str(r)] = the_row
                 header_list = ["__id__", "__filename__"] + header_list
-                ddict = {"name": docname, "data_rows": doc_as_dict, "header_list": header_list}
+                table_spec = {"doc_name": docname, "header_list": header_list}
+                metadata = {}
                 if docname in document_metadata:
                     for k, val in document_metadata[docname].items():
                         if k not in PROTECTED_METADATA_KEYS:
-                            ddict[k] = val
+                            metadata[k] = val
+                ddict = {"name": docname, "data_rows": doc_as_dict, "table_spec": table_spec, "metadata": metadata}
                 self.db[full_collection_name].insert_one(ddict)
         else:
             mdata["type"] = "freeform"
             self.db[full_collection_name].insert_one(mdata)
             for docname, doc in doc_dict.items():
                 file_id = self.fs.put(str(doc))
-                ddict = {"name": docname, "file_id": file_id}
+
+                metadata = {}
                 if docname in document_metadata:
                     for k, val in document_metadata[docname].items():
                         if k not in PROTECTED_METADATA_KEYS:
-                            ddict[k] = val
+                            metadata[k] = val
+                ddict = {"name": docname, "file_id": file_id, "metadata": metadata}
                 self.db[full_collection_name].insert_one(ddict)
         self.mworker.ask_host("update_collection_selector_list", {"user_id": self.user_id})
         return {"success": True}
@@ -1156,7 +913,8 @@ class mainWindow(object):
                     "left_fraction": self.left_fraction,
                     "data_rows": self.doc_dict[doc_name].displayed_data_rows,
                     "background_colors": self.doc_dict[doc_name].displayed_background_colors,
-                    "header_list": self.doc_dict[doc_name].header_list,
+                    "header_list": self.doc_dict[doc_name].table_spec.header_list,
+                    "hidden_columns_list": self.doc_dict[doc_name].table_spec.hidden_columns_list,
                     "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
                     "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
                     "max_table_size": self.doc_dict[doc_name].max_table_size}
@@ -1176,12 +934,12 @@ class mainWindow(object):
                     "left_fraction": self.left_fraction,
                     "data_rows": self.doc_dict[doc_name].displayed_data_rows,
                     "background_colors": self.doc_dict[doc_name].displayed_background_colors,
-                    "header_list": self.doc_dict[doc_name].header_list,
+                    "header_list": self.doc_dict[doc_name].table_spec.header_list,
                     "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
                     "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
                     "max_table_size": self.doc_dict[doc_name].max_table_size,
                     "tablespec_dict": self.tablespec_dict(),
-                    "hidden_columns_list": self.hidden_columns_list,
+                    "hidden_columns_list": self.doc_dict[doc_name].table_spec.hidden_columns_list,
                     "tile_save_results": self.tile_save_results}
         else:
             return {"doc_name": doc_name,
@@ -1242,7 +1000,7 @@ class mainWindow(object):
                 "is_shrunk": self.is_shrunk,
                 "data_rows": self.doc_dict[doc_name].displayed_data_rows,
                 "background_colors": self.doc_dict[doc_name].displayed_background_colors,
-                "header_list": self.doc_dict[doc_name].header_list,
+                "header_list": self.doc_dict[doc_name].table_spec.header_list,
                 "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
                 "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
                 "max_table_size": self.doc_dict[doc_name].max_table_size,
@@ -1271,7 +1029,7 @@ class mainWindow(object):
         return {"doc_name": doc_name,
                 "data_rows": self.doc_dict[doc_name].displayed_data_rows,
                 "background_colors": self.doc_dict[doc_name].displayed_background_colors,
-                "header_list": self.doc_dict[doc_name].header_list,
+                "header_list": self.doc_dict[doc_name].table_spec.header_list,
                 "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
                 "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
                 "step_size": step_amount}
@@ -1283,7 +1041,7 @@ class mainWindow(object):
         return {"doc_name": doc_name,
                 "data_rows": self.doc_dict[doc_name].displayed_data_rows,
                 "background_colors": self.doc_dict[doc_name].displayed_background_colors,
-                "header_list": self.doc_dict[doc_name].header_list,
+                "header_list": self.doc_dict[doc_name].table_spec.header_list,
                 "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
                 "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
                 "step_size": step_amount}
@@ -1294,12 +1052,45 @@ class mainWindow(object):
         return None
 
     @task_worthy
+    def UpdateHeaderListOrder(self, data):
+        header_list = data["header_list"]
+        if "doc_name" in data:
+            doc = self.doc_dict[data["doc_name"]]
+            doc.table_spec.header_list = header_list
+        else:
+            for doc in self.doc_dict.values():
+                current_list = doc.table_spec.header_list
+                doc.table_spec.header_list = header_list
+                for header in current_list:
+                    if header not in header_list:
+                        doc.table_spec.header_list.append(header)
+
+        the_lists = self.get_lists_classes_functions()
+
+        form_info = {"current_header_list": self.current_header_list,
+                     "pipe_dict": self._pipe_dict,
+                     "doc_names": self.doc_names,
+                     "list_names": the_lists["list_names"],
+                     "class_names": the_lists["class_names"],
+                     "function_names": the_lists["function_names"],
+                     "collection_names": the_lists["collection_names"]}
+        for tid in self.tile_instances:
+            self.mworker.post_task(tid, "RebuildTileForms", form_info)
+        return None
+
+    @task_worthy
     def CreateColumn(self, data):
         column_name = data["column_name"]
-        for doc in self.doc_dict.values():
-            doc.header_list.append(column_name)
+        if "doc_name" in data:
+            doc = self.doc_dict[data["doc_name"]]
+            doc.table_spec.header_list.append(column_name)
             for r in doc.data_rows.values():
                 r[column_name] = ""
+        else:
+            for doc in self.doc_dict.values():
+                doc.table_spec.header_list.append(column_name)
+                for r in doc.data_rows.values():
+                    r[column_name] = ""
 
         the_lists = self.get_lists_classes_functions()
 
