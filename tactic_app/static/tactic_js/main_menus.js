@@ -131,10 +131,6 @@ function bind_to_keys(shortcuts) {
 }
 
 function build_and_render_menu_objects() {
-    // Create the column_menu object
-    column_menu = new MenuObject("Column", column_command,["shift-left", "shift-right", "hide", "unhide", "add-column", "add-column-all-docs"]);
-    menus[column_menu.menu_name] = column_menu;
-    column_menu.add_options_to_index();
 
     // Create the project_menu object
     project_menu = new MenuObject("Project", project_command,["save-as", "save", "export-table-as-collection"]);
@@ -148,6 +144,12 @@ function build_and_render_menu_objects() {
                 }
         }
     };
+
+    // Create the column_menu object
+    column_menu = new MenuObject("Column", column_command,["shift-left", "shift-right", "hide", "unhide", "add-column", "add-column-all-docs"]);
+    menus[column_menu.menu_name] = column_menu;
+    column_menu.add_options_to_index();
+
     bind_to_keys(project_menu.shortcuts);
 
     // Create the tile_menus
@@ -215,8 +217,7 @@ function column_command(menu_id) {
                 deselect_header(column_header);
                 const col_class = ".column-" + column_header;
                 $(col_class).fadeOut();
-                //tableObject.current_spec.hidden_list.push(column_header);
-                table_object.current_spec.hidden_columns_list.push(column_header);
+                tableObject.current_spec.hidden_columns_list.push(column_header);
                 dirty = true;
                 updateHeaderList();
                 break;
@@ -224,7 +225,7 @@ function column_command(menu_id) {
         }
     }
     else if (menu_id == "unhide") {
-        table_object.current_spec.hidden_columns_list = ["__filename__"];
+        tableObject.current_spec.hidden_columns_list = ["__filename__"];
         tableObject.build_table();
         updateHeaderList();
         dirty = true;

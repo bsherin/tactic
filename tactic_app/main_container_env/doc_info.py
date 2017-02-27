@@ -35,7 +35,7 @@ class TableSpec(object):
         print "in table_spec compile_save_dict"
         return {"doc_name": self.doc_name, "header_list": self.header_list,
                 "table_width": self.table_width, "column_widths": self.column_widths,
-                "hidden_columns_list": self.hidden_columns_list}
+                "cell_backgrounds": self.cell_backgrounds, "hidden_columns_list": self.hidden_columns_list}
 
     @staticmethod
     def recreate_from_save(save_dict):

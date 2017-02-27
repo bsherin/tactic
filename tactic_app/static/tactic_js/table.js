@@ -225,7 +225,7 @@ class TableObjectClass {
             if (!this.background_colors.hasOwnProperty(row)) continue;
             for (let cheader in this.background_colors[row]) {
                 if (!this.background_colors[row].hasOwnProperty(cheader)) continue;
-                tableObject.colorCellBackground(row, cheader, this.background_colors[row][cheader])
+                this.colorCellBackground(row, cheader, this.background_colors[row][cheader])
             }
         }
      }
