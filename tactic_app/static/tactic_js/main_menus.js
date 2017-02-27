@@ -197,6 +197,7 @@ function column_command(menu_id) {
                 deselect_header(column_header);
                 tableObject.current_spec.shift_column_left(column_header);
                 tableObject.build_table();
+                updateHeaderList();
                 dirty = true;
                 break;
             }
@@ -205,6 +206,7 @@ function column_command(menu_id) {
                 deselect_header(column_header);
                 tableObject.current_spec.shift_column_right(column_header);
                 tableObject.build_table();
+                updateHeaderList();
                 dirty = true;
                 break;
             }
@@ -216,6 +218,7 @@ function column_command(menu_id) {
                 //tableObject.current_spec.hidden_list.push(column_header);
                 table_object.current_spec.hidden_columns_list.push(column_header);
                 dirty = true;
+                updateHeaderList();
                 break;
             }
         }
@@ -223,6 +226,7 @@ function column_command(menu_id) {
     else if (menu_id == "unhide") {
         table_object.current_spec.hidden_columns_list = ["__filename__"];
         tableObject.build_table();
+        updateHeaderList();
         dirty = true;
     }
     else if (menu_id == "add-column-all-docs") {
@@ -236,7 +240,9 @@ function column_command(menu_id) {
 }
 
 function updateHeaderList() {
-    const data_dict = {"header_list": table_object.current_spec.header_list};
+    const data_dict = {"header_list": tableObject.current_spec.header_list,
+                       "hidden_columns_list": tableObject.current_spec.hidden_columns_list,
+                       "doc_name": tableObject.current_doc_name};
     broadcast_event_to_server("UpdateHeaderListOrder", data_dict, function () {
         dirty = true
     })
@@ -272,7 +278,7 @@ function createColumnThisDoc() {
 
         // Then change the current data_dict back on the server
         const data_dict = {"column_name": column_name,
-                           "doc_name": this.doc_name};
+                           "doc_name": tableObject.current_doc_name};
         broadcast_event_to_server("CreateColumn", data_dict, function () {
             dirty = true
         })
@@ -290,7 +296,6 @@ function saveProjectAs() {
             const result_dict = {
                 "project_name": new_name,
                 "main_id": main_id,
-                "tablespec_dict": tablespec_dict,
                 "console_html": $("#console").html(),
                 "console_cm_code": consoleObject.getConsoleCMCode(),
                 "doc_type": DOC_TYPE,
@@ -329,7 +334,6 @@ function saveProjectAs() {
 function save_project() {
     const result_dict = {
         "main_id": main_id,
-        "tablespec_dict": tablespec_dict,
         "console_html": $("#console").html(),
         "console_cm_code": consoleObject.getConsoleCMCode()
     };

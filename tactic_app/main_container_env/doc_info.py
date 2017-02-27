@@ -9,18 +9,17 @@ PROTECTED_METADATA_KEYS = ["_id", "file_id", "name", "my_class_for_recreate", "t
                            "data_rows", "header_list", "number_of_rows"]
 
 
-
 class TableSpec(object):
     def __init__(self, doc_name=None, header_list=None, table_width=None, column_widths=None,
                  cell_backgrounds=None, hidden_columns_list=None):
         self.doc_name = doc_name
         if header_list is None:
-            self.header_list = {}
+            self.header_list = []
         else:
             self.header_list = header_list
         self.table_width = table_width
         if column_widths is None:
-            self.column_widths = {}
+            self.column_widths = None
         else:
             self.column_widths = column_widths
         if cell_backgrounds is None:
@@ -33,12 +32,14 @@ class TableSpec(object):
             self.hidden_columns_list = hidden_columns_list
 
     def compile_save_dict(self):
+        print "in table_spec compile_save_dict"
         return {"doc_name": self.doc_name, "header_list": self.header_list,
                 "table_width": self.table_width, "column_widths": self.column_widths,
                 "hidden_columns_list": self.hidden_columns_list}
 
     @staticmethod
     def recreate_from_save(save_dict):
+        print "in table_spec recreate"
         new_instance = TableSpec(**save_dict)
         return new_instance
 
@@ -51,13 +52,13 @@ class DocInfoAbstract(object):
             self.metadata = f["metadata"]
         else:
             self.metadata = self.collect_legacy_metadata(f)
-        if "table_spec" in f:
-            self.table_spec = TableSpec(**f["table_spec"])
+        if "header_list" in f:
+            self.table_spec = TableSpec(f["name"], f["header_list"], None, None, None)  # Legacy older than 2-27-17
         else:
-            self.table_spec = TableSpec(f["name"], f["header_list"], None, None, None)
+            self.table_spec = TableSpec(**f["table_spec"])
         return
 
-    def collect_legacy_metadata(self, f):
+    def collect_legacy_metadata(self, f):  # Legacy older than about 2-27-17
         mdata = {}
         for key, val in f.items():
             if key not in PROTECTED_METADATA_KEYS:
@@ -74,9 +75,10 @@ class DocInfoAbstract(object):
         return
 
     def compile_save_dict(self):
+        print "in docinfo compile_save_Dict"
         result = {"name": self.name,
                   "metadata": self.metadata,
-                  "table_spec": self.table_spec,
+                  "table_spec": self.table_spec.compile_save_dict(),
                   }
         return result
 
@@ -260,5 +262,6 @@ class docInfo(DocInfoAbstract):
 
     @staticmethod
     def recreate_from_save(save_dict):
+        print "in docinfo recreate"
         new_instance = docInfo(save_dict)
         return new_instance

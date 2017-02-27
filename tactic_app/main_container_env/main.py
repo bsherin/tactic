@@ -41,7 +41,7 @@ class mainWindow(object):
     update_events = ["CellChange", "FreeformTextChange", "CreateColumn", "SearchTable", "SaveTableSpec", "MainClose",
                      "DisplayCreateErrors", "DehighlightTable", "SetCellContent", "RemoveTile", "ColorTextInCell",
                      "FilterTable", "UnfilterTable", "TextSelect", "UpdateSortList", "UpdateLeftFraction",
-                     "UpdateTableShrinkState", "UpdateHeaderListOrder"]
+                     "UpdateTableShrinkState", "UpdateHeaderListOrder", "UpdateColumnWidths"]
 
     # noinspection PyUnresolvedReferences
     def __init__(self, mworker, data_dict):
@@ -340,9 +340,6 @@ class mainWindow(object):
             self.purgetiles = data_dict["purgetiles"]
             self.console_html = data_dict["console_html"]
             self.console_cm_code = data_dict["console_cm_code"]
-            tspec_dict = data_dict["tablespec_dict"]
-            for (dname, spec) in tspec_dict.items():
-                self.doc_dict[dname].table_spec = spec
 
             self.show_main_status_message("Getting loaded modules")
             self.loaded_modules = self.mworker.post_and_wait("host", "get_loaded_user_modules",
@@ -378,13 +375,8 @@ class mainWindow(object):
     def update_project(self, data_dict):
         # noinspection PyBroadException
         try:
-            if self.doc_type == "table":
-                self.hidden_columns_list = data_dict["hidden_columns_list"]
             self.console_html = data_dict["console_html"]
             self.console_cm_code = data_dict["console_cm_code"]
-            tspec_dict = data_dict["tablespec_dict"]
-            for (dname, spec) in tspec_dict.items():
-                self.doc_dict[dname].table_spec = spec
             self.show_main_status_message("Getting loaded modules")
             print "user_id is " + str(self.user_id)
             self.loaded_modules = self.mworker.post_and_wait("host", "get_loaded_user_modules",
@@ -913,8 +905,7 @@ class mainWindow(object):
                     "left_fraction": self.left_fraction,
                     "data_rows": self.doc_dict[doc_name].displayed_data_rows,
                     "background_colors": self.doc_dict[doc_name].displayed_background_colors,
-                    "header_list": self.doc_dict[doc_name].table_spec.header_list,
-                    "hidden_columns_list": self.doc_dict[doc_name].table_spec.hidden_columns_list,
+                    "table_spec": self.doc_dict[doc_name].table_spec.compile_save_dict(),
                     "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
                     "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
                     "max_table_size": self.doc_dict[doc_name].max_table_size}
@@ -934,12 +925,10 @@ class mainWindow(object):
                     "left_fraction": self.left_fraction,
                     "data_rows": self.doc_dict[doc_name].displayed_data_rows,
                     "background_colors": self.doc_dict[doc_name].displayed_background_colors,
-                    "header_list": self.doc_dict[doc_name].table_spec.header_list,
+                    "table_spec": self.doc_dict[doc_name].table_spec.compile_save_dict(),
                     "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
                     "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
                     "max_table_size": self.doc_dict[doc_name].max_table_size,
-                    "tablespec_dict": self.tablespec_dict(),
-                    "hidden_columns_list": self.doc_dict[doc_name].table_spec.hidden_columns_list,
                     "tile_save_results": self.tile_save_results}
         else:
             return {"doc_name": doc_name,
@@ -947,7 +936,7 @@ class mainWindow(object):
                     "tile_ids": self.tile_sort_list,
                     "left_fraction": self.left_fraction,
                     "data_text": self.doc_dict[doc_name].data_text,
-                    "tablespec_dict": self.tablespec_dict(),
+                    "table_spec": self.doc_dict[doc_name].table_spec.compile_save_dict(),
                     "tile_save_results": self.tile_save_results}
 
     def get_tile_property(self, tile_id, prop_name):
@@ -1000,7 +989,7 @@ class mainWindow(object):
                 "is_shrunk": self.is_shrunk,
                 "data_rows": self.doc_dict[doc_name].displayed_data_rows,
                 "background_colors": self.doc_dict[doc_name].displayed_background_colors,
-                "header_list": self.doc_dict[doc_name].table_spec.header_list,
+                "table_spec": self.doc_dict[doc_name].table_spec.compile_save_dict(),
                 "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
                 "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
                 "max_table_size": self.doc_dict[doc_name].max_table_size,
@@ -1029,7 +1018,7 @@ class mainWindow(object):
         return {"doc_name": doc_name,
                 "data_rows": self.doc_dict[doc_name].displayed_data_rows,
                 "background_colors": self.doc_dict[doc_name].displayed_background_colors,
-                "header_list": self.doc_dict[doc_name].table_spec.header_list,
+                "table_spec": self.doc_dict[doc_name].table_spec.compile_save_dict(),
                 "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
                 "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
                 "step_size": step_amount}
@@ -1053,14 +1042,18 @@ class mainWindow(object):
 
     @task_worthy
     def UpdateHeaderListOrder(self, data):
+        print "entering UpdateHeaderListOrder with " + str(data)
         header_list = data["header_list"]
+        hidden_columns_list = data["hidden_columns_list"]
         if "doc_name" in data:
             doc = self.doc_dict[data["doc_name"]]
             doc.table_spec.header_list = header_list
+            doc.table_spec.hidden_columns_list = hidden_columns_list
         else:
             for doc in self.doc_dict.values():
                 current_list = doc.table_spec.header_list
                 doc.table_spec.header_list = header_list
+                doc.table_spec.hidden_columns_list = hidden_columns_list
                 for header in current_list:
                     if header not in header_list:
                         doc.table_spec.header_list.append(header)
@@ -1076,6 +1069,14 @@ class mainWindow(object):
                      "collection_names": the_lists["collection_names"]}
         for tid in self.tile_instances:
             self.mworker.post_task(tid, "RebuildTileForms", form_info)
+        return None
+
+    @task_worthy
+    def UpdateColumnWidths(self, data):
+        print "entering UpdateColumnWidths with " + str(data)
+        doc = self.doc_dict[data["doc_name"]]
+        doc.table_spec.column_widths = data["column_widths"]
+        doc.table_spec.table_width = data["table_width"]
         return None
 
     @task_worthy
