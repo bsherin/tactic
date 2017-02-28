@@ -51,7 +51,7 @@ class TileManager(ResourceManager):
                          login_required(self.unload_all_tiles), methods=['get', 'post'])
         app.add_url_rule('/add_tile_module', "add_tile_module",
                          login_required(self.add_tile_module), methods=['get', "post"])
-        app.add_url_rule('/delete_tile_module/<tile_module_name>', "delete_tile_module",
+        app.add_url_rule('/delete_tile_module', "delete_tile_module",
                          login_required(self.delete_tile_module), methods=['post'])
         app.add_url_rule('/create_tile_module', "create_tile_module",
                          login_required(self.create_tile_module), methods=['get', 'post'])
@@ -276,8 +276,9 @@ class TileManager(ResourceManager):
         self.update_selector_list(new_tile_name)
         return jsonify({"success": True})
 
-    def delete_tile_module(self, tile_module_name):
+    def delete_tile_module(self):
         user_obj = current_user
+        tile_module_name = request.json["resource_name"]
         db[user_obj.tile_collection_name].delete_one({"tile_module_name": tile_module_name})
         self.update_selector_list()
         return jsonify({"success": True})

@@ -248,7 +248,7 @@ class UserManagerResourceManager extends ResourceManager{
             manager.get_active_selector_button("resource").fadeOut();
             manager.get_tags_field("resource").html("");
             manager.get_notes_field("resource").html("");
-            $.post($SCRIPT_ROOT + manager.delete_view + String(res_name))
+            postAjax(manager.delete_view, {"resource_name": res_name})
         })
     }
 

@@ -17,7 +17,7 @@ class ProjectManager(ResourceManager):
     name_field = "project_name"
 
     def add_rules(self):
-        app.add_url_rule('/delete_project/<project_name>', "delete_project", login_required(self.delete_project),
+        app.add_url_rule('/delete_project', "delete_project", login_required(self.delete_project),
                          methods=['post'])
 
     def rename_me(self, old_name):
@@ -31,8 +31,10 @@ class ProjectManager(ResourceManager):
             error_string = "Error renaming project " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
             return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
-    def delete_project(self, project_name):
+    def delete_project(self):
+        project_name = request.json["resource_name"]
         current_user.remove_project(project_name)
+
         self.update_selector_list()
         return jsonify({"success": True})
 

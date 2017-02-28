@@ -193,7 +193,7 @@ class ListManager extends UserManagerResourceManager {
         this.update_view = "request_update_selector_list";
         this.update_tag_view = "request_update_tag_list";
         this.view_view = '/view_list/';
-        this.delete_view = `/delete_list/`;
+        this.delete_view = `/delete_list`;
         this.double_click_func = "view_func";
         this.duplicate_view = '/create_duplicate_list';
 
@@ -240,7 +240,7 @@ class CollectionManager extends UserManagerResourceManager {
         this.start_hidden = false;
         this.update_view = "request_update_selector_list";
         this.update_tag_view = "request_update_tag_list";
-        this.delete_view = `/delete_collection/`;
+        this.delete_view = `/delete_collection`;
         this.double_click_func = "load_func";
         this.duplicate_view = '/duplicate_collection';
         this.load_view = "/main/";
@@ -336,7 +336,7 @@ class ProjectManager extends UserManagerResourceManager {
         this.update_view = "request_update_selector_list";
         this.update_tag_view = "request_update_tag_list";
         this.load_view = "";
-        this.delete_view = "/delete_project/";
+        this.delete_view = "/delete_project";
         this.double_click_func = "load_func";
         this.button_groups = [
             {buttons: [
@@ -385,7 +385,7 @@ class TileManager extends UserManagerResourceManager {
         this.view_view = '/view_module/';
         this.creator_view = '/view_in_creator/';
         this.last_saved_view = '/last_saved_view/';
-        this.delete_view = "/delete_tile_module/";
+        this.delete_view = "/delete_tile_module";
         this.duplicate_view = '/create_duplicate_tile';
         this.double_click_func = "dc_view_func";
         this.popup_buttons = [{
@@ -552,7 +552,7 @@ class CodeManager extends UserManagerResourceManager {
         this.update_tag_view = "request_update_tag_list";
         this.new_view = '/create_code';
         this.view_view = '/view_code/';
-        this.delete_view = "/delete_code/";
+        this.delete_view = "/delete_code";
         this.duplicate_view = '/create_duplicate_code';
         this.double_click_func = "view_func";
         this.popup_buttons = [{
