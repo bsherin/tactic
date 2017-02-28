@@ -43,8 +43,9 @@ class TableSpec(object):
         new_instance = TableSpec(**save_dict)
         return new_instance
 
+
 # Each doc should have fields:
-# name, data_rows, cell_background, table_spec, metadata
+# name, data_rows or data_text, cell_background, table_spec, metadata
 class DocInfoAbstract(object):
     def __init__(self, f):
         self.name = f["name"]
@@ -52,11 +53,6 @@ class DocInfoAbstract(object):
             self.metadata = f["metadata"]
         else:
             self.metadata = self.collect_legacy_metadata(f)
-        if "header_list" in f:
-            self.table_spec = TableSpec(f["name"], f["header_list"], None, None, None)  # Legacy older than 2-27-17
-        else:
-            self.table_spec = TableSpec(**f["table_spec"])
-        return
 
     def collect_legacy_metadata(self, f):  # Legacy older than about 2-27-17
         mdata = {}
@@ -78,11 +74,10 @@ class DocInfoAbstract(object):
         print "in docinfo compile_save_Dict"
         result = {"name": self.name,
                   "metadata": self.metadata,
-                  "table_spec": self.table_spec.compile_save_dict(),
-                  }
+                  "table_spec": self.table_spec.compile_save_dict()}
         return result
 
-
+# Most of table_spec stuff, including table_width, doesn't do anything in freeform docs.
 class FreeformDocInfo(DocInfoAbstract):
 
     def __init__(self, f, data_text=None):
@@ -92,6 +87,10 @@ class FreeformDocInfo(DocInfoAbstract):
         else:
             self.data_text = data_text
         self.metadata["length"] = len(self.data_text)
+        if "table_spec" not in f:
+            self.table_spec = TableSpec(doc_name=f["name"])
+        else:
+            self.table_spec = TableSpec(**f["table_spec"])
 
     def compile_save_dict(self):
         result = DocInfoAbstract.compile_save_dict(self)
@@ -127,9 +126,13 @@ class FreeformDocInfo(DocInfoAbstract):
 class docInfo(DocInfoAbstract):
     def __init__(self, f):
         DocInfoAbstract.__init__(self, f)
+        if "header_list" in f:
+            self.table_spec = TableSpec(f["name"], f["header_list"], None, None, None)  # Legacy older than 2-27-17
+        else:
+            self.table_spec = TableSpec(**f["table_spec"])
+        return
         self.data_rows = copy.deepcopy(f["data_rows"])  # All the data rows in the doc
         self.current_data_rows = self.data_rows  # The current filtered set of data rows
-
 
         self.start_of_current_chunk = None
         self.is_first_chunk = None
@@ -142,7 +145,6 @@ class docInfo(DocInfoAbstract):
         else:
             self.max_table_size = len(self.data_rows.keys())
         self.metadata["number_of_rows"] = len(f["data_rows"].keys())
-
 
     def set_background_color(self, row, column_header, color):
         if not str(row) in self.table_spec.cell_backgrounds:

@@ -16,6 +16,8 @@ import uuid
 
 from doc_info import docInfo, FreeformDocInfo, PROTECTED_METADATA_KEYS
 
+# noinspection PyUnresolvedReferences
+from qworker import task_worthy_methods
 
 # getting environment variables
 INITIAL_LEFT_FRACTION = .69
@@ -26,12 +28,10 @@ else:
     RETRIES = 60
 
 
-# noinspection PyUnresolvedReferences
-from qworker import task_worthy_methods
-
 def task_worthy(m):
     task_worthy_methods[m.__name__] = "mainwindow"
     return m
+
 
 # noinspection PyPep8Naming,PyUnusedLocal
 class mainWindow(object):
@@ -171,9 +171,9 @@ class mainWindow(object):
                     del tile_code_dict[old_tile_id]
             self.show_um_message("Creating empty containers", data_dict["user_manage_id"])
             new_tile_keys = self.mworker.post_and_wait("host", "get_empty_tile_containers",
-                                                         {"number": len(tile_info_dict.keys()),
-                                                          "user_id": self.user_id,
-                                                          "parent": self.mworker.my_id})["tile_containers"]
+                                                       {"number": len(tile_info_dict.keys()),
+                                                        "user_id": self.user_id,
+                                                        "parent": self.mworker.my_id})["tile_containers"]
             new_tile_info = {}
             error_messages = ""
             for i, old_tile_id in enumerate(tile_info_dict.keys()):
@@ -291,9 +291,9 @@ class mainWindow(object):
             tile_save_dict = self.project_dict["tile_instances"][old_tile_id]
             tile_save_dict["new_base_figure_url"] = self.base_figure_url.replace("tile_id", new_tile_id)
             tile_result = self.mworker.post_and_wait(new_tile_id,
-                                                 "recreate_from_save",
-                                                 tile_save_dict,
-                                                 timeout=60, tries=RETRIES)
+                                                     "recreate_from_save",
+                                                     tile_save_dict,
+                                                     timeout=60, tries=RETRIES)
             if not tile_result["success"]:
                 errors[old_tile_id] = tile_result["message_string"]
                 self.tile_instances.remove(new_tile_id)
@@ -602,7 +602,7 @@ class mainWindow(object):
         ddata = copy.copy(data)
         for doc_name in self.doc_dict.keys():
             ddata["doc_name"] = doc_name
-            result = result + self.get_column_data_for_doc(ddata)
+            result += self.get_column_data_for_doc(ddata)
         return result
 
     def sort_rows(self, row_dict):

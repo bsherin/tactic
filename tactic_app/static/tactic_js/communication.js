@@ -134,6 +134,7 @@ function postWithCallbackNoMain(dest_id, task_type, task_data, callback_func){
 
 
 function broadcast_event_to_server(event_name, data_dict, callback, tobject=null) {
+    let table_object;
     if (tobject == null) {
         table_object = tableObject
     }

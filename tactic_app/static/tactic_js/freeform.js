@@ -200,12 +200,6 @@ class TableObjectClass {
             }
         }
 
-        function save_table_width() {
-            // let resize = true;
-            self.current_spec.table_width = $("#freeform-area").width();
-
-            //broadcast_event_to_server("SaveTableSpec", {"tablespec": self.current_spec})
-        }
 
     }
 
