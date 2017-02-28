@@ -33,7 +33,7 @@ class CodeManager(ResourceManager):
                          login_required(self.get_code_code), methods=['get', "post"])
         app.add_url_rule('/add_code', "add_code",
                          login_required(self.add_code), methods=['get', "post"])
-        app.add_url_rule('/delete_code/<code_name>', "delete_code",
+        app.add_url_rule('/delete_code', "delete_code",
                          login_required(self.delete_code), methods=['post'])
         app.add_url_rule('/create_code', "create_code",
                          login_required(self.create_code), methods=['get', 'post'])
@@ -154,8 +154,9 @@ class CodeManager(ResourceManager):
         self.update_selector_list(new_code_name)
         return jsonify({"success": True})
 
-    def delete_code(self, code_name):
+    def delete_code(self):
         user_obj = current_user
+        code_name = request.json["resource_name"]
         db[user_obj.code_collection_name].delete_one({"code_name": code_name})
         self.update_selector_list()
         return jsonify({"success": True})

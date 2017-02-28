@@ -150,7 +150,7 @@
     var new_tile_info = "{{new_tile_info | safe}}";
     window.onload = start_post_load;
     window.onresize = function () {
-        if (tableObject != null) {
+        if (typeof tableObject != "undefined") {
             tableObject.resize_table_area();
             consoleObject.resize_to_window();
             exportViewerObject.resize_to_window()

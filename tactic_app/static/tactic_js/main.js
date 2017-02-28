@@ -15,8 +15,6 @@ let tooltip_dict = {
 };
 
 function start_post_load() {
-    //spinner = new Spinner({scale: 1.0}).spin();
-    //$("#loading-message").html(spinner.el);
     console.log("entering start_post_load");
     console.log("in new version");
     dirty = false;
@@ -33,11 +31,9 @@ function start_post_load() {
     socket.emit('join', {"room": main_id});
     socket.emit('ready-to-finish', {"room": main_id});
     socket.on('tile-message', function (data) {
-        // console.log("received tile message " + data.message);
         tile_dict[data.tile_id][data.tile_message](data)
     });
     socket.on('table-message', function (data) {
-        // console.log("received table message " + data.message);
         tableObject[data.table_message](data)
     });
     socket.on('handle-callback', handleCallback);
@@ -112,7 +108,6 @@ function continue_loading() {
                 }
                 tableObject = new TableObjectClass((data)); // consoleObject is created in here
                 postWithCallback(main_id, "get_saved_console_code", {}, function (data) {
-                    console.log("en callback for get_saved_console_code");
                     const saved_console_code = data["saved_console_code"];
                     global_scc = saved_console_code;
                     for (let uid in saved_console_code) {

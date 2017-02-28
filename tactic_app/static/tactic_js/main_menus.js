@@ -146,7 +146,7 @@ function build_and_render_menu_objects() {
     };
 
     // Create the column_menu object
-    column_menu = new MenuObject("Column", column_command,["shift-left", "shift-right", "hide", "unhide", "add-column", "add-column-all-docs"]);
+    column_menu = new MenuObject("Column", column_command,["shift-left", "shift-right", "hide", "hide-in-all-docs", "unhide", "add-column", "add-column-all-docs"]);
     menus[column_menu.menu_name] = column_menu;
     column_menu.add_options_to_index();
 
@@ -222,6 +222,17 @@ function column_command(menu_id) {
                 updateHeaderList();
                 break;
             }
+            case "hide-in-all-docs":
+            {
+                deselect_header(column_header);
+                const col_class = ".column-" + column_header;
+                $(col_class).fadeOut();
+                tableObject.current_spec.hidden_columns_list.push(column_header);
+                dirty = true;
+                hideColumnInAll(column_header);
+                break;
+            }
+
         }
     }
     else if (menu_id == "unhide") {
@@ -249,20 +260,21 @@ function updateHeaderList() {
     })
 }
 
+function hideColumnInAll(column_name) {
+    const data_dict = {"column_name": column_name};
+    broadcast_event_to_server("HideColumnInAllDocs", data_dict, function () {
+        dirty = true
+    })
+}
+
 function createColumn() {
     showModal("Create Column All Docs", "New Column Name", function (new_name) {
         const column_name = new_name;
-        for (let doc in tablespec_dict) {
-            if (tablespec_dict.hasOwnProperty(doc)) {
-                tablespec_dict[doc].header_list.push(column_name)
-            }
-        }
-        // Then rebuild the table
+        tableObject.current_spec.header_list.push(column_name);
         tableObject.build_table();
         get_column(column_name).text(" ");  // This seems to be necessary for the column to be editable
 
-        // Then change the current data_dict back on the server
-        const data_dict = {"column_name": column_name};
+        const data_dict = {"column_name": column_name, "all_docs": true};
         broadcast_event_to_server("CreateColumn", data_dict, function () {
             dirty = true
         })
@@ -273,13 +285,12 @@ function createColumnThisDoc() {
     showModal("Create Column This Doc", "New Column Name", function (new_name) {
         const column_name = new_name;
         tableObject.current_spec.header_list.push(column_name);
-        // Then rebuild the table
         tableObject.build_table();
         get_column(column_name).text(" ");  // This seems to be necessary for the column to be editable
 
-        // Then change the current data_dict back on the server
         const data_dict = {"column_name": column_name,
-                           "doc_name": tableObject.current_doc_name};
+                           "doc_name": tableObject.current_doc_name,
+                           "all_docs": false};
         broadcast_event_to_server("CreateColumn", data_dict, function () {
             dirty = true
         })

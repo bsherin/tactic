@@ -3,7 +3,7 @@ import re, datetime, sys, os
 from flask_login import login_required, current_user
 from flask import jsonify, render_template, url_for, request, send_file
 from tactic_app.users import User
-from tactic_app.docker_functions import create_container
+from tactic_app.docker_functions import create_container, ContainerCreateError
 from tactic_app import app, db, fs, mongo_uri, use_ssl
 import openpyxl
 import cStringIO
@@ -32,7 +32,7 @@ class CollectionManager(ResourceManager):
                          login_required(self.import_as_table), methods=['get', "post"])
         app.add_url_rule('/import_as_freeform/<collection_name>', "import_as_freeform",
                          login_required(self.import_as_freeform), methods=['get', "post"])
-        app.add_url_rule('/delete_collection/<collection_name>', "delete_collection",
+        app.add_url_rule('/delete_collection', "delete_collection",
                          login_required(self.delete_collection), methods=['post'])
         app.add_url_rule('/duplicate_collection', "duplicate_collection",
                          login_required(self.duplicate_collection), methods=['post', 'get'])
@@ -44,9 +44,10 @@ class CollectionManager(ResourceManager):
     def main(self, collection_name):
         user_obj = current_user
         cname = user_obj.build_data_collection_name(collection_name)
-        main_id, container_id = create_container("tactic_main_image", owner=user_obj.get_id())
-        if main_id == -1:
-            render_template("error_window_template.html",
+        try:
+            main_id, container_id = create_container("tactic_main_image", owner=user_obj.get_id())
+        except ContainerCreateError:
+            return render_template("error_window_template.html",
                             window_tile="Load Failed",
                             error_string="Load failed: Could not create container")
 
@@ -284,8 +285,9 @@ class CollectionManager(ResourceManager):
         self.update_selector_list(collection_name)
         return jsonify({"message": "Collection successfully loaded", "alert_type": "alert-success"})
 
-    def delete_collection(self, collection_name):
+    def delete_collection(self):
         user_obj = current_user
+        collection_name = request.json["resource_name"]
         result = user_obj.remove_collection(collection_name)
         self.update_selector_list()
         return jsonify({"success": result})

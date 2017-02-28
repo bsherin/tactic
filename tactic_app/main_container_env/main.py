@@ -41,7 +41,7 @@ class mainWindow(object):
     update_events = ["CellChange", "FreeformTextChange", "CreateColumn", "SearchTable", "SaveTableSpec", "MainClose",
                      "DisplayCreateErrors", "DehighlightTable", "SetCellContent", "RemoveTile", "ColorTextInCell",
                      "FilterTable", "UnfilterTable", "TextSelect", "UpdateSortList", "UpdateLeftFraction",
-                     "UpdateTableShrinkState", "UpdateHeaderListOrder", "UpdateColumnWidths"]
+                     "UpdateTableShrinkState", "UpdateHeaderListOrder", "HideColumnInAllDocs", "UpdateColumnWidths"]
 
     # noinspection PyUnresolvedReferences
     def __init__(self, mworker, data_dict):
@@ -1042,7 +1042,6 @@ class mainWindow(object):
 
     @task_worthy
     def UpdateHeaderListOrder(self, data):
-        print "entering UpdateHeaderListOrder with " + str(data)
         header_list = data["header_list"]
         hidden_columns_list = data["hidden_columns_list"]
         if "doc_name" in data:
@@ -1072,6 +1071,14 @@ class mainWindow(object):
         return None
 
     @task_worthy
+    def HideColumnInAllDocs(self, data):
+        column_name = data["column_name"]
+        for doc in self.doc_dict.values():
+            if column_name in doc.table_spec.header_list and column_name not in doc.table_spec.hidden_columns_list:
+                doc.table_spec.hidden_columns_list.append(column_name)
+        return None
+
+    @task_worthy
     def UpdateColumnWidths(self, data):
         print "entering UpdateColumnWidths with " + str(data)
         doc = self.doc_dict[data["doc_name"]]
@@ -1082,7 +1089,7 @@ class mainWindow(object):
     @task_worthy
     def CreateColumn(self, data):
         column_name = data["column_name"]
-        if "doc_name" in data:
+        if not data["all_docs"]:
             doc = self.doc_dict[data["doc_name"]]
             doc.table_spec.header_list.append(column_name)
             for r in doc.data_rows.values():

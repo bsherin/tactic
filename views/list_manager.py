@@ -29,7 +29,7 @@ class ListManager(ResourceManager):
 
         app.add_url_rule('/get_list/<list_name>', "get_list", login_required(self.get_list), methods=['get', 'post'])
         app.add_url_rule('/add_list', "add_list", login_required(self.add_list), methods=['get', "post"])
-        app.add_url_rule('/delete_list/<list_name>', "delete_list", login_required(self.delete_list), methods=['post'])
+        app.add_url_rule('/delete_list', "delete_list", login_required(self.delete_list), methods=['post'])
         app.add_url_rule('/create_duplicate_list', "create_duplicate_list",
                          login_required(self.create_duplicate_list), methods=['get', 'post'])
         app.add_url_rule('/update_list', "update_list",
@@ -123,8 +123,9 @@ class ListManager(ResourceManager):
         self.update_selector_list(select=the_file.filename)
         return jsonify({"success": True})
 
-    def delete_list(self, list_name):
+    def delete_list(self):
         user_obj = current_user
+        list_name = request.json["resource_name"]
         db[user_obj.list_collection_name].delete_one({"list_name": list_name})
         self.update_selector_list()
         return jsonify({"success": True})
