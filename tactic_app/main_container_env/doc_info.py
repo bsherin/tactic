@@ -53,6 +53,7 @@ class DocInfoAbstract(object):
             self.metadata = f["metadata"]
         else:
             self.metadata = self.collect_legacy_metadata(f)
+        return
 
     def collect_legacy_metadata(self, f):  # Legacy older than about 2-27-17
         mdata = {}
@@ -77,6 +78,7 @@ class DocInfoAbstract(object):
                   "table_spec": self.table_spec.compile_save_dict()}
         return result
 
+
 # Most of table_spec stuff, including table_width, doesn't do anything in freeform docs.
 class FreeformDocInfo(DocInfoAbstract):
 
@@ -87,10 +89,12 @@ class FreeformDocInfo(DocInfoAbstract):
         else:
             self.data_text = data_text
         self.metadata["length"] = len(self.data_text)
+
         if "table_spec" not in f:
             self.table_spec = TableSpec(doc_name=f["name"])
         else:
             self.table_spec = TableSpec(**f["table_spec"])
+        return
 
     def compile_save_dict(self):
         result = DocInfoAbstract.compile_save_dict(self)
@@ -130,7 +134,6 @@ class docInfo(DocInfoAbstract):
             self.table_spec = TableSpec(f["name"], f["header_list"], None, None, None)  # Legacy older than 2-27-17
         else:
             self.table_spec = TableSpec(**f["table_spec"])
-        return
         self.data_rows = copy.deepcopy(f["data_rows"])  # All the data rows in the doc
         self.current_data_rows = self.data_rows  # The current filtered set of data rows
 
@@ -145,6 +148,7 @@ class docInfo(DocInfoAbstract):
         else:
             self.max_table_size = len(self.data_rows.keys())
         self.metadata["number_of_rows"] = len(f["data_rows"].keys())
+        return
 
     def set_background_color(self, row, column_header, color):
         if not str(row) in self.table_spec.cell_backgrounds:
