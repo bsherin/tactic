@@ -15,7 +15,6 @@ let header_template;
 let body_template;
 let body_template_hidden;
 let tablespec_dict = {};
-let hidden_columns_list = ["__filename__"];
 let table_is_shrunk = false;
 
 $.get($SCRIPT_ROOT + "/get_table_templates", function(template){
@@ -78,9 +77,10 @@ function select_header(header_name) {
 class TableSpec {
     constructor(dict) {
         this.doc_name = dict.doc_name;
-        this.header_list = dict.header_list;
-        this.table_width = dict.table_width;
-        this.column_widths = dict.column_widths;
+        this.header_list = dict.table_spec.header_list;
+        this.table_width = dict.table_spec.table_width;
+        this.column_widths = dict.table_spec.column_widths;
+        this.hidden_columns_list = dict.table_spec.hidden_columns_list
     }
 
     shift_column_left (column_name) {
@@ -123,6 +123,7 @@ class TableObjectClass {
         this.initialize_table (data_object);
     }
 
+
     initialize_table (data_object){
         if (data_object.hasOwnProperty("left_fraction")) {
             this.left_fraction = data_object.left_fraction
@@ -141,19 +142,8 @@ class TableObjectClass {
         this.is_last_chunk = data_object["is_last_chunk"];
         this.getting_new_chunk = false;
 
-        if (!tablespec_dict.hasOwnProperty(this.current_doc_name)) {
-            this.current_spec = new TableSpec (
-                {"doc_name": this.current_doc_name,
-                "header_list": data_object["header_list"],
+        this.current_spec = new TableSpec(data_object);
 
-                "table_width": null,
-                "column_widths": null
-                });
-            tablespec_dict[this.current_doc_name] = this.current_spec;
-        }
-        else {
-            this.current_spec = tablespec_dict[this.current_doc_name]
-        }
         if (this.project_name == "") {
             menus["Project"].disable_menu_item('save')
         }
@@ -235,13 +225,15 @@ class TableObjectClass {
             if (!this.background_colors.hasOwnProperty(row)) continue;
             for (let cheader in this.background_colors[row]) {
                 if (!this.background_colors[row].hasOwnProperty(cheader)) continue;
-                tableObject.colorCellBackground(row, cheader, this.background_colors[row][cheader])
+                this.colorCellBackground(row, cheader, this.background_colors[row][cheader])
             }
         }
      }
 
     build_table  (max_table_size) {
         const self = this;
+        this.active_row = null;
+        this.active_row_id = null;
         if (consoleObject == null) {
             consoleObject = new ConsoleObjectClass()
         }
@@ -250,8 +242,8 @@ class TableObjectClass {
         }
         const html_result = create_all_html(this.table_id, this.data_rows, this.current_spec.header_list, max_table_size, this.is_last_chunk);
         $("#" + this.table_id).html(html_result);
-        for (let i = 0; i < hidden_columns_list.length; ++i) {
-            $(".column-" + hidden_columns_list[i]).css("display", "none");
+        for (let i = 0; i < this.current_spec.hidden_columns_list.length; ++i) {
+            $(".column-" + this.current_spec.hidden_columns_list[i]).css("display", "none");
         }
         $("td.column-__id__").attr("contenteditable", false);
         $("td.column-__filename__").attr("contenteditable", false);
@@ -262,8 +254,7 @@ class TableObjectClass {
         setup_resize_listeners();
         //broadcast_event_to_server("SaveTableSpec", {"tablespec": this.current_spec})
          $('#table-area td').blur(handle_cell_change);
-        this.active_row = null;
-        this.active_row_id = null;
+
 
         // Listen for the cursor to be placed in row
         $("#table-area").on('focus', 'td', function() {
@@ -396,8 +387,10 @@ class TableObjectClass {
             this.current_spec.column_widths = result;
             this.current_spec.table_width = $("#table-area").width();
 
-            //broadcast_event_to_server("SaveTableSpec", {"tablespec": self.current_spec})
+            this.update_column_widths()
         }
+
+
         function handle_cell_change () {
             // This is called when the user directly edits a cell.
             // It is assumed that this points to the DOM element that was changed.
@@ -433,6 +426,11 @@ class TableObjectClass {
         }
      }
 
+    update_column_widths() {
+        broadcast_event_to_server("UpdateColumnWidths", {"docname": this.docname,
+            "column_widths": this.current_spec.column_widths,
+            "table_width": this.current_spec.table_width}, null, this)
+    }
 
     freeze_column_widths () {
         // This modifies this.column_widths and this.table_width
@@ -491,6 +489,7 @@ class TableObjectClass {
             }
             this.current_spec.table_width = saved_table_width;
             this.current_spec.column_widths = column_widths;
+            this.update_column_widths()
         }
 
         $("#table-area").width(String(this.current_spec.table_width));

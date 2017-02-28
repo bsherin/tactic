@@ -133,11 +133,18 @@ function postWithCallbackNoMain(dest_id, task_type, task_data, callback_func){
 }
 
 
-function broadcast_event_to_server(event_name, data_dict, callback) {
+function broadcast_event_to_server(event_name, data_dict, callback, tobject=null) {
+    let table_object;
+    if (tobject == null) {
+        table_object = tableObject
+    }
+    else {
+        table_object = tobject
+    }
     data_dict.main_id = main_id;
     data_dict.event_name = event_name;
-    data_dict.doc_name = tableObject.current_spec.doc_name;
-    data_dict.active_row_index = tableObject.active_row;
-    data_dict.active_row_id = tableObject.active_row_id;
+    data_dict.doc_name = table_object.current_doc_name;
+    data_dict.active_row_index = table_object.active_row;
+    data_dict.active_row_id = table_object.active_row_id;
     postWithCallback(main_id, "distribute_events_stub", data_dict, callback)
 }

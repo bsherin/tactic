@@ -94,7 +94,7 @@ function continue_loading() {
 
     });
     if (_project_name != "") {
-        postWithCallback(main_id, "grab_project_data", {"doc_name":String(doc_names[0])}, function(data) {
+        postWithCallback(main_id, "grab_project_data", {"doc_name": String(doc_names[0])}, function(data) {
                 console.log("Entering grab_project_data callback");
                 $("#loading-message").css("display", "none");
                 $("#reload-message").css("display", "none");
@@ -164,7 +164,6 @@ function continue_loading() {
                 $("#reload-message").css("display", "none");
                 $("#outer-container").css("display", "block");
                 $("#table-area").css("display", "block");
-                tablespec_dict = {};
                 tableObject = new TableObjectClass((data));
                 set_visible_doc(doc_names[0], null)
             })
@@ -243,7 +242,7 @@ function change_doc(el, row_id) {
 }
 
 function removeMainwindow() {
-    target = "/remove_mainwindow/" + String(main_id)
+    target = "/remove_mainwindow/" + String(main_id);
 
     // Note that the async: false  below is important.
     // That's why I don't use postAjax

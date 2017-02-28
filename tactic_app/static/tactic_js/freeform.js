@@ -95,18 +95,8 @@ class TableObjectClass {
         //this.short_collection_name = _collection_name.replace(/^.*?\.data_collection\./, "");
         this.data_text = data_object["data_text"];
         this.current_doc_name = data_object["doc_name"];
+        this.current_spec = new TableSpec(data_object);
 
-        if (!tablespec_dict.hasOwnProperty(this.current_doc_name)) {
-            this.current_spec = new TableSpec(
-                {
-                    "doc_name": this.current_doc_name,
-                    "table_width": null
-                });
-            tablespec_dict[this.current_doc_name] = this.current_spec;
-        }
-        else {
-            this.current_spec = tablespec_dict[this.current_doc_name]
-        }
         if (this.project_name == "") {
             menus["Project"].disable_menu_item('save')
         }
@@ -210,12 +200,6 @@ class TableObjectClass {
             }
         }
 
-        function save_table_width() {
-            // let resize = true;
-            self.current_spec.table_width = $("#freeform-area").width();
-
-            //broadcast_event_to_server("SaveTableSpec", {"tablespec": self.current_spec})
-        }
 
     }
 

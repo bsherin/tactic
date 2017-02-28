@@ -32,7 +32,7 @@ class MenuObject {
     constructor (menu_name, menu_function, options) {
         this.menu_name = menu_name;
         this.options = options;
-        this.perform_menu_item = menu_function
+        this.perform_menu_item = menu_function;
         this.shortcuts = {}
     }
 
@@ -131,10 +131,6 @@ function bind_to_keys(shortcuts) {
 }
 
 function build_and_render_menu_objects() {
-    // Create the column_menu object
-    column_menu = new MenuObject("Column", column_command,["shift-left", "shift-right", "hide", "unhide", "add-column", "add-column-all-docs"]);
-    menus[column_menu.menu_name] = column_menu;
-    column_menu.add_options_to_index();
 
     // Create the project_menu object
     project_menu = new MenuObject("Project", project_command,["save-as", "save", "export-table-as-collection"]);
@@ -148,6 +144,12 @@ function build_and_render_menu_objects() {
                 }
         }
     };
+
+    // Create the column_menu object
+    column_menu = new MenuObject("Column", column_command,["shift-left", "shift-right", "hide", "unhide", "add-column", "add-column-all-docs"]);
+    menus[column_menu.menu_name] = column_menu;
+    column_menu.add_options_to_index();
+
     bind_to_keys(project_menu.shortcuts);
 
     // Create the tile_menus
@@ -197,6 +199,7 @@ function column_command(menu_id) {
                 deselect_header(column_header);
                 tableObject.current_spec.shift_column_left(column_header);
                 tableObject.build_table();
+                updateHeaderList();
                 dirty = true;
                 break;
             }
@@ -205,6 +208,7 @@ function column_command(menu_id) {
                 deselect_header(column_header);
                 tableObject.current_spec.shift_column_right(column_header);
                 tableObject.build_table();
+                updateHeaderList();
                 dirty = true;
                 break;
             }
@@ -213,16 +217,17 @@ function column_command(menu_id) {
                 deselect_header(column_header);
                 const col_class = ".column-" + column_header;
                 $(col_class).fadeOut();
-                //tableObject.current_spec.hidden_list.push(column_header);
-                hidden_columns_list.push(column_header);
+                tableObject.current_spec.hidden_columns_list.push(column_header);
                 dirty = true;
+                updateHeaderList();
                 break;
             }
         }
     }
     else if (menu_id == "unhide") {
-        hidden_columns_list = ["__filename__"];
+        tableObject.current_spec.hidden_columns_list = ["__filename__"];
         tableObject.build_table();
+        updateHeaderList();
         dirty = true;
     }
     else if (menu_id == "add-column-all-docs") {
@@ -233,6 +238,15 @@ function column_command(menu_id) {
         createColumnThisDoc();
         dirty = true;
     }
+}
+
+function updateHeaderList() {
+    const data_dict = {"header_list": tableObject.current_spec.header_list,
+                       "hidden_columns_list": tableObject.current_spec.hidden_columns_list,
+                       "doc_name": tableObject.current_doc_name};
+    broadcast_event_to_server("UpdateHeaderListOrder", data_dict, function () {
+        dirty = true
+    })
 }
 
 function createColumn() {
@@ -258,13 +272,14 @@ function createColumn() {
 function createColumnThisDoc() {
     showModal("Create Column This Doc", "New Column Name", function (new_name) {
         const column_name = new_name;
-        tableObject.current_spec.header_list.push(column_name)
+        tableObject.current_spec.header_list.push(column_name);
         // Then rebuild the table
         tableObject.build_table();
         get_column(column_name).text(" ");  // This seems to be necessary for the column to be editable
 
         // Then change the current data_dict back on the server
-        const data_dict = {"column_name": column_name};
+        const data_dict = {"column_name": column_name,
+                           "doc_name": tableObject.current_doc_name};
         broadcast_event_to_server("CreateColumn", data_dict, function () {
             dirty = true
         })
@@ -273,7 +288,7 @@ function createColumnThisDoc() {
 
 function saveProjectAs() {
     postWithCallback("host", "get_project_names", {"user_id": user_id}, function (data) {
-        checkboxes = [{"checkname": "purgetiles", "checktext": "Include only currently used tiles"}];
+        let checkboxes = [{"checkname": "purgetiles", "checktext": "Include only currently used tiles"}];
         showModal("Save Project As", "New Project Name", CreateNewProject,
                   "NewProject", data["project_names"], checkboxes)
     });
@@ -282,15 +297,11 @@ function saveProjectAs() {
             const result_dict = {
                 "project_name": new_name,
                 "main_id": main_id,
-                "tablespec_dict": tablespec_dict,
                 "console_html": $("#console").html(),
                 "console_cm_code": consoleObject.getConsoleCMCode(),
                 "doc_type": DOC_TYPE,
                 "purgetiles": checkresults["purgetiles"]
             };
-            if (DOC_TYPE == "table") {
-                result_dict.hidden_columns_list = hidden_columns_list
-            }
 
             tableObject.startTableSpinner();
             postWithCallback(main_id, "save_new_project", result_dict, save_as_success);
@@ -324,13 +335,10 @@ function saveProjectAs() {
 function save_project() {
     const result_dict = {
         "main_id": main_id,
-        "tablespec_dict": tablespec_dict,
         "console_html": $("#console").html(),
         "console_cm_code": consoleObject.getConsoleCMCode()
     };
-    if (DOC_TYPE == "table") {
-        result_dict.hidden_columns_list = hidden_columns_list
-    }
+
     tableObject.startTableSpinner();
     postWithCallback(main_id, "update_project", result_dict, updateSuccess);
     function updateSuccess(data) {
