@@ -32,7 +32,7 @@ class MenuObject {
     constructor (menu_name, menu_function, options) {
         this.menu_name = menu_name;
         this.options = options;
-        this.perform_menu_item = menu_function
+        this.perform_menu_item = menu_function;
         this.shortcuts = {}
     }
 
@@ -272,7 +272,7 @@ function createColumn() {
 function createColumnThisDoc() {
     showModal("Create Column This Doc", "New Column Name", function (new_name) {
         const column_name = new_name;
-        tableObject.current_spec.header_list.push(column_name)
+        tableObject.current_spec.header_list.push(column_name);
         // Then rebuild the table
         tableObject.build_table();
         get_column(column_name).text(" ");  // This seems to be necessary for the column to be editable
@@ -288,7 +288,7 @@ function createColumnThisDoc() {
 
 function saveProjectAs() {
     postWithCallback("host", "get_project_names", {"user_id": user_id}, function (data) {
-        checkboxes = [{"checkname": "purgetiles", "checktext": "Include only currently used tiles"}];
+        let checkboxes = [{"checkname": "purgetiles", "checktext": "Include only currently used tiles"}];
         showModal("Save Project As", "New Project Name", CreateNewProject,
                   "NewProject", data["project_names"], checkboxes)
     });
