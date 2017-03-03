@@ -642,7 +642,9 @@ class mainWindow(object):
     @task_worthy
     def get_document_metadata(self, data):
         doc_name = data["document_name"]
-        return self.doc_dict[doc_name].metadata
+        mdata = self.doc_dict[doc_name].metadata
+        mdata["name"] = doc_name  # legacy Some older tiles expect this to be in the metadata
+        return mdata
 
     @task_worthy
     def set_document_metadata(self, data):

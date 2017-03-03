@@ -125,7 +125,10 @@ class CollectionManager(ResourceManager):
             else:
                 ws = wb.create_sheet(title=sheet_name)
             data_rows = f["data_rows"]
-            header_list = f["header_list"]
+            if "header_list" in f:
+                header_list = f["header_list"]
+            else:
+                header_list = f["table_spec"]["header_list"]
             for c, header in enumerate(header_list, start=1):
                 _ = ws.cell(row=1, column=c, value=header)
             for r, row in enumerate(data_rows.values(), start=2):
