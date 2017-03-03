@@ -268,6 +268,5 @@ class docInfo(DocInfoAbstract):
 
     @staticmethod
     def recreate_from_save(save_dict):
-        print "in docinfo recreate"
         new_instance = docInfo(save_dict)
         return new_instance
