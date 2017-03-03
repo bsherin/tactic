@@ -583,6 +583,9 @@ class TileBase(object):
         result = {"my_class_for_recreate": "TileBase",
                   "binary_attrs": []}
         for attr in self.save_attrs:
+            if not hasattr(self, attr):
+                result[attr] = None
+                continue
             attr_val = getattr(self, attr)
             if hasattr(attr_val, "compile_save_dict"):
                 result[attr] = attr_val.compile_save_dict()
