@@ -21,7 +21,7 @@ class {{class_name}}(TileBase{% if is_mpl %}, MplFigure{% endif %}):
 {{extra_methods|safe -}}
 {% if is_mpl %}
     def draw_plot(self):
-{{draw_plot_body -}}
+{{draw_plot_body|safe -}}
 {% endif %}
     def render_content(self):
 {{render_content_body|safe}}
