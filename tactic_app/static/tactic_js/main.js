@@ -36,6 +36,9 @@ function start_post_load() {
     socket.on('table-message', function (data) {
         tableObject[data.table_message](data)
     });
+    socket.on('export-viewer-message', function(data) {
+        exportViewerObject[data.export_viewer_message](data)
+    });
     socket.on('handle-callback', handleCallback);
     socket.on('close-user-windows', function(data){
                 $.ajax({
