@@ -4,6 +4,8 @@
  * the contents of a resource.
  */
 
+MARGIN_SIZE = 17;
+
 class ResourceViewer {
     constructor(resource_name, res_type, get_url) {
         this.resource_name = resource_name;
@@ -18,14 +20,61 @@ class ResourceViewer {
         });
         this.bind_buttons();
         $("#rename-button").click(this.rename_me.bind(this));
-
-
+        if (include_right) {
+            this.update_width(.5);
+            this.turn_on_horizontal_resize()
+        }
+        else {
+            this.update_width(1.0)
+        }
+        self = this;
+        window.onresize = function () {
+            self.resize_to_window()
+        };
         postAjaxPromise(`${get_url}/${resource_name}`, {})
             .then(function (data) {
                 self.got_resource(data.the_content)
             })
             .catch(doFlash);
     }
+
+    update_width(new_width_fraction) {
+        const usable_width = window.innerWidth - 2 * MARGIN_SIZE - 30;
+        this.current_width_fraction = new_width_fraction;
+        this.left_div.width(usable_width * new_width_fraction);
+        if (include_right) {
+            this.right_div.width((1 - new_width_fraction) * usable_width)
+        }
+
+    }
+
+    get left_div() {
+        return $("#left-div")
+    }
+
+    get right_div() {
+        return $("#right-div")
+    }
+
+    turn_on_horizontal_resize () {
+        self = this;
+        this.left_div.resizable({
+            handles: "e",
+            resize: function (event, ui) {
+                const usable_width = window.innerWidth - 2 * MARGIN_SIZE - 30;
+                let new_width_fraction = 1.0 * ui.size.width / usable_width;
+                // self.update_width(new_width_fraction)
+                ui.position.left = ui.originalPosition.left;
+                self.update_width(new_width_fraction)
+            }
+        });
+    }
+
+    resize_to_window() {
+        resize_dom_to_bottom_given_selector("#main_content", 40);
+        this.update_width(this.current_width_fraction)
+    }
+
 
     set_metadata_fields(created, tags, notes) {
         $(".created").html(created);

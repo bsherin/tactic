@@ -205,6 +205,10 @@ a[role="tab"] {
     color: #1b6d85;
 }
 
+.res-viewer-resizer {
+    border-right: .5px solid rgb(204, 204, 204)
+}
+
 .tag-button-list, .resource-tag-button-list {
     vertical-align: top;
     overflow-y: auto;

@@ -114,6 +114,9 @@ a[role="tab"] {
 .res-name-button:active {
   color: #1b6d85; }
 
+.res-viewer-resizer {
+  border-right: 0.5px solid #cccccc; }
+
 .tag-button-list, .resource-tag-button-list {
   vertical-align: top;
   overflow-y: auto;
