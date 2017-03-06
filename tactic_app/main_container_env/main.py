@@ -489,7 +489,7 @@ class mainWindow(object):
         return result_dict
 
     def _delete_tile_instance(self, tile_id):
-        del self.tile_instances[tile_id]
+        self.tile_instances.remove(tile_id)
         self.tile_sort_list.remove(tile_id)
         the_lists = self.get_lists_classes_functions()
         form_info = {"current_header_list": self.current_header_list,
@@ -504,6 +504,7 @@ class mainWindow(object):
             for tid in self.tile_instances:
                 self.mworker.post_task(tid, "RebuildTileForms", form_info)
         self.mworker.ask_host("delete_container", {"container_id": tile_id})
+        self.mworker.emit_export_viewer_message("update_exports_popup", {})
         return
 
     def get_current_pipe_list(self):

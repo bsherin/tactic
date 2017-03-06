@@ -306,6 +306,13 @@ class HostWorker(QWorker):
         return {"success": True}
 
     @task_worthy
+    def emit_export_viewer_message(self, data):
+        from tactic_app import socketio
+
+        socketio.emit("export-viewer-message", data, namespace='/main', room=data["main_id"])
+        return {"success": True}
+
+    @task_worthy
     def print_to_console(self, data):
         from tactic_app import app, socketio
         with app.test_request_context():
