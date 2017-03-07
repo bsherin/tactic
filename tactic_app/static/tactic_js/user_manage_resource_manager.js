@@ -5,7 +5,7 @@
 class UserManagerResourceManager extends ResourceManager{
 
     constructor (module_id, res_type, resource_module_template, destination_selector) {
-        super(module_id, res_type, resource_module_template, destination_selector)
+        super(module_id, res_type, resource_module_template, destination_selector, false)
     }
 
     set_extra_properties() {

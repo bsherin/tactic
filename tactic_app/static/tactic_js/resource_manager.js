@@ -2,6 +2,8 @@
  * Created by bls910 on 11/1/15.
  */
 
+MARGIN_SIZE = 50;
+
 function get_current_res_type() {
     const module_id_str = $(".nav-tabs .active a").attr("href");
     const reg_exp = /\#(\S*?)\-module/;
@@ -9,10 +11,11 @@ function get_current_res_type() {
 }
 
 class ResourceManager {
-    constructor (module_id, res_type, resource_module_template, destination_selector, extras_dict=null) {
+    constructor (module_id, res_type, resource_module_template, destination_selector, extras_dict=null, include_right=true) {
         this.destination_selector = destination_selector;
         this.res_type = res_type;
         this.module_id = module_id;
+        this.include_right = include_right
 
         // These additional parameters are relevant to the rendering of the template
         this.include_metadata = false;
@@ -21,7 +24,7 @@ class ResourceManager {
         this.start_hidden = false;
         this.include_search_toolbar = true;
         this.popup_buttons = [];
-        this.button_groups=[];
+        this.button_groups = [];
         this.file_adders = [];
         this.aux_left = false;
         this.aux_right = false;
@@ -30,8 +33,60 @@ class ResourceManager {
         this.textify_button_names();
         this.resource_module_template = resource_module_template;
         this.create_module_html();
-        this.add_listeners()
+        this.add_listeners();
+        if (include_right) {
+            this.update_width(.5);
+        }
+        else {
+            this.update_width(1.0)
+        }
+        self = this;
+
     }
+
+    update_width(new_width_fraction) {
+        const usable_width = window.innerWidth - 2 * MARGIN_SIZE - 30;
+        this.current_width_fraction = new_width_fraction;
+        this.get_left_div().width(usable_width * new_width_fraction);
+        if (this.include_right) {
+            this.get_right_div().width((1 - new_width_fraction) * usable_width)
+        }
+
+    }
+
+    turn_on_horizontal_resize () {
+        let self = this;
+        this.get_left_div().resizable({
+            handles: "e",
+            resize: function (event, ui) {
+                const usable_width = window.innerWidth - 2 * MARGIN_SIZE - 30;
+                let new_width_fraction = 1.0 * ui.size.width / usable_width;
+                ui.position.left = ui.originalPosition.left;
+                self.update_width(new_width_fraction)
+            }
+        });
+    }
+
+    turn_off_horizontal_resize () {
+        if (this.get_left_div().resizable("instance") != undefined) {
+            this.get_left_div().resizable("destroy")
+        }
+    }
+
+    resize_to_window() {
+        const rsw_row = this.get_main_content_row();
+        resize_dom_to_bottom(rsw_row, 50);
+        const left_div = this.get_left_div();
+        resize_dom_to_bottom(left_div, 50);
+        const right_div = this.get_right_div();
+        resize_dom_to_bottom(right_div, 50);
+        const tselector = this.get_aux_left_dom();
+        resize_dom_to_bottom(tselector, 50);
+        const rselector = this.get_aux_right_dom();
+        resize_dom_to_bottom(rselector, 50);
+        this.update_width(this.current_width_fraction)
+    }
+
 
     set_extra_properties() { }
 
@@ -45,6 +100,8 @@ class ResourceManager {
     update_main_content() { }
 
     update_aux_content() { }
+
+
 
     add_listeners() {
         for (let bgroup of this.button_groups) {
@@ -117,6 +174,14 @@ class ResourceManager {
 
     get_main_content_dom () {
         return this.get_module_element(".main-content")
+    }
+
+    get_left_div () {
+        return this.get_module_element(".left-div")
+    }
+
+    get_right_div () {
+        return this.get_module_element(".right-div")
     }
 
 

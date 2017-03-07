@@ -73,10 +73,22 @@ function start_post_load() {
             }
             });
             resize_window();
-            $('a[data-toggle="tab"]').on('shown.bs.tab', function () {
-            resize_window()
+            $('a[data-toggle="tab"]').on('shown.bs.tab', function (event) {
+                // $(event.currentTarget).attr("href")
+                current_modid = get_current_module_id()
+                for (let module_id in resource_managers) {
+                    const manager = resource_managers[module_id];
+                    if (module_id == current_modid){
+                        manager.turn_on_horizontal_resize()
+                    }
+                    else {
+                        manager.turn_off_horizontal_resize()
+                    }
+                    manager.resize_to_window()
+                }
             });
             stopSpinner()
+            resource_managers[get_current_module_id()].turn_on_horizontal_resize();
         })
 }
 

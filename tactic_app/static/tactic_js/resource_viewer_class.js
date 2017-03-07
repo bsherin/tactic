@@ -57,13 +57,12 @@ class ResourceViewer {
     }
 
     turn_on_horizontal_resize () {
-        self = this;
+        let self = this;
         this.left_div.resizable({
             handles: "e",
             resize: function (event, ui) {
                 const usable_width = window.innerWidth - 2 * MARGIN_SIZE - 30;
                 let new_width_fraction = 1.0 * ui.size.width / usable_width;
-                // self.update_width(new_width_fraction)
                 ui.position.left = ui.originalPosition.left;
                 self.update_width(new_width_fraction)
             }
