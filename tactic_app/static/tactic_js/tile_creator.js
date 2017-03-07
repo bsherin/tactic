@@ -27,8 +27,17 @@ class CreatorViewer extends ModuleViewerAbstract {
                 self.resize_method_module();
                 self.resource_managers["method_module"].cmobject.refresh();
             }
+            if ($(e.currentTarget).attr("value") == "metadata") {
+                self.resize_metadata_area();
+            }
         });
     }
+
+    update_width(new_width_fraction) {
+        super.update_width(new_width_fraction);
+        this.resize_metadata_area()
+    }
+
 
     get exportManager() {
         return this.resource_managers["export_module"]
@@ -163,6 +172,11 @@ class CreatorViewer extends ModuleViewerAbstract {
         }
     }
 
+    resize_metadata_area() {
+        const metadata_width = $("#notes").parent().width();
+        $("#notes").width(metadata_width - 50)
+    }
+
     resize_method_module() {
         resize_dom_to_bottom_given_selector("#method_module .CodeMirror", 20);
     }
@@ -176,8 +190,10 @@ class CreatorViewer extends ModuleViewerAbstract {
         if (this.is_mpl) {
             this.resize_dparea()
         }
+        for (let manager in this.resource_managers) {
+            this.resource_managers[manager].resize_to_window()
+        }
         this.resize_code_area();
-        this.resize_method_module();
         this.resize_api_and_tab_areas();
         this.update_width(this.current_width_fraction)
     }
@@ -199,6 +215,11 @@ class CreatorViewer extends ModuleViewerAbstract {
 }
 
 class OptionManager extends CreatorResourceManager {
+
+    resize_to_window() {
+        resize_dom_to_bottom_given_selector("#export_module .CodeMirror", 20);
+    }
+
     set_extra_properties() {
         super.set_extra_properties();
         this.update_view = "get_option_table";
@@ -335,6 +356,11 @@ class OptionManager extends CreatorResourceManager {
 
 class ExportManager extends CreatorResourceManager {
 
+
+    resize_to_window() {
+        resize_dom_to_bottom_given_selector("#export_module .CodeMirror", 20);
+    }
+
     set_extra_properties() {
         super.set_extra_properties();
         this.update_view = "get_export_table";
@@ -382,6 +408,11 @@ class ExportManager extends CreatorResourceManager {
 }
 
 class MethodManager extends CreatorResourceManager {
+
+
+    resize_to_window() {
+        resize_dom_to_bottom_given_selector("#method_module .CodeMirror", 20);
+    }
 
     set_extra_properties() {
         super.set_extra_properties();

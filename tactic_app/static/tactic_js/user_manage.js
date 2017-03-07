@@ -98,10 +98,22 @@ function start_post_load() {
             }
         });
         resize_window();
-        $('a[data-toggle="tab"]').on('shown.bs.tab', function () {
-            resize_window()
+        $('a[data-toggle="tab"]').on('shown.bs.tab', function (event) {
+            // $(event.currentTarget).attr("href")
+            current_modid = get_current_module_id()
+            for (let module_id in resource_managers) {
+                const manager = resource_managers[module_id];
+                if (module_id == current_modid){
+                    manager.turn_on_horizontal_resize()
+                }
+                else {
+                    manager.turn_off_horizontal_resize()
+                }
+                manager.resize_to_window()
+            }
         });
         stopSpinner()
+        resource_managers[get_current_module_id()].turn_on_horizontal_resize();
     })
 }
 
@@ -119,6 +131,7 @@ function toggleRepository() {
 
         }
         old_manager.get_module_dom().css("display", "none");
+        old_manager.turn_off_horizontal_resize();
         new_manager.get_module_dom().css("display", "block");
     }
     if (repository_visible) {
@@ -134,6 +147,7 @@ function toggleRepository() {
         $(".page-header").addClass("repository-title");
     }
     resize_window();
+    resource_managers[get_current_module_id()].turn_on_horizontal_resize();
     return(false)
 }
 
@@ -177,12 +191,7 @@ function doFlashStopSpinner(data) {
 function resize_window() {
     for (let module_id in resource_managers) {
         const manager = resource_managers[module_id];
-        const rsw_row = manager.get_main_content_row();
-        resize_dom_to_bottom(rsw_row, 50);
-        const tselector = manager.get_aux_left_dom();
-        resize_dom_to_bottom(tselector, 50);
-        const rselector = manager.get_aux_right_dom();
-        resize_dom_to_bottom(rselector, 50);
+        manager.resize_to_window()
     }
 }
 

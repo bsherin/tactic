@@ -4,6 +4,9 @@
 
 
 class CreatorResourceManager extends ResourceManager {
+    constructor (module_id, res_type, resource_module_template, destination_selector, extras_dict) {
+        super(module_id, res_type, resource_module_template, destination_selector, extras_dict, false)
+    }
 
     set_extra_properties () {
         this.include_metadata = false;
