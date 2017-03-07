@@ -3,7 +3,7 @@
 {% block title %}{{resource_name}}{% endblock %}
 
 {% block styles %}
-    <!--suppress ALL -->
+    <link rel="stylesheet" href="{{url_for('static', filename='css/jquery-ui.min.css')}}">
 {% endblock %}
 
 {% block page_content %}
@@ -30,29 +30,31 @@
                 </div>
         </div>
         <div class="row">
-            <div {% if include_right %} class="col-xs-8" {% else %} class="col-xs-12" {% endif %} style="margin-top: 20px">
-                {% if include_above_main_area %}
-                <div id="above_main" style="position: relative"></div>
-                {% endif %}
-                <div id="main_content"></div>
-            </div>
-            {% if include_right %}
-            <div class="col-xs-4" style="margin-top: 20px">
-                {% if include_metadata %}
-                <div  style="vertical-align: top; margin-left: 5px; margin-top: 10px">
-                    <div class="created"></div>
-                    <div class="form-group" style="margin-bottom: 7px">
-                        <textarea type="text" class="form-control metadata-field" id="tags" rows="1" placeholder="tags" {% if readonly %} readonly {% endif %}></textarea>
-                    </div>
-                    <div class="form-group">
-                        <textarea class="form-control metadata-field" id="notes" rows="10" placeholder="notes" {% if readonly %} readonly {% endif %}></textarea>
-                    </div>
+            <div class="col-xs-12">
+                <div id="left-div" class="res-viewer-resizer" style="margin-top: 20px; display: inline-block; vertical-align:top">
+                    {% if include_above_main_area %}
+                    <div id="above_main" style="position: relative"></div>
+                    {% endif %}
+                    <div id="main_content"></div>
                 </div>
-                {% endif -%}
-                <div id="aux-area" style="display:none; overflow:scroll""></div>
+                {% if include_right %}
+                <div id="right-div" class="" style="margin-top: 20px; display: inline-block; vertical-align:top">
+                    {% if include_metadata %}
+                    <div  style="vertical-align: top; margin-left: 5px; margin-top: 10px">
+                        <div class="created"></div>
+                        <div class="form-group" style="margin-bottom: 7px">
+                            <textarea type="text" class="form-control metadata-field" id="tags" rows="1" placeholder="tags" {% if readonly %} readonly {% endif %}></textarea>
+                        </div>
+                        <div class="form-group">
+                            <textarea class="form-control metadata-field" id="notes" rows="10" placeholder="notes" {% if readonly %} readonly {% endif %}></textarea>
+                        </div>
+                    </div>
+                    {% endif -%}
+                    <div id="aux-area" style="display:none; overflow:scroll"></div>
+                </div>
+                {% endif %}
             </div>
-            {% endif %}
-        </div>
+    </div>
     </div>
 {%  endblock %}
 
@@ -67,17 +69,13 @@
         let user_id = "{{current_user.get_id()}}";
         let resource_name = "{{resource_name}}";
         let is_repository = "{{is_repository}}" == "True";
-        window.onresize = function () {
-            resize_dom_to_bottom_given_selector("#main_content", 40)
-        }
+        let include_right = "{{include_right}}" == "True"
         window.onload = start_post_load;
         window.onbeforeunload = function(e) {
             if (dirty()) {
                 return "Any unsaved changes will be lost."
             }
         };
-        window.onresize = function () {
-            resize_dom_to_bottom_given_selector("#main_content", 40)
-        }
+
     </script>
 {% endblock %}

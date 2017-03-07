@@ -6,7 +6,7 @@ let creator_viewer;
 
 function start_post_load() {
     creator_viewer = new CreatorViewer(module_name, "tile", "parse_code");
-    creator_viewer.resize_all_areas();
+    creator_viewer.resize_to_window();
 }
 
 class CreatorViewer extends ModuleViewerAbstract {
@@ -28,9 +28,6 @@ class CreatorViewer extends ModuleViewerAbstract {
                 self.resource_managers["method_module"].cmobject.refresh();
             }
         });
-        window.onresize = function () {
-            self.resize_all_areas();
-        };
     }
 
     get exportManager() {
@@ -66,7 +63,7 @@ class CreatorViewer extends ModuleViewerAbstract {
             .then(function (data) {
                 $("#aux-area").html(data.api_html);
                 self.create_api_listeners();
-                self.resize_all_areas()
+                self.resize_to_window()
             })
             .catch(doFlash);
     }
@@ -175,13 +172,14 @@ class CreatorViewer extends ModuleViewerAbstract {
         resize_dom_to_bottom_given_selector(".tab-pane", 20);
     }
 
-    resize_all_areas() {
+    resize_to_window() {
         if (this.is_mpl) {
             this.resize_dparea()
         }
         this.resize_code_area();
         this.resize_method_module();
-        this.resize_api_and_tab_areas()
+        this.resize_api_and_tab_areas();
+        this.update_width(this.current_width_fraction)
     }
 
     selector_click(event) {
