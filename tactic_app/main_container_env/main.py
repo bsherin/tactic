@@ -170,10 +170,20 @@ class mainWindow(object):
                     del tile_info_dict[old_tile_id]
                     del tile_code_dict[old_tile_id]
             self.show_um_message("Creating empty containers", data_dict["user_manage_id"])
-            new_tile_keys = self.mworker.post_and_wait("host", "get_empty_tile_containers",
-                                                       {"number": len(tile_info_dict.keys()),
-                                                        "user_id": self.user_id,
-                                                        "parent": self.mworker.my_id})["tile_containers"]
+
+            new_tile_keys = []
+            for i in range(len(tile_info_dict.keys())):
+                new_key = self.mworker.post_and_wait("host", "create_tile_container",
+                                                       {"user_id": self.user_id,
+                                                        "parent": self.mworker.my_id})["tile_id"]
+                new_tile_keys.append(new_key)
+
+            self.show_um_message("Got empty containers", data_dict["user_manage_id"])
+
+            # new_tile_keys = self.mworker.post_and_wait("host", "get_empty_tile_containers",
+            #                                            {"number": len(tile_info_dict.keys()),
+            #                                             "user_id": self.user_id,
+            #                                             "parent": self.mworker.my_id})["tile_containers"]
             new_tile_info = {}
             error_messages = ""
             for i, old_tile_id in enumerate(tile_info_dict.keys()):
@@ -774,6 +784,7 @@ class mainWindow(object):
         result = self.mworker.post_and_wait(self.pseudo_tile_id, "evaluate_export", ndata)
         return result
 
+    @task_worthy
     def get_export_info(self, data):
         if self.pseudo_tile_id is None:
             self.create_pseudo_tile()

@@ -1,6 +1,6 @@
 
 from flask import jsonify
-from flask_login import login_required
+from flask_login import login_required, current_user
 from tactic_app import app
 from tactic_app.users import get_all_users, remove_user
 from resource_manager import ResourceManager
@@ -13,10 +13,14 @@ class UserManager(ResourceManager):
                          login_required(self.delete_user), methods=['get', "post"])
 
     def refresh_user_table(self):
+        if not (current_user.username == "admin"):
+            return jsonify({"success": False, "message": "not authorized", "alert_type": "alert-warning"})
         self.update_selector_list()
         return jsonify({"success": True})
 
     def delete_user(self, userid):
+        if not (current_user.username == "admin"):
+            return jsonify({"success": False, "message": "not authorized", "alert_type": "alert-warning"})
         result = remove_user(userid)
         self.update_selector_list()
         return jsonify(result)

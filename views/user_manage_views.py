@@ -18,6 +18,7 @@ from tactic_app.users import User, copy_between_accounts
 
 global_tile_manager = tactic_app.global_tile_manager
 repository_user = User.get_user_by_username("repository")
+admin_user = User.get_user_by_username("admin")
 
 code_manager = CodeManager("code")
 repository_code_manager = RepositoryCodeManager("code")
@@ -61,9 +62,10 @@ def stop_spinner(user_id=None):
 @app.route('/user_manage')
 @login_required
 def user_manage():
-    return render_template('user_manage/user_manage.html',
-                           use_ssl=str(use_ssl))
-
+    if current_user.get_id() == admin_user.get_id():
+        return render_template('admin_interface.html', use_ssl=str(use_ssl))
+    else:
+        return render_template('user_manage/user_manage.html', use_ssl=str(use_ssl))
 
 @socketio.on('connect', namespace='/user_manage')
 @login_required

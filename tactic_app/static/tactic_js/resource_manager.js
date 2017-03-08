@@ -333,8 +333,6 @@ class ResourceManager {
             .catch(doFlash)
     }
 
-
-
     // Search
 
    search_my_resource  () {
