@@ -2,7 +2,6 @@
  * Created by bls910 on 11/1/15.
  */
 
-
 class CreatorResourceManager extends ResourceManager {
     constructor (module_id, res_type, resource_module_template, destination_selector, extras_dict) {
         super(module_id, res_type, resource_module_template, destination_selector, extras_dict, false)
@@ -36,11 +35,11 @@ class CreatorResourceManager extends ResourceManager {
 
     fill_content(the_html) {
         this.get_main_content_dom().html(the_html);
-        if (this.get_resource_table().length > 0) {
-            sorttable.makeSortable(this.get_resource_table()[0]);
-            const updated_header = this.get_main_content_dom().find("table th")[0];
-            sorttable.innerSortFunction.apply(updated_header, []);
-        }
+        // if (this.get_resource_table().length > 0) {
+        //     sorttable.makeSortable(this.get_resource_table()[0]);
+        //     const updated_header = this.get_main_content_dom().find("table th")[0];
+        //     sorttable.innerSortFunction.apply(updated_header, []);
+        // }
     }
 
     check_for_selection () {
