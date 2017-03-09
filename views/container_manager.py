@@ -9,8 +9,7 @@ from docker_cleanup import do_docker_cleanup
 import tactic_app
 import traceback
 
-
-repository_user = User.get_user_by_username("repository")
+admin_user = User.get_user_by_username("admin")
 global_tile_manager = tactic_app.global_tile_manager
 
 
@@ -34,7 +33,7 @@ class ContainerManager(ResourceManager):
         for iname in tactic_image_names:
             tactic_image_ids[iname] = cli.images.get(iname).id
 
-        if not (current_user.get_id() == repository_user.get_id()):
+        if not (current_user.get_id() == admin_user.get_id()):
             return jsonify({"success": False, "message": "not authorized", "alert_type": "alert-warning"})
         try:
             self.show_um_message("removing user containers", user_manage_id)
@@ -63,7 +62,7 @@ class ContainerManager(ResourceManager):
         return jsonify({"success": True, "message": "User Containers Cleared", "alert_type": "alert-success"})
 
     def reset_server(self, user_manage_id):
-        if not (current_user.get_id() == repository_user.get_id()):
+        if not (current_user.get_id() == admin_user.get_id()):
             return jsonify({"success": False, "message": "not authorized", "alert_type": "alert-warning"})
         try:
             self.show_um_message("removing all containers", user_manage_id)
@@ -85,7 +84,7 @@ class ContainerManager(ResourceManager):
         return jsonify({"success": True, "message": "Server successefully reset", "alert_type": "alert-success"})
 
     def kill_container(self, cont_id):
-        if not (current_user.get_id() == repository_user.get_id()):
+        if not (current_user.get_id() == admin_user.get_id()):
             return jsonify({"success": False, "message": "not authorized", "alert_type": "alert-warning"})
         try:
             destroy_container(cont_id)
@@ -98,7 +97,7 @@ class ContainerManager(ResourceManager):
         return jsonify({"success": True, "message": "Container Destroeyd", "alert_type": "alert-success"})
 
     def container_logs(self, container_id):
-        if not (current_user.get_id() == repository_user.get_id()):
+        if not (current_user.get_id() == admin_user.get_id()):
             return jsonify({"success": False, "message": "not authorized", "alert_type": "alert-warning"})
         try:
             log_text = get_log(container_id)

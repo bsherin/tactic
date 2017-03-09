@@ -12,6 +12,8 @@ from tactic_app import ANYONE_CAN_REGISTER
 from tactic_app.docker_functions import destroy_user_containers
 import tactic_app
 
+admin_user = User.get_user_by_username("admin")
+
 # @app.before_request
 # def mark_sess_modified():
 #   session.modified = True
@@ -48,7 +50,7 @@ def attempt_login():
 def check_if_admin():
     result_dict = {}
     try:
-        if ANYONE_CAN_REGISTER or (current_user.username == "repository"):
+        if ANYONE_CAN_REGISTER or (current_user.username == "admin"):
             result_dict["is_admin"] = True
         else:
             result_dict["is_admin"] = False
@@ -73,7 +75,7 @@ def logout(page_id):
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    if ANYONE_CAN_REGISTER or (current_user.username == "repository"):
+    if ANYONE_CAN_REGISTER or (current_user.username == "admin"):
         return render_template('auth/register.html')
     else:
         return render_template
@@ -81,7 +83,7 @@ def register():
 
 @app.route('/user_duplicate', methods=['GET', 'POST'])
 def user_duplicate():
-    if ANYONE_CAN_REGISTER or (current_user.username == "repository"):
+    if ANYONE_CAN_REGISTER or (current_user.username == "admin"):
         return render_template('auth/duplicate_user.html')
     else:
         return render_template
@@ -104,6 +106,8 @@ def attempt_register():
 
 @app.route('/attempt_duplicate', methods=['GET', 'POST'])
 def attempt_duplicate():
+    if not (current_user.get_id() == admin_user.get_id()):
+        return jsonify({"success": False, "message": "not authorized", "alert_type": "alert-warning"})
     data = request.json
     result_dict = User.create_new({"username": data["username"], "password": data["password"]})
     if result_dict["success"]:

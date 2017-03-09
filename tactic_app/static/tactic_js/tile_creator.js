@@ -260,6 +260,31 @@ class OptionManager extends CreatorResourceManager {
         return false
     }
 
+    update_option_order () {
+        let rows = this.get_main_content_dom().find("tbody tr");
+        let new_option_list = [];
+        for (let i = 0; i < rows.length; ++i) {
+            let r = rows[i];
+            let name = $(r).attr("value");
+            for (let opt of this.option_dict) {
+                if (opt.name == name) {
+                    new_option_list.push(opt);
+                    break
+                }
+            }
+        }
+        this.option_dict = new_option_list;
+        this.changed = true
+    }
+
+    fill_content(the_html) {
+        super.fill_content(the_html);
+        self = this;
+        this.get_main_content_dom().find("tbody").sortable( {
+            update: function (event, ui) {self.update_option_order()}
+        })
+    }
+
     get_option_names () {
         let result = [];
         for (let opt of this.option_dict) {

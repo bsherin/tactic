@@ -178,17 +178,6 @@ class HostWorker(QWorker):
         return {"success": True}
 
     @task_worthy
-    def get_empty_tile_containers(self, data):
-        tile_containers = []
-        for i in range(data["number"]):
-            tile_container_id, container_id = create_container("tactic_tile_image",
-                                                                network_mode="bridge",
-                                                                owner=data["user_id"],
-                                                                parent=data["parent"])
-            tile_containers.append(tile_container_id)
-        return {"tile_containers": tile_containers}
-
-    @task_worthy
     def get_tile_code(self, data_dict):
         result = {}
         tile_info_dict = data_dict["tile_info_dict"]
@@ -359,6 +348,18 @@ class HostWorker(QWorker):
             print "Error creating tile container"
             return {"success": False, "message": "Error creating empty tile container."}
         return {"success": True, "tile_id": tile_container_id}
+
+    @task_worthy
+    def get_empty_tile_containers(self, data):
+        tile_containers = []
+        for i in range(data["number"]):
+            tile_container_id, container_id = create_container("tactic_tile_image",
+                                                                network_mode="bridge",
+                                                                owner=data["user_id"],
+                                                                parent=data["parent"])
+            tile_containers.append(tile_container_id)
+        return {"tile_containers": tile_containers}
+
 
     @task_worthy
     def get_module_code(self, data):

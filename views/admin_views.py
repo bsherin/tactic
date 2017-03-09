@@ -7,7 +7,7 @@ import tactic_app
 from container_manager import ContainerManager
 from user_manager import UserManager
 
-repository_user = User.get_user_by_username("repository")
+admin_user = User.get_user_by_username("admin")
 global_tile_manager = tactic_app.global_tile_manager
 
 container_manager = ContainerManager("container")
@@ -27,7 +27,7 @@ def request_update_admin_selector_list(res_type):
 @app.route('/admin_interface', methods=['GET', 'POST'])
 @login_required
 def admin_interface():
-    if current_user.get_id() == repository_user.get_id():
+    if current_user.get_id() == admin_user.get_id():
         return render_template("admin_interface.html", use_ssl=str(use_ssl))
     else:
         return "not authorized"
