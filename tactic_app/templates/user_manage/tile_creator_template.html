@@ -1,14 +1,21 @@
 @user_tile
-class {{class_name}}(TileBase{% if is_mpl %}, MplFigure{% endif %}):
+class {{class_name}}({% if is_d3 %}D3Tile{% else %}TileBase{% if is_mpl %}, MplFigure{% endif %}{% endif %}):
     category = "{{category}}"
     exports = [{% for exp in exports %}"{{exp.name | e}}"{% if not loop.last %}, {% endif %}{% endfor %}]
 
     def __init__(self, main_id, tile_id, tile_name=None):
+        {% if is_d3 -%}
+        D3Tile.__init__(self, main_id, tile_id, tile_name)
+        {% else -%}
         TileBase.__init__(self, main_id, tile_id, tile_name)
+        {% endif -%}
         self.save_attrs += self.exports
         {% for option in options -%}
         self.{{option.name|e}} = {{option.default|safe}}
-        {% endfor %}
+        {% endfor -%}
+        {% if is_d3 -%}
+        self.jscript = """{{jscript_code|safe}}"""
+        {% endif -%}
         return
 
     @property

@@ -50,6 +50,8 @@ def build_code(data_dict):
                                 exports=export_list_of_dicts,
                                 options=data_dict["options"],
                                 is_mpl=data_dict["is_mpl"],
+                                is_d3=data_dict["is_d3"],
+                                jscript_code=data_dict["jscript_body"],
                                 extra_methods=extra_methods,
                                 render_content_body=render_content_body,
                                 draw_plot_body=draw_plot_body)

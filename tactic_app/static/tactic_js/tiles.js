@@ -209,6 +209,28 @@ class TileObject {
         $(this.full_selector() + " #spin-place").html("");
     }
 
+    execute_d3_func(data) {
+        const w = $(this.full_selector() + " .tile-display-area").width();
+        const h = $(this.full_selector() + " .tile-display-area").height();
+        console.log(String(data.arg_dict));
+        try {;
+            this.d3func(data.selector + " .d3plot", w, h, data.arg_dict)
+        }
+        catch(err) {
+            doFlash({"alert-type": "alert-warning", "message": "Error executing javascript function: " + err.message})
+        }
+    }
+
+    set_d3_javascript(data) {
+        try{
+            eval("this.d3func = " + data["javascript_code"])
+        }
+        catch(err) {
+            doFlash({"alert-type": "alert-warning", "message": "Error evaluating javascript: " + err.message})
+        }
+
+    }
+
     closeMe (){
         const my_tile_id = this.tile_id;
         dirty = true;

@@ -17,10 +17,12 @@ class CreatorViewer extends ModuleViewerAbstract {
         this.savedMethods = null;
         this.resource_managers = {};
         this.is_mpl = false;
+        this.is_d3 = false;
         this.savedCode = null;
         this.savedDPCode = null;
         this.myCodeMirror = null;
         this.myDPCodeMirror = null;
+        this.myJSCodeMirror = null;
         let self = this;
         $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function (e) {
             if ($(e.currentTarget).attr("value") == "method") {
@@ -80,6 +82,7 @@ class CreatorViewer extends ModuleViewerAbstract {
     setup_code_areas() {
         this.savedMethods = this.parsed_data.extra_functions;
         this.is_mpl = this.parsed_data.is_mpl;
+        this.is_d3 = this.parsed_data.is_d3;
 
         const codearea = document.getElementById("codearea");
         this.myCodeMirror = this.createCMArea(codearea, false, this.parsed_data.render_content_code, this.parsed_data.render_content_line_number + 1);
@@ -100,6 +103,23 @@ class CreatorViewer extends ModuleViewerAbstract {
                     }
                 });
         }
+
+        if (this.is_d3) {
+            const jscriptcodearea = document.getElementById("jscriptcodearea");
+            this.myJSCodeMirror = this.createJSCMArea(jscriptcodearea, false, this.parsed_data.jscript_code, 1);
+            let jsba = $("#jscriptboundingarea");
+            jsba.css("display", "block");
+            this.savedJSCode = this.myJSCodeMirror.getDoc().getValue();
+            let self = this;
+            jsba.resizable({
+                    handles: "s",
+                    resize: function (event, ui) {
+                        self.resize_jsarea_from_height(ui.size.height);
+                        self.resize_code_area();
+                    }
+                });
+        }
+
     }
 
     setup_resource_modules() {
@@ -151,6 +171,13 @@ class CreatorViewer extends ModuleViewerAbstract {
             this.resize_dparea_from_height(the_height)
         }
     }
+    resize_jsarea() {
+        let jsba = $("#jscriptboundingarea");
+        if (jsba.length > 0) {
+            let the_height = [window.innerHeight - jsba.offset().top - 20] / 2;
+            this.resize_jsarea_from_height(the_height)
+        }
+    }
     resize_dparea_from_height(the_height) {
         let dpba = $("#drawplotboundingarea");
         dpba.css('height', the_height);
@@ -162,6 +189,19 @@ class CreatorViewer extends ModuleViewerAbstract {
         }
         if (this.myDPCodeMirror != null) {
             this.myDPCodeMirror.refresh();
+        }
+    }
+    resize_jsarea_from_height(the_height) {
+        let jsba = $("#jscriptboundingarea");
+        jsba.css('height', the_height);
+        let jsca = $("#jscriptcodearea");
+        if (jsca.length > 0) {
+            let jsca_height = the_height - (jsca.offset().top - jsba.offset().top);
+            jsca.css('height', jsca_height);
+            $("#jscriptcodearea .CodeMirror").css('height', jsca_height);
+        }
+        if (this.myJSCodeMirror != null) {
+            this.myJSCodeMirror.refresh();
         }
     }
     resize_code_area() {
@@ -189,6 +229,9 @@ class CreatorViewer extends ModuleViewerAbstract {
     resize_to_window() {
         if (this.is_mpl) {
             this.resize_dparea()
+        }
+        if (this.is_d3) {
+            this.resize_jsarea()
         }
         for (let manager in this.resource_managers) {
             this.resource_managers[manager].resize_to_window()
