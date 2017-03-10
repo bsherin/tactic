@@ -30,7 +30,9 @@ DECORATOR = ' *@' + IDENT + '\n'
 DEF_LINE = '\n    *def\s+(' + IDENT + ')\s*' + PARAM_LIST_NO_CAPTURE + ":"
 
 INIT_METHOD = '( *def *__init__[\s\S]*?)(?=(?:$| *?def | *?@))'
-ASSIGNMENTS = 'self\.(' + IDENT + ') *\= *([\S]+)'
+# ASSIGNMENTS = 'self\.(' + IDENT + ') *\= *([\S]+)'
+ASSIGNMENTS = 'self\.(' + IDENT + ') *\= *([\S\s]+?)\n'
+TRIPLE_QUOTE_ASSIGNMENTS = 'self\.(' + IDENT + ') *\= ("""[\S\s]*?""")'
 
 DEF_FULL_CODE = '((?:' + DECORATOR + ')?' + DEF_LINE + '[\s\S]*?)(?=(?:$|\n    def |\n    @))'
 CLASS_LINE = "\nclass *" + IDENT +" *?" + PARAM_LIST_CAPTURE_ITEMS
@@ -42,6 +44,7 @@ def_cl = re.compile(CLASS_LINE)
 
 init_rx = re.compile(INIT_METHOD)
 ass_rx = re.compile(ASSIGNMENTS)
+trass_rx = re.compile(TRIPLE_QUOTE_ASSIGNMENTS)
 
 def get_base_classes(the_code):
     return def_cl.findall(the_code)[0]
@@ -82,11 +85,18 @@ def convert_default(it):
 
 # tactic_todo This isn't general yet. It doesn't handle triple quotes and doesn't check for matching quotes
 def get_assignments_from_init(the_str):
+    triple_tups = trass_rx.findall(the_str)
+    tdict = {}
+    for ttup in triple_tups:
+        tdict[ttup[0]] = ttup[1]
     tups = ass_rx.findall(extract_init(the_str))
     res = {}
     for tup in tups:
         try:
-            res[tup[0]] = convert_default(tup[1])
+            if tup[0] in tdict:
+                res[tup[0]] = eval(tdict[tup[0]])
+            else:
+                res[tup[0]] = convert_default(tup[1])
         except:
             print "error converting default assignment " + str(tup)
     return res
@@ -180,6 +190,10 @@ class WordFreqDist(TileBase):
         self.save_attrs += self.exports + ["logging_html"]
         self.logging_html = ""
         self.teststing = "blah"
+        self.teststring_with_space = "test with spaces"
+        self.triple_quote_string = \"\"\"a long string with () all softs of stuff
+including returns and such\"\"\"
+        self.nother = 7
         return
 
     @property
@@ -261,7 +275,11 @@ class WordFreqDist(TileBase):
 
 """
 
-# from tile_code_parser import test_string, def_rx, def_fc, ts2, run_test, run_ass_test, get_base_classes
+# from tile_code_parser import test_string, def_rx, def_fc, ts2, run_test, run_ass_test, get_base_classes, get_assignments_from_init, ass_rx, extract_init, trass_rx
+# init = extract_init(ts2)
+# get_assignments_from_init(init)
+# get_assignments_from_init(extract_init(ts2))
+# ass_rx.findall(init)
 # def_rx.findall(test_string)
 # res = def_fc.findall(ts2)
 # res = get_base_classes(ts2)

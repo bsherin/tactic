@@ -58,6 +58,10 @@
                     </div>
                     <div id="drawplotcodearea" style="overflow-y: auto; clear:right"></div>
                 </div>
+                <div id="jscriptboundingarea" class="bootstrap-border" style="display: none; border-bottom-width: 1px; border-bottom-style: solid; margin-bottom: 20px; clear: left">
+                    <h4 style="display:inline-block; margin-bottom:0px">d3javascript</h4>
+                    <div id="jscriptcodearea" style="overflow-y: auto; clear:right"></div>
+                </div>
                 <h4 style="display:inline-block; margin-bottom:0px">render_content</h4>
                 <div class="btn-group" style= "margin-top: 10px; margin-bottom: 5px; float:right" role="group">
                        {% for catdict in api_dlist%}
@@ -165,6 +169,7 @@
 {% block scripts %}
     <script src="{{url_for('static', filename='js/sorttable.js')}}"></script>
     <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
+    <script src="{{url_for('static', filename='js/javascript.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/resource_manager.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/creator_resource_manager.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/resource_viewer_class.js')}}"></script>

@@ -72,6 +72,7 @@ def parse_code(module_name):
 
     base_classes = get_base_classes(module_code)
     is_mpl = "MplFigure" in base_classes
+    is_d3 = "D3Tile" in base_classes
 
     if is_mpl and "draw_plot" in func_dict:
             draw_plot_code = func_dict["draw_plot"]
@@ -79,6 +80,11 @@ def parse_code(module_name):
             draw_plot_code = remove_indents(draw_plot_code, 2)
     else:
         draw_plot_code = ""
+
+    if is_d3 and "jscript" in default_dict:
+        jscript_code = default_dict["jscript"]
+    else:
+        jscript_code = ""
 
     for func_name in func_dict.keys():
         if func_name not in ["__init__", "render_content", "options"]:
@@ -104,7 +110,9 @@ def parse_code(module_name):
                     "category": category,
                     "metadata": mdata,
                     "is_mpl": is_mpl,
+                    "is_d3": is_d3,
                     "draw_plot_code": draw_plot_code,
+                    "jscript_code": jscript_code,
                     "render_content_line_number": render_content_line_number,
                     "draw_plot_line_number": draw_plot_line_number,
                     "extra_methods_line_number": extra_methods_line_number}

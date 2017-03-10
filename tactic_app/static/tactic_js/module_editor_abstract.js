@@ -15,6 +15,7 @@ class ModuleViewerAbstract extends ResourceViewer {
         this.this_viewer = "viewer";
         this.myCodemirror = null;
         this.myDPCodeMirror = null;
+        this.myJSCodeMirror = null;
         this.current_theme = "default";
         this.api_list = null;
 
@@ -113,6 +114,39 @@ class ModuleViewerAbstract extends ResourceViewer {
             highlightSelectionMatches: true,
             autoCloseBrackets: true,
             indentUnit: 4,
+            mode: "python",
+            readOnly: false
+        });
+        if (first_line_number != 1) {
+            cmobject.setOption("firstLineNumber", first_line_number)
+        }
+        if (initial_value != null) {
+            cmobject.setValue(initial_value);
+        }
+
+        cmobject.setOption("extraKeys", {
+            Tab: function (cm) {
+                let spaces = new Array(5).join(" ");
+                cm.replaceSelection(spaces);
+            },
+            "Ctrl-Space": "autocomplete"
+        });
+        $(".CodeMirror").css("height", "100%");
+        if (include_in_global_search) {
+            this.cmobjects_to_search.push(cmobject);
+        }
+        this.cmobjects.push(cmobject);
+        return cmobject
+    }
+
+    createJSCMArea(codearea, include_in_global_search = false, initial_value = null, first_line_number = 1) {
+        let cmobject = CodeMirror(codearea, {
+            lineNumbers: true,
+            matchBrackets: true,
+            highlightSelectionMatches: true,
+            autoCloseBrackets: true,
+            indentUnit: 4,
+            mode: "javascript",
             readOnly: false
         });
         if (first_line_number != 1) {
@@ -188,6 +222,10 @@ class ModuleViewerAbstract extends ResourceViewer {
                 if (self.is_mpl) {
                     new_dp_code = self.myDPCodeMirror.getDoc().getValue();
                 }
+                let new_js_code = "";
+                if (self.is_d3) {
+                    new_js_code = self.myJSCodeMirror.getDoc().getValue();
+                }
                 result_dict = {
                     "module_name": self.resource_name,
                     "category": category,
@@ -198,7 +236,9 @@ class ModuleViewerAbstract extends ResourceViewer {
                     "extra_methods": self.methodManager.get_extra_functions(),
                     "render_content_body": new_code,
                     "is_mpl": self.is_mpl,
+                    "is_d3": self.is_d3,
                     "draw_plot_body": new_dp_code,
+                    "jscript_body": new_js_code,
                     "last_saved": self.this_viewer
                 };
             }
@@ -239,6 +279,9 @@ class ModuleViewerAbstract extends ResourceViewer {
             self.savedCategory = category;
             if (self.is_mpl) {
                 self.savedDPCode = self.myDPCodeMirror.getDoc().getValue();
+            }
+            if (self.is_d3) {
+                self.savedJSCode = self.myJSCodeMirror.getDoc().getValue();
             }
         }
     }
@@ -300,6 +343,9 @@ class ModuleViewerAbstract extends ResourceViewer {
             if ((this.this_viewer == "creator") && this.is_mpl) {
                 this.myDPCodeMirror.setOption("theme", "pastel-on-dark");
             }
+            if ((this.this_viewer == "creator") && this.is_d3) {
+                this.myJSCodeMirror.setOption("theme", "pastel-on-dark");
+            }
             document.body.style.backgroundColor = "grey";
             this.current_theme = "dark"
         }
@@ -307,6 +353,9 @@ class ModuleViewerAbstract extends ResourceViewer {
             this.myCodeMirror.setOption("theme", "default");
             if ((this.this_viewer == "creator") && this.is_mpl) {
                 this.myDPCodeMirror.setOption("theme", "default");
+            }
+            if ((this.this_viewer == "creator") && this.is_d3) {
+                this.myJSCodeMirror.setOption("theme", "default");
             }
             document.body.style.backgroundColor = "white";
             this.current_theme = "default"
@@ -326,6 +375,10 @@ class ModuleViewerAbstract extends ResourceViewer {
             if (this.is_mpl) {
                 const dp_code = this.myDPCodeMirror.getDoc().getValue();
                 is_clean = is_clean && (dp_code == this.savedDPCode);
+            }
+            if (this.is_d3) {
+                const js_code = this.myJSCodeMirror.getDoc().getValue();
+                is_clean = is_clean && (js_code == this.savedjsCode);
             }
         }
         return !is_clean
