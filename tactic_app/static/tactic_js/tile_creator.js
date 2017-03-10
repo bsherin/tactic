@@ -194,7 +194,7 @@ class CreatorViewer extends ModuleViewerAbstract {
     resize_jsarea_from_height(the_height) {
         let jsba = $("#jscriptboundingarea");
         jsba.css('height', the_height);
-        let jsca = $("#drawplotcodearea");
+        let jsca = $("#jscriptcodearea");
         if (jsca.length > 0) {
             let jsca_height = the_height - (jsca.offset().top - jsba.offset().top);
             jsca.css('height', jsca_height);
