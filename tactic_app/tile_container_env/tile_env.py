@@ -13,6 +13,8 @@ with warnings.catch_warnings():
 
 from bson.binary import Binary
 from tile_base import TileBase
+from d3utilities import D3Tile
+
 import sklearn
 
 class_info = {"class_name": "",
