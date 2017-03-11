@@ -49,6 +49,7 @@ class TileWorker(QWorker):
             template = special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}"
         error_string = template.format(type(ex).__name__, ex.args)
         error_string = "<pre>" + error_string + "</pre>"
+        print error_string
         return {"success": False, "message_string": error_string}
 
     @task_worthy
@@ -92,8 +93,9 @@ class TileWorker(QWorker):
                 data["tile_log_width"] = data["back_width"]
                 data["tile_log_height"] = data["back_height"]
             self.tile_instance.recreate_from_save(data)
-            self.tile_instance.current_html = self.tile_instance.current_html.replace(data["base_figure_url"],
-                                                                                      data["new_base_figure_url"])
+            if self.tile_instance.current_html is not None:
+                self.tile_instance.current_html = self.tile_instance.current_html.replace(data["base_figure_url"],
+                                                                                          data["new_base_figure_url"])
             self.tile_instance.base_figure_url = data["new_base_figure_url"]
             if "doc_type" in data:
                 self.tile_instance.doc_type = data["doc_type"]
@@ -106,7 +108,8 @@ class TileWorker(QWorker):
                 "is_shrunk": self.tile_instance.is_shrunk,
                 "saved_size": self.tile_instance.full_tile_height,
                 "exports": self.tile_instance.exports,
-                "tile_name": self.tile_instance.tile_name}
+                "tile_name": self.tile_instance.tile_name,
+                "is_d3": self.tile_instance.is_d3}
 
     @task_worthy
     def get_image(self,  data_dict):

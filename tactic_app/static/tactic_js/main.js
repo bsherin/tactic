@@ -152,6 +152,9 @@ function continue_loading() {
                         });
                         new_tile_object.hideOptions();
                         new_tile_object.hideTileLog();
+                        if (data.tile_save_results[tile_id].is_d3) {
+                            postWithCallback(tile_id, "RefreshTileFromSave", {})
+                            }
                         }
                     })
                 })
