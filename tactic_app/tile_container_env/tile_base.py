@@ -715,6 +715,11 @@ class TileBase(object):
         return data
 
     @task_worthy
+    def set_current_html(self, data):
+        self.current_html = data["current_html"]
+        return {"success": True}
+
+    @task_worthy
     def get_export_info(self, data):
         try:
             ename = data["export_name"]

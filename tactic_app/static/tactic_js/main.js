@@ -152,6 +152,7 @@ function continue_loading() {
                         });
                         new_tile_object.hideOptions();
                         new_tile_object.hideTileLog();
+                        // If I don't do the thing below, then the tile doesn't resize unless it's rerun first
                         if (data.tile_save_results[tile_id].is_d3) {
                             postWithCallback(tile_id, "RefreshTileFromSave", {})
                             }

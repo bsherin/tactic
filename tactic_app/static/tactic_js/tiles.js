@@ -109,6 +109,10 @@ class TileObject {
         broadcast_event_to_server("UpdateOptions", data)
     }
 
+    get_current_html() {
+        return $(this.full_selector() + " .tile-display-area").html();
+    }
+
     broadcastTileSize () {
         const w = $(this.full_selector() + " .tile-display-area").width();
         const h = $(this.full_selector() + " .tile-display-area").height();
@@ -214,7 +218,8 @@ class TileObject {
         const h = $(this.full_selector() + " .tile-display-area").height();
         console.log(String(data.arg_dict));
         try {;
-            this.d3func(data.selector + " .d3plot", w, h, data.arg_dict)
+            this.d3func(data.selector + " .d3plot", w, h, data.arg_dict);
+            postWithCallback(this.tile_id, "set_current_html", {"current_html": this.get_current_html()})
         }
         catch(err) {
             doFlash({"alert-type": "alert-warning", "message": "Error executing javascript function: " + err.message})
