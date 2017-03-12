@@ -102,7 +102,7 @@ class TileBase(object):
                            "header_height", "front_height", "front_width", "back_height", "back_width",
                            "tile_log_height", "tile_log_width",
                            "tda_width", "tda_height", "width", "height", "user_id", "base_figure_url",
-                           "full_tile_width", "full_tile_height", "is_shrunk", "img_dict", "current_fig_id"]
+                           "full_tile_width", "full_tile_height", "is_shrunk", "img_dict", "current_fig_id", "is_d3"]
         # These define the state of a tile and should be saved
 
         self.tworker = tworker
@@ -137,6 +137,7 @@ class TileBase(object):
         self.is_pseudo = False
         self.current_html = None
         self.old_stdout = None
+        self.is_d3 = False
         return
 
     """
@@ -221,6 +222,7 @@ class TileBase(object):
 
     @task_worthy
     def RefreshTileFromSave(self, data):
+        print "in RefreshTileFromSave"
         self.refresh_from_save()
         return None
 
@@ -711,6 +713,11 @@ class TileBase(object):
         except Exception as ex:
             data["result_string"] = self.handle_exception(ex, "Error executing console code", print_to_console=False)
         return data
+
+    @task_worthy
+    def set_current_html(self, data):
+        self.current_html = data["current_html"]
+        return {"success": True}
 
     @task_worthy
     def get_export_info(self, data):

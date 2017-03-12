@@ -408,7 +408,8 @@ class TileManager extends UserManagerResourceManager {
                 "name": "new_in_creator",
                 "button_class": "btn-default",
                 "option_list": [{"opt_name": "StandardTile", "opt_func": "new_basic_in_creator"},
-                    {"opt_name": "MatplotlibTile", "opt_func": "new_mpl_in_creator"}]
+                    {"opt_name": "MatplotlibTile", "opt_func": "new_mpl_in_creator"},
+                    {"opt_name": "D3Tile", "opt_func": "new_d3_in_creator"}]
             }];
         this.file_adders = [
             {
@@ -502,6 +503,11 @@ class TileManager extends UserManagerResourceManager {
 
     new_mpl_in_creator (event) {
         event.data.manager.new_in_creator(event, "MatplotlibTileTemplate");
+        event.preventDefault();
+    }
+
+    new_d3_in_creator (event) {
+        event.data.manager.new_in_creator(event, "D3TileTemplate");
         event.preventDefault();
     }
 

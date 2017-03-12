@@ -368,7 +368,7 @@ class OptionManager extends CreatorResourceManager {
     }
 
     getInteger (val) {
-        i = parseInt(val);
+        let i = parseInt(val);
         if (isNaN(i) || i != parseFloat(val)) {
             return false
         }
