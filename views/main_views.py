@@ -75,13 +75,6 @@ def load_temp_page(the_id):
     return render_template(template_data["template_name"], **template_data)
 
 
-@app.route('/remove_mainwindow/<main_id>', methods=['get', 'post'])
-def remove_mainwindow(main_id):
-    destroy_child_containers(main_id)
-    destroy_container(main_id)
-    return jsonify({"success": True})
-
-
 @app.route('/export_data', methods=['POST'])
 @login_required
 def export_data():

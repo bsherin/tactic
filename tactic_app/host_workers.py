@@ -4,7 +4,8 @@ from flask_login import url_for
 from users import load_user
 import gevent
 from communication_utils import send_request_to_megaplex
-from docker_functions import create_container, destroy_container, get_log, ContainerCreateError
+from docker_functions import create_container, destroy_container, destroy_child_containers, destroy_user_containers
+from docker_functions import get_log, ContainerCreateError
 from tactic_app import app, socketio, mongo_uri, use_ssl
 from views.user_manage_views import tile_manager, project_manager, collection_manager
 import tactic_app
@@ -98,6 +99,18 @@ class HostWorker(QWorker):
             raise Exception(result["message"])
 
         return None
+
+    @task_worthy
+    def destroy_a_users_containers(self, data):
+        destroy_user_containers(data["user_id"])
+        return {"success": True}
+
+    @task_worthy
+    def remove_mainwindow_task(self, data):
+        main_id = data["main_id"]
+        destroy_child_containers(main_id)
+        destroy_container(main_id)
+        return {"success": True}
 
     @task_worthy
     def get_container_log(self, data):

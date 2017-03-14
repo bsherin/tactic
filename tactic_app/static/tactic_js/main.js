@@ -41,11 +41,7 @@ function start_post_load() {
     });
     socket.on('handle-callback', handleCallback);
     socket.on('close-user-windows', function(data){
-                $.ajax({
-                    url: $SCRIPT_ROOT + "/remove_mainwindow/" + String(main_id),
-                    contentType: 'application/json',
-                    type: 'POST'
-                });
+                postWithCallback("host", "remove_mainwindow_task", {"main_id": main_id})
                 if (!(data["originator"] == main_id)) {
                     window.close()
                 }
@@ -244,16 +240,7 @@ function change_doc(el, row_id) {
 }
 
 function removeMainwindow() {
-    target = "/remove_mainwindow/" + String(main_id);
-
-    // Note that the async: false  below is important.
-    // That's why I don't use postAjax
-    $.ajax({
-        url: $SCRIPT_ROOT + target,
-        contentType: 'application/json',
-        type: 'POST',
-        async: false
-    });
+    postWithCallback("host", "remove_mainwindow_task", {"main_id": main_id})
 }
 
 spinner_html = '<span class="loader-small"></span>';
