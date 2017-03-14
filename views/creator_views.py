@@ -142,6 +142,9 @@ class OptionManager(ResourceManager):
             result = "No options defined."
         else:
             res_array = self.build_resource_array(option_dict)
+            res_array[0] = res_array[0] + [""]
+            for i in range(len(res_array))[1:]:
+                res_array[i] = res_array[i] + ['<span class="ui-icon ui-icon-arrowthick-2-n-s"></span>']
             result = self.build_html_table_from_data_list(res_array)
         return jsonify({"success": True, "html": result})
 

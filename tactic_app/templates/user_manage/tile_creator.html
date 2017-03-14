@@ -108,36 +108,36 @@
                             </div>
                             <div class="tab-pane fade row" id="option-module-outer">
                                 <div class="resource-module" id="option-module-holder"></div>
-                                <form class="form-inline row indent-row" style="display:inline-block">
-                                      <div class="form-group">
-                                            <label for="option-name-input">Name</label><br>
-                                            <input type="text" class="form-control" id="option-name-input">
-                                      </div>
-                                    <div class="form-group">
-                                        <label for="option-type-input">type</label><br>
-                                        <select class="form-control" id="option-type-input">
-                                            {% for option_type in option_types %}
-                                                <option value="{{option_type.name|e}}">{{option_type.name|e}}</option>
-                                            {% endfor %}
-                                        </select>
-                                      </div>
-                                      <div class="form-group">
-                                        <label for="option-default-input">Default</label><br>
-                                        <input type="text" class="form-control" id="option-default-input" placeholder="">
-                                      </div>
-                                      <div class="form-group" id="special-list-group" style="display:none">
-                                        <label for="option-list-input">Special List</label><br>
-                                        <input type="text" class="form-control" id="option-list-input" placeholder="">
-                                      </div>
-                                      <div class="form-group" id="option-tag-group" style="display:none">
-                                        <label for="option-tag-input">Tag</label><br>
-                                        <input type="text" class="form-control" id="option-tag-input" placeholder="">
-                                      </div>
-                                    <div class="form-group">
-                                          <label for="option-create-button"> </label><br>
-                                         <button type="button" id="option-create-button" class="btn btn-default">Create</button>
-                                        </div>
-                                </form>
+                                    <form class="form-inline row indent-row" style="display:inline-block">
+                                          <div class="form-group">
+                                                <label for="option-name-input">Name</label><br>
+                                                <input type="text" class="form-control" id="option-name-input">
+                                          </div>
+                                        <div class="form-group">
+                                            <label for="option-type-input">type</label><br>
+                                            <select class="form-control" id="option-type-input">
+                                                {% for option_type in option_types %}
+                                                    <option value="{{option_type.name|e}}">{{option_type.name|e}}</option>
+                                                {% endfor %}
+                                            </select>
+                                          </div>
+                                          <div class="form-group">
+                                            <label for="option-default-input">Default</label><br>
+                                            <input type="text" class="form-control" id="option-default-input" placeholder="">
+                                          </div>
+                                          <div class="form-group" id="special-list-group" style="display:none">
+                                            <label for="option-list-input">Special List</label><br>
+                                            <input type="text" class="form-control" id="option-list-input" placeholder="">
+                                          </div>
+                                          <div class="form-group" id="option-tag-group" style="display:none">
+                                            <label for="option-tag-input">Tag</label><br>
+                                            <input type="text" class="form-control" id="option-tag-input" placeholder="">
+                                          </div>
+                                        <div class="form-group">
+                                              <label for="option-create-button"> </label><br>
+                                             <button type="button" id="option-create-button" class="btn btn-default">Create</button>
+                                            </div>
+                                    </form>
                                 </div>
 
                             <div class="tab-pane fade row" id="export-module-outer">
@@ -177,6 +177,11 @@
     <script src="{{url_for('static', filename='tactic_js/tile_creator.js')}}"></script>
     <script>
         const user_id = "{{current_user.get_id()}}";
+        const option_types_raw = {{option_types|safe}};
+        let option_types = [];
+        for (let opt of option_types_raw){
+            option_types.push(opt["name"])
+        }
         let module_name = "{{module_name}}";
         let use_ssl = "{{use_ssl}}"=="True";
         let include_right = true;

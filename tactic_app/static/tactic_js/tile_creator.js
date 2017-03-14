@@ -295,6 +295,7 @@ class OptionManager extends CreatorResourceManager {
                 $("#option-tag-group").css("display", "none")
             }
             });
+
     }
 
     refresh_option_table (event) {
@@ -321,9 +322,44 @@ class OptionManager extends CreatorResourceManager {
     }
 
     fill_content(the_html) {
+        let fields = ["name", "type", "default", "special_list", "tag"];
+        let manager = creator_viewer.optionManager;
         super.fill_content(the_html);
-        self = this;
+        let self = this;
+        this.get_main_content_dom().find("td").attr("contenteditable", true);
+        this.get_main_content_dom().find("td").blur(function(event) {
+            let cell_index = event.target.cellIndex;
+            let row_index = $(event.target).parent()[0].rowIndex - 1;  // We subtract one for the header row
+            let new_value = $(event.target).html();
+            let field_name = fields[cell_index];
+            if (field_name == "type") {
+                if (!option_types.includes(new_value)) {
+                    doFlash({"message": "Invalid option_type.", "alert_type": "alert-warning"});
+                    $(event.target).html(self.option_dict[row_index][field_name]);
+                    return false
+                }
+            }
+            else if (field_name == "default") {
+                let option_type = self.option_dict[row_index]["type"];
+                if (self.check_default_value(manager, option_type, new_value)) {
+                    if (option_type == "boolean") {
+                        new_value = (new_value == "true") || (new_value == "True");
+                    }
+                    if (option_type == "int") {
+                        new_value = manager.getInteger(new_value);
+                    }
+                }
+                else {
+                    $(event.target).html(self.option_dict[row_index][field_name]);
+                    return false
+                }
+            }
+            self.option_dict[row_index][field_name] = new_value;
+            return true
+        });
+
         this.get_main_content_dom().find("tbody").sortable( {
+            handle: ".ui-icon",
             update: function (event, ui) {self.update_option_order()}
         })
     }
@@ -377,9 +413,25 @@ class OptionManager extends CreatorResourceManager {
         }
     }
 
+    check_default_value (manager, option_type, option_default) {
+         if (option_type == "int") {
+            option_default = manager.getInteger(option_default);
+            if (!option_default) {
+                doFlash({"message": "Invalid default value.", "alert_type": "alert-warning"});
+                return false
+            }
+         }
+        else if (option_type == "boolean") {
+            if (["true", "True", "false", "False"].indexOf(option_default) == -1) {
+                doFlash({"message": "Invalid default value.", "alert_type": "alert-warning"});
+                return false
+            }
+        }
+        return true
+    }
+
     createNewOption (event) {
         let manager = event.data.manager;
-        // let manager = resource_managers["option_module"];
         let option_name = $("#option-name-input").val();
         let option_type = $("#option-type-input").val();
         let option_default = $("#option-default-input").val();
@@ -392,21 +444,15 @@ class OptionManager extends CreatorResourceManager {
         else {
             let new_option = {"name": option_name, "type": option_type};
             if (option_default.length > 0) {
-                if (option_type == "int") {
-                    option_default = manager.getInteger(option_default);
-                    if (!option_default) {
-                        doFlash({"message": "Invalid default value.", "alert_type": "alert-warning"});
-                        return false
+                if (manager.check_default_value(manager, option_type, option_default)) {
+                    if (option_type == "boolean") {
+                        option_default = (option_default == "true") || (option_default == "True");
                     }
-                }
-                else if (option_type == "boolean") {
-                    if (["true", "True", "false", "False"].indexOf(option_default) == -1) {
-                        doFlash({"message": "Invalid default value.", "alert_type": "alert-warning"});
-                        return false
+                    if (option_type == "int") {
+                        option_default = manager.getInteger(option_default);
                     }
-                    option_default = (option_default == "true") || (option_default == "True");
+                    new_option["default"] = option_default;
                 }
-                new_option["default"] = option_default;
             }
             if (option_type == "custom_list") {
                 new_option["special_list"] = $("#option-list-input").val();

@@ -19,7 +19,6 @@ class D3Tile(TileBase):
         step = 1.0 / num
         cmap = get_cmap(self.palette_name)
         breaks = [i * step for i in range(num)]
-        breaks.append(1)
         return [rgb2hex(cmap(bb)) for bb in breaks]
 
     def initialize_client_side(self, styles):
