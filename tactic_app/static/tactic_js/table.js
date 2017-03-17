@@ -414,7 +414,7 @@ class TableObjectClass {
             const row_id = parseInt($(this.parentElement).children(id_selector).text());
             if (current_content != old_content) {
                 self.data_rows[rindex][column_header] = current_content;
-                const data_dict = {
+                let data_dict = {
                     "id": row_id,
                     "column_header": column_header,
                     "old_content": old_content,
