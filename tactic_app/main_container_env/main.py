@@ -717,6 +717,7 @@ class mainWindow(object):
 
     @task_worthy
     def CellChange(self, data):
+        print "entering cell change with data: " + str(data)
         self._set_row_column_data(data["doc_name"], data["id"], data["column_header"], data["new_content"])
         self._change_list.append(data["id"])
         return None
@@ -855,9 +856,14 @@ class mainWindow(object):
                 header_list = doc_as_list[0].keys()
                 doc_as_dict = {}
                 for r, the_row in enumerate(doc_as_list):
+                    if "__id__" in the_row:
+                        del the_row["__id__"]
+                    if "__filename__" in the_row:
+                        del the_row["__filename__"]
                     the_row["__id__"] = r
                     the_row["__filename__"] = docname
                     doc_as_dict[str(r)] = the_row
+                print "done iterating over rows in the doc"
                 header_list = ["__id__", "__filename__"] + header_list
                 table_spec = {"doc_name": docname, "header_list": header_list}
                 metadata = {}

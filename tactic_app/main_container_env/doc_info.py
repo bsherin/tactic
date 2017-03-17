@@ -16,7 +16,7 @@ class TableSpec(object):
         if header_list is None:
             self.header_list = []
         else:
-            self.header_list = header_list
+            self.header_list = self.remove_duplicates(header_list)
         self.table_width = table_width
         if column_widths is None:
             self.column_widths = None
@@ -30,6 +30,11 @@ class TableSpec(object):
             self.hidden_columns_list = ["__filename__"]
         else:
             self.hidden_columns_list = hidden_columns_list
+
+    def remove_duplicates(self, seq):
+        seen = set()
+        seen_add = seen.add
+        return [x for x in seq if not (x in seen or seen_add(x))]
 
     def compile_save_dict(self):
         print "in table_spec compile_save_dict"
