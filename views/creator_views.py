@@ -127,8 +127,8 @@ class OptionManager(ResourceManager):
 
     # noinspection PyMethodOverriding
     def build_resource_array(self, option_dict):
-        fields = ["name", "type", "default", "special_list", "tag"]
-        larray = [["Name", "Type", "Default", "Special List", "Tag"]]
+        fields = ["name", "type", "default", "special_list", "tags"]
+        larray = [["Name", "Type", "Default", "Special List", "Tags"]]
         for opt in option_dict:
             for f in fields:
                 if f not in opt:
@@ -157,7 +157,6 @@ class ExportManager(ResourceManager):
         app.add_url_rule('/get_export_table', "get_export_table",
                          login_required(self.get_export_table), methods=['get', 'post'])
 
-    # tactic_changed get_export_table needs to have a tags column
     # noinspection PyMethodOverriding
     def build_resource_array(self, export_list):
         larray = [["Name", "Tags"]]

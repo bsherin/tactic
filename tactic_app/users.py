@@ -258,9 +258,12 @@ class User(UserMixin):
             m = re.search(string_start + "(.*)", cname)
             if m:
                 mdata = db[cname].find_one({"name": "__metadata__"})
-                data_collection_names[m.group(1)] = mdata
+                if mdata is None:
+                    data_collection_names[m.group(1)] = ""
+                else:
+                    data_collection_names[m.group(1)] = mdata["tags"]
 
-        return sorted(data_collection_names, key=self.sort_data_list_key)
+        return data_collection_names
 
     def delete_all_data_collections(self):
         for dcol in self.data_collections:

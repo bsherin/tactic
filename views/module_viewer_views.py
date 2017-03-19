@@ -28,7 +28,7 @@ def insert_indents(the_str, number_indents):
 
 def build_code(data_dict):
     export_list = data_dict["exports"]
-    export_list_of_dicts = [{"name": exp["name"], "tags": exp["tags"]} for exp in export_list] # tactic_changed
+    export_list_of_dicts = [{"name": exp["name"], "tags": exp["tags"]} for exp in export_list]
     extra_methods = insert_indents(data_dict["extra_methods"], 1)
     render_content_body = insert_indents(data_dict["render_content_body"], 2)
     if data_dict["is_mpl"]:
@@ -44,7 +44,6 @@ def build_code(data_dict):
         opt_dict["default"] = str(opt_dict["default"])
         if "special_list" in opt_dict:
             opt_dict["special_list"] = str(opt_dict["special_list"])
-    # tactic_changed tile_creator_template.html has to be changed
     full_code = render_template("user_manage/tile_creator_template.html",
                                 class_name=data_dict["module_name"],
                                 category=data_dict["category"],

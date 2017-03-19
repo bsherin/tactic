@@ -68,7 +68,6 @@ class TileWorker(QWorker):
             the_class = class_info["tile_class"]
             self.tile_instance = the_class(0, 0)
             opt_dict = self.tile_instance.options
-            # tactic_changed exports are retrieved here from the tile source
             export_list = self.tile_instance.exports
             if len(export_list) > 0:
                 if not isinstance(export_list[0], dict):

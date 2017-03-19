@@ -317,15 +317,15 @@ class mainWindow(object):
         # There's some extra work I have to do once all of the tiles are built.
         # Each tile needs to know the main_id it's associated with.
         # Also I have to build the pipe machinery.
-        # tactic_changed pipe_dict built here
         for tile_id, tile_result in tile_results.items():
             if "exports" in tile_result:
+                exports = tile_result["exports"]
                 if len(tile_result["exports"]) > 0:
-                    if not isinstance(exports[0], dict):
-                        exports = [{"name": exp, "tags": ""} for exp in exports]
                     if tile_id not in self._pipe_dict:
                         self._pipe_dict[tile_id] = {}
-                    for export in tile_result["exports"]:
+                    for export in exports:
+                        if not isinstance(export, dict):  # legacy old exports specified as list of strings
+                            export = {"name": export, "tags": ""}
                         self._pipe_dict[tile_id][tile_result["tile_name"] + "_" + export["name"]] = {
                             "export_name": export["name"],
                             "export_tags": export["tags"],
@@ -587,7 +587,6 @@ class mainWindow(object):
             self.mworker.debug_log("got an exception " + instantiate_result["message_string"])
             raise Exception(instantiate_result["message_string"])
 
-        # tactic_changed pipe_dict also built here
         exports = instantiate_result["exports"]
         if len(exports) > 0:
             if not isinstance(exports[0], dict):

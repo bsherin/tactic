@@ -282,7 +282,6 @@ class OptionManager extends CreatorResourceManager {
 
     add_listeners() {
         super.add_listeners();
-        // tactic_changed tag option is only shown for code and function_select.
         let self = this;
         $("#option-type-input").on("change", function () {
                 let option_type = $("#option-type-input").val();
@@ -325,7 +324,7 @@ class OptionManager extends CreatorResourceManager {
     }
 
     fill_content(the_html) {
-        let fields = ["name", "type", "default", "special_list", "tag"];
+        let fields = ["name", "type", "default", "special_list", "tags"];
         let manager = creator_viewer.optionManager;
         super.fill_content(the_html);
         let self = this;
@@ -461,8 +460,7 @@ class OptionManager extends CreatorResourceManager {
             if (option_type == "custom_list") {
                 new_option["special_list"] = $("#option-list-input").val();
             }
-            // tactic_changed in createNewOption need to record the tags
-            if (self.taggable_option_types.indexOf(option_type) >= 0) {
+            if (manager.taggable_option_types.indexOf(option_type) >= 0) {
                 new_option["tag"] = $("#option-tag-input").val()
             }
             manager.option_dict.push(new_option);
@@ -509,7 +507,6 @@ class ExportManager extends CreatorResourceManager {
         return false
     }
 
-    // tactic_changed createNewExport changed to capture tags. also change tile_creator.html
     createNewExport (event) {
         const manager = event.data.manager;
         let export_name = $("#export-name-input").val();

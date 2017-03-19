@@ -367,7 +367,6 @@ class TileBase(object):
     @task_worthy
     def create_form_html(self, data):
         self._pipe_dict = data["pipe_dict"]
-        # tactic_changed forms built using pipe_dict. here is where the filtering will happen
         try:
             form_html = ""
             for option in self.options:
@@ -452,7 +451,6 @@ class TileBase(object):
                 elif option["type"] == "list_select":
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
-                    # tactic_changed list_names needs tags
                     for choice, tags in data["list_names"].items():
                         if self.check_for_tag_match(option_tags, tags):
                             if choice == starting_value:
@@ -463,8 +461,7 @@ class TileBase(object):
                 elif option["type"] == "collection_select":
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
-                    # tactic_changed collection_names needs tags
-                    for choice, tags in data["list_names"].items():
+                    for choice, tags in data["collection_names"].items():
                         if self.check_for_tag_match(option_tags, tags):
                             if choice == starting_value:
                                 form_html += self.select_option_selected_template.format(choice)
@@ -474,7 +471,6 @@ class TileBase(object):
                 elif option["type"] == "function_select":
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
-                    # tactic_changed functions filtered in a new way
                     for func_name, tags in data["function_names"].items():
                         if self.check_for_tag_match(option_tags, tags):
                             if func_name == starting_value:
@@ -482,7 +478,6 @@ class TileBase(object):
                             else:
                                 form_html += self.select_option_template.format(func_name)
                     form_html += '</select></div>'
-                # tactic_changed classes filtered in a new way
                 elif option["type"] == "class_select":
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
