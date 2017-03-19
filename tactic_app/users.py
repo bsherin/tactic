@@ -249,6 +249,22 @@ class User(UserMixin):
 
         return sorted(my_collection_names, key=self.sort_data_list_key)
 
+    @property
+    def data_collection_tags_dict(self):
+        cnames = db.collection_names()
+        string_start = self.username + ".data_collection."
+        data_collection_names = {}
+        for cname in cnames:
+            m = re.search(string_start + "(.*)", cname)
+            if m:
+                mdata = db[cname].find_one({"name": "__metadata__"})
+                if mdata is None:
+                    data_collection_names[m.group(1)] = ""
+                else:
+                    data_collection_names[m.group(1)] = mdata["tags"]
+
+        return data_collection_names
+
     def delete_all_data_collections(self):
         for dcol in self.data_collections:
             self.remove_collection(dcol)
@@ -315,6 +331,19 @@ class User(UserMixin):
             else:
                 my_list_names.append([doc["list_name"], None])
         return sorted(my_list_names, key=self.sort_data_list_key)
+
+    @property
+    def list_tags_dict(self, ):
+        if self.list_collection_name not in db.collection_names():
+            db.create_collection(self.list_collection_name)
+            return {}
+        lists = {}
+        for doc in db[self.list_collection_name].find(projection=["list_name", "metadata"]):
+            if "metadata" in doc:
+                lists[doc["list_name"]] = doc["metadata"]["tags"]
+            else:
+                lists[doc["list_name"]] = ""
+        return lists
 
     @property
     def project_names_with_metadata(self):

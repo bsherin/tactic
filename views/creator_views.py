@@ -127,8 +127,8 @@ class OptionManager(ResourceManager):
 
     # noinspection PyMethodOverriding
     def build_resource_array(self, option_dict):
-        fields = ["name", "type", "default", "special_list", "tag"]
-        larray = [["Name", "Type", "Default", "Special List", "Tag"]]
+        fields = ["name", "type", "default", "special_list", "tags"]
+        larray = [["Name", "Type", "Default", "Special List", "Tags"]]
         for opt in option_dict:
             for f in fields:
                 if f not in opt:
@@ -159,9 +159,9 @@ class ExportManager(ResourceManager):
 
     # noinspection PyMethodOverriding
     def build_resource_array(self, export_list):
-        larray = [["Name"]]
+        larray = [["Name", "Tags"]]
         for exp in export_list:
-            larray.append([exp])
+            larray.append([exp["name"], exp["tags"]])
         return larray
 
     def get_export_table(self):

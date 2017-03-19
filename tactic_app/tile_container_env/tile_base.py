@@ -357,6 +357,12 @@ class TileBase(object):
         self.tworker.emit_tile_message("displayFormContent", {"html": form_html})
         return None
 
+    def check_for_tag_match(self, option_tags, source_tags):
+        for opt_tag in option_tags:
+            if not opt_tag in source_tags:
+                return False
+        return True
+
     # Info needed here: list_names, current_header_list, pipe_dict, doc_names
     @task_worthy
     def create_form_html(self, data):
@@ -364,7 +370,12 @@ class TileBase(object):
         try:
             form_html = ""
             for option in self.options:
+                print "got option " + str(option)
                 att_name = option["name"]
+                if "tags" in option:
+                    option_tags = option["tags"].split()
+                else:
+                    option_tags = []
                 if not hasattr(self, att_name):
                     setattr(self, att_name, None)
                 self.save_attrs.append(att_name)
@@ -422,10 +433,11 @@ class TileBase(object):
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
                     for choice in self.get_current_pipe_list():
-                        if choice == starting_value:
-                            form_html += self.select_option_selected_template.format(choice)
-                        else:
-                            form_html += self.select_option_template.format(choice)
+                        if self.check_for_tag_match(option_tags, choice["tags"].split()):
+                            if choice["name"] == starting_value:
+                                form_html += self.select_option_selected_template.format(choice["name"])
+                            else:
+                                form_html += self.select_option_template.format(choice["name"])
                     form_html += '</select></div>'
                 elif option["type"] == "document_select":
                     the_template = self.input_start_template + self.select_base_template
@@ -439,52 +451,42 @@ class TileBase(object):
                 elif option["type"] == "list_select":
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
-                    for choice in data["list_names"]:
-                        if choice == starting_value:
-                            form_html += self.select_option_selected_template.format(choice)
-                        else:
-                            form_html += self.select_option_template.format(choice)
+                    for choice, tags in data["list_names"].items():
+                        if self.check_for_tag_match(option_tags, tags):
+                            if choice == starting_value:
+                                form_html += self.select_option_selected_template.format(choice)
+                            else:
+                                form_html += self.select_option_template.format(choice)
                     form_html += '</select></div>'
                 elif option["type"] == "collection_select":
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
-                    for choice in data["collection_names"]:
-                        if choice == starting_value:
-                            form_html += self.select_option_selected_template.format(choice)
-                        else:
-                            form_html += self.select_option_template.format(choice)
+                    for choice, tags in data["collection_names"].items():
+                        if self.check_for_tag_match(option_tags, tags):
+                            if choice == starting_value:
+                                form_html += self.select_option_selected_template.format(choice)
+                            else:
+                                form_html += self.select_option_template.format(choice)
                     form_html += '</select></div>'
                 elif option["type"] == "function_select":
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
-                    if "tag" in option:
-                        fnames = []
-                        for func_name, tags in data["function_names"].items():
-                            if option["tag"] in tags.split():
-                                fnames.append(func_name)
-                    else:
-                        fnames = data["function_names"].keys()
-                    for choice in fnames:
-                        if choice == starting_value:
-                            form_html += self.select_option_selected_template.format(choice)
-                        else:
-                            form_html += self.select_option_template.format(choice)
+                    for func_name, tags in data["function_names"].items():
+                        if self.check_for_tag_match(option_tags, tags):
+                            if func_name == starting_value:
+                                form_html += self.select_option_selected_template.format(func_name)
+                            else:
+                                form_html += self.select_option_template.format(func_name)
                     form_html += '</select></div>'
                 elif option["type"] == "class_select":
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
-                    if "tag" in option:
-                        cnames = []
-                        for class_name, tags in data["class_names"].items():
-                            if option["tag"] in tags.split():
-                                cnames.append(class_name)
-                    else:
-                        cnames = data["class_names"].keys()
-                    for choice in cnames:
-                        if choice == starting_value:
-                            form_html += self.select_option_selected_template.format(choice)
-                        else:
-                            form_html += self.select_option_template.format(choice)
+                    for class_name, tags in data["class_names"].items():
+                        if self.check_for_tag_match(option_tags, tags.split()):
+                            if class_name == starting_value:
+                                form_html += self.select_option_selected_template.format(class_name)
+                            else:
+                                form_html += self.select_option_template.format(class_name)
                     form_html += '</select></div>'
                 elif option["type"] == "palette_select":
                     the_template = self.input_start_template + self.select_base_template
@@ -525,7 +527,13 @@ class TileBase(object):
                     form_html += the_template.format(att_name, val)
                 else:
                     print "Unknown option type specified"
-            self.save_attrs = list(set(self.save_attrs))
+            fixed_attrs = []
+            for attr in self.save_attrs:  # legacy to deal with tiles that have self.save_attrs += exports
+                if isinstance(attr, dict):
+                    fixed_attrs.append(attr["name"])
+                else:
+                    fixed_attrs.append(attr)
+            self.save_attrs = list(set(fixed_attrs))
             return {"form_html": form_html}
         except:
             error_string = ("error creating form for  " + self.__class__.__name__ + " tile: "
@@ -821,7 +829,8 @@ class TileBase(object):
     def get_current_pipe_list(self):
         pipe_list = []
         for tile_entry in self._pipe_dict.values():
-            pipe_list += tile_entry.keys()
+            for full_export_name, edict in tile_entry.items():
+                pipe_list += [{"name": full_export_name, "tags": edict["export_tags"]}]
         return pipe_list
 
     def refresh_from_save(self):

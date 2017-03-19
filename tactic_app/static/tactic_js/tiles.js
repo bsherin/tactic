@@ -95,6 +95,14 @@ class TileObject {
                 }
             }
         );
+        $(this.full_selector() + " .back select").each(function() {
+            if ($(this).find(":selected").length == 0) {
+                data[$(this).attr("id")] = ""
+            }
+            else {
+                data[$(this).attr("id")] = $(this).find(":selected").text()
+            }
+        })
         $(this.full_selector() + " .back select :selected").each(function () {
             data[$(this).parent().attr('id')] = $(this).text()
         }

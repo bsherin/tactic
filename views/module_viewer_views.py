@@ -28,7 +28,7 @@ def insert_indents(the_str, number_indents):
 
 def build_code(data_dict):
     export_list = data_dict["exports"]
-    export_list_of_dicts = [{"name": exp_name} for exp_name in export_list]
+    export_list_of_dicts = [{"name": exp["name"], "tags": exp["tags"]} for exp in export_list]
     extra_methods = insert_indents(data_dict["extra_methods"], 1)
     render_content_body = insert_indents(data_dict["render_content_body"], 2)
     if data_dict["is_mpl"]:
