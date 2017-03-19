@@ -157,11 +157,12 @@ class ExportManager(ResourceManager):
         app.add_url_rule('/get_export_table', "get_export_table",
                          login_required(self.get_export_table), methods=['get', 'post'])
 
+    # tactic_changed get_export_table needs to have a tags column
     # noinspection PyMethodOverriding
     def build_resource_array(self, export_list):
-        larray = [["Name"]]
+        larray = [["Name", "Tags"]]
         for exp in export_list:
-            larray.append([exp])
+            larray.append([exp["name"], exp["tags"]])
         return larray
 
     def get_export_table(self):

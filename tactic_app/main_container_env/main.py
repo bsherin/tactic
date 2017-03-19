@@ -317,14 +317,18 @@ class mainWindow(object):
         # There's some extra work I have to do once all of the tiles are built.
         # Each tile needs to know the main_id it's associated with.
         # Also I have to build the pipe machinery.
+        # tactic_changed pipe_dict built here
         for tile_id, tile_result in tile_results.items():
             if "exports" in tile_result:
                 if len(tile_result["exports"]) > 0:
+                    if not isinstance(exports[0], dict):
+                        exports = [{"name": exp, "tags": ""} for exp in exports]
                     if tile_id not in self._pipe_dict:
                         self._pipe_dict[tile_id] = {}
                     for export in tile_result["exports"]:
-                        self._pipe_dict[tile_id][tile_result["tile_name"] + "_" + export] = {
-                            "export_name": export,
+                        self._pipe_dict[tile_id][tile_result["tile_name"] + "_" + export["name"]] = {
+                            "export_name": export["name"],
+                            "export_tags": export["tags"],
                             "tile_id": tile_id}
 
         # We have to wait to here to actually render the tiles because
@@ -572,14 +576,7 @@ class mainWindow(object):
         tile_name = data_dict["tile_name"]
         data_dict["base_figure_url"] = self.base_figure_url.replace("tile_id", tile_container_id)
         data_dict["doc_type"] = self.doc_type
-        form_info = {"current_header_list": self.current_header_list,
-                     "pipe_dict": self._pipe_dict,
-                     "doc_names": self.doc_names,
-                     "list_names": data_dict["list_names"],
-                     "function_names": data_dict["function_names"],
-                     "class_names": data_dict["class_names"],
-                     "collection_names": data_dict["collection_names"]}
-        # data_dict["form_info"] = form_info
+
         result = self.mworker.post_and_wait(tile_container_id, "load_source", data_dict)
         if not result["success"]:
             self.mworker.debug_log("got an exception " + result["message_string"])
@@ -590,15 +587,26 @@ class mainWindow(object):
             self.mworker.debug_log("got an exception " + instantiate_result["message_string"])
             raise Exception(instantiate_result["message_string"])
 
+        # tactic_changed pipe_dict also built here
         exports = instantiate_result["exports"]
         if len(exports) > 0:
+            if not isinstance(exports[0], dict):
+                exports = [{"name": exp, "tags": ""} for exp in exports]
             if tile_container_id not in self._pipe_dict:
                 self._pipe_dict[tile_container_id] = {}
             for export in exports:
-                self._pipe_dict[tile_container_id][tile_name + "_" + export] = {
-                    "export_name": export,
+                self._pipe_dict[tile_container_id][tile_name + "_" + export["name"]] = {
+                    "export_name": export["name"],
+                    "export_tags": export["tags"],
                     "tile_id": tile_container_id}
 
+        form_info = {"current_header_list": self.current_header_list,
+                     "pipe_dict": self._pipe_dict,
+                     "doc_names": self.doc_names,
+                     "list_names": data_dict["list_names"],
+                     "function_names": data_dict["function_names"],
+                     "class_names": data_dict["class_names"],
+                     "collection_names": data_dict["collection_names"]}
         form_html = self.mworker.post_and_wait(tile_container_id, "create_form_html", form_info)["form_html"]
         for tid in self.tile_instances:
             if not tid == tile_container_id:

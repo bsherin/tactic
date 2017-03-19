@@ -268,6 +268,8 @@ class OptionManager extends CreatorResourceManager {
         this.update_view = "get_option_table";
         this.option_dict = this.viewer.parsed_data.option_dict;
         this.data_attr = "option_dict";
+        this.taggable_option_types = ["class_select", "function_select", "pipe_select", "list_select",
+                                      "collection_select"];
         this.button_groups = [
             {
                 "buttons": [
@@ -280,22 +282,23 @@ class OptionManager extends CreatorResourceManager {
 
     add_listeners() {
         super.add_listeners();
+        // tactic_changed tag option is only shown for code and function_select.
+        let self = this;
         $("#option-type-input").on("change", function () {
-            let option_type = $("#option-type-input").val();
-            if (option_type == "custom_list") {
-                $("#special-list-group").css("display", "inline-block");
-                $("#option-tag-group").css("display", "none")
-            }
-            else if ((option_type == "class_select") || (option_type == "function_select")) {
-                $("#option-tag-group").css("display", "inline-block");
-                $("#special-list-group").css("display", "none")
-            }
-            else {
-                $("#special-list-group").css("display", "none");
-                $("#option-tag-group").css("display", "none")
-            }
+                let option_type = $("#option-type-input").val();
+                if (option_type == "custom_list") {
+                    $("#special-list-group").css("display", "inline-block");
+                }
+                else {
+                    $("#special-list-group").css("display", "none");
+                }
+                if (self.taggable_option_types.indexOf(option_type) >= 0) {
+                    $("#option-tag-group").css("display", "inline-block");
+                    }
+                else {
+                    $("#option-tag-group").css("display", "none")
+                }
             });
-
     }
 
     refresh_option_table (event) {
@@ -442,6 +445,7 @@ class OptionManager extends CreatorResourceManager {
             doFlash({"message": "Option name exists.", "alert_type": "alert-warning"})
         }
         else {
+
             let new_option = {"name": option_name, "type": option_type};
             if (option_default.length > 0) {
                 if (manager.check_default_value(manager, option_type, option_default)) {
@@ -457,7 +461,8 @@ class OptionManager extends CreatorResourceManager {
             if (option_type == "custom_list") {
                 new_option["special_list"] = $("#option-list-input").val();
             }
-            else if ((option_type == "class_select") || (option_type == "function_select")) {
+            // tactic_changed in createNewOption need to record the tags
+            if (self.taggable_option_types.indexOf(option_type) >= 0) {
                 new_option["tag"] = $("#option-tag-input").val()
             }
             manager.option_dict.push(new_option);
@@ -504,16 +509,17 @@ class ExportManager extends CreatorResourceManager {
         return false
     }
 
-
+    // tactic_changed createNewExport changed to capture tags. also change tile_creator.html
     createNewExport (event) {
         const manager = event.data.manager;
         let export_name = $("#export-name-input").val();
+        let export_tags = $("#export-tags-input").val();
         if (manager.export_list.indexOf(export_name) != -1) {
             doFlash({"message": "Export already exists.", "alert_type": "alert-warning"});
             return false
         }
         else {
-            manager.export_list.push(export_name);
+            manager.export_list.push({"name": export_name, "tags": export_tags});
             manager.changed = true;
             manager.update_main_content()
         }

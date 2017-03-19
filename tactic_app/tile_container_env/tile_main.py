@@ -68,7 +68,11 @@ class TileWorker(QWorker):
             the_class = class_info["tile_class"]
             self.tile_instance = the_class(0, 0)
             opt_dict = self.tile_instance.options
+            # tactic_changed exports are retrieved here from the tile source
             export_list = self.tile_instance.exports
+            if len(export_list) > 0:
+                if not isinstance(export_list[0], dict):
+                    export_list = [{"name": exp, "tags": ""} for exp in export_list]
         except Exception as ex:
             return self.handle_exception(ex, "Error extracting options from source")
         return {"success": True, "opt_dict": opt_dict, "export_list": export_list}

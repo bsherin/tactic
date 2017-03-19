@@ -168,8 +168,7 @@ class TileManager(ResourceManager):
                         {"name": "pipe_select"},
                         {"name": "custom_list"},
                         {"name": "function_select"},
-                        {"name": "class_select"},
-                        {"name": "pipe_select"}]
+                        {"name": "class_select"}]
         revised_api_dlist = []
         for cat in ordered_api_categories:
             the_list = api_dict_by_category[cat]

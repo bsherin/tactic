@@ -129,10 +129,10 @@ class HostWorker(QWorker):
     def get_lists_classes_functions(self, data):
         user_id = data["user_id"]
         the_user = load_user(user_id)
-        return {"list_names": the_user.list_names,
+        return {"list_names": the_user.list_tags_dict,
                 "class_names": the_user.class_tags_dict,
                 "function_names": the_user.function_tags_dict,
-                "collection_names": the_user.data_collections}
+                "collection_names": the_user.data_collection_tags_dict}
 
     @task_worthy
     def get_list_names(self, data):
