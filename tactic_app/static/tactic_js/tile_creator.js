@@ -494,6 +494,23 @@ class ExportManager extends CreatorResourceManager {
         this.update_main_content()
     }
 
+    update_export_order () {
+        let rows = this.get_main_content_dom().find("tbody tr");
+        let new_export_list = [];
+        for (let i = 0; i < rows.length; ++i) {
+            let r = rows[i];
+            let name = $(r).attr("value");
+            for (let exp of this.export_list) {
+                if (exp.name == name) {
+                    new_export_list.push(exp);
+                    break
+                }
+            }
+        }
+        this.export_list = new_export_list;
+        this.changed = true
+    }
+
     delete_export_func (event) {
         const manager = event.data.manager;
         let export_name = manager.check_for_selection("export", 0);
@@ -505,6 +522,26 @@ class ExportManager extends CreatorResourceManager {
             manager.update_main_content()
         });
         return false
+    }
+
+    fill_content(the_html) {
+        let fields = ["name", "tags"];
+        super.fill_content(the_html);
+        let self = this;
+        this.get_main_content_dom().find("td").attr("contenteditable", true);
+        this.get_main_content_dom().find("td").blur(function(event) {
+            let cell_index = event.target.cellIndex;
+            let row_index = $(event.target).parent()[0].rowIndex - 1;  // We subtract one for the header row
+            let new_value = $(event.target).html();
+            let field_name = fields[cell_index];
+            self.export_list[row_index][field_name] = new_value;
+            return true
+        });
+
+        this.get_main_content_dom().find("tbody").sortable( {
+            handle: ".ui-icon",
+            update: function (event, ui) {self.update_export_order()}
+        })
     }
 
     createNewExport (event) {
