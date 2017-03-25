@@ -175,6 +175,13 @@ class TileWorker(QWorker):
             return self.handle_exception(ex, "Error instantiating tile class")
 
     @task_worthy
+    def stop_me(self, data):
+        print "killing me"
+        self.kill()
+        print "I'm killed"
+        return {"success": True}
+
+    @task_worthy
     def render_tile(self, data):
         return self.tile_instance.render_me(data)
 

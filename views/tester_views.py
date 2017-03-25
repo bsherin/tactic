@@ -94,5 +94,7 @@ def container_create_test(collection_name,n, username, password):
     data = {"user_id": user.get_id(), "parent": "host"}
     for i in range(int(n)):
         res = host_worker.create_tile_container(data)
+        tile_id = res["tile_id"]
+        host_worker.post_task(tile_id, "stop_me")
         print str(i) + ", " + str(res["success"])
     return redirect(url_for("main", collection_name=collection_name))

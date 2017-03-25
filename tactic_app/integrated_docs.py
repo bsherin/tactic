@@ -63,5 +63,9 @@ try:
     api_dict_by_category, ordered_api_categories = create_api_dict_by_category(api_array)
     api_dict_by_name = create_api_dict_by_name(api_dict_by_category)
 except:
+    print "unable to get api"
     api_array = []
+    api_dict_by_category = {}
+    api_dict_by_name = {}
+    ordered_api_categories = []
     api_html = ""

@@ -571,17 +571,23 @@ class mainWindow(object):
     # Task Worthy methods. These are eligible to be the recipient of posted tasks.
     @task_worthy
     def create_tile(self, data_dict):
-        tile_container_id = data_dict["tile_id"]
+        print "entering create_tile"
+        create_container_dict = self.mworker.post_and_wait("host", "create_tile_container", {"user_id": self.user_id,
+                                                                            "parent": self.mworker.my_id})
+        if not create_container_dict["success"]:
+            raise Exception("Error creating empty tile container")
+        tile_container_id = create_container_dict["tile_id"]
         self.tile_instances.append(tile_container_id)
         tile_name = data_dict["tile_name"]
         data_dict["base_figure_url"] = self.base_figure_url.replace("tile_id", tile_container_id)
         data_dict["doc_type"] = self.doc_type
 
+        tile_code = self.mworker.post_and_wait("host", "get_module_code", data_dict)["module_code"]
+        data_dict["tile_code"] = tile_code
         result = self.mworker.post_and_wait(tile_container_id, "load_source", data_dict)
         if not result["success"]:
             self.mworker.debug_log("got an exception " + result["message_string"])
             raise Exception(result["message_string"])
-
         instantiate_result = self.mworker.post_and_wait(tile_container_id, "instantiate_tile_class", data_dict)
         if not instantiate_result["success"]:
             self.mworker.debug_log("got an exception " + instantiate_result["message_string"])
@@ -598,21 +604,22 @@ class mainWindow(object):
                     "export_name": export["name"],
                     "export_tags": export["tags"],
                     "tile_id": tile_container_id}
-
+        form_data = self.get_lists_classes_functions()
         form_info = {"current_header_list": self.current_header_list,
                      "pipe_dict": self._pipe_dict,
                      "doc_names": self.doc_names,
-                     "list_names": data_dict["list_names"],
-                     "function_names": data_dict["function_names"],
-                     "class_names": data_dict["class_names"],
-                     "collection_names": data_dict["collection_names"]}
+                     "list_names": form_data["list_names"],
+                     "function_names": form_data["function_names"],
+                     "class_names": form_data["class_names"],
+                     "collection_names": form_data["collection_names"]}
+
         form_html = self.mworker.post_and_wait(tile_container_id, "create_form_html", form_info)["form_html"]
         for tid in self.tile_instances:
             if not tid == tile_container_id:
                 self.mworker.post_task(tid, "RebuildTileForms", form_info)
         self.tile_sort_list.append(tile_container_id)
         self.current_tile_id += 1
-        return {"success": True, "html": form_html}
+        return {"success": True, "html": form_html, "tile_id": tile_container_id }
 
     @task_worthy
     def get_column_data(self, data):

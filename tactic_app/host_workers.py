@@ -386,7 +386,6 @@ class HostWorker(QWorker):
             tile_containers.append(tile_container_id)
         return {"tile_containers": tile_containers}
 
-
     @task_worthy
     def get_module_code(self, data):
         module_code = global_tile_manager.get_tile_code(data["tile_type"], data["user_id"])

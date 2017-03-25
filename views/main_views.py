@@ -23,6 +23,13 @@ import tactic_app
 def connected_msg():
     print"client connected"
 
+@socketio.on('connect', namespace='/main')
+def connected_msg():
+    print"client connected"
+
+@socketio.on('disconnect', namespace='/test')
+def test_disconnect():
+    print('Client disconnected')
 
 @socketio.on('join', namespace='/main')
 def on_join(data):
