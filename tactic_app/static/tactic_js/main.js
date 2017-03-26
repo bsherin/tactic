@@ -3,6 +3,11 @@ let socket;
 let dirty;
 let tile_types;
 
+const HEARBEAT_INTERVAL = 10000; //milliseconds
+setInterval( function(){
+   postAjax("register_heartbeat", {"main_id": main_id}, function () {});
+}, HEARBEAT_INTERVAL );
+
 let tooltip_dict = {
     "shrink-table-button": "shrink/expand table",
     "doc-selector": "select document",

@@ -41,6 +41,7 @@ app = Flask(__name__)
 MAX_QUEUE_LENGTH = int(os.environ.get("MAX_QUEUE_LENGTH"))
 print "max_queue_length is " + str(MAX_QUEUE_LENGTH)
 
+
 @app.route('/')
 def hello():
     return 'This is the megaplex communicating'
@@ -83,9 +84,11 @@ def get_stalled():
             del container_registry[cont_id]
     return stalled_containers
 
+
 @app.route('/get_stalled_containers', methods=["get", "post"])
 def get_stalled_containers():
     return jsonify({"stalled_containers": get_stalled()})
+
 
 def get_inactive():
     current_time = datetime.datetime.today()
@@ -104,6 +107,7 @@ def get_inactive():
 def get_inactive_containers():
     return jsonify({"inactive_containers": get_inactive()})
 
+
 def get_old():
     current_time = datetime.datetime.today()
     old_containers = []
@@ -114,6 +118,7 @@ def get_old():
             old_containers.append(cont_id)
             del container_registry[cont_id]
     return old_containers
+
 
 @app.route('/get_old_containers', methods=["get", "post"])
 def get_old_containers():
@@ -221,7 +226,7 @@ def submit_response():
     task_packet = request.json
     source = task_packet["source"]
     update_last_active_contact(source)
-    if source not in queue_dict: # This shouldn't happen
+    if source not in queue_dict:  # This shouldn't happen
         queue_dict[source] = {"tasks": Queue.Queue(),
                               "responses": Queue.Queue(),
                               "wait_dict": {}}
@@ -232,7 +237,3 @@ def submit_response():
     else:
         queue_dict[source]["responses"].put(task_packet)
     return jsonify({"success": True})
-
-
-#if __name__ == "__main__":
- #    app.run(host="0.0.0.0", debug=True, threaded=True)

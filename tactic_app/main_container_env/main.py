@@ -180,10 +180,6 @@ class mainWindow(object):
 
             self.show_um_message("Got empty containers", data_dict["user_manage_id"])
 
-            # new_tile_keys = self.mworker.post_and_wait("host", "get_empty_tile_containers",
-            #                                            {"number": len(tile_info_dict.keys()),
-            #                                             "user_id": self.user_id,
-            #                                             "parent": self.mworker.my_id})["tile_containers"]
             new_tile_info = {}
             error_messages = ""
             for i, old_tile_id in enumerate(tile_info_dict.keys()):

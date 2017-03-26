@@ -4,6 +4,7 @@ import time
 import os
 import sys
 import uuid
+import datetime
 from communication_utils import send_request_to_megaplex
 forwarder_address = None
 forwarder_id = None
@@ -17,7 +18,6 @@ STEP_SIZE = int(os.environ.get("STEP_SIZE"))
 
 
 megaplex_address = None  # This is set in __init__.py
-
 
 if "RETRIES" in os.environ:
     RETRIES = int(os.environ.get("RETRIES"))
