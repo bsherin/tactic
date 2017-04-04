@@ -20,9 +20,9 @@ class ContainerManager(ResourceManager):
                          methods=['get'])
         app.add_url_rule('/clear_user_containers/<user_manage_id>', "clear_user_containers",
                          login_required(self.clear_user_containers), methods=['get'])
-        app.add_url_rule('/destroy_container/<container_id>', "kill_container",
+        app.add_url_rule('/kill_container/<cont_id>', "kill_container",
                          login_required(self.kill_container), methods=['get'])
-        app.add_url_rule('/container_logs/<container_id>', "container_logs",
+        app.add_url_rule('/container_logs/<cont_id>', "container_logs",
                          login_required(self.container_logs), methods=['get'])
         app.add_url_rule('/refresh_container_table', "refresh_container_table",
                          login_required(self.refresh_container_table), methods=['get'])
@@ -40,12 +40,13 @@ class ContainerManager(ResourceManager):
             all_containers = cli.containers.list(all=True)
             for cont in all_containers:
                 if cont.attrs["Image"] == tactic_image_ids["tactic_main_image"]:
-                    self.show_um_message("removing main container " + cont.id, user_manage_id)
+                    self.show_um_message("removing main container " + cont.attrs["Name"], user_manage_id)
                     cont.remove(force=True)
                     continue
                 if cont.attrs["Image"] == tactic_image_ids["tactic_tile_image"]:
-                    if not cont.id == global_tile_manager.test_tile_container_id:
-                        self.show_um_message("removing tile container " + cont.id, user_manage_id)
+                    the_id = container_id(cont)
+                    if not the_id == global_tile_manager.test_tile_container_id:
+                        self.show_um_message("removing tile container " + cont.attrs["Name"], user_manage_id)
                         cont.remove(force=True)
                     continue
                 # if cont.attrs["Image"] == cont.attrs["ImageID"]:
@@ -96,11 +97,11 @@ class ContainerManager(ResourceManager):
         self.update_selector_list()
         return jsonify({"success": True, "message": "Container Destroeyd", "alert_type": "alert-success"})
 
-    def container_logs(self, container_id):
+    def container_logs(self, cont_id):
         if not (current_user.get_id() == admin_user.get_id()):
             return jsonify({"success": False, "message": "not authorized", "alert_type": "alert-warning"})
         try:
-            log_text = get_log(container_id)
+            log_text = get_log(cont_id)
         except Exception as ex:
             template = "<pre>An exception of type {0} occured. Arguments:\n{1!r}</pre>"
             error_string = template.format(type(ex).__name__, ex.args)

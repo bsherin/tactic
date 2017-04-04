@@ -62,7 +62,7 @@ def direct_repository_list_viewer(list_name, username, password):
 
 @app.route('/direct_administer/<password>', methods=['GET', 'POST'])
 def direct_administer(password):
-    user = User.get_user_by_username("repository")
+    user = User.get_user_by_username("admin")
     if user is not None and user.verify_password(password):
         login_user(user, remember=False)
     return redirect(url_for("admin_interface"))

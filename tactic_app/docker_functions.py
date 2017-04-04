@@ -68,7 +68,8 @@ def create_container(image_name, container_name=None, network_mode="bridge",
                                        network_mode="bridge",
                                        environment=environ,
                                        ports=port_bindings,
-                                       detach=detach)
+                                       detach=detach,
+                                       labels=labels)
     cont_id = container.id
     container = cli.containers.get(cont_id)
     print "status " + str(container.status)
