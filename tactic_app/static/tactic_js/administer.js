@@ -138,7 +138,7 @@ class ContainerManager extends AdminResourceManager {
     destroy_container (event) {
         let manager = event.data.manager;
         let cont_id = manager.check_for_selection("container", 4);
-        $.getJSON($SCRIPT_ROOT + '/destroy_container/' + cont_id, doFlash);
+        $.getJSON($SCRIPT_ROOT + '/kill_container/' + cont_id, doFlash);
         event.preventDefault();
     }
 

@@ -14,7 +14,8 @@ import copy
 import traceback
 import datetime
 
-check_for_dead_time = 300
+check_for_dead_time = 300  # How often, in seconds, to ask the megaplex to check for stalled containers
+no_heartbeat_time = 60  # If a mainwindow does send a heartbeat after this amount of time, remove mainwindow.
 global_tile_manager = tactic_app.global_tile_manager
 
 class HostWorker(QWorker):
@@ -110,6 +111,7 @@ class HostWorker(QWorker):
         main_id = data["main_id"]
         destroy_child_containers(main_id)
         destroy_container(main_id)
+        tactic_app.client_worker.remove_from_heartbeat_table(main_id)
         return {"success": True}
 
     @task_worthy
@@ -386,7 +388,6 @@ class HostWorker(QWorker):
             tile_containers.append(tile_container_id)
         return {"tile_containers": tile_containers}
 
-
     @task_worthy
     def get_module_code(self, data):
         module_code = global_tile_manager.get_tile_code(data["tile_type"], data["user_id"])
@@ -443,6 +444,7 @@ class ClientWorker(QWorker):
         self.short_sleep_period = .01
         self.hibernate_time = .1
         self.gap_time_for_hiberate = 60
+        self.main_heartbeat_table = {}
 
     def forward_client_post(self, task_packet):
         send_request_to_megaplex("post_task", task_packet)
@@ -458,9 +460,26 @@ class ClientWorker(QWorker):
         print error_string
         return
 
+    def update_heartbeat_table(self, main_id):
+        self.main_heartbeat_table[main_id] = datetime.datetime.today()
+
+    def remove_from_heartbeat_table(self, main_id):
+        if main_id in self.main_heartbeat_table:
+            del self.main_heartbeat_table[main_id]
+
+    def check_for_dead_mainwindows(self):
+        current_time = datetime.datetime.today()
+        for main_id, last_contact in self.main_heartbeat_table.items():
+            tdelta = current_time - last_contact
+            delta_seconds = tdelta.days * 24 * 60 + tdelta.seconds
+            if delta_seconds > no_heartbeat_time:
+                print "No heartbeat from mainwindow " + str(main_id)
+                self.post_task("host", "remove_mainwindow_task", {"main_id": main_id})
+
     def _run(self):
         self.running = True
         while self.running:
+            self.check_for_dead_mainwindows()
             try:
                 task_packet = self.get_next_task()
             except Exception as ex:

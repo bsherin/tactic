@@ -18,7 +18,7 @@ blank_packet = {"source": None,
                 "callback_id": None}
 
 SHORT_SLEEP_PERIOD = .01
-HIBERNATE_TIME = 1
+HIBERNATE_TIME = .2
 GAP_TIME_FOR_HIBERATE = 10
 
 if "MEGAPLEX_ADDRESS" in os.environ:

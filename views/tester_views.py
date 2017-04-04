@@ -62,7 +62,7 @@ def direct_repository_list_viewer(list_name, username, password):
 
 @app.route('/direct_administer/<password>', methods=['GET', 'POST'])
 def direct_administer(password):
-    user = User.get_user_by_username("repository")
+    user = User.get_user_by_username("admin")
     if user is not None and user.verify_password(password):
         login_user(user, remember=False)
     return redirect(url_for("admin_interface"))
@@ -94,5 +94,7 @@ def container_create_test(collection_name,n, username, password):
     data = {"user_id": user.get_id(), "parent": "host"}
     for i in range(int(n)):
         res = host_worker.create_tile_container(data)
+        tile_id = res["tile_id"]
+        host_worker.post_task(tile_id, "stop_me")
         print str(i) + ", " + str(res["success"])
     return redirect(url_for("main", collection_name=collection_name))

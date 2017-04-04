@@ -431,34 +431,19 @@ function tile_command(menu_id) {
         data_dict["tile_type"] = tile_type;
         data_dict["user_id"] = user_id;
         data_dict["parent"] = main_id;
-        postWithCallback("host", "create_tile_container", data_dict, function (data) {
-            if (!data.success) {
-                doFlash(data);
-                return
-            }
-            const tile_id = data["tile_id"];
-            data_dict["tile_id"] = tile_id;
-            postWithCallback("host", "get_module_code", data_dict, function (data) {
-                data_dict["tile_code"] = data["module_code"];
-                postWithCallback("host", "get_lists_classes_functions", data_dict, function (data) {
-                    data_dict["list_names"] = data["list_names"];
-                    data_dict["class_names"] = data["class_names"];
-                    data_dict["function_names"] = data["function_names"];
-                    data_dict["collection_names"] = data["collection_names"];
-                    postWithCallback(main_id, "create_tile", data_dict, function (data) {
-                        if (data.success) {
-                            data_dict["form_html"] = data["html"] ;
-                            postWithCallback("host", "render_tile", data_dict, function(data) {
-                                const new_tile_object = new TileObject(tile_id, data.html, true, tile_name);
-                                tile_dict[tile_id] = new_tile_object;
-                                new_tile_object.spin_and_refresh();
-                                exportViewerObject.update_exports_popup();
-                                dirty = true;
-                            })
-                        }
-                    })
+        postWithCallback(main_id, "create_tile", data_dict, function (create_data) {
+            if (create_data.success) {
+                let tile_id = create_data["tile_id"];
+                data_dict["form_html"] = create_data["html"];
+                data_dict["tile_id"] = create_data["tile_id"];
+                postWithCallback("host", "render_tile", data_dict, function (render_data) {
+                    const new_tile_object = new TileObject(tile_id, render_data.html, true, tile_name);
+                    tile_dict[tile_id] = new_tile_object;
+                    new_tile_object.spin_and_refresh();
+                    exportViewerObject.update_exports_popup();
+                    dirty = true;
                 })
-            })
+            }
         })
     }
 }
