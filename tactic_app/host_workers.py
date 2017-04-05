@@ -15,7 +15,7 @@ import traceback
 import datetime
 
 check_for_dead_time = 300  # How often, in seconds, to ask the megaplex to check for stalled containers
-no_heartbeat_time = 60  # If a mainwindow does send a heartbeat after this amount of time, remove mainwindow.
+no_heartbeat_time = 900  # If a mainwindow does send a heartbeat after this amount of time, remove mainwindow.
 global_tile_manager = tactic_app.global_tile_manager
 
 class HostWorker(QWorker):
