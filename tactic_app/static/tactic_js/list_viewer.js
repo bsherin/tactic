@@ -11,6 +11,7 @@ function start_post_load ()  {
     else {
         list_viewer = new ListViewer(resource_name, "list", "get_list")
     }
+    list_viewer.stopSpinner()
 }
 
 class ListViewer extends ResourceViewer {

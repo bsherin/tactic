@@ -136,6 +136,7 @@ class TileManager(ResourceManager):
                                include_above_main_area=False,
                                readonly=False,
                                is_repository=False,
+                               use_ssl=use_ssl,
                                javascript_source=javascript_source,
                                uses_codemirror="True",
                                button_groups=self.button_groups)
@@ -315,6 +316,7 @@ class RepositoryTileManager(TileManager):
                                include_above_main_area=False,
                                readonly=True,
                                is_repository=True,
+                               use_ssl=use_ssl,
                                javascript_source=javascript_source,
                                uses_codemirror="True",
                                button_groups=self.button_groups)

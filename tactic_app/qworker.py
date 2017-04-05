@@ -18,8 +18,8 @@ blank_packet = {"source": None,
                 "callback_id": None}
 
 SHORT_SLEEP_PERIOD = .01
-HIBERNATE_TIME = .2
-GAP_TIME_FOR_HIBERATE = 10
+HIBERNATE_TIME = .1
+GAP_TIME_FOR_HIBERATE = 100
 
 if "MEGAPLEX_ADDRESS" in os.environ:
     communication_utils.megaplex_address = os.environ.get("MEGAPLEX_ADDRESS")

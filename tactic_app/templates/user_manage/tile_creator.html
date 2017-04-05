@@ -4,6 +4,7 @@
 
 {% block styles %}
     <link rel="stylesheet" href="{{url_for('static', filename='css/jquery-ui.min.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/loader.css')}}">
 {% endblock %}
 
 {% block morenavbar %}
@@ -41,6 +42,7 @@
                         </div>
                     </div>
                 </div>
+
                 <div id="drawplotboundingarea" class="bootstrap-border" style="display: none; border-bottom-width: 1px; border-bottom-style: solid; margin-bottom: 20px; clear: left">
                     <h4 style="display:inline-block; margin-bottom:0px">draw_plot</h4>
                         <div class="btn-group" style= "margin-top: 10px; margin-bottom: 5px; float:right" role="group">
@@ -81,13 +83,13 @@
                     <div id="aux-area" style="display:none; overflow:scroll"></div>
                     <div id="resource-area" style="diplay:inline-block">
                       <ul class="nav nav-tabs" style="border-bottom: none" role="tablist">
-                          <li role="presentation" class="active"><a href="#metadata-module-outer" aria-controls="metadata" role="tab" data-toggle="tab" value="metadata">metadata</a></li>
+                        <li role="presentation" class="active"><a href="#metadata-module-outer" aria-controls="metadata" role="tab" data-toggle="tab" value="metadata">metadata</a></li>
                         <li role="presentation"><a href="#option-module-outer" aria-controls="options" role="tab" data-toggle="tab" value="option">options</a></li>
                         <li role="presentation"><a href="#export-module-outer" aria-controls="exports" role="tab" data-toggle="tab" value="export">exports</a></li>
                        <li role="presentation"><a href="#method-module-outer" aria-controls="methods" role="tab" data-toggle="tab" value="method">methods</a></li>
-
+                <span id="spinner" class="loader-medium" style="float:right"></span>
                       </ul>
-                            <div class="tab-content" id="creator-resources">
+                        <div class="tab-content" id="creator-resources">
                             <div class="tab-pane fade in active row" id="metadata-module-outer">
                                 <div class="row indent-row">
                                     <div class="created" style="margin-bottom: 15px"></div>
@@ -164,8 +166,9 @@
                         </div>
                     </div>
 
+                </div>
             </div>
-            </div>
+
         </div>
     </div>
 {%  endblock %}

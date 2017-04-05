@@ -4,6 +4,7 @@
 
 {% block styles %}
     <link rel="stylesheet" href="{{url_for('static', filename='css/jquery-ui.min.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/loader.css')}}">
 {% endblock %}
 
 {% block page_content %}
@@ -27,6 +28,7 @@
 
                     {% endfor -%}
                     <button id="rename-button" type="button" class="btn btn-default res-name-button">{{resource_name}}</button>
+            <span id="spinner" class="loader-medium" style="float:right"></span>
                 </div>
         </div>
         <div class="row">
@@ -69,7 +71,8 @@
         let user_id = "{{current_user.get_id()}}";
         let resource_name = "{{resource_name}}";
         let is_repository = "{{is_repository}}" == "True";
-        let include_right = "{{include_right}}" == "True"
+        let include_right = "{{include_right}}" == "True";
+        let use_ssl = "{{use_ssl}}"=="True";
         window.onload = start_post_load;
         window.onbeforeunload = function(e) {
             if (dirty()) {

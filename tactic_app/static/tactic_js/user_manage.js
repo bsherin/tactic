@@ -33,6 +33,7 @@ function get_current_module_id() {
 }
 
 function start_post_load() {
+    let socket;
     if (use_ssl) {
         socket = io.connect(`https://${document.domain}:${location.port}/user_manage`);
     }

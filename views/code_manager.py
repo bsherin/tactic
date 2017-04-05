@@ -2,7 +2,7 @@
 import sys, datetime
 
 import tactic_app
-from tactic_app import app, db  # global_stuff
+from tactic_app import app, db, use_ssl  # global_stuff
 
 from resource_manager import ResourceManager
 from flask import render_template, jsonify, url_for, request
@@ -84,6 +84,7 @@ class CodeManager(ResourceManager):
                                include_above_main_area=False,
                                readonly=False,
                                is_repository=False,
+                               use_ssl=use_ssl,
                                javascript_source=javascript_source,
                                uses_codemirror="True",
                                button_groups=self.button_groups)
@@ -211,6 +212,7 @@ class RepositoryCodeManager(CodeManager):
                                include_right=True,
                                include_above_main_area=False,
                                readonly=True,
+                               use_ssl=use_ssl,
                                is_repository=True,
                                javascript_source=javascript_source,
                                uses_codemirror="True",

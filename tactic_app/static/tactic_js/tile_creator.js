@@ -5,8 +5,10 @@
 let creator_viewer;
 
 function start_post_load() {
+
     creator_viewer = new CreatorViewer(module_name, "tile", "parse_code");
     creator_viewer.resize_to_window();
+    creator_viewer.stopSpinner()
 }
 
 class CreatorViewer extends ModuleViewerAbstract {

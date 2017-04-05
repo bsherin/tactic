@@ -44,6 +44,7 @@ class ResourceManager {
 
     }
 
+
     update_width(new_width_fraction) {
         const usable_width = window.innerWidth - 2 * MARGIN_SIZE - 30;
         this.current_width_fraction = new_width_fraction;

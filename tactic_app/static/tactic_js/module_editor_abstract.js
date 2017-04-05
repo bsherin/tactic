@@ -287,19 +287,21 @@ class ModuleViewerAbstract extends ResourceViewer {
     }
 
     saveMe() {
+        this.startSpinner();
         this.doSavePromise()
-            .then(doFlash)
-            .catch(doFlash);
+            .then(this.doFlashStopSpinner)
+            .catch(this.doFlashStopSpinner);
         return false
     }
 
     saveAndCheckpoint() {
+        this.startSpinner();
         let self = this;
         this.doSavePromise()
             .then(function (){
                 self.doCheckpointPromise()
-                    .then(doFlash)
-                    .catch(doFlash)
+                    .then(self.doFlashStopSpinner)
+                    .catch(self.doFlashStopSpinner)
             })
             .catch(doFlash);
         return false
@@ -308,17 +310,18 @@ class ModuleViewerAbstract extends ResourceViewer {
 
     loadModule() {
         let self = this;
+        this.startSpinner();
         this.doSavePromise()
             .then(function () {
                 $.getJSON($SCRIPT_ROOT + '/load_tile_module/' + String(self.resource_name), load_success)
             })
-            .catch(doFlash);
+            .catch(self.doFlashStopSpinner);
 
         function load_success(data) {
             if (data.success) {
                 data.timeout = 2000;
             }
-            doFlash(data);
+            self.doFlashStopSpinner(data);
             return false
         }
     }
