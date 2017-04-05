@@ -11,6 +11,7 @@ function start_post_load() {
     else {
             module_viewer = new ModuleViewer(resource_name, "tile", "get_module_code")
     }
+    stopSpinner()
 }
 
 class ModuleViewer extends ModuleViewerAbstract {

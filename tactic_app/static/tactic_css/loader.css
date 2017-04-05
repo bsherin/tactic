@@ -10,6 +10,18 @@
     -webkit-animation: loader 4s infinite ease;
 }
 
+.loader-medium {
+  display: inline-block;
+  width: 23px;
+  height: 23px;
+  position: relative;
+  border: 3px solid purple;
+  top: 50%;
+  margin-right: 25px;
+  animation: loader 4s infinite ease;
+    -webkit-animation: loader 4s infinite ease;
+}
+
 .loader-small {
   display: inline-block;
   width: 15px;

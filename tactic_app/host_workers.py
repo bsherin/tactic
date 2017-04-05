@@ -3,6 +3,7 @@ from flask import render_template
 from flask_login import url_for
 from users import load_user
 import gevent
+from gevent import monkey; monkey.patch_all()
 from communication_utils import send_request_to_megaplex
 from docker_functions import create_container, destroy_container, destroy_child_containers, destroy_user_containers
 from docker_functions import get_log, ContainerCreateError
@@ -15,7 +16,7 @@ import traceback
 import datetime
 
 check_for_dead_time = 300  # How often, in seconds, to ask the megaplex to check for stalled containers
-no_heartbeat_time = 60  # If a mainwindow does send a heartbeat after this amount of time, remove mainwindow.
+no_heartbeat_time = 900  # If a mainwindow does send a heartbeat after this amount of time, remove mainwindow.
 global_tile_manager = tactic_app.global_tile_manager
 
 class HostWorker(QWorker):

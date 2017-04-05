@@ -3,7 +3,7 @@ import sys, datetime
 from flask_login import login_required, current_user
 from flask import jsonify, render_template, url_for, request
 
-from tactic_app import app, db
+from tactic_app import app, db, use_ssl
 import tactic_app
 
 from tactic_app.file_handling import load_a_list
@@ -43,6 +43,7 @@ class ListManager(ResourceManager):
                                include_above_main_area=False,
                                include_right=True,
                                readonly=False,
+                               use_ssl=use_ssl,
                                is_repository=False,
                                javascript_source=javascript_source,
                                button_groups=self.button_groups)
@@ -165,6 +166,7 @@ class RepositoryListManager(ListManager):
                                include_above_main_area=False,
                                include_right=True,
                                readonly=True,
+                               use_ssl=use_ssl,
                                is_repository=True,
                                javascript_source=javascript_source,
                                button_groups=self.button_groups)

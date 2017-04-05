@@ -10,6 +10,7 @@ function start_post_load() {
     else {
             code_viewer = new CodeViewer(resource_name, "code", "get_code_code")
     }
+    stopSpinner()
 }
 
 class CodeViewer extends ModuleViewerAbstract {
@@ -65,8 +66,8 @@ class CodeViewer extends ModuleViewerAbstract {
         function update_success(data) {
             if (data.success) {
                 this.savedCode = new_code;
-                savedTags = tags;
-                savedNotes = notes;
+                this.savedTags = tags;
+                this.savedNotes = notes;
                 data.timeout = 2000;
             }
             doFlash(data);

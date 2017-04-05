@@ -71,6 +71,7 @@ function start_post_load() {
     socket.on("clear-status-msg", function (){
        clearStatusMessage()
     });
+
 }
 
 function continue_loading() {
@@ -96,8 +97,8 @@ function continue_loading() {
     if (_project_name != "") {
         postWithCallback(main_id, "grab_project_data", {"doc_name": String(doc_names[0])}, function(data) {
                 console.log("Entering grab_project_data callback");
-                $("#loading-message").css("display", "none");
-                $("#reload-message").css("display", "none");
+                // $("#loading-message").css("display", "none");
+                // $("#reload-message").css("display", "none");
                 $("#outer-container").css("display", "block");
                 $("#table-area").css("display", "block");
                 if (data.hasOwnProperty("hidden_columns_list")) {
@@ -141,6 +142,7 @@ function continue_loading() {
                     
                     menus["Project"].enable_menu_item("save");
                     postWithCallback(main_id, "DisplayCreateErrors", {});
+                    stopSpinner();
 
                     function create_tile_from_save(tile_id) {
                         const tile_html = data.tile_save_results[tile_id].tile_html;
@@ -163,12 +165,14 @@ function continue_loading() {
             }
     else {
             postWithCallback(main_id, "grab_data", {"doc_name":String(doc_names[0])}, function (data) {
-                $("#loading-message").css("display", "none");
-                $("#reload-message").css("display", "none");
+                // $("#loading-message").css("display", "none");
+                // $("#reload-message").css("display", "none");
                 $("#outer-container").css("display", "block");
                 $("#table-area").css("display", "block");
                 tableObject = new TableObjectClass((data));
                 set_visible_doc(doc_names[0], null)
+                stopSpinner();
+                clearStatusMessage();
             })
         }
 
@@ -200,15 +204,17 @@ function set_visible_doc(doc_name, func) {
 
 function change_doc(el, row_id) {
     $("#table-area").css("display", "none");
-    $("#reload-message").css("display", "block");
+    // $("#reload-message").css("display", "block");
+    startSpinner();
     const doc_name = $(el).val();
     if (row_id == null) {
         postWithCallback(main_id, "grab_data", {"doc_name":doc_name}, function (data) {
-        $("#loading-message").css("display", "none");
-        $("#reload-message").css("display", "none");
+        // $("#loading-message").css("display", "none");
+        // $("#reload-message").css("display", "none");
         $("#outer-container").css("display", "block");
         $("#table-area").css("display", "block");
         tableObject.initialize_table(data);
+        stopSpinner();
         set_visible_doc(doc_name, null)
         })
     }
@@ -216,8 +222,8 @@ function change_doc(el, row_id) {
         const data_dict = {"doc_name": doc_name, "row_id": row_id};
         if (DOC_TYPE == "table") {
             postWithCallback(main_id, "grab_chunk_with_row", data_dict, function (data) {
-                $("#loading-message").css("display", "none");
-                $("#reload-message").css("display", "none");
+                // $("#loading-message").css("display", "none");
+                // $("#reload-message").css("display", "none");
                 $("#outer-container").css("display", "block");
                 $("#table-area").css("display", "block");
                 tableObject.initialize_table(data);
@@ -227,18 +233,22 @@ function change_doc(el, row_id) {
                 tableObject.active_row = data.actual_row;
                 tableObject.active_row_id = row_id;
                 set_visible_doc(doc_name, null)
+                stopSpinner();
+                clearStatusMessage();
             })
         }
         else {
             postWithCallback(main_id, "grab_data", {"doc_name":doc_name}, function (data) {
-                $("#loading-message").css("display", "none");
-                $("#reload-message").css("display", "none");
+                // $("#loading-message").css("display", "none");
+                // $("#reload-message").css("display", "none");
                 $("#outer-container").css("display", "block");
                 $("#table-area").css("display", "block");
                 tableObject.initialize_table(data);
                 myCodeMirror.scrollIntoView(row_id);
                 tableObject.active_row = row_id;
                 set_visible_doc(doc_name, null)
+                stopSpinner();
+                clearStatusMessage()
             })
         }
     }

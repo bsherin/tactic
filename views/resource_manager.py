@@ -2,6 +2,7 @@ from flask import render_template
 from flask_login import current_user
 import traceback
 
+import tactic_app
 from tactic_app import socketio
 from tactic_app.users import User
 
@@ -112,9 +113,9 @@ class ResourceManager(object):
         result = self.build_html_table_from_data_list(res_array)
         return result
 
-    # I don't think the timeout variable has any effect.
     def show_um_message(self, message, user_manage_id, timeout=3):
         data = {"message": message, "timeout": timeout}
+
         socketio.emit('show-status-msg', data, namespace='/user_manage', room=user_manage_id)
 
     def clear_um_message(self, user_manage_id):

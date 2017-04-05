@@ -4,7 +4,7 @@ import sys
 import datetime
 from flask import render_template, request, jsonify, url_for
 from flask_login import login_required, current_user
-from tactic_app import app, db
+from tactic_app import app, db, use_ssl
 from tactic_app.tile_code_parser import get_functions_full_code, get_starting_lines
 from user_manage_views import tile_manager
 
@@ -119,6 +119,7 @@ def show_history_viewer(module_name):
                            include_right=False,
                            readonly=False,
                            is_repository=False,
+                           use_ssl=use_ssl,
                            javascript_source=javascript_source,
                            uses_codemirror="True",
                            button_groups=button_groups)
@@ -136,6 +137,7 @@ def show_tile_differ(module_name):
                            include_right=False,
                            readonly=False,
                            is_repository=False,
+                           use_ssl=use_ssl,
                            javascript_source=javascript_source,
                            uses_codemirror="True",
                            button_groups=button_groups)
