@@ -50,7 +50,21 @@ alertbox = alertify.alert()
             'resizable': true
         });
 
-function statusMessage(data) {
+
+function startSpinner() {
+    $("#spinner").css("display", "inline-block")
+}
+
+function stopSpinner() {
+    $("#spinner").css("display", "none")
+}
+
+function doFlashStopSpinner(data) {
+    stopSpinner();
+    doFlash(data)
+}
+
+function oldstatusMessage(data) {
     let timeout;
     if (data.hasOwnProperty("timeout") && (data.timeout != null)) {
         timeout = data.timeout
@@ -65,8 +79,25 @@ function statusMessage(data) {
     }
 }
 
-function clearStatusMessage() {
+function statusMessageText(message, timeout=null) {
+    statusMessage({"message": message, "timeout": timeout})
+}
+
+function statusMessage(data) {
+    $("#status-msg-area").text(data.message);
+    $("#status-msg-area").fadeIn();
+    if (data.hasOwnProperty("timeout") && (data.timeout != null)) {
+        setTimeout(clearStatusMessage, data.timeout)
+    }
+}
+
+function oldclearStatusMessage() {
     alertbox.close();
+}
+
+function clearStatusMessage() {
+    $("#status-msg-area").fadeOut();
+    $("#status-msg-area").text("")
 }
 
 function doSignOut(page_id) {
@@ -170,9 +201,6 @@ function toggleTooltips() {
     return (false)
 }
 
-function clearStatusArea() {
-    $("#status-area").fadeOut()
-}
 
 function resize_dom_to_bottom_given_selector(selector, bottom_margin) {
     if ($(selector).length > 0) {

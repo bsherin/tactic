@@ -16,16 +16,7 @@
     {% include 'modals/show_image_modal.html' %}
     <div id="modal-area">
     </div>
-    <div id="loading-message">
-        <span class="loader"><span class="loader-inner"></span></span>
-    </div>
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-xs-12">
-                <div id="status-area"></div>
-            </div>
-        </div>
-    </div>
+
     <div id="outer-container" style="display: none">
         <div class="grid-left" align="left">
             <div id="main-panel" class="panel panel-default">
@@ -61,13 +52,10 @@
                             </span>
                         </form>
                     </div>
-                    <span id="table-spin-place"></span><span id="status-msg-area" class="status-msg"></span>
+                    <span id="table-spin-place"></span><span id="table-status-msg-area" class="status-msg"></span>
                 </div>
 
                 <div id="table-wrapper" class="panel-body">
-                    <div id="reload-message" style="display: none">
-                        <span class="loader"><span class="loader-inner"></span></span>
-                    </div>
                     {% if is_table %}
                         <table id="table-area">
                         </table>

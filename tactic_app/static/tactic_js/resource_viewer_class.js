@@ -42,8 +42,8 @@ class ResourceViewer {
         }
         this.user_manage_id = guid();
         this.socket.emit('join', {"user_id":  user_id, "user_manage_id":  this.user_manage_id});
-        this.socket.on('stop-spinner', this.stopSpinner);
-        this.socket.on('start-spinner', this.startSpinner);
+        this.socket.on('stop-spinner', stopSpinner);
+        this.socket.on('start-spinner', startSpinner);
         this.socket.on('close-user-windows', (data) => {
             if (!(data["originator"] == this.user_manage_id)) {
                 window.close()
@@ -55,20 +55,6 @@ class ResourceViewer {
             })
             .catch(doFlash);
 
-    }
-
-    startSpinner() {
-        $("#spinner").css("display", "inline-block")
-    }
-
-    stopSpinner() {
-        $("#spinner").css("display", "none")
-    }
-
-
-    doFlashStopSpinner(data) {
-        this_viewer.stopSpinner();
-        doFlash(data)
     }
 
     update_width(new_width_fraction) {

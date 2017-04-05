@@ -11,7 +11,6 @@ const res_types = ["list", "collection", "project", "tile", "code"];
 const resource_managers = {};
 
 mousetrap.bind("esc", () => {
-    clearStatusArea();
     clearStatusMessage();
     resource_managers[get_current_module_id()].unfilter_me()
 });
@@ -176,18 +175,6 @@ function showAdmin() {
     window.open(`${$SCRIPT_ROOT}/admin_interface`)
 }
 
-function startSpinner() {
-    $("#spinner").css("display", "inline-block")
-}
-
-function stopSpinner() {
-    $("#spinner").css("display", "none")
-}
-
-function doFlashStopSpinner(data) {
-    stopSpinner();
-    doFlash(data)
-}
 
 function resize_window() {
     for (let module_id in resource_managers) {

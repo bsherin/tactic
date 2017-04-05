@@ -12,11 +12,6 @@
     </div>
     <div class="container-fluid">
         <div class="row">
-            <div class="col-xs-12">
-                <div id="status-area"></div>
-            </div>
-        </div>
-        <div class="row">
             <div class="col-xs-12" style="margin-top: 20px">
                 <div class="btn-toolbar" role="toolbar"></div>
                     {% for group in button_groups -%}
@@ -28,7 +23,6 @@
 
                     {% endfor -%}
                     <button id="rename-button" type="button" class="btn btn-default res-name-button">{{resource_name}}</button>
-            <span id="spinner" class="loader-medium" style="float:right"></span>
                 </div>
         </div>
         <div class="row">

@@ -19,13 +19,11 @@
                 {% if current_user.username != "repository" %}
                 <button id="toggle-repository-button" class="btn btn-default" onclick="return toggleRepository();">Show Repository</button>
                 {% endif %}
-                <span id="spinner" class="loader-medium" style="float:right"></span><span id="status-msg-area" class="status-msg"></span>
+                <span id="xspinner" class="xloader-medium" style="float:right"></span><span id="xstatus-msg-area" class="xstatus-msg" style="float:right"></span>
             </h1>
 
         </div>
-        <div class="row">
-            <div class="col-xs-12" id="status-area"></div>
-        </div>
+
         <div class="row">
             <div class="col-xs-12">
               <ul class="nav nav-tabs" role="tablist">

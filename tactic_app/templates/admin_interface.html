@@ -5,6 +5,7 @@
 
 {% block styles %}
     <link rel="stylesheet" href="{{url_for('static', filename='css/jquery-ui.min.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/loader.css')}}">
     <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/table.css')}}">
 {% endblock %}
 
@@ -16,9 +17,6 @@
             <h1>Admin Interface</h1>
         </div>
 
-        <div class="row">
-            <div class="col-xs-12" id="status-area"></div>
-        </div>
         <div class="row">
             <div class="col-xs-12">
               <ul class="nav nav-tabs" role="tablist">

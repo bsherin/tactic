@@ -287,21 +287,21 @@ class ModuleViewerAbstract extends ResourceViewer {
     }
 
     saveMe() {
-        this.startSpinner();
+        startSpinner();
         this.doSavePromise()
-            .then(this.doFlashStopSpinner)
-            .catch(this.doFlashStopSpinner);
+            .then(doFlashStopSpinner)
+            .catch(doFlashStopSpinner);
         return false
     }
 
     saveAndCheckpoint() {
-        this.startSpinner();
+        startSpinner();
         let self = this;
         this.doSavePromise()
             .then(function (){
                 self.doCheckpointPromise()
-                    .then(self.doFlashStopSpinner)
-                    .catch(self.doFlashStopSpinner)
+                    .then(doFlashStopSpinner)
+                    .catch(doFlashStopSpinner)
             })
             .catch(doFlash);
         return false
@@ -310,18 +310,18 @@ class ModuleViewerAbstract extends ResourceViewer {
 
     loadModule() {
         let self = this;
-        this.startSpinner();
+        startSpinner();
         this.doSavePromise()
             .then(function () {
                 $.getJSON($SCRIPT_ROOT + '/load_tile_module/' + String(self.resource_name), load_success)
             })
-            .catch(self.doFlashStopSpinner);
+            .catch(doFlashStopSpinner);
 
         function load_success(data) {
             if (data.success) {
                 data.timeout = 2000;
             }
-            self.doFlashStopSpinner(data);
+            doFlashStopSpinner(data);
             return false
         }
     }

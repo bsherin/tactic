@@ -3,6 +3,7 @@ from flask import render_template
 from flask_login import url_for
 from users import load_user
 import gevent
+from gevent import monkey; monkey.patch_all()
 from communication_utils import send_request_to_megaplex
 from docker_functions import create_container, destroy_container, destroy_child_containers, destroy_user_containers
 from docker_functions import get_log, ContainerCreateError

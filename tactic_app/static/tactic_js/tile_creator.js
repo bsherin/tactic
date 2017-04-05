@@ -4,11 +4,13 @@
 
 let creator_viewer;
 
+const BOTTOM_MARGIN = 50
+
 function start_post_load() {
 
     creator_viewer = new CreatorViewer(module_name, "tile", "parse_code");
     creator_viewer.resize_to_window();
-    creator_viewer.stopSpinner()
+    stopSpinner()
 }
 
 class CreatorViewer extends ModuleViewerAbstract {
@@ -207,8 +209,8 @@ class CreatorViewer extends ModuleViewerAbstract {
         }
     }
     resize_code_area() {
-        resize_dom_to_bottom_given_selector("#codearea", 20);
-        resize_dom_to_bottom_given_selector("#codearea .CodeMirror", 20);
+        resize_dom_to_bottom_given_selector("#codearea", BOTTOM_MARGIN);
+        resize_dom_to_bottom_given_selector("#codearea .CodeMirror", BOTTOM_MARGIN);
         if (this.myCodeMirror != null) {
             this.myCodeMirror.refresh();
         }
@@ -220,12 +222,12 @@ class CreatorViewer extends ModuleViewerAbstract {
     }
 
     resize_method_module() {
-        resize_dom_to_bottom_given_selector("#method_module .CodeMirror", 20);
+        resize_dom_to_bottom_given_selector("#method_module .CodeMirror", BOTTOM_MARGIN);
     }
 
     resize_api_and_tab_areas() {
-        resize_dom_to_bottom_given_selector("#aux-area", 20);
-        resize_dom_to_bottom_given_selector(".tab-pane", 20);
+        resize_dom_to_bottom_given_selector("#aux-area", BOTTOM_MARGIN);
+        resize_dom_to_bottom_given_selector(".tab-pane", BOTTOM_MARGIN);
     }
 
     resize_to_window() {

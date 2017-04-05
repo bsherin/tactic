@@ -7,7 +7,6 @@ const mousetrap = new Mousetrap();
 const user_manage_id = guid();
 
 mousetrap.bind("esc", function() {
-    clearStatusArea();
     clearStatusMessage();
     resource_managers[get_current_module_id()].unfilter_me()
 });
@@ -128,17 +127,20 @@ class ContainerManager extends AdminResourceManager {
         ]
     }
     clear_user_func (event) {
-        $.getJSON($SCRIPT_ROOT + '/clear_user_containers/' + user_manage_id, doFlash);
+        startSpinner();
+        $.getJSON($SCRIPT_ROOT + '/clear_user_containers/' + user_manage_id, doFlashStopSpinner);
         event.preventDefault();
     }
     reset_server_func (event) {
-        $.getJSON($SCRIPT_ROOT + '/reset_server/' + user_manage_id, doFlash);
+        startSpinner();
+        $.getJSON($SCRIPT_ROOT + '/reset_server/' + user_manage_id, doFlashStopSpinner);
         event.preventDefault();
     }
     destroy_container (event) {
+        startSpinner();
         let manager = event.data.manager;
         let cont_id = manager.check_for_selection("container", 4);
-        $.getJSON($SCRIPT_ROOT + '/kill_container/' + cont_id, doFlash);
+        $.getJSON($SCRIPT_ROOT + '/kill_container/' + cont_id, doFlashStopSpinner);
         event.preventDefault();
     }
 
@@ -209,12 +211,4 @@ function resize_window() {
         const rselector = manager.get_aux_right_dom();
         resize_dom_to_bottom(rselector, 50);
     }
-}
-
-function startSpinner() {
-    $("#spinner").css("display", "inline-block")
-}
-
-function stopSpinner() {
-    $("#spinner").css("display", "none")
 }

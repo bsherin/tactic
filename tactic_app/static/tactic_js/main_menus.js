@@ -18,8 +18,8 @@ mousetrap.bind("esc", function() {
         deselect_header(tableObject.selected_header)
     }
     broadcast_event_to_server("DehighlightTable", {});
-    clearStatusArea();
     clearStatusMessage();
+    stopSpinner()
 });
 
 function clear_all_menus() {
@@ -298,6 +298,7 @@ function createColumnThisDoc() {
 }
 
 function saveProjectAs() {
+    startSpinner();
     postWithCallback("host", "get_project_names", {"user_id": user_id}, function (data) {
         let checkboxes = [{"checkname": "purgetiles", "checktext": "Include only currently used tiles"}];
         showModal("Save Project As", "New Project Name", CreateNewProject,
@@ -318,7 +319,7 @@ function saveProjectAs() {
             postWithCallback(main_id, "save_new_project", result_dict, save_as_success);
             function save_as_success(data_object) {
                 if (data_object["success"]) {
-                    tableObject.stopTableSpinner();
+                    //tableObject.stopTableSpinner();
                     clearStatusMessage();
                     menus["Project"].enable_menu_item("save");
                     tableObject.project_name = data_object["project_name"];
@@ -330,14 +331,15 @@ function saveProjectAs() {
                     _project_name = data_object.project_name;  // When menus recreated, it checks _project_name
                     dirty = false;
                     data_object["message"] = data_object["message_string"];
-                    doFlash(data_object);
+
                     postWithCallback("host", "update_project_selector_list", {'user_id': user_id})
+                    doFlashStopSpinner(data_object);
                 }
                 else {
-                    tableObject.stopTableSpinner();
+                    //tableObject.stopTableSpinner();
                     clearStatusMessage();
                     data_object["message"] = data_object["message_string"];
-                    doFlash(data_object)
+                    doFlashStopSpinner(data_object)
                 }
             }
     }
@@ -350,7 +352,8 @@ function save_project() {
         "console_cm_code": consoleObject.getConsoleCMCode()
     };
 
-    tableObject.startTableSpinner();
+    //tableObject.startTableSpinner();
+    startSpinner();
     postWithCallback(main_id, "update_project", result_dict, updateSuccess);
     function updateSuccess(data) {
         if (data.success) {
@@ -359,14 +362,14 @@ function save_project() {
             data.alert_type = "alert-success";
             dirty = false;
             data.timeout = 2000;
-            doFlash(data)
+            doFlashStopSpinner(data)
         }
         else {
             tableObject.stopTableSpinner();
             clearStatusMessage();
             data.alert_type = "alert-warning";
             dirty = false;
-            doFlash(data)
+            doFlashStopSpinner(data)
         }
     }
 }
@@ -425,6 +428,8 @@ function tile_command(menu_id) {
     showModal("Create " + menu_id, "New Tile Name", createNewTile, menu_id, existing_tile_names);
 
     function createNewTile(tile_name) {
+        startSpinner();
+        statusMessageText("Creating Tile " + tile_name);
         const data_dict = {};
         const tile_type = menu_id;
         data_dict["tile_name"] = tile_name;
@@ -432,6 +437,7 @@ function tile_command(menu_id) {
         data_dict["user_id"] = user_id;
         data_dict["parent"] = main_id;
         postWithCallback(main_id, "create_tile", data_dict, function (create_data) {
+
             if (create_data.success) {
                 let tile_id = create_data["tile_id"];
                 data_dict["form_html"] = create_data["html"];
@@ -442,6 +448,8 @@ function tile_command(menu_id) {
                     new_tile_object.spin_and_refresh();
                     exportViewerObject.update_exports_popup();
                     dirty = true;
+                    clearStatusMessage();
+                    stopSpinner();
                 })
             }
         })

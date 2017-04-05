@@ -52,6 +52,9 @@
     </div>
 
   {% block page_content %}{% endblock %}
+    <div class="container-fluid">
+        <div id="status-div" class="col-xs-12" style="position:absolute; bottom:10px; display:block"><span id="spinner" class="loader-medium" ></span><span id="status-msg-area" class="status-msg"></span></div>
+    </div>
     <script type=text/javascript>
         $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
     </script>

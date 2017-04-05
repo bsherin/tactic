@@ -10,7 +10,7 @@ function start_post_load() {
     else {
             code_viewer = new CodeViewer(resource_name, "code", "get_code_code")
     }
-    code_viewer.stopSpinner()
+    stopSpinner()
 }
 
 class CodeViewer extends ModuleViewerAbstract {
