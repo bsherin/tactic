@@ -650,7 +650,7 @@ class TableObjectClass {
         try {
             const el = this.getCellElementByRowColIndex(rindex, cindex);
             for (let i = 0; i < token_text.length; ++i) {
-                w = token_text[i];
+                let w = token_text[i];
                 if (color_dict.hasOwnProperty(w)) {
                     result = result + "<span style='background-color: " + color_dict[w] + "' > " + w + "</span>";
                 }
