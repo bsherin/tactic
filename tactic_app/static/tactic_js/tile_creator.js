@@ -479,7 +479,7 @@ class ExportManager extends CreatorResourceManager {
 
 
     resize_to_window() {
-        resize_dom_to_bottom_given_selector("#export_module .CodeMirror", 20);
+        resize_dom_to_bottom_given_selector("#export_module .CodeMirror", BOTTOM_MARGIN);
     }
 
     set_extra_properties() {

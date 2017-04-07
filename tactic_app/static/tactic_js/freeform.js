@@ -210,10 +210,10 @@ class TableObjectClass {
         }
         $(".grid-right").width(usable_width * (1 - this.left_fraction));
         if ($("#freeform-area .CodeMirror").length > 0) {
-            $("#freeform-area .CodeMirror").height(window.innerHeight - $("#grid-bottom").outerHeight() - 30 - $("#freeform-area .CodeMirror").offset().top);
+            $("#freeform-area .CodeMirror").height(window.innerHeight - $("#grid-bottom").outerHeight() - BOTTOM_MARGIN - $("#freeform-area .CodeMirror").offset().top);
         }
         if ($("#tile-area").length > 0) {
-            $("#tile-area").height(window.innerHeight - $("#grid-bottom").outerHeight() - 30 - $("#tile-area").offset().top);
+            $("#tile-area").height(window.innerHeight - $("#grid-bottom").outerHeight() - BOTTOM_MARGIN - $("#tile-area").offset().top);
         }
         $("#main-panel").width(""); // We do this so that this will resize when the window is resized.
         myCodeMirror.refresh()
