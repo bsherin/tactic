@@ -61,6 +61,7 @@ function stopSpinner() {
 
 function doFlashStopSpinner(data) {
     stopSpinner();
+    clearStatusMessage();
     doFlash(data)
 }
 

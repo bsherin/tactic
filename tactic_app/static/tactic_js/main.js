@@ -3,7 +3,7 @@ let socket;
 let dirty;
 let tile_types;
 
-const BOTTOM_MARGIN = 50
+const BOTTOM_MARGIN = 35
 
 const HEARBEAT_INTERVAL = 10000; //milliseconds
 setInterval( function(){

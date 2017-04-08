@@ -7,9 +7,11 @@ let creator_viewer;
 const BOTTOM_MARGIN = 50
 
 function start_post_load() {
-
+    startSpinner();
+    statusMessageText("loading " + "module_name");
     creator_viewer = new CreatorViewer(module_name, "tile", "parse_code");
     creator_viewer.resize_to_window();
+    clearStatusMessage();
     stopSpinner()
 }
 
