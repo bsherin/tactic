@@ -288,6 +288,7 @@ class ModuleViewerAbstract extends ResourceViewer {
 
     saveMe() {
         startSpinner();
+        statusMessageText("Saving Module");
         this.doSavePromise()
             .then(doFlashStopSpinner)
             .catch(doFlashStopSpinner);
@@ -299,11 +300,12 @@ class ModuleViewerAbstract extends ResourceViewer {
         let self = this;
         this.doSavePromise()
             .then(function (){
+                statusMessage("Checkpointing")
                 self.doCheckpointPromise()
                     .then(doFlashStopSpinner)
                     .catch(doFlashStopSpinner)
             })
-            .catch(doFlash);
+            .catch(doFlashStopSpinner);
         return false
 
     }
@@ -313,6 +315,7 @@ class ModuleViewerAbstract extends ResourceViewer {
         startSpinner();
         this.doSavePromise()
             .then(function () {
+                statusMessageText("Loading Module");
                 $.getJSON($SCRIPT_ROOT + '/load_tile_module/' + String(self.resource_name), load_success)
             })
             .catch(doFlashStopSpinner);
