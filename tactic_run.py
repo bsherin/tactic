@@ -5,6 +5,7 @@
 # This avoids circular imports since the view functions make use
 # of things such as app, socketio, and db that are created in __init__.py
 
+from gevent import monkey; monkey.patch_all()
 import docker_cleanup
 print "entering tactic_run"
 
