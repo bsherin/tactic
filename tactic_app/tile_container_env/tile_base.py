@@ -5,7 +5,6 @@ import sys
 import re
 import time
 import requests
-from gevent import monkey; monkey.patch_all()
 import numpy as np
 from bson.binary import Binary
 # noinspection PyUnresolvedReferences
