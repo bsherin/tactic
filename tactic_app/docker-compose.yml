@@ -20,5 +20,3 @@ services:
     image: tactic_tile_image
     environment:
       PYTHONUNBUFFERED: 0
-
-
