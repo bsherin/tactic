@@ -8,11 +8,9 @@ const BOTTOM_MARGIN = 50
 
 function start_post_load() {
     startSpinner();
-    statusMessageText("loading " + "module_name");
+    statusMessageText("loading " + module_name);
     creator_viewer = new CreatorViewer(module_name, "tile", "parse_code");
     creator_viewer.resize_to_window();
-    clearStatusMessage();
-    stopSpinner()
 }
 
 class CreatorViewer extends ModuleViewerAbstract {
@@ -81,8 +79,10 @@ class CreatorViewer extends ModuleViewerAbstract {
                 $("#aux-area").html(data.api_html);
                 self.create_api_listeners();
                 self.resize_to_window()
+                    clearStatusMessage();
+                    stopSpinner()
             })
-            .catch(doFlash);
+            .catch(doFlashStopSpinner);
     }
 
     setup_code_areas() {

@@ -3,6 +3,7 @@ import copy
 # noinspection PyUnresolvedReferences
 from qworker import QWorker, task_worthy
 # noinspection PyUnresolvedReferences
+from gevent import monkey; monkey.patch_all()
 import qworker
 import tile_env
 from tile_env import class_info
@@ -14,6 +15,7 @@ from bson.binary import Binary
 import inspect
 import types
 import gevent
+
 import sys, os
 sys.stdout = sys.stderr
 import time

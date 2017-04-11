@@ -1,9 +1,9 @@
+from gevent import monkey; monkey.patch_all()
 import sys
 import re
 # noinspection PyUnresolvedReferences
 import requests
 import copy
-from gevent import monkey; monkey.patch_all()
 import pymongo
 import gridfs
 import cPickle
