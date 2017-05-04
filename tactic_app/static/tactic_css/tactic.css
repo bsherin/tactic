@@ -387,7 +387,8 @@ td.cell-clickable:active {
 .status-msg {
   font-size: 16px;
   color: purple;
-  margin-right: px; }
+  margin-right: 20px;
+  margin-left: 20px; }
 
 .highlight {
   background: yellow; }

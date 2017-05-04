@@ -72,9 +72,8 @@ function start_post_load() {
             }
             });
             resize_window();
-            $('a[data-toggle="tab"]').on('shown.bs.tab', function (event) {
-                // $(event.currentTarget).attr("href")
-                current_modid = get_current_module_id()
+            $('a[data-toggle="tab"]').on('shown.bs.tab', function () {
+                let current_modid = get_current_module_id();
                 for (let module_id in resource_managers) {
                     const manager = resource_managers[module_id];
                     if (module_id == current_modid){
@@ -86,7 +85,7 @@ function start_post_load() {
                     manager.resize_to_window()
                 }
             });
-            stopSpinner()
+            stopSpinner();
             resource_managers[get_current_module_id()].turn_on_horizontal_resize();
         })
 }
@@ -147,6 +146,9 @@ class ContainerManager extends AdminResourceManager {
     container_logs (event) {
         let manager = event.data.manager;
         let cont_id = manager.check_for_selection();
+        /**
+         * @param {{log_text:boolean}} data
+         */
         $.getJSON($SCRIPT_ROOT + '/container_logs/' + cont_id, function (data) {
             let the_html = "<pre><small>" + data.log_text + "</small></pre>";
             manager.get_aux_right_dom().html(the_html)

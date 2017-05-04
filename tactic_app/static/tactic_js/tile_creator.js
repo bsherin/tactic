@@ -4,7 +4,7 @@
 
 let creator_viewer;
 
-const BOTTOM_MARGIN = 50
+const BOTTOM_MARGIN = 50;
 
 function start_post_load() {
     startSpinner();
@@ -78,9 +78,9 @@ class CreatorViewer extends ModuleViewerAbstract {
             .then(function (data) {
                 $("#aux-area").html(data.api_html);
                 self.create_api_listeners();
-                self.resize_to_window()
-                    clearStatusMessage();
-                    stopSpinner()
+                self.resize_to_window();
+                clearStatusMessage();
+                stopSpinner()
             })
             .catch(doFlashStopSpinner);
     }
@@ -368,7 +368,7 @@ class OptionManager extends CreatorResourceManager {
 
         this.get_main_content_dom().find("tbody").sortable( {
             handle: ".ui-icon",
-            update: function (event, ui) {self.update_option_order()}
+            update: function () {self.update_option_order()}
         })
     }
 
@@ -546,7 +546,7 @@ class ExportManager extends CreatorResourceManager {
 
         this.get_main_content_dom().find("tbody").sortable( {
             handle: ".ui-icon",
-            update: function (event, ui) {self.update_export_order()}
+            update: function () {self.update_export_order()}
         })
     }
 
@@ -586,7 +586,7 @@ class MethodManager extends CreatorResourceManager {
         this.cmobject = this.viewer.createCMArea(this.get_main_content_dom()[0], false, null, this.extra_methods_line_number);
         this.get_main_content_dom().find(".CodeMirror").resizable({handles: "se"});
         this.get_main_content_dom().find(".CodeMirror").height(100);
-        this.get_main_content_dom().width("100%")
+        this.get_main_content_dom().width("100%");
         this.fill_content();
     }
 

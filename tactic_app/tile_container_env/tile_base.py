@@ -1335,47 +1335,6 @@ class TileBase(object):
         self.restore_stdout()
         return
 
-    # tactic_todo these d3-based plots currently won't work.
-    def create_lineplot_html(self, data, xlabels=None):
-        if xlabels is None:
-            xlabels = []
-        data_name = self.create_data_source({"data_list": data, "xlabels": xlabels})
-        uid = self.get_unique_div_id()
-        the_html = "<div id='{}'><div class='d3plot'></div>".format(str(uid))
-
-        the_script = "createLinePlot('{0}', '{1}', '{2}')".format(self.tworker.my_id, data_name, uid)
-        the_html += "<script class='resize-rerun'>{}</script></div>".format(the_script)
-        return the_html
-
-    def create_scatterplot_html(self, data, xlabels=None, margins=None):
-        if margins is None:
-            margins = {"top": 20, "bottom": 20, "left": 20, "right": 20}
-        if xlabels is None:
-            xlabels = []
-        data_name = self.create_data_source({"data_list": data, "xlabels": xlabels, "margins": margins})
-        uid = self.get_unique_div_id()
-        the_html = "<div id='{}'><div class='d3plot'></div>".format(str(uid))
-
-        the_script = "createScatterPlot('{0}', '{1}', '{2}')".format(self.tworker.my_id, data_name, uid)
-        the_html += "<script class='resize-rerun'>{}</script></div>".format(the_script)
-        return the_html
-
-    def create_heatmap(self, data, row_labels=None, margins=None, domain=None, title=None):
-        if margins is None:
-            margins = {"top": 20, "bottom": 20, "left": 20, "right": 20}
-        if row_labels is None:
-            row_labels = []
-
-        if domain is None:
-            domain = [np.amin(data), np.amax(data)]
-        data_name = self.create_data_source({"data_list": data, "row_labels": row_labels, "margins": margins,
-                                             "domain": domain, "title": title})
-        uid = self.get_unique_div_id()
-        the_html = "<div id='{}'><div class='d3plot'></div>".format(str(uid))
-        the_script = "createHeatmap('{0}', '{1}', '{2}')".format(self.tworker.my_id, data_name, uid)
-        the_html += "<script class='resize-rerun' >{}</script></div>".format(the_script)
-        return the_html
-
     def get_unique_div_id(self):
         unique_id = "div-{0}-{1}-{2}".format(self.main_id, self.tworker.my_id, self.current_unique_id_index)
         self.current_unique_id_index += 1

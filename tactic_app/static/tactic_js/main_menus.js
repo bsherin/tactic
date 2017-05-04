@@ -315,7 +315,7 @@ function saveProjectAs() {
                 "purgetiles": checkresults["purgetiles"]
             };
 
-            tableObject.startTableSpinner();
+            // tableObject.startTableSpinner();
             postWithCallback(main_id, "save_new_project", result_dict, save_as_success);
             function save_as_success(data_object) {
                 if (data_object["success"]) {
