@@ -34,6 +34,10 @@ class exportViewerObjectClass {
         return $("#exports-refresh-button")
     }
 
+    get exports_send_console_button() {
+        return $("#exports-send-console-button")
+    }
+
     get exports_popup () {
         return $("#exports-popup")
     }
@@ -113,11 +117,15 @@ class exportViewerObjectClass {
         this.exports_refresh_button.click(function () {
             self.set_new_export(self.exports_popup.val())
         });
+
         this.exports_popup.change(function () {
             self.set_new_export(this.value)
         });
         this.exports_show_button.click(function ()  {
             self.show_value()
+        });
+        this.exports_send_console_button.click(function () {
+            self.send_to_console()
         });
         this.exports_tail.keypress(function(e) {
             if (e.which == 13) {
@@ -159,6 +167,16 @@ class exportViewerObjectClass {
         postWithCallback(main_id, "evaluate_export", send_data, function (data) {
             self.exports_body.html(data.the_html)
         })
+    }
+
+    send_to_console() {
+        const tail = this.exports_tail.val();
+        let full_export_name = this.current_export;
+        if (!(this.key_list == null)) {
+            full_export_name = full_export_name +`[${this.exports_keys.val()}]`
+        }
+        full_export_name = full_export_name + tail;
+        consoleObject.addConsoleCodeWithCode(`self.get_pipe_value("${full_export_name}")`)
     }
 
 }

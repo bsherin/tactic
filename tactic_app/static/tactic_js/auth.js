@@ -19,6 +19,9 @@ function submit_login_info() {
 }
 
 function attempt_open_register() {
+    /**
+     * @param {{is_admin:boolean}} data
+     */
     $.getJSON($SCRIPT_ROOT + '/check_if_admin', function(data){
         if (data.is_admin) {
             window.open($SCRIPT_ROOT + "/register")
@@ -29,6 +32,9 @@ function attempt_open_register() {
     });
 }
 
+/**
+ * @param {{logged_in:boolean}} data
+ */
 function return_from_submit_login(data) {
     if (data.logged_in) {
          window.open($SCRIPT_ROOT + "/user_manage", "_self")

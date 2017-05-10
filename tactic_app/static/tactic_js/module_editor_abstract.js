@@ -172,7 +172,7 @@ class ModuleViewerAbstract extends ResourceViewer {
     }
 
     doCheckpointPromise() {
-        self = this;
+        let self = this;
         return new Promise (function (resolve, reject) {
             postAjax("checkpoint_module", {"module_name": self.resource_name}, function (data) {
                 if (data.success) {
@@ -194,7 +194,7 @@ class ModuleViewerAbstract extends ResourceViewer {
     }
 
     doSavePromise() {
-        self = this;
+        let self = this;
         return new Promise (function (resolve, reject) {
             const new_code = self.myCodeMirror.getDoc().getValue();
             const tags = $("#tags").val();
@@ -300,7 +300,7 @@ class ModuleViewerAbstract extends ResourceViewer {
         let self = this;
         this.doSavePromise()
             .then(function (){
-                statusMessage("Checkpointing")
+                statusMessage("Checkpointing");
                 self.doCheckpointPromise()
                     .then(doFlashStopSpinner)
                     .catch(doFlashStopSpinner)

@@ -5,8 +5,6 @@ class ConsoleObjectClass {
         this.saved_console_size = 150;
         const pan = this.console_panel;
         this.console_dom.css("display", "none");
-        const hheight = this.console_heading.outerHeight();
-        // pan.outerHeight(hheight);
         pan.find(".triangle-bottom").hide();
         pan.find(".triangle-right").show();
         this.console_visible = false;
@@ -46,7 +44,7 @@ class ConsoleObjectClass {
     }
 
     add_listeners () {
-        self = this;
+        let self = this;
         $("#show-console-button").click(function () {
             self.expandConsole()
         });
@@ -75,7 +73,7 @@ class ConsoleObjectClass {
     }
 
     turn_on_resize () {
-        self = this;
+        let self = this;
         this.console_panel.resizable({
             handles: "e",
             resize: function (event, ui) {
@@ -142,7 +140,7 @@ class ConsoleObjectClass {
     }
 
     closeLogItem(e) {
-        self = e.data.cobject;
+        let self = e.data.cobject;
         const el = $(e.target).closest(".log-panel");
         if (!(el.find(".console-code").length == 0)) {
             let uid = el.find(".console-code")[0].id;
@@ -152,7 +150,7 @@ class ConsoleObjectClass {
     }
 
     runConsoleCode(e) {
-        self = e.data.cobject;
+        let self = e.data.cobject;
         const el = $(e.target).closest(".log-panel");
         const uid = el.find(".console-code")[0].id;
         const the_code = self.consoleCMObjects[uid].getValue();
@@ -183,6 +181,11 @@ class ConsoleObjectClass {
                 doFlash(data)
             }
         })
+    }
+
+    setConsoleCode(uid, the_code) {
+        this.consoleCMObjects[uid].setValue(the_code);
+        this.consoleCMObjects[uid].refresh()
     }
 
     createConsoleCodeInCodearea(uid, codearea) {
@@ -220,6 +223,9 @@ class ConsoleObjectClass {
         };
         rec();
     }
+    /**
+     * @param {{force_open:boolean, message_string:string}} data_object
+     */
     consoleLog (data_object) {
         const force_open = data_object.force_open;
         this.console_dom.append(data_object.message_string);
@@ -234,7 +240,9 @@ class ConsoleObjectClass {
             eval(scripts[i].innerHTML)
         }
      }
-
+    /**
+     * @param {{force_open:boolean, console_id:string, message_string:string}} data_object
+     */
      consoleCodeLog (data_object) {
         const force_open = data_object.force_open;
         let el = $("#" + data_object.console_id).parent().find(".log-code-output");
@@ -272,6 +280,22 @@ class ConsoleObjectClass {
                 self.check_for_element("#" + data["unique_id"], function () {
                     const codearea = document.getElementById(data["unique_id"]);
                     self.createConsoleCodeInCodearea(data["unique_id"], codearea)
+                })
+            }
+        })
+    }
+
+    addConsoleCodeWithCode(the_code) {
+        let self = this;
+        postWithCallback(main_id, "create_console_code_area", {}, function(data) {
+            if (!data.success) {
+                doFlash(data)
+            }
+            else {
+                self.check_for_element("#" + data["unique_id"], function () {
+                    const codearea = document.getElementById(data["unique_id"]);
+                    self.createConsoleCodeInCodearea(data["unique_id"], codearea);
+                    self.setConsoleCode(data["unique_id"], the_code)
                 })
             }
         })

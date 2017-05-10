@@ -149,7 +149,7 @@ class ResourceViewer {
 
     rename_me() {
         console.log("entering rename");
-        self = this;
+        let self = this;
         $.getJSON($SCRIPT_ROOT + `get_resource_names/${this.res_type}`, function (data) {
                 const res_names = data["resource_names"];
                 const index = res_names.indexOf(self.resource_name);
@@ -177,7 +177,7 @@ class ResourceViewer {
     }
 
     sendToRepository() {
-        self = this;
+        let self = this;
         $.getJSON($SCRIPT_ROOT + `get_repository_resource_names/${this.res_type}`, function(data) {
             showModal(`Share ${self.res_type}`, `New ${self.res_type} Name`, ShareResource, self.resource_name, data["resource_names"])
             }
@@ -193,7 +193,7 @@ class ResourceViewer {
     }
 
     copyToLibrary() {
-        self = this;
+        let self = this;
         $.getJSON($SCRIPT_ROOT + `get_resource_names/${this.res_type}`, function(data) {
             showModal(`Import ${self.res_type}`, `New ${self.res_type} Name`, ImportResource, self.resource_name, data["resource_names"])
             }
