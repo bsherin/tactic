@@ -55,41 +55,19 @@ def make_fieldnames_unique(flist):
         new_list.append(fname)
     return new_list
 
-def read_csv_file_to_dict(csvfile):
-    csvfile.seek(0)
-    i = 0
-    try:
-        reader = csv.reader(csvfile)
-        header_list = reader.next()
-        header_list = make_fieldnames_unique(header_list)
-        reader = csv.DictReader(csvfile, dialect="excel", fieldnames=header_list)
-        filename, file_extension = os.path.splitext(csvfile.filename)
-        result_dict = {}
-        for row in reader:
-            for (key, val) in row.items():
-                row[key] = utf_solver(val)
-            row["__filename__"] = filename
-            row["__id__"] = i
-            result_dict[str(i)] = row
-            i += 1
-        csvfile.seek(0)
-        header_list = ["__id__", "__filename__"] + header_list
-
-    except csv.Error as e:
-        return (None, e, None)
-    return (filename, result_dict, header_list)
-
-def read_tsv_file_to_dict(tsvfile):
+def read_table_file_to_dict(tsvfile, separator):
     tsvfile.seek(0)
+    filelines = tsvfile.read().splitlines()
     i = 0
     try:
-        header_list = tsvfile.readline().rstrip().split("\t")
+        header_list = filelines[0].rstrip().split(separator)
         header_list = make_fieldnames_unique(header_list)
         filename, file_extension = os.path.splitext(tsvfile.filename)
         result_dict = {}
-        for line in tsvfile:
+
+        for line in csv.reader(filelines[1:], delimiter=separator):
             row = {}
-            for col, val in enumerate(line.rstrip().split("\t")):
+            for col, val in enumerate(line):
                 row[header_list[col]] = utf_solver(val)
             row["__filename__"] = filename
             row["__id__"] = i
@@ -97,10 +75,17 @@ def read_tsv_file_to_dict(tsvfile):
             i += 1
         tsvfile.seek(0)
         header_list = ["__id__", "__filename__"] + header_list
-
-    except csv.Error as e:
-        return (None, e, None)
+    except:
+        ermsg = "Error reading text file " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+        return (None, {"message": ermsg}, None)
     return (filename, result_dict, header_list)
+
+
+def read_csv_file_to_dict(csvfile):
+    return read_table_file_to_dict(csvfile, ",")
+
+def read_tsv_file_to_dict(tsvfile):
+    return read_table_file_to_dict(tsvfile, "\t")
 
 def utf_solver(txt):
     return txt.decode("utf-8", 'ignore').encode("ascii", "ignore")
