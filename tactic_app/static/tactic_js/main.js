@@ -2,8 +2,9 @@
 let socket;
 let dirty;
 let tile_types;
+var tableObject;
 
-const BOTTOM_MARGIN = 35
+const BOTTOM_MARGIN = 35;
 
 const HEARBEAT_INTERVAL = 10000; //milliseconds
 setInterval( function(){
@@ -23,7 +24,6 @@ let tooltip_dict = {
 
 function start_post_load() {
     console.log("entering start_post_load");
-    console.log("in new version");
     dirty = false;
     $("#outer-container").css({"margin-left": String(MARGIN_SIZE) + "px"});
     $("#outer-container").css({"margin-right": String(MARGIN_SIZE) + "px"});
@@ -35,8 +35,8 @@ function start_post_load() {
         socket = io.connect('http://' + document.domain + ':' + location.port + '/main');
     }
     socket.emit('join', {"room": user_id});
-    socket.emit('join', {"room": main_id});
-    socket.emit('ready-to-finish', {"room": main_id});
+    socket.emit('join-main', {"room": main_id});
+    socket.emit('ready-to-begin', {"room": main_id});
     socket.on('tile-message', function (data) {
         tile_dict[data.tile_id][data.tile_message](data)
     });
@@ -48,12 +48,24 @@ function start_post_load() {
     });
     socket.on('handle-callback', handleCallback);
     socket.on('close-user-windows', function(data){
-                postWithCallback("host", "remove_mainwindow_task", {"main_id": main_id})
+                postWithCallback("host", "remove_mainwindow_task", {"main_id": main_id});
                 if (!(data["originator"] == main_id)) {
                     window.close()
                 }
             });
-    socket.on('finish-post-load', function () {
+    socket.on('finish-post-load', function (data) {
+        if (is_project) {
+            _collection_name = data.collection_name;
+            doc_names = data.doc_names;
+            $("#doc-selector-label").html(data.short_collection_name);
+            $("#console").html(data.console_html);
+            let doc_popup = "";
+            for (let dname of doc_names) {
+                doc_popup = doc_popup + `<option>${dname}</option>`
+            }
+            $("#doc-selector").html(doc_popup)
+
+        }
         postWithCallback("host", "get_tile_types", {"user_id": user_id}, function (data) {
             tile_types = data.tile_types;
             build_and_render_menu_objects();
@@ -69,11 +81,35 @@ function start_post_load() {
     socket.on('show-status-msg', function (data){
         statusMessage(data)
     });
-
     socket.on("clear-status-msg", function (){
        clearStatusMessage()
     });
-
+    socket.on("begin-post-load", function () {
+        if (is_project) {
+            let data_dict = {
+                "project_name": _project_name,
+                "doc_type": DOC_TYPE,
+                "project_collection_name": _project_collection_name,
+                "user_manage_id": main_id,
+                "mongo_uri": mongo_uri,
+                "base_figure_url": base_figure_url,
+                "use_ssl": use_ssl,
+                "user_id": user_id
+            };
+            postWithCallback(main_id, "initialize_project_mainwindow", data_dict)
+        }
+        else {
+            let data_dict = {
+                "collection_name": _collection_name,
+                "doc_type": DOC_TYPE,
+                "project_collection_name": _project_collection_name,
+                "mongo_uri": mongo_uri,
+                "base_figure_url": base_figure_url,
+                "use_ssl": use_ssl
+            };
+            postWithCallback(main_id, "initialize_mainwindow", data_dict)
+        }
+    })
 }
 
 function continue_loading() {
@@ -103,9 +139,9 @@ function continue_loading() {
                 // $("#reload-message").css("display", "none");
                 $("#outer-container").css("display", "block");
                 $("#table-area").css("display", "block");
-                if (data.hasOwnProperty("hidden_columns_list")) {
-                    hidden_columns_list = data.hidden_columns_list;
-                }
+                // if (data.hasOwnProperty("hidden_columns_list")) {
+                //     hidden_columns_list = data.hidden_columns_list;
+                // }
                 tablespec_dict = {};
                 for (let spec in data.tablespec_dict) {
                     if (!data.tablespec_dict.hasOwnProperty(spec)){
@@ -116,7 +152,7 @@ function continue_loading() {
                 tableObject = new TableObjectClass((data)); // consoleObject is created in here
                 postWithCallback(main_id, "get_saved_console_code", {}, function (data) {
                     const saved_console_code = data["saved_console_code"];
-                    global_scc = saved_console_code;
+                    // global_scc = saved_console_code;
                     for (let uid in saved_console_code) {
                         if (!saved_console_code.hasOwnProperty(uid)) continue;
                         console.log("getting codearea " + uid);
@@ -172,7 +208,7 @@ function continue_loading() {
                 $("#outer-container").css("display", "block");
                 $("#table-area").css("display", "block");
                 tableObject = new TableObjectClass((data));
-                set_visible_doc(doc_names[0], null)
+                set_visible_doc(doc_names[0], null);
                 stopSpinner();
                 clearStatusMessage();
             })
@@ -234,7 +270,7 @@ function change_doc(el, row_id) {
                 $(tr_element).addClass("selected-row");
                 tableObject.active_row = data.actual_row;
                 tableObject.active_row_id = row_id;
-                set_visible_doc(doc_name, null)
+                set_visible_doc(doc_name, null);
                 stopSpinner();
                 clearStatusMessage();
             })
@@ -248,7 +284,7 @@ function change_doc(el, row_id) {
                 tableObject.initialize_table(data);
                 myCodeMirror.scrollIntoView(row_id);
                 tableObject.active_row = row_id;
-                set_visible_doc(doc_name, null)
+                set_visible_doc(doc_name, null);
                 stopSpinner();
                 clearStatusMessage()
             })

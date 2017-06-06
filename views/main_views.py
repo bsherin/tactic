@@ -23,13 +23,16 @@ import tactic_app
 def connected_msg():
     print"client connected"
 
+
 @socketio.on('connect', namespace='/main')
 def connected_msg():
     print"client connected"
 
+
 @socketio.on('disconnect', namespace='/test')
 def test_disconnect():
     print('Client disconnected')
+
 
 @socketio.on('join', namespace='/main')
 def on_join(data):
@@ -38,9 +41,20 @@ def on_join(data):
 
     print "user joined room " + room
 
-@socketio.on('ready-to-finish', namespace='/main')
-def on_ready_to_finish(data):
-    socketio.emit("finish-post-load", data, namespace='/main', room=data["room"])
+
+@socketio.on('join-main', namespace='/main')
+def on_join_main(data):
+    room = data["room"]
+    join_room(room)
+
+    print "user joined room " + room
+    socketio.emit("joined-mainid", room=room)
+
+
+@socketio.on('ready-to-begin', namespace='/main')
+def on_ready_to_begin(data):
+    socketio.emit("begin-post-load", data, namespace='/main', room=data["room"])
+
 
 @app.route("/register_heartbeat", methods=["GET", "POST"])
 @login_required
@@ -48,6 +62,7 @@ def register_heartbeat():
     data = request.json
     tactic_app.client_worker.update_heartbeat_table(data["main_id"])
     return jsonify({"success": True})
+
 
 @app.route('/post_from_client', methods=["GET", "POST"])
 @login_required
@@ -99,8 +114,9 @@ def export_data():
         return
     data_dict = request.json
     full_collection_name = current_user.build_data_collection_name(data_dict['export_name'])
-    tactic_app.host_worker.post_task(data_dict["main_id"], "export_data", {"full_collection_name": full_collection_name},
-                          export_success)
+    tactic_app.host_worker.post_task(data_dict["main_id"], "export_data",
+                                     {"full_collection_name": full_collection_name},
+                                     export_success)
     return jsonify({"success": True})
 
 

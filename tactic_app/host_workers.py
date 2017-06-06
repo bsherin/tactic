@@ -18,6 +18,7 @@ check_for_dead_time = 300  # How often, in seconds, to ask the megaplex to check
 no_heartbeat_time = 900  # If a mainwindow does send a heartbeat after this amount of time, remove mainwindow.
 global_tile_manager = tactic_app.global_tile_manager
 
+
 class HostWorker(QWorker):
     def __init__(self):
         QWorker.__init__(self)
@@ -54,52 +55,16 @@ class HostWorker(QWorker):
         socketio.emit('show-status-msg', data, namespace='/user_manage', room=data["user_manage_id"])
 
     @task_worthy
+    def show_main_status_message_task(self, data):
+        socketio.emit('show-status-msg', data, namespace='/main', room=data["main_id"])
+
+    @task_worthy
     def clear_um_status_message_task(self, data):
         socketio.emit('clear-status-msg', {}, namespace='/user_manage', room=data["user_manage_id"])
 
     @task_worthy
     def update_collection_selector_list(self, data):
         collection_manager.update_selector_list(user_obj=load_user(data["user_id"]))
-
-    @task_worthy
-    def main_project(self, data):
-        user_id = data["user_id"]
-        project_name = data["project_name"]
-        user_manage_id = data["user_manage_id"]
-        user_obj = load_user(user_id)
-        # noinspection PyTypeChecker
-        self.show_um_status_message("creating main container", user_manage_id, None)
-        main_id, container_id = create_container("tactic_main_image", network_mode="bridge", owner=user_id)
-        global_tile_manager.add_user(user_obj.username)
-
-        list_names = self.get_list_tags_dict({"user_id": user_obj.get_id()})["list_names"]
-        class_names = self.get_class_names({"user_id": user_obj.get_id()})["class_names"]  # this actually gets the tags dict
-        function_names = self.get_function_tags_dict({"user_id": user_obj.get_id()})["function_names"]
-        collection_names = self.get_collection_tags_dict({"user_id": user_obj.get_id()})["collection_names"]
-
-        with app.test_request_context():
-            bf_url = url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1]
-
-        data_dict = {"project_name": project_name,
-                     "project_collection_name": user_obj.project_collection_name,
-                     "loaded_user_modules": global_tile_manager.loaded_user_modules,
-                     "mongo_uri": mongo_uri,
-                     "list_names": list_names,
-                     "class_names": class_names,
-                     "function_names": function_names,
-                     "collection_names": collection_names,
-                     "user_manage_id": user_manage_id,
-                     "base_figure_url": bf_url,
-                     "use_ssl": use_ssl}
-
-        # noinspection PyTypeChecker
-        self.show_um_status_message("start initialize project", user_manage_id, None)
-        result = self.post_and_wait(main_id, "initialize_project_mainwindow", data_dict)
-        if not result["success"]:
-            destroy_container(main_id)
-            raise Exception(result["message"])
-
-        return None
 
     @task_worthy
     def destroy_a_users_containers(self, data):
@@ -118,7 +83,6 @@ class HostWorker(QWorker):
     def get_container_log(self, data):
         container_id = data["container_id"]
         return {"success": True, "log_text": get_log(container_id)}
-
 
     @task_worthy
     def get_full_collection_name(self, data):
@@ -160,7 +124,6 @@ class HostWorker(QWorker):
         the_user = load_user(user_id)
         return {"collection_names": the_user.data_collection_tags_dict}
 
-
     @task_worthy
     def get_class_names(self, data):
         user_id = data["user_id"]
@@ -190,12 +153,12 @@ class HostWorker(QWorker):
         loaded_modules = data["loaded_modules"]
         user_id = data["user_id"]
         user_obj = load_user(user_id)
-        for module in loaded_modules:
-            if module not in global_tile_manager.loaded_user_modules[user_obj.username]:
-                result = tile_manager.load_tile_module(module, return_json=False, user_obj=user_obj)
+        for the_module in loaded_modules:
+            if the_module not in global_tile_manager.loaded_user_modules[user_obj.username]:
+                result = tile_manager.load_tile_module(the_module, return_json=False, user_obj=user_obj)
                 if not result["success"]:
                     template = "Error loading module {}\n" + result["message"]
-                    raise Exception(template.format(module))
+                    raise Exception(template.format(the_module))
         return {"success": True}
 
     @task_worthy
@@ -256,33 +219,10 @@ class HostWorker(QWorker):
 
     @task_worthy
     def get_tile_types(self, data):
-        tile_types = {}
         user_id = data["user_id"]
         the_user = load_user(user_id)
         result = {"tile_types": global_tile_manager.get_user_available_tile_types(the_user.username)}
         return result
-
-    # tactic_todo should clear temp_dict entry after use?
-    @task_worthy
-    def open_project_window(self, data):
-        from tactic_app import socketio
-        unique_id = str(uuid.uuid4())
-        template_data = data["template_data"]
-        template_data["template_name"] = "main.html"
-        template_data["uses_codemirror"] = "True"
-        if data["doc_type"] == "table":
-            template_data["is_table"] = True
-        else:
-            template_data["is_freeform"] = True
-        doc_names = template_data["doc_names"]
-        # why is this fix needed here when I did it upstream?
-        fixed_doc_names = [str(doc_name) for doc_name in doc_names]
-        fixed_doc_names.sort()
-        template_data["doc_names"] = fixed_doc_names
-        self.temp_dict[unique_id] = template_data
-        socketio.emit("window-open", {"the_id": unique_id}, namespace='/user_manage', room=data["user_manage_id"])
-        socketio.emit('stop-spinner', {}, namespace='/user_manage', room=data["user_manage_id"])
-        return {"success": True}
 
     # tactic_todo I'm in the middle of figuring out how to do this send_file_to_client
     # currently I'm thinking I'll do it with something like the temp page loading
@@ -318,8 +258,14 @@ class HostWorker(QWorker):
     @task_worthy
     def emit_table_message(self, data):
         from tactic_app import socketio
-
         socketio.emit("table-message", data, namespace='/main', room=data["main_id"])
+        return {"success": True}
+
+    @task_worthy
+    def emit_to_client(self, data):
+        from tactic_app import socketio
+        socketio.emit(data["message"], data, namespace='/main', room=data["main_id"])
+        print data["message"] + " emitted to client"
         return {"success": True}
 
     @task_worthy
@@ -382,9 +328,9 @@ class HostWorker(QWorker):
         tile_containers = []
         for i in range(data["number"]):
             tile_container_id, container_id = create_container("tactic_tile_image",
-                                                                network_mode="bridge",
-                                                                owner=data["user_id"],
-                                                                parent=data["parent"])
+                                                               network_mode="bridge",
+                                                               owner=data["user_id"],
+                                                               parent=data["parent"])
             tile_containers.append(tile_container_id)
         return {"tile_containers": tile_containers}
 
