@@ -154,14 +154,17 @@ class mainWindow(object):
             self.show_um_message("Entering do_full_recreation", data_dict["user_manage_id"])
             tile_info_dict, loaded_modules = self.recreate_from_save(data_dict["project_collection_name"],
                                                                      data_dict["project_name"])
+            print "returning from recreate_from_save"
             self.mworker.post_and_wait("host", "load_modules",
                                        {"loaded_modules": loaded_modules, "user_id": self.user_id})
+            print "loaded modules"
             doc_names = [str(doc_name) for doc_name in self.doc_names]
 
             self.show_um_message("Getting tile code", data_dict["user_manage_id"])
             tile_code_dict = self.mworker.post_and_wait("host", "get_tile_code",
                                                         {"tile_info_dict": tile_info_dict,
                                                          "user_id": self.user_id})
+            print "got tile code"
             self.show_um_message("Checking tile Code", data_dict["user_manage_id"])
             for old_tile_id in tile_code_dict.keys():
                 if tile_code_dict[old_tile_id] is None:
@@ -179,7 +182,7 @@ class mainWindow(object):
                 new_tile_keys.append(new_key)
 
             self.show_um_message("Got empty containers", data_dict["user_manage_id"])
-
+            print "got empty containers"
             new_tile_info = {}
             error_messages = ""
             for i, old_tile_id in enumerate(tile_info_dict.keys()):
@@ -197,6 +200,7 @@ class mainWindow(object):
                     del tile_code_dict[old_tile_id]
                     del self.project_dict["tile_instances"][old_tile_id]
                     # raise Exception(result["message_string"])
+            print "loaded source"
             self.show_um_message("Recreating the tiles", data_dict["user_manage_id"])
             # Note data_dict has class, function, and list_names
             errors, self.tile_save_results = self.recreate_project_tiles(data_dict, new_tile_info)
@@ -209,22 +213,14 @@ class mainWindow(object):
                 del tile_info_dict[tid]
                 del tile_code_dict[tid]
                 del self.project_dict["tile_instances"][tid]
-
-            template_data = {"collection_name": self.collection_name,
-                             "project_name": self.project_name,
-                             "window_title": self.project_name,
-                             "main_id": self.mworker.my_id,
-                             "doc_names": doc_names,
-                             "use_ssl": str(data_dict["use_ssl"]),
-                             "console_html": self.console_html,
-                             "short_collection_name": self.short_collection_name,
-                             "new_tile_info": new_tile_info}
-
+            print "recreated the tiles"
             self.clear_um_message(data_dict["user_manage_id"])
-            self.mworker.post_task("host", "open_project_window", {"user_manage_id": data_dict["user_manage_id"],
-                                                                   "template_data": template_data,
-                                                                   "message": "window-open",
-                                                                   "doc_type": self.doc_type})
+            self.mworker.ask_host("emit_to_client", {"message": "finish-post-load",
+                                             "collection_name": self.collection_name,
+                                             "short_collection_name": self.short_collection_name,
+                                             "doc_names": self.doc_names,
+                                             "console_html": self.console_html})
+
         except Exception as ex:
             container_list = [self.mworker.my_id] + tile_containers.keys()
             self.mworker.ask_host("delete_container_list", {"container_list": container_list})

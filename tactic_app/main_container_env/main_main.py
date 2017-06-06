@@ -77,8 +77,15 @@ class MainWorker(QWorker):
         try:
             print("entering intialize mainwindow")
             print("data_dict is " + str(data_dict))
+
+            # missing: project_collection_name, mongo_uri, base_figure_url
+
             self.mwindow = mainWindow(self, data_dict)
             self.handler_instances["mainwindow"] = self.mwindow
+            print "ready to emit to client"
+            self.ask_host("emit_to_client", {"message": "finish-post-load",
+                                             "collection_name": self.mwindow.collection_name,
+                                             "doc_names": self.mwindow.doc_names})
             return {"success": True}
         except Exception as Ex:
             return self.handle_exception(Ex, "Error initializing mainwindow")
@@ -87,6 +94,11 @@ class MainWorker(QWorker):
     def initialize_project_mainwindow(self, data_dict):
         try:
             print("entering intialize project mainwindow")
+            the_lists = self.post_and_wait("host", "get_lists_classes_functions", {"user_id": data_dict["user_id"]})
+            data_dict.update({"list_names": the_lists["list_names"],
+                              "class_names": the_lists["class_names"],
+                              "function_names": the_lists["function_names"],
+                              "collection_names": the_lists["collection_names"]})
             self.mwindow = mainWindow(self, data_dict)
             self.handler_instances["mainwindow"] = self.mwindow
             self.post_task(self.my_id, "do_full_recreation", data_dict)

@@ -60,15 +60,15 @@ class CollectionManager(ResourceManager):
         else:
             doc_type = "table"
 
-        data_dict = {"collection_name": cname,
-                     "project_collection_name": user_obj.project_collection_name,
-                     "mongo_uri": mongo_uri,
-                     "doc_type": doc_type,
-                     "base_figure_url": url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1]}
+        # data_dict = {"collection_name": cname,
+        #              "project_collection_name": user_obj.project_collection_name,
+        #              "mongo_uri": mongo_uri,
+        #              "doc_type": doc_type,
+        #              "base_figure_url": url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1]}
 
-        result = tactic_app.host_worker.post_and_wait(main_id, "initialize_mainwindow", data_dict)
-        if not result["success"]:
-            return result["message"]
+        # result = tactic_app.host_worker.post_and_wait(main_id, "initialize_mainwindow", data_dict)
+        # if not result["success"]:
+        #     return result["message"]
         short_collection_name = re.sub("^.*?\.data_collection\.", "", collection_name)
 
         doc_names = []
@@ -85,6 +85,9 @@ class CollectionManager(ResourceManager):
                                collection_name=cname,
                                window_title=short_collection_name,
                                project_name='',
+                               project_collection_name=user_obj.project_collection_name,
+                               mongo_uri=mongo_uri,
+                               base_figure_url=url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
                                main_id=main_id,
                                doc_names=doc_names,
                                use_ssl=str(use_ssl),

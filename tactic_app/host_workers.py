@@ -62,46 +62,6 @@ class HostWorker(QWorker):
         collection_manager.update_selector_list(user_obj=load_user(data["user_id"]))
 
     @task_worthy
-    def main_project(self, data):
-        user_id = data["user_id"]
-        project_name = data["project_name"]
-        user_manage_id = data["user_manage_id"]
-        user_obj = load_user(user_id)
-        # noinspection PyTypeChecker
-        self.show_um_status_message("creating main container", user_manage_id, None)
-        main_id, container_id = create_container("tactic_main_image", network_mode="bridge", owner=user_id)
-        global_tile_manager.add_user(user_obj.username)
-
-        list_names = self.get_list_tags_dict({"user_id": user_obj.get_id()})["list_names"]
-        class_names = self.get_class_names({"user_id": user_obj.get_id()})["class_names"]  # this actually gets the tags dict
-        function_names = self.get_function_tags_dict({"user_id": user_obj.get_id()})["function_names"]
-        collection_names = self.get_collection_tags_dict({"user_id": user_obj.get_id()})["collection_names"]
-
-        with app.test_request_context():
-            bf_url = url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1]
-
-        data_dict = {"project_name": project_name,
-                     "project_collection_name": user_obj.project_collection_name,
-                     "loaded_user_modules": global_tile_manager.loaded_user_modules,
-                     "mongo_uri": mongo_uri,
-                     "list_names": list_names,
-                     "class_names": class_names,
-                     "function_names": function_names,
-                     "collection_names": collection_names,
-                     "user_manage_id": user_manage_id,
-                     "base_figure_url": bf_url,
-                     "use_ssl": use_ssl}
-
-        # noinspection PyTypeChecker
-        self.show_um_status_message("start initialize project", user_manage_id, None)
-        result = self.post_and_wait(main_id, "initialize_project_mainwindow", data_dict)
-        if not result["success"]:
-            destroy_container(main_id)
-            raise Exception(result["message"])
-
-        return None
-
-    @task_worthy
     def destroy_a_users_containers(self, data):
         destroy_user_containers(data["user_id"])
         return {"success": True}
@@ -280,7 +240,8 @@ class HostWorker(QWorker):
         fixed_doc_names.sort()
         template_data["doc_names"] = fixed_doc_names
         self.temp_dict[unique_id] = template_data
-        socketio.emit("window-open", {"the_id": unique_id}, namespace='/user_manage', room=data["user_manage_id"])
+        with app.test_request_context():
+            socketio.emit("window-load", {"the_html": render_template("main.html", **template_data)}, namespace='/user_manage', room=data["user_manage_id"])
         socketio.emit('stop-spinner', {}, namespace='/user_manage', room=data["user_manage_id"])
         return {"success": True}
 
@@ -318,8 +279,14 @@ class HostWorker(QWorker):
     @task_worthy
     def emit_table_message(self, data):
         from tactic_app import socketio
-
         socketio.emit("table-message", data, namespace='/main', room=data["main_id"])
+        return {"success": True}
+
+    @task_worthy
+    def emit_to_client(self, data):
+        from tactic_app import socketio
+        socketio.emit(data["message"], data, namespace='/main', room=data["main_id"])
+        print data["message"] + " emitted to client"
         return {"success": True}
 
     @task_worthy

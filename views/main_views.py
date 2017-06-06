@@ -38,9 +38,17 @@ def on_join(data):
 
     print "user joined room " + room
 
-@socketio.on('ready-to-finish', namespace='/main')
-def on_ready_to_finish(data):
-    socketio.emit("finish-post-load", data, namespace='/main', room=data["room"])
+@socketio.on('join-main', namespace='/main')
+def on_join_main(data):
+    room = data["room"]
+    join_room(room)
+
+    print "user joined room " + room
+    socketio.emit("joined-mainid", room=room)
+
+@socketio.on('ready-to-begin', namespace='/main')
+def on_ready_to_begin(data):
+    socketio.emit("begin-post-load", data, namespace='/main', room=data["room"])
 
 @app.route("/register_heartbeat", methods=["GET", "POST"])
 @login_required

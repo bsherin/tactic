@@ -69,14 +69,12 @@ def direct_administer(password):
 
 
 # this isn't even close to working
-@app.route('/direct_project/<project_name>/<username>/<password>', methods=['GET', 'POST'])
-def direct_project(project_name, username, password):
-    user = User.get_user_by_username(username)
-    if user is not None and user.verify_password(password):
-        login_user(user, remember=False)
-    data = {"project_name": project_name, "user_id": user.get_id(), "user_manage_id": 0};
-    tactic_app.host_worker.main_project(data)
-    return
+@app.route('/direct_project/<project_name>', methods=['GET', 'POST'])
+def direct_project(project_name):
+    user_obj = current_user
+    data = {"project_name": project_name, "user_id": user_obj.get_id()}
+    # tactic_app.host_worker.main_project(data) # This needs to not be here.
+    return render_template("stub_loader.html", data_dict=data, post_task="main_project")
 
 
 @app.route('/direct_collection/<collection_name>/<username>/<password>', methods=['GET', 'POST'])

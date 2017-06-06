@@ -335,6 +335,7 @@ class ProjectManager extends UserManagerResourceManager {
         this.load_view = "";
         this.delete_view = "/delete_project";
         this.double_click_func = "load_func";
+        this.load_view = "/main_project/";
         this.button_groups = [
             {buttons: [
                     {"name": "load", "func": "load_func", "button_class": "btn-default"}]
@@ -349,14 +350,6 @@ class ProjectManager extends UserManagerResourceManager {
         ];
     }
 
-    load_func (event) {
-        const manager = event.data.manager;
-        const res_name = manager.check_for_selection("resource");
-        if (res_name == "") return;
-        const data = {"project_name": res_name, "user_id": user_id, "user_manage_id": user_manage_id};
-        startSpinner();
-        postWithCallbackNoMain("host", "main_project", data)
-    }
 }
 
 class RepositoryProjectManager extends UserManagerResourceManager {
