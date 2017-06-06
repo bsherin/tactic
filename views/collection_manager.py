@@ -48,8 +48,8 @@ class CollectionManager(ResourceManager):
             main_id, container_id = create_container("tactic_main_image", owner=user_obj.get_id())
         except ContainerCreateError:
             return render_template("error_window_template.html",
-                            window_tile="Load Failed",
-                            error_string="Load failed: Could not create container")
+                                   window_tile="Load Failed",
+                                   error_string="Load failed: Could not create container")
 
         global_tile_manager.add_user(user_obj.username)
 
@@ -60,15 +60,6 @@ class CollectionManager(ResourceManager):
         else:
             doc_type = "table"
 
-        # data_dict = {"collection_name": cname,
-        #              "project_collection_name": user_obj.project_collection_name,
-        #              "mongo_uri": mongo_uri,
-        #              "doc_type": doc_type,
-        #              "base_figure_url": url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1]}
-
-        # result = tactic_app.host_worker.post_and_wait(main_id, "initialize_mainwindow", data_dict)
-        # if not result["success"]:
-        #     return result["message"]
         short_collection_name = re.sub("^.*?\.data_collection\.", "", collection_name)
 
         doc_names = []

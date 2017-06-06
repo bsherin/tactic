@@ -18,13 +18,16 @@ class ProjectManager(ResourceManager):
     name_field = "project_name"
 
     def add_rules(self):
-        app.add_url_rule('/main_project/<project_name>', "main_project", login_required(self.main_project), methods=['get'])
+        app.add_url_rule('/main_project/<project_name>',
+                         "main_project",
+                         login_required(self.main_project),
+                         methods=['get'])
         app.add_url_rule('/delete_project', "delete_project", login_required(self.delete_project),
                          methods=['post'])
 
     def main_project(self, project_name):
         user_obj = current_user
-        user_id  =  user_obj.get_id()
+        user_id = user_obj.get_id()
 
         # noinspection PyTypeChecker
         main_id, container_id = create_container("tactic_main_image", network_mode="bridge", owner=user_id)

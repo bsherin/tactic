@@ -332,7 +332,7 @@ function saveProjectAs() {
                     dirty = false;
                     data_object["message"] = data_object["message_string"];
 
-                    postWithCallback("host", "update_project_selector_list", {'user_id': user_id})
+                    postWithCallback("host", "update_project_selector_list", {'user_id': user_id});
                     doFlashStopSpinner(data_object);
                 }
                 else {
