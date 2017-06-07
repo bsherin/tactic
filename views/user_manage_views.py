@@ -194,6 +194,19 @@ def grab_repository_metadata():
         return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
 
+@app.route('/get_tag_list', methods=['POST'])
+@login_required
+def get_tag_list():
+    try:
+        res_type = request.json["res_type"]
+        manager = get_manager_for_type(res_type)
+        tag_list = manager.get_tag_list()
+        return jsonify({"success": True, "tag_list": tag_list})
+    except:
+        error_string = "Error getting tag list: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+
+
 @app.route('/save_metadata', methods=['POST'])
 @login_required
 def save_metadata():
@@ -202,13 +215,15 @@ def save_metadata():
         res_name = request.json["res_name"]
         tags = request.json["tags"]
         notes = request.json["notes"]
+        module_id = request.json["module_id"]
         manager = get_manager_for_type(res_type)
         manager.save_metadata(res_name, tags, notes)
         tag_list = manager.get_tag_list()
         if not tag_list == manager.tag_list:
             socketio.emit('update-tag-list',
                           {"html": manager.request_update_tag_list(),
-                           "res_type": res_type},
+                           "res_type": res_type,
+                           "module_id": module_id},
                           namespace='/user_manage', room=current_user.get_id())
 
         return jsonify({"success": True, "message": "Saved metadata", "alert_type": "alert-success"})

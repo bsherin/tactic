@@ -57,7 +57,7 @@ class CodeViewer extends ModuleViewerAbstract {
 
     saveMe() {
         const new_code = this.myCodeMirror.getDoc().getValue();
-        const tags = $("#tags").val();
+        const tags = this.get_tags_string();
         const notes = $("#notes").val();
         const result_dict = {
             "code_name": this.resource_name,

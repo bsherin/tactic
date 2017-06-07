@@ -7,6 +7,7 @@
 
 {% block styles %}
     <link rel="stylesheet" href="{{url_for('static', filename='css/jquery-ui.min.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/jquery.tag-editor.css')}}">
     <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/loader.css')}}">
 {% endblock %}
 
@@ -46,6 +47,8 @@
 {% endblock %}
 {% block scripts %}
     <script src="{{url_for('static', filename='js/sorttable.js')}}"></script>
+    <script src="{{url_for('static', filename='js/jquery.caret.min.js')}}"></script>
+    <script src="{{url_for('static', filename='js/jquery.tag-editor.min.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/resource_manager.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/user_manage_resource_manager.js')}}"></script>
     <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>

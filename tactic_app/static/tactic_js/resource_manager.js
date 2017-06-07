@@ -128,9 +128,9 @@ class ResourceManager {
             this.bind_standard_button(".search-tags-button", this.search_my_tags);
             this.bind_standard_button(".save-metadata-button", this.save_my_metadata);
         }
-        this.get_tags_field().blur(function () {
-            self.save_my_metadata(false)
-        });
+        // this.get_tags_field().blur(function () {
+        //     self.save_my_metadata(false)
+        // });
 
         this.get_notes_field().blur(function () {
             self.save_my_metadata(false)

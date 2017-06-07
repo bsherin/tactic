@@ -197,7 +197,7 @@ class ModuleViewerAbstract extends ResourceViewer {
         let self = this;
         return new Promise (function (resolve, reject) {
             const new_code = self.myCodeMirror.getDoc().getValue();
-            const tags = $("#tags").val();
+            const tags = self.get_tags_string();
             const notes = $("#notes").val();
             let result_dict;
             let category;

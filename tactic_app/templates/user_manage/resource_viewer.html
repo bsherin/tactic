@@ -4,6 +4,7 @@
 
 {% block styles %}
     <link rel="stylesheet" href="{{url_for('static', filename='css/jquery-ui.min.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/jquery.tag-editor.css')}}">
     <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/loader.css')}}">
 {% endblock %}
 
@@ -36,10 +37,10 @@
                 {% if include_right %}
                 <div id="right-div" class="" style="margin-top: 20px; display: inline-block; vertical-align:top">
                     {% if include_metadata %}
-                    <div  style="vertical-align: top; margin-left: 5px; margin-top: 10px">
+                    <div  style="vertical-align: top; margin-left: 5px; margin-top: 10px; display:inline-block">
                         <div class="created"></div>
                         <div class="form-group" style="margin-bottom: 7px">
-                            <textarea type="text" class="form-control metadata-field" id="tags" rows="1" placeholder="tags" {% if readonly %} readonly {% endif %}></textarea>
+                            <textarea type="text" class="form-control metadata-field" id="tags" rows="1" {% if readonly %} readonly {% endif %}></textarea>
                         </div>
                         <div class="form-group">
                             <textarea class="form-control metadata-field" id="notes" rows="10" placeholder="notes" {% if readonly %} readonly {% endif %}></textarea>
@@ -56,6 +57,8 @@
 
 {% block scripts %}
     <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
+    <script src="{{url_for('static', filename='js/jquery.caret.min.js')}}"></script>
+    <script src="{{url_for('static', filename='js/jquery.tag-editor.min.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/resource_viewer_class.js')}}"></script>
     {% if uses_codemirror == "True" %}
         <script src="{{url_for('static', filename='tactic_js/module_editor_abstract.js')}}"></script>

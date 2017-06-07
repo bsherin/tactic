@@ -31,6 +31,80 @@ class UserManagerResourceManager extends ResourceManager{
         sorttable.innerSortFunction.apply(updated_header, []);
     }
 
+    get_tags() {
+        return this.get_tags_field().tagEditor('getTags')[0].tags
+    }
+
+    get_tags_string() {
+        let taglist = this.get_tags();
+        let tags = "";
+        for (let tag of taglist) {
+            tags = tags + tag + " "
+        }
+        return tags.trim();
+    }
+
+    remove_all_tags() {
+        let tags = this.get_tags();
+        for (let i = 0; i < tags.length; i++) {
+            this.get_tags_field().tagEditor('removeTag', tags[i]);
+        }
+    }
+
+    create_tag_editor(initial_tag_list) {
+        let self = this;
+        let data_dict = {"res_type": this.res_type};
+        postAjaxPromise("get_tag_list", data_dict)
+            .then(function(data) {
+                let all_tags = data.tag_list;
+                self.get_tags_field().tagEditor({
+                    initialTags: initial_tag_list,
+                    autocomplete: {
+                        delay: 0, // show suggestions immediately
+                        position: { collision: 'flip' }, // automatic menu position up/down
+                        source: all_tags
+                    },
+                    placeholder: "Tags...",
+                    onChange: function () {
+                        self.save_my_metadata(false)
+                }});
+            })
+            .catch(doFlash)
+    }
+
+    set_tag_list(tagstring) {
+        this.get_tags_field().tagEditor('destroy');
+        this.get_tags_field().html("");
+        let taglist = tagstring.split(" ");
+        this.create_tag_editor(taglist);
+    }
+
+    set_resource_metadata(created, tags, notes) {
+        this.get_created_field().html(created);
+        this.set_tag_list(tags);
+        this.get_notes_field().html("");
+        this.get_notes_field()[0].value = notes;
+    }
+
+
+    save_my_metadata (flash = true) {
+        const res_name = this.get_active_selector_button().attr("value");
+        //const tags = this.get_tags_field().val();
+        const tags = this.get_tags_string();
+        const notes = this.get_notes_field().val();
+        const result_dict = {"res_type": this.res_type, "res_name": res_name,
+            "tags": tags, "notes": notes, "module_id": this.module_id};
+        const self = this;
+        postAjaxPromise("save_metadata", result_dict)
+            .then(function(data) {
+                self.get_selector_table_row(res_name).children()[3].innerHTML = tags;
+                if (flash) {
+                    doFlash(data)
+                }
+            })
+            .catch(doFlash)
+    }
+
     check_for_selection () {
         //var res_name = $('#' + res_type + '-selector > .btn.active').text().trim();
         const res_name = this.get_active_selector_button().attr("value");
@@ -79,7 +153,7 @@ class UserManagerResourceManager extends ResourceManager{
     }
 
     fill_tag_buttons(the_html) {
-        this.get_aux_left_dom().append(the_html)
+        this.get_aux_left_dom().html(the_html)
     }
 
     get_all_tag_buttons () {
@@ -110,8 +184,8 @@ class UserManagerResourceManager extends ResourceManager{
 
     refresh_tag_buttons(the_html) {
         let active_tag_button = this.get_active_tag_button();
-        manager.fill_tag_buttons(the_html);
-        manager.set_tag_button_state(active_tag_button);
+        this.fill_tag_buttons(the_html);
+        this.set_tag_button_state(active_tag_button);
     }
 
     set_tag_button_state (txt) {
@@ -246,7 +320,8 @@ class UserManagerResourceManager extends ResourceManager{
         const confirm_text = `Are you sure that you want to delete ${res_name}?`;
         confirmDialog(`Delete ${manager.res_type}`, confirm_text, "do nothing", "delete", function () {
             manager.get_active_selector_button("resource").fadeOut();
-            manager.get_tags_field("resource").html("");
+            // manager.get_tags_field("resource").html("");
+            manager.remove_all_tags();
             manager.get_notes_field("resource").html("");
             postAjax(manager.delete_view, {"resource_name": res_name})
         })

@@ -93,10 +93,59 @@ class ResourceViewer {
         this.update_width(this.current_width_fraction)
     }
 
+    get_tags_field() {
+        return $("#tags")
+    }
+
+    get_tags() {
+        return this.get_tags_field().tagEditor('getTags')[0].tags
+    }
+
+    get_tags_string() {
+        let taglist = this.get_tags();
+        let tags = "";
+        for (let tag of taglist) {
+            tags = tags + tag + " "
+        }
+        return tags.trim();
+    }
+
+    remove_all_tags() {
+        let tags = this.get_tags();
+        for (let i = 0; i < tags.length; i++) {
+            this.get_tags_field().tagEditor('removeTag', tags[i]);
+        }
+    }
+
+    create_tag_editor(initial_tag_list) {
+        let self = this;
+        let data_dict = {"res_type": this.res_type};
+        postAjaxPromise("get_tag_list", data_dict)
+            .then(function(data) {
+                let all_tags = data.tag_list;
+                self.get_tags_field().tagEditor({
+                    initialTags: initial_tag_list,
+                    autocomplete: {
+                        delay: 0, // show suggestions immediately
+                        position: { collision: 'flip' }, // automatic menu position up/down
+                        source: all_tags
+                    },
+                    placeholder: "Tags..."
+                });
+            })
+            .catch(doFlash)
+    }
+
+    set_tag_list(tagstring) {
+        this.get_tags_field().tagEditor('destroy');
+        this.get_tags_field().html("");
+        let taglist = tagstring.split(" ");
+        this.create_tag_editor(taglist);
+    }
 
     set_metadata_fields(created, tags, notes) {
         $(".created").html(created);
-        $("#tags")[0].value = tags;
+        this.set_tag_list(tags);
         $("#notes")[0].value = notes;
         this.savedTags = tags;
         this.savedNotes = notes;
@@ -210,7 +259,7 @@ class ResourceViewer {
 
     dirty() {
         let current_content = this.get_current_content();
-        const tags = $("#tags").val();
+        const tags = this.get_tags_string();
         const notes = $("#notes").val();
         return !((current_content == this.saved_content) && (tags == this.savedTags) && (notes == this.savedNotes))
     }
