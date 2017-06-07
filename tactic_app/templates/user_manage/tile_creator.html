@@ -4,6 +4,7 @@
 
 {% block styles %}
     <link rel="stylesheet" href="{{url_for('static', filename='css/jquery-ui.min.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/jquery.tag-editor.css')}}">
     <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/loader.css')}}">
 {% endblock %}
 
@@ -93,7 +94,7 @@
                                     </div>
                                     <div class="form-group" style="margin-bottom: 7px">
                                         <label for="tags">Tags</label>
-                                        <textarea type="text" class="form-control metadata-field" id="tags" rows="1" placeholder="tags" {{read_only_string}}></textarea>
+                                        <textarea type="text" class="form-control metadata-field" id="tags" rows="1" {{read_only_string}}></textarea>
                                     </div>
                                     <div class="form-group">
                                         <label for="notes">Notes</label>
@@ -145,7 +146,7 @@
                                       </div>
                                       <div class="form-group">
                                         <label for="export-tags-input">Tags</label><br>
-                                        <input type="text" class="form-control" id="export-tags-input" placeholder="tags">
+                                        <input type="text" class="form-control" id="export-tags-input">
                                       </div>
                                     <div class="form-group">
                                           <label for="export-create-button"> </label><br>
@@ -171,6 +172,8 @@
     <script src="{{url_for('static', filename='js/sorttable.js')}}"></script>
     <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
     <script src="{{url_for('static', filename='js/javascript.js')}}"></script>
+    <script src="{{url_for('static', filename='js/jquery.caret.min.js')}}"></script>
+    <script src="{{url_for('static', filename='js/jquery.tag-editor.min.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/resource_manager.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/creator_resource_manager.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/resource_viewer_class.js')}}"></script>

@@ -31,7 +31,7 @@ class ListViewer extends ResourceViewer {
 
     saveMe() {
         const new_list_as_string = $("#listarea").val();
-        const tags = $("#tags").val();
+        const tags = this.get_tags_string();
         const notes = $("#notes").val();
         const result_dict = {
             "list_name": this.resource_name,

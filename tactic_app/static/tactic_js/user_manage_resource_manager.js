@@ -25,7 +25,6 @@ class UserManagerResourceManager extends ResourceManager{
 
     fill_content(the_html) {
         this.get_main_content_dom().html(the_html);
-        this.create_tag_editor([]);
         sorttable.makeSortable(this.get_resource_table()[0]);
         const updated_header = this.get_main_content_dom().find("table th")[2];
         sorttable.innerSortFunction.apply(updated_header, []);
@@ -34,6 +33,15 @@ class UserManagerResourceManager extends ResourceManager{
 
     get_tags() {
         return this.get_tags_field().tagEditor('getTags')[0].tags
+    }
+
+    get_tags_string() {
+        let taglist = this.get_tags();
+        let tags = "";
+        for (let tag of taglist) {
+            tags = tags + tag + " "
+        }
+        return tags.trim();
     }
 
     remove_all_tags() {
@@ -56,17 +64,17 @@ class UserManagerResourceManager extends ResourceManager{
                         position: { collision: 'flip' }, // automatic menu position up/down
                         source: all_tags
                     },
+                    placeholder: "Tags...",
                     onChange: function () {
                         self.save_my_metadata(false)
                 }});
             })
             .catch(doFlash)
-
     }
 
     set_tag_list(tagstring) {
         this.get_tags_field().tagEditor('destroy');
-        this.get_tags_field().html("")
+        this.get_tags_field().html("");
         let taglist = tagstring.split(" ");
         this.create_tag_editor(taglist);
     }
@@ -74,21 +82,15 @@ class UserManagerResourceManager extends ResourceManager{
     set_resource_metadata(created, tags, notes) {
         this.get_created_field().html(created);
         this.set_tag_list(tags);
-        // this.get_tags_field().html("");
-        // this.get_tags_field()[0].value = tags;
         this.get_notes_field().html("");
         this.get_notes_field()[0].value = notes;
     }
 
+
     save_my_metadata (flash = true) {
         const res_name = this.get_active_selector_button().attr("value");
         //const tags = this.get_tags_field().val();
-        let taglist = this.get_tags();
-        let tags = "";
-        for (let tag of taglist) {
-            tags = tags + tag + " "
-        }
-        tags = tags.trim();
+        const tags = this.get_tags_string();
         const notes = this.get_notes_field().val();
         const result_dict = {"res_type": this.res_type, "res_name": res_name,
             "tags": tags, "notes": notes, "module_id": this.module_id};
