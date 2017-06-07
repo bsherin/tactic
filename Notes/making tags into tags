@@ -1,0 +1,44 @@
+
+in resourcemanager
+    create_module_html () {
+            let res = Mustache.to_html(this.resource_module_template, this);
+            $(this.destination_selector).append(res);
+            this.update_main_content();
+            this.update_aux_content();
+    get_tags_field() {
+             return this.get_module_element(".tags-field")
+        }
+    add_listeners
+     this.get_tags_field().blur(function ()
+
+     set_resource_metadata(created, tags, notes) {
+            this.get_created_field().html(created);
+            this.get_tags_field().html("");
+            this.get_tags_field()[0].value = tags;
+
+    save_my_metadata (flash = true) {
+        const res_name = this.get_active_selector_button().attr("value");
+        const tags = this.get_tags_field().val();
+
+
+ UserManagerResourceManager
+
+    update_main_content() {
+        const self = this;
+        $.getJSON(`${$SCRIPT_ROOT}/${this.update_view}/${this.res_type}`, function (data) {
+            self.fill_content(data.html, null);
+            self.select_resource_button(null);
+        })
+    }
+
+    fill_content(the_html) {
+        this.get_main_content_dom().html(the_html);
+        sorttable.makeSortable(this.get_resource_table()[0]);
+        const updated_header = this.get_main_content_dom().find("table th")[2];
+        sorttable.innerSortFunction.apply(updated_header, []);
+        sorttable.innerSortFunction.apply(updated_header, []);
+    }
+
+     delete_func (event) {
+    ...
+            manager.get_tags_field("resource").html("");
