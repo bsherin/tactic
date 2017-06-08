@@ -22,6 +22,7 @@ class ResourceManager {
         this.include_above_main_area = false;
         this.include_button_well = true;
         this.start_hidden = false;
+        this.is_repository = false;
         this.include_search_toolbar = true;
         this.popup_buttons = [];
         this.button_groups = [];
@@ -266,7 +267,7 @@ class ResourceManager {
 
     selector_click(row_element) {
         const res_name = row_element.getAttribute("value");
-        const result_dict = {"res_type": this.res_type, "res_name": res_name};
+        const result_dict = {"res_type": this.res_type, "res_name": res_name, "is_repository": this.is_repository};
         this.get_all_selector_buttons().removeClass("active");
         const self = this;
         if (this.include_metadata) {

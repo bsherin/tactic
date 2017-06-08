@@ -119,7 +119,7 @@ class ResourceViewer {
 
     create_tag_editor(initial_tag_list) {
         let self = this;
-        let data_dict = {"res_type": this.res_type};
+        let data_dict = {"res_type": this.res_type, "is_repository": false};
         postAjaxPromise("get_tag_list", data_dict)
             .then(function(data) {
                 let all_tags = data.tag_list;
@@ -130,8 +130,10 @@ class ResourceViewer {
                         position: { collision: 'flip' }, // automatic menu position up/down
                         source: all_tags
                     },
-                    placeholder: "Tags..."
-                });
+                    placeholder: "Tags...",
+                    onChange: function () {
+                        self.save_my_metadata(false)
+                }});
             })
             .catch(doFlash)
     }
@@ -144,7 +146,7 @@ class ResourceViewer {
     }
 
     set_metadata_fields(created, tags, notes) {
-        $(".created").html(created);
+        $("#created").html(created);
         this.set_tag_list(tags);
         $("#notes")[0].value = notes;
         this.savedTags = tags;
@@ -185,11 +187,11 @@ class ResourceViewer {
         this.set_main_content(the_html);
         resize_dom_to_bottom_given_selector("#main_content", 40);
 
-        let result_dict = {"res_type": this.res_type, "res_name": this.resource_name};
+        let result_dict = {"res_type": this.res_type, "res_name": this.resource_name, "is_repository": false};
         let self = this;
         postAjaxPromise("grab_metadata", result_dict)
             .then(function (data) {
-                self.set_metadata_fields(data.date_string, data.tags, data.notes)
+                self.set_metadata_fields(data.datestring, data.tags, data.notes)
             })
             .catch(function () {
                 self.set_metadata_fields("", "", "")
