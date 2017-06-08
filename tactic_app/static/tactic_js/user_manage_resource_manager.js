@@ -53,7 +53,7 @@ class UserManagerResourceManager extends ResourceManager{
 
     create_tag_editor(initial_tag_list) {
         let self = this;
-        let data_dict = {"res_type": this.res_type};
+        let data_dict = {"res_type": this.res_type, "is_repository": this.is_repository};
         postAjaxPromise("get_tag_list", data_dict)
             .then(function(data) {
                 let all_tags = data.tag_list;
@@ -65,8 +65,15 @@ class UserManagerResourceManager extends ResourceManager{
                         source: all_tags
                     },
                     placeholder: "Tags...",
+                    beforeTagSave: function (field, editor, tags, tag, val) {
+                        if (self.is_repository) {
+                            return false
+                        }
+                    },
                     onChange: function () {
-                        self.save_my_metadata(false)
+                        if (!self.is_repository) {
+                            self.save_my_metadata(false)
+                        }
                 }});
             })
             .catch(doFlash)
@@ -89,7 +96,6 @@ class UserManagerResourceManager extends ResourceManager{
 
     save_my_metadata (flash = true) {
         const res_name = this.get_active_selector_button().attr("value");
-        //const tags = this.get_tags_field().val();
         const tags = this.get_tags_string();
         const notes = this.get_notes_field().val();
         const result_dict = {"res_type": this.res_type, "res_name": res_name,

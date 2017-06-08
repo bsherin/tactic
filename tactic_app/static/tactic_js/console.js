@@ -18,6 +18,7 @@ class ConsoleObjectClass {
         this.add_listeners();
         this.console_panel.width();
         this.update_width(.5);
+        this.exports_visible = false;
 
     }
 
@@ -43,6 +44,18 @@ class ConsoleObjectClass {
         this.update_width(this.current_width_fraction)
     }
 
+    showHideExports() {
+        if (this.exports_visible) {
+            $("#exports-panel").css("display", "none");
+            this.exports_visible = false
+        }
+        else {
+            $("#exports-panel").css("display", "inline-block");
+            exportViewerObject.update_height($("#grid-bottom").innerHeight());
+            this.exports_visible = true
+        }
+    }
+
     add_listeners () {
         let self = this;
         $("#show-console-button").click(function () {
@@ -51,6 +64,11 @@ class ConsoleObjectClass {
         $("#hide-console-button").click(function () {
             self.shrinkConsole()
         });
+
+        $("#show-exports-button").click(function () {
+            self.showHideExports()
+        });
+
         $("#open-log-button").click(function () {
             self.openLogWindow()
         });

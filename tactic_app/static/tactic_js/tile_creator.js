@@ -130,10 +130,10 @@ class CreatorViewer extends ModuleViewerAbstract {
 
     setup_resource_modules() {
         let self = this;
-        let result_dict = {"res_type": this.res_type, "res_name": this.resource_name};
+        let result_dict = {"res_type": this.res_type, "res_name": this.resource_name, "is_repository": false};
         postAjaxPromise("grab_metadata", result_dict)
             .then(function (data) {
-                self.set_metadata_fields(data.date_string, data.tags, data.notes, self.parsed_data.category)
+                self.set_metadata_fields(data.datestring, data.tags, data.notes, self.parsed_data.category)
             })
             .catch(function () {
                 self.set_metadata_fields("", "", "", "")
@@ -220,7 +220,7 @@ class CreatorViewer extends ModuleViewerAbstract {
 
     resize_metadata_area() {
         const metadata_width = $("#notes").parent().width();
-        $("#notes").width(metadata_width - 50)
+        // $("#notes").width(metadata_width - 50)
     }
 
     resize_method_module() {

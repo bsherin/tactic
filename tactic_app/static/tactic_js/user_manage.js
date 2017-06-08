@@ -218,6 +218,7 @@ class ListManager extends UserManagerResourceManager {
 class RepositoryListManager extends UserManagerResourceManager {
     set_extra_properties() {
         super.set_extra_properties();
+        this.is_repository = true;
         this.start_hidden = true;
         this.update_view = "request_update_repository_selector_list";
         this.update_tag_view = "request_update_repository_tag_list";
@@ -317,6 +318,7 @@ class CollectionManager extends UserManagerResourceManager {
 class RepositoryCollectionManager extends UserManagerResourceManager {
     set_extra_properties() {
         super.set_extra_properties();
+        this.is_repository = true;
         this.start_hidden = true;
         this.update_view = "request_update_repository_selector_list";
         this.update_tag_view = "request_update_repository_tag_list";
@@ -355,6 +357,7 @@ class ProjectManager extends UserManagerResourceManager {
 class RepositoryProjectManager extends UserManagerResourceManager {
     set_extra_properties() {
         super.set_extra_properties();
+        this.is_repository = true;
         this.start_hidden = true;
         this.update_view = "request_update_repository_selector_list";
         this.update_tag_view = "request_update_repository_tag_list";
@@ -527,6 +530,7 @@ class TileManager extends UserManagerResourceManager {
 class RepositoryTileManager extends UserManagerResourceManager {
     set_extra_properties() {
         super.set_extra_properties();
+        this.is_repository = true;
         this.start_hidden = true;
         this.update_view = "request_update_repository_selector_list";
         this.update_tag_view = "request_update_repository_tag_list";
@@ -604,6 +608,7 @@ class CodeManager extends UserManagerResourceManager {
 class RepositoryCodeManager extends UserManagerResourceManager {
     set_extra_properties() {
         super.set_extra_properties();
+        this.is_repository = true;
         this.start_hidden = true;
         this.update_view = "request_update_repository_selector_list";
         this.update_tag_view = "request_update_repository_tag_list";

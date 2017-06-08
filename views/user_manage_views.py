@@ -158,7 +158,8 @@ def grab_metadata():
     try:
         res_type = request.json["res_type"]
         res_name = request.json["res_name"]
-        manager = get_manager_for_type(res_type)
+        is_repository=request.json["is_repository"]
+        manager = get_manager_for_type(res_type, is_repository=is_repository)
         mdata = manager.grab_metadata(res_name)
         if mdata is None:
             return jsonify({"success": False, "message": "No metadata found", "alert_type": "alert-warning"})
@@ -199,7 +200,8 @@ def grab_repository_metadata():
 def get_tag_list():
     try:
         res_type = request.json["res_type"]
-        manager = get_manager_for_type(res_type)
+        is_repository = request.json["is_repository"]
+        manager = get_manager_for_type(res_type, is_repository=is_repository)
         tag_list = manager.get_tag_list()
         return jsonify({"success": True, "tag_list": tag_list})
     except:
