@@ -237,7 +237,6 @@ class UserManagerResourceManager extends ResourceManager{
                         self.search_my_tags()
                     }
                 });
-                self.get_search_tags_editor().addClass("form-control")
             })
             .catch(doFlash)
     }
