@@ -159,7 +159,7 @@ class exportViewerObjectClass {
 
     show_value() {
         const tail = this.exports_tail.val();
-        let send_data = {"export_name": this.current_export, "tail": tail}
+        let send_data = {"export_name": this.current_export, "tail": tail};
         if (!(this.key_list == null)) {
             send_data["key"] = this.exports_keys.val()
         }

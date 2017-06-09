@@ -97,6 +97,17 @@ function start_post_load() {
                 resource_managers[mod_id].search_my_resource();
             }
         });
+        $(".resource-module").on("keyup", ".search-tags-field", function(e) {
+            if (e.which == 13) {
+                let mod_id = get_current_module_id();
+                resource_managers[mod_id].search_my_tags();
+                e.preventDefault();
+            }
+            else {
+                let mod_id = get_current_module_id();
+                resource_managers[mod_id].search_my_tags();
+            }
+        });
         resize_window();
         $('a[data-toggle="tab"]').on('shown.bs.tab', function (event) {
             // $(event.currentTarget).attr("href")
@@ -168,7 +179,8 @@ function selector_double_click(event) {
 
 function tag_button_clicked(event) {
     const txt = event.target.innerHTML;
-    resource_managers[get_current_module_id()].search_given_tag( txt)
+    resource_managers[get_current_module_id()].search_given_tags([txt])
+    resource_managers[get_current_module_id()].set_tag_button_state(txt);
 }
 
 function showAdmin() {

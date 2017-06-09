@@ -96,6 +96,11 @@ a[role="tab"] {
 .resource-module {
   margin: 10px; }
 
+.search-toolbar .tag-editor li {
+  margin: 6px 2px 6px 2px; }
+.search-toolbar .tag-editor li:last-child {
+  margin-right: 20px; }
+
 .selector-button:hover {
   background-color: #cbcbcb !important; }
 

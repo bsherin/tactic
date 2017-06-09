@@ -8,11 +8,21 @@
                       <input type="text" class="form-control search-field" placeholder="Search">
                          <span class="input-group-btn">
                             <button class="btn btn-default search-resource-button" type="button" value="{{res_type}}">Search</button>
-                            <button class="btn btn-default search-tags-button" type="button" value="{{res_type}}">Search Tags</button>
                             <button class="btn btn-default resource-unfilter-button" type="button" value="{{res_type}}">Show All</button>
                          </span>
                     </div>
                </form>
+                {{#include_tags_search}}
+                <form class="form-inline" style="display:inline">
+                    <div class="input-group">
+                      <input type="text" class="form-control search-tags-field" placeholder="Search">
+                         <span class="input-group-btn">
+                            <button class="btn btn-default search-tags-button" type="button" value="{{res_type}}">Filter Tags</button>
+                             <button class="btn btn-default tags-unfilter-button" type="button" value="{{res_type}}">Clear</button>
+                         </span>
+                    </div>
+               </form>
+                {{/include_tags_search}}
             </div>
         </div>
         {{/include_search_toolbar}}
