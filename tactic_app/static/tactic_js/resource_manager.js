@@ -42,6 +42,7 @@ class ResourceManager {
         else {
             this.update_width(1.0)
         }
+        this.handling_selector_click = false;
         self = this;
 
     }
@@ -278,25 +279,29 @@ class ResourceManager {
     }
 
     selector_click(row_element) {
-        const res_name = row_element.getAttribute("value");
-        const result_dict = {"res_type": this.res_type, "res_name": res_name, "is_repository": this.is_repository};
-        this.get_all_selector_buttons().removeClass("active");
-        const self = this;
-        if (this.include_metadata) {
-            postAjaxPromise("grab_metadata", result_dict)
-            .then(got_metadata)
-            .catch(got_metadata)
-        }
-
-        $(row_element).addClass("active");
-
-        function got_metadata(data) {
-            if (data.success) {
-                self.set_resource_metadata(data.datestring, data.tags, data.notes);
+        if (!this.handling_selector_click) {  // We want to make sure we are not already processing a click
+            this.handling_selector_click = true;
+            const res_name = row_element.getAttribute("value");
+            const result_dict = {"res_type": this.res_type, "res_name": res_name, "is_repository": this.is_repository};
+            this.get_all_selector_buttons().removeClass("active");
+            const self = this;
+            if (this.include_metadata) {
+                postAjaxPromise("grab_metadata", result_dict)
+                    .then(got_metadata)
+                    .catch(got_metadata)
             }
-            else {
-                // doFlash(data)
-                self.clear_resource_metadata()
+
+            $(row_element).addClass("active");
+
+            function got_metadata(data) {
+                if (data.success) {
+                    self.set_resource_metadata(data.datestring, data.tags, data.notes);
+                }
+                else {
+                    // doFlash(data)
+                    self.clear_resource_metadata()
+                }
+                self.handling_selector_click = false;
             }
         }
     }
