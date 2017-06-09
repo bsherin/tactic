@@ -8,6 +8,7 @@ class AdminResourceManager extends ResourceManager {
     set_extra_properties () {
         this.include_metadata = false;
         this.include_search_toolbar = true;
+        this.include_tags_search = false;
         this.aux_right = true
     }
 

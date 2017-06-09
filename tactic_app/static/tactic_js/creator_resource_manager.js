@@ -10,6 +10,7 @@ class CreatorResourceManager extends ResourceManager {
     set_extra_properties () {
         this.include_metadata = false;
         this.include_search_toolbar = false;
+        this.include_tags_search = false;
         this.aux_right = false;
         this.change = false;
         this.viewer = this.extras_dict["viewer"];

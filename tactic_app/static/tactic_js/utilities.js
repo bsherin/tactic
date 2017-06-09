@@ -33,6 +33,15 @@ function objectKeys(obj) {
     return result
 }
 
+Array.prototype.empty = function () {
+  if (this.length == 0) {
+      return true
+  }
+  else {
+      return false
+  }
+};
+
 $.get($SCRIPT_ROOT + "/get_modal_template", function(template){
     modal_template = $(template).filter('#modal-template').html();
     confirm_template = $(template).filter('#confirm-template').html();

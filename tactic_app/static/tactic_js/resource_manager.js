@@ -24,6 +24,7 @@ class ResourceManager {
         this.start_hidden = false;
         this.is_repository = false;
         this.include_search_toolbar = true;
+        this.include_tags_search = true;
         this.popup_buttons = [];
         this.button_groups = [];
         this.file_adders = [];
@@ -126,8 +127,11 @@ class ResourceManager {
         if (this.include_search_toolbar) {
             this.bind_standard_button(".search-resource-button", this.search_my_resource);
             this.bind_standard_button(".resource-unfilter-button", this.unfilter_me);
-            this.bind_standard_button(".search-tags-button", this.search_my_tags);
             this.bind_standard_button(".save-metadata-button", this.save_my_metadata);
+            if (this.include_tags_search) {
+                this.bind_standard_button(".search-tags-button", this.search_my_tags);
+                this.bind_standard_button(".tags-unfilter-button", this.unfilter_tags);
+            }
         }
         // this.get_tags_field().blur(function () {
         //     self.save_my_metadata(false)
@@ -219,6 +223,14 @@ class ResourceManager {
 
     get_search_field() {
         return this.get_module_element(".search-field")
+    }
+
+    get_search_tags_field() {
+        return this.get_module_element(".search-tags-field")
+    }
+
+    get_search_tags_editor() {
+        return this.get_module_element(".search-toolbar .tag-editor")
     }
 
     get_search_button() {
@@ -360,6 +372,13 @@ class ResourceManager {
     }
 
     unfilter_me () {
+        const all_rows = this.get_all_selector_buttons();
+        $.each(all_rows, function (index, row_element) {
+                $(row_element).show()
+        });
+    }
+
+    unfilter_tags () {
         const all_rows = this.get_all_selector_buttons();
         $.each(all_rows, function (index, row_element) {
                 $(row_element).show()

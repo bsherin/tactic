@@ -11,6 +11,7 @@ class UserManagerResourceManager extends ResourceManager{
     set_extra_properties() {
         this.include_metadata = true;
         this.include_search_toolbar = true;
+        this.include_tags_search = true;
         this.aux_left = true;
         this.repository_copy_view = '/copy_from_repository';
         this.send_repository_view = '/send_to_repository';
@@ -20,6 +21,7 @@ class UserManagerResourceManager extends ResourceManager{
         $.getJSON(`${$SCRIPT_ROOT}/${this.update_view}/${this.res_type}`, function (data) {
             self.fill_content(data.html, null);
             self.select_resource_button(null);
+            self.create_search_tag_editor()
         })
     }
 
@@ -120,23 +122,45 @@ class UserManagerResourceManager extends ResourceManager{
         return res_name
     }
 
+    tagMatch (search_tags, item_tags) {
+        if (search_tags.empty()) {
+            return true
+        }
+        for (let item of search_tags) {
+            if (!item_tags.includes(item)) {
+                return false
+            }
+        }
+        return true
+    }
+
     search_my_resource (){
-        this.deactivate_tag_buttons();
         const txt = this.get_search_field()[0].value.toLowerCase();
         const all_rows = this.get_all_selector_buttons();
+        this.deactivate_tag_buttons();
+        let searchtags;
+        if (txt == "") {
+            searchtags = []
+        }
+        else {
+            searchtags = txt.split(" ");
+        }
+        let self = this;
         $.each(all_rows, function (index, row_element) {
             const cells = $(row_element).children();
             const res_name = row_element.getAttribute("value").toLowerCase();
             const tag_text = $(cells[3]).text().toLowerCase();
-            if ((res_name.search(txt) == -1) && (tag_text.search(txt) == -1)) {
+            const taglist = tag_text.split(" ");
+            if ((res_name.search(txt) == -1) && (!self.tagMatch(searchtags, taglist))) {
                 $(row_element).hide()
             }
             else {
                 $(row_element).show()
             }
         });
-        this.show_hide_tag_buttons(txt)
+        this.show_hide_tag_buttons(searchtags)
     }
+
 
     unfilter_me () {
         const all_rows = this.get_all_selector_buttons();
@@ -145,7 +169,19 @@ class UserManagerResourceManager extends ResourceManager{
         });
         this.deactivate_tag_buttons();
         this.show_all_tag_buttons();
+        this.get_search_field().val("")
     }
+
+    unfilter_tags () {
+        const all_rows = this.get_all_selector_buttons();
+        $.each(all_rows, function (index, row_element) {
+                $(row_element).show()
+        });
+        this.deactivate_tag_buttons();
+        this.show_all_tag_buttons();
+        this.clear_search_tag_list();
+    }
+
 
     update_aux_content() {
         this.create_tag_buttons(this.update_tag_view);
@@ -166,26 +202,60 @@ class UserManagerResourceManager extends ResourceManager{
         return this.get_module_element(".tag-button-list button")
     }
 
-    search_given_tag (txt) {
+    search_given_tags (searchtags) {
         const all_rows = this.get_all_selector_buttons();
         this.deactivate_tag_buttons();
+        let self = this;
         $.each(all_rows, function (index, row_element) {
             const cells = $(row_element).children();
             const tag_text = $(cells[3]).text().toLowerCase();
-            if (tag_text.search(txt) == -1) {
+            const taglist = tag_text.split(" ");
+            if (!self.tagMatch(searchtags, taglist)) {
                 $(row_element).hide()
             }
             else {
                 $(row_element).show()
             }
         });
-        this.set_tag_button_state(txt);
+    }
+
+    create_search_tag_editor(initial_tag_list) {
+        let self = this;
+        let data_dict = {"res_type": this.res_type, "is_repository": this.is_repository};
+        postAjaxPromise("get_tag_list", data_dict)
+            .then(function(data) {
+                let all_tags = data.tag_list;
+                self.get_search_tags_field().tagEditor({
+                    initialTags: initial_tag_list,
+                    autocomplete: {
+                        delay: 0, // show suggestions immediately
+                        position: {collision: 'flip'}, // automatic menu position up/down
+                        source: all_tags
+                    },
+                    placeholder: "Tags...",
+                    onChange: function () {
+                        self.search_my_tags()
+                    }
+                });
+                self.get_search_tags_editor().addClass("form-control")
+            })
+            .catch(doFlash)
+    }
+
+    get_search_tags() {
+        return this.get_search_tags_field().tagEditor('getTags')[0].tags
+    }
+    
+    clear_search_tag_list() {
+        this.get_search_tags_field().tagEditor('destroy');
+        this.get_search_tags_field().val("");
+        this.create_search_tag_editor([]);
     }
 
     search_my_tags() {
-        const txt = this.get_search_field()[0].value.toLowerCase();
-        this.search_given_tag(txt);
-        this.show_hide_tag_buttons(txt)
+        const searchtags = this.get_search_tags();
+        this.search_given_tags(searchtags);
+        this.show_hide_tag_buttons(searchtags)
     }
 
     refresh_tag_buttons(the_html) {
@@ -217,15 +287,20 @@ class UserManagerResourceManager extends ResourceManager{
         return active_tag_button
     }
 
-    show_hide_tag_buttons (txt) {
+    show_hide_tag_buttons (searchtags) {
         const all_tag_buttons = this.get_all_tag_buttons();
         $.each(all_tag_buttons, function (index, but) {
             const tag_text = but.innerHTML;
-            if (tag_text.search(txt) == -1) {
-                $(but).hide()
+            if (searchtags.empty()) {
+                $(but).show()
             }
             else {
-                $(but).show()
+                if (!searchtags.includes(tag_text)) {
+                    $(but).hide()
+                }
+                else {
+                    $(but).show()
+                }
             }
         })
     }
