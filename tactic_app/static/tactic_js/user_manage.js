@@ -163,8 +163,10 @@ function toggleRepository() {
 }
 
 function selector_click(event) {
-    const row_element = $(event.target).closest('tr');
-    resource_managers[get_current_module_id()].selector_click(row_element[0])
+    if (event.originalEvent.detail <= 1) {
+        const row_element = $(event.target).closest('tr');
+        resource_managers[get_current_module_id()].selector_click(row_element[0])
+    }
 }
 
 function selector_double_click(event) {
