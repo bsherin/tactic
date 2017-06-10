@@ -106,6 +106,27 @@ function postWithCallback(dest_id, task_type, task_data, callback_func){
     });
 }
 
+function postAsyncFalse(dest_id, task_type, task_data){
+    const task_packet =  {
+        "source": "client",
+        "dest": dest_id,
+        "task_type": task_type,
+        "task_data": task_data,
+        "response_data": null,
+        "main_id": main_id,
+        "callback_id": null
+    };
+
+    $.ajax({
+        url: $SCRIPT_ROOT + "/post_from_client",
+        contentType : 'application/json',
+        type : 'POST',
+        async: false,
+        data: JSON.stringify(task_packet),
+        dataType: 'json'
+    });
+}
+
 function postWithCallbackNoMain(dest_id, task_type, task_data, callback_func){
     const task_packet =  {
         "source": "client",

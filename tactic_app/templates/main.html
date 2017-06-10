@@ -153,7 +153,9 @@
     };
     window.onbeforeunload = function(e) {
         if (dirty) {
-            return "Any unsaved changes will be lost."
+            dtext =  "Any unsaved changes will be lost."
+            e.returnValue = dtext;
+            return dtext
         }
     };
     window.onunload = function (e) {
