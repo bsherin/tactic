@@ -48,7 +48,7 @@ function start_post_load() {
     });
     socket.on('handle-callback', handleCallback);
     socket.on('close-user-windows', function(data){
-                postWithCallback("host", "remove_mainwindow_task", {"main_id": main_id});
+                postAsyncFalse("host", "remove_mainwindow_task", {"main_id": main_id});
                 if (!(data["originator"] == main_id)) {
                     window.close()
                 }
