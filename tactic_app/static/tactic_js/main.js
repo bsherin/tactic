@@ -293,7 +293,7 @@ function change_doc(el, row_id) {
 }
 
 function removeMainwindow() {
-    postWithCallback("host", "remove_mainwindow_task", {"main_id": main_id})
+    postAsyncFalse("host", "remove_mainwindow_task", {"main_id": main_id})
 }
 
 spinner_html = '<span class="loader-small"></span>';

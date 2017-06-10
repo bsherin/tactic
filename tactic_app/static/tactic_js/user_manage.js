@@ -163,7 +163,7 @@ function toggleRepository() {
 }
 
 function selector_click(event) {
-    if (event.originalEvent.detail <= 1) {
+    if (event.originalEvent.detail <= 1) {  // Will suppress on second click of a double-click
         const row_element = $(event.target).closest('tr');
         resource_managers[get_current_module_id()].selector_click(row_element[0])
     }
