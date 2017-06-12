@@ -33,6 +33,17 @@ class UserManagerResourceManager extends ResourceManager{
         sorttable.innerSortFunction.apply(updated_header, []);
     }
 
+    check_for_selection () {
+        //var res_name = $('#' + res_type + '-selector > .btn.active').text().trim();
+        const res_name = this.get_active_selector_button().attr("value");
+        if (res_name == "") {
+            doFlash({"message": `Select a ${this.res_type} first.`, "alert_type": "alert-info"})
+        }
+        return res_name
+    }
+
+    // Metadata fields related related
+
     get_tags() {
         return this.get_tags_field().tagEditor('getTags')[0].tags
     }
@@ -95,7 +106,6 @@ class UserManagerResourceManager extends ResourceManager{
         this.get_notes_field()[0].value = notes;
     }
 
-
     save_my_metadata (flash = true) {
         const res_name = this.get_active_selector_button().attr("value");
         const tags = this.get_tags_string();
@@ -113,14 +123,7 @@ class UserManagerResourceManager extends ResourceManager{
             .catch(doFlash)
     }
 
-    check_for_selection () {
-        //var res_name = $('#' + res_type + '-selector > .btn.active').text().trim();
-        const res_name = this.get_active_selector_button().attr("value");
-        if (res_name == "") {
-            doFlash({"message": `Select a ${this.res_type} first.`, "alert_type": "alert-info"})
-        }
-        return res_name
-    }
+    // search related
 
     tagMatch (search_tags, item_tags) {
         if (search_tags.empty()) {
@@ -138,7 +141,7 @@ class UserManagerResourceManager extends ResourceManager{
         const txt = this.get_search_field()[0].value.toLowerCase();
         const all_rows = this.get_all_selector_buttons();
         this.deactivate_tag_buttons();
-        let searchtags;
+        let searchtags = [];
         if (txt == "") {
             searchtags = []
         }
@@ -146,6 +149,7 @@ class UserManagerResourceManager extends ResourceManager{
             searchtags = txt.split(" ");
         }
         let self = this;
+        let current_tags = [];
         $.each(all_rows, function (index, row_element) {
             const cells = $(row_element).children();
             const res_name = row_element.getAttribute("value").toLowerCase();
@@ -155,12 +159,13 @@ class UserManagerResourceManager extends ResourceManager{
                 $(row_element).hide()
             }
             else {
-                $(row_element).show()
+                $(row_element).show();
+                current_tags = current_tags.concat(taglist);
             }
         });
-        this.show_hide_tag_buttons(searchtags)
+        current_tags = remove_duplicates(current_tags);
+        this.show_hide_tag_buttons(current_tags)
     }
-
 
     unfilter_me () {
         const all_rows = this.get_all_selector_buttons();
@@ -172,40 +177,10 @@ class UserManagerResourceManager extends ResourceManager{
         this.get_search_field().val("")
     }
 
-    unfilter_tags () {
-        const all_rows = this.get_all_selector_buttons();
-        $.each(all_rows, function (index, row_element) {
-                $(row_element).show()
-        });
-        this.deactivate_tag_buttons();
-        this.show_all_tag_buttons();
-        this.clear_search_tag_list();
-    }
-
-
-    update_aux_content() {
-        this.create_tag_buttons(this.update_tag_view);
-    }
-
-    create_tag_buttons(url_string) {
-        const self = this;
-        $.getJSON(`${$SCRIPT_ROOT}/${url_string}/${this.res_type}`, function (data) {
-            self.fill_tag_buttons(data.html, null);
-        })
-    }
-
-    fill_tag_buttons(the_html) {
-        this.get_aux_left_dom().html(the_html)
-    }
-
-    get_all_tag_buttons () {
-        return this.get_module_element(".tag-button-list button")
-    }
-
     search_given_tags (searchtags) {
         const all_rows = this.get_all_selector_buttons();
-        this.deactivate_tag_buttons();
         let self = this;
+        let current_tags = [];
         $.each(all_rows, function (index, row_element) {
             const cells = $(row_element).children();
             const tag_text = $(cells[3]).text().toLowerCase();
@@ -214,9 +189,12 @@ class UserManagerResourceManager extends ResourceManager{
                 $(row_element).hide()
             }
             else {
-                $(row_element).show()
+                $(row_element).show();
+                current_tags = current_tags.concat(taglist);
             }
         });
+        current_tags = remove_duplicates(current_tags);
+        this.show_hide_tag_buttons(current_tags)
     }
 
     create_search_tag_editor(initial_tag_list) {
@@ -244,7 +222,7 @@ class UserManagerResourceManager extends ResourceManager{
     get_search_tags() {
         return this.get_search_tags_field().tagEditor('getTags')[0].tags
     }
-    
+
     clear_search_tag_list() {
         this.get_search_tags_field().tagEditor('destroy');
         this.get_search_tags_field().val("");
@@ -254,19 +232,50 @@ class UserManagerResourceManager extends ResourceManager{
     search_my_tags() {
         const searchtags = this.get_search_tags();
         this.search_given_tags(searchtags);
-        this.show_hide_tag_buttons(searchtags)
+        this.set_tag_button_state(searchtags)
+    }
+
+    // tag button related
+
+    unfilter_tags () {
+        const all_rows = this.get_all_selector_buttons();
+        $.each(all_rows, function (index, row_element) {
+                $(row_element).show()
+        });
+        this.deactivate_tag_buttons();
+        this.show_all_tag_buttons();
+        this.clear_search_tag_list();
+    }
+
+    update_aux_content() {
+        this.create_tag_buttons(this.update_tag_view);
+    }
+
+    create_tag_buttons(url_string) {
+        const self = this;
+        $.getJSON(`${$SCRIPT_ROOT}/${url_string}/${this.res_type}`, function (data) {
+            self.fill_tag_buttons(data.html, null);
+        })
+    }
+
+    fill_tag_buttons(the_html) {
+        this.get_aux_left_dom().html(the_html)
+    }
+
+    get_all_tag_buttons () {
+        return this.get_module_element(".tag-button-list button")
     }
 
     refresh_tag_buttons(the_html) {
-        let active_tag_button = this.get_active_tag_button();
+        let active_tag_buttons = this.get_active_tag_buttons();
         this.fill_tag_buttons(the_html);
-        this.set_tag_button_state(active_tag_button);
+        this.set_tag_button_state(active_tag_buttons);
     }
 
-    set_tag_button_state (txt) {
+    set_tag_button_state (tag_list) {
         const all_tag_buttons = this.get_all_tag_buttons();
         $.each(all_tag_buttons, function (index, but) {
-            if (but.innerHTML == txt) {
+            if (tag_list.includes(but.innerHTML)) {
                 $(but).addClass("active")
             }
             else {
@@ -275,15 +284,19 @@ class UserManagerResourceManager extends ResourceManager{
         })
     }
 
-    get_active_tag_button () {
+    search_active_tag_buttons() {
+        this.search_given_tags(this.get_active_tag_buttons())
+    }
+
+    get_active_tag_buttons () {
         let all_tag_buttons = this.get_all_tag_buttons();
-        let active_tag_button = null;
+        let active_tag_buttons = [];
         $.each(all_tag_buttons, (index, but) => {
             if ($(but).hasClass("active")) {
-                active_tag_button = $(but).html()
+                active_tag_buttons.push($(but).html())
             }
         });
-        return active_tag_button
+        return active_tag_buttons
     }
 
     show_hide_tag_buttons (searchtags) {
@@ -318,6 +331,13 @@ class UserManagerResourceManager extends ResourceManager{
         })
     }
 
+    set_active_tag_buttons (active_list) {
+        const all_tag_buttons = this.get_all_tag_buttons();
+        $.each(all_tag_buttons, function (index, but) {
+            $(but).removeClass("active")
+        })
+    }
+
     add_func(event) {
         const manager = event.data.manager;
         const form_data = new FormData(this);
@@ -326,6 +346,8 @@ class UserManagerResourceManager extends ResourceManager{
             .catch(doFlash);
         event.preventDefault();
     }
+
+    // button action functions
 
     load_func (event) {
         const manager = event.data.manager;

@@ -180,9 +180,14 @@ function selector_double_click(event) {
 }
 
 function tag_button_clicked(event) {
-    const txt = event.target.innerHTML;
-    resource_managers[get_current_module_id()].search_given_tags([txt])
-    resource_managers[get_current_module_id()].set_tag_button_state(txt);
+    let but = $(event.target);
+    if (but.hasClass("active")) {
+        but.removeClass("active")
+    }
+    else {
+        but.addClass("active")
+    }
+    resource_managers[get_current_module_id()].search_active_tag_buttons();
 }
 
 function showAdmin() {
