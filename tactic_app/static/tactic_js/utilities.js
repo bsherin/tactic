@@ -24,6 +24,12 @@ String.prototype.format = function() {
   return str;
 };
 
+function remove_duplicates (arrArg) {
+  return arrArg.filter((elem, pos, arr) => {
+    return arr.indexOf(elem) == pos;
+  });
+}
+
 function objectKeys(obj) {
     const result = [];
     for (let key in obj){
