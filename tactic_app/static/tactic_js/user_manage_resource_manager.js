@@ -331,13 +331,6 @@ class UserManagerResourceManager extends ResourceManager{
         })
     }
 
-    set_active_tag_buttons (active_list) {
-        const all_tag_buttons = this.get_all_tag_buttons();
-        $.each(all_tag_buttons, function (index, but) {
-            $(but).removeClass("active")
-        })
-    }
-
     add_func(event) {
         const manager = event.data.manager;
         const form_data = new FormData(this);
