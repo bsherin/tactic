@@ -4,7 +4,7 @@ import sys, datetime
 import tactic_app
 from tactic_app import app, db, use_ssl  # global_stuff
 
-from resource_manager import ResourceManager
+from resource_manager import ResourceManager, UserManageResourceManager
 from flask import render_template, jsonify, url_for, request
 from flask_login import login_required, current_user
 
@@ -13,7 +13,7 @@ repository_user = User.get_user_by_username("repository")
 global_tile_manager = tactic_app.global_tile_manager
 
 
-class CodeManager(ResourceManager):
+class CodeManager(UserManageResourceManager):
     collection_list = "code_names"
     collection_list_with_metadata = "code_names_with_metadata"
     collection_name = "code_collection_name"

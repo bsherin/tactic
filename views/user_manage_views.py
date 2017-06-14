@@ -13,6 +13,7 @@ from collection_manager import CollectionManager, RepositoryCollectionManager
 from project_manager import ProjectManager, RepositoryProjectManager
 from tile_manager import TileManager, RepositoryTileManager
 from code_manager import CodeManager, RepositoryCodeManager
+from all_manager import AllManager, RepositoryAllManager
 from tactic_app.users import User, copy_between_accounts
 
 
@@ -20,23 +21,28 @@ global_tile_manager = tactic_app.global_tile_manager
 repository_user = User.get_user_by_username("repository")
 admin_user = User.get_user_by_username("admin")
 
-code_manager = CodeManager("code")
-repository_code_manager = RepositoryCodeManager("code")
-tile_manager = TileManager("tile")
-repository_tile_manager = RepositoryTileManager("tile")
-project_manager = ProjectManager("project")
-repository_project_manager = RepositoryProjectManager("project")
-collection_manager = CollectionManager("collection")
-repository_collection_manager = RepositoryCollectionManager("collection")
-list_manager = ListManager("list")
-repository_list_manager = RepositoryListManager("list")
+
+all_manager = AllManager("all")
+repository_all_manager = RepositoryAllManager("all")
+code_manager = CodeManager("code", all_manager)
+repository_code_manager = RepositoryCodeManager("code", repository_all_manager)
+tile_manager = TileManager("tile", all_manager)
+repository_tile_manager = RepositoryTileManager("tile", repository_all_manager)
+project_manager = ProjectManager("project", all_manager)
+repository_project_manager = RepositoryProjectManager("project", repository_all_manager)
+collection_manager = CollectionManager("collection", all_manager)
+repository_collection_manager = RepositoryCollectionManager("collection", repository_all_manager)
+list_manager = ListManager("list", all_manager)
+repository_list_manager = RepositoryListManager("list", repository_all_manager)
+
 
 managers = {
     "list": [list_manager, repository_list_manager],
     "collection": [collection_manager, repository_collection_manager],
     "project": [project_manager, repository_project_manager],
     "tile": [tile_manager, repository_tile_manager],
-    "code": [code_manager, repository_code_manager]
+    "code": [code_manager, repository_code_manager],
+    "all": [all_manager, repository_all_manager]
 }
 
 
@@ -220,12 +226,18 @@ def save_metadata():
         module_id = request.json["module_id"]
         manager = get_manager_for_type(res_type)
         manager.save_metadata(res_name, tags, notes)
+        all_manager = get_manager_for_type("all")
         tag_list = manager.get_tag_list()
         if not tag_list == manager.tag_list:
             socketio.emit('update-tag-list',
                           {"html": manager.request_update_tag_list(),
                            "res_type": res_type,
                            "module_id": module_id},
+                          namespace='/user_manage', room=current_user.get_id())
+            socketio.emit('update-tag-list',
+                          {"html": all_manager.request_update_tag_list(),
+                           "res_type": "all",
+                           "module_id": "all_module"},
                           namespace='/user_manage', room=current_user.get_id())
 
         return jsonify({"success": True, "message": "Saved metadata", "alert_type": "alert-success"})

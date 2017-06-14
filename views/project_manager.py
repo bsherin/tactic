@@ -5,13 +5,13 @@ from flask_login import login_required, current_user
 import tactic_app
 from tactic_app import app, db, use_ssl, mongo_uri
 from tactic_app.docker_functions import create_container, ContainerCreateError
-from resource_manager import ResourceManager
+from resource_manager import ResourceManager, UserManageResourceManager
 from tactic_app.users import User
 global_tile_manager = tactic_app.global_tile_manager
 repository_user = User.get_user_by_username("repository")
 
 
-class ProjectManager(ResourceManager):
+class ProjectManager(UserManageResourceManager):
     collection_list = "project_names"
     collection_list_with_metadata = "project_names_with_metadata"
     collection_name = "project_collection_name"

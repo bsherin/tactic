@@ -7,14 +7,14 @@ from tactic_app import app, db, use_ssl
 import tactic_app
 
 from tactic_app.file_handling import load_a_list
-from resource_manager import ResourceManager
+from resource_manager import ResourceManager, UserManageResourceManager
 from tactic_app.users import User
 global_tile_manager = tactic_app.global_tile_manager
 repository_user = User.get_user_by_username("repository")
 
 
 # noinspection PyMethodMayBeStatic
-class ListManager(ResourceManager):
+class ListManager(UserManageResourceManager):
     collection_list = "list_names"
     collection_list_with_metadata = "list_names_with_metadata"
     collection_name = "list_collection_name"

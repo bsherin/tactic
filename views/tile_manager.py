@@ -8,7 +8,7 @@ from tactic_app.integrated_docs import api_html, api_dict_by_category, ordered_a
 import tactic_app
 from tactic_app import app, db, socketio, use_ssl
 
-from resource_manager import ResourceManager
+from resource_manager import ResourceManager, UserManageResourceManager
 
 from tactic_app.users import User
 global_tile_manager = tactic_app.global_tile_manager
@@ -16,7 +16,7 @@ repository_user = User.get_user_by_username("repository")
 
 
 # noinspection PyMethodMayBeStatic,PyBroadException
-class TileManager(ResourceManager):
+class TileManager(UserManageResourceManager):
     collection_list = "tile_module_names"
     collection_list_with_metadata = "tile_module_names_with_metadata"
     collection_name = "tile_collection_name"
