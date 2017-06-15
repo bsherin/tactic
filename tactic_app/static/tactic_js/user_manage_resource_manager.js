@@ -116,7 +116,8 @@ class UserManagerResourceManager extends ResourceManager{
         const self = this;
         postAjaxPromise("save_metadata", result_dict)
             .then(function(data) {
-                self.get_selector_table_row(res_name).children()[3].innerHTML = tags;
+                self.get_selector_table_row(res_name).children().slice(-1)[0].innerHTML = tags;
+                resource_managers["all_module"].get_selector_table_row(res_name).children().slice(-1)[0].innerHTML = tags
                 if (flash) {
                     doFlash(data)
                 }
