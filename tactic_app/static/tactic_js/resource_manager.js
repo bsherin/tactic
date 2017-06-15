@@ -290,6 +290,9 @@ class ResourceManager {
                     .then(got_metadata)
                     .catch(got_metadata)
             }
+            else {
+                self.handling_selector_click = false
+            }
 
             $(row_element).addClass("active");
 
