@@ -405,7 +405,7 @@ class User(UserMixin):
         return sorted(my_code_names, key=self.sort_data_list_key)
 
     @property
-    def class_tags_dict(self, ):
+    def class_tags_dict(self):
         if self.code_collection_name not in db.collection_names():
             db.create_collection(self.code_collection_name)
             return {}
@@ -415,6 +415,21 @@ class User(UserMixin):
             for c in doc["metadata"]["classes"]:
                 classes[c] = tags
         return classes
+
+    @property
+    def all_names(self):
+        names = self.collection_names + self.project_names + self.tile_module_names + self.list_names + self.code_names
+        return sorted(names, key=str.lower)
+
+    @property
+    def all_names_with_metadata(self):
+        col_names_with_metadata = [d + ["collection"] for d in self.data_collection_names_with_metadata]
+        proj_names_with_metadata = [d + ["project"] for d in self.project_names_with_metadata]
+        list_names_with_metadata = [d + ["list"] for d in self.list_names_with_metadata]
+        tile_names_with_metadata = [d + ["tile"] for d in self.tile_module_names_with_metadata]
+        code_names_with_metadata = [d + ["code"] for d in self.code_names_with_metadata]
+        names_with_metadata = col_names_with_metadata + proj_names_with_metadata + list_names_with_metadata + tile_names_with_metadata + code_names_with_metadata
+        return sorted(names_with_metadata, key=self.sort_data_list_key)
 
     @property
     def function_tags_dict(self):

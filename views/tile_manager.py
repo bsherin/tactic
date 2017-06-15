@@ -8,7 +8,7 @@ from tactic_app.integrated_docs import api_html, api_dict_by_category, ordered_a
 import tactic_app
 from tactic_app import app, db, socketio, use_ssl
 
-from resource_manager import ResourceManager
+from resource_manager import ResourceManager, UserManageResourceManager
 
 from tactic_app.users import User
 global_tile_manager = tactic_app.global_tile_manager
@@ -16,7 +16,7 @@ repository_user = User.get_user_by_username("repository")
 
 
 # noinspection PyMethodMayBeStatic,PyBroadException
-class TileManager(ResourceManager):
+class TileManager(UserManageResourceManager):
     collection_list = "tile_module_names"
     collection_list_with_metadata = "tile_module_names_with_metadata"
     collection_name = "tile_collection_name"
@@ -65,7 +65,7 @@ class TileManager(ResourceManager):
             new_name = request.json["new_name"]
             db[current_user.tile_collection_name].update_one({"tile_module_name": old_name},
                                                              {'$set': {"tile_module_name": new_name}})
-            self.update_selector_list()
+            # self.update_selector_list()
             return jsonify({"success": True, "message": "Module Successfully Saved", "alert_type": "alert-success"})
         except:
             error_string = "Error renaming module " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
@@ -240,8 +240,9 @@ class TileManager(ResourceManager):
         metadata = global_tile_manager.create_initial_metadata()
         data_dict = {"tile_module_name": f.filename, "tile_module": the_module, "metadata": metadata}
         db[user_obj.tile_collection_name].insert_one(data_dict)
-        self.update_selector_list(f.filename)
-        return jsonify({"success": True})
+        table_row = self.create_new_row(f.filename, metadata)
+        all_table_row = self.all_manager.create_new_all_row(f.filename, metadata, "tile")
+        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
 
     def create_duplicate_tile(self):
         user_obj = current_user
@@ -252,11 +253,14 @@ class TileManager(ResourceManager):
                             "message": "A tile with that name already exists"})
         old_tile_dict = db[user_obj.tile_collection_name].find_one({"tile_module_name": tile_to_copy})
         metadata = global_tile_manager.create_initial_metadata()
+        metadata["tags"] = old_tile_dict["metadata"]["tags"]
+        metadata["note"] = old_tile_dict["metadata"]["notes"]
         new_tile_dict = {"tile_module_name": new_tile_name, "tile_module": old_tile_dict["tile_module"],
                          "metadata": metadata}
         db[user_obj.tile_collection_name].insert_one(new_tile_dict)
-        self.update_selector_list(select=new_tile_name)
-        return jsonify({"success": True})
+        table_row = self.create_new_row(new_tile_name, metadata)
+        all_table_row = self.all_manager.create_new_all_row(new_tile_name, metadata, "tile")
+        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
 
     def create_tile_module(self):
         user_obj = current_user
@@ -273,14 +277,15 @@ class TileManager(ResourceManager):
         data_dict = {"tile_module_name": new_tile_name, "tile_module": template, "metadata": metadata,
                      "last_saved": last_saved}
         db[current_user.tile_collection_name].insert_one(data_dict)
-        self.update_selector_list(new_tile_name)
-        return jsonify({"success": True})
+        table_row = self.create_new_row(new_tile_name, metadata)
+        all_table_row = self.all_manager.create_new_all_row(new_tile_name, metadata, "tile")
+        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
 
     def delete_tile_module(self):
         user_obj = current_user
         tile_module_name = request.json["resource_name"]
         db[user_obj.tile_collection_name].delete_one({"tile_module_name": tile_module_name})
-        self.update_selector_list()
+        # self.update_selector_list()
         return jsonify({"success": True})
 
     def render_loaded_tile_list(self, user_obj=None):

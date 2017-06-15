@@ -11,7 +11,7 @@ import tactic_app
 from tactic_app.file_handling import read_csv_file_to_dict, read_tsv_file_to_dict, read_txt_file_to_dict
 from tactic_app.file_handling import read_freeform_file
 
-from resource_manager import ResourceManager
+from resource_manager import ResourceManager, UserManageResourceManager
 global_tile_manager = tactic_app.global_tile_manager
 repository_user = User.get_user_by_username("repository")
 
@@ -20,7 +20,7 @@ AUTOSPLIT_SIZE = 10000
 
 
 # noinspection PyMethodMayBeStatic,PyBroadException
-class CollectionManager(ResourceManager):
+class CollectionManager(UserManageResourceManager):
     collection_list = "data_collections"
     collection_list_with_metadata = "data_collection_names_with_metadata"
     collection_name = ""
@@ -94,7 +94,7 @@ class CollectionManager(ResourceManager):
             full_old_name = current_user.build_data_collection_name(old_name)
             full_new_name = current_user.build_data_collection_name(new_name)
             db[full_old_name].rename(full_new_name)
-            self.update_selector_list()
+            # self.update_selector_list()
             return jsonify({"success": True, "message": "collection name changed", "alert_type": "alert-success"})
         except:
             error_string = "Error renaming collection " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
@@ -245,8 +245,11 @@ class CollectionManager(ResourceManager):
                 error_string = "Error creating collection: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
                 return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
-        self.update_selector_list(collection_name)
-        return jsonify({"message": "Collection successfully loaded", "alert_type": "alert-success"})
+
+        table_row = self.create_new_row(collection_name, mdata)
+        all_table_row = self.all_manager.create_new_all_row(collection_name, mdata, "collection")
+        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row,
+                        "message": "Collection successfully loaded", "alert_type": "alert-success"})
 
     def import_as_freeform(self, collection_name):
         user_obj = current_user
@@ -279,14 +282,16 @@ class CollectionManager(ResourceManager):
                 error_string = "Error creating collection: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
                 return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
-        self.update_selector_list(collection_name)
-        return jsonify({"message": "Collection successfully loaded", "alert_type": "alert-success"})
+        table_row = self.create_new_row(collection_name, mdata)
+        all_table_row = self.all_manager.create_new_all_row(collection_name, mdata, "collection")
+        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row,
+                        "message": "Collection successfully loaded", "alert_type": "alert-success"})
 
     def delete_collection(self):
         user_obj = current_user
         collection_name = request.json["resource_name"]
         result = user_obj.remove_collection(collection_name)
-        self.update_selector_list()
+        # self.update_selector_list()
         return jsonify({"success": result})
 
     def duplicate_collection(self):
@@ -302,8 +307,11 @@ class CollectionManager(ResourceManager):
                 doc_text = fs.get(doc["file_id"]).read()
                 doc["file_id"] = fs.put(doc_text)
             db[new_collection_name].insert_one(doc)
-        self.update_selector_list(request.json['new_res_name'])
-        return jsonify({"success": True})
+        # self.update_selector_list(request.json['new_res_name'])
+        metadata = db[collection_to_copy].find_one({"name": "__metadata__"})
+        table_row = self.create_new_row(request.json['new_res_name'], metadata)
+        all_table_row = self.all_manager.create_new_all_row(request.json['new_res_name'], metadata, "collection")
+        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
 
 
 class RepositoryCollectionManager(CollectionManager):

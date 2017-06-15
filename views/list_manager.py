@@ -7,14 +7,14 @@ from tactic_app import app, db, use_ssl
 import tactic_app
 
 from tactic_app.file_handling import load_a_list
-from resource_manager import ResourceManager
+from resource_manager import ResourceManager, UserManageResourceManager
 from tactic_app.users import User
 global_tile_manager = tactic_app.global_tile_manager
 repository_user = User.get_user_by_username("repository")
 
 
 # noinspection PyMethodMayBeStatic
-class ListManager(ResourceManager):
+class ListManager(UserManageResourceManager):
     collection_list = "list_names"
     collection_list_with_metadata = "list_names_with_metadata"
     collection_name = "list_collection_name"
@@ -76,7 +76,7 @@ class ListManager(ResourceManager):
             new_name = request.json["new_name"]
             db[current_user.list_collection_name].update_one({"list_name": old_name},
                                                              {'$set': {"list_name": new_name}})
-            self.update_selector_list()
+            # self.update_selector_list()
             return jsonify({"success": True, "message": "List name changed", "alert_type": "alert-success"})
         except:
             error_string = "Error renaming list " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
@@ -121,14 +121,15 @@ class ListManager(ResourceManager):
         metadata = global_tile_manager.create_initial_metadata()
         data_dict = {"list_name": the_file.filename, "the_list": the_list, "metadata": metadata}
         db[user_obj.list_collection_name].insert_one(data_dict)
-        self.update_selector_list(select=the_file.filename)
-        return jsonify({"success": True})
+        table_row = self.create_new_row(the_file.filename, metadata)
+        all_table_row = self.all_manager.create_new_all_row(the_file.filename, metadata, "list")
+        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
 
     def delete_list(self):
         user_obj = current_user
         list_name = request.json["resource_name"]
         db[user_obj.list_collection_name].delete_one({"list_name": list_name})
-        self.update_selector_list()
+        # self.update_selector_list()
         return jsonify({"success": True})
 
     def create_duplicate_list(self):
@@ -140,10 +141,13 @@ class ListManager(ResourceManager):
                             "message": "A list with that name already exists"})
         old_list_dict = db[user_obj.list_collection_name].find_one({"list_name": list_to_copy})
         metadata = global_tile_manager.create_initial_metadata()
+        metadata["tags"] = old_list_dict["metadata"]["tags"]
+        metadata["note"] = old_list_dict["metadata"]["notes"]
         new_list_dict = {"list_name": new_list_name, "the_list": old_list_dict["the_list"], "metadata": metadata}
         db[user_obj.list_collection_name].insert_one(new_list_dict)
-        self.update_selector_list(select=new_list_name)
-        return jsonify({"success": True})
+        table_row = self.create_new_row(new_list_name, metadata)
+        all_table_row = self.all_manager.create_new_all_row(new_list_name, metadata, "list")
+        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
 
 
 class RepositoryListManager(ListManager):

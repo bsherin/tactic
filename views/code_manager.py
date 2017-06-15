@@ -4,7 +4,7 @@ import sys, datetime
 import tactic_app
 from tactic_app import app, db, use_ssl  # global_stuff
 
-from resource_manager import ResourceManager
+from resource_manager import ResourceManager, UserManageResourceManager
 from flask import render_template, jsonify, url_for, request
 from flask_login import login_required, current_user
 
@@ -13,7 +13,7 @@ repository_user = User.get_user_by_username("repository")
 global_tile_manager = tactic_app.global_tile_manager
 
 
-class CodeManager(ResourceManager):
+class CodeManager(UserManageResourceManager):
     collection_list = "code_names"
     collection_list_with_metadata = "code_names_with_metadata"
     collection_name = "code_collection_name"
@@ -47,7 +47,7 @@ class CodeManager(ResourceManager):
             new_name = request.json["new_name"]
             db[current_user.code_collection_name].update_one({"code_name": old_name},
                                                              {'$set': {"code_name": new_name}})
-            self.update_selector_list()
+            # self.update_selector_list()
             return jsonify({"success": True, "message": "Module Successfully Saved", "alert_type": "alert-success"})
         except:
             error_string = "Error renaming module " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
@@ -110,16 +110,16 @@ class CodeManager(ResourceManager):
 
         load_result = self.load_code(the_code)
         if not load_result["success"]:
-            return jsonify(load_result)
+            return jsonify({"success": False, "message": "Error loading the code", "alert-type": "alert-warning"})
 
         metadata["classes"] = load_result["classes"]
         metadata["functions"] = load_result["functions"]
 
         data_dict = {"code_name": f.filename, "the_code": the_code, "metadata": metadata}
         db[user_obj.code_collection_name].insert_one(data_dict)
-        self.update_selector_list(f.filename)
-
-        return jsonify({"success": True})
+        table_row = self.create_new_row(f.filename, metadata)
+        all_table_row = self.all_manager.create_new_all_row(f.filename, metadata, "code")
+        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
 
     def create_duplicate_code(self):
         user_obj = current_user
@@ -132,10 +132,13 @@ class CodeManager(ResourceManager):
         metadata = global_tile_manager.create_initial_metadata()
         metadata["classes"] = old_code_dict["metadata"]["classes"]
         metadata["functions"] = old_code_dict["metadata"]["functions"]
+        metadata["tags"] = old_code_dict["metadata"]["tags"]
+        metadata["note"] = old_code_dict["metadata"]["notes"]
         new_code_dict = {"code_name": new_code_name, "the_code": old_code_dict["the_code"], "metadata": metadata}
         db[user_obj.code_collection_name].insert_one(new_code_dict)
-        self.update_selector_list(select=new_code_name)
-        return jsonify({"success": True})
+        table_row = self.create_new_row(new_code_name, metadata)
+        all_table_row = self.all_manager.create_new_all_row(new_code_name, metadata, "code")
+        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
 
     def create_code(self):
         user_obj = current_user
@@ -152,14 +155,15 @@ class CodeManager(ResourceManager):
         metadata["classes"] = []
         data_dict = {"code_name": new_code_name, "the_code": template, "metadata": metadata}
         db[current_user.code_collection_name].insert_one(data_dict)
-        self.update_selector_list(new_code_name)
-        return jsonify({"success": True})
+        table_row = self.create_new_row(new_code_name, metadata)
+        all_table_row = self.all_manager.create_new_all_row(new_code_name, metadata, "code")
+        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
 
     def delete_code(self):
         user_obj = current_user
         code_name = request.json["resource_name"]
         db[user_obj.code_collection_name].delete_one({"code_name": code_name})
-        self.update_selector_list()
+        # self.update_selector_list()
         return jsonify({"success": True})
 
     def update_code(self):

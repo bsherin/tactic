@@ -141,6 +141,17 @@ class ResourceManager(object):
         the_html += "</tbody></table>"
         return the_html
 
+    def build_one_table_row(self, row_data):
+        the_html = "<tr class='selector-button' value='{1}' style='display:none' >".format(self.res_type, row_data[0])
+        for c in row_data:
+            if isinstance(c, list):
+                the_html += "<td sorttable_customkey='{0}'>{1}</td>".format(c[1], c[0])
+            else:
+                the_html += "<td>{0}</td>".format(c)
+        the_html += "</tr>"
+        return the_html
+
+
     def build_resource_array(self, res_list):
         larray = [["Name", "Created", "Updated", "Tags"]]
         for res_item in res_list:
@@ -169,3 +180,41 @@ class ResourceManager(object):
                            [updatestring, updatestring_for_sort], tagstring])
         return larray
 
+    def create_new_row(self, res_name, metadata):
+        new_item = [res_name, metadata]
+        res_array = self.build_resource_array([new_item])
+        table_row = self.build_one_table_row(res_array[1])
+        return table_row
+
+class UserManageResourceManager(ResourceManager):
+
+    def __init__(self, res_type, all_manager):
+        ResourceManager.__init__(self, res_type)
+        self.all_manager = all_manager
+
+    def update_selector_list(self, select=None, user_obj=None):
+        if user_obj is None:
+            user_obj = current_user
+
+        if self.is_repository:
+            socketio.emit('update-selector-list',
+                          {"html": self.request_update_selector_list(user_obj=repository_user),
+                           "select": None,
+                           "module_id": self.module_id,
+                           "res_type": self.res_type},
+                          namespace='/user_manage', room=user_obj.get_id())
+        elif select is None:
+            socketio.emit('update-selector-list',
+                          {"html": self.request_update_selector_list(user_obj=user_obj),
+                           "select": None,
+                           "module_id": self.module_id,
+                           "res_type": self.res_type},
+                          namespace='/user_manage', room=user_obj.get_id())
+        else:
+            socketio.emit('update-selector-list',
+                          {"html": self.request_update_selector_list(user_obj=user_obj),
+                           "select": select,
+                           "module_id": self.module_id,
+                           "res_type": self.res_type},
+                          namespace='/user_manage', room=user_obj.get_id())
+        self.all_manager.update_selector_list(select, user_obj)

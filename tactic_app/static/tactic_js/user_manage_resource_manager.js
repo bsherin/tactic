@@ -6,6 +6,7 @@ class UserManagerResourceManager extends ResourceManager{
 
     constructor (module_id, res_type, resource_module_template, destination_selector) {
         super(module_id, res_type, resource_module_template, destination_selector, false)
+        this.last_search = null;
     }
 
     set_extra_properties() {
@@ -28,7 +29,7 @@ class UserManagerResourceManager extends ResourceManager{
     fill_content(the_html) {
         this.get_main_content_dom().html(the_html);
         sorttable.makeSortable(this.get_resource_table()[0]);
-        const updated_header = this.get_main_content_dom().find("table th")[2];
+        const updated_header = this.get_main_content_dom().find("table th").slice(-2)[0];
         sorttable.innerSortFunction.apply(updated_header, []);
         sorttable.innerSortFunction.apply(updated_header, []);
     }
@@ -125,6 +126,26 @@ class UserManagerResourceManager extends ResourceManager{
 
     // search related
 
+    replay_last_search() {
+        if (!this.last_search) return;
+        let func = this.last_search["function"];
+        let val = this.last_search["value"];
+        switch (func) {
+            case "search_my_resource":
+                this.get_search_field()[0].value = val;
+                this.search_my_resource();
+                break;
+            case "search_my_tags":
+                this.set_tag_button_state(val);
+                this.set_search_tag_list(taglist);
+                this.search_my_tags();
+                break;
+            case "search_active_tag_buttons":
+                this.set_tag_button_state(val);
+                this.search_active_tag_buttons()
+        }
+    }
+
     tagMatch (search_tags, item_tags) {
         if (search_tags.empty()) {
             return true
@@ -153,28 +174,30 @@ class UserManagerResourceManager extends ResourceManager{
         $.each(all_rows, function (index, row_element) {
             const cells = $(row_element).children();
             const res_name = row_element.getAttribute("value").toLowerCase();
-            const tag_text = $(cells[3]).text().toLowerCase();
+            const tag_text = $(cells.slice(-1)[0]).text().toLowerCase();
             const taglist = tag_text.split(" ");
             if ((res_name.search(txt) == -1) && (!self.tagMatch(searchtags, taglist))) {
-                $(row_element).hide()
+                $(row_element).fadeOut()
             }
             else {
-                $(row_element).show();
+                $(row_element).fadeIn();
                 current_tags = current_tags.concat(taglist);
             }
         });
         current_tags = remove_duplicates(current_tags);
-        this.show_hide_tag_buttons(current_tags)
+        this.show_hide_tag_buttons(current_tags);
+        this.last_search = {"function": "search_my_resource", "value": txt}
     }
 
     unfilter_me () {
         const all_rows = this.get_all_selector_buttons();
         $.each(all_rows, function (index, row_element) {
-                $(row_element).show()
+                $(row_element).fadeIn()
         });
         this.deactivate_tag_buttons();
         this.show_all_tag_buttons();
-        this.get_search_field().val("")
+        this.get_search_field().val("");
+        this.last_search = null;
     }
 
     search_given_tags (searchtags) {
@@ -183,13 +206,13 @@ class UserManagerResourceManager extends ResourceManager{
         let current_tags = [];
         $.each(all_rows, function (index, row_element) {
             const cells = $(row_element).children();
-            const tag_text = $(cells[3]).text().toLowerCase();
+            const tag_text = $(cells.slice(-1)[0]).text().toLowerCase();
             const taglist = tag_text.split(" ");
             if (!self.tagMatch(searchtags, taglist)) {
-                $(row_element).hide()
+                $(row_element).fadeOut()
             }
             else {
-                $(row_element).show();
+                $(row_element).fadeIn();
                 current_tags = current_tags.concat(taglist);
             }
         });
@@ -229,10 +252,17 @@ class UserManagerResourceManager extends ResourceManager{
         this.create_search_tag_editor([]);
     }
 
+    set_search_tag_list(taglist) {
+        this.get_search_tags_field().tagEditor('destroy');
+        this.get_search_tags_field().val("");
+    }
+
     search_my_tags() {
         const searchtags = this.get_search_tags();
         this.search_given_tags(searchtags);
-        this.set_tag_button_state(searchtags)
+        this.set_tag_button_state(searchtags);
+        this.last_search = {"function": "search_my_tags", "value": searchtags}
+
     }
 
     // tag button related
@@ -240,11 +270,12 @@ class UserManagerResourceManager extends ResourceManager{
     unfilter_tags () {
         const all_rows = this.get_all_selector_buttons();
         $.each(all_rows, function (index, row_element) {
-                $(row_element).show()
+                $(row_element).fadeIn()
         });
         this.deactivate_tag_buttons();
         this.show_all_tag_buttons();
         this.clear_search_tag_list();
+        this.last_search = null
     }
 
     update_aux_content() {
@@ -285,7 +316,9 @@ class UserManagerResourceManager extends ResourceManager{
     }
 
     search_active_tag_buttons() {
-        this.search_given_tags(this.get_active_tag_buttons())
+        let active_tag_buttons = this.get_active_tag_buttons();
+        this.search_given_tags(active_tag_buttons);
+        this.last_search = {"function": "search_active_tag_buttons", "value": active_tag_buttons}
     }
 
     get_active_tag_buttons () {
@@ -304,14 +337,14 @@ class UserManagerResourceManager extends ResourceManager{
         $.each(all_tag_buttons, function (index, but) {
             const tag_text = but.innerHTML;
             if (searchtags.empty()) {
-                $(but).show()
+                $(but).fadeIn()
             }
             else {
                 if (!searchtags.includes(tag_text)) {
-                    $(but).hide()
+                    $(but).fadeOut()
                 }
                 else {
-                    $(but).show()
+                    $(but).fadeIn()
                 }
             }
         })
@@ -320,7 +353,7 @@ class UserManagerResourceManager extends ResourceManager{
     show_all_tag_buttons () {
         const all_tag_buttons = this.get_all_tag_buttons();
         $.each(all_tag_buttons, function (index, but) {
-                $(but).show()
+                $(but).fadeIn()
         })
     }
 
@@ -342,18 +375,16 @@ class UserManagerResourceManager extends ResourceManager{
 
     // button action functions
 
-    load_func (event) {
-        const manager = event.data.manager;
-        const res_name = manager.check_for_selection("resource");
-        if (res_name == "") return;
-        window.open($SCRIPT_ROOT + manager.load_view + String(res_name))
-    }
-
     view_func (event) {
         const manager = event.data.manager;
         const res_name = manager.check_for_selection("resource");
         if (res_name == "") return;
         window.open($SCRIPT_ROOT + manager.view_view + String(res_name))
+    }
+
+    insert_new_row (new_row, index) {
+        this.get_resource_table().find("tbody > tr").eq(index).before(new_row);
+        this.get_resource_table().find("tbody > tr").eq(index).fadeIn("slow")
     }
 
     duplicate_func (event) {
@@ -371,7 +402,11 @@ class UserManagerResourceManager extends ResourceManager{
                 "res_to_copy": res_name
             };
             postAjaxPromise(manager.duplicate_view, result_dict)
-                .then(() => {;})
+                .then((data) => {
+                    manager.insert_new_row(data.new_row, 0);
+                    manager.select_first_row();
+                    resource_managers["all_module"].insert_new_row(data.new_all_row, 0)
+                })
                 .catch(doFlash)
         }
     }
@@ -394,19 +429,26 @@ class UserManagerResourceManager extends ResourceManager{
             const the_data = {"new_name": new_name};
             postAjax(`rename_resource/${the_type}/${res_name}`, the_data, renameSuccess);
             function renameSuccess(data) {
-                if (data.success) {
-                    self.resource_name = new_name;
-                    $("#rename-button").text(self.resource_name)
-                }
-                else {
+                if (!data.success) {
                     doFlash(data);
                     return false
                 }
-
+                else {
+                    manager.get_selector_table_row(res_name).children()[0].innerHTML = new_name;
+                    manager.get_selector_table_row(res_name).attr("value", new_name);
+                    resource_managers["all_module"].get_selector_table_row(res_name).children()[0].innerHTML = new_name;
+                    resource_managers["all_module"].get_selector_table_row(res_name).attr("value", new_name)
+                }
             }
         }
     }
 
+    select_first_row() {
+        const all_selectors = this.get_all_selector_buttons();
+        if (all_selectors.length > 0) {
+            this.selector_click(all_selectors[0]);
+        }
+    }
 
     delete_func (event) {
         const manager = event.data.manager;
@@ -414,11 +456,19 @@ class UserManagerResourceManager extends ResourceManager{
         if (res_name == "") return;
         const confirm_text = `Are you sure that you want to delete ${res_name}?`;
         confirmDialog(`Delete ${manager.res_type}`, confirm_text, "do nothing", "delete", function () {
-            manager.get_active_selector_button("resource").fadeOut();
-            // manager.get_tags_field("resource").html("");
-            manager.remove_all_tags();
-            manager.get_notes_field("resource").html("");
-            postAjax(manager.delete_view, {"resource_name": res_name})
+            postAjaxPromise(manager.delete_view, {"resource_name": res_name})
+                .then(() => {
+                    let active_row = manager.get_active_selector_button();
+                    active_row.fadeOut("slow", function () {
+                        active_row.remove();
+                        manager.select_first_row()
+                    });
+                    let all_manager_row = resource_managers["all_module"].get_selector_table_row(res_name);
+                    all_manager_row.fadeOut("slow", function () {
+                        all_manager_row.remove();
+                    });
+                })
+                .catch(doFlash);
         })
     }
 
