@@ -177,10 +177,11 @@ class UserManagerResourceManager extends ResourceManager{
             const tag_text = $(cells.slice(-1)[0]).text().toLowerCase();
             const taglist = tag_text.split(" ");
             if ((res_name.search(txt) == -1) && (!self.tagMatch(searchtags, taglist))) {
-                $(row_element).fadeOut()
+                $(row_element).css("display", "none")
+
             }
             else {
-                $(row_element).fadeIn();
+                $(row_element).css("display", "table-row");
                 current_tags = current_tags.concat(taglist);
             }
         });
@@ -192,7 +193,7 @@ class UserManagerResourceManager extends ResourceManager{
     unfilter_me () {
         const all_rows = this.get_all_selector_buttons();
         $.each(all_rows, function (index, row_element) {
-                $(row_element).fadeIn()
+                $(row_element).css("display", "table-row");
         });
         this.deactivate_tag_buttons();
         this.show_all_tag_buttons();
@@ -209,10 +210,10 @@ class UserManagerResourceManager extends ResourceManager{
             const tag_text = $(cells.slice(-1)[0]).text().toLowerCase();
             const taglist = tag_text.split(" ");
             if (!self.tagMatch(searchtags, taglist)) {
-                $(row_element).fadeOut()
+                $(row_element).css("display", "none")
             }
             else {
-                $(row_element).fadeIn();
+                $(row_element).css("display", "table-row");
                 current_tags = current_tags.concat(taglist);
             }
         });
@@ -337,14 +338,14 @@ class UserManagerResourceManager extends ResourceManager{
         $.each(all_tag_buttons, function (index, but) {
             const tag_text = but.innerHTML;
             if (searchtags.empty()) {
-                $(but).fadeIn()
+                $(but).css("display", "block")
             }
             else {
                 if (!searchtags.includes(tag_text)) {
-                    $(but).fadeOut()
+                    $(but).css("display", "none")
                 }
                 else {
-                    $(but).fadeIn()
+                    $(but).css("display", "block")
                 }
             }
         })
@@ -353,7 +354,7 @@ class UserManagerResourceManager extends ResourceManager{
     show_all_tag_buttons () {
         const all_tag_buttons = this.get_all_tag_buttons();
         $.each(all_tag_buttons, function (index, but) {
-                $(but).fadeIn()
+                $(but).css("display", "block")
         })
     }
 
