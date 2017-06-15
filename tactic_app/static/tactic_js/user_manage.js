@@ -230,8 +230,13 @@ class ListManager extends UserManagerResourceManager {
 
     add_list (event) {
         const fdata = new FormData(this);
+        let manager = event.data.manager;
         postAjaxUploadPromise("add_list", fdata)
-            .then(() => {})
+            .then((data) => {
+                    manager.insert_new_row(data.new_row, 0);
+                    manager.select_first_row();
+                    resource_managers["all_module"].insert_new_row(data.new_all_row, 0)
+            })
             .catch(doFlash);
         event.preventDefault();
     }
@@ -293,26 +298,42 @@ class CollectionManager extends UserManagerResourceManager {
     }
     import_as_table (event) {
         const the_data = new FormData(this);
+        let manager = event.data.manager;
         $.getJSON(`${$SCRIPT_ROOT}get_resource_names/collection`, function (data) {
                 showModal("Import as table", "New collection Name", CreateNewCollection, "NewCollection", data["resource_names"])
             }
         );
         function CreateNewCollection(new_name) {
             startSpinner();
-            postAjaxUpload("import_as_table/" + new_name, the_data, doFlashStopSpinner);
+            postAjaxUploadPromise("import_as_table/" + new_name, the_data)
+                .then((data) => {
+                        doFlashStopSpinner(data);
+                        manager.insert_new_row(data.new_row, 0);
+                        manager.select_first_row();
+                        resource_managers["all_module"].insert_new_row(data.new_all_row, 0)
+                })
+                .catch(doFlash);
         }
 
         event.preventDefault();
     };
     import_as_freeform (event) {
         const the_data = new FormData(this);
+        let manager = event.data.manager;
         $.getJSON(`${$SCRIPT_ROOT}get_resource_names/collection`, function (data) {
                 showModal("Import as table", "New collection Name", CreateNewCollection, "NewCollection", data["resource_names"])
             }
         );
         function CreateNewCollection(new_name) {
             startSpinner();
-            postAjaxUpload("import_as_freeform/" + new_name, the_data, doFlashStopSpinner);
+            postAjaxUploadPromise("import_as_freeform/" + new_name, the_data)
+                .then((data) => {
+                        doFlashStopSpinner(data);
+                        manager.insert_new_row(data.new_row, 0);
+                        manager.select_first_row();
+                        resource_managers["all_module"].insert_new_row(data.new_all_row, 0)
+                })
+                .catch(doFlash);
         }
 
         event.preventDefault();
@@ -479,11 +500,18 @@ class TileManager extends UserManagerResourceManager {
 
     add_tile_module (event) {
         const form_data = new FormData(this);
-        postAjaxUpload("add_tile_module", form_data, doFlashOnFailure(data));
+        let manager = event.data.manager;
+        postAjaxUploadPromise("add_tile_module", form_data)
+            .then((data) => {
+                    manager.insert_new_row(data.new_row, 0);
+                    manager.select_first_row();
+                    resource_managers["all_module"].insert_new_row(data.new_all_row, 0)
+            })
+            .catch(doFlash);
         event.preventDefault();
     }
 
-    new_in_creator (event, template_name) {
+    new_in_creator (event, template_name, select_all = false) {
         const manager = event.data.manager;
         $.getJSON(`${$SCRIPT_ROOT}/get_resource_names/tile`, function (data) {
                 showModal("New Tile", "New Tile Name", CreateNewTileModule, "NewTileModule", data["resource_names"])
@@ -496,7 +524,18 @@ class TileManager extends UserManagerResourceManager {
                 "last_saved": "creator"
             };
             postAjaxPromise(manager.new_view, result_dict)
-                .then(() => window.open($SCRIPT_ROOT + manager.creator_view + String(new_name)))
+                .then((data) => {
+                    manager.insert_new_row(data.new_row, 0);
+
+                    resource_managers["all_module"].insert_new_row(data.new_all_row, 0);
+                    if (select_all) {
+                        resource_managers["all_module"].select_first_row()
+                    }
+                    else {
+                        manager.select_first_row();
+                    }
+                    window.open($SCRIPT_ROOT + manager.creator_view + String(new_name))
+                })
                 .catch(doFlash)
             }
         event.preventDefault();
@@ -542,7 +581,12 @@ class TileManager extends UserManagerResourceManager {
                 "last_saved": "viewer"
             };
             postAjaxPromise(manager.new_view, result_dict)
-                .then(() => window.open($SCRIPT_ROOT + manager.view_view + String(new_name)))
+                .then((data) => {
+                    manager.insert_new_row(data.new_row, 0);
+                    manager.select_first_row();
+                    resource_managers["all_module"].insert_new_row(data.new_all_row, 0);
+                    window.open($SCRIPT_ROOT + manager.view_view + String(new_name))
+                })
                 .catch(doFlash)
             }
         event.preventDefault();
@@ -603,23 +647,40 @@ class CodeManager extends UserManagerResourceManager {
     }
     add_code (event) {
         const form_data = new FormData(this);
-        postAjaxUpload("add_code", form_data, doFlashOnFailure(data));
+        let manager = event.data.manager;
+        postAjaxUploadPromise("add_code", form_data)
+            .then((data) => {
+                    manager.insert_new_row(data.new_row, 0);
+                    manager.select_first_row();
+                    resource_managers["all_module"].insert_new_row(data.new_all_row, 0)
+            })
+            .catch(doFlash);
         event.preventDefault();
     }
-    new_code (event) {
+    new_code (event, select_all = false) {
         const template_name = "BasicCodeTemplate";
         $.getJSON(`${$SCRIPT_ROOT}/get_resource_names/code`, function (data) {
                 showModal("New Code Resource", "New Code Resource Name", CreateNewCodeResource, "NewCodeResource", data["resource_names"])
             }
         );
-
+        const manager = event.data.manager;
         function CreateNewCodeResource(new_name) {
             const result_dict = {
                 "template_name": template_name,
                 "new_res_name": new_name
             };
             postAjaxPromise("/create_code", result_dict)
-                .then(() => window.open($SCRIPT_ROOT + "/view_code/" + String(new_name)))
+                .then((data) => {
+                    manager.insert_new_row(data.new_row, 0);
+                    resource_managers["all_module"].insert_new_row(data.new_all_row, 0);
+                    if (select_all) {
+                        resource_managers["all_module"].select_first_row()
+                    }
+                    else {
+                        manager.select_first_row();
+                    }
+                    window.open($SCRIPT_ROOT + "/view_code/" + String(new_name))
+                })
                 .catch(doFlash)
         }
         event.preventDefault();
@@ -689,19 +750,20 @@ class AllManager extends UserManagerResourceManager {
     }
     new_basic_in_creator (event) {
         event.data.manager =  resource_managers["tile_module"];
-        resource_managers["tile_module"].new_in_creator(event, "BasicTileTemplate");
+        resource_managers["tile_module"].new_in_creator(event, "BasicTileTemplate", true);
         event.preventDefault();
     }
     new_mpl_in_creator (event) {
         event.data.manager =  resource_managers["tile_module"];
-        resource_managers["tile_module"].new_in_creator(event, "MatplotlibTileTemplate")
+        resource_managers["tile_module"].new_in_creator(event, "MatplotlibTileTemplate", true)
     }
     new_d3_in_creator (event) {
         event.data.manager =  resource_managers["tile_module"];
-        resource_managers["tile_module"].new_in_creator(event, "D3TileTemplate")
+        resource_managers["tile_module"].new_in_creator(event, "D3TileTemplate", true)
     }
     new_code (event) {
-        resource_managers["code_module"].new_code(event)
+        event.data.manager =  resource_managers["code_module"];
+        resource_managers["code_module"].new_code(event, true);
     }
 
     selected_resource_type() {
@@ -736,7 +798,6 @@ class AllManager extends UserManagerResourceManager {
         }
     }
 
-
     duplicate_func (event) {
         const manager = event.data.manager;
         const res_name = manager.check_for_selection();
@@ -752,7 +813,11 @@ class AllManager extends UserManagerResourceManager {
                 "res_to_copy": res_name
             };
             postAjaxPromise(manager.res_manager(res_type).duplicate_view, result_dict)
-                .then(() => {;})
+                .then((data) => {
+                    manager.res_manager(res_type).insert_new_row(data.new_row, 0);
+                    manager.insert_new_row(data.new_all_row, 0);
+                    manager.select_first_row();
+                })
                 .catch(doFlash)
         }
     }
@@ -868,18 +933,15 @@ class AllManager extends UserManagerResourceManager {
         confirmDialog(`Delete ${the_type}`, confirm_text, "do nothing", "delete", function () {
             postAjaxPromise(manager.res_manager(the_type).delete_view, {"resource_name": res_name})
                 .then(() => {
-                    let active_row = manager.get_active_selector_button("resource")
+                    let active_row = manager.get_active_selector_button("resource");
                     active_row.fadeOut("slow", function () {
-                         active_row.remove()
+                        active_row.remove();
+                        manager.select_first_row()
                     });
                     let specific_manager_row = manager.res_manager(the_type).get_selector_table_row(res_name);
                     specific_manager_row.fadeOut("slow", function () {
                          specific_manager_row.remove()
                     });
-                    const all_selectors = manager.get_all_selector_buttons();
-                    if (all_selectors.length > 0) {
-                        manager.selector_click(all_selectors[0]);
-                    }
                 })
         })
     }

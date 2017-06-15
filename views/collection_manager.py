@@ -245,8 +245,11 @@ class CollectionManager(UserManageResourceManager):
                 error_string = "Error creating collection: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
                 return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
-        self.update_selector_list(collection_name)
-        return jsonify({"message": "Collection successfully loaded", "alert_type": "alert-success"})
+
+        table_row = self.create_new_row(collection_name, mdata)
+        all_table_row = self.all_manager.create_new_all_row(collection_name, mdata, "collection")
+        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row,
+                        "message": "Collection successfully loaded", "alert_type": "alert-success"})
 
     def import_as_freeform(self, collection_name):
         user_obj = current_user
@@ -279,8 +282,10 @@ class CollectionManager(UserManageResourceManager):
                 error_string = "Error creating collection: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
                 return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
-        self.update_selector_list(collection_name)
-        return jsonify({"message": "Collection successfully loaded", "alert_type": "alert-success"})
+        table_row = self.create_new_row(collection_name, mdata)
+        all_table_row = self.all_manager.create_new_all_row(collection_name, mdata, "collection")
+        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row,
+                        "message": "Collection successfully loaded", "alert_type": "alert-success"})
 
     def delete_collection(self):
         user_obj = current_user
@@ -302,8 +307,11 @@ class CollectionManager(UserManageResourceManager):
                 doc_text = fs.get(doc["file_id"]).read()
                 doc["file_id"] = fs.put(doc_text)
             db[new_collection_name].insert_one(doc)
-        self.update_selector_list(request.json['new_res_name'])
-        return jsonify({"success": True})
+        # self.update_selector_list(request.json['new_res_name'])
+        metadata = db[collection_to_copy].find_one({"name": "__metadata__"})
+        table_row = self.create_new_row(request.json['new_res_name'], metadata)
+        all_table_row = self.all_manager.create_new_all_row(request.json['new_res_name'], metadata, "collection")
+        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
 
 
 class RepositoryCollectionManager(CollectionManager):

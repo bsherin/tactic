@@ -50,6 +50,11 @@ class AllManager(ResourceManager):
                            [updatestring, updatestring_for_sort], tagstring])
         return larray
 
+    def create_new_all_row(self, res_name, metadata, type):
+        new_all_item = [res_name, metadata, type]
+        new_all_array = self.build_resource_array([new_all_item])
+        all_table_row = self.build_one_table_row(new_all_array[1])
+        return all_table_row
 
 class RepositoryAllManager(AllManager):
     rep_string = "repository-"

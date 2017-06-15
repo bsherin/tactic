@@ -110,16 +110,16 @@ class CodeManager(UserManageResourceManager):
 
         load_result = self.load_code(the_code)
         if not load_result["success"]:
-            return jsonify(load_result)
+            return jsonify({"success": False, "message": "Error loading the code", "alert-type": "alert-warning"})
 
         metadata["classes"] = load_result["classes"]
         metadata["functions"] = load_result["functions"]
 
         data_dict = {"code_name": f.filename, "the_code": the_code, "metadata": metadata}
         db[user_obj.code_collection_name].insert_one(data_dict)
-        self.update_selector_list(f.filename)
-
-        return jsonify({"success": True})
+        table_row = self.create_new_row(f.filename, metadata)
+        all_table_row = self.all_manager.create_new_all_row(f.filename, metadata, "code")
+        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
 
     def create_duplicate_code(self):
         user_obj = current_user
@@ -136,8 +136,9 @@ class CodeManager(UserManageResourceManager):
         metadata["note"] = old_code_dict["metadata"]["notes"]
         new_code_dict = {"code_name": new_code_name, "the_code": old_code_dict["the_code"], "metadata": metadata}
         db[user_obj.code_collection_name].insert_one(new_code_dict)
-        self.update_selector_list(select=new_code_name)
-        return jsonify({"success": True})
+        table_row = self.create_new_row(new_code_name, metadata)
+        all_table_row = self.all_manager.create_new_all_row(new_code_name, metadata, "code")
+        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
 
     def create_code(self):
         user_obj = current_user
@@ -154,8 +155,9 @@ class CodeManager(UserManageResourceManager):
         metadata["classes"] = []
         data_dict = {"code_name": new_code_name, "the_code": template, "metadata": metadata}
         db[current_user.code_collection_name].insert_one(data_dict)
-        self.update_selector_list(new_code_name)
-        return jsonify({"success": True})
+        table_row = self.create_new_row(new_code_name, metadata)
+        all_table_row = self.all_manager.create_new_all_row(new_code_name, metadata, "code")
+        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
 
     def delete_code(self):
         user_obj = current_user

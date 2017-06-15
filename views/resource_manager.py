@@ -141,6 +141,17 @@ class ResourceManager(object):
         the_html += "</tbody></table>"
         return the_html
 
+    def build_one_table_row(self, row_data):
+        the_html = "<tr class='selector-button' value='{1}' style='display:none' >".format(self.res_type, row_data[0])
+        for c in row_data:
+            if isinstance(c, list):
+                the_html += "<td sorttable_customkey='{0}'>{1}</td>".format(c[1], c[0])
+            else:
+                the_html += "<td>{0}</td>".format(c)
+        the_html += "</tr>"
+        return the_html
+
+
     def build_resource_array(self, res_list):
         larray = [["Name", "Created", "Updated", "Tags"]]
         for res_item in res_list:
@@ -168,6 +179,12 @@ class ResourceManager(object):
             larray.append([res_item[0], [datestring, datestring_for_sort],
                            [updatestring, updatestring_for_sort], tagstring])
         return larray
+
+    def create_new_row(self, res_name, metadata):
+        new_item = [res_name, metadata]
+        res_array = self.build_resource_array([new_item])
+        table_row = self.build_one_table_row(res_array[1])
+        return table_row
 
 class UserManageResourceManager(ResourceManager):
 

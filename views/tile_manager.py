@@ -240,8 +240,9 @@ class TileManager(UserManageResourceManager):
         metadata = global_tile_manager.create_initial_metadata()
         data_dict = {"tile_module_name": f.filename, "tile_module": the_module, "metadata": metadata}
         db[user_obj.tile_collection_name].insert_one(data_dict)
-        self.update_selector_list(f.filename)
-        return jsonify({"success": True})
+        table_row = self.create_new_row(f.filename, metadata)
+        all_table_row = self.all_manager.create_new_all_row(f.filename, metadata, "tile")
+        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
 
     def create_duplicate_tile(self):
         user_obj = current_user
@@ -257,8 +258,9 @@ class TileManager(UserManageResourceManager):
         new_tile_dict = {"tile_module_name": new_tile_name, "tile_module": old_tile_dict["tile_module"],
                          "metadata": metadata}
         db[user_obj.tile_collection_name].insert_one(new_tile_dict)
-        self.update_selector_list(select=new_tile_name)
-        return jsonify({"success": True})
+        table_row = self.create_new_row(new_tile_name, metadata)
+        all_table_row = self.all_manager.create_new_all_row(new_tile_name, metadata, "tile")
+        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
 
     def create_tile_module(self):
         user_obj = current_user
@@ -275,8 +277,9 @@ class TileManager(UserManageResourceManager):
         data_dict = {"tile_module_name": new_tile_name, "tile_module": template, "metadata": metadata,
                      "last_saved": last_saved}
         db[current_user.tile_collection_name].insert_one(data_dict)
-        self.update_selector_list(new_tile_name)
-        return jsonify({"success": True})
+        table_row = self.create_new_row(new_tile_name, metadata)
+        all_table_row = self.all_manager.create_new_all_row(new_tile_name, metadata, "tile")
+        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
 
     def delete_tile_module(self):
         user_obj = current_user

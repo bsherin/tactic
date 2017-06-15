@@ -121,8 +121,9 @@ class ListManager(UserManageResourceManager):
         metadata = global_tile_manager.create_initial_metadata()
         data_dict = {"list_name": the_file.filename, "the_list": the_list, "metadata": metadata}
         db[user_obj.list_collection_name].insert_one(data_dict)
-        self.update_selector_list(select=the_file.filename)
-        return jsonify({"success": True})
+        table_row = self.create_new_row(the_file.filename, metadata)
+        all_table_row = self.all_manager.create_new_all_row(the_file.filename, metadata, "list")
+        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
 
     def delete_list(self):
         user_obj = current_user
@@ -144,8 +145,9 @@ class ListManager(UserManageResourceManager):
         metadata["note"] = old_list_dict["metadata"]["notes"]
         new_list_dict = {"list_name": new_list_name, "the_list": old_list_dict["the_list"], "metadata": metadata}
         db[user_obj.list_collection_name].insert_one(new_list_dict)
-        self.update_selector_list(select=new_list_name)
-        return jsonify({"success": True})
+        table_row = self.create_new_row(new_list_name, metadata)
+        all_table_row = self.all_manager.create_new_all_row(new_list_name, metadata, "list")
+        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
 
 
 class RepositoryListManager(ListManager):

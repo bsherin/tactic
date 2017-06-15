@@ -382,6 +382,11 @@ class UserManagerResourceManager extends ResourceManager{
         window.open($SCRIPT_ROOT + manager.view_view + String(res_name))
     }
 
+    insert_new_row (new_row, index) {
+        this.get_resource_table().find("tbody > tr").eq(index).before(new_row);
+        this.get_resource_table().find("tbody > tr").eq(index).fadeIn("slow")
+    }
+
     duplicate_func (event) {
         const manager = event.data.manager;
         const res_name = manager.check_for_selection("resource");
@@ -397,7 +402,11 @@ class UserManagerResourceManager extends ResourceManager{
                 "res_to_copy": res_name
             };
             postAjaxPromise(manager.duplicate_view, result_dict)
-                .then(() => {;})
+                .then((data) => {
+                    manager.insert_new_row(data.new_row, 0);
+                    manager.select_first_row();
+                    resource_managers["all_module"].insert_new_row(data.new_all_row, 0)
+                })
                 .catch(doFlash)
         }
     }
@@ -434,6 +443,12 @@ class UserManagerResourceManager extends ResourceManager{
         }
     }
 
+    select_first_row() {
+        const all_selectors = this.get_all_selector_buttons();
+        if (all_selectors.length > 0) {
+            this.selector_click(all_selectors[0]);
+        }
+    }
 
     delete_func (event) {
         const manager = event.data.manager;
@@ -446,16 +461,12 @@ class UserManagerResourceManager extends ResourceManager{
                     let active_row = manager.get_active_selector_button();
                     active_row.fadeOut("slow", function () {
                         active_row.remove();
+                        manager.select_first_row()
                     });
                     let all_manager_row = resource_managers["all_module"].get_selector_table_row(res_name);
                     all_manager_row.fadeOut("slow", function () {
                         all_manager_row.remove();
                     });
-
-                    const all_selectors = manager.get_all_selector_buttons();
-                    if (all_selectors.length > 0) {
-                        manager.selector_click(all_selectors[0]);
-                    }
                 })
                 .catch(doFlash);
         })
