@@ -94,7 +94,7 @@ class CollectionManager(UserManageResourceManager):
             full_old_name = current_user.build_data_collection_name(old_name)
             full_new_name = current_user.build_data_collection_name(new_name)
             db[full_old_name].rename(full_new_name)
-            self.update_selector_list()
+            # self.update_selector_list()
             return jsonify({"success": True, "message": "collection name changed", "alert_type": "alert-success"})
         except:
             error_string = "Error renaming collection " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
@@ -286,7 +286,7 @@ class CollectionManager(UserManageResourceManager):
         user_obj = current_user
         collection_name = request.json["resource_name"]
         result = user_obj.remove_collection(collection_name)
-        self.update_selector_list()
+        # self.update_selector_list()
         return jsonify({"success": result})
 
     def duplicate_collection(self):

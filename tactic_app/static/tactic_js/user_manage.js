@@ -132,7 +132,7 @@ function start_post_load() {
 }
 
 function toggleRepository() {
-    for (let res_type of res_types) {
+    for (let res_type of res_types.concat("all")) {
         let old_manager;
         let new_manager;
         if (repository_visible) {
@@ -619,7 +619,7 @@ class CodeManager extends UserManagerResourceManager {
                 "new_res_name": new_name
             };
             postAjaxPromise("/create_code", result_dict)
-                .then(() => window.open($SCRIPT_ROOT + "/view_code" + String(new_name)))
+                .then(() => window.open($SCRIPT_ROOT + "/view_code/" + String(new_name)))
                 .catch(doFlash)
         }
         event.preventDefault();
@@ -649,7 +649,7 @@ class AllManager extends UserManagerResourceManager {
         this.start_hidden = false;
         this.update_view = "request_update_selector_list";
         this.update_tag_view = "request_update_tag_list";
-        this.double_click_func = "view_func";
+        this.double_click_func = "dc_view_func";
         this.popup_buttons = [{
             "name": "new",
             "button_class": "btn-default",
@@ -668,23 +668,19 @@ class AllManager extends UserManagerResourceManager {
         ];
         this.button_groups = [
             {buttons: [
-                    {"name": "view", "func": "view_func", "button_class": "btn-default", "applicable_types": res_types}]
+                    {"name": "view", "func": "view_func", "button_class": "btn-default", "applicable_types": res_types},
+                    {"name": "view_in_creator", "func": "creator_view_func", "button_class": "btn-default", "applicable_types": ["tile"]},
+                    {"name": "load", "func": "load_func", "button_class": "btn-default", "applicable_types": ["tile"]},
+                    {"name": "unload", "func": "unload_func", "button_class": "btn-default", "applicable_types": ["tile"]}]
             },
             {buttons: [
                     {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-default", "applicable_types": ["list", "collection", "tile", "code"]},
                     {"name": "rename", "func": "rename_func", "button_class": "btn-default", "applicable_types": res_types}]
             },
             {buttons: [
+                    {"name": "share", "func": "send_repository_func", "button_class": "btn-default", "applicable_types": res_types},
                     {"name": "combine_collections", "func": "combineCollections", "button_class": "btn-default", "applicable_types": ["collection"]},
                     {"name": "download", "func": "downloadCollection", "button_class": "btn btn-default", "applicable_types": ["collection"]}]
-            },
-            {buttons: [
-                    {"name": "view_in_creator", "func": "creator_view_func", "button_class": "btn-default", "applicable_types": ["tile"]},
-                    {"name": "load", "func": "load_func", "button_class": "btn-default", "applicable_types": ["tile"]},
-                    {"name": "unload", "func": "unload_func", "button_class": "btn-default"}]
-            },
-            {buttons: [
-                    {"name": "share", "func": "send_repository_func", "button_class": "btn-default", "applicable_types": res_types}]
             },
             {buttons: [
                     {"name": "delete", "func": "delete_func", "button_class": "btn-default", "applicable_types": res_types}]
@@ -692,13 +688,16 @@ class AllManager extends UserManagerResourceManager {
         ];
     }
     new_basic_in_creator (event) {
+        event.data.manager =  resource_managers["tile_module"];
         resource_managers["tile_module"].new_in_creator(event, "BasicTileTemplate");
         event.preventDefault();
     }
     new_mpl_in_creator (event) {
+        event.data.manager =  resource_managers["tile_module"];
         resource_managers["tile_module"].new_in_creator(event, "MatplotlibTileTemplate")
     }
     new_d3_in_creator (event) {
+        event.data.manager =  resource_managers["tile_module"];
         resource_managers["tile_module"].new_in_creator(event, "D3TileTemplate")
     }
     new_code (event) {
@@ -723,6 +722,20 @@ class AllManager extends UserManagerResourceManager {
         const res_type = manager.selected_resource_type();
         window.open($SCRIPT_ROOT + manager.res_manager(res_type).view_view + String(res_name))
     }
+
+    dc_view_func (event) {
+        const manager = event.data.manager;
+        const res_name = manager.check_for_selection();
+        if (res_name == "") return;
+        const res_type = manager.selected_resource_type();
+        if (res_type == "tile") {
+             window.open($SCRIPT_ROOT + manager.res_manager(res_type).last_saved_view + String(res_name))
+        }
+        else {
+            window.open($SCRIPT_ROOT + manager.res_manager(res_type).view_view + String(res_name))
+        }
+    }
+
 
     duplicate_func (event) {
         const manager = event.data.manager;
@@ -765,6 +778,12 @@ class AllManager extends UserManagerResourceManager {
                 if (!data.success) {
                     doFlash(data);
                     return false
+                }
+                else {
+                    manager.get_selector_table_row(res_name).children()[0].innerHTML = new_name;
+                    manager.get_selector_table_row(res_name).attr("value", new_name);
+                    manager.res_manager(the_type).get_selector_table_row(res_name).children()[0].innerHTML = new_name;
+                    manager.res_manager(the_type).get_selector_table_row(res_name).attr("value", new_name)
                 }
 
             }
@@ -830,7 +849,7 @@ class AllManager extends UserManagerResourceManager {
         );
         function ShareResource(new_name) {
             const result_dict = {
-                "res_type": manager.res_type,
+                "res_type": the_type,
                 "res_name": res_name,
                 "new_res_name": new_name
             };
@@ -847,18 +866,41 @@ class AllManager extends UserManagerResourceManager {
         const confirm_text = `Are you sure that you want to delete ${res_name}?`;
         const the_type = manager.selected_resource_type();
         confirmDialog(`Delete ${the_type}`, confirm_text, "do nothing", "delete", function () {
-            manager.get_active_selector_button("resource").fadeOut();
-            // manager.get_tags_field("resource").html("");
-            manager.remove_all_tags();
-            manager.get_notes_field("resource").html("");
-            postAjax(manager.res_manager(the_type).delete_view, {"resource_name": res_name})
+            postAjaxPromise(manager.res_manager(the_type).delete_view, {"resource_name": res_name})
+                .then(() => {
+                    let active_row = manager.get_active_selector_button("resource")
+                    active_row.fadeOut("slow", function () {
+                         active_row.remove()
+                    });
+                    let specific_manager_row = manager.res_manager(the_type).get_selector_table_row(res_name);
+                    specific_manager_row.fadeOut("slow", function () {
+                         specific_manager_row.remove()
+                    });
+                    const all_selectors = manager.get_all_selector_buttons();
+                    if (all_selectors.length > 0) {
+                        manager.selector_click(all_selectors[0]);
+                    }
+                })
         })
+    }
+    set_button_activations(the_type) {
+        for (let group of this.button_groups) {
+            for (let but of group.buttons) {
+                if (but.applicable_types.includes(the_type)) {
+                    $(`button[value=${but.name}-all]`).css("display", "block")
+                }
+                else {
+                    $(`button[value=${but.name}-all]`).css("display", "none")
+                }
+            }
+        }
     }
      selector_click(row_element) {
         if (!this.handling_selector_click) {  // We want to make sure we are not already processing a click
             this.handling_selector_click = true;
             const res_name = row_element.getAttribute("value");
             const the_type = this.selected_resource_type_from_row_element(row_element);
+            this.set_button_activations(the_type);
             const result_dict = {"res_type": the_type, "res_name": res_name, "is_repository": this.is_repository};
             this.get_all_selector_buttons().removeClass("active");
             const self = this;
@@ -912,8 +954,10 @@ class RepositoryAllManager extends AllManager {
         this.double_click_func = "view_func";
         this.button_groups = [
             {
-                "buttons": [{"name": "view", "func": "view_func", "button_class": "btn-default"},
-                    {"name": "copy_to_libary", "func": "repository_copy_func", "button_class": "btn-default"}]
+                "buttons": [
+                    {"name": "view", "func": "view_func", "button_class": "btn-default", "applicable_types": res_types},
+                    {"name": "copy_to_libary", "func": "repository_copy_func", "button_class": "btn-default", "applicable_types": ["tile", "code", "list"]}
+                ]
             }
         ]
     }
@@ -934,14 +978,14 @@ class RepositoryAllManager extends AllManager {
             doFlash({"message": `Select a ${manager.res_type} first.`, "alert_type": "alert-info"})
         }
         const res_type = manager.selected_resource_type();
-        self = this;
+
         $.getJSON($SCRIPT_ROOT + "get_resource_names/" + res_type, function (data) {
                 showModal("Import " + res_type, "New Name", ImportResource, res_name, data["resource_names"])
             }
         );
         function ImportResource(new_name) {
             const result_dict = {
-                "res_type": manager.res_type,
+                "res_type": res_type,
                 "res_name": res_name,
                 "new_res_name": new_name
             };

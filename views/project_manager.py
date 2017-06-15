@@ -65,7 +65,7 @@ class ProjectManager(UserManageResourceManager):
             new_name = request.json["new_name"]
             db[current_user.project_collection_name].update_one({"project_name": old_name},
                                                                 {'$set': {"project_name": new_name}})
-            self.update_selector_list()
+            # self.update_selector_list()
             return jsonify({"success": True, "message": "project name changed", "alert_type": "alert-success"})
         except:
             error_string = "Error renaming project " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
@@ -75,7 +75,7 @@ class ProjectManager(UserManageResourceManager):
         project_name = request.json["resource_name"]
         current_user.remove_project(project_name)
 
-        self.update_selector_list()
+        # self.update_selector_list()
         return jsonify({"success": True})
 
     def grab_metadata(self, res_name):

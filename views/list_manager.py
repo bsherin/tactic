@@ -76,7 +76,7 @@ class ListManager(UserManageResourceManager):
             new_name = request.json["new_name"]
             db[current_user.list_collection_name].update_one({"list_name": old_name},
                                                              {'$set': {"list_name": new_name}})
-            self.update_selector_list()
+            # self.update_selector_list()
             return jsonify({"success": True, "message": "List name changed", "alert_type": "alert-success"})
         except:
             error_string = "Error renaming list " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
@@ -128,7 +128,7 @@ class ListManager(UserManageResourceManager):
         user_obj = current_user
         list_name = request.json["resource_name"]
         db[user_obj.list_collection_name].delete_one({"list_name": list_name})
-        self.update_selector_list()
+        # self.update_selector_list()
         return jsonify({"success": True})
 
     def create_duplicate_list(self):
@@ -140,6 +140,8 @@ class ListManager(UserManageResourceManager):
                             "message": "A list with that name already exists"})
         old_list_dict = db[user_obj.list_collection_name].find_one({"list_name": list_to_copy})
         metadata = global_tile_manager.create_initial_metadata()
+        metadata["tags"] = old_list_dict["metadata"]["tags"]
+        metadata["note"] = old_list_dict["metadata"]["notes"]
         new_list_dict = {"list_name": new_list_name, "the_list": old_list_dict["the_list"], "metadata": metadata}
         db[user_obj.list_collection_name].insert_one(new_list_dict)
         self.update_selector_list(select=new_list_name)

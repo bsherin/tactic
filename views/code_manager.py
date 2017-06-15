@@ -47,7 +47,7 @@ class CodeManager(UserManageResourceManager):
             new_name = request.json["new_name"]
             db[current_user.code_collection_name].update_one({"code_name": old_name},
                                                              {'$set': {"code_name": new_name}})
-            self.update_selector_list()
+            # self.update_selector_list()
             return jsonify({"success": True, "message": "Module Successfully Saved", "alert_type": "alert-success"})
         except:
             error_string = "Error renaming module " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
@@ -132,6 +132,8 @@ class CodeManager(UserManageResourceManager):
         metadata = global_tile_manager.create_initial_metadata()
         metadata["classes"] = old_code_dict["metadata"]["classes"]
         metadata["functions"] = old_code_dict["metadata"]["functions"]
+        metadata["tags"] = old_code_dict["metadata"]["tags"]
+        metadata["note"] = old_code_dict["metadata"]["notes"]
         new_code_dict = {"code_name": new_code_name, "the_code": old_code_dict["the_code"], "metadata": metadata}
         db[user_obj.code_collection_name].insert_one(new_code_dict)
         self.update_selector_list(select=new_code_name)
@@ -159,7 +161,7 @@ class CodeManager(UserManageResourceManager):
         user_obj = current_user
         code_name = request.json["resource_name"]
         db[user_obj.code_collection_name].delete_one({"code_name": code_name})
-        self.update_selector_list()
+        # self.update_selector_list()
         return jsonify({"success": True})
 
     def update_code(self):

@@ -29,7 +29,7 @@ class UserManagerResourceManager extends ResourceManager{
     fill_content(the_html) {
         this.get_main_content_dom().html(the_html);
         sorttable.makeSortable(this.get_resource_table()[0]);
-        const updated_header = this.get_main_content_dom().find("table th")[2];
+        const updated_header = this.get_main_content_dom().find("table th").slice(-2)[0];
         sorttable.innerSortFunction.apply(updated_header, []);
         sorttable.innerSortFunction.apply(updated_header, []);
     }
@@ -424,6 +424,12 @@ class UserManagerResourceManager extends ResourceManager{
                     doFlash(data);
                     return false
                 }
+                else {
+                    manager.get_selector_table_row(res_name).children()[0].innerHTML = new_name;
+                    manager.get_selector_table_row(res_name).attr("value", new_name);
+                    resource_managers["all_module"].get_selector_table_row(res_name).children()[0].innerHTML = new_name;
+                    resource_managers["all_module"].get_selector_table_row(res_name).attr("value", new_name)
+                }
             }
         }
     }
@@ -435,11 +441,23 @@ class UserManagerResourceManager extends ResourceManager{
         if (res_name == "") return;
         const confirm_text = `Are you sure that you want to delete ${res_name}?`;
         confirmDialog(`Delete ${manager.res_type}`, confirm_text, "do nothing", "delete", function () {
-            manager.get_active_selector_button("resource").fadeOut();
-            // manager.get_tags_field("resource").html("");
-            manager.remove_all_tags();
-            manager.get_notes_field("resource").html("");
-            postAjax(manager.delete_view, {"resource_name": res_name})
+            postAjaxPromise(manager.delete_view, {"resource_name": res_name})
+                .then(() => {
+                    let active_row = manager.get_active_selector_button();
+                    active_row.fadeOut("slow", function () {
+                        active_row.remove();
+                    });
+                    let all_manager_row = resource_managers["all_module"].get_selector_table_row(res_name);
+                    all_manager_row.fadeOut("slow", function () {
+                        all_manager_row.remove();
+                    });
+
+                    const all_selectors = manager.get_all_selector_buttons();
+                    if (all_selectors.length > 0) {
+                        manager.selector_click(all_selectors[0]);
+                    }
+                })
+                .catch(doFlash);
         })
     }
 
