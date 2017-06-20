@@ -301,6 +301,12 @@ class CollectionManager(UserManageResourceManager):
         if new_collection_name in db.collection_names():
             return jsonify({"success": False, "message": "There is already a collection with that name.",
                             "alert_type": "alert-warning"})
+        metadata = db[collection_to_copy].find_one({"name": "__metadata__"})
+
+        if ("number_of_docs" not in metadata): # legacy this is a way to get this into older collections
+            number_of_docs = db[collection_to_copy].count() - 1;
+            db[collection_to_copy].update_one({"name": "__metadata__"},
+                                             {'$set': {"number_of_docs": number_of_docs}})
 
         for doc in db[collection_to_copy].find():
             if "file_id" in doc:
@@ -309,6 +315,7 @@ class CollectionManager(UserManageResourceManager):
             db[new_collection_name].insert_one(doc)
         # self.update_selector_list(request.json['new_res_name'])
         metadata = db[collection_to_copy].find_one({"name": "__metadata__"})
+
         table_row = self.create_new_row(request.json['new_res_name'], metadata)
         all_table_row = self.all_manager.create_new_all_row(request.json['new_res_name'], metadata, "collection")
         return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})

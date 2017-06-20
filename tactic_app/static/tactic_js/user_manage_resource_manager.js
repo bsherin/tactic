@@ -100,11 +100,37 @@ class UserManagerResourceManager extends ResourceManager{
         this.create_tag_editor(taglist);
     }
 
-    set_resource_metadata(created, tags, notes) {
-        this.get_created_field().html(created);
+    format_metadata(name, valstring) {
+        return `<div><span class="text-primary">${name}:</span> ${valstring}</div>`
+    }
+
+    set_resource_metadata(created, tags, notes, additional_mdata) {
+        this.get_created_field().html(this.format_metadata("created", created));
         this.set_tag_list(tags);
         this.get_notes_field().html("");
         this.get_notes_field()[0].value = notes;
+        let added_string = "";
+        for (name in additional_mdata) {
+            let val = additional_mdata[name];
+            let valstring;
+            if (Array.isArray(val)){
+                valstring = "";
+                let isfirst = true;
+                for (let it of val) {
+                    if (!isfirst) {
+                        valstring += ", ";
+                    }
+                    isfirst = false;
+                    valstring += String(it)
+                }
+            }
+            else {
+                valstring = String(val)
+            }
+            added_string = added_string + this.format_metadata(name, valstring)
+        }
+
+        this.get_additional_mdata_field().html(added_string)
     }
 
     save_my_metadata (flash = true) {

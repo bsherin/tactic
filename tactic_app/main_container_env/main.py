@@ -358,6 +358,7 @@ class mainWindow(object):
             mdata = self.create_initial_metadata()
             mdata["type"] = self.doc_type
             mdata["collection_name"] = self.collection_name
+            mdata["loaded_modules"] = project_dict["loaded_modules"]
             save_dict = {"metadata": mdata,
                          "project_name": project_dict["project_name"]}
             self.show_main_status_message("Pickle, convert, compress")
@@ -394,6 +395,8 @@ class mainWindow(object):
             project_dict = self.compile_save_dict()
             pname = project_dict["project_name"]
             self.mdata["updated"] = datetime.datetime.today()
+            self.mdata["loaded_modules"] = project_dict["loaded_modules"]
+            self.mdata["collection_name"] = self.collection_name  # legacy this shouldn't be necessary for newer saves
             self.show_main_status_message("Pickle, convert, compress")
             pdict = cPickle.dumps(project_dict)
             pdict = Binary(zlib.compress(pdict))

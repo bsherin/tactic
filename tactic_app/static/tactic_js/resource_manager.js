@@ -222,6 +222,10 @@ class ResourceManager {
          return this.get_module_element(".tags-field")
     }
 
+    get_additional_mdata_field() {
+        return this.get_module_element(".additional-mdata")
+    }
+
     get_search_field() {
         return this.get_module_element(".search-field")
     }
@@ -298,7 +302,7 @@ class ResourceManager {
 
             function got_metadata(data) {
                 if (data.success) {
-                    self.set_resource_metadata(data.datestring, data.tags, data.notes);
+                    self.set_resource_metadata(data.datestring, data.tags, data.notes, data.additional_mdata);
                 }
                 else {
                     // doFlash(data)
@@ -328,10 +332,10 @@ class ResourceManager {
     // metadata related functions
 
    clear_resource_metadata() {
-        this.set_resource_metadata("", "", "")
+        this.set_resource_metadata("", "", "", {})
     }
 
-    set_resource_metadata(created, tags, notes) {
+    set_resource_metadata(created, tags, notes, additional_mdata) {
         this.get_created_field().html(created);
         this.get_tags_field().html("");
         this.get_tags_field()[0].value = tags;
