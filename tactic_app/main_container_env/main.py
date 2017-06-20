@@ -858,6 +858,7 @@ class mainWindow(object):
         mdata["name"] = "__metadata__"
         new_name = data["name"]
         doc_dict = data["doc_dict"]
+        mdata["number_of_docs"] = len(doc_dict.keys())
         doc_type = data["doc_type"]
         document_metadata = data["doc_metadata"]
         if document_metadata is None:

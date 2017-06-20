@@ -1,5 +1,5 @@
 
-import sys, datetime
+import sys, datetime, copy
 
 import tactic_app
 from tactic_app import app, db, use_ssl  # global_stuff
@@ -129,11 +129,7 @@ class CodeManager(UserManageResourceManager):
             return jsonify({"success": False, "alert_type": "alert-warning",
                             "message": "A code resource with that name already exists"})
         old_code_dict = db[user_obj.code_collection_name].find_one({"code_name": code_to_copy})
-        metadata = global_tile_manager.create_initial_metadata()
-        metadata["classes"] = old_code_dict["metadata"]["classes"]
-        metadata["functions"] = old_code_dict["metadata"]["functions"]
-        metadata["tags"] = old_code_dict["metadata"]["tags"]
-        metadata["note"] = old_code_dict["metadata"]["notes"]
+        metadata = copy.copy(old_code_dict["metadata"])
         new_code_dict = {"code_name": new_code_name, "the_code": old_code_dict["the_code"], "metadata": metadata}
         db[user_obj.code_collection_name].insert_one(new_code_dict)
         table_row = self.create_new_row(new_code_name, metadata)

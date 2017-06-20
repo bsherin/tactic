@@ -7,10 +7,10 @@ from flask_login import login_required, current_user
 from tactic_app.integrated_docs import api_html, api_dict_by_category, ordered_api_categories
 import tactic_app
 from tactic_app import app, db, socketio, use_ssl
-
+from tactic_app.tile_code_parser import get_base_classes, extract_type
 from resource_manager import ResourceManager, UserManageResourceManager
-
 from tactic_app.users import User
+
 global_tile_manager = tactic_app.global_tile_manager
 repository_user = User.get_user_by_username("repository")
 
@@ -238,6 +238,7 @@ class TileManager(UserManageResourceManager):
                             "message": "A module with that name already exists"})
         the_module = f.read()
         metadata = global_tile_manager.create_initial_metadata()
+        metadata["type"] = extract_type(the_module)
         data_dict = {"tile_module_name": f.filename, "tile_module": the_module, "metadata": metadata}
         db[user_obj.tile_collection_name].insert_one(data_dict)
         table_row = self.create_new_row(f.filename, metadata)
@@ -252,9 +253,7 @@ class TileManager(UserManageResourceManager):
             return jsonify({"success": False, "alert_type": "alert-warning",
                             "message": "A tile with that name already exists"})
         old_tile_dict = db[user_obj.tile_collection_name].find_one({"tile_module_name": tile_to_copy})
-        metadata = global_tile_manager.create_initial_metadata()
-        metadata["tags"] = old_tile_dict["metadata"]["tags"]
-        metadata["note"] = old_tile_dict["metadata"]["notes"]
+        metadata = copy.copy(old_tile_dict["metadata"])
         new_tile_dict = {"tile_module_name": new_tile_name, "tile_module": old_tile_dict["tile_module"],
                          "metadata": metadata}
         db[user_obj.tile_collection_name].insert_one(new_tile_dict)
@@ -274,6 +273,8 @@ class TileManager(UserManageResourceManager):
         template = mongo_dict["tile_module"]
 
         metadata = global_tile_manager.create_initial_metadata()
+        metadata["type"] = extract_type(template)
+
         data_dict = {"tile_module_name": new_tile_name, "tile_module": template, "metadata": metadata,
                      "last_saved": last_saved}
         db[current_user.tile_collection_name].insert_one(data_dict)

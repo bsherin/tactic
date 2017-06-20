@@ -49,6 +49,17 @@ trass_rx = re.compile(TRIPLE_QUOTE_ASSIGNMENTS)
 def get_base_classes(the_code):
     return def_cl.findall(the_code)[0]
 
+def extract_type(module_code):
+    try:
+        base_classes = get_base_classes(module_code)
+        if "MplFigure" in base_classes:
+            return "matplotlib"
+        elif "D3Tile" in base_classes:
+            return "d3"
+        else:
+            return "standard"
+    except:
+        return "unknown"
 
 def RepresentsInt(s):
     try:
