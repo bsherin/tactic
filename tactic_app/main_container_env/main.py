@@ -355,17 +355,17 @@ class mainWindow(object):
 
             self.show_main_status_message("compiling save dictionary")
             project_dict = self.compile_save_dict()
-            mdata = self.create_initial_metadata()
-            mdata["type"] = self.doc_type
-            mdata["collection_name"] = self.collection_name
-            save_dict = {"metadata": mdata,
+            self.mdata = self.create_initial_metadata()
+            self.mdata["type"] = self.doc_type
+            self.mdata["collection_name"] = self.collection_name
+            self.mdata["loaded_tiles"] = self.get_used_tile_types()
+            save_dict = {"metadata": self.mdata,
                          "project_name": project_dict["project_name"]}
             self.show_main_status_message("Pickle, convert, compress")
             pdict = cPickle.dumps(project_dict)
             pdict = Binary(zlib.compress(pdict))
             self.show_main_status_message("Writing the data")
             save_dict["file_id"] = self.fs.put(pdict)
-            self.mdata = save_dict["metadata"]
             self.db[self.project_collection_name].insert_one(save_dict)
             self.clear_main_status_message()
 
@@ -378,6 +378,12 @@ class mainWindow(object):
             error_string = self.handle_exception(ex, "<pre>Error saving new project</pre>", print_to_console=False)
             return_data = {"success": False, "message_string": error_string}
         return return_data
+
+    def get_used_tile_types(self):
+        result = []
+        for tile_id in self.tile_instances:
+            result.append(self.get_tile_property(tile_id, "tile_type"))
+        return result
 
     @task_worthy
     def update_project(self, data_dict):
@@ -394,6 +400,8 @@ class mainWindow(object):
             project_dict = self.compile_save_dict()
             pname = project_dict["project_name"]
             self.mdata["updated"] = datetime.datetime.today()
+            self.mdata["loaded_tiles"] = self.get_used_tile_types()
+            self.mdata["collection_name"] = self.collection_name  # legacy this shouldn't be necessary for newer saves
             self.show_main_status_message("Pickle, convert, compress")
             pdict = cPickle.dumps(project_dict)
             pdict = Binary(zlib.compress(pdict))
@@ -407,7 +415,6 @@ class mainWindow(object):
             self.db[self.project_collection_name].update_one({"project_name": pname},
                                                              {'$set': save_dict})
             self.clear_main_status_message()
-            self.mdata = save_dict["metadata"]
             return_data = {"project_name": pname,
                            "success": True,
                            "message": "Project Successfully Saved"}
@@ -851,6 +858,7 @@ class mainWindow(object):
         mdata["name"] = "__metadata__"
         new_name = data["name"]
         doc_dict = data["doc_dict"]
+        mdata["number_of_docs"] = len(doc_dict.keys())
         doc_type = data["doc_type"]
         document_metadata = data["doc_metadata"]
         if document_metadata is None:

@@ -2,10 +2,13 @@
 import re
 import sys
 import datetime
+import copy
 from flask import render_template, request, jsonify, url_for
 from flask_login import login_required, current_user
 from tactic_app import app, db, use_ssl
 from tactic_app.tile_code_parser import get_functions_full_code, get_starting_lines
+from tactic_app.tile_code_parser import get_base_classes, extract_type
+
 from user_manage_views import tile_manager
 
 
@@ -170,6 +173,17 @@ def update_module():
         mdata["tags"] = data_dict["tags"]
         mdata["notes"] = data_dict["notes"]
         mdata["updated"] = datetime.datetime.today()
+        mdata["last_viewer"] = data_dict["last_saved"]
+        if mdata["last_viewer"] == "creator":
+            if data_dict["is_mpl"]:
+                mdata["type"] = "matplotlib"
+            elif data_dict["is_d3"]:
+                mdata["type"] = "d3"
+            else:
+                mdata["type"] = "standard"
+        else:
+            mdata["type"] = extract_type(module_code)
+
         db[current_user.tile_collection_name].update_one({"tile_module_name": module_name},
                                                          {'$set': {"tile_module": module_code, "metadata": mdata,
                                                                    "last_saved": last_saved}})
@@ -182,3 +196,4 @@ def update_module():
     except:
         error_string = "Error saving module " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+

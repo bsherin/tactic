@@ -1,5 +1,5 @@
 
-import sys, datetime
+import sys, datetime, copy
 from flask_login import login_required, current_user
 from flask import jsonify, render_template, url_for, request
 
@@ -140,9 +140,7 @@ class ListManager(UserManageResourceManager):
             return jsonify({"success": False, "alert_type": "alert-warning",
                             "message": "A list with that name already exists"})
         old_list_dict = db[user_obj.list_collection_name].find_one({"list_name": list_to_copy})
-        metadata = global_tile_manager.create_initial_metadata()
-        metadata["tags"] = old_list_dict["metadata"]["tags"]
-        metadata["note"] = old_list_dict["metadata"]["notes"]
+        metadata = copy.copy(old_list_dict["metadata"])
         new_list_dict = {"list_name": new_list_name, "the_list": old_list_dict["the_list"], "metadata": metadata}
         db[user_obj.list_collection_name].insert_one(new_list_dict)
         table_row = self.create_new_row(new_list_name, metadata)

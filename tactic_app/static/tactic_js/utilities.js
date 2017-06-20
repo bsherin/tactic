@@ -40,12 +40,7 @@ function objectKeys(obj) {
 }
 
 Array.prototype.empty = function () {
-  if (this.length == 0) {
-      return true
-  }
-  else {
-      return false
-  }
+  return this.length == 0;
 };
 
 $.get($SCRIPT_ROOT + "/get_modal_template", function(template){

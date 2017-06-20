@@ -1,5 +1,5 @@
 
-import sys
+import sys, copy, re
 
 from flask import render_template, request, jsonify, send_file
 from flask_login import login_required, current_user
@@ -174,7 +174,17 @@ def grab_metadata():
                 datestring = mdata["datetime"].strftime("%b %d, %Y, %H:%M")
             else:
                 datestring = ""
-            return jsonify({"success": True, "datestring": datestring, "tags": mdata["tags"], "notes": mdata["notes"]})
+            additional_mdata = copy.copy(mdata)
+            standard_mdata = ["datetime", "tags", "notes", "_id", "name"]
+            for field in standard_mdata:
+                if field in additional_mdata:
+                    del additional_mdata[field]
+            if "updated" in additional_mdata:
+                additional_mdata["updated"] = additional_mdata["updated"].strftime("%b %d, %Y, %H:%M")
+            if "collection_name" in additional_mdata:
+                additional_mdata["collection_name"] = re.sub("^.*?\.data_collection\.", "", additional_mdata["collection_name"])
+            return jsonify({"success": True, "datestring": datestring, "tags": mdata["tags"],
+                            "notes": mdata["notes"], "additional_mdata": additional_mdata})
     except:
         error_string = "Error getting metadata: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})

@@ -65,7 +65,7 @@ def parse_code(module_name):
     func_dict = get_functions_full_code(module_code)
     if "render_content" in func_dict:
         render_content_code = func_dict["render_content"]
-        render_content_code = re.sub("([\s\S]*?\n    def [\S\s]*?\: *?\n)", "", render_content_code)
+        render_content_code = re.sub("([\s\S]*?\n {4}def [\S\s]*?\: *?\n)", "", render_content_code)
         render_content_code = remove_indents(render_content_code, 2)
     else:
         render_content_code = ""
@@ -76,7 +76,7 @@ def parse_code(module_name):
 
     if is_mpl and "draw_plot" in func_dict:
             draw_plot_code = func_dict["draw_plot"]
-            draw_plot_code = re.sub("([\s\S]*?\n    def [\S\s]*?\: *?\n)", "", draw_plot_code)
+            draw_plot_code = re.sub("([\s\S]*?\n {4}def [\S\s]*?\: *?\n)", "", draw_plot_code)
             draw_plot_code = remove_indents(draw_plot_code, 2)
     else:
         draw_plot_code = ""
@@ -86,6 +86,7 @@ def parse_code(module_name):
     else:
         jscript_code = ""
 
+    first_func = ""
     for func_name in func_dict.keys():
         if func_name not in ["__init__", "render_content", "options"]:
             first_func = func_name
