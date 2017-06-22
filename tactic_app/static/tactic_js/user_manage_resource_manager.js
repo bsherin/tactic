@@ -5,7 +5,7 @@
 class UserManagerResourceManager extends ResourceManager{
 
     constructor (module_id, res_type, resource_module_template, destination_selector) {
-        super(module_id, res_type, resource_module_template, destination_selector, false)
+        super(module_id, res_type, resource_module_template, destination_selector, false);
         this.last_search = null;
     }
 
@@ -22,8 +22,13 @@ class UserManagerResourceManager extends ResourceManager{
         $.getJSON(`${$SCRIPT_ROOT}/${this.update_view}/${this.res_type}`, function (data) {
             self.fill_content(data.html, null);
             self.select_resource_button(null);
-            self.create_search_tag_editor()
+            self.create_search_tag_editor();
         })
+    }
+
+    fix_tag_button_width() {
+        let w = this.get_tag_button_group().width();
+        this.get_tag_button_group().css("min-width", w)
     }
 
     fill_content(the_html) {
@@ -110,7 +115,7 @@ class UserManagerResourceManager extends ResourceManager{
         this.get_notes_field().html("");
         this.get_notes_field()[0].value = notes;
         let added_string = "";
-        for (name in additional_mdata) {
+        for (let name in additional_mdata) {
             let val = additional_mdata[name];
             let valstring;
             if (Array.isArray(val)){
@@ -143,7 +148,7 @@ class UserManagerResourceManager extends ResourceManager{
         postAjaxPromise("save_metadata", result_dict)
             .then(function(data) {
                 self.get_selector_table_row(res_name).children().slice(-1)[0].innerHTML = tags;
-                resource_managers["all_module"].get_selector_table_row(res_name).children().slice(-1)[0].innerHTML = tags
+                resource_managers["all_module"].get_selector_table_row(res_name).children().slice(-1)[0].innerHTML = tags;
                 if (flash) {
                     doFlash(data)
                 }
@@ -153,25 +158,25 @@ class UserManagerResourceManager extends ResourceManager{
 
     // search related
 
-    replay_last_search() {
-        if (!this.last_search) return;
-        let func = this.last_search["function"];
-        let val = this.last_search["value"];
-        switch (func) {
-            case "search_my_resource":
-                this.get_search_field()[0].value = val;
-                this.search_my_resource();
-                break;
-            case "search_my_tags":
-                this.set_tag_button_state(val);
-                this.set_search_tag_list(taglist);
-                this.search_my_tags();
-                break;
-            case "search_active_tag_buttons":
-                this.set_tag_button_state(val);
-                this.search_active_tag_buttons()
-        }
-    }
+    // replay_last_search() {
+    //     if (!this.last_search) return;
+    //     let func = this.last_search["function"];
+    //     let val = this.last_search["value"];
+    //     switch (func) {
+    //         case "search_my_resource":
+    //             this.get_search_field()[0].value = val;
+    //             this.search_my_resource();
+    //             break;
+    //         case "search_my_tags":
+    //             this.set_tag_button_state(val);
+    //             this.set_search_tag_list(taglist);
+    //             this.search_my_tags();
+    //             break;
+    //         case "search_active_tag_buttons":
+    //             this.set_tag_button_state(val);
+    //             this.search_active_tag_buttons()
+    //     }
+    // }
 
     tagMatch (search_tags, item_tags) {
         if (search_tags.empty()) {
@@ -204,14 +209,20 @@ class UserManagerResourceManager extends ResourceManager{
             const tag_text = $(cells.slice(-1)[0]).text().toLowerCase();
             const taglist = tag_text.split(" ");
             if ((res_name.search(txt) == -1) && (!self.tagMatch(searchtags, taglist))) {
-                $(row_element).css("display", "none")
+                // $(row_element).css("display", "none")
+                $(row_element).removeClass("showme");
+                $(row_element).addClass("hideme");
 
             }
             else {
-                $(row_element).css("display", "table-row");
+                $(row_element).removeClass("hideme");
+                $(row_element).addClass("showme");
+                // $(row_element).css("display", "table-row");
                 current_tags = current_tags.concat(taglist);
             }
         });
+        this.hide_table_rows(all_rows.filter(".hideme"));
+        this.show_table_rows(all_rows.filter(".showme"));
         current_tags = remove_duplicates(current_tags);
         this.show_hide_tag_buttons(current_tags);
         this.last_search = {"function": "search_my_resource", "value": txt}
@@ -219,14 +230,22 @@ class UserManagerResourceManager extends ResourceManager{
 
     unfilter_me () {
         const all_rows = this.get_all_selector_buttons();
-        $.each(all_rows, function (index, row_element) {
-                $(row_element).css("display", "table-row");
-        });
+        this.show_table_rows(all_rows);
+
         this.deactivate_tag_buttons();
         this.show_all_tag_buttons();
         this.get_search_field().val("");
         this.last_search = null;
     }
+
+    show_table_rows (the_rows) {
+        the_rows.css("display", "table-row")
+    }
+
+    hide_table_rows (the_rows) {
+        the_rows.css("display", "none")
+    }
+
 
     search_given_tags (searchtags) {
         const all_rows = this.get_all_selector_buttons();
@@ -237,13 +256,19 @@ class UserManagerResourceManager extends ResourceManager{
             const tag_text = $(cells.slice(-1)[0]).text().toLowerCase();
             const taglist = tag_text.split(" ");
             if (!self.tagMatch(searchtags, taglist)) {
-                $(row_element).css("display", "none")
+                // $(row_element).css("display", "none")
+                $(row_element).addClass("hideme");
+                $(row_element).removeClass("showme");
             }
             else {
-                $(row_element).css("display", "table-row");
+                $(row_element).addClass("showme");
+                $(row_element).removeClass("hideme");
+                // $(row_element).css("display", "table-row");
                 current_tags = current_tags.concat(taglist);
             }
         });
+        this.hide_table_rows(all_rows.filter(".hideme"));
+        this.show_table_rows(all_rows.filter(".showme"))
         current_tags = remove_duplicates(current_tags);
         this.show_hide_tag_buttons(current_tags)
     }
@@ -296,13 +321,11 @@ class UserManagerResourceManager extends ResourceManager{
     // tag button related
 
     unfilter_tags () {
-        const all_rows = this.get_all_selector_buttons();
-        $.each(all_rows, function (index, row_element) {
-                $(row_element).fadeIn()
-        });
+        this.show_tag_buttons(this.get_all_tag_buttons());
         this.deactivate_tag_buttons();
-        this.show_all_tag_buttons();
         this.clear_search_tag_list();
+        const all_rows = this.get_all_selector_buttons();
+        this.show_table_rows(all_rows);
         this.last_search = null
     }
 
@@ -323,6 +346,10 @@ class UserManagerResourceManager extends ResourceManager{
 
     get_all_tag_buttons () {
         return this.get_module_element(".tag-button-list button")
+    }
+
+    get_tag_button_group () {
+        return this.get_module_element(".tag-button-list .btn-group-vertical")
     }
 
     refresh_tag_buttons(the_html) {
@@ -362,39 +389,53 @@ class UserManagerResourceManager extends ResourceManager{
 
     show_hide_tag_buttons (searchtags) {
         const all_tag_buttons = this.get_all_tag_buttons();
+        all_tag_buttons.removeClass("hideme");
+        all_tag_buttons.removeClass("showme");
+        if (searchtags.empty()) {
+            // $(but).css("display", "block")
+            all_tag_buttons.addClass("showme")
+        }
+
         $.each(all_tag_buttons, function (index, but) {
             const tag_text = but.innerHTML;
-            if (searchtags.empty()) {
-                $(but).css("display", "block")
+            if (!searchtags.includes(tag_text)) {
+                // $(but).css("display", "none")
+                $(but).addClass("hideme")
             }
             else {
-                if (!searchtags.includes(tag_text)) {
-                    $(but).css("display", "none")
-                }
-                else {
-                    $(but).css("display", "block")
-                }
+                // $(but).css("display", "block")
+                $(but).addClass("showme")
             }
-        })
+        });
+        this.show_tag_buttons(all_tag_buttons.filter(".showme"));
+        this.fix_tag_button_width();
+        this.hide_tag_buttons(all_tag_buttons.filter(".hideme"));
+    }
+
+    show_tag_buttons(the_tags) {
+        the_tags.slideDown();
+    }
+
+    hide_tag_buttons(the_tags) {
+        the_tags.slideUp();
     }
 
     show_all_tag_buttons () {
         const all_tag_buttons = this.get_all_tag_buttons();
-        $.each(all_tag_buttons, function (index, but) {
-                $(but).css("display", "block")
-        })
+        this.show_tag_buttons(all_tag_buttons);
     }
+
+
 
     deactivate_tag_buttons () {
         const all_tag_buttons = this.get_all_tag_buttons();
-        $.each(all_tag_buttons, function (index, but) {
-            $(but).removeClass("active")
-        })
+        all_tag_buttons.removeClass("active");
     }
 
     add_func(event) {
         const manager = event.data.manager;
         const form_data = new FormData(this);
+        //noinspection JSUnresolvedVariable
         postAjaxUploadPromise(manager.add_view, form_data)
             .then(doNothing)
             .catch(doFlash);

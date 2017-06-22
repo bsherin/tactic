@@ -1,5 +1,7 @@
 
-import sys, datetime, copy
+import sys
+import datetime
+import copy
 
 import tactic_app
 from tactic_app import app, db, use_ssl  # global_stuff
@@ -95,8 +97,9 @@ class CodeManager(UserManageResourceManager):
         return jsonify({"success": True, "the_content": the_code})
 
     def load_code(self, the_code):
-        res_dict = tactic_app.host_worker.post_and_wait(global_tile_manager.test_tile_container_id, "clear_and_load_code",
-                                           {"the_code": the_code})
+        res_dict = tactic_app.host_worker.post_and_wait(global_tile_manager.test_tile_container_id,
+                                                        "clear_and_load_code",
+                                                        {"the_code": the_code})
         return res_dict
 
     def add_code(self):

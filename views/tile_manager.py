@@ -1,6 +1,7 @@
 
 import datetime
 import sys
+import copy
 
 from flask import render_template, request, jsonify, url_for
 from flask_login import login_required, current_user
@@ -108,7 +109,7 @@ class TileManager(UserManageResourceManager):
         # Plus we want to keep the last entry from each date taht appears.
         for cp in tile_dict["recent_history"]:
             cp_date = cp["updated"].date()
-            if cp_date > yesterday_date: # If it's more recent than yesterday, keep it.
+            if cp_date > yesterday_date:  # If it's more recent than yesterday, keep it.
                 recent_history.append(cp)
             else:
                 found = False
@@ -193,7 +194,7 @@ class TileManager(UserManageResourceManager):
             tile_module = user_obj.get_tile_module(tile_module_name)
 
             res_dict = tactic_app.host_worker.post_and_wait(global_tile_manager.test_tile_container_id, "load_source",
-                                               {"tile_code": tile_module})
+                                                            {"tile_code": tile_module})
             if not res_dict["success"]:
                 return jsonify({"success": False, "message": res_dict["message_string"], "alert_type": "alert-warning"})
             category = res_dict["category"]

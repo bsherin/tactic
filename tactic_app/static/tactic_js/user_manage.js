@@ -49,7 +49,7 @@ function start_post_load() {
         const manager = resource_managers[data.module_id];
         manager.fill_content(data.html);
         manager.select_resource_button(data.select);
-        manager.replay_last_search()
+        // manager.replay_last_search()
     });
 
     socket.on('update-tag-list', (data) => {
@@ -859,7 +859,7 @@ class AllManager extends UserManagerResourceManager {
         const res_name = manager.check_for_selection("resource");
         if (res_name == "") return;
         const the_type = manager.selected_resource_type();
-        if (!the_type == "collection") return;
+        if (!(the_type == "collection")) return;
         showModal("Download Collection as Excel Notebook", "New File Name", function (new_name) {
             window.open(`${$SCRIPT_ROOT}/download_collection/` + res_name + "/" + new_name)
         }, res_name + ".xls")
@@ -869,7 +869,7 @@ class AllManager extends UserManagerResourceManager {
         const res_name = manager.check_for_selection("resource");
         if (res_name == "") return;
         const the_type = manager.selected_resource_type();
-        if (!the_type == "collection") return;
+        if (!(the_type == "collection")) return;
         showModal("Name of collection to combine with " + res_name, "collection Name", function (other_name) {
             startSpinner();
             const target = `${$SCRIPT_ROOT}/combine_collections/${res_name}/${other_name}`;
@@ -881,7 +881,7 @@ class AllManager extends UserManagerResourceManager {
         const res_name = manager.check_for_selection("resource");
         if (res_name == "") return;
         const the_type = manager.selected_resource_type();
-        if (!the_type == "tile") return;
+        if (!(the_type == "tile")) return;
         window.open($SCRIPT_ROOT + manager.res_manager("tile").creator_view + String(res_name))
     }
 
@@ -890,7 +890,7 @@ class AllManager extends UserManagerResourceManager {
         const res_name = manager.check_for_selection("resource");
         if (res_name == "") return;
         const the_type = manager.selected_resource_type();
-        if (!the_type == "tile") return;
+        if (!(the_type == "tile")) return;
         $.getJSON(`${$SCRIPT_ROOT}/load_tile_module/${res_name}`, doFlash)
     }
     unload_func (event) {
@@ -898,7 +898,7 @@ class AllManager extends UserManagerResourceManager {
         const res_name = manager.check_for_selection("resource");
         if (res_name == "") return;
         const the_type = manager.selected_resource_type();
-        if (!the_type == "tile") return;
+        if (!(the_type == "tile")) return;
         $.getJSON(`${$SCRIPT_ROOT}/unload_all_tiles`, doFlash)
     }
     send_repository_func (event) {

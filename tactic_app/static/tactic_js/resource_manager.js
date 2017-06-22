@@ -385,16 +385,12 @@ class ResourceManager {
 
     unfilter_me () {
         const all_rows = this.get_all_selector_buttons();
-        $.each(all_rows, function (index, row_element) {
-                $(row_element).show()
-        });
+        all_rows.show();
     }
 
     unfilter_tags () {
         const all_rows = this.get_all_selector_buttons();
-        $.each(all_rows, function (index, row_element) {
-                $(row_element).show()
-        });
+        all_rows.show();
     }
 
     search_my_tags () {}

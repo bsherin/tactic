@@ -586,15 +586,18 @@ class mainWindow(object):
 
         tile_code = self.mworker.post_and_wait("host", "get_module_code", data_dict)["module_code"]
         data_dict["tile_code"] = tile_code
+        print "loading tile source"
         result = self.mworker.post_and_wait(tile_container_id, "load_source", data_dict)
         if not result["success"]:
             self.mworker.debug_log("got an exception " + result["message_string"])
             raise Exception(result["message_string"])
+        print "instantiating tile class"
         instantiate_result = self.mworker.post_and_wait(tile_container_id, "instantiate_tile_class", data_dict)
         if not instantiate_result["success"]:
             self.mworker.debug_log("got an exception " + instantiate_result["message_string"])
             raise Exception(instantiate_result["message_string"])
 
+        print "dealing with exports"
         exports = instantiate_result["exports"]
         if len(exports) > 0:
             if not isinstance(exports[0], dict):
@@ -615,7 +618,9 @@ class mainWindow(object):
                      "class_names": form_data["class_names"],
                      "collection_names": form_data["collection_names"]}
 
+        print "creating form html"
         form_html = self.mworker.post_and_wait(tile_container_id, "create_form_html", form_info)["form_html"]
+        print "rebuilding tile forms"
         for tid in self.tile_instances:
             if not tid == tile_container_id:
                 self.mworker.post_task(tid, "RebuildTileForms", form_info)
