@@ -14,6 +14,7 @@ import datetime
 
 rpath = "bsherinremtiles"
 
+
 def create_initial_metadata():
     mdata = {"datetime": datetime.datetime.today(),
              "tags": "",
@@ -21,6 +22,7 @@ def create_initial_metadata():
     return mdata
 
 repository_user = User.get_user_by_username("bsherin")
+
 
 def add_tile_module(full_filename):
     user_obj = repository_user
@@ -40,10 +42,12 @@ def add_tile_module(full_filename):
         data_dict = {"tile_module_name": filename, "tile_module": the_module, "metadata": mdata}
         db[user_obj.tile_collection_name].insert_one(data_dict)
 
+
 def delete_tile_module(tile_module_name):
     user_obj = repository_user
     db[user_obj.tile_collection_name].delete_one({"tile_module_name": tile_module_name})
     return
+
 
 def grab_metadata(res_name):
     doc = db[repository_user.tile_collection_name].find_one({"tile_module_name": res_name})
@@ -74,7 +78,7 @@ try:
         client.server_info()
         db = client.heroku_4ncbq1zd
     for filename in os.listdir(rpath):
-        print "adding tile module "+ filename
+        print "adding tile module " + filename
         add_tile_module(filename)
 
 except pymongo.errors.PyMongoError as err:

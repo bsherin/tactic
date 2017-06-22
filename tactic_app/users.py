@@ -487,9 +487,8 @@ class User(UserMixin):
         list_dict = db[self.list_collection_name].find_one({"list_name": list_name})
         return list_dict["the_list"]
 
-    def get_collection(self, collection_name):
+    def get_collection(self, collection_name):  # tactic_todo This doesn't do anything. Delete?
         full_collection_name = self.build_data_collection_name(collection_name)
-
 
     def get_tile_dict(self, tile_module_name):
         tile_dict = db[self.tile_collection_name].find_one({"tile_module_name": tile_module_name})
@@ -523,15 +522,17 @@ class User(UserMixin):
                 return doc["the_code"]
         return None
 
-def load_remote_user(userid, db):
+
+def load_remote_user(userid, the_db):
     # This expects that userid will be a string
     # If it's an ObjectId, rather than a string, I get an error likely having to do with login_manager
-    result = db.user_collection.find_one({"_id": ObjectId(userid)})
+    result = the_db.user_collection.find_one({"_id": ObjectId(userid)})
 
     if result is None:
         return None
     else:
         return User(result)
+
 
 class RemoteUser(User):
     def __init__(self, user_dict, remote_db):

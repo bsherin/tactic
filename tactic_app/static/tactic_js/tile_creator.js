@@ -40,7 +40,14 @@ class CreatorViewer extends ModuleViewerAbstract {
     }
 
     update_width(new_width_fraction) {
-        super.update_width(new_width_fraction);
+        const main_width = $("#main-container").width();
+        const usable_width = main_width - 10 - 15;  // 15 is for the row outdent, 10 is a fudge factor
+        this.current_width_fraction = new_width_fraction;
+        this.left_div.width(usable_width * new_width_fraction);
+        const left_div_margin = 25;  // This is hard coped in tile_creator.html
+        if (include_right) {
+            this.right_div.width((1 - new_width_fraction) * usable_width - left_div_margin)
+        }
         this.resize_metadata_area()
     }
 
@@ -585,7 +592,7 @@ class MethodManager extends CreatorResourceManager {
     update_main_content() {
         this.cmobject = this.viewer.createCMArea(this.get_main_content_dom()[0], false, null, this.extra_methods_line_number);
         this.get_main_content_dom().find(".CodeMirror").resizable({handles: "se"});
-        this.get_main_content_dom().find(".CodeMirror").height(100);
+        this.get_main_content_dom().find(".CodeMirror").height("100%");
         this.get_main_content_dom().width("100%");
         this.fill_content();
     }

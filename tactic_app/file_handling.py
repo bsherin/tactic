@@ -61,6 +61,7 @@ def read_table_file_to_dict(tsvfile, separator):
     i = 0
     try:
         header_list = filelines[0].rstrip().split(separator)
+        header_list = [utf_solver(header) for header in header_list]
         header_list = make_fieldnames_unique(header_list)
         filename, file_extension = os.path.splitext(tsvfile.filename)
         result_dict = {}
