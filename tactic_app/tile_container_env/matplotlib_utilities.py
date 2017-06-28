@@ -5,6 +5,7 @@ from matplotlib.colors import Normalize as mpl_Normalize
 from matplotlib.cm import get_cmap, ScalarMappable, register_cmap, datad
 import numpy
 import mpld3
+import uuid
 # import pylab
 import StringIO
 
@@ -100,8 +101,7 @@ class MplFigure(Figure):
         img_file = StringIO.StringIO()
         self.savefig(img_file)
         img_file.seek(0)
-        figname = str(self.current_fig_id)
-        self.current_fig_id += 1
+        figname = str(uuid.uuid4())
         self.img_dict[figname] = img_file.getvalue()
         fig_url = self.base_figure_url + figname
         image_string = "<img class='output-plot' src='{}' onclick=showZoomedImage(this) lt='Image Placeholder'>"
