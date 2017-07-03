@@ -194,6 +194,36 @@ a[role="tab"] {
     }
 }
 
+.tag-button {
+    padding-left: 5px;
+    color: #46799b;
+    background: #e0eaf1;
+    white-space: nowrap;
+    overflow: hidden;
+    cursor: pointer;
+    border-radius: 2px 0 0 2px;
+    text-align: left;
+    border: none
+}
+
+.tag-button-delete:before {
+    color: #8ba7ba;
+    font-style: normal;
+    content: "×";
+    font-size: 16px;
+    line-height: 18px;
+    padding-left: 7px;
+    float: right !important;
+    display: none
+}
+
+.tag-button-delete.delete-visible:before {
+    display: block;
+}
+.tag-button-delete.delete-visible:hover:before{
+    color: red;
+}
+
 .selector-button:hover {
     background-color: #cbcbcb !important
 }

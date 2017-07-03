@@ -268,7 +268,7 @@ class UserManagerResourceManager extends ResourceManager{
             }
         });
         this.hide_table_rows(all_rows.filter(".hideme"));
-        this.show_table_rows(all_rows.filter(".showme"))
+        this.show_table_rows(all_rows.filter(".showme"));
         current_tags = remove_duplicates(current_tags);
         this.show_hide_tag_buttons(current_tags)
     }
@@ -352,22 +352,93 @@ class UserManagerResourceManager extends ResourceManager{
         return this.get_module_element(".tag-button-list .btn-group-vertical")
     }
 
+    get_tag_button_deleters () {
+        return this.get_module_element(".tag-button-list .tag-button-delete")
+    }
+
     refresh_tag_buttons(the_html) {
         let active_tag_buttons = this.get_active_tag_buttons();
         this.fill_tag_buttons(the_html);
         this.set_tag_button_state(active_tag_buttons);
+        this.set_tag_button_edit_mode(this.tag_button_mode)
     }
 
     set_tag_button_state (tag_list) {
         const all_tag_buttons = this.get_all_tag_buttons();
         $.each(all_tag_buttons, function (index, but) {
-            if (tag_list.includes(but.innerHTML)) {
+            if (tag_list.includes(but.innerText)) {
                 $(but).addClass("active")
             }
             else {
                 $(but).removeClass("active")
             }
         })
+    }
+
+    set_tag_button_edit_mode (mode) {
+        if (mode == "edit") {
+            this.tag_button_mode = "edit";
+            this.get_module_element(".edit-tags-button").addClass("active");
+            this.get_tag_button_deleters().addClass("delete-visible")
+        }
+        else {
+            this.tag_button_mode = "select";
+            this.get_module_element(".edit-tags-button").removeClass("active");
+            this.get_tag_button_deleters().removeClass("delete-visible")
+        }
+
+    }
+
+    remove_tag_from_all_rows(tag) {
+        const all_rows = this.get_all_selector_buttons();
+        $.each(all_rows, function (index, row_element) {
+            const cells = $(row_element).children();
+            const tag_text = $(cells.slice(-1)[0]).text().toLowerCase();
+            if (!tag_text == "") {
+                const taglist = tag_text.split(" ");
+                if (taglist.includes(tag)) {
+                    let tag_index = taglist.indexOf(tag);
+                    taglist.splice(tag_index, 1);
+                    let newtags;
+                    if (taglist.empty()) {
+                        newtags = ""
+                    }
+                    else {
+                        newtags = taglist[0];
+                        for (let ptag of taglist.slice(1)) {
+                            newtags = newtags + " " + ptag
+                        }
+                    }
+                    cells.slice(-1)[0].innerHTML = newtags
+                }
+            }
+        });
+        this.get_tags_field().tagEditor('removeTag', tag, true);
+    }
+
+    delete_tag(tag) {
+        const confirm_text = `Are you sure that you want delete to the tag ${tag} for this resource type?`;
+        let self = this;
+        confirmDialog(`Delete tag`, confirm_text, "do nothing", "delete", function () {
+            const result_dict = {"res_type": self.res_type, "tag": tag, "module_id": self.module_id};
+            postAjaxPromise("delete_tag", result_dict)
+                .then(function(data) {
+                    self.remove_tag_from_all_rows(tag);
+                    resource_managers["all_module"].remove_tag_from_all_rows(tag, self.res_type)
+
+                })
+                .catch(doFlash)
+        })
+    }
+
+    toggle_tag_button_edit_mode(mode) {
+        if (this.tag_button_mode == "edit") {
+            this.set_tag_button_edit_mode("select")
+        }
+        else {
+            this.set_tag_button_edit_mode("edit")
+        }
+
     }
 
     search_active_tag_buttons() {
@@ -381,7 +452,7 @@ class UserManagerResourceManager extends ResourceManager{
         let active_tag_buttons = [];
         $.each(all_tag_buttons, (index, but) => {
             if ($(but).hasClass("active")) {
-                active_tag_buttons.push($(but).html())
+                active_tag_buttons.push($(but).text())
             }
         });
         return active_tag_buttons
@@ -397,7 +468,7 @@ class UserManagerResourceManager extends ResourceManager{
         }
 
         $.each(all_tag_buttons, function (index, but) {
-            const tag_text = but.innerHTML;
+            const tag_text = but.innerText;
             if (!searchtags.includes(tag_text)) {
                 // $(but).css("display", "none")
                 $(but).addClass("hideme")
@@ -424,8 +495,6 @@ class UserManagerResourceManager extends ResourceManager{
         const all_tag_buttons = this.get_all_tag_buttons();
         this.show_tag_buttons(all_tag_buttons);
     }
-
-
 
     deactivate_tag_buttons () {
         const all_tag_buttons = this.get_all_tag_buttons();

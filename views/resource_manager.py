@@ -99,8 +99,12 @@ class ResourceManager(object):
 
     def request_update_tag_list(self, user_obj=None):
         self.tag_list = self.get_tag_list(user_obj)
-        result = "<div class='tag-button-list'>" + self.create_button_list(self.tag_list) + "</div>"
-        return result
+        if self.is_repository:
+            temp = """<div class='tag-button-list'>{}</div>"""
+        else:
+            temp = """<div><button type='button' class='btn btn-default btn-xs edit-tags-button' style='border:none'>edit tags</button></div>
+                              <div class='tag-button-list'>{}</div>"""
+        return temp.format(self.create_button_list(self.tag_list))
 
     def create_button_list(self, the_list):
         the_html = render_template("user_manage/button_list_template.html",

@@ -77,6 +77,21 @@ class CodeManager(UserManageResourceManager):
         mdata["notes"] = notes
         db[current_user.code_collection_name].update_one({"code_name": res_name}, {'$set': {"metadata": mdata}})
 
+    def delete_tag(self, tag):
+        doclist = db[current_user.code_collection_name].find()
+        for doc in doclist:
+            if not "metadata" in doc:
+                continue
+            mdata = doc["metadata"]
+            tagstring = mdata["tags"]
+            taglist = tagstring.split()
+            if tag in taglist:
+                taglist.remove(tag)
+                mdata["tags"] = " ".join(taglist)
+                res_name = doc["code_name"]
+                db[current_user.code_collection_name].update_one({"code_name": res_name}, {'$set': {"metadata": mdata}})
+        return
+
     def view_code(self, code_name):
         javascript_source = url_for('static', filename='tactic_js/code_viewer.js')
         return render_template("user_manage/resource_viewer.html",

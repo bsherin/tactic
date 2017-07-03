@@ -255,6 +255,28 @@ def save_metadata():
         error_string = "Error saving metadata: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
+@app.route('/delete_tag', methods=['POST'])
+def delete_tag():
+    try:
+        res_type = request.json["res_type"]
+        tag = request.json["tag"]
+        module_id = request.json["module_id"]
+        manager = get_manager_for_type(res_type)
+        manager.delete_tag(tag)
+        socketio.emit('update-tag-list',
+                      {"html": manager.request_update_tag_list(),
+                       "res_type": res_type,
+                       "module_id": module_id},
+                      namespace='/user_manage', room=current_user.get_id())
+        socketio.emit('update-tag-list',
+                      {"html": all_manager.request_update_tag_list(),
+                       "res_type": "all",
+                       "module_id": "all_module"},
+                      namespace='/user_manage', room=current_user.get_id())
+        return jsonify({"success": True, "message": "Deleted tag", "alert_type": "alert-success"})
+    except:
+        error_string = "Error deleting a tag: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
 @app.route('/search_resource', methods=['POST'])
 @login_required

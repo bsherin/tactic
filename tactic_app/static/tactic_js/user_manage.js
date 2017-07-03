@@ -88,6 +88,8 @@ function start_post_load() {
         $(".resource-module").on("click", ".main-content .selector-button", selector_click);
         $(".resource-module").on("dblclick", ".main-content .selector-button", selector_double_click);
         $(".resource-module").on("click", ".tag-button-list button", tag_button_clicked);
+        $(".resource-module").on("click", ".tag-button-delete", tag_button_delete_clicked);
+        $(".resource-module").on("click", ".edit-tags-button", edit_tags_button_clicked);
 
         $(".resource-module").on("keyup", ".search-field", function(e) {
             if (e.which == 13) {
@@ -191,6 +193,16 @@ function tag_button_clicked(event) {
         but.addClass("active")
     }
     resource_managers[get_current_module_id()].search_active_tag_buttons();
+}
+
+function tag_button_delete_clicked(event) {
+    let but = $(event.target);
+    let tag = but.parent().text();
+    resource_managers[get_current_module_id()].delete_tag(tag);
+}
+
+function edit_tags_button_clicked(event) {
+    resource_managers[get_current_module_id()].toggle_tag_button_edit_mode();
 }
 
 function showAdmin() {
@@ -1003,6 +1015,52 @@ class AllManager extends UserManagerResourceManager {
                 }
             })
             .catch(doFlash)
+    }
+
+    //
+    delete_tag(tag) {
+        const confirm_text = `Are you sure that you want to the tag ${tag} for all resource types?`;
+        let self = this;
+        confirmDialog(`Delete tag`, confirm_text, "do nothing", "delete", function () {
+            const result_dict = {"res_type": "all", "tag": tag, "module_id": self.module_id};
+            for (let res_type of res_types) {
+                resource_managers[`${res_type}_module`].delete_tag(tag)
+            }
+            self.remove_tag_from_all_rows(tag, "all")
+        })
+    }
+
+    remove_tag_from_all_rows(tag, res_type) {
+        const all_rows = this.get_all_selector_buttons();
+        $.each(all_rows, function (index, row_element) {
+            const cells = $(row_element).children();
+            let the_type = cells[1].innerHTML;
+            if ((res_type == "all") || (the_type == res_type)) {
+                const tag_text = $(cells.slice(-1)[0]).text().toLowerCase();
+                if (!tag_text == "") {
+                    const taglist = tag_text.split(" ");
+                    if (taglist.includes(tag)) {
+                        let tag_index = taglist.indexOf(tag);
+                        taglist.splice(tag_index, 1);
+                        let newtags;
+                        if (taglist.empty()) {
+                            newtags = ""
+                        }
+                        else {
+                            newtags = taglist[0];
+                            for (let ptag of taglist.slice(1)) {
+                                newtags = newtags + " " + ptag
+                            }
+                        }
+                        cells.slice(-1)[0].innerHTML = newtags
+                    }
+                }
+            }
+
+        });
+        if ((res_type == "all") || (this.selected_resource_type() == res_type)) {
+            self.get_tags_field().tagEditor('removeTag', tag, true);
+        }
     }
 
 }
