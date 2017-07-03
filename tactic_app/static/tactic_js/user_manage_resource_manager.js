@@ -26,6 +26,21 @@ class UserManagerResourceManager extends ResourceManager{
         })
     }
 
+    resize_to_window() {
+        const rsw_row = this.get_main_content_row();
+        resize_dom_to_bottom(rsw_row, 50);
+        const left_div = this.get_left_div();
+        resize_dom_to_bottom(left_div, 50);
+        const right_div = this.get_right_div();
+        resize_dom_to_bottom(right_div, 50);
+        const tselector = this.get_aux_left_dom();
+        resize_dom_to_bottom(tselector, 50);
+        const rselector = this.get_aux_right_dom();
+        resize_dom_to_bottom(rselector, 50);
+        resize_dom_to_bottom(this.get_tag_button_list(), 50);
+        this.update_width(this.current_width_fraction)
+    }
+
     fix_tag_button_width() {
         let w = this.get_tag_button_group().width();
         this.get_tag_button_group().css("min-width", w)
@@ -347,6 +362,10 @@ class UserManagerResourceManager extends ResourceManager{
 
     get_all_tag_buttons () {
         return this.get_module_element(".tag-button-list button")
+    }
+
+    get_tag_button_list() {
+        return this.get_module_element(".tag-button-list")
     }
 
     get_tag_button_group () {

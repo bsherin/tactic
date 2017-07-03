@@ -109,7 +109,7 @@ a[role="tab"] {
   white-space: nowrap;
   overflow: hidden;
   cursor: pointer;
-  border-radius: 2px 0 0 2px;
+  border-radius: 2px 0 0 2px !important;
   text-align: left;
   border: 1px solid white; }
 
@@ -153,7 +153,6 @@ a[role="tab"] {
 .tag-button-list, .resource-tag-button-list {
   vertical-align: top;
   overflow-y: auto;
-  max-height: 100%;
   border-top: none;
   border-top-right-radius: 4px;
   border-top-left-radius: 4px;
