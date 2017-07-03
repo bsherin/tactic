@@ -103,13 +103,30 @@ class ProjectManager(UserManageResourceManager):
     def delete_tag(self, tag):
         doclist = db[current_user.project_collection_name].find()
         for doc in doclist:
-            if not "metadata" in doc:
+            if "metadata" not in doc:
                 continue
             mdata = doc["metadata"]
             tagstring = mdata["tags"]
             taglist = tagstring.split()
             if tag in taglist:
                 taglist.remove(tag)
+                mdata["tags"] = " ".join(taglist)
+                res_name = doc["project_name"]
+                db[current_user.project_collection_name].update_one({"project_name": res_name}, {'$set': {"metadata": mdata}})
+        return
+
+    def rename_tag(self, old_tag, new_tag):
+        doclist = db[current_user.project_collection_name].find()
+        for doc in doclist:
+            if "metadata" not in doc:
+                continue
+            mdata = doc["metadata"]
+            tagstring = mdata["tags"]
+            taglist = tagstring.split()
+            if old_tag in taglist:
+                taglist.remove(old_tag)
+                if new_tag not in taglist:
+                    taglist.append(new_tag)
                 mdata["tags"] = " ".join(taglist)
                 res_name = doc["project_name"]
                 db[current_user.project_collection_name].update_one({"project_name": res_name}, {'$set': {"metadata": mdata}})

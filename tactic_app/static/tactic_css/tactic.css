@@ -111,7 +111,7 @@ a[role="tab"] {
   cursor: pointer;
   border-radius: 2px 0 0 2px;
   text-align: left;
-  border: none; }
+  border: 1px solid white; }
 
 .tag-button-delete:before {
   color: #8ba7ba;
@@ -153,7 +153,8 @@ a[role="tab"] {
 .tag-button-list, .resource-tag-button-list {
   vertical-align: top;
   overflow-y: auto;
-  border-top: 0.1px solid #cccccc;
+  max-height: 100%;
+  border-top: none;
   border-top-right-radius: 4px;
   border-top-left-radius: 4px;
   border-bottom-right-radius: 4px;
@@ -162,9 +163,6 @@ a[role="tab"] {
     background-color: lightgray; }
   .tag-button-list .btn-default:focus, .resource-tag-button-list .btn-default:focus {
     outline: none; }
-
-.tag-button-list:first-child {
-  border-top-width: 0px; }
 
 .CodeMirror {
   border: 1px solid #eee;

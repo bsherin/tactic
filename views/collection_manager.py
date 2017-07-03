@@ -168,6 +168,21 @@ class CollectionManager(UserManageResourceManager):
                                      {'$set': {"tags": mdata["tags"], "notes": mdata["notes"]}})
         return
 
+    def rename_tag(self, old_tag, new_tag):
+        cnames_with_metadata = current_user.data_collection_names_with_metadata
+        for [res_name, mdata] in cnames_with_metadata:
+            tagstring = mdata["tags"]
+            taglist = tagstring.split()
+            if old_tag in taglist:
+                taglist.remove(old_tag)
+                if new_tag not in taglist:
+                    taglist.append(new_tag)
+                mdata["tags"] = " ".join(taglist)
+                cname = current_user.build_data_collection_name(res_name)
+                db[cname].update_one({"name": "__metadata__"},
+                                     {'$set': {"tags": mdata["tags"], "notes": mdata["notes"]}})
+        return
+
     def autosplit_doc(self, filename, full_dict):
         sorted_int_keys = sorted([int(key) for key in full_dict.keys()])
         counter = 0

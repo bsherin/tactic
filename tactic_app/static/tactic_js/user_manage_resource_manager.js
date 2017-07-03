@@ -90,10 +90,11 @@ class UserManagerResourceManager extends ResourceManager{
                         }
                     },
                     onChange: function () {
-                        if (!self.is_repository) {
+                        if (!self.is_repository && self.tageditor_onchange_enabled) {
                             self.save_my_metadata(false)
                         }
                 }});
+                self.tageditor_onchange_enabled = true
             })
             .catch(doFlash)
     }
@@ -413,22 +414,87 @@ class UserManagerResourceManager extends ResourceManager{
                 }
             }
         });
+        this.tageditor_onchange_enabled = false;
         this.get_tags_field().tagEditor('removeTag', tag, true);
+        this.tageditor_onchange_enabled = true;
+    }
+
+    rename_tag_in_all_rows(old_tag, new_tag) {
+        const all_rows = this.get_all_selector_buttons();
+        $.each(all_rows, function (index, row_element) {
+            const cells = $(row_element).children();
+            const tag_text = $(cells.slice(-1)[0]).text().toLowerCase();
+            if (!tag_text == "") {
+                const taglist = tag_text.split(" ");
+                if (taglist.includes(old_tag)) {
+                    let tag_index = taglist.indexOf(old_tag);
+                    if (taglist.includes(new_tag)) {
+                        taglist.splice(tag_index, 1);
+                    }
+                    else {
+                        taglist[tag_index] = new_tag
+                    }
+                    let newtags;
+                    newtags = taglist[0];
+                    for (let ptag of taglist.slice(1)) {
+                        newtags = newtags + " " + ptag
+                    }
+                    cells.slice(-1)[0].innerHTML = newtags
+                }
+            }
+        });
+        if (this.get_tags().includes(old_tag)){
+            this.tageditor_onchange_enabled = false;
+            this.get_tags_field().tagEditor('removeTag', old_tag, true);
+            if (!this.get_tags().includes(new_tag)){
+                this.get_tags_field().tagEditor('addTag', new_tag, true)
+            }
+            this.tageditor_onchange_enabled = true;
+        }
+
+    }
+
+    DoTagDelete(tag) {
+        const result_dict = {"res_type": this.res_type, "tag": tag, "module_id": this.module_id};
+        let self = this;
+        postAjaxPromise("delete_tag", result_dict)
+            .then(function(data) {
+                self.remove_tag_from_all_rows(tag);
+                resource_managers["all_module"].remove_tag_from_all_rows(tag, self.res_type)
+
+            })
+            .catch(doFlash)
     }
 
     delete_tag(tag) {
         const confirm_text = `Are you sure that you want delete to the tag ${tag} for this resource type?`;
         let self = this;
         confirmDialog(`Delete tag`, confirm_text, "do nothing", "delete", function () {
-            const result_dict = {"res_type": self.res_type, "tag": tag, "module_id": self.module_id};
-            postAjaxPromise("delete_tag", result_dict)
-                .then(function(data) {
-                    self.remove_tag_from_all_rows(tag);
-                    resource_managers["all_module"].remove_tag_from_all_rows(tag, self.res_type)
-
-                })
-                .catch(doFlash)
+            self.DoTagDelete(tag)
         })
+    }
+
+    DoTagRename(old_tag, new_tag) {
+        const result_dict = {"res_type": this.res_type, "old_tag": old_tag, "new_tag": new_tag, "module_id": this.module_id};
+        let self = this;
+        postAjaxPromise("rename_tag", result_dict)
+            .then(function (data) {
+                if (!(new_tag == old_tag)) {
+                    self.rename_tag_in_all_rows(old_tag, new_tag);
+                    resource_managers["all_module"].rename_tag_in_all_rows(old_tag, new_tag, self.res_type)
+                }
+            })
+            .catch(doFlash)
+    }
+
+    rename_tag(old_tag) {
+        let self = this;
+        showModal(`Rename tag ${old_tag}`, `New name for this tag`, RenameTag, old_tag);
+
+        function RenameTag(new_tag) {
+            self.DoTagRename(old_tag, new_tag)
+        }
+
     }
 
     toggle_tag_button_edit_mode(mode) {
