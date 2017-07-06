@@ -15,7 +15,7 @@ class ResourceManager {
         this.destination_selector = destination_selector;
         this.res_type = res_type;
         this.module_id = module_id;
-        this.include_right = include_right
+        this.include_right = include_right;
 
         // These additional parameters are relevant to the rendering of the template
         this.include_metadata = false;
@@ -43,8 +43,7 @@ class ResourceManager {
             this.update_width(1.0)
         }
         this.handling_selector_click = false;
-        self = this;
-
+        let self = this;
     }
 
 

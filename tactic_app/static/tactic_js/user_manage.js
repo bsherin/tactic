@@ -49,12 +49,11 @@ function start_post_load() {
         const manager = resource_managers[data.module_id];
         manager.fill_content(data.html);
         manager.select_resource_button(data.select);
-        manager.refresh_tag_buttons(manager.get_all_selector_tags())
-        // manager.replay_last_search()
+        manager.tag_button_list.refresh_from_selectors()
     });
 
     socket.on('update-tag-list', (data) => {
-        resource_managers[data.module_id].refresh_tag_buttons(data.tag_list)
+        resource_managers[data.module_id].tag_button_list.refresh_given_taglist(data.tag_list)
     });
 
     socket.on('stop-spinner', stopSpinner);
@@ -189,7 +188,7 @@ function tag_button_clicked(event) {
     let but = $(event.target);
     if (but.hasClass('tag-button-delete')) return;  // We don't want a click on the delete to bubble up.
     let manager = resource_managers[get_current_module_id()];
-    if (manager.tag_button_mode == "edit") {
+    if (manager.tag_button_list.tag_button_mode == "edit") {
         let tag = but.text();
         manager.rename_tag(tag)
     }
@@ -211,7 +210,7 @@ function tag_button_delete_clicked(event) {
 }
 
 function edit_tags_button_clicked(event) {
-    resource_managers[get_current_module_id()].toggle_tag_button_edit_mode();
+    resource_managers[get_current_module_id()].tag_button_list.toggle_edit_button_mode();
 }
 
 function showAdmin() {
@@ -1103,9 +1102,9 @@ class AllManager extends UserManagerResourceManager {
         postAjaxPromise("save_metadata", result_dict)
             .then(function (data) {
                 self.get_selector_table_row(res_name, the_type).children().slice(-1)[0].innerHTML = tags;
-                self.refresh_tag_buttons(data.all_tags);
+                self.tag_button_list.refresh_given_taglist(data.all_tags);
                 self.res_manager(the_type).update_selector_tags(res_name, tags);
-                self.res_manager(the_type).refresh_tag_buttons(data.res_tags);
+                self.res_manager(the_type).tag_button_list.refresh_given_taglist(data.res_tags);
                 if (flash) {
                     doFlash(data)
                 }
@@ -1133,7 +1132,6 @@ class AllManager extends UserManagerResourceManager {
                 resource_managers[`${res_type}_module`].DoTagRename(old_tag, new_tag)
             }
         }
-
     }
 
     remove_tag_from_all_rows(tag, res_type) {
@@ -1143,7 +1141,7 @@ class AllManager extends UserManagerResourceManager {
             let the_type = cells[1].innerHTML;
             if ((res_type == "all") || (the_type == res_type)) {
                 const tag_text = $(cells.slice(-1)[0]).text().toLowerCase();
-                if (!tag_text == "") {
+                if (tag_text != "") {
                     const taglist = tag_text.split(" ");
                     if (taglist.includes(tag)) {
                         let tag_index = taglist.indexOf(tag);
@@ -1178,7 +1176,7 @@ class AllManager extends UserManagerResourceManager {
             let the_type = cells[1].innerHTML;
             if ((res_type == "all") || (the_type == res_type)) {
                 const tag_text = $(cells.slice(-1)[0]).text().toLowerCase();
-                if (!tag_text == "") {
+                if (tag_text != "") {
                     const taglist = tag_text.split(" ");
                     if (taglist.includes(old_tag)) {
                         let tag_index = taglist.indexOf(old_tag);

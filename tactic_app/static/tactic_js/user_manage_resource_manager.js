@@ -2,6 +2,211 @@
  * Created by bls910 on 1/21/17.
  */
 
+class TagButtonList {
+    constructor (manager) {
+        this.manager = manager;
+        this.tag_button_mode = "select"
+    }
+
+    get_module_element(selector) {
+        return this.manager.get_module_element(selector)
+    }
+
+    fix_tag_button_width() {
+        let w = this.get_tag_button_group().width();
+        this.get_tag_button_group().css("min-width", w)
+    }
+
+    get_all_tag_buttons () {
+        return this.get_module_element(".tag-button-list button")
+    }
+
+    get_tag_button_list() {
+        return this.get_module_element(".tag-button-list")
+    }
+
+    get_tag_button_group () {
+        return this.get_module_element(".tag-button-list .btn-group-vertical")
+    }
+
+    get_tag_button_deleters () {
+        return this.get_module_element(".tag-button-list .tag-button-delete")
+    }
+
+    create_tag_buttons(url_string) {
+        const self = this;
+        $.getJSON(`${$SCRIPT_ROOT}/${url_string}/${this.manager.res_type}`, function (data) {
+            self.create_button_html(data.tag_list, "all");
+        })
+    }
+
+    resize_me() {
+        resize_dom_to_bottom(this.get_tag_button_list(), 50);
+    }
+
+    toggle_edit_button_mode(mode) {
+        if (this.tag_button_mode == "edit") {
+            this.set_edit_button_mode("select")
+        }
+        else {
+            this.set_edit_button_mode("edit")
+        }
+    }
+
+    set_edit_button_mode (mode) {
+        if (mode == "edit") {
+            this.tag_button_mode = "edit";
+            this.get_module_element(".edit-tags-button").addClass("active");
+            this.get_tag_button_deleters().addClass("delete-visible")
+        }
+        else {
+            this.tag_button_mode = "select";
+            this.get_module_element(".edit-tags-button").removeClass("active");
+            this.get_tag_button_deleters().removeClass("delete-visible")
+        }
+    }
+
+    set_button_state_from_taglist (tag_list) {
+        const all_tag_buttons = this.get_all_tag_buttons();
+        $.each(all_tag_buttons, function (index, but) {
+            if (tag_list.includes(but.innerText)) {
+                $(but).addClass("active")
+            }
+            else {
+                $(but).removeClass("active")
+            }
+        })
+    }
+
+    refresh_from_selectors() {
+        let tag_list = this.get_all_selector_tags();
+        this.refresh_given_taglist(tag_list)
+    }
+
+    refresh_given_taglist(tag_list) {
+        let active_tag_buttons = this.get_active_tag_buttons();
+        let visible_tags = this.get_currently_visible_tags();
+        this.create_button_html(tag_list, visible_tags);
+        this.set_button_state_from_taglist(active_tag_buttons);
+        this.set_edit_button_mode(this.tag_button_mode);
+    }
+
+    get_active_tag_buttons () {
+        let all_tag_buttons = this.get_all_tag_buttons();
+        let active_tag_buttons = [];
+        $.each(all_tag_buttons, (index, but) => {
+            if ($(but).hasClass("active")) {
+                active_tag_buttons.push($(but).text())
+            }
+        });
+        return active_tag_buttons
+    }
+
+    get_currently_visible_tags() {
+        const all_rows = this.manager.get_all_selector_buttons();
+        const visible_rows = all_rows.filter(function() { return $(this).css("display") == "table-row" });
+        let self = this;
+        let visible_tags = [];
+        $.each(visible_rows, function (index, row_element) {
+            const cells = $(row_element).children();
+            const tag_text = $(cells.slice(-1)[0]).text().toLowerCase();
+            const taglist = tag_text.split(" ");
+            visible_tags = visible_tags.concat(taglist);
+        });
+        visible_tags = remove_duplicates(visible_tags);
+        return visible_tags
+    }
+
+    get_all_selector_tags() {
+        const all_rows = this.manager.get_all_selector_buttons();
+        let self = this;
+        let all_tags = [];
+        $.each(all_rows, function (index, row_element) {
+            const cells = $(row_element).children();
+            const tag_text = $(cells.slice(-1)[0]).text().toLowerCase();
+            if (tag_text != "") {
+                const taglist = tag_text.split(" ");
+                all_tags = all_tags.concat(taglist);
+            }
+        });
+        all_tags = remove_duplicates(all_tags);
+        all_tags.splice(all_tags.indexOf(""), 1);
+        return all_tags.sort()
+    }
+
+    create_button_html(tag_list, visible_buttons) {
+        let tag_button_html = `<div class="btn-group-vertical btn-group-sm" role="group">`;
+        for (let tag of tag_list) {
+            let new_html;
+            if ((visible_buttons == "all") || (visible_buttons.includes(tag))) {
+                new_html = `<button type="button" class="btn btn-default tag-button showme" style="display: block" value="${this.res_type}">${tag}<span class="tag-button-delete"></span></button>`
+            }
+            else {
+                new_html = `<button type="button" class="btn btn-default tag-button hideme" style="display: none" value="${this.res_type}">${tag}<span class="tag-button-delete"></span></button>`
+            }
+            tag_button_html = tag_button_html + new_html + "\n"
+        }
+        tag_button_html = tag_button_html + "</div>";
+        let the_html;
+        if (this.manager.is_repository) {
+            the_html = `<div class='tag-button-list'>${tag_button_html}</div>`
+        }
+        else {
+            the_html = `<div><button type='button' class='btn btn-default btn-xs edit-tags-button' style='border:none'>edit tags</button></div>
+            <div class='tag-button-list'>${tag_button_html}</div>`
+        }
+        this.manager.get_aux_left_dom().html(the_html);
+        this.resize_me()
+    }
+
+    show_hide_buttons_given_taglist(searchtags) {
+        const all_tag_buttons = this.get_all_tag_buttons();
+        all_tag_buttons.removeClass("hideme");
+        all_tag_buttons.removeClass("showme");
+
+        $.each(all_tag_buttons, function (index, but) {
+            const tag_text = but.innerText;
+            if (searchtags.includes(tag_text) || searchtags.empty()) {
+                if ($(but).css("display") == "none") {
+                    $(but).addClass("showme")
+                }
+            }
+            else {
+                if ($(but).css("display") != "none") {
+                    $(but).addClass("hideme")
+                }
+            }
+        });
+        this.show_buttons(all_tag_buttons.filter(".showme"));
+        this.fix_tag_button_width();
+        this.hide_buttons(all_tag_buttons.filter(".hideme"));
+    }
+
+    show_buttons(the_tags) {
+        the_tags.slideDown();
+    }
+
+    hide_buttons(the_tags) {
+        the_tags.slideUp();
+    }
+
+    unfilter_all() {
+        this.show_all_buttons();
+        this.deactivate_all_buttons();
+    }
+
+    show_all_buttons () {
+        const all_tag_buttons = this.get_all_tag_buttons();
+        this.show_buttons(all_tag_buttons);
+    }
+
+    deactivate_all_buttons () {
+        const all_tag_buttons = this.get_all_tag_buttons();
+        all_tag_buttons.removeClass("active");
+    }
+
+}
+
 class UserManagerResourceManager extends ResourceManager{
 
     constructor (module_id, res_type, resource_module_template, destination_selector) {
@@ -10,6 +215,7 @@ class UserManagerResourceManager extends ResourceManager{
     }
 
     set_extra_properties() {
+        this.tag_button_list = new TagButtonList(this);
         this.include_metadata = true;
         this.include_search_toolbar = true;
         this.include_tags_search = true;
@@ -37,13 +243,8 @@ class UserManagerResourceManager extends ResourceManager{
         resize_dom_to_bottom(tselector, 50);
         const rselector = this.get_aux_right_dom();
         resize_dom_to_bottom(rselector, 50);
-        resize_dom_to_bottom(this.get_tag_button_list(), 50);
+        this.tag_button_list.resize_me();
         this.update_width(this.current_width_fraction)
-    }
-
-    fix_tag_button_width() {
-        let w = this.get_tag_button_group().width();
-        this.get_tag_button_group().css("min-width", w)
     }
 
     fill_content(the_html) {
@@ -165,9 +366,9 @@ class UserManagerResourceManager extends ResourceManager{
         postAjaxPromise("save_metadata", result_dict)
             .then(function(data) {
                 self.get_selector_table_row(res_name).children().slice(-1)[0].innerHTML = tags;
-                self.refresh_tag_buttons(data.res_tags);
+                self.tag_button_list.refresh_given_taglist(data.res_tags);
                 resource_managers["all_module"].update_selector_tags(res_name, self.res_type, tags);
-                resource_managers["all_module"].refresh_tag_buttons(data.all_tags);
+                resource_managers["all_module"].tag_button_list.refresh_given_taglist(data.all_tags);
                 if (flash) {
                     doFlash(data)
                 }
@@ -178,25 +379,25 @@ class UserManagerResourceManager extends ResourceManager{
     // search related
 
     // This currently isn't used
-    replay_last_search() {
-        if (!this.last_search) return;
-        let func = this.last_search["function"];
-        let val = this.last_search["value"];
-        switch (func) {
-            case "search_my_resource":
-                this.get_search_field()[0].value = val;
-                this.search_my_resource();
-                break;
-            case "search_my_tags":
-                this.set_tag_button_state(val);
-                this.set_search_tag_list(taglist);
-                this.search_my_tags();
-                break;
-            case "search_active_tag_buttons":
-                this.set_tag_button_state(val);
-                this.search_active_tag_buttons()
-        }
-    }
+    // replay_last_search() {
+    //     if (!this.last_search) return;
+    //     let func = this.last_search["function"];
+    //     let val = this.last_search["value"];
+    //     switch (func) {
+    //         case "search_my_resource":
+    //             this.get_search_field()[0].value = val;
+    //             this.search_my_resource();
+    //             break;
+    //         case "search_my_tags":
+    //             this.set_tag_button_state(val);
+    //             this.set_search_tag_list(taglist);
+    //             this.search_my_tags();
+    //             break;
+    //         case "search_active_tag_buttons":
+    //             this.set_tag_button_state(val);
+    //             this.search_active_tag_buttons()
+    //     }
+    // }
 
     tagMatch (search_tags, item_tags) {
         if (search_tags.empty()) {
@@ -213,7 +414,7 @@ class UserManagerResourceManager extends ResourceManager{
     search_my_resource (){
         const txt = this.get_search_field()[0].value.toLowerCase();
         const all_rows = this.get_all_selector_buttons();
-        this.deactivate_tag_buttons();
+        this.tag_button_list.deactivate_all_buttons();
         let searchtags = [];
         if (txt == "") {
             searchtags = []
@@ -244,7 +445,7 @@ class UserManagerResourceManager extends ResourceManager{
         this.hide_table_rows(all_rows.filter(".hideme"));
         this.show_table_rows(all_rows.filter(".showme"));
         current_tags = remove_duplicates(current_tags);
-        this.show_hide_tag_buttons(current_tags);
+        this.tag_button_list.show_hide_buttons_given_taglist(current_tags);
         if (!this.active_selector_is_visible()){
             this.select_first_row()
         }
@@ -255,8 +456,8 @@ class UserManagerResourceManager extends ResourceManager{
         const all_rows = this.get_all_selector_buttons();
         this.show_table_rows(all_rows);
 
-        this.deactivate_tag_buttons();
-        this.show_all_tag_buttons();
+        this.tag_button_list.deactivate_all_buttons();
+        this.tag_button_list.show_all_buttons();
         this.get_search_field().val("");
         this.last_search = null;
     }
@@ -278,57 +479,24 @@ class UserManagerResourceManager extends ResourceManager{
             const tag_text = $(cells.slice(-1)[0]).text().toLowerCase();
             const taglist = tag_text.split(" ");
             if (!self.tagMatch(searchtags, taglist)) {
-                // $(row_element).css("display", "none")
                 $(row_element).addClass("hideme");
                 $(row_element).removeClass("showme");
             }
             else {
                 $(row_element).addClass("showme");
                 $(row_element).removeClass("hideme");
-                // $(row_element).css("display", "table-row");
                 current_tags = current_tags.concat(taglist);
             }
         });
         this.hide_table_rows(all_rows.filter(".hideme"));
         this.show_table_rows(all_rows.filter(".showme"));
         current_tags = remove_duplicates(current_tags);
-        this.show_hide_tag_buttons(current_tags);
+        this.tag_button_list.show_hide_buttons_given_taglist(current_tags);
         if (!this.active_selector_is_visible()){
             this.select_first_row()
         }
     }
 
-    get_currently_visible_tags() {
-        const all_rows = this.get_all_selector_buttons();
-        const visible_rows = all_rows.filter(function() { return $(this).css("display") == "table-row" });
-        let self = this;
-        let visible_tags = [];
-        $.each(visible_rows, function (index, row_element) {
-            const cells = $(row_element).children();
-            const tag_text = $(cells.slice(-1)[0]).text().toLowerCase();
-            const taglist = tag_text.split(" ");
-            visible_tags = visible_tags.concat(taglist);
-        });
-        visible_tags = remove_duplicates(visible_tags);
-        return visible_tags
-    }
-
-    get_all_selector_tags() {
-        const all_rows = this.get_all_selector_buttons();
-        let self = this;
-        let all_tags = [];
-        $.each(all_rows, function (index, row_element) {
-            const cells = $(row_element).children();
-            const tag_text = $(cells.slice(-1)[0]).text().toLowerCase();
-            if (tag_text != "") {
-                const taglist = tag_text.split(" ");
-                all_tags = all_tags.concat(taglist);
-            }
-        });
-        all_tags = remove_duplicates(all_tags);
-        all_tags.splice(all_tags.indexOf(""), 1);
-        return all_tags.sort()
-    }
 
     create_search_tag_editor(initial_tag_list) {
         let self = this;
@@ -370,7 +538,7 @@ class UserManagerResourceManager extends ResourceManager{
     search_my_tags() {
         const searchtags = this.get_search_tags();
         this.search_given_tags(searchtags);
-        this.set_tag_button_state(searchtags);
+        this.tag_button_list.set_button_state_from_taglist(searchtags);
         this.last_search = {"function": "search_my_tags", "value": searchtags}
 
     }
@@ -378,8 +546,7 @@ class UserManagerResourceManager extends ResourceManager{
     // tag button related
 
     unfilter_tags () {
-        this.show_tag_buttons(this.get_all_tag_buttons());
-        this.deactivate_tag_buttons();
+        this.tag_button_list.unfilter_all();
         this.clear_search_tag_list();
         const all_rows = this.get_all_selector_buttons();
         this.show_table_rows(all_rows);
@@ -387,96 +554,9 @@ class UserManagerResourceManager extends ResourceManager{
     }
 
     update_aux_content() {
-        this.create_tag_buttons(this.update_tag_view);
+        this.tag_button_list.create_tag_buttons(this.update_tag_view);
     }
 
-    create_tag_buttons(url_string) {
-        const self = this;
-        $.getJSON(`${$SCRIPT_ROOT}/${url_string}/${this.res_type}`, function (data) {
-            self.fill_tag_buttons(data.tag_list, "all");
-        })
-    }
-
-    get_all_tag_buttons () {
-        return this.get_module_element(".tag-button-list button")
-    }
-
-    get_tag_button_list() {
-        return this.get_module_element(".tag-button-list")
-    }
-
-    get_tag_button_group () {
-        return this.get_module_element(".tag-button-list .btn-group-vertical")
-    }
-
-    get_tag_button_deleters () {
-        return this.get_module_element(".tag-button-list .tag-button-delete")
-    }
-
-    refresh_tag_buttons(tag_list) {
-        let active_tag_buttons = this.get_active_tag_buttons();
-        let visible_tags = this.get_currently_visible_tags();
-        this.fill_tag_buttons(tag_list, visible_tags);
-        this.set_tag_button_state(active_tag_buttons);
-        this.set_tag_button_edit_mode(this.tag_button_mode);
-        this.show_hide_tag_buttons(visible_tags)
-    }
-
-    fill_tag_buttons(tag_list, visible_buttons) {
-        let tag_button_html = `<div class="btn-group-vertical btn-group-sm" role="group">`;
-        for (let tag of tag_list) {
-            let new_html;
-            if ((visible_buttons == "all") || (visible_buttons.includes(tag))) {
-                new_html = `<button type="button" class="btn btn-default tag-button showme" style="display: block" value="${this.res_type}">${tag}<span class="tag-button-delete"></span></button>`
-            }
-            else {
-                new_html = `<button type="button" class="btn btn-default tag-button hideme" style="display: none" value="${this.res_type}">${tag}<span class="tag-button-delete"></span></button>`
-            }
-            tag_button_html = tag_button_html + new_html + "\n"
-        }
-        tag_button_html = tag_button_html + "</div>"
-        let the_html;
-        if (this.is_repository) {
-            the_html = `<div class='tag-button-list'>${tag_button_html}</div>`
-        }
-        else {
-            the_html = `<div><button type='button' class='btn btn-default btn-xs edit-tags-button' style='border:none'>edit tags</button></div>
-            <div class='tag-button-list'>${tag_button_html}</div>`
-        }
-
-        this.get_aux_left_dom().html(the_html)
-    }
-
-    update_visible_tag_buttons() {
-        let visible_tags = this.get_currently_visible_tags();
-        this.show_hide_tag_buttons(visible_tags)
-    }
-
-    set_tag_button_state (tag_list) {
-        const all_tag_buttons = this.get_all_tag_buttons();
-        $.each(all_tag_buttons, function (index, but) {
-            if (tag_list.includes(but.innerText)) {
-                $(but).addClass("active")
-            }
-            else {
-                $(but).removeClass("active")
-            }
-        })
-    }
-
-    set_tag_button_edit_mode (mode) {
-        if (mode == "edit") {
-            this.tag_button_mode = "edit";
-            this.get_module_element(".edit-tags-button").addClass("active");
-            this.get_tag_button_deleters().addClass("delete-visible")
-        }
-        else {
-            this.tag_button_mode = "select";
-            this.get_module_element(".edit-tags-button").removeClass("active");
-            this.get_tag_button_deleters().removeClass("delete-visible")
-        }
-
-    }
 
     update_selector_tags(res_name, new_tags) {
         this.get_selector_table_row(res_name).children().slice(-1)[0].innerHTML = new_tags;
@@ -490,7 +570,7 @@ class UserManagerResourceManager extends ResourceManager{
         $.each(all_rows, function (index, row_element) {
             const cells = $(row_element).children();
             const tag_text = $(cells.slice(-1)[0]).text().toLowerCase();
-            if (!tag_text == "") {
+            if (tag_text != "") {
                 const taglist = tag_text.split(" ");
                 if (taglist.includes(tag)) {
                     let tag_index = taglist.indexOf(tag);
@@ -519,7 +599,7 @@ class UserManagerResourceManager extends ResourceManager{
         $.each(all_rows, function (index, row_element) {
             const cells = $(row_element).children();
             const tag_text = $(cells.slice(-1)[0]).text().toLowerCase();
-            if (!tag_text == "") {
+            if (tag_text != "") {
                 const taglist = tag_text.split(" ");
                 if (taglist.includes(old_tag)) {
                     let tag_index = taglist.indexOf(old_tag);
@@ -554,10 +634,9 @@ class UserManagerResourceManager extends ResourceManager{
         postAjaxPromise("delete_tag", result_dict)
             .then(function(data) {
                 self.remove_tag_from_all_rows(tag);
-                self.refresh_tag_buttons(data.res_tags);
-                self.update_visible_tag_buttons();
+                self.tag_button_list.refresh_given_taglist(data.res_tags);
                 resource_managers["all_module"].remove_tag_from_all_rows(tag, self.res_type);
-                resource_managers["all_module"].refresh_tag_buttons(data.all_tags);
+                resource_managers["all_module"].tag_button_list.refresh_given_taglist(data.all_tags);
                 if (!self.active_selector_is_visible()){
                     self.select_first_row()
                 }
@@ -580,9 +659,9 @@ class UserManagerResourceManager extends ResourceManager{
             .then(function (data) {
                 if (!(new_tag == old_tag)) {
                     self.rename_tag_in_all_rows(old_tag, new_tag);
-                    self.refresh_tag_buttons(data.res_tags);
+                    self.tag_button_list.refresh_given_taglist(data.res_tags);
                     resource_managers["all_module"].rename_tag_in_all_rows(old_tag, new_tag, self.res_type);
-                    resource_managers["all_module"].refresh_tag_buttons(data.all_tags);
+                    resource_managers["all_module"].tag_button_list.refresh_given_taglist(data.all_tags);
                     if (!self.active_selector_is_visible()){
                         self.select_first_row()
                     }
@@ -601,72 +680,10 @@ class UserManagerResourceManager extends ResourceManager{
 
     }
 
-    toggle_tag_button_edit_mode(mode) {
-        if (this.tag_button_mode == "edit") {
-            this.set_tag_button_edit_mode("select")
-        }
-        else {
-            this.set_tag_button_edit_mode("edit")
-        }
-
-    }
-
     search_active_tag_buttons() {
-        let active_tag_buttons = this.get_active_tag_buttons();
+        let active_tag_buttons = this.tag_button_list.get_active_tag_buttons();
         this.search_given_tags(active_tag_buttons);
         this.last_search = {"function": "search_active_tag_buttons", "value": active_tag_buttons}
-    }
-
-    get_active_tag_buttons () {
-        let all_tag_buttons = this.get_all_tag_buttons();
-        let active_tag_buttons = [];
-        $.each(all_tag_buttons, (index, but) => {
-            if ($(but).hasClass("active")) {
-                active_tag_buttons.push($(but).text())
-            }
-        });
-        return active_tag_buttons
-    }
-
-    show_hide_tag_buttons (searchtags) {
-        const all_tag_buttons = this.get_all_tag_buttons();
-        all_tag_buttons.removeClass("hideme");
-        all_tag_buttons.removeClass("showme");
-
-        $.each(all_tag_buttons, function (index, but) {
-            const tag_text = but.innerText;
-            if (searchtags.includes(tag_text) || searchtags.empty()) {
-                if ($(but).css("display") == "none") {
-                    $(but).addClass("showme")
-                }
-            }
-            else {
-                if ($(but).css("display") != "none") {
-                    $(but).addClass("hideme")
-                }
-            }
-        });
-        this.show_tag_buttons(all_tag_buttons.filter(".showme"));
-        this.fix_tag_button_width();
-        this.hide_tag_buttons(all_tag_buttons.filter(".hideme"));
-    }
-
-    show_tag_buttons(the_tags) {
-        the_tags.slideDown();
-    }
-
-    hide_tag_buttons(the_tags) {
-        the_tags.slideUp();
-    }
-
-    show_all_tag_buttons () {
-        const all_tag_buttons = this.get_all_tag_buttons();
-        this.show_tag_buttons(all_tag_buttons);
-    }
-
-    deactivate_tag_buttons () {
-        const all_tag_buttons = this.get_all_tag_buttons();
-        all_tag_buttons.removeClass("active");
     }
 
     add_func(event) {
