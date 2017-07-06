@@ -49,6 +49,7 @@ function start_post_load() {
         const manager = resource_managers[data.module_id];
         manager.fill_content(data.html);
         manager.select_resource_button(data.select);
+        manager.refresh_tag_buttons(manager.get_all_selector_tags())
         // manager.replay_last_search()
     });
 
@@ -1088,7 +1089,6 @@ class AllManager extends UserManagerResourceManager {
         }
         return result
     }
-
 
     save_my_metadata(flash = true) {
         const res_name = this.get_active_selector_button().attr("value");

@@ -313,6 +313,23 @@ class UserManagerResourceManager extends ResourceManager{
         return visible_tags
     }
 
+    get_all_selector_tags() {
+        const all_rows = this.get_all_selector_buttons();
+        let self = this;
+        let all_tags = [];
+        $.each(all_rows, function (index, row_element) {
+            const cells = $(row_element).children();
+            const tag_text = $(cells.slice(-1)[0]).text().toLowerCase();
+            if (tag_text != "") {
+                const taglist = tag_text.split(" ");
+                all_tags = all_tags.concat(taglist);
+            }
+        });
+        all_tags = remove_duplicates(all_tags);
+        all_tags.splice(all_tags.indexOf(""), 1);
+        return all_tags.sort()
+    }
+
     create_search_tag_editor(initial_tag_list) {
         let self = this;
         let data_dict = {"res_type": this.res_type, "is_repository": this.is_repository};
