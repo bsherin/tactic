@@ -53,7 +53,7 @@ function start_post_load() {
     });
 
     socket.on('update-tag-list', (data) => {
-        resource_managers[data.module_id].refresh_tag_buttons(data.html)
+        resource_managers[data.module_id].refresh_tag_buttons(data.tag_list)
     });
 
     socket.on('stop-spinner', stopSpinner);
@@ -187,7 +187,7 @@ function selector_double_click(event) {
 function tag_button_clicked(event) {
     let but = $(event.target);
     if (but.hasClass('tag-button-delete')) return;  // We don't want a click on the delete to bubble up.
-    let manager = resource_managers[get_current_module_id()]
+    let manager = resource_managers[get_current_module_id()];
     if (manager.tag_button_mode == "edit") {
         let tag = but.text();
         manager.rename_tag(tag)
@@ -914,8 +914,8 @@ class AllManager extends UserManagerResourceManager {
                     return false
                 }
                 else {
-                    manager.get_selector_table_row(res_name).children()[0].innerHTML = new_name;
-                    manager.get_selector_table_row(res_name).attr("value", new_name);
+                    manager.get_selector_table_row(res_name, the_type).children()[0].innerHTML = new_name;
+                    manager.get_selector_table_row(res_name, the_type).attr("value", new_name);
                     manager.res_manager(the_type).get_selector_table_row(res_name).children()[0].innerHTML = new_name;
                     manager.res_manager(the_type).get_selector_table_row(res_name).attr("value", new_name)
                 }
@@ -1065,6 +1065,31 @@ class AllManager extends UserManagerResourceManager {
         }
     }
 
+    update_selector_tags(res_name, res_type, new_tags) {
+        let row_to_change = this.get_selector_table_row(res_name, res_type);
+        row_to_change.children().slice(-1)[0].innerHTML = new_tags;
+        if (row_to_change.hasClass("active")) {
+            this.set_tag_list(new_tags)
+        }
+    }
+
+    get_selector_table_row(name, res_type) {
+        const possible_rows = this.get_module_element(`tr[value='${name}']`);
+        let self = this;
+        let result = null;
+        let row_element;
+        for (let i = 0; row_element = possible_rows[i]; ++i) {
+            const cells = $(row_element).children();
+            self.get_module_element(`tr[value='${name}']`);
+            let the_type = cells[1].innerHTML;
+            if (the_type == res_type) {
+                result = $(row_element)
+            }
+        }
+        return result
+    }
+
+
     save_my_metadata(flash = true) {
         const res_name = this.get_active_selector_button().attr("value");
         const tags = this.get_tags_string();
@@ -1077,8 +1102,10 @@ class AllManager extends UserManagerResourceManager {
         const self = this;
         postAjaxPromise("save_metadata", result_dict)
             .then(function (data) {
-                self.get_selector_table_row(res_name).children().slice(-1)[0].innerHTML = tags;
-                self.res_manager(the_type).get_selector_table_row(res_name).children().slice(-1)[0].innerHTML = tags;
+                self.get_selector_table_row(res_name, the_type).children().slice(-1)[0].innerHTML = tags;
+                self.refresh_tag_buttons(data.all_tags);
+                self.res_manager(the_type).update_selector_tags(res_name, tags);
+                self.res_manager(the_type).refresh_tag_buttons(data.res_tags);
                 if (flash) {
                     doFlash(data)
                 }
@@ -1139,7 +1166,7 @@ class AllManager extends UserManagerResourceManager {
         });
         if ((res_type == "all") || (this.selected_resource_type() == res_type)) {
             this.tageditor_onchange_enabled = false;
-            self.get_tags_field().tagEditor('removeTag', tag, true);
+            this.get_tags_field().tagEditor('removeTag', tag, true);
             this.tageditor_onchange_enabled = true;
         }
     }

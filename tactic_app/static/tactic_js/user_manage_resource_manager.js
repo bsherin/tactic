@@ -93,6 +93,7 @@ class UserManagerResourceManager extends ResourceManager{
                 let all_tags = data.tag_list;
                 self.get_tags_field().tagEditor({
                     initialTags: initial_tag_list,
+                    forceLowercase: true,
                     autocomplete: {
                         delay: 0, // show suggestions immediately
                         position: { collision: 'flip' }, // automatic menu position up/down
@@ -164,7 +165,9 @@ class UserManagerResourceManager extends ResourceManager{
         postAjaxPromise("save_metadata", result_dict)
             .then(function(data) {
                 self.get_selector_table_row(res_name).children().slice(-1)[0].innerHTML = tags;
-                resource_managers["all_module"].get_selector_table_row(res_name).children().slice(-1)[0].innerHTML = tags;
+                self.refresh_tag_buttons(data.res_tags);
+                resource_managers["all_module"].update_selector_tags(res_name, self.res_type, tags);
+                resource_managers["all_module"].refresh_tag_buttons(data.all_tags);
                 if (flash) {
                     doFlash(data)
                 }
@@ -174,25 +177,26 @@ class UserManagerResourceManager extends ResourceManager{
 
     // search related
 
-    // replay_last_search() {
-    //     if (!this.last_search) return;
-    //     let func = this.last_search["function"];
-    //     let val = this.last_search["value"];
-    //     switch (func) {
-    //         case "search_my_resource":
-    //             this.get_search_field()[0].value = val;
-    //             this.search_my_resource();
-    //             break;
-    //         case "search_my_tags":
-    //             this.set_tag_button_state(val);
-    //             this.set_search_tag_list(taglist);
-    //             this.search_my_tags();
-    //             break;
-    //         case "search_active_tag_buttons":
-    //             this.set_tag_button_state(val);
-    //             this.search_active_tag_buttons()
-    //     }
-    // }
+    // This currently isn't used
+    replay_last_search() {
+        if (!this.last_search) return;
+        let func = this.last_search["function"];
+        let val = this.last_search["value"];
+        switch (func) {
+            case "search_my_resource":
+                this.get_search_field()[0].value = val;
+                this.search_my_resource();
+                break;
+            case "search_my_tags":
+                this.set_tag_button_state(val);
+                this.set_search_tag_list(taglist);
+                this.search_my_tags();
+                break;
+            case "search_active_tag_buttons":
+                this.set_tag_button_state(val);
+                this.search_active_tag_buttons()
+        }
+    }
 
     tagMatch (search_tags, item_tags) {
         if (search_tags.empty()) {
@@ -241,6 +245,9 @@ class UserManagerResourceManager extends ResourceManager{
         this.show_table_rows(all_rows.filter(".showme"));
         current_tags = remove_duplicates(current_tags);
         this.show_hide_tag_buttons(current_tags);
+        if (!this.active_selector_is_visible()){
+            this.select_first_row()
+        }
         this.last_search = {"function": "search_my_resource", "value": txt}
     }
 
@@ -261,7 +268,6 @@ class UserManagerResourceManager extends ResourceManager{
     hide_table_rows (the_rows) {
         the_rows.css("display", "none")
     }
-
 
     search_given_tags (searchtags) {
         const all_rows = this.get_all_selector_buttons();
@@ -286,7 +292,25 @@ class UserManagerResourceManager extends ResourceManager{
         this.hide_table_rows(all_rows.filter(".hideme"));
         this.show_table_rows(all_rows.filter(".showme"));
         current_tags = remove_duplicates(current_tags);
-        this.show_hide_tag_buttons(current_tags)
+        this.show_hide_tag_buttons(current_tags);
+        if (!this.active_selector_is_visible()){
+            this.select_first_row()
+        }
+    }
+
+    get_currently_visible_tags() {
+        const all_rows = this.get_all_selector_buttons();
+        const visible_rows = all_rows.filter(function() { return $(this).css("display") == "table-row" });
+        let self = this;
+        let visible_tags = [];
+        $.each(visible_rows, function (index, row_element) {
+            const cells = $(row_element).children();
+            const tag_text = $(cells.slice(-1)[0]).text().toLowerCase();
+            const taglist = tag_text.split(" ");
+            visible_tags = visible_tags.concat(taglist);
+        });
+        visible_tags = remove_duplicates(visible_tags);
+        return visible_tags
     }
 
     create_search_tag_editor(initial_tag_list) {
@@ -352,12 +376,8 @@ class UserManagerResourceManager extends ResourceManager{
     create_tag_buttons(url_string) {
         const self = this;
         $.getJSON(`${$SCRIPT_ROOT}/${url_string}/${this.res_type}`, function (data) {
-            self.fill_tag_buttons(data.html, null);
+            self.fill_tag_buttons(data.tag_list, "all");
         })
-    }
-
-    fill_tag_buttons(the_html) {
-        this.get_aux_left_dom().html(the_html)
     }
 
     get_all_tag_buttons () {
@@ -376,11 +396,43 @@ class UserManagerResourceManager extends ResourceManager{
         return this.get_module_element(".tag-button-list .tag-button-delete")
     }
 
-    refresh_tag_buttons(the_html) {
+    refresh_tag_buttons(tag_list) {
         let active_tag_buttons = this.get_active_tag_buttons();
-        this.fill_tag_buttons(the_html);
+        let visible_tags = this.get_currently_visible_tags();
+        this.fill_tag_buttons(tag_list, visible_tags);
         this.set_tag_button_state(active_tag_buttons);
-        this.set_tag_button_edit_mode(this.tag_button_mode)
+        this.set_tag_button_edit_mode(this.tag_button_mode);
+        this.show_hide_tag_buttons(visible_tags)
+    }
+
+    fill_tag_buttons(tag_list, visible_buttons) {
+        let tag_button_html = `<div class="btn-group-vertical btn-group-sm" role="group">`;
+        for (let tag of tag_list) {
+            let new_html;
+            if ((visible_buttons == "all") || (visible_buttons.includes(tag))) {
+                new_html = `<button type="button" class="btn btn-default tag-button showme" style="display: block" value="${this.res_type}">${tag}<span class="tag-button-delete"></span></button>`
+            }
+            else {
+                new_html = `<button type="button" class="btn btn-default tag-button hideme" style="display: none" value="${this.res_type}">${tag}<span class="tag-button-delete"></span></button>`
+            }
+            tag_button_html = tag_button_html + new_html + "\n"
+        }
+        tag_button_html = tag_button_html + "</div>"
+        let the_html;
+        if (this.is_repository) {
+            the_html = `<div class='tag-button-list'>${tag_button_html}</div>`
+        }
+        else {
+            the_html = `<div><button type='button' class='btn btn-default btn-xs edit-tags-button' style='border:none'>edit tags</button></div>
+            <div class='tag-button-list'>${tag_button_html}</div>`
+        }
+
+        this.get_aux_left_dom().html(the_html)
+    }
+
+    update_visible_tag_buttons() {
+        let visible_tags = this.get_currently_visible_tags();
+        this.show_hide_tag_buttons(visible_tags)
     }
 
     set_tag_button_state (tag_list) {
@@ -407,6 +459,13 @@ class UserManagerResourceManager extends ResourceManager{
             this.get_tag_button_deleters().removeClass("delete-visible")
         }
 
+    }
+
+    update_selector_tags(res_name, new_tags) {
+        this.get_selector_table_row(res_name).children().slice(-1)[0].innerHTML = new_tags;
+        if (this.get_active_selector_button().attr("value") == res_name) {
+            this.set_tag_list(new_tags)
+        }
     }
 
     remove_tag_from_all_rows(tag) {
@@ -470,7 +529,6 @@ class UserManagerResourceManager extends ResourceManager{
             }
             this.tageditor_onchange_enabled = true;
         }
-
     }
 
     DoTagDelete(tag) {
@@ -479,8 +537,13 @@ class UserManagerResourceManager extends ResourceManager{
         postAjaxPromise("delete_tag", result_dict)
             .then(function(data) {
                 self.remove_tag_from_all_rows(tag);
-                resource_managers["all_module"].remove_tag_from_all_rows(tag, self.res_type)
-
+                self.refresh_tag_buttons(data.res_tags);
+                self.update_visible_tag_buttons();
+                resource_managers["all_module"].remove_tag_from_all_rows(tag, self.res_type);
+                resource_managers["all_module"].refresh_tag_buttons(data.all_tags);
+                if (!self.active_selector_is_visible()){
+                    self.select_first_row()
+                }
             })
             .catch(doFlash)
     }
@@ -500,7 +563,12 @@ class UserManagerResourceManager extends ResourceManager{
             .then(function (data) {
                 if (!(new_tag == old_tag)) {
                     self.rename_tag_in_all_rows(old_tag, new_tag);
-                    resource_managers["all_module"].rename_tag_in_all_rows(old_tag, new_tag, self.res_type)
+                    self.refresh_tag_buttons(data.res_tags);
+                    resource_managers["all_module"].rename_tag_in_all_rows(old_tag, new_tag, self.res_type);
+                    resource_managers["all_module"].refresh_tag_buttons(data.all_tags);
+                    if (!self.active_selector_is_visible()){
+                        self.select_first_row()
+                    }
                 }
             })
             .catch(doFlash)
@@ -547,20 +615,18 @@ class UserManagerResourceManager extends ResourceManager{
         const all_tag_buttons = this.get_all_tag_buttons();
         all_tag_buttons.removeClass("hideme");
         all_tag_buttons.removeClass("showme");
-        if (searchtags.empty()) {
-            // $(but).css("display", "block")
-            all_tag_buttons.addClass("showme")
-        }
 
         $.each(all_tag_buttons, function (index, but) {
             const tag_text = but.innerText;
-            if (!searchtags.includes(tag_text)) {
-                // $(but).css("display", "none")
-                $(but).addClass("hideme")
+            if (searchtags.includes(tag_text) || searchtags.empty()) {
+                if ($(but).css("display") == "none") {
+                    $(but).addClass("showme")
+                }
             }
             else {
-                // $(but).css("display", "block")
-                $(but).addClass("showme")
+                if ($(but).css("display") != "none") {
+                    $(but).addClass("hideme")
+                }
             }
         });
         this.show_tag_buttons(all_tag_buttons.filter(".showme"));
@@ -668,8 +734,9 @@ class UserManagerResourceManager extends ResourceManager{
 
     select_first_row() {
         const all_selectors = this.get_all_selector_buttons();
-        if (all_selectors.length > 0) {
-            this.selector_click(all_selectors[0]);
+        const visible_rows = all_selectors.filter(function() { return $(this).css("display") == "table-row" });
+        if (visible_rows.length > 0) {
+            this.selector_click(visible_rows[0]);
         }
     }
 

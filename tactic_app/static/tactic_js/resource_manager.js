@@ -262,6 +262,10 @@ class ResourceManager {
         return this.get_module_element(".aux-right")
     }
 
+    active_selector_is_visible() {
+        return this.get_active_selector_button().css("display") != "none"
+    }
+
     // a couple of utility functions
 
     textify_button_names () {
