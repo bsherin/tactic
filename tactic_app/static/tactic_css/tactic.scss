@@ -194,6 +194,36 @@ a[role="tab"] {
     }
 }
 
+.tag-button {
+    padding-left: 5px;
+    color: #46799b;
+    background: #e0eaf1;
+    white-space: nowrap;
+    overflow: hidden;
+    cursor: pointer;
+    border-radius: 2px 0 0 2px !important;
+    text-align: left;
+    border: 1px solid white
+}
+
+.tag-button-delete:before {
+    color: #8ba7ba;
+    font-style: normal;
+    content: "×";
+    font-size: 16px;
+    line-height: 18px;
+    padding-left: 7px;
+    float: right !important;
+    display: none
+}
+
+.tag-button-delete.delete-visible:before {
+    display: block;
+}
+.tag-button-delete.delete-visible:hover:before{
+    color: red;
+}
+
 .selector-button:hover {
     background-color: #cbcbcb !important
 }
@@ -225,7 +255,7 @@ a[role="tab"] {
 .tag-button-list, .resource-tag-button-list {
     vertical-align: top;
     overflow-y: auto;
-    border-top: .1px solid $resource-manager-border-color;
+    border-top: none;
     border-top-right-radius: 4px;
     border-top-left-radius: 4px;
     border-bottom-right-radius: 4px;
@@ -239,10 +269,6 @@ a[role="tab"] {
         outline: none;
     }
 
-}
-
-.tag-button-list:first-child {
-    border-top-width: 0px
 }
 
 .CodeMirror {

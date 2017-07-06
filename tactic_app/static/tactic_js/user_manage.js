@@ -49,11 +49,12 @@ function start_post_load() {
         const manager = resource_managers[data.module_id];
         manager.fill_content(data.html);
         manager.select_resource_button(data.select);
+        manager.refresh_tag_buttons(manager.get_all_selector_tags())
         // manager.replay_last_search()
     });
 
     socket.on('update-tag-list', (data) => {
-        resource_managers[data.module_id].refresh_tag_buttons(data.html)
+        resource_managers[data.module_id].refresh_tag_buttons(data.tag_list)
     });
 
     socket.on('stop-spinner', stopSpinner);
@@ -88,6 +89,8 @@ function start_post_load() {
         $(".resource-module").on("click", ".main-content .selector-button", selector_click);
         $(".resource-module").on("dblclick", ".main-content .selector-button", selector_double_click);
         $(".resource-module").on("click", ".tag-button-list button", tag_button_clicked);
+        $(".resource-module").on("click", ".tag-button-delete", tag_button_delete_clicked);
+        $(".resource-module").on("click", ".edit-tags-button", edit_tags_button_clicked);
 
         $(".resource-module").on("keyup", ".search-field", function(e) {
             if (e.which == 13) {
@@ -184,13 +187,31 @@ function selector_double_click(event) {
 
 function tag_button_clicked(event) {
     let but = $(event.target);
-    if (but.hasClass("active")) {
-        but.removeClass("active")
+    if (but.hasClass('tag-button-delete')) return;  // We don't want a click on the delete to bubble up.
+    let manager = resource_managers[get_current_module_id()];
+    if (manager.tag_button_mode == "edit") {
+        let tag = but.text();
+        manager.rename_tag(tag)
     }
     else {
-        but.addClass("active")
+        if (but.hasClass("active")) {
+            but.removeClass("active")
+        }
+        else {
+            but.addClass("active")
+        }
+        manager.search_active_tag_buttons();
     }
-    resource_managers[get_current_module_id()].search_active_tag_buttons();
+}
+
+function tag_button_delete_clicked(event) {
+    let but = $(event.target);
+    let tag = but.parent().text();
+    resource_managers[get_current_module_id()].delete_tag(tag);
+}
+
+function edit_tags_button_clicked(event) {
+    resource_managers[get_current_module_id()].toggle_tag_button_edit_mode();
 }
 
 function showAdmin() {
@@ -728,41 +749,89 @@ class AllManager extends UserManagerResourceManager {
             // {"name": "add_code", "func": "add_code", "button_class": "btn-default", show_multiple: false}
         ];
         this.button_groups = [
-            {buttons: [
+            {
+                buttons: [
                     {"name": "view", "func": "view_func", "button_class": "btn-default", "applicable_types": res_types},
-                    {"name": "view_in_creator", "func": "creator_view_func", "button_class": "btn-default", "applicable_types": ["tile"]},
+                    {
+                        "name": "view_in_creator",
+                        "func": "creator_view_func",
+                        "button_class": "btn-default",
+                        "applicable_types": ["tile"]
+                    },
                     {"name": "load", "func": "load_func", "button_class": "btn-default", "applicable_types": ["tile"]},
-                    {"name": "unload", "func": "unload_func", "button_class": "btn-default", "applicable_types": ["tile"]}]
+                    {
+                        "name": "unload",
+                        "func": "unload_func",
+                        "button_class": "btn-default",
+                        "applicable_types": ["tile"]
+                    }]
             },
-            {buttons: [
-                    {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-default", "applicable_types": ["list", "collection", "tile", "code"]},
-                    {"name": "rename", "func": "rename_func", "button_class": "btn-default", "applicable_types": res_types}]
+            {
+                buttons: [
+                    {
+                        "name": "duplicate",
+                        "func": "duplicate_func",
+                        "button_class": "btn-default",
+                        "applicable_types": ["list", "collection", "tile", "code"]
+                    },
+                    {
+                        "name": "rename",
+                        "func": "rename_func",
+                        "button_class": "btn-default",
+                        "applicable_types": res_types
+                    }]
             },
-            {buttons: [
-                    {"name": "share", "func": "send_repository_func", "button_class": "btn-default", "applicable_types": res_types},
-                    {"name": "combine_collections", "func": "combineCollections", "button_class": "btn-default", "applicable_types": ["collection"]},
-                    {"name": "download", "func": "downloadCollection", "button_class": "btn btn-default", "applicable_types": ["collection"]}]
+            {
+                buttons: [
+                    {
+                        "name": "share",
+                        "func": "send_repository_func",
+                        "button_class": "btn-default",
+                        "applicable_types": res_types
+                    },
+                    {
+                        "name": "combine_collections",
+                        "func": "combineCollections",
+                        "button_class": "btn-default",
+                        "applicable_types": ["collection"]
+                    },
+                    {
+                        "name": "download",
+                        "func": "downloadCollection",
+                        "button_class": "btn btn-default",
+                        "applicable_types": ["collection"]
+                    }]
             },
-            {buttons: [
-                    {"name": "delete", "func": "delete_func", "button_class": "btn-default", "applicable_types": res_types}]
+            {
+                buttons: [
+                    {
+                        "name": "delete",
+                        "func": "delete_func",
+                        "button_class": "btn-default",
+                        "applicable_types": res_types
+                    }]
             }
         ];
     }
-    new_basic_in_creator (event) {
-        event.data.manager =  resource_managers["tile_module"];
+
+    new_basic_in_creator(event) {
+        event.data.manager = resource_managers["tile_module"];
         resource_managers["tile_module"].new_in_creator(event, "BasicTileTemplate", true);
         event.preventDefault();
     }
-    new_mpl_in_creator (event) {
-        event.data.manager =  resource_managers["tile_module"];
+
+    new_mpl_in_creator(event) {
+        event.data.manager = resource_managers["tile_module"];
         resource_managers["tile_module"].new_in_creator(event, "MatplotlibTileTemplate", true)
     }
-    new_d3_in_creator (event) {
-        event.data.manager =  resource_managers["tile_module"];
+
+    new_d3_in_creator(event) {
+        event.data.manager = resource_managers["tile_module"];
         resource_managers["tile_module"].new_in_creator(event, "D3TileTemplate", true)
     }
-    new_code (event) {
-        event.data.manager =  resource_managers["code_module"];
+
+    new_code(event) {
+        event.data.manager = resource_managers["code_module"];
         resource_managers["code_module"].new_code(event, true);
     }
 
@@ -777,7 +846,8 @@ class AllManager extends UserManagerResourceManager {
     res_manager(res_type) {
         return resource_managers[`${res_type}_module`]
     }
-    view_func (event) {
+
+    view_func(event) {
         const manager = event.data.manager;
         const res_name = manager.check_for_selection();
         if (res_name == "") return;
@@ -785,25 +855,25 @@ class AllManager extends UserManagerResourceManager {
         window.open($SCRIPT_ROOT + manager.res_manager(res_type).view_view + String(res_name))
     }
 
-    dc_view_func (event) {
+    dc_view_func(event) {
         const manager = event.data.manager;
         const res_name = manager.check_for_selection();
         if (res_name == "") return;
         const res_type = manager.selected_resource_type();
         if (res_type == "tile") {
-             window.open($SCRIPT_ROOT + manager.res_manager(res_type).last_saved_view + String(res_name))
+            window.open($SCRIPT_ROOT + manager.res_manager(res_type).last_saved_view + String(res_name))
         }
         else {
             window.open($SCRIPT_ROOT + manager.res_manager(res_type).view_view + String(res_name))
         }
     }
 
-    duplicate_func (event) {
+    duplicate_func(event) {
         const manager = event.data.manager;
         const res_name = manager.check_for_selection();
         if (res_name == "") return;
         const res_type = manager.selected_resource_type();
-        $.getJSON($SCRIPT_ROOT + "get_resource_names/" + res_type, function(data) {
+        $.getJSON($SCRIPT_ROOT + "get_resource_names/" + res_type, function (data) {
                 showModal(`Duplicate ${res_type}`, "New Name", DuplicateResource, res_name, data["resource_names"])
             }
         );
@@ -822,12 +892,12 @@ class AllManager extends UserManagerResourceManager {
         }
     }
 
-    rename_func (event) {
+    rename_func(event) {
         const manager = event.data.manager;
         const res_name = manager.check_for_selection("resource");
         if (res_name == "") return;
         const the_type = manager.selected_resource_type();
-        $.getJSON($SCRIPT_ROOT + "get_resource_names/" + the_type, function(data) {
+        $.getJSON($SCRIPT_ROOT + "get_resource_names/" + the_type, function (data) {
                 const res_names = data["resource_names"];
                 const index = res_names.indexOf(res_name);
                 if (index >= 0) {
@@ -845,8 +915,8 @@ class AllManager extends UserManagerResourceManager {
                     return false
                 }
                 else {
-                    manager.get_selector_table_row(res_name).children()[0].innerHTML = new_name;
-                    manager.get_selector_table_row(res_name).attr("value", new_name);
+                    manager.get_selector_table_row(res_name, the_type).children()[0].innerHTML = new_name;
+                    manager.get_selector_table_row(res_name, the_type).attr("value", new_name);
                     manager.res_manager(the_type).get_selector_table_row(res_name).children()[0].innerHTML = new_name;
                     manager.res_manager(the_type).get_selector_table_row(res_name).attr("value", new_name)
                 }
@@ -854,7 +924,8 @@ class AllManager extends UserManagerResourceManager {
             }
         }
     }
-    downloadCollection (event) {
+
+    downloadCollection(event) {
         const manager = event.data.manager;
         const res_name = manager.check_for_selection("resource");
         if (res_name == "") return;
@@ -864,7 +935,8 @@ class AllManager extends UserManagerResourceManager {
             window.open(`${$SCRIPT_ROOT}/download_collection/` + res_name + "/" + new_name)
         }, res_name + ".xls")
     };
-    combineCollections (event) {
+
+    combineCollections(event) {
         const manager = event.data.manager;
         const res_name = manager.check_for_selection("resource");
         if (res_name == "") return;
@@ -876,7 +948,8 @@ class AllManager extends UserManagerResourceManager {
             $.post(target, doFlashStopSpinner);
         })
     }
-    creator_view_func (event) {
+
+    creator_view_func(event) {
         const manager = event.data.manager;
         const res_name = manager.check_for_selection("resource");
         if (res_name == "") return;
@@ -885,7 +958,7 @@ class AllManager extends UserManagerResourceManager {
         window.open($SCRIPT_ROOT + manager.res_manager("tile").creator_view + String(res_name))
     }
 
-    load_func (event) {
+    load_func(event) {
         const manager = event.data.manager;
         const res_name = manager.check_for_selection("resource");
         if (res_name == "") return;
@@ -893,7 +966,8 @@ class AllManager extends UserManagerResourceManager {
         if (!(the_type == "tile")) return;
         $.getJSON(`${$SCRIPT_ROOT}/load_tile_module/${res_name}`, doFlash)
     }
-    unload_func (event) {
+
+    unload_func(event) {
         const manager = event.data.manager;
         const res_name = manager.check_for_selection("resource");
         if (res_name == "") return;
@@ -901,15 +975,16 @@ class AllManager extends UserManagerResourceManager {
         if (!(the_type == "tile")) return;
         $.getJSON(`${$SCRIPT_ROOT}/unload_all_tiles`, doFlash)
     }
-    send_repository_func (event) {
+
+    send_repository_func(event) {
         const manager = event.data.manager;
         const res_name = manager.check_for_selection("resource");
         if (res_name == "") {
             doFlash({"message": `Select a ${manager.res_type} first.`, "alert_type": "alert-info"})
         }
         const the_type = manager.selected_resource_type();
-        $.getJSON($SCRIPT_ROOT + "get_repository_resource_names/" + the_type, function(data) {
-            showModal(`Share ${the_type}`, `New ${the_type} Name`, ShareResource, res_name, data["resource_names"])
+        $.getJSON($SCRIPT_ROOT + "get_repository_resource_names/" + the_type, function (data) {
+                showModal(`Share ${the_type}`, `New ${the_type} Name`, ShareResource, res_name, data["resource_names"])
             }
         );
         function ShareResource(new_name) {
@@ -922,9 +997,11 @@ class AllManager extends UserManagerResourceManager {
                 .then(doFlash)
                 .catch(doFlash);
         }
+
         return res_name
     }
-    delete_func (event) {
+
+    delete_func(event) {
         const manager = event.data.manager;
         const res_name = manager.check_for_selection("resource");
         if (res_name == "") return;
@@ -940,11 +1017,12 @@ class AllManager extends UserManagerResourceManager {
                     });
                     let specific_manager_row = manager.res_manager(the_type).get_selector_table_row(res_name);
                     specific_manager_row.fadeOut("slow", function () {
-                         specific_manager_row.remove()
+                        specific_manager_row.remove()
                     });
                 })
         })
     }
+
     set_button_activations(the_type) {
         for (let group of this.button_groups) {
             for (let but of group.buttons) {
@@ -957,7 +1035,8 @@ class AllManager extends UserManagerResourceManager {
             }
         }
     }
-     selector_click(row_element) {
+
+    selector_click(row_element) {
         if (!this.handling_selector_click) {  // We want to make sure we are not already processing a click
             this.handling_selector_click = true;
             const res_name = row_element.getAttribute("value");
@@ -986,18 +1065,47 @@ class AllManager extends UserManagerResourceManager {
             }
         }
     }
-    save_my_metadata (flash = true) {
+
+    update_selector_tags(res_name, res_type, new_tags) {
+        let row_to_change = this.get_selector_table_row(res_name, res_type);
+        row_to_change.children().slice(-1)[0].innerHTML = new_tags;
+        if (row_to_change.hasClass("active")) {
+            this.set_tag_list(new_tags)
+        }
+    }
+
+    get_selector_table_row(name, res_type) {
+        const possible_rows = this.get_module_element(`tr[value='${name}']`);
+        let self = this;
+        let result = null;
+        let row_element;
+        for (let i = 0; row_element = possible_rows[i]; ++i) {
+            const cells = $(row_element).children();
+            self.get_module_element(`tr[value='${name}']`);
+            let the_type = cells[1].innerHTML;
+            if (the_type == res_type) {
+                result = $(row_element)
+            }
+        }
+        return result
+    }
+
+    save_my_metadata(flash = true) {
         const res_name = this.get_active_selector_button().attr("value");
         const tags = this.get_tags_string();
         const notes = this.get_notes_field().val();
         const the_type = this.selected_resource_type();
-        const result_dict = {"res_type": the_type, "res_name": res_name,
-            "tags": tags, "notes": notes, "module_id": `${the_type}_module`};
+        const result_dict = {
+            "res_type": the_type, "res_name": res_name,
+            "tags": tags, "notes": notes, "module_id": `${the_type}_module`
+        };
         const self = this;
         postAjaxPromise("save_metadata", result_dict)
-            .then(function(data) {
-                self.get_selector_table_row(res_name).children().slice(-1)[0].innerHTML = tags;
-                self.res_manager(the_type).get_selector_table_row(res_name).children().slice(-1)[0].innerHTML = tags;
+            .then(function (data) {
+                self.get_selector_table_row(res_name, the_type).children().slice(-1)[0].innerHTML = tags;
+                self.refresh_tag_buttons(data.all_tags);
+                self.res_manager(the_type).update_selector_tags(res_name, tags);
+                self.res_manager(the_type).refresh_tag_buttons(data.res_tags);
                 if (flash) {
                     doFlash(data)
                 }
@@ -1005,7 +1113,104 @@ class AllManager extends UserManagerResourceManager {
             .catch(doFlash)
     }
 
+    //
+    delete_tag(tag) {
+        const confirm_text = `Are you sure that you want to the tag ${tag} for all resource types?`;
+        let self = this;
+        confirmDialog(`Delete tag`, confirm_text, "do nothing", "delete", function () {
+            for (let res_type of res_types) {
+                resource_managers[`${res_type}_module`].DoTagDelete(tag)
+            }
+        })
+    }
+
+    rename_tag(old_tag) {
+        let self = this;
+        showModal(`Rename tag ${old_tag}`, `New name for this tag for all resource types`, RenameTag, old_tag);
+
+        function RenameTag(new_tag) {
+            for (let res_type of res_types) {
+                resource_managers[`${res_type}_module`].DoTagRename(old_tag, new_tag)
+            }
+        }
+
+    }
+
+    remove_tag_from_all_rows(tag, res_type) {
+        const all_rows = this.get_all_selector_buttons();
+        $.each(all_rows, function (index, row_element) {
+            const cells = $(row_element).children();
+            let the_type = cells[1].innerHTML;
+            if ((res_type == "all") || (the_type == res_type)) {
+                const tag_text = $(cells.slice(-1)[0]).text().toLowerCase();
+                if (!tag_text == "") {
+                    const taglist = tag_text.split(" ");
+                    if (taglist.includes(tag)) {
+                        let tag_index = taglist.indexOf(tag);
+                        taglist.splice(tag_index, 1);
+                        let newtags;
+                        if (taglist.empty()) {
+                            newtags = ""
+                        }
+                        else {
+                            newtags = taglist[0];
+                            for (let ptag of taglist.slice(1)) {
+                                newtags = newtags + " " + ptag
+                            }
+                        }
+                        cells.slice(-1)[0].innerHTML = newtags
+                    }
+                }
+            }
+
+        });
+        if ((res_type == "all") || (this.selected_resource_type() == res_type)) {
+            this.tageditor_onchange_enabled = false;
+            this.get_tags_field().tagEditor('removeTag', tag, true);
+            this.tageditor_onchange_enabled = true;
+        }
+    }
+
+    rename_tag_in_all_rows(old_tag, new_tag, res_type) {
+        const all_rows = this.get_all_selector_buttons();
+        $.each(all_rows, function (index, row_element) {
+            const cells = $(row_element).children();
+            let the_type = cells[1].innerHTML;
+            if ((res_type == "all") || (the_type == res_type)) {
+                const tag_text = $(cells.slice(-1)[0]).text().toLowerCase();
+                if (!tag_text == "") {
+                    const taglist = tag_text.split(" ");
+                    if (taglist.includes(old_tag)) {
+                        let tag_index = taglist.indexOf(old_tag);
+                        if (taglist.includes(new_tag)) {
+                            taglist.splice(tag_index, 1);
+                        }
+                        else {
+                            taglist[tag_index] = new_tag
+                        }
+                        let newtags;
+                        newtags = taglist[0];
+                        for (let ptag of taglist.slice(1)) {
+                            newtags = newtags + " " + ptag
+                        }
+                        cells.slice(-1)[0].innerHTML = newtags
+                    }
+                }
+            }
+        });
+        if ((res_type == "all") || (this.selected_resource_type() == res_type)) {
+            if (this.get_tags().includes(old_tag)) {
+                this.tageditor_onchange_enabled = false;
+                this.get_tags_field().tagEditor('removeTag', old_tag, false);
+                if (!this.get_tags().includes(new_tag)) {
+                    this.get_tags_field().tagEditor('addTag', new_tag, false)
+                }
+                this.tageditor_onchange_enabled = false;
+            }
+        }
+    }
 }
+
 class RepositoryAllManager extends AllManager {
     set_extra_properties() {
         super.set_extra_properties();

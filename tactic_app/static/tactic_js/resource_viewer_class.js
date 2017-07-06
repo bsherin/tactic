@@ -125,15 +125,13 @@ class ResourceViewer {
                 let all_tags = data.tag_list;
                 self.get_tags_field().tagEditor({
                     initialTags: initial_tag_list,
+                    forceLowercase: true,
                     autocomplete: {
                         delay: 0, // show suggestions immediately
                         position: { collision: 'flip' }, // automatic menu position up/down
                         source: all_tags
                     },
-                    placeholder: "Tags...",
-                    onChange: function () {
-                        self.save_my_metadata(false)
-                }});
+                    placeholder: "Tags...",});
             })
             .catch(doFlash)
     }

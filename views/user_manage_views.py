@@ -141,13 +141,13 @@ def request_update_selector_list(res_type):
 @app.route('/request_update_tag_list/<res_type>', methods=['GET'])
 @login_required
 def request_update_tag_list(res_type):
-    return jsonify({"html": managers[res_type][0].request_update_tag_list()})
+    return jsonify({"tag_list": managers[res_type][0].request_update_tag_list()})
 
 
 @app.route('/request_update_repository_tag_list/<res_type>', methods=['GET'])
 @login_required
 def request_update_repositorytag_list(res_type):
-    return jsonify({"html": managers[res_type][1].request_update_tag_list()})
+    return jsonify({"tag_list": managers[res_type][1].request_update_tag_list()})
 
 
 @app.route('/request_update_repository_selector_list/<res_type>', methods=['GET'])
@@ -233,28 +233,60 @@ def save_metadata():
         res_name = request.json["res_name"]
         tags = request.json["tags"]
         notes = request.json["notes"]
-        module_id = request.json["module_id"]
+        # module_id = request.json["module_id"]
         manager = get_manager_for_type(res_type)
         manager.save_metadata(res_name, tags, notes)
+        res_tags = manager.get_tag_list()
         all_manager = get_manager_for_type("all")
-        tag_list = manager.get_tag_list()
-        if not tag_list == manager.tag_list:
-            socketio.emit('update-tag-list',
-                          {"html": manager.request_update_tag_list(),
-                           "res_type": res_type,
-                           "module_id": module_id},
-                          namespace='/user_manage', room=current_user.get_id())
-            socketio.emit('update-tag-list',
-                          {"html": all_manager.request_update_tag_list(),
-                           "res_type": "all",
-                           "module_id": "all_module"},
-                          namespace='/user_manage', room=current_user.get_id())
+        all_tags = all_manager.get_tag_list()
+        # if not tag_list == manager.tag_list:
+        #     socketio.emit('update-tag-list',
+        #                   {"tag_list": manager.request_update_tag_list(),
+        #                    "res_type": res_type,
+        #                    "module_id": module_id},
+        #                   namespace='/user_manage', room=current_user.get_id())
+        #     socketio.emit('update-tag-list',
+        #                   {"tag_list": all_manager.request_update_tag_list(),
+        #                    "res_type": "all",
+        #                    "module_id": "all_module"},
+        #                   namespace='/user_manage', room=current_user.get_id())
 
-        return jsonify({"success": True, "message": "Saved metadata", "alert_type": "alert-success"})
+        return jsonify({"success": True, "res_tags": res_tags, "all_tags": all_tags,
+                        "message": "Saved metadata", "alert_type": "alert-success"})
     except:
         error_string = "Error saving metadata: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
+@app.route('/delete_tag', methods=['POST'])
+def delete_tag():
+    try:
+        res_type = request.json["res_type"]
+        tag = request.json["tag"]
+        manager = get_manager_for_type(res_type)
+        manager.delete_tag(tag)
+        res_tags = manager.get_tag_list()
+        all_tags = all_manager.get_tag_list()
+        return jsonify({"success": True, "res_tags": res_tags, "all_tags": all_tags,
+                        "message": "Deleted tag", "alert_type": "alert-success"})
+    except:
+        error_string = "Error deleting a tag: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+
+@app.route('/rename_tag', methods=['POST'])
+def rename_tag():
+    try:
+        res_type = request.json["res_type"]
+        old_tag = request.json["old_tag"]
+        new_tag = request.json["new_tag"]
+        manager = get_manager_for_type(res_type)
+        manager.rename_tag(old_tag, new_tag)
+        res_tags = manager.get_tag_list()
+        all_tags = all_manager.get_tag_list()
+        return jsonify({"success": True, "res_tags": res_tags, "all_tags": all_tags,
+                        "message": "Deleted tag", "alert_type": "alert-success"})
+    except:
+        error_string = "Error deleting a tag: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
 @app.route('/search_resource', methods=['POST'])
 @login_required

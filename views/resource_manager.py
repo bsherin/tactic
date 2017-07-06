@@ -98,9 +98,7 @@ class ResourceManager(object):
         return sorted(list(set(result)))
 
     def request_update_tag_list(self, user_obj=None):
-        self.tag_list = self.get_tag_list(user_obj)
-        result = "<div class='tag-button-list'>" + self.create_button_list(self.tag_list) + "</div>"
-        return result
+        return self.get_tag_list(user_obj)
 
     def create_button_list(self, the_list):
         the_html = render_template("user_manage/button_list_template.html",

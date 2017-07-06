@@ -111,6 +111,38 @@ class ListManager(UserManageResourceManager):
         mdata["notes"] = notes
         db[current_user.list_collection_name].update_one({"list_name": res_name}, {'$set': {"metadata": mdata}})
 
+    def delete_tag(self, tag):
+        doclist = db[current_user.list_collection_name].find()
+        for doc in doclist:
+            if not "metadata" in doc:
+                continue
+            mdata = doc["metadata"]
+            tagstring = mdata["tags"]
+            taglist = tagstring.split()
+            if tag in taglist:
+                taglist.remove(tag)
+                mdata["tags"] = " ".join(taglist)
+                res_name = doc["list_name"]
+                db[current_user.list_collection_name].update_one({"list_name": res_name}, {'$set': {"metadata": mdata}})
+        return
+
+    def rename_tag(self, old_tag, new_tag):
+        doclist = db[current_user.list_collection_name].find()
+        for doc in doclist:
+            if not "metadata" in doc:
+                continue
+            mdata = doc["metadata"]
+            tagstring = mdata["tags"]
+            taglist = tagstring.split()
+            if old_tag in taglist:
+                taglist.remove(old_tag)
+                if new_tag not in taglist:
+                    taglist.append(new_tag)
+                mdata["tags"] = " ".join(taglist)
+                res_name = doc["list_name"]
+                db[current_user.list_collection_name].update_one({"list_name": res_name}, {'$set': {"metadata": mdata}})
+        return
+
     def add_list(self):
         user_obj = current_user
         the_file = request.files['file']
