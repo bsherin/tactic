@@ -142,6 +142,10 @@ class mainWindow(object):
         data = {"message": message, "timeout": timeout, "main_id": self.mworker.my_id}
         self.mworker.post_task("host", "show_main_status_message", data)
 
+    def show_error_window(self, error_string, timeout=None):
+        data = {"error_string": error_string, "timeout": timeout, "room": self.mworker.my_id, "namespace": "/main"}
+        self.mworker.post_task("host", "open_error_window", data)
+
     def clear_main_status_message(self):
         data = {"main_id": self.mworker.my_id}
         self.mworker.post_task("host", "clear_main_status_message", data)
@@ -152,8 +156,12 @@ class mainWindow(object):
         try:
             print "Entering do_full_recreation"
             self.show_main_status_message("Entering do_full_recreation")
-            tile_info_dict, loaded_modules = self.recreate_from_save(data_dict["project_collection_name"],
+            tile_info_dict, loaded_modules, success = self.recreate_from_save(data_dict["project_collection_name"],
                                                                      data_dict["project_name"])
+            if not success:
+                self.show_main_status_message("Error trying to recreate the project from save")
+                self.show_error_window(tile_info_dict)
+                return
             print "returning from recreate_from_save"
             self.mworker.post_and_wait("host", "load_modules",
                                        {"loaded_modules": loaded_modules, "user_id": self.user_id})
@@ -228,13 +236,21 @@ class mainWindow(object):
             error_string = template.format(type(ex).__name__, ex.args)
             error_string += traceback.format_exc()
             error_string = "<pre>" + error_string + "</pre>"
-            self.mworker.post_task("host", "open_error_window", {"user_manage_id": data_dict["user_manage_id"],
-                                                                 "error_string": error_string})
+            self.show_error_window(error_string)
         return
 
     def recreate_from_save(self, project_collection_name, project_name):
+        print "entering recreate from save"
+        print "project_collection_name is {} and project_name is {}".format(project_collection_name, project_name)
         save_dict = self.db[project_collection_name].find_one({"project_name": project_name})
-        project_dict = cPickle.loads(zlib.decompress(self.fs.get(save_dict["file_id"]).read()).decode("utf-8", "ignore").encode("ascii"))
+        print "got save_dict"
+        try:
+            project_dict = cPickle.loads(zlib.decompress(self.fs.get(save_dict["file_id"]).read()).decode("utf-8", "ignore").encode("ascii"))
+        except Exception as ex:
+            error_string = self.handle_exception(ex, "<pre>Error loading project dict</pre>", print_to_console=True)
+            print error_string
+            return_data = {"success": False, "message_string": error_string}
+            return error_string, {}, False
         print "got project dict with keys " + str(project_dict.keys())
         project_dict["metadata"] = save_dict["metadata"]
         self.mdata = save_dict["metadata"]
@@ -242,6 +258,7 @@ class mainWindow(object):
         if "doc_type" not in project_dict:  # This is for backward compatibility
             project_dict["doc_type"] = "table"
         for (attr, attr_val) in project_dict.items():
+            print "got attr " + str(attr)
             if str(attr) != "tile_instances":
                 try:
                     if type(attr_val) == dict and ("my_class_for_recreate" in attr_val):
@@ -274,7 +291,7 @@ class mainWindow(object):
         self.project_dict = project_dict
         # self.doc_dict = self._build_doc_dict()
         self.visible_doc_name = self.doc_dict.keys()[0]  # This is necessary for recreating the tiles
-        return tile_info_dict, project_dict["loaded_modules"]
+        return tile_info_dict, project_dict["loaded_modules"], True
 
     def recreate_project_tiles(self, data_dict, new_tile_info):
         list_names = data_dict["list_names"]

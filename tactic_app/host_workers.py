@@ -238,10 +238,10 @@ class HostWorker(QWorker):
         template_data = copy.copy(data)
         template_data["template_name"] = "error_window_template.html"
         template_data["error_string"] = str(template_data["error_string"])
-        template_data["uses_codemirror"] = "True"
+        template_data["uses_codemirror"] = "False"
         self.temp_dict[unique_id] = template_data
-        socketio.emit("window-open", {"the_id": unique_id}, namespace='/user_manage', room=data["user_manage_id"])
-        socketio.emit('stop-spinner', {}, namespace='/user_manage', room=data["user_manage_id"])
+        socketio.emit("window-open", {"the_id": unique_id}, namespace=data["namespace"], room=data["room"])
+        socketio.emit('stop-spinner', namespace=data["namespace"], room=data["room"])
         return {"success": True}
 
     @task_worthy

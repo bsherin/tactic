@@ -26,7 +26,13 @@ class TileObject {
             "tile-options": "toggleOptions"
         };
 
-        $("#tile-div").append(html);  // This append has to be after the flip or weird things happen
+        // tactic_todo This line can give an error if there's a problem with embedded javascritp code
+        try {
+            $("#tile-div").append(html);  // This append has to be after the flip or weird things happen
+        }
+        catch (err) {
+            console.log(`Got an error appending the html for tile ${this.tile_name}: ${err.message}`)
+        }
 
         const self = this;
         $(this.full_selector() + " .codearea").each(function () {
