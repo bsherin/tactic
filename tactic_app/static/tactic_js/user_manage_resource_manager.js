@@ -787,7 +787,7 @@ class UserManagerResourceManager extends ResourceManager{
                         active_row.remove();
                         manager.select_first_row()
                     });
-                    let all_manager_row = resource_managers["all_module"].get_selector_table_row(res_name);
+                    let all_manager_row = resource_managers["all_module"].get_selector_table_row(res_name, manager.res_type);
                     all_manager_row.fadeOut("slow", function () {
                         all_manager_row.remove();
                     });
