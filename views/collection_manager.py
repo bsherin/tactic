@@ -125,7 +125,9 @@ class CollectionManager(UserManageResourceManager):
                 header_list = f["table_spec"]["header_list"]
             for c, header in enumerate(header_list, start=1):
                 _ = ws.cell(row=1, column=c, value=header)
-            for r, row in enumerate(data_rows.values(), start=2):
+            sorted_int_keys = sorted([int(key) for key in data_rows.keys()])
+            for r, id in enumerate(sorted_int_keys, start=2):
+                row = data_rows[str(id)]
                 for c, header in enumerate(header_list, start=1):
                     _ = ws.cell(row=r, column=c, value=row[header])
             # noinspection PyUnresolvedReferences
