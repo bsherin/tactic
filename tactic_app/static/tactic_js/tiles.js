@@ -106,11 +106,11 @@ class TileObject {
                 data[$(this).attr("id")] = ""
             }
             else {
-                data[$(this).attr("id")] = $(this).find(":selected").text()
+                data[$(this).attr("id")] = $(this).find(":selected").val()
             }
-        })
+        });
         $(this.full_selector() + " .back select :selected").each(function () {
-            data[$(this).parent().attr('id')] = $(this).text()
+            data[$(this).parent().attr('id')] = $(this).val()
         }
         );
         $(this.full_selector() + " .back textarea").each(function () {
