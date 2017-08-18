@@ -84,7 +84,9 @@ class TileBase(object):
                         '</textarea></div>'
     select_base_template = '<select class="form-control input-sm" id="{0}">'
     select_option_template = '<option value="{0}">{0}</option>'
+    select_option_val_template = '<option value="{0}">{1}</option>'
     select_option_selected_template = '<option value="{0}" selected>{0}</option>'
+    select_option_val_selected_template = '<option value="{0}" selected>{1}</option>'
     boolean_template = '<div class="checkbox"><label style="font-weight: 700">'\
                        '<input type="checkbox" id="{0}" value="{0}" {1}>{0}</label>' \
                        '</div>'
@@ -430,12 +432,26 @@ class TileBase(object):
                 elif option["type"] == "pipe_select":
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
-                    for choice in self.get_current_pipe_list():
-                        if self.check_for_tag_match(option_tags, choice["tags"].split()):
-                            if choice["name"] == starting_value:
-                                form_html += self.select_option_selected_template.format(choice["name"])
-                            else:
-                                form_html += self.select_option_template.format(choice["name"])
+                    for tile_id, tile_entry in self._pipe_dict.items():
+                        first_full_name = tile_entry.keys()[0]
+                        first_short_name = tile_entry.values()[0]["export_name"]
+                        tile_name = re.sub("_" + first_short_name, "", first_full_name)
+                        print "tile name is " + tile_name
+                        print "tile_entry is " + str(tile_entry)
+                        group_created = False
+                        group_html = "<optgroup label={}>".format(tile_name)
+                        group_len = 0
+                        for full_export_name, edict in tile_entry.items():
+                            print "full_export_name is " + full_export_name
+                            if self.check_for_tag_match(option_tags, edict["export_tags"].split()):
+                                group_len += 1
+                                if full_export_name == starting_value:
+                                    group_html += self.select_option_val_selected_template.format(full_export_name, edict["export_name"])
+                                else:
+                                    group_html += self.select_option_val_template.format(full_export_name, edict["export_name"])
+                        if group_len > 0:
+                            group_html += "</optgroup>"
+                            form_html += group_html
                     form_html += '</select></div>'
                 elif option["type"] == "document_select":
                     the_template = self.input_start_template + self.select_base_template
