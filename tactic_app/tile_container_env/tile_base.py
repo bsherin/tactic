@@ -433,6 +433,8 @@ class TileBase(object):
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
                     for tile_id, tile_entry in self._pipe_dict.items():
+                        if tile_id == self.tworker.my_id:
+                            continue
                         first_full_name = tile_entry.keys()[0]
                         first_short_name = tile_entry.values()[0]["export_name"]
                         tile_name = re.sub("_" + first_short_name, "", first_full_name)
