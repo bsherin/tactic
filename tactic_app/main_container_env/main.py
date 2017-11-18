@@ -42,6 +42,8 @@ class mainWindow(object):
                      "DisplayCreateErrors", "DehighlightTable", "SetCellContent", "RemoveTile", "ColorTextInCell",
                      "FilterTable", "UnfilterTable", "TextSelect", "UpdateSortList", "UpdateLeftFraction",
                      "UpdateTableShrinkState", "UpdateHeaderListOrder", "HideColumnInAllDocs", "UpdateColumnWidths"]
+    select_option_val_template = '<option value="{0}">{1}</option>'
+    select_option_val_selected_template = '<option value="{0}" selected>{1}</option>'
 
     # noinspection PyUnresolvedReferences
     def __init__(self, mworker, data_dict):
@@ -794,12 +796,12 @@ class mainWindow(object):
         if self.pseudo_tile_id is None:
             self.create_pseudo_tile()
         the_code = data["the_code"]
-        data["pipe_dict"] = self._pipe_dict
+        self.dict = self._pipe_dict
+        data["pipe_dict"] = self.dict
         self.mworker.post_task(self.pseudo_tile_id, "exec_console_code", data, self.got_console_result)
         return {"success": True}
 
-    @task_worthy
-    def get_exports_list_html(self, data):
+    def get_exports_list_html_old(self, data):
         the_html = ""
         export_list = []
         for (tile_id, tile_entry) in self._pipe_dict.items():
@@ -808,6 +810,35 @@ class mainWindow(object):
         export_list.sort()
         for pname in export_list:
             the_html += "<option>{}</option>\n".format(pname)
+        return {"success": True, "the_html": the_html, "export_list": export_list}
+
+    @task_worthy
+    def get_exports_list_html(self, data):
+        the_html = ""
+        export_list = []
+        for tile_id, tile_entry in self._pipe_dict.items():
+            first_full_name = tile_entry.keys()[0]
+            first_short_name = tile_entry.values()[0]["export_name"]
+            tile_name = re.sub("_" + first_short_name, "", first_full_name)
+            print "tile name is " + tile_name
+            print "tile_entry is " + str(tile_entry)
+            group_created = False
+            group_html = "<optgroup label={}>".format(tile_name)
+            group_len = 0
+            first_one = True
+            for full_export_name, edict in tile_entry.items():
+                print "full_export_name is " + full_export_name
+                export_list.append(full_export_name)
+                group_len += 1
+                if first_one:
+                    group_html += self.select_option_val_selected_template.format(full_export_name,
+                                                                                  edict["export_name"])
+                    first_one = False
+                else:
+                    group_html += self.select_option_val_template.format(full_export_name, edict["export_name"])
+            if group_len > 0:
+                group_html += "</optgroup>"
+                the_html += group_html
         return {"success": True, "the_html": the_html, "export_list": export_list}
 
     @task_worthy
