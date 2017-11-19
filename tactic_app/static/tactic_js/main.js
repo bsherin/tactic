@@ -297,4 +297,5 @@ function removeMainwindow() {
 }
 
 spinner_html = '<span class="loader-small"></span>';
+console_spinner_html = '<span class="loader-extra-small"></span>';
 
