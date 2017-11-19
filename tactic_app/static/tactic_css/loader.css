@@ -34,6 +34,18 @@
     -webkit-animation: loader 4s infinite ease;
 }
 
+.loader-extra-small {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  position: relative;
+  border: 2px solid #333;
+  top: 50%;
+  animation: loader 4s infinite ease;
+    -webkit-animation: loader 4s infinite ease;
+}
+
+
 
 #loading-message, #reload-message {
     height: 200px;

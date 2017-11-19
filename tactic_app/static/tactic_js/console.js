@@ -172,6 +172,7 @@ class ConsoleObjectClass {
         const el = $(e.target).closest(".log-panel");
         const uid = el.find(".console-code")[0].id;
         const the_code = self.consoleCMObjects[uid].getValue();
+        self.startConsoleSpinner(uid);
         postWithCallback(main_id, "exec_console_code", {"the_code": the_code, "console_id": uid})
     }
 
@@ -272,6 +273,7 @@ class ConsoleObjectClass {
         for (let i = 0; i < scripts.length; i = i+1) {
             eval(scripts[i].innerHTML)
         }
+        this.stopConsoleSpinner(data_object.console_id)
      }
 
     clearConsole () {
@@ -301,6 +303,16 @@ class ConsoleObjectClass {
                 })
             }
         })
+    }
+
+    startConsoleSpinner (uid) {
+        let cc = $("#" + uid).parent();
+        cc.find(".console-spin-place").html(console_spinner_html);
+    }
+
+    stopConsoleSpinner (uid) {
+        let cc = $("#" + uid).parent();
+        cc.find(".console-spin-place").html("");
     }
 
     addConsoleCodeWithCode(the_code) {
