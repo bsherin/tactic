@@ -172,11 +172,11 @@ class exportViewerObjectClass {
     send_to_console() {
         const tail = this.exports_tail.val();
         let full_export_name = this.current_export;
+        let key_string = "";
         if (!(this.key_list == null)) {
-            full_export_name = full_export_name +`[${this.exports_keys.val()}]`
+            key_string = `["${this.exports_keys.val()}"]`;
         }
-        full_export_name = full_export_name + tail;
-        consoleObject.addConsoleCodeWithCode(`self.get_pipe_value("${full_export_name}")`)
+        consoleObject.addConsoleCodeWithCode(`self.get_pipe_value("${full_export_name}")` + key_string + tail)
     }
 
 }
