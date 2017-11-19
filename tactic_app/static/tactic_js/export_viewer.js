@@ -186,7 +186,7 @@ class exportViewerObjectClass {
     }
 
     startExportsSpinner () {
-        $("#exports-spin-place").html(spinner_html);
+        $("#exports-spin-place").html(console_spinner_html);
     }
 
     stopExportsSpinner () {
