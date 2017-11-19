@@ -44,6 +44,7 @@ class exportViewerObjectClass {
 
     update_exports_popup() {
         let self = this;
+        this.startExportsSpinner();
         postWithCallback(main_id, "get_exports_list_html", {}, function (data) {
             self.populate_exports(data.the_html);
             self.export_list = data.export_list;
@@ -52,6 +53,7 @@ class exportViewerObjectClass {
             if (new_export != self.current_export) {
                 self.set_new_export(new_export)
             }
+            self.stopExportsSpinner()
 
         })
     }
@@ -139,6 +141,7 @@ class exportViewerObjectClass {
     set_new_export(new_export) {
         this.current_export = new_export;
         let self = this;
+        this.startExportsSpinner();
         postWithCallback(main_id, "get_export_info", {"export_name": new_export}, function (data) {
             self.current_type = data.type;
             self.set_exports_info(data.info_string);
@@ -153,19 +156,22 @@ class exportViewerObjectClass {
                 self.exports_keys.css("display", "none");
                 self.key_list = null
             }
+            self.stopExportsSpinner()
 
         })
     }
 
     show_value() {
         const tail = this.exports_tail.val();
+        this.startExportsSpinner();
         let send_data = {"export_name": this.current_export, "tail": tail};
         if (!(this.key_list == null)) {
             send_data["key"] = this.exports_keys.val()
         }
         let self = this;
         postWithCallback(main_id, "evaluate_export", send_data, function (data) {
-            self.exports_body.html(data.the_html)
+            self.exports_body.html(data.the_html);
+            self.stopExportsSpinner()
         })
     }
 
@@ -178,5 +184,14 @@ class exportViewerObjectClass {
         }
         consoleObject.addConsoleCodeWithCode(`self.get_pipe_value("${full_export_name}")` + key_string + tail)
     }
+
+    startExportsSpinner () {
+        $("#exports-spin-place").html(spinner_html);
+    }
+
+    stopExportsSpinner () {
+        $("#exports-spin-place").html("");
+    }
+
 
 }
