@@ -18,7 +18,8 @@ class GlobalTileManager(object):
             self.test_tile_container_id, container_id = create_container("tactic_tile_image",
                                                                          network_mode="bridge",
                                                                          container_name="tile_test_container",
-                                                                         register_container=False)
+                                                                         register_container=False,
+                                                                         other_name="test_container")
         except ContainerCreateError:
             print "failed to create the test tile_container. That's very bad."
             exit()

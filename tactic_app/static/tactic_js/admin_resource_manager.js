@@ -24,7 +24,7 @@ class AdminResourceManager extends ResourceManager {
     fill_content(the_html) {
         this.get_main_content_dom().html(the_html);
         sorttable.makeSortable(this.get_resource_table()[0]);
-        const updated_header = this.get_main_content_dom().find("table th")[5];
+        const updated_header = this.get_main_content_dom().find("table th").slice(-1)[0]
         sorttable.innerSortFunction.apply(updated_header, []);
         sorttable.innerSortFunction.apply(updated_header, []);
     }

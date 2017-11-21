@@ -89,7 +89,7 @@ def container_create_test(collection_name,n, username, password):
     user = User.get_user_by_username(username)
     if user is not None and user.verify_password(password):
         login_user(user, remember=False)
-    data = {"user_id": user.get_id(), "parent": "host"}
+    data = {"user_id": user.get_id(), "parent": "host", "other_name": "test"}
     for i in range(int(n)):
         res = host_worker.create_tile_container(data)
         tile_id = res["tile_id"]

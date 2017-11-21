@@ -185,10 +185,12 @@ class mainWindow(object):
             self.show_main_status_message("Creating empty containers")
 
             new_tile_keys = []
-            for i in range(len(tile_info_dict.keys())):
+            for old_tile_id, tile_save_dict in self.project_dict["tile_instances"].items():
+                tile_name = tile_save_dict["tile_name"]
                 new_key = self.mworker.post_and_wait("host", "create_tile_container",
                                                      {"user_id": self.user_id,
-                                                      "parent": self.mworker.my_id})["tile_id"]
+                                                      "parent": self.mworker.my_id,
+                                                      "other_name": tile_name})["tile_id"]
                 new_tile_keys.append(new_key)
 
             self.show_main_status_message("Got empty containers")
@@ -592,14 +594,16 @@ class mainWindow(object):
     @task_worthy
     def create_tile(self, data_dict):
         print "entering create_tile"
+        tile_name = data_dict["tile_name"]
         create_container_dict = self.mworker.post_and_wait("host", "create_tile_container",
                                                            {"user_id": self.user_id,
-                                                            "parent": self.mworker.my_id})
+                                                            "parent": self.mworker.my_id,
+                                                            "other_name": tile_name})
         if not create_container_dict["success"]:
             raise Exception("Error creating empty tile container")
         tile_container_id = create_container_dict["tile_id"]
         self.tile_instances.append(tile_container_id)
-        tile_name = data_dict["tile_name"]
+
         data_dict["base_figure_url"] = self.base_figure_url.replace("tile_id", tile_container_id)
         data_dict["doc_type"] = self.doc_type
 
@@ -866,7 +870,8 @@ class mainWindow(object):
 
     def create_pseudo_tile(self):
         data = self.mworker.post_and_wait("host", "create_tile_container", {"user_id": self.user_id,
-                                                                            "parent": self.mworker.my_id})
+                                                                            "parent": self.mworker.my_id,
+                                                                            "other_name": "pseudo_tile"})
         if not data["success"]:
             raise Exception("Error creating empty tile container")
         self.pseudo_tile_id = data["tile_id"]

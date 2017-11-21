@@ -317,7 +317,8 @@ class HostWorker(QWorker):
         try:
             tile_container_id, container_id = create_container("tactic_tile_image", network_mode="bridge",
                                                                owner=data["user_id"],
-                                                               parent=data["parent"])
+                                                               parent=data["parent"],
+                                                               other_name=data["other_name"])
         except ContainerCreateError:
             print "Error creating tile container"
             return {"success": False, "message": "Error creating empty tile container."}

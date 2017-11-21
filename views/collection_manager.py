@@ -45,7 +45,7 @@ class CollectionManager(UserManageResourceManager):
         user_obj = current_user
         cname = user_obj.build_data_collection_name(collection_name)
         try:
-            main_id, container_id = create_container("tactic_main_image", owner=user_obj.get_id())
+            main_id, container_id = create_container("tactic_main_image", owner=user_obj.get_id(), other_name=collection_name)
         except ContainerCreateError:
             return render_template("error_window_template.html",
                                    window_tile="Load Failed",

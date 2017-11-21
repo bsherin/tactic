@@ -4,7 +4,7 @@ from flask_login import login_required, current_user
 from tactic_app import app, create_megaplex
 from tactic_app.users import User, load_user
 from resource_manager import ResourceManager
-from tactic_app.docker_functions import cli, destroy_container, container_owner, get_log, container_id
+from tactic_app.docker_functions import cli, destroy_container, container_owner, get_log, container_id, container_other_name
 from docker_cleanup import do_docker_cleanup
 import tactic_app
 import traceback
@@ -120,7 +120,7 @@ class ContainerManager(ResourceManager):
         for iname in tactic_image_names:
             image_id_names[cli.images.get(iname).id] = iname
 
-        larray = [["Id", "Name", "Image", "Owner", "Status", "Created"]]
+        larray = [["Id", "Other_name", "Name", "Image", "Owner", "Status", "Created"]]
         all_containers = cli.containers.list(all=True)
         for cont in all_containers:
             owner_id = container_owner(cont)
@@ -135,8 +135,7 @@ class ContainerManager(ResourceManager):
                 image_name = image_id_names[image_id]
             else:
                 image_name = image_id
-            larray.append([container_id(cont), cont.attrs["Name"],
-                           image_name,
+            larray.append([container_id(cont), container_other_name(cont), cont.attrs["Name"], image_name,
                            owner_name, cont.status, cont.attrs["Created"]])
         return larray
 
