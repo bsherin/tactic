@@ -747,7 +747,7 @@ class mainWindow(object):
     def SendTileMessage(self, data):
         tile_id = self.tile_id_dict[data["tile_name"]]
         self.mworker.post_task(tile_id, "TileMessage", data)
-        return none
+        return None
 
     @task_worthy
     def get_row(self, data):
