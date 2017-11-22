@@ -79,6 +79,7 @@ class mainWindow(object):
         self.mdata = None
         self.pseudo_tile_id = None
         self.loaded_modules = None
+        self.tile_id_dict = {}  # dict with the keys the names of tiles and ids as the values.
 
         if "project_name" not in data_dict:
             print "determined not a project"
@@ -159,7 +160,7 @@ class mainWindow(object):
             print "Entering do_full_recreation"
             self.show_main_status_message("Entering do_full_recreation")
             tile_info_dict, loaded_modules, success = self.recreate_from_save(data_dict["project_collection_name"],
-                                                                     data_dict["project_name"])
+                                                                              data_dict["project_name"])
             if not success:
                 self.show_main_status_message("Error trying to recreate the project from save")
                 self.show_error_window(tile_info_dict)
@@ -185,11 +186,14 @@ class mainWindow(object):
             self.show_main_status_message("Creating empty containers")
 
             new_tile_keys = []
-            for i in range(len(tile_info_dict.keys())):
+            for old_tile_id, tile_save_dict in self.project_dict["tile_instances"].items():
+                tile_name = tile_save_dict["tile_name"]
                 new_key = self.mworker.post_and_wait("host", "create_tile_container",
                                                      {"user_id": self.user_id,
-                                                      "parent": self.mworker.my_id})["tile_id"]
+                                                      "parent": self.mworker.my_id,
+                                                      "other_name": tile_name})["tile_id"]
                 new_tile_keys.append(new_key)
+                self.tile_id_dict[tile_name] = new_key
 
             self.show_main_status_message("Got empty containers")
             print "got empty containers"
@@ -209,6 +213,10 @@ class mainWindow(object):
                     del tile_info_dict[old_tile_id]
                     del tile_code_dict[old_tile_id]
                     del self.project_dict["tile_instances"][old_tile_id]
+                    for n, tid in self.tile_id_dict.items():
+                        if tid == new_id:
+                            del self.tile_id_dict[n]
+                            break
                     # raise Exception(result["message_string"])
             print "loaded source"
             self.show_main_status_message("Recreating the tiles")
@@ -353,6 +361,7 @@ class mainWindow(object):
                      "collection_names": collection_names,
                      "function_names": function_names}
         for tile_id, tile_result in tile_results.items():
+            form_info["other_tile_names"] = self.get_other_tile_names(tile_id)
             res = self.mworker.post_and_wait(tile_id, "render_tile", form_info)
             tile_result["tile_html"] = res["tile_html"]
         return errors, tile_results
@@ -525,6 +534,10 @@ class mainWindow(object):
     def _delete_tile_instance(self, tile_id):
         self.tile_instances.remove(tile_id)
         self.tile_sort_list.remove(tile_id)
+        for n, tid in self.tile_id_dict.items():
+            if tid == tile_id:
+                del self.tile_id_dict[n]
+                break
         the_lists = self.get_lists_classes_functions()
         form_info = {"current_header_list": self.current_header_list,
                      "pipe_dict": self._pipe_dict,
@@ -536,6 +549,7 @@ class mainWindow(object):
         if tile_id in self._pipe_dict:
             del self._pipe_dict[tile_id]
             for tid in self.tile_instances:
+                form_info["other_tile_names"] = self.get_other_tile_names(tid)
                 self.mworker.post_task(tid, "RebuildTileForms", form_info)
         self.mworker.ask_host("delete_container", {"container_id": tile_id})
         self.mworker.emit_export_viewer_message("update_exports_popup", {})
@@ -592,14 +606,18 @@ class mainWindow(object):
     @task_worthy
     def create_tile(self, data_dict):
         print "entering create_tile"
+        tile_name = data_dict["tile_name"]
         create_container_dict = self.mworker.post_and_wait("host", "create_tile_container",
                                                            {"user_id": self.user_id,
-                                                            "parent": self.mworker.my_id})
+                                                            "parent": self.mworker.my_id,
+                                                            "other_name": tile_name})
         if not create_container_dict["success"]:
             raise Exception("Error creating empty tile container")
         tile_container_id = create_container_dict["tile_id"]
         self.tile_instances.append(tile_container_id)
-        tile_name = data_dict["tile_name"]
+        other_tile_names = self.tile_id_dict.keys()
+        self.tile_id_dict[tile_name] = tile_container_id
+
         data_dict["base_figure_url"] = self.base_figure_url.replace("tile_id", tile_container_id)
         data_dict["doc_type"] = self.doc_type
 
@@ -635,13 +653,15 @@ class mainWindow(object):
                      "list_names": form_data["list_names"],
                      "function_names": form_data["function_names"],
                      "class_names": form_data["class_names"],
-                     "collection_names": form_data["collection_names"]}
+                     "collection_names": form_data["collection_names"],
+                     "other_tile_names": other_tile_names}
 
         print "creating form html"
         form_html = self.mworker.post_and_wait(tile_container_id, "create_form_html", form_info)["form_html"]
         print "rebuilding tile forms"
         for tid in self.tile_instances:
             if not tid == tile_container_id:
+                form_info["other_tile_names"] = self.get_other_tile_names(tid)
                 self.mworker.post_task(tid, "RebuildTileForms", form_info)
         self.tile_sort_list.append(tile_container_id)
         self.current_tile_id += 1
@@ -722,6 +742,12 @@ class mainWindow(object):
         doc_name = data["document_name"]
         nrows = self.doc_dict[doc_name].number_of_rows
         return {"number_rows": nrows}
+
+    @task_worthy
+    def SendTileMessage(self, data):
+        tile_id = self.tile_id_dict[data["tile_name"]]
+        self.mworker.post_task(tile_id, "TileMessage", data)
+        return none
 
     @task_worthy
     def get_row(self, data):
@@ -866,7 +892,8 @@ class mainWindow(object):
 
     def create_pseudo_tile(self):
         data = self.mworker.post_and_wait("host", "create_tile_container", {"user_id": self.user_id,
-                                                                            "parent": self.mworker.my_id})
+                                                                            "parent": self.mworker.my_id,
+                                                                            "other_name": "pseudo_tile"})
         if not data["success"]:
             raise Exception("Error creating empty tile container")
         self.pseudo_tile_id = data["tile_id"]
@@ -1130,6 +1157,13 @@ class mainWindow(object):
         self._delete_tile_instance(data["tile_id"])
         return None
 
+    def get_other_tile_names(self, tile_id):
+        other_tile_names = []
+        for n, tid in self.tile_id_dict.items():
+            if not tid == tile_id:
+                other_tile_names.append(n)
+        return other_tile_names
+
     @task_worthy
     def UpdateHeaderListOrder(self, data):
         header_list = data["header_list"]
@@ -1157,6 +1191,7 @@ class mainWindow(object):
                      "function_names": the_lists["function_names"],
                      "collection_names": the_lists["collection_names"]}
         for tid in self.tile_instances:
+            form_info["other_tile_names"] = self.get_other_tile_names(tid)
             self.mworker.post_task(tid, "RebuildTileForms", form_info)
         return None
 
@@ -1200,6 +1235,7 @@ class mainWindow(object):
                      "function_names": the_lists["function_names"],
                      "collection_names": the_lists["collection_names"]}
         for tid in self.tile_instances:
+            form_info["other_tile_names"] = self.get_other_tile_names(tid)
             self.mworker.post_task(tid, "RebuildTileForms", form_info)
         return None
 

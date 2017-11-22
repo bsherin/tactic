@@ -317,7 +317,8 @@ class HostWorker(QWorker):
         try:
             tile_container_id, container_id = create_container("tactic_tile_image", network_mode="bridge",
                                                                owner=data["user_id"],
-                                                               parent=data["parent"])
+                                                               parent=data["parent"],
+                                                               other_name=data["other_name"])
         except ContainerCreateError:
             print "Error creating tile container"
             return {"success": False, "message": "Error creating empty tile container."}
@@ -448,6 +449,7 @@ class ClientWorker(QWorker):
                     gevent.sleep(self.hibernate_time)
                 else:
                     gevent.sleep(self.short_sleep_period)
+
 
 tactic_app.host_worker = HostWorker()
 tactic_app.client_worker = ClientWorker()

@@ -184,7 +184,7 @@ function continue_loading() {
 
                     function create_tile_from_save(tile_id) {
                         const tile_html = data.tile_save_results[tile_id].tile_html;
-                        const new_tile_object = new TileObject(tile_id, tile_html, false);
+                        const new_tile_object = new TileObject(tile_id, tile_html, false, data.tile_save_results[tile_id].tile_name);
                         tile_dict[tile_id] = new_tile_object;
                         new_tile_object.saved_size = data.tile_save_results[tile_id].saved_size;
                         const sortable_tables = $(new_tile_object.full_selector() + " table.sortable");
