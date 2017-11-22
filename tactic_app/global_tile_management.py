@@ -4,6 +4,7 @@ import copy
 from users import User, load_user, initial_metadata
 import tactic_app
 
+
 class GlobalTileManager(object):
 
     def __init__(self):
@@ -18,7 +19,8 @@ class GlobalTileManager(object):
             self.test_tile_container_id, container_id = create_container("tactic_tile_image",
                                                                          network_mode="bridge",
                                                                          container_name="tile_test_container",
-                                                                         register_container=False)
+                                                                         register_container=False,
+                                                                         other_name="test_container")
         except ContainerCreateError:
             print "failed to create the test tile_container. That's very bad."
             exit()
@@ -31,7 +33,7 @@ class GlobalTileManager(object):
             for tm in tm_list:
                 module_code = repository_user.get_tile_module(tm)
                 res_dict = tactic_app.host_worker.post_and_wait(self.test_tile_container_id, "load_source",
-                                                  {"tile_code": module_code})
+                                                                {"tile_code": module_code})
                 if res_dict["success"]:
                     category = res_dict["category"]
                     if category not in self.tile_classes:
@@ -113,5 +115,6 @@ class GlobalTileManager(object):
         self.tile_module_index[username][tile_name] = tile_module_name
         if tile_module_name not in self.loaded_user_modules[username]:
             self.loaded_user_modules[username].append(tile_module_name)
+
 
 tactic_app.global_tile_manager = GlobalTileManager()

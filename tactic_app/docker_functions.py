@@ -40,6 +40,7 @@ class ContainerCreateError(Exception):
 def create_container(image_name, container_name=None, network_mode="bridge",
                      wait_until_running=True, owner="host", parent="host",
                      env_vars={}, port_bindings=None, wait_retries=50,
+                     other_name="none",
                      detach=True, register_container=True):
     unique_id = str(uuid.uuid4())
     environ = {"MAX_QUEUE_LENGTH": MAX_QUEUE_LENGTH,
@@ -53,7 +54,7 @@ def create_container(image_name, container_name=None, network_mode="bridge",
     for key, val in env_vars.items():
         environ[key] = val
 
-    labels = {"my_id": unique_id, "owner": owner, "parent": parent}
+    labels = {"my_id": unique_id, "owner": owner, "parent": parent, "other_name": other_name}
 
     if container_name is None:
         container = cli.containers.run(image=image_name,
@@ -103,6 +104,13 @@ def container_parent(container):
         return "system"
 
 
+def container_other_name(container):
+    if "other_name" in container.attrs["Config"]["Labels"]:
+        return container.attrs["Config"]["Labels"]["other_name"]
+    else:
+        return "name"
+
+
 def container_id(container):
     if "my_id" in container.attrs["Config"]["Labels"]:
         return container.attrs["Config"]["Labels"]["my_id"]
@@ -123,6 +131,14 @@ def get_container(tactic_id):
     for cont in conts:
         if container_id(cont) == tactic_id:
             return cont
+    return None
+
+
+def get_id_from_name_and_parent(cont_name, parent_id):
+    conts = cli.containers.list()
+    for cont in conts:
+        if (container_parent(cont) == parent_id) and (container_other_name(cont) == cont_name):
+            return container_id(cont)
     return None
 
 
