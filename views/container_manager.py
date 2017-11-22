@@ -4,7 +4,8 @@ from flask_login import login_required, current_user
 from tactic_app import app, create_megaplex
 from tactic_app.users import User, load_user
 from resource_manager import ResourceManager
-from tactic_app.docker_functions import cli, destroy_container, container_owner, get_log, container_id, container_other_name
+from tactic_app.docker_functions import cli, destroy_container, container_owner, get_log, container_id
+from tactic_app.docker_functions import container_other_name
 from docker_cleanup import do_docker_cleanup
 import tactic_app
 import traceback
@@ -46,7 +47,8 @@ class ContainerManager(ResourceManager):
                 if cont.attrs["Image"] == tactic_image_ids["tactic_tile_image"]:
                     the_id = container_id(cont)
                     if not the_id == global_tile_manager.test_tile_container_id:
-                        self.show_um_message("removing tile container " + cont.attrs["Name"], user_manage_id, timeout=None)
+                        self.show_um_message("removing tile container " + cont.attrs["Name"],
+                                             user_manage_id, timeout=None)
                         cont.remove(force=True)
                     continue
                 # if cont.attrs["Image"] == cont.attrs["ImageID"]:

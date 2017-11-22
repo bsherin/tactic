@@ -13,6 +13,7 @@ from types import NoneType
 import traceback
 import os
 
+
 if "RETRIES" in os.environ:
     RETRIES = int(os.environ.get("RETRIES"))
 else:
@@ -22,9 +23,11 @@ else:
 # noinspection PyUnresolvedReferences
 from qworker import task_worthy_methods
 
+
 def task_worthy(m):
     task_worthy_methods[m.__name__] = "tilebase"
     return m
+
 
 jsonizable_types = {
     "str": str,
@@ -39,10 +42,12 @@ jsonizable_types = {
     "NoneType": NoneType
 }
 
+
 code_names = {"classes": {},
               "functions": {}}
 
 tworker = None
+
 
 def user_function(the_func):
     code_names["functions"][the_func.__name__] = the_func
@@ -256,6 +261,14 @@ class TileBase(object):
         return None
 
     @task_worthy
+    def TileMessage(self, data):
+        try:
+            self.handle_tile_message(data["event_name"], data["event_data"])
+        except Exception as ex:
+            self.handle_exception(ex)
+        return None
+
+    @task_worthy
     def TileFormSubmit(self, data):
         try:
             self.handle_form_submit(data["form_data"], data["doc_name"], data["active_row_id"])
@@ -454,6 +467,16 @@ class TileBase(object):
                         if group_len > 0:
                             group_html += "</optgroup>"
                             form_html += group_html
+                    form_html += '</select></div>'
+                elif option["type"] == "tile_select":
+                    the_template = self.input_start_template + self.select_base_template
+                    form_html += the_template.format(att_name)
+                    tile_name_list = data["other_tile_names"]
+                    for choice in tile_name_list:
+                        if choice == starting_value:
+                            form_html += self.select_option_selected_template.format(choice)
+                        else:
+                            form_html += self.select_option_template.format(choice)
                     form_html += '</select></div>'
                 elif option["type"] == "document_select":
                     the_template = self.input_start_template + self.select_base_template
@@ -693,8 +716,8 @@ class TileBase(object):
             else:
                 result["type"] = "no type"
             try:
-                l = len(avar)
-                result["info_string"] = "{} of length {}".format(result["type"], l)
+                thel = len(avar)
+                result["info_string"] = "{} of length {}".format(result["type"], thel)
             except:
                 result["info_string"] = result["type"]
         return result
@@ -876,6 +899,9 @@ class TileBase(object):
         return [{}]
 
     def handle_size_change(self):
+        return
+
+    def handle_tile_message(self, event_name, data):
         return
 
     def handle_cell_change(self, column_header, row_index, old_content, new_content, doc_name):
@@ -1076,6 +1102,15 @@ class TileBase(object):
                      "column_name": column_name,
                      "color": color}
         self.tworker.post_task(self.main_id, "SetCellBackground", task_data)
+        self.restore_stdout()
+        return
+
+    def send_tile_message(self, tile_name, event_name, data=None):
+        self.save_stdout()
+        task_data = {"tile_name": tile_name,
+                     "event_name": event_name,
+                     "event_data": data}
+        self.tworker.post_task(self.main_id, "SendTileMessage", task_data)
         self.restore_stdout()
         return
 

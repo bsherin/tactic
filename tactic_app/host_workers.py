@@ -450,6 +450,7 @@ class ClientWorker(QWorker):
                 else:
                     gevent.sleep(self.short_sleep_period)
 
+
 tactic_app.host_worker = HostWorker()
 tactic_app.client_worker = ClientWorker()
 tactic_app.host_worker.start()

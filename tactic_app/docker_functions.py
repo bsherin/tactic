@@ -103,11 +103,13 @@ def container_parent(container):
     else:
         return "system"
 
+
 def container_other_name(container):
     if "other_name" in container.attrs["Config"]["Labels"]:
         return container.attrs["Config"]["Labels"]["other_name"]
     else:
         return "name"
+
 
 def container_id(container):
     if "my_id" in container.attrs["Config"]["Labels"]:
@@ -129,6 +131,14 @@ def get_container(tactic_id):
     for cont in conts:
         if container_id(cont) == tactic_id:
             return cont
+    return None
+
+
+def get_id_from_name_and_parent(cont_name, parent_id):
+    conts = cli.containers.list()
+    for cont in conts:
+        if (container_parent(cont) == parent_id) and (container_other_name(cont) == cont_name):
+            return container_id(cont)
     return None
 
 

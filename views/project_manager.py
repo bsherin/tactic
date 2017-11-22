@@ -133,6 +133,7 @@ class ProjectManager(UserManageResourceManager):
                 db[current_user.project_collection_name].update_one({"project_name": res_name}, {'$set': {"metadata": mdata}})
         return
 
+
 class RepositoryProjectManager(ProjectManager):
     rep_string = "repository-"
     is_repository = True

@@ -7,7 +7,7 @@ from tactic_app.users import User
 from flask.ext.wtf import Form
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import Required, Length, Regexp, EqualTo
-from tactic_app import app # global_stuff
+from tactic_app import app  # global_stuff
 import tactic_app
 
 @app.route('/direct_user_manage/<username>/<password>', methods=['GET', 'POST'])
