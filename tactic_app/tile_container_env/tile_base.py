@@ -5,6 +5,7 @@ import sys
 import re
 import time
 import requests
+from StringIO import StringIO
 import numpy as np
 from bson.binary import Binary
 # noinspection PyUnresolvedReferences
@@ -72,6 +73,20 @@ def clear_and_exec_user_code(the_code):
     code_names["classes"] = {}
     code_names["functions"] = {}
     return exec_user_code(the_code)
+
+class ConsoleStringIO(StringIO):
+    def __init__(self, tile, data):
+        self.my_tile = tile
+        self.data = data
+        StringIO.__init__(self)
+        return
+
+    def write(self, s):
+        StringIO.write(self, s)
+        if not s == "\n":   # The print commmand automatically adds a \n. We don't want to print it.
+            self.data["result_string"] = s
+            self.my_tile.tworker.post_task(self.my_tile.main_id, "got_console_print", self.data)
+        return
 
 # noinspection PyMiss
 # ingConstructor
@@ -723,42 +738,27 @@ class TileBase(object):
         return result
 
     @task_worthy
+    def clear_console_namespace(self, data):
+        try:
+            self.console_namespace = {"self": self}
+        except Exception as ex:
+            data["result_string"] = self.handle_exception(ex, "Error clearing console namespace", print_to_console=False)
+        return data
+
+    @task_worthy
     def exec_console_code(self, data):
         import StringIO
+        old_stdout = sys.stdout
         try:
             self._pipe_dict = data["pipe_dict"]
-            the_code = data["the_code"]
-            the_code = re.sub("(\s*)$", "", the_code)  # remove trailing whie space
-            last_line_matches = re.findall("\n.*$", the_code)  # extract the last line
-            if len(last_line_matches) == 0:
-                last_line = the_code
-                the_code = None
-            else:
-                last_line = last_line_matches[0]
-                last_line = re.sub("^\s*", "", last_line)  # remove initial white space from the last line
-                the_code = re.sub("\n.*$", "", the_code)  # remove last line
-
-            additional_output = ""
-            old_stdout = sys.stdout
-            redirected_output = StringIO.StringIO()
+            redirected_output = ConsoleStringIO(self, data)
             sys.stdout = redirected_output
-            try:
-                if the_code is not None:
-                    exec the_code
-                result = eval(last_line)
-                additional_output = str(result)
-                data["result_string"] = redirected_output.getvalue() + "\n" + additional_output
-                sys.stdout = old_stdout
-            except:
-                redirected_output.close()
-                new_redirected_output = StringIO.StringIO()
-                sys.stdout = new_redirected_output
-                exec(data["the_code"])
-                data["result_string"] = new_redirected_output.getvalue()
-                sys.stdout = old_stdout
-
+            exec(data["the_code"], globals(), self.console_namespace)
+            sys.stdout = old_stdout
         except Exception as ex:
             data["result_string"] = self.handle_exception(ex, "Error executing console code", print_to_console=False)
+            # print(data["result_string"])
+            old_stdout = sys.stdout
         return data
 
     @task_worthy

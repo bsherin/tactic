@@ -196,6 +196,7 @@ class PseudoTileClass(TileBase):
     def __init__(self, main_id_ignored=None, tile_id_ignored=None, tile_name=None):
         TileBase.__init__(self, tile_name=tile_name)
         self.is_pseudo = True
+        self.console_namespace = {"self": self}
         return
 
 

@@ -812,7 +812,15 @@ class mainWindow(object):
 
     @task_worthy
     def got_console_result(self, data):
-        self.mworker.emit_table_message("consoleCodeLog", {"message_string": data["result_string"],
+        print "in got console result"
+        print "data is " + str(data)
+        self.mworker.emit_table_message("stopConsoleSpinner", {"console_id": data["console_id"],
+                                                               "force_open": True})
+        return {"success": True}
+
+    @task_worthy
+    def got_console_print(self, data):
+        self.mworker.emit_table_message("consoleCodePrint", {"message_string": data["result_string"],
                                                            "console_id": data["console_id"],
                                                            "force_open": True})
         return {"success": True}
@@ -826,6 +834,12 @@ class mainWindow(object):
         data["pipe_dict"] = self.dict
         self.mworker.post_task(self.pseudo_tile_id, "exec_console_code", data, self.got_console_result)
         return {"success": True}
+
+    @task_worthy
+    def clear_console_namespace(self, data):
+        if self.pseudo_tile_id is None:
+            return {"success": True}
+        self.mworker.post_task(self.pseudo_tile_id, "clear_console_namespace", data)
 
     def get_exports_list_html_old(self, data):
         the_html = ""
