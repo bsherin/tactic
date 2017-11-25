@@ -1,5 +1,5 @@
 
-import sys, copy, re
+import sys, copy, re, datetime
 
 from flask import render_template, request, jsonify, send_file
 from flask_login import login_required, current_user
@@ -46,6 +46,9 @@ managers = {
 }
 
 
+tstring = datetime.datetime.now().strftime("%Y-%H-%M-%S")
+
+
 def get_manager_for_type(res_type, is_repository=False):
     if is_repository:
         return managers[res_type][1]
@@ -68,10 +71,12 @@ def stop_spinner(user_id=None):
 @app.route('/user_manage')
 @login_required
 def user_manage():
+
     if current_user.get_id() == admin_user.get_id():
-        return render_template('admin_interface.html', use_ssl=str(use_ssl))
+        return render_template('admin_interface.html', use_ssl=str(use_ssl), version_string=tstring)
     else:
-        return render_template('user_manage/user_manage.html', use_ssl=str(use_ssl))
+
+        return render_template('user_manage/user_manage.html', use_ssl=str(use_ssl), version_string=tstring)
 
 @socketio.on('connect', namespace='/user_manage')
 @login_required

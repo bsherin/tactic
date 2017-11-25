@@ -5,7 +5,7 @@
 {% block styles %}
     <link rel="stylesheet" href="{{url_for('static', filename='css/jquery-ui.min.css')}}">
     <link rel="stylesheet" href="{{url_for('static', filename='css/jquery.tag-editor.css')}}">
-    <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/loader.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/loader.css', version_string=tstring)}}">
 {% endblock %}
 
 {% block page_content %}
@@ -59,9 +59,9 @@
     <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
     <script src="{{url_for('static', filename='js/jquery.caret.min.js')}}"></script>
     <script src="{{url_for('static', filename='js/jquery.tag-editor.min.js')}}"></script>
-    <script src="{{url_for('static', filename='tactic_js/resource_viewer_class.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/resource_viewer_class.js', version_string=tstring)}}"></script>
     {% if uses_codemirror == "True" %}
-        <script src="{{url_for('static', filename='tactic_js/module_editor_abstract.js')}}"></script>
+        <script src="{{url_for('static', filename='tactic_js/module_editor_abstract.js', version_string=tstring)}}"></script>
     {% endif %}
     <script src="{{javascript_source}}"></script>
     <script>

@@ -15,6 +15,8 @@ from tactic_app.users import User
 global_tile_manager = tactic_app.global_tile_manager
 repository_user = User.get_user_by_username("repository")
 
+import datetime
+tstring = datetime.datetime.now().strftime("%Y-%H-%M-%S")
 
 # noinspection PyMethodMayBeStatic,PyBroadException
 class TileManager(UserManageResourceManager):
@@ -171,7 +173,7 @@ class TileManager(UserManageResourceManager):
                                use_ssl=use_ssl,
                                javascript_source=javascript_source,
                                uses_codemirror="True",
-                               button_groups=self.button_groups)
+                               button_groups=self.button_groups, version_string=tstring)
 
     def get_module_code(self, module_name):
         user_obj = current_user
@@ -217,7 +219,8 @@ class TileManager(UserManageResourceManager):
                                use_ssl=use_ssl,
                                option_types=option_types,
                                api_dlist=revised_api_dlist,
-                               uses_codemirror="True")
+                               uses_codemirror="True",
+                               version_string=tstring)
 
     def load_tile_module(self, tile_module_name, return_json=True, user_obj=None):
         try:
@@ -358,7 +361,8 @@ class RepositoryTileManager(TileManager):
                                use_ssl=use_ssl,
                                javascript_source=javascript_source,
                                uses_codemirror="True",
-                               button_groups=self.button_groups)
+                               button_groups=self.button_groups,
+                               version_string=tstring)
 
     def repository_get_module_code(self, module_name):
         user_obj = repository_user

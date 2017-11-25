@@ -10,6 +10,8 @@ from tactic_app.users import User
 global_tile_manager = tactic_app.global_tile_manager
 repository_user = User.get_user_by_username("repository")
 
+import datetime
+tstring = datetime.datetime.now().strftime("%Y-%H-%M-%S")
 
 class ProjectManager(UserManageResourceManager):
     collection_list = "project_names"
@@ -56,7 +58,8 @@ class ProjectManager(UserManageResourceManager):
                      "mongo_uri": mongo_uri,
                      "is_table": (doc_type == "table"),
                      "base_figure_url": url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
-                     "uses_codemirror": "True"
+                     "uses_codemirror": "True",
+                     "version_string": tstring
                      }
 
         return render_template("main.html", **data_dict)

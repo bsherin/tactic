@@ -12,6 +12,8 @@ from tactic_app.users import User
 global_tile_manager = tactic_app.global_tile_manager
 repository_user = User.get_user_by_username("repository")
 
+import datetime
+tstring = datetime.datetime.now().strftime("%Y-%H-%M-%S")
 
 # noinspection PyMethodMayBeStatic
 class ListManager(UserManageResourceManager):
@@ -46,7 +48,7 @@ class ListManager(UserManageResourceManager):
                                use_ssl=use_ssl,
                                is_repository=False,
                                javascript_source=javascript_source,
-                               button_groups=self.button_groups)
+                               button_groups=self.button_groups, version_string=tstring)
 
     def update_list(self):  # This is called from the list viewer
         try:
@@ -203,7 +205,7 @@ class RepositoryListManager(ListManager):
                                use_ssl=use_ssl,
                                is_repository=True,
                                javascript_source=javascript_source,
-                               button_groups=self.button_groups)
+                               button_groups=self.button_groups, version_string=tstring)
 
     def repository_get_list(self, list_name):
         the_list = repository_user.get_list(list_name)

@@ -41,7 +41,7 @@
     </div>
 {% endblock %}
 {% block scripts %}
-    <script src="{{url_for('static', filename='tactic_js/auth.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/auth.js', version_string=tstring)}}"></script>
     <script>
         var page_id = guid();
     </script>
