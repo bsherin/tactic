@@ -5,6 +5,8 @@ from tile_base import TileBase, task_worthy
 # noinspection PyUnresolvedReferences
 from qworker import task_worthy_methods
 
+from matplotlib_utilities import MplFigure
+
 
 class ConsoleStringIO(StringIO):
     def __init__(self, tile, data):
@@ -20,7 +22,7 @@ class ConsoleStringIO(StringIO):
             self.my_tile.tworker.post_task(self.my_tile.main_id, "got_console_print", self.data)
         return
 
-class PseudoTileClass(TileBase):
+class PseudoTileClass(TileBase, MplFigure):
     category = "word"
     exports = []
     measures = ["raw_freq", "student_t", "chi_sq", "pmi", "likelihood_ratio"]
