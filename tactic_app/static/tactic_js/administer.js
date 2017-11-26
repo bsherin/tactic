@@ -11,6 +11,29 @@ mousetrap.bind("esc", function() {
     resource_managers[get_current_module_id()].unfilter_me()
 });
 
+mousetrap.bind(['down'], (e) => {
+    const mod_id = get_current_module_id();
+    resource_managers[mod_id].go_to_next_row();
+    e.preventDefault()
+});
+
+mousetrap.bind(['up'], (e) => {
+    const mod_id = get_current_module_id();
+    resource_managers[mod_id].go_to_previous_row();
+    e.preventDefault()
+});
+
+mousetrap.bind(['enter', 'space'], (e) => {
+    const mod_id = get_current_module_id();
+    let rm = resource_managers[mod_id];
+    let row_element = rm.get_active_selector_button();
+    const res_type = get_current_res_type();
+    e.data = {"manager": rm, "res_type": res_type};
+    rm[rm.double_click_func](e)
+    e.preventDefault()
+});
+
+
 const res_types = ["container", "user"];
 const resource_managers = {};
 const repository_visible = false;
@@ -108,7 +131,7 @@ function selector_double_click(event) {
 class ContainerManager extends AdminResourceManager {
     set_extra_properties() {
         super.set_extra_properties();
-        this.double_click_func = this.container_logs;
+        this.double_click_func = "container_logs";
         this.button_groups = [
             {
                 "buttons": [

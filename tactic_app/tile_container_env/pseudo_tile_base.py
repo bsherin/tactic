@@ -8,6 +8,7 @@ from qworker import task_worthy_methods
 from matplotlib_utilities import MplFigure
 
 
+# noinspection PyTypeChecker
 class ConsoleStringIO(StringIO):
     def __init__(self, tile, data):
         self.my_tile = tile
@@ -52,6 +53,5 @@ class PseudoTileClass(TileBase, MplFigure):
             sys.stdout = old_stdout
         except Exception as ex:
             data["result_string"] = self.handle_exception(ex, "Error executing console code", print_to_console=False)
-            # print(data["result_string"])
             sys.stdout = old_stdout
         return data

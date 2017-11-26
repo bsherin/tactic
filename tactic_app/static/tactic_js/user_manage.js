@@ -21,6 +21,28 @@ mousetrap.bind(['command+f', 'ctrl+f'], (e) => {
     e.preventDefault()
 });
 
+mousetrap.bind(['down'], (e) => {
+    const mod_id = get_current_module_id();
+    resource_managers[mod_id].go_to_next_row();
+    e.preventDefault()
+});
+
+mousetrap.bind(['up'], (e) => {
+    const mod_id = get_current_module_id();
+    resource_managers[mod_id].go_to_previous_row();
+    e.preventDefault()
+});
+
+mousetrap.bind(['enter', 'space'], (e) => {
+    const mod_id = get_current_module_id();
+    let rm = resource_managers[mod_id];
+    let row_element = rm.get_active_selector_button();
+    const res_type = get_current_res_type();
+    e.data = {"manager": rm, "res_type": res_type};
+    rm[rm.double_click_func](e)
+    e.preventDefault()
+});
+
 function get_current_module_id() {
     let res_type = get_current_res_type();
     if (repository_visible) {

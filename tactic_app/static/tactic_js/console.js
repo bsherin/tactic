@@ -293,7 +293,7 @@ class ConsoleObjectClass {
                 $($(this).closest(".log-panel")).remove()
             }
         });
-        $("#console")[0].scrollTop = $("#console")[0].scrollHeight
+        $("#console")[0].scrollTop = $("#console")[0].scrollHeight;
         postWithCallback(main_id, "clear_console_namespace", {})
      }
 
@@ -318,7 +318,7 @@ class ConsoleObjectClass {
     }
 
     stopConsoleSpinner (data_object) {
-        let uid = data_object.console_id
+        let uid = data_object.console_id;
         let cc = $("#" + uid).parent();
         cc.find(".console-spin-place").html("");
     }
