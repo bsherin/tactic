@@ -265,7 +265,7 @@ class ConsoleObjectClass {
      consoleCodeLog (data_object) {
         const force_open = data_object.force_open;
         let el = $("#" + data_object.console_id).parent().find(".log-code-output");
-        el.html(data_object.message_string);
+        el.append(data_object.message_string);
         if (force_open && !this.console_visible) {
             this.expandConsole()
         }
@@ -273,7 +273,13 @@ class ConsoleObjectClass {
         for (let i = 0; i < scripts.length; i = i+1) {
             eval(scripts[i].innerHTML)
         }
-        this.stopConsoleSpinner(data_object.console_id)
+        this.stopConsoleSpinner(data_object)
+     }
+
+     consoleCodePrint (data_object) {
+        let el = $("#" + data_object.console_id).parent().find(".log-code-output");
+        let mstring = data_object.message_string + "<br>";
+        el.append(mstring)
      }
 
     clearConsole () {
@@ -287,7 +293,8 @@ class ConsoleObjectClass {
                 $($(this).closest(".log-panel")).remove()
             }
         });
-        $("#console")[0].scrollTop = $("#console")[0].scrollHeight
+        $("#console")[0].scrollTop = $("#console")[0].scrollHeight;
+        postWithCallback(main_id, "clear_console_namespace", {})
      }
 
     addConsoleCodearea() {
@@ -310,7 +317,8 @@ class ConsoleObjectClass {
         cc.find(".console-spin-place").html(console_spinner_html);
     }
 
-    stopConsoleSpinner (uid) {
+    stopConsoleSpinner (data_object) {
+        let uid = data_object.console_id;
         let cc = $("#" + uid).parent();
         cc.find(".console-spin-place").html("");
     }

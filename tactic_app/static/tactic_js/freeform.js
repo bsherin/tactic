@@ -257,6 +257,14 @@ class TableObjectClass {
         consoleObject.consoleCodeLog(data_object)
     }
 
+    consoleCodePrint (data_object) {
+        consoleObject.consoleCodePrint(data_object)
+    }
+
+    stopConsoleSpinner (data_object) {
+        consoleObject.stopConsoleSpinner(data_object)
+    }
+
     clearConsole () {
         consoleObject.clearConsole()
      }

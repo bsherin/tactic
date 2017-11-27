@@ -73,6 +73,7 @@ def clear_and_exec_user_code(the_code):
     code_names["functions"] = {}
     return exec_user_code(the_code)
 
+
 # noinspection PyMiss
 # ingConstructor
 # noinspection PyUnusedLocal
@@ -721,45 +722,6 @@ class TileBase(object):
             except:
                 result["info_string"] = result["type"]
         return result
-
-    @task_worthy
-    def exec_console_code(self, data):
-        import StringIO
-        try:
-            self._pipe_dict = data["pipe_dict"]
-            the_code = data["the_code"]
-            the_code = re.sub("(\s*)$", "", the_code)  # remove trailing whie space
-            last_line_matches = re.findall("\n.*$", the_code)  # extract the last line
-            if len(last_line_matches) == 0:
-                last_line = the_code
-                the_code = None
-            else:
-                last_line = last_line_matches[0]
-                last_line = re.sub("^\s*", "", last_line)  # remove initial white space from the last line
-                the_code = re.sub("\n.*$", "", the_code)  # remove last line
-
-            additional_output = ""
-            old_stdout = sys.stdout
-            redirected_output = StringIO.StringIO()
-            sys.stdout = redirected_output
-            try:
-                if the_code is not None:
-                    exec the_code
-                result = eval(last_line)
-                additional_output = str(result)
-                data["result_string"] = redirected_output.getvalue() + "\n" + additional_output
-                sys.stdout = old_stdout
-            except:
-                redirected_output.close()
-                new_redirected_output = StringIO.StringIO()
-                sys.stdout = new_redirected_output
-                exec(data["the_code"])
-                data["result_string"] = new_redirected_output.getvalue()
-                sys.stdout = old_stdout
-
-        except Exception as ex:
-            data["result_string"] = self.handle_exception(ex, "Error executing console code", print_to_console=False)
-        return data
 
     @task_worthy
     def set_current_html(self, data):
@@ -1467,3 +1429,4 @@ class TileBase(object):
 
         the_html += "</tbody></table>"
         return the_html
+

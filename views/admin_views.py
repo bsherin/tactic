@@ -7,6 +7,9 @@ import tactic_app
 from container_manager import ContainerManager
 from user_manager import UserManager
 
+import datetime
+tstring = datetime.datetime.now().strftime("%Y-%H-%M-%S")
+
 admin_user = User.get_user_by_username("admin")
 global_tile_manager = tactic_app.global_tile_manager
 
@@ -28,7 +31,7 @@ def request_update_admin_selector_list(res_type):
 @login_required
 def admin_interface():
     if current_user.get_id() == admin_user.get_id():
-        return render_template("admin_interface.html", use_ssl=str(use_ssl))
+        return render_template("admin_interface.html", use_ssl=str(use_ssl), version_string=tstring)
     else:
         return "not authorized"
 

@@ -14,6 +14,8 @@ from tactic_app.users import User
 repository_user = User.get_user_by_username("repository")
 global_tile_manager = tactic_app.global_tile_manager
 
+import datetime
+tstring = datetime.datetime.now().strftime("%Y-%H-%M-%S")
 
 class CodeManager(UserManageResourceManager):
     collection_list = "code_names"
@@ -121,7 +123,8 @@ class CodeManager(UserManageResourceManager):
                                use_ssl=use_ssl,
                                javascript_source=javascript_source,
                                uses_codemirror="True",
-                               button_groups=self.button_groups)
+                               button_groups=self.button_groups,
+                               version_string=tstring)
 
     def get_code_code(self, code_name):
         user_obj = current_user
@@ -251,7 +254,7 @@ class RepositoryCodeManager(CodeManager):
                                is_repository=True,
                                javascript_source=javascript_source,
                                uses_codemirror="True",
-                               button_groups=self.button_groups)
+                               button_groups=self.button_groups, version_string=tstring)
 
     def repository_get_code_code(self, code_name):
         user_obj = repository_user

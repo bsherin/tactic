@@ -1,3 +1,4 @@
+import datetime
 from flask import render_template, request, jsonify
 from flask.ext.login import login_user, login_required, logout_user
 from flask_login import current_user
@@ -17,19 +18,20 @@ admin_user = User.get_user_by_username("admin")
 # def mark_sess_modified():
 #   session.modified = True
 
+tstring = datetime.datetime.now().strftime("%Y-%H-%M-%S")
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     print "entering login view"
-    return render_template('auth/login.html', after_register="no", message="", alert_type="")
+    return render_template('auth/login.html', after_register="no", message="", alert_type="", version_string=tstring)
 
 
 @app.route('/login_after_register', methods=['GET', 'POST'])
 def login_after_register():
     print "entering login view"
     return render_template('auth/login.html', show_message="yes",
-                           message="You can now log in.", alert_type="alert-success")
+                           message="You can now log in.", alert_type="alert-success", version_string=tstring)
 
 
 @app.route('/attempt_login', methods=['GET', 'POST'])
@@ -70,13 +72,13 @@ def logout(page_id):
     tactic_app.host_worker.post_task("host", "destroy_a_users_containers", {"user_id": user_id})
     logout_user()
     return render_template('auth/login.html', show_message="yes",
-                           message="You have been logged out.", alert_type="alert-info")
+                           message="You have been logged out.", alert_type="alert-info", version_string=tstring)
 
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if ANYONE_CAN_REGISTER or (current_user.username == "admin"):
-        return render_template('auth/register.html')
+        return render_template('auth/register.html', version_string=tstring)
     else:
         return render_template
 
@@ -84,7 +86,7 @@ def register():
 @app.route('/user_duplicate', methods=['GET', 'POST'])
 def user_duplicate():
     if ANYONE_CAN_REGISTER or (current_user.username == "admin"):
-        return render_template('auth/duplicate_user.html')
+        return render_template('auth/duplicate_user.html', version_string=tstring)
     else:
         return render_template
 
@@ -137,7 +139,7 @@ def account_info():
     for key, val in user_data.items():
         if not key == "username":
             field_list.append({"name": key, "val": val})
-    return render_template('auth/account.html', fields=field_list)
+    return render_template('auth/account.html', fields=field_list, version_string=tstring)
 
 
 @app.route('/update_account_info', methods=['GET', 'POST'])

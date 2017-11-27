@@ -258,7 +258,7 @@ class TileObject {
             const data_dict = {};
             data_dict["main_id"] = main_id;
             data_dict["tile_id"] = my_tile_id;
-            postWithCallback(main_id, "RemoveTile", data_dict)
+            postWithCallback(main_id, "RemoveTile", data_dict);
             delete tile_dict[my_tile_id]
         });
     }

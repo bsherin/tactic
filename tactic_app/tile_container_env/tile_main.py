@@ -10,6 +10,7 @@ from tile_env import class_info
 from tile_env import exec_tile_code
 import tile_base
 from tile_base import clear_and_exec_user_code, TileBase
+from pseudo_tile_base import PseudoTileClass
 import cPickle
 from bson.binary import Binary
 import inspect
@@ -186,17 +187,6 @@ class TileWorker(QWorker):
     @task_worthy
     def render_tile(self, data):
         return self.tile_instance.render_me(data)
-
-
-class PseudoTileClass(TileBase):
-    category = "word"
-    exports = []
-    measures = ["raw_freq", "student_t", "chi_sq", "pmi", "likelihood_ratio"]
-
-    def __init__(self, main_id_ignored=None, tile_id_ignored=None, tile_name=None):
-        TileBase.__init__(self, tile_name=tile_name)
-        self.is_pseudo = True
-        return
 
 
 if __name__ == "__main__":
