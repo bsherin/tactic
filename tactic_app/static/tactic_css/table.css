@@ -89,8 +89,11 @@
   #table-area td:last-child, #table-area th:last-child {
     border-right: 1px solid #ddd; }
 
-.ui-resizable-e {
-  width: 15px; }
+.ui-resizable-e, .ui-resizable-w {
+  width: 25px !important; }
+
+.ui-resizable-s, .ui-resizable-n {
+  height: 25px !important; }
 
 #table-icon {
   -webkit-appearance: none;

@@ -2,6 +2,8 @@
 const tile_dict = {};
 const MAX_STARTING_TILE_WIDTH = 450;
 
+const using_touch = "ontouchend" in document;
+
 function showZoomedImage(el) {
     const src = el.src;
     const image_string = "<img class='output-plot' src='" + src + "' lt='Image Placeholder'>";
@@ -266,36 +268,43 @@ class TileObject {
     shrinkMe  (callback){
         dirty = true;
         const el = $(this.full_selector());
-        this.saved_size = el.outerHeight();
-        postWithCallback(this.tile_id, "ShrinkTile", {});
-        el.find(".tile-body").fadeOut("fast", function () {
-            const hheight = el.find(".tile-panel-heading").outerHeight();
-            el.outerHeight(hheight);
-            el.resizable('destroy');
-            el.find(".triangle-bottom").hide();
-            el.find(".triangle-right").show();
-            if (arguments.length == 1) {
-                callback()
-            }
-        })
+        // Don't want to shrink if already shrunk. This was getting called twice on mobile
+        if ($(this.full_selector()).find(".tile-body").css("display") != "none") {
+            this.saved_size = el.outerHeight();
+            postWithCallback(this.tile_id, "ShrinkTile", {});
+            el.find(".tile-body").fadeOut("fast", function () {
+                const hheight = el.find(".tile-panel-heading").outerHeight();
+                el.outerHeight(hheight);
+                el.resizable('destroy');
+                el.find(".triangle-bottom").hide();
+                el.find(".triangle-right").show();
+                if (arguments.length == 1) {
+                    callback()
+                }
+            })
+        }
+
     }
 
     expandMe  (){
         dirty = true;
         const el = $(this.full_selector());
-        el.outerHeight(this.saved_size);
-        $(this.full_selector()).find(".triangle-right").hide();
-        $(this.full_selector()).find(".triangle-bottom").show();
-        $(this.full_selector()).find(".tile-body").fadeIn();
-        const self = this;
-        postWithCallback(this.tile_id, "ExpandTile", {});
-        $(this.full_selector()).resizable({
-                handles: "se",
-                resize: self.resize_tile_area,
-                stop  () {
-                    self.broadcastTileSize()
-                }
-            });
+        // The next line prevents calling this twice
+        if ($(this.full_selector()).find(".tile-body").css("display") == "none") {
+            el.outerHeight(this.saved_size);
+            $(this.full_selector()).find(".triangle-right").hide();
+            $(this.full_selector()).find(".triangle-bottom").show();
+            $(this.full_selector()).find(".tile-body").fadeIn();
+            const self = this;
+            postWithCallback(this.tile_id, "ExpandTile", {});
+            $(this.full_selector()).resizable({
+                    handles: "se",
+                    resize: self.resize_tile_area,
+                    stop  () {
+                        self.broadcastTileSize()
+                    }
+                });
+        }
     }
 
     resize_tile_area  (event, ui) {
@@ -387,7 +396,7 @@ class TileObject {
         const full_frontal_selector = this.full_selector() + " .front";
         let the_id;
 
-        $(this.full_selector()).on('click touchstart', ".header-but", function (e) {
+        $(this.full_selector()).on('click', ".header-but", function (e) {
             the_id = $(e.target).closest(".tile-panel").attr("id");
             const tobject = tile_dict[the_id];
             if ($(e.target).hasClass("header-but")){ // this is necessary to make this work on firefox
