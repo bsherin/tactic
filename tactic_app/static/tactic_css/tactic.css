@@ -192,8 +192,11 @@ a[role="tab"] {
   width: 350px; }
 
 /* creator */
-.ui-resizable-s {
-  width: 15px; }
+.ui-resizable-e, .ui-resizable-w {
+  width: 25px !important; }
+
+.ui-resizable-s, .ui-resizable-n {
+  height: 25px !important; }
 
 #creator-resources .tab-pane {
   padding: 10px;
