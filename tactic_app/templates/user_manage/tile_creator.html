@@ -25,21 +25,21 @@
                     <div class="btn-toolbar" style="float:right" role="toolbar" >
                         <div class="btn-group btn-group-sm" role="group">
                             <button value="save_button" type="button" class="btn btn-default">Save</button>
-                            <button value="checkpoint_button" type="button" class="btn btn-default">Save+Checkpoint</button>
                             <button value="load_button" type="button" class="btn btn-default">Save+Load</button>
+                            <button value="checkpoint_button" type="button" class="btn btn-default">Checkpoint</button>
                             <button value="share_button" type="button" class="btn btn-default">Share</button>
 
                         </div>
                         <div class="btn-group btn-group-sm" role="group">
                             <button type="button" value="history_button" class="btn btn-default">History</button>
                             <button type="button" value="differ_button" class="btn btn-default">Compare</button>
-                            <button type="button" value="change_theme_button" class="btn btn-default">Toggle Theme</button>
+                            <button type="button" value="change_theme_button" class="btn btn-default">Theme</button>
                             <button type="button" value="show_api_button" class="btn btn-default" >API</button>
                         </div>
                     </div>
                 </div>
 
-                <div id="drawplotboundingarea" class="bootstrap-border" style="display: none; border-bottom-width: 1px; border-bottom-style: solid; margin-bottom: 20px; clear: left">
+                <div id="drawplotboundingarea" class="bootstrap-border" style="display: none; border-bottom-width: 1px; border-bottom-style: solid; margin-bottom: 20px; clear: both">
                     <h4 style="display:inline-block; margin-bottom:0px">draw_plot</h4>
                         <div class="btn-group" style= "margin-top: 10px; margin-bottom: 5px; float:right" role="group">
                            {% for catdict in api_dlist%}
@@ -56,7 +56,7 @@
                     </div>
                     <div id="drawplotcodearea" style="overflow-y: auto; clear:right"></div>
                 </div>
-                <div id="jscriptboundingarea" class="bootstrap-border" style="display: none; border-bottom-width: 1px; border-bottom-style: solid; margin-bottom: 20px; clear: left">
+                <div id="jscriptboundingarea" class="bootstrap-border" style="display: none; border-bottom-width: 1px; border-bottom-style: solid; margin-bottom: 20px; clear: both">
                     <h4 style="display:inline-block; margin-bottom:0px">d3javascript</h4>
                     <div id="jscriptcodearea" style="overflow-y: auto; clear:right"></div>
                 </div>
