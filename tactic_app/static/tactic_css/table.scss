@@ -167,9 +167,18 @@ $selected-column-background: #e0e0e0;
     }
 }
 
-.ui-resizable-e {
-    width: 15px;
+.ui-resizable-e, .ui-resizable-w {
+        width: 25px !important;
 }
+
+.ui-resizable-s, .ui-resizable-n{
+        height: 25px !important;
+}
+
+//.ui-resizable-se {
+//        height: 25px !important;
+//        width: 25px !important;
+//}
 
 #table-icon {
     -webkit-appearance: none;
