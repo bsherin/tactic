@@ -5,7 +5,7 @@
 {% block styles %}
     <link rel="stylesheet" href="{{url_for('static', filename='css/jquery-ui.min.css')}}">
     <link rel="stylesheet" href="{{url_for('static', filename='css/jquery.tag-editor.css')}}">
-    <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/loader.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/loader.css', version_string=tstring)}}">
 {% endblock %}
 
 {% block morenavbar %}
@@ -174,11 +174,11 @@
     <script src="{{url_for('static', filename='js/javascript.js')}}"></script>
     <script src="{{url_for('static', filename='js/jquery.caret.min.js')}}"></script>
     <script src="{{url_for('static', filename='js/jquery.tag-editor.min.js')}}"></script>
-    <script src="{{url_for('static', filename='tactic_js/resource_manager.js')}}"></script>
-    <script src="{{url_for('static', filename='tactic_js/creator_resource_manager.js')}}"></script>
-    <script src="{{url_for('static', filename='tactic_js/resource_viewer_class.js')}}"></script>
-    <script src="{{url_for('static', filename='tactic_js/module_editor_abstract.js')}}"></script>
-    <script src="{{url_for('static', filename='tactic_js/tile_creator.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/resource_manager.js', version_string=tstring)}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/creator_resource_manager.js', version_string=tstring)}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/resource_viewer_class.js', version_string=tstring)}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/module_editor_abstract.js', version_string=tstring)}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/tile_creator.js', version_string=tstring)}}"></script>
     <script>
         const user_id = "{{current_user.get_id()}}";
         const option_types_raw = {{option_types|safe}};

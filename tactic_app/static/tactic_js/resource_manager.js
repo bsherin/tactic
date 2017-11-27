@@ -316,6 +316,22 @@ class ResourceManager {
         }
     }
 
+    go_to_next_row() {
+        let rindex = this.get_active_selector_button()[0].rowIndex;
+        if (rindex < this.get_all_selector_buttons().length) {
+            let sbs = this.get_all_selector_buttons();
+            this.selector_click(sbs[rindex]) // Note that rindex is already one larger because of heading row
+        }
+    }
+
+    go_to_previous_row() {
+        let rindex = this.get_active_selector_button()[0].rowIndex;
+        if (rindex > 1) {
+            let sbs = this.get_all_selector_buttons();
+            this.selector_click(sbs[rindex - 2]) // Note that rindex is already one larger because of heading row
+        }
+    }
+
     select_resource_button(res_name) {
         if (res_name == null) {
             const all_selectors = this.get_all_selector_buttons();

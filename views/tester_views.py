@@ -10,6 +10,9 @@ from wtforms.validators import Required, Length, Regexp, EqualTo
 from tactic_app import app  # global_stuff
 import tactic_app
 
+import datetime
+tstring = datetime.datetime.now().strftime("%Y-%H-%M-%S")
+
 @app.route('/direct_user_manage/<username>/<password>', methods=['GET', 'POST'])
 def direct_user_manage(username, password):
     user = User.get_user_by_username(username)
@@ -74,7 +77,7 @@ def direct_project(project_name):
     user_obj = current_user
     data = {"project_name": project_name, "user_id": user_obj.get_id()}
     # tactic_app.host_worker.main_project(data) # This needs to not be here.
-    return render_template("stub_loader.html", data_dict=data, post_task="main_project")
+    return render_template("stub_loader.html", data_dict=data, post_task="main_project", version_string=tstring)
 
 
 @app.route('/direct_collection/<collection_name>/<username>/<password>', methods=['GET', 'POST'])

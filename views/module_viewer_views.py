@@ -10,6 +10,8 @@ from tactic_app.tile_code_parser import get_functions_full_code, get_starting_li
 from tactic_app.tile_code_parser import get_base_classes, extract_type
 
 from user_manage_views import tile_manager
+import datetime
+tstring = datetime.datetime.now().strftime("%Y-%H-%M-%S")
 
 
 indent_unit = "    "
@@ -57,7 +59,7 @@ def build_code(data_dict):
                                 jscript_code=data_dict["jscript_body"],
                                 extra_methods=extra_methods,
                                 render_content_body=render_content_body,
-                                draw_plot_body=draw_plot_body)
+                                draw_plot_body=draw_plot_body, version_string=tstring)
     return full_code
 
 
@@ -125,7 +127,7 @@ def show_history_viewer(module_name):
                            use_ssl=use_ssl,
                            javascript_source=javascript_source,
                            uses_codemirror="True",
-                           button_groups=button_groups)
+                           button_groups=button_groups, version_string=tstring)
 
 
 @app.route('/show_tile_differ/<module_name>', methods=['get', 'post'])
@@ -143,7 +145,7 @@ def show_tile_differ(module_name):
                            use_ssl=use_ssl,
                            javascript_source=javascript_source,
                            uses_codemirror="True",
-                           button_groups=button_groups)
+                           button_groups=button_groups, version_string=tstring)
 
 
 

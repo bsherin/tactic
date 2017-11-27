@@ -5,8 +5,8 @@
 
 {% block styles %}
     <link rel="stylesheet" href="{{url_for('static', filename='css/jquery-ui.min.css')}}">
-    <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/loader.css')}}">
-    <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/table.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/loader.css', version_string=tstring)}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/table.css', version_string=tstring)}}">
 {% endblock %}
 
 {% block page_content %}
@@ -34,9 +34,9 @@
 {% block scripts %}
     <script src="{{url_for('static', filename='js/sorttable.js')}}"></script>
     <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
-    <script src="{{url_for('static', filename='tactic_js/resource_manager.js')}}"></script>
-    <script src="{{url_for('static', filename='tactic_js/admin_resource_manager.js')}}"></script>
-    <script src="{{url_for('static', filename='tactic_js/administer.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/resource_manager.js', version_string=tstring)}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/admin_resource_manager.js', version_string=tstring)}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/administer.js', version_string=tstring)}}"></script>
     <script>
         var user_id = "{{current_user.get_id()}}";
         var use_ssl = "{{use_ssl}}"=="True";

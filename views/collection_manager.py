@@ -18,6 +18,8 @@ repository_user = User.get_user_by_username("repository")
 AUTOSPLIT = True
 AUTOSPLIT_SIZE = 10000
 
+import datetime
+tstring = datetime.datetime.now().strftime("%Y-%H-%M-%S")
 
 # noinspection PyMethodMayBeStatic,PyBroadException
 class CollectionManager(UserManageResourceManager):
@@ -50,7 +52,8 @@ class CollectionManager(UserManageResourceManager):
         except ContainerCreateError:
             return render_template("error_window_template.html",
                                    window_tile="Load Failed",
-                                   error_string="Load failed: Could not create container")
+                                   error_string="Load failed: Could not create container",
+                                   version_string=tstring)
 
         global_tile_manager.add_user(user_obj.username)
 
@@ -87,7 +90,8 @@ class CollectionManager(UserManageResourceManager):
                                is_table=(doc_type == "table"),
                                short_collection_name=short_collection_name,
                                new_tile_info="",
-                               uses_codemirror="True")
+                               uses_codemirror="True",
+                               version_string=tstring)
 
     def rename_me(self, old_name):
         try:

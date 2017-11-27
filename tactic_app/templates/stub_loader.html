@@ -7,7 +7,7 @@
 
 {% block styles %}
     <link rel="stylesheet" href="{{url_for('static', filename='css/jquery-ui.min.css')}}">
-    <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/loader.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/loader.css', v=version_string)}}">
 {% endblock %}
 
 {% block page_content %}
@@ -20,7 +20,7 @@
 {% block scripts %}
     <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
     <script src="{{url_for('static', filename='js/tab.js')}}"></script>
-    <script src="{{url_for('static', filename='tactic_js/stub_loader.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/stub_loader.js', v=version_string)}}"></script>
     <script>
         let user_id = "{{current_user.get_id()}}";
         let use_ssl = "{{use_ssl}}"=="True";

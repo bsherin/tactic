@@ -6,10 +6,10 @@
       <meta http-equiv="X-UA-Compatible" content="IE=edge">
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap.min.css')}}">
-      <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/tactic.css')}}">
+      <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/tactic.css', v=version_string)}}">
       <link rel="stylesheet" href="{{url_for('static', filename='css/alertify_css/alertify.min.css')}}"/>
-      <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/tactic_alertify_theme.css')}}" />
-     <link rel="shortcut icon" href="{{url_for('static', filename='tactic_css/favicon.ico')}}" />
+      <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/tactic_alertify_theme.css', v=version_string)}}" />
+     <link rel="shortcut icon" href="{{url_for('static', filename='tactic_css/favicon.ico', v=version_string)}}" />
   <link rel="icon" type="image/png" href="{{url_for('static', filename='tactic_css/icons/iris-and-pupil-16-12855.png')}}" sizes="16x16">
   <link rel="icon" type="image/png" href="{{url_for('static', filename='tactic_css/icons/iris-and-pupil-24-12855.png')}}" sizes="24x24">
   <link rel="icon" type="image/png" href="{{url_for('static', filename='tactic_css/icons/iris-and-pupil-32-12855.png')}}" sizes="32x32">
@@ -81,8 +81,8 @@
     <script src="{{url_for('static', filename='js/jquery.ui.touch-punch.min.js')}}"></script>
     <script src="{{url_for('static', filename='js/bootstrap.min.js')}}"></script>
     <script src="{{url_for('static', filename='js/mustache.js')}}"></script>
-    <script src="{{url_for('static', filename='tactic_js/utilities.js')}}"></script>
-    <script src="{{url_for('static', filename='tactic_js/communication.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/utilities.js', v=version_string)}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/communication.js', v=version_string)}}"></script>
     {% if uses_codemirror == "True" %}
         <script src="{{url_for('static', filename='js/codemirror.js')}}"></script>
         <script src="{{url_for('static', filename='js/codemirror/search.js')}}"></script>
@@ -95,7 +95,7 @@
         <script src="{{url_for('static', filename='js/matchbrackets.js')}}"></script>
         <script src="{{url_for('static', filename='js/show-hint.js')}}"></script>
         <script src="{{url_for('static', filename='js/match-highlighter.js')}}"></script>
-        <script src="{{url_for('static', filename='tactic_js/tactic-anyword-hint.js')}}"></script>
+        <script src="{{url_for('static', filename='tactic_js/tactic-anyword-hint.js', v=version_string)}}"></script>
         <script src="{{url_for('static', filename='js/closebrackets.js')}}"></script>
     {% endif %}
     <script type="text/javascript">
