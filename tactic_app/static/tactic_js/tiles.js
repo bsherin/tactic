@@ -4,6 +4,13 @@ const MAX_STARTING_TILE_WIDTH = 450;
 
 const using_touch = "ontouchend" in document;
 
+if (using_touch) {
+    click_event = "touchstart"
+}
+else {
+    click_event = "click"
+}
+
 function showZoomedImage(el) {
     const src = el.src;
     const image_string = "<img class='output-plot' src='" + src + "' lt='Image Placeholder'>";
@@ -53,7 +60,7 @@ class TileObject {
             handles: "se",
             resize: self.resize_tile_area,
             stop: function () {
-                self.broadcastTileSize()
+                self.broadcastTileSize();
             }
         });
         // tactic_todo Is this stuff with my_tile_id really needed? Note that the id has the tile_id.
@@ -396,7 +403,7 @@ class TileObject {
         const full_frontal_selector = this.full_selector() + " .front";
         let the_id;
 
-        $(this.full_selector()).on('click', ".header-but", function (e) {
+        $(this.full_selector()).on(click_event, ".header-but", function (e) {
             the_id = $(e.target).closest(".tile-panel").attr("id");
             const tobject = tile_dict[the_id];
             if ($(e.target).hasClass("header-but")){ // this is necessary to make this work on firefox
@@ -408,7 +415,7 @@ class TileObject {
             tobject[tobject.tileHeaderButtons[the_id]]()
         });
 
-        $(full_frontal_selector).on('click', '.word-clickable', function(e) {
+        $(full_frontal_selector).on(click_event, '.word-clickable', function(e) {
             const tile_id = jQuery.data(e, "my_tile_id");
             const s = window.getSelection();
             const range = s.getRangeAt(0);
@@ -445,7 +452,7 @@ class TileObject {
               postWithCallback(data_dict["tile_id"], "TileWordClick", data_dict)
         });
 
-        $(full_frontal_selector).on('click', '.cell-clickable', function(e) {
+        $(full_frontal_selector).on(click_event, '.cell-clickable', function(e) {
             const tile_id = jQuery.data(e, "my_tile_id");
             const txt = $(this).text();
 
@@ -465,7 +472,7 @@ class TileObject {
             postWithCallback(data_dict["tile_id"], "TileCellClick", data_dict)
         });
 
-        $(full_frontal_selector).on('click', '.element-clickable', function(e) {
+        $(full_frontal_selector).on(click_event, '.element-clickable', function(e) {
             const tile_id = jQuery.data(e, "my_tile_id");
 
             const data_dict = {};
@@ -489,7 +496,7 @@ class TileObject {
             postWithCallback(data_dict["tile_id"], "TileElementClick", data_dict)
         });
 
-        $(full_frontal_selector).on('click', '.row-clickable', function(e) {
+        $(full_frontal_selector).on(click_event, '.row-clickable', function(e) {
             const cells = $(this).children();
             const row_vals = [];
             cells.each(function() {
@@ -513,7 +520,7 @@ class TileObject {
             postWithCallback(data_dict["tile_id"], "TileRowClick", data_dict)
         });
 
-        $(full_frontal_selector).on('click', 'button', function(e) {
+        $(full_frontal_selector).on(click_event, 'button', function(e) {
             const p = $(e.target).closest(".tile-panel")[0];
             const data = {};
             data["tile_id"] = $(p).data("my_tile_id");
