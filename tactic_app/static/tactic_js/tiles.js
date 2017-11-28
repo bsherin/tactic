@@ -226,6 +226,27 @@ class TileObject {
 
     displayFormContent  (data) {
         $(this.full_selector() + " #form-display-area").html(data["html"]);
+        let self = this;
+        $(this.full_selector() + " .codearea").each(function () {
+            const theId = $(this).attr("id");
+            self.codeMirrorObjects[theId] = CodeMirror.fromTextArea(this, {
+                matchBrackets: true,
+                highlightSelectionMatches: false,
+                autoCloseBrackets: true,
+                indentUnit: 4
+            });
+            const cm_element = $($(this).siblings(".CodeMirror")[0]);
+            cm_element.resizable({handles: "se"});
+            cm_element.height(100)
+        });
+    }
+
+    refreshCodeAreas () {
+        let self = this;
+        $(this.full_selector() + " .codearea").each(function () {
+            const theId = $(this).attr("id");
+            self.codeMirrorObjects[theId].refresh()
+        })
     }
 
     startSpinner () {
@@ -358,6 +379,7 @@ class TileObject {
     }
     showOptions  (){
         $("#tile_body_" + this.tile_id + " .back").show("blind");
+        this.refreshCodeAreas()
     }
 
     toggleContainerLog  () {
