@@ -190,7 +190,7 @@ class TileWorker(QWorker):
             else:
                 self.tile_instance.doc_type = "table"
             if not self.tile_instance.exports:
-                tile_instance.exports = []
+                self.tile_instance.exports = []
             data["exports"] = self.tile_instance.exports
             print("leaving instantiate_tile_class")
             data["success"] = True

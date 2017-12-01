@@ -637,8 +637,8 @@ class mainWindow(object):
         print "dealing with exports"
         exports = instantiate_result["exports"]
         if len(exports) > 0:
-            if not isinstance(export_list[0], dict):  # legacy old exports specified as list of strings
-                export_list = [{"name": exp, "tags": ""} for exp in export_list]
+            if not isinstance(exports[0], dict):  # legacy old exports specified as list of strings
+                export_list = [{"name": exp, "tags": ""} for exp in exports]
             self._pipe_dict[tile_container_id] = {}
             for export in exports:
                 self._pipe_dict[tile_container_id][tile_name + "_" + export["name"]] = {
@@ -820,8 +820,8 @@ class mainWindow(object):
     @task_worthy
     def got_console_print(self, data):
         self.mworker.emit_table_message("consoleCodePrint", {"message_string": data["result_string"],
-                                                           "console_id": data["console_id"],
-                                                           "force_open": True})
+                                                             "console_id": data["console_id"],
+                                                             "force_open": True})
         return {"success": True}
 
     @task_worthy
@@ -1099,7 +1099,8 @@ class mainWindow(object):
                      "list_names": the_lists["list_names"],
                      "class_names": the_lists["class_names"],
                      "function_names": the_lists["function_names"],
-                     "collection_names": the_lists["collection_names"]}
+                     "collection_names": the_lists["collection_names"],
+                     "other_tile_names": self.get_other_tile_names(tile_id)}
         reload_dict["form_info"] = form_info
         print "reinstantiating"
         result = self.mworker.post_and_wait(tile_id, "reinstantiate_tile", reload_dict)
