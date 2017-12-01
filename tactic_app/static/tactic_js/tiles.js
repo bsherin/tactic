@@ -175,14 +175,19 @@ class TileObject {
 
     reloadMe () {
         const self = this;
-        const data_dict = {"tile_id": this.tile_id};
+        const data_dict = {"tile_id": this.tile_id, "tile_name": this.tile_name};
         postWithCallback(main_id, "reload_tile", data_dict, reload_success);
 
         function reload_success (data) {
             if (data.success) {
                 self.displayFormContent(data);
-                self.spin_and_refresh();
                 dirty = true;
+                if (data.options_changed) {
+                    self.showOptions()
+                }
+                else {
+                    self.spin_and_refresh()
+                }
             }
         }
     }

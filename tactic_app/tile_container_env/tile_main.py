@@ -73,7 +73,7 @@ class TileWorker(QWorker):
             opt_dict = self.tile_instance.options
             export_list = self.tile_instance.exports
             if len(export_list) > 0:
-                if not isinstance(export_list[0], dict):
+                if not isinstance(export_list[0], dict):  # legacy old exports specified as list of strings
                     export_list = [{"name": exp, "tags": ""} for exp in export_list]
         except Exception as ex:
             return self.handle_exception(ex, "Error extracting options from source")
@@ -125,17 +125,36 @@ class TileWorker(QWorker):
         except Exception as ex:
             return self.handle_exception(ex, "Error loading source")
 
+    def extract_option_names(self, opt_dict):
+        opt_names = []
+        for opt in opt_dict:
+            opt_names.append(opt["name"])
+        return opt_names
+
     @task_worthy
     def reinstantiate_tile(self, reload_dict):
         try:
             print("entering reinstantiate_tile_class")
+            old_options = self.tile_instance.options
             self.tile_instance = class_info["tile_class"](None, None, tile_name=reload_dict["tile_name"])
+            options_changed = not self.tile_instance.options == old_options
             self.handler_instances["tilebase"] = self.tile_instance
+            if options_changed:  # Have to deal with case where an option no longer exists and shouldn't be copied
+                old_names = self.extract_option_names(old_options)
+                new_names = self.extract_option_names(self.tile_instance.options)
+                for attr in reload_dict.keys():
+                    if attr in old_names and attr not in new_names:
+                        print "removing options " + attr
+                        del reload_dict[attr]
             for (attr, val) in reload_dict.items():
                 setattr(self.tile_instance, attr, val)
             form_html = self.tile_instance.create_form_html(reload_dict["form_info"])["form_html"]
             print("leaving reinstantiate_tile_class")
-            return {"success": True, "form_html": form_html}
+            if not self.tile_instance.exports:
+                self.tile_instance.exports = []
+            return {"success": True, "form_html": form_html,
+                    "exports": self.tile_instance.exports,
+                    "options_changed": options_changed}
         except Exception as ex:
             return self.handle_exception(ex, "Error reinstantiating tile")
 
@@ -170,6 +189,8 @@ class TileWorker(QWorker):
                 self.tile_instance.doc_type = data["doc_type"]
             else:
                 self.tile_instance.doc_type = "table"
+            if not self.tile_instance.exports:
+                self.tile_instance.exports = []
             data["exports"] = self.tile_instance.exports
             print("leaving instantiate_tile_class")
             data["success"] = True
