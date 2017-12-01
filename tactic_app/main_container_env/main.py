@@ -639,8 +639,7 @@ class mainWindow(object):
         if len(exports) > 0:
             if not isinstance(exports[0], dict):
                 exports = [{"name": exp, "tags": ""} for exp in exports]
-            if tile_container_id not in self._pipe_dict:
-                self._pipe_dict[tile_container_id] = {}
+            self._pipe_dict[tile_container_id] = {}
             for export in exports:
                 self._pipe_dict[tile_container_id][tile_name + "_" + export["name"]] = {
                     "export_name": export["name"],
@@ -1102,12 +1101,31 @@ class mainWindow(object):
                      "collection_names": the_lists["collection_names"]}
         reload_dict["form_info"] = form_info
         print "reinstantiating"
-        result = self.mworker.post_and_wait(tile_id, "reinstantiate_tile", reload_dict)
+        result = self.mworker.post_and_wait(tile_id, "reinstantiate_tile", reload_dict)  # tactic working
+
         if result["success"]:
             print "leaving reload tile with success"
+            exports = result["exports"]
+            if len(exports) == 0:
+                if tile_id in self._pipe_dict:
+                    del self._pipe_dict[tile_id]
+            else:
+                self._pipe_dict[tile_id] = {}
+                for export in exports:
+                    self._pipe_dict[tile_id][ddict["tile_name"] + "_" + export["name"]] = {
+                        "export_name": export["name"],
+                        "export_tags": export["tags"],
+                        "tile_id": tile_id}
+            print "rebuilding tile forms"
+            form_info["pipe_dict"] = self._pipe_dict
+            for tid in self.tile_instances:
+                if not tid == tile_id:
+                    form_info["other_tile_names"] = self.get_other_tile_names(tid)
+                    self.mworker.post_task(tid, "RebuildTileForms", form_info)
+            self.mworker.emit_export_viewer_message("update_exports_popup", {})
             return {"success": True, "html": result["form_html"]}
         else:
-            print "encounterd problem in reload_tile"
+            print "encountered problem in reload_tile"
             raise Exception(result["message_string"])
 
     @task_worthy

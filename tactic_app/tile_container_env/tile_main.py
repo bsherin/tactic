@@ -135,7 +135,7 @@ class TileWorker(QWorker):
                 setattr(self.tile_instance, attr, val)
             form_html = self.tile_instance.create_form_html(reload_dict["form_info"])["form_html"]
             print("leaving reinstantiate_tile_class")
-            return {"success": True, "form_html": form_html}
+            return {"success": True, "form_html": form_html, "exports": self.tile_instance.exports}
         except Exception as ex:
             return self.handle_exception(ex, "Error reinstantiating tile")
 
