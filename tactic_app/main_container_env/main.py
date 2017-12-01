@@ -637,10 +637,9 @@ class mainWindow(object):
         print "dealing with exports"
         exports = instantiate_result["exports"]
         if len(exports) > 0:
-            if not isinstance(exports[0], dict):
-                exports = [{"name": exp, "tags": ""} for exp in exports]
-            if tile_container_id not in self._pipe_dict:
-                self._pipe_dict[tile_container_id] = {}
+            if not isinstance(exports[0], dict):  # legacy old exports specified as list of strings
+                export_list = [{"name": exp, "tags": ""} for exp in exports]
+            self._pipe_dict[tile_container_id] = {}
             for export in exports:
                 self._pipe_dict[tile_container_id][tile_name + "_" + export["name"]] = {
                     "export_name": export["name"],
@@ -821,8 +820,8 @@ class mainWindow(object):
     @task_worthy
     def got_console_print(self, data):
         self.mworker.emit_table_message("consoleCodePrint", {"message_string": data["result_string"],
-                                                           "console_id": data["console_id"],
-                                                           "force_open": True})
+                                                             "console_id": data["console_id"],
+                                                             "force_open": True})
         return {"success": True}
 
     @task_worthy
@@ -854,6 +853,7 @@ class mainWindow(object):
 
     @task_worthy
     def get_exports_list_html(self, data):
+        print "entering get_exports_list_html"
         the_html = ""
         export_list = []
         for tile_id, tile_entry in self._pipe_dict.items():
@@ -1099,15 +1099,37 @@ class mainWindow(object):
                      "list_names": the_lists["list_names"],
                      "class_names": the_lists["class_names"],
                      "function_names": the_lists["function_names"],
-                     "collection_names": the_lists["collection_names"]}
+                     "collection_names": the_lists["collection_names"],
+                     "other_tile_names": self.get_other_tile_names(tile_id)}
         reload_dict["form_info"] = form_info
         print "reinstantiating"
         result = self.mworker.post_and_wait(tile_id, "reinstantiate_tile", reload_dict)
+
         if result["success"]:
             print "leaving reload tile with success"
-            return {"success": True, "html": result["form_html"]}
+            exports = result["exports"]
+            if len(exports) == 0:
+                if tile_id in self._pipe_dict:
+                    del self._pipe_dict[tile_id]
+            else:
+                self._pipe_dict[tile_id] = {}
+                if not isinstance(exports[0], dict):
+                    exports = [{"name": exp, "tags": ""} for exp in exports]  # legacy old form of exports list of strings
+                for export in exports:
+                    self._pipe_dict[tile_id][ddict["tile_name"] + "_" + export["name"]] = {
+                        "export_name": export["name"],
+                        "export_tags": export["tags"],
+                        "tile_id": tile_id}
+            print "rebuilding tile forms"
+            form_info["pipe_dict"] = self._pipe_dict
+            for tid in self.tile_instances:
+                if not tid == tile_id:
+                    form_info["other_tile_names"] = self.get_other_tile_names(tid)
+                    self.mworker.post_task(tid, "RebuildTileForms", form_info)
+            self.mworker.emit_export_viewer_message("update_exports_popup", {})
+            return {"success": True, "html": result["form_html"], "options_changed": result["options_changed"]}
         else:
-            print "encounterd problem in reload_tile"
+            print "encountered problem in reload_tile"
             raise Exception(result["message_string"])
 
     @task_worthy
