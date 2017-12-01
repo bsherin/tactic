@@ -181,8 +181,13 @@ class TileObject {
         function reload_success (data) {
             if (data.success) {
                 self.displayFormContent(data);
-                self.spin_and_refresh();
                 dirty = true;
+                if (data.options_changed) {
+                    self.showOptions()
+                }
+                else {
+                    self.spin_and_refresh()
+                }
             }
         }
     }
