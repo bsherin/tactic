@@ -636,9 +636,10 @@ class mainWindow(object):
 
         print "dealing with exports"
         exports = instantiate_result["exports"]
+        print str(exports)
         if len(exports) > 0:
             if not isinstance(exports[0], dict):  # legacy old exports specified as list of strings
-                export_list = [{"name": exp, "tags": ""} for exp in exports]
+                exports = [{"name": exp, "tags": ""} for exp in exports]
             self._pipe_dict[tile_container_id] = {}
             for export in exports:
                 self._pipe_dict[tile_container_id][tile_name + "_" + export["name"]] = {
