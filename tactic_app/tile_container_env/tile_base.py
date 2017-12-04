@@ -150,8 +150,8 @@ class TileBase(object):
     Basic Machinery to make the tile work.
     """
 
-    def post_event(self, event_name):
-        self.tworker.post_task(self.tworker.my_id, event_name)
+    def post_event(self, event_name, task_data=None):
+        self.tworker.post_task(self.tworker.my_id, event_name, task_data)
         return
 
     @property

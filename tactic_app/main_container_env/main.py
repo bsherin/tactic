@@ -636,7 +636,6 @@ class mainWindow(object):
 
         print "dealing with exports"
         exports = instantiate_result["exports"]
-        print str(exports)
         if len(exports) > 0:
             if not isinstance(exports[0], dict):  # legacy old exports specified as list of strings
                 exports = [{"name": exp, "tags": ""} for exp in exports]
