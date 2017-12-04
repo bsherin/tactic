@@ -304,10 +304,6 @@ class mainWindow(object):
         return tile_info_dict, project_dict["loaded_modules"], True
 
     def recreate_project_tiles(self, data_dict, new_tile_info):
-        list_names = data_dict["list_names"]
-        class_names = data_dict["class_names"]
-        function_names = data_dict["function_names"]
-        collection_names = data_dict["collection_names"]
         self.tile_instances = []
         tile_results = {}
         errors = {}
@@ -339,16 +335,7 @@ class mainWindow(object):
         for tile_id, tile_result in tile_results.items():
             if "exports" in tile_result:
                 exports = tile_result["exports"]
-                if len(tile_result["exports"]) > 0:
-                    if tile_id not in self._pipe_dict:
-                        self._pipe_dict[tile_id] = {}
-                    for export in exports:
-                        if not isinstance(export, dict):  # legacy old exports specified as list of strings
-                            export = {"name": export, "tags": ""}
-                        self._pipe_dict[tile_id][tile_result["tile_name"] + "_" + export["name"]] = {
-                            "export_name": export["name"],
-                            "export_tags": export["tags"],
-                            "tile_id": tile_id}
+                self.update_pipe_dict(exports, tile_id, tile_result["tile_name"])
 
         # We have to wait to here to actually render the tiles because
         # the pipe_dict needs to be complete to build the forms.
@@ -356,10 +343,10 @@ class mainWindow(object):
         form_info = {"current_header_list": self.current_header_list,
                      "pipe_dict": self._pipe_dict,
                      "doc_names": self.doc_names,
-                     "list_names": list_names,
-                     "class_names": class_names,
-                     "collection_names": collection_names,
-                     "function_names": function_names}
+                     "list_names": data_dict["list_names"],
+                     "class_names": data_dict["class_names"],
+                     "collection_names": data_dict["collection_names"],
+                     "function_names": data_dict["function_names"]}
         for tile_id, tile_result in tile_results.items():
             form_info["other_tile_names"] = self.get_other_tile_names(tile_id)
             res = self.mworker.post_and_wait(tile_id, "render_tile", form_info)
@@ -538,19 +525,11 @@ class mainWindow(object):
             if tid == tile_id:
                 del self.tile_id_dict[n]
                 break
-        the_lists = self.get_lists_classes_functions()
-        form_info = {"current_header_list": self.current_header_list,
-                     "pipe_dict": self._pipe_dict,
-                     "doc_names": self.doc_names,
-                     "list_names": the_lists["list_names"],
-                     "class_names": the_lists["class_names"],
-                     "function_names": the_lists["function_names"],
-                     "collection_names": the_lists["collection_names"]}
+
         if tile_id in self._pipe_dict:
             del self._pipe_dict[tile_id]
-            for tid in self.tile_instances:
-                form_info["other_tile_names"] = self.get_other_tile_names(tid)
-                self.mworker.post_task(tid, "RebuildTileForms", form_info)
+            form_info = self.compile_form_info()
+            self.rebuild_other_tile_forms(None, form_info)
         self.mworker.ask_host("delete_container", {"container_id": tile_id})
         self.mworker.emit_export_viewer_message("update_exports_popup", {})
         return
@@ -615,7 +594,6 @@ class mainWindow(object):
             raise Exception("Error creating empty tile container")
         tile_container_id = create_container_dict["tile_id"]
         self.tile_instances.append(tile_container_id)
-        other_tile_names = self.tile_id_dict.keys()
         self.tile_id_dict[tile_name] = tile_container_id
 
         data_dict["base_figure_url"] = self.base_figure_url.replace("tile_id", tile_container_id)
@@ -636,32 +614,13 @@ class mainWindow(object):
 
         print "dealing with exports"
         exports = instantiate_result["exports"]
-        if len(exports) > 0:
-            if not isinstance(exports[0], dict):  # legacy old exports specified as list of strings
-                exports = [{"name": exp, "tags": ""} for exp in exports]
-            self._pipe_dict[tile_container_id] = {}
-            for export in exports:
-                self._pipe_dict[tile_container_id][tile_name + "_" + export["name"]] = {
-                    "export_name": export["name"],
-                    "export_tags": export["tags"],
-                    "tile_id": tile_container_id}
-        form_data = self.get_lists_classes_functions()
-        form_info = {"current_header_list": self.current_header_list,
-                     "pipe_dict": self._pipe_dict,
-                     "doc_names": self.doc_names,
-                     "list_names": form_data["list_names"],
-                     "function_names": form_data["function_names"],
-                     "class_names": form_data["class_names"],
-                     "collection_names": form_data["collection_names"],
-                     "other_tile_names": other_tile_names}
+        self.update_pipe_dict(exports, tile_container_id, tile_name)
+        form_info = self.compile_form_info()
 
         print "creating form html"
         form_html = self.mworker.post_and_wait(tile_container_id, "create_form_html", form_info)["form_html"]
         print "rebuilding tile forms"
-        for tid in self.tile_instances:
-            if not tid == tile_container_id:
-                form_info["other_tile_names"] = self.get_other_tile_names(tid)
-                self.mworker.post_task(tid, "RebuildTileForms", form_info)
+        self.rebuild_other_tile_forms(tile_container_id, form_info)
         self.tile_sort_list.append(tile_container_id)
         self.current_tile_id += 1
         return {"success": True, "html": form_html, "tile_id": tile_container_id}
@@ -1074,6 +1033,43 @@ class mainWindow(object):
         result = self.mworker.post_and_wait(tile_id, 'get_property', {"property": prop_name})["val"]
         return result
 
+    def compile_form_info(self, tile_id=None):
+        form_data = self.get_lists_classes_functions()
+        if tile_id is None:
+            other_tile_names = self.tile_id_dict.keys()
+        else:
+            other_tile_names = self.get_other_tile_names(tile_id)
+        form_info = {"current_header_list": self.current_header_list,
+                     "pipe_dict": self._pipe_dict,
+                     "doc_names": self.doc_names,
+                     "list_names": form_data["list_names"],
+                     "function_names": form_data["function_names"],
+                     "class_names": form_data["class_names"],
+                     "collection_names": form_data["collection_names"],
+                     "other_tile_names": other_tile_names}
+        return form_info
+
+    def update_pipe_dict(self, exports, tile_id, tile_name):
+        if len(exports) == 0:
+            if tile_id in self._pipe_dict:
+                del self._pipe_dict[tile_id]
+        else:
+            self._pipe_dict[tile_id] = {}
+            if not isinstance(exports[0], dict):
+                exports = [{"name": exp, "tags": ""} for exp in exports]  # legacy old form of exports list of strings
+            for export in exports:
+                self._pipe_dict[tile_id][tile_name + "_" + export["name"]] = {
+                    "export_name": export["name"],
+                    "export_tags": export["tags"],
+                    "tile_id": tile_id}
+        return
+
+    def rebuild_other_tile_forms(self, tile_id, form_info):
+        for tid in self.tile_instances:
+            if tile_id is None or not tid == tile_id:
+                form_info["other_tile_names"] = self.get_other_tile_names(tid)
+                self.mworker.post_task(tid, "RebuildTileForms", form_info)
+
     @task_worthy
     def reload_tile(self, ddict):
         print "entering reload tile"
@@ -1093,14 +1089,7 @@ class mainWindow(object):
         if not result["success"]:
             raise Exception(result["message_string"])
 
-        form_info = {"current_header_list": self.current_header_list,
-                     "pipe_dict": self._pipe_dict,
-                     "doc_names": self.doc_names,
-                     "list_names": the_lists["list_names"],
-                     "class_names": the_lists["class_names"],
-                     "function_names": the_lists["function_names"],
-                     "collection_names": the_lists["collection_names"],
-                     "other_tile_names": self.get_other_tile_names(tile_id)}
+        form_info = self.compile_form_info(tile_id)
         reload_dict["form_info"] = form_info
         print "reinstantiating"
         result = self.mworker.post_and_wait(tile_id, "reinstantiate_tile", reload_dict)
@@ -1108,24 +1097,10 @@ class mainWindow(object):
         if result["success"]:
             print "leaving reload tile with success"
             exports = result["exports"]
-            if len(exports) == 0:
-                if tile_id in self._pipe_dict:
-                    del self._pipe_dict[tile_id]
-            else:
-                self._pipe_dict[tile_id] = {}
-                if not isinstance(exports[0], dict):
-                    exports = [{"name": exp, "tags": ""} for exp in exports]  # legacy old form of exports list of strings
-                for export in exports:
-                    self._pipe_dict[tile_id][ddict["tile_name"] + "_" + export["name"]] = {
-                        "export_name": export["name"],
-                        "export_tags": export["tags"],
-                        "tile_id": tile_id}
+            self.update_pipe_dict(exports, tile_id, ddict["tile_name"])
             print "rebuilding tile forms"
             form_info["pipe_dict"] = self._pipe_dict
-            for tid in self.tile_instances:
-                if not tid == tile_id:
-                    form_info["other_tile_names"] = self.get_other_tile_names(tid)
-                    self.mworker.post_task(tid, "RebuildTileForms", form_info)
+            self.rebuild_other_tile_forms(tile_id, form_info)
             self.mworker.emit_export_viewer_message("update_exports_popup", {})
             return {"success": True, "html": result["form_html"], "options_changed": result["options_changed"]}
         else:
@@ -1217,18 +1192,8 @@ class mainWindow(object):
                     if header not in header_list:
                         doc.table_spec.header_list.append(header)
 
-        the_lists = self.get_lists_classes_functions()
-
-        form_info = {"current_header_list": self.current_header_list,
-                     "pipe_dict": self._pipe_dict,
-                     "doc_names": self.doc_names,
-                     "list_names": the_lists["list_names"],
-                     "class_names": the_lists["class_names"],
-                     "function_names": the_lists["function_names"],
-                     "collection_names": the_lists["collection_names"]}
-        for tid in self.tile_instances:
-            form_info["other_tile_names"] = self.get_other_tile_names(tid)
-            self.mworker.post_task(tid, "RebuildTileForms", form_info)
+        form_info = self.compile_form_info()
+        self.rebuild_other_tile_forms(None, form_info)
         return None
 
     @task_worthy
@@ -1261,18 +1226,8 @@ class mainWindow(object):
                 for r in doc.data_rows.values():
                     r[column_name] = ""
 
-        the_lists = self.get_lists_classes_functions()
-
-        form_info = {"current_header_list": self.current_header_list,
-                     "pipe_dict": self._pipe_dict,
-                     "doc_names": self.doc_names,
-                     "list_names": the_lists["list_names"],
-                     "class_names": the_lists["class_names"],
-                     "function_names": the_lists["function_names"],
-                     "collection_names": the_lists["collection_names"]}
-        for tid in self.tile_instances:
-            form_info["other_tile_names"] = self.get_other_tile_names(tid)
-            self.mworker.post_task(tid, "RebuildTileForms", form_info)
+        form_info = self.compile_form_info()
+        self.rebuild_other_tile_forms(None, form_info)
         return None
 
     @task_worthy
