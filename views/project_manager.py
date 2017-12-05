@@ -2,8 +2,11 @@
 import sys
 from flask import jsonify, request, url_for, render_template
 from flask_login import login_required, current_user
+import cPickle
+from bson.binary import Binary
+import zlib
 import tactic_app
-from tactic_app import app, db, use_ssl, mongo_uri
+from tactic_app import app, db, fs, use_ssl, mongo_uri
 from tactic_app.docker_functions import create_container, ContainerCreateError
 from resource_manager import ResourceManager, UserManageResourceManager
 from tactic_app.users import User
@@ -26,6 +29,8 @@ class ProjectManager(UserManageResourceManager):
                          methods=['get'])
         app.add_url_rule('/delete_project', "delete_project", login_required(self.delete_project),
                          methods=['post'])
+        app.add_url_rule('/duplicate_project', "duplicate_project",
+                         login_required(self.duplicate_project), methods=['get', 'post'])
 
     def main_project(self, project_name):
         user_obj = current_user
@@ -63,6 +68,29 @@ class ProjectManager(UserManageResourceManager):
                      }
 
         return render_template("main.html", **data_dict)
+
+    def duplicate_project(self):
+        user_obj = current_user
+        project_to_copy = request.json['res_to_copy']
+        new_project_name = request.json['new_res_name']
+        save_dict = db[user_obj.project_collection_name].find_one({"project_name": project_to_copy})
+        mdata = save_dict["metadata"]
+        new_save_dict = {"metadata": mdata,
+                         "project_name": new_project_name}
+
+        # uncompressing and compressing below is necessary because we need to change the project_name inside
+        # the project dict. so, essentially, the project_name is stored in two places which is non-optimal
+        # tactic_todo fix project_name being stored in two places in project saves
+        project_dict = cPickle.loads(zlib.decompress(fs.get(save_dict["file_id"]).read()).decode("utf-8", "ignore").encode("ascii"))
+        project_dict["project_name"] = new_project_name
+
+        pdict = cPickle.dumps(project_dict)
+        pdict = Binary(zlib.compress(pdict))
+        new_save_dict["file_id"] = fs.put(pdict)
+        db[user_obj.project_collection_name].insert_one(new_save_dict)
+        table_row = self.create_new_row(new_project_name, mdata)
+        all_table_row = self.all_manager.create_new_all_row(new_project_name, mdata, "project")
+        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
 
     def rename_me(self, old_name):
         try:

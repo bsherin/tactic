@@ -133,7 +133,7 @@ function bind_to_keys(shortcuts) {
 function build_and_render_menu_objects() {
 
     // Create the project_menu object
-    project_menu = new MenuObject("Project", project_command,["save-as", "save", "export-table-as-collection"]);
+    project_menu = new MenuObject("Project", project_command,["save-as", "save", "export-table-as-collection", "change-collection"]);
     menus[project_menu.menu_name] = project_menu;
     project_menu.add_options_to_index();
     project_menu.shortcuts = {
@@ -297,6 +297,47 @@ function createColumnThisDoc() {
     })
 }
 
+function changeCollection() {
+    startSpinner();
+    postWithCallback("host", "get_collection_names",{"user_id": user_id}, function (data) {
+        let collection_names = data["collection_names"]
+        let option_names = [];
+        for (var collection of collection_names) {
+            option_names.push({"option": collection})
+        }
+        showSelectModal("Select New Collection", "New Collection", changeTheCollection, option_names)
+    });
+
+    function changeTheCollection(new_collection_name) {
+        const result_dict = {
+                "new_collection_name": new_collection_name,
+                "main_id": main_id
+            };
+
+        postWithCallback(main_id, "change_collection", result_dict, changeCollectionResult);
+        function changeCollectionResult(data_object) {
+            if (data_object.success) {
+                doc_names = data_object.doc_names;
+                _collection_name = data_object.collection_name;
+                $("#doc-selector-label").html(data_object.short_collection_name);
+                let doc_popup = "";
+                for (let dname of doc_names) {
+                    doc_popup = doc_popup + `<option>${dname}</option>`
+                }
+                $("#doc-selector").html(doc_popup);
+                change_doc($("#doc-selector")[0], null);
+                stopSpinner();
+            }
+            else {
+                clearStatusMessage();
+                data_object["message"] = data_object["message_string"];
+                doFlashStopSpinner(data_object)
+            }
+        }
+    }
+
+}
+
 function saveProjectAs() {
     startSpinner();
     postWithCallback("host", "get_project_names", {"user_id": user_id}, function (data) {
@@ -374,6 +415,7 @@ function save_project() {
     }
 }
 
+
 function project_command(menu_id) {
     switch (menu_id) {
         case "save-as":
@@ -389,6 +431,11 @@ function project_command(menu_id) {
         case "export-table-as-collection":
         {
             exportDataTable();
+            break;
+        }
+        case "change-collection":
+        {
+            changeCollection();
             break;
         }
     }
