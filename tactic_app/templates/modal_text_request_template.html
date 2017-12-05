@@ -50,3 +50,33 @@
   </div>
 </div>
 </script>
+
+<script id="select-modal-template" type="text/html">
+<div class="modal fade" id="modal-dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">{{modal_title}}</h4>
+      </div>
+      <div class="modal-body">
+          <form>
+              <div class="form-group">
+                <label for="recipient-name" class="control-label">{{field_title}}</label>
+                <select class="form-control" id="modal-select-input-field">
+                    {{#options}}
+                    <option value="{{option}}">{{option}}</option>'
+                    {{/options}}
+                </select>
+              </div>
+          </form>
+      </div>
+      <div class="modal-footer">
+          <span id="warning_field"></span>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        <button type="button" id="modal-submit-button" class="btn btn-primary">Submit</button>
+      </div>
+    </div>
+  </div>
+</div>
+</script>
