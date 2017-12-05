@@ -2,6 +2,7 @@
  * Created by bls910 on 6/12/15.
  */
 let modal_template;
+let select_modal_template;
 let confirm_template;
 let tooltips;
 
@@ -46,6 +47,7 @@ Array.prototype.empty = function () {
 $.get($SCRIPT_ROOT + "/get_modal_template", function(template){
     modal_template = $(template).filter('#modal-template').html();
     confirm_template = $(template).filter('#confirm-template').html();
+    select_modal_template = $(template).filter('#select-modal-template').html();
 });
 
 alertify.set('notifier','position', 'top-right');
@@ -243,6 +245,26 @@ function confirmDialog(modal_title, modal_text, cancel_text, submit_text, submit
     function submit_handler() {
         $("#modal-dialog").modal("hide");
         submit_function()
+    }
+}
+
+function showSelectModal(modal_title, field_title, submit_function, options) {
+    const res = Mustache.to_html(select_modal_template, {
+        "modal_title": modal_title,
+        "field_title": field_title,
+        "options": options
+    });
+    $("#modal-area").html(res);
+    $('#modal-dialog').on('shown.bs.modal', function () {
+        $('#modal-text-input-field').focus();
+    });
+    $("#modal-dialog").modal();
+    $("#modal-submit-button").on("click", submit_handler);
+
+    function submit_handler() {
+        const result = $("#modal-select-input-field").val();
+        $("#modal-dialog").modal("hide");
+        submit_function(result)
     }
 }
 

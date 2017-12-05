@@ -354,6 +354,49 @@ class mainWindow(object):
         return errors, tile_results
 
     @task_worthy
+    def change_collection(self, data_dict):
+        try:
+            short_collection_name = data_dict["new_collection_name"]
+            data = {"user_id": self.user_id, "collection_name": short_collection_name}
+            full_collection_name = self.mworker.post_and_wait("host",
+                                                              "get_full_collection_name",
+                                                              data)["full_collection_name"]
+            print "got full collection name " + str(full_collection_name)
+            the_collection = self.db[full_collection_name]
+            mdata = the_collection.find_one({"name": "__metadata__"})
+            if "type" in mdata and mdata["type"] == "freeform":
+                doc_type = "freeform"
+            else:
+                doc_type = "table"
+            if not doc_type == self.doc_type:
+                error_string = "Cannot replace a collection with a different type"
+                return_data = {"success": False, "message_string": error_string}
+                return return_data
+            doc_names = []
+            self.short_collection_name = short_collection_name
+            self.collection_name = full_collection_name
+            for f in the_collection.find():
+                fname = f["name"].encode("ascii", "ignore")
+                if fname == "__metadata__":
+                    continue
+                else:
+                    doc_names.append(fname)
+            self.doc_dict = self._build_doc_dict()
+            self.visible_doc_name = self.doc_dict.keys()[0]
+            form_info = self.compile_form_info()
+            self.rebuild_other_tile_forms(None, form_info)
+            return_data = {"success": True,
+                           "collection_name": self.collection_name,
+                           "short_colleciton_name": self.short_collection_name,
+                           "doc_names": doc_names}
+
+        except Exception as ex:
+            self.mworker.debug_log("got an error in changing collection")
+            error_string = self.handle_exception(ex, "<pre>Error changing changing collection</pre>", print_to_console=False)
+            return_data = {"success": False, "message_string": error_string}
+        return return_data
+
+    @task_worthy
     def save_new_project(self, data_dict):
         # noinspection PyBroadException
         try:
