@@ -421,6 +421,7 @@ class ProjectManager extends UserManagerResourceManager {
         this.update_tag_view = "request_update_tag_list";
         this.load_view = "";
         this.delete_view = "/delete_project";
+        this.duplicate_view = '/duplicate_project';
         this.double_click_func = "view_func";
         this.view_view = "/main_project/";
         this.button_groups = [
@@ -429,6 +430,9 @@ class ProjectManager extends UserManagerResourceManager {
             },
             {buttons: [
                     {"name": "rename", "func": "rename_func", "button_class": "btn-default"},
+                    {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-default"}]
+            },
+            {buttons: [
                     {"name": "share", "func": "send_repository_func", "button_class": "btn-default"}]
             },
             {buttons: [

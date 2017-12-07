@@ -1,5 +1,6 @@
 import sys
 from StringIO import StringIO
+import ast
 from tile_base import TileBase, task_worthy
 
 # noinspection PyUnresolvedReferences
@@ -49,7 +50,17 @@ class PseudoTileClass(TileBase, MplFigure):
             self._pipe_dict = data["pipe_dict"]
             redirected_output = ConsoleStringIO(self, data)
             sys.stdout = redirected_output
-            exec(data["the_code"], globals(), self.console_namespace)
+            the_code = data["the_code"]
+            as_tree = ast.parse(the_code)
+            if as_tree.body[-1].__class__.__name__ == "Expr":
+                lnumber = as_tree.body[-1].lineno - 1
+                code_lines = the_code.splitlines()
+                code_to_eval = code_lines[lnumber]
+                code_to_exec = "\n".join(code_lines[:lnumber])
+                exec(code_to_exec, globals(), self.console_namespace)
+                print eval(code_to_eval, globals(), self.console_namespace)
+            else:
+                exec(data["the_code"], globals(), self.console_namespace)
             sys.stdout = old_stdout
         except Exception as ex:
             data["result_string"] = self.handle_exception(ex, "Error executing console code", print_to_console=False)
