@@ -7,6 +7,8 @@ class ConsoleObjectClass {
         this.console_dom.css("display", "none");
         pan.find(".triangle-bottom").hide();
         pan.find(".triangle-right").show();
+        pan.find("#zoom-console-button").show();
+        pan.find("#unzoom-console-button").hide();
         this.console_visible = false;
         this.consoleCMObjects = {};
         this.console_dom.sortable({
@@ -19,7 +21,7 @@ class ConsoleObjectClass {
         this.console_panel.width();
         this.update_width(.5);
         this.exports_visible = false;
-
+        this.console_zoomed = false;
     }
 
     get console_panel () {
@@ -40,11 +42,22 @@ class ConsoleObjectClass {
         this.console_panel.width(usable_width * new_width_fraction)
     }
 
-    resize_to_window() {
-        this.update_width(this.current_width_fraction)
+    resize_to_window() {  // tactic_working
+        if (!this.console_zoomed) {
+            this.update_width(this.current_width_fraction)
+        }
+        else {
+            let gb = $("#grid-bottom");
+            gb.height(window.innerHeight - $("#grid-bottom").offset().top - BOTTOM_MARGIN);
+            this.update_height(gb.height());
+            let saved_fraction = this.current_width_fraction;
+            this.update_width(1);
+            this.current_width_fraction = saved_fraction
+        }
+
     }
 
-    showHideExports() {
+    showHideExports() {  // tactic_working
         if (this.exports_visible) {
             $("#exports-panel").css("display", "none");
             this.exports_visible = false
@@ -63,6 +76,13 @@ class ConsoleObjectClass {
         });
         $("#hide-console-button").click(function () {
             self.shrinkConsole()
+        });
+
+        $("#zoom-console-button").click(function () {
+            self.zoomConsole()
+        });
+        $("#unzoom-console-button").click(function () {
+            self.unzoomConsole()
         });
 
         $("#show-exports-button").click(function () {
@@ -125,7 +145,7 @@ class ConsoleObjectClass {
         $("#grid-bottom").innerHeight(Math.max(exportViewerObject.exports_panel.outerHeight(), consoleObject.console_panel.outerHeight()))
     }
 
-    shrinkConsole () {
+    shrinkConsole () {  // tactic_working
         const pan = this.console_panel;
         this.saved_console_size = $("#grid-bottom").outerHeight();
         exportViewerObject.exports_body.css("display", "none");
@@ -138,7 +158,7 @@ class ConsoleObjectClass {
         this.turn_off_resize()
     }
 
-    expandConsole(){
+    expandConsole(){  // tactic_working
         const pan = this.console_panel;
         const gb = $("#grid-bottom");
         gb.outerHeight(this.saved_console_size);
@@ -155,6 +175,48 @@ class ConsoleObjectClass {
             if (!this.consoleCMObjects.hasOwnProperty(uid)) continue;
             this.consoleCMObjects[uid].refresh()
         }
+    }
+
+    zoomConsole()  { // tactic_working
+        const pan = this.console_panel;
+        $("#exports-panel").css("display", "none");
+        this.console_zoomed = true;
+        $(".grid-left").hide();
+        $(".grid-right").hide();
+        if (!this.console_visible) {
+            this.expandConsole();
+            this.console_visible = false;
+        }
+        else {
+            this.saved_console_size = $("#grid-bottom").outerHeight();
+        }
+        this.turn_off_resize();
+        this.resize_to_window();
+        pan.find(".triangle-bottom").hide();
+        $("#show-exports-button").hide();
+        $("#zoom-console-button").hide();
+        $("#unzoom-console-button").show();
+    }
+
+    unzoomConsole() {  // tactic_working
+        this.console_zoomed = false;
+        $(".grid-left").show();
+        $(".grid-right").show();
+        let saved_visibility = this.console_visible;
+        this.expandConsole();
+
+        if (!saved_visibility) {
+            this.shrinkConsole()
+        }
+
+        if (this.exports_visible) {
+            $("#exports-panel").css("display", "inline-block");
+        }
+        this.turn_on_resize();
+        this.resize_to_window();
+        $("#zoom-console-button").show();
+        $("#unzoom-console-button").hide();
+        $("#show-exports-button").show();
     }
 
     closeLogItem(e) {
@@ -227,8 +289,6 @@ class ConsoleObjectClass {
             }
         });
         this.consoleCMObjects[uid].tactic_uid = uid;
-        $(codearea).find(".CodeMirror").resizable({handles: "se"});
-        $(codearea).find(".CodeMirror").height(100)
     }
 
     check_for_element(elstring, callback) {

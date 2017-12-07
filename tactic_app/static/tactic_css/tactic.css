@@ -329,6 +329,9 @@ td.cell-clickable:active {
   background-color: #f5f5f5 !important;
   font-family: Arial, Helvetica, sans-serif; }
 
+#console-panel .CodeMirror {
+  height: auto !important; }
+
 .log-panel {
   border: 1px solid #c7c7c7 !important;
   margin: 1px;
