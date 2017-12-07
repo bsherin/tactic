@@ -227,8 +227,6 @@ class ConsoleObjectClass {
             }
         });
         this.consoleCMObjects[uid].tactic_uid = uid;
-        $(codearea).find(".CodeMirror").resizable({handles: "se"});
-        $(codearea).find(".CodeMirror").height(100)
     }
 
     check_for_element(elstring, callback) {
