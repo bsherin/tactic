@@ -42,7 +42,7 @@ class ConsoleObjectClass {
         this.console_panel.width(usable_width * new_width_fraction)
     }
 
-    resize_to_window() {  // tactic_working
+    resize_to_window() {
         if (!this.console_zoomed) {
             this.update_width(this.current_width_fraction)
         }
@@ -57,7 +57,7 @@ class ConsoleObjectClass {
 
     }
 
-    showHideExports() {  // tactic_working
+    showHideExports() {
         if (this.exports_visible) {
             $("#exports-panel").css("display", "none");
             this.exports_visible = false
@@ -145,7 +145,7 @@ class ConsoleObjectClass {
         $("#grid-bottom").innerHeight(Math.max(exportViewerObject.exports_panel.outerHeight(), consoleObject.console_panel.outerHeight()))
     }
 
-    shrinkConsole () {  // tactic_working
+    shrinkConsole () {
         const pan = this.console_panel;
         this.saved_console_size = $("#grid-bottom").outerHeight();
         exportViewerObject.exports_body.css("display", "none");
@@ -158,7 +158,7 @@ class ConsoleObjectClass {
         this.turn_off_resize()
     }
 
-    expandConsole(){  // tactic_working
+    expandConsole(){
         const pan = this.console_panel;
         const gb = $("#grid-bottom");
         gb.outerHeight(this.saved_console_size);
@@ -177,7 +177,7 @@ class ConsoleObjectClass {
         }
     }
 
-    zoomConsole()  { // tactic_working
+    zoomConsole()  {
         const pan = this.console_panel;
         $("#exports-panel").css("display", "none");
         this.console_zoomed = true;
@@ -198,7 +198,7 @@ class ConsoleObjectClass {
         $("#unzoom-console-button").show();
     }
 
-    unzoomConsole() {  // tactic_working
+    unzoomConsole() {
         this.console_zoomed = false;
         $(".grid-left").show();
         $(".grid-right").show();
@@ -308,7 +308,7 @@ class ConsoleObjectClass {
     consoleLog (data_object) {
         const force_open = data_object.force_open;
         this.console_dom.append(data_object.message_string);
-        if (force_open && !this.console_visible) {
+        if (force_open && !this.console_visible && !this.console_zoomed) {
             this.expandConsole()
         }
         this.console_dom[0].scrollTop = this.console_dom[0].scrollHeight;
