@@ -67,7 +67,6 @@ register_cmap(cmap=ListedColormap(standard, name="standard"))
 color_palette_names = sorted(color_palette_names)
 color_palette_names = ["standard"] + color_palette_names
 
-
 class MplFigure(Figure):
     # kwargs for mplfigure are dpi and title
     def __init__(self, **kwargs):

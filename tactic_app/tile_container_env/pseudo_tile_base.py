@@ -8,6 +8,8 @@ from qworker import task_worthy_methods
 
 from matplotlib_utilities import MplFigure
 
+PSEUDO_WIDTH = 300
+PSEUDO_HEIGHT = 300
 
 # noinspection PyTypeChecker
 class ConsoleStringIO(StringIO):
@@ -33,6 +35,8 @@ class PseudoTileClass(TileBase, MplFigure):
         TileBase.__init__(self, tile_name=tile_name)
         self.is_pseudo = True
         self.console_namespace = {"self": self}
+        self.width = PSEUDO_WIDTH
+        self.height = PSEUDO_HEIGHT
         return
 
     @task_worthy
