@@ -22,6 +22,7 @@ class ConsoleObjectClass {
         this.update_width(.5);
         this.exports_visible = false;
         this.console_zoomed = false;
+        this.current_panel_focus = null;
     }
 
     get console_panel () {
@@ -95,15 +96,16 @@ class ConsoleObjectClass {
         $("#clear-console-button").click(function () {
             self.clearConsole()
         });
-        $("#add-blank-code-button").click(function () {
-            self.addConsoleCodearea()
+        $("#add-blank-code-button").click(function (e) {
+            self.addConsoleCodearea(e)
         });
-        $("#add-blank-text-button").click(function () {
-            self.addBlankConsoleText()
+        $("#add-blank-text-button").click(function (e) {
+            self.addBlankConsoleText(e)
         });
         this.console_dom.on("click", ".close-log-button", {"cobject": this}, this.closeLogItem);
         this.console_dom.on("click", ".run-log-button", {"cobject": this}, this.runConsoleCode);
         this.console_dom.on("click", ".clear-code-button", {"cobject": this}, this.clearConsoleCode);
+        this.console_dom.on("focus", ".log-panel", {"cobject": this}, this.setPanelFocus);
     }
 
     update_height(hgt) {
@@ -219,6 +221,11 @@ class ConsoleObjectClass {
         $("#show-exports-button").show();
     }
 
+    setPanelFocus(e) {
+        let self = e.data.cobject;
+        self.current_panel_focus = $(this);
+    }
+
     closeLogItem(e) {
         let self = e.data.cobject;
         const el = $(e.target).closest(".log-panel");
@@ -254,14 +261,16 @@ class ConsoleObjectClass {
         el.html("");
     }
 
-    addBlankConsoleText() {
-        const print_string = "<div contenteditable='true'></div>";
+    addBlankConsoleText(e) {
+        const print_string = "<div class='console-text' contenteditable='true'></div>";
         const task_data = {"print_string": print_string};
         postWithCallback(main_id, "print_to_console_event", task_data, function(data) {
             if (!data.success) {
                 doFlash(data)
             }
         })
+        e.preventDefault();
+
     }
 
     setConsoleCode(uid, the_code) {
@@ -307,14 +316,29 @@ class ConsoleObjectClass {
      */
     consoleLog (data_object) {
         const force_open = data_object.force_open;
-        this.console_dom.append(data_object.message_string);
+        if (this.current_panel_focus.index() == -1) {
+            this.current_panel_focus = null
+        }
+        if (this.current_panel_focus == null) {
+            this.console_dom.append(data_object.message_string);
+        }
+        else {
+            this.current_panel_focus.after(data_object.message_string);
+
+        }
         if (force_open && !this.console_visible && !this.console_zoomed) {
             this.expandConsole()
         }
         this.console_dom[0].scrollTop = this.console_dom[0].scrollHeight;
-        const child_array = this.console_dom.children();
-        const last_child = child_array[child_array.length - 1];
-        const scripts = $(last_child).find(".resize-rerun");
+        let child_array = this.console_dom.children();
+        let new_child;
+        if (this.current_panel_focus == null) {
+            new_child = child_array[child_array.length - 1];
+        }
+        else {
+            new_child = child_array[this.current_panel_focus.index + 1];
+        }
+        const scripts = $(new_child).find(".resize-rerun");
         for (let i = 0; i < scripts.length; i = i+1) {
             eval(scripts[i].innerHTML)
         }
@@ -357,7 +381,7 @@ class ConsoleObjectClass {
         postWithCallback(main_id, "clear_console_namespace", {})
      }
 
-    addConsoleCodearea() {
+    addConsoleCodearea(e) {
         let self = this;
         postWithCallback(main_id, "create_console_code_area", {}, function(data) {
             if (!data.success) {
@@ -369,7 +393,8 @@ class ConsoleObjectClass {
                     self.createConsoleCodeInCodearea(data["unique_id"], codearea)
                 })
             }
-        })
+        });
+        e.preventDefault();
     }
 
     startConsoleSpinner (uid) {
