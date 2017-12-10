@@ -316,7 +316,7 @@ class ConsoleObjectClass {
      */
     consoleLog (data_object) {
         const force_open = data_object.force_open;
-        if (this.current_panel_focus.index() == -1) {
+        if ((this.current_panel_focus != null) && (this.current_panel_focus.index() == -1)) {
             this.current_panel_focus = null
         }
         if (this.current_panel_focus == null) {
@@ -329,16 +329,16 @@ class ConsoleObjectClass {
         if (force_open && !this.console_visible && !this.console_zoomed) {
             this.expandConsole()
         }
-        this.console_dom[0].scrollTop = this.console_dom[0].scrollHeight;
         let child_array = this.console_dom.children();
         let new_child;
         if (this.current_panel_focus == null) {
             new_child = child_array[child_array.length - 1];
         }
         else {
-            new_child = child_array[this.current_panel_focus.index + 1];
+            new_child = child_array[this.current_panel_focus.index() + 1];
         }
         const scripts = $(new_child).find(".resize-rerun");
+        new_child.scrollIntoView();
         for (let i = 0; i < scripts.length; i = i+1) {
             eval(scripts[i].innerHTML)
         }
