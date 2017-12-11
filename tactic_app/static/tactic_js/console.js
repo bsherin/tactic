@@ -338,9 +338,12 @@ class ConsoleObjectClass {
             new_child = child_array[this.current_panel_focus.index() + 1];
         }
         const scripts = $(new_child).find(".resize-rerun");
-        new_child.scrollIntoView();
+        altScrollIntoView(new_child, this.console_dom[0]);
         for (let i = 0; i < scripts.length; i = i+1) {
             eval(scripts[i].innerHTML)
+        }
+        if ($(new_child).find(".console-text").length == 1) {
+            $(new_child).find(".console-text").focus()
         }
      }
     /**
@@ -390,7 +393,8 @@ class ConsoleObjectClass {
             else {
                 self.check_for_element("#" + data["unique_id"], function () {
                     const codearea = document.getElementById(data["unique_id"]);
-                    self.createConsoleCodeInCodearea(data["unique_id"], codearea)
+                    self.createConsoleCodeInCodearea(data["unique_id"], codearea);
+                    self.consoleCMObjects[data["unique_id"]].focus()
                 })
             }
         });
