@@ -188,6 +188,19 @@ function scrollIntoView(element, container) {
   }
 }
 
+function altScrollIntoView(element, container) {
+  const containerTop = $(container).scrollTop();
+  const containerBottom = containerTop + $(container).height();
+  const elemTop = element.offsetTop;
+  const elemBottom = elemTop + $(element).height();
+  if (elemTop < containerTop) {
+    $(container).scrollTop(elemTop);
+    element.scrollIntoView({behavior: "smooth", block: "start", inline: "nearest"})
+  } else if (elemBottom > containerBottom) {
+      element.scrollIntoView({behavior: "smooth", block: "end", inline: "nearest"})
+  }
+}
+
 function tooltipper() {
     return tooltip_dict[this.id];
 }
