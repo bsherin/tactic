@@ -54,6 +54,7 @@ class QWorker(gevent.Greenlet):
             self.my_id = os.environ.get("MY_ID")
         else:
             self.my_id = "host"
+        print "my_id is " + self.my_id
         self.hibernating = False
         self.handler_instances = {"this_worker": self}
 
@@ -112,6 +113,7 @@ class QWorker(gevent.Greenlet):
         return result
 
     def submit_response(self, task_packet):
+        print "submitting response with task_packet " + str(task_packet)
         send_request_to_megaplex("submit_response", task_packet)
         return
 

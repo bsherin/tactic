@@ -30,31 +30,33 @@ class ResourceViewer {
         else {
             this.update_width(1.0)
         }
+
         self = this;
         window.onresize = function () {
             self.resize_to_window()
         };
-        if (use_ssl) {
-            this.socket = io.connect(`https://${document.domain}:${location.port}/user_manage`);
-        }
-        else {
-            this.socket = io.connect(`http://${document.domain}:${location.port}/user_manage`);
-        }
-        this.user_manage_id = guid();
-        this.socket.emit('join', {"user_id":  user_id, "user_manage_id":  this.user_manage_id});
-        this.socket.on('stop-spinner', stopSpinner);
-        this.socket.on('start-spinner', startSpinner);
-        this.socket.on('close-user-windows', (data) => {
-            if (!(data["originator"] == this.user_manage_id)) {
-                window.close()
+        if (get_url) {
+            if (use_ssl) {
+                this.socket = io.connect(`https://${document.domain}:${location.port}/user_manage`);
             }
-        });
-        postAjaxPromise(`${get_url}/${resource_name}`, {})
-            .then(function (data) {
-                self.got_resource(data.the_content)
-            })
-            .catch(doFlash);
-
+            else {
+                this.socket = io.connect(`http://${document.domain}:${location.port}/user_manage`);
+            }
+            this.user_manage_id = guid();
+            this.socket.emit('join', {"user_id":  user_id, "user_manage_id":  this.user_manage_id});
+            this.socket.on('stop-spinner', stopSpinner);
+            this.socket.on('start-spinner', startSpinner);
+            this.socket.on('close-user-windows', (data) => {
+                if (!(data["originator"] == this.user_manage_id)) {
+                    window.close()
+                }
+            });
+            postAjaxPromise(`${get_url}/${resource_name}`, {})
+                .then(function (data) {
+                    self.got_resource(data.the_content)
+                })
+                .catch(doFlash);
+        }
     }
 
     update_width(new_width_fraction) {

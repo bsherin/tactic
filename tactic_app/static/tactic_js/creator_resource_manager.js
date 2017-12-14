@@ -14,7 +14,7 @@ class CreatorResourceManager extends ResourceManager {
         this.aux_right = false;
         this.change = false;
         this.viewer = this.extras_dict["viewer"];
-
+        this.module_viewer_id = this.extras_dict["module_viewer_id"]
     }
 
     set_viewer(the_viewer) {
@@ -26,12 +26,15 @@ class CreatorResourceManager extends ResourceManager {
         data[this.data_attr] = this[this.data_attr];
         this.viewer.rebuild_autocomplete_list();
         let self = this;
-        postAjaxPromise(this.update_view, data)
-            .then(function (result) {
-                    self.fill_content(result.html);
-                    self.select_resource_button(null);
-                })
-            .catch(doFlash)
+        postWithCallback(this.module_viewer_id, this.update_view, data, function (result) {
+          if (result["success"]) {
+              self.fill_content(result.html);
+              self.select_resource_button(null);
+          }
+          else {
+              doFlash(result)
+          }
+        });
     }
 
     fill_content(the_html) {

@@ -188,7 +188,12 @@
         }
         let module_name = "{{module_name}}";
         let use_ssl = "{{use_ssl}}"=="True";
+        let mongo_uri = "{{mongo_uri}}";
         let include_right = true;
+        let module_viewer_id = "{{module_viewer_id}}";
+        let main_id = module_viewer_id;  // tactic_todo A little kludgy
+        let tile_collection_name = "{{tile_collection_name}}";
+        let version_string = "{{tstring}}";
         console.log(module_name);
 
         window.onload = start_post_load;

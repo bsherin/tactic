@@ -3,7 +3,7 @@ from flask import jsonify
 from flask_login import login_required, current_user
 from tactic_app import app, create_megaplex
 from tactic_app.users import User, load_user
-from resource_manager import ResourceManager
+from tactic_app.resource_manager import ResourceManager
 from tactic_app.docker_functions import cli, destroy_container, container_owner, get_log, container_id
 from tactic_app.docker_functions import container_other_name
 from docker_cleanup import do_docker_cleanup
@@ -29,7 +29,7 @@ class ContainerManager(ResourceManager):
                          login_required(self.refresh_container_table), methods=['get'])
 
     def clear_user_containers(self, user_manage_id):
-        tactic_image_names = ["tactic_tile_image", "tactic_main_image"]
+        tactic_image_names = ["tactic_tile_image", "tactic_main_image", "module_viewer_image"]
         tactic_image_ids = {}
         for iname in tactic_image_names:
             tactic_image_ids[iname] = cli.images.get(iname).id
@@ -117,7 +117,7 @@ class ContainerManager(ResourceManager):
 
     # noinspection PyMethodOverriding
     def build_resource_array(self):
-        tactic_image_names = ["tactic_tile_image", "tactic_main_image", "tactic_megaplex_image", "forwarder_image"]
+        tactic_image_names = ["tactic_tile_image", "tactic_main_image", "tactic_megaplex_image", "module_viewer_image"]
         image_id_names = {}
         for iname in tactic_image_names:
             image_id_names[cli.images.get(iname).id] = iname
