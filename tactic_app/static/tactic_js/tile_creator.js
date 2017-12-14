@@ -3,17 +3,70 @@
  */
 
 let creator_viewer;
+let socket;
 
 const BOTTOM_MARGIN = 50;
+
+const HEARTBEAT_INTERVAL = 10000; //milliseconds
+setInterval( function(){
+   postAjax("register_heartbeat", {"main_id": main_id}, function () {});
+}, HEARTBEAT_INTERVAL );
 
 function start_post_load() {
     startSpinner();
     statusMessageText("loading " + module_name);
-    creator_viewer = new CreatorViewer(module_name, "tile", "parse_code");
-    creator_viewer.resize_to_window();
+    if (use_ssl) {
+        socket = io.connect('https://' + document.domain + ':' + location.port + '/main');
+    }
+    else {
+        socket = io.connect('http://' + document.domain + ':' + location.port + '/main');
+    }
+    socket.emit('join', {"room": user_id});
+    socket.emit('join-main', {"room": module_viewer_id});
+    socket.on('stop-spinner', stopSpinner);
+    socket.on('start-spinner', startSpinner);
+    socket.on('handle-callback', handleCallback);
+    socket.on('close-user-windows', (data) => {
+        if (!(data["originator"] == this.user_manage_id)) {
+            window.close()
+        }
+    });
+    socket.on("begin-post-load", function () {
+        creator_viewer = new CreatorViewer(module_name, "tile", "initialize_module_viewer_container");
+        creator_viewer.resize_to_window();
+    });
+    socket.emit('ready-to-begin', {"room": main_id});
 }
 
 class CreatorViewer extends ModuleViewerAbstract {
+    constructor(resource_name, res_type, get_url) {
+        super(resource_name, res_type, null);
+
+        let the_content = {"module_name": module_name,
+                        "module_viewer_id": module_viewer_id,
+                        "tile_collection_name": tile_collection_name,
+                        "mongo_uri": mongo_uri,
+                        "version_string": version_string};
+        postWithCallback(module_viewer_id, "initialize_parser", the_content, this.got_parsed_data);
+
+    }
+
+    got_parsed_data(data_object) {
+        creator_viewer.parsed_data = data_object["the_content"];
+        creator_viewer.setup_code_areas();
+        creator_viewer.setup_resource_modules();
+        self = creator_viewer;
+
+        postAjaxPromise("get_api_html", {})
+            .then(function (data) {
+                $("#aux-area").html(data.api_html);
+                self.create_api_listeners();
+                self.resize_to_window();
+                clearStatusMessage();
+                stopSpinner()
+            })
+            .catch(doFlashStopSpinner);
+    }
     do_extra_setup () {
         super.do_extra_setup();
         this.this_viewer = "creator";
@@ -76,22 +129,6 @@ class CreatorViewer extends ModuleViewerAbstract {
             "show_api_button": this.showAPI}
     }
 
-    got_resource (the_content) {
-        this.parsed_data = the_content;
-        this.setup_code_areas();
-        this.setup_resource_modules();
-        let self = this;
-        postAjaxPromise("get_api_html", {})
-            .then(function (data) {
-                $("#aux-area").html(data.api_html);
-                self.create_api_listeners();
-                self.resize_to_window();
-                clearStatusMessage();
-                stopSpinner()
-            })
-            .catch(doFlashStopSpinner);
-    }
-
     setup_code_areas() {
         this.savedMethods = this.parsed_data.extra_functions;
         this.is_mpl = this.parsed_data.is_mpl;
@@ -149,11 +186,10 @@ class CreatorViewer extends ModuleViewerAbstract {
             const resource_module_template = $(template).filter('#resource-module-template').html();
 
             // Note there's a kluge here: these managers require the global variable parsed_data to be set.
-            self.resource_managers["option_module"] = new OptionManager("option_module", "option", resource_module_template, "#option-module-holder", {"viewer": self});
-            self.resource_managers["export_module"] = new ExportManager("export_module", "export", resource_module_template, "#export-module-holder", {"viewer": self});
-            self.resource_managers["method_module"] = new MethodManager("method_module", "method", resource_module_template, "#method-module-holder", {"viewer": self});
-
-
+            let extras = {"viewer": self, "module_viewer_id": module_viewer_id}
+            self.resource_managers["option_module"] = new OptionManager("option_module", "option", resource_module_template, "#option-module-holder", extras);
+            self.resource_managers["export_module"] = new ExportManager("export_module", "export", resource_module_template, "#export-module-holder", extras);
+            self.resource_managers["method_module"] = new MethodManager("method_module", "method", resource_module_template, "#method-module-holder", extras);
 
             $(".resource-module").on("click", ".main-content .selector-button", {"viewer": self}, self.selector_click);
             $("#export-create-button").on("click", {"manager": self.resource_managers["export_module"]}, self.resource_managers["export_module"].createNewExport);

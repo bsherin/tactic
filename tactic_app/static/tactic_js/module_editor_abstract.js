@@ -72,7 +72,7 @@ class ModuleViewerAbstract extends ResourceViewer {
             CodeMirror.keyMap["default"]["Cmd-S"] = function () {self.saveMe()};
 
             this.mousetrap.bind(['command+l'], function (e) {
-                self.loadModule();
+                // self.loadModule();
                 e.preventDefault()
             });
             this.mousetrap.bind(['command+f'], function (e) {
@@ -84,7 +84,7 @@ class ModuleViewerAbstract extends ResourceViewer {
             CodeMirror.keyMap["default"]["Ctrl-S"] = function () {self.saveMe()};
 
             this.mousetrap.bind(['ctrl+l'], function (e) {
-                self.loadModule();
+                // self.loadModule();
                 e.preventDefault()
             });
             this.mousetrap.bind(['ctrl+f'], function (e) {
@@ -212,6 +212,16 @@ class ModuleViewerAbstract extends ResourceViewer {
                     "new_code": new_code,
                     "last_saved": self.this_viewer
                 };
+                postAjax("update_module", result_dict, function (data) {
+                    if (data.success) {
+                        self.save_success(data, new_code, tags, notes, category);
+                        data.new_code = new_code;
+                        resolve(data)
+                    }
+                    else {
+                        reject(data)
+                    }
+                });
             }
             else {
                 category = $("#category").val();
@@ -241,18 +251,18 @@ class ModuleViewerAbstract extends ResourceViewer {
                     "jscript_body": new_js_code,
                     "last_saved": self.this_viewer
                 };
+                postWithCallback(module_viewer_id, "update_module", result_dict, function (data) {
+                    if (data.success) {
+                        self.save_success(data, new_code, tags, notes, category);
+                        data.new_code = new_code;
+                        resolve(data)
+                    }
+                    else {
+                        reject(data)
+                    }
+                })
             }
 
-            postAjax("update_module", result_dict, function (data) {
-                if (data.success) {
-                    self.save_success(data, new_code, tags, notes, category);
-                    data.new_code = new_code;
-                    resolve(data)
-                }
-                else {
-                    reject(data)
-                }
-            });
         })
     }
 

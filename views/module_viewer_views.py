@@ -6,8 +6,7 @@ import copy
 from flask import render_template, request, jsonify, url_for
 from flask_login import login_required, current_user
 from tactic_app import app, db, use_ssl
-from tactic_app.tile_code_parser import get_functions_full_code, get_starting_lines
-from tactic_app.tile_code_parser import get_base_classes, extract_type
+# from tactic_app.tile_code_parser import TileParser
 
 from user_manage_views import tile_manager
 import datetime
@@ -15,53 +14,6 @@ tstring = datetime.datetime.now().strftime("%Y-%H-%M-%S")
 
 
 indent_unit = "    "
-
-
-def remove_indents(the_str, number_indents):
-    total_indent = indent_unit * number_indents
-    result = re.sub(r"\n" + total_indent, "\n", the_str)
-    result = re.sub(r"^" + total_indent, "", result)
-    return result
-
-
-def insert_indents(the_str, number_indents):
-    total_indent = indent_unit * number_indents
-    result = re.sub(r"\n", r"\n" + total_indent, the_str)
-    result = total_indent + result
-    return result
-
-
-def build_code(data_dict):
-    export_list = data_dict["exports"]
-    export_list_of_dicts = [{"name": exp["name"], "tags": exp["tags"]} for exp in export_list]
-    extra_methods = insert_indents(data_dict["extra_methods"], 1)
-    render_content_body = insert_indents(data_dict["render_content_body"], 2)
-    if data_dict["is_mpl"]:
-        draw_plot_body = insert_indents(data_dict["draw_plot_body"], 2)
-    else:
-        draw_plot_body = ""
-    options = data_dict["options"]
-    for opt_dict in options:
-        if "default" not in opt_dict:
-            opt_dict["default"] = "None"
-        elif isinstance(opt_dict["default"], basestring):
-            opt_dict["default"] = '"' + opt_dict["default"] + '"'
-        opt_dict["default"] = str(opt_dict["default"])
-        if "special_list" in opt_dict:
-            opt_dict["special_list"] = str(opt_dict["special_list"])
-    full_code = render_template("user_manage/tile_creator_template.html",
-                                class_name=data_dict["module_name"],
-                                category=data_dict["category"],
-                                exports=export_list_of_dicts,
-                                options=data_dict["options"],
-                                is_mpl=data_dict["is_mpl"],
-                                is_d3=data_dict["is_d3"],
-                                jscript_code=data_dict["jscript_body"],
-                                extra_methods=extra_methods,
-                                render_content_body=render_content_body,
-                                draw_plot_body=draw_plot_body, version_string=tstring)
-    return full_code
-
 
 @app.route('/checkpoint_module', methods=['post'])
 @login_required
@@ -151,7 +103,7 @@ def show_tile_differ(module_name):
 
 @app.route('/update_module', methods=['post'])
 @login_required
-def update_module():
+def update_module():  # tactic_working
     try:
         data_dict = request.json
         module_name = data_dict["module_name"]
@@ -163,10 +115,10 @@ def update_module():
             draw_plot_line_number = None
         else:
             module_code = build_code(data_dict)
-            func_dict = get_functions_full_code(module_code)
-            (render_content_line_number,
-             draw_plot_line_number,
-             extra_methods_line_number) = get_starting_lines(module_code, func_dict)
+            tp = TileParser(module_code)  # tactic_working
+            render_content_line_number = tp.get_starting_line("render_content")
+            draw_plot_line_number = tp.get_starting_line("draw_plot")
+            extra_methods_line_number = tp.get_starting_line(tp.extra_methods.keys()[0])
         doc = db[current_user.tile_collection_name].find_one({"tile_module_name": module_name})
         if "metadata" in doc:
             mdata = doc["metadata"]

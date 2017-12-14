@@ -224,6 +224,8 @@ def get_next_task(requester_id):
 @app.route('/submit_response', methods=["get", "post"])
 def submit_response():
     task_packet = request.json
+    print "got a response task packet"
+    print str(task_packet)
     source = task_packet["source"]
     update_last_active_contact(source)
     if source not in queue_dict:  # This shouldn't happen
