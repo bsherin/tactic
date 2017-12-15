@@ -6,7 +6,7 @@ import copy
 import tactic_app
 from tactic_app import app, db, use_ssl  # global_stuff
 
-from resource_manager import ResourceManager, UserManageResourceManager
+from tactic_app.resource_manager import ResourceManager, UserManageResourceManager
 from flask import render_template, jsonify, url_for, request
 from flask_login import login_required, current_user
 

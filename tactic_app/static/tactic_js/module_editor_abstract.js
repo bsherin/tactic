@@ -72,7 +72,7 @@ class ModuleViewerAbstract extends ResourceViewer {
             CodeMirror.keyMap["default"]["Cmd-S"] = function () {self.saveMe()};
 
             this.mousetrap.bind(['command+l'], function (e) {
-                self.loadModule();
+                // self.loadModule();
                 e.preventDefault()
             });
             this.mousetrap.bind(['command+f'], function (e) {
@@ -84,7 +84,7 @@ class ModuleViewerAbstract extends ResourceViewer {
             CodeMirror.keyMap["default"]["Ctrl-S"] = function () {self.saveMe()};
 
             this.mousetrap.bind(['ctrl+l'], function (e) {
-                self.loadModule();
+                // self.loadModule();
                 e.preventDefault()
             });
             this.mousetrap.bind(['ctrl+f'], function (e) {
@@ -201,48 +201,15 @@ class ModuleViewerAbstract extends ResourceViewer {
             const notes = $("#notes").val();
             let result_dict;
             let category;
-
-            if (self.this_viewer == "viewer") {
-                category = null;
-                result_dict = {
-                    "module_name": self.resource_name,
-                    "category": category,
-                    "tags": tags,
-                    "notes": notes,
-                    "new_code": new_code,
-                    "last_saved": self.this_viewer
-                };
-            }
-            else {
-                category = $("#category").val();
-                if (category.length == 0) {
-                    category = "basic"
-                }
-                let new_dp_code = "";
-                if (self.is_mpl) {
-                    new_dp_code = self.myDPCodeMirror.getDoc().getValue();
-                }
-                let new_js_code = "";
-                if (self.is_d3) {
-                    new_js_code = self.myJSCodeMirror.getDoc().getValue();
-                }
-                result_dict = {
-                    "module_name": self.resource_name,
-                    "category": category,
-                    "tags": tags,
-                    "notes": notes,
-                    "exports": self.exportManager.export_list,
-                    "options": self.optionManager.option_dict,
-                    "extra_methods": self.methodManager.get_extra_functions(),
-                    "render_content_body": new_code,
-                    "is_mpl": self.is_mpl,
-                    "is_d3": self.is_d3,
-                    "draw_plot_body": new_dp_code,
-                    "jscript_body": new_js_code,
-                    "last_saved": self.this_viewer
-                };
-            }
-
+            category = null;
+            result_dict = {
+                "module_name": self.resource_name,
+                "category": category,
+                "tags": tags,
+                "notes": notes,
+                "new_code": new_code,
+                "last_saved": self.this_viewer
+            };
             postAjax("update_module", result_dict, function (data) {
                 if (data.success) {
                     self.save_success(data, new_code, tags, notes, category);
@@ -253,37 +220,16 @@ class ModuleViewerAbstract extends ResourceViewer {
                     reject(data)
                 }
             });
+
         })
     }
 
     save_success(data, new_code, tags, notes, category) {
         let self = this;
-        if ((self.this_viewer == "creator") && (data.render_content_line_number != 0)) {
-            self.myCodeMirror.setOption("firstLineNumber", data.render_content_line_number + 1);
-            self.myCodeMirror.refresh()
-        }
-        if ((self.this_viewer == "creator") && (data.extra_methods_line_number != 0)) {
-            self.methodManager.extra_methods_line_number = data.extra_methods_line_number;
-            self.methodManager.cmobject.setOption("firstLineNumber", data.extra_methods_line_number);
-            self.methodManager.cmobject.refresh()
-        }
-        if ((self.this_viewer == "creator") && (self.is_mpl) && (data.draw_plot_line_number != 0)) {
-            self.myDPCodeMirror.setOption("firstLineNumber", data.draw_plot_line_number + 1);
-            self.myDPCodeMirror.refresh();
-        }
         self.savedContent = new_code;
         self.savedTags = tags;
         self.savedNotes = notes;
         data.timeout = 2000;
-        if (self.this_viewer == "creator") {
-            self.savedCategory = category;
-            if (self.is_mpl) {
-                self.savedDPCode = self.myDPCodeMirror.getDoc().getValue();
-            }
-            if (self.is_d3) {
-                self.savedJSCode = self.myJSCodeMirror.getDoc().getValue();
-            }
-        }
     }
 
     saveMe() {

@@ -54,6 +54,7 @@ class QWorker(gevent.Greenlet):
             self.my_id = os.environ.get("MY_ID")
         else:
             self.my_id = "host"
+        print "my_id is " + self.my_id
         self.hibernating = False
         self.handler_instances = {"this_worker": self}
 
@@ -86,7 +87,9 @@ class QWorker(gevent.Greenlet):
             else:
                 # self.debug_log("No result yet for post_and_wait after tries " + str(i))
                 time.sleep(sleep_time)
-        error_string = "post_and_wait timed out with msg_type {}, destination {}, and source".format(task_type, dest_id, self.my_id)
+        error_string = "post_and_wait timed out with msg_type {}, destination {}, and source".format(task_type,
+                                                                                                     dest_id,
+                                                                                                     self.my_id)
         self.debug_log(error_string)
         raise Exception(error_string)
 
@@ -160,7 +163,6 @@ class QWorker(gevent.Greenlet):
                     else:
                         gevent.sleep(self.short_sleep_period)
 
-
     def handle_event(self, task_packet):
         task_type = task_packet["task_type"]
         if task_type in task_worthy_methods.keys():
@@ -177,7 +179,7 @@ class QWorker(gevent.Greenlet):
                     self.submit_response(task_packet)
                 except Exception as ex:
                     special_string = "Error submitting response for task type {} for my_id {}".format(task_type,
-                                                                                                     self.my_id)
+                                                                                                      self.my_id)
                     self.handle_exception(ex, special_string)
         else:
             self.debug_log("Got invalid task type {} for my_id {}".format(task_type, self.my_id))

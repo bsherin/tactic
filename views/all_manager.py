@@ -6,7 +6,7 @@ from flask import jsonify, render_template, url_for, request
 from tactic_app import app, db, use_ssl
 import tactic_app
 
-from resource_manager import ResourceManager
+from tactic_app.resource_manager import ResourceManager
 from tactic_app.users import User
 global_tile_manager = tactic_app.global_tile_manager
 repository_user = User.get_user_by_username("repository")

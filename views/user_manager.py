@@ -3,7 +3,7 @@ from flask import jsonify
 from flask_login import login_required, current_user
 from tactic_app import app
 from tactic_app.users import get_all_users, remove_user
-from resource_manager import ResourceManager
+from tactic_app.resource_manager import ResourceManager
 
 class UserManager(ResourceManager):
     def add_rules(self):
