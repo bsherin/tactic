@@ -6,9 +6,7 @@ import copy
 from flask import render_template, request, jsonify, url_for
 from flask_login import login_required, current_user
 from tactic_app import app, db, use_ssl
-from tactic_app.tile_code_parser import TileParser
 from tactic_app.integrated_docs import api_dict_by_category, api_dict_by_name, ordered_api_categories
-# from tactic_app.tile_code_parser import TileParser
 
 from user_manage_views import tile_manager
 import datetime
@@ -128,28 +126,14 @@ def update_module():
         mdata["notes"] = data_dict["notes"]
         mdata["updated"] = datetime.datetime.today()
         mdata["last_viewer"] = last_saved
-
-        try:
-            tp = TileParser(module_code)
-            mdata["type"] = tp.type
-            parse_success = True
-            parse_error_string = ""
-        except:
-            parse_error_string = "error parsing code" + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-            mdata["type"] = ""
-            parse_success = False
-
+        mdata["type"] = ""
         db[current_user.tile_collection_name].update_one({"tile_module_name": module_name},
                                                          {'$set': {"tile_module": module_code, "metadata": mdata,
                                                                    "last_saved": last_saved}})
         create_recent_checkpoint(module_name)
         tile_manager.update_selector_list()
-        if parse_success:
-            return jsonify({"success": True, "message": "Module Successfully Saved",
-                            "alert_type": "alert-success"})
-        else:
-            message = "Module saved but " + parse_error_string
-            return jsonify({"success": True, "message": message, "alert_type": "alert-warning"})
+        return jsonify({"success": True, "message": "Module Successfully Saved",
+                        "alert_type": "alert-success"})
     except:
         error_string = "Error saving module " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
