@@ -149,7 +149,6 @@ class ResourceManager(object):
         the_html += "</tr>"
         return the_html
 
-
     def build_resource_array(self, res_list):
         larray = [["Name", "Created", "Updated", "Tags"]]
         for res_item in res_list:
@@ -183,6 +182,7 @@ class ResourceManager(object):
         res_array = self.build_resource_array([new_item])
         table_row = self.build_one_table_row(res_array[1])
         return table_row
+
 
 class UserManageResourceManager(ResourceManager):
 

@@ -162,6 +162,13 @@ class HostWorker(QWorker):
         return {"success": True}
 
     @task_worthy
+    def update_tile_selector_list(self, data):
+        user_id = data["user_id"]
+        user_obj = load_user(user_id)
+        tile_manager.update_selector_list(user_obj=user_obj)
+        return {"success": True}
+
+    @task_worthy
     def update_project_selector_list(self, data):
         user_id = data["user_id"]
         user_obj = load_user(user_id)

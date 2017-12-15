@@ -10,11 +10,10 @@ import qworker
 from flask import render_template, Flask
 from tile_code_parser import TileParser, remove_indents, insert_indents
 
-from bson.binary import Binary
-
 import sys, os
 sys.stdout = sys.stderr
 import time
+
 
 class ModuleViewerWorker(QWorker):
     def __init__(self):
@@ -22,24 +21,41 @@ class ModuleViewerWorker(QWorker):
         QWorker.__init__(self)
         print "QWorker initialized"
         self.tp = None
+        self.tstring = None
+        self.module_name = None
+        self.user_id = None
+        self.db = None
+        self.tile_collection_name = None
+        self.tile_instance = None
         return
+
+    @task_worthy
+    def initialize_parser(self, data_dict):
+        self.tstring = data_dict["version_string"]
+        self.module_name = data_dict["module_name"]
+        self.user_id = data_dict["user_id"]
+        try:
+            client = pymongo.MongoClient(data_dict["mongo_uri"], serverSelectionTimeoutMS=10)
+            client.server_info()
+            # noinspection PyUnresolvedReferences
+            self.db = client.tacticdb
+        except:
+            error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+            print error_string
+            self.mworker.debug_log("error getting pymongo client: " + error_string)
+            sys.exit()
+        self.tile_collection_name = data_dict["tile_collection_name"]
+        tile_dict = self.db[self.tile_collection_name].find_one({"tile_module_name": self.module_name})
+        module_code = tile_dict["tile_module"]
+        self.user_id = os.environ.get("OWNER")
+        self.tp = TileParser(module_code)
+        self.tp.reparse(self.tp.rebuild_in_canonical_form())
+
+        return {"success": True, "the_content": self.assemble_parse_information()}
 
     @task_worthy
     def hello(self, data_dict):
         return {"success": True, "message": 'This is a tile communicating'}
-
-    def ask_host(self, msg_type, task_data=None, callback_func=None):
-        task_data["main_id"] = self.tile_instance.main_id
-        self.post_task("host", msg_type, task_data, callback_func)
-        return
-
-    def emit_tile_message(self, message, data=None):
-        if data is None:
-            data = {}
-        data["tile_message"] = message
-        data["tile_id"] = self.my_id
-        self.ask_host("emit_tile_message", data)
-        return
 
     def handle_exception(self, ex, special_string=None):
         if special_string is None:
@@ -51,20 +67,11 @@ class ModuleViewerWorker(QWorker):
         print error_string
         return {"success": False, "message_string": error_string}
 
-    # def grab_metadata(self, module_name):
-    #     doc = self.db[self.tile_collection_name].find_one({"tile_module_name": module_name})
-    #     if "metadata" in doc:
-    #         mdata = doc["metadata"]
-    #     else:
-    #         mdata = {"datestring": "", "tags": "", "notes": ""}
-    #     return mdata
-
     @task_worthy
     def reintiailize_parser(self, data_dict):
         module_code = data_dict["new_module_code"]
         self.tp.reparse(module_code)
         return {"success": True, "the_content": self.assemble_parse_information()}
-
 
     def build_code(self, data_dict):
         export_list = data_dict["exports"]
@@ -109,11 +116,11 @@ class ModuleViewerWorker(QWorker):
         recent_history.append({"updated": tile_dict["metadata"]["updated"],
                                "tile_module": tile_dict["tile_module"]})
         self.db[self.tile_collection_name].update_one({"tile_module_name": module_name},
-                                                         {'$set': {"recent_history": recent_history}})
+                                                      {'$set': {"recent_history": recent_history}})
         return
 
     @task_worthy
-    def update_module(self, data_dict):  # tactic_working
+    def update_module(self, data_dict):
         try:
             module_name = data_dict["module_name"]
             module_code = self.build_code(data_dict)
@@ -137,20 +144,18 @@ class ModuleViewerWorker(QWorker):
             else:
                 mdata["type"] = "standard"
 
-
             self.db[self.tile_collection_name].update_one({"tile_module_name": module_name},
-                                                             {'$set': {"tile_module": module_code, "metadata": mdata,
-                                                                       "last_saved": "creator"}})
+                                                          {'$set': {"tile_module": module_code, "metadata": mdata,
+                                                                    "last_saved": "creator"}})
             self.create_recent_checkpoint(module_name)
-            # tile_manager.update_selector_list()  # tactic_working put this back in somehow
+            self.post_task("host", "update_tile_selector_list", {'user_id': self.user_id})
             return {"success": True, "message": "Module Successfully Saved",
-                            "alert_type": "alert-success", "render_content_line_number": render_content_line_number,
-                            "draw_plot_line_number": draw_plot_line_number,
-                            "extra_methods_line_number": extra_methods_line_number}
+                    "alert_type": "alert-success", "render_content_line_number": render_content_line_number,
+                    "draw_plot_line_number": draw_plot_line_number,
+                    "extra_methods_line_number": extra_methods_line_number}
         except:
             error_string = "Error saving module " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
             return {"success": False, "message": error_string, "alert_type": "alert-warning"}
-
 
     def assemble_parse_information(self):
         for option in self.tp.options:
@@ -196,32 +201,6 @@ class ModuleViewerWorker(QWorker):
                        "draw_plot_line_number": draw_plot_line_number,
                        "extra_methods_line_number": extra_methods_line_number}
         return parsed_data
-
-    @task_worthy
-    def initialize_parser(self, data_dict):
-        self.tstring = data_dict["version_string"]
-        print "in initialize parser with data_dict " + str(data_dict)
-        self.module_name = data_dict["module_name"]
-        try:
-            client = pymongo.MongoClient(data_dict["mongo_uri"], serverSelectionTimeoutMS=10)
-            client.server_info()
-            # noinspection PyUnresolvedReferences
-            self.db = client.tacticdb
-        except:
-            error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-            print error_string
-            self.mworker.debug_log("error getting pymongo client: " + error_string)
-            sys.exit()
-        self.tile_collection_name = data_dict["tile_collection_name"]
-        tile_dict = self.db[self.tile_collection_name].find_one({"tile_module_name": self.module_name})
-        module_code = tile_dict["tile_module"]
-        self.user_id = os.environ.get("OWNER")
-        self.tp = TileParser(module_code)
-        self.tp.reparse(self.tp.rebuild_in_canonical_form())
-
-        # mdata = self.grab_metadata(self.module_name)
-
-        return {"success": True, "the_content": self.assemble_parse_information()}
 
     @task_worthy
     def get_options(self, data_dict):

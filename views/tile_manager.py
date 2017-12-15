@@ -18,6 +18,7 @@ repository_user = User.get_user_by_username("repository")
 import datetime
 tstring = datetime.datetime.now().strftime("%Y-%H-%M-%S")
 
+
 # noinspection PyMethodMayBeStatic,PyBroadException
 class TileManager(UserManageResourceManager):
     collection_list = "tile_module_names"
@@ -206,7 +207,7 @@ class TileManager(UserManageResourceManager):
 
         return the_content
 
-    def view_in_creator(self, module_name):  # tactic_working
+    def view_in_creator(self, module_name):
         self.clear_old_recent_history(module_name)
         option_types = [{"name": "text"},
                         {"name": "int"},

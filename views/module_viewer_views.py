@@ -6,6 +6,8 @@ import copy
 from flask import render_template, request, jsonify, url_for
 from flask_login import login_required, current_user
 from tactic_app import app, db, use_ssl
+from tactic_app.tile_code_parser import TileParser
+from tactic_app.integrated_docs import api_dict_by_category, api_dict_by_name, ordered_api_categories
 # from tactic_app.tile_code_parser import TileParser
 
 from user_manage_views import tile_manager
@@ -82,6 +84,14 @@ def show_history_viewer(module_name):
                            button_groups=button_groups, version_string=tstring)
 
 
+@app.route('/get_api_dict', methods=['GET', 'POST'])
+@login_required
+def get_api_dict():
+    return jsonify({"success": True, "api_dict_by_name": api_dict_by_name,
+                    "api_dict_by_category": api_dict_by_category,
+                    "ordered_api_categories": ordered_api_categories})
+
+
 @app.route('/show_tile_differ/<module_name>', methods=['get', 'post'])
 @login_required
 def show_tile_differ(module_name):
@@ -100,25 +110,15 @@ def show_tile_differ(module_name):
                            button_groups=button_groups, version_string=tstring)
 
 
-
 @app.route('/update_module', methods=['post'])
 @login_required
-def update_module():  # tactic_working
+def update_module():
     try:
         data_dict = request.json
         module_name = data_dict["module_name"]
         last_saved = data_dict["last_saved"]
-        if last_saved == "viewer":
-            module_code = data_dict["new_code"]
-            extra_methods_line_number = None
-            render_content_line_number = None
-            draw_plot_line_number = None
-        else:
-            module_code = build_code(data_dict)
-            tp = TileParser(module_code)  # tactic_working
-            render_content_line_number = tp.get_starting_line("render_content")
-            draw_plot_line_number = tp.get_starting_line("draw_plot")
-            extra_methods_line_number = tp.get_starting_line(tp.extra_methods.keys()[0])
+        module_code = data_dict["new_code"]
+
         doc = db[current_user.tile_collection_name].find_one({"tile_module_name": module_name})
         if "metadata" in doc:
             mdata = doc["metadata"]
@@ -127,27 +127,29 @@ def update_module():  # tactic_working
         mdata["tags"] = data_dict["tags"]
         mdata["notes"] = data_dict["notes"]
         mdata["updated"] = datetime.datetime.today()
-        mdata["last_viewer"] = data_dict["last_saved"]
-        if mdata["last_viewer"] == "creator":
-            if data_dict["is_mpl"]:
-                mdata["type"] = "matplotlib"
-            elif data_dict["is_d3"]:
-                mdata["type"] = "d3"
-            else:
-                mdata["type"] = "standard"
-        else:
-            mdata["type"] = extract_type(module_code)
+        mdata["last_viewer"] = last_saved
+
+        try:
+            tp = TileParser(module_code)
+            mdata["type"] = tp.type
+            parse_success = True
+            parse_error_string = ""
+        except:
+            parse_error_string = "error parsing code" + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+            mdata["type"] = ""
+            parse_success = False
 
         db[current_user.tile_collection_name].update_one({"tile_module_name": module_name},
                                                          {'$set': {"tile_module": module_code, "metadata": mdata,
                                                                    "last_saved": last_saved}})
         create_recent_checkpoint(module_name)
         tile_manager.update_selector_list()
-        return jsonify({"success": True, "message": "Module Successfully Saved",
-                        "alert_type": "alert-success", "render_content_line_number": render_content_line_number,
-                        "draw_plot_line_number": draw_plot_line_number,
-                        "extra_methods_line_number": extra_methods_line_number})
+        if parse_success:
+            return jsonify({"success": True, "message": "Module Successfully Saved",
+                            "alert_type": "alert-success"})
+        else:
+            message = "Module saved but " + parse_error_string
+            return jsonify({"success": True, "message": message, "alert_type": "alert-warning"})
     except:
         error_string = "Error saving module " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
-
