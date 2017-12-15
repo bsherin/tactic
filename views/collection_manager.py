@@ -21,6 +21,7 @@ AUTOSPLIT_SIZE = 10000
 import datetime
 tstring = datetime.datetime.now().strftime("%Y-%H-%M-%S")
 
+
 # noinspection PyMethodMayBeStatic,PyBroadException
 class CollectionManager(UserManageResourceManager):
     collection_list = "data_collections"
@@ -43,7 +44,7 @@ class CollectionManager(UserManageResourceManager):
         app.add_url_rule('/combine_collections/<base_collection_name>/<collection_to_add>', "combine_collections",
                          login_required(self.combine_collections), methods=['post', 'get'])
 
-    def main(self, collection_name):  # tactic_working
+    def main(self, collection_name):
         user_obj = current_user
         cname = user_obj.build_data_collection_name(collection_name)
         try:

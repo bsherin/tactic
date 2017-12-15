@@ -197,10 +197,14 @@
         console.log(module_name);
 
         window.onload = start_post_load;
+
         window.onbeforeunload = function(e) {
             if (dirty()) {
                 return "Any unsaved changes will be lost."
             }
         };
+        window.onunload = function (e) {
+        removeCreatorwindow()
+    }
     </script>
 {% endblock %}

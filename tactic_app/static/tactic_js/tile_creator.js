@@ -46,6 +46,7 @@ class CreatorViewer extends ModuleViewerAbstract {
                         "module_viewer_id": module_viewer_id,
                         "tile_collection_name": tile_collection_name,
                         "mongo_uri": mongo_uri,
+                        "user_id": user_id,
                         "version_string": version_string};
         postWithCallback(module_viewer_id, "initialize_parser", the_content, this.got_parsed_data);
 
@@ -53,6 +54,9 @@ class CreatorViewer extends ModuleViewerAbstract {
 
     got_parsed_data(data_object) {
         creator_viewer.parsed_data = data_object["the_content"];
+        creator_viewer.savedMethods = creator_viewer.parsed_data.extra_functions;
+        creator_viewer.is_mpl = creator_viewer.parsed_data.is_mpl;
+        creator_viewer.is_d3 = creator_viewer.parsed_data.is_d3;
         creator_viewer.setup_code_areas();
         creator_viewer.setup_resource_modules();
         self = creator_viewer;
@@ -130,10 +134,6 @@ class CreatorViewer extends ModuleViewerAbstract {
     }
 
     setup_code_areas() {
-        this.savedMethods = this.parsed_data.extra_functions;
-        this.is_mpl = this.parsed_data.is_mpl;
-        this.is_d3 = this.parsed_data.is_d3;
-
         const codearea = document.getElementById("codearea");
         this.myCodeMirror = this.createCMArea(codearea, false, this.parsed_data.render_content_code, this.parsed_data.render_content_line_number + 1);
         this.savedCode = this.myCodeMirror.getDoc().getValue();
@@ -169,7 +169,6 @@ class CreatorViewer extends ModuleViewerAbstract {
                     }
                 });
         }
-
     }
 
     setup_resource_modules() {
@@ -186,7 +185,7 @@ class CreatorViewer extends ModuleViewerAbstract {
             const resource_module_template = $(template).filter('#resource-module-template').html();
 
             // Note there's a kluge here: these managers require the global variable parsed_data to be set.
-            let extras = {"viewer": self, "module_viewer_id": module_viewer_id}
+            let extras = {"viewer": self, "module_viewer_id": module_viewer_id};
             self.resource_managers["option_module"] = new OptionManager("option_module", "option", resource_module_template, "#option-module-holder", extras);
             self.resource_managers["export_module"] = new ExportManager("export_module", "export", resource_module_template, "#export-module-holder", extras);
             self.resource_managers["method_module"] = new MethodManager("method_module", "method", resource_module_template, "#method-module-holder", extras);
@@ -196,6 +195,83 @@ class CreatorViewer extends ModuleViewerAbstract {
             $("#option-create-button").on("click", {"manager": self.resource_managers["option_module"]}, self.resource_managers["option_module"].createNewOption);
 
         });
+    }
+
+    doSavePromise() {
+        let self = this;
+        return new Promise (function (resolve, reject) {
+            const new_code = self.myCodeMirror.getDoc().getValue();
+            const tags = self.get_tags_string();
+            const notes = $("#notes").val();
+            let result_dict;
+            let category;
+
+            category = $("#category").val();
+            if (category.length == 0) {
+                category = "basic"
+            }
+            let new_dp_code = "";
+            if (self.is_mpl) {
+                new_dp_code = self.myDPCodeMirror.getDoc().getValue();
+            }
+            let new_js_code = "";
+            if (self.is_d3) {
+                new_js_code = self.myJSCodeMirror.getDoc().getValue();
+            }
+            result_dict = {
+                "module_name": self.resource_name,
+                "category": category,
+                "tags": tags,
+                "notes": notes,
+                "exports": self.exportManager.export_list,
+                "options": self.optionManager.option_dict,
+                "extra_methods": self.methodManager.get_extra_functions(),
+                "render_content_body": new_code,
+                "is_mpl": self.is_mpl,
+                "is_d3": self.is_d3,
+                "draw_plot_body": new_dp_code,
+                "jscript_body": new_js_code,
+                "last_saved": self.this_viewer
+            };
+            postWithCallback(module_viewer_id, "update_module", result_dict, function (data) {
+                if (data.success) {
+                    self.save_success(data, new_code, tags, notes, category);
+                    data.new_code = new_code;
+                    resolve(data)
+                }
+                else {
+                    reject(data)
+                }
+            })
+        })
+    }
+
+    save_success(data, new_code, tags, notes, category) {
+        let self = this;
+        if (data.render_content_line_number != 0) {
+            self.myCodeMirror.setOption("firstLineNumber", data.render_content_line_number + 1);
+            self.myCodeMirror.refresh()
+        }
+        if (data.extra_methods_line_number != 0) {
+            self.methodManager.extra_methods_line_number = data.extra_methods_line_number;
+            self.methodManager.cmobject.setOption("firstLineNumber", data.extra_methods_line_number);
+            self.methodManager.cmobject.refresh()
+        }
+        if ((self.is_mpl) && (data.draw_plot_line_number != 0)) {
+            self.myDPCodeMirror.setOption("firstLineNumber", data.draw_plot_line_number + 1);
+            self.myDPCodeMirror.refresh();
+        }
+        self.savedContent = new_code;
+        self.savedTags = tags;
+        self.savedNotes = notes;
+        data.timeout = 2000;
+        self.savedCategory = category;
+        if (self.is_mpl) {
+            self.savedDPCode = self.myDPCodeMirror.getDoc().getValue();
+        }
+        if (self.is_d3) {
+            self.savedJSCode = self.myJSCodeMirror.getDoc().getValue();
+        }
     }
 
     set_metadata_fields(created, tags, notes, category=null) {
@@ -646,3 +722,6 @@ class MethodManager extends CreatorResourceManager {
     }
 }
 
+function removeCreatorwindow() {
+    postAsyncFalse("host", "remove_mainwindow_task", {"main_id": main_id})
+}
