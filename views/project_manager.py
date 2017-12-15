@@ -8,7 +8,7 @@ import zlib
 import tactic_app
 from tactic_app import app, db, fs, use_ssl, mongo_uri
 from tactic_app.docker_functions import create_container, ContainerCreateError
-from resource_manager import ResourceManager, UserManageResourceManager
+from tactic_app.resource_manager import ResourceManager, UserManageResourceManager
 from tactic_app.users import User
 global_tile_manager = tactic_app.global_tile_manager
 repository_user = User.get_user_by_username("repository")

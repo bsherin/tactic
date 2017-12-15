@@ -7,16 +7,17 @@ from flask import render_template, request, jsonify, url_for
 from flask_login import login_required, current_user
 from tactic_app.integrated_docs import api_html, api_dict_by_category, ordered_api_categories
 import tactic_app
-from tactic_app import app, db, socketio, use_ssl
-from tactic_app.tile_code_parser import get_base_classes, extract_type
-from resource_manager import ResourceManager, UserManageResourceManager
+from tactic_app import app, db, mongo_uri, socketio, use_ssl
+from tactic_app.resource_manager import ResourceManager, UserManageResourceManager
 from tactic_app.users import User
+from tactic_app.docker_functions import create_container, ContainerCreateError
 
 global_tile_manager = tactic_app.global_tile_manager
 repository_user = User.get_user_by_username("repository")
 
 import datetime
 tstring = datetime.datetime.now().strftime("%Y-%H-%M-%S")
+
 
 # noinspection PyMethodMayBeStatic,PyBroadException
 class TileManager(UserManageResourceManager):
@@ -188,6 +189,24 @@ class TileManager(UserManageResourceManager):
             result = self.view_module(module_name)
         return result
 
+    def initialize_module_viewer_container(self, module_name):
+        user_obj = current_user
+        try:
+            module_viewer_id, container_id = create_container("module_viewer_image", owner=user_obj.get_id(),
+                                                              other_name=module_name)
+        except ContainerCreateError:
+            return render_template("error_window_template.html",
+                                   window_tile="Failure",
+                                   error_string="Load failed: Could not create container",
+                                   version_string=tstring)
+
+        the_content = {"module_name": module_name,
+                       "module_viewer_id": module_viewer_id,
+                       "container_id": container_id,
+                       "tile_collection_name": user_obj.tile_collection_name}
+
+        return the_content
+
     def view_in_creator(self, module_name):
         self.clear_old_recent_history(module_name)
         option_types = [{"name": "text"},
@@ -213,6 +232,7 @@ class TileManager(UserManageResourceManager):
                 new_list.append({"name": api_item["name"]})
             if len(new_list) > 0:
                 revised_api_dlist.append({"cat_name": cat, "cat_list": new_list})
+        the_content = self.initialize_module_viewer_container(module_name)
         return render_template("user_manage/tile_creator.html",
                                module_name=module_name,
                                read_only_string="",
@@ -220,7 +240,10 @@ class TileManager(UserManageResourceManager):
                                option_types=option_types,
                                api_dlist=revised_api_dlist,
                                uses_codemirror="True",
-                               version_string=tstring)
+                               version_string=tstring,
+                               mongo_uri=mongo_uri,
+                               module_viewer_id=the_content["module_viewer_id"],
+                               tile_collection_name=the_content["tile_collection_name"])
 
     def load_tile_module(self, tile_module_name, return_json=True, user_obj=None):
         try:
@@ -228,6 +251,7 @@ class TileManager(UserManageResourceManager):
                 user_obj = current_user
             tile_module = user_obj.get_tile_module(tile_module_name)
 
+            # tactic_todo doing post_and_wait in main loop
             res_dict = tactic_app.host_worker.post_and_wait(global_tile_manager.test_tile_container_id, "load_source",
                                                             {"tile_code": tile_module})
             if not res_dict["success"]:
@@ -274,7 +298,8 @@ class TileManager(UserManageResourceManager):
                             "message": "A module with that name already exists"})
         the_module = f.read()
         metadata = global_tile_manager.create_initial_metadata()
-        metadata["type"] = extract_type(the_module)
+        tp = TileParser(the_module)
+        metadata["type"] = tp.type
         data_dict = {"tile_module_name": f.filename, "tile_module": the_module, "metadata": metadata}
         db[user_obj.tile_collection_name].insert_one(data_dict)
         table_row = self.create_new_row(f.filename, metadata)

@@ -13,6 +13,12 @@ services:
       dockerfile: Dockerfile-main
     image: tactic_main_image
 
+  tactic_module_viewer:
+    build:
+      context: .
+      dockerfile: Dockerfile-module-viewer
+    image: module_viewer_image
+
   tactic_tile:
     build:
       context: .

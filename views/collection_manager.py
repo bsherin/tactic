@@ -11,7 +11,7 @@ import tactic_app
 from tactic_app.file_handling import read_csv_file_to_dict, read_tsv_file_to_dict, read_txt_file_to_dict
 from tactic_app.file_handling import read_freeform_file
 
-from resource_manager import ResourceManager, UserManageResourceManager
+from tactic_app.resource_manager import ResourceManager, UserManageResourceManager
 global_tile_manager = tactic_app.global_tile_manager
 repository_user = User.get_user_by_username("repository")
 
@@ -20,6 +20,7 @@ AUTOSPLIT_SIZE = 10000
 
 import datetime
 tstring = datetime.datetime.now().strftime("%Y-%H-%M-%S")
+
 
 # noinspection PyMethodMayBeStatic,PyBroadException
 class CollectionManager(UserManageResourceManager):

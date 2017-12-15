@@ -6,7 +6,7 @@ def do_docker_cleanup():
 
     all_containers = cli.containers.list(all=True)
 
-    tactic_script_names = ["forwarder_main.py", "megaplex_main:app", "tile_main.py", "main_main.py"]
+    tactic_script_names = ["forwarder_main.py", "megaplex_main:app", "tile_main.py", "main_main.py", "module_viewer_main.py"]
     for cont in all_containers:
         for arg in cont.attrs["Args"]:
             if arg in tactic_script_names:
