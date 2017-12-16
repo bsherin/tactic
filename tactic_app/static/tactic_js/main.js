@@ -55,22 +55,29 @@ function start_post_load() {
             });
     socket.on('finish-post-load', function (data) {
         if (is_project) {
-            _collection_name = data.collection_name;
-            doc_names = data.doc_names;
-            $("#doc-selector-label").html(data.short_collection_name);
             $("#console").html(data.console_html);
-            let doc_popup = "";
-            for (let dname of doc_names) {
-                doc_popup = doc_popup + `<option>${dname}</option>`
+            if (!is_notebook) {
+                _collection_name = data.collection_name;
+                doc_names = data.doc_names;
+                $("#doc-selector-label").html(data.short_collection_name);
+                let doc_popup = "";
+                for (let dname of doc_names) {
+                    doc_popup = doc_popup + `<option>${dname}</option>`
+                }
+                $("#doc-selector").html(doc_popup)
             }
-            $("#doc-selector").html(doc_popup)
-
         }
-        postWithCallback("host", "get_tile_types", {"user_id": user_id}, function (data) {
-            tile_types = data.tile_types;
+        if (is_notebook) {
             build_and_render_menu_objects();
             continue_loading()
-        })
+        }
+        else {
+            postWithCallback("host", "get_tile_types", {"user_id": user_id}, function (data) {
+                tile_types = data.tile_types;
+                build_and_render_menu_objects();
+                continue_loading()
+            })
+        }
     });
     socket.on("window-open", function(data) {
         window.open($SCRIPT_ROOT + "/load_temp_page/" + data["the_id"])
@@ -113,27 +120,51 @@ function start_post_load() {
 }
 
 function continue_loading() {
-    socket.on('update-menus', function() {
-        postWithCallback("host", "get_tile_types", {"user_id": user_id}, function (data) {
-            tile_types = data.tile_types;
-            clear_all_menus();
-            build_and_render_menu_objects();
-        })});
-    socket.on('change-doc', function(data){
-        $("#doc-selector").val(data.doc_name);
-        if (table_is_shrunk) {
-            tableObject.expandTable()
-        }
-        if (data.hasOwnProperty("row_id")) {
-            change_doc($("#doc-selector")[0], data.row_id)
+    if (!is_notebook) {
+        socket.on('update-menus', function() {
+            postWithCallback("host", "get_tile_types", {"user_id": user_id}, function (data) {
+                tile_types = data.tile_types;
+                clear_all_menus();
+                build_and_render_menu_objects();
+            })});
+        socket.on('change-doc', function(data){
+            $("#doc-selector").val(data.doc_name);
+            if (table_is_shrunk) {
+                tableObject.expandTable()
+            }
+            if (data.hasOwnProperty("row_id")) {
+                change_doc($("#doc-selector")[0], data.row_id)
+            }
+            else {
+                change_doc($("#doc-selector")[0], null)
+            }
+
+        });
+    }
+
+    if (_project_name != "") {
+        if (is_notebook) {
+            $("#outer-container").css("display", "block");
+            tableObject = new TableObjectClass(({}));
+            postWithCallback(main_id, "get_saved_console_code", {}, function (data) {
+                    const saved_console_code = data["saved_console_code"];
+                    // global_scc = saved_console_code;
+                    for (let uid in saved_console_code) {
+                        if (!saved_console_code.hasOwnProperty(uid)) continue;
+                        console.log("getting codearea " + uid);
+                        const codearea = document.getElementById(uid);
+                        codearea.innerHTML = "";
+                        consoleObject.createConsoleCodeInCodearea(uid, codearea);
+                        consoleObject.consoleCMObjects[uid].doc.setValue(saved_console_code[uid]);
+                        consoleObject.consoleCMObjects[uid].refresh();
+                    }
+                });
+            consoleObject.prepareNotebook();
+            menus["Project"].enable_menu_item("save");
+            stopSpinner();
         }
         else {
-            change_doc($("#doc-selector")[0], null)
-        }
-
-    });
-    if (_project_name != "") {
-        postWithCallback(main_id, "grab_project_data", {"doc_name": String(doc_names[0])}, function(data) {
+            postWithCallback(main_id, "grab_project_data", {"doc_name": String(doc_names[0])}, function(data) {
                 console.log("Entering grab_project_data callback");
                 // $("#loading-message").css("display", "none");
                 // $("#reload-message").css("display", "none");
@@ -177,7 +208,7 @@ function continue_loading() {
                     else {
                         table_is_shrunk = false
                     }
-                    
+
                     menus["Project"].enable_menu_item("save");
                     postWithCallback(main_id, "DisplayCreateErrors", {});
                     stopSpinner();
@@ -201,7 +232,16 @@ function continue_loading() {
                     })
                 })
             }
+        }
     else {
+        if (is_notebook) {
+            $("#outer-container").css("display", "block");
+            tableObject = new TableObjectClass(({}));
+            consoleObject.prepareNotebook();
+            stopSpinner();
+            clearStatusMessage();
+        }
+        else {
             postWithCallback(main_id, "grab_data", {"doc_name":String(doc_names[0])}, function (data) {
                 // $("#loading-message").css("display", "none");
                 // $("#reload-message").css("display", "none");
@@ -214,20 +254,22 @@ function continue_loading() {
             })
         }
 
-    $("#tile-div").sortable({
-        handle: '.panel-heading',
-        tolerance: 'pointer',
-        revert: 'invalid',
-        forceHelperSize: true,
-        stop: function() {
-            const new_sort_list = $("#tile-div").sortable("toArray");
-            postWithCallback(main_id, "UpdateSortList", {"sort_list": new_sort_list})
-        }
-    });
+    }
 
+    if (!is_notebook) {
+        $("#tile-div").sortable({
+            handle: '.panel-heading',
+            tolerance: 'pointer',
+            revert: 'invalid',
+            forceHelperSize: true,
+            stop: function() {
+                const new_sort_list = $("#tile-div").sortable("toArray");
+                postWithCallback(main_id, "UpdateSortList", {"sort_list": new_sort_list})
+            }
+        });
+    }
 
     initializeTooltips();
-    
 }
 
 function set_visible_doc(doc_name, func) {

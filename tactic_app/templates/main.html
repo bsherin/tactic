@@ -18,63 +18,65 @@
     </div>
 
     <div id="outer-container" style="display: none">
-        <div class="grid-left" align="left">
-            <div id="main-panel" class="panel panel-default">
-                <div class="panel-heading" id="data-title" style="overflow:hidden; white-space:nowrap">
-                    <div class="main-heading-element hidden-xs" style="float:right; display:inline-block">
-                        <form class="form-inline">
-                            <div class="input-group input-group-sm">
-                              <input type="text" id="search" class="form-control" size="10" placeholder="Search">
-                                 <span class="input-group-btn">
-                                    <button class="btn btn-default tooltip-top" id="search-button" data-toggle="tooltip" type="button" onclick="return doSearch(document.getElementById('search').value)" value="Find">Find</button>
-                                 </span>
-                            </div>
-                            {% if is_table %}
-                                <div class="btn-group btn-group-sm" role="group">
-                                    <button class="btn btn-default tooltip-bottom" id="filter-button" data-toggle="tooltip" onclick="return doFilter(document.getElementById('search').value)" value="Filter">Filter</button>
-                                    <button class="btn btn-default tooltip-top" id="unfilter-button" data-toggle="tooltip" onclick="return doUnfilter()" value="Unfilter">Unfilter</button>
+        {% if not is_notebook %}
+            <div class="grid-left" align="left">
+                <div id="main-panel" class="panel panel-default">
+                    <div class="panel-heading" id="data-title" style="overflow:hidden; white-space:nowrap">
+                        <div class="main-heading-element hidden-xs" style="float:right; display:inline-block">
+                            <form class="form-inline">
+                                <div class="input-group input-group-sm">
+                                  <input type="text" id="search" class="form-control" size="10" placeholder="Search">
+                                     <span class="input-group-btn">
+                                        <button class="btn btn-default tooltip-top" id="search-button" data-toggle="tooltip" type="button" onclick="return doSearch(document.getElementById('search').value)" value="Find">Find</button>
+                                     </span>
                                 </div>
-                            {% endif %}
-                       </form>
-                    </div>
-                    <div class="main-heading-element" style="float:left; display:inline-block; line-height:30px">
-                        <button type='button' id="shrink-table-button" data-toggle="tooltip" class='notclose tooltip-top' onclick="tableObject.shrinkTable()"><span class="glyphicon glyphicon-th"></span></button>
-                    </div>
-                    <div class="main-heading-element" style="float:left; display:inline-block">
-                        <form class="form-inline" style="display:inline">
-                          <span class="form-group">
-                            <label for="doc-selector" id="doc-selector-label" class="hidden-sm hidden-xs">{{short_collection_name}}: </label>
-                                <select id="doc-selector" style="max-width: 200px" class="form-control  tooltip-top" data-toggle="tooltip" onchange="change_doc(this, null)">
-                                    {% for dname in doc_names %}
-                                        <option>{{ dname }}</option>
-                                    {% endfor %}
-                                </select>
-                            </span>
-                        </form>
-                    </div>
-                    <span id="table-spin-place"></span><span id="table-status-msg-area" class="status-msg"></span>
-                </div>
-
-                <div id="table-wrapper" class="panel-body">
-                    {% if is_table %}
-                        <table id="table-area">
-                        </table>
-                    {% else %}
-                        <div id="freeform-area">
+                                {% if is_table %}
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <button class="btn btn-default tooltip-bottom" id="filter-button" data-toggle="tooltip" onclick="return doFilter(document.getElementById('search').value)" value="Filter">Filter</button>
+                                        <button class="btn btn-default tooltip-top" id="unfilter-button" data-toggle="tooltip" onclick="return doUnfilter()" value="Unfilter">Unfilter</button>
+                                    </div>
+                                {% endif %}
+                           </form>
                         </div>
-                    {% endif %}
-                </div>
-             </div>
-            <button type='button' id="table-icon" class="btn" onclick="tableObject.expandTable()"><span class="glyphicon glyphicon-th-list"></span></button>
+                        <div class="main-heading-element" style="float:left; display:inline-block; line-height:30px">
+                            <button type='button' id="shrink-table-button" data-toggle="tooltip" class='notclose tooltip-top' onclick="tableObject.shrinkTable()"><span class="glyphicon glyphicon-th"></span></button>
+                        </div>
+                        <div class="main-heading-element" style="float:left; display:inline-block">
+                            <form class="form-inline" style="display:inline">
+                              <span class="form-group">
+                                <label for="doc-selector" id="doc-selector-label" class="hidden-sm hidden-xs">{{short_collection_name}}: </label>
+                                    <select id="doc-selector" style="max-width: 200px" class="form-control  tooltip-top" data-toggle="tooltip" onchange="change_doc(this, null)">
+                                        {% for dname in doc_names %}
+                                            <option>{{ dname }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </span>
+                            </form>
+                        </div>
+                        <span id="table-spin-place"></span><span id="table-status-msg-area" class="status-msg"></span>
+                    </div>
 
-        </div>
+                    <div id="table-wrapper" class="panel-body">
+                        {% if is_table %}
+                            <table id="table-area">
+                            </table>
+                        {% else %}
+                            <div id="freeform-area">
+                            </div>
+                        {% endif %}
+                    </div>
+                 </div>
+                <button type='button' id="table-icon" class="btn" onclick="tableObject.expandTable()"><span class="glyphicon glyphicon-th-list"></span></button>
 
-        <div class="grid-right" align="left">
-            <div  class="panel panel-default" id="tile-area">
-                <div class="panel-body" id="tile-div">
+            </div>
+
+            <div class="grid-right" align="left">
+                <div  class="panel panel-default" id="tile-area">
+                    <div class="panel-body" id="tile-div">
+                    </div>
                 </div>
             </div>
-        </div>
+        {%  endif %}
         <div id="grid-bottom" style="display:block">
             <div id="console-panel" class="panel panel-default" style="display:inline-block; vertical-align:top">
                 <div id="console-heading" class="panel-heading">
@@ -93,23 +95,25 @@
                 </div>
                 <div id="console" class="panel-body">{{ console_html | safe }}</div>
             </div>
-            <div id="exports-panel" class="panel panel-default" style="display:none; vertical-align:top">
-                <div id="exports-heading" class="panel-heading" style="padding-top:2px; padding-bottom:2px">
-                    <button type='button' id="exports-send-console-button" data-toggle="tooltip" class='notclose bottom-heading-element'><span style="font-size:12px" class="glyphicon glyphicon-arrow-left"></span></button>
-                    <button type='button' id="exports-refresh-button" data-toggle="tooltip" class='notclose bottom-heading-element'><span style="font-size:12px" class="glyphicon glyphicon-repeat"></span></button>
-                    <button type='button' id="exports-show-button" class='notclose bottom-heading-element'> Eval </button>
-                     <form class="form-inline" style="display:inline-block">
-                            <select id="exports-popup" class="form-control input-sm bottom-heading-element" style="font-size:11px">
-                            </select>
-                           <select id="keys-popup" class="form-control input-sm bottom-heading-element" style="display:none; font-size:11px">
-                            </select>
-                            <input type="text" id="exports-tail" class="form-control input-sm bottom-heading-element">
-                     </form>
-                    <span id="exports-info" class="bottom-heading-element"></span>
-                    <span id="exports-spin-place" style="margin:7px"></span>
+            {% if not is_notebook %}
+                <div id="exports-panel" class="panel panel-default" style="display:none; vertical-align:top">
+                    <div id="exports-heading" class="panel-heading" style="padding-top:2px; padding-bottom:2px">
+                        <button type='button' id="exports-send-console-button" data-toggle="tooltip" class='notclose bottom-heading-element'><span style="font-size:12px" class="glyphicon glyphicon-arrow-left"></span></button>
+                        <button type='button' id="exports-refresh-button" data-toggle="tooltip" class='notclose bottom-heading-element'><span style="font-size:12px" class="glyphicon glyphicon-repeat"></span></button>
+                        <button type='button' id="exports-show-button" class='notclose bottom-heading-element'> Eval </button>
+                         <form class="form-inline" style="display:inline-block">
+                                <select id="exports-popup" class="form-control input-sm bottom-heading-element" style="font-size:11px">
+                                </select>
+                               <select id="keys-popup" class="form-control input-sm bottom-heading-element" style="display:none; font-size:11px">
+                                </select>
+                                <input type="text" id="exports-tail" class="form-control input-sm bottom-heading-element">
+                         </form>
+                        <span id="exports-info" class="bottom-heading-element"></span>
+                        <span id="exports-spin-place" style="margin:7px"></span>
+                    </div>
+                    <div id="exports-body" class="panel-body" style="display: none; overflow-y:scroll"></div>
                 </div>
-                <div id="exports-body" class="panel-body" style="display: none; overflow-y:scroll"></div>
-            </div>
+            {%  endif %}
         </div>
 </div>
 
@@ -128,9 +132,11 @@
     <script src="{{url_for('static', filename='tactic_js/main.js', v=version_string)}}"></script>
     {% if is_table %}
         <script src="{{url_for('static', filename='tactic_js/table.js', v=version_string)}}"></script>
-    {% else %}
+    {% elif is_freeform%}
         <script src="{{url_for('static', filename='js/codemirror/simple.js')}}"></script>
         <script src="{{url_for('static', filename='tactic_js/freeform.js', v=version_string)}}"></script>
+    {% else %}
+        <script src="{{url_for('static', filename='tactic_js/notebook.js', v=version_string)}}"></script>
     {% endif %}
     <script>
     console.log("running scripts");
@@ -144,14 +150,18 @@
     var user_id = "{{current_user.get_id()}}";
     var doc_names = {{ doc_names | safe }};
     var is_project = _project_name != "";
+    var is_notebook = "{{is_notebook}}"=="True";
+    var is_freeform = "{{is_freeform}}"=="True";
     var use_ssl = "{{use_ssl}}"=="True";
     var new_tile_info = "{{new_tile_info | safe}}";
     window.onload = start_post_load;
     window.onresize = function () {
         if (typeof tableObject != "undefined") {
-            tableObject.resize_table_area();
             consoleObject.resize_to_window();
-            exportViewerObject.resize_to_window()
+            if (!is_notebook) {
+                tableObject.resize_table_area();
+                exportViewerObject.resize_to_window()
+            }
         }
     };
     window.onbeforeunload = function(e) {
