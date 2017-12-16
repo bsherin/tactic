@@ -76,7 +76,7 @@ class ModuleViewerWorker(QWorker):
     def build_code(self, data_dict):
         export_list = data_dict["exports"]
         export_list_of_dicts = [{"name": exp["name"], "tags": exp["tags"]} for exp in
-                                export_list]  # tactic_working what does this accomplish?
+                                export_list]  # tactic_todo what does this accomplish?
         extra_methods = insert_indents(data_dict["extra_methods"], 1)
         render_content_body = insert_indents(data_dict["render_content_body"], 2)
         if data_dict["is_mpl"]:

@@ -166,10 +166,13 @@ class ConsoleObjectClass {
         gb.outerHeight(this.saved_console_size);
         pan.find(".triangle-right").hide();
         pan.find(".triangle-bottom").show();
-        exportViewerObject.exports_body.fadeIn();
+        if (!is_notebook){
+            exportViewerObject.exports_body.fadeIn();
+            exportViewerObject.update_height(gb.innerHeight());
+        }
+
         this.console_dom.fadeIn();
         consoleObject.update_height(gb.innerHeight());
-        exportViewerObject.update_height(gb.innerHeight());
         this.console_visible = true;
         tableObject.resize_table_area();
         this.turn_on_resize();
@@ -177,6 +180,7 @@ class ConsoleObjectClass {
             if (!this.consoleCMObjects.hasOwnProperty(uid)) continue;
             this.consoleCMObjects[uid].refresh()
         }
+
     }
 
     zoomConsole()  {
@@ -198,6 +202,23 @@ class ConsoleObjectClass {
         $("#show-exports-button").hide();
         $("#zoom-console-button").hide();
         $("#unzoom-console-button").show();
+    }
+
+    prepareNotebook() {
+        const pan = this.console_panel;
+        this.console_zoomed = true;
+        this.expandConsole();
+        this.turn_off_resize();
+        let gb = $("#grid-bottom");
+        gb.height(window.innerHeight - $("#grid-bottom").offset().top - BOTTOM_MARGIN);
+        this.update_height(gb.height());
+        let saved_fraction = this.current_width_fraction;
+        this.update_width(1);
+        pan.find(".triangle-bottom").hide();
+        pan.find(".triangle-right").hide();
+        $("#show-exports-button").hide();
+        $("#zoom-console-button").hide();
+        $("#unzoom-console-button").hide();
     }
 
     unzoomConsole() {

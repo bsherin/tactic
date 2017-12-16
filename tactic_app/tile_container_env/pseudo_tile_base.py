@@ -1,7 +1,8 @@
-import sys
+import sys, copy
 from StringIO import StringIO
 import ast
 from tile_base import TileBase, task_worthy
+
 
 # noinspection PyUnresolvedReferences
 from qworker import task_worthy_methods
@@ -37,12 +38,19 @@ class PseudoTileClass(TileBase, MplFigure):
         self.console_namespace = {"self": self}
         self.width = PSEUDO_WIDTH
         self.height = PSEUDO_HEIGHT
+        self.saved_globals = copy.copy(globals())
+        globals()["self"] = self
         return
 
     @task_worthy
     def clear_console_namespace(self, data):
         try:
-            self.console_namespace = {"self": self}
+            print "clearing namespace"
+            for attr in globals().keys():
+                if attr in self.saved_globals:
+                    globals()[attr] = self.saved_globals[attr]
+                else:
+                    del globals()[attr]
         except Exception as ex:
             data["result_string"] = self.handle_exception(ex, "Error clearing console namespace", print_to_console=False)
         return data
@@ -61,10 +69,10 @@ class PseudoTileClass(TileBase, MplFigure):
                 code_lines = the_code.splitlines()
                 code_to_eval = code_lines[lnumber]
                 code_to_exec = "\n".join(code_lines[:lnumber])
-                exec(code_to_exec, globals(), self.console_namespace)
-                print eval(code_to_eval, globals(), self.console_namespace)
+                exec(code_to_exec, globals(), globals())
+                print eval(code_to_eval, globals(), globals())
             else:
-                exec(data["the_code"], globals(), self.console_namespace)
+                exec(data["the_code"], globals(), globals())
             sys.stdout = old_stdout
         except Exception as ex:
             data["result_string"] = self.handle_exception(ex, "Error executing console code", print_to_console=False)
