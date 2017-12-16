@@ -38,6 +38,7 @@ class mainWindow(object):
     save_attrs = ["short_collection_name", "collection_name", "current_tile_id", "tile_sort_list", "left_fraction",
                   "is_shrunk", "doc_dict", "project_name", "loaded_modules", "user_id",
                   "console_html", "console_cm_code", "doc_type", "purgetiles"]
+    notebook_save_attrs = ["project_name", "user_id", "console_html", "console_cm_code", "doc_type"]
     update_events = ["CellChange", "FreeformTextChange", "CreateColumn", "SearchTable", "SaveTableSpec", "MainClose",
                      "DisplayCreateErrors", "DehighlightTable", "SetCellContent", "RemoveTile", "ColorTextInCell",
                      "FilterTable", "UnfilterTable", "TextSelect", "UpdateSortList", "UpdateLeftFraction",
@@ -90,22 +91,33 @@ class mainWindow(object):
             self.tile_sort_list = []
             self.left_fraction = INITIAL_LEFT_FRACTION
             self.is_shrunk = False
-            self.collection_name = data_dict["collection_name"]
-            print "collection_name is " + self.collection_name
-            self.short_collection_name = re.sub("^.*?\.data_collection\.", "", self.collection_name)
             self.project_name = None
             self.console_html = None
             self.console_cm_code = {}
             self.user_id = os.environ.get("OWNER")
-            self.doc_dict = self._build_doc_dict()
-            self.visible_doc_name = self.doc_dict.keys()[0]
             self.purgetiles = False
+            if self.doc_type == "notebook":
+                self.collection_name = ""
+                self.short_collection_name = ""
+                self.doc_dict = {}
+                self.visible_doc_name = ""
+            else:
+                self.collection_name = data_dict["collection_name"]
+                print "collection_name is " + self.collection_name
+                self.short_collection_name = re.sub("^.*?\.data_collection\.", "", self.collection_name)
+                self.doc_dict = self._build_doc_dict()
+                self.visible_doc_name = self.doc_dict.keys()[0]
+
         print "done with init"
 
     # Save and load-related methods
 
     def compile_save_dict(self):
         result = {}
+        if self.doc_type == "notebook":
+            save_attrs = self.notebook_save_attrs
+        else:
+            save_attrs = self.save_attrs
         for attr in self.save_attrs:
             attr_val = getattr(self, attr)
             if hasattr(attr_val, "compile_save_dict"):
@@ -117,20 +129,21 @@ class mainWindow(object):
                 result[attr] = res
             else:
                 result[attr] = attr_val
-        tile_instances = {}
-        for tile_id in self.tile_instances:
-            tile_save_dict = self.mworker.post_and_wait(tile_id, "compile_save_dict")
-            tile_instances[tile_id] = tile_save_dict  # tile_id isn't meaningful going forward.
-        result["tile_instances"] = tile_instances
-        if self.purgetiles:
-            used_modules = []
+        if not self.doc_type == "notebook":
+            tile_instances = {}
             for tile_id in self.tile_instances:
-                tile_type = self.get_tile_property(tile_id, "tile_type")
-                data = {"tile_type": tile_type, "user_id": self.user_id}
-                module_name = self.mworker.post_and_wait("host", "get_module_from_tile_type", data)["module_name"]
-                if module_name is not None:
-                    used_modules.append(module_name)
-            result["loaded_modules"] = used_modules
+                tile_save_dict = self.mworker.post_and_wait(tile_id, "compile_save_dict")
+                tile_instances[tile_id] = tile_save_dict  # tile_id isn't meaningful going forward.
+            result["tile_instances"] = tile_instances
+            if self.purgetiles:
+                used_modules = []
+                for tile_id in self.tile_instances:
+                    tile_type = self.get_tile_property(tile_id, "tile_type")
+                    data = {"tile_type": tile_type, "user_id": self.user_id}
+                    module_name = self.mworker.post_and_wait("host", "get_module_from_tile_type", data)["module_name"]
+                    if module_name is not None:
+                        used_modules.append(module_name)
+                result["loaded_modules"] = used_modules
         return result
 
     def show_main_message(self, message, timeout=None):
@@ -152,6 +165,37 @@ class mainWindow(object):
     def clear_main_status_message(self):
         data = {"main_id": self.mworker.my_id}
         self.mworker.post_task("host", "clear_main_status_message", data)
+
+    @task_worthy
+    def do_full_notebook_recreation(self, data_dict):
+        tile_containers = {}
+        try:
+            print "Entering do_full_recreation"
+            self.show_main_status_message("Entering do_full_recreation")
+            success = self.recreate_from_save(data_dict["project_collection_name"],
+                                                        data_dict["project_name"])
+            if not success:
+                self.show_main_status_message("Error trying to recreate the project from save")
+                self.show_error_window(tile_info_dict)
+                return
+            print "returning from recreate_from_save"
+
+            self.clear_main_status_message()
+            self.mworker.ask_host("emit_to_client", {"message": "finish-post-load",
+                                                     "collection_name": "",
+                                                     "short_collection_name": "",
+                                                     "doc_names": [],
+                                                     "console_html": self.console_html})
+
+        except Exception as ex:
+            container_list = [self.mworker.my_id] + tile_containers.keys()
+            self.mworker.ask_host("delete_container_list", {"container_list": container_list})
+            template = "An exception of type {0} occured. Arguments:\n{1!r}\n"
+            error_string = template.format(type(ex).__name__, ex.args)
+            error_string += traceback.format_exc()
+            error_string = "<pre>" + error_string + "</pre>"
+            self.show_error_window(error_string)
+        return
 
     @task_worthy
     def do_full_recreation(self, data_dict):
@@ -291,17 +335,24 @@ class mainWindow(object):
                 except TypeError:
                     setattr(self, attr, attr_val)
 
-        for attr in self.save_attrs:
+        if self.doc_type == "notebook":
+            save_attrs = self.notebook_save_attrs
+        else:
+            save_attrs = self.save_attrs
+        for attr in save_attrs:
             if attr not in project_dict:
                 setattr(self, attr, "")
 
-        tile_info_dict = {}
-        for old_tile_id, tile_save_dict in project_dict["tile_instances"].items():
-            tile_info_dict[old_tile_id] = tile_save_dict["tile_type"]
-        self.project_dict = project_dict
-        # self.doc_dict = self._build_doc_dict()
-        self.visible_doc_name = self.doc_dict.keys()[0]  # This is necessary for recreating the tiles
-        return tile_info_dict, project_dict["loaded_modules"], True
+        if self.doc_type == "notebook":
+            return True
+        else:
+            tile_info_dict = {}
+            for old_tile_id, tile_save_dict in project_dict["tile_instances"].items():
+                tile_info_dict[old_tile_id] = tile_save_dict["tile_type"]
+            self.project_dict = project_dict
+            # self.doc_dict = self._build_doc_dict()
+            self.visible_doc_name = self.doc_dict.keys()[0]  # This is necessary for recreating the tiles
+            return tile_info_dict, project_dict["loaded_modules"], True
 
     def recreate_project_tiles(self, data_dict, new_tile_info):
         self.tile_instances = []
@@ -397,7 +448,7 @@ class mainWindow(object):
         return return_data
 
     @task_worthy
-    def save_new_project(self, data_dict):
+    def save_new_project(self, data_dict):  # tactic_working
         # noinspection PyBroadException
         try:
             self.project_name = data_dict["project_name"]
@@ -437,6 +488,41 @@ class mainWindow(object):
             return_data = {"success": False, "message_string": error_string}
         return return_data
 
+    @task_worthy
+    def save_new_notebook_project(self, data_dict):  # tactic_working
+        # noinspection PyBroadException
+        try:
+            self.project_name = data_dict["project_name"]
+            self.purgetiles = data_dict["purgetiles"]
+            self.console_html = data_dict["console_html"]
+            self.console_cm_code = data_dict["console_cm_code"]
+
+            self.show_main_status_message("compiling save dictionary")
+            project_dict = self.compile_save_dict()
+            self.mdata = self.create_initial_metadata()
+            self.mdata["type"] = self.doc_type
+            self.mdata["collection_name"] = self.collection_name
+            self.mdata["loaded_tiles"] = self.get_used_tile_types()
+            save_dict = {"metadata": self.mdata,
+                         "project_name": project_dict["project_name"]}
+            self.show_main_status_message("Pickle, convert, compress")
+            pdict = cPickle.dumps(project_dict)
+            pdict = Binary(zlib.compress(pdict))
+            self.show_main_status_message("Writing the data")
+            save_dict["file_id"] = self.fs.put(pdict)
+            self.db[self.project_collection_name].insert_one(save_dict)
+            self.clear_main_status_message()
+
+            return_data = {"project_name": data_dict["project_name"],
+                           "success": True,
+                           "message_string": "Project Successfully Saved"}
+
+        except Exception as ex:
+            self.mworker.debug_log("got an error in save_new_project")
+            error_string = self.handle_exception(ex, "<pre>Error saving new project</pre>", print_to_console=False)
+            return_data = {"success": False, "message_string": error_string}
+        return return_data
+
     def get_used_tile_types(self):
         result = []
         for tile_id in self.tile_instances:
@@ -449,17 +535,19 @@ class mainWindow(object):
         try:
             self.console_html = data_dict["console_html"]
             self.console_cm_code = data_dict["console_cm_code"]
-            self.show_main_status_message("Getting loaded modules")
             print "user_id is " + str(self.user_id)
-            self.loaded_modules = self.mworker.post_and_wait("host", "get_loaded_user_modules",
-                                                             {"user_id": self.user_id})["loaded_modules"]
-            self.loaded_modules = [str(the_module) for the_module in self.loaded_modules]
+            if not self.doc_type == "notebook":
+                self.show_main_status_message("Getting loaded modules")
+                self.loaded_modules = self.mworker.post_and_wait("host", "get_loaded_user_modules",
+                                                                 {"user_id": self.user_id})["loaded_modules"]
+                self.loaded_modules = [str(the_module) for the_module in self.loaded_modules]
+                self.mdata["loaded_tiles"] = self.get_used_tile_types()
+                self.mdata["collection_name"] = self.collection_name  # legacy this shouldn't be necessary for newer saves
             self.show_main_status_message("compiling save dictionary")
             project_dict = self.compile_save_dict()
             pname = project_dict["project_name"]
             self.mdata["updated"] = datetime.datetime.today()
-            self.mdata["loaded_tiles"] = self.get_used_tile_types()
-            self.mdata["collection_name"] = self.collection_name  # legacy this shouldn't be necessary for newer saves
+
             self.show_main_status_message("Pickle, convert, compress")
             pdict = cPickle.dumps(project_dict)
             pdict = Binary(zlib.compress(pdict))

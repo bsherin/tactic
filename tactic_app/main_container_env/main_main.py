@@ -101,7 +101,10 @@ class MainWorker(QWorker):
                               "collection_names": the_lists["collection_names"]})
             self.mwindow = mainWindow(self, data_dict)
             self.handler_instances["mainwindow"] = self.mwindow
-            self.post_task(self.my_id, "do_full_recreation", data_dict)
+            if data_dict["doc_type"] == "notebook":
+                self.post_task(self.my_id, "do_full_notebook_recreation", data_dict)
+            else:
+                self.post_task(self.my_id, "do_full_recreation", data_dict)
             print("leaving initialize_project_mainwindow")
             return {"success": True}
         except Exception as ex:

@@ -145,21 +145,24 @@ function build_and_render_menu_objects() {
         }
     };
 
-    // Create the column_menu object
-    column_menu = new MenuObject("Column", column_command,["shift-left", "shift-right", "hide", "hide-in-all-docs", "unhide", "add-column", "add-column-all-docs"]);
-    menus[column_menu.menu_name] = column_menu;
-    column_menu.add_options_to_index();
+    if (!is_notebook) {
+        // Create the column_menu object
+        column_menu = new MenuObject("Column", column_command,["shift-left", "shift-right", "hide", "hide-in-all-docs", "unhide", "add-column", "add-column-all-docs"]);
+        menus[column_menu.menu_name] = column_menu;
+        column_menu.add_options_to_index();
 
-    bind_to_keys(project_menu.shortcuts);
+        bind_to_keys(project_menu.shortcuts);
 
-    // Create the tile_menus
-    for (let category in tile_types) {
-        if (!tile_types.hasOwnProperty(category)) {
-            continue;
+        // Create the tile_menus
+        for (let category in tile_types) {
+            if (!tile_types.hasOwnProperty(category)) {
+                continue;
+            }
+            const new_tile_menu = new MenuObject(category, tile_command, tile_types[category]);
+            menus[new_tile_menu.menu_name] = new_tile_menu;
+            new_tile_menu.add_options_to_index();
         }
-        const new_tile_menu = new MenuObject(category, tile_command, tile_types[category]);
-        menus[new_tile_menu.menu_name] = new_tile_menu;
-        new_tile_menu.add_options_to_index();
+
     }
 
     render_menus();
@@ -179,7 +182,9 @@ function build_and_render_menu_objects() {
             }
             e.preventDefault()
         });
-        disable_require_column_select();
+        if (!is_notebook) {
+            disable_require_column_select();
+        }
         if (_project_name == "") {
             project_menu.disable_items(["save"]);
         }
@@ -338,7 +343,7 @@ function changeCollection() {
 
 }
 
-function saveProjectAs() {
+function saveProjectAs() {  // tactic_working
     startSpinner();
     postWithCallback("host", "get_project_names", {"user_id": user_id}, function (data) {
         let checkboxes = [{"checkname": "purgetiles", "checktext": "Include only currently used tiles"}];
@@ -357,7 +362,13 @@ function saveProjectAs() {
             };
 
             // tableObject.startTableSpinner();
-            postWithCallback(main_id, "save_new_project", result_dict, save_as_success);
+            if (is_notebook) {
+                postWithCallback(main_id, "save_new_notebook_project", result_dict, save_as_success);
+            }
+            else {
+                postWithCallback(main_id, "save_new_project", result_dict, save_as_success);
+            }
+
             function save_as_success(data_object) {
                 if (data_object["success"]) {
                     //tableObject.stopTableSpinner();
@@ -365,7 +376,7 @@ function saveProjectAs() {
                     menus["Project"].enable_menu_item("save");
                     tableObject.project_name = data_object["project_name"];
                     //tableObject.set_table_title()
-                    $("#project-name").html(tableObject.project_name);
+                    // $("#project-name").html(tableObject.project_name);
                     $("title").html(data_object["project_name"]);
                     data_object.alert_type = "alert-success";
                     data_object.timeout = 2000;
