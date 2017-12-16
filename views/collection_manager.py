@@ -30,6 +30,7 @@ class CollectionManager(UserManageResourceManager):
     name_field = ""
 
     def add_rules(self):
+        app.add_url_rule('/new_notebook', "new_notebook", login_required(self.new_notebook), methods=['get'])
         app.add_url_rule('/main/<collection_name>', "main", login_required(self.main), methods=['get'])
         app.add_url_rule('/import_as_table/<collection_name>', "import_as_table",
                          login_required(self.import_as_table), methods=['get', "post"])
@@ -44,7 +45,37 @@ class CollectionManager(UserManageResourceManager):
         app.add_url_rule('/combine_collections/<base_collection_name>/<collection_to_add>', "combine_collections",
                          login_required(self.combine_collections), methods=['post', 'get'])
 
-    def main(self, collection_name):
+    def new_notebook(self):
+        user_obj = current_user
+        try:
+            main_id, container_id = create_container("tactic_main_image", owner=user_obj.get_id(),
+                                                     other_name="new_notebook")
+        except ContainerCreateError:
+            return render_template("error_window_template.html",
+                                   window_tile="Load Failed",
+                                   error_string="Load failed: Could not create container",
+                                   version_string=tstring)
+        doc_type = "notebook"
+        return render_template("main.html",
+                               collection_name="",
+                               window_title="new notebook",
+                               project_name='',
+                               project_collection_name=user_obj.project_collection_name,
+                               mongo_uri=mongo_uri,
+                               base_figure_url=url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
+                               main_id=main_id,
+                               doc_names=[],
+                               use_ssl=str(use_ssl),
+                               console_html="",
+                               is_table=False,
+                               is_notebook=True,
+                               is_freeform=False,
+                               short_collection_name="",
+                               new_tile_info="",
+                               uses_codemirror="True",
+                               version_string=tstring)
+
+    def main(self, collection_name):  # tactic_working
         user_obj = current_user
         cname = user_obj.build_data_collection_name(collection_name)
         try:
@@ -89,6 +120,8 @@ class CollectionManager(UserManageResourceManager):
                                use_ssl=str(use_ssl),
                                console_html="",
                                is_table=(doc_type == "table"),
+                               is_notebook=False,
+                               is_freeform=(doc_type == 'freeform'),
                                short_collection_name=short_collection_name,
                                new_tile_info="",
                                uses_codemirror="True",

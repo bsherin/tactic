@@ -43,8 +43,8 @@ class ProjectManager(UserManageResourceManager):
 
         save_dict = db[user_obj.project_collection_name].find_one({"project_name": project_name})
         mdata = save_dict["metadata"]
-        if "type" in mdata and mdata["type"] == "freeform":
-            doc_type = "freeform"
+        if "type" in mdata:
+            doc_type = mdata["type"]
         else:
             doc_type = "table"
 
@@ -62,6 +62,8 @@ class ProjectManager(UserManageResourceManager):
                      "project_collection_name": user_obj.project_collection_name,
                      "mongo_uri": mongo_uri,
                      "is_table": (doc_type == "table"),
+                     "is_notebook": (doc_type == 'notebook'),
+                     "is_freeform": (doc_type == 'freeform'),
                      "base_figure_url": url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
                      "uses_codemirror": "True",
                      "version_string": tstring

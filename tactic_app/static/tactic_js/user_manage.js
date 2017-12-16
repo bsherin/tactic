@@ -323,6 +323,7 @@ class CollectionManager extends UserManagerResourceManager {
         ];
         this.button_groups = [
             {buttons: [
+                    {"name": "new_notebook", "func": "newNotebook", "button_class": "btn btn-default"},
                     {"name": "view", "func": "view_func", "button_class": "btn btn-default"}]
             },
             {buttons: [
@@ -338,6 +339,13 @@ class CollectionManager extends UserManagerResourceManager {
             }
         ];
     }
+     newNotebook (event) {
+        const manager = event.data.manager;
+        const res_name = manager.check_for_selection("resource");
+        if (res_name == "") return;
+        window.open(`${$SCRIPT_ROOT}/new_notebook`)
+    }
+
     import_as_table (event) {
         const the_data = new FormData(this);
         let manager = event.data.manager;
@@ -388,6 +396,7 @@ class CollectionManager extends UserManagerResourceManager {
             window.open(`${$SCRIPT_ROOT}/download_collection/` + res_name + "/" + new_name)
         }, res_name + ".xls")
     };
+
     combineCollections (event) {
         const manager = event.data.manager;
         const res_name = manager.check_for_selection("resource");
