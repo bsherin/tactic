@@ -50,7 +50,6 @@ class ModuleViewerWorker(QWorker):
         self.user_id = os.environ.get("OWNER")
         self.tp = TileParser(module_code)
         self.tp.reparse(self.tp.rebuild_in_canonical_form())
-
         return {"success": True, "the_content": self.assemble_parse_information()}
 
     @task_worthy
@@ -127,7 +126,13 @@ class ModuleViewerWorker(QWorker):
             self.tp.reparse(module_code)
             render_content_line_number = self.tp.get_starting_line("render_content")
             draw_plot_line_number = self.tp.get_starting_line("draw_plot")
-            extra_methods_line_number = self.tp.get_starting_line(self.tp.extra_methods.keys()[0])
+            if len(self.tp.extra_methods.keys()) == 0:
+                if draw_plot_line_number is None:
+                    extra_methods_line_number = render_content_line_number - 1
+                else:
+                    extra_methods_line_number = draw_plot_line_number - 1
+            else:
+                extra_methods_line_number = self.tp.get_starting_line(self.tp.extra_methods.keys()[0])
             doc = self.db[self.tile_collection_name].find_one({"tile_module_name": module_name})
             if "metadata" in doc:
                 mdata = doc["metadata"]
@@ -173,11 +178,10 @@ class ModuleViewerWorker(QWorker):
         is_d3 = self.tp.is_d3
 
         if is_mpl and "draw_plot" in func_dict:
-            draw_plot_code = func_dict["draw_plot"]
+            draw_plot_code = func_dict["draw_plot"]["method_body"]
             draw_plot_code = remove_indents(draw_plot_code, 2)
         else:
             draw_plot_code = ""
-
         if is_d3 and "jscript" in self.tp.defaults:
             jscript_code = self.tp.defaults["jscript"]
         else:
@@ -187,7 +191,13 @@ class ModuleViewerWorker(QWorker):
 
         render_content_line_number = self.tp.get_starting_line("render_content")
         draw_plot_line_number = self.tp.get_starting_line("draw_plot")
-        extra_methods_line_number = self.tp.get_starting_line(self.tp.extra_methods.keys()[0])
+        if len(self.tp.extra_methods.keys()) == 0:
+            if draw_plot_line_number is None:
+                extra_methods_line_number = render_content_line_number - 1
+            else:
+                extra_methods_line_number = draw_plot_line_number - 1
+        else:
+            extra_methods_line_number = self.tp.get_starting_line(self.tp.extra_methods.keys()[0])
 
         parsed_data = {"option_dict": self.tp.options, "export_list": self.tp.exports,
                        "render_content_code": render_content_code,
