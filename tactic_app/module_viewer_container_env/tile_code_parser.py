@@ -53,6 +53,7 @@ class TileParser(object):
         self.exports = self.get_exports()
         self.type = self.extract_type()
         self.extra_methods = self.get_extra_methods()
+        return
 
     def get_extra_methods(self):
         extra_methods = OrderedDict()
@@ -155,6 +156,7 @@ class TileParser(object):
             new_code += "\n" + self.methods["draw_plot"]["method_code"]
         if "render_content" in self.methods:
             new_code += "\n" + self.methods["render_content"]["method_code"]
+        print "done rebuilding"
         return new_code
 
     def get_assignments(self):
@@ -207,7 +209,7 @@ class TileParser(object):
 
     def get_exports(self):
         if "exports" not in self.assignments:
-            return None
+            return []
         enode = self.assignments["exports"]["node"]
         val = enode.value
         export_info = []
