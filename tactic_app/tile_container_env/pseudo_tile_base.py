@@ -38,6 +38,7 @@ class PseudoTileClass(TileBase, MplFigure):
         self.console_namespace = {"self": self}
         self.width = PSEUDO_WIDTH
         self.height = PSEUDO_HEIGHT
+        MplFigure.__init__(self)
         self.saved_globals = copy.copy(globals())
         globals()["self"] = self
         return
@@ -51,6 +52,9 @@ class PseudoTileClass(TileBase, MplFigure):
                     globals()[attr] = self.saved_globals[attr]
                 else:
                     del globals()[attr]
+            globals()["self"] = self
+            self.width = PSEUDO_WIDTH
+            self.height = PSEUDO_HEIGHT
         except Exception as ex:
             data["result_string"] = self.handle_exception(ex, "Error clearing console namespace", print_to_console=False)
         return data

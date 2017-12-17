@@ -334,7 +334,7 @@ class TileManager(UserManageResourceManager):
         template = mongo_dict["tile_module"]
 
         metadata = global_tile_manager.create_initial_metadata()
-        metadata["type"] = extract_type(template)
+        metadata["type"] = ""
 
         data_dict = {"tile_module_name": new_tile_name, "tile_module": template, "metadata": metadata,
                      "last_saved": last_saved}

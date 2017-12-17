@@ -133,7 +133,14 @@ function bind_to_keys(shortcuts) {
 function build_and_render_menu_objects() {
 
     // Create the project_menu object
-    project_menu = new MenuObject("Project", project_command,["save-as", "save", "export-table-as-collection", "change-collection"]);
+    if (is_notebook){
+        project_menu = new MenuObject("Project", project_command,["save-as", "save"]);
+    }
+
+    else {
+        project_menu = new MenuObject("Project", project_command,["save-as", "save", "export-table-as-collection", "change-collection"]);
+    }
+
     menus[project_menu.menu_name] = project_menu;
     project_menu.add_options_to_index();
     project_menu.shortcuts = {
