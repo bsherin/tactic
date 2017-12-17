@@ -68,24 +68,21 @@ color_palette_names = sorted(color_palette_names)
 color_palette_names = ["standard"] + color_palette_names
 
 class MplFigure(Figure):
-    # kwargs for mplfigure are dpi and title
+    # kwargs for mplfigure are same as matplotlib Figure
     def __init__(self, **kwargs):
-        if "dpi" in kwargs:
-            dpi = kwargs["dpi"]
-        else:
-            dpi = 80
-        if "title" in kwargs:
-            title = kwargs["title"]
-        else:
-            title = None
-        Figure.__init__(self, figsize=(self.width / dpi, self.height / 80), dpi=dpi)
-        self.title = title
-        self.dpi = dpi
+        if "dpi" not in kwargs:
+            kwargs["dpi"] = 80
+        if "figsize" not in kwargs:
+            kwargs["figsize"] = (self.width / kwargs["dpi"], self.height /kwargs["dpi"])
+        Figure.__init__(self, **kwargs)
         self.kwargs = kwargs
 
     def draw_plot(self):
         print "draw_plot not implemented"
         return
+
+    def init_mpl_figure(self, **kwargs):
+        MplFigure.__init__(self, **kwargs)
 
     def convert_figure_to_img(self):
         FigureCanvas(self)  # This does seem to be necessary or savefig won't work.
