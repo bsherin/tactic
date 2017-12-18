@@ -272,12 +272,18 @@ class ConsoleObjectClass {
     convertMarkdown(e) {
         let self = e.data.cobject;
         const el = $(e.target).closest(".log-panel");
-        const the_text = el.find(".console-text").html();
-        postWithCallback(main_id, "convert_markdown", {"the_text": the_text}, function (data) {
-            el.find(".text-panel-output").html(data.converted_markdown)
-            el.find(".console-text").hide();
-            el.find(".text-panel-output").show();
-        })
+        if (el.find(".console-text").is(":visible")) {
+            const the_text = el.find(".console-text").html();
+            postWithCallback(main_id, "convert_markdown", {"the_text": the_text}, function (data) {
+                el.find(".text-panel-output").html(data.converted_markdown)
+                el.find(".console-text").hide();
+                el.find(".text-panel-output").show();
+            })
+        }
+        else {
+            el.find(".console-text").show();
+            el.find(".text-panel-output").hide();
+        }
     }
 
     setTextFocus(e) {
@@ -303,7 +309,7 @@ class ConsoleObjectClass {
         el.html("");
     }
 
-    addBlankConsoleText(e) {  // tactic_working
+    addBlankConsoleText(e) {
         const print_string = "<div class='console-text' contenteditable='true'></div>";
         const task_data = {"print_string": print_string};
         postWithCallback(main_id, "create_blank_text_area", task_data, function(data) {
@@ -321,6 +327,7 @@ class ConsoleObjectClass {
     }
 
     createConsoleCodeInCodearea(uid, codearea) {
+        self = this;
         this.consoleCMObjects[uid] = CodeMirror(codearea, {
             lineNumbers: true,
             matchBrackets: true,
@@ -331,10 +338,12 @@ class ConsoleObjectClass {
             extraKeys: {
                 'Ctrl-Enter': function(cm) {
                     let the_code = cm.getValue();
+                    self.startConsoleSpinner(cm.tactic_uid);
                     postWithCallback(main_id, "exec_console_code", {"the_code": the_code, "console_id": cm.tactic_uid})
                 },
                 'Cmd-Enter': function (cm) {
                     let the_code = cm.getValue();
+                    self.startConsoleSpinner(cm.tactic_uid);
                     postWithCallback(main_id, "exec_console_code", {"the_code": the_code, "console_id": cm.tactic_uid})
                 }
             }
@@ -418,7 +427,7 @@ class ConsoleObjectClass {
                 let el = $("#" + uid).parent().find(".log-code-output");
                 el.html("")
             }
-            else {
+            else if ($(this).hasClass("error-log-panel")) {
                 $($(this).closest(".log-panel")).remove()
             }
         });
@@ -426,7 +435,7 @@ class ConsoleObjectClass {
         postWithCallback(main_id, "clear_console_namespace", {})
      }
 
-    addConsoleCodearea(e) {  // tactic_working
+    addConsoleCodearea(e) {
         let self = this;
         postWithCallback(main_id, "create_console_code_area", {}, function(data) {
             if (!data.success) {
@@ -445,13 +454,17 @@ class ConsoleObjectClass {
 
     startConsoleSpinner (uid) {
         let cc = $("#" + uid).parent();
+        cc.find(".clear-code-button").css("display", "none");
+        cc.find(".console-spin-outer").css("display", "inline-block");
         cc.find(".console-spin-place").html(console_spinner_html);
     }
 
     stopConsoleSpinner (data_object) {
         let uid = data_object.console_id;
         let cc = $("#" + uid).parent();
+        cc.find(".console-spin-outer").css("display", "none");
         cc.find(".console-spin-place").html("");
+        cc.find(".clear-code-button").css("display", "inline-block")
     }
 
     addConsoleCodeWithCode(the_code) {
