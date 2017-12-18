@@ -286,7 +286,10 @@ class HostWorker(QWorker):
     def print_to_console(self, data):
         from tactic_app import app, socketio
         with app.test_request_context():
-            data["message_string"] = render_template("log_item.html", log_item=data["message_string"])
+            if data["is_error"]:
+                data["message_string"] = render_template("error_log_item.html", log_item=data["message_string"])
+            else:
+                data["message_string"] = render_template("log_item.html", log_item=data["message_string"])
 
         data["table_message"] = "consoleLog"
         self.emit_table_message(data)
@@ -297,6 +300,16 @@ class HostWorker(QWorker):
         with app.test_request_context():
             render_result = render_template(data["template"], **data["render_fields"])
         return {"success": True, "render_result": render_result}
+
+    @task_worthy
+    def print_text_area_to_console(self, data):
+        from tactic_app import socketio
+        with app.test_request_context():
+            data["message_string"] = render_template("text_log_item.html", unique_id=data["unique_id"])
+
+        data["table_message"] = "consoleLog"
+        self.emit_table_message(data)
+        return {"success": True}
 
     @task_worthy
     def print_code_area_to_console(self, data):

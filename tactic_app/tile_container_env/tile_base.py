@@ -824,7 +824,7 @@ class TileBase(object):
         error_string = "<pre>" + error_string + "</pre>"
         self.tworker.debug_log(error_string)
         if print_to_console:
-            self.log_it(error_string, force_open=True)
+            self.log_it(error_string, force_open=True, is_error=True)
         return error_string
 
     def get_current_pipe_list(self):
@@ -1221,21 +1221,25 @@ class TileBase(object):
         self.restore_stdout()
         return result
 
-    def display_message(self, message_string, force_open=False):
+    def display_message(self, message_string, force_open=True, is_error=False):
         self.save_stdout()
-        self.tworker.post_task(self.main_id, "print_to_console_event", {"print_string": message_string})
+        self.tworker.post_task(self.main_id, "print_to_console_event", {"print_string": message_string,
+                                                                        "force_open": force_open,
+                                                                        "is_error": is_error})
         self.restore_stdout()
         return
 
-    def dm(self, message_string, force_open=False):
+    def dm(self, message_string, force_open=True, is_error=False):
         self.save_stdout()
-        self.display_message(message_string, force_open)
+        self.display_message(message_string, force_open, is_error)
         self.restore_stdout()
         return
 
-    def log_it(self, message_string, force_open=False):
+    def log_it(self, message_string, force_open=True, is_error=False):
         self.save_stdout()
-        self.tworker.post_task(self.main_id, "print_to_console_event", {"print_string": message_string})
+        self.tworker.post_task(self.main_id, "print_to_console_event", {"print_string": message_string,
+                                                                        "force_open": force_open,
+                                                                        "is_error": is_error})
         self.restore_stdout()
         return
 

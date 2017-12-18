@@ -75,7 +75,7 @@ class CollectionManager(UserManageResourceManager):
                                uses_codemirror="True",
                                version_string=tstring)
 
-    def main(self, collection_name):  # tactic_working
+    def main(self, collection_name):
         user_obj = current_user
         cname = user_obj.build_data_collection_name(collection_name)
         try:

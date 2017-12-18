@@ -32,7 +32,7 @@ function start_post_load() {
         socket = io.connect('https://' + document.domain + ':' + location.port + '/main');
     }
     else {
-        socket = io.connect('http://' + document.domain + ':' + location.port + '/main');
+        socket = io.connect('http://' + document.domain + ':' + location.port + '/main')
     }
     socket.emit('join', {"room": user_id});
     socket.emit('join-main', {"room": main_id});
@@ -339,5 +339,5 @@ function removeMainwindow() {
 }
 
 spinner_html = '<span class="loader-small"></span>';
-console_spinner_html = '<span class="loader-extra-small"></span>';
+console_spinner_html = '<span class="loader-console"></span>';
 
