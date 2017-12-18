@@ -350,7 +350,7 @@ function changeCollection() {
 
 }
 
-function saveProjectAs() {  // tactic_working
+function saveProjectAs() {
     startSpinner();
     postWithCallback("host", "get_project_names", {"user_id": user_id}, function (data) {
         let checkboxes = [{"checkname": "purgetiles", "checktext": "Include only currently used tiles"}];

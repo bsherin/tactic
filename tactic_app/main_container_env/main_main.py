@@ -43,6 +43,10 @@ class MainWorker(QWorker):
         self.ask_host("print_to_console", {"message_string": message_string, "force_open": force_open})
         return {"success": True}
 
+    def print_text_area_to_console(self, uid, force_open=False):
+        self.ask_host("print_text_area_to_console", {"unique_id": uid, "force_open": force_open})
+        return {"success": True, "unique_id": uid}
+
     def print_code_area_to_console(self, uid, force_open=False):
         self.ask_host("print_code_area_to_console", {"unique_id": uid, "force_open": force_open})
         return {"success": True, "unique_id": uid}

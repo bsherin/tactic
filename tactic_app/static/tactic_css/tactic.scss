@@ -516,6 +516,15 @@ a[role="tab"] {
         height: auto !important;
     }
 
+    .console-text {
+        padding: 10px;
+        display: inline-block;
+    }
+
+    .text-panel-output {
+        //padding: 10px;
+    }
+
     .log-panel {
         border: $log-panel-border-style !important;
         margin: 1px;
