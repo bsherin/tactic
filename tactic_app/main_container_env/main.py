@@ -682,7 +682,7 @@ class mainWindow(object):
         error_string = "<pre>" + error_string + "</pre>"
         self.mworker.debug_log(error_string)
         if print_to_console:
-            self.mworker.print_to_console(error_string, force_open=True)
+            self.mworker.print_to_console(error_string, force_open=True, is_error=True)
         return error_string
 
     def highlight_table_text(self, txt):
@@ -893,7 +893,9 @@ class mainWindow(object):
 
     @task_worthy
     def print_to_console_event(self, data):
-        return self.mworker.print_to_console(data["print_string"], force_open=True)
+        return self.mworker.print_to_console(data["print_string"],
+                                             force_open=data["force_open"],
+                                             is_error=data["is_error"])
 
     @task_worthy
     def create_console_code_area(self, data):
@@ -1482,14 +1484,22 @@ class mainWindow(object):
 
     @task_worthy
     def PrintToConsole(self, data):
-        self.mworker.print_to_console(data["message"], True)
+        if "force_open" in data:
+            force_open = data["force_open"]
+        else:
+            force_open = True
+        if "is_error" in data:
+            is_error = data["is_error"]
+        else:
+            is_error = False
+        self.mworker.print_to_console(data["message"], force_open, is_error)
         return None
 
     @task_worthy
     def DisplayCreateErrors(self, data):
         for msg in self.recreate_errors:
             self.mworker.debug_log("Got CreateError: " + msg)
-            self.mworker.print_to_console(msg, True)
+            self.mworker.print_to_console(msg, True, True)
         self.recreate_errors = []
         return None
 

@@ -29,6 +29,8 @@ $log-panel-header-background-color: #f5f5f5;
 $log-panel-header-foreground-color: #333;
 $log-panel-header-background-hover-color: #f5f5f5;
 $log-panel-font-color: #616161;
+$console-text-background-color: #f7f7f7;
+$console-text-border-color: #616161;
 
 
 /* resource management and table related */
@@ -519,6 +521,9 @@ a[role="tab"] {
     .console-text {
         padding: 10px;
         display: inline-block;
+        background-color: $console-text-background-color !important;
+        border: $console-panel-border-style !important;
+        width: 100%;
     }
 
     .text-panel-output {
@@ -529,12 +534,31 @@ a[role="tab"] {
         border: $log-panel-border-style !important;
         margin: 1px;
         box-shadow: none;
+        min-height: 110px;
+        position: relative;
 
         .panel-heading {
+            //color: $log-panel-header-foreground-color !important;
+            float: left;
+            position: absolute;
+            height: 100%;
+            width: 30px;
+            padding: 4px 4px !important;
+            text-align: center;
             background-color: $log-panel-header-background-color important;
-            color: $log-panel-header-foreground-color !important;
-            padding: 2px;
+            border-right: $log-panel-border-style;
 
+            .button-div {
+                padding-top: 10px !important;
+            }
+        }
+
+        .CodeMirror {
+            border: $console-panel-border-style !important;
+        }
+
+        .CodeMirror-lines {
+            background-color: $console-text-background-color !important;
         }
 
         .panel-heading:hover {
@@ -542,21 +566,25 @@ a[role="tab"] {
         }
 
         .notclose {
-            padding-left: 6px;
+            //padding-left: 6px;
         }
     }
 
+    html,body {
+    height:100%;
+}
+
     .log-panel-body {
-        padding-left: 15px;
-        padding-right: 15px;
+        padding-left: 45px;
+        padding-right: 45px;
         padding-top: 10px;
         padding-bottom: 10px;
         color: $log-panel-font-color !important;
     }
 
     .log-code-output {
-        padding-left: 15px;
-        padding-right: 15px;
+        padding-left: 45px;
+        padding-right: 45px;
         padding-top: 10px;
         padding-bottom: 10px;
     }
