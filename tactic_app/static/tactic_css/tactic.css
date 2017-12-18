@@ -332,6 +332,10 @@ td.cell-clickable:active {
 #console-panel .CodeMirror {
   height: auto !important; }
 
+.console-text {
+  padding: 10px;
+  display: inline-block; }
+
 .log-panel {
   border: 1px solid #c7c7c7 !important;
   margin: 1px;

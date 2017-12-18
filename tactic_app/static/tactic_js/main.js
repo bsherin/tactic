@@ -32,7 +32,7 @@ function start_post_load() {
         socket = io.connect('https://' + document.domain + ':' + location.port + '/main');
     }
     else {
-        socket = io.connect('http://' + document.domain + ':' + location.port + '/main');
+        socket = io.connect('http://' + document.domain + ':' + location.port + '/main')
     }
     socket.emit('join', {"room": user_id});
     socket.emit('join-main', {"room": main_id});

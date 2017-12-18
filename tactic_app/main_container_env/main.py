@@ -13,6 +13,7 @@ import traceback
 import zlib
 import os
 import uuid
+import markdown
 
 from doc_info import docInfo, FreeformDocInfo, PROTECTED_METADATA_KEYS
 
@@ -448,7 +449,7 @@ class mainWindow(object):
         return return_data
 
     @task_worthy
-    def save_new_project(self, data_dict):  # tactic_working
+    def save_new_project(self, data_dict):
         # noinspection PyBroadException
         try:
             self.project_name = data_dict["project_name"]
@@ -489,7 +490,7 @@ class mainWindow(object):
         return return_data
 
     @task_worthy
-    def save_new_notebook_project(self, data_dict):  # tactic_working
+    def save_new_notebook_project(self, data_dict):
         # noinspection PyBroadException
         try:
             self.project_name = data_dict["project_name"]
@@ -900,6 +901,11 @@ class mainWindow(object):
         return self.mworker.print_code_area_to_console(unique_id, force_open=True)
 
     @task_worthy
+    def create_blank_text_area(self, data):
+        unique_id = str(uuid.uuid4())
+        return self.mworker.print_text_area_to_console(unique_id, force_open=True)
+
+    @task_worthy
     def got_console_result(self, data):
         print "in got console result"
         print "data is " + str(data)
@@ -923,6 +929,16 @@ class mainWindow(object):
         data["pipe_dict"] = self.dict
         self.mworker.post_task(self.pseudo_tile_id, "exec_console_code", data, self.got_console_result)
         return {"success": True}
+
+    @task_worthy
+    def convert_markdown(self, data):
+        the_text = data["the_text"]
+        the_text = re.sub("<br>", "\n", the_text)
+        the_text = re.sub("&gt;", ">", the_text)
+        the_text = re.sub("&nbsp;", " ", the_text)
+        converted_markdown = markdown.markdown(the_text)
+        return {"success": True, "converted_markdown": converted_markdown}
+
 
     @task_worthy
     def clear_console_namespace(self, data):

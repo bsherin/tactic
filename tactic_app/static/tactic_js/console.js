@@ -104,8 +104,10 @@ class ConsoleObjectClass {
         });
         this.console_dom.on("click", ".close-log-button", {"cobject": this}, this.closeLogItem);
         this.console_dom.on("click", ".run-log-button", {"cobject": this}, this.runConsoleCode);
+        this.console_dom.on("click", ".convert-markdown-button", {"cobject": this}, this.convertMarkdown);
         this.console_dom.on("click", ".clear-code-button", {"cobject": this}, this.clearConsoleCode);
         this.console_dom.on("focus", ".log-panel", {"cobject": this}, this.setPanelFocus);
+        this.console_dom.on("click", ".text-panel-output", {"cobject": this}, this.setTextFocus);
     }
 
     update_height(hgt) {
@@ -247,6 +249,7 @@ class ConsoleObjectClass {
         self.current_panel_focus = $(this);
     }
 
+
     closeLogItem(e) {
         let self = e.data.cobject;
         const el = $(e.target).closest(".log-panel");
@@ -266,6 +269,24 @@ class ConsoleObjectClass {
         postWithCallback(main_id, "exec_console_code", {"the_code": the_code, "console_id": uid})
     }
 
+    convertMarkdown(e) {
+        let self = e.data.cobject;
+        const el = $(e.target).closest(".log-panel");
+        const the_text = el.find(".console-text").html();
+        postWithCallback(main_id, "convert_markdown", {"the_text": the_text}, function (data) {
+            el.find(".text-panel-output").html(data.converted_markdown)
+            el.find(".console-text").hide();
+            el.find(".text-panel-output").show();
+        })
+    }
+
+    setTextFocus(e) {
+        let self = e.data.cobject;
+        const el = $(e.target).closest(".log-panel");
+        el.find(".text-panel-output").hide();
+        el.find(".console-text").show();
+    }
+
     getConsoleCMCode() {
         const result = {};
         for (let cmi in this.consoleCMObjects) {
@@ -282,14 +303,14 @@ class ConsoleObjectClass {
         el.html("");
     }
 
-    addBlankConsoleText(e) {
+    addBlankConsoleText(e) {  // tactic_working
         const print_string = "<div class='console-text' contenteditable='true'></div>";
         const task_data = {"print_string": print_string};
-        postWithCallback(main_id, "print_to_console_event", task_data, function(data) {
+        postWithCallback(main_id, "create_blank_text_area", task_data, function(data) {
             if (!data.success) {
                 doFlash(data)
             }
-        })
+        });
         e.preventDefault();
 
     }
@@ -405,7 +426,7 @@ class ConsoleObjectClass {
         postWithCallback(main_id, "clear_console_namespace", {})
      }
 
-    addConsoleCodearea(e) {
+    addConsoleCodearea(e) {  // tactic_working
         let self = this;
         postWithCallback(main_id, "create_console_code_area", {}, function(data) {
             if (!data.success) {
