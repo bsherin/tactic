@@ -374,9 +374,8 @@ html, body {
   color: #616161 !important; }
 
 .log-code-output {
-  padding-left: 45px;
+  padding-left: 85px;
   padding-right: 45px;
-  padding-top: 10px;
   padding-bottom: 10px; }
 
 /*main window*/
