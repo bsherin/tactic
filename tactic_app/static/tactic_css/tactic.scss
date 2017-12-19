@@ -376,6 +376,7 @@ a[role="tab"] {
         .notclose .glyphicon {
             font-size: 17px
         }
+        font-weight: 600
     }
 
     /* plot related */
@@ -583,9 +584,9 @@ a[role="tab"] {
     }
 
     .log-code-output {
-        padding-left: 45px;
+        padding-left: 85px;
         padding-right: 45px;
-        padding-top: 10px;
+        //padding-top: 10px;
         padding-bottom: 10px;
     }
 
