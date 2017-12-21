@@ -127,7 +127,9 @@ class ResourceManager {
         if (this.include_search_toolbar) {
             this.bind_standard_button(".search-resource-button", this.search_my_resource);
             this.bind_standard_button(".resource-unfilter-button", this.unfilter_me);
-            this.bind_standard_button(".save-metadata-button", this.save_my_metadata);
+            this.bind_standard_button(".save-metadata-button", function () {
+                self.save_my_metadata (false)
+            });
             if (this.include_tags_search) {
                 this.bind_standard_button(".search-tags-button", this.search_my_tags);
                 this.bind_standard_button(".tags-unfilter-button", this.unfilter_tags);
@@ -140,6 +142,10 @@ class ResourceManager {
         this.get_notes_field().blur(function () {
             self.save_my_metadata(false)
         });
+
+        this.get_notes_markdown_field().click(function () {
+            self.hideMarkdown()
+        })
     }
 
     bind_standard_button(bselector, func) {
@@ -215,6 +221,10 @@ class ResourceManager {
 
     get_notes_field() {
         return this.get_module_element(".notes-field")
+    }
+
+    get_notes_markdown_field() {
+        return this.get_module_element(".notes-field-markdown-output")
     }
 
     get_tags_field() {
@@ -362,7 +372,7 @@ class ResourceManager {
         this.get_notes_field()[0].value = notes;
     }
 
-    save_my_metadata (flash = true) {
+    save_my_metadata (flash = false) {
         const res_name = this.get_active_selector_button().attr("value");
         const tags = this.get_tags_field().val();
         const notes = this.get_notes_field().val();

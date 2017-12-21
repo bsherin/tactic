@@ -1140,6 +1140,7 @@ class AllManager extends UserManagerResourceManager {
                 self.tag_button_list.refresh_given_taglist(data.all_tags);
                 self.res_manager(the_type).update_selector_tags(res_name, tags);
                 self.res_manager(the_type).tag_button_list.refresh_given_taglist(data.res_tags);
+                self.convertMarkdown();
                 if (flash) {
                     doFlash(data)
                 }
