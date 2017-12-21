@@ -4,6 +4,7 @@ import sys, copy, re, datetime
 from flask import render_template, request, jsonify, send_file
 from flask_login import login_required, current_user
 from flask_socketio import join_room
+import markdown
 
 import tactic_app
 from tactic_app import app, socketio, use_ssl
@@ -213,6 +214,20 @@ def grab_repository_metadata():
             return jsonify({"success": True, "datestring": datestring, "tags": mdata["tags"], "notes": mdata["notes"]})
     except:
         error_string = "Error getting metadata: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+
+@app.route('/convert_markdown', methods=['POST'])
+@login_required
+def convert_markdown():
+    try:
+        the_text = request.json["the_text"]
+        the_text = re.sub("<br>", "\n", the_text)
+        the_text = re.sub("&gt;", ">", the_text)
+        the_text = re.sub("&nbsp;", " ", the_text)
+        converted_markdown = markdown.markdown(the_text)
+        return jsonify({"success": True, "converted_markdown": converted_markdown})
+    except:
+        error_string = "Error converting markdown: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
 
