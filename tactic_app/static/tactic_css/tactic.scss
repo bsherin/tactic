@@ -196,13 +196,16 @@ a[role="tab"] {
     }
 }
 
-.notes-field {
-    background-color: #f7f7f7;
+.resource-viewer-right {
+    #notes {
+        background-color: #f7f7f7;
+    }
+
+    #notes-field-markdown-output {
+        padding: 10px;
+    }
 }
 
-.notes-field-markdown-output {
-    padding: 10px;
-}
 
 .tag-button {
     padding-left: 5px;
@@ -372,6 +375,12 @@ a[role="tab"] {
         }
         input {
             width: 150px;
+        }
+        #notes {
+            background-color: #f7f7f7;
+        }
+        #notes-field-markdown-output {
+            padding: 10px;
         }
     }
 

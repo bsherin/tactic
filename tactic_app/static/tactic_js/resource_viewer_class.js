@@ -57,6 +57,15 @@ class ResourceViewer {
                 })
                 .catch(doFlash);
         }
+        $("#notes").blur(function () {
+            self.convertMarkdown();
+            self.showMarkdown()
+        });
+
+        $("#notes-field-markdown-output").click(function () {
+            self.hideMarkdown();
+            $("#notes").focus()
+        })
     }
 
     update_width(new_width_fraction) {
@@ -148,9 +157,55 @@ class ResourceViewer {
     set_metadata_fields(created, tags, notes) {
         $("#created").html(created);
         this.set_tag_list(tags);
-        $("#notes")[0].value = notes;
+        this.setNotesField(notes);
         this.savedTags = tags;
         this.savedNotes = notes;
+        this.convertMarkdown();
+    }
+
+    hideMarkdown() {
+            $("#notes").show();
+            $("#notes-field-markdown-output").hide();
+    }
+
+    showMarkdown() {
+        if (this.getNotesField() != "") {
+            $("#notes").hide();
+            $("#notes-field-markdown-output").show();
+        }
+        else {
+            this.hideMarkdown();
+        }
+    }
+
+    setNotesField(the_text) {
+        $("#notes")[0].value = the_text
+    }
+
+    getNotesField() {
+        return $("#notes")[0].value
+    }
+
+    setMarkdownField(the_html) {
+        $("#notes-field-markdown-output").html(the_html)
+    }
+
+    convertMarkdown() {
+        let the_text = this.getNotesField();
+        if (the_text == "") {
+            this.setMarkdownField.html("");
+            this.hideMarkdown();
+            return
+        }
+        let ddict = {"the_text": the_text};
+        let self = this;
+        postAjaxPromise("convert_markdown", ddict)
+            .then(function(data) {
+                self.setMarkdownField("");
+                self.setMarkdownField(data["converted_markdown"]);
+                self.showMarkdown()
+            })
+            .catch(doFlash)
     }
 
     bind_buttons() {
