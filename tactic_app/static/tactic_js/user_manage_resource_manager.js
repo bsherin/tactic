@@ -212,6 +212,15 @@ class UserManagerResourceManager extends ResourceManager{
     constructor (module_id, res_type, resource_module_template, destination_selector) {
         super(module_id, res_type, resource_module_template, destination_selector, false);
         this.last_search = null;
+
+        this.get_notes_field().blur(function () {
+            self.save_my_metadata(false)
+        });
+
+        this.get_notes_markdown_field().click(function () {
+            self.hideMarkdown();
+            self.get_notes_field().focus()
+        })
     }
 
     set_extra_properties() {

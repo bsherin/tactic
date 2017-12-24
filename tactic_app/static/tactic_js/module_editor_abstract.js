@@ -20,7 +20,9 @@ class ModuleViewerAbstract extends ResourceViewer {
         this.api_list = null;
 
         this.create_api();
-        this.create_keymap()
+        this.create_keymap();
+        self = this;
+
     }
 
     create_api() {
