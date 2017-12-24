@@ -102,10 +102,9 @@ a[role="tab"] {
 .search-toolbar .tag-editor li:last-child {
   margin-right: 20px; }
 
-.notes-field {
+.resource-viewer-right #notes {
   background-color: #f7f7f7; }
-
-.notes-field-markdown-output {
+.resource-viewer-right #notes-field-markdown-output {
   padding: 10px; }
 
 .tag-button {
@@ -219,6 +218,10 @@ a[role="tab"] {
   margin: 0px; }
 #creator-resources input {
   width: 150px; }
+#creator-resources #notes {
+  background-color: #f7f7f7; }
+#creator-resources #notes-field-markdown-output {
+  padding: 10px; }
 
 /* Tile related */
 .tile-panel-heading {

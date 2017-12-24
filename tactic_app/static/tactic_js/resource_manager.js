@@ -139,13 +139,6 @@ class ResourceManager {
         //     self.save_my_metadata(false)
         // });
 
-        this.get_notes_field().blur(function () {
-            self.save_my_metadata(false)
-        });
-
-        this.get_notes_markdown_field().click(function () {
-            self.hideMarkdown()
-        })
     }
 
     bind_standard_button(bselector, func) {

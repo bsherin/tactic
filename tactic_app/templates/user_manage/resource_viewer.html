@@ -35,7 +35,7 @@
                     <div id="main_content"></div>
                 </div>
                 {% if include_right %}
-                <div id="right-div" class="" style="margin-top: 20px; display: inline-block; vertical-align:top">
+                <div id="right-div" class="resource-viewer-right" style="margin-top: 20px; display: inline-block; vertical-align:top">
                     {% if include_metadata %}
                     <div  style="vertical-align: top; margin-left: 5px; margin-top: 10px; display:inline-block">
                         <div id="created"></div>
@@ -44,6 +44,7 @@
                         </div>
                         <div class="form-group">
                             <textarea class="form-control metadata-field" id="notes" rows="10" placeholder="notes" {% if readonly %} readonly {% endif %}></textarea>
+                            <div id="notes-field-markdown-output"></div>
                         </div>
                     </div>
                     {% endif -%}
