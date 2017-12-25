@@ -96,6 +96,10 @@ a[role="tab"] {
 
 .resource-module {
   margin: 10px; }
+  .resource-module .notes-field {
+    background-color: #f7f7f7; }
+  .resource-module .notes-field-markdown-output {
+    padding: 10px; }
 
 .search-toolbar .tag-editor li {
   margin: 6px 2px 6px 2px; }
