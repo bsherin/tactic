@@ -181,7 +181,13 @@ a[role="tab"] {
 }
 
 .resource-module {
-    margin: 10px
+    margin: 10px;
+    .notes-field {
+        background-color: #f7f7f7;
+    }
+    .notes-field-markdown-output {
+        padding: 10px;
+    }
 }
 
 .search-toolbar {
