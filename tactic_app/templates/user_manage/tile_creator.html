@@ -104,7 +104,7 @@
 
                                 </div>
                             </div>
-                            <div class="tab-pane fade row" id="option-module-outer">
+                            <div class="tab-pane fade row" id="option-module-outer" style="overflow-y: auto">
                                 <div class="resource-module" id="option-module-holder"></div>
                                     <form class="form-inline row indent-row" style="display:inline-block">
                                           <div class="form-group">
@@ -138,7 +138,7 @@
                                     </form>
                                 </div>
 
-                            <div class="tab-pane fade row" id="export-module-outer">
+                            <div class="tab-pane fade row" id="export-module-outer" style="overflow-y: auto">
                                 <div class="resource-module" id="export-module-holder"></div>
                                 <form class="form-inline row indent-row" style="display:inline-block">
                                       <div class="form-group">
@@ -156,7 +156,7 @@
                                 </form>
 
                             </div>
-                            <div class="tab-pane fade row" id="method-module-outer">
+                            <div class="tab-pane fade row" id="method-module-outer" style="overflow-y: auto">
                                 <div class="resource-module" id="method-module-holder"></div>
                             </div>
                         </div>
@@ -175,6 +175,7 @@
     <script src="{{url_for('static', filename='js/javascript.js')}}"></script>
     <script src="{{url_for('static', filename='js/jquery.caret.min.js')}}"></script>
     <script src="{{url_for('static', filename='js/jquery.tag-editor.min.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/markdown_utilities.js', v=version_string)}}"></script>
     <script src="{{url_for('static', filename='tactic_js/resource_manager.js', version_string=tstring)}}"></script>
     <script src="{{url_for('static', filename='tactic_js/creator_resource_manager.js', version_string=tstring)}}"></script>
     <script src="{{url_for('static', filename='tactic_js/resource_viewer_class.js', version_string=tstring)}}"></script>
@@ -200,12 +201,12 @@
         window.onload = start_post_load;
 
         window.onbeforeunload = function(e) {
-            if (dirty()) {
+            if (creator_viewer.dirty()) {
                 return "Any unsaved changes will be lost."
             }
         };
         window.onunload = function (e) {
-        removeCreatorwindow()
-    }
+            removeCreatorwindow()
+        }
     </script>
 {% endblock %}

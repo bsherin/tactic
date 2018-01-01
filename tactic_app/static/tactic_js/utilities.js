@@ -234,6 +234,15 @@ function resize_dom_to_bottom_given_selector(selector, bottom_margin) {
     }
 }
 
+function fit_dom_in_parent(selector, parent_selector, bottom_margin) {
+    if ($(selector).length > 0) {
+        let me = $(selector);
+        let parent = $(parent_selector);
+        let new_max_height = parent.height() - (me.offset().top - parent.offset().top) - bottom_margin;
+        $(selector).css('max-height', new_max_height)
+    }
+}
+
 function resize_dom_to_bottom(dom, bottom_margin) {
     if (dom.length > 0) {
         const h = window.innerHeight - bottom_margin - dom.offset().top;

@@ -187,6 +187,11 @@ a[role="tab"] {
     }
     .notes-field-markdown-output {
         padding: 10px;
+        overflow: scroll;
+    }
+    .right-div {
+        overflow: scroll;
+        position: absolute;
     }
 }
 
@@ -209,6 +214,7 @@ a[role="tab"] {
 
     #notes-field-markdown-output {
         padding: 10px;
+        overflow: scroll;
     }
 }
 
@@ -387,6 +393,7 @@ a[role="tab"] {
         }
         #notes-field-markdown-output {
             padding: 10px;
+            overflow: scroll;
         }
     }
 

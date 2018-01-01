@@ -84,14 +84,14 @@ class CreatorViewer extends ModuleViewerAbstract {
         this.myCodeMirror = null;
         this.myDPCodeMirror = null;
         this.myJSCodeMirror = null;
+        this.current_tab_selector = "#metadata-module-outer";
         let self = this;
         $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function (e) {
+            self.current_tab_selector = $(e.currentTarget).attr("href");
+            resize_dom_to_bottom_given_selector(self.current_tab_selector, BOTTOM_MARGIN);
             if ($(e.currentTarget).attr("value") == "method") {
                 self.resize_method_module();
                 self.resource_managers["method_module"].cmobject.refresh();
-            }
-            if ($(e.currentTarget).attr("value") == "metadata") {
-                self.resize_metadata_area();
             }
         });
     }
@@ -105,7 +105,6 @@ class CreatorViewer extends ModuleViewerAbstract {
         if (include_right) {
             this.right_div.width((1 - new_width_fraction) * usable_width - left_div_margin)
         }
-        this.resize_metadata_area()
     }
 
 
@@ -337,18 +336,13 @@ class CreatorViewer extends ModuleViewerAbstract {
         }
     }
 
-    resize_metadata_area() {
-        const metadata_width = $("#notes").parent().width();
-        // $("#notes").width(metadata_width - 50)
-    }
-
     resize_method_module() {
         resize_dom_to_bottom_given_selector("#method_module .CodeMirror", BOTTOM_MARGIN);
     }
 
     resize_api_and_tab_areas() {
         resize_dom_to_bottom_given_selector("#aux-area", BOTTOM_MARGIN);
-        resize_dom_to_bottom_given_selector(".tab-pane", BOTTOM_MARGIN);
+        resize_dom_to_bottom_given_selector(this.current_tab_selector, BOTTOM_MARGIN);
     }
 
     resize_to_window() {
@@ -363,7 +357,8 @@ class CreatorViewer extends ModuleViewerAbstract {
         }
         this.resize_code_area();
         this.resize_api_and_tab_areas();
-        this.update_width(this.current_width_fraction)
+        this.update_width(this.current_width_fraction);
+        this.markdown_helper.updateMarkdownHeight(this.meta_outer, "#metadata-module-outer");
     }
 
     selector_click(event) {
@@ -385,7 +380,7 @@ class CreatorViewer extends ModuleViewerAbstract {
 class OptionManager extends CreatorResourceManager {
 
     resize_to_window() {
-        resize_dom_to_bottom_given_selector("#export_module .CodeMirror", 20);
+        resize_dom_to_bottom_given_selector("#option-module-outer", 20);
     }
 
     set_extra_properties() {
@@ -400,6 +395,11 @@ class OptionManager extends CreatorResourceManager {
                 "buttons": [
                     {"name": "delete", "func": "delete_option_func", "button_class": "btn-default"},
                     {"name": "refresh", "func": "refresh_option_table", "button_class": "btn-default"}
+                ]
+            },
+            {
+                "buttons": [
+                    {"name": "document_options", "func": "send_doc_text", "button_class": "btn-default"}
                 ]
             }
         ]
@@ -429,6 +429,19 @@ class OptionManager extends CreatorResourceManager {
         let manager = event.data.manager;
         manager.update_main_content();
         return false
+    }
+
+    send_doc_text (event) {
+        let manager = event.data.manager;
+        let res_string = "\n\noptions: \n\n";
+        for (let opt of manager.option_dict) {
+            res_string += ` * \`${opt.name}\` (${opt.type}): \n`
+        }
+        $('.nav-tabs a[href="#metadata-module-outer"]').tab('show');
+        let self = creator_viewer;
+        let md = creator_viewer.markdown_helper;
+        md.setNotesValue(self.meta_outer, md.getNotesValue(self.meta_outer) + res_string);
+        md.getMarkdownField(self.meta_outer).click();
     }
 
     update_option_order () {
@@ -612,11 +625,30 @@ class ExportManager extends CreatorResourceManager {
             {"buttons": [
                     {"name": "delete", "func": "delete_export_func", "button_class": "btn-default"},
                     {"name": "refresh", "func": "refresh_export_table", "button_class": "btn-default"}]
-            }]
+            },
+            {
+                "buttons": [
+                    {"name": "document_exports", "func": "send_doc_text", "button_class": "btn-default"}
+                ]
+            }
+        ]
     }
 
     refresh_export_table () {
         this.update_main_content()
+    }
+
+    send_doc_text (event) {
+        let manager = event.data.manager;
+        let res_string = "\n\nexports: \n\n";
+        for (let exp of manager.export_list) {
+            res_string += ` * \`${exp.name}\`: \n`
+        }
+        $('.nav-tabs a[href="#metadata-module-outer"]').tab('show');
+        let self = creator_viewer;
+        let md = creator_viewer.markdown_helper;
+        md.setNotesValue(self.meta_outer, md.getNotesValue(self.meta_outer) + res_string);
+        md.getMarkdownField(self.meta_outer).click();
     }
 
     update_export_order () {
@@ -690,7 +722,7 @@ class MethodManager extends CreatorResourceManager {
 
 
     resize_to_window() {
-        resize_dom_to_bottom_given_selector("#method_module .CodeMirror", 20);
+        resize_dom_to_bottom_given_selector("#method-module-outer", 20);
     }
 
     set_extra_properties() {

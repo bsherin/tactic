@@ -223,8 +223,8 @@ class UserManagerResourceManager extends ResourceManager{
             });
 
             this.get_module_dom().on("click", ".notes-field-markdown-output", function () {
-                self.hideMarkdown();
-                self.get_notes_field().focus()
+                self.markdown_helper.hideMarkdown(self.get_module_dom());
+                self.markdown_helper.focusNotes(self.get_module_dom())
             })
         }
     }
@@ -345,9 +345,10 @@ class UserManagerResourceManager extends ResourceManager{
     set_resource_metadata(created, tags, notes, additional_mdata) {
         this.get_created_field().html(this.format_metadata("created", created));
         this.set_tag_list(tags);
-        this.get_notes_field().html("");
-        this.get_notes_field()[0].value = notes;
-        this.convertMarkdown();
+        let md = this.get_module_dom();
+        this.markdown_helper.clearNotes(md);
+        this.markdown_helper.setNotesValue(md, notes);
+        this.markdown_helper.convertMarkdown(md);
         let added_string = "";
         for (let name in additional_mdata) {
             let val = additional_mdata[name];
@@ -372,36 +373,10 @@ class UserManagerResourceManager extends ResourceManager{
         this.get_additional_mdata_field().html(added_string)
     }
 
-    convertMarkdown() {
-        let the_text = this.get_notes_field().val();
-        if (the_text == "") {
-            this.get_notes_markdown_field().html("");
-            this.hideMarkdown();
-            return
-        }
-        let ddict = {"the_text": the_text};
-        let self = this;
-        postAjaxPromise("convert_markdown", ddict)
-            .then(function(data) {
-                self.get_notes_markdown_field().html("");
-                self.get_notes_markdown_field().html(data["converted_markdown"]);
-                self.get_notes_field().hide();
-                self.get_notes_markdown_field().show();
-            })
-            .catch(doFlash)
-    }
-
-    hideMarkdown() {
-        if (!this.is_repository){
-            this.get_notes_field().show();
-            this.get_notes_markdown_field().hide();
-        }
-    }
-
     save_my_metadata (flash = false) {
         const res_name = this.get_active_selector_button().attr("value");
         const tags = this.get_tags_string();
-        const notes = this.get_notes_field().val();
+        const notes = this.markdown_helper.getNotesValue(this.get_module_dom());
         const result_dict = {"res_type": this.res_type, "res_name": res_name,
             "tags": tags, "notes": notes, "module_id": this.module_id};
         const self = this;
@@ -411,7 +386,7 @@ class UserManagerResourceManager extends ResourceManager{
                 self.tag_button_list.refresh_given_taglist(data.res_tags);
                 resource_managers["all_module"].update_selector_tags(res_name, self.res_type, tags);
                 resource_managers["all_module"].tag_button_list.refresh_given_taglist(data.all_tags);
-                self.convertMarkdown();
+                self.markdown_helper.convertMarkdown(self.get_module_dom());
                 if (flash) {
                     doFlash(data)
                 }
