@@ -37,7 +37,7 @@
                 {% if include_right %}
                 <div id="right-div" class="resource-viewer-right" style="margin-top: 20px; display: inline-block; vertical-align:top">
                     {% if include_metadata %}
-                    <div  style="vertical-align: top; margin-left: 5px; margin-top: 10px; display:inline-block">
+                    <div id="resource-area" style="vertical-align: top; margin-left: 5px; margin-top: 10px; display:inline-block">
                         <div id="created"></div>
                         <div class="form-group" style="margin-bottom: 7px">
                             <textarea type="text" class="form-control metadata-field" id="tags" rows="1" {% if readonly %} readonly {% endif %}></textarea>
@@ -74,7 +74,7 @@
         let use_ssl = "{{use_ssl}}"=="True";
         window.onload = start_post_load;
         window.onbeforeunload = function(e) {
-            if (dirty()) {
+            if (this_viewer.dirty()) {
                 return "Any unsaved changes will be lost."
             }
         };

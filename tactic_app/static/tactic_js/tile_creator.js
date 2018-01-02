@@ -54,7 +54,6 @@ class CreatorViewer extends ModuleViewerAbstract {
 
     got_parsed_data(data_object) {
         creator_viewer.parsed_data = data_object["the_content"];
-        creator_viewer.savedMethods = creator_viewer.parsed_data.extra_functions;
         creator_viewer.is_mpl = creator_viewer.parsed_data.is_mpl;
         creator_viewer.is_d3 = creator_viewer.parsed_data.is_d3;
         creator_viewer.setup_code_areas();
@@ -75,12 +74,9 @@ class CreatorViewer extends ModuleViewerAbstract {
         super.do_extra_setup();
         this.this_viewer = "creator";
         this.savedCategory = null;
-        this.savedMethods = null;
         this.resource_managers = {};
         this.is_mpl = false;
         this.is_d3 = false;
-        this.savedCode = null;
-        this.savedDPCode = null;
         this.myCodeMirror = null;
         this.myDPCodeMirror = null;
         this.myJSCodeMirror = null;
@@ -135,14 +131,14 @@ class CreatorViewer extends ModuleViewerAbstract {
     setup_code_areas() {
         const codearea = document.getElementById("codearea");
         this.myCodeMirror = this.createCMArea(codearea, false, this.parsed_data.render_content_code, this.parsed_data.render_content_line_number + 1);
-        this.savedCode = this.myCodeMirror.getDoc().getValue();
+        this.myCodeMirror.getDoc().markClean();
 
         if (this.is_mpl) {
             const drawplotcodearea = document.getElementById("drawplotcodearea");
             this.myDPCodeMirror = this.createCMArea(drawplotcodearea, false, this.parsed_data.draw_plot_code, this.parsed_data.draw_plot_line_number + 1);
             let dpba = $("#drawplotboundingarea");
             dpba.css("display", "block");
-            this.savedDPCode = this.myDPCodeMirror.getDoc().getValue();
+            this.myDPCodeMirror.getDoc().markClean();
             let self = this;
             dpba.resizable({
                     handles: "s",
@@ -158,7 +154,7 @@ class CreatorViewer extends ModuleViewerAbstract {
             this.myJSCodeMirror = this.createJSCMArea(jscriptcodearea, false, this.parsed_data.jscript_code, 1);
             let jsba = $("#jscriptboundingarea");
             jsba.css("display", "block");
-            this.savedJSCode = this.myJSCodeMirror.getDoc().getValue();
+            this.myJSCodeMirror.getDoc().markClean();
             let self = this;
             jsba.resizable({
                     handles: "s",
@@ -175,7 +171,7 @@ class CreatorViewer extends ModuleViewerAbstract {
         let result_dict = {"res_type": this.res_type, "res_name": this.resource_name, "is_repository": false};
         postAjaxPromise("grab_metadata", result_dict)
             .then(function (data) {
-                self.set_metadata_fields(data.datestring, data.tags, data.notes, self.parsed_data.category)
+                self.set_metadata_fields(data.datestring, data.tags, data.notes, self.parsed_data.category);
             })
             .catch(function () {
                 self.set_metadata_fields("", "", "", "")
@@ -254,27 +250,34 @@ class CreatorViewer extends ModuleViewerAbstract {
         if (data.extra_methods_line_number != 0) {
             self.methodManager.extra_methods_line_number = data.extra_methods_line_number;
             self.methodManager.cmobject.setOption("firstLineNumber", data.extra_methods_line_number);
-            self.methodManager.cmobject.refresh()
+            self.methodManager.cmobject.refresh();
+            self.methodManager.cmobject.markClean();
         }
         if ((self.is_mpl) && (data.draw_plot_line_number != 0)) {
             self.myDPCodeMirror.setOption("firstLineNumber", data.draw_plot_line_number + 1);
             self.myDPCodeMirror.refresh();
         }
-        self.savedContent = new_code;
+        self.myCodeMirror.getDoc().markClean();
         self.savedTags = tags;
         self.savedNotes = notes;
         data.timeout = 2000;
         self.savedCategory = category;
         if (self.is_mpl) {
-            self.savedDPCode = self.myDPCodeMirror.getDoc().getValue();
+            self.myDPCodeMirror.getDoc().markClean();
+
         }
         if (self.is_d3) {
-            self.savedJSCode = self.myJSCodeMirror.getDoc().getValue();
+            self.myJSCodeMirror.getDoc().markClean();
         }
     }
 
     set_metadata_fields(created, tags, notes, category=null) {
-        super.set_metadata_fields(created, tags, notes);
+        $("#created").html(created);
+        this.set_tag_list(tags);
+        this.markdown_helper.setNotesValue(this.meta_outer, notes);
+        this.savedTags = tags;
+        this.savedNotes = notes;
+        this.markdown_helper.convertMarkdown(this.meta_outer, true, "#metadata-module-outer");
         if (category != null) {
             $("#category")[0].value = category;
             this.savedCategory = category;
@@ -739,6 +742,7 @@ class MethodManager extends CreatorResourceManager {
         this.get_main_content_dom().find(".CodeMirror").height("100%");
         this.get_main_content_dom().width("100%");
         this.fill_content();
+        this.cmobject.getDoc().markClean();
     }
 
     fill_content () {

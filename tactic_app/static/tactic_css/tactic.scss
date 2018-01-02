@@ -208,6 +208,8 @@ a[role="tab"] {
 }
 
 .resource-viewer-right {
+    overflow: scroll;
+
     #notes {
         background-color: #f7f7f7;
     }
@@ -372,7 +374,6 @@ a[role="tab"] {
             border-color: $bootstrap-border-color;
             border-width: 1px;
             margin-right: 10px;
-
         }
 
         .form-inline label {
