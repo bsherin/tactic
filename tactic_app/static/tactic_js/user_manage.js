@@ -522,7 +522,8 @@ class TileManager extends UserManagerResourceManager {
     }
 
     update_aux_content() {
-        super.update_aux_content();
+        this.tag_button_list.create_tag_buttons(this.update_tag_view);
+        this.get_aux_right_dom().css("display", "inline-block");
         this.get_aux_right_dom().load(`${$SCRIPT_ROOT}/request_update_loaded_tile_list`)
     }
 
@@ -1127,7 +1128,7 @@ class AllManager extends UserManagerResourceManager {
     save_my_metadata(flash = true) {
         const res_name = this.get_active_selector_button().attr("value");
         const tags = this.get_tags_string();
-        const notes = this.get_notes_field().val();
+        const notes = this.markdown_helper.getNotesValue(this.get_module_dom());
         const the_type = this.selected_resource_type();
         const result_dict = {
             "res_type": the_type, "res_name": res_name,
@@ -1140,7 +1141,7 @@ class AllManager extends UserManagerResourceManager {
                 self.tag_button_list.refresh_given_taglist(data.all_tags);
                 self.res_manager(the_type).update_selector_tags(res_name, tags);
                 self.res_manager(the_type).tag_button_list.refresh_given_taglist(data.res_tags);
-                self.convertMarkdown();
+                self.markdown_helper.convertMarkdown(self.get_module_dom());
                 if (flash) {
                     doFlash(data)
                 }

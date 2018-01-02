@@ -13,7 +13,7 @@ class ModuleViewerAbstract extends ResourceViewer {
         this.api_dict_by_category = {};
         this.ordered_api_categories = [];
         this.this_viewer = "viewer";
-        this.myCodemirror = null;
+        this.myCodeMirror = null;
         this.myDPCodeMirror = null;
         this.myJSCodeMirror = null;
         this.current_theme = "default";
@@ -214,7 +214,7 @@ class ModuleViewerAbstract extends ResourceViewer {
             };
             postAjax("update_module", result_dict, function (data) {
                 if (data.success) {
-                    self.save_success(data, new_code, tags, notes, category);
+                    self.save_success(data, tags, notes, category);
                     data.new_code = new_code;
                     resolve(data)
                 }
@@ -226,11 +226,10 @@ class ModuleViewerAbstract extends ResourceViewer {
         })
     }
 
-    save_success(data, new_code, tags, notes, category) {
-        let self = this;
-        self.savedContent = new_code;
-        self.savedTags = tags;
-        self.savedNotes = notes;
+    save_success(data, tags, notes, category) {
+        this.myCodeMirror.getDoc().markClean();
+        this.savedTags = tags;
+        this.savedNotes = notes;
         data.timeout = 2000;
     }
 
@@ -283,10 +282,7 @@ class ModuleViewerAbstract extends ResourceViewer {
     }
 
     showAPI() {
-        if (this.this_viewer == "creator") {
-            $("#resource-area").toggle();
-        }
-
+        $("#resource-area").toggle();
         $("#aux-area").toggle();
         resize_dom_to_bottom_given_selector("#aux-area", 20);
     }
@@ -318,26 +314,23 @@ class ModuleViewerAbstract extends ResourceViewer {
 
     dirty() {
         const the_code = this.myCodeMirror.getDoc().getValue();
-        const tags = $("#tile-tags").val();
-        const notes = $("#tile-notes").val();
+        const tags = this.get_tags_string();
+        const notes = this.markdown_helper.getNotesValue(self.meta_outer);
 
-        let is_clean = (the_code == this.savedContent) && (tags == this.savedTags) && (notes == this.savedNotes);
+        let is_clean = this.myCodeMirror.getDoc().isClean() && (tags == this.savedTags) && (notes == this.savedNotes);
         if (this.this_viewer == "creator") {
             let new_methods = this.methodManager.cmobject.getValue();
-            const category = $("#tile-category").val();
-            is_clean = is_clean && (new_methods == this.savedMethods) && !this.optionManager.changed && !this.exportManager.changed && (category == this.savedCategory);
+            const category = $("#category").val();
+            is_clean = is_clean && this.methodManager.cmobject.getDoc().isClean() && !this.optionManager.changed && !this.exportManager.changed && (category == this.savedCategory);
             if (this.is_mpl) {
-                const dp_code = this.myDPCodeMirror.getDoc().getValue();
-                is_clean = is_clean && (dp_code == this.savedDPCode);
+                is_clean = is_clean && this.myDPCodeMirror.getDoc().isClean();
             }
             if (this.is_d3) {
-                const js_code = this.myJSCodeMirror.getDoc().getValue();
-                is_clean = is_clean && (js_code == this.savedjsCode);
+                is_clean = is_clean && this.myJSCodeMirror.getDoc().isClean();
             }
         }
         return !is_clean
     }
-
 }
 
 tactic_keymap_pcDefault = {

@@ -99,17 +99,24 @@ a[role="tab"] {
   .resource-module .notes-field {
     background-color: #f7f7f7; }
   .resource-module .notes-field-markdown-output {
-    padding: 10px; }
+    padding: 10px;
+    overflow: auto; }
+  .resource-module .right-div {
+    overflow: auto;
+    position: absolute; }
 
 .search-toolbar .tag-editor li {
   margin: 6px 2px 6px 2px; }
 .search-toolbar .tag-editor li:last-child {
   margin-right: 20px; }
 
-.resource-viewer-right #notes {
-  background-color: #f7f7f7; }
-.resource-viewer-right #notes-field-markdown-output {
-  padding: 10px; }
+.resource-viewer-right {
+  overflow: auto; }
+  .resource-viewer-right #notes {
+    background-color: #f7f7f7; }
+  .resource-viewer-right #notes-field-markdown-output {
+    padding: 10px;
+    overflow: auto; }
 
 .tag-button {
   padding-left: 5px;
@@ -225,7 +232,8 @@ a[role="tab"] {
 #creator-resources #notes {
   background-color: #f7f7f7; }
 #creator-resources #notes-field-markdown-output {
-  padding: 10px; }
+  padding: 10px;
+  overflow: auto; }
 
 /* Tile related */
 .tile-panel-heading {

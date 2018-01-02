@@ -20,6 +20,7 @@ user_manager = UserManager("user")
 @app.route('/request_update_admin_selector_list/<res_type>', methods=['GET'])
 @login_required
 def request_update_admin_selector_list(res_type):
+    the_html = ""
     if res_type == "container":
         the_html = container_manager.request_update_selector_list()
     elif res_type == "user":
@@ -34,4 +35,3 @@ def admin_interface():
         return render_template("admin_interface.html", use_ssl=str(use_ssl), version_string=tstring)
     else:
         return "not authorized"
-

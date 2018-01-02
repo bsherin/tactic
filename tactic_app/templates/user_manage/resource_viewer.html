@@ -37,7 +37,7 @@
                 {% if include_right %}
                 <div id="right-div" class="resource-viewer-right" style="margin-top: 20px; display: inline-block; vertical-align:top">
                     {% if include_metadata %}
-                    <div  style="vertical-align: top; margin-left: 5px; margin-top: 10px; display:inline-block">
+                    <div id="resource-area" style="vertical-align: top; margin-left: 5px; margin-top: 10px; display:inline-block">
                         <div id="created"></div>
                         <div class="form-group" style="margin-bottom: 7px">
                             <textarea type="text" class="form-control metadata-field" id="tags" rows="1" {% if readonly %} readonly {% endif %}></textarea>
@@ -48,7 +48,7 @@
                         </div>
                     </div>
                     {% endif -%}
-                    <div id="aux-area" style="display:none; overflow:scroll"></div>
+                    <div id="aux-area" style="display:none; overflow:auto"></div>
                 </div>
                 {% endif %}
             </div>
@@ -60,6 +60,7 @@
     <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
     <script src="{{url_for('static', filename='js/jquery.caret.min.js')}}"></script>
     <script src="{{url_for('static', filename='js/jquery.tag-editor.min.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/markdown_utilities.js', v=version_string)}}"></script>
     <script src="{{url_for('static', filename='tactic_js/resource_viewer_class.js', version_string=tstring)}}"></script>
     {% if uses_codemirror == "True" %}
         <script src="{{url_for('static', filename='tactic_js/module_editor_abstract.js', version_string=tstring)}}"></script>
@@ -73,7 +74,7 @@
         let use_ssl = "{{use_ssl}}"=="True";
         window.onload = start_post_load;
         window.onbeforeunload = function(e) {
-            if (dirty()) {
+            if (this_viewer.dirty()) {
                 return "Any unsaved changes will be lost."
             }
         };

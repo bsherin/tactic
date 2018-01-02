@@ -57,14 +57,16 @@ class ResourceViewer {
                 })
                 .catch(doFlash);
         }
+        this.meta_outer = $("#right-div");
+        this.markdown_helper = new MarkdownHelper("#notes", "#notes-field-markdown-output");
         $("#notes").blur(function () {
-            self.convertMarkdown();
-            self.showMarkdown()
+            self.markdown_helper.convertMarkdown(self.meta_outer);
         });
 
-        $("#notes-field-markdown-output").click(function () {
-            self.hideMarkdown();
-            $("#notes").focus()
+        $("#notes-field-markdown-output").click(function (e) {
+            e.preventDefault();
+            self.markdown_helper.hideMarkdown(self.meta_outer);
+            self.markdown_helper.focusNotes(self.meta_outer)
         })
     }
 
@@ -101,7 +103,9 @@ class ResourceViewer {
 
     resize_to_window() {
         resize_dom_to_bottom_given_selector("#main_content", 40);
-        this.update_width(this.current_width_fraction)
+        resize_dom_to_bottom_given_selector("#right-div", 40);
+        this.update_width(this.current_width_fraction);
+        // this.markdown_helper.updateMarkdownHeight(this.meta_outer, "#metadata-module-outer");
     }
 
     get_tags_field() {
@@ -157,56 +161,12 @@ class ResourceViewer {
     set_metadata_fields(created, tags, notes) {
         $("#created").html(created);
         this.set_tag_list(tags);
-        this.setNotesField(notes);
+        this.markdown_helper.setNotesValue(this.meta_outer, notes);
         this.savedTags = tags;
         this.savedNotes = notes;
-        this.convertMarkdown();
+        this.markdown_helper.convertMarkdown(self.meta_outer);
     }
 
-    hideMarkdown() {
-            $("#notes").show();
-            $("#notes-field-markdown-output").hide();
-    }
-
-    showMarkdown() {
-        if (this.getNotesField() != "") {
-            $("#notes").hide();
-            $("#notes-field-markdown-output").show();
-        }
-        else {
-            this.hideMarkdown();
-        }
-    }
-
-    setNotesField(the_text) {
-        $("#notes")[0].value = the_text
-    }
-
-    getNotesField() {
-        return $("#notes")[0].value
-    }
-
-    setMarkdownField(the_html) {
-        $("#notes-field-markdown-output").html(the_html)
-    }
-
-    convertMarkdown() {
-        let the_text = this.getNotesField();
-        if (the_text == "") {
-            this.setMarkdownField.html("");
-            this.hideMarkdown();
-            return
-        }
-        let ddict = {"the_text": the_text};
-        let self = this;
-        postAjaxPromise("convert_markdown", ddict)
-            .then(function(data) {
-                self.setMarkdownField("");
-                self.setMarkdownField(data["converted_markdown"]);
-                self.showMarkdown()
-            })
-            .catch(doFlash)
-    }
 
     bind_buttons() {
         for (let but_name in this.button_bindings) {
@@ -317,7 +277,7 @@ class ResourceViewer {
     dirty() {
         let current_content = this.get_current_content();
         const tags = this.get_tags_string();
-        const notes = $("#notes").val();
+        const notes = this.markdown_helper.getNotesValue(this.meta_outer);
         return !((current_content == this.saved_content) && (tags == this.savedTags) && (notes == this.savedNotes))
     }
 }

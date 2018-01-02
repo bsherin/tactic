@@ -43,6 +43,7 @@ class CodeViewer extends ModuleViewerAbstract {
             this.myCodeMirror.setOption("readOnly", true)
         }
         this.myCodeMirror.refresh();
+        this.myCodeMirror.getDoc().markClean();
         let self = this;
         /**
          * @param {{api_html:boolean}} data
@@ -65,12 +66,13 @@ class CodeViewer extends ModuleViewerAbstract {
             "tags": tags,
             "notes": notes
             };
+        self = this;
         postAjax("update_code", result_dict, update_success);
         function update_success(data) {
             if (data.success) {
-                this.savedCode = new_code;
-                this.savedTags = tags;
-                this.savedNotes = notes;
+                self.myCodeMirror.getDoc().markClean();
+                self.savedTags = tags;
+                self.savedNotes = notes;
                 data.timeout = 2000;
             }
             doFlash(data);

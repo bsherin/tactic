@@ -23,6 +23,7 @@ class ConsoleObjectClass {
         this.exports_visible = false;
         this.console_zoomed = false;
         this.current_panel_focus = null;
+        this.markdown_helper = new MarkdownHelper(".console-text", ".text-panel-output");
     }
 
     get console_panel () {
@@ -104,10 +105,16 @@ class ConsoleObjectClass {
         });
         this.console_dom.on("click", ".close-log-button", {"cobject": this}, this.closeLogItem);
         this.console_dom.on("click", ".run-log-button", {"cobject": this}, this.runConsoleCode);
-        this.console_dom.on("click", ".convert-markdown-button", {"cobject": this}, this.convertMarkdown);
+        this.console_dom.on("click", ".convert-markdown-button", {"cobject": this}, function (e) {
+            const el = $(e.target).closest(".log-panel");
+            self.markdown_helper.toggleMarkdown(el);
+        });
         this.console_dom.on("click", ".clear-code-button", {"cobject": this}, this.clearConsoleCode);
         this.console_dom.on("focus", ".log-panel", {"cobject": this}, this.setPanelFocus);
-        this.console_dom.on("click", ".text-panel-output", {"cobject": this}, this.setTextFocus);
+        this.console_dom.on("click", ".text-panel-output", {"cobject": this}, function (e) {
+            const el = $(e.target).closest(".log-panel");
+            self.markdown_helper.hideMarkdown(el);
+        });
     }
 
     update_height(hgt) {
@@ -269,29 +276,6 @@ class ConsoleObjectClass {
         postWithCallback(main_id, "exec_console_code", {"the_code": the_code, "console_id": uid})
     }
 
-    convertMarkdown(e) {
-        let self = e.data.cobject;
-        const el = $(e.target).closest(".log-panel");
-        if (el.find(".console-text").is(":visible")) {
-            const the_text = el.find(".console-text").html();
-            postWithCallback(main_id, "convert_markdown", {"the_text": the_text}, function (data) {
-                el.find(".text-panel-output").html(data.converted_markdown)
-                el.find(".console-text").hide();
-                el.find(".text-panel-output").show();
-            })
-        }
-        else {
-            el.find(".console-text").show();
-            el.find(".text-panel-output").hide();
-        }
-    }
-
-    setTextFocus(e) {
-        let self = e.data.cobject;
-        const el = $(e.target).closest(".log-panel");
-        el.find(".text-panel-output").hide();
-        el.find(".console-text").show();
-    }
 
     getConsoleCMCode() {
         const result = {};

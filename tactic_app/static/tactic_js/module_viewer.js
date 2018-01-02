@@ -47,6 +47,7 @@ class ModuleViewer extends ModuleViewerAbstract {
             this.myCodeMirror.setOption("readOnly", true)
         }
         this.myCodeMirror.refresh();
+        this.myCodeMirror.getDoc().markClean();
         let self = this;
         postAjaxPromise("get_api_html", {})
             .then(function (data) {
@@ -56,7 +57,6 @@ class ModuleViewer extends ModuleViewerAbstract {
             .catch(doFlash)
     }
 }
-
 
 class RepositoryModuleViewer extends ModuleViewer {
 

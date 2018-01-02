@@ -54,7 +54,6 @@ class CreatorViewer extends ModuleViewerAbstract {
 
     got_parsed_data(data_object) {
         creator_viewer.parsed_data = data_object["the_content"];
-        creator_viewer.savedMethods = creator_viewer.parsed_data.extra_functions;
         creator_viewer.is_mpl = creator_viewer.parsed_data.is_mpl;
         creator_viewer.is_d3 = creator_viewer.parsed_data.is_d3;
         creator_viewer.setup_code_areas();
@@ -75,23 +74,20 @@ class CreatorViewer extends ModuleViewerAbstract {
         super.do_extra_setup();
         this.this_viewer = "creator";
         this.savedCategory = null;
-        this.savedMethods = null;
         this.resource_managers = {};
         this.is_mpl = false;
         this.is_d3 = false;
-        this.savedCode = null;
-        this.savedDPCode = null;
         this.myCodeMirror = null;
         this.myDPCodeMirror = null;
         this.myJSCodeMirror = null;
+        this.current_tab_selector = "#metadata-module-outer";
         let self = this;
         $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function (e) {
+            self.current_tab_selector = $(e.currentTarget).attr("href");
+            resize_dom_to_bottom_given_selector(self.current_tab_selector, BOTTOM_MARGIN);
             if ($(e.currentTarget).attr("value") == "method") {
                 self.resize_method_module();
                 self.resource_managers["method_module"].cmobject.refresh();
-            }
-            if ($(e.currentTarget).attr("value") == "metadata") {
-                self.resize_metadata_area();
             }
         });
     }
@@ -105,7 +101,6 @@ class CreatorViewer extends ModuleViewerAbstract {
         if (include_right) {
             this.right_div.width((1 - new_width_fraction) * usable_width - left_div_margin)
         }
-        this.resize_metadata_area()
     }
 
 
@@ -136,14 +131,14 @@ class CreatorViewer extends ModuleViewerAbstract {
     setup_code_areas() {
         const codearea = document.getElementById("codearea");
         this.myCodeMirror = this.createCMArea(codearea, false, this.parsed_data.render_content_code, this.parsed_data.render_content_line_number + 1);
-        this.savedCode = this.myCodeMirror.getDoc().getValue();
+        this.myCodeMirror.getDoc().markClean();
 
         if (this.is_mpl) {
             const drawplotcodearea = document.getElementById("drawplotcodearea");
             this.myDPCodeMirror = this.createCMArea(drawplotcodearea, false, this.parsed_data.draw_plot_code, this.parsed_data.draw_plot_line_number + 1);
             let dpba = $("#drawplotboundingarea");
             dpba.css("display", "block");
-            this.savedDPCode = this.myDPCodeMirror.getDoc().getValue();
+            this.myDPCodeMirror.getDoc().markClean();
             let self = this;
             dpba.resizable({
                     handles: "s",
@@ -159,7 +154,7 @@ class CreatorViewer extends ModuleViewerAbstract {
             this.myJSCodeMirror = this.createJSCMArea(jscriptcodearea, false, this.parsed_data.jscript_code, 1);
             let jsba = $("#jscriptboundingarea");
             jsba.css("display", "block");
-            this.savedJSCode = this.myJSCodeMirror.getDoc().getValue();
+            this.myJSCodeMirror.getDoc().markClean();
             let self = this;
             jsba.resizable({
                     handles: "s",
@@ -176,7 +171,7 @@ class CreatorViewer extends ModuleViewerAbstract {
         let result_dict = {"res_type": this.res_type, "res_name": this.resource_name, "is_repository": false};
         postAjaxPromise("grab_metadata", result_dict)
             .then(function (data) {
-                self.set_metadata_fields(data.datestring, data.tags, data.notes, self.parsed_data.category)
+                self.set_metadata_fields(data.datestring, data.tags, data.notes, self.parsed_data.category);
             })
             .catch(function () {
                 self.set_metadata_fields("", "", "", "")
@@ -255,27 +250,34 @@ class CreatorViewer extends ModuleViewerAbstract {
         if (data.extra_methods_line_number != 0) {
             self.methodManager.extra_methods_line_number = data.extra_methods_line_number;
             self.methodManager.cmobject.setOption("firstLineNumber", data.extra_methods_line_number);
-            self.methodManager.cmobject.refresh()
+            self.methodManager.cmobject.refresh();
+            self.methodManager.cmobject.markClean();
         }
         if ((self.is_mpl) && (data.draw_plot_line_number != 0)) {
             self.myDPCodeMirror.setOption("firstLineNumber", data.draw_plot_line_number + 1);
             self.myDPCodeMirror.refresh();
         }
-        self.savedContent = new_code;
+        self.myCodeMirror.getDoc().markClean();
         self.savedTags = tags;
         self.savedNotes = notes;
         data.timeout = 2000;
         self.savedCategory = category;
         if (self.is_mpl) {
-            self.savedDPCode = self.myDPCodeMirror.getDoc().getValue();
+            self.myDPCodeMirror.getDoc().markClean();
+
         }
         if (self.is_d3) {
-            self.savedJSCode = self.myJSCodeMirror.getDoc().getValue();
+            self.myJSCodeMirror.getDoc().markClean();
         }
     }
 
     set_metadata_fields(created, tags, notes, category=null) {
-        super.set_metadata_fields(created, tags, notes);
+        $("#created").html(created);
+        this.set_tag_list(tags);
+        this.markdown_helper.setNotesValue(this.meta_outer, notes);
+        this.savedTags = tags;
+        this.savedNotes = notes;
+        this.markdown_helper.convertMarkdown(this.meta_outer, true, "#metadata-module-outer");
         if (category != null) {
             $("#category")[0].value = category;
             this.savedCategory = category;
@@ -337,18 +339,13 @@ class CreatorViewer extends ModuleViewerAbstract {
         }
     }
 
-    resize_metadata_area() {
-        const metadata_width = $("#notes").parent().width();
-        // $("#notes").width(metadata_width - 50)
-    }
-
     resize_method_module() {
         resize_dom_to_bottom_given_selector("#method_module .CodeMirror", BOTTOM_MARGIN);
     }
 
     resize_api_and_tab_areas() {
         resize_dom_to_bottom_given_selector("#aux-area", BOTTOM_MARGIN);
-        resize_dom_to_bottom_given_selector(".tab-pane", BOTTOM_MARGIN);
+        resize_dom_to_bottom_given_selector(this.current_tab_selector, BOTTOM_MARGIN);
     }
 
     resize_to_window() {
@@ -363,7 +360,8 @@ class CreatorViewer extends ModuleViewerAbstract {
         }
         this.resize_code_area();
         this.resize_api_and_tab_areas();
-        this.update_width(this.current_width_fraction)
+        this.update_width(this.current_width_fraction);
+        this.markdown_helper.updateMarkdownHeight(this.meta_outer, "#metadata-module-outer");
     }
 
     selector_click(event) {
@@ -385,7 +383,7 @@ class CreatorViewer extends ModuleViewerAbstract {
 class OptionManager extends CreatorResourceManager {
 
     resize_to_window() {
-        resize_dom_to_bottom_given_selector("#export_module .CodeMirror", 20);
+        resize_dom_to_bottom_given_selector("#option-module-outer", 20);
     }
 
     set_extra_properties() {
@@ -400,6 +398,11 @@ class OptionManager extends CreatorResourceManager {
                 "buttons": [
                     {"name": "delete", "func": "delete_option_func", "button_class": "btn-default"},
                     {"name": "refresh", "func": "refresh_option_table", "button_class": "btn-default"}
+                ]
+            },
+            {
+                "buttons": [
+                    {"name": "document_options", "func": "send_doc_text", "button_class": "btn-default"}
                 ]
             }
         ]
@@ -429,6 +432,19 @@ class OptionManager extends CreatorResourceManager {
         let manager = event.data.manager;
         manager.update_main_content();
         return false
+    }
+
+    send_doc_text (event) {
+        let manager = event.data.manager;
+        let res_string = "\n\noptions: \n\n";
+        for (let opt of manager.option_dict) {
+            res_string += ` * \`${opt.name}\` (${opt.type}): \n`
+        }
+        $('.nav-tabs a[href="#metadata-module-outer"]').tab('show');
+        let self = creator_viewer;
+        let md = creator_viewer.markdown_helper;
+        md.setNotesValue(self.meta_outer, md.getNotesValue(self.meta_outer) + res_string);
+        md.getMarkdownField(self.meta_outer).click();
     }
 
     update_option_order () {
@@ -612,11 +628,30 @@ class ExportManager extends CreatorResourceManager {
             {"buttons": [
                     {"name": "delete", "func": "delete_export_func", "button_class": "btn-default"},
                     {"name": "refresh", "func": "refresh_export_table", "button_class": "btn-default"}]
-            }]
+            },
+            {
+                "buttons": [
+                    {"name": "document_exports", "func": "send_doc_text", "button_class": "btn-default"}
+                ]
+            }
+        ]
     }
 
     refresh_export_table () {
         this.update_main_content()
+    }
+
+    send_doc_text (event) {
+        let manager = event.data.manager;
+        let res_string = "\n\nexports: \n\n";
+        for (let exp of manager.export_list) {
+            res_string += ` * \`${exp.name}\`: \n`
+        }
+        $('.nav-tabs a[href="#metadata-module-outer"]').tab('show');
+        let self = creator_viewer;
+        let md = creator_viewer.markdown_helper;
+        md.setNotesValue(self.meta_outer, md.getNotesValue(self.meta_outer) + res_string);
+        md.getMarkdownField(self.meta_outer).click();
     }
 
     update_export_order () {
@@ -690,7 +725,7 @@ class MethodManager extends CreatorResourceManager {
 
 
     resize_to_window() {
-        resize_dom_to_bottom_given_selector("#method_module .CodeMirror", 20);
+        resize_dom_to_bottom_given_selector("#method-module-outer", 20);
     }
 
     set_extra_properties() {
@@ -707,6 +742,7 @@ class MethodManager extends CreatorResourceManager {
         this.get_main_content_dom().find(".CodeMirror").height("100%");
         this.get_main_content_dom().width("100%");
         this.fill_content();
+        this.cmobject.getDoc().markClean();
     }
 
     fill_content () {

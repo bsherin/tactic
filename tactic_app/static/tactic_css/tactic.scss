@@ -187,6 +187,11 @@ a[role="tab"] {
     }
     .notes-field-markdown-output {
         padding: 10px;
+        overflow: auto;
+    }
+    .right-div {
+        overflow: auto;
+        position: absolute;
     }
 }
 
@@ -203,12 +208,15 @@ a[role="tab"] {
 }
 
 .resource-viewer-right {
+    overflow: auto;
+
     #notes {
         background-color: #f7f7f7;
     }
 
     #notes-field-markdown-output {
         padding: 10px;
+        overflow: auto;
     }
 }
 
@@ -366,7 +374,6 @@ a[role="tab"] {
             border-color: $bootstrap-border-color;
             border-width: 1px;
             margin-right: 10px;
-
         }
 
         .form-inline label {
@@ -387,6 +394,7 @@ a[role="tab"] {
         }
         #notes-field-markdown-output {
             padding: 10px;
+            overflow: auto;
         }
     }
 
