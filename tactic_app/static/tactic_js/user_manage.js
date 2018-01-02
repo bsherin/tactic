@@ -522,7 +522,8 @@ class TileManager extends UserManagerResourceManager {
     }
 
     update_aux_content() {
-        super.update_aux_content();
+        this.tag_button_list.create_tag_buttons(this.update_tag_view);
+        this.get_aux_right_dom().css("display", "inline-block");
         this.get_aux_right_dom().load(`${$SCRIPT_ROOT}/request_update_loaded_tile_list`)
     }
 

@@ -13,7 +13,8 @@
   "use strict";
 
   var WORD = /[\w$]+/, RANGE = 500;
-  var WORDDOT = /[\w\.$]+/;
+  // noinspection RegExpRedundantEscape
+    var WORDDOT = /[\w\.$]+/;
 
   CodeMirror.registerHelper("hint", "anyword", function(editor, options) {
     var word = options && options.word || WORD;

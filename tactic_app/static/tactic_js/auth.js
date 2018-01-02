@@ -16,6 +16,7 @@ function submit_login_info() {
     data.password = $("#password").val();
     data.remember_me = $("#remember_me")[0].checked;
     postAjax("attempt_login", data, return_from_submit_login)
+
 }
 
 function attempt_open_register() {

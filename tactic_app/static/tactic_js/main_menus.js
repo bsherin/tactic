@@ -312,7 +312,7 @@ function createColumnThisDoc() {
 function changeCollection() {
     startSpinner();
     postWithCallback("host", "get_collection_names",{"user_id": user_id}, function (data) {
-        let collection_names = data["collection_names"]
+        let collection_names = data["collection_names"];
         let option_names = [];
         for (var collection of collection_names) {
             option_names.push({"option": collection})

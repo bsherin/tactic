@@ -573,6 +573,7 @@ class UserManagerResourceManager extends ResourceManager{
 
     update_aux_content() {
         this.tag_button_list.create_tag_buttons(this.update_tag_view);
+        this.get_aux_right_dom().css("display", "none");
     }
 
 

@@ -187,10 +187,10 @@ a[role="tab"] {
     }
     .notes-field-markdown-output {
         padding: 10px;
-        overflow: scroll;
+        overflow: auto;
     }
     .right-div {
-        overflow: scroll;
+        overflow: auto;
         position: absolute;
     }
 }
@@ -208,7 +208,7 @@ a[role="tab"] {
 }
 
 .resource-viewer-right {
-    overflow: scroll;
+    overflow: auto;
 
     #notes {
         background-color: #f7f7f7;
@@ -216,7 +216,7 @@ a[role="tab"] {
 
     #notes-field-markdown-output {
         padding: 10px;
-        overflow: scroll;
+        overflow: auto;
     }
 }
 
@@ -394,7 +394,7 @@ a[role="tab"] {
         }
         #notes-field-markdown-output {
             padding: 10px;
-            overflow: scroll;
+            overflow: auto;
         }
     }
 
