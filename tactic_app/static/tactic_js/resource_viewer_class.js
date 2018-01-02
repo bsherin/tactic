@@ -103,8 +103,9 @@ class ResourceViewer {
 
     resize_to_window() {
         resize_dom_to_bottom_given_selector("#main_content", 40);
+        resize_dom_to_bottom_given_selector("#right-div", 40);
         this.update_width(this.current_width_fraction);
-        this.markdown_helper.updateMarkdownHeight(this.meta_outer, "#metadata-module-outer");
+        // this.markdown_helper.updateMarkdownHeight(this.meta_outer, "#metadata-module-outer");
     }
 
     get_tags_field() {
@@ -163,7 +164,7 @@ class ResourceViewer {
         this.markdown_helper.setNotesValue(this.meta_outer, notes);
         this.savedTags = tags;
         this.savedNotes = notes;
-        this.markdown_helper.convertMarkdown(this.meta_outer);
+        this.markdown_helper.convertMarkdown(self.meta_outer);
     }
 
 

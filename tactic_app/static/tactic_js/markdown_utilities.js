@@ -21,9 +21,9 @@ class MarkdownHelper {
     }
 
     updateMarkdownHeight(el, outer_selector) {
-        let me = this.getMarkdownField(el)
+        let me = this.getMarkdownField(el);
         let outer = $(outer_selector);
-        let new_max_height = outer.height() - (me.offset().top - outer.offset().top) - BOTTOM_MARGIN;
+        let new_max_height = outer.height() - (me.offset().top - outer.offset().top);
         me.css('max-height', new_max_height)
     }
 
@@ -76,7 +76,7 @@ class MarkdownHelper {
         this.getMarkdownField(el).html(converted_markdown)
     }
 
-    convertMarkdown(el, dont_convert_if_empty=true) {
+    convertMarkdown(el, dont_convert_if_empty=true, outer_selector=null) {
         let the_text = this.getNotesValue(el)
         if (dont_convert_if_empty && (the_text == "")) {
             this.setMarkdown(el, "");
@@ -90,6 +90,9 @@ class MarkdownHelper {
                     self.setMarkdown(el, "");
                     self.setMarkdown(el, data["converted_markdown"]);
                     self.showMarkdown(el)
+                    if (outer_selector != null) {
+                        self.updateMarkdownHeight(el, outer_selector)
+                    }
                 })
             .catch(doFlash)
         }

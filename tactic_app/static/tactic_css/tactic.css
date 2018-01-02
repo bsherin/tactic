@@ -110,11 +110,13 @@ a[role="tab"] {
 .search-toolbar .tag-editor li:last-child {
   margin-right: 20px; }
 
-.resource-viewer-right #notes {
-  background-color: #f7f7f7; }
-.resource-viewer-right #notes-field-markdown-output {
-  padding: 10px;
+.resource-viewer-right {
   overflow: scroll; }
+  .resource-viewer-right #notes {
+    background-color: #f7f7f7; }
+  .resource-viewer-right #notes-field-markdown-output {
+    padding: 10px;
+    overflow: scroll; }
 
 .tag-button {
   padding-left: 5px;
