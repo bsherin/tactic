@@ -29,7 +29,7 @@ mousetrap.bind(['enter', 'space'], (e) => {
     let row_element = rm.get_active_selector_button();
     const res_type = get_current_res_type();
     e.data = {"manager": rm, "res_type": res_type};
-    rm[rm.double_click_func](e)
+    rm[rm.double_click_func](e);
     e.preventDefault()
 });
 
@@ -174,6 +174,7 @@ class ContainerManager extends AdminResourceManager {
          */
         $.getJSON($SCRIPT_ROOT + '/container_logs/' + cont_id, function (data) {
             let the_html = "<pre><small>" + data.log_text + "</small></pre>";
+            manager.get_aux_right_dom().css("display", "inline-block");
             manager.get_aux_right_dom().html(the_html)
         });
         event.preventDefault();

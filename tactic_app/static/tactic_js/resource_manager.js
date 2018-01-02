@@ -6,6 +6,7 @@ MARGIN_SIZE = 50;
 
 function get_current_res_type() {
     const module_id_str = $(".nav-tabs .active a").attr("href");
+    // noinspection RegExpRedundantEscape
     const reg_exp = /\#(\S*?)\-module/;
     return module_id_str.match(reg_exp)[1]
 }
@@ -43,6 +44,7 @@ class ResourceManager {
             this.update_width(1.0)
         }
         this.handling_selector_click = false;
+        this.markdown_helper = new MarkdownHelper(".notes-field", ".notes-field-markdown-output");
         let self = this;
     }
 
@@ -212,13 +214,6 @@ class ResourceManager {
         return this.get_module_element(".created");
     }
 
-    get_notes_field() {
-        return this.get_module_element(".notes-field")
-    }
-
-    get_notes_markdown_field() {
-        return this.get_module_element(".notes-field-markdown-output")
-    }
 
     get_tags_field() {
          return this.get_module_element(".tags-field")
@@ -309,6 +304,7 @@ class ResourceManager {
             function got_metadata(data) {
                 if (data.success) {
                     self.set_resource_metadata(data.datestring, data.tags, data.notes, data.additional_mdata);
+                    self.resize_to_window();
                 }
                 else {
                     // doFlash(data)
@@ -361,14 +357,13 @@ class ResourceManager {
         this.get_created_field().html(created);
         this.get_tags_field().html("");
         this.get_tags_field()[0].value = tags;
-        this.get_notes_field().html("");
-        this.get_notes_field()[0].value = notes;
+        this.markdown_helper.setNotesValue(this.get_module_dom(), notes);
     }
 
     save_my_metadata (flash = false) {
         const res_name = this.get_active_selector_button().attr("value");
         const tags = this.get_tags_field().val();
-        const notes = this.get_notes_field().val();
+        const notes = this.markdown_helper.getNotesValue(this.get_module_dom());
         const result_dict = {"res_type": this.res_type, "res_name": res_name, "tags": tags, "notes": notes};
         const self = this;
         postAjaxPromise("save_metadata", result_dict)

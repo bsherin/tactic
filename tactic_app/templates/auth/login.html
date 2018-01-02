@@ -26,8 +26,8 @@
         <input id="remember_me" name="remember_me" type="checkbox" value="y"> Keep me logged in
       </label>
     </div>
-    <input class="btn btn-default" id="submit" name="submit" onclick="submit_login_info()" value="Log In">
 </form>
+    <button class="btn btn-default" id="submit" name="submit">Log In</button>
 </div>
 <p>
     New user?
@@ -36,7 +36,7 @@
     </div>
 {% endblock %}
 {% block scripts %}
-    <script src="{{url_for('static', filename='tactic_js/auth.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/auth.js', v=version_string)}}"></script>
 
     <script>
         current_user = "{{current_user.username}}"
@@ -46,6 +46,10 @@
                 if (_show_message == "yes") {
                     doFlash({"message": "{{message}}" })
                 }
-        }
+        };
+        $(document).ready(function () {
+            $("#submit").click(submit_login_info)
+        });
+
     </script>
 {% endblock %}
