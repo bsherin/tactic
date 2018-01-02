@@ -77,7 +77,7 @@ class MarkdownHelper {
     }
 
     convertMarkdown(el, dont_convert_if_empty=true, outer_selector=null) {
-        let the_text = this.getNotesValue(el)
+        let the_text = this.getNotesValue(el);
         if (dont_convert_if_empty && (the_text == "")) {
             this.setMarkdown(el, "");
             this.hideMarkdown(el)
@@ -89,7 +89,7 @@ class MarkdownHelper {
                 .then(function(data) {
                     self.setMarkdown(el, "");
                     self.setMarkdown(el, data["converted_markdown"]);
-                    self.showMarkdown(el)
+                    self.showMarkdown(el);
                     if (outer_selector != null) {
                         self.updateMarkdownHeight(el, outer_selector)
                     }

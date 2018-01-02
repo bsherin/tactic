@@ -77,21 +77,6 @@ function doFlashStopSpinner(data) {
     doFlash(data)
 }
 
-function oldstatusMessage(data) {
-    let timeout;
-    if (data.hasOwnProperty("timeout") && (data.timeout != null)) {
-        timeout = data.timeout
-    } else {
-        timeout = 0
-    }
-
-    if (!alertbox.isOpen()){
-        alertbox.setContent(data.message).show().resizeTo("25%", 50).moveTo(0,0)
-    } else {
-        alertbox.setContent(data.message)
-    }
-}
-
 function statusMessageText(message, timeout=null) {
     statusMessage({"message": message, "timeout": timeout})
 }
@@ -338,9 +323,9 @@ function showModal(modal_title, field_title, submit_function, default_value, exi
 
     function submit_handler() {
         const result = $("#modal-text-input-field").val();
-        checkresults = {};
+        let checkresults = {};
         for (let i = 0; i < checkboxes.length; i++) {
-            cname = checkboxes[i]["checkname"];
+            let cname = checkboxes[i]["checkname"];
             checkresults[cname] = $("#" + cname).is(":checked")
         }
         let msg;
