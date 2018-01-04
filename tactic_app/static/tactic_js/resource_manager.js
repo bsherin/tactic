@@ -12,7 +12,7 @@ function get_current_res_type() {
 }
 
 class ResourceManager {
-    constructor (module_id, res_type, resource_module_template, destination_selector, extras_dict=null, include_right=true) {
+    constructor (module_id, res_type, resource_module_template, destination_selector, extras_dict=null, include_right=true, include_markdown=true) {
         this.destination_selector = destination_selector;
         this.res_type = res_type;
         this.module_id = module_id;
@@ -44,7 +44,9 @@ class ResourceManager {
             this.update_width(1.0)
         }
         this.handling_selector_click = false;
-        this.markdown_helper = new MarkdownHelper(".notes-field", ".notes-field-markdown-output");
+        if (include_markdown) {
+            this.markdown_helper = new MarkdownHelper(".notes-field", ".notes-field-markdown-output");
+        }
         let self = this;
     }
 
