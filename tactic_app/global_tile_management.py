@@ -1,7 +1,8 @@
 
 from docker_functions import create_container, ContainerCreateError
 import copy
-from users import User, load_user, initial_metadata
+import datetime
+from users import User, load_user
 import tactic_app
 
 
@@ -85,8 +86,13 @@ class GlobalTileManager(object):
 
     @staticmethod
     def create_initial_metadata():
-        mdata = copy.copy(initial_metadata)
-        return mdata
+
+        initial_metadata = {"datetime": datetime.datetime.utcnow(),
+                            "updated": datetime.datetime.utcnow(),
+                            "tags": "",
+                            "notes": ""}
+
+        return initial_metadata
 
     def get_loaded_user_tiles_list(self, username):
         loaded_tiles = []

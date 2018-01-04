@@ -19,7 +19,7 @@ AUTOSPLIT = True
 AUTOSPLIT_SIZE = 10000
 
 import datetime
-tstring = datetime.datetime.now().strftime("%Y-%H-%M-%S")
+tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 
 
 # noinspection PyMethodMayBeStatic,PyBroadException
@@ -261,7 +261,7 @@ class CollectionManager(UserManageResourceManager):
                     continue
                 base_collection.insert_one(f)
             db[base_full_name].update_one({"name": "__metadata__"},
-                                          {'$set': {"updated": datetime.datetime.today()}})
+                                          {'$set': {"updated": datetime.datetime.utcnow()}})
             self.update_number_of_docs(base_full_name)
             self.update_selector_list(base_collection_name)
             return jsonify({"message": "Collections successfull combined", "alert_type": "alert-success"})

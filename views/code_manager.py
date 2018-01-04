@@ -15,7 +15,7 @@ repository_user = User.get_user_by_username("repository")
 global_tile_manager = tactic_app.global_tile_manager
 
 import datetime
-tstring = datetime.datetime.now().strftime("%Y-%H-%M-%S")
+tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 
 class CodeManager(UserManageResourceManager):
     collection_list = "code_names"
@@ -212,7 +212,7 @@ class CodeManager(UserManageResourceManager):
                 mdata = {}
             mdata["tags"] = data_dict["tags"]
             mdata["notes"] = data_dict["notes"]
-            mdata["updated"] = datetime.datetime.today()
+            mdata["updated"] = datetime.datetime.utcnow()
 
             load_result = self.load_code(the_code)
             if not load_result["success"]:

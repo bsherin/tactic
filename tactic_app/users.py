@@ -15,12 +15,7 @@ import zlib
 import cPickle
 from bson.binary import Binary
 
-initial_metadata = {"datetime": datetime.datetime.today(),
-                    "updated": datetime.datetime.today(),
-                    "tags": "",
-                    "notes": ""}
-
-user_data_fields = ["username", "email", "full_name", "favorite_dumpling"]
+user_data_fields = ["username", "email", "full_name", "favorite_dumpling", "tzoffset"]
 res_types = ["list", "collection", "project", "tile", "code"]
 name_keys = {"tile": "tile_module_name", "list": "list_name", "project": "project_name", "code": "code_name"}
 
@@ -79,7 +74,7 @@ def copy_between_accounts(source_user, dest_user, res_type, new_res_name, res_na
                     doc["file_id"] = fs.put(doc_text)
                 db[new_collection_name].insert_one(doc)
             db[new_collection_name].update_one({"name": "__metadata__"},
-                                               {'$set': {"datatime": datetime.datetime.today()}})
+                                               {'$set': {"datetime": datetime.datetime.utcnow()}})
         else:
             name_field = name_keys[res_type]
             collection_name = source_user.resource_collection_name(res_type)
@@ -90,13 +85,13 @@ def copy_between_accounts(source_user, dest_user, res_type, new_res_name, res_na
                     continue
                 new_res_dict[key] = val
             if "metadata" not in new_res_dict:
-                mdata = {"datetime": datetime.datetime.today(),
-                         "updated": datetime.datetime.today(),
+                mdata = {"datetime": datetime.datetime.utcnow(),
+                         "updated": datetime.datetime.utcnow(),
                          "tags": "",
                          "notes": ""}
                 new_res_dict["metadata"] = mdata
             else:
-                new_res_dict["metadata"]["datetime"] = datetime.datetime.today()
+                new_res_dict["metadata"]["datetime"] = datetime.datetime.utcnow()
             if res_type == "project":
                 project_dict = cPickle.loads(zlib.decompress(fs.get(old_dict["file_id"]).read()).decode("utf-8", "ignore").encode("ascii"))
                 project_dict["user_id"] = dest_user.get_id()
@@ -131,6 +126,15 @@ class User(UserMixin):
     def is_anonymous(self):
         return False
 
+    def set_user_timezone_offset(self, tzoffset):
+        db["user_collection"].update_one({"username": self.username},
+                                         {'$set': {"tzoffset": tzoffset}})
+        return
+
+    def localize_time(self, dt):
+        tzoffset = self.get_tzoffset()
+        return dt - datetime.timedelta(hours=tzoffset)
+
     @staticmethod
     def get_user_by_username(username):
         result = db.user_collection.find_one({"username": username})
@@ -138,6 +142,9 @@ class User(UserMixin):
             return None
         else:
             return User(result)
+
+    def get_tzoffset(self):
+        return self.user_data_dict["tzoffset"]
 
     @property
     def user_data_dict(self):
