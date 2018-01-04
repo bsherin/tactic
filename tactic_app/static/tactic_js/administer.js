@@ -79,8 +79,8 @@ function start_post_load() {
     socket.on('doflash', doFlash);
     $.get($SCRIPT_ROOT + "/get_resource_module_template", function(template) {
         resource_module_template = $(template).filter('#resource-module-template').html();
-        resource_managers["container_module"] = new ContainerManager("container_module", "container", resource_module_template, "#container-module");
-        resource_managers["user_module"] = new UserManager("user_module", "user", resource_module_template, "#user-module");
+        resource_managers["container_module"] = new ContainerManager("container_module", "container", resource_module_template, "#container-module", null, true, false);
+        resource_managers["user_module"] = new UserManager("user_module", "user", resource_module_template, "#user-module", null, true, false);
 
         $(".resource-module").on("click", ".main-content .selector-button", selector_click);
         $(".resource-module").on("dblclick", ".main-content .selector-button", selector_double_click);
