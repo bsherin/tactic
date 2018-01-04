@@ -164,7 +164,7 @@ class ResourceViewer {
         this.markdown_helper.setNotesValue(this.meta_outer, notes);
         this.savedTags = tags;
         this.savedNotes = notes;
-        this.markdown_helper.convertMarkdown(self.meta_outer);
+        this.markdown_helper.convertMarkdown(this.meta_outer);
     }
 
 

@@ -18,7 +18,7 @@ admin_user = User.get_user_by_username("admin")
 # def mark_sess_modified():
 #   session.modified = True
 
-tstring = datetime.datetime.now().strftime("%Y-%H-%M-%S")
+tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/login', methods=['GET', 'POST'])
@@ -41,6 +41,7 @@ def attempt_login():
     user = User.get_user_by_username(data["username"])
     if user is not None and user.verify_password(data["password"]):
         login_user(user, remember=data["remember_me"])
+        user.set_user_timezone_offset(data["tzOffset"])
         result_dict["logged_in"] = True
     else:
         result_dict["logged_in"] = False

@@ -8,7 +8,7 @@ from container_manager import ContainerManager
 from user_manager import UserManager
 
 import datetime
-tstring = datetime.datetime.now().strftime("%Y-%H-%M-%S")
+tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 
 admin_user = User.get_user_by_username("admin")
 global_tile_manager = tactic_app.global_tile_manager

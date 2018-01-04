@@ -16,7 +16,7 @@ rpath = "bsherinremtiles"
 
 
 def create_initial_metadata():
-    mdata = {"datetime": datetime.datetime.today(),
+    mdata = {"datetime": datetime.datetime.utcnow(),
              "tags": "",
              "notes": ""}
     return mdata
@@ -38,7 +38,7 @@ def add_tile_module(full_filename):
         if mdata is None:
             mdata = create_initial_metadata()
         else:
-            mdata["datetime"] = datetime.datetime.today()
+            mdata["datetime"] = datetime.datetime.utcnow()
         data_dict = {"tile_module_name": filename, "tile_module": the_module, "metadata": mdata}
         db[user_obj.tile_collection_name].insert_one(data_dict)
 

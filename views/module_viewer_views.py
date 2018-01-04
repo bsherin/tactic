@@ -10,7 +10,7 @@ from tactic_app.integrated_docs import api_dict_by_category, api_dict_by_name, o
 
 from user_manage_views import tile_manager
 import datetime
-tstring = datetime.datetime.now().strftime("%Y-%H-%M-%S")
+tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 
 
 indent_unit = "    "
@@ -124,7 +124,7 @@ def update_module():
             mdata = {}
         mdata["tags"] = data_dict["tags"]
         mdata["notes"] = data_dict["notes"]
-        mdata["updated"] = datetime.datetime.today()
+        mdata["updated"] = datetime.datetime.utcnow()
         mdata["last_viewer"] = last_saved
         mdata["type"] = ""
         db[current_user.tile_collection_name].update_one({"tile_module_name": module_name},

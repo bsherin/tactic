@@ -13,7 +13,7 @@ global_tile_manager = tactic_app.global_tile_manager
 repository_user = User.get_user_by_username("repository")
 
 import datetime
-tstring = datetime.datetime.now().strftime("%Y-%H-%M-%S")
+tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 
 
 # noinspection PyMethodMayBeStatic
@@ -64,7 +64,7 @@ class ListManager(UserManageResourceManager):
                 mdata = {}
             mdata["tags"] = data_dict["tags"]
             mdata["notes"] = data_dict["notes"]
-            mdata["updated"] = datetime.datetime.today()
+            mdata["updated"] = datetime.datetime.utcnow()
 
             db[current_user.list_collection_name].update_one({"list_name": list_name},
                                                              {'$set': {"the_list": new_list, "metadata": mdata}})
