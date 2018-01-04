@@ -48,7 +48,7 @@ def hello():
 
 
 def dmsg(msg):
-    timestring = datetime.datetime.today().strftime("%b %d, %Y, %H:%M")
+    timestring = datetime.datetime.utcnow().strftime("%b %d, %Y, %H:%M")
     print timestring + ": " + msg
     # app.logger.debug(msg)
     return
@@ -58,9 +58,9 @@ def dmsg(msg):
 def register_container():
     data = request.json
     container_registry[data["container_id"]] = {
-        "created": datetime.datetime.today(),
-        "last_passive_contact": datetime.datetime.today(),
-        "last_active_contact": datetime.datetime.today()
+        "created": datetime.datetime.utcnow(),
+        "last_passive_contact": datetime.datetime.utcnow(),
+        "last_active_contact": datetime.datetime.utcnow()
     }
     print "registered container_id {}".format(data["container_id"])
     return jsonify({"success": True})
@@ -74,7 +74,7 @@ def deregister_container():
 
 
 def get_stalled():
-    current_time = datetime.datetime.today()
+    current_time = datetime.datetime.utcnow()
     stalled_containers = []
     for cont_id, info in container_registry.items():
         tdelta = current_time - info["last_passive_contact"]
@@ -91,7 +91,7 @@ def get_stalled_containers():
 
 
 def get_inactive():
-    current_time = datetime.datetime.today()
+    current_time = datetime.datetime.utcnow()
     inactive_containers = []
     for cont_id, info in container_registry.items():
         tdelta = current_time - info["last_active_contact"]
@@ -109,7 +109,7 @@ def get_inactive_containers():
 
 
 def get_old():
-    current_time = datetime.datetime.today()
+    current_time = datetime.datetime.utcnow()
     old_containers = []
     for cont_id, info in container_registry.items():
         tdelta = current_time - info["created"]
@@ -135,13 +135,13 @@ def get_old_inactive_stalled_containers():
 
 def update_last_passive_contact(container_id):
     if container_id in container_registry:
-        container_registry[container_id]["last_passive_contact"] = datetime.datetime.today()
+        container_registry[container_id]["last_passive_contact"] = datetime.datetime.utcnow()
 
 
 def update_last_active_contact(container_id):
     if container_id in container_registry:
         update_last_passive_contact(container_id)
-        container_registry[container_id]["last_active_contact"] = datetime.datetime.today()
+        container_registry[container_id]["last_active_contact"] = datetime.datetime.utcnow()
 
 
 @app.route('/post_task', methods=["get", "post"])

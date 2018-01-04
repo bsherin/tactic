@@ -11,7 +11,7 @@ from tactic_app import app  # global_stuff
 import tactic_app
 
 import datetime
-tstring = datetime.datetime.now().strftime("%Y-%H-%M-%S")
+tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 
 @app.route('/direct_user_manage/<username>/<password>', methods=['GET', 'POST'])
 def direct_user_manage(username, password):

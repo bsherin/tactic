@@ -23,7 +23,7 @@ class HostWorker(QWorker):
     def __init__(self):
         QWorker.__init__(self)
         self.temp_dict = {}
-        self.last_check_for_dead_containers = datetime.datetime.today()
+        self.last_check_for_dead_containers = datetime.datetime.utcnow()
         self.short_sleep_period = .01
         self.hibernate_time = .1
         self.gap_time_for_hiberate = 60
@@ -396,7 +396,7 @@ class HostWorker(QWorker):
             destroy_container(cont_id)
 
     def special_long_sleep_function(self):
-        current_time = datetime.datetime.today()
+        current_time = datetime.datetime.utcnow()
         tdelta = current_time - self.last_check_for_dead_containers
         delta_seconds = tdelta.days * 24 * 60 + tdelta.seconds
         if delta_seconds > check_for_dead_time:
@@ -428,14 +428,14 @@ class ClientWorker(QWorker):
         return
 
     def update_heartbeat_table(self, main_id):
-        self.main_heartbeat_table[main_id] = datetime.datetime.today()
+        self.main_heartbeat_table[main_id] = datetime.datetime.utcnow()
 
     def remove_from_heartbeat_table(self, main_id):
         if main_id in self.main_heartbeat_table:
             del self.main_heartbeat_table[main_id]
 
     def check_for_dead_mainwindows(self):
-        current_time = datetime.datetime.today()
+        current_time = datetime.datetime.utcnow()
         for main_id, last_contact in self.main_heartbeat_table.items():
             tdelta = current_time - last_contact
             delta_seconds = tdelta.days * 24 * 60 + tdelta.seconds
@@ -458,11 +458,11 @@ class ClientWorker(QWorker):
                 else:
                     task_packet["table_message"] = task_packet["task_type"]
                     socketio.emit("table-message", task_packet, namespace='/main', room=task_packet["main_id"])
-                self.last_contact = datetime.datetime.now()
+                self.last_contact = datetime.datetime.utcnow()
                 gevent.sleep(self.short_sleep_period)
             else:
                 self.special_long_sleep_function()
-                current_time = datetime.datetime.today()
+                current_time = datetime.datetime.utcnow()
                 tdelta = current_time - self.last_contact
                 delta_seconds = tdelta.days * 24 * 60 + tdelta.seconds
                 if delta_seconds > self.gap_time_for_hiberate:

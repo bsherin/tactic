@@ -20,7 +20,7 @@ def hello():
 
 
 def dmsg(msg):
-    timestring = datetime.datetime.today().strftime("%b %d, %Y, %H:%M")
+    timestring = datetime.datetime.utcnow().strftime("%b %d, %Y, %H:%M")
     print timestring + ": " + msg
     # app.logger.debug(msg)
     return

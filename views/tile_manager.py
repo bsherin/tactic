@@ -16,7 +16,7 @@ global_tile_manager = tactic_app.global_tile_manager
 repository_user = User.get_user_by_username("repository")
 
 import datetime
-tstring = datetime.datetime.now().strftime("%Y-%H-%M-%S")
+tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 
 
 # noinspection PyMethodMayBeStatic,PyBroadException
@@ -137,7 +137,7 @@ class TileManager(UserManageResourceManager):
             return
 
         recent_history = []
-        yesterday = datetime.datetime.today() - datetime.timedelta(days=1)
+        yesterday = datetime.datetime.utcnow() - datetime.timedelta(days=1)
         yesterday_date = yesterday.date()
         # We want to keep every element of the recent history from yesterday or today
         # Plus we want to keep the last entry from each date taht appears.
