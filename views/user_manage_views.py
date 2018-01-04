@@ -47,7 +47,7 @@ managers = {
 }
 
 
-tstring = datetime.datetime.now().strftime("%Y-%H-%M-%S")
+tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 
 
 def get_manager_for_type(res_type, is_repository=False):
@@ -177,7 +177,8 @@ def grab_metadata():
             return jsonify({"success": False, "message": "No metadata found", "alert_type": "alert-warning"})
         else:
             if "datetime" in mdata:
-                datestring = mdata["datetime"].strftime("%b %d, %Y, %H:%M")
+                localtime = current_user.localize_time(mdata["datetime"])
+                datestring = localtime.strftime("%b %d, %Y, %H:%M")
             else:
                 datestring = ""
             additional_mdata = copy.copy(mdata)
@@ -186,7 +187,8 @@ def grab_metadata():
                 if field in additional_mdata:
                     del additional_mdata[field]
             if "updated" in additional_mdata:
-                additional_mdata["updated"] = additional_mdata["updated"].strftime("%b %d, %Y, %H:%M")
+                localtime = current_user.localize_time(additional_mdata["updated"])
+                additional_mdata["updated"] = localtime.strftime("%b %d, %Y, %H:%M")
             if "collection_name" in additional_mdata:
                 additional_mdata["collection_name"] = re.sub("^.*?\.data_collection\.", "", additional_mdata["collection_name"])
             return jsonify({"success": True, "datestring": datestring, "tags": mdata["tags"],
@@ -208,7 +210,7 @@ def grab_repository_metadata():
             return jsonify({"success": False, "message": "No repository metadata found", "alert_type": "alert-warning"})
         else:
             if "datetime" in mdata:
-                datestring = mdata["datetime"].strftime("%b %d, %Y, %H:%M")
+                datestring = current_user.localize_time(mdata["datetime"]).strftime("%b %d, %Y, %H:%M")
             else:
                 datestring = ""
             return jsonify({"success": True, "datestring": datestring, "tags": mdata["tags"], "notes": mdata["notes"]})

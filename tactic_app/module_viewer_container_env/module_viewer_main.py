@@ -140,7 +140,7 @@ class ModuleViewerWorker(QWorker):
                 mdata = {}
             mdata["tags"] = data_dict["tags"]
             mdata["notes"] = data_dict["notes"]
-            mdata["updated"] = datetime.datetime.today()
+            mdata["updated"] = datetime.datetime.utcnow()
             mdata["last_viewer"] = data_dict["last_saved"]
             if data_dict["is_mpl"]:
                 mdata["type"] = "matplotlib"

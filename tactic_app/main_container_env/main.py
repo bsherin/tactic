@@ -547,7 +547,7 @@ class mainWindow(object):
             self.show_main_status_message("compiling save dictionary")
             project_dict = self.compile_save_dict()
             pname = project_dict["project_name"]
-            self.mdata["updated"] = datetime.datetime.today()
+            self.mdata["updated"] = datetime.datetime.utcnow()
 
             self.show_main_status_message("Pickle, convert, compress")
             pdict = cPickle.dumps(project_dict)
@@ -606,8 +606,8 @@ class mainWindow(object):
         return tdict
 
     def create_initial_metadata(self):
-        mdata = {"datetime": datetime.datetime.today(),
-                 "updated": datetime.datetime.today(),
+        mdata = {"datetime": datetime.datetime.utcnow(),
+                 "updated": datetime.datetime.utcnow(),
                  "tags": "",
                  "notes": ""}
         return mdata

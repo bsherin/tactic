@@ -16,22 +16,22 @@ def get_checkpoint_history(module_name, include_code=False):
         for cp in history:
             history_list.append(cp["updated"])
             if include_code:
-                checkpoints.append({"updatestring": cp["updated"].strftime("%b %d, %Y, %H:%M:%S"),
+                checkpoints.append({"updatestring": current_user.localize_time(cp["updated"]).strftime("%b %d, %Y, %H:%M:%S"),
                                     "updatestring_for_sort": cp["updated"].strftime("%Y%m%d%H%M%S"),
                                     "tile_module": cp["tile_module"]})
             else:
-                checkpoints.append({"updatestring": cp["updated"].strftime("%b %d, %Y, %H:%M:%S"),
+                checkpoints.append({"updatestring": current_user.localize_time(cp["updated"]).strftime("%b %d, %Y, %H:%M:%S"),
                                     "updatestring_for_sort": cp["updated"].strftime("%Y%m%d%H%M%S")})
     if "recent_history" in tile_dict:
         recent_history = tile_dict["recent_history"]
         for cp in recent_history:
             if cp["updated"] not in history_list:
                 if include_code:
-                    checkpoints.append({"updatestring": cp["updated"].strftime("%b %d, %Y, %H:%M:%S"),
+                    checkpoints.append({"updatestring": current_user.localize_time(cp["updated"]).strftime("%b %d, %Y, %H:%M:%S"),
                                         "updatestring_for_sort": cp["updated"].strftime("%Y%m%d%H%M%S"),
                                         "tile_module": cp["tile_module"]})
                 else:
-                    checkpoints.append({"updatestring": cp["updated"].strftime("%b %d, %Y, %H:%M:%S"),
+                    checkpoints.append({"updatestring": current_user.localize_time(cp["updated"]).strftime("%b %d, %Y, %H:%M:%S"),
                                         "updatestring_for_sort": cp["updated"].strftime("%Y%m%d%H%M%S")})
 
     checkpoints.sort(key=lambda x: x["updatestring_for_sort"])
@@ -81,7 +81,7 @@ def update_from_left():
             mdata = doc["metadata"]
         else:
             mdata = {}
-        mdata["updated"] = datetime.datetime.today()
+        mdata["updated"] = datetime.datetime.utcnow()
         db[current_user.tile_collection_name].update_one({"tile_module_name": module_name},
                                                          {'$set': {"tile_module": module_code, "metadata": mdata}})
         tile_manager.update_selector_list()

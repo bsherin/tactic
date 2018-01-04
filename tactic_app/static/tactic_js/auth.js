@@ -15,6 +15,8 @@ function submit_login_info() {
     data.username = $("#username").val();
     data.password = $("#password").val();
     data.remember_me = $("#remember_me")[0].checked;
+    var x = new Date();
+    data.tzOffset = x.getTimezoneOffset() / 60;
     postAjax("attempt_login", data, return_from_submit_login)
 
 }

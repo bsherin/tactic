@@ -18,7 +18,7 @@ from tactic_app.communication_utils import send_request_to_megaplex
 import tactic_app
 
 import datetime
-tstring = datetime.datetime.now().strftime("%Y-%H-%M-%S")
+tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 
 # The main window should join a room associated with the user
 @socketio.on('connect', namespace='/main')

@@ -49,7 +49,7 @@ class QWorker(gevent.Greenlet):
         self.hibernate_time = HIBERNATE_TIME
         self.gap_time_for_hiberate = GAP_TIME_FOR_HIBERATE
         gevent.Greenlet.__init__(self)
-        self.last_contact = datetime.datetime.now()
+        self.last_contact = datetime.datetime.utcnow()
         if "MY_ID" in os.environ:
             self.my_id = os.environ.get("MY_ID")
         else:
@@ -59,7 +59,7 @@ class QWorker(gevent.Greenlet):
         self.handler_instances = {"this_worker": self}
 
     def debug_log(self, msg):
-        timestring = datetime.datetime.today().strftime("%b %d, %Y, %H:%M:%S")
+        timestring = datetime.datetime.utcnow().strftime("%b %d, %Y, %H:%M:%S")
         print timestring + ": " + msg
         # with self.app.test_request_context():
         #     self.app.logger.debug(msg)
@@ -148,11 +148,11 @@ class QWorker(gevent.Greenlet):
                     if self.hibernating:
                         print "left hibernation"
                         self.hibernating = False
-                    self.last_contact = datetime.datetime.now()
+                    self.last_contact = datetime.datetime.utcnow()
                     gevent.sleep(self.short_sleep_period)
                 else:
                     self.special_long_sleep_function()
-                    current_time = datetime.datetime.today()
+                    current_time = datetime.datetime.utcnow()
                     tdelta = current_time - self.last_contact
                     delta_seconds = tdelta.days * 24 * 60 + tdelta.seconds
                     if delta_seconds > self.gap_time_for_hiberate:
