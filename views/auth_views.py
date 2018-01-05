@@ -1,10 +1,11 @@
 import datetime
 from flask import render_template, request, jsonify
-from flask.ext.login import login_user, login_required, logout_user
+from flask_login import login_user, login_required, logout_user
 from flask_login import current_user
 
 from tactic_app.users import User, res_types, copy_between_accounts
-from flask.ext.wtf import Form
+from flask_wtf import Form
+from flask_wtf.csrf import CSRFError
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import Required, Length, Regexp, EqualTo
 from tactic_app import app, socketio, csrf, db
@@ -151,7 +152,7 @@ def update_account_info():
     return jsonify(result_dict)
 
 
-@csrf.error_handler
+@app.errorhandler(CSRFError)
 def csrf_error(reason):
     return login('auth/login.html', show_message="yes", message=reason), 400
 

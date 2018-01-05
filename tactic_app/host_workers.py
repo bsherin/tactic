@@ -1,6 +1,5 @@
 from qworker import QWorker, task_worthy
-from flask import render_template
-from flask_login import url_for
+from flask import render_template, url_for
 from users import load_user
 import gevent
 from communication_utils import send_request_to_megaplex

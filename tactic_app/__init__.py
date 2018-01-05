@@ -8,16 +8,16 @@ import re
 import os
 from pymongo import MongoClient
 import gridfs
-from flask.ext.login import LoginManager
-from flask.ext.bootstrap import Bootstrap
-from flask.ext.socketio import SocketIO
-from flask_wtf.csrf import CsrfProtect
+from flask_login import LoginManager
+from flask_bootstrap import Bootstrap
+from flask_socketio import SocketIO
+from flask_wtf.csrf import CSRFProtect
 from docker_functions import create_container, get_address, ContainerCreateError
 import docker_functions
 from communication_utils import send_request_to_container, USE_FORWARDER
 from integrated_docs import api_array
 
-csrf = CsrfProtect()
+csrf = CSRFProtect()
 
 # ip_info is only used as a step to getting the host_ip
 
