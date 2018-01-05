@@ -41,7 +41,7 @@
                     {% block morenavbar %}
                     {% endblock %}
                     <li class="hidden-sm"><a href="https://github.com/bsherin/tactic/wiki">Docs</a></li>
-                    {% if current_user.is_authenticated() %}
+                    {% if current_user.is_authenticated %}
                         <li><a href="{{ url_for('user_manage') }}">Resources</a></li>
                         <li class="hidden-sm hidden-xs"><a href="{{ url_for('account_info') }}">{{current_user.username}}</a></li>
                         <li><a href="" onclick="return doSignOut(page_id);">Sign Out</a></li>

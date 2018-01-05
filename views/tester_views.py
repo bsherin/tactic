@@ -1,10 +1,10 @@
 from flask import render_template, redirect, request, url_for, flash, jsonify
-from flask.ext.login import login_user, login_required, logout_user
+from flask_login import login_user, login_required, logout_user
 from flask_login import current_user
 from tactic_app import host_worker
 
 from tactic_app.users import User
-from flask.ext.wtf import Form
+from flask_wtf import Form
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import Required, Length, Regexp, EqualTo
 from tactic_app import app  # global_stuff
