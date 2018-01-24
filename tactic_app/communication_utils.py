@@ -2,6 +2,11 @@ import requests
 import sys
 import time
 import os
+import json
+from bson import Binary
+import base64
+import cPickle
+import zlib
 
 if ("USE_FORWARDER" in os.environ) and (os.environ.get("USE_FORWARDER") == "True"):
     USE_FORWARDER = True
@@ -17,6 +22,36 @@ else:
 am_host = False
 megaplex_address = None
 
+
+def is_jsonizable(dat, ensure_ascii=True):
+    try:
+        _ = json.dumps(dat, ensure_ascii)
+        return True
+    except:
+        return False
+
+def make_jsonizable_and_compress(dat):
+    return zlib.compress(make_python_object_jsonizable(dat))
+
+def make_python_object_jsonizable(dat):
+    return base64.b64encode(cPickle.dumps(dat))
+
+def debinarize_python_object(bdat):
+    if isinstance(bdat, Binary):
+        dat = bdat.dcode()
+    else:
+        dat = base64.b64decode(bdat)
+    return cPickle.loads(dat)
+
+def read_project_dict(fs, mdata, file_id):
+    project_dict = None
+    if "save_style" in mdata:
+        if mdata["save_style"] == "b64save":
+            binarized_python_object = zlib.decompress(fs.get(file_id).read())
+            project_dict = debinarize_python_object(binarized_python_object)
+    else:  # legacy
+        project_dict = cPickle.loads(zlib.decompress(fs.get(file_id).read()).decode("utf-8", "ignore").encode("ascii"))
+    return project_dict
 
 def send_request_to_megaplex(msg_type, data_dict=None, wait_for_success=True, timeout=3, tries=RETRIES, wait_time=.1):
     if am_host is True:

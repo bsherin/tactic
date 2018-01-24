@@ -1,6 +1,4 @@
-import cPickle
 import exceptions
-import json
 import sys
 import re
 import time
@@ -12,6 +10,7 @@ from matplotlib_utilities import MplFigure, Mpld3Figure, color_palette_names
 from types import NoneType
 import traceback
 import os
+from communication_utils import is_jsonizable, make_python_object_jsonizable, debinarize_python_object
 
 
 if "RETRIES" in os.environ:
@@ -647,20 +646,24 @@ class TileBase(object):
                 result[attr] = res
             else:
                 if type(attr_val) in jsonizable_types.values():
-                    try:
-                        _ = json.dumps(attr_val)
+                    if is_jsonizable(attr_val):
                         result[attr] = attr_val
                         continue
-                    except (TypeError, exceptions.UnicodeDecodeError) as e:
-                        pass
                 try:
-                    self.tworker.debug_log("Found non jsonizable attribute " + attr)
+                    self.tworker.debug_log("Found non jsonizable attribute " + attr)  # tactic_working
                     result["binary_attrs"].append(attr)
-                    bser_attr_val = Binary(cPickle.dumps(attr_val))
+                    # bser_attr_val = Binary(cPickle.dumps(attr_val, cPickle.HIGHEST_PROTOCOL))
+                    bser_attr_val = make_python_object_jsonizable(attr_val)
                     result[attr] = bser_attr_val
-                except TypeError:
-                    continue
+                    if is_jsonizable(bser_attr_val, ensure_ascii=False):
+                        print "new bser_attr_val is jsonizable"
+                    else:
+                        print "new bser_attr_val is not jsonizable"
 
+                except TypeError:
+                    print "got a TypeError"
+                    continue
+        print "done compiling attributes"
         return result
 
     def recreate_from_save(self, save_dict):
@@ -679,7 +682,8 @@ class TileBase(object):
                 setattr(self, attr, res)
             else:
                 if isinstance(attr_val, Binary) or attr in save_dict["binary_attrs"]:
-                    decoded_val = cPickle.loads(str(attr_val.decode()))
+                    decoded_val = debinarize_python_object(attr_val)
+                    # decoded_val = cPickle.loads(str(attr_val.decode()))  # tactic_working
                     setattr(self, attr, decoded_val)
                 else:
                     setattr(self, attr, attr_val)
@@ -1310,7 +1314,8 @@ class TileBase(object):
                                                     timeout=60,
                                                     tries=RETRIES)
                 encoded_val = result["encoded_val"]
-                val = cPickle.loads(encoded_val.decode("utf-8", "ignore").encode("ascii"))
+                val = debinarize_python_object(encoded_val)
+                # val = cPickle.loads(encoded_val.decode("utf-8", "ignore").encode("ascii"))  #tactic_working
                 self.restore_stdout()
                 return val
         self.restore_stdout()
@@ -1324,7 +1329,8 @@ class TileBase(object):
             res = getattr(self, export_name)
         else:
             res = "__none__"
-        encoded_val = Binary(cPickle.dumps(res))
+        # ncoded_val = Binary(cPickle.dumps(res))  # tactic_working
+        encoded_val = make_python_object_jsonizable(res) # tactic_working
         self.restore_stdout()
         return {"encoded_val": encoded_val}
 
