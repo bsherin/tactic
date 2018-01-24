@@ -25,7 +25,7 @@ class UserManager(ResourceManager):
         self.update_selector_list()
         return jsonify(result)
 
-    def build_resource_array(self):
+    def build_resource_array(self, user_obj=None):
         user_list = get_all_users()
         larray = [["_id", "username", "full_name", "email"]]
         for user in user_list:

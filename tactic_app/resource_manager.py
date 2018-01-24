@@ -107,7 +107,7 @@ class ResourceManager(object):
 
     def request_update_selector_list(self, user_obj=None):
         res_list_with_metadata = self.get_resource_list_with_metadata(user_obj)
-        res_array = self.build_resource_array(res_list_with_metadata)
+        res_array = self.build_resource_array(res_list_with_metadata, user_obj)
         result = self.build_html_table_from_data_list(res_array)
         return result
 
@@ -149,7 +149,9 @@ class ResourceManager(object):
         the_html += "</tr>"
         return the_html
 
-    def build_resource_array(self, res_list):
+    def build_resource_array(self, res_list, user_obj=None):
+        if user_obj == None:
+            user_obj = current_user
         larray = [["Name", "Created", "Updated", "Tags"]]
         for res_item in res_list:
             mdata = res_item[1]
@@ -161,7 +163,7 @@ class ResourceManager(object):
                 updatestring_for_sort = ""
             else:
                 if "datetime" in mdata:
-                    localtime = current_user.localize_time(mdata["datetime"])
+                    localtime = current_user.localize_time(mdata["datetime"])  # note that we always want current_user
                     datestring = localtime.strftime("%b %d, %Y, %H:%M")
                     datestring_for_sort = mdata["datetime"].strftime("%Y%m%d%H%M%S")
                 else:

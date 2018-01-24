@@ -6,14 +6,13 @@ import requests
 import copy
 import pymongo
 import gridfs
-import cPickle
-from bson.binary import Binary
 import datetime
 import traceback
-import zlib
 import os
 import uuid
 import markdown
+from communication_utils import make_python_object_jsonizable, debinarize_python_object
+from communication_utils import make_jsonizable_and_compress, read_project_dict
 
 from doc_info import docInfo, FreeformDocInfo, PROTECTED_METADATA_KEYS
 
@@ -299,16 +298,19 @@ class mainWindow(object):
         print "project_collection_name is {} and project_name is {}".format(project_collection_name, project_name)
         save_dict = self.db[project_collection_name].find_one({"project_name": project_name})
         print "got save_dict"
+        self.mdata = save_dict["metadata"]
         try:
-            project_dict = cPickle.loads(zlib.decompress(self.fs.get(save_dict["file_id"]).read()).decode("utf-8", "ignore").encode("ascii"))
+            project_dict = read_project_dict(self.fs, self.mdata, save_dict["file_id"])
         except Exception as ex:
             error_string = self.handle_exception(ex, "<pre>Error loading project dict</pre>", print_to_console=True)
             print error_string
             return_data = {"success": False, "message_string": error_string}
             return error_string, {}, False
+
         print "got project dict with keys " + str(project_dict.keys())
+
+
         project_dict["metadata"] = save_dict["metadata"]
-        self.mdata = save_dict["metadata"]
         error_messages = []
         if "doc_type" not in project_dict:  # This is for backward compatibility
             project_dict["doc_type"] = "table"
@@ -469,11 +471,11 @@ class mainWindow(object):
             self.mdata["type"] = self.doc_type
             self.mdata["collection_name"] = self.collection_name
             self.mdata["loaded_tiles"] = self.get_used_tile_types()
+            self.mdata["save_style"] = "b64save"
             save_dict = {"metadata": self.mdata,
                          "project_name": project_dict["project_name"]}
             self.show_main_status_message("Pickle, convert, compress")
-            pdict = cPickle.dumps(project_dict)
-            pdict = Binary(zlib.compress(pdict))
+            pdict = make_jsonizable_and_compress(project_dict)
             self.show_main_status_message("Writing the data")
             save_dict["file_id"] = self.fs.put(pdict)
             self.db[self.project_collection_name].insert_one(save_dict)
@@ -503,12 +505,12 @@ class mainWindow(object):
             self.mdata = self.create_initial_metadata()
             self.mdata["type"] = self.doc_type
             self.mdata["collection_name"] = self.collection_name
-            self.mdata["loaded_tiles"] = self.get_used_tile_types()
+            self.mdata["loaded_tiles"] = []
+            self.mdata["save_style"] = "b64save"
             save_dict = {"metadata": self.mdata,
                          "project_name": project_dict["project_name"]}
             self.show_main_status_message("Pickle, convert, compress")
-            pdict = cPickle.dumps(project_dict)
-            pdict = Binary(zlib.compress(pdict))
+            pdict = make_jsonizable_and_compress(project_dict)
             self.show_main_status_message("Writing the data")
             save_dict["file_id"] = self.fs.put(pdict)
             self.db[self.project_collection_name].insert_one(save_dict)
@@ -543,15 +545,15 @@ class mainWindow(object):
                                                                  {"user_id": self.user_id})["loaded_modules"]
                 self.loaded_modules = [str(the_module) for the_module in self.loaded_modules]
                 self.mdata["loaded_tiles"] = self.get_used_tile_types()
-                self.mdata["collection_name"] = self.collection_name  # legacy this shouldn't be necessary for newer saves
+                self.mdata["collection_name"] = self.collection_name  # legacy shouldn't be necessary for newer saves
             self.show_main_status_message("compiling save dictionary")
             project_dict = self.compile_save_dict()
             pname = project_dict["project_name"]
             self.mdata["updated"] = datetime.datetime.utcnow()
+            self.mdata["save_style"] = "b64save"
 
             self.show_main_status_message("Pickle, convert, compress")
-            pdict = cPickle.dumps(project_dict)
-            pdict = Binary(zlib.compress(pdict))
+            pdict = make_jsonizable_and_compress(project_dict)
             self.show_main_status_message("Writing the data")
             new_file_id = self.fs.put(pdict)
             save_dict = self.db[self.project_collection_name].find_one({"project_name": pname})
@@ -573,7 +575,7 @@ class mainWindow(object):
 
     # utility methods
 
-    def _build_doc_dict(self):
+    def _build_doc_dict(self):   # tactic_working
         result = {}
         the_collection = self.db[self.collection_name]
         for f in the_collection.find():
@@ -581,9 +583,17 @@ class mainWindow(object):
             if fname == "__metadata__":
                 continue
             if self.doc_type == "table":
+                if "file_id" in f:
+                    f["data_rows"] = debinarize_python_object(self.fs.get(f["file_id"]).read())
                 result[fname] = docInfo(f)
             else:
-                result[fname] = FreeformDocInfo(f, self.fs.get(f["file_id"]).read())
+                if "encoding" in f:
+                    print "found encoding " + str(f["encoding"])
+                    the_text = self.fs.get(f["file_id"]).read().decode(f["encoding"])
+                else:
+                    print "no encoding found"
+                    the_text = self.fs.get(f["file_id"]).read()
+                result[fname] = FreeformDocInfo(f, the_text)
         return result
 
     def _set_row_column_data(self, doc_name, the_id, column_header, new_content):
@@ -704,7 +714,7 @@ class mainWindow(object):
             self.mworker.emit_table_message("highlightTxtInDocument", {"text_to_find": txt})
 
     @staticmethod
-    def txt_in_dict(txt, d):
+    def txt_in_dict(txt, d):  # tactic_working
         for val in d.values():
             try:
                 if str(txt).lower() in str(val).lower():
@@ -774,7 +784,7 @@ class mainWindow(object):
         return result
 
     @task_worthy
-    def get_user_collection(self, data):
+    def get_user_collection(self, data):  # tactic_working
         full_collection_name = self.mworker.post_and_wait("host",
                                                           "get_full_collection_name",
                                                           data)["full_collection_name"]
@@ -790,9 +800,14 @@ class mainWindow(object):
             if fname == "__metadata__":
                 continue
             if doc_type == "table":
+                if "file_id" in f:
+                    f["data_rows"] = debinarize_python_object(self.fs.get(f["file_id"]).read())
                 result[fname] = self.sort_rows(f["data_rows"])
             else:
-                result[fname] = self.fs.get(f["file_id"]).read()
+                if "encoding" in f:
+                    the_text = self.fs.get(f["file_id"]).read().decode(f["encoding"])
+                else:
+                    result[fname] = self.fs.get(f["file_id"]).read()
         return {"the_collection": result}
 
     @task_worthy
@@ -910,7 +925,6 @@ class mainWindow(object):
     @task_worthy
     def got_console_result(self, data):
         print "in got console result"
-        print "data is " + str(data)
         self.mworker.emit_table_message("stopConsoleSpinner", {"console_id": data["console_id"],
                                                                "force_open": True})
         return {"success": True}

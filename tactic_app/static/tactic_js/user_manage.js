@@ -346,6 +346,23 @@ class CollectionManager extends UserManagerResourceManager {
         window.open(`${$SCRIPT_ROOT}/new_notebook`)
     }
 
+    displayImportResults(data) {
+        let title = "Collection Created";
+        let message = "";
+        let number_of_errors;
+        if (data.file_decoding_errors == null) {
+            message = "No decoding errors were encounters"
+        }
+        else {
+            message = "<b>Decoding errors were enountered</b>";
+            for (let filename in data.file_decoding_errors) {
+                number_of_errors = String(data.file_decoding_errors[filename].length);
+                message = message + `<br>${filename}: ${number_of_errors} errors`;
+            }
+        }
+        alertify.alert(title, message).set({'pinnable': false, 'modal':false})
+    }
+
     import_as_table (event) {
         const the_data = new FormData(this);
         let manager = event.data.manager;
@@ -355,12 +372,14 @@ class CollectionManager extends UserManagerResourceManager {
         );
         function CreateNewCollection(new_name) {
             startSpinner();
-            postAjaxUploadPromise("import_as_table/" + new_name, the_data)
+            postAjaxUploadPromise(`import_as_table/${new_name}/${user_manage_id}`, the_data)
                 .then((data) => {
-                        doFlashStopSpinner(data);
+                        clearStatusMessage();
+                        manager.displayImportResults(data);
                         manager.insert_new_row(data.new_row, 0);
                         manager.select_first_row();
-                        resource_managers["all_module"].insert_new_row(data.new_all_row, 0)
+                        resource_managers["all_module"].insert_new_row(data.new_all_row, 0);
+                        stopSpinner();
                 })
                 .catch(doFlash);
         }
@@ -371,19 +390,21 @@ class CollectionManager extends UserManagerResourceManager {
         const the_data = new FormData(this);
         let manager = event.data.manager;
         $.getJSON(`${$SCRIPT_ROOT}get_resource_names/collection`, function (data) {
-                showModal("Import as table", "New collection Name", CreateNewCollection, "NewCollection", data["resource_names"])
+                showModal("Import as freeform", "New collection Name", CreateNewCollection, "NewCollection", data["resource_names"])
             }
         );
         function CreateNewCollection(new_name) {
             startSpinner();
-            postAjaxUploadPromise("import_as_freeform/" + new_name, the_data)
+            postAjaxUploadPromise(`import_as_freeform/${new_name}/${user_manage_id}`, the_data)
                 .then((data) => {
-                        doFlashStopSpinner(data);
+                        manager.displayImportResults(data);
                         manager.insert_new_row(data.new_row, 0);
                         manager.select_first_row();
-                        resource_managers["all_module"].insert_new_row(data.new_all_row, 0)
+                        resource_managers["all_module"].insert_new_row(data.new_all_row, 0);
+                        stopSpinner()
                 })
                 .catch(doFlash);
+            console.log("Posted the upload")
         }
 
         event.preventDefault();

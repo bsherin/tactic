@@ -52,15 +52,15 @@ $.get($SCRIPT_ROOT + "/get_modal_template", function(template){
 
 alertify.set('notifier','position', 'top-right');
 
-alertbox = alertify.alert()
-        .setting({
-             'basic': true,
-            'modal': false,
-            'frameless': true,
-            'closable': false,
-            'transition': 'fade',
-            'resizable': true
-        });
+// alertbox = alertify.alert()
+//         .setting({
+//              'basic': true,
+//             'modal': false,
+//             'frameless': true,
+//             'closable': false,
+//             'transition': 'fade',
+//             'resizable': true
+//         });
 
 
 function startSpinner() {
@@ -85,7 +85,7 @@ function statusMessage(data) {
     $("#status-msg-area").text(data.message);
     $("#status-msg-area").fadeIn();
     if (data.hasOwnProperty("timeout") && (data.timeout != null)) {
-        setTimeout(clearStatusMessage, data.timeout)
+        setTimeout(clearStatusMessage, data.timeout * 1000)
     }
 }
 
@@ -150,7 +150,13 @@ function doFlash(data) {
         msg = alertify.success(message, timeout);
 
     } else if(alert_type =="alert-warning") {
-        msg = alertify.error(message, timeout);
+        // msg = alertify.error(message, timeout);
+        if ("title" in data) {
+            msg = alertify.alert(title, `<pre>${message}</pre>`).set({'pinnable': false, 'modal':false});
+        }
+        else {
+            msg = alertify.alert("Error", `<pre>${message}</pre>`).set({'pinnable': false, 'modal':false});
+        }
 
     } else {
         msg = alertify.message(message, timeout);
