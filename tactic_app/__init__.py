@@ -11,7 +11,7 @@ import gridfs
 from flask_login import LoginManager
 from flask_bootstrap import Bootstrap
 from flask_socketio import SocketIO
-from flask_wtf.csrf import CSRFProtect
+from flask_wtf import CSRFProtect
 from docker_functions import create_container, get_address, ContainerCreateError
 import docker_functions
 from communication_utils import send_request_to_container, USE_FORWARDER
