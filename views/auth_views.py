@@ -154,7 +154,7 @@ def update_account_info():
 
 @app.errorhandler(CSRFError)
 def csrf_error(reason):
-    return login('auth/login.html', show_message="yes", message=reason), 400
+    return render_template('auth/login.html', show_message="yes", message=reason), 400
 
 
 class LoginForm(Form):
