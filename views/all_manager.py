@@ -22,7 +22,9 @@ class AllManager(ResourceManager):
         pass
 
 
-    def build_resource_array(self, res_list):
+    def build_resource_array(self, res_list, user_obj=None):
+        if user_obj == None:
+            user_obj = current_user
         larray = [["Name", "Type", "Created", "Updated", "Tags"]]
         for res_item in res_list:
             mdata = res_item[1]

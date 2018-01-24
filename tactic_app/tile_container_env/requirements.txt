@@ -1,12 +1,12 @@
 beautifulsoup4==4.5.1
 cycler==0.10.0
-Flask==0.10.1
+Flask
 funcsigs==0.4
 gensim==2.3.0
-gevent==1.0.2
-gevent-socketio==0.3.6
-gevent-websocket==0.9.5
-greenlet==0.4.7
+gevent
+gevent-socketio
+gevent-websocket
+greenlet
 itsdangerous==0.24
 jdcal==1.2
 Jinja2==2.7.3
@@ -17,7 +17,7 @@ mpld3==0.2
 networkx
 nltk==3.1
 nose==1.3.7
-openpyxl==2.3.2
+openpyxl
 pbr==1.4.0
 Pillow==3.0.0
 pymongo==3.0.3

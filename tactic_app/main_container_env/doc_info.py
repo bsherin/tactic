@@ -1,5 +1,6 @@
 
 import copy, os
+from communication_utils import debinarize_python_object
 
 CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
 

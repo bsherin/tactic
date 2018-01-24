@@ -398,6 +398,7 @@ function saveProjectAs() {
                     //tableObject.stopTableSpinner();
                     clearStatusMessage();
                     data_object["message"] = data_object["message_string"];
+                    data_object["alert-type"] = "alert-warning";
                     doFlashStopSpinner(data_object)
                 }
             }

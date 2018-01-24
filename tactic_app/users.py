@@ -6,14 +6,12 @@ import sys
 import datetime
 from collections import OrderedDict
 from flask import jsonify, request
-from flask.ext.login import UserMixin
+from flask_login import UserMixin
 from tactic_app import login_manager, db, fs  # global_stuff db
+from tactic_app.communication_utils import read_project_dict, make_jsonizable_and_compress
 from bson.objectid import ObjectId
 from werkzeug.security import generate_password_hash, check_password_hash
 import traceback
-import zlib
-import cPickle
-from bson.binary import Binary
 
 user_data_fields = ["username", "email", "full_name", "favorite_dumpling", "tzoffset"]
 res_types = ["list", "collection", "project", "tile", "code"]
@@ -62,7 +60,7 @@ def process_exception(ex):
     return {"success": False, "message": error_string, "alert_type": "alert-warning"}
 
 
-def copy_between_accounts(source_user, dest_user, res_type, new_res_name, res_name):
+def copy_between_accounts(source_user, dest_user, res_type, new_res_name, res_name):  # tactic_working
     try:
         if res_type == "collection":
             collection_to_copy = source_user.full_collection_name(res_name)
@@ -93,10 +91,10 @@ def copy_between_accounts(source_user, dest_user, res_type, new_res_name, res_na
             else:
                 new_res_dict["metadata"]["datetime"] = datetime.datetime.utcnow()
             if res_type == "project":
-                project_dict = cPickle.loads(zlib.decompress(fs.get(old_dict["file_id"]).read()).decode("utf-8", "ignore").encode("ascii"))
+                project_dict = read_project_dict(fs, new_res_dict["metadata"], old_dict["file_id"])
+                # project_dict = cPickle.loads(zlib.decompress(fs.get(old_dict["file_id"]).read()).decode("utf-8", "ignore").encode("ascii"))
                 project_dict["user_id"] = dest_user.get_id()
-                pdict = cPickle.dumps(project_dict)
-                pdict = Binary(zlib.compress(pdict))
+                pdict = make_jsonizable_and_compress(project_dict)
                 new_res_dict["file_id"] = fs.put(pdict)
             elif "file_id" in new_res_dict:
                 doc_text = fs.get(new_res_dict["file_id"]).read()
