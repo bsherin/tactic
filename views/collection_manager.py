@@ -1,21 +1,23 @@
 
 import re, datetime, sys, os
+from collections import OrderedDict
 from flask_login import login_required, current_user
 from flask import jsonify, render_template, url_for, request, send_file
 from tactic_app.users import User
 from tactic_app.docker_functions import create_container, ContainerCreateError
 from tactic_app import app, db, fs, mongo_uri, use_ssl
+from tactic_app.communication_utils import make_python_object_jsonizable, debinarize_python_object
 import openpyxl
 import cStringIO
 import tactic_app
-from tactic_app.file_handling import read_csv_file_to_dict, read_tsv_file_to_dict, read_txt_file_to_dict
+from tactic_app.file_handling import read_csv_file_to_dict, read_tsv_file_to_dict, read_txt_file_to_dict, read_excel_file
 from tactic_app.file_handling import read_freeform_file
 
 from tactic_app.resource_manager import ResourceManager, UserManageResourceManager
 global_tile_manager = tactic_app.global_tile_manager
 repository_user = User.get_user_by_username("repository")
 
-AUTOSPLIT = True
+AUTOSPLIT = False
 AUTOSPLIT_SIZE = 10000
 
 import datetime
@@ -32,9 +34,9 @@ class CollectionManager(UserManageResourceManager):
     def add_rules(self):
         app.add_url_rule('/new_notebook', "new_notebook", login_required(self.new_notebook), methods=['get'])
         app.add_url_rule('/main/<collection_name>', "main", login_required(self.main), methods=['get'])
-        app.add_url_rule('/import_as_table/<collection_name>', "import_as_table",
+        app.add_url_rule('/import_as_table/<collection_name>/<user_manage_id>', "import_as_table",
                          login_required(self.import_as_table), methods=['get', "post"])
-        app.add_url_rule('/import_as_freeform/<collection_name>', "import_as_freeform",
+        app.add_url_rule('/import_as_freeform/<collection_name>/<user_manage_id>', "import_as_freeform",
                          login_required(self.import_as_freeform), methods=['get', "post"])
         app.add_url_rule('/delete_collection', "delete_collection",
                          login_required(self.delete_collection), methods=['post'])
@@ -269,7 +271,7 @@ class CollectionManager(UserManageResourceManager):
             error_string = "Error combining collections: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
             return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
-    def import_as_table(self, collection_name):
+    def import_as_table(self, collection_name, user_manage_id):
         user_obj = current_user
         file_list = request.files.getlist("file")
         full_collection_name = user_obj.build_data_collection_name(collection_name)
@@ -284,32 +286,53 @@ class CollectionManager(UserManageResourceManager):
             error_string = "Error creating collection: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
             return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
+        known_extensions = [".xlsx", ".csv", ".tsv", ".txt"]
+
+        file_decoding_errors = OrderedDict()
         for the_file in file_list:
+            multidoc = False
             filename, file_extension = os.path.splitext(the_file.filename)
             filename = filename.encode("ascii", "ignore")
-            if file_extension == ".csv":
-                (success, result_dict, header_list) = read_csv_file_to_dict(the_file)
-            elif file_extension == ".tsv":
-                (success, result_dict, header_list) = read_tsv_file_to_dict(the_file)
-            elif file_extension == ".txt":
-                (success, result_dict, header_list) = read_txt_file_to_dict(the_file)
-            # elif file_extension == ".xml":
-            #     (success, result_dict, header_list) = read_xml_file_to_dict(file)
-            else:
-                return jsonify({"success": False, "message": "Not a valid file extension " + file_extension,
+            if file_extension not in known_extensions:
+                return jsonify({"success": False, "message": "Invalid file extension " + file_extension,
                                 "alert_type": "alert-warning"})
+            success = None
+            header_dict = None
+            header_list = None
+            decoding_problems = []
+            if file_extension == ".xlsx":
+                (success, result_dict, header_dict) = read_excel_file(the_file)
+                multidoc = True
+            else:
+                self.show_um_message("Reading file {} and checking encoding".format(filename), user_manage_id,
+                                     timeout=10)
+                encoding = ""
+                if file_extension == ".csv":
+                    (success, result_dict, header_list, encoding, decoding_problems) = read_csv_file_to_dict(the_file)
+                elif file_extension == ".tsv":
+                    (success, result_dict, header_list, encoding, decoding_problems) = read_tsv_file_to_dict(the_file)
+                elif file_extension == ".txt":
+                    (success, result_dict, header_list, encoding, decoding_problems) = read_txt_file_to_dict(the_file)
+                self.show_um_message("Got encoding {} for {}".format(encoding, filename), user_manage_id, timeout=10)
+
             if not success:  # then result_dict contains an error object
                 e = result_dict
-                return jsonify({"message": e.message, "alert_type": "alert-danger"})
+                return jsonify({"message": e["message"], "alert_type": "alert-danger"})
+
+            if len(decoding_problems) > 0:
+                file_decoding_errors[filename] = decoding_problems
 
             try:
-                if AUTOSPLIT and len(result_dict.keys()) > AUTOSPLIT_SIZE:
-                    docs = self.autosplit_doc(filename, result_dict)
-                    for doc in docs:
-                        db[full_collection_name].insert_one({"name": doc["name"], "data_rows": doc["data_rows"],
-                                                             "header_list": header_list, "type": "table"})
+                if multidoc:
+                    for dname in result_dict.keys():
+                        result_binary = make_python_object_jsonizable(result_dict[dname])
+                        file_id = fs.put(result_binary)
+                        db[full_collection_name].insert_one({"name": dname, "file_id": file_id,
+                                                             "header_list": header_dict[dname]})
                 else:
-                    db[full_collection_name].insert_one({"name": filename, "data_rows": result_dict,
+                    result_binary = make_python_object_jsonizable(result_dict)
+                    file_id = fs.put(result_binary)
+                    db[full_collection_name].insert_one({"name": filename, "file_id": file_id,
                                                          "header_list": header_list})
             except:
                 error_string = "Error creating collection: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
@@ -318,10 +341,13 @@ class CollectionManager(UserManageResourceManager):
         self.update_number_of_docs(full_collection_name)
         table_row = self.create_new_row(collection_name, mdata)
         all_table_row = self.all_manager.create_new_all_row(collection_name, mdata, "collection")
+        if len(file_decoding_errors.keys()) == 0:
+            file_decoding_errors = None
         return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row,
-                        "message": "Collection successfully loaded", "alert_type": "alert-success"})
+                        "message": "Collection successfully loaded", "alert_type": "alert-success",
+                        "file_decoding_errors": file_decoding_errors})
 
-    def import_as_freeform(self, collection_name):
+    def import_as_freeform(self, collection_name, user_manage_id):   # tactic_working
         user_obj = current_user
         file_list = request.files.getlist("file")
         full_collection_name = user_obj.build_data_collection_name(collection_name)
@@ -337,16 +363,21 @@ class CollectionManager(UserManageResourceManager):
             error_string = "Error creating collection: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
             return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
+        file_decoding_errors = OrderedDict()
         for the_file in file_list:
+
             filename, file_extension = os.path.splitext(the_file.filename)
             filename = filename.encode("ascii", "ignore")
-            (success, result_txt) = read_freeform_file(the_file)
+            self.show_um_message("Reading file {} and checking encoding".format(filename), user_manage_id, timeout=10)
+            (success, result_txt, encoding, decoding_problems) = read_freeform_file(the_file)
+            self.show_um_message("Got encoding {} for {}".format(encoding, filename), user_manage_id, timeout=10)
             if not success:  # then result_dict contains an error object
                 e = result_txt
                 return jsonify({"message": e.message, "alert_type": "alert-danger"})
-
+            if len(decoding_problems) > 0:
+                file_decoding_errors[filename] = decoding_problems
             try:
-                save_dict = {"name": filename, "file_id": fs.put(result_txt)}
+                save_dict = {"name": filename, "encoding": encoding, "file_id": fs.put(result_txt, encoding=encoding)}
                 db[full_collection_name].insert_one(save_dict)
             except:
                 error_string = "Error creating collection: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
@@ -355,8 +386,11 @@ class CollectionManager(UserManageResourceManager):
         self.update_number_of_docs(full_collection_name)
         table_row = self.create_new_row(collection_name, mdata)
         all_table_row = self.all_manager.create_new_all_row(collection_name, mdata, "collection")
+        if len(file_decoding_errors.keys()) == 0:
+            file_decoding_errors = None
         return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row,
-                        "message": "Collection successfully loaded", "alert_type": "alert-success"})
+                        "alert_type": "alert-success",
+                        "file_decoding_errors": file_decoding_errors})
 
     def delete_collection(self):
         user_obj = current_user

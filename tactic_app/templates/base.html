@@ -8,7 +8,8 @@
       <link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap.min.css')}}">
       <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/tactic.css', v=version_string)}}">
       <link rel="stylesheet" href="{{url_for('static', filename='css/alertify_css/alertify.min.css')}}"/>
-      <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/tactic_alertify_theme.css', v=version_string)}}" />
+{#      <link rel="stylesheet" href="{{url_for('static', filename='css/alertify_css/themes/default.css')}}"/>#}
+     <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/tactic_alertify_theme.css', v=version_string)}}" />
      <link rel="shortcut icon" href="{{url_for('static', filename='tactic_css/favicon.ico', v=version_string)}}" />
   <link rel="icon" type="image/png" href="{{url_for('static', filename='tactic_css/icons/iris-and-pupil-16-12855.png')}}" sizes="16x16">
   <link rel="icon" type="image/png" href="{{url_for('static', filename='tactic_css/icons/iris-and-pupil-24-12855.png')}}" sizes="24x24">
@@ -98,6 +99,13 @@
         <script src="{{url_for('static', filename='tactic_js/tactic-anyword-hint.js', v=version_string)}}"></script>
         <script src="{{url_for('static', filename='js/closebrackets.js')}}"></script>
     {% endif %}
+    <script type="text/javascript">
+    //override defaults
+    alertify.defaults.transition = "slide";
+    alertify.defaults.theme.ok = "btn btn-primary";
+    alertify.defaults.theme.cancel = "btn btn-danger";
+    alertify.defaults.theme.input = "form-control";
+    </script>
     <script type="text/javascript">
         var csrftoken = "{{ csrf_token() }}";
         $.ajaxSetup({

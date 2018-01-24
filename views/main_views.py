@@ -1,12 +1,9 @@
-import cPickle
 import cStringIO
 import datetime
 import sys
 import copy
 import requests
 
-import openpyxl
-from bson.binary import Binary
 from flask import request, jsonify, render_template, send_file, url_for
 from flask_login import current_user, login_required
 from flask_socketio import join_room
@@ -14,7 +11,7 @@ from tactic_app import app, db, fs, socketio
 from user_manage_views import collection_manager
 from tactic_app.docker_functions import destroy_container, destroy_child_containers
 from tactic_app.users import load_user
-from tactic_app.communication_utils import send_request_to_megaplex
+from tactic_app.communication_utils import send_request_to_megaplex, debinarize_python_object
 import tactic_app
 
 import datetime
@@ -124,9 +121,10 @@ def export_data():
 
 @app.route('/figure_source/<tile_id>/<figure_name>', methods=['GET', 'POST'])
 @login_required
-def figure_source(tile_id, figure_name):
+def figure_source(tile_id, figure_name):  # tactic_changed
     encoded_img = tactic_app.host_worker.post_and_wait(tile_id, "get_image", {"figure_name": figure_name})["img"]
-    img = cPickle.loads(encoded_img.decode("utf-8", "ignore").encode("ascii"))
+    img = debinarize_python_object(encoded_img)
+    # img = cPickle.loads(encoded_img.decode("utf-8", "ignore").encode("ascii"))
     img_file = cStringIO.StringIO()
     img_file.write(img)
     img_file.seek(0)

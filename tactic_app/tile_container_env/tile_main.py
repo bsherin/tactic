@@ -11,11 +11,11 @@ from tile_env import exec_tile_code
 import tile_base
 from tile_base import clear_and_exec_user_code, TileBase
 from pseudo_tile_base import PseudoTileClass
-import cPickle
 from bson.binary import Binary
 import inspect
 import types
 import gevent
+from communication_utils import make_python_object_jsonizable
 
 import sys, os
 sys.stdout = sys.stderr
@@ -118,9 +118,10 @@ class TileWorker(QWorker):
                 "is_d3": self.tile_instance.is_d3}
 
     @task_worthy
-    def get_image(self,  data_dict):
+    def get_image(self,  data_dict): # tactic_working
         try:
-            encoded_img = Binary(cPickle.dumps(self.tile_instance.img_dict[data_dict["figure_name"]]))
+            encoded_img = make_python_object_jsonizable(self.tile_instance.img_dict[data_dict["figure_name"]])
+            # encoded_img = Binary(cPickle.dumps(self.tile_instance.img_dict[data_dict["figure_name"]]))
             return {"success": True, "img": encoded_img}
         except Exception as ex:
             return self.handle_exception(ex, "Error loading source")
