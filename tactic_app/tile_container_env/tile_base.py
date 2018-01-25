@@ -10,6 +10,8 @@ from matplotlib_utilities import MplFigure, Mpld3Figure, color_palette_names
 from types import NoneType
 import traceback
 import os
+import cPickle
+from cPickle import UnpicklingError
 from communication_utils import is_jsonizable, make_python_object_jsonizable, debinarize_python_object
 
 
@@ -667,6 +669,7 @@ class TileBase(object):
         return result
 
     def recreate_from_save(self, save_dict):
+        print "entering recreate from save in tile_base"
         if "binary_attrs" not in save_dict:
             save_dict["binary_attrs"] = []
         for(attr, attr_val) in save_dict.items():
@@ -681,9 +684,14 @@ class TileBase(object):
                     res[key] = cls.recreate_from_save(val)
                 setattr(self, attr, res)
             else:
-                if isinstance(attr_val, Binary) or attr in save_dict["binary_attrs"]:
-                    decoded_val = debinarize_python_object(attr_val)
-                    # decoded_val = cPickle.loads(str(attr_val.decode()))  # tactic_working
+                if isinstance(attr_val, Binary):  # seems like this is never true even for old-style saves
+                    decoded_val = cPickle.loads(str(attr_val.decode()))
+                    setattr(self, attr, decoded_val)
+                elif attr in save_dict["binary_attrs"]:
+                    try:
+                        decoded_val = debinarize_python_object(attr_val)
+                    except UnpicklingError:  # legacy if above fails try the old method
+                        decoded_val = cPickle.loads(str(attr_val.decode()))
                     setattr(self, attr, decoded_val)
                 else:
                     setattr(self, attr, attr_val)
