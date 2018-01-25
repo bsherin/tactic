@@ -690,7 +690,7 @@ class TileBase(object):
                 elif attr in save_dict["binary_attrs"]:
                     try:
                         decoded_val = debinarize_python_object(attr_val)
-                    except UnpicklingError:  # legacy if above fails try the old method
+                    except:  # legacy if above fails try the old method
                         decoded_val = cPickle.loads(str(attr_val.decode()))
                     setattr(self, attr, decoded_val)
                 else:
