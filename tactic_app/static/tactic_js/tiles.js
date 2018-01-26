@@ -11,12 +11,6 @@ else {
     click_event = "click"
 }
 
-function showZoomedImage(el) {
-    const src = el.src;
-    const image_string = "<img class='output-plot' src='" + src + "' lt='Image Placeholder'>";
-    $("#image-modal .modal-body").html(image_string);
-    $("#image-modal").modal()
-}
 
 class TileObject {
     constructor(tile_id, html, is_new_tile, tile_name) {
@@ -35,7 +29,7 @@ class TileObject {
             "tile-options": "toggleOptions"
         };
 
-        // tactic_todo This line can give an error if there's a problem with embedded javascritp code
+        // tactic_todo This line can give an error if there's a problem with embedded javascript code
         try {
             $("#tile-div").append(html);  // This append has to be after the flip or weird things happen
         }
@@ -266,7 +260,7 @@ class TileObject {
         const w = $(this.full_selector() + " .tile-display-area").width();
         const h = $(this.full_selector() + " .tile-display-area").height();
         console.log(String(data.arg_dict));
-        try {;
+        try {
             this.d3func(data.selector + " .d3plot", w, h, data.arg_dict);
             postWithCallback(this.tile_id, "set_current_html", {"current_html": this.get_current_html()})
         }

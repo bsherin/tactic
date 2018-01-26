@@ -121,7 +121,7 @@ def export_data():
 
 @app.route('/figure_source/<tile_id>/<figure_name>', methods=['GET', 'POST'])
 @login_required
-def figure_source(tile_id, figure_name):  # tactic_changed
+def figure_source(tile_id, figure_name):
     encoded_img = tactic_app.host_worker.post_and_wait(tile_id, "get_image", {"figure_name": figure_name})["img"]
     img = debinarize_python_object(encoded_img)
     # img = cPickle.loads(encoded_img.decode("utf-8", "ignore").encode("ascii"))

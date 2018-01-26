@@ -69,7 +69,7 @@ class ProjectManager(UserManageResourceManager):
 
         return render_template("main.html", **data_dict)
 
-    def duplicate_project(self):  # tactic_working
+    def duplicate_project(self):
         user_obj = current_user
         project_to_copy = request.json['res_to_copy']
         new_project_name = request.json['new_res_name']
