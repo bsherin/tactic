@@ -138,7 +138,7 @@ function build_and_render_menu_objects() {
     }
 
     else {
-        project_menu = new MenuObject("Project", project_command,["save-as", "save", "export-table-as-collection", "change-collection"]);
+        project_menu = new MenuObject("Project", project_command,["save-as", "save", "open-console-as-notebook", "export-table-as-collection", "change-collection"]);
     }
 
     menus[project_menu.menu_name] = project_menu;
@@ -350,6 +350,15 @@ function changeCollection() {
 
 }
 
+function consoleToNotebook() {
+    const result_dict = {
+        "main_id": main_id,
+        "console_html": $("#console").html(),
+        "user_id": user_id
+    };
+    postWithCallback("host", "console_to_notebook", result_dict)
+}
+
 function saveProjectAs() {
     startSpinner();
     postWithCallback("host", "get_project_names", {"user_id": user_id}, function (data) {
@@ -445,6 +454,11 @@ function project_command(menu_id) {
         case "save":
         {
             save_project();
+            break;
+        }
+        case "open-console-as-notebook":
+        {
+            consoleToNotebook();
             break;
         }
         case "export-table-as-collection":
