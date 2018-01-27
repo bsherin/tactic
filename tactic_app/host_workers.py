@@ -6,7 +6,8 @@ from communication_utils import send_request_to_megaplex
 from docker_functions import create_container, destroy_container, destroy_child_containers, destroy_user_containers
 from docker_functions import get_log, ContainerCreateError
 from tactic_app import app, socketio, mongo_uri, use_ssl
-from views.user_manage_views import tile_manager, project_manager, collection_manager
+from views.user_manage_views import tile_manager, project_manager, collection_manager, list_manager
+from views.user_manage_views import code_manager, all_manager
 import tactic_app
 import uuid
 import copy
@@ -64,6 +65,18 @@ class HostWorker(QWorker):
     @task_worthy
     def update_collection_selector_list(self, data):
         collection_manager.update_selector_list(user_obj=load_user(data["user_id"]))
+
+    @task_worthy
+    def update_code_selector_list(self, data):
+        code_manager.update_selector_list(user_obj=load_user(data["user_id"]))
+
+    @task_worthy
+    def update_all_selector_list(self, data):
+        all_manager.update_selector_list(user_obj=load_user(data["user_id"]))
+
+    @task_worthy
+    def update_list_selector_list(self, data):
+        list_manager.update_selector_list(user_obj=load_user(data["user_id"]))
 
     @task_worthy
     def destroy_a_users_containers(self, data):

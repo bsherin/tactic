@@ -5,6 +5,7 @@ let resource_module_template;
 let repository_module_template;
 const mousetrap = new Mousetrap();
 let repository_visible = false;
+let socket;
 const user_manage_id = guid();
 const page_id = user_manage_id;
 const res_types = ["list", "collection", "project", "tile", "code"];
@@ -53,17 +54,32 @@ function get_current_module_id() {
     }
 }
 
-function start_post_load() {
-    let socket;
-    if (use_ssl) {
-        socket = io.connect(`https://${document.domain}:${location.port}/user_manage`);
+var recInterval;
+
+function attemptReconnect() {
+    if (socket.connected) {
+        clearInterval(recInterval);
+        initialize_socket_stuff();
+        doFlash({"message": "reconnected to server"})
     }
     else {
-        socket = io.connect(`http://${document.domain}:${location.port}/user_manage`);
+        if (use_ssl) {
+            socket = io.connect(`https://${document.domain}:${location.port}/user_manage`);
+        }
+        else {
+            socket = io.connect(`http://${document.domain}:${location.port}/user_manage`);
+        }
     }
-    window.onresize = resize_window;
+}
+
+function initialize_socket_stuff() {
 
     socket.emit('join', {"user_id":  user_id, "user_manage_id":  user_manage_id});
+    socket.on("disconnect", function () {
+        doFlash({"message": "lost server connection"});
+        socket.close();
+        recInterval = setInterval(attemptReconnect, 5000)
+    });
 
     socket.on("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
 
@@ -91,6 +107,17 @@ function start_post_load() {
         }
     });
     socket.on('doflash', doFlash);
+}
+
+function start_post_load() {
+    if (use_ssl) {
+        socket = io.connect(`https://${document.domain}:${location.port}/user_manage`);
+    }
+    else {
+        socket = io.connect(`http://${document.domain}:${location.port}/user_manage`);
+    }
+    window.onresize = resize_window;
+    initialize_socket_stuff();
     console.log("about to create");
     $.get(`${$SCRIPT_ROOT}/get_resource_module_template`, function(template) {
         resource_module_template = $(template).filter('#resource-module-template').html();
@@ -257,6 +284,7 @@ class ListManager extends UserManagerResourceManager {
         this.delete_view = `/delete_list`;
         this.double_click_func = "view_func";
         this.duplicate_view = '/create_duplicate_list';
+        this.refresh_task = 'update_list_selector_list';
 
         this.file_adders =[
             {"name": "add_list", "func": "add_list", "button_class": "btn-default", "show_multiple": false}
@@ -266,7 +294,8 @@ class ListManager extends UserManagerResourceManager {
             {"buttons": [{"name": "duplicate", "func": "duplicate_func", "button_class": "btn-default"},
                          {"name": "rename", "func": "rename_func", "button_class": "btn-default"}]},
             {"buttons": [{"name": "share", "func": "send_repository_func", "button_class": "btn-default"}]},
-            {"buttons": [{"name": "delete", "func": "delete_func", "button_class": "btn-default"}]}
+            {"buttons": [{"name": "delete", "func": "delete_func", "button_class": "btn-default"}]},
+            {"buttons": [{"name": "refresh", "func": "refresh_func", "button_class": "btn-default"}]}
         ]
     }
 
@@ -311,6 +340,7 @@ class CollectionManager extends UserManagerResourceManager {
         this.double_click_func = "view_func";
         this.duplicate_view = '/duplicate_collection';
         this.view_view = "/main/";
+        this.refresh_task = 'update_collection_selector_list';
 
         this.file_adders = [
             {"name": "import_as_table", "func": "import_as_table", "button_class": "btn-default", show_multiple: true},
@@ -336,6 +366,9 @@ class CollectionManager extends UserManagerResourceManager {
             },
             {buttons: [
                     {"name": "delete", "func": "delete_func", "button_class": "btn-default"}]
+            },
+            {"buttons":
+                    [{"name": "refresh", "func": "refresh_func", "button_class": "btn-default"}]
             }
         ];
     }
@@ -454,6 +487,7 @@ class ProjectManager extends UserManagerResourceManager {
         this.duplicate_view = '/duplicate_project';
         this.double_click_func = "view_func";
         this.view_view = "/main_project/";
+        this.refresh_task = 'update_project_selector_list';
         this.button_groups = [
             {buttons: [
                     {"name": "view", "func": "view_func", "button_class": "btn-default"}]
@@ -467,6 +501,9 @@ class ProjectManager extends UserManagerResourceManager {
             },
             {buttons: [
                     {"name": "delete", "func": "delete_func", "button_class": "btn-default"}]
+            },
+            {"buttons": [
+                {"name": "refresh", "func": "refresh_func", "button_class": "btn-default"}]
             }
         ];
     }
@@ -500,6 +537,7 @@ class TileManager extends UserManagerResourceManager {
         this.delete_view = "/delete_tile_module";
         this.duplicate_view = '/create_duplicate_tile';
         this.double_click_func = "dc_view_func";
+        this.refresh_task = 'update_tile_selector_list';
         this.popup_buttons = [{
             "name": "new",
             "button_class": "btn-default",
@@ -538,7 +576,8 @@ class TileManager extends UserManagerResourceManager {
             },
             {buttons: [
                     {"name": "delete", "func": "delete_func", "button_class": "btn-default"}]
-            }
+            },
+            {"buttons": [{"name": "refresh", "func": "refresh_func", "button_class": "btn-default"}]}
         ]
     }
 
@@ -698,6 +737,7 @@ class CodeManager extends UserManagerResourceManager {
         this.delete_view = "/delete_code";
         this.duplicate_view = '/create_duplicate_code';
         this.double_click_func = "view_func";
+        this.refresh_task = 'update_code_selector_list';
         this.popup_buttons = [{
             "name": "new",
             "button_class": "btn-default",
@@ -719,7 +759,8 @@ class CodeManager extends UserManagerResourceManager {
             },
             {buttons: [
                     {"name": "delete", "func": "delete_func", "button_class": "btn-default"}]
-            }
+            },
+            {"buttons": [{"name": "refresh", "func": "refresh_func", "button_class": "btn-default"}]}
         ];
     }
     add_code (event) {
@@ -788,6 +829,7 @@ class AllManager extends UserManagerResourceManager {
         this.update_view = "request_update_selector_list";
         this.update_tag_view = "request_update_tag_list";
         this.double_click_func = "dc_view_func";
+        this.refresh_task = 'update_all_selector_list';
         this.popup_buttons = [{
             "name": "new",
             "button_class": "btn-default",
@@ -866,7 +908,8 @@ class AllManager extends UserManagerResourceManager {
                         "button_class": "btn-default",
                         "applicable_types": res_types
                     }]
-            }
+            },
+            {"buttons": [{"name": "refresh", "func": "refresh_func", "button_class": "btn-default"}]}
         ];
     }
 
