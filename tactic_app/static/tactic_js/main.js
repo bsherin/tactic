@@ -22,24 +22,35 @@ let tooltip_dict = {
     "clear-console-button": "clear console output"
 };
 
-function start_post_load() {
-    console.log("entering start_post_load");
-    dirty = false;
-    $("#outer-container").css({"margin-left": String(MARGIN_SIZE) + "px"});
-    $("#outer-container").css({"margin-right": String(MARGIN_SIZE) + "px"});
-    $("#outer-container").css({"margin-top": "0px", "margin-bottom": "0px"});
-    if (use_ssl) {
-        socket = io.connect('https://' + document.domain + ':' + location.port + '/main');
+function attemptReconnect() {
+    if (socket.connected) {
+        clearInterval(recInterval);
+        initialize_socket_stuff();
+        doFlash({"message": "reconnected to server"})
     }
     else {
-        socket = io.connect('http://' + document.domain + ':' + location.port + '/main')
+        if (use_ssl) {
+            socket = io.connect(`https://${document.domain}:${location.port}/user_manage`);
+        }
+        else {
+            socket = io.connect(`http://${document.domain}:${location.port}/user_manage`);
+        }
     }
+}
+
+function initialize_socket_stuff() {
     socket.emit('join', {"room": user_id});
     socket.emit('join-main', {"room": main_id});
     socket.emit('ready-to-begin', {"room": main_id});
     socket.on('tile-message', function (data) {
         tile_dict[data.tile_id][data.tile_message](data)
     });
+    socket.on("disconnect", function () {
+        doFlash({"message": "lost server connection"});
+        socket.close();
+        recInterval = setInterval(attemptReconnect, 5000)
+    });
+
     socket.on('table-message', function (data) {
         tableObject[data.table_message](data)
     });
@@ -121,6 +132,21 @@ function start_post_load() {
             postWithCallback(main_id, "initialize_mainwindow", data_dict)
         }
     })
+}
+
+function start_post_load() {
+    console.log("entering start_post_load");
+    dirty = false;
+    $("#outer-container").css({"margin-left": String(MARGIN_SIZE) + "px"});
+    $("#outer-container").css({"margin-right": String(MARGIN_SIZE) + "px"});
+    $("#outer-container").css({"margin-top": "0px", "margin-bottom": "0px"});
+    if (use_ssl) {
+        socket = io.connect('https://' + document.domain + ':' + location.port + '/main');
+    }
+    else {
+        socket = io.connect('http://' + document.domain + ':' + location.port + '/main')
+    }
+    initialize_socket_stuff()
 }
 
 function continue_loading() {
