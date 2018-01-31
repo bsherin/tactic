@@ -7,6 +7,24 @@
 MARGIN_SIZE = 17;
 
 let this_viewer;
+let tsocket;
+let user_manage_id;
+
+class ResourceViewerSocket extends TacticSocket {
+    initialize_socket_stuff() {
+        this.socket.emit('join', {"user_id":  user_id, "user_manage_id":  user_manage_id});
+        this.socket.on('stop-spinner', stopSpinner);
+        this.socket.on('start-spinner', startSpinner);
+        this.socket.on('close-user-windows', (data) => {
+            if (!(data["originator"] == user_manage_id)) {
+                window.close()
+            }
+        });
+        this.socket.on("doFlash", function(data) {
+            doFlash(data)
+        });
+    }
+}
 
 class ResourceViewer {
     constructor(resource_name, res_type, get_url) {
@@ -36,21 +54,8 @@ class ResourceViewer {
             self.resize_to_window()
         };
         if (get_url) {
-            if (use_ssl) {
-                this.socket = io.connect(`https://${document.domain}:${location.port}/user_manage`);
-            }
-            else {
-                this.socket = io.connect(`http://${document.domain}:${location.port}/user_manage`);
-            }
-            this.user_manage_id = guid();
-            this.socket.emit('join', {"user_id":  user_id, "user_manage_id":  this.user_manage_id});
-            this.socket.on('stop-spinner', stopSpinner);
-            this.socket.on('start-spinner', startSpinner);
-            this.socket.on('close-user-windows', (data) => {
-                if (!(data["originator"] == this.user_manage_id)) {
-                    window.close()
-                }
-            });
+            user_manage_id = guid();
+            tsocket = new ResourceViewerSocket("user_manage", 5000);
             postAjaxPromise(`${get_url}/${resource_name}`, {})
                 .then(function (data) {
                     self.got_resource(data.the_content)
@@ -69,6 +74,8 @@ class ResourceViewer {
             self.markdown_helper.focusNotes(self.meta_outer)
         })
     }
+
+
 
     update_width(new_width_fraction) {
         const usable_width = window.innerWidth - 2 * MARGIN_SIZE - 30;

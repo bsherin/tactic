@@ -1,5 +1,5 @@
 
-let socket;
+let tsocket;
 let dirty;
 let tile_types;
 var tableObject;
@@ -22,91 +22,79 @@ let tooltip_dict = {
     "clear-console-button": "clear console output"
 };
 
-function attemptReconnect() {
-    if (socket.connected) {
-        clearInterval(recInterval);
-        initialize_socket_stuff();
-        doFlash({"message": "reconnected to server"})
-    }
-    else {
-        if (use_ssl) {
-            socket = io.connect(`https://${document.domain}:${location.port}/user_manage`);
-        }
-        else {
-            socket = io.connect(`http://${document.domain}:${location.port}/user_manage`);
+class MainTacticSocket extends TacticSocket {
+
+    initialize_socket_stuff() {
+        this.socket.emit('join', {"room": user_id});
+        this.socket.emit('join-main', {"room": main_id});
+        this.socket.on('tile-message', function (data) {
+            tile_dict[data.tile_id][data.tile_message](data)
+        });
+        this.socket.on('table-message', function (data) {
+            tableObject[data.table_message](data)
+        });
+        this.socket.on('export-viewer-message', function(data) {
+            exportViewerObject[data.export_viewer_message](data)
+        });
+        this.socket.on('handle-callback', handleCallback);
+        this.socket.on('close-user-windows', function(data){
+                    postAsyncFalse("host", "remove_mainwindow_task", {"main_id": main_id});
+                    if (!(data["originator"] == main_id)) {
+                        window.close()
+                    }
+                });
+
+        this.socket.on("window-open", function(data) {
+            window.open($SCRIPT_ROOT + "/load_temp_page/" + data["the_id"])
+        });
+
+        this.socket.on("notebook-open", function(data) {
+            window.open($SCRIPT_ROOT + "/open_notebook/" + data["the_id"])
+        });
+        this.socket.on("doFlash", function(data) {
+            doFlash(data)
+        });
+        this.socket.on('show-status-msg', function (data){
+            statusMessage(data)
+        });
+        this.socket.on("clear-status-msg", function (){
+           clearStatusMessage()
+        });
+
+        if (!is_notebook) {
+            this.socket.on('update-menus', function() {
+                postWithCallback("host", "get_tile_types", {"user_id": user_id}, function (data) {
+                    tile_types = data.tile_types;
+                    clear_all_menus();
+                    build_and_render_menu_objects();
+                })});
+            this.socket.on('change-doc', function(data){
+                $("#doc-selector").val(data.doc_name);
+                if (table_is_shrunk) {
+                    tableObject.expandTable()
+                }
+                if (data.hasOwnProperty("row_id")) {
+                    change_doc($("#doc-selector")[0], data.row_id)
+                }
+                else {
+                    change_doc($("#doc-selector")[0], null)
+                }
+
+            });
         }
     }
 }
 
-function initialize_socket_stuff() {
-    socket.emit('join', {"room": user_id});
-    socket.emit('join-main', {"room": main_id});
-    socket.emit('ready-to-begin', {"room": main_id});
-    socket.on('tile-message', function (data) {
-        tile_dict[data.tile_id][data.tile_message](data)
-    });
-    socket.on("disconnect", function () {
-        doFlash({"message": "lost server connection"});
-        socket.close();
-        recInterval = setInterval(attemptReconnect, 5000)
-    });
 
-    socket.on('table-message', function (data) {
-        tableObject[data.table_message](data)
-    });
-    socket.on('export-viewer-message', function(data) {
-        exportViewerObject[data.export_viewer_message](data)
-    });
-    socket.on('handle-callback', handleCallback);
-    socket.on('close-user-windows', function(data){
-                postAsyncFalse("host", "remove_mainwindow_task", {"main_id": main_id});
-                if (!(data["originator"] == main_id)) {
-                    window.close()
-                }
-            });
-    socket.on('finish-post-load', function (data) {
-        if (is_project) {
-            $("#console").html(data.console_html);
-            if (!is_notebook) {
-                _collection_name = data.collection_name;
-                doc_names = data.doc_names;
-                $("#doc-selector-label").html(data.short_collection_name);
-                let doc_popup = "";
-                for (let dname of doc_names) {
-                    doc_popup = doc_popup + `<option>${dname}</option>`
-                }
-                $("#doc-selector").html(doc_popup)
-            }
-        }
-        if (is_notebook) {
-            build_and_render_menu_objects();
-            continue_loading()
-        }
-        else {
-            postWithCallback("host", "get_tile_types", {"user_id": user_id}, function (data) {
-                tile_types = data.tile_types;
-                build_and_render_menu_objects();
-                continue_loading()
-            })
-        }
-    });
-    socket.on("window-open", function(data) {
-        window.open($SCRIPT_ROOT + "/load_temp_page/" + data["the_id"])
-    });
 
-    socket.on("notebook-open", function(data) {
-        window.open($SCRIPT_ROOT + "/open_notebook/" + data["the_id"])
-    });
-    socket.on("doFlash", function(data) {
-        doFlash(data)
-    });
-    socket.on('show-status-msg', function (data){
-        statusMessage(data)
-    });
-    socket.on("clear-status-msg", function (){
-       clearStatusMessage()
-    });
-    socket.on("begin-post-load", function () {
+function start_post_load() {
+    console.log("entering start_post_load");
+    dirty = false;
+    $("#outer-container").css({"margin-left": String(MARGIN_SIZE) + "px"});
+    $("#outer-container").css({"margin-right": String(MARGIN_SIZE) + "px"});
+    $("#outer-container").css({"margin-top": "0px", "margin-bottom": "0px"});
+    tsocket = new MainTacticSocket("main", 5000);
+    tsocket.socket.on("begin-post-load", function () {
         if (is_project) {
             let data_dict = {
                 "project_name": _project_name,
@@ -131,46 +119,38 @@ function initialize_socket_stuff() {
             };
             postWithCallback(main_id, "initialize_mainwindow", data_dict)
         }
-    })
-}
-
-function start_post_load() {
-    console.log("entering start_post_load");
-    dirty = false;
-    $("#outer-container").css({"margin-left": String(MARGIN_SIZE) + "px"});
-    $("#outer-container").css({"margin-right": String(MARGIN_SIZE) + "px"});
-    $("#outer-container").css({"margin-top": "0px", "margin-bottom": "0px"});
-    if (use_ssl) {
-        socket = io.connect('https://' + document.domain + ':' + location.port + '/main');
-    }
-    else {
-        socket = io.connect('http://' + document.domain + ':' + location.port + '/main')
-    }
-    initialize_socket_stuff()
+    });
+    tsocket.socket.on('finish-post-load', function (data) {
+            if (is_project) {
+                $("#console").html(data.console_html);
+                if (!is_notebook) {
+                    _collection_name = data.collection_name;
+                    doc_names = data.doc_names;
+                    $("#doc-selector-label").html(data.short_collection_name);
+                    let doc_popup = "";
+                    for (let dname of doc_names) {
+                        doc_popup = doc_popup + `<option>${dname}</option>`
+                    }
+                    $("#doc-selector").html(doc_popup)
+                }
+            }
+            if (is_notebook) {
+                build_and_render_menu_objects();
+                continue_loading()
+            }
+            else {
+                postWithCallback("host", "get_tile_types", {"user_id": user_id}, function (data) {
+                    tile_types = data.tile_types;
+                    build_and_render_menu_objects();
+                    continue_loading()
+                })
+            }
+        });
+    tsocket.socket.emit('ready-to-begin', {"room": main_id});
 }
 
 function continue_loading() {
-    if (!is_notebook) {
-        socket.on('update-menus', function() {
-            postWithCallback("host", "get_tile_types", {"user_id": user_id}, function (data) {
-                tile_types = data.tile_types;
-                clear_all_menus();
-                build_and_render_menu_objects();
-            })});
-        socket.on('change-doc', function(data){
-            $("#doc-selector").val(data.doc_name);
-            if (table_is_shrunk) {
-                tableObject.expandTable()
-            }
-            if (data.hasOwnProperty("row_id")) {
-                change_doc($("#doc-selector")[0], data.row_id)
-            }
-            else {
-                change_doc($("#doc-selector")[0], null)
-            }
 
-        });
-    }
 
     if (_project_name != "") {
         if (is_notebook) {

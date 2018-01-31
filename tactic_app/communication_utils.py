@@ -97,3 +97,19 @@ def send_request_to_container(taddress, msg_type, data_dict=None, wait_for_succe
         raise Exception(error_string)
     else:
         return requests.post("http://{0}:5000/{1}".format(taddress, msg_type), timeout=timeout, json=data_dict)
+
+def post_task_noqworker(source_id, dest_id, task_type, task_data=None):
+    new_packet = {"source": source_id,
+                  "dest": dest_id,
+                  "task_type": task_type,
+                  "task_data": task_data,
+                  "response_data": None,
+                  "callback_id": None}
+    result = send_request_to_megaplex("post_task", new_packet).json()
+    if not result["success"]:
+        error_string = "Error posting task with msg_type {} dest {} source {}. Error: {}".format(task_type,
+                                                                                                 dest_id,
+                                                                                                 source_id,
+                                                                                                 result["message"])
+        raise Exception(error_string)
+    return result

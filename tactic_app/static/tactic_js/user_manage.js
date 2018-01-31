@@ -5,7 +5,7 @@ let resource_module_template;
 let repository_module_template;
 const mousetrap = new Mousetrap();
 let repository_visible = false;
-let socket;
+let tsocket;
 const user_manage_id = guid();
 const page_id = user_manage_id;
 const res_types = ["list", "collection", "project", "tile", "code"];
@@ -54,70 +54,47 @@ function get_current_module_id() {
     }
 }
 
-var recInterval;
 
-function attemptReconnect() {
-    if (socket.connected) {
-        clearInterval(recInterval);
-        initialize_socket_stuff();
-        doFlash({"message": "reconnected to server"})
+
+class UserTacticSocket extends TacticSocket {
+
+    initialize_socket_stuff() {
+
+        this.socket.emit('join', {"user_id":  user_id, "user_manage_id":  user_manage_id});
+
+        this.socket.on("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
+
+        this.socket.on('update-selector-list', (data) => {
+            const manager = resource_managers[data.module_id];
+            manager.fill_content(data.html);
+            manager.select_resource_button(data.select);
+            manager.tag_button_list.refresh_from_selectors()
+        });
+
+        this.socket.on('update-tag-list', (data) => {
+            resource_managers[data.module_id].tag_button_list.refresh_given_taglist(data.tag_list)
+        });
+
+        this.socket.on('stop-spinner', stopSpinner);
+        this.socket.on('start-spinner', startSpinner);
+        this.socket.on('show-status-msg', statusMessage);
+        this.socket.on("clear-status-msg", clearStatusMessage);
+        this.socket.on('update-loaded-tile-list', (data) => {
+            resource_managers["tile_module"].get_aux_right_dom().html(data.html)
+        });
+        this.socket.on('close-user-windows', (data) => {
+            if (!(data["originator"] == user_manage_id)) {
+                window.close()
+            }
+        });
+        this.socket.on('doflash', doFlash);
     }
-    else {
-        if (use_ssl) {
-            socket = io.connect(`https://${document.domain}:${location.port}/user_manage`);
-        }
-        else {
-            socket = io.connect(`http://${document.domain}:${location.port}/user_manage`);
-        }
-    }
-}
-
-function initialize_socket_stuff() {
-
-    socket.emit('join', {"user_id":  user_id, "user_manage_id":  user_manage_id});
-    socket.on("disconnect", function () {
-        doFlash({"message": "lost server connection"});
-        socket.close();
-        recInterval = setInterval(attemptReconnect, 5000)
-    });
-
-    socket.on("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
-
-    socket.on('update-selector-list', (data) => {
-        const manager = resource_managers[data.module_id];
-        manager.fill_content(data.html);
-        manager.select_resource_button(data.select);
-        manager.tag_button_list.refresh_from_selectors()
-    });
-
-    socket.on('update-tag-list', (data) => {
-        resource_managers[data.module_id].tag_button_list.refresh_given_taglist(data.tag_list)
-    });
-
-    socket.on('stop-spinner', stopSpinner);
-    socket.on('start-spinner', startSpinner);
-    socket.on('show-status-msg', statusMessage);
-    socket.on("clear-status-msg", clearStatusMessage);
-    socket.on('update-loaded-tile-list', (data) => {
-        resource_managers["tile_module"].get_aux_right_dom().html(data.html)
-    });
-    socket.on('close-user-windows', (data) => {
-        if (!(data["originator"] == user_manage_id)) {
-            window.close()
-        }
-    });
-    socket.on('doflash', doFlash);
 }
 
 function start_post_load() {
-    if (use_ssl) {
-        socket = io.connect(`https://${document.domain}:${location.port}/user_manage`);
-    }
-    else {
-        socket = io.connect(`http://${document.domain}:${location.port}/user_manage`);
-    }
+    tsocket = new UserTacticSocket("user_manage", 5000);
+
     window.onresize = resize_window;
-    initialize_socket_stuff();
     console.log("about to create");
     $.get(`${$SCRIPT_ROOT}/get_resource_module_template`, function(template) {
         resource_module_template = $(template).filter('#resource-module-template').html();
@@ -909,7 +886,15 @@ class AllManager extends UserManagerResourceManager {
                         "applicable_types": res_types
                     }]
             },
-            {"buttons": [{"name": "refresh", "func": "refresh_func", "button_class": "btn-default"}]}
+            {
+                buttons: [
+                    {
+                        "name": "refresh",
+                        "func": "refresh_func",
+                        "button_class": "btn-default",
+                        "applicable_types": res_types
+                    }]
+            }
         ];
     }
 

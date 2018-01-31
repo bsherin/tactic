@@ -324,6 +324,12 @@ class HostWorker(QWorker):
         return {"success": True, "render_result": render_result}
 
     @task_worthy
+    def flash_to_main(self, data):
+        # data = {"message": message, "alert_type": alert_type, "main_id": main_id}
+        socketio.emit("doFlash", data, namespace='/main', room=data["main_id"])
+        return {"success": True}
+
+    @task_worthy
     def print_text_area_to_console(self, data):
         from tactic_app import socketio
         with app.test_request_context():
