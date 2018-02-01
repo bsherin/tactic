@@ -10,7 +10,7 @@ Flask-SSLify
 Flask-WTF
 funcsigs==0.4
 gevent
-gevent-socketio
+python-socketio
 gevent-websocket
 greenlet
 gunicorn==18.0
