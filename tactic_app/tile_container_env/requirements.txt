@@ -4,7 +4,7 @@ Flask
 funcsigs==0.4
 gensim==2.3.0
 gevent
-gevent-socketio
+python-socketio
 gevent-websocket
 greenlet
 itsdangerous==0.24
