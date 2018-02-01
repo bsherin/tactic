@@ -60,7 +60,7 @@ def process_exception(ex):
     return {"success": False, "message": error_string, "alert_type": "alert-warning"}
 
 
-def copy_between_accounts(source_user, dest_user, res_type, new_res_name, res_name):  # tactic_working
+def copy_between_accounts(source_user, dest_user, res_type, new_res_name, res_name):
     try:
         if res_type == "collection":
             collection_to_copy = source_user.full_collection_name(res_name)

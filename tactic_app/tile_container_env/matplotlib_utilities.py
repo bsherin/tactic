@@ -100,7 +100,7 @@ class MplFigure(Figure):
         figname = str(uuid.uuid4())
         self.img_dict[figname] = img_file.getvalue()
         fig_url = self.base_figure_url + figname
-        image_string = "<img class='output-plot' src='{}' onclick=showZoomedImage(this) lt='Image Placeholder'>"
+        image_string = "<img class='output-plot' src='{}' lt='Image Placeholder'>"
         the_html = image_string.format(fig_url)
         return the_html
 

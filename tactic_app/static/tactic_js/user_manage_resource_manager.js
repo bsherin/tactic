@@ -815,6 +815,11 @@ class UserManagerResourceManager extends ResourceManager{
         })
     }
 
+    refresh_func(event) {
+        const manager = event.data.manager;
+        postWithCallbackNoMain("host", manager.refresh_task, {"user_id": user_id})
+    }
+
     send_repository_func (event) {
         const manager = event.data.manager;
         const res_name = manager.check_for_selection("resource");

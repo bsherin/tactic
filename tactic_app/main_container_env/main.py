@@ -575,7 +575,7 @@ class mainWindow(object):
 
     # utility methods
 
-    def _build_doc_dict(self):   # tactic_working
+    def _build_doc_dict(self):
         result = {}
         the_collection = self.db[self.collection_name]
         for f in the_collection.find():
@@ -714,7 +714,7 @@ class mainWindow(object):
             self.mworker.emit_table_message("highlightTxtInDocument", {"text_to_find": txt})
 
     @staticmethod
-    def txt_in_dict(txt, d):  # tactic_working
+    def txt_in_dict(txt, d):
         for val in d.values():
             try:
                 if str(txt).lower() in str(val).lower():
@@ -784,7 +784,7 @@ class mainWindow(object):
         return result
 
     @task_worthy
-    def get_user_collection(self, data):  # tactic_working
+    def get_user_collection(self, data):
         full_collection_name = self.mworker.post_and_wait("host",
                                                           "get_full_collection_name",
                                                           data)["full_collection_name"]
