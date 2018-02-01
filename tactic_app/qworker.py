@@ -119,7 +119,7 @@ class QWorker(gevent.Greenlet):
     def special_long_sleep_function(self):
         pass
 
-    def _run(self): # tactic_working
+    def _run(self):
         self.debug_log("Entering _run")
         self.running = True
         while self.running:
@@ -134,8 +134,6 @@ class QWorker(gevent.Greenlet):
                         try:
                             func = callback_dict[task_packet["callback_id"]]
                             del callback_dict[task_packet["callback_id"]]
-                            # if isinstance(task_packet["response_data"], Binary): tactic_working
-                            #     task_packet["response_data"] = cPickle.loads(task_packet["response_data"].decode("utf-8", "ignore").encode("ascii"))
                             func(task_packet["response_data"])
                         except Exception as ex:
                             special_string = "Error handling callback for task type {} for my_id {}".format(task_packet["task_type"],

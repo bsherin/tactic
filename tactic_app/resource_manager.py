@@ -163,14 +163,14 @@ class ResourceManager(object):
                 updatestring_for_sort = ""
             else:
                 if "datetime" in mdata:
-                    localtime = current_user.localize_time(mdata["datetime"])  # note that we always want current_user
+                    localtime = user_obj.localize_time(mdata["datetime"])  # note that we always want current_user
                     datestring = localtime.strftime("%b %d, %Y, %H:%M")
                     datestring_for_sort = mdata["datetime"].strftime("%Y%m%d%H%M%S")
                 else:
                     datestring = ""
                     datestring_for_sort = ""
                 if "updated" in mdata:
-                    localtime = current_user.localize_time(mdata["updated"])
+                    localtime = user_obj.localize_time(mdata["updated"])
                     updatestring = localtime.strftime("%b %d, %Y, %H:%M")
                     updatestring_for_sort = mdata["updated"].strftime("%Y%m%d%H%M%S")
                 else:

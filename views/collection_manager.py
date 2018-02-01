@@ -12,6 +12,7 @@ import cStringIO
 import tactic_app
 from tactic_app.file_handling import read_csv_file_to_dict, read_tsv_file_to_dict, read_txt_file_to_dict, read_excel_file
 from tactic_app.file_handling import read_freeform_file
+from tactic_app.users import load_user
 
 from tactic_app.resource_manager import ResourceManager, UserManageResourceManager
 global_tile_manager = tactic_app.global_tile_manager
@@ -24,7 +25,7 @@ import datetime
 tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 
 
-# noinspection PyMethodMayBeStatic,PyBroadException
+# noinspection PyMethodMayBeStatic,PyBroadException,RegExpRedundantEscape
 class CollectionManager(UserManageResourceManager):
     collection_list = "data_collections"
     collection_list_with_metadata = "data_collection_names_with_metadata"
@@ -33,6 +34,7 @@ class CollectionManager(UserManageResourceManager):
 
     def add_rules(self):
         app.add_url_rule('/new_notebook', "new_notebook", login_required(self.new_notebook), methods=['get'])
+        app.add_url_rule('/open_notebook/<unique_id>', "open_notebook", login_required(self.open_notebook), methods=['get'])
         app.add_url_rule('/main/<collection_name>', "main", login_required(self.main), methods=['get'])
         app.add_url_rule('/import_as_table/<collection_name>/<user_manage_id>', "import_as_table",
                          login_required(self.import_as_table), methods=['get', "post"])
@@ -57,7 +59,6 @@ class CollectionManager(UserManageResourceManager):
                                    window_tile="Load Failed",
                                    error_string="Load failed: Could not create container",
                                    version_string=tstring)
-        doc_type = "notebook"
         return render_template("main.html",
                                collection_name="",
                                window_title="new notebook",
@@ -69,6 +70,38 @@ class CollectionManager(UserManageResourceManager):
                                doc_names=[],
                                use_ssl=str(use_ssl),
                                console_html="",
+                               is_table=False,
+                               is_notebook=True,
+                               is_freeform=False,
+                               short_collection_name="",
+                               new_tile_info="",
+                               uses_codemirror="True",
+                               version_string=tstring)
+
+    def open_notebook(self, unique_id):
+        the_data = tactic_app.host_worker.temp_dict[unique_id]
+        console_html = the_data["console_html"]
+        user_obj = load_user(the_data["user_id"])
+        del tactic_app.host_worker.temp_dict[unique_id]
+        try:
+            main_id, container_id = create_container("tactic_main_image", owner=user_obj.get_id(),
+                                                     other_name="new_notebook")
+        except ContainerCreateError:
+            return render_template("error_window_template.html",
+                                   window_tile="Load Failed",
+                                   error_string="Load failed: Could not create container",
+                                   version_string=tstring)
+        return render_template("main.html",
+                               collection_name="",
+                               window_title="new notebook",
+                               project_name='',
+                               project_collection_name=user_obj.project_collection_name,
+                               mongo_uri=mongo_uri,
+                               base_figure_url=url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
+                               main_id=main_id,
+                               doc_names=[],
+                               use_ssl=str(use_ssl),
+                               console_html=console_html,
                                is_table=False,
                                is_notebook=True,
                                is_freeform=False,
@@ -347,7 +380,7 @@ class CollectionManager(UserManageResourceManager):
                         "message": "Collection successfully loaded", "alert_type": "alert-success",
                         "file_decoding_errors": file_decoding_errors})
 
-    def import_as_freeform(self, collection_name, user_manage_id):   # tactic_working
+    def import_as_freeform(self, collection_name, user_manage_id):
         user_obj = current_user
         file_list = request.files.getlist("file")
         full_collection_name = user_obj.build_data_collection_name(collection_name)
@@ -413,7 +446,7 @@ class CollectionManager(UserManageResourceManager):
                             "alert_type": "alert-warning"})
         metadata = db[collection_to_copy].find_one({"name": "__metadata__"})
 
-        if ("number_of_docs" not in metadata): # legacy this is a way to get this into older collections
+        if "number_of_docs" not in metadata:  # legacy this is a way to get this into older collections
             self.update_number_of_docs(collection_to_copy)
 
         for doc in db[collection_to_copy].find():

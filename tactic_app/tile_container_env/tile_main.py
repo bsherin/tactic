@@ -21,6 +21,8 @@ import sys, os
 sys.stdout = sys.stderr
 import time
 
+
+# noinspection PyUnusedLocal
 class TileWorker(QWorker):
     def __init__(self):
         print "about to initialize QWorker"
@@ -120,10 +122,9 @@ class TileWorker(QWorker):
                 "is_d3": self.tile_instance.is_d3}
 
     @task_worthy
-    def get_image(self,  data_dict): # tactic_working
+    def get_image(self,  data_dict):
         try:
             encoded_img = make_python_object_jsonizable(self.tile_instance.img_dict[data_dict["figure_name"]])
-            # encoded_img = Binary(cPickle.dumps(self.tile_instance.img_dict[data_dict["figure_name"]]))
             return {"success": True, "img": encoded_img}
         except Exception as ex:
             return self.handle_exception(ex, "Error loading source")

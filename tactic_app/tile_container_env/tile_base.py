@@ -652,9 +652,8 @@ class TileBase(object):
                         result[attr] = attr_val
                         continue
                 try:
-                    self.tworker.debug_log("Found non jsonizable attribute " + attr)  # tactic_working
+                    self.tworker.debug_log("Found non jsonizable attribute " + attr)
                     result["binary_attrs"].append(attr)
-                    # bser_attr_val = Binary(cPickle.dumps(attr_val, cPickle.HIGHEST_PROTOCOL))
                     bser_attr_val = make_python_object_jsonizable(attr_val)
                     result[attr] = bser_attr_val
                     if is_jsonizable(bser_attr_val, ensure_ascii=False):
@@ -1323,7 +1322,6 @@ class TileBase(object):
                                                     tries=RETRIES)
                 encoded_val = result["encoded_val"]
                 val = debinarize_python_object(encoded_val)
-                # val = cPickle.loads(encoded_val.decode("utf-8", "ignore").encode("ascii"))  #tactic_working
                 self.restore_stdout()
                 return val
         self.restore_stdout()
@@ -1337,8 +1335,7 @@ class TileBase(object):
             res = getattr(self, export_name)
         else:
             res = "__none__"
-        # ncoded_val = Binary(cPickle.dumps(res))  # tactic_working
-        encoded_val = make_python_object_jsonizable(res) # tactic_working
+        encoded_val = make_python_object_jsonizable(res)
         self.restore_stdout()
         return {"encoded_val": encoded_val}
 

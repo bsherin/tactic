@@ -3,7 +3,6 @@
  */
 
 let creator_viewer;
-let socket;
 
 const BOTTOM_MARGIN = 50;
 
@@ -12,30 +11,33 @@ setInterval( function(){
    postAjax("register_heartbeat", {"main_id": main_id}, function () {});
 }, HEARTBEAT_INTERVAL );
 
+class CreatorViewerSocket extends TacticSocket {
+    initialize_socket_stuff () {
+        this.socket.emit('join', {"room": user_id});
+        this.socket.emit('join-main', {"room": module_viewer_id});
+        this.socket.on('stop-spinner', stopSpinner);
+        this.socket.on('start-spinner', startSpinner);
+        this.socket.on('handle-callback', handleCallback);
+        this.socket.on('close-user-windows', (data) => {
+            if (!(data["originator"] == this.user_manage_id)) {
+                window.close()
+            }
+        });
+        this.socket.on("doFlash", function(data) {
+            doFlash(data)
+        });
+    }
+}
+
 function start_post_load() {
     startSpinner();
     statusMessageText("loading " + module_name);
-    if (use_ssl) {
-        socket = io.connect('https://' + document.domain + ':' + location.port + '/main');
-    }
-    else {
-        socket = io.connect('http://' + document.domain + ':' + location.port + '/main');
-    }
-    socket.emit('join', {"room": user_id});
-    socket.emit('join-main', {"room": module_viewer_id});
-    socket.on('stop-spinner', stopSpinner);
-    socket.on('start-spinner', startSpinner);
-    socket.on('handle-callback', handleCallback);
-    socket.on('close-user-windows', (data) => {
-        if (!(data["originator"] == this.user_manage_id)) {
-            window.close()
-        }
-    });
-    socket.on("begin-post-load", function () {
-        creator_viewer = new CreatorViewer(module_name, "tile", "initialize_module_viewer_container");
-        creator_viewer.resize_to_window();
-    });
-    socket.emit('ready-to-begin', {"room": main_id});
+    tsocket = new CreatorViewerSocket("main", 5000);
+    tsocket.socket.on("begin-post-load", function () {
+            creator_viewer = new CreatorViewer(module_name, "tile", "initialize_module_viewer_container");
+            creator_viewer.resize_to_window();
+        });
+    tsocket.socket.emit('ready-to-begin', {"room": main_id});
 }
 
 class CreatorViewer extends ModuleViewerAbstract {
@@ -102,7 +104,6 @@ class CreatorViewer extends ModuleViewerAbstract {
             this.right_div.width((1 - new_width_fraction) * usable_width - left_div_margin)
         }
     }
-
 
     get exportManager() {
         return this.resource_managers["export_module"]

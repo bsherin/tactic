@@ -6,7 +6,8 @@ from communication_utils import send_request_to_megaplex
 from docker_functions import create_container, destroy_container, destroy_child_containers, destroy_user_containers
 from docker_functions import get_log, ContainerCreateError
 from tactic_app import app, socketio, mongo_uri, use_ssl
-from views.user_manage_views import tile_manager, project_manager, collection_manager
+from views.user_manage_views import tile_manager, project_manager, collection_manager, list_manager
+from views.user_manage_views import code_manager, all_manager
 import tactic_app
 import uuid
 import copy
@@ -64,6 +65,18 @@ class HostWorker(QWorker):
     @task_worthy
     def update_collection_selector_list(self, data):
         collection_manager.update_selector_list(user_obj=load_user(data["user_id"]))
+
+    @task_worthy
+    def update_code_selector_list(self, data):
+        code_manager.update_selector_list(user_obj=load_user(data["user_id"]))
+
+    @task_worthy
+    def update_all_selector_list(self, data):
+        all_manager.update_selector_list(user_obj=load_user(data["user_id"]))
+
+    @task_worthy
+    def update_list_selector_list(self, data):
+        list_manager.update_selector_list(user_obj=load_user(data["user_id"]))
 
     @task_worthy
     def destroy_a_users_containers(self, data):
@@ -183,6 +196,7 @@ class HostWorker(QWorker):
             result[old_tile_id] = global_tile_manager.get_tile_code(tile_type, user_id)
         return result
 
+
     @task_worthy
     def get_project_names(self, data):
         user_id = data["user_id"]
@@ -251,6 +265,15 @@ class HostWorker(QWorker):
         return {"success": True}
 
     @task_worthy
+    def console_to_notebook(self, data):
+        from tactic_app import socketio
+        unique_id = str(uuid.uuid4())
+        template_data = copy.copy(data)
+        self.temp_dict[unique_id] = template_data
+        socketio.emit("notebook-open", {"the_id": unique_id}, namespace='/main', room=data["main_id"])
+        return {"success": True}
+
+    @task_worthy
     def open_log_window(self, data):
         from tactic_app import socketio
         unique_id = str(uuid.uuid4())
@@ -299,6 +322,12 @@ class HostWorker(QWorker):
         with app.test_request_context():
             render_result = render_template(data["template"], **data["render_fields"])
         return {"success": True, "render_result": render_result}
+
+    @task_worthy
+    def flash_to_main(self, data):
+        # data = {"message": message, "alert_type": alert_type, "main_id": main_id}
+        socketio.emit("doFlash", data, namespace='/main', room=data["main_id"])
+        return {"success": True}
 
     @task_worthy
     def print_text_area_to_console(self, data):

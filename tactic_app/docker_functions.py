@@ -5,7 +5,7 @@ import os
 import sys
 import uuid
 import datetime
-from communication_utils import send_request_to_megaplex
+from communication_utils import send_request_to_megaplex, post_task_noqworker
 forwarder_address = None
 forwarder_id = None
 sys.stdout = sys.stderr
@@ -36,6 +36,16 @@ def get_address(container_identifier, network_name):
 class ContainerCreateError(Exception):
     pass
 
+cont_type_dict = {"megaplex_main:app":"megaplex",
+                  "tile_main.py": "tile",
+                  "main_main.py": "main",
+                  "module_viewer_main.py": "module_viewer"}
+
+def get_container_type(cont):
+    for arg in cont.attrs["Args"]:
+        if arg in cont_type_dict:
+            return cont_type_dict[arg]
+    return
 
 def create_container(image_name, container_name=None, network_mode="bridge",
                      wait_until_running=True, owner="host", parent="host",
@@ -150,11 +160,25 @@ def get_log(tactic_id):
 def destroy_container(tactic_id):
     try:
         cont = get_container(tactic_id)
+        message = None
+        dest_id = None
         if cont is None:
             return -1
         else:
-            cont.remove(force=True)
+            cont_type = get_container_type(cont)
             send_request_to_megaplex("deregister_container", {"container_id": tactic_id})
+            if cont_type == "main" or cont_type == "module_viewer":
+                message = "Underlying container has been destroyed. This window won't function now."
+                dest_id = tactic_id
+            elif cont_type == "tile":
+                tile_name = container_other_name(cont)
+                dest_id = container_parent(cont)
+                message = "Container for tile {} has been destroyed".format(tile_name)
+            cont.remove(force=True)
+            if message is not None:
+                data = {"message": message, "alert_type": "alert-warning", "main_id": dest_id}
+                post_task_noqworker("host", "host", "flash_to_main", data)
+            return
     except:
         return -1
 
