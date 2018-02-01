@@ -1,6 +1,6 @@
 chardet
 cycler==0.9.0
-docker
+docker==2.7.0
 et-xmlfile==1.0.1
 Flask
 Flask-Bootstrap
