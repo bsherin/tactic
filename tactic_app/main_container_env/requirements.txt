@@ -2,7 +2,7 @@ cycler==0.9.0
 et-xmlfile==1.0.1
 funcsigs==0.4
 gevent
-gevent-socketio
+python-socketio
 gevent-websocket
 greenlet==0.4.7
 itsdangerous==0.24
