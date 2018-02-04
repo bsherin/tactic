@@ -16,6 +16,7 @@ from docker_functions import create_container, get_address, ContainerCreateError
 import docker_functions
 from communication_utils import send_request_to_container, USE_FORWARDER
 from integrated_docs import api_array
+from docker_functions import db_name
 
 csrf = CSRFProtect()
 
@@ -40,7 +41,6 @@ socketio = None
 global_tile_manager = None
 client_worker = None
 host_worker = None
-
 
 def print_message():
     print "got to the message"
@@ -70,8 +70,8 @@ try:
     # to be useless here
     client.server_info()
     # noinspection PyUnresolvedReferences
-    db = client.tacticdb
-    mongo_uri ="mongodb://{}:27017/tacticdb".format(host_ip)
+    db = client[db_name]
+    mongo_uri ="mongodb://{}:27017/{}".format(host_ip, db_name)
 
     if ("ANYONE_CAN_REGISTER" in os.environ) and (os.environ.get("ANYONE_CAN_REGISTER") == "True"):
         ANYONE_CAN_REGISTER = True

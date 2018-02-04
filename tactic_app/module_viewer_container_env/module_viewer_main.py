@@ -14,6 +14,11 @@ import sys, os
 sys.stdout = sys.stderr
 import time
 
+if "DB_NAME" in os.environ:
+    db_name = os.environ.get("DB_NAME")
+else:
+    db_name = "tacticdb"
+
 
 class ModuleViewerWorker(QWorker):
     def __init__(self):
@@ -38,7 +43,7 @@ class ModuleViewerWorker(QWorker):
             client = pymongo.MongoClient(data_dict["mongo_uri"], serverSelectionTimeoutMS=10)
             client.server_info()
             # noinspection PyUnresolvedReferences
-            self.db = client.tacticdb
+            self.db = client[db_name]
         except:
             error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
             print error_string
