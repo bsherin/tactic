@@ -16,6 +16,11 @@ MAX_QUEUE_LENGTH = 5000
 CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
 STEP_SIZE = int(os.environ.get("STEP_SIZE"))
 
+if "DB_NAME" in os.environ:
+    db_name = os.environ.get("DB_NAME")
+else:
+    db_name = "tacticdb"
+
 
 megaplex_address = None  # This is set in __init__.py
 
@@ -60,7 +65,8 @@ def create_container(image_name, container_name=None, network_mode="bridge",
                "MEGAPLEX_ADDRESS": megaplex_address,
                "MY_ID": unique_id,
                "OWNER": owner,
-               "PARENT": parent}
+               "PARENT": parent,
+               "DB_NAME": db_name}
     for key, val in env_vars.items():
         environ[key] = val
 

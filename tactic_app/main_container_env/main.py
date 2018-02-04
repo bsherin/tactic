@@ -22,10 +22,17 @@ from qworker import task_worthy_methods
 # getting environment variables
 INITIAL_LEFT_FRACTION = .69
 
+
 if "RETRIES" in os.environ:
     RETRIES = int(os.environ.get("RETRIES"))
 else:
     RETRIES = 60
+
+
+if "DB_NAME" in os.environ:
+    db_name = os.environ.get("DB_NAME")
+else:
+    db_name = "tacticdb"
 
 
 def task_worthy(m):
@@ -54,7 +61,7 @@ class mainWindow(object):
             client = pymongo.MongoClient(data_dict["mongo_uri"], serverSelectionTimeoutMS=10)
             client.server_info()
             # noinspection PyUnresolvedReferences
-            self.db = client.tacticdb
+            self.db = client[db_name]
             self.fs = gridfs.GridFS(self.db)
         except:
             error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
@@ -496,7 +503,7 @@ class mainWindow(object):
         # noinspection PyBroadException
         try:
             self.project_name = data_dict["project_name"]
-            self.purgetiles = data_dict["purgetiles"]
+            self.purgetiles = True
             self.console_html = data_dict["console_html"]
             self.console_cm_code = data_dict["console_cm_code"]
 
