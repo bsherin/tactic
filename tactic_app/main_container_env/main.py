@@ -181,7 +181,7 @@ class mainWindow(object):
         self.mworker.post_task("host", "clear_main_status_message", data)
 
     @task_worthy
-    def do_full_notebook_recreation(self, data_dict):
+    def do_full_notebook_recreation(self, data_dict):  # tactic_working
         tile_containers = {}
         try:
             print "Entering do_full_recreation"
@@ -193,7 +193,7 @@ class mainWindow(object):
                 self.show_error_window(tile_info_dict)
                 return
 
-            self.create_pseudo_tile(globals_dict)
+            self.create_pseudo_tile(globals_dict)  # tactic_working
 
             self.clear_main_status_message()
             self.mworker.ask_host("emit_to_client", {"message": "finish-post-load",
@@ -1046,17 +1046,19 @@ class mainWindow(object):
         result = self.mworker.post_and_wait(self.pseudo_tile_id, "get_export_info", ndata)
         return result
 
-    def create_pseudo_tile(self, globals_dict=None):
+    def create_pseudo_tile(self, globals_dict=None):  # tactic_working
         data = self.mworker.post_and_wait("host", "create_tile_container", {"user_id": self.user_id,
                                                                             "parent": self.mworker.my_id,
                                                                             "other_name": "pseudo_tile"})
         if not data["success"]:
             raise Exception("Error creating empty tile container")
         self.pseudo_tile_id = data["tile_id"]
+        if globals_dict is None:
+            globals_dict = {}
         data_dict = {"base_figure_url": self.base_figure_url.replace("tile_id", self.pseudo_tile_id),
                      "doc_type": self.doc_type, "globals_dict": globals_dict}
         instantiate_result = self.mworker.post_and_wait(self.pseudo_tile_id,
-                                                        "instantiate_as_pseudo_tile", data_dict)
+                                                        "instantiate_as_pseudo_tile", data_dict)  # tactic_working
         if not instantiate_result["success"]:
             self.mworker.debug_log("got an exception " + instantiate_result["message_string"])
             raise Exception(instantiate_result["message_string"])
