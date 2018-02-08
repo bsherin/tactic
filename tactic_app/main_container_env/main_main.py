@@ -118,7 +118,7 @@ class MainWorker(QWorker):
 
     @task_worthy
     def get_saved_console_code(self, data_dict):
-        print "entering saved console code with console_cm_code " + str(self.mwindow.console_cm_code)
+        print "entering saved console code"
         return {"saved_console_code": self.mwindow.console_cm_code}
 
 
