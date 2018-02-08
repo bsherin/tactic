@@ -151,6 +151,13 @@ class mainWindow(object):
                     if module_name is not None:
                         used_modules.append(module_name)
                 result["loaded_modules"] = used_modules
+        else:
+            if self.pseudo_tile_id is None:
+                result["pseudo_tile_instance"] = None
+            else:
+                print "about to ask the pseudo tile to compile_save_dict"
+                result["pseudo_tile_instance"] = self.mworker.post_and_wait(self.pseudo_tile_id, "compile_save_dict")
+                print "result['pseudo_tile_instance'].keys() is " + str(result['pseudo_tile_instance'].keys())
         return result
 
     def show_main_message(self, message, timeout=None):
@@ -179,13 +186,14 @@ class mainWindow(object):
         try:
             print "Entering do_full_recreation"
             self.show_main_status_message("Entering do_full_recreation")
-            success = self.recreate_from_save(data_dict["project_collection_name"],
+            globals_dict, success = self.recreate_from_save(data_dict["project_collection_name"],
                                                         data_dict["project_name"])
             if not success:
                 self.show_main_status_message("Error trying to recreate the project from save")
                 self.show_error_window(tile_info_dict)
                 return
-            print "returning from recreate_from_save"
+
+            self.create_pseudo_tile(globals_dict)
 
             self.clear_main_status_message()
             self.mworker.ask_host("emit_to_client", {"message": "finish-post-load",
@@ -300,7 +308,7 @@ class mainWindow(object):
             self.show_error_window(error_string)
         return
 
-    def recreate_from_save(self, project_collection_name, project_name):
+    def recreate_from_save(self, project_collection_name, project_name):  # tactic_working
         print "entering recreate from save"
         print "project_collection_name is {} and project_name is {}".format(project_collection_name, project_name)
         save_dict = self.db[project_collection_name].find_one({"project_name": project_name})
@@ -316,14 +324,13 @@ class mainWindow(object):
 
         print "got project dict with keys " + str(project_dict.keys())
 
-
         project_dict["metadata"] = save_dict["metadata"]
         error_messages = []
         if "doc_type" not in project_dict:  # This is for backward compatibility
             project_dict["doc_type"] = "table"
         for (attr, attr_val) in project_dict.items():
             print "got attr " + str(attr)
-            if str(attr) != "tile_instances":
+            if str(attr) != "tile_instances" and str(attr) != "pseudo_tile_instance":
                 try:
                     if type(attr_val) == dict and ("my_class_for_recreate" in attr_val):
                         cls = getattr(sys.modules[__name__], attr_val["my_class_for_recreate"])
@@ -354,7 +361,13 @@ class mainWindow(object):
                 setattr(self, attr, "")
 
         if self.doc_type == "notebook":
-            return True
+            if "pseudo_tile_instance" in project_dict:
+                globals_dict = project_dict["pseudo_tile_instance"]
+                print "got globals_dict " + str(globals_dict)
+            else:
+                print "got empty globals_dict"
+                globals_dict = {}
+            return globals_dict, True
         else:
             tile_info_dict = {}
             for old_tile_id, tile_save_dict in project_dict["tile_instances"].items():
@@ -499,7 +512,7 @@ class mainWindow(object):
         return return_data
 
     @task_worthy
-    def save_new_notebook_project(self, data_dict):
+    def save_new_notebook_project(self, data_dict):  # tactic_working
         # noinspection PyBroadException
         try:
             self.project_name = data_dict["project_name"]
@@ -511,7 +524,7 @@ class mainWindow(object):
             project_dict = self.compile_save_dict()
             self.mdata = self.create_initial_metadata()
             self.mdata["type"] = self.doc_type
-            self.mdata["collection_name"] = self.collection_name
+            self.mdata["collection_name"] = ""
             self.mdata["loaded_tiles"] = []
             self.mdata["save_style"] = "b64save"
             save_dict = {"metadata": self.mdata,
@@ -1033,7 +1046,7 @@ class mainWindow(object):
         result = self.mworker.post_and_wait(self.pseudo_tile_id, "get_export_info", ndata)
         return result
 
-    def create_pseudo_tile(self):
+    def create_pseudo_tile(self, globals_dict=None):
         data = self.mworker.post_and_wait("host", "create_tile_container", {"user_id": self.user_id,
                                                                             "parent": self.mworker.my_id,
                                                                             "other_name": "pseudo_tile"})
@@ -1041,7 +1054,7 @@ class mainWindow(object):
             raise Exception("Error creating empty tile container")
         self.pseudo_tile_id = data["tile_id"]
         data_dict = {"base_figure_url": self.base_figure_url.replace("tile_id", self.pseudo_tile_id),
-                     "doc_type": self.doc_type}
+                     "doc_type": self.doc_type, "globals_dict": globals_dict}
         instantiate_result = self.mworker.post_and_wait(self.pseudo_tile_id,
                                                         "instantiate_as_pseudo_tile", data_dict)
         if not instantiate_result["success"]:

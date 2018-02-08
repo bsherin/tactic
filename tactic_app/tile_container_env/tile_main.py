@@ -174,6 +174,8 @@ class TileWorker(QWorker):
                 self.tile_instance.doc_type = data["doc_type"]
             else:
                 self.tile_instance.doc_type = "table"
+            if data["globals_dict"] is not None:
+                self.tile_instance.recreate_from_save(data["globals_dict"])
             data["exports"] = []
             print("leaving instantiate_tile_class")
             data["success"] = True
