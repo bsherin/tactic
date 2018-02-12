@@ -38,7 +38,7 @@ def make_python_object_jsonizable(dat):
 
 def debinarize_python_object(bdat):
     if isinstance(bdat, Binary):
-        dat = bdat.dcode()
+        dat = bdat.decode()
     else:
         dat = base64.b64decode(bdat)
     return cPickle.loads(dat)
