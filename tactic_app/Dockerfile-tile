@@ -1,4 +1,4 @@
-FROM ruimashita/scikit-learn:latest
+FROM python:2.7.11
 WORKDIR /code
 ADD ./tile_container_env/requirements.txt /code/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt

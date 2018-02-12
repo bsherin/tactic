@@ -6,7 +6,7 @@ import requests
 import numpy as np
 from bson.binary import Binary
 # noinspection PyUnresolvedReferences
-from matplotlib_utilities import MplFigure, Mpld3Figure, color_palette_names
+from matplotlib_utilities import MplFigure, color_palette_names
 from types import NoneType
 import traceback
 import os
@@ -221,7 +221,7 @@ class TileBase(object):
         self.tda_width = data["tda_width"]
         self.margin = data["margin"]
         if self.configured:
-            if isinstance(self, MplFigure) or isinstance(self, Mpld3Figure):
+            if isinstance(self, MplFigure):
                 self.resize_mpl_tile()
             else:
                 self.handle_size_change()
