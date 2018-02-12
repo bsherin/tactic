@@ -692,7 +692,7 @@ class mainWindow(object):
             del self._pipe_dict[tile_id]
             form_info = self.compile_form_info()
             self.rebuild_other_tile_forms(None, form_info)
-        self.mworker.ask_host("delete_container", {"container_id": tile_id})
+        self.mworker.ask_host("delete_container", {"container_id": tile_id, "notify": False})
         self.mworker.emit_export_viewer_message("update_exports_popup", {})
         return
 

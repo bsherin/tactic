@@ -3,6 +3,7 @@ from StringIO import StringIO
 import ast
 from bson.binary import Binary
 import os
+import types
 import cPickle
 from cPickle import UnpicklingError
 from tile_base import TileBase, task_worthy, jsonizable_types
@@ -49,22 +50,24 @@ class PseudoTileClass(TileBase, MplFigure):
         return
 
     @task_worthy
-    def compile_save_dict(self, data):
+    def compile_save_dict(self, data):  # tactic_working tactic_todo functions aren't actually saved
         print "entering compile_save_dict"
-        result = {"binary_attrs": []}
+        result = {"binary_attrs": [], "imports": [], "functions": []}
         attrs = globals().keys()
         for attr in attrs:
             if attr in self.saved_globals:
                 continue
             attr_val = globals()[attr]
             if hasattr(attr_val, "compile_save_dict"):
-                print "in place 1 with attr " + attr
                 result[attr] = attr_val.compile_save_dict(data)
+            elif (isinstance(attr_val, types.ModuleType)):
+                result["imports"].append(attr)
+            elif (isinstance(attr_val, types.FunctionType)):
+                result["functions"].append(attr)  # tactic_working tactic_todo nothing is done with this now
             elif((type(attr_val) == dict) and (len(attr_val) > 0) and
                  hasattr(attr_val.values()[0], "compile_save_dict")):
                 res = {}
                 for(key, val) in attr_val.items():
-                    print "in place 2 with attr " + attr
                     res[key] = attr_val.compile_save_dict(data)
                 result[attr] = res
             else:
@@ -87,34 +90,48 @@ class PseudoTileClass(TileBase, MplFigure):
         print "done compiling attributes " + str(result.keys())
         return result
 
-    def recreate_from_save(self, save_dict):
+    def recreate_from_save(self, save_dict):  # tactic_working
         print "entering recreate from save in pseudo_tile_base"
         print str(save_dict.keys())
         if "binary_attrs" not in save_dict:
             save_dict["binary_attrs"] = []
+        if "imports" in save_dict:
+            for imp in save_dict["imports"]:
+                __import__(imp)
         for (attr, attr_val) in save_dict.items():
-            if type(attr_val) == dict and hasattr(attr_val, "recreate_from_save"):
-                cls = getattr(sys.modules[__name__], attr_val["my_class_for_recreate"])
-                globals()[attr] = cls.recreate_from_save(attr_val)
-            elif((type(attr_val) == dict) and(len(attr_val) > 0) and
-                 hasattr(attr_val.values()[0], "recreate_from_save")):
-                cls = getattr(sys.modules[__name__], attr_val.values()[0]["my_class_for_recreate"])
-                res = {}
-                for(key, val) in attr_val.items():
-                    res[key] = cls.recreate_from_save(val)
-                globals()[attr] = res
-            else:
-                if isinstance(attr_val, Binary):  # seems like this is never true even for old-style saves
-                    decoded_val = cPickle.loads(str(attr_val.decode()))
-                    globals()[attr] = decoded_val
-                elif attr in save_dict["binary_attrs"]:
-                    try:
-                        decoded_val = debinarize_python_object(attr_val)
-                    except:  # legacy if above fails try the old method
+            print "attr is " + attr
+            try:
+                if attr in ["binary_attrs", "imports", "functions"]:
+                    continue
+                if type(attr_val) == dict and hasattr(attr_val, "recreate_from_save"):
+                    cls = getattr(sys.modules[__name__], attr_val["my_class_for_recreate"])
+                    globals()[attr] = cls.recreate_from_save(attr_val)
+                elif((type(attr_val) == dict) and(len(attr_val) > 0) and
+                     hasattr(attr_val.values()[0], "recreate_from_save")):
+                    cls = getattr(sys.modules[__name__], attr_val.values()[0]["my_class_for_recreate"])
+                    res = {}
+                    for(key, val) in attr_val.items():
+                        res[key] = cls.recreate_from_save(val)
+                    globals()[attr] = res
+                else:
+                    if isinstance(attr_val, Binary):  # seems like this is never true even for old-style saves
                         decoded_val = cPickle.loads(str(attr_val.decode()))
                         globals()[attr] = decoded_val
-                else:
-                    globals()[attr] = attr_val
+                    elif attr in save_dict["binary_attrs"]:
+                        try:
+                            print "trying to debinarize"
+                            decoded_val = debinarize_python_object(attr_val)
+                        except Exception as ex:  # legacy if above fails try the old method
+                            print self.handle_exception(ex, "got error", print_to_console=False)
+                            decoded_val = cPickle.loads(str(attr_val.decode()))
+                        print "debinarize succeeded"
+                        globals()[attr] = decoded_val
+                    else:
+                        globals()[attr] = attr_val
+            except:
+                print "failed to recreate attribute " + attr
+
+
         self.main_id = os.environ["PARENT"]  # this is for backward compatibility with some old project saves
         return None
 

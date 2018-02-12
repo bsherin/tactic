@@ -206,7 +206,11 @@ class HostWorker(QWorker):
     @task_worthy
     def delete_container(self, data):
         container_id = data["container_id"]
-        destroy_container(container_id)
+        if "notify" in data:
+            nfy = data["notify"]
+        else:
+            nfy = True
+        destroy_container(container_id, nfy)
         return {"success": True}
 
     @task_worthy
