@@ -5,6 +5,7 @@ let tile_types;
 var tableObject;
 
 const BOTTOM_MARGIN = 35;
+var done_loading = false;
 
 const HEARTBEAT_INTERVAL = 10000; //milliseconds
 setInterval( function(){
@@ -63,11 +64,14 @@ class MainTacticSocket extends TacticSocket {
 
         if (!is_notebook) {
             this.socket.on('update-menus', function() {
-                postWithCallback("host", "get_tile_types", {"user_id": user_id}, function (data) {
-                    tile_types = data.tile_types;
-                    clear_all_menus();
-                    build_and_render_menu_objects();
-                })});
+                if (done_loading){
+                    postWithCallback("host", "get_tile_types", {"user_id": user_id}, function (data) {
+                        tile_types = data.tile_types;
+                        clear_all_menus();
+                        build_and_render_menu_objects();
+                        })
+                    }
+                });
             this.socket.on('change-doc', function(data){
                 $("#doc-selector").val(data.doc_name);
                 if (table_is_shrunk) {
@@ -280,6 +284,7 @@ function continue_loading() {
     }
 
     initializeTooltips();
+    done_loading = true
 }
 
 function set_visible_doc(doc_name, func) {
