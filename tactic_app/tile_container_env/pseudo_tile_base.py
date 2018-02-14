@@ -52,7 +52,7 @@ class PseudoTileClass(TileBase, MplFigure):
     @task_worthy
     def compile_save_dict(self, data):  # tactic_working tactic_todo functions aren't actually saved
         print "entering compile_save_dict"
-        result = {"binary_attrs": [], "imports": [], "functions": []}
+        result = {"binary_attrs": [], "imports": []}
         attrs = globals().keys()
         for attr in attrs:
             if attr in self.saved_globals:
@@ -62,8 +62,6 @@ class PseudoTileClass(TileBase, MplFigure):
                 result[attr] = attr_val.compile_save_dict(data)
             elif (isinstance(attr_val, types.ModuleType)):
                 result["imports"].append(attr)
-            elif (isinstance(attr_val, types.FunctionType)):
-                result["functions"].append(attr)  # tactic_working tactic_todo nothing is done with this now
             elif((type(attr_val) == dict) and (len(attr_val) > 0) and
                  hasattr(attr_val.values()[0], "compile_save_dict")):
                 res = {}
@@ -97,7 +95,7 @@ class PseudoTileClass(TileBase, MplFigure):
             save_dict["binary_attrs"] = []
         if "imports" in save_dict:
             for imp in save_dict["imports"]:
-                __import__(imp)
+                globals()[imp] = __import__(imp, globals(), locals(), [], -1)
         for (attr, attr_val) in save_dict.items():
             print "attr is " + attr
             try:
