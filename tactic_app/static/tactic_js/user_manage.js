@@ -54,8 +54,6 @@ function get_current_module_id() {
     }
 }
 
-
-
 class UserTacticSocket extends TacticSocket {
 
     initialize_socket_stuff() {

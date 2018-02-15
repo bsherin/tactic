@@ -3,9 +3,11 @@ import sys
 import time
 import os
 import json
+import types
 from bson import Binary
 import base64
 import cPickle
+import cloudpickle
 import zlib
 
 if ("USE_FORWARDER" in os.environ) and (os.environ.get("USE_FORWARDER") == "True"):
@@ -34,11 +36,14 @@ def make_jsonizable_and_compress(dat):
     return zlib.compress(make_python_object_jsonizable(dat))
 
 def make_python_object_jsonizable(dat):
+    if (isinstance(dat, types.FunctionType)):  # handle functions specially
+        dat.__module__ = "__main__"  # without this, cloudpickle only generates a reference to the function
+        return base64.b64encode(cloudpickle.dumps(dat))
     return base64.b64encode(cPickle.dumps(dat))
 
 def debinarize_python_object(bdat):
     if isinstance(bdat, Binary):
-        dat = bdat.dcode()
+        dat = bdat.decode()
     else:
         dat = base64.b64decode(bdat)
     return cPickle.loads(dat)

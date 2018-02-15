@@ -16,6 +16,11 @@ MAX_QUEUE_LENGTH = 5000
 CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
 STEP_SIZE = int(os.environ.get("STEP_SIZE"))
 
+if "DB_NAME" in os.environ:
+    db_name = os.environ.get("DB_NAME")
+else:
+    db_name = "tacticdb"
+
 
 megaplex_address = None  # This is set in __init__.py
 
@@ -60,7 +65,8 @@ def create_container(image_name, container_name=None, network_mode="bridge",
                "MEGAPLEX_ADDRESS": megaplex_address,
                "MY_ID": unique_id,
                "OWNER": owner,
-               "PARENT": parent}
+               "PARENT": parent,
+               "DB_NAME": db_name}
     for key, val in env_vars.items():
         environ[key] = val
 
@@ -157,7 +163,7 @@ def get_log(tactic_id):
     return cont.logs()
 
 
-def destroy_container(tactic_id):
+def destroy_container(tactic_id, notify=True):
     try:
         cont = get_container(tactic_id)
         message = None
@@ -167,15 +173,16 @@ def destroy_container(tactic_id):
         else:
             cont_type = get_container_type(cont)
             send_request_to_megaplex("deregister_container", {"container_id": tactic_id})
-            if cont_type == "main" or cont_type == "module_viewer":
-                message = "Underlying container has been destroyed. This window won't function now."
-                dest_id = tactic_id
-            elif cont_type == "tile":
-                tile_name = container_other_name(cont)
-                dest_id = container_parent(cont)
-                message = "Container for tile {} has been destroyed".format(tile_name)
+            if notify:
+                if cont_type == "main" or cont_type == "module_viewer":
+                    message = "Underlying container has been destroyed. This window won't function now."
+                    dest_id = tactic_id
+                elif cont_type == "tile":
+                    tile_name = container_other_name(cont)
+                    dest_id = container_parent(cont)
+                    message = "Container for tile {} has been destroyed".format(tile_name)
             cont.remove(force=True)
-            if message is not None:
+            if notify and message is not None:
                 data = {"message": message, "alert_type": "alert-warning", "main_id": dest_id}
                 post_task_noqworker("host", "host", "flash_to_main", data)
             return
