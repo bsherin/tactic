@@ -1,6 +1,4 @@
 import re
-from collections import OrderedDict
-
 import ast
 from collections import OrderedDict
 

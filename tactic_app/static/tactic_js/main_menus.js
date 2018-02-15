@@ -362,7 +362,13 @@ function consoleToNotebook() {
 function saveProjectAs() {
     startSpinner();
     postWithCallback("host", "get_project_names", {"user_id": user_id}, function (data) {
-        let checkboxes = [{"checkname": "purgetiles", "checktext": "Include only currently used tiles"}];
+        let checkboxes;
+        if (is_notebook) {
+            checkboxes = []
+        }
+        else {
+            checkboxes = [{"checkname": "purgetiles", "checktext": "Include only currently used tiles"}];
+        }
         showModal("Save Project As", "New Project Name", CreateNewProject,
                   "NewProject", data["project_names"], checkboxes)
     });
@@ -373,8 +379,7 @@ function saveProjectAs() {
                 "main_id": main_id,
                 "console_html": $("#console").html(),
                 "console_cm_code": consoleObject.getConsoleCMCode(),
-                "doc_type": DOC_TYPE,
-                "purgetiles": checkresults["purgetiles"]
+                "doc_type": DOC_TYPE
             };
 
             // tableObject.startTableSpinner();
@@ -382,6 +387,7 @@ function saveProjectAs() {
                 postWithCallback(main_id, "save_new_notebook_project", result_dict, save_as_success);
             }
             else {
+                result_dict["purgetiles"] = checkresults["purgetiles"];
                 postWithCallback(main_id, "save_new_project", result_dict, save_as_success);
             }
 

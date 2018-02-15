@@ -163,7 +163,7 @@ class TileWorker(QWorker):
             return self.handle_exception(ex, "Error reinstantiating tile")
 
     @task_worthy
-    def instantiate_as_pseudo_tile(self, data):
+    def instantiate_as_pseudo_tile(self, data):  # tactic_working
         try:
             print("entering load_source")
             self.tile_instance = PseudoTileClass()
@@ -174,6 +174,11 @@ class TileWorker(QWorker):
                 self.tile_instance.doc_type = data["doc_type"]
             else:
                 self.tile_instance.doc_type = "table"
+            print "globals dict is " + str(data["globals_dict"])
+            # The if statement below is because older notebooks saves won't have the globals dict
+            # There won't be many of these old notebooks
+            if (data["globals_dict"] is not None) and (isinstance(data["globals_dict"], dict)):  # legacy
+                self.tile_instance.recreate_from_save(data["globals_dict"])
             data["exports"] = []
             print("leaving instantiate_tile_class")
             data["success"] = True

@@ -1,6 +1,12 @@
 version: '2'
 
 services:
+  tactic_base:
+      build:
+        context: .
+        dockerfile: Dockerfile-base
+      image: tactic_base_image
+
   tactic_megaplex:
     build:
       context: .

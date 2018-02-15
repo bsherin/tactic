@@ -4,7 +4,6 @@ from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 from matplotlib.colors import Normalize as mpl_Normalize
 from matplotlib.cm import get_cmap, ScalarMappable, register_cmap, datad
 import numpy
-import mpld3
 import uuid
 # import pylab
 import StringIO
@@ -103,31 +102,6 @@ class MplFigure(Figure):
         image_string = "<img class='output-plot' src='{}' lt='Image Placeholder'>"
         the_html = image_string.format(fig_url)
         return the_html
-
-
-class Mpld3Figure(Figure):
-    # kwargs for mplfigure are dpi and title
-    def __init__(self, **kwargs):
-        if "dpi" in kwargs:
-            dpi = kwargs["dpi"]
-        else:
-            dpi = 80
-        if "title" in kwargs:
-            title = kwargs["title"]
-        else:
-            title = None
-        Figure.__init__(self, figsize=(self.width / dpi, self.height / 80), dpi=dpi)
-        self.title = title
-        self.dpi = dpi
-        self.kwargs = kwargs
-        FigureCanvas(self)
-
-    def draw_plot(self):
-        print "draw_plot not implemented"
-        return
-
-    def create_figure_html(self):
-        return mpld3.fig_to_html(self)
 
 
 class GraphList(MplFigure):
