@@ -134,22 +134,6 @@ class PseudoTileClass(TileBase, MplFigure):
         return None
 
     @task_worthy
-    def clear_console_namespace(self, data):
-        try:
-            print "clearing namespace"
-            for attr in globals().keys():
-                if attr in self.saved_globals:
-                    globals()[attr] = self.saved_globals[attr]
-                else:
-                    del globals()[attr]
-            globals()["self"] = self
-            self.width = PSEUDO_WIDTH
-            self.height = PSEUDO_HEIGHT
-        except Exception as ex:
-            data["result_string"] = self.handle_exception(ex, "Error clearing console namespace", print_to_console=False)
-        return data
-
-    @task_worthy
     def exec_console_code(self, data):
         old_stdout = sys.stdout
         try:

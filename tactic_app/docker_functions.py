@@ -150,6 +150,18 @@ def get_container(tactic_id):
     return None
 
 
+def container_exec(tactic_id, cmd):
+    cont = get_container(tactic_id)
+    cont.exec_run(cmd)
+    return None
+
+
+def restart_container(tactic_id):
+    cont = get_container(tactic_id)
+    cont.restart()
+    return None
+
+
 def get_id_from_name_and_parent(cont_name, parent_id):
     conts = cli.containers.list()
     for cont in conts:
