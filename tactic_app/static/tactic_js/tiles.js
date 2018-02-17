@@ -170,6 +170,7 @@ class TileObject {
     reloadMe () {
         const self = this;
         const data_dict = {"tile_id": this.tile_id, "tile_name": this.tile_name};
+        this.startSpinner();
         postWithCallback(main_id, "reload_tile", data_dict, reload_success);
 
         function reload_success (data) {
@@ -177,12 +178,14 @@ class TileObject {
                 self.displayFormContent(data);
                 dirty = true;
                 if (data.options_changed) {
+                    self.stopSpinner();
                     self.showOptions()
                 }
                 else {
                     self.spin_and_refresh()
                 }
             }
+            self.start_spinner()
         }
     }
 
