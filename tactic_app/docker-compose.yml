@@ -17,18 +17,24 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-main
+    depends_on:
+      - tactic_base
     image: tactic_main_image
 
   tactic_module_viewer:
     build:
       context: .
       dockerfile: Dockerfile-module-viewer
+    depends_on:
+      - tactic_base
     image: module_viewer_image
 
   tactic_tile:
     build:
       context: .
       dockerfile: Dockerfile-tile
+    depends_on:
+      - tactic_base
     image: tactic_tile_image
     environment:
       PYTHONUNBUFFERED: 0
