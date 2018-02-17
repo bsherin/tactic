@@ -1263,17 +1263,19 @@ class mainWindow(object):
         data = {"tile_type": tile_type, "user_id": self.user_id}
         print "getting code"
         module_code = self.mworker.post_and_wait("host", "get_module_code", data)["module_code"]
-        print "getting lists"
-        the_lists = self.get_lists_classes_functions()
         print "getting tile properties"
         reload_dict = copy.copy(self.get_tile_property(tile_id, "current_reload_attrs"))
         saved_options = copy.copy(self.get_tile_property(tile_id, "current_options"))
         reload_dict.update(saved_options)
+        reload_dict["old_option_names"] = saved_options.keys()
+        print "stopping the tile"
+        self.mworker.post_task(tile_id, "kill_me", {})
+        print "restarting the _tile"
+        self.mworker.post_task("host", "restart_container", {"tile_id": tile_id})
         print "loading source"
         result = self.mworker.post_and_wait(tile_id, "load_source", {"tile_code": module_code})
         if not result["success"]:
             raise Exception(result["message_string"])
-
         form_info = self.compile_form_info(tile_id)
         reload_dict["form_info"] = form_info
         print "reinstantiating"
