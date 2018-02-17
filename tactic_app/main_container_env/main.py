@@ -978,9 +978,20 @@ class mainWindow(object):
 
     @task_worthy
     def clear_console_namespace(self, data):
-        if self.pseudo_tile_id is None:
-            return {"success": True}
-        self.mworker.post_task(self.pseudo_tile_id, "clear_console_namespace", data)
+        self.show_main_message("Resetting notebook ...")
+        if self.pseudo_tile_id is not None:
+            self.mworker.post_task(self.pseudo_tile_id, "kill_me", {})
+            self.mworker.post_and_wait("host", "restart_container", {"tile_id": self.pseudo_tile_id})
+            data_dict = {"base_figure_url": self.base_figure_url.replace("tile_id", self.pseudo_tile_id),
+                         "doc_type": self.doc_type, "globals_dict": {}}
+            instantiate_result = self.mworker.post_and_wait(self.pseudo_tile_id,
+                                                            "instantiate_as_pseudo_tile", data_dict)
+            if not instantiate_result["success"]:
+                self.mworker.debug_log("got an exception " + instantiate_result["message_string"])
+                self.show_main_message("Error resetting notebook", 7)
+                raise Exception(instantiate_result["message_string"])
+        self.show_main_message("Notebook reset", 7)
+        return {"success": True}
 
     def get_exports_list_html_old(self, data):
         the_html = ""

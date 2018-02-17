@@ -179,7 +179,6 @@ class TileWorker(QWorker):
                 self.tile_instance.doc_type = data["doc_type"]
             else:
                 self.tile_instance.doc_type = "table"
-            print "globals dict is " + str(data["globals_dict"])
             # The if statement below is because older notebooks saves won't have the globals dict
             # There won't be many of these old notebooks
             if (data["globals_dict"] is not None) and (isinstance(data["globals_dict"], dict)):  # legacy
