@@ -136,18 +136,23 @@ class TileWorker(QWorker):
         return opt_names
 
     @task_worthy
+    def kill_me(self, data):
+        print "about to exit"
+        sys.exit()
+
+    @task_worthy
     def reinstantiate_tile(self, reload_dict):
         try:
             print("entering reinstantiate_tile_class")
-            old_options = self.tile_instance.options
             self.tile_instance = class_info["tile_class"](None, None, tile_name=reload_dict["tile_name"])
-            options_changed = not self.tile_instance.options == old_options
             self.handler_instances["tilebase"] = self.tile_instance
+            old_option_names = reload_dict["old_option_names"]
+            del reload_dict["old_option_names"]
+            new_option_names = self.extract_option_names(self.tile_instance.options)
+            options_changed = not set(new_option_names) == set(old_option_names)
             if options_changed:  # Have to deal with case where an option no longer exists and shouldn't be copied
-                old_names = self.extract_option_names(old_options)
-                new_names = self.extract_option_names(self.tile_instance.options)
                 for attr in reload_dict.keys():
-                    if attr in old_names and attr not in new_names:
+                    if attr in old_option_names and attr not in new_option_names:
                         print "removing options " + attr
                         del reload_dict[attr]
             for (attr, val) in reload_dict.items():
@@ -174,7 +179,6 @@ class TileWorker(QWorker):
                 self.tile_instance.doc_type = data["doc_type"]
             else:
                 self.tile_instance.doc_type = "table"
-            print "globals dict is " + str(data["globals_dict"])
             # The if statement below is because older notebooks saves won't have the globals dict
             # There won't be many of these old notebooks
             if (data["globals_dict"] is not None) and (isinstance(data["globals_dict"], dict)):  # legacy
