@@ -366,7 +366,6 @@ td.cell-clickable:active {
   border: 1px solid #c7c7c7 !important;
   margin: 1px;
   box-shadow: none;
-  min-height: 110px;
   position: relative; }
   .log-panel .panel-heading {
     float: left;
@@ -376,15 +375,39 @@ td.cell-clickable:active {
     padding: 4px 4px !important;
     text-align: center;
     background-color: #f5f5f5 important;
-    border-right: 1px solid #c7c7c7; }
+    border-right: 1px solid #c7c7c7;
+    overflow-y: hidden; }
     .log-panel .panel-heading .button-div {
-      padding-top: 10px !important; }
+      padding-top: 7px !important; }
   .log-panel .CodeMirror {
     border: 1px solid #c7c7c7 !important; }
   .log-panel .CodeMirror-lines {
     background-color: #f7f7f7 !important; }
   .log-panel .panel-heading:hover {
     background-color: #f5f5f5 !important; }
+
+.log-panel.log-panel-visible {
+  min-height: 122px; }
+  .log-panel.log-panel-visible .log-panel-body {
+    display: block; }
+  .log-panel.log-panel-visible .log-code-output {
+    display: block; }
+  .log-panel.log-panel-visible .shrink-log-button {
+    display: inline-block; }
+  .log-panel.log-panel-visible .expand-log-button {
+    display: none; }
+
+.log-panel.log-panel-invisible {
+  height: 40px;
+  min-height: 0; }
+  .log-panel.log-panel-invisible .log-panel-body {
+    display: none; }
+  .log-panel.log-panel-invisible .log-code-output {
+    display: none; }
+  .log-panel.log-panel-invisible .shrink-log-button {
+    display: none; }
+  .log-panel.log-panel-invisible .expand-log-button {
+    display: inline-block; }
 
 html, body {
   height: 100%; }

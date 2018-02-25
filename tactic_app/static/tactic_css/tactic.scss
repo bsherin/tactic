@@ -566,7 +566,6 @@ a[role="tab"] {
         border: $log-panel-border-style !important;
         margin: 1px;
         box-shadow: none;
-        min-height: 110px;
         position: relative;
 
         .panel-heading {
@@ -579,9 +578,10 @@ a[role="tab"] {
             text-align: center;
             background-color: $log-panel-header-background-color important;
             border-right: $log-panel-border-style;
+            overflow-y: hidden;
 
             .button-div {
-                padding-top: 10px !important;
+                padding-top: 7px !important;
             }
         }
 
@@ -602,6 +602,48 @@ a[role="tab"] {
         }
     }
 
+    .log-panel.log-panel-visible {
+        min-height: 122px;
+
+        .log-panel-body {
+            display: block
+        }
+
+        .log-code-output {
+            display: block
+        }
+
+        .shrink-log-button {
+            display: inline-block
+        }
+
+        .expand-log-button {
+            display: none
+        }
+    }
+
+    .log-panel.log-panel-invisible {
+        height: 40px;
+        min-height: 0;
+
+        .log-panel-body {
+            display: none
+        }
+
+        .log-code-output {
+            display: none
+        }
+
+        .shrink-log-button {
+            display: none
+        }
+
+        .expand-log-button {
+            display: inline-block
+        }
+
+    }
+
     html,body {
     height:100%;
 }
@@ -613,6 +655,7 @@ a[role="tab"] {
         padding-bottom: 10px;
         color: $log-panel-font-color !important;
     }
+
 
     .log-code-output {
         padding-left: 85px;
