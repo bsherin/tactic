@@ -5,7 +5,7 @@ docker-compose==1.19.0
 Flask==0.12.2
 Flask-Bootstrap==3.3.7.1
 Flask-Login==0.4.1
-Flask-SocketIO==2.9.3
+Flask-SocketIO==2.9.4
 Flask-SSLify==0.1.5
 Flask-WTF==0.14.2
 gevent==1.2.2
