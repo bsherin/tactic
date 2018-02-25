@@ -39,7 +39,10 @@ def make_python_object_jsonizable(dat):
     if (isinstance(dat, types.FunctionType)):  # handle functions specially
         dat.__module__ = "__main__"  # without this, cloudpickle only generates a reference to the function
         return base64.b64encode(cloudpickle.dumps(dat))
-    return base64.b64encode(cPickle.dumps(dat))
+    try:
+        return base64.b64encode(cPickle.dumps(dat))
+    except:
+        return base64.b64encode(cloudpickle.dumps(dat))
 
 def debinarize_python_object(bdat):
     if isinstance(bdat, Binary):

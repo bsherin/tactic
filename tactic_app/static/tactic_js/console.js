@@ -103,6 +103,8 @@ class ConsoleObjectClass {
         $("#add-blank-text-button").click(function (e) {
             self.addBlankConsoleText(e)
         });
+        this.console_dom.on("click", ".shrink-log-button", {"cobject": this}, this.toggleLogItem);
+        this.console_dom.on("click", ".expand-log-button", {"cobject": this}, this.toggleLogItem);
         this.console_dom.on("click", ".close-log-button", {"cobject": this}, this.closeLogItem);
         this.console_dom.on("click", ".run-log-button", {"cobject": this}, this.runConsoleCode);
         this.console_dom.on("click", ".convert-markdown-button", {"cobject": this}, function (e) {
@@ -256,6 +258,17 @@ class ConsoleObjectClass {
         self.current_panel_focus = $(this);
     }
 
+    toggleLogItem(e) {
+        let self = e.data.cobject;
+        const el = $(e.target).closest(".log-panel");
+        el.toggleClass("log-panel-visible log-panel-invisible");
+        if (el.hasClass("log-panel-invisible")) {
+            if (!(el.find(".console-code").length == 0)) {
+                let uid = el.find(".console-code")[0].id;
+                self.consoleCMObjects[uid].refresh();
+            }
+        }
+    }
 
     closeLogItem(e) {
         let self = e.data.cobject;
