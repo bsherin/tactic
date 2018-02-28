@@ -1,17 +1,18 @@
-Welcome to the TacticText wiki, a place of wonder and enjoyment.
+W# Tactic Text Documentation Home
 
-You can navigate the documentation that exists with the links below or the sidebar at the right.
+Welcome to the TacticText documentation, a place of wonder and enjoyment.
 
 You might want to start with [Getting Started](Getting-Started).
 
 ***
 
-#### Contents
+## Contents
 
 Using Tactic
 
 * [Getting Started](Getting-Started)
 * Using the resource library and repository [not written yet]
+    * But you can read about [uploading data] (Uploading-Data)
 * Working with the [Main interface](Main-interface)
 * Using [Logs and Notebooks](Log-And-Notebook)
 * [Making](Making-Tiles) your own tiles:
@@ -45,7 +46,7 @@ Some details on programming Tiles
 
 ***
 
-#### Projects that make Tactic work
+## Projects that make Tactic work
 
 Tactic makes use of a large number of excellent [open-source resources](Docs/open-source-resources) 
 

@@ -1,3 +1,5 @@
+# Running a Tactic Server
+
 This is some preliminary documentation for running your own Tactic server. 
 I haven't tried following these instruction myself, so it very well might not work. But this should get you started.
 

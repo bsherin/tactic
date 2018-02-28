@@ -1,3 +1,5 @@
+# The Module Viewer
+
 As explained in [the introduction to making tiles](Making-Tiles), this is the tile editor that
 provides minimal scaffolds. It's mainly just a text editor for your tile code. 
 The interface is pretty much self-explanatory. But when writing your tiles 
