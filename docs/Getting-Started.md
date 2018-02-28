@@ -1,4 +1,7 @@
-#### Creating your first collection
+
+# Getting Started
+
+## Creating your first collection
 
 After you log in, you should be taken automatically to the resource management page. To get started using tactic, 
 you need to load in some data. Your libary should already have some collections loaded. To view one of these 
@@ -26,7 +29,7 @@ Alternatively, you can [upload one of your own datasets](Uploading-Data)
 Also, before you try to do anything, you should head over to the "code" tab your resource library and make sure there
 are some tokenizers there. If there aren't, import some of the tokenizers from the repository.
 
-#### Working with your collection
+## Working with your collection
 
 If you haven't already loaded a collection, do that. Then head over to the [Main interface](Main interface) 
 section of the documentation.
