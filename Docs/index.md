@@ -10,9 +10,9 @@ You might want to start with [Getting Started](Getting-Started).
 
 Using Tactic
 
-* [Getting Started](Docs/Getting-Started)
+* [Getting Started](Getting-Started)
 * Using the resource library and repository [not written yet]
-* Working with the [Main interface](Docs/Main-interface)
+* Working with the [Main interface](Main-interface)
 * Using [Logs and Notebooks](Log-And-Notebook)
 * [Making](Making-Tiles) your own tiles:
     * The [Tile Creator](Tile-Creator) is a scaffolded interface for building tiles.
@@ -47,5 +47,5 @@ Some details on programming Tiles
 
 #### Projects that make Tactic work
 
-Tactic makes use of a large number of excellent [open-source resources](open-source-resources) 
+Tactic makes use of a large number of excellent [open-source resources](Docs/open-source-resources) 
 
