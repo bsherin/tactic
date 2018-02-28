@@ -407,7 +407,18 @@ a[role="tab"] {
         .notclose .glyphicon {
             font-size: 17px
         }
-        font-weight: 600
+        .tile-name-div {
+            display: inline-block;
+            overflow-x: hidden;
+            line-height: 100%;
+        }
+        #spin-place {
+            margin: 0px 7px 0px 0px;
+        }
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+
     }
 
     /* plot related */

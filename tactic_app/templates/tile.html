@@ -5,12 +5,13 @@
         <button type='button' class='notclose header-but' id='tile-log-params' style='float:right'><span style="padding-right: 7px" class="glyphicon glyphicon-list"></span></button>
         <button type='button' class='notclose header-but' id='tile-logme' style='float:right'><span style="padding-right: 7px" class="glyphicon glyphicon-download-alt"></span></button>
         <button type='button' class='notclose header-but' id='tile-container-log' style='float:right'><span style="padding-right: 7px" class="glyphicon glyphicon-exclamation-sign"></span></button>
+        <span id="spin-place" style="float:right"></span>
         <button type='button' class='notclose header-but triangle-right' id='tile-expandme'><span class="glyphicon glyphicon-triangle-right"></span></button>
         <button type='button' class='notclose header-but triangle-bottom' id='tile-shrinkme'><span class="glyphicon glyphicon-triangle-bottom"></span></button>
         <button type='button' class='notclose header-but' id='tile-options'><span class="glyphicon glyphicon-cog"></span></button>
 
-        {{tile_name}}
-        <span id="spin-place" style="margin:7px"></span>
+        <div class="tile-name-div" style="display:inline-block">{{tile_name}}</div>
+
     </div>
      <div class='panel-body tile-body' id='tile_body_{{tile_id}}' style="overflow: hidden">
          <div class="back">
