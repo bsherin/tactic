@@ -1,0 +1,9 @@
+pages:
+- Home: 'index.md'
+- Basics:
+  - Getting Started: 'Getting-Started.md'
+  - Resource Library:
+    - Uploading Data: 'Uploading-Data.md'
+  - Main Interface: 'Main-interface.md'
+- Tile Programming Details:
+  - Tile Structure: 'Tile-Structure.md'
