@@ -1,3 +1,5 @@
+# Code Resources
+
 There is a type of resource called a "code" resource that you can have in your library. This is where you can create independent functions and classes that can be called upon by your tiles.
 
 A code resource can contain multiple functions and classes, if you like. 

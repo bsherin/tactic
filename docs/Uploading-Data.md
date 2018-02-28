@@ -1,4 +1,4 @@
-#### Uploading Data
+## Uploading Data
 
 You can upload one of your own datasets. There are two modalities available for datasets, 
 "table" and "freeform." Freeform datasets consist of a set of unstructured text documents. 

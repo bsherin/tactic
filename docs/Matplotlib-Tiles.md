@@ -1,3 +1,5 @@
+# Matplotlib Tiles
+
 Tactic includes support for building tiles that display matplotlib images. Every Matplotlib tile must have the minimum elements shown here:
 
 ``` python
