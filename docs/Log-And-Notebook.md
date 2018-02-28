@@ -1,4 +1,4 @@
-
+# The Log and Notebook
 
 As mentioned in the section on the [Main Interface](Main-interface), there is a component at the bottom of the screen
 called the Log. Tiles can send information to the Log, and some error messages will show up there. The Log is also designed

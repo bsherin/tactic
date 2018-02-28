@@ -1,3 +1,5 @@
+# D3 Tiles
+
 Tactic includes support for building tiles that display interactive [D3 visualizations](https://www.d3js.org). Really, the machinery is more general
 than the ability to draw D3 visualizations; it provides a way to write general javascript code to render the content of a tile.
 

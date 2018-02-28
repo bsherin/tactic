@@ -1,3 +1,5 @@
+# Using the version history and comparing tiles
+
 ## Version History
 
 There is now machinery built into Tactic that helps you to look at and use code from earlier versions of a tile.

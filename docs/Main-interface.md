@@ -1,8 +1,4 @@
-
-* [The top parts](#the-top-parts)
-* [Working with tiles](#working-with-tiles)
-* [The log in brief](#the-log=in-brief)
-* [The exports viewer](#the-exports-viewer)
+# The Main Interface
 
 ## The top parts
 

@@ -1,3 +1,5 @@
+# Which tiles are available when
+
 I'm not sure if this page has the right title, but here's the deal. 
 
 If you open up a project window, before explicitly loading any tiles from your library, the tile menus will be 
