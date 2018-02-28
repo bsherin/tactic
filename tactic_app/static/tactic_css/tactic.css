@@ -237,11 +237,19 @@ a[role="tab"] {
 
 /* Tile related */
 .tile-panel-heading {
-  font-weight: 600; }
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden; }
   .tile-panel-heading .close .glyphicon {
     font-size: 17px; }
   .tile-panel-heading .notclose .glyphicon {
     font-size: 17px; }
+  .tile-panel-heading .tile-name-div {
+    display: inline-block;
+    overflow-x: hidden;
+    line-height: 100%; }
+  .tile-panel-heading #spin-place {
+    margin: 0px 7px 0px 0px; }
 
 /* plot related */
 .d3plot {
