@@ -1,11 +1,12 @@
 site_name: Tactic Documentation
 repo_url: https://github.com/bsherin/tactic
+docs_dir: 'docs'
 pages:
-- Home: 'Docs/index.md'
+- Home: 'index.md'
 - Basics:
-  - Getting Started: 'Docs/Getting-Started.md'
+  - Getting Started: 'Getting-Started.md'
   - Resource Library:
-    - Uploading Data: 'Docs/Uploading-Data.md'
-  - Main Interface: 'Docs/Main-interface.md'
+    - Uploading Data: 'Uploading-Data.md'
+  - Main Interface: 'Main-interface.md'
 - Tile Programming Details:
-  - Tile Structure: 'Docs/Tile-Structure.md'
+  - Tile Structure: 'Tile-Structure.md'

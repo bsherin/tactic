@@ -47,5 +47,5 @@ Some details on programming Tiles
 
 #### Projects that make Tactic work
 
-Tactic makes use of a large number of excellent [open-source resources](Docs/open-source-resources) 
+Tactic makes use of a large number of excellent [open-source resources](docs/open-source-resources) 
 
