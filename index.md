@@ -10,9 +10,9 @@ You might want to start with [Getting Started](Getting-Started).
 
 Using Tactic
 
-* [Getting Started](Getting-Started)
+* [Getting Started](Docs/Getting-Started)
 * Using the resource library and repository [not written yet]
-* Working with the [Main interface](Main-interface)
+* Working with the [Main interface](Docs/Main-interface)
 * Using [Logs and Notebooks](Log-And-Notebook)
 * [Making](Making-Tiles) your own tiles:
     * The [Tile Creator](Tile-Creator) is a scaffolded interface for building tiles.
