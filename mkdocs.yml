@@ -1,3 +1,5 @@
+site_name: Tactic Documentation
+repo_url: https://github.com/bsherin/tactic
 pages:
 - Home: 'index.md'
 - Basics:
