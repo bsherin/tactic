@@ -1,3 +1,5 @@
+# Tile Structure
+
 Every user tile is a subclass of `TileBase`. 
 Each tile is also associated with a queue to which events are added by the system. 
 A separate process periodically checks this queue and sends relevant events to the tile.

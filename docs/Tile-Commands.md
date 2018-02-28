@@ -1,16 +1,13 @@
+# Tile Commands
+
 This is the second part of the Tile API. These are the commands that we want to make available to programmers of new tiles.
 
-Note that all of these need to be accessed from within a tile using self.function(). The reason is that each tile (each instance of `TileBase`) that is created contains contextual information about the environment in which it is operating. Keep in mind that a user might have multiple windows open and that there may be many users using the server at once. So tiles need to operate on their environment using the commands provided by `TileBase`, which in turn make use of this contextual information.
-
-Contents
-
-* [Refreshing a Tile](#refreshing-a-tile)
-* [Data access](#data-access)
-* [Data setting](#data-setting)
-* [Filtering and Iteration](#filtering-and-iteration)
-* [Plots](#plots)
-* [Other](#other)
-
+Note that all of these need to be accessed from within a tile using self.function(). 
+The reason is that each tile (each instance of `TileBase`) that is created contains 
+contextual information about the environment in which it is operating. 
+Keep in mind that a user might have multiple windows open and that there may be many 
+users using the server at once. So tiles need to operate on their environment using the commands provided by 
+`TileBase`, which in turn make use of this contextual information.
 
 ## Refreshing a Tile
 

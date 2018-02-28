@@ -1,3 +1,5 @@
+# The Tile Creator
+
 The Tile Creator is the  editor that provides a more scaffolded environment for creating and
 editing tiles. As explained in the [introduction to making tiles](Making-Tiles), **the tile creator
 is new and can garble existing tiles**. So, use it with care. 
@@ -118,7 +120,7 @@ def my_method(self, avar):
 
 All methods that you define need to have `self` as the first argument. 
 
-# Creating Matplotlib Tiles
+## Creating Matplotlib Tiles
 
 You can use the Tile Creator to make tiles that display matplotlib figures. If you open an existing
 matplotlib figure or create a new one from your resource manager, then the Tile Creator opens
@@ -128,7 +130,7 @@ code for the `draw_plot` method, which all matplotlib tiles must have.
 
 This is explained a bit [here](Matplotlib-Tiles).
 
-# Creating D3 Tiles
+## Creating D3 Tiles
 
 You can also use the Tile Creator to make tiles that display interactive D3 figures. If you open an existing
 D3 figure or create a new one from your resource manager, then the Tile Creator opens
