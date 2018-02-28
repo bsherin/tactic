@@ -1,4 +1,4 @@
-W# Tactic Text Documentation Home
+# Tactic Text Documentation Home
 
 Welcome to the TacticText documentation, a place of wonder and enjoyment.
 
