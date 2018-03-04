@@ -1,3 +1,12 @@
+print "entering main_main"
+import os
+
+if "DEBUG_MAIN_CONTAINER" in os.environ:
+    if os.environ.get("DEBUG_MAIN_CONTAINER") == "True":
+        import pydevd
+        pydevd.settrace('docker.for.mac.localhost', port=21000, stdoutToServer=True, stderrToServer=True)
+        print "settrace done"
+
 from main import mainWindow
 import main
 

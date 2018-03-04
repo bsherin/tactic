@@ -12,7 +12,7 @@ Using Tactic
 
 * [Getting Started](Getting-Started)
 * Using the resource library and repository [not written yet]
-    * But you can read about [uploading data] (Uploading-Data)
+    * But you can read about [uploading data](Uploading-Data)
 * Working with the [Main interface](Main-interface)
 * Using [Logs and Notebooks](Log-And-Notebook)
 * [Making](Making-Tiles) your own tiles:

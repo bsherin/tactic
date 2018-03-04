@@ -10,11 +10,22 @@ forwarder_address = None
 forwarder_id = None
 sys.stdout = sys.stderr
 
-
 print os.environ
 MAX_QUEUE_LENGTH = 5000
 CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
 STEP_SIZE = int(os.environ.get("STEP_SIZE"))
+
+
+if "DEBUG_MAIN_CONTAINER" in os.environ:
+    DEBUG_MAIN_CONTAINER = os.environ.get("DEBUG_MAIN_CONTAINER")
+else:
+    DEBUG_MAIN_CONTAINER = False
+
+if "DEBUG_TILE_CONTAINER" in os.environ:
+    DEBUG_TILE_CONTAINER = os.environ.get("DEBUG_TILE_CONTAINER")
+else:
+    DEBUG_TILE_CONTAINER = False
+
 
 if "DB_NAME" in os.environ:
     db_name = os.environ.get("DB_NAME")
@@ -66,7 +77,14 @@ def create_container(image_name, container_name=None, network_mode="bridge",
                "MY_ID": unique_id,
                "OWNER": owner,
                "PARENT": parent,
-               "DB_NAME": db_name}
+               "DB_NAME": db_name,
+               "DEBUG_MAIN_CONTAINER": DEBUG_MAIN_CONTAINER,
+               "DEBUG_TILE_CONTAINER": DEBUG_TILE_CONTAINER}
+
+    if DEBUG_MAIN_CONTAINER or DEBUG_TILE_CONTAINER:
+        environ["PYCHARM_DEBUG"] =  True
+        environ["GEVENT_SUPPORT"] = True
+
     for key, val in env_vars.items():
         environ[key] = val
 
