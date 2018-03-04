@@ -1,3 +1,11 @@
+print "entering main_main"
+import os
+
+if "DEBUG_MAIN_CONTAINER" in os.environ:
+    if os.environ.get("DEBUG_TILE_CONTAINER") == "True":
+        import pydevd
+        pydevd.settrace('docker.for.mac.localhost', port=21000, stdoutToServer=True, stderrToServer=True, suspend=False)
+        print "settrace done"
 
 import copy
 # noinspection PyUnresolvedReferences
