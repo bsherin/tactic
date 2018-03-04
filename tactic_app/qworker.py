@@ -178,7 +178,7 @@ class QWorker(gevent.Greenlet):
                                                                                                       self.my_id)
                     self.handle_exception(ex, special_string)
         else:
-            self.debug_log("Got invalid task type {} for my_id {}".format(task_type, self.my_id))
+            self.debug_log("Ignoring task type {} for my_id {}".format(task_type, self.my_id))
         return
 
     def handle_exception(self, ex, special_string=None):
