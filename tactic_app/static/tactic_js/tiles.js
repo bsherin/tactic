@@ -79,7 +79,7 @@ class TileObject {
                 eval(scripts[i].innerHTML)
             }
             this.saved_size = $(this.full_selector()).outerHeight();
-            this.do_resize()
+            this.resize_name_area()
         }
     }
     full_selector () {
@@ -338,6 +338,18 @@ class TileObject {
         }
     }
 
+    resize_name_area(){
+        const header_element = $(this.full_selector()).children(".panel-heading")[0];
+        const name_element = $(header_element).children(".tile-name-div")[0];
+        const exclamation_element = $(header_element).children("#tile-container-log")[0];
+        let max_name_width = $(exclamation_element).position().left - $(name_element).position().left - 10;
+        if (max_name_width < 0) {
+            max_name_width = 0
+        }
+
+        $(name_element).width(max_name_width);
+    }
+
     resize_tile_area  (event, ui) {
         const header_element = ui.element.children(".panel-heading")[0];
         const hheight = $(header_element).outerHeight();
@@ -362,14 +374,9 @@ class TileObject {
         ui.element.width(computed_width);
         ui.element.height(computed_height);
 
-        const name_element = $(header_element).children(".tile-name-div")[0];
-        const exclamation_element = $(header_element).children("#tile-container-log")[0];
-        let max_name_width = $(exclamation_element).position().left - $(name_element).position().left - 10;
-        if (max_name_width < 0) {
-            max_name_width = 0
-        }
-
-        $(name_element).width(max_name_width);
+        let tile_id = ui.element.attr("id");
+        let tile_object = tile_dict[tile_id];
+        tile_object.resize_name_area();
 
         const scripts = $(ui.element.find(".tile-display-area")).find(".resize-rerun");
         for (let i = 0; i < scripts.length; i = i+1) {
