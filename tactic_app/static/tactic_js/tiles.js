@@ -374,9 +374,14 @@ class TileObject {
         ui.element.width(computed_width);
         ui.element.height(computed_height);
 
-        let tile_id = ui.element.attr("id");
-        let tile_object = tile_dict[tile_id];
-        tile_object.resize_name_area();
+        const name_element = $(header_element).children(".tile-name-div")[0];
+        const exclamation_element = $(header_element).children("#tile-container-log")[0];
+        let max_name_width = $(exclamation_element).position().left - $(name_element).position().left - 10;
+        if (max_name_width < 0) {
+            max_name_width = 0
+        }
+
+        $(name_element).width(max_name_width);
 
         const scripts = $(ui.element.find(".tile-display-area")).find(".resize-rerun");
         for (let i = 0; i < scripts.length; i = i+1) {
