@@ -1,6 +1,11 @@
 version: '2'
 
 services:
+  tactic_simple:
+      build:
+        context: .
+        dockerfile: Dockerfile-simple
+      image: tactic_simple_image
 
   tactic_base:
       build:
@@ -17,7 +22,7 @@ services:
   tactic_main:
     build:
       context: .
-      dockerfile: Dockerfile-main
+      dockerfile: Dockerfile-main-debug
     depends_on:
       - tactic_base
     image: tactic_main_image
@@ -33,7 +38,7 @@ services:
   tactic_tile:
     build:
       context: .
-      dockerfile: Dockerfile-tile
+      dockerfile: Dockerfile-tile-debug
     depends_on:
       - tactic_base
     image: tactic_tile_image
