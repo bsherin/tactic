@@ -1,0 +1,8 @@
+FROM tactic_base_image
+WORKDIR /code
+ADD ./main_container_env/requirements-debug.txt /code/requirements-debug.txt
+RUN pip install -r requirements-debug.txt
+MAINTAINER "Bruce L Sherin"
+ADD  ./main_container_env /code
+ADD ./pycharm-debug.egg /code
+CMD ["python", "-u", "main_main.py"]
