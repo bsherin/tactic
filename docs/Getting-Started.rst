@@ -38,7 +38,7 @@ library.
 Finally, click “Hide Repository” again to go back to your own library.
 
 Alternatively, you can `upload one of your own
-datasets <Uploading-Data>`__
+datasets <Uploading-Data.html>`__
 
 Also, before you try to do anything, you should head over to the “code”
 tab your resource library and make sure there are some tokenizers there.
@@ -48,7 +48,8 @@ Working with your collection
 ----------------------------
 
 If you haven’t already loaded a collection, do that. Then head over to
-the `Main interface <Main%20interface>`__ section of the documentation.
+the `Main interface <Main-interface.html>`__ section of the documentation.
 
 .. |image0| image:: images/load_coll.png
+
 
