@@ -9,6 +9,8 @@ All of these commands are methods of the tile base class, ``TileBase``.
 That means that when you invoke these functions you will generally be
 writing ``self.function()``.
 
+.. category_start
+
 Refreshing a Tile
 -----------------
 
@@ -31,6 +33,10 @@ Refreshing a Tile
 
         Starts the spinner, refreshes the tile, then stops the spinner.
 
+.. category_end
+
+.. category_start
+
 Data Access
 -----------
 
@@ -42,7 +48,7 @@ Data Access
 
         Returns the name of the current document.
 
-.. py:method:a; get_document_data(document_name)
+.. py:method:: get_document_data(document_name)
 
         For table-based documents,returns all of the data in the document
         represented as a dictionary. The keys of the dictionary are the values
@@ -50,54 +56,57 @@ Data Access
 
         For freeform documents, the document is returned as a string.
 
-.. py:method:a; get_document_data_as_list(document_name)
+.. py:method:: get_document_data_as_list(document_name)
 
         Returns all of the data in the document represented as a list.
 
         For table documents, each item corresponds to a row. For freeform
         documents, each item corresponds to a line.
 
-.. py:method:a; get_column_names (document_name)
+.. py:method:: get_column_names (document_name)
 
         Returns a list containing the column names of the specified document. (Table documents only.)
 
-.. py:method:a; get_number_rows(document_name)
+.. py:method:: get_number_rows(document_name)
 
         Returns the number of rows in the specified document for table
         documents. For freeform documents, returns the number of lines.
 
-.. py:method:a; get_row(document_name, row_id)
+.. py:method:: get_row(document_name, row_id)
 
         For table documents, the specified row is returned. For freeform
         documents, the specified line is returned. **self.get_line** is a
         synonym.
 
-.. py:method:a; get_cell(document_name, row_id, column_name)
+.. py:method:: get_cell(document_name, row_id, column_name)
 
         Returns the text in the specified cell.
         **row_id** should be the same as the value in \_\_id\_\_.
         Right now we are also assuming that is the same as the row number in the table. (Table documents only.)
 
-.. py:method:a; get_column_data(column_name, document_name)
+.. py:method:: get_column_data(column_name, document_name)
 
         Get all contents of a column as a list. If document_name is not provided or is
         None then the content of the column from all documents is returned as one long list. (Table documents only.)
 
-.. py:method:a; get_column_data_dict(column_name)
+.. py:method:: get_column_data_dict(column_name)
 
         Returns a dictionary. The keys of the dictionary are the document names.
         Each value is a list corresponding to the values in column_name for the
         document. (Table documents only.)
 
-.. py:method:a; get_document_metadata(document_name)
+.. py:method:: get_document_metadata(document_name)
 
         Returns a the document-level metadata for the given document. Returns a dict.
 
+.. category_end
+
+.. category_start
 
 Data Setting
 ------------
 
-.. py:function::  self.set_cell(document_name, row_id, column_name, text, cellchange=True)
+.. py:function:: set_cell(document_name, row_id, column_name, text, cellchange=True)
 
         Sets the text in the specified cell. By default generates a CellChange
         event. (Table documents only.) **row_id** should be the same as the value in \__id__.
@@ -137,6 +146,10 @@ Data Setting
         Highlights the words in the target cell. Color dict has a dictionary
         that maps words to colors. (Table documents only.)
 
+.. category_end
+
+.. category_start
+
 Filtering-And-Iteration
 -----------------------
 
@@ -172,6 +185,10 @@ Filtering-And-Iteration
 
         (Table documents only.)
 
+.. category_end
+
+.. category_start
+
 Plots
 -----
 
@@ -190,6 +207,10 @@ Tiles <Matplotlib-Tiles.html>`__ (i.e., those that subclass MplFigure).
 
         Given a MplFigure instance this generates html that can be included in a
         tile to display the figure.
+
+.. category_end
+
+.. category_start
 
 Other
 -----
@@ -243,10 +264,10 @@ Other
         ``get_user_function()`` or ``get_user_class()``.
 
 .. py:method:: get_user_list(list_name)
-.. py:method:: get_pipe_value(pipe_name)
-.. py:method:: get_user_function(function_name)
-.. py:method:: get_user_class(class_name)
-.. py:method:: get_user_collection(collection_name)
+               get_pipe_value(pipe_name)
+               get_user_function(function_name)
+               get_user_class(class_name)
+               get_user_collection(collection_name)
 
         When a tile includes a list, pipe, function, class, collection as one of
         the options that appears on the back of a tile, then update_options
@@ -293,6 +314,8 @@ Other
         the value range. color_palette_name is the name of the matplotlib
         color_palette. These can be selected by the user using the
         palette_select option type.
+
+.. category_end
 
 Available-libraries
 -------------------

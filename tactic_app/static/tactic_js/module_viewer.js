@@ -49,12 +49,6 @@ class ModuleViewer extends ModuleViewerAbstract {
         this.myCodeMirror.refresh();
         this.myCodeMirror.getDoc().markClean();
         let self = this;
-        postAjaxPromise("get_api_html", {})
-            .then(function (data) {
-                $("#aux-area").html(data.api_html);
-                self.create_api_listeners();
-            })
-            .catch(doFlash)
     }
 }
 
