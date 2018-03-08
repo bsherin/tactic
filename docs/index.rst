@@ -52,7 +52,9 @@ enjoyment.
 
 You might want to start with `Getting Started <Getting-Started.html>`__.
 
-* :ref:`genindex`
+* `Index <genindex.html>`__
+
+:ref:`modindex`
 
 --------------
 

@@ -1,28 +1,20 @@
 import requests, markdown
 import re
 
-
-def remove_lt_whitespace(txt):
-    newtxt = re.sub(r"^(\s*)", "", txt)
-    newtxt = re.sub(r"(\s*)$", "", newtxt)
-    return newtxt
-
-
-def get_api_from_wiki():
-    r = requests.get("https://raw.githubusercontent.com/wiki/bsherin/tactic/Tile-Commands.md", timeout=3)
-    the_source = r.text
-
-    res = re.findall(r"\#\#(.*)([\s\S]*?)(?=\#\#)|$", the_source)
+def get_api_from_rst():
+    f = open("../docs/Tile-Commands.rst")
+    txt = f.read()
+    categories = re.findall(r".. category_start([\s\S]*?).. category_end", txt)
     newres = []
-    for r in res:
-        sectext = re.findall("```python([\s\S]*?)---", str(r[1]))
-        for i, m in enumerate(sectext):
-            sectext[i] = list(re.findall(r"([\s\S]*?)```([\s\S]*)", sectext[i])[0])
-            sectext[i][0] = remove_lt_whitespace(sectext[i][0])
-            sectext[i].append(re.sub(r"(\n\s*)", r"XXX", sectext[i][0]))
-            sectext[i][0] = re.sub(r"(\n\s*)", r", ", sectext[i][0])
-            sectext[i][1] = markdown.markdown(remove_lt_whitespace(sectext[i][1]))
-        newres.append([r[0], sectext])
+    for cat in categories:
+        catname = re.findall(r"\n*(.*?)\n", cat)[0]
+        methods = re.findall(r"py:method:: ([\s\S]*?)(?=\n\.\.|$)", cat)
+        mlist = []
+        for m in methods:
+            msig = re.findall(r"(^.*)", m)[0]
+            mbody =re.findall(r"\n\n([\s\S]*)", m)[0]
+            mlist.append([msig, mbody])
+        newres.append([catname, mlist])
     return newres
 
 
@@ -38,12 +30,9 @@ def create_api_dict_by_category(api_array):
     result = {}
     ordered_categories = []
     for cat_array in api_array:
-        cat_list = []
-        for entry in cat_array[1]:
-            cat_list += entry[2].split("XXX")
+        cat_list = [entry[0] for entry in cat_array[1]]
         revised_cat_list = []
-        for ent in cat_list:
-            signature = re.sub("self\.", "", ent)
+        for signature in cat_list:
             short_name = re.findall("(^.*?)\(", signature)[0]
             revised_cat_list.append({"name": short_name, "signature": signature})
         result[cat_array[0]] = revised_cat_list
@@ -59,8 +48,7 @@ def create_api_dict_by_name(api_dict_by_category):
 
 
 try:
-    api_array = get_api_from_wiki()
-    api_html = get_api_html(api_array)
+    api_array = get_api_from_rst()
     api_dict_by_category, ordered_api_categories = create_api_dict_by_category(api_array)
     api_dict_by_name = create_api_dict_by_name(api_dict_by_category)
 except:

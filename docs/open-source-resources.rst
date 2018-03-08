@@ -1,6 +1,5 @@
 Open Source Resources
-====================
-
+=====================
 Tactic is built on a foundation of many free resources.
 
 System
@@ -18,7 +17,7 @@ Python-related
 -  pymongo
 
 Scientific computing in Python
-----------------------------
+------------------------------
 
 -  matplotlib
 -  nltk
