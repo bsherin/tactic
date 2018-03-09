@@ -5,7 +5,7 @@ import copy
 
 from flask import render_template, request, jsonify, url_for
 from flask_login import login_required, current_user
-from tactic_app.integrated_docs import api_html, api_dict_by_category, ordered_api_categories
+from tactic_app.integrated_docs import api_dict_by_category, ordered_api_categories
 import tactic_app
 from tactic_app import app, db, mongo_uri, socketio, use_ssl
 from tactic_app.resource_manager import ResourceManager, UserManageResourceManager

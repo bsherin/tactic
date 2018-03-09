@@ -49,17 +49,6 @@ class ModuleViewerAbstract extends ResourceViewer {
         })
     }
 
-    create_api_listeners() {
-        const acc = document.getElementsByClassName("accordion");
-        for (let i=0; i < acc.length; ++i) {
-            let element = acc[i];
-            element.onclick = function(){
-            this.classList.toggle("active");
-            this.nextElementSibling.classList.toggle("show");
-            }
-        }
-    }
-
     create_keymap() {
         let self = this;
         CodeMirror.keyMap["default"]["Esc"] = function () {self.clearSelections()};
@@ -282,9 +271,7 @@ class ModuleViewerAbstract extends ResourceViewer {
     }
 
     showAPI() {
-        $("#resource-area").toggle();
-        $("#aux-area").toggle();
-        resize_dom_to_bottom_given_selector("#aux-area", 20);
+        window.open("http://tactic.readthedocs.io/en/latest/Tile-Commands.html");
     }
 
     changeTheme() {

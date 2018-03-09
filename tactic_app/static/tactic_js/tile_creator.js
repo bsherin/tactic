@@ -61,16 +61,9 @@ class CreatorViewer extends ModuleViewerAbstract {
         creator_viewer.setup_code_areas();
         creator_viewer.setup_resource_modules();
         self = creator_viewer;
-
-        postAjaxPromise("get_api_html", {})
-            .then(function (data) {
-                $("#aux-area").html(data.api_html);
-                self.create_api_listeners();
-                self.resize_to_window();
-                clearStatusMessage();
-                stopSpinner()
-            })
-            .catch(doFlashStopSpinner);
+        self.resize_to_window();
+        clearStatusMessage();
+        stopSpinner()
     }
     do_extra_setup () {
         super.do_extra_setup();
