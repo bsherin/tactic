@@ -1,17 +1,15 @@
 import sys
-import nltk
-import numpy
+# import nltk
 # import wordcloud
 # from sentiment_tools import vader_sentiment_analyzer, sentiwordnet, TacticVader
 import warnings
 
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore")
-    from matplotlib_utilities import GraphList, ColorMapper, FigureCanvas, ArrayHeatmap, ImageShow, MplFigure
-    # noinspection PyUnresolvedReferences
-    from matplotlib.cm import get_cmap
+# with warnings.catch_warnings():
+#     warnings.simplefilter("ignore")
+#     from matplotlib_utilities import GraphList, ColorMapper, FigureCanvas, ImageShow, MplFigure
+#     # noinspection PyUnresolvedReferences
+#     from matplotlib.cm import get_cmap
 
-from bson.binary import Binary
 from tile_base import TileBase
 from d3utilities import D3Tile
 
@@ -40,6 +38,6 @@ def exec_tile_code(tile_code):
 
 # I want nltk to only search here so that I can see
 # what behavior on remote will be like.
-nltk.data.path = ['/code/lexicons/']
+# nltk.data.path = ['/code/lexicons/']
 
 
