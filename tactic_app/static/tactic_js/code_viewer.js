@@ -48,12 +48,12 @@ class CodeViewer extends ModuleViewerAbstract {
         /**
          * @param {{api_html:boolean}} data
          */
-        postAjaxPromise("get_api_html", {})
-            .then(function (data) {
-                $("#aux-area").html(data.api_html);
-                self.create_api_listeners();
-            })
-            .catch(doFlash)
+        // postAjaxPromise("get_api_html", {})
+        //     .then(function (data) {
+        //         $("#aux-area").html(data.api_html);
+        //         self.create_api_listeners();
+        //     })
+        //     .catch(doFlash)
     }
 
     saveMe() {

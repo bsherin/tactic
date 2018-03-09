@@ -89,7 +89,10 @@ html_sidebars = {
     ]
 }
 html_theme_options = {
-    'sidebar_width': "220px"
+    'sidebar_width': "220px",
+    'github_user': 'bsherin',
+    'github_repo': 'tactic',
+    'description': 'A text mining environment for qualitative researchers'
 }
 
 # Theme options are theme-specific and customize the look and feel of a theme

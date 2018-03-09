@@ -8,7 +8,7 @@ After you log in, you should be taken automatically to the resource
 management page. To get started using tactic, you need to load in some
 data. Your libary should already have some collections loaded. To view
 one of these collections, select it in the list and click the blue
-“view” button. (You can also double_click directly on the item.) A new
+:guilabel:`view` button. (You can also double_click directly on the item.) A new
 web browser tab should open and you should see a table (or freeform
 document) with your data.
 
