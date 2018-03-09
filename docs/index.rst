@@ -1,5 +1,5 @@
-Tactic Text Documentation Home
-==============================
+Tactic Text
+===========
 
 .. toctree::
    :hidden:
@@ -53,8 +53,6 @@ enjoyment.
 You might want to start with `Getting Started <Getting-Started.html>`__.
 
 * `Index <genindex.html>`__
-
-:ref:`modindex`
 
 --------------
 
