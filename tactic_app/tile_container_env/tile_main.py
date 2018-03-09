@@ -19,9 +19,6 @@ from tile_env import exec_tile_code
 import tile_base
 from tile_base import clear_and_exec_user_code, TileBase
 from pseudo_tile_base import PseudoTileClass
-from bson.binary import Binary
-import inspect
-import types
 import gevent
 from communication_utils import make_python_object_jsonizable
 
