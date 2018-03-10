@@ -4,4 +4,5 @@ ADD ./tile_container_env/requirements.txt /code/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 MAINTAINER "Bruce L Sherin"
 ADD  ./tile_container_env /code
+ADD ./nltk_data /root/nltk_data
 CMD ["python", "tile_main.py"]

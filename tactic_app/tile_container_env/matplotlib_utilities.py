@@ -3,9 +3,7 @@ from matplotlib.figure import Figure
 from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 from matplotlib.colors import Normalize as mpl_Normalize
 from matplotlib.cm import get_cmap, ScalarMappable, register_cmap, datad
-import numpy
 import uuid
-# import pylab
 import StringIO
 
 color_palette_names = [m for m in datad if not m.endswith("_r")]
@@ -168,53 +166,5 @@ class ImageShow(MplFigure):
         ax = self.add_subplot(111)
         ax.imshow(self.data)
         ax.axis("off")
-        self.tight_layout()
-        return
-
-
-class ArrayHeatmap(MplFigure):
-    def draw_plot(self):
-        self.dialogs = []
-        the_array = self.data
-        palette_name = self.kwargs["palette_name"]
-        (nrows, ncols) = the_array.shape
-        ax = self.add_subplot(111)
-        if "title" in self.kwargs:
-            ax.set_title(self.kwargs["title"], fontsize=10)
-        if "value_range" is self.kwargs:
-            cax = ax.imshow(the_array, cmap=get_cmap(palette_name), aspect="auto", interpolation='nearest',
-                            vmin=self.kwargs["value_range"][0], vmax=self.kwargs["value_range"][1])
-        else:
-            cax = ax.imshow(the_array, cmap=get_cmap(palette_name), aspect="auto", interpolation='nearest')
-
-        ind = numpy.arange(ncols)
-
-        if "xticks" in self.kwargs:
-            ax.set_xticks(self.kwargs["xticks"])
-        else:
-            ax.set_xticks(ind, minor=False)
-            ax.set_xticks(ind + .5, minor=True)
-        if "xlabels" in self.kwargs:
-            ax.get_xaxis().set_ticklabels(self.kwargs["xlabels"], size="x-small", rotation="vertical")
-        else:
-            ax.get_xaxis().set_ticklabels(ind + 1, size="x-small")
-
-        ind = numpy.arange(nrows)
-
-        if "yticks" in self.kwargs:
-            ax.set_yticks(self.kwargs["yticks"])
-        else:
-            ax.set_yticks(ind, minor=False)
-            ax.set_yticks(ind + .5, minor=True)
-        if "ylabels" in self.kwargs:
-            ax.get_yaxis().set_ticklabels(self.kwargs["ylabels"], size="x-small", rotation="horizontal")
-        else:
-            ax.get_yaxis().set_ticklabels(ind + 1, size="x-small")
-
-        ax.grid(True, which='minor', linestyle='-')
-
-        cbar = self.colorbar(cax)
-        # self.subplots_adjust(left=.12, bottom=.25, right=.99, top=.95)
-        self.set_facecolor("white")
         self.tight_layout()
         return
