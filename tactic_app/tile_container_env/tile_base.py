@@ -1,9 +1,6 @@
-import exceptions
 import sys
 import re
 import time
-import requests
-import numpy as np
 from bson.binary import Binary
 # noinspection PyUnresolvedReferences
 from matplotlib_utilities import MplFigure, color_palette_names
