@@ -9,7 +9,7 @@ collection of tiles. These tiles are drawn from the tile *repository*.
 More specifically, it includes all of the tiles from the repository that
 have the tag “default.”
 
-Next, suppose you go to your tile library and click **load** to load a
+Next, suppose you go to your tile library and click :guilabel:`load` to load a
 tile. Immediately, the tile menus in every open project window will be
 updated to include the new tile. The new tile is available universally,
 across all of your open projects.
@@ -19,8 +19,8 @@ tile will be overwritten. But note: The name of a tile comes from the
 name of the tile class, not the name of the module. It has to be this
 way since it’s possible to have multiple tile classes inside a module.
 
-If you go to your tile library, and click **unload**, this will clear
-all of the tiles that you loaded.
+If you go to your tile library, and click :guilabel:`unload`, this will unload
+all of the tiles that you previously loaded.
 
 This has an impact on what happens if you **save a project.** By
 default, when you save a project, the project makes a note of all of the
@@ -30,7 +30,7 @@ available in the user environment. If they are not, it will load them.
 Note that it finds the tiles by name in your library, it does not use a
 saved version of the tile code.
 
-However, you can change this default behavior on a per-project basis.
+However, you can change some of this default behavior on a per-project basis.
 When you first save a project, you will get a dialog that looks like
 this:
 

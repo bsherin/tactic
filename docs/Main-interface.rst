@@ -6,19 +6,19 @@ The top parts
 
 The helpfully-titled “Main” interface is where you do the real work with
 Tactic. It’s what you see when you load a data collection or a project.
-There is a menu bar at the top. The column menu can be used to hide
+There is a menu bar at the top. The :guilabel:`column menu` can be used to hide
 columns, add new columns, or reorder columns. Note that hiding columns
-doesn’t delete them, and selecting “unhide” from the column menu will
+doesn’t delete them, and selecting :guilabel:`unhide` from the column menu will
 make all hidden columns reappear. Hidden columns are also available to
 tiles.
 
-Use the Project menu to save the current state of a project. You can
+Use the :guilabel:`Project` menu to save the current state of a project. You can
 also export the data table in a few different ways: (1) you can export
 it as a data collection back to your library, (2) you can export the
 visible document as a CSV file on your local machine, and (3) you can
 export all of the documents to an excel file.
 
-The Project menu also has a an option **change_collection** which lets
+The :guilabel:`Project` menu also has a an option :guilabel:`change_collection` which lets
 you swap out the data collection in the main data table.
 
 |image0|
@@ -38,39 +38,42 @@ Working with tiles
 ------------------
 
 The other menus at the top of the main interface allow you to created
-analysis tiles. From the “word” menu, you can select the WordFreqDist
+analysis tiles. From the :guilabel:`word` menu, you can select the :guilabel:`WordFreqDist`
 option to create a tile.
 
 |image1|
 
-If you then click on the **show/hide options** button, you’ll see the
+If you then click on the :guilabel:`show/hide options` button, you’ll see the
 options for this tile. Fill these in and click submit to run the tile.
-Hint: If you don’t see any choices in the tokenizer menu, go back to
-your library, to the “code” area, and copy some tokenizers from the
-repository. Another hint: In the “list” area of you resource library,
-you can also copy some additional word lists from the repository, as
-well as create your own.
+
+.. note::
+
+    If you don’t see any choices in the tokenizer menu, go back to
+    your library, to the :guilabel:`code` tab, and copy some tokenizers from the
+    repository. Another note: In the :guilabel:`list` tab of you resource library,
+    you can also copy some additional word lists from the repository, as
+    well as create your own.
 
 |image2|
 
 There are also buttons at the top of a tile. Some of these need some
-explanation. The **show container log** button displays, within the
+explanation. The :guilabel:`show container log` button displays, within the
 tile, the log of the docker container within which the tile runs. This
 will show everything that is written to stderr or stdout. If you use a
 ``print`` statment the output will appear there. (It’s unfortunate that
 the word “log” means something different in this case.)
 
-The **send to log** button writes a version of the tiles contents to the
+The :guilabel:`send to log` button writes a version of the tiles contents to the
 log, which is visible at the bottom of the main interface. This will be
 just a copy of the tile’s html unless the programmer of the tile has
 implemented an overriding method to write something different. (This is
 explained in the part of the documentation on creating tiles.)
 
-The **log parameters** button displays, in the log at the bottom of the
+The :guilabel:`log parameters` button displays, in the log at the bottom of the
 screen, a table containing the values of the various options, as
 specified on the back of the tile.
 
-The **recreate from library**, refreshes the tile, but it does so by
+The :guilabel:`recreate from library`, refreshes the tile, but it does so by
 grabbing the current version of the code from the library. Then it
 reruns the tile, keeping the values of options the same. This is
 intended for the situation in which you are making changes to a tile’s
