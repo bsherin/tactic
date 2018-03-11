@@ -327,7 +327,7 @@ Other
 
 .. category_end
 
-Available-libraries
+Available libraries
 -------------------
 
 All of these libraries are available for import from within tiles.

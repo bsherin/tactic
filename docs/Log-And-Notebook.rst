@@ -10,12 +10,12 @@ python notebook.
 Furthermore, you can also create projects that consist of nothing more
 than a Notebook of this sort. There are two ways to create one of these
 Notebook projects. First, from within the Main Interface, you can go to
-the Project menu and select **open-console-as-notebook**. This will
+the Project menu and select :guilabel:`open-console-as-notebook`. This will
 start a Notebook project using the correct contents of the Log (but will
 not copy internal state).
 
 The second way to create a Notebook project is from the collection
-manager. Just click the **new notebook** button as as shownin the figure
+manager. Just click the :guilabel:`new notebook` button as as shown in the figure
 below.
 
 |image0|
@@ -28,7 +28,7 @@ the top to manually add new elements:
 Text fields
 -----------
 
-You can create a text field by clicking the **+text** button. You’ll get
+You can create a text field by clicking the :guilabel:`+text` button. You’ll get
 something that looks like this:
 
 |image2|
@@ -45,7 +45,7 @@ Clicking the bottom button again toggles the display back to plain text.
 Code fields
 -----------
 
-You create a code field by clicking the **+code** button:
+You create a code field by clicking the :guilabel:`+code` button:
 
 |image4|
 
@@ -64,7 +64,7 @@ fields in your Log/Notebook.
 
 Like a tile, output here is treated as html. So you might need to add
 html tags to get the output that you want. For example, you might want
-to wrap your output in *pre* tags.
+to wrap your output in ``<pre>..</pre>`` tags.
 
 You can display plots in the console just as you’d expect. At the
 present time, to do so, you have to use the same magic commands as in a
@@ -78,7 +78,7 @@ Some final generalities
 You can **reorder** fields by dragging on the button panel on the left
 of any field.
 
-About the **reset** button:
+About the :guilabel:`reset` button:
 
 Clicking the reset button does a few different things:
 

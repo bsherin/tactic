@@ -8,16 +8,19 @@ of a set of tables of data.
 
 To upload data, go to the collections tab of your user library. Click
 “choose files” next to either the “import as_table” or “import as
-freeform” buttons. Then select some files. **Note: You can select any
-number of files and these files will be the “documents” in your new
-“collection.”**
+freeform” buttons. Then select some files.
+
+.. note::
+
+    You can select any number of files and these files will be loaded as documents within a single
+    collection.
 
 |image0|
 
 For table collectons, data must be in the form of xlsx, csv, tsv, or
 plain text (txt) files. The first row of an xlsx, csv, or tsv file must
 contain the headers for the columns. Data in a txt file is treated as a
-series of rows of text with rows separated by newlines.) If multiple
+series of rows of text with rows separated by newlines. If multiple
 files are selected, each of the files is treated as a separate document
 within the collection. If an xlsx file with multiple sheets is selected,
 each sheet is treated with as a separate document. It’s okay to mix and
