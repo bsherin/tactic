@@ -4,11 +4,11 @@ import sys
 # from sentiment_tools import vader_sentiment_analyzer, sentiwordnet, TacticVader
 import warnings
 
-# with warnings.catch_warnings():
-#     warnings.simplefilter("ignore")
-#     from matplotlib_utilities import GraphList, ColorMapper, FigureCanvas, ImageShow, MplFigure
-#     # noinspection PyUnresolvedReferences
-#     from matplotlib.cm import get_cmap
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    from matplotlib_utilities import ColorMapper, FigureCanvas, MplFigure
+    # noinspection PyUnresolvedReferences
+    from matplotlib.cm import get_cmap
 
 from tile_base import TileBase
 from d3utilities import D3Tile
@@ -20,6 +20,11 @@ class_info = {"class_name": "",
 
 tile_name = ""
 tile_class = None
+
+
+def global_import(imp):
+    globals()[imp] = __import__(imp, globals(), locals(), [], -1)
+    return
 
 
 def user_tile(tclass):
