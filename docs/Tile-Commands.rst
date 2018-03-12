@@ -13,7 +13,6 @@ be used in `Logs and Notebooks <Log-And-Notebook.html>`__.
     almost always be writing ``self.function()``.
 
 .. py:class:: TileBase()
-    :hidden:
 
 .. category_start
 
@@ -199,31 +198,8 @@ Filtering-And-Iteration
 
 .. category_start
 
-Plots
------
-
-These commands are only available in `Matplotlib
-Tiles <Matplotlib-Tiles.html>`__ (i.e., those that subclass ``MplFigure``).
-
-    .. py:method:: init_mpl_figure(figsize=(self.width/80, self.height/80), dpi=80, facecolor=None, edgecolor=None, linewidth=0.0, frameon=None, subplotpars=None, tight_layout=None)
-
-        This reinitializes the figure contained in a MatplotlibTile. It’s
-        equivalent to calling ``MplFigure.__init__(self, kwargs).`` The kwargs
-        are the same as for `Matplotlib’s Figure
-        class <https://matplotlib.org/api/_as_gen/matplotlib.figure.Figure.html>`__.
-        But the default values are different for ``figsize`` and ``dpi``.
-
-    .. py:method:: create_figure_html()
-
-        Given a MplFigure instance this generates html that can be included in a
-        tile to display the figure.
-
-.. category_end
-
-.. category_start
-
-Other
------
+Other TileBase Methods
+------------------------------
 
     .. py:method:: go_to_document(document_name)
 
@@ -316,14 +292,57 @@ Other
         you’d like to add. The keys are document names and the values are
         dictionaries of keys and values.
 
-    .. py:class:: ColorMapper(bottom_val, top_val, color_palette_name)
-    .. py:method:: ColorMapper.color_from_val(val)
+.. category_start
 
-        ColorMapper is a class for creating mappings between values and colors.
-        ColorMapper() creates the class instance. bottom_val and top_val specify
-        the value range. color_palette_name is the name of the matplotlib
-        color_palette. These can be selected by the user using the
-        palette_select option type.
+
+Plots
+-----
+
+.. py:class:: MplFigure()
+
+    .. note::
+
+        These commands are only available in `Matplotlib
+        Tiles <Matplotlib-Tiles.html>`__ (i.e., those that subclass ``MplFigure``).
+
+    .. py:method:: init_mpl_figure(figsize=(self.width/80, self.height/80), dpi=80, facecolor=None, edgecolor=None, linewidth=0.0, frameon=None, subplotpars=None, tight_layout=None)
+
+        This reinitializes the figure contained in a MatplotlibTile. It’s
+        equivalent to calling ``MplFigure.__init__(self, kwargs).`` The kwargs
+        are the same as for `Matplotlib’s Figure
+        class <https://matplotlib.org/api/_as_gen/matplotlib.figure.Figure.html>`__.
+        But the default values are different for ``figsize`` and ``dpi``.
+
+    .. py:method:: create_figure_html()
+
+        Given a MplFigure instance this generates html that can be included in a
+        tile to display the figure.
+
+.. category_end
+
+.. category_start
+
+Global Functions
+----------------
+
+.. note::
+    The following commands are not called with ``self``.
+
+.. py:class:: ColorMapper(bottom_val, top_val, color_palette_name)
+.. py:method:: ColorMapper.color_from_val(val)
+
+    ColorMapper is a class for creating mappings between values and colors.
+    ColorMapper() creates the class instance. bottom_val and top_val specify
+    the value range. color_palette_name is the name of the matplotlib
+    color_palette. These can be selected by the user using the
+    palette_select option type.
+
+.. py:method:: global_import(module_name)
+
+    This command imports a module into the global namespace. So, for example, ``global_import("nltk")``
+    within ``render_content`` would make ``nltk`` available within all method calls in your tile.
+
+    :param str module_name: The name of the module to import as a string.
 
 .. category_end
 
