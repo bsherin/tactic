@@ -5,15 +5,14 @@ The Tile Creator is the editor that provides a more scaffolded
 environment for creating and editing tiles. As explained in the
 `introduction to making tiles <Making-Tiles.html>`__, **the tile creator is
 new and can garble existing tiles**. So, use it with care. When editing
-an existing tile you might wnat to first make a copy of the tile.
+an existing tile you might want to first make a copy of the tile.
 
 Creating the new tile
 ---------------------
 
 With that said, here’s how to create a new tile with the creator:
 
-Go to the **tiles** tab of your resource library and click **new in
-creator: StandardTile**.
+Go to the :guilabel:`tile` tab of your resource library and click :menuselection:`new in creator --> StandardTile`.
 
 |image0|
 
@@ -54,28 +53,20 @@ In writing your tile, you have access to a number of tactic-specific
 commands that, for example, give you access to your data. These are
 described in some detail here: `Tile Commands <Tile-Commands.html>`__. There
 is also some help pertaining to these commands built into the Creator
-window. If you click on “Show API” at the top fo the Creator view the
+window. If you click on :guilabel:`Show API` at the top of the Creator view the
 resource area will be replaced by a compressed version of the command
 documentation. Also, at the very top of the big box for typing your code
 are popup lists that contain the tile commands. These paste the relevant
 command directly into your code.
 
-You can use these `Keyboard
-Shortcuts <Module-Viewer-Keyboard-Shortcuts.html>`__ within the box
+You can use these `Keyboard Shortcuts <Module-Viewer-Keyboard-Shortcuts.html>`__ within the box
 containing your code.
 
-Finally, typing **ctrl-space** while in the code area brings up the
+Finally, typing :kbd:`ctrl-space` while in the code area brings up the
 autocomplete widget. This will prompt you with various useful
 possibilities, including the Tile Commands
 
-You can also import and make use of a number of scientific libraries
-including
-
--  nltk
--  numpy
--  matplotlib
--  sklearn
--  gensim
+You can also import and make use of a number of `scientific libraries <Tile-commands.html#available-libraries>`__.
 
 Go to the relevant web sites for documentation on these libraries.
 
@@ -90,17 +81,17 @@ and edit various resources and metadata for your tile.
 metadata
 ~~~~~~~~
 
-The **metadata** is where you specify a bit of metadata for your tile.
+The :guilabel:`metadata` is where you specify a bit of metadata for your tile.
 The “Category” field determines the menu under which your tile will
 appear in the main project environment.
 
 options
 ~~~~~~~
 
-The **options** tab is where you specify `Tile
+The :guilabel:`options` tab is where you specify `Tile
 Options <Tile-Structure.html#options>`__ that will appear on back of your
 tile. Here I have clicked on the options tab and then used the form at
-the bottom to create an option called “some_user_text”.
+the bottom to create an option called ``some_user_text``.
 
 |image3|
 
@@ -114,8 +105,8 @@ These option can now be referred to in the tile code as
 
 There are many different types of options as described here: `Tile
 Options <Tile-Structure.html#options>`__. there’s an extra step required in
-making use of some of these options (**list_select**, **pipe_select**,
-**function_select**, **class_select**). In these options, the variable
+making use of some of these options (``list_select``, ``pipe_select``,
+``function_select``, ``class_select``). In these options, the variable
 you get contains only the name of the selected resource. To extract the
 value you have to use one of the tile commands described
 `here <Tile-Commands.html#other>`__. For example
@@ -124,7 +115,7 @@ value you have to use one of the tile commands described
 exports
 ~~~~~~~
 
-You can also specifythe name of variables that will be **exports** for
+You can also specifythe name of variables that will be :guilabel:`exports` for
 your tile. (Exported variables are available as pipes to other tiles.
 Note that these must be instance variables assigned values in your code
 in this manner ``self.variable_name =  ...``. )
@@ -132,7 +123,7 @@ in this manner ``self.variable_name =  ...``. )
 methods
 ~~~~~~~
 
-The **methods** tab displays additional methods defined within a tile
+The :guilabel:`methods` tab displays additional methods defined within a tile
 class. This is for advanced users. But if you use the tile creator to
 look at existing tiles they will often have methods that are visible
 here. You can define new methods that will be accessible in your tile.

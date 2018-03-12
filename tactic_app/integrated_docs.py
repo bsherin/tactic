@@ -8,7 +8,7 @@ def get_api_from_rst():
     newres = []
     for cat in categories:
         catname = re.findall(r"\n*(.*?)\n", cat)[0]
-        methods = re.findall(r"py:method:: ([\s\S]*?)(?=\n\.\.|$)", cat)
+        methods = re.findall(r"py:method:: ([\s\S]*?)(?=\n *?\.\.|$)", cat)
         mlist = []
         for m in methods:
             msig = re.findall(r"(^.*)", m)[0]

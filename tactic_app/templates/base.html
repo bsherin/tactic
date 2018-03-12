@@ -41,7 +41,7 @@
                 <ul id="my-navbar-right" class="nav navbar-nav navbar-right">
                     {% block morenavbar %}
                     {% endblock %}
-                    <li class="hidden-sm"><a href="https://github.com/bsherin/tactic/wiki">Docs</a></li>
+                    <li class="hidden-sm"><a href="http://tactic.readthedocs.io/en/latest/index.html">Docs</a></li>
                     {% if current_user.is_authenticated %}
                         <li><a href="{{ url_for('user_manage') }}">Resources</a></li>
                         <li class="hidden-sm hidden-xs"><a href="{{ url_for('account_info') }}">{{current_user.username}}</a></li>
