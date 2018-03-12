@@ -41,7 +41,7 @@ class GlobalTileManager(object):
                         self.tile_classes[category] = {}
                     self.tile_classes[category][res_dict["tile_name"]] = module_code
                 else:
-                    print "Error loading tile " + res_dict["message_string"]
+                    print "Error loading tile " + res_dict["message_string"] + " tile " + str(tm)
 
     def add_user(self, username):
         if username not in self.loaded_user_modules:

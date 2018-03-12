@@ -364,7 +364,12 @@ class CreatorViewer extends ModuleViewerAbstract {
     }
 
     insertApiItem(the_item) {
-        this.myCodeMirror.getDoc().replaceSelection("self." + this.api_dict_by_name[the_item].signature);
+        if (this.api_dict_by_name[the_item].category == "Global Functions") {
+            this.myCodeMirror.getDoc().replaceSelection(this.api_dict_by_name[the_item].signature);
+        }
+        else {
+            this.myCodeMirror.getDoc().replaceSelection("self." + this.api_dict_by_name[the_item].signature);
+        }
         return false
     }
 
