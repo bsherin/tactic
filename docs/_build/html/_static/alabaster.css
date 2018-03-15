@@ -112,7 +112,7 @@ div.footer a {
 
 p.caption {
     font-family: inherit;
-    font-size: inherit;
+    font-size: 20px;
 }
 
 
@@ -160,7 +160,7 @@ div.sphinxsidebarwrapper p.blurb {
 div.sphinxsidebar h3,
 div.sphinxsidebar h4 {
     font-family: 'Garamond', 'Georgia', serif;
-    color: #444;
+    color: black;
     font-size: 24px;
     font-weight: normal;
     margin: 0 0 5px 0;
