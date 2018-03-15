@@ -66,7 +66,7 @@ Finally, typing :kbd:`ctrl-space` while in the code area brings up the
 autocomplete widget. This will prompt you with various useful
 possibilities, including the Tile Commands
 
-You can also import and make use of a number of `scientific libraries <Tile-commands.html#available-libraries>`__.
+You can also import and make use of a number of `scientific libraries <Tile-commands.html#scientific-libraries>`__.
 
 Go to the relevant web sites for documentation on these libraries.
 

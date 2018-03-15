@@ -90,6 +90,8 @@ html_sidebars = {
 }
 html_theme_options = {
     'sidebar_width': "220px",
+    'caption_font_size': '20px',
+    'sidebar_header': "black",
     'github_user': 'bsherin',
     'github_repo': 'tactic',
     'description': 'A text mining environment for qualitative researchers'
