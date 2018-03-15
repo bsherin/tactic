@@ -346,11 +346,22 @@ Global Functions
 
 .. category_end
 
-Available libraries
--------------------
+Scientific libraries
+--------------------
 
-All of these libraries are available for import from within tiles.
-Refer to the documentation for specifics.
+It is assumed that tiles will make heavy use of scientific libraries.
+The libraries listed below are currently available for import from tiles.
+
+.. note::
+    There is one subtlety to be aware of when importing libraries.
+    The code that you write for a tile is always executed within a method.
+    If you all of the code you for your tile is in the `render_content`, then
+    you can just import your the library there, and everything is fine.
+    However, if your tile includes other methods, then each method would have to separately
+    import the library.
+
+    The `global_import` function, described above, can simplify things. If you write `global_import("nltk")`, for example, then
+    nltk will be available to all methods.
 
 -  `nltk <http://www.nltk.org>`__
 -  `numpy <http://www.numpy.org>`__
