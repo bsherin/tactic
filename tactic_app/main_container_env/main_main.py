@@ -48,18 +48,23 @@ class MainWorker(QWorker):
         self.ask_host("emit_export_viewer_message", data, callback_func)
         return
 
-    def print_to_console(self, message_string, force_open=False, is_error=False):
+    def print_to_console(self, message_string, force_open=False, is_error=False, summary=None):
+
         self.ask_host("print_to_console", {"message_string": message_string,
                                            "force_open": force_open,
-                                           "is_error": is_error})
+                                           "is_error": is_error,
+                                           "user_id": self.mwindow.user_id,
+                                           "summary": summary})
         return {"success": True}
 
     def print_text_area_to_console(self, uid, force_open=False):
-        self.ask_host("print_text_area_to_console", {"unique_id": uid, "force_open": force_open})
+        self.ask_host("print_text_area_to_console", {"unique_id": uid, "force_open": force_open,
+                                                     "user_id": self.mwindow.user_id})
         return {"success": True, "unique_id": uid}
 
     def print_code_area_to_console(self, uid, force_open=False):
-        self.ask_host("print_code_area_to_console", {"unique_id": uid, "force_open": force_open})
+        self.ask_host("print_code_area_to_console", {"unique_id": uid, "force_open": force_open,
+                                                     "user_id": self.mwindow.user_id})
         return {"success": True, "unique_id": uid}
 
     def distribute_event(self, event_name, data_dict=None, tile_id=None):

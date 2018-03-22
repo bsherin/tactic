@@ -8,6 +8,9 @@
             <button type="button" class="notclose close-log-button"><span style="font-size:13px" class="glyphicon glyphicon-trash"></span></button>
         </div>
     </div>
+     <div class='log-panel-summary' contenteditable="true">
+         {{summary_text | safe}}
+     </div>
      <div class='log-panel-body error-log-panel'>
         {{log_item | safe}}
      </div>
