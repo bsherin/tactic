@@ -215,17 +215,19 @@ Other TileBase Methods
 
         Returns the text currently highlighted by the user
 
-    .. py:method:: log_it(html_string, force_open=True, is_error=False)
+    .. py:method:: log_it(html_string, force_open=True, is_error=False, summary=None)
 
         Adds the given html to the log (formerly called the console). These
         commands all do the same thing. ``display_message`` and ``dm`` are the
         old names. ``log_it`` is the new name of the command that was added when
         the name of the console was change to log.
 
-        if ``force_open`` is True then the Log will be opened if it was closed.
+        If ``force_open`` is True then the Log will be opened if it was closed.
         If ``is_error`` is True then the new panel that is created in the Log
         will be an error panel. This means it will have a red header. It also
         means that, if the user resets the log, then the panel will be deleted.
+
+        The optional ``summary`` parameter is a line of text to be displayed when the log item is shrunk.
 
         Synonyms of ``self.log_it`` are ``self.dm`` and ``self.display_message``.
 

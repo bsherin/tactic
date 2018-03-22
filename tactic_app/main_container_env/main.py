@@ -712,7 +712,8 @@ class mainWindow(object):
         error_string = "<pre>" + error_string + "</pre>"
         self.mworker.debug_log(error_string)
         if print_to_console:
-            self.mworker.print_to_console(error_string, force_open=True, is_error=True)
+            summary = "An exception of type {}".format(type(ex).__name__)
+            self.mworker.print_to_console(error_string, force_open=True, is_error=True, summary=summary)
         return error_string
 
     def highlight_table_text(self, txt):
@@ -930,7 +931,8 @@ class mainWindow(object):
     def print_to_console_event(self, data):
         return self.mworker.print_to_console(data["print_string"],
                                              force_open=data["force_open"],
-                                             is_error=data["is_error"])
+                                             is_error=data["is_error"],
+                                             summary=data["summary"])
 
     @task_worthy
     def create_console_code_area(self, data):
@@ -1548,7 +1550,7 @@ class mainWindow(object):
     def DisplayCreateErrors(self, data):
         for msg in self.recreate_errors:
             self.mworker.debug_log("Got CreateError: " + msg)
-            self.mworker.print_to_console(msg, True, True)
+            self.mworker.print_to_console(msg, True, True, summary="Project recreation error")
         self.recreate_errors = []
         return None
 

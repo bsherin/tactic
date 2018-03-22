@@ -3,7 +3,7 @@ import re
 import time
 from bson.binary import Binary
 # noinspection PyUnresolvedReferences
-from matplotlib_utilities import MplFigure, color_palette_names
+from matplotlib_utilities import MplFigure, color_palette_names, ColorMapper
 from types import NoneType
 import traceback
 import os
@@ -358,9 +358,10 @@ class TileBase(object):
         parray = [["name", "value"]]
         for opt in self.options:
             parray.append([opt["name"], getattr(self, opt["name"])])
+        summary = "Parameters for tile " + data["tile_name"]
 
-        self.log_it(self.build_html_table_from_data_list(parray, title=self.tile_name,
-                                                         sidebyside=True))
+        self.log_it(self.build_html_table_from_data_list(parray, title=self.tile_name, sidebyside=True),
+                    summary=summary)
         return None
 
     @task_worthy
@@ -831,8 +832,9 @@ class TileBase(object):
         error_string += traceback.format_exc()
         error_string = "<pre>" + error_string + "</pre>"
         self.tworker.debug_log(error_string)
+        summary = "Exception of type {}".format(type(ex).__name__)
         if print_to_console:
-            self.log_it(error_string, force_open=True, is_error=True)
+            self.log_it(error_string, force_open=True, is_error=True, summary=summary)
         return error_string
 
     def get_current_pipe_list(self):
@@ -913,7 +915,8 @@ class TileBase(object):
         return
 
     def handle_log_tile(self):
-        self.log_it(self.current_html)
+        summary = "Log from tile " + self.tile_name
+        self.log_it(self.current_html, summary=summary)
         return
 
     def handle_tile_word_click(self, clicked_word, doc_name, active_row_id):
@@ -1229,25 +1232,20 @@ class TileBase(object):
         self.restore_stdout()
         return result
 
-    def display_message(self, message_string, force_open=True, is_error=False):
+    def display_message(self, message_string, force_open=True, is_error=False, summary=None):
+        self.log_it(message_string, force_open, is_error, summary)
+        return
+
+    def dm(self, message_string, force_open=True, is_error=False, summary=None):
+        self.log_it(message_string, force_open, is_error, summary)
+        return
+
+    def log_it(self, message_string, force_open=True, is_error=False, summary=None):
         self.save_stdout()
         self.tworker.post_task(self.main_id, "print_to_console_event", {"print_string": message_string,
                                                                         "force_open": force_open,
-                                                                        "is_error": is_error})
-        self.restore_stdout()
-        return
-
-    def dm(self, message_string, force_open=True, is_error=False):
-        self.save_stdout()
-        self.display_message(message_string, force_open, is_error)
-        self.restore_stdout()
-        return
-
-    def log_it(self, message_string, force_open=True, is_error=False):
-        self.save_stdout()
-        self.tworker.post_task(self.main_id, "print_to_console_event", {"print_string": message_string,
-                                                                        "force_open": force_open,
-                                                                        "is_error": is_error})
+                                                                        "is_error": is_error,
+                                                                        "summary": summary})
         self.restore_stdout()
         return
 

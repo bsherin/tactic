@@ -262,7 +262,7 @@ class ConsoleObjectClass {
         let self = e.data.cobject;
         const el = $(e.target).closest(".log-panel");
         el.toggleClass("log-panel-visible log-panel-invisible");
-        if (el.hasClass("log-panel-invisible")) {
+        if (el.hasClass("log-panel-visible")) {
             if (!(el.find(".console-code").length == 0)) {
                 let uid = el.find(".console-code")[0].id;
                 self.consoleCMObjects[uid].refresh();

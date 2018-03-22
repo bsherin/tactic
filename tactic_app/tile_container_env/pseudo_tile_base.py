@@ -13,7 +13,7 @@ from communication_utils import is_jsonizable, make_python_object_jsonizable, de
 # noinspection PyUnresolvedReferences
 from qworker import task_worthy_methods
 
-from matplotlib_utilities import MplFigure
+from matplotlib_utilities import MplFigure, ColorMapper
 
 PSEUDO_WIDTH = 300
 PSEUDO_HEIGHT = 300
