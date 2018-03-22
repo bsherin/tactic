@@ -194,6 +194,7 @@ class TileObject {
         const data_dict = {};
         data_dict["main_id"] = main_id;
         data_dict["tile_id"] = this.tile_id;
+        data_dict["tile_name"] = this.tile_name;
         postWithCallback(this.tile_id, "LogParams", data_dict)
     }
 

@@ -620,6 +620,10 @@ a[role="tab"] {
             display: block
         }
 
+        .log-panel-summary {
+            display: none
+        }
+
         .log-code-output {
             display: block
         }
@@ -640,6 +644,11 @@ a[role="tab"] {
         .log-panel-body {
             display: none
         }
+
+        .log-panel-summary {
+            display: block
+        }
+
 
         .log-code-output {
             display: none
@@ -667,6 +676,13 @@ a[role="tab"] {
         color: $log-panel-font-color !important;
     }
 
+    .log-panel-summary {
+        padding-left: 45px;
+        padding-right: 45px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        color: $log-panel-font-color !important;
+    }
 
     .log-code-output {
         padding-left: 85px;

@@ -59,8 +59,9 @@ class TileWorker(QWorker):
             template = special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}"
         error_string = template.format(type(ex).__name__, ex.args)
         error_string = "<pre>" + error_string + "</pre>"
+        summary = "Exception of type {}".format(type(ex).__name__)
         print error_string
-        return {"success": False, "message_string": error_string}
+        return {"success": False, "message_string": error_string, "summary": summary}
 
     @task_worthy
     def load_source(self, data_dict):

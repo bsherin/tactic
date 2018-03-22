@@ -398,6 +398,8 @@ td.cell-clickable:active {
   min-height: 122px; }
   .log-panel.log-panel-visible .log-panel-body {
     display: block; }
+  .log-panel.log-panel-visible .log-panel-summary {
+    display: none; }
   .log-panel.log-panel-visible .log-code-output {
     display: block; }
   .log-panel.log-panel-visible .shrink-log-button {
@@ -410,6 +412,8 @@ td.cell-clickable:active {
   min-height: 0; }
   .log-panel.log-panel-invisible .log-panel-body {
     display: none; }
+  .log-panel.log-panel-invisible .log-panel-summary {
+    display: block; }
   .log-panel.log-panel-invisible .log-code-output {
     display: none; }
   .log-panel.log-panel-invisible .shrink-log-button {
@@ -421,6 +425,13 @@ html, body {
   height: 100%; }
 
 .log-panel-body {
+  padding-left: 45px;
+  padding-right: 45px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  color: #616161 !important; }
+
+.log-panel-summary {
   padding-left: 45px;
   padding-right: 45px;
   padding-top: 10px;

@@ -317,11 +317,24 @@ class HostWorker(QWorker):
     @task_worthy
     def print_to_console(self, data):
         from tactic_app import app, socketio
+        user_id = data["user_id"]
+        user_obj = load_user(user_id)
         with app.test_request_context():
+            user_time = user_obj.localize_time(datetime.datetime.utcnow())
             if data["is_error"]:
-                data["message_string"] = render_template("error_log_item.html", log_item=data["message_string"])
+                if "summary" in data:
+                    summary_text = data["summary"]
+                else:
+                    summary_text = "<b>error</b> " + user_time.strftime("%b %d, %Y, %H:%M")
+                data["message_string"] = render_template("error_log_item.html", log_item=data["message_string"],
+                                                         summary_text=summary_text)
             else:
-                data["message_string"] = render_template("log_item.html", log_item=data["message_string"])
+                if "summary" in data:
+                    summary_text = data["summary"]
+                else:
+                    summary_text = "<b>log_it item</b> " + user_time.strftime("%b %d, %Y, %H:%M")
+                data["message_string"] = render_template("log_item.html", log_item=data["message_string"],
+                                                         summary_text=summary_text)
 
         data["table_message"] = "consoleLog"
         self.emit_table_message(data)
@@ -342,8 +355,13 @@ class HostWorker(QWorker):
     @task_worthy
     def print_text_area_to_console(self, data):
         from tactic_app import socketio
+        user_id = data["user_id"]
+        user_obj = load_user(user_id)
+        user_time = user_obj.localize_time(datetime.datetime.utcnow())
+        summary_text = "<b>text item </b> " + user_time.strftime("%b %d, %Y, %H:%M")
         with app.test_request_context():
-            data["message_string"] = render_template("text_log_item.html", unique_id=data["unique_id"])
+            data["message_string"] = render_template("text_log_item.html", unique_id=data["unique_id"],
+                                                     summary_text=summary_text)
 
         data["table_message"] = "consoleLog"
         self.emit_table_message(data)
@@ -352,8 +370,13 @@ class HostWorker(QWorker):
     @task_worthy
     def print_code_area_to_console(self, data):
         from tactic_app import socketio
+        user_id = data["user_id"]
+        user_obj = load_user(user_id)
+        user_time = user_obj.localize_time(datetime.datetime.utcnow())
+        summary_text = "<b>code item </b> " + user_time.strftime("%b %d, %Y, %H:%M")
         with app.test_request_context():
-            data["message_string"] = render_template("code_log_item.html", unique_id=data["unique_id"])
+            data["message_string"] = render_template("code_log_item.html", unique_id=data["unique_id"],
+                                                     summary_text=summary_text)
 
         data["table_message"] = "consoleLog"
         self.emit_table_message(data)
