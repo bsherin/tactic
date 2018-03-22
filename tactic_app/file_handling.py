@@ -132,19 +132,29 @@ def read_excel_file(xlfile):
                     header_list.append(utf_solver(c.value))
             header_list = make_fieldnames_unique(header_list)
             header_list = make_keys_mongo_valid(header_list)
-            i = 0
-            for line in allrows[1:]:
+            highest_nonblank_line = 0
+            highest_nonblank_column = 0
+            for i, line in enumerate(allrows[1:]):
                 row = {}
                 for col, c in enumerate(line):
                     the_val = c.value
+                    if the_val is not None:
+                        highest_nonblank_line = i
+                        if col > highest_nonblank_column:
+                            highest_nonblank_column = col
                     if not c.data_type == c.TYPE_STRING:
                         the_val = str(the_val)
                     row[header_list[col]] = the_val
                     row["__filename__"] = filename
                     row["__id__"] = i
                     sheet_dict[str(i)] = row
-                i += 1
+            for r in range(highest_nonblank_line + 1, i + 1):
+                del sheet_dict[str(r)]
+            for rname in sheet_dict.keys():
+                for col in range(highest_nonblank_column + 1, len(header_list)):
+                    del sheet_dict[rname][header_list[col]]
             doc_dict[sname] = sheet_dict
+            header_list = header_list[:highest_nonblank_column + 1]
             header_list = add_standard_fields(header_list)
             header_dict[sname] = header_list
     except:

@@ -15,6 +15,9 @@
             <button type="button" class="notclose console-spin-outer" style="display:none"><span style="font-size:13px" class="console-spin-place"></span></button>
         </div>
     </div>
+     <div class='log-panel-summary' contenteditable="true">
+         {{summary_text | safe}}
+     </div>
      <div class='log-panel-body mousetrap console-code' id="{{ unique_id }}">
      </div>
       <div class='log-code-output'>
