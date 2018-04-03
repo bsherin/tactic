@@ -35,16 +35,12 @@ repository.
 .. figure:: images/demo_user_start.png
    :alt: blank_user
 
-   blank_user
-
 Select one of the data collections from the list that appears. Click
 “Copy to Library” and the collection will be added to your own personal
 library.
 
 .. figure:: images/repository_start.png
    :alt: repo_start
-
-   repo_start
 
 Finally, click “Hide Repository” again to go back to your own library.
 
