@@ -61,10 +61,17 @@ this next to install the requirements.
     export ANYONE_CAN_REGISTER=True
     export SHORT_SLEEP_PERIOD=.0001
     export LONG_SLEEP_PERIOD=.1
-    ~/PycharmProjects/tactic/tactic_venv/bin/gunicorn -b 0.0.0.0:5000 --worker-class socketio.sgunicorn.GeventSocketIOWorker tactic_run:app
+    ~/PycharmProjects/tactic/tactic_venv/bin/gunicorn -b 0.0.0.0:5000 -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker tactic_run:app
+
 
 You’ll have to edit the first and last lines so that they contain the
 correct paths for your own machine.
+
+Also, on the mac, I add:
+
+::
+
+ export USE_FORWARDER=True
 
 (8)  Execute this script. If you have lived a good life to this point,
      then the Tactic server will start. If it starts, but gives an error
