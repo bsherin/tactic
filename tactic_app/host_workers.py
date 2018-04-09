@@ -262,39 +262,6 @@ class HostWorker(QWorker):
         # str_io = cPickle.loads(data["encoded_str_io"]).decode("utf-8", "ignore").encode("ascii")
 
     @task_worthy
-    def open_error_window(self, data):
-        from tactic_app import socketio
-        unique_id = str(uuid.uuid4())
-        template_data = copy.copy(data)
-        template_data["template_name"] = "error_window_template.html"
-        template_data["error_string"] = str(template_data["error_string"])
-        template_data["uses_codemirror"] = "False"
-        self.temp_dict[unique_id] = template_data
-        socketio.emit("window-open", {"the_id": unique_id}, namespace=data["namespace"], room=data["room"])
-        socketio.emit('stop-spinner', namespace=data["namespace"], room=data["room"])
-        return {"success": True}
-
-    @task_worthy
-    def console_to_notebook(self, data):
-        from tactic_app import socketio
-        unique_id = str(uuid.uuid4())
-        template_data = copy.copy(data)
-        self.temp_dict[unique_id] = template_data
-        socketio.emit("notebook-open", {"the_id": unique_id}, namespace='/main', room=data["main_id"])
-        return {"success": True}
-
-    @task_worthy
-    def open_log_window(self, data):
-        from tactic_app import socketio
-        unique_id = str(uuid.uuid4())
-        template_data = copy.copy(data)
-        template_data["template_name"] = "log_window_template.html"
-        template_data["uses_codemirror"] = "True"
-        self.temp_dict[unique_id] = template_data
-        socketio.emit("window-open", {"the_id": unique_id}, namespace='/main', room=data["main_id"])
-        return {"success": True}
-
-    @task_worthy
     def emit_table_message(self, data):
         from tactic_app import socketio
         socketio.emit("table-message", data, namespace='/main', room=data["main_id"])

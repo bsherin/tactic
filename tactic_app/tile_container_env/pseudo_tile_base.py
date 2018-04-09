@@ -50,7 +50,7 @@ class PseudoTileClass(TileBase, MplFigure):
         return
 
     @task_worthy
-    def compile_save_dict(self, data):  # tactic_working tactic_todo functions aren't actually saved
+    def compile_save_dict(self, data):  # tactic_working gets img_dict now
         print "entering compile_save_dict"
         result = {"binary_attrs": [], "imports": []}
         attrs = globals().keys()
@@ -85,10 +85,11 @@ class PseudoTileClass(TileBase, MplFigure):
                 except TypeError:
                     print "got a TypeError"
                     continue
+        result["img_dict"] = make_python_object_jsonizable(self.img_dict)
         print "done compiling attributes " + str(result.keys())
         return result
 
-    def recreate_from_save(self, save_dict):  # tactic_working
+    def recreate_from_save(self, save_dict):  # tactic_working now gets img_dict
         print "entering recreate from save in pseudo_tile_base"
         print str(save_dict.keys())
         if "binary_attrs" not in save_dict:
@@ -96,10 +97,12 @@ class PseudoTileClass(TileBase, MplFigure):
         if "imports" in save_dict:
             for imp in save_dict["imports"]:
                 globals()[imp] = __import__(imp, globals(), locals(), [], -1)
+        if "img_dict" in save_dict:
+            self.img_dict = debinarize_python_object(save_dict["img_dict"])
         for (attr, attr_val) in save_dict.items():
             print "attr is " + attr
             try:
-                if attr in ["binary_attrs", "imports", "functions"]:
+                if attr in ["binary_attrs", "imports", "functions", "img_dict"]:
                     continue
                 if type(attr_val) == dict and hasattr(attr_val, "recreate_from_save"):
                     cls = getattr(sys.modules[__name__], attr_val["my_class_for_recreate"])
@@ -132,6 +135,12 @@ class PseudoTileClass(TileBase, MplFigure):
 
         self.main_id = os.environ["PARENT"]  # this is for backward compatibility with some old project saves
         return None
+
+    @task_worthy
+    def store_image(self, data):  # tactic_working
+        encoded_img = data["img"]
+        self.img_dict[data["figure_name"]] = debinarize_python_object(encoded_img)
+        return {"success":True}
 
     @task_worthy
     def exec_console_code(self, data):
