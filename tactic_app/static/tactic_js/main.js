@@ -100,28 +100,43 @@ function start_post_load() {
     tsocket = new MainTacticSocket("main", 5000);
     tsocket.socket.on("begin-post-load", function () {
         if (is_project) {
-            let data_dict = {
-                "project_name": _project_name,
-                "doc_type": DOC_TYPE,
-                "project_collection_name": _project_collection_name,
-                "user_manage_id": main_id,
-                "mongo_uri": mongo_uri,
-                "base_figure_url": base_figure_url,
-                "use_ssl": use_ssl,
-                "user_id": user_id
-            };
-            postWithCallback(main_id, "initialize_project_mainwindow", data_dict)
-        }
-        else {
-            let data_dict = {
-                "collection_name": _collection_name,
-                "doc_type": DOC_TYPE,
-                "project_collection_name": _project_collection_name,
-                "mongo_uri": mongo_uri,
-                "base_figure_url": base_figure_url,
-                "use_ssl": use_ssl
-            };
-            postWithCallback(main_id, "initialize_mainwindow", data_dict)
+                let data_dict = {
+                    "project_name": _project_name,
+                    "doc_type": DOC_TYPE,
+                    "project_collection_name": _project_collection_name,
+                    "user_manage_id": main_id,
+                    "mongo_uri": mongo_uri,
+                    "base_figure_url": base_figure_url,
+                    "use_ssl": use_ssl,
+                    "user_id": user_id
+                };
+                postWithCallback(main_id, "initialize_project_mainwindow", data_dict)
+            }
+            else {
+                if (is_notebook && (temp_data_id != "")) {
+                    let data_dict = {
+                        "doc_type": "notebook",
+                        "project_collection_name": _project_collection_name,
+                        "mongo_uri": mongo_uri,
+                        "base_figure_url": base_figure_url,
+                        "use_ssl": use_ssl,
+                        "unique_id": temp_data_id,
+                        "user_id": user_id
+                    };
+                    postWithCallback(main_id, "initialize_project_mainwindow", data_dict)
+                }
+                else {
+                    let data_dict = {
+                        "collection_name": _collection_name,
+                        "doc_type": DOC_TYPE,
+                        "project_collection_name": _project_collection_name,
+                        "mongo_uri": mongo_uri,
+                        "base_figure_url": base_figure_url,
+                        "use_ssl": use_ssl,
+                        "user_id": user_id
+                    };
+                    postWithCallback(main_id, "initialize_mainwindow", data_dict)
+                }
         }
     });
     tsocket.socket.on('finish-post-load', function (data) {
@@ -139,6 +154,9 @@ function start_post_load() {
                 }
             }
             if (is_notebook) {
+                if (temp_data_id != "") {
+                    $("#console").html(data.console_html);
+                }
                 build_and_render_menu_objects();
                 continue_loading()
             }
@@ -154,8 +172,6 @@ function start_post_load() {
 }
 
 function continue_loading() {
-
-
     if (_project_name != "") {
         if (is_notebook) {
             $("#outer-container").css("display", "block");
@@ -251,6 +267,21 @@ function continue_loading() {
         if (is_notebook) {
             $("#outer-container").css("display", "block");
             tableObject = new TableObjectClass(({}));
+            if (temp_data_id != "") {
+                    postWithCallback(main_id, "get_saved_console_code", {}, function (data) {
+                    const saved_console_code = data["saved_console_code"];
+                    // global_scc = saved_console_code;
+                    for (let uid in saved_console_code) {
+                        if (!saved_console_code.hasOwnProperty(uid)) continue;
+                        console.log("getting codearea " + uid);
+                        const codearea = document.getElementById(uid);
+                        codearea.innerHTML = "";
+                        consoleObject.createConsoleCodeInCodearea(uid, codearea);
+                        consoleObject.consoleCMObjects[uid].doc.setValue(saved_console_code[uid]);
+                        consoleObject.consoleCMObjects[uid].refresh();
+                    }
+                });
+            }
             consoleObject.prepareNotebook();
             stopSpinner();
             clearStatusMessage();

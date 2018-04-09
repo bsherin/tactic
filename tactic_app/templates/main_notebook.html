@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}{{ window_title }}{% endblock %}
+
+{% block head %}
+{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{{url_for('static', filename='css/jquery-ui.min.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/loader.css', v=version_string)}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/table.css', v=version_string)}}">
+
+{% endblock %}
+
+{% block page_content %}
+    {% include 'modals/show_image_modal.html' %}
+    <div id="modal-area">
+    </div>
+
+    <div id="outer-container" style="display: none">
+        <div id="grid-bottom" style="display:block">
+            <div id="console-panel" class="panel panel-default" style="display:inline-block; vertical-align:top">
+                <div id="console-heading" class="panel-heading">
+                    <button type='button' id="show-console-button" data-toggle="tooltip" class='notclose triangle-right bottom-heading-element tooltip-top'><span style="font-size:12px" class="glyphicon glyphicon-triangle-right"></span></button>
+                    <button type='button' id="hide-console-button" data-toggle="tooltip" class='notclose triangle-bottom bottom-heading-element tooltip-top' ><span style="font-size:12px" class="glyphicon glyphicon-triangle-bottom"></span></button>
+
+                    <b>Log</b>
+                    <button type='button' id="add-blank-text-button" data-toggle="tooltip" class='notclose tooltip-top bottom-heading-element bottom-heading-element-button'><span style="font-size:12px" class="glyphicon glyphicon-plus"></span> text </button>
+                    <button type='button' id="add-blank-code-button" data-toggle="tooltip" class='notclose tooltip-top bottom-heading-element bottom-heading-element-button'><span style="font-size:12px" class="glyphicon glyphicon-plus"></span> code </button>
+                    <button type='button' id="clear-console-button" data-toggle="tooltip" class='notclose tooltip-top bottom-heading-element bottom-heading-element-button'><span style="font-size:12px" class="glyphicon glyphicon-refresh"></span> reset</button>
+
+                    <button type='button' id="zoom-console-button" data-toggle="tooltip" class='notclose bottom-heading-element tooltip-top' style="float:right"><span style="font-size:16px" class="glyphicon glyphicon-resize-full"></span></button>
+                    <button type='button' id="unzoom-console-button" data-toggle="tooltip" class='notclose bottom-heading-element tooltip-top' style="float:right"><span style="font-size:16px" class="glyphicon glyphicon-resize-small"></span></button>
+                    <button type='button' id="show-exports-button" data-toggle="tooltip" class='notclose tooltip-top bottom-heading-element' style="float:right; margin-right:20px">exports</button>
+                </div>
+                <div id="console" class="panel-body">{{ console_html | safe }}</div>
+            </div>
+        </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+    <script src="{{url_for('static', filename='js/jquery.isonscreen.js')}}"></script>
+    <script src="{{url_for('static', filename='js/d3.js')}}"></script>
+    <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
+    <script src="{{url_for('static', filename='js/transition.js')}}"></script>
+    <script src="{{url_for('static', filename='js/collapse.js')}}"></script>
+    <script src="{{url_for('static', filename='js/sorttable.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/main_menus.js', v=version_string)}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/markdown_utilities.js', v=version_string)}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/console.js', v=version_string)}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/main_notebook.js', v=version_string)}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/notebook.js', v=version_string)}}"></script>
+    <script>
+    console.log("running scripts");
+    var _project_name = "{{project_name}}";
+    var _project_collection_name = "{{project_collection_name}}";
+    var mongo_uri = "{{mongo_uri}}";
+    var base_figure_url = "{{base_figure_url}}";
+    var main_id = "{{main_id}}";
+    var temp_data_id = "{{temp_data_id}}";
+    var page_id = main_id;
+    var user_id = "{{current_user.get_id()}}";
+    var doc_names = {{ doc_names | safe }};
+    var is_project = _project_name != "";
+    var use_ssl = "{{use_ssl}}"=="True";
+    window.onload = start_post_load;
+    window.onresize = function () {
+        if (typeof tableObject != "undefined") {
+            consoleObject.resize_to_window();
+            if (!is_notebook) {
+                tableObject.resize_table_area();
+                exportViewerObject.resize_to_window()
+            }
+        }
+    };
+    window.onbeforeunload = function(e) {
+        if (dirty) {
+            dtext =  "Any unsaved changes will be lost."
+            e.returnValue = dtext;
+            return dtext
+        }
+    };
+    window.onunload = function (e) {
+        removeMainwindow()
+    }
+    </script>
+{% endblock %}

@@ -9,6 +9,7 @@ import base64
 import cPickle
 import cloudpickle
 import zlib
+import uuid
 
 if ("USE_FORWARDER" in os.environ) and (os.environ.get("USE_FORWARDER") == "True"):
     USE_FORWARDER = True
@@ -50,6 +51,22 @@ def debinarize_python_object(bdat):
     else:
         dat = base64.b64decode(bdat)
     return cPickle.loads(dat)
+
+def store_temp_data(db, data_dict):
+    unique_id = str(uuid.uuid4())
+    data_dict["unique_id"] = unique_id
+    db["temp_data"].insert_one(data_dict)
+    return unique_id
+
+def read_temp_data(db, unique_id):
+    return db["temp_data"].find_one({"unique_id": unique_id})
+
+def delete_temp_data(db, unique_id, fs=None):
+    save_dict = read_temp_data(db, unique_id)
+    db["temp_data"].delete_one({"unique_id": unique_id})
+    if fs is not None and "file_id" in save_dict:
+        fs.delete(save_dict["file_id"])
+    return
 
 def read_project_dict(fs, mdata, file_id):
     project_dict = None
