@@ -119,7 +119,7 @@ class mainWindow(object):
 
     # Save and load-related methods
 
-    def compile_save_dict(self): # tactic_working in main.py
+    def compile_save_dict(self):
         result = {}
         if self.doc_type == "notebook":
             save_attrs = self.notebook_save_attrs
@@ -151,7 +151,7 @@ class mainWindow(object):
                     if module_name is not None:
                         used_modules.append(module_name)
                 result["loaded_modules"] = used_modules
-        if self.pseudo_tile_id is None:  # tactic_working
+        if self.pseudo_tile_id is None:
             result["pseudo_tile_instance"] = None
         else:
             print "about to ask the pseudo tile to compile_save_dict"
@@ -171,7 +171,6 @@ class mainWindow(object):
         data = {"message": message, "timeout": timeout, "main_id": self.mworker.my_id}
         self.mworker.post_task("host", "show_main_status_message", data)
 
-
     def show_error_window(self, error_string):
         data_dict = {"error_string": str(error_string),
                      "uses_codemirror": "False",
@@ -185,7 +184,7 @@ class mainWindow(object):
         self.mworker.post_task("host", "clear_main_status_message", data)
 
     @task_worthy
-    def do_full_notebook_recreation(self, data_dict):  # tactic_working
+    def do_full_notebook_recreation(self, data_dict):
         tile_containers = {}
         try:
             print "Entering do_full_recreation"
@@ -199,12 +198,12 @@ class mainWindow(object):
                 self.show_error_window(tile_info_dict)
                 return
 
-            if self.pseudo_tile_id is None:   # tactic_working
+            if self.pseudo_tile_id is None:
                 self.create_pseudo_tile()
 
-            matches = re.findall(r"\/figure_source\/(.*?)\/([0-9A-Fa-f-]*)", self.console_html)  # tactic_working
+            matches = re.findall(r"/figure_source/(.*?)/([0-9A-Fa-f-]*)", self.console_html)
             if len(matches) > 0:
-                for match in matches: # really they should all be the same, but loop over just in case
+                for match in matches:  # really they should all be the same, but loop over just in case
                     self.console_html = re.sub(match[0], self.pseudo_tile_id, self.console_html)
 
             self.clear_main_status_message()
@@ -225,7 +224,7 @@ class mainWindow(object):
         return
 
     @task_worthy
-    def do_full_recreation(self, data_dict):  # tactic_working
+    def do_full_recreation(self, data_dict):
         tile_containers = {}
         try:
             print "Entering do_full_recreation"
@@ -304,11 +303,11 @@ class mainWindow(object):
                 del self.project_dict["tile_instances"][tid]
             print "recreated the tiles"
             self.clear_main_status_message()
-            matches = re.findall(r"\/figure_source\/(.*?)\/([0-9A-Fa-f-]*)", self.console_html)  # tactic_working
+            matches = re.findall(r"/figure_source/(.*?)/([0-9A-Fa-f-]*)", self.console_html)
             if len(matches) > 0:
                 if self.pseudo_tile_id is None:  # This really shouldn't be necessary
                     self.create_pseudo_tile()
-                for match in matches: # really they should all be the same, but loop over just in case
+                for match in matches:  # really they should all be the same, but loop over just in case
                     self.console_html = re.sub(match[0], self.pseudo_tile_id, self.console_html)
             self.mworker.ask_host("emit_to_client", {"message": "finish-post-load",
                                                      "collection_name": self.collection_name,
@@ -325,7 +324,7 @@ class mainWindow(object):
             self.mworker.ask_host("delete_container_list", {"container_list": container_list})
         return
 
-    def recreate_from_save(self, project_collection_name, project_name, unique_id=None):  # tactic_working makes pseudo_tile now
+    def recreate_from_save(self, project_collection_name, project_name, unique_id=None):
 
         print "entering recreate from save"
         if unique_id is None:
@@ -384,7 +383,7 @@ class mainWindow(object):
             if attr not in project_dict:
                 setattr(self, attr, "")
 
-        if "pseudo_tile_instance" in project_dict:  # tactic_working
+        if "pseudo_tile_instance" in project_dict:
             globals_dict = project_dict["pseudo_tile_instance"]
             self.create_pseudo_tile(globals_dict)
 
@@ -488,7 +487,8 @@ class mainWindow(object):
 
         except Exception as ex:
             self.mworker.debug_log("got an error in changing collection")
-            error_string = self.handle_exception(ex, "<pre>Error changing changing collection</pre>", print_to_console=False)
+            error_string = self.handle_exception(ex, "<pre>Error changing changing collection</pre>",
+                                                 print_to_console=False)
             return_data = {"success": False, "message_string": error_string}
         return return_data
 
@@ -540,6 +540,7 @@ class mainWindow(object):
 
         self.show_main_status_message("compiling save dictionary")
         console_dict = self.compile_save_dict()
+        console_dict["doc_type"] = "notebook"
         cdict = make_jsonizable_and_compress(console_dict)
         save_dict = {}
         save_dict["file_id"] = self.fs.put(cdict)
@@ -549,7 +550,7 @@ class mainWindow(object):
         return {"success": True}
 
     @task_worthy
-    def save_new_notebook_project(self, data_dict):  # tactic_working
+    def save_new_notebook_project(self, data_dict):
         # noinspection PyBroadException
         try:
             self.project_name = data_dict["project_name"]
@@ -771,8 +772,8 @@ class mainWindow(object):
         else:
             self.mworker.emit_table_message("highlightTxtInDocument", {"text_to_find": txt})
 
-    def move_figures_to_pseudo_tile(self, html_string):  # tactic_working
-        matches = re.findall(r"\/figure_source\/(.*?)\/([0-9A-Fa-f-]*)", html_string)
+    def move_figures_to_pseudo_tile(self, html_string):
+        matches = re.findall(r"/figure_source/(.*?)/([0-9A-Fa-f-]*)", html_string)
         new_html = html_string
         for match in matches:
             tid = match[0]
@@ -981,7 +982,7 @@ class mainWindow(object):
 
     @task_worthy
     def print_to_console_event(self, data):
-        to_print = self.move_figures_to_pseudo_tile(data["print_string"]) # tactic_working
+        to_print = self.move_figures_to_pseudo_tile(data["print_string"])
         return self.mworker.print_to_console(to_print,
                                              force_open=data["force_open"],
                                              is_error=data["is_error"],
@@ -1029,7 +1030,6 @@ class mainWindow(object):
         the_text = re.sub("&nbsp;", " ", the_text)
         converted_markdown = markdown.markdown(the_text)
         return {"success": True, "converted_markdown": converted_markdown}
-
 
     @task_worthy
     def clear_console_namespace(self, data):
@@ -1112,7 +1112,7 @@ class mainWindow(object):
         result = self.mworker.post_and_wait(self.pseudo_tile_id, "get_export_info", ndata)
         return result
 
-    def create_pseudo_tile(self, globals_dict=None):  # tactic_working img_dict in globals_dict?
+    def create_pseudo_tile(self, globals_dict=None):
         data = self.mworker.post_and_wait("host", "create_tile_container", {"user_id": self.user_id,
                                                                             "parent": self.mworker.my_id,
                                                                             "other_name": "pseudo_tile"})
@@ -1124,7 +1124,7 @@ class mainWindow(object):
         data_dict = {"base_figure_url": self.base_figure_url.replace("tile_id", self.pseudo_tile_id),
                      "doc_type": self.doc_type, "globals_dict": globals_dict}
         instantiate_result = self.mworker.post_and_wait(self.pseudo_tile_id,
-                                                        "instantiate_as_pseudo_tile", data_dict)  # tactic_working
+                                                        "instantiate_as_pseudo_tile", data_dict)
         if not instantiate_result["success"]:
             self.mworker.debug_log("got an exception " + instantiate_result["message_string"])
             raise Exception(instantiate_result["message_string"])

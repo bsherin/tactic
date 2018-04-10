@@ -22,7 +22,6 @@ global_tile_manager = tactic_app.global_tile_manager
 class HostWorker(QWorker):
     def __init__(self):
         QWorker.__init__(self)
-        self.temp_dict = {}
         self.last_check_for_dead_containers = datetime.datetime.utcnow()
         self.short_sleep_period = .01
         self.hibernate_time = .1
@@ -195,7 +194,6 @@ class HostWorker(QWorker):
         for old_tile_id, tile_type in tile_info_dict.items():
             result[old_tile_id] = global_tile_manager.get_tile_code(tile_type, user_id)
         return result
-
 
     @task_worthy
     def get_project_names(self, data):

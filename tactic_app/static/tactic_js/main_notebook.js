@@ -104,9 +104,9 @@ function continue_loading() {
                     consoleObject.consoleCMObjects[uid].refresh();
                 }
             });
-        consoleObject.prepareNotebook();
-        stopSpinner();
     }
+    consoleObject.prepareNotebook();
+    stopSpinner();
     if (is_project) {
         menus["Project"].enable_menu_item("save");
     }
