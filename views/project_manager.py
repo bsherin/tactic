@@ -14,6 +14,7 @@ repository_user = User.get_user_by_username("repository")
 import datetime
 tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 
+
 class ProjectManager(UserManageResourceManager):
     collection_list = "project_names"
     collection_list_with_metadata = "project_names_with_metadata"
@@ -66,8 +67,12 @@ class ProjectManager(UserManageResourceManager):
                      "uses_codemirror": "True",
                      "version_string": tstring
                      }
+        if doc_type == 'notebook':
+            template_name = "main_notebook.html"
+        else:
+            template_name = "main.html"
 
-        return render_template("main.html", **data_dict)
+        return render_template(template_name, **data_dict)
 
     def duplicate_project(self):
         user_obj = current_user

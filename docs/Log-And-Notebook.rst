@@ -90,13 +90,9 @@ Clicking the reset button does a few different things:
 
 About **saving**:
 
-When you save a standard project, the Log is saved as pure html. That
-means that it will *look* the same when you open the project. But the
-state of the Log is not saved; none of the variables you have defined
-are saved.
-
-However, when you save a Notebook project, Tactic attempts to save both
-the appearance *and internal state* of the Notebook.
+When you save a standard project or notebook, Tactic attempts to save both
+the appearance *and internal state* of the Notebook. The saving of internal
+state is still an iffy business however.
 
 .. |image0| image:: imgs/663fd636.png
 .. |image1| image:: imgs/e64e7678.png

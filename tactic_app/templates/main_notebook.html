@@ -61,22 +61,18 @@
     var temp_data_id = "{{temp_data_id}}";
     var page_id = main_id;
     var user_id = "{{current_user.get_id()}}";
-    var doc_names = {{ doc_names | safe }};
     var is_project = _project_name != "";
     var use_ssl = "{{use_ssl}}"=="True";
+    var is_notebook = true;
     window.onload = start_post_load;
     window.onresize = function () {
         if (typeof tableObject != "undefined") {
             consoleObject.resize_to_window();
-            if (!is_notebook) {
-                tableObject.resize_table_area();
-                exportViewerObject.resize_to_window()
-            }
         }
     };
     window.onbeforeunload = function(e) {
         if (dirty) {
-            dtext =  "Any unsaved changes will be lost."
+            var dtext =  "Any unsaved changes will be lost.";
             e.returnValue = dtext;
             return dtext
         }

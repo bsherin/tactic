@@ -11,8 +11,8 @@ from tactic_app.communication_utils import read_temp_data, delete_temp_data
 import openpyxl
 import cStringIO
 import tactic_app
-from tactic_app.file_handling import read_csv_file_to_dict, read_tsv_file_to_dict, read_txt_file_to_dict, read_excel_file
-from tactic_app.file_handling import read_freeform_file
+from tactic_app.file_handling import read_csv_file_to_dict, read_tsv_file_to_dict, read_txt_file_to_dict
+from tactic_app.file_handling import read_freeform_file, read_excel_file
 from tactic_app.users import load_user
 
 from tactic_app.resource_manager import ResourceManager, UserManageResourceManager
@@ -60,8 +60,7 @@ class CollectionManager(UserManageResourceManager):
                                    window_tile="Load Failed",
                                    error_string="Load failed: Could not create container",
                                    version_string=tstring)
-        return render_template("main.html",
-                               collection_name="",
+        return render_template("main_notebook.html",
                                window_title="new notebook",
                                project_name='',
                                project_collection_name=user_obj.project_collection_name,
@@ -69,17 +68,12 @@ class CollectionManager(UserManageResourceManager):
                                base_figure_url=url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
                                main_id=main_id,
                                temp_data_id="",
-                               doc_names=[],
                                use_ssl=str(use_ssl),
                                console_html="",
-                               is_table=False,
-                               is_notebook=True,
-                               is_freeform=False,
-                               short_collection_name="",
                                uses_codemirror="True",
                                version_string=tstring)
 
-    def open_notebook(self, unique_id):  # tactic_working
+    def open_notebook(self, unique_id):
         the_data = read_temp_data(db, unique_id)
         user_obj = load_user(the_data["user_id"])
         try:
@@ -90,22 +84,16 @@ class CollectionManager(UserManageResourceManager):
                                    window_tile="Load Failed",
                                    error_string="Load failed: Could not create container",
                                    version_string=tstring)
-        return render_template("main.html",
-                               collection_name="",
+        return render_template("main_notebook.html",
                                window_title="new notebook",
                                project_name='',
                                project_collection_name=user_obj.project_collection_name,
                                mongo_uri=mongo_uri,
                                base_figure_url=url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
                                main_id=main_id,
-                               temp_data_id= unique_id,
-                               doc_names=[],
+                               temp_data_id=unique_id,
                                use_ssl=str(use_ssl),
-                               console_html="",  # tactic_working
-                               is_table=False,
-                               is_notebook=True,
-                               is_freeform=False,
-                               short_collection_name="",
+                               console_html="",
                                uses_codemirror="True",
                                version_string=tstring)
 

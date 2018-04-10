@@ -350,7 +350,7 @@ function changeCollection() {
 
 }
 
-function consoleToNotebook() {  // tactic_working
+function consoleToNotebook() {
     const result_dict = {
         "main_id": main_id,
         "console_html": $("#console").html(),

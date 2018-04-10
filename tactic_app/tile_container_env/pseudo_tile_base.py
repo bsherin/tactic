@@ -18,6 +18,7 @@ from matplotlib_utilities import MplFigure, ColorMapper
 PSEUDO_WIDTH = 300
 PSEUDO_HEIGHT = 300
 
+
 # noinspection PyTypeChecker
 class ConsoleStringIO(StringIO):
     def __init__(self, tile, data):
@@ -32,6 +33,7 @@ class ConsoleStringIO(StringIO):
             self.data["result_string"] = s
             self.my_tile.tworker.post_task(self.my_tile.main_id, "got_console_print", self.data)
         return
+
 
 class PseudoTileClass(TileBase, MplFigure):
     category = "word"
@@ -50,7 +52,7 @@ class PseudoTileClass(TileBase, MplFigure):
         return
 
     @task_worthy
-    def compile_save_dict(self, data):  # tactic_working gets img_dict now
+    def compile_save_dict(self, data):
         print "entering compile_save_dict"
         result = {"binary_attrs": [], "imports": []}
         attrs = globals().keys()
@@ -60,7 +62,7 @@ class PseudoTileClass(TileBase, MplFigure):
             attr_val = globals()[attr]
             if hasattr(attr_val, "compile_save_dict"):
                 result[attr] = attr_val.compile_save_dict(data)
-            elif (isinstance(attr_val, types.ModuleType)):
+            elif isinstance(attr_val, types.ModuleType):
                 result["imports"].append(attr)
             elif((type(attr_val) == dict) and (len(attr_val) > 0) and
                  hasattr(attr_val.values()[0], "compile_save_dict")):
@@ -89,7 +91,7 @@ class PseudoTileClass(TileBase, MplFigure):
         print "done compiling attributes " + str(result.keys())
         return result
 
-    def recreate_from_save(self, save_dict):  # tactic_working now gets img_dict
+    def recreate_from_save(self, save_dict):
         print "entering recreate from save in pseudo_tile_base"
         print str(save_dict.keys())
         if "binary_attrs" not in save_dict:
@@ -132,15 +134,14 @@ class PseudoTileClass(TileBase, MplFigure):
             except:
                 print "failed to recreate attribute " + attr
 
-
         self.main_id = os.environ["PARENT"]  # this is for backward compatibility with some old project saves
         return None
 
     @task_worthy
-    def store_image(self, data):  # tactic_working
+    def store_image(self, data):
         encoded_img = data["img"]
         self.img_dict[data["figure_name"]] = debinarize_python_object(encoded_img)
-        return {"success":True}
+        return {"success": True}
 
     @task_worthy
     def exec_console_code(self, data):
