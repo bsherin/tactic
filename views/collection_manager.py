@@ -7,11 +7,12 @@ from tactic_app.users import User
 from tactic_app.docker_functions import create_container, ContainerCreateError
 from tactic_app import app, db, fs, mongo_uri, use_ssl
 from tactic_app.communication_utils import make_python_object_jsonizable, debinarize_python_object
+from tactic_app.communication_utils import read_temp_data, delete_temp_data
 import openpyxl
 import cStringIO
 import tactic_app
-from tactic_app.file_handling import read_csv_file_to_dict, read_tsv_file_to_dict, read_txt_file_to_dict, read_excel_file
-from tactic_app.file_handling import read_freeform_file
+from tactic_app.file_handling import read_csv_file_to_dict, read_tsv_file_to_dict, read_txt_file_to_dict
+from tactic_app.file_handling import read_freeform_file, read_excel_file
 from tactic_app.users import load_user
 
 from tactic_app.resource_manager import ResourceManager, UserManageResourceManager
@@ -59,30 +60,22 @@ class CollectionManager(UserManageResourceManager):
                                    window_tile="Load Failed",
                                    error_string="Load failed: Could not create container",
                                    version_string=tstring)
-        return render_template("main.html",
-                               collection_name="",
+        return render_template("main_notebook.html",
                                window_title="new notebook",
                                project_name='',
                                project_collection_name=user_obj.project_collection_name,
                                mongo_uri=mongo_uri,
                                base_figure_url=url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
                                main_id=main_id,
-                               doc_names=[],
+                               temp_data_id="",
                                use_ssl=str(use_ssl),
                                console_html="",
-                               is_table=False,
-                               is_notebook=True,
-                               is_freeform=False,
-                               short_collection_name="",
-                               new_tile_info="",
                                uses_codemirror="True",
                                version_string=tstring)
 
     def open_notebook(self, unique_id):
-        the_data = tactic_app.host_worker.temp_dict[unique_id]
-        console_html = the_data["console_html"]
+        the_data = read_temp_data(db, unique_id)
         user_obj = load_user(the_data["user_id"])
-        del tactic_app.host_worker.temp_dict[unique_id]
         try:
             main_id, container_id = create_container("tactic_main_image", owner=user_obj.get_id(),
                                                      other_name="new_notebook")
@@ -91,22 +84,16 @@ class CollectionManager(UserManageResourceManager):
                                    window_tile="Load Failed",
                                    error_string="Load failed: Could not create container",
                                    version_string=tstring)
-        return render_template("main.html",
-                               collection_name="",
+        return render_template("main_notebook.html",
                                window_title="new notebook",
                                project_name='',
                                project_collection_name=user_obj.project_collection_name,
                                mongo_uri=mongo_uri,
                                base_figure_url=url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
                                main_id=main_id,
-                               doc_names=[],
+                               temp_data_id=unique_id,
                                use_ssl=str(use_ssl),
-                               console_html=console_html,
-                               is_table=False,
-                               is_notebook=True,
-                               is_freeform=False,
-                               short_collection_name="",
-                               new_tile_info="",
+                               console_html="",
                                uses_codemirror="True",
                                version_string=tstring)
 
@@ -151,6 +138,7 @@ class CollectionManager(UserManageResourceManager):
                                mongo_uri=mongo_uri,
                                base_figure_url=url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
                                main_id=main_id,
+                               temp_data_id="",
                                doc_names=doc_names,
                                use_ssl=str(use_ssl),
                                console_html="",
@@ -158,7 +146,6 @@ class CollectionManager(UserManageResourceManager):
                                is_notebook=False,
                                is_freeform=(doc_type == 'freeform'),
                                short_collection_name=short_collection_name,
-                               new_tile_info="",
                                uses_codemirror="True",
                                version_string=tstring)
 

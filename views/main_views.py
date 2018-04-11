@@ -12,10 +12,12 @@ from user_manage_views import collection_manager
 from tactic_app.docker_functions import destroy_container, destroy_child_containers
 from tactic_app.users import load_user
 from tactic_app.communication_utils import send_request_to_megaplex, debinarize_python_object
+from tactic_app.communication_utils import read_temp_data, delete_temp_data
 import tactic_app
 
 import datetime
 tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
+
 
 # The main window should join a room associated with the user
 @socketio.on('connect', namespace='/main')
@@ -96,8 +98,8 @@ def get_mainwindow_property(main_id, prop_name, callback):
 @app.route('/load_temp_page/<the_id>', methods=['get', 'post'])
 @login_required
 def load_temp_page(the_id):
-    template_data = tactic_app.host_worker.temp_dict[the_id]
-    del tactic_app.host_worker.temp_dict[the_id]
+    template_data = read_temp_data(db, the_id)
+    delete_temp_data(db, the_id)
     return render_template(template_data["template_name"], **template_data)
 
 

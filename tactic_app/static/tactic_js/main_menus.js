@@ -354,9 +354,10 @@ function consoleToNotebook() {
     const result_dict = {
         "main_id": main_id,
         "console_html": $("#console").html(),
-        "user_id": user_id
+        "user_id": user_id,
+        "console_cm_code": consoleObject.getConsoleCMCode(),
     };
-    postWithCallback("host", "console_to_notebook", result_dict)
+    postWithCallback(main_id, "console_to_notebook", result_dict)
 }
 
 function saveProjectAs() {

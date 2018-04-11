@@ -128,12 +128,12 @@ class TileWorker(QWorker):
                 "is_d3": self.tile_instance.is_d3}
 
     @task_worthy
-    def get_image(self,  data_dict):
+    def get_image(self, data_dict):
         try:
             encoded_img = make_python_object_jsonizable(self.tile_instance.img_dict[data_dict["figure_name"]])
             return {"success": True, "img": encoded_img}
         except Exception as ex:
-            return self.handle_exception(ex, "Error loading source")
+            return self.handle_exception(ex, "Error getting image")
 
     def extract_option_names(self, opt_dict):
         opt_names = []
@@ -174,7 +174,7 @@ class TileWorker(QWorker):
             return self.handle_exception(ex, "Error reinstantiating tile")
 
     @task_worthy
-    def instantiate_as_pseudo_tile(self, data):  # tactic_working
+    def instantiate_as_pseudo_tile(self, data):
         try:
             print("entering load_source")
             self.tile_instance = PseudoTileClass()

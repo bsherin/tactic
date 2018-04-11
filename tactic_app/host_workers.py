@@ -22,7 +22,6 @@ global_tile_manager = tactic_app.global_tile_manager
 class HostWorker(QWorker):
     def __init__(self):
         QWorker.__init__(self)
-        self.temp_dict = {}
         self.last_check_for_dead_containers = datetime.datetime.utcnow()
         self.short_sleep_period = .01
         self.hibernate_time = .1
@@ -196,7 +195,6 @@ class HostWorker(QWorker):
             result[old_tile_id] = global_tile_manager.get_tile_code(tile_type, user_id)
         return result
 
-
     @task_worthy
     def get_project_names(self, data):
         user_id = data["user_id"]
@@ -260,39 +258,6 @@ class HostWorker(QWorker):
     # def send_file_to_client(self, data):
         # from tactic_app import socketio
         # str_io = cPickle.loads(data["encoded_str_io"]).decode("utf-8", "ignore").encode("ascii")
-
-    @task_worthy
-    def open_error_window(self, data):
-        from tactic_app import socketio
-        unique_id = str(uuid.uuid4())
-        template_data = copy.copy(data)
-        template_data["template_name"] = "error_window_template.html"
-        template_data["error_string"] = str(template_data["error_string"])
-        template_data["uses_codemirror"] = "False"
-        self.temp_dict[unique_id] = template_data
-        socketio.emit("window-open", {"the_id": unique_id}, namespace=data["namespace"], room=data["room"])
-        socketio.emit('stop-spinner', namespace=data["namespace"], room=data["room"])
-        return {"success": True}
-
-    @task_worthy
-    def console_to_notebook(self, data):
-        from tactic_app import socketio
-        unique_id = str(uuid.uuid4())
-        template_data = copy.copy(data)
-        self.temp_dict[unique_id] = template_data
-        socketio.emit("notebook-open", {"the_id": unique_id}, namespace='/main', room=data["main_id"])
-        return {"success": True}
-
-    @task_worthy
-    def open_log_window(self, data):
-        from tactic_app import socketio
-        unique_id = str(uuid.uuid4())
-        template_data = copy.copy(data)
-        template_data["template_name"] = "log_window_template.html"
-        template_data["uses_codemirror"] = "True"
-        self.temp_dict[unique_id] = template_data
-        socketio.emit("window-open", {"the_id": unique_id}, namespace='/main', room=data["main_id"])
-        return {"success": True}
 
     @task_worthy
     def emit_table_message(self, data):
