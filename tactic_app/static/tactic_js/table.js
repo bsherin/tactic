@@ -386,10 +386,8 @@ class TableObjectClass {
             }
             this.current_spec.column_widths = result;
             this.current_spec.table_width = $("#table-area").width();
-
             this.update_column_widths()
         }
-
 
         function handle_cell_change () {
             // This is called when the user directly edits a cell.

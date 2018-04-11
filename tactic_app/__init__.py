@@ -105,6 +105,14 @@ try:
     print "creating the megaplex"
     create_megaplex()
 
+    if not "temp_data" in db.collection_names():
+        db.create_collection("temp_data")
+    else:
+        for rec in db["temp_data"].find():
+            if "file_id" in rec:
+                fs.delete(rec["file_id"])
+        db["temp_data"].remove()
+
 except pymongo.errors.PyMongoError as err:
     print("There's a problem with the PyMongo database. ", err)
     sys.exit()

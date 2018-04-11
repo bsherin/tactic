@@ -91,9 +91,6 @@ class ConsoleObjectClass {
             self.showHideExports()
         });
 
-        $("#open-log-button").click(function () {
-            self.openLogWindow()
-        });
         $("#clear-console-button").click(function () {
             self.clearConsole()
         });
@@ -478,13 +475,6 @@ class ConsoleObjectClass {
                 })
             }
         })
-    }
-
-    openLogWindow() {
-        const task_data = {
-            "console_html": this.console_dom.html()
-        };
-        postWithCallback(main_id, "open_log_window", task_data)
     }
 
 }
