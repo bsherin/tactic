@@ -183,6 +183,25 @@ class mainWindow(object):
         data = {"main_id": self.mworker.my_id}
         self.mworker.post_task("host", "clear_main_status_message", data)
 
+
+    def update_legacy_console_html(self):
+        self.console_html = re.sub("panel panel-default log-panel ", "card log-panel ", self.console_html)
+        self.console_html = re.sub("panel log-panel panel-default ", "card log-panel ", self.console_html)
+        self.console_html = re.sub("panel-heading", "card-header", self.console_html)
+
+        replacements = {"trash": "trash-alt",
+                        "triangle-bottom": "chevron-circle-down",
+                        "triangle-right": "chevron-circle-right",
+                        "step-forward": "step-forward",
+                        "erase": "eraser",
+                        "text-size": "font"}
+
+        for old, new in replacements.items():
+            self.console_html = re.sub('style=\"font-size:13px\" class=\"glyphicon glyphicon-{}\"'.format(old),
+                                       r'class="fas fa-{}"'.format(new),
+                                       self.console_html)
+        return
+
     @task_worthy
     def do_full_notebook_recreation(self, data_dict):
         tile_containers = {}
@@ -205,6 +224,8 @@ class mainWindow(object):
             if len(matches) > 0:
                 for match in matches:  # really they should all be the same, but loop over just in case
                     self.console_html = re.sub(match[0], self.pseudo_tile_id, self.console_html)
+
+            self.update_legacy_console_html()
 
             self.clear_main_status_message()
             self.mworker.ask_host("emit_to_client", {"message": "finish-post-load",
@@ -309,6 +330,8 @@ class mainWindow(object):
                     self.create_pseudo_tile()
                 for match in matches:  # really they should all be the same, but loop over just in case
                     self.console_html = re.sub(match[0], self.pseudo_tile_id, self.console_html)
+
+            self.update_legacy_console_html()
             self.mworker.ask_host("emit_to_client", {"message": "finish-post-load",
                                                      "collection_name": self.collection_name,
                                                      "short_collection_name": self.short_collection_name,
