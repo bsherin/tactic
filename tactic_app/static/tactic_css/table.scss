@@ -37,7 +37,7 @@ $selected-column-background: #e0e0e0;
     border: 2px solid $main-panel-border-color;
     font-family: $table-font-family;
 
-    .panel-heading {
+    .card-header{
         padding-top: $main-panel-heading-padding;
         padding-bottom: $main-panel-heading-padding;
         background-color: $main-panel-heading-background;

@@ -14,35 +14,29 @@
 {% block page_content %}
     <div id="modal-area">
     </div>
-    <div class="container-fluid">
-        <div class="page-header" style="margin-top: 5px">
-            <h1><span id="view-title">{{current_user.username}}'s library</span>
-                {% if current_user.username != "repository" %}
-                <button id="toggle-repository-button" class="btn btn-default" onclick="return toggleRepository();">Show Repository</button>
-                {% endif %}
-                <span id="xspinner" class="xloader-medium" style="float:right"></span><span id="xstatus-msg-area" class="xstatus-msg" style="float:right"></span>
-            </h1>
+    <div class="container-fluid" style="padding-left: 0px">
 
-        </div>
-
-        <div class="row">
-            <div class="col-xs-12">
-              <ul class="nav nav-tabs" role="tablist">
-                <li role="presentation" class="active"><a href="#collection-module-outer" aria-controls="collections" role="tab" data-toggle="tab" value="collection">collections</a></li>
-                <li role="presentation"><a href="#project-module-outer" aria-controls="projects" role="tab" data-toggle="tab" value="project">projects</a></li>
-                <li role="presentation"><a href="#tile-module-outer" aria-controls="tiles" role="tab" data-toggle="tab" value="tile">tiles</a></li>
-                <li role="presentation"><a href="#list-module-outer" aria-controls="lists" role="tab" data-toggle="tab" value="list">lists</a></li>
-                <li role="presentation"><a href="#code-module-outer" aria-controls="code" role="tab" data-toggle="tab" value="code">code</a></li>
-                  <li role="presentation"><a href="#all-module-outer" aria-controls="all" role="tab" data-toggle="tab" value="all">all</a></li>
+        <div class="d-flex">
+            <div class="d-flex flex-column justify-content-between" style="margin-bottom:25px">
+              <ul id="nav-list" style="margin-top:20px" class="nav nav-pills flex-column left-vertical-nav" role="tablist">
+                <li role="presentation" class="nav-item"><a class="nav-link active" href="#collection-module-outer" aria-controls="collections" role="tab" data-toggle="tab" value="collection">collections</a></li>
+                <li role="presentation" class="nav-item"><a class="nav-link" href="#project-module-outer" aria-controls="projects" role="tab" data-toggle="tab" value="project">projects</a></li>
+                <li role="presentation" class="nav-item"><a class="nav-link" href="#tile-module-outer" aria-controls="tiles" role="tab" data-toggle="tab" value="tile">tiles</a></li>
+                <li role="presentation" class="nav-item"><a class="nav-link" href="#list-module-outer" aria-controls="lists" role="tab" data-toggle="tab" value="list">lists</a></li>
+                <li role="presentation" class="nav-item"><a class="nav-link" href="#code-module-outer" aria-controls="code" role="tab" data-toggle="tab" value="code">code</a></li>
+                  <li role="presentation" class="nav-item"><a class="nav-link" href="#all-module-outer" aria-controls="all" role="tab" data-toggle="tab" value="all">all</a></li>
               </ul>
-                <div class="tab-content" id="module-area">
-                    <div class="resource-module tab-pane fade in active" id="collection-module-outer"></div>
-                    <div class="resource-module tab-pane fade" id="project-module-outer"></div>
-                    <div class="resource-module tab-pane fade" id="tile-module-outer"></div>
-                    <div class="resource-module tab-pane fade" id="list-module-outer"></div>
-                    <div class="resource-module tab-pane fade" id="code-module-outer"></div>
-                    <div class="resource-module tab-pane fade" id="all-module-outer"></div>
+                {% if current_user.username != "repository" %}
+                    <button style="border-radius:0" id="toggle-repository-button" class="btn btn-sm btn-warning" onclick="return toggleRepository();">Show Repository</button>
+                {% endif %}
                 </div>
+            <div class="tab-content d-flex" id="module-area">
+                <div class="resource-module tab-pane fade active show" id="collection-module-outer"></div>
+                <div class="resource-module tab-pane fade" id="project-module-outer"></div>
+                <div class="resource-module tab-pane fade" id="tile-module-outer"></div>
+                <div class="resource-module tab-pane fade" id="list-module-outer"></div>
+                <div class="resource-module tab-pane fade" id="code-module-outer"></div>
+                <div class="resource-module tab-pane fade" id="all-module-outer"></div>
             </div>
         </div>
     </div>

@@ -262,15 +262,15 @@ class ListManager extends UserManagerResourceManager {
         this.refresh_task = 'update_list_selector_list';
 
         this.file_adders =[
-            {"name": "add_list", "func": "add_list", "button_class": "btn-default", "show_multiple": false}
+            {"name": "add_list", "func": "add_list", "button_class": "btn-outline-secondary", "show_multiple": false}
         ];
         this.button_groups = [
-            {"buttons": [{"name": "view", "func": "view_func", "button_class": "btn-default"}]},
-            {"buttons": [{"name": "duplicate", "func": "duplicate_func", "button_class": "btn-default"},
-                         {"name": "rename", "func": "rename_func", "button_class": "btn-default"}]},
-            {"buttons": [{"name": "share", "func": "send_repository_func", "button_class": "btn-default"}]},
-            {"buttons": [{"name": "delete", "func": "delete_func", "button_class": "btn-default"}]},
-            {"buttons": [{"name": "refresh", "func": "refresh_func", "button_class": "btn-default"}]}
+            {"buttons": [{"name": "view", "func": "view_func", "button_class": "btn-outline-secondary"}]},
+            {"buttons": [{"name": "duplicate", "func": "duplicate_func", "button_class": "btn-outline-secondary"},
+                         {"name": "rename", "func": "rename_func", "button_class": "btn-outline-secondary"}]},
+            {"buttons": [{"name": "share", "func": "send_repository_func", "button_class": "btn-outline-secondary"}]},
+            {"buttons": [{"name": "delete", "func": "delete_func", "button_class": "btn-outline-secondary"}]},
+            {"buttons": [{"name": "refresh", "func": "refresh_func", "button_class": "btn-outline-secondary"}]}
         ]
     }
 
@@ -298,8 +298,8 @@ class RepositoryListManager extends UserManagerResourceManager {
         this.view_view = '/repository_view_list/';
         this.double_click_func = "view_func";
         this.button_groups = [
-            {"buttons": [{"name": "view", "func": "view_func", "button_class": "btn-default"},
-                        {"name": "copy_to_libary", "func": "repository_copy_func", "button_class": "btn-default"}
+            {"buttons": [{"name": "view", "func": "view_func", "button_class": "btn-outline-secondary"},
+                        {"name": "copy_to_libary", "func": "repository_copy_func", "button_class": "btn-outline-secondary"}
             ]}
         ]
     }
@@ -318,32 +318,32 @@ class CollectionManager extends UserManagerResourceManager {
         this.refresh_task = 'update_collection_selector_list';
 
         this.file_adders = [
-            {"name": "import_as_table", "func": "import_as_table", "button_class": "btn-default", show_multiple: true},
+            {"name": "import_as_table", "func": "import_as_table", "button_class": "btn-outline-secondary", show_multiple: true},
             {
                 "name": "import_as_freeform",
                 "func": "import_as_freeform",
-                "button_class": "btn-default",
+                "button_class": "btn-outline-secondary",
                 show_multiple: true
             }
         ];
         this.button_groups = [
             {buttons: [
-                    {"name": "new_notebook", "func": "newNotebook", "button_class": "btn btn-default"},
-                    {"name": "view", "func": "view_func", "button_class": "btn btn-default"}]
+                    {"name": "new_notebook", "func": "newNotebook", "button_class": "btn btn-outline-secondary"},
+                    {"name": "view", "func": "view_func", "button_class": "btn btn-outline-secondary"}]
             },
             {buttons: [
-                    {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-default"},
-                    {"name": "rename", "func": "rename_func", "button_class": "btn-default"},
-                    {"name": "combine_collections", "func": "combineCollections", "button_class": "btn-default"}]
+                    {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-outline-secondary"},
+                    {"name": "rename", "func": "rename_func", "button_class": "btn-outline-secondary"},
+                    {"name": "combine_collections", "func": "combineCollections", "button_class": "btn-outline-secondary"}]
             },
-            {buttons: [{"name": "download", "func": "downloadCollection", "button_class": "btn btn-default"},
-                    {"name": "share", "func": "send_repository_func", "button_class": "btn-default"}]
+            {buttons: [{"name": "download", "func": "downloadCollection", "button_class": "btn btn-outline-secondary"},
+                    {"name": "share", "func": "send_repository_func", "button_class": "btn-outline-secondary"}]
             },
             {buttons: [
-                    {"name": "delete", "func": "delete_func", "button_class": "btn-default"}]
+                    {"name": "delete", "func": "delete_func", "button_class": "btn-outline-secondary"}]
             },
             {"buttons":
-                    [{"name": "refresh", "func": "refresh_func", "button_class": "btn-default"}]
+                    [{"name": "refresh", "func": "refresh_func", "button_class": "btn-outline-secondary"}]
             }
         ];
     }
@@ -446,7 +446,7 @@ class RepositoryCollectionManager extends UserManagerResourceManager {
         this.update_view = "request_update_repository_selector_list";
         this.update_tag_view = "request_update_repository_tag_list";
         this.button_groups = [
-            {"buttons": [{"name": "copy_to_libary", "func": "repository_copy_func", "button_class": "btn-default"}]}
+            {"buttons": [{"name": "copy_to_libary", "func": "repository_copy_func", "button_class": "btn-outline-secondary"}]}
         ]
     }
 }
@@ -465,20 +465,20 @@ class ProjectManager extends UserManagerResourceManager {
         this.refresh_task = 'update_project_selector_list';
         this.button_groups = [
             {buttons: [
-                    {"name": "view", "func": "view_func", "button_class": "btn-default"}]
+                    {"name": "view", "func": "view_func", "button_class": "btn-outline-secondary"}]
             },
             {buttons: [
-                    {"name": "rename", "func": "rename_func", "button_class": "btn-default"},
-                    {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-default"}]
+                    {"name": "rename", "func": "rename_func", "button_class": "btn-outline-secondary"},
+                    {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-outline-secondary"}]
             },
             {buttons: [
-                    {"name": "share", "func": "send_repository_func", "button_class": "btn-default"}]
+                    {"name": "share", "func": "send_repository_func", "button_class": "btn-outline-secondary"}]
             },
             {buttons: [
-                    {"name": "delete", "func": "delete_func", "button_class": "btn-default"}]
+                    {"name": "delete", "func": "delete_func", "button_class": "btn-outline-secondary"}]
             },
             {"buttons": [
-                {"name": "refresh", "func": "refresh_func", "button_class": "btn-default"}]
+                {"name": "refresh", "func": "refresh_func", "button_class": "btn-outline-secondary"}]
             }
         ];
     }
@@ -493,7 +493,7 @@ class RepositoryProjectManager extends UserManagerResourceManager {
         this.update_view = "request_update_repository_selector_list";
         this.update_tag_view = "request_update_repository_tag_list";
         this.button_groups = [
-            {"buttons": [{"name": "copy_to_libary", "func": "repository_copy_func", "button_class": "btn-default"}]}
+            {"buttons": [{"name": "copy_to_libary", "func": "repository_copy_func", "button_class": "btn-outline-secondary"}]}
         ]
     }
 }
@@ -515,14 +515,14 @@ class TileManager extends UserManagerResourceManager {
         this.refresh_task = 'update_tile_selector_list';
         this.popup_buttons = [{
             "name": "new",
-            "button_class": "btn-default",
+            "button_class": "btn-outline-secondary",
             "option_list": [{"opt_name": "BasicTileTemplate", "opt_func": "new_basic_tile"},
                 {"opt_name": "ExpandedTileTemplate", "opt_func": "new_expanded_tile"},
                 {"opt_name": "MatplotlibTileTemplate", "opt_func": "new_matplotlib_tile"}]
             },
             {
                 "name": "new_in_creator",
-                "button_class": "btn-default",
+                "button_class": "btn-outline-secondary",
                 "option_list": [{"opt_name": "StandardTile", "opt_func": "new_basic_in_creator"},
                     {"opt_name": "MatplotlibTile", "opt_func": "new_mpl_in_creator"},
                     {"opt_name": "D3Tile", "opt_func": "new_d3_in_creator"}]
@@ -531,28 +531,28 @@ class TileManager extends UserManagerResourceManager {
             {
                 "name": "add_module",
                 "func": "add_tile_module",
-                "button_class": "btn-default",
+                "button_class": "btn-outline-secondary",
                 "show_multiple": false,
             }
         ];
         this.button_groups = [
             {buttons: [
-                    {"name": "view", "func": "view_func", "button_class": "btn-default"},
-                    {"name": "view_in_creator", "func": "creator_view_func", "button_class": "btn-default"},
-                    {"name": "load", "func": "load_func", "button_class": "btn-default"},
-                    {"name": "unload", "func": "unload_func", "button_class": "btn-default"}]
+                    {"name": "view", "func": "view_func", "button_class": "btn-outline-secondary"},
+                    {"name": "view_in_creator", "func": "creator_view_func", "button_class": "btn-outline-secondary"},
+                    {"name": "load", "func": "load_func", "button_class": "btn-outline-secondary"},
+                    {"name": "unload", "func": "unload_func", "button_class": "btn-outline-secondary"}]
             },
             {buttons: [
-                    {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-default"},
-                    {"name": "rename", "func": "rename_func", "button_class": "btn-default"}]
+                    {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-outline-secondary"},
+                    {"name": "rename", "func": "rename_func", "button_class": "btn-outline-secondary"}]
             },
             {buttons: [
-                    {"name": "share", "func": "send_repository_func", "button_class": "btn-default"}]
+                    {"name": "share", "func": "send_repository_func", "button_class": "btn-outline-secondary"}]
             },
             {buttons: [
-                    {"name": "delete", "func": "delete_func", "button_class": "btn-default"}]
+                    {"name": "delete", "func": "delete_func", "button_class": "btn-outline-secondary"}]
             },
-            {"buttons": [{"name": "refresh", "func": "refresh_func", "button_class": "btn-default"}]}
+            {"buttons": [{"name": "refresh", "func": "refresh_func", "button_class": "btn-outline-secondary"}]}
         ]
     }
 
@@ -694,8 +694,8 @@ class RepositoryTileManager extends UserManagerResourceManager {
         this.view_view = '/repository_view_module/';
         this.double_click_func = "view_func";
         this.button_groups = [
-            {"buttons": [{"name": "view", "func": "view_func", "button_class": "btn-default"},
-                    {"name": "copy_to_libary", "func": "repository_copy_func", "button_class": "btn-default"}]
+            {"buttons": [{"name": "view", "func": "view_func", "button_class": "btn-outline-secondary"},
+                    {"name": "copy_to_libary", "func": "repository_copy_func", "button_class": "btn-outline-secondary"}]
             }
         ]
     };
@@ -715,27 +715,27 @@ class CodeManager extends UserManagerResourceManager {
         this.refresh_task = 'update_code_selector_list';
         this.popup_buttons = [{
             "name": "new",
-            "button_class": "btn-default",
+            "button_class": "btn-outline-secondary",
             "option_list": [{"opt_name": "BasicCodeTemplate", "opt_func": "new_code"}]
         }];
         this.file_adders = [
-            {"name": "add_code", "func": "add_code", "button_class": "btn-default", show_multiple: false}
+            {"name": "add_code", "func": "add_code", "button_class": "btn-outline-secondary", show_multiple: false}
         ];
         this.button_groups = [
             {buttons: [
-                    {"name": "view", "func": "view_func", "button_class": "btn-default"}]
+                    {"name": "view", "func": "view_func", "button_class": "btn-outline-secondary"}]
             },
             {buttons: [
-                    {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-default"},
-                    {"name": "rename", "func": "rename_func", "button_class": "btn-default"}]
+                    {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-outline-secondary"},
+                    {"name": "rename", "func": "rename_func", "button_class": "btn-outline-secondary"}]
             },
             {buttons: [
-                    {"name": "share", "func": "send_repository_func", "button_class": "btn-default"}]
+                    {"name": "share", "func": "send_repository_func", "button_class": "btn-outline-secondary"}]
             },
             {buttons: [
-                    {"name": "delete", "func": "delete_func", "button_class": "btn-default"}]
+                    {"name": "delete", "func": "delete_func", "button_class": "btn-outline-secondary"}]
             },
-            {"buttons": [{"name": "refresh", "func": "refresh_func", "button_class": "btn-default"}]}
+            {"buttons": [{"name": "refresh", "func": "refresh_func", "button_class": "btn-outline-secondary"}]}
         ];
     }
     add_code (event) {
@@ -790,8 +790,8 @@ class RepositoryCodeManager extends UserManagerResourceManager {
         this.view_view = '/repository_view_code/';
         this.double_click_func = "view_func";
         this.button_groups = [
-            {"buttons": [{"name": "view", "func": "view_func", "button_class": "btn-default"},
-                {"name": "copy_to_libary", "func": "repository_copy_func", "button_class": "btn-default"}]
+            {"buttons": [{"name": "view", "func": "view_func", "button_class": "btn-outline-secondary"},
+                {"name": "copy_to_libary", "func": "repository_copy_func", "button_class": "btn-outline-secondary"}]
             }
         ]
     };
@@ -807,7 +807,7 @@ class AllManager extends UserManagerResourceManager {
         this.refresh_task = 'update_all_selector_list';
         this.popup_buttons = [{
             "name": "new",
-            "button_class": "btn-default",
+            "button_class": "btn-outline-secondary",
             "option_list": [
                 {"opt_name": "StandardTile", "opt_func": "new_basic_in_creator"},
                 {"opt_name": "MatplotlibTile", "opt_func": "new_mpl_in_creator"},
@@ -815,27 +815,27 @@ class AllManager extends UserManagerResourceManager {
                 {"opt_name": "NewCode", "opt_func": "new_code"}]
         }];
         this.file_adders = [
-            // {"name": "import_as_table", "func": "import_as_table", "button_class": "btn-default", show_multiple: true},
-            // {"name": "import_as_freeform", "func": "import_as_freeform", "button_class": "btn-default", show_multiple: true},
-            // {"name": "add_module", "func": "add_tile_module", "button_class": "btn-default", "show_multiple": false},
-            // {"name": "add_list", "func": "add_list", "button_class": "btn-default", "show_multiple": false},
-            // {"name": "add_code", "func": "add_code", "button_class": "btn-default", show_multiple: false}
+            // {"name": "import_as_table", "func": "import_as_table", "button_class": "btn-outline-secondary", show_multiple: true},
+            // {"name": "import_as_freeform", "func": "import_as_freeform", "button_class": "btn-outline-secondary", show_multiple: true},
+            // {"name": "add_module", "func": "add_tile_module", "button_class": "btn-outline-secondary", "show_multiple": false},
+            // {"name": "add_list", "func": "add_list", "button_class": "btn-outline-secondary", "show_multiple": false},
+            // {"name": "add_code", "func": "add_code", "button_class": "btn-outline-secondary", show_multiple: false}
         ];
         this.button_groups = [
             {
                 buttons: [
-                    {"name": "view", "func": "view_func", "button_class": "btn-default", "applicable_types": res_types},
+                    {"name": "view", "func": "view_func", "button_class": "btn-outline-secondary", "applicable_types": res_types},
                     {
                         "name": "view_in_creator",
                         "func": "creator_view_func",
-                        "button_class": "btn-default",
+                        "button_class": "btn-outline-secondary",
                         "applicable_types": ["tile"]
                     },
-                    {"name": "load", "func": "load_func", "button_class": "btn-default", "applicable_types": ["tile"]},
+                    {"name": "load", "func": "load_func", "button_class": "btn-outline-secondary", "applicable_types": ["tile"]},
                     {
                         "name": "unload",
                         "func": "unload_func",
-                        "button_class": "btn-default",
+                        "button_class": "btn-outline-secondary",
                         "applicable_types": ["tile"]
                     }]
             },
@@ -844,13 +844,13 @@ class AllManager extends UserManagerResourceManager {
                     {
                         "name": "duplicate",
                         "func": "duplicate_func",
-                        "button_class": "btn-default",
+                        "button_class": "btn-outline-secondary",
                         "applicable_types": ["list", "collection", "tile", "code"]
                     },
                     {
                         "name": "rename",
                         "func": "rename_func",
-                        "button_class": "btn-default",
+                        "button_class": "btn-outline-secondary",
                         "applicable_types": res_types
                     }]
             },
@@ -859,19 +859,19 @@ class AllManager extends UserManagerResourceManager {
                     {
                         "name": "share",
                         "func": "send_repository_func",
-                        "button_class": "btn-default",
+                        "button_class": "btn-outline-secondary",
                         "applicable_types": res_types
                     },
                     {
                         "name": "combine_collections",
                         "func": "combineCollections",
-                        "button_class": "btn-default",
+                        "button_class": "btn-outline-secondary",
                         "applicable_types": ["collection"]
                     },
                     {
                         "name": "download",
                         "func": "downloadCollection",
-                        "button_class": "btn btn-default",
+                        "button_class": "btn btn-outline-secondary",
                         "applicable_types": ["collection"]
                     }]
             },
@@ -880,7 +880,7 @@ class AllManager extends UserManagerResourceManager {
                     {
                         "name": "delete",
                         "func": "delete_func",
-                        "button_class": "btn-default",
+                        "button_class": "btn-outline-secondary",
                         "applicable_types": res_types
                     }]
             },
@@ -889,7 +889,7 @@ class AllManager extends UserManagerResourceManager {
                     {
                         "name": "refresh",
                         "func": "refresh_func",
-                        "button_class": "btn-default",
+                        "button_class": "btn-outline-secondary",
                         "applicable_types": res_types
                     }]
             }
@@ -1304,8 +1304,8 @@ class RepositoryAllManager extends AllManager {
         this.button_groups = [
             {
                 "buttons": [
-                    {"name": "view", "func": "view_func", "button_class": "btn-default", "applicable_types": res_types},
-                    {"name": "copy_to_libary", "func": "repository_copy_func", "button_class": "btn-default", "applicable_types": ["tile", "code", "list"]}
+                    {"name": "view", "func": "view_func", "button_class": "btn-outline-secondary", "applicable_types": res_types},
+                    {"name": "copy_to_libary", "func": "repository_copy_func", "button_class": "btn-outline-secondary", "applicable_types": ["tile", "code", "list"]}
                 ]
             }
         ]

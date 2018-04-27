@@ -4,5 +4,6 @@ ADD ./tile_container_env/requirements-debug.txt /code/requirements-debug.txt
 RUN pip install --no-cache-dir -r requirements-debug.txt
 MAINTAINER "Bruce L Sherin"
 ADD  ./tile_container_env /code
+ADD ./nltk_data /root/nltk_data
 ADD ./pycharm-debug.egg /code
 CMD ["python", "tile_main.py"]

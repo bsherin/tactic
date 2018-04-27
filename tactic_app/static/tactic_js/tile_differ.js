@@ -5,7 +5,8 @@
 let tile_differ;
 
 function start_post_load() {
-    tile_differ = new TileDiffer(resource_name, "tile", "get_module_code")
+    tile_differ = new TileDiffer(resource_name, "tile", "get_module_code");
+    stopSpinner()
 }
 
 class TileDiffer extends ModuleViewerAbstract {

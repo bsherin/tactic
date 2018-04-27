@@ -9,163 +9,158 @@
 {% endblock %}
 
 {% block morenavbar %}
-    <li><a href="http://tactic.readthedocs.io/en/latest/Module-Viewer-Keyboard-Shortcuts.html">Keyboard Shortcuts</a></li>
+    <li class="nav-item"><a class="nav-link" href="http://tactic.readthedocs.io/en/latest/Module-Viewer-Keyboard-Shortcuts.html">Keyboard Shortcuts</a></li>
 {% endblock %}
 
 {% block page_content %}
     <div id="modal-area">
     </div>
-    <div id="main-container" class="container-fluid">
+    <div id="main-container" class="container-fluid d-flex">
+        <div id="left-div" class="d-flex flex-column" style="margin-top: 10px; margin-right: 25px; vertical-align:top">
+            <div style="margin-top: 10px" class="d-flex flex-row justify-content-between">
+                <button id="rename-button" type="button" style="padding-top:0" class="btn btn-outline-secondary res-name-button">{{ module_name }}</button>
+                <div class="" role="toolbar" >
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button value="save_button" type="button" class="btn btn-outline-secondary">Save</button>
+                        <button value="load_button" type="button" class="btn btn-outline-secondary">Save+Load</button>
+                        <button value="checkpoint_button" type="button" class="btn btn-outline-secondary">Checkpoint</button>
+                        <button value="share_button" type="button" class="btn btn-outline-secondary">Share</button>
 
-        <div class="row">
-            <div class="col-xs-12">
-            <div id="left-div" style="margin-top: 10px; margin-right: 25px; display: inline-block; vertical-align:top">
-                <div style="margin-top: 10px">
-                    <button id="rename-button" type="button" class="btn btn-default res-name-button">{{ module_name }}</button>
-                    <div class="btn-toolbar" style="float:right" role="toolbar" >
-                        <div class="btn-group btn-group-sm" role="group">
-                            <button value="save_button" type="button" class="btn btn-default">Save</button>
-                            <button value="load_button" type="button" class="btn btn-default">Save+Load</button>
-                            <button value="checkpoint_button" type="button" class="btn btn-default">Checkpoint</button>
-                            <button value="share_button" type="button" class="btn btn-default">Share</button>
-
-                        </div>
-                        <div class="btn-group btn-group-sm" role="group">
-                            <button type="button" value="history_button" class="btn btn-default">History</button>
-                            <button type="button" value="differ_button" class="btn btn-default">Compare</button>
-                            <button type="button" value="change_theme_button" class="btn btn-default">Theme</button>
-                            <button type="button" value="show_api_button" class="btn btn-default" >API</button>
-                        </div>
+                    </div>
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" value="history_button" class="btn btn-outline-secondary">History</button>
+                        <button type="button" value="differ_button" class="btn btn-outline-secondary">Compare</button>
+                        <button type="button" value="change_theme_button" class="btn btn-outline-secondary">Theme</button>
+                        <button type="button" value="show_api_button" class="btn btn-outline-secondary" >API</button>
                     </div>
                 </div>
+            </div>
 
-                <div id="drawplotboundingarea" class="bootstrap-border" style="display: none; border-bottom-width: 1px; border-bottom-style: solid; margin-bottom: 20px; clear: both">
-                    <h4 style="display:inline-block; margin-bottom:0px">draw_plot</h4>
-                        <div class="btn-group" style= "margin-top: 10px; margin-bottom: 5px; float:right" role="group">
-                           {% for catdict in api_dlist%}
-
-                            <div class="btn-group">
-                                <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">{{catdict.cat_name}}<span class="caret"></span></button>
-                                  <ul class="dropdown-menu">
-                                      {% for api_item in catdict.cat_list %}
-                                        <li><a class="popup_item" onclick="creator_viewer.insertApiItemDP('{{api_item.name}}')">{{api_item.name}}</a></li>
-                                      {% endfor %}
-                                  </ul>
-                            </div>
-                           {% endfor %}
-                    </div>
-                    <div id="drawplotcodearea" style="overflow-y: auto; clear:right"></div>
-                </div>
-                <div id="jscriptboundingarea" class="bootstrap-border" style="display: none; border-bottom-width: 1px; border-bottom-style: solid; margin-bottom: 20px; clear: both">
-                    <h4 style="display:inline-block; margin-bottom:0px">d3javascript</h4>
-                    <div id="jscriptcodearea" style="overflow-y: auto; clear:right"></div>
-                </div>
-                <h4 style="display:inline-block; margin-bottom:0px">render_content</h4>
-                <div class="btn-group" style= "margin-top: 10px; margin-bottom: 5px; float:right" role="group">
+            <div id="drawplotboundingarea" class="bootstrap-border" style="display: none; border-bottom-width: 1px; border-bottom-style: solid; margin-bottom: 20px; clear: both">
+            <div class="d-flex flex-row justify-content-between align-items-baseline">
+                <a style=" margin-bottom:0px">draw_plot:</a>
+                    <div class="btn-group" style= "margin-top: 10px; margin-bottom: 2px; float:right" role="group">
                        {% for catdict in api_dlist%}
+
                         <div class="btn-group">
-                            <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">{{catdict.cat_name}}<span class="caret"></span></button>
+                            <button type="button" class="btn btn-outline-secondary btn-xs dropdown-toggle" data-toggle="dropdown">{{catdict.cat_name}}<span class="caret"></span></button>
                               <ul class="dropdown-menu">
                                   {% for api_item in catdict.cat_list %}
-                                    <li><a class="popup_item" onclick="creator_viewer.insertApiItem('{{api_item.name}}')">{{api_item.name}}</a></li>
+                                    <li><a class="popup_item" onclick="creator_viewer.insertApiItemDP('{{api_item.name}}')">{{api_item.name}}</a></li>
                                   {% endfor %}
                               </ul>
                         </div>
                        {% endfor %}
                 </div>
-                <div id="codearea" style="overflow-y: auto; clear:right"></div>
             </div>
-            <div id="right-div" style="margin-top: 25px; display: inline-block; vertical-align:top">
-                    <div id="aux-area" style="display:none; overflow:auto"></div>
-                    <div id="resource-area" style="diplay:inline-block">
-                      <ul class="nav nav-tabs" style="border-bottom: none" role="tablist">
-                        <li role="presentation" class="active"><a href="#metadata-module-outer" aria-controls="metadata" role="tab" data-toggle="tab" value="metadata">metadata</a></li>
-                        <li role="presentation"><a href="#option-module-outer" aria-controls="options" role="tab" data-toggle="tab" value="option">options</a></li>
-                        <li role="presentation"><a href="#export-module-outer" aria-controls="exports" role="tab" data-toggle="tab" value="export">exports</a></li>
-                       <li role="presentation"><a href="#method-module-outer" aria-controls="methods" role="tab" data-toggle="tab" value="method">methods</a></li>
-                      </ul>
-                        <div class="tab-content" id="creator-resources">
-                            <div class="tab-pane fade in active row" id="metadata-module-outer">
-                                <div class="row indent-row" style="display: inline-block">
-                                    <div id="created" style="margin-bottom: 15px"></div>
-                                    <div class="form-group" style="margin-bottom: 7px">
-                                        <label for="category">Category</label>
-                                        <textarea type="text" class="form-control metadata-field" id="category" rows="1" placeholder="category" {{read_only_string}}></textarea>
-                                    </div>
-                                    <div class="form-group" style="margin-bottom: 7px">
-                                        <label for="tags">Tags</label>
-                                        <textarea type="text" class="form-control metadata-field" id="tags" rows="1" {{read_only_string}}></textarea>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="notes">Notes</label>
-                                        <textarea class="form-control metadata-field" id="notes" rows="10" placeholder="notes" {{read_only_string}}></textarea>
-                                        <div id="notes-field-markdown-output"></div>
-                                    </div>
-
-                                </div>
+            <div id="drawplotcodearea" style="overflow-y: auto; clear:right"></div>
+            </div>
+            <div id="jscriptboundingarea" class="bootstrap-border" style="display: none; border-bottom-width: 1px; border-bottom-style: solid; margin-bottom: 20px; clear: both">
+                <div class="d-flex flex-row justify-content-between align-items-baseline">
+                    <a style=" margin-bottom:0px">d3javascript:</a>
+                </div>
+                <div id="jscriptcodearea" style="overflow-y: auto; clear:right"></div>
+            </div>
+            <div class="d-flex flex-row justify-content-between align-items-baseline">
+                <a style=" margin-bottom:0px">render_content:</a>
+                <div class="btn-group" style= "margin-top: 10px; margin-bottom: 2px; role="group">
+                       {% for catdict in api_dlist%}
+                        <div class="dropdown" role="group">
+                            <button type="button" class="btn btn-outline-secondary btn-xs dropdown-toggle" data-toggle="dropdown">{{catdict.cat_name}}</button>
+                              <div class="dropdown-menu">
+                                  {% for api_item in catdict.cat_list %}
+                                    <a class="dropdown-item" onclick="creator_viewer.insertApiItem('{{api_item.name}}')">{{api_item.name}}</a>
+                                  {% endfor %}
+                              </div>
+                        </div>
+                       {% endfor %}
+                </div>
+            </div>
+            <div id="codearea" style="overflow-y: auto; clear:right"></div>
+        </div>
+        <div id="right-div" style="margin-top: 25px; display: inline-block; vertical-align:top">
+            <div id="aux-area" style="display:none; overflow:auto"></div>
+            <div id="resource-area" style="diplay:inline-block">
+              <ul class="nav nav-tabs" style="border-bottom: none" role="tablist">
+                <li role="presentation" class="nav-item"><a class="nav-link active" href="#metadata-module-outer" aria-controls="metadata" role="tab" data-toggle="tab" value="metadata">metadata</a></li>
+                <li role="presentation" class="nav-item"><a class="nav-link" href="#option-module-outer" aria-controls="options" role="tab" data-toggle="tab" value="option">options</a></li>
+                <li role="presentation" class="nav-item"><a class="nav-link" href="#export-module-outer" aria-controls="exports" role="tab" data-toggle="tab" value="export">exports</a></li>
+               <li role="presentation" class="nav-item"><a class="nav-link" href="#method-module-outer" aria-controls="methods" role="tab" data-toggle="tab" value="method">methods</a></li>
+              </ul>
+                <div class="tab-content" id="creator-resources">
+                    <div class="tab-pane fade active show" id="metadata-module-outer">
+                        <div class="row indent-row" style="display: inline-block">
+                            <div id="created" style="margin-bottom: 15px"></div>
+                            <div class="form-group" style="margin-bottom: 7px">
+                                <label for="category">Category</label>
+                                <textarea type="text" class="form-control metadata-field" id="category" rows="1" placeholder="category" {{read_only_string}}></textarea>
                             </div>
-                            <div class="tab-pane fade row" id="option-module-outer" style="overflow-y: auto">
-                                <div class="resource-module" id="option-module-holder"></div>
-                                    <form class="form-inline row indent-row" style="display:inline-block">
-                                          <div class="form-group">
-                                                <label for="option-name-input">Name</label><br>
-                                                <input type="text" class="form-control" id="option-name-input">
-                                          </div>
-                                        <div class="form-group">
-                                            <label for="option-type-input">type</label><br>
-                                            <select class="form-control" id="option-type-input">
-                                                {% for option_type in option_types %}
-                                                    <option value="{{option_type.name|e}}">{{option_type.name|e}}</option>
-                                                {% endfor %}
-                                            </select>
-                                          </div>
-                                          <div class="form-group">
-                                            <label for="option-default-input">Default</label><br>
-                                            <input type="text" class="form-control" id="option-default-input" placeholder="">
-                                          </div>
-                                          <div class="form-group" id="special-list-group" style="display:none">
-                                            <label for="option-list-input">Special List</label><br>
-                                            <input type="text" class="form-control" id="option-list-input" placeholder="">
-                                          </div>
-                                          <div class="form-group" id="option-tag-group" style="display:none">
-                                            <label for="option-tag-input">Tag</label><br>
-                                            <input type="text" class="form-control" id="option-tag-input" placeholder="">
-                                          </div>
-                                        <div class="form-group">
-                                              <label for="option-create-button"> </label><br>
-                                             <button type="button" id="option-create-button" class="btn btn-default">Create</button>
-                                            </div>
-                                    </form>
-                                </div>
-
-                            <div class="tab-pane fade row" id="export-module-outer" style="overflow-y: auto">
-                                <div class="resource-module" id="export-module-holder"></div>
-                                <form class="form-inline row indent-row" style="display:inline-block">
-                                      <div class="form-group">
-                                        <label for="export-name-input">Name</label><br>
-                                        <input type="text" class="form-control" id="export-name-input" placeholder="export_name">
-                                      </div>
-                                      <div class="form-group">
-                                        <label for="export-tags-input">Tags</label><br>
-                                        <input type="text" class="form-control" id="export-tags-input">
-                                      </div>
-                                    <div class="form-group">
-                                          <label for="export-create-button"> </label><br>
-                                        <button type="button" id="export-create-button" class="btn btn-default">Create</button>
-                                    </div>
-                                </form>
-
+                            <div class="form-group" style="margin-bottom: 7px">
+                                <label for="tags">Tags</label>
+                                <textarea type="text" class="form-control metadata-field" id="tags" rows="1" {{read_only_string}}></textarea>
                             </div>
-                            <div class="tab-pane fade row" id="method-module-outer" style="overflow-y: auto">
-                                <div class="resource-module" id="method-module-holder"></div>
+                            <div class="form-group">
+                                <label for="notes">Notes</label>
+                                <textarea class="form-control metadata-field" id="notes" rows="10" placeholder="notes" {{read_only_string}}></textarea>
+                                <div id="notes-field-markdown-output"></div>
                             </div>
+
                         </div>
                     </div>
+                    <div class="tab-pane fade row" id="option-module-outer" style="overflow-y: auto">
+                        <div class="resource-module" id="option-module-holder"></div>
+                            <form class="form-row" style="">
+                                  <div class="form-group m-1">
+                                        <label class="mb-1" for="option-name-input">Name</label>
+                                        <input type="text" class="form-control" id="option-name-input">
+                                  </div>
+                                <div class="form-group m-1">
+                                    <label class="mb-1" for="option-type-input">Type</label>
+                                    <select class="custom-select" id="option-type-input">
+                                        {% for option_type in option_types %}
+                                            <option value="{{option_type.name|e}}">{{option_type.name|e}}</option>
+                                        {% endfor %}
+                                    </select>
+                                  </div>
+                                  <div class="form-group m-1">
+                                    <label class="mb-1" for="option-default-input">Default</label>
+                                    <input type="text" class="form-control" id="option-default-input" placeholder="">
+                                  </div>
+                                  <div class="form-group m-1" id="special-list-group" style="display:none">
+                                    <label class="mb-1" for="option-list-input">Special List</label>
+                                    <input type="text" class="form-control" id="option-list-input" placeholder="">
+                                  </div>
+                                  <div class="form-group m-1" id="option-tag-group" style="display:none">
+                                    <label class="mb-1" for="option-tag-input">Tag</label>
+                                    <input type="text" class="form-control" id="option-tag-input" placeholder="">
+                                  </div>
+                                  <button type="button" id="option-create-button" style="align-self:center" class="btn btn-outline-secondary">Create</button>
+                            </form>
+                        </div>
 
+                    <div class="tab-pane fade row" id="export-module-outer" style="overflow-y: auto">
+                        <div class="resource-module" id="export-module-holder"></div>
+                        <form class="form-row" style="">
+                              <div class="form-group m-1">
+                                <label class="mb-1" for="export-name-input">Name</label><br>
+                                <input type="text" class="form-control" id="export-name-input" placeholder="export_name">
+                              </div>
+                              <div class="form-group m-1">
+                                <label class="mb-1"  for="export-tags-input">Tags</label><br>
+                                <input type="text" class="form-control" id="export-tags-input">
+                              </div>
+                            <button type="button" id="export-create-button" style="align-self:center" class="btn btn-outline-secondary">Create</button>
+                        </form>
+
+                    </div>
+                    <div class="tab-pane fade row" id="method-module-outer" style="overflow-y: auto">
+                        <div class="resource-module" id="method-module-holder"></div>
+                    </div>
                 </div>
             </div>
 
         </div>
+
     </div>
 {%  endblock %}
 

@@ -8,6 +8,49 @@
 /* console related */
 /* resource management and table related */
 /* accordion api related parameters */
+/* corrections to deal with changes to bootstrap 4 */
+.btn-default {
+  color: #6c757d;
+  background-color: transparent;
+  background-image: none;
+  border-color: #6c757d; }
+
+.glyphicon {
+  opacity: .5;
+  padding-right: 7px; }
+
+.well-sm {
+  padding: 9px !important;
+  border-radius: 3px; }
+
+.well {
+  min-height: 20px;
+  padding: 19px;
+  margin-bottom: 20px;
+  background-color: #f5f5f5;
+  border: 1px solid #e3e3e3;
+  border-radius: 4px;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05); }
+
+body {
+  font-family: "Helvetica Neue",Helvetica,Arial,sans-serif; }
+
+.CodeMirror {
+  font-size: 14px; }
+
+.btn-xs {
+  padding: 1px 5px;
+  font-size: 10px;
+  line-height: 1.5;
+  border-radius: 3px; }
+
+table caption {
+  caption-side: top; }
+
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: #f9f9f9; }
+
 #api-area, #aux-area {
   border: none; }
 
@@ -84,6 +127,7 @@ table.sortable thead {
     padding-right: 10px;
     padding-left: 10px; }
 
+/* login */
 /* user manage and  resource viewers*/
 .repository-title {
   color: #4EA818; }
@@ -91,10 +135,19 @@ table.sortable thead {
 a[role="tab"] {
   font-size: 20px; }
 
-.nav-tabs a {
-  outline: 0; }
+.left-vertical-nav .nav-link {
+  font-size: 16px;
+  color: #212529; }
+
+.left-vertical-nav .nav-link.active {
+  color: #fff;
+  background-color: #9B79CC; }
+
+.left-vertical-nav.nav-pills .nav-link {
+  border-radius: 0; }
 
 .resource-module {
+  display: flex;
   margin: 10px; }
   .resource-module .notes-field {
     background-color: #f7f7f7; }
@@ -102,8 +155,7 @@ a[role="tab"] {
     padding: 10px;
     overflow: auto; }
   .resource-module .right-div {
-    overflow: auto;
-    position: absolute; }
+    overflow: auto; }
 
 .search-toolbar .tag-editor li {
   margin: 6px 2px 6px 2px; }
@@ -119,7 +171,7 @@ a[role="tab"] {
     overflow: auto; }
 
 .tag-button {
-  padding-left: 5px;
+  padding: 5px 10px !important;
   color: #46799b;
   background: #e0eaf1;
   white-space: nowrap;
@@ -127,7 +179,8 @@ a[role="tab"] {
   cursor: pointer;
   border-radius: 2px 0 0 2px !important;
   text-align: left;
-  border: 1px solid white; }
+  border: 1px solid white;
+  font-size: 12px !important; }
 
 .tag-button-delete:before {
   color: #8ba7ba;
@@ -149,7 +202,8 @@ a[role="tab"] {
   background-color: #cbcbcb !important; }
 
 .selector-button.active td {
-  background-color: #5bb4d2 !important; }
+  background-color: #9B79CC !important;
+  color: white; }
 
 .res-name-button {
   border: none;
@@ -237,19 +291,30 @@ a[role="tab"] {
 
 /* Tile related */
 .tile-panel-heading {
+  display: flex;
+  justify-content: space-between;
   font-weight: 600;
   white-space: nowrap;
-  overflow: hidden; }
-  .tile-panel-heading .close .glyphicon {
-    font-size: 17px; }
-  .tile-panel-heading .notclose .glyphicon {
-    font-size: 17px; }
+  overflow: hidden;
+  color: #31708f !important;
+  cursor: move;
+  padding: 5px 7px;
+  background-color: #d9edf7 !important;
+  border-bottom: 0px; }
   .tile-panel-heading .tile-name-div {
-    display: inline-block;
     overflow-x: hidden;
     line-height: 100%; }
   .tile-panel-heading #spin-place {
-    margin: 0px 7px 0px 0px; }
+    margin: 0px 7px 0px 0px;
+    display: inline-flex; }
+
+.form-display-area label {
+  font-weight: 700;
+  font-size: 15px; }
+
+.header-but {
+  font-size: 18px;
+  color: #31708f !important; }
 
 /* plot related */
 .d3plot {
@@ -306,9 +371,12 @@ a[role="tab"] {
   zoom: 1; }
 
 /* Tile table related*/
-.tile-table td {
-  padding-top: 1px !important;
-  padding-bottom: 1px !important; }
+.tile-table {
+  line-height: 23px; }
+  .tile-table td {
+    padding-top: 1px !important;
+    padding-bottom: 1px !important;
+    font-size: 14px; }
 
 .sidebyside-table {
   display: inline-block;
@@ -352,16 +420,46 @@ td.cell-clickable:active {
   border: 1px solid #c7c7c7 !important; }
 
 #console-heading {
+  display: flex;
+  justify-content: space-between;
   font-size: 16px;
   padding-top: 2px;
   padding-bottom: 2px;
-  text-align: left;
+  padding-left: 10px;
+  padding-right: 15px;
   color: #333 !important;
   background-color: #f5f5f5 !important;
   font-family: Arial, Helvetica, sans-serif; }
+  #console-heading .extra-glyph-text {
+    padding-left: 4px; }
+
+#exports-heading {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  font-size: 16px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  padding-left: 10px;
+  padding-right: 15px;
+  color: #333 !important;
+  background-color: #f5f5f5 !important;
+  font-family: Arial, Helvetica, sans-serif; }
+  #exports-heading button {
+    margin-right: 2px; }
+
+#exports-info {
+  font-size: 14px;
+  line-height: 30px; }
+
+#exports-spin-place {
+  margin-left: 7px;
+  font-size: 14px;
+  line-height: 30px; }
 
 #console-panel .CodeMirror {
-  height: auto !important; }
+  height: auto !important;
+  margin-top: 2px; }
 
 .console-text {
   padding: 10px;
@@ -375,8 +473,10 @@ td.cell-clickable:active {
   margin: 1px;
   box-shadow: none;
   position: relative; }
-  .log-panel .panel-heading {
-    float: left;
+  .log-panel .notclose {
+    font-size: 15px;
+    padding-bottom: 9px; }
+  .log-panel .card-header {
     position: absolute;
     height: 100%;
     width: 30px;
@@ -385,17 +485,15 @@ td.cell-clickable:active {
     background-color: #f5f5f5 important;
     border-right: 1px solid #c7c7c7;
     overflow-y: hidden; }
-    .log-panel .panel-heading .button-div {
-      padding-top: 7px !important; }
   .log-panel .CodeMirror {
     border: 1px solid #c7c7c7 !important; }
   .log-panel .CodeMirror-lines {
     background-color: #f7f7f7 !important; }
-  .log-panel .panel-heading:hover {
+  .log-panel .card-header:hover {
     background-color: #f5f5f5 !important; }
 
 .log-panel.log-panel-visible {
-  min-height: 122px; }
+  min-height: 128px; }
   .log-panel.log-panel-visible .log-panel-body {
     display: block; }
   .log-panel.log-panel-visible .log-panel-summary {
@@ -427,7 +525,7 @@ html, body {
 .log-panel-body {
   padding-left: 45px;
   padding-right: 45px;
-  padding-top: 10px;
+  padding-top: 14px;
   padding-bottom: 10px;
   color: #616161 !important; }
 
@@ -465,6 +563,18 @@ html, body {
   border: 0;
   overflow: auto; }
 
+#status-div {
+  position: absolute;
+  bottom: 10px;
+  display: flex;
+  width: 100%;
+  background-color: white; }
+  #status-div .status-msg {
+    font-size: 16px;
+    color: purple;
+    margin-right: 20px;
+    margin-left: 20px; }
+
 /* tile */
 .tile-panel {
   height: 265px;
@@ -475,12 +585,6 @@ html, body {
 
 .tile-panel-float {
   float: left; }
-
-.tile-panel-heading {
-  color: #31708f !important;
-  cursor: move;
-  padding: 5px 7px;
-  background-color: #d9edf7 !important; }
 
 #spin-place {
   position: relative; }
@@ -493,11 +597,15 @@ html, body {
 .back {
   padding: 20px;
   margin: 0;
-  overflow: auto; }
+  overflow: auto;
+  display: flex;
+  flex-direction: column; }
 
 .front {
   padding: 0;
-  margin: 0; }
+  margin: 0;
+  display: flex;
+  flex-direction: column; }
 
 .tile-log {
   padding: 20px;
@@ -505,7 +613,9 @@ html, body {
   overflow: auto; }
 
 .tile-body {
-  padding: 0; }
+  padding: 0;
+  display: flex;
+  flex-direction: column; }
 
 .tile-body img {
   cursor: pointer; }
@@ -526,11 +636,12 @@ html, body {
 
 button.notclose {
   -webkit-appearance: none;
-  padding: 0;
+  padding: 1px;
   cursor: pointer;
   background: transparent;
   opacity: 0.9;
-  border: 0; }
+  border: 0;
+  display: inline-flex; }
 
 button.notclose:hover {
   opacity: 0.3 !important; }
