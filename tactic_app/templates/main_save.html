@@ -29,19 +29,19 @@
     <div id="outer-container" style="display: none">
         <div class="grid-left" align="left">
             <div id="main-panel" class="panel panel-default">
-                <div class="panel-heading" id="data-title" style="overflow:hidden; white-space:nowrap">
+                <div class="card-header" id="data-title" style="overflow:hidden; white-space:nowrap">
                     <div class="main-heading-element hidden-xs" style="float:right; display:inline-block">
                         <form class="form-inline">
                             <div class="input-group input-group-sm">
                               <input type="text" id="search" class="form-control" size="10" placeholder="Search">
                                  <span class="input-group-btn">
-                                    <button class="btn btn-default tooltip-top" id="search-button" data-toggle="tooltip" type="button" onclick="return doSearch(document.getElementById('search').value)" value="Find">Find</button>
+                                    <button class="btn btn-outline-secondary tooltip-top" id="search-button" data-toggle="tooltip" type="button" onclick="return doSearch(document.getElementById('search').value)" value="Find">Find</button>
                                  </span>
                             </div>
                             {% if is_table %}
                                 <div class="btn-group btn-group-sm" role="group">
-                                    <button class="btn btn-default tooltip-bottom" id="filter-button" data-toggle="tooltip" onclick="return doFilter(document.getElementById('search').value)" value="Filter">Filter</button>
-                                    <button class="btn btn-default tooltip-top" id="unfilter-button" data-toggle="tooltip" onclick="return doUnfilter()" value="Unfilter">Unfilter</button>
+                                    <button class="btn btn-outline-secondary tooltip-bottom" id="filter-button" data-toggle="tooltip" onclick="return doFilter(document.getElementById('search').value)" value="Filter">Filter</button>
+                                    <button class="btn btn-outline-secondary tooltip-top" id="unfilter-button" data-toggle="tooltip" onclick="return doUnfilter()" value="Unfilter">Unfilter</button>
                                 </div>
                             {% endif %}
                        </form>
@@ -86,7 +86,7 @@
         </div>
         <div id="grid-bottom" style="display:block">
             <div id="console-panel" class="panel panel-default" style="display:inline-block; vertical-align:top; width:50%">
-                <div id="console-heading" class="panel-heading">
+                <div id="console-heading" class="card-header">
                     <button type='button' id="show-console-button" data-toggle="tooltip" class='notclose triangle-right tooltip-top'><span style="font-size:12px" class="glyphicon glyphicon-triangle-right"></span></button>
                     <button type='button' id="hide-console-button" data-toggle="tooltip" class='notclose triangle-bottom tooltip-top' ><span style="font-size:12px" class="glyphicon glyphicon-triangle-bottom"></span></button>
                     <button type='button' id="open-log-button" data-toggle="tooltip" class='notclose tooltip-top'><span style="font-size:12px" class="glyphicon glyphicon-open"></span></button>
@@ -98,7 +98,7 @@
                 <div id="console" class="panel-body">{{ console_html | safe }}</div>
             </div>
             <div id="exports-panel" class="panel panel-default" style="display:inline-block; vertical-align:top; width:50%">
-                <div id="exports-heading" class="panel-heading">
+                <div id="exports-heading" class="card-header">
                     <button type='button' id="exports-show-button" data-toggle="tooltip" class='notclose tooltip-top' style="font-size:12px"> Show </button>
                      <form class="form-inline" style="display:inline">
                           <span class="form-group">

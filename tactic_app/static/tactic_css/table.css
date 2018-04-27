@@ -2,16 +2,16 @@
   margin: 5px;
   border: 2px solid #c3e5b6;
   font-family: Arial, Helvetica, sans-serif; }
-  #main-panel .panel-heading {
+  #main-panel .card-header {
     padding-top: 5px;
     padding-bottom: 5px;
     background-color: #dff0d8;
     color: #306030; }
-    #main-panel .panel-heading .main-heading-element {
+    #main-panel .card-header .main-heading-element {
       height: 35px; }
-      #main-panel .panel-heading .main-heading-element .glyphicon {
+      #main-panel .card-header .main-heading-element .glyphicon {
         font-size: 15px; }
-      #main-panel .panel-heading .main-heading-element label[for=doc-selector] {
+      #main-panel .card-header .main-heading-element label[for=doc-selector] {
         padding-left: 5px;
         font-weight: 700; }
 

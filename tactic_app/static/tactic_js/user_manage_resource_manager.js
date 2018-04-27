@@ -139,10 +139,10 @@ class TagButtonList {
         for (let tag of tag_list) {
             let new_html;
             if ((visible_buttons == "all") || (visible_buttons.includes(tag))) {
-                new_html = `<button type="button" class="btn btn-default tag-button showme" style="display: block" value="${this.res_type}">${tag}<span class="tag-button-delete"></span></button>`
+                new_html = `<button type="button" class="btn btn-outline-secondary tag-button showme" style="display: block" value="${this.res_type}">${tag}<span class="tag-button-delete"></span></button>`
             }
             else {
-                new_html = `<button type="button" class="btn btn-default tag-button hideme" style="display: none" value="${this.res_type}">${tag}<span class="tag-button-delete"></span></button>`
+                new_html = `<button type="button" class="btn btn-outline-secondarytag-button hideme" style="display: none" value="${this.res_type}">${tag}<span class="tag-button-delete"></span></button>`
             }
             tag_button_html = tag_button_html + new_html + "\n"
         }
@@ -152,7 +152,7 @@ class TagButtonList {
             the_html = `<div class='tag-button-list'>${tag_button_html}</div>`
         }
         else {
-            the_html = `<div><button type='button' class='btn btn-default btn-xs edit-tags-button' style='border:none'>edit tags</button></div>
+            the_html = `<div><button type='button' class='btn btn-outline-secondary edit-tags-button' style='border:none; font-size:12px'>edit tags</button></div>
             <div class='tag-button-list'>${tag_button_html}</div>`
         }
         this.manager.get_aux_left_dom().html(the_html);

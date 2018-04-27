@@ -1,7 +1,7 @@
 
 function start_post_load() {
     $("#console").sortable({
-        handle: '.panel-heading',
+        handle: '.card-header',
         tolerance: 'pointer',
         revert: 'invalid',
         forceHelperSize: true

@@ -1,21 +1,41 @@
-<div class='panel panel-info tile-panel' id='{{tile_id}}' style="width: {{whole_width}}px; height: {{whole_height}}px">
-    <div class='panel-heading tile-panel-heading'>
-        <button type='button' class='close header-but' id='tile-close'><span class="glyphicon glyphicon-trash"></span></button>
-        <button type='button' class='notclose header-but' id='tile-reload' style='float:right'><span style="padding-right: 7px" class="glyphicon glyphicon-repeat"></span></button>
-        <button type='button' class='notclose header-but' id='tile-log-params' style='float:right'><span style="padding-right: 7px" class="glyphicon glyphicon-list"></span></button>
-        <button type='button' class='notclose header-but' id='tile-logme' style='float:right'><span style="padding-right: 7px" class="glyphicon glyphicon-download-alt"></span></button>
-        <button type='button' class='notclose header-but' id='tile-container-log' style='float:right'><span style="padding-right: 7px" class="glyphicon glyphicon-exclamation-sign"></span></button>
-        <span id="spin-place" style="float:right"></span>
-        <button type='button' class='notclose header-but triangle-right' id='tile-expandme' style='{{triangle_right_display_string | safe}}'><span class="glyphicon glyphicon-triangle-right"></span></button>
-        <button type='button' class='notclose header-but triangle-bottom' id='tile-shrinkme' style='{{triangle_bottom_display_string | safe}}'><span class="glyphicon glyphicon-triangle-bottom"></span></button>
-        <button type='button' class='notclose header-but' id='tile-options'><span class="glyphicon glyphicon-cog"></span></button>
+<div class='card panel-info tile-panel' id='{{tile_id}}' style="width: {{whole_width}}px; height: {{whole_height}}px">
+    <div class='card-header tile-panel-heading'>
+        <div class="left-glyphs">
+            <button type='button' class='notclose header-but triangle-right' id='tile-expandme' style='{{triangle_right_display_string | safe}}'>
+                <span class="fas fa-chevron-circle-right"></span>
+            </button>
+            <button type='button' class='notclose header-but triangle-bottom' id='tile-shrinkme' style='{{triangle_bottom_display_string | safe}}'>
+                <span class="fas fa-chevron-circle-down"></span>
+            </button>
+            <button type='button' class='notclose header-but' id='tile-options'>
+                <span class="fas fa-cog"></span>
+            </button>
+            <span class="tile-name-div">{{tile_name}}</span>
+        </div>
 
-        <div class="tile-name-div" style="display:inline-block">{{tile_name}}</div>
+        <div class="right-glyphs">
+            <span id="spin-place" style=""></span>
+            <button type='button' class='notclose header-but' id='tile-container-log' style=''>
+                <span class="fas fa-exclamation-circle"></span>
+            </button>
+            <button type='button' class='notclose header-but' id='tile-logme' style=''>
+                <span class="fas fa-download"></span>
+            </button>
+          <button type='button' class='notclose header-but' id='tile-log-params' style=''>
+                <span class="fas fa-list-ul"></span>
+            </button>
 
+                <button type='button' class='notclose header-but' id='tile-reload' style=''>
+                    <span class="fas fa-redo-alt"></span>
+            </button>
+            <button type='button' class='notclose header-but' id='tile-close'>
+                <span class="fas fa-trash-alt"></span>
+            </button>
+        </div>
     </div>
-     <div class='panel-body tile-body' id='tile_body_{{tile_id}}' style="height: {{front_height}}px; overflow: hidden; {{front_back_display_string | safe}}">
-         <div class="back" style="width: {{back_width}}px; height: {{back_height}}px">
-             <form id="form-display-area">
+     <div class='card-body tile-body' id='tile_body_{{tile_id}}' style="overflow: hidden; {{front_back_display_string | safe}}">
+         <div class="back">
+             <form class="form-display-area">
                 {{form_text | safe}}
              </form>
              <button class='btn btn-primary' onclick=tile_dict['{{tile_id}}'].submitOptions()>Submit</button>

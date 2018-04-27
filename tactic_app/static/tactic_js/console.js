@@ -12,7 +12,7 @@ class ConsoleObjectClass {
         this.console_visible = false;
         this.consoleCMObjects = {};
         this.console_dom.sortable({
-            handle: '.panel-heading',
+            handle: '.card-header',
             tolerance: 'pointer',
             revert: 'invalid',
             forceHelperSize: true
@@ -94,6 +94,9 @@ class ConsoleObjectClass {
         $("#clear-console-button").click(function () {
             self.clearConsole()
         });
+        $("#delete-all-console-button").click(function () {
+            self.deleteAllConsoleItems()
+        });
         $("#add-blank-code-button").click(function (e) {
             self.addConsoleCodearea(e)
         });
@@ -117,6 +120,7 @@ class ConsoleObjectClass {
     }
 
     update_height(hgt) {
+        this.console_panel.innerHeight(hgt);
         this.console_dom.outerHeight(hgt - this.console_heading.outerHeight())
     }
 
@@ -160,6 +164,10 @@ class ConsoleObjectClass {
         this.saved_console_size = $("#grid-bottom").outerHeight();
         exportViewerObject.exports_body.css("display", "none");
         this.console_dom.css("display", "none");
+        this.console_panel.outerHeight(this.console_heading.outerHeight());
+        if (!is_notebook){
+            exportViewerObject.exports_panel.outerHeight(this.console_heading.outerHeight());
+        }
         pan.find(".triangle-bottom").hide();
         pan.find(".triangle-right").show();
         this.update_grid_bottom_height();
@@ -178,8 +186,8 @@ class ConsoleObjectClass {
             exportViewerObject.exports_body.fadeIn();
             exportViewerObject.update_height(gb.innerHeight());
         }
-
-        this.console_dom.fadeIn();
+        this.console_panel.outerHeight(gb.innerHeight());
+        this.console_dom.css("display", "block");
         consoleObject.update_height(gb.innerHeight());
         this.console_visible = true;
         tableObject.resize_table_area();
@@ -188,7 +196,6 @@ class ConsoleObjectClass {
             if (!this.consoleCMObjects.hasOwnProperty(uid)) continue;
             this.consoleCMObjects[uid].refresh()
         }
-
     }
 
     zoomConsole()  {
@@ -427,6 +434,10 @@ class ConsoleObjectClass {
         });
         $("#console")[0].scrollTop = $("#console")[0].scrollHeight;
         postWithCallback(main_id, "clear_console_namespace", {})
+     }
+
+     deleteAllConsoleItems() {
+         $("#console").html("")
      }
 
     addConsoleCodearea(e) {

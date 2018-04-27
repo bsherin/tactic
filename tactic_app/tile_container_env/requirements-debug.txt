@@ -8,5 +8,6 @@ numpy
 pandas
 scipy
 scikit-learn
+tweepy
 wordcloud==1.2
 pydevd
