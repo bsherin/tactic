@@ -63,7 +63,7 @@ class AllManager(ResourceManager):
 class RepositoryAllManager(AllManager):
     rep_string = "repository-"
     is_repository = True
-    button_groups = [[{"name": "copy_button", "button_class": "btn-default", "name_text": "Copy to library"}
+    button_groups = [[{"name": "copy_button", "button_class": "btn-outline-secondary", "name_text": "Copy to library"}
                       ]]
 
     def add_rules(self):

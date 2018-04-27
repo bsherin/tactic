@@ -80,13 +80,13 @@ class TileBase(object):
     exports = []
     input_start_template = '<div class="form-group form-group-sm"">' \
                            '<label>{0}</label>'
-    basic_input_template = '<input type="{1}" class="form-control input-sm" id="{0}" value="{2}"></input>' \
+    basic_input_template = '<input type="{1}" class="form-control form-control-sm" id="{0}" value="{2}"></input>' \
                            '</div>'
-    textarea_template = '<textarea type="{1}" class="form-control input-sm" id="{0}" value="{2}">{2}</textarea>' \
+    textarea_template = '<textarea type="{1}" class="form-control form-control-sm" id="{0}" value="{2}">{2}</textarea>' \
                         '</div>'
-    codearea_template = '<textarea type="{1}" class="form-control input-sm codearea" id="{0}" value="{2}">{2}' \
+    codearea_template = '<textarea type="{1}" class="form-control form-control-sm codearea" id="{0}" value="{2}">{2}' \
                         '</textarea></div>'
-    select_base_template = '<select class="form-control input-sm" id="{0}">'
+    select_base_template = '<select class="form-control form-control-sm" id="{0}">'
     select_option_template = '<option value="{0}">{0}</option>'
     select_option_val_template = '<option value="{0}">{1}</option>'
     select_option_selected_template = '<option value="{0}" selected>{0}</option>'
@@ -1381,14 +1381,14 @@ class TileBase(object):
         self.save_stdout()
         if sortable:
             if not sidebyside:
-                the_html = "<table class='tile-table table table-striped table-bordered table-condensed sortable'>"
+                the_html = "<table class='tile-table table table-striped table-bordered table-sm sortable'>"
             else:
-                the_html = "<table class='tile-table sidebyside-table table-striped table-bordered table-condensed sortable'>"
+                the_html = "<table class='tile-table sidebyside-table table-striped table-bordered table-sm sortable'>"
         else:
             if not sidebyside:
-                the_html = "<table class='tile-table table table-striped table-bordered table-condensed'>"
+                the_html = "<table class='tile-table table table-striped table-bordered table-sm'>"
             else:
-                the_html = "<table class='tile-table sidebyside-table table-striped table-bordered table-condensed'>"
+                the_html = "<table class='tile-table sidebyside-table table-striped table-bordered table-sm'>"
 
         if title is not None:
             the_html += "<caption>{0}</caption>".format(title)
@@ -1420,7 +1420,7 @@ class TileBase(object):
         return the_html
 
     def build_html_table_for_exports(self, data_list, has_header=False, title=None):
-        the_html = "<table class='tile-table table sortable table-striped table-bordered table-condensed'>"
+        the_html = "<table class='tile-table table sortable table-striped table-bordered table-sm'>"
         if title is not None:
             the_html += "<caption>{0}</caption>".format(title)
         if has_header:

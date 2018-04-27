@@ -5,7 +5,7 @@
 MARGIN_SIZE = 50;
 
 function get_current_res_type() {
-    const module_id_str = $(".nav-tabs .active a").attr("href");
+    const module_id_str = $("#nav-list a.active").attr("href");
     // noinspection RegExpRedundantEscape
     const reg_exp = /\#(\S*?)\-module/;
     return module_id_str.match(reg_exp)[1]
