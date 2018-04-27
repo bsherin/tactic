@@ -111,6 +111,7 @@ class exportViewerObjectClass {
     }
 
     update_height(hgt) {
+        this.exports_panel.outerHeight(hgt);
         this.exports_body.outerHeight(hgt - this.exports_heading.outerHeight())
     }
 

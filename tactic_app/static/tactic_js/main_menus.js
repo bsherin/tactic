@@ -180,7 +180,7 @@ function build_and_render_menu_objects() {
                 $("#menu-area").append(menus[m].render_menu())
             }
         }
-        $(".menu-item").click(function(e) {
+        $(".dropdown-item").click(function(e) {
             const item_id = e.currentTarget.id;
             const menu_name = menu_item_index[item_id];
             //$(e.currentTarget).parents(".dropdown-menu").dropdown("toggle")s;

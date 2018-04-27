@@ -249,7 +249,7 @@ class ModuleViewerWorker(QWorker):
         return {"success": True}
 
     def build_html_table_from_data_list(self, data_list, res_type, title=None):
-        the_html = "<table class='tile-table table sortable table-striped table-bordered table-condensed'>"
+        the_html = "<table class='tile-table table sortable table-striped table-bordered table-sm'>"
         if title is not None:
             the_html += "<caption>{0}</caption>".format(title)
         the_html += "<thead><tr>"

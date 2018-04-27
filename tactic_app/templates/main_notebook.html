@@ -18,29 +18,51 @@
     </div>
 
     <div id="outer-container" style="display: none">
-        <div id="grid-bottom" style="display:block">
-            <div id="console-panel" class="panel panel-default" style="display:inline-block; vertical-align:top">
-                <div id="console-heading" class="panel-heading">
-                    <button type='button' id="show-console-button" data-toggle="tooltip" class='notclose triangle-right bottom-heading-element tooltip-top'><span style="font-size:12px" class="glyphicon glyphicon-triangle-right"></span></button>
-                    <button type='button' id="hide-console-button" data-toggle="tooltip" class='notclose triangle-bottom bottom-heading-element tooltip-top' ><span style="font-size:12px" class="glyphicon glyphicon-triangle-bottom"></span></button>
+        <div id="grid-bottom" style="display:flex">
+            <div id="console-panel" class="card">
+                <div id="console-heading" class="card-header">
+                    <div id="console-header-left">
+                        <button type='button' id="show-console-button" data-toggle="tooltip" class='notclose triangle-right bottom-heading-element tooltip-top' style="font-size:20px; padding-right: 5px; padding-top: 0px">
+                            <span class="fas fa-chevron-circle-right"></span>
+                        </button>
+                        <button type='button' id="hide-console-button" data-toggle="tooltip" class='notclose triangle-bottom bottom-heading-element tooltip-top' style="font-size:20px; padding-right: 5px; padding-top: 0px">
+                           <span class="fas fa-chevron-circle-down"></span>
+                        </button>
 
-                    <b>Log</b>
-                    <button type='button' id="add-blank-text-button" data-toggle="tooltip" class='notclose tooltip-top bottom-heading-element bottom-heading-element-button'><span style="font-size:12px" class="glyphicon glyphicon-plus"></span> text </button>
-                    <button type='button' id="add-blank-code-button" data-toggle="tooltip" class='notclose tooltip-top bottom-heading-element bottom-heading-element-button'><span style="font-size:12px" class="glyphicon glyphicon-plus"></span> code </button>
-                    <button type='button' id="clear-console-button" data-toggle="tooltip" class='notclose tooltip-top bottom-heading-element bottom-heading-element-button'><span style="font-size:12px" class="glyphicon glyphicon-refresh"></span> reset</button>
+                        <b>Log</b>
+                        <button type='button' id="add-blank-text-button" data-toggle="tooltip" class='notclose my-1 tooltip-top bottom-heading-element bottom-heading-element-button'>
+                            <span class="fas fa-plus"></span><span class="extra-glyph-text">text</span>
+                        </button>
+                        <button type='button' id="add-blank-code-button" data-toggle="tooltip" class='notclose tooltip-top bottom-heading-element bottom-heading-element-button'>
+                            <span class="fas fa-plus"></span><span class="extra-glyph-text">code</span>
+                        </button>
+                        <button type='button' id="clear-console-button" data-toggle="tooltip" class='notclose tooltip-top bottom-heading-element bottom-heading-element-button'>
+                            <span class="fas fa-sync"></span><span class="extra-glyph-text">reset</span>
+                        </button>
+                       <button type='button' id="delete-all-console-button" data-toggle="tooltip" class='notclose tooltip-top bottom-heading-element bottom-heading-element-button'>
+                            <span class="fas fa-trash"></span><span class="extra-glyph-text">clear</span>
+                        </button>
+                    </div>
 
-                    <button type='button' id="zoom-console-button" data-toggle="tooltip" class='notclose bottom-heading-element tooltip-top' style="float:right"><span style="font-size:16px" class="glyphicon glyphicon-resize-full"></span></button>
-                    <button type='button' id="unzoom-console-button" data-toggle="tooltip" class='notclose bottom-heading-element tooltip-top' style="float:right"><span style="font-size:16px" class="glyphicon glyphicon-resize-small"></span></button>
-                    <button type='button' id="show-exports-button" data-toggle="tooltip" class='notclose tooltip-top bottom-heading-element' style="float:right; margin-right:20px">exports</button>
+                   <div id="console-header-right">
+                        <button type='button' id="show-exports-button" data-toggle="tooltip" class='notclose tooltip-top bottom-heading-element' style="margin-right:12px">exports</button>
+                        <button type='button' id="zoom-console-button" data-toggle="tooltip" class='notclose bottom-heading-element tooltip-top'>
+                            <span class="fas fa-expand"></span>
+                        </button>
+                        <button type='button' id="unzoom-console-button" data-toggle="tooltip" class='notclose bottom-heading-element tooltip-top'>
+                            <span class="fas fa-compress"></span>
+                        </button>
+                    </div>
                 </div>
-                <div id="console" class="panel-body">{{ console_html | safe }}</div>
-            </div>
+                <div id="console" class="card-body">{{ console_html | safe }}</div>
         </div>
+    </div>
 </div>
 
 {% endblock %}
 {% block scripts %}
     <script src="{{url_for('static', filename='js/jquery.isonscreen.js')}}"></script>
+    <script src="{{url_for('static', filename='js/fontawesome-all.js')}}"></script>
     <script src="{{url_for('static', filename='js/d3.js')}}"></script>
     <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
     <script src="{{url_for('static', filename='js/transition.js')}}"></script>

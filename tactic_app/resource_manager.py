@@ -120,7 +120,7 @@ class ResourceManager(object):
         socketio.emit('clear-status-msg', {}, namespace='/user_manage', room=user_manage_id)
 
     def build_html_table_from_data_list(self, data_list, title=None):
-        the_html = "<table class='tile-table table sortable table-striped table-bordered table-condensed'>"
+        the_html = "<table class='tile-table table sortable table-striped table-bordered table-sm'>"
         if title is not None:
             the_html += "<caption>{0}</caption>".format(title)
         the_html += "<thead><tr>"

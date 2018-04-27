@@ -12,21 +12,17 @@
 {% block page_content %}
     <div id="modal-area">
     </div>
-    <div class="container-fluid">
-        <div class="page-header">
-            <h1>Admin Interface</h1>
-        </div>
-
-        <div class="row">
-            <div class="col-xs-12">
-              <ul class="nav nav-tabs" role="tablist">
-                <li role="presentation" class="active"><a href="#container-module" aria-controls="containers" role="tab" data-toggle="tab" value="container">containers</a></li>
-                  <li role="presentation"><a href="#user-module" aria-controls="users" role="tab" data-toggle="tab" value="user">users</a></li>
+    <div class="container-fluid" style="padding-left: 0px">
+        <div class="d-flex">
+            <div class="d-flex flex-column justify-content-between" style="margin-bottom:25px">
+              <ul id="nav-list" style="margin-top:20px" class="nav nav-pills flex-column left-vertical-nav" role="tablist">
+                <li role="presentation" class="nav-item"><a class="nav-link active" href="#container-module" aria-controls="containers" role="tab" data-toggle="tab" value="container">containers</a></li>
+                <li role="presentation" class="nav-item"><a class="nav-link" href="#user-module" aria-controls="users" role="tab" data-toggle="tab" value="user">users</a></li>
               </ul>
-                <div class="tab-content">
-                    <div class="resource-module tab-pane fade in active" id="container-module"></div>
-                    <div class="resource-module tab-pane fade in" id="user-module"></div>
-                </div>
+            </div>
+            <div class="tab-content d-flex">
+                <div class="resource-module tab-pane fade active show" id="container-module"></div>
+                <div class="resource-module tab-pane fade" id="user-module"></div>
             </div>
         </div>
     </div>

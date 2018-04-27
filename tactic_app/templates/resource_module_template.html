@@ -1,57 +1,59 @@
 <script id="resource-module-template" type="text/html">
-    <div class="col-xs-12" id="{{module_id}}" style="height: 100%; overflow: hidden; {{#start_hidden}}display:none{{/start_hidden}}">
+    <div class="" id="{{module_id}}" style="height: 100%; overflow: hidden; {{#start_hidden}}display:none{{/start_hidden}}">
         {{#include_search_toolbar}}
-        <div class="search-toolbar row indent-row" style="margin-top: 10px">
-            <div class="col-xs-12">
-                <form class="form-inline" style="display:inline">
-                    <div class="input-group">
-                      <input type="text" class="form-control search-field" placeholder="Search">
-                         <span class="input-group-btn">
-                            <button class="btn btn-default search-resource-button" type="button" value="{{res_type}}">Search</button>
-                            <button class="btn btn-default resource-unfilter-button" type="button" value="{{res_type}}">Show All</button>
-                         </span>
-                    </div>
-               </form>
+        <div class="search-toolbar mx-3 my-2" style="margin-top: 10px">
+            <div class="form-row">
+                <div class="col" style="max-width: 350px">
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control search-field" placeholder="Search">
+                        <div class="input-group-append">
+                                <button class="btn btn-outline-secondary search-resource-button" type="button" value="{{res_type}}">Search</button>
+                                <button class="btn btn-outline-secondary resource-unfilter-button" type="button" value="{{res_type}}">Show All</button>
+                        </div>
+                   </div>
+                </div>
                 {{#include_tags_search}}
-                <form class="form-inline" style="display:inline">
-                    <div class="input-group">
-                      <input type="text" class="form-control search-tags-field" placeholder="Search">
-                         <span class="input-group-btn">
-                            <button class="btn btn-default search-tags-button" type="button" value="{{res_type}}">Filter Tags</button>
-                             <button class="btn btn-default tags-unfilter-button" type="button" value="{{res_type}}">Clear</button>
-                         </span>
-                    </div>
-               </form>
+                <div class="col">
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control search-tags-field" placeholder="Search">
+                        <div class="input-group-append">
+                                <button class="btn btn-outline-secondary search-tags-button" type="button" value="{{res_type}}">Filter Tags</button>
+                                 <button class="btn btn-outline-secondary tags-unfilter-button" type="button" value="{{res_type}}">Clear</button>
+                        </div>
+                   </div>
+                </div>
                 {{/include_tags_search}}
             </div>
         </div>
         {{/include_search_toolbar}}
     {{#include_button_well}}
-    <div class="well well-sm" style="display:inline-block; margin-left:10px; margin-bottom:10px">
+    <div class="well well-sm" style="display:inline-flex; flex-direction:column; margin-left:10px; margin-bottom:10px">
+        <div style="display:flex; flex-direction:row; justify-content:space-between">
         {{#file_adders}}
-            <form action="" class="file-adder" method="post" target="_self" value="{{name}}-{{res_type}}-form" enctype="multipart/form-data">
-                <input class="btn add-button btn-default" style="display: inline" type="submit" value="{{name_text}}">
-                <input style="display: inline" type="file" name="file" {{#show_multiple}}multiple{{/show_multiple}}>
+            <form action="" class="file-adder" style="display:inline-flex" method="post" target="_self" value="{{name}}-{{res_type}}-form" enctype="multipart/form-data">
+                <input class="btn btn-sm add-button btn-outline-secondary" style="display: inline" type="submit" value="{{name_text}}">
+                <input style="display: inline; width:250px" class="form-control-file form-control-sm btn-outline-secondary" type="file" name="file" {{#show_multiple}}multiple{{/show_multiple}}>
             </form>
         {{/file_adders}}
-        <div class="btn-toolbar" role="toolbar">
+        </div>
+        <div class="mt-2 mb-2 mx-1" role="toolbar">
             {{#popup_buttons}}
-                <div class="btn-group" role="group">
-                    <button class="btn {{button_class}} action-popup" type="button">{{name_text}}</button>
-                    <button type="button" value="{{name}}-{{res_type}}" class="btn {{button_class}} dropdown-toggle action-caret" data-toggle="dropdown">
-                        <span class="caret"></span>
-                    </button>
-                      <ul class="dropdown-menu">
+            <div class="btn-group" role="group">
+                <div class="dropdown" role="group">
+                    <button class="btn btn-sm {{button_class}} dropdown-toggle" data-toggle="dropdown" type="button">{{name_text}}</button>
+                      <div class="dropdown-menu">
                           {{#option_list}}
-                            <li><a value="{{opt_name}}-{{res_type}}" class="popup_item" href="#">{{opt_name}}</a></li>
+                            <a value="{{opt_name}}-{{res_type}}" class="dropdown-item" href="#">{{opt_name}}</a>
                           {{/option_list}}
-                      </ul>
+                      </div>
                 </div>
+            </div>
             {{/popup_buttons}}
+
             {{#button_groups}}
                  <div class="btn-group" role="group">
                      {{#buttons}}
-                        <button type="button" value="{{name}}-{{res_type}}" class="btn {{button_class}} action-button">{{name_text}}</button>
+                        <button type="button" value="{{name}}-{{res_type}}" class="btn btn-sm {{button_class}} action-button">{{name_text}}</button>
                      {{/buttons}}
                      </div>
             {{/button_groups}}
@@ -59,10 +61,10 @@
     </div>
     {{/include_button_well}}
     <div class="indent-row main-content-row" style="margin-top: 7px; height: 100%">
-        <div class="" style="height: 100%; overflow: hidden">
-            <div class="left-div res-viewer-resizer" style="display: inline-block; vertical-align:top; white-space:nowrap; overflow:hidden">
+        <div class="" style="height: 100%; overflow: hidden; display:flex">
+            <div class="left-div res-viewer-resizer" style="display:flex; vertical-align:top; white-space:nowrap; overflow:hidden">
                 {{#aux_left}}
-                <div class="aux-left" style="display: inline-block; vertical-align: top; margin-left: 5px; margin-right: 5px; max-height: 100%">
+                <div class="aux-left" style="display:flex; vertical-align: top; margin-left: 5px; margin-right: 5px; max-height: 100%; flex-direction:column">
                 </div>
                 {{ /aux_left }}
                 <div style="display: inline-block; vertical-align: top; max-height: 100%; overflow-y: scroll; line-height: 1" class="list-group main-content" data-toggle="buttons">
@@ -86,7 +88,7 @@
                 </div>
                 {{/include_metadata}}
                 {{ #aux_right}}
-                <div class="aux-right" style="display: inline-block; vertical-align: top; margin-left: 5px; overflow-y: scroll; width: 100%">
+                <div class="aux-right" style="display: inline-block; vertical-align: top; margin-left: 10px; overflow-y: scroll; width: 100%">
                 {{ /aux_right }}
                 </div>
             </div>

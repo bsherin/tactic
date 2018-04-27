@@ -5,7 +5,8 @@
 let history_viewer;
 
 function start_post_load() {
-    history_viewer = new HistoryViewer(resource_name, "tile", "get_module_code")
+    history_viewer = new HistoryViewer(resource_name, "tile", "get_module_code");
+    stopSpinner()
 }
 
 class HistoryViewer extends ModuleViewerAbstract {

@@ -225,11 +225,10 @@ class TileObject {
         });
         dirty = true;
         this.hideOptions();
-        this.hideTileLog();
     }
 
     displayFormContent  (data) {
-        $(this.full_selector() + " #form-display-area").html(data["html"]);
+        $(this.full_selector() + " .form-display-area").html(data["html"]);
         let self = this;
         $(this.full_selector() + " .codearea").each(function () {
             const theId = $(this).attr("id");
@@ -340,9 +339,9 @@ class TileObject {
     }
 
     resize_name_area(){
-        const header_element = $(this.full_selector()).children(".panel-heading")[0];
-        const name_element = $(header_element).children(".tile-name-div")[0];
-        const exclamation_element = $(header_element).children("#tile-container-log")[0];
+        const header_element = $(this.full_selector()).children(".card-header")[0];
+        const name_element = $(header_element).find(".tile-name-div")[0];
+        const exclamation_element = $(header_element).find("#tile-container-log")[0];
         let max_name_width = $(exclamation_element).position().left - $(name_element).position().left - 10;
         if (max_name_width < 0) {
             max_name_width = 0
@@ -352,7 +351,7 @@ class TileObject {
     }
 
     resize_tile_area  (event, ui) {
-        const header_element = ui.element.children(".panel-heading")[0];
+        const header_element = ui.element.children(".card-header")[0];
         const hheight = $(header_element).outerHeight();
         const front_element = ui.element.find(".front")[0];
         $(front_element).outerHeight(ui.size.height - hheight);
@@ -375,8 +374,8 @@ class TileObject {
         ui.element.width(computed_width);
         ui.element.height(computed_height);
 
-        const name_element = $(header_element).children(".tile-name-div")[0];
-        const exclamation_element = $(header_element).children("#tile-container-log")[0];
+        const name_element = $(header_element).find(".tile-name-div")[0];
+        const exclamation_element = $(header_element).find("#tile-container-log")[0];
         let max_name_width = $(exclamation_element).position().left - $(name_element).position().left - 10;
         if (max_name_width < 0) {
             max_name_width = 0
@@ -399,12 +398,18 @@ class TileObject {
         }
     }
 
-    hideOptions  (){
-        $("#tile_body_" + this.tile_id + " .back").hide("blind");
+    hideOptions (){
+        const self = this;
+        $("#tile_body_" + this.tile_id + " .back").hide("slide", {"direction": "up"});
+        $("#tile_body_" + self.tile_id + " .front").show("slide", {"direction": "down"});
+        $("#tile_body_" + this.tile_id + " .tile-log").hide("blind");
 
     }
     showOptions  (){
-        $("#tile_body_" + this.tile_id + " .back").show("blind");
+        const self = this;
+        $("#tile_body_" + this.tile_id + " .front").hide("slide", {"direction": "down"});
+        $("#tile_body_" + self.tile_id + " .back").show("slide", {"direction": "up"})
+        $("#tile_body_" + this.tile_id + " .tile-log").hide("blind");
         this.refreshCodeAreas()
     }
 
@@ -422,12 +427,15 @@ class TileObject {
         postWithCallback("host", "get_container_log", {"container_id": self.tile_id}, function (res) {
             const the_html = "<pre>" + res["log_text"] + "</pre>";
             $("#tile_body_" + self.tile_id + " .tile-log-area").html(the_html);
+            $("#tile_body_" + self.tile_id + " .back").hide("blind");
+            $("#tile_body_" + self.tile_id + " .front").hide("blind");
             $("#tile_body_" + self.tile_id + " .tile-log").show("blind");
         })
     }
 
     hideTileLog  () {
         $("#tile_body_" + this.tile_id + " .tile-log").hide("blind");
+        $("#tile_body_" + this.tile_id + " .front").show("blind");
     }
 
     spin_and_refresh  () {
@@ -453,13 +461,15 @@ class TileObject {
 
         $(this.full_selector()).on(click_event, ".header-but", function (e) {
             the_id = $(e.target).closest(".tile-panel").attr("id");
+            console.log(the_id)
             const tobject = tile_dict[the_id];
             if ($(e.target).hasClass("header-but")){ // this is necessary to make this work on firefox
                 the_id = e.target.id
             }
             else {
-                the_id = e.target.parentElement.id
+                the_id = $(e.target).closest(".header-but")[0].id
             }
+            console.log(the_id);
             tobject[tobject.tileHeaderButtons[the_id]]()
         });
 

@@ -135,15 +135,15 @@ class ContainerManager extends AdminResourceManager {
         this.button_groups = [
             {
                 "buttons": [
-                    {"name": "reset-server", "func": "reset_server_func", "button_class": "btn-default"},
-                    {"name": "clear-user-containers", "func": "clear_user_func", "button_class": "btn-default"},
-                    {"name": "destroy-container", "func": "destroy_container", "button_class": "btn-default"},
+                    {"name": "reset-server", "func": "reset_server_func", "button_class": "btn-outline-secondary"},
+                    {"name": "clear-user-containers", "func": "clear_user_func", "button_class": "btn-outline-secondary"},
+                    {"name": "destroy-container", "func": "destroy_container", "button_class": "btn-outline-secondary"},
                 ]
             },
             {
                 "buttons": [
-                    {"name": "container-logs", "func": "container_logs", "button_class": "btn-default"},
-                    {"name": "refresh", "func": "refresh_container_table", "button_class": "btn-default"}
+                    {"name": "container-logs", "func": "container_logs", "button_class": "btn-outline-secondary"},
+                    {"name": "refresh", "func": "refresh_container_table", "button_class": "btn-outline-secondary"}
                 ]
             }
         ]
@@ -194,10 +194,10 @@ class UserManager extends AdminResourceManager {
         this.button_groups = [
             {
                 "buttons": [
-                    {"name": "create_user", "func": "create_user_func", "button_class": "btn-default"},
-                    {"name": "duplicate_user", "func": "duplicate_user_func", "button_class": "btn-default"},
-                    {"name": "delete_user", "func": "delete_user_func", "button_class": "btn-default"},
-                    {"name": "refresh", "func": "refresh_user_table", "button_class": "btn-default"}
+                    {"name": "create_user", "func": "create_user_func", "button_class": "btn-outline-secondary"},
+                    {"name": "duplicate_user", "func": "duplicate_user_func", "button_class": "btn-outline-secondary"},
+                    {"name": "delete_user", "func": "delete_user_func", "button_class": "btn-outline-secondary"},
+                    {"name": "refresh", "func": "refresh_user_table", "button_class": "btn-outline-secondary"}
                 ]
             }
         ]

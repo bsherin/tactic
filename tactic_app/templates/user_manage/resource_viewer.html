@@ -12,22 +12,18 @@
     <div id="modal-area">
     </div>
     <div class="container-fluid">
-        <div class="row">
-            <div class="col-xs-12" style="margin-top: 20px">
-                <div class="btn-toolbar" role="toolbar"></div>
+            <div style="margin-top: 20px">
                     {% for group in button_groups -%}
                          <div class="btn-group" role="group">
                              {% for button in group -%}
-                                <button type="button" value="{{button.name|e}}" class="btn {{button.button_class|e}} action-button">{{button.name_text}}</button>
+                                <button type="button" value="{{button.name|e}}" class="btn btn-sm {{button.button_class|e}} action-button">{{button.name_text}}</button>
                              {% endfor -%}
                          </div>
 
                     {% endfor -%}
-                    <button id="rename-button" type="button" class="btn btn-default res-name-button">{{resource_name}}</button>
+                    <button id="rename-button" type="button" class="btn btn-outline-secondary res-name-button">{{resource_name}}</button>
                 </div>
-        </div>
-        <div class="row">
-            <div class="col-xs-12">
+            <div>
                 <div id="left-div" class="res-viewer-resizer" style="margin-top: 20px; display: inline-block; vertical-align:top">
                     {% if include_above_main_area %}
                     <div id="above_main" style="position: relative"></div>
@@ -52,7 +48,6 @@
                 </div>
                 {% endif %}
             </div>
-    </div>
     </div>
 {%  endblock %}
 
