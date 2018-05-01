@@ -47,7 +47,6 @@ class CreatorViewer extends ModuleViewerAbstract {
         let the_content = {"module_name": module_name,
                         "module_viewer_id": module_viewer_id,
                         "tile_collection_name": tile_collection_name,
-                        "mongo_uri": mongo_uri,
                         "user_id": user_id,
                         "version_string": version_string};
         postWithCallback(module_viewer_id, "initialize_parser", the_content, this.got_parsed_data);

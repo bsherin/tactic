@@ -60,7 +60,6 @@ function start_post_load() {
         let data_dict = {
             "doc_type": "notebook",
             "project_collection_name": _project_collection_name,
-            "mongo_uri": mongo_uri,
             "base_figure_url": base_figure_url,
             "use_ssl": use_ssl,
             "user_id": user_id

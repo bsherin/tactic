@@ -20,19 +20,8 @@ from docker_functions import db_name
 
 csrf = CSRFProtect()
 
-# ip_info is only used as a step to getting the host_ip
-
-if USE_FORWARDER: # This means we're working on the mac
-    # I used to have en0 here. Now it seems to need to be en3
-    ip_info = subprocess.check_output(['/usr/local/bin/ip', '-4', 'addr', 'show', 'en0'])
-else:
-    ip_info = subprocess.check_output(['ip', '-4', 'addr', 'show', 'scope', 'global', 'dev', 'docker0'])
-
-
 # global_stuff
 # these variables are imported by other modules
-host_ip = re.search("inet (.*?)/", ip_info).group(1)
-mongo_uri = None
 use_ssl = os.environ.get("USE_SSL")
 app = None
 db = None
@@ -70,8 +59,7 @@ try:
     # to be useless here
     client.server_info()
     # noinspection PyUnresolvedReferences
-    db = client[db_name]
-    mongo_uri ="mongodb://{}:27017/{}".format(host_ip, db_name)
+    db = client[db_name] # tactic_working
 
     if ("ANYONE_CAN_REGISTER" in os.environ) and (os.environ.get("ANYONE_CAN_REGISTER") == "True"):
         ANYONE_CAN_REGISTER = True
