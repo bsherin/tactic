@@ -6,6 +6,9 @@ import sys
 import uuid
 import datetime
 from communication_utils import send_request_to_megaplex, post_task_noqworker
+from communication_utils import USE_FORWARDER
+import subprocess
+import re
 forwarder_address = None
 forwarder_id = None
 sys.stdout = sys.stderr
@@ -31,6 +34,20 @@ if "DB_NAME" in os.environ:
     db_name = os.environ.get("DB_NAME")
 else:
     db_name = "tacticdb"
+
+
+if "MONGO_URI" in os.environ:
+    mongo_uri = os.environ.get("MONGO_URI")
+else:
+    # ip_info is only used as a step to getting the host_ip
+    if USE_FORWARDER:  # This means we're working on the mac
+        # I used to have en0 here. Now it seems to need to be en3
+        ip_info = subprocess.check_output(['/usr/local/bin/ip', '-4', 'addr', 'show', 'en0'])
+    else:
+        ip_info = subprocess.check_output(['ip', '-4', 'addr', 'show', 'scope', 'global', 'dev', 'docker0'])
+
+    host_ip = re.search("inet (.*?)/", ip_info).group(1)
+    mongo_uri ="mongodb://{}:27017/{}".format(host_ip, db_name)
 
 
 megaplex_address = None  # This is set in __init__.py
@@ -78,6 +95,7 @@ def create_container(image_name, container_name=None, network_mode="bridge",
                "OWNER": owner,
                "PARENT": parent,
                "DB_NAME": db_name,
+               "MONGO_URI": mongo_uri,
                "DEBUG_MAIN_CONTAINER": DEBUG_MAIN_CONTAINER,
                "DEBUG_TILE_CONTAINER": DEBUG_TILE_CONTAINER}
 

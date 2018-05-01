@@ -7,7 +7,7 @@ from flask import render_template, request, jsonify, url_for
 from flask_login import login_required, current_user
 from tactic_app.integrated_docs import api_dict_by_category, ordered_api_categories
 import tactic_app
-from tactic_app import app, db, mongo_uri, socketio, use_ssl
+from tactic_app import app, db, socketio, use_ssl
 from tactic_app.resource_manager import ResourceManager, UserManageResourceManager
 from tactic_app.users import User
 from tactic_app.docker_functions import create_container, ContainerCreateError
@@ -241,7 +241,6 @@ class TileManager(UserManageResourceManager):
                                api_dlist=revised_api_dlist,
                                uses_codemirror="True",
                                version_string=tstring,
-                               mongo_uri=mongo_uri,
                                module_viewer_id=the_content["module_viewer_id"],
                                tile_collection_name=the_content["tile_collection_name"])
 

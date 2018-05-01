@@ -3,7 +3,7 @@ import sys
 from flask import jsonify, request, url_for, render_template
 from flask_login import login_required, current_user
 import tactic_app
-from tactic_app import app, db, fs, use_ssl, mongo_uri
+from tactic_app import app, db, fs, use_ssl
 from tactic_app.docker_functions import create_container, ContainerCreateError
 from tactic_app.resource_manager import ResourceManager, UserManageResourceManager
 from tactic_app.users import User
@@ -59,7 +59,6 @@ class ProjectManager(UserManageResourceManager):
                      "console_html": "",
                      "short_collection_name": "",
                      "project_collection_name": user_obj.project_collection_name,
-                     "mongo_uri": mongo_uri,
                      "is_table": (doc_type == "table"),
                      "is_notebook": (doc_type == 'notebook'),
                      "is_freeform": (doc_type == 'freeform'),
