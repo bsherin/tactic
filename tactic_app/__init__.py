@@ -16,7 +16,7 @@ from docker_functions import create_container, get_address, ContainerCreateError
 import docker_functions
 from communication_utils import send_request_to_container, USE_FORWARDER
 from integrated_docs import api_array
-from docker_functions import db_name
+from docker_functions import db_name, mongo_uri
 
 csrf = CSRFProtect()
 
@@ -46,6 +46,13 @@ def create_megaplex():
         print "Error creating the Megaplex."
         exit()
 
+
+# The purpose of this function is that db.collection_names doesn't work in on Azure
+def list_collections(db):
+    dictlist = db.command("listCollections")["cursor"]["firstBatch"]
+    return [d["name"] for d in dictlist]
+
+
 # noinspection PyUnresolvedReferences
 try:
     print "getting client"
@@ -53,7 +60,7 @@ try:
     STEP_SIZE = int(os.environ.get("STEP_SIZE"))
 
     # Now the local server branch is what executes on the remote server
-    client = MongoClient("localhost", serverSelectionTimeoutMS=10)
+    client = MongoClient(mongo_uri, serverSelectionTimeoutMS=10)
     # force connection on a request as the
     # connect=True parameter of MongoClient seems
     # to be useless here
