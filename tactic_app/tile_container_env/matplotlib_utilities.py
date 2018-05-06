@@ -101,6 +101,17 @@ class MplFigure(Figure):
         the_html = image_string.format(fig_url)
         return the_html
 
+    def create_pyplot_html(self):
+        import matplotlib.pyplot as plt
+        img_file = StringIO.StringIO()
+        plt.savefig(img_file)
+        img_file.seek(0)
+        figname = str(uuid.uuid4())
+        self.img_dict[figname] = img_file.getvalue()
+        fig_url = self.base_figure_url + figname
+        image_string = "<img class='output-plot' src='{}' lt='Image Placeholder'>"
+        the_html = image_string.format(fig_url)
+        return the_html
 
 class GraphList(MplFigure):
     def draw_plot(self):
