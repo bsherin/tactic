@@ -60,7 +60,7 @@ class mainWindow(object):
         self.mworker = mworker
         print "mongo_uri is " + str(mongo_uri)
         try:
-            client = pymongo.MongoClient(mongo_uri, serverSelectionTimeoutMS=10)
+            client = pymongo.MongoClient(mongo_uri, serverSelectionTimeoutMS=30000)
             client.server_info()
             # noinspection PyUnresolvedReferences
             self.db = client[db_name]

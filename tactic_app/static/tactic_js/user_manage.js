@@ -347,7 +347,8 @@ class CollectionManager extends UserManagerResourceManager {
             }
         ];
     }
-     newNotebook (event) {
+
+    newNotebook (event) {
         const manager = event.data.manager;
         const res_name = manager.check_for_selection("resource");
         if (res_name == "") return;

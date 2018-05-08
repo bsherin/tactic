@@ -7,6 +7,7 @@ import subprocess
 import re
 import os
 from pymongo import MongoClient
+from pymongo.database import Database
 import gridfs
 from flask_login import LoginManager
 from flask_bootstrap import Bootstrap
@@ -48,10 +49,17 @@ def create_megaplex():
 
 
 # The purpose of this function is that db.collection_names doesn't work in on Azure
-def list_collections(db):
-    dictlist = db.command("listCollections")["cursor"]["firstBatch"]
+def list_collections(self):
+    dictlist = self.command("listCollections")["cursor"]["firstBatch"]
     return [d["name"] for d in dictlist]
 
+Database.collection_names = list_collections
+
+def create_collection(self, collection_name):
+    self.command("create", collection_name)
+    return
+
+Database.create_collection = create_collection
 
 # noinspection PyUnresolvedReferences
 try:
@@ -60,7 +68,7 @@ try:
     STEP_SIZE = int(os.environ.get("STEP_SIZE"))
 
     # Now the local server branch is what executes on the remote server
-    client = MongoClient(mongo_uri, serverSelectionTimeoutMS=10)
+    client = MongoClient(mongo_uri, serverSelectionTimeoutMS=30000)
     # force connection on a request as the
     # connect=True parameter of MongoClient seems
     # to be useless here

@@ -197,6 +197,8 @@ class UserManager extends AdminResourceManager {
                     {"name": "create_user", "func": "create_user_func", "button_class": "btn-outline-secondary"},
                     {"name": "duplicate_user", "func": "duplicate_user_func", "button_class": "btn-outline-secondary"},
                     {"name": "delete_user", "func": "delete_user_func", "button_class": "btn-outline-secondary"},
+                    {"name": "migrate_user", "func": "migrate_user_func", "button_class": "btn-outline-secondary"},
+                    {"name": "update_all_collections", "func": "update_all_collections", "button_class": "btn-outline-secondary"},
                     {"name": "refresh", "func": "refresh_user_table", "button_class": "btn-outline-secondary"}
                 ]
             }
@@ -218,6 +220,16 @@ class UserManager extends AdminResourceManager {
         event.preventDefault();
     }
 
+    migrate_user_func (event) {
+        const manager = event.data.manager;
+        user_id = manager.check_for_selection("user", 0);
+        const confirm_text = "Are you sure that you want to migrate user " + String(user_id) + "?";
+        confirmDialog("Migrate User", confirm_text, "do nothing", "migrate", function () {
+            $.getJSON($SCRIPT_ROOT + '/migrate_user/' + user_id, doFlash);
+        });
+        event.preventDefault();
+    }
+
     create_user_func (event) {
         window.open($SCRIPT_ROOT + '/register');
         event.preventDefault();
@@ -225,6 +237,11 @@ class UserManager extends AdminResourceManager {
 
     duplicate_user_func (event) {
         window.open($SCRIPT_ROOT + '/user_duplicate');
+        event.preventDefault();
+    }
+
+    update_all_collections (event) {
+        window.open($SCRIPT_ROOT + '/update_all_collections');
         event.preventDefault();
     }
 }
