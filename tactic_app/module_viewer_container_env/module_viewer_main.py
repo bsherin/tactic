@@ -41,7 +41,7 @@ class ModuleViewerWorker(QWorker):
         self.module_name = data_dict["module_name"]
         self.user_id = data_dict["user_id"]
         try:
-            client = pymongo.MongoClient(mongo_uri, serverSelectionTimeoutMS=10)
+            client = pymongo.MongoClient(mongo_uri, serverSelectionTimeoutMS=30000)
             client.server_info()
             # noinspection PyUnresolvedReferences
             self.db = client[db_name]

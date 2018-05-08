@@ -108,6 +108,9 @@ def create_container(image_name, container_name=None, network_mode="bridge",
 
     labels = {"my_id": unique_id, "owner": owner, "parent": parent, "other_name": other_name}
 
+    if image_name == "tactic_tile_image":  # We don't want people to be able to see the mongo_uri
+        del environ["MONGO_URI"]
+
     if container_name is None:
         container = cli.containers.run(image=image_name,
                                        network_mode="bridge",
