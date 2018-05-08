@@ -320,6 +320,23 @@ Plots
         Given a MplFigure instance this generates html that can be included in a
         tile to display the figure.
 
+    .. py:method:: create_figure_html()
+
+        Given a MplFigure instance this generates html that can be included in a
+        tile to display the figure.
+
+    .. py:method:: create_pyplot_html()
+
+        When using matplotlib.pyplot to work in interactive mode, use this alternative
+        command to generate html to display the figure. For example, this will work
+        in the log or a notebook:
+
+        .. code-block:: python
+
+            import matplotlib.pyplot as plt
+            plt.plot([7, 4, 3])
+            self.create_pyplot_html()
+
 .. category_end
 
 .. category_start

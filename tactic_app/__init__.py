@@ -7,6 +7,7 @@ import subprocess
 import re
 import os
 from pymongo import MongoClient
+from pymongo.database import Database
 import gridfs
 from flask_login import LoginManager
 from flask_bootstrap import Bootstrap
@@ -16,23 +17,12 @@ from docker_functions import create_container, get_address, ContainerCreateError
 import docker_functions
 from communication_utils import send_request_to_container, USE_FORWARDER
 from integrated_docs import api_array
-from docker_functions import db_name
+from docker_functions import db_name, mongo_uri
 
 csrf = CSRFProtect()
 
-# ip_info is only used as a step to getting the host_ip
-
-if USE_FORWARDER: # This means we're working on the mac
-    # I used to have en0 here. Now it seems to need to be en3
-    ip_info = subprocess.check_output(['/usr/local/bin/ip', '-4', 'addr', 'show', 'en0'])
-else:
-    ip_info = subprocess.check_output(['ip', '-4', 'addr', 'show', 'scope', 'global', 'dev', 'docker0'])
-
-
 # global_stuff
 # these variables are imported by other modules
-host_ip = re.search("inet (.*?)/", ip_info).group(1)
-mongo_uri = None
 use_ssl = os.environ.get("USE_SSL")
 app = None
 db = None
@@ -57,6 +47,20 @@ def create_megaplex():
         print "Error creating the Megaplex."
         exit()
 
+
+# The purpose of this function is that db.collection_names doesn't work in on Azure
+def list_collections(self):
+    dictlist = self.command("listCollections")["cursor"]["firstBatch"]
+    return [d["name"] for d in dictlist]
+
+Database.collection_names = list_collections
+
+def create_collection(self, collection_name):
+    self.command("create", collection_name)
+    return
+
+Database.create_collection = create_collection
+
 # noinspection PyUnresolvedReferences
 try:
     print "getting client"
@@ -64,14 +68,13 @@ try:
     STEP_SIZE = int(os.environ.get("STEP_SIZE"))
 
     # Now the local server branch is what executes on the remote server
-    client = MongoClient("localhost", serverSelectionTimeoutMS=10)
+    client = MongoClient(mongo_uri, serverSelectionTimeoutMS=30000)
     # force connection on a request as the
     # connect=True parameter of MongoClient seems
     # to be useless here
     client.server_info()
     # noinspection PyUnresolvedReferences
-    db = client[db_name]
-    mongo_uri ="mongodb://{}:27017/{}".format(host_ip, db_name)
+    db = client[db_name] # tactic_working
 
     if ("ANYONE_CAN_REGISTER" in os.environ) and (os.environ.get("ANYONE_CAN_REGISTER") == "True"):
         ANYONE_CAN_REGISTER = True

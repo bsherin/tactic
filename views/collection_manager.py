@@ -5,7 +5,7 @@ from flask_login import login_required, current_user
 from flask import jsonify, render_template, url_for, request, send_file
 from tactic_app.users import User
 from tactic_app.docker_functions import create_container, ContainerCreateError
-from tactic_app import app, db, fs, mongo_uri, use_ssl
+from tactic_app import app, db, fs, use_ssl
 from tactic_app.communication_utils import make_python_object_jsonizable, debinarize_python_object
 from tactic_app.communication_utils import read_temp_data, delete_temp_data
 import openpyxl
@@ -64,7 +64,6 @@ class CollectionManager(UserManageResourceManager):
                                window_title="new notebook",
                                project_name='',
                                project_collection_name=user_obj.project_collection_name,
-                               mongo_uri=mongo_uri,
                                base_figure_url=url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
                                main_id=main_id,
                                temp_data_id="",
@@ -88,7 +87,6 @@ class CollectionManager(UserManageResourceManager):
                                window_title="new notebook",
                                project_name='',
                                project_collection_name=user_obj.project_collection_name,
-                               mongo_uri=mongo_uri,
                                base_figure_url=url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
                                main_id=main_id,
                                temp_data_id=unique_id,
@@ -135,7 +133,6 @@ class CollectionManager(UserManageResourceManager):
                                window_title=short_collection_name,
                                project_name='',
                                project_collection_name=user_obj.project_collection_name,
-                               mongo_uri=mongo_uri,
                                base_figure_url=url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
                                main_id=main_id,
                                temp_data_id="",
@@ -437,8 +434,12 @@ class CollectionManager(UserManageResourceManager):
             self.update_number_of_docs(collection_to_copy)
 
         for doc in db[collection_to_copy].find():
-            if "file_id" in doc:
-                doc_text = fs.get(doc["file_id"]).read()
+            if not doc["name"] == "__metadata__":
+                if "file_id" in doc:
+                    doc_text = fs.get(doc["file_id"]).read()
+                else:
+                    doc_text = make_python_object_jsonizable(doc["data_rows"])
+                    del doc["data_rows"]
                 doc["file_id"] = fs.put(doc_text)
             db[new_collection_name].insert_one(doc)
 
@@ -447,7 +448,6 @@ class CollectionManager(UserManageResourceManager):
         table_row = self.create_new_row(request.json['new_res_name'], metadata)
         all_table_row = self.all_manager.create_new_all_row(request.json['new_res_name'], metadata, "collection")
         return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
-
 
 class RepositoryCollectionManager(CollectionManager):
     rep_string = "repository-"

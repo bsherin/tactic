@@ -98,7 +98,10 @@ class PseudoTileClass(TileBase, MplFigure):
             save_dict["binary_attrs"] = []
         if "imports" in save_dict:
             for imp in save_dict["imports"]:
-                globals()[imp] = __import__(imp, globals(), locals(), [], -1)
+                try:
+                    globals()[imp] = __import__(imp, globals(), locals(), [], -1)
+                except:
+                    print "problem importing " + str(imp)
         if "img_dict" in save_dict:
             self.img_dict = debinarize_python_object(save_dict["img_dict"])
         for (attr, attr_val) in save_dict.items():
