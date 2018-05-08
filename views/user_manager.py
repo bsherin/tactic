@@ -99,17 +99,20 @@ class UserManager(ResourceManager):
         return jsonify(result)
 
     def migrate_user(self, userid):
+        print "entering migrate user"
         if not (current_user.username == "admin"):
             return jsonify({"success": False, "message": "not authorized", "alert_type": "alert-warning"})
         if "TARGET_URI" in os.environ:
             target_uri = os.environ.get("TARGET_URI")
+            print "got target_uri " + str(target_uri)
         else:
+            print "target_uri not in environ"
             return jsonify({"success": False})
         target_client = MongoClient(target_uri, serverSelectionTimeoutMS=30000)
         target_db = target_client["tacticdb"]
         target_fs = gridfs.GridFS(target_db)
         user_obj = load_user(userid)
-
+        print "got target db, fs, etc"
         if user_obj.list_collection_name not in target_db.collection_names():
             target_db.create_collection(user_obj.list_collection_name)
         for doc in db[user_obj.list_collection_name].find():
