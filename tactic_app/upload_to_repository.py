@@ -63,7 +63,7 @@ try:
     CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
     STEP_SIZE = int(os.environ.get("STEP_SIZE"))
     if ("USE_LOCAL_SERVER" in os.environ) and (os.environ.get("USE_LOCAL_SERVER") == "True"):
-        client = MongoClient("localhost", serverSelectionTimeoutMS=10)
+        client = MongoClient("localhost", serverSelectionTimeoutMS=30000)
         # force connection on a request as the
         # connect=True parameter of MongoClient seems
         # to be useless here

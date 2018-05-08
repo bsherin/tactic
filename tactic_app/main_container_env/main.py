@@ -39,6 +39,7 @@ def task_worthy(m):
     task_worthy_methods[m.__name__] = "mainwindow"
     return m
 
+mongo_uri = os.environ.get("MONGO_URI")
 
 # noinspection PyPep8Naming,PyUnusedLocal
 class mainWindow(object):
@@ -57,8 +58,9 @@ class mainWindow(object):
     def __init__(self, mworker, data_dict):
         print "entering mainwindow_init"
         self.mworker = mworker
+        print "mongo_uri is " + str(mongo_uri)
         try:
-            client = pymongo.MongoClient(data_dict["mongo_uri"], serverSelectionTimeoutMS=10)
+            client = pymongo.MongoClient(mongo_uri, serverSelectionTimeoutMS=30000)
             client.server_info()
             # noinspection PyUnresolvedReferences
             self.db = client[db_name]
@@ -184,6 +186,7 @@ class mainWindow(object):
         self.mworker.post_task("host", "clear_main_status_message", data)
 
 
+    # legacy
     def update_legacy_console_html(self):
         self.console_html = re.sub("panel panel-default log-panel ", "card log-panel ", self.console_html)
         self.console_html = re.sub("panel log-panel panel-default ", "card log-panel ", self.console_html)

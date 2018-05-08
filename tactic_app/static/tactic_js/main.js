@@ -102,7 +102,6 @@ function start_post_load() {
                     "doc_type": DOC_TYPE,
                     "project_collection_name": _project_collection_name,
                     "user_manage_id": main_id,
-                    "mongo_uri": mongo_uri,
                     "base_figure_url": base_figure_url,
                     "use_ssl": use_ssl,
                     "user_id": user_id
@@ -114,7 +113,6 @@ function start_post_load() {
                         "collection_name": _collection_name,
                         "doc_type": DOC_TYPE,
                         "project_collection_name": _project_collection_name,
-                        "mongo_uri": mongo_uri,
                         "base_figure_url": base_figure_url,
                         "use_ssl": use_ssl,
                         "user_id": user_id

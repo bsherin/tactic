@@ -7,7 +7,7 @@ import datetime
 from collections import OrderedDict
 from flask import jsonify, request
 from flask_login import UserMixin
-from tactic_app import login_manager, db, fs  # global_stuff db
+from tactic_app import login_manager, db, fs, list_collections  # global_stuff db
 from tactic_app.communication_utils import read_project_dict, make_jsonizable_and_compress
 from bson.objectid import ObjectId
 from werkzeug.security import generate_password_hash, check_password_hash

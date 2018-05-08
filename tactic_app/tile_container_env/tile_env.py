@@ -3,6 +3,8 @@ import sys
 # import wordcloud
 # from sentiment_tools import vader_sentiment_analyzer, sentiwordnet, TacticVader
 import warnings
+import matplotlib
+matplotlib.use("Agg")
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")

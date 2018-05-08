@@ -66,11 +66,15 @@ Like a tile, output here is treated as html. So you might need to add
 html tags to get the output that you want. For example, you might want
 to wrap your output in ``<pre>..</pre>`` tags.
 
-You can display plots in the console just as you’d expect. At the
-present time, to do so, you have to use the same magic commands as in a
-tile. So it’s a little ugly:
+You can display plots in the console just as you’d expect. But you have to use the
+same magic commands as in a tile. So it’s a little ugly:
 
 |image5|
+
+You can also work with the Matplotlib interactive mode if you use the ``self.create_pyplot_html()``
+magic command:
+
+|image6|
 
 Some final generalities
 -----------------------
@@ -100,4 +104,5 @@ state is still an iffy business however.
 .. |image3| image:: imgs/a6aa511c.png
 .. |image4| image:: imgs/55cbd9bd.png
 .. |image5| image:: imgs/59bba4c7.png
+.. |image6| image:: imgs/pyploting.png
 
