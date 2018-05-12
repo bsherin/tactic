@@ -250,8 +250,12 @@ a[role="tab"] {
     background-color: $selector-background-color;
 }
 
-.left-vertical-nav.nav-pills .nav-link {
-    border-radius: 0;
+.um-nav-icon {
+    width: 20px
+}
+
+.um-nav-text {
+    padding-left: 6px
 }
 
 
@@ -500,13 +504,17 @@ a[role="tab"] {
 
     }
 
+    .tile-body .back button {
+        width: 100%
+    }
+
     .form-display-area {
+
         label {
             font-weight: 700;
             font-size: 15px;
 
         }
-
     }
 
     .header-but {
@@ -624,11 +632,13 @@ a[role="tab"] {
     /* console */
 
     .bottom-heading-element {
-        height: 30px !important
+        height: 30px !important;
+        line-height: 12px;
     }
 
     .bottom-heading-element-button {
-        margin-left: 7px !important
+        margin-left: 13px !important;
+        align-items: baseline
     }
 
     #console {
@@ -636,6 +646,12 @@ a[role="tab"] {
         font-size: 14px;
         overflow: auto;
         padding: 5px;
+    }
+
+    #console_error_log {
+        text-align: left;
+        font-size: 14px;
+        overflow: auto;
     }
 
     #console-panel {
@@ -895,8 +911,6 @@ a[role="tab"] {
         padding: 20px;
         margin: 0;
         overflow: auto;
-        display: flex;
-        flex-direction: column;
     }
 
     .front {

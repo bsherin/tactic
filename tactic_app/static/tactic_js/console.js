@@ -24,6 +24,9 @@ class ConsoleObjectClass {
         this.console_zoomed = false;
         this.current_panel_focus = null;
         this.markdown_helper = new MarkdownHelper(".console-text", ".text-panel-output");
+        this.pseudo_tile_id = null;
+        this.saved_console_dom_visibility = "block";
+        this.saved_error_dom_visibility = "none"
     }
 
     get console_panel () {
@@ -36,6 +39,10 @@ class ConsoleObjectClass {
 
     get console_dom () {
         return $("#console")
+    }
+
+    get error_dom () {
+        return $("#console_error_log")
     }
 
     update_width(new_width_fraction) {
@@ -103,6 +110,12 @@ class ConsoleObjectClass {
         $("#add-blank-text-button").click(function (e) {
             self.addBlankConsoleText(e)
         });
+        $("#console-error-log-button").click(function(e) {
+            self.toggleConsoleErrorLog()
+        });
+         $("#main-error-log-button").click(function(e) {
+            self.toggleMainErrorLog()
+        });
         this.console_dom.on("click", ".shrink-log-button", {"cobject": this}, this.toggleLogItem);
         this.console_dom.on("click", ".expand-log-button", {"cobject": this}, this.toggleLogItem);
         this.console_dom.on("click", ".close-log-button", {"cobject": this}, this.closeLogItem);
@@ -122,6 +135,7 @@ class ConsoleObjectClass {
     update_height(hgt) {
         this.console_panel.innerHeight(hgt);
         this.console_dom.outerHeight(hgt - this.console_heading.outerHeight())
+        this.error_dom.outerHeight(hgt - this.console_heading.outerHeight())
     }
 
     turn_on_resize () {
@@ -163,7 +177,10 @@ class ConsoleObjectClass {
         const pan = this.console_panel;
         this.saved_console_size = $("#grid-bottom").outerHeight();
         exportViewerObject.exports_body.css("display", "none");
+        this.saved_console_dom_visibility = this.console_dom.css("display");
+        this.saved_error_dom_visibility = this.error_dom.css("display");
         this.console_dom.css("display", "none");
+        this.error_dom.css("display", "none")
         this.console_panel.outerHeight(this.console_heading.outerHeight());
         if (!is_notebook){
             exportViewerObject.exports_panel.outerHeight(this.console_heading.outerHeight());
@@ -187,7 +204,8 @@ class ConsoleObjectClass {
             exportViewerObject.update_height(gb.innerHeight());
         }
         this.console_panel.outerHeight(gb.innerHeight());
-        this.console_dom.css("display", "block");
+        this.console_dom.css("display", this.saved_console_dom_visibility);
+        this.error_dom.css("display", this.saved_error_dom_visibility);
         consoleObject.update_height(gb.innerHeight());
         this.console_visible = true;
         tableObject.resize_table_area();
@@ -486,6 +504,69 @@ class ConsoleObjectClass {
                 })
             }
         })
+    }
+
+    toggleConsoleErrorLog  () {
+         if ($("#console_error_log").css("display") == "none") {
+             this.getPseudoShowConsoleErrorLog()
+         }
+         else {
+             this.hideConsoleErrorLog()
+         }
+    }
+
+    toggleMainErrorLog  () {
+         if ($("#console_error_log").css("display") == "none") {
+             this.showMainErrorLog()
+         }
+         else {
+             this.hideConsoleErrorLog()
+         }
+    }
+
+    showMainErrorLog () {
+         self = this;
+         if (!this.console_visible && !this.console_zoomed) {
+            this.expandConsole()
+        }
+         postWithCallback("host", "get_container_log", {"container_id": main_id}, function (res) {
+            const the_html = "<pre>" + res["log_text"] + "</pre>";
+            $("#console_error_log").html(the_html);
+            self.console_dom.hide("blind");
+            $("#console_error_log").show("blind");
+     })
+}
+
+    showConsoleErrorLog() {
+         self = this;
+         if (!this.console_visible && !this.console_zoomed) {
+            this.expandConsole()
+        }
+         postWithCallback("host", "get_container_log", {"container_id": self.pseudo_tile_id}, function (res) {
+                const the_html = "<pre>" + res["log_text"] + "</pre>";
+                $("#console_error_log").html(the_html);
+                self.console_dom.hide("blind");
+                $("#console_error_log").show("blind");
+         })
+    }
+
+
+    getPseudoShowConsoleErrorLog() {
+         const self = this;
+         if (self.pseudo_tile_id == null) {
+              postWithCallback(main_id, "get_pseudo_tile_id", {}, function (res) {
+                  self.pseudo_tile_id = res["pseudo_tile_id"];
+                  self.showConsoleErrorLog()
+              })
+         }
+         else {
+            self.showConsoleErrorLog()
+         }
+    }
+
+    hideConsoleErrorLog() {
+        $("#console_error_log").hide("blind",);
+        this.console_dom.show("blind");
     }
 
 }
