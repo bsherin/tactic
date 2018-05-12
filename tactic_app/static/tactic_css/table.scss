@@ -1,9 +1,9 @@
 
-$main-panel-heading-background: #dff0d8; // bootstrap default #dff0d8
+$main-panel-heading-background: #9B79CC; // bootstrap default #dff0d8
 $main-panel-heading-height: 35px;
 $main-panel-heading-padding: 5px;
-$main-panel-heading-font-color: #306030; // bootstrap default #4f8950
-$main-panel-border-color: #c3e5b6;
+$main-panel-heading-font-color: white; // bootstrap default #4f8950
+$main-panel-border-color: #9B79CC;
 
 $table-font-family: Arial, Helvetica, sans-serif;
 
@@ -34,7 +34,7 @@ $selected-column-background: #e0e0e0;
 // Panel header stuff for main table
 #main-panel {
     margin: 5px;
-    border: 2px solid $main-panel-border-color;
+    border: 1px solid $main-panel-border-color;
     font-family: $table-font-family;
 
     .card-header{
@@ -52,8 +52,8 @@ $selected-column-background: #e0e0e0;
 
             }
             label[for=doc-selector] {
-                padding-left: 5px;
-                font-weight: 700;
+                padding-left: 10px;
+                font-weight: 500;
             }
         }
     }

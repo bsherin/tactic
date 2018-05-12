@@ -91,8 +91,8 @@ class TileBase(object):
     select_option_val_template = '<option value="{0}">{1}</option>'
     select_option_selected_template = '<option value="{0}" selected>{0}</option>'
     select_option_val_selected_template = '<option value="{0}" selected>{1}</option>'
-    boolean_template = '<div class="checkbox"><label style="font-weight: 700">'\
-                       '<input type="checkbox" id="{0}" value="{0}" {1}>{0}</label>' \
+    boolean_template = '<div class="form-group form-check"><label class="form-check-label" style="font-weight: 700">'\
+                       '<input type="checkbox" class="form-check-input" id="{0}" value="{0}" {1}>{0}</label>' \
                        '</div>'
     reload_attrs = ["tile_name", "tile_type", "base_figure_url", "user_id", "doc_type",
                     "header_height", "front_height", "front_width", "back_height",
