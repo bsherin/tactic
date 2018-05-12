@@ -18,7 +18,7 @@ The second way to create a Notebook project is from the collection
 manager. Just click the :guilabel:`new notebook` button as as shown in the figure
 below.
 
-|image0|
+|new_notebook|
 
 Logs and Notebooks pretty much work the same way. You use the buttons at
 the top to manually add new elements:
@@ -92,14 +92,33 @@ Clicking the reset button does a few different things:
 -  It stops and restarts the python process so that the internal state
    is entirely cleared.
 
+About the :guilabel:`clear` button:
+
+Clicking the clear button button does everything that reset does, and
+it also removes absolutely everything from the log.
+
+About the **log and main errors** buttons:
+
+These log errors button shows the container log for the virtual tile associated with the log.
+The main errors button shows the container log for the container associated with the current project.
+Tactic tries to catch all errors and to display them for you in the log, or in alerts. But if you
+are getting unexpected behavior, and not seeing any normal error messages, then you can try looking at
+the container logs to get a sense for what's going on. Problems with docker itself might also show up here.
+
+About log item **summaries**:
+
+When you shrink a log item, you will see the "summary" for the item.
+The summary can be specified in the ``log_it`` command that creates a log item.
+You can also directly edit the summary after shrinking a log item.
+
 About **saving**:
 
 When you save a standard project or notebook, Tactic attempts to save both
 the appearance *and internal state* of the Notebook. The saving of internal
 state is still an iffy business however.
 
-.. |image0| image:: imgs/663fd636.png
-.. |image1| image:: imgs/e64e7678.png
+.. |new_notebook| image:: imgs/new_notebook.png
+.. |image1| image:: imgs/console_top.png
 .. |image2| image:: imgs/06ca6226.png
 .. |image3| image:: imgs/a6aa511c.png
 .. |image4| image:: imgs/55cbd9bd.png

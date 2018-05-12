@@ -20,40 +20,47 @@
     <div id="outer-container" style="display: none">
         <div id="grid-bottom" style="display:flex">
             <div id="console-panel" class="card">
-                <div id="console-heading" class="card-header">
-                    <div id="console-header-left">
-                        <button type='button' id="show-console-button" data-toggle="tooltip" class='notclose triangle-right bottom-heading-element tooltip-top' style="font-size:20px; padding-right: 5px; padding-top: 0px">
-                            <span class="fas fa-chevron-circle-right"></span>
+                <div id="console-heading" class="card-header  d-flex flex-row justify-content-between">
+                    <div id="console-header-left" class="d-flex flex-row align-items-baseline">
+                        <button type='button' id="show-console-button" data-toggle="tooltip" class='notclose triangle-right bottom-heading-element tooltip-top' style="padding-right: 5px; padding-top: 0px">
+                            <span class="far fa-chevron-circle-right"></span>
                         </button>
-                        <button type='button' id="hide-console-button" data-toggle="tooltip" class='notclose triangle-bottom bottom-heading-element tooltip-top' style="font-size:20px; padding-right: 5px; padding-top: 0px">
-                           <span class="fas fa-chevron-circle-down"></span>
+                        <button type='button' id="hide-console-button" data-toggle="tooltip" class='notclose triangle-bottom bottom-heading-element tooltip-top' style="padding-right: 5px; padding-top: 0px">
+                           <span class="far fa-chevron-circle-down"></span>
                         </button>
 
                         <b>Log</b>
-                        <button type='button' id="add-blank-text-button" data-toggle="tooltip" class='notclose my-1 tooltip-top bottom-heading-element bottom-heading-element-button'>
-                            <span class="fas fa-plus"></span><span class="extra-glyph-text">text</span>
+                        <button type='button' id="add-blank-text-button" data-toggle="tooltip" class='notclose tooltip-top bottom-heading-element bottom-heading-element-button'>
+                            <span class="far fa-font"></span><span class="extra-glyph-text">text</span>
                         </button>
                         <button type='button' id="add-blank-code-button" data-toggle="tooltip" class='notclose tooltip-top bottom-heading-element bottom-heading-element-button'>
-                            <span class="fas fa-plus"></span><span class="extra-glyph-text">code</span>
+                            <span class="far fa-terminal"></span><span class="extra-glyph-text">code</span>
                         </button>
                         <button type='button' id="clear-console-button" data-toggle="tooltip" class='notclose tooltip-top bottom-heading-element bottom-heading-element-button'>
-                            <span class="fas fa-sync"></span><span class="extra-glyph-text">reset</span>
+                            <span class="far fa-sync"></span><span class="extra-glyph-text">reset</span>
                         </button>
-                       <button type='button' id="delete-all-console-button" data-toggle="tooltip" class='notclose tooltip-top bottom-heading-element bottom-heading-element-button'>
-                            <span class="fas fa-trash"></span><span class="extra-glyph-text">clear</span>
+                        <button type='button' id="delete-all-console-button" data-toggle="tooltip" class='notclose tooltip-top bottom-heading-element bottom-heading-element-button'>
+                            <span class="far fa-trash"></span><span class="extra-glyph-text">clear</span>
+                        </button>
+                        <button type='button' id="console-error-log-button" data-toggle="tooltip" class='notclose tooltip-top bottom-heading-element bottom-heading-element-button'>
+                            <span class="far fa-exclamation-triangle"></span><span class="extra-glyph-text">log</span>
+                        </button>
+                        <button type='button' id="main-error-log-button" data-toggle="tooltip" class='notclose tooltip-top bottom-heading-element bottom-heading-element-button'>
+                            <span class="far fa-exclamation-triangle"></span><span class="extra-glyph-text">main</span>
                         </button>
                     </div>
 
-                   <div id="console-header-right">
+                   <div id="console-header-right  align-items-baseline">
                         <button type='button' id="show-exports-button" data-toggle="tooltip" class='notclose tooltip-top bottom-heading-element' style="margin-right:12px">exports</button>
                         <button type='button' id="zoom-console-button" data-toggle="tooltip" class='notclose bottom-heading-element tooltip-top'>
-                            <span class="fas fa-expand"></span>
+                            <span class="far fa-expand-alt"></span>
                         </button>
                         <button type='button' id="unzoom-console-button" data-toggle="tooltip" class='notclose bottom-heading-element tooltip-top'>
-                            <span class="fas fa-compress"></span>
+                            <span class="far fa-compress-alt"></span>
                         </button>
                     </div>
                 </div>
+                <div id="console_error_log" class="card-body" style="display:none"></div>
                 <div id="console" class="card-body">{{ console_html | safe }}</div>
         </div>
     </div>
