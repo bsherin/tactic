@@ -1,19 +1,19 @@
 #main-panel {
   margin: 5px;
-  border: 2px solid #c3e5b6;
+  border: 1px solid #9B79CC;
   font-family: Arial, Helvetica, sans-serif; }
   #main-panel .card-header {
     padding-top: 5px;
     padding-bottom: 5px;
-    background-color: #dff0d8;
-    color: #306030; }
+    background-color: #9B79CC;
+    color: white; }
     #main-panel .card-header .main-heading-element {
       height: 35px; }
       #main-panel .card-header .main-heading-element .glyphicon {
         font-size: 15px; }
       #main-panel .card-header .main-heading-element label[for=doc-selector] {
-        padding-left: 5px;
-        font-weight: 700; }
+        padding-left: 10px;
+        font-weight: 500; }
 
 .admin-table-row {
   font-size: 12px; }

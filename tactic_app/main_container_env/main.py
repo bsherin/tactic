@@ -58,7 +58,6 @@ class mainWindow(object):
     def __init__(self, mworker, data_dict):
         print "entering mainwindow_init"
         self.mworker = mworker
-        print "mongo_uri is " + str(mongo_uri)
         try:
             client = pymongo.MongoClient(mongo_uri, serverSelectionTimeoutMS=30000)
             client.server_info()
@@ -1048,6 +1047,7 @@ class mainWindow(object):
         self.mworker.post_task(self.pseudo_tile_id, "exec_console_code", data, self.got_console_result)
         return {"success": True}
 
+
     @task_worthy
     def convert_markdown(self, data):
         the_text = data["the_text"]
@@ -1235,6 +1235,12 @@ class mainWindow(object):
                 self.db[full_collection_name].insert_one(ddict)
         self.mworker.ask_host("update_collection_selector_list", {"user_id": self.user_id})
         return {"success": True}
+
+    @task_worthy
+    def get_pseudo_tile_id(self, data):
+        if self.pseudo_tile_id is None:
+            self.create_pseudo_tile()
+        return {"success": True, "pseudo_tile_id": self.pseudo_tile_id}
 
     @task_worthy
     def get_tile_ids(self, data):
