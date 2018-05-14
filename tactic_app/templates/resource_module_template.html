@@ -1,5 +1,5 @@
 <script id="resource-module-template" type="text/html">
-    <div class="" id="{{module_id}}" style="height: 100%; overflow: hidden; {{#start_hidden}}display:none{{/start_hidden}}">
+    <div class="{{class_string}}" id="{{module_id}}" style="height: 100%; overflow: hidden; {{#start_hidden}}display:none{{/start_hidden}}">
         {{#include_search_toolbar}}
         <div class="search-toolbar mx-3 my-2" style="margin-top: 10px">
             <div class="form-row">
@@ -74,7 +74,7 @@
                 {{#include_metadata}}
                 <div style="display: inline-block; vertical-align: top; margin-left: 5px">
                     {{^start_hidden}}
-                    <button type="button" class="btn btn-sm btn-warning save-metadata-button" style="margin-bottom: 7px" value="{{res_type}}">Save Metadata</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary save-metadata-button" style="margin-bottom: 7px" value="{{res_type}}">Save Metadata</button>
                     {{/start_hidden}}
                     <div class="form-group" style="margin-bottom: 7px">
                         <textarea type="text" class="form-control metadata-field tags-field" rows="1" {{#start_hidden}}readonly{{/start_hidden}}></textarea>
