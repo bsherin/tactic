@@ -36,6 +36,7 @@ $console-text-border-color: #616161;
 /* resource management and table related */
 $repository-title-color: #4EA818;
 
+$repository-distinctive-color: #ffc107;
 $sortable-table-header-background: #eee;
 $sortable-table-header-text-color: #666666;
 
@@ -50,6 +51,8 @@ $resource-manager-tab-font-size: 20px;
 $resource-manager-border-color: rgb(204, 204, 204);
 
 $selector-background-color: #9B79CC;
+
+
 
 /* accordion api related parameters */
 $api-border-style: none;
@@ -242,12 +245,25 @@ a[role="tab"] {
         font-size: 16px;
         color: #212529;
     }
+    .nav-link:hover {
+        background-color: #9b79cc3d;
+    }
+
+    .nav-link.active {
+        color: #fff;
+        background-color: $selector-background-color;
+    }
 }
 
 
-.left-vertical-nav .nav-link.active{
-    color: #fff;
-    background-color: $selector-background-color;
+.left-vertical-nav.repo {
+    .nav-link.active {
+        background-color: $repository-distinctive-color !important;
+        color: #212529;
+    }
+     .nav-link:hover {
+        background-color: rgba(255, 193, 7, 0.33);
+    }
 }
 
 .um-nav-icon {
@@ -257,7 +273,6 @@ a[role="tab"] {
 .um-nav-text {
     padding-left: 6px
 }
-
 
 .resource-module {
     display: flex;
@@ -325,7 +340,7 @@ a[role="tab"] {
 }
 
 .tag-button-delete.delete-visible:before {
-    display: block;
+        display: block;
 }
 .tag-button-delete.delete-visible:hover:before{
     color: red;
@@ -335,9 +350,14 @@ a[role="tab"] {
     background-color: #cbcbcb !important
 }
 
-.selector-button.active td {
+.notrepo .selector-button.active td {
     background-color: $selector-background-color!important;
     color: white;
+}
+
+.repo .selector-button.active td {
+    background-color: $repository-distinctive-color!important;
+    color: #212529;
 }
 
 .res-name-button {
@@ -429,552 +449,548 @@ a[role="tab"] {
     }
 }
 
-    .metadata-field {
-        width: 350px
-    }
-
-    /* creator */
-
-    .ui-resizable-e, .ui-resizable-w {
-        width: 25px !important;
-    }
-
-    .ui-resizable-s, .ui-resizable-n{
-            height: 25px !important;
-    }
-
-    //.ui-resizable-se {
-    //        height: 25px !important;
-    //        width: 25px !important;
-    //}
-
-    #creator-resources {
-        .tab-pane {
-            padding: 10px;
-            border-style: solid;
-            border-color: $bootstrap-border-color;
-            border-width: 1px;
-            margin-right: 10px;
-        }
-
-        .form-inline label {
-            margin-bottom: 0px;
-            margin-left: 4px
-        }
-        .indent-row {
-            margin-bottom: 10px
-        }
-        .resource-module {
-            margin: 0px;
-        }
-        input {
-            width: 150px;
-        }
-        #notes {
-            background-color: #f7f7f7;
-        }
-        #notes-field-markdown-output {
-            padding: 10px;
-            overflow: auto;
-        }
-    }
-
-    /* Tile related */
-
-    .tile-panel-heading {
-        display: flex;
-        justify-content: space-between;
-
-        .tile-name-div {
-            overflow-x: hidden;
-            line-height: 100%;
-        }
-        #spin-place {
-            margin: 0px 7px 0px 0px;
-            display: inline-flex;
-        }
-        font-weight: 600;
-        white-space: nowrap;
-        overflow: hidden;
-            color: $tile-header-foreground-color !important;
-        cursor: move;
-        padding: 5px 7px;
-        background-color: $tile-header-background-color !important;
-        border-bottom: 0px
-
-    }
-
-    .tile-body .back button {
-        width: 100%
-    }
-
-    .form-display-area {
-
-        label {
-            font-weight: 700;
-            font-size: 15px;
-
-        }
-    }
-
-    .header-but {
-        font-size: 18px;
-        color: $tile-header-foreground-color !important;
-    }
-
-    /* plot related */
-    .d3plot { font: 10px Arial;}
-
-    .d3plot path {
-        stroke: steelblue;
-        stroke-width: 2;
-        fill: none;
-    }
-
-    .d3plot path.domain {
-        fill: none;
-        stroke: #a4a4a4;
-        shape-rendering: crispEdges;
-    }
-
-    .d3plot line {
-        stroke: black;
-    }
-
-    .d3plot .axis path,
-    .d3plot .axis line {
-        fill: none;
-        stroke: grey;
-        stroke-width: 2;
-        shape-rendering: crispEdges;
-    }
-
-    .d3plot .heatmap-cell-border {
-        stroke: #eee;
-        stroke-width:0.3px;
-    }
-
-    .d3plot .heatmap-colLabel {
-        fill: #aaa;
-    }
-
-    .d3plot .heatmap-rowLabel {
-        fill: #aaa;
-    }
-
-    .d3plot-title {
-        font-size: 14px;
-    }
-
-    /* tooltips */
-
-    $tooltip-background-color: #fde930;
-    $tooltip-text-color: #66431a;
-
-    .tooltip .tooltip-inner {background-color: $tooltip-background-color;
-        color: $tooltip-text-color}
-
-    .tooltip.top .tooltip-arrow { border-top-color:$tooltip-background-color}
-
-    .tooltip.bottom .tooltip-arrow { border-bottom-color:$tooltip-background-color}
-
-    .tooltip-inner{
-        -moz-box-shadow: 0 1px 5px 1px rgba(0,0,0,0.4);
-        -webkit-box-shadow: 0 1px 5px 1px rgba(0,0,0,0.4);
-        box-shadow: 0 1px 5px 1px rgba(0,0,0,0.4);
-        zoom: 1;
-    }
-
-
-    /* Tile table related*/
-
-    .tile-table {
-        line-height: 23px;
-        td {
-            padding-top: 1px !important;
-            padding-bottom: 1px !important;
-            font-size: 14px;
-
-        }
-    }
-
-    .sidebyside-table {
-        display: inline-block;
-        margin-right: 10px;
-        border: none;
-    }
-
-
-    .row-clickable:hover {
-        background-color: #5bc0de !important
-    }
-
-    .row-clickable:active {
-        background-color: #1b6d85 !important
-    }
-
-    td.cell-clickable:hover {
-        background-color: #5bc0de !important
-    }
-
-    td.cell-clickable:active {
-        background-color: #1b6d85 !important
-    }
-
-    .element-clickable:hover {
-        background-color: #5bc0de !important
-    }
-
-    .element-clickable:active {
-        background-color: #1b6d85 !important
-    }
-
-    /* console */
-
-    .bottom-heading-element {
-        height: 30px !important;
-        line-height: 12px;
-    }
-
-    .bottom-heading-element-button {
-        margin-left: 13px !important;
-        align-items: baseline
-    }
-
-    #console {
-        text-align: left;
-        font-size: 14px;
-        overflow: auto;
-        padding: 5px;
-    }
-
-    #console_error_log {
-        text-align: left;
-        font-size: 14px;
-        overflow: auto;
-    }
-
-    #console-panel {
-        margin-left: 5px;
-        margin-right: 0px;
-        border: $console-panel-border-style !important;
-    }
-
-    #console-heading {
-        display: flex;
-        justify-content: space-between;
-        font-size: $console-header-font-size;
-        padding-top: 2px;
-        padding-bottom: 2px;
-        padding-left: 10px;
-        padding-right: 15px;
-        color: $console-header-foreground-color !important;
-        background-color: $console-header-background-color !important;
-        font-family: $console-font-family;
-
-        .extra-glyph-text {
-            padding-left: 4px
-        }
-    }
-
-    #exports-heading {
-        display: flex;
-        justify-content: flex-start;
-        align-items: center;
-        font-size: $console-header-font-size;
-        padding-top: 2px;
-        padding-bottom: 2px;
-        padding-left: 10px;
-        padding-right: 15px;
-        color: $console-header-foreground-color !important;
-        background-color: $console-header-background-color !important;
-        font-family: $console-font-family;
-
-        button {
-            margin-right:2px;
-        }
-    }
-
-    #exports-info {
-        font-size: 14px;
-        line-height: 30px;
-    }
-
-    #exports-spin-place {
-        margin-left: 7px;
-        font-size: 14px;
-        line-height: 30px;
-    }
-
-    #console-panel .CodeMirror{
-        height: auto !important;
-        margin-top: 2px;
-    }
-
-    .console-text {
-        padding: 10px;
-        display: inline-block;
-        background-color: $console-text-background-color !important;
-        border: $console-panel-border-style !important;
-        width: 100%;
-    }
-
-    .text-panel-output {
-        //padding: 10px;
-    }
-
-    .log-panel {
-        border: $log-panel-border-style !important;
-        margin: 1px;
-        box-shadow: none;
-        position: relative;
-
-        .notclose {
-            font-size: 15px;
-            padding-bottom: 9px
-        }
-
-        .card-header {
-            position: absolute;
-            height: 100%;
-            width: 30px;
-            padding: 4px 4px !important;
-            text-align: center;
-            background-color: $log-panel-header-background-color important;
-            border-right: $log-panel-border-style;
-            overflow-y: hidden;
-        }
-
-        .CodeMirror {
-            border: $console-panel-border-style !important;
-        }
-
-        .CodeMirror-lines {
-            background-color: $console-text-background-color !important;
-        }
-
-        .card-header:hover {
-            background-color: $log-panel-header-background-hover-color !important
-        }
-
-        .notclose {
-            //padding-left: 6px;
-        }
-    }
-
-    .log-panel.log-panel-visible {
-        min-height: 128px;
-
-        .log-panel-body {
-            display: block
-        }
-
-        .log-panel-summary {
-            display: none
-        }
-
-        .log-code-output {
-            display: block
-        }
-
-        .shrink-log-button {
-            display: inline-block
-        }
-
-        .expand-log-button {
-            display: none
-        }
-    }
-
-    .log-panel.log-panel-invisible {
-        height: 40px;
-        min-height: 0;
-
-        .log-panel-body {
-            display: none
-        }
-
-        .log-panel-summary {
-            display: block
-        }
-
-
-        .log-code-output {
-            display: none
-        }
-
-        .shrink-log-button {
-            display: none
-        }
-
-        .expand-log-button {
-            display: inline-block
-        }
-
-    }
-
-    html,body {
-    height:100%;
+.metadata-field {
+    width: 350px
 }
 
+/* creator */
+
+.ui-resizable-e, .ui-resizable-w {
+    width: 25px !important;
+}
+
+.ui-resizable-s, .ui-resizable-n{
+    height: 25px !important;
+}
+
+//.ui-resizable-se {
+//        height: 25px !important;
+//        width: 25px !important;
+//}
+
+#creator-resources {
+    .tab-pane {
+        padding: 10px;
+        border-style: solid;
+        border-color: $bootstrap-border-color;
+        border-width: 1px;
+        margin-right: 10px;
+    }
+
+    .form-inline label {
+        margin-bottom: 0;
+        margin-left: 4px
+    }
+    .indent-row {
+        margin-bottom: 10px
+    }
+    .resource-module {
+        margin: 0;
+    }
+    input {
+        width: 150px;
+    }
+    #notes {
+        background-color: #f7f7f7;
+    }
+    #notes-field-markdown-output {
+        padding: 10px;
+        overflow: auto;
+    }
+}
+
+/* Tile related */
+
+.tile-panel-heading {
+    display: flex;
+    justify-content: space-between;
+
+    .tile-name-div {
+        overflow-x: hidden;
+        line-height: 100%;
+    }
+    #spin-place {
+        margin: 0 7px 0 0;
+        display: inline-flex;
+    }
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    color: $tile-header-foreground-color !important;
+    cursor: move;
+    padding: 5px 7px;
+    background-color: $tile-header-background-color !important;
+    border-bottom: 0
+}
+
+.tile-body .back button {
+    width: 100%
+}
+
+.form-display-area {
+    label {
+        font-weight: 700;
+        font-size: 15px;
+    }
+}
+
+.header-but {
+    font-size: 18px;
+    color: $tile-header-foreground-color !important;
+}
+
+/* plot related */
+.d3plot { font: 10px Arial;}
+
+.d3plot path {
+    stroke: steelblue;
+    stroke-width: 2px;
+    fill: none;
+}
+
+.d3plot path.domain {
+    fill: none;
+    stroke: #a4a4a4;
+    shape-rendering: crispEdges;
+}
+
+.d3plot line {
+    stroke: black;
+}
+
+.d3plot .axis path,
+    .d3plot .axis line {
+    fill: none;
+    stroke: grey;
+    stroke-width: 2px;
+    shape-rendering: crispEdges;
+}
+
+.d3plot .heatmap-cell-border {
+    stroke: #eee;
+    stroke-width:0.3px;
+}
+
+.d3plot .heatmap-colLabel {
+    fill: #aaa;
+}
+
+.d3plot .heatmap-rowLabel {
+    fill: #aaa;
+}
+
+.d3plot-title {
+    font-size: 14px;
+}
+
+/* tooltips */
+
+$tooltip-background-color: #fde930;
+$tooltip-text-color: #66431a;
+
+.tooltip .tooltip-inner {background-color: $tooltip-background-color;
+color: $tooltip-text-color}
+
+.tooltip.top .tooltip-arrow { border-top-color:$tooltip-background-color}
+
+.tooltip.bottom .tooltip-arrow { border-bottom-color:$tooltip-background-color}
+
+.tooltip-inner{
+    -moz-box-shadow: 0 1px 5px 1px rgba(0,0,0,0.4);
+    -webkit-box-shadow: 0 1px 5px 1px rgba(0,0,0,0.4);
+    box-shadow: 0 1px 5px 1px rgba(0,0,0,0.4);
+    zoom: 1;
+}
+
+
+/* Tile table related*/
+
+.tile-table {
+    line-height: 23px;
+    td {
+        padding-top: 1px !important;
+        padding-bottom: 1px !important;
+        font-size: 14px;
+
+    }
+}
+
+.sidebyside-table {
+    display: inline-block;
+    margin-right: 10px;
+    border: none;
+}
+
+
+.row-clickable:hover {
+    background-color: #5bc0de !important
+}
+
+.row-clickable:active {
+    background-color: #1b6d85 !important
+}
+
+td.cell-clickable:hover {
+    background-color: #5bc0de !important
+}
+
+td.cell-clickable:active {
+    background-color: #1b6d85 !important
+}
+
+.element-clickable:hover {
+    background-color: #5bc0de !important
+}
+
+.element-clickable:active {
+    background-color: #1b6d85 !important
+}
+
+/* console */
+
+.bottom-heading-element {
+    height: 30px !important;
+    line-height: 12px;
+}
+
+.bottom-heading-element-button {
+        margin-left: 13px !important;
+align-items: baseline
+}
+
+#console {
+    text-align: left;
+    font-size: 14px;
+    overflow: auto;
+    padding: 5px;
+}
+
+#console_error_log {
+    text-align: left;
+    font-size: 14px;
+    overflow: auto;
+}
+
+#console-panel {
+    margin-left: 5px;
+    margin-right: 0;
+    border: $console-panel-border-style !important;
+}
+
+#console-heading {
+    display: flex;
+    justify-content: space-between;
+    font-size: $console-header-font-size;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 10px;
+    padding-right: 15px;
+    color: $console-header-foreground-color !important;
+    background-color: $console-header-background-color !important;
+    font-family: $console-font-family;
+
+    .extra-glyph-text {
+        padding-left: 4px
+    }
+}
+
+#exports-heading {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    font-size: $console-header-font-size;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 10px;
+    padding-right: 15px;
+    color: $console-header-foreground-color !important;
+    background-color: $console-header-background-color !important;
+    font-family: $console-font-family;
+
+    button {
+        margin-right:2px;
+    }
+}
+
+#exports-info {
+    font-size: 14px;
+    line-height: 30px;
+}
+
+#exports-spin-place {
+    margin-left: 7px;
+    font-size: 14px;
+    line-height: 30px;
+}
+
+#console-panel .CodeMirror{
+    height: auto !important;
+    margin-top: 2px;
+}
+
+.console-text {
+    padding: 10px;
+    display: inline-block;
+    background-color: $console-text-background-color !important;
+    border: $console-panel-border-style !important;
+    width: 100%;
+}
+
+.text-panel-output {
+    //padding: 10px;
+}
+
+.log-panel {
+    border: $log-panel-border-style !important;
+    margin: 1px;
+    box-shadow: none;
+    position: relative;
+
+    .notclose {
+        font-size: 15px;
+        padding-bottom: 9px
+    }
+
+    .card-header {
+        position: absolute;
+        height: 100%;
+        width: 30px;
+        padding: 4px 4px !important;
+        text-align: center;
+        background-color: $log-panel-header-background-color important;
+        border-right: $log-panel-border-style;
+        overflow-y: hidden;
+    }
+
+    .CodeMirror {
+        border: $console-panel-border-style !important;
+    }
+
+    .CodeMirror-lines {
+        background-color: $console-text-background-color !important;
+    }
+
+    .card-header:hover {
+        background-color: $log-panel-header-background-hover-color !important
+    }
+
+    .notclose {
+        //padding-left: 6px;
+    }
+}
+
+.log-panel.log-panel-visible {
+    min-height: 128px;
+
     .log-panel-body {
-        padding-left: 45px;
-        padding-right: 45px;
-        padding-top: 14px;
-        padding-bottom: 10px;
-        color: $log-panel-font-color !important;
+        display: block
     }
 
     .log-panel-summary {
-        padding-left: 45px;
-        padding-right: 45px;
-        padding-top: 10px;
-        padding-bottom: 10px;
-        color: $log-panel-font-color !important;
+        display: none
     }
 
     .log-code-output {
-        padding-left: 85px;
-        padding-right: 45px;
-        //padding-top: 10px;
-        padding-bottom: 10px;
+        display: block
     }
 
-    /*main window*/
-
-    .grid-left {
-        display: inline-block;
-        width: 500px;
-        vertical-align:top
+    .shrink-log-button {
+        display: inline-block
     }
 
-    .grid-right {
-        display: inline-block;
-        width: 300px;
-        vertical-align:top
+    .expand-log-button {
+        display: none
+    }
+}
+
+.log-panel.log-panel-invisible {
+    height: 40px;
+    min-height: 0;
+
+    .log-panel-body {
+        display: none
     }
 
-    .outer-container {
-        padding: 25px;
-    }
-
-    #tile-div {
-        padding: 5px;
-    }
-
-    #tile-area {
-        margin: 0;
-        border: 0;
-        overflow: auto;
-    }
-
-    #status-div {
-        position: absolute;
-        bottom: 10px;
-        display: flex;
-        width: 100%;
-        background-color: white;
-        .status-msg {
-            font-size: 16px;
-            color: purple;
-            margin-right: 20px;
-            margin-left: 20px;
-        }
-    }
-
-    /* tile */
-
-    .tile-panel {
-        height: 265px;
-        margin: 7px;
-        border: $tile-panel-border-style !important;
-        background-color: $tile-panel-background-color !important;
-        color: $tile-panel-foreground-color !important;
-    }
-
-    .tile-panel-float {
-        float: left;
+    .log-panel-summary {
+        display: block
     }
 
 
-    #spin-place {
-        position: relative;
+    .log-code-output {
+        display: none
     }
 
-    .tile-display-area {
-        overflow: auto;
-        padding: 0;
-        margin: 15px 15px 15px 15px;
+    .shrink-log-button {
+        display: none
     }
 
-    .back {
-        padding: 20px;
-        margin: 0;
-        overflow: auto;
+    .expand-log-button {
+        display: inline-block
     }
+}
 
-    .front {
-        padding: 0;
-        margin: 0;
-        display: flex;
-        flex-direction: column;
-    }
+html,body {
+    height:100%;
+}
 
-    .tile-log {
-        padding: 20px;
-        margin: 0;
-        overflow: auto
-    }
+.log-panel-body {
+    padding-left: 45px;
+    padding-right: 45px;
+    padding-top: 14px;
+    padding-bottom: 10px;
+    color: $log-panel-font-color !important;
+}
 
+.log-panel-summary {
+    padding-left: 45px;
+    padding-right: 45px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    color: $log-panel-font-color !important;
+}
 
-    .tile-body {
-        padding: 0;
-        display: flex;
-        flex-direction: column;
-    }
+.log-code-output {
+    padding-left: 85px;
+    padding-right: 45px;
+    //padding-top: 10px;
+    padding-bottom: 10px;
+}
 
-    .tile-body img {
-        cursor: pointer
-    }
+/*main window*/
 
-    .output-plot {
-        max-width: 100%;
-        max-height: 100%
-    }
+.grid-left {
+    display: inline-block;
+    width: 500px;
+    vertical-align:top
+}
 
-    /* Other*/
+.grid-right {
+    display: inline-block;
+    width: 300px;
+    vertical-align:top
+}
 
+.outer-container {
+    padding: 25px;
+}
+
+#tile-div {
+    padding: 5px;
+}
+
+#tile-area {
+    margin: 0;
+    border: 0;
+    overflow: auto;
+}
+
+#status-div {
+    position: absolute;
+    bottom: 10px;
+    display: flex;
+    width: 100%;
+    background-color: white;
     .status-msg {
         font-size: 16px;
         color: purple;
         margin-right: 20px;
-        margin-left: 20px
+        margin-left: 20px;
     }
+}
 
-    .highlight {
-        background: $search-highlight-color;
-    }
+/* tile */
 
-    button.notclose {
-        -webkit-appearance: none;
-        padding: 1px;
-        cursor: pointer;
-        background: transparent;
-        opacity: $button-notclose-opacity;
-        border: 0;
-        display: inline-flex;
-    }
+.tile-panel {
+    height: 265px;
+    margin: 7px;
+    border: $tile-panel-border-style !important;
+    background-color: $tile-panel-background-color !important;
+    color: $tile-panel-foreground-color !important;
+}
 
-    button.notclose:hover {
-        opacity: $button-notclose-hover-opacity !important;
-    }
+.tile-panel-float {
+    float: left;
+}
 
 
-    .monospace {
-        font-family: monospace
-    }
+#spin-place {
+    position: relative;
+}
 
-    .hide-important {
-        display: none !important
-    }
+.tile-display-area {
+    overflow: auto;
+    padding: 0;
+    margin: 15px 15px 15px 15px;
+}
+
+.back {
+    padding: 20px;
+    margin: 0;
+    overflow: auto;
+}
+
+.front {
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.tile-log {
+    padding: 20px;
+    margin: 0;
+    overflow: auto
+}
+
+
+.tile-body {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.tile-body img {
+    cursor: pointer
+}
+
+.output-plot {
+    max-width: 100%;
+    max-height: 100%
+}
+
+/* Other*/
+
+.status-msg {
+    font-size: 16px;
+    color: purple;
+    margin-right: 20px;
+margin-left: 20px
+}
+
+.highlight {
+    background: $search-highlight-color;
+}
+
+button.notclose {
+    -webkit-appearance: none;
+    padding: 1px;
+    cursor: pointer;
+    background: transparent;
+    opacity: $button-notclose-opacity;
+    border: 0;
+    display: inline-flex;
+}
+
+button.notclose:hover {
+    opacity: $button-notclose-hover-opacity !important;
+}
+
+
+.monospace {
+    font-family: monospace
+}
+
+.hide-important {
+    display: none !important
+}
 

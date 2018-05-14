@@ -138,10 +138,17 @@ a[role="tab"] {
 .left-vertical-nav .nav-link {
   font-size: 16px;
   color: #212529; }
-
+.left-vertical-nav .nav-link:hover {
+  background-color: #9b79cc3d; }
 .left-vertical-nav .nav-link.active {
   color: #fff;
   background-color: #9B79CC; }
+
+.left-vertical-nav.repo .nav-link.active {
+  background-color: #ffc107 !important;
+  color: #212529; }
+.left-vertical-nav.repo .nav-link:hover {
+  background-color: rgba(255, 193, 7, 0.33); }
 
 .um-nav-icon {
   width: 20px; }
@@ -204,9 +211,13 @@ a[role="tab"] {
 .selector-button:hover {
   background-color: #cbcbcb !important; }
 
-.selector-button.active td {
+.notrepo .selector-button.active td {
   background-color: #9B79CC !important;
   color: white; }
+
+.repo .selector-button.active td {
+  background-color: #ffc107 !important;
+  color: #212529; }
 
 .res-name-button {
   border: none;
@@ -278,12 +289,12 @@ a[role="tab"] {
   border-width: 1px;
   margin-right: 10px; }
 #creator-resources .form-inline label {
-  margin-bottom: 0px;
+  margin-bottom: 0;
   margin-left: 4px; }
 #creator-resources .indent-row {
   margin-bottom: 10px; }
 #creator-resources .resource-module {
-  margin: 0px; }
+  margin: 0; }
 #creator-resources input {
   width: 150px; }
 #creator-resources #notes {
@@ -303,12 +314,12 @@ a[role="tab"] {
   cursor: move;
   padding: 5px 7px;
   background-color: #d9edf7 !important;
-  border-bottom: 0px; }
+  border-bottom: 0; }
   .tile-panel-heading .tile-name-div {
     overflow-x: hidden;
     line-height: 100%; }
   .tile-panel-heading #spin-place {
-    margin: 0px 7px 0px 0px;
+    margin: 0 7px 0 0;
     display: inline-flex; }
 
 .tile-body .back button {
@@ -328,7 +339,7 @@ a[role="tab"] {
 
 .d3plot path {
   stroke: steelblue;
-  stroke-width: 2;
+  stroke-width: 2px;
   fill: none; }
 
 .d3plot path.domain {
@@ -343,7 +354,7 @@ a[role="tab"] {
 .d3plot .axis line {
   fill: none;
   stroke: grey;
-  stroke-width: 2;
+  stroke-width: 2px;
   shape-rendering: crispEdges; }
 
 .d3plot .heatmap-cell-border {
@@ -429,7 +440,7 @@ td.cell-clickable:active {
 
 #console-panel {
   margin-left: 5px;
-  margin-right: 0px;
+  margin-right: 0;
   border: 1px solid #c7c7c7 !important; }
 
 #console-heading {
