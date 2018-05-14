@@ -16,6 +16,8 @@
       #main-panel .card-header .main-heading-element label[for=doc-selector] {
         padding-left: 10px;
         font-weight: 500; }
+  #main-panel .btn-sm {
+    border: 1px solid; }
 
 .admin-table-row {
   font-size: 12px; }
