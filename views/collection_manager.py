@@ -176,6 +176,8 @@ class CollectionManager(UserManageResourceManager):
                 first = False
             else:
                 ws = wb.create_sheet(title=sheet_name)
+            if "file_id" in f:
+                f["data_rows"] = debinarize_python_object(fs.get(f["file_id"]).read())
             data_rows = f["data_rows"]
             if "header_list" in f:
                 header_list = f["header_list"]

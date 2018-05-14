@@ -209,8 +209,8 @@ class TagButtonList {
 
 class UserManagerResourceManager extends ResourceManager{
 
-    constructor (module_id, res_type, resource_module_template, destination_selector) {
-        super(module_id, res_type, resource_module_template, destination_selector, false);
+    constructor (module_id, res_type, resource_module_template, destination_selector, class_string) {
+        super(module_id, res_type, resource_module_template, destination_selector, class_string);
         this.last_search = null;
     }
 
