@@ -1,9 +1,9 @@
 
-$main-panel-heading-background: #9B79CC; // bootstrap default #dff0d8
+$main-panel-heading-background: #f5f5f5; // bootstrap default #dff0d8
 $main-panel-heading-height: 35px;
 $main-panel-heading-padding: 5px;
-$main-panel-heading-font-color: white; // bootstrap default #4f8950
-$main-panel-border-color: #9B79CC;
+$main-panel-heading-font-color: 333; // bootstrap default #4f8950
+$main-panel-border-color: #6c757d;;
 
 $table-font-family: Arial, Helvetica, sans-serif;
 
@@ -42,6 +42,8 @@ $selected-column-background: #e0e0e0;
         padding-bottom: $main-panel-heading-padding;
         background-color: $main-panel-heading-background;
         color: $main-panel-heading-font-color;
+        border-bottom-width: 1px;
+        border-bottom-color: $main-panel-border-color;
 
         .main-heading-element {
             height: $main-panel-heading-height;
@@ -80,8 +82,8 @@ $selected-column-background: #e0e0e0;
 
 #table-wrapper {
     overflow-x: auto;
-    margin: 0px;
-    padding: 0px;
+    margin: 0;
+    padding: 0;
 }
 
 #table-area {
@@ -117,7 +119,8 @@ $selected-column-background: #e0e0e0;
         vertical-align: top;
         color: $table-header-font-color;
         text-shadow: 1px 1px 0px #fff;
-        overflow: hidden
+        overflow: hidden;
+        white-space: nowrap;
     }
     tr {
         display: block;

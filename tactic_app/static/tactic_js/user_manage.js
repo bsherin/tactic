@@ -96,18 +96,18 @@ function start_post_load() {
     console.log("about to create");
     $.get(`${$SCRIPT_ROOT}/get_resource_module_template`, function(template) {
         resource_module_template = $(template).filter('#resource-module-template').html();
-        resource_managers["list_module"] = new ListManager("list_module", "list", resource_module_template, "#list-module-outer");
-        resource_managers["repository_list_module"] = new RepositoryListManager("repository_list_module", "list", resource_module_template, "#list-module-outer");
-        resource_managers["collection_module"] = new CollectionManager("collection_module", "collection", resource_module_template, "#collection-module-outer");
-        resource_managers["repository_collection_module"] = new RepositoryCollectionManager("repository_collection_module", "collection", resource_module_template, "#collection-module-outer");
-        resource_managers["project_module"] = new ProjectManager("project_module", "project", resource_module_template, "#project-module-outer");
-        resource_managers["repository_project_module"] = new RepositoryProjectManager("repository_project_module", "project", resource_module_template, "#project-module-outer");
-        resource_managers["tile_module"] = new TileManager("tile_module", "tile", resource_module_template, "#tile-module-outer");
-        resource_managers["repository_tile_module"] = new RepositoryTileManager("repository_tile_module", "tile", resource_module_template, "#tile-module-outer");
-        resource_managers["code_module"] = new CodeManager("code_module", "code", resource_module_template, "#code-module-outer");
-        resource_managers["repository_code_module"] = new RepositoryCodeManager("repository_code_module", "code", resource_module_template, "#code-module-outer");
-        resource_managers["all_module"] = new AllManager("all_module", "all", resource_module_template, "#all-module-outer");
-        resource_managers["repository_all_module"] = new RepositoryAllManager("repository_all_module", "all", resource_module_template, "#all-module-outer");
+        resource_managers["list_module"] = new ListManager("list_module", "list", resource_module_template, "#list-module-outer", "notrepo");
+        resource_managers["repository_list_module"] = new RepositoryListManager("repository_list_module", "list", resource_module_template, "#list-module-outer", "repo");
+        resource_managers["collection_module"] = new CollectionManager("collection_module", "collection", resource_module_template, "#collection-module-outer", "notrepo");
+        resource_managers["repository_collection_module"] = new RepositoryCollectionManager("repository_collection_module", "collection", resource_module_template, "#collection-module-outer", "repo");
+        resource_managers["project_module"] = new ProjectManager("project_module", "project", resource_module_template, "#project-module-outer", "notrepo");
+        resource_managers["repository_project_module"] = new RepositoryProjectManager("repository_project_module", "project", resource_module_template, "#project-module-outer", "repo");
+        resource_managers["tile_module"] = new TileManager("tile_module", "tile", resource_module_template, "#tile-module-outer", "notrepo");
+        resource_managers["repository_tile_module"] = new RepositoryTileManager("repository_tile_module", "tile", resource_module_template, "#tile-module-outer", "repo");
+        resource_managers["code_module"] = new CodeManager("code_module", "code", resource_module_template, "#code-module-outer", "notrepo");
+        resource_managers["repository_code_module"] = new RepositoryCodeManager("repository_code_module", "code", resource_module_template, "#code-module-outer", "repo");
+        resource_managers["all_module"] = new AllManager("all_module", "all", resource_module_template, "#all-module-outer", "notrepo");
+        resource_managers["repository_all_module"] = new RepositoryAllManager("repository_all_module", "all", resource_module_template, "#all-module-outer", "repo");
 
         $(".resource-module").on("click", ".main-content .selector-button", selector_click);
         $(".resource-module").on("dblclick", ".main-content .selector-button", selector_double_click);
@@ -179,12 +179,14 @@ function toggleRepository() {
         $("#toggle-repository-button").text("Show Repository");
         $("#view_title").text(saved_title);
         $(".page-header").removeClass("repository-title");
+        $("#nav-list").removeClass("repo")
         }
     else {
         repository_visible = true;
         $("#toggle-repository-button").text("Hide Repository");
         $("#view_title").text("Repository");
         $(".page-header").addClass("repository-title");
+        $("#nav-list").addClass("repo")
     }
     resize_window();
     resource_managers[get_current_module_id()].turn_on_horizontal_resize();
@@ -424,7 +426,7 @@ class CollectionManager extends UserManagerResourceManager {
         if (res_name == "") return;
         showModal("Download Collection as Excel Notebook", "New File Name", function (new_name) {
             window.open(`${$SCRIPT_ROOT}/download_collection/` + res_name + "/" + new_name)
-        }, res_name + ".xls")
+        }, res_name + ".xlsx")
     };
 
     combineCollections (event) {
@@ -1016,7 +1018,7 @@ class AllManager extends UserManagerResourceManager {
         if (!(the_type == "collection")) return;
         showModal("Download Collection as Excel Notebook", "New File Name", function (new_name) {
             window.open(`${$SCRIPT_ROOT}/download_collection/` + res_name + "/" + new_name)
-        }, res_name + ".xls")
+        }, res_name + ".xlsx")
     };
 
     combineCollections(event) {

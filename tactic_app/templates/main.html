@@ -3,7 +3,6 @@
 {% block title %}{{ window_title }}{% endblock %}
 
 {% block head %}
-    <script defer src="{{url_for('static', filename='js/fontawesome-all.js')}}"></script>
 {% endblock %}
 
 {% block styles %}
@@ -24,7 +23,7 @@
                 <div class="card-header d-flex justify-content-between align-baseline" id="data-title" style="overflow:hidden; white-space:nowrap; padding-left:7px; padding-top:7px">
                     <div id="heading-left" class="d-flex">
                         <div class="main-heading-element" style="line-height:10px">
-                            <button type='button' id="shrink-table-button" style="color:white" data-toggle="tooltip" class='notclose tooltip-top' onclick="tableObject.shrinkTable()">
+                            <button type='button' id="shrink-table-button" data-toggle="tooltip" class='notclose tooltip-top' onclick="tableObject.shrinkTable()">
                                 <span class="far fa-minus-circle"></span>
                             </button>
                         </div>
@@ -46,11 +45,11 @@
                         <div id="table-status-msg-area" class="d-flex status-msg"></div>
                         <div class="main-heading-element d-flex hidden-xs">
                             <form class="form-inline">
-                                  <input type="text" id="search" class="form-control-sm mr-2" size="10" placeholder="Search">
-                                        <button class="btn-sm my-2 mr-1 btn-light tooltip-top" id="search-button" data-toggle="tooltip" type="button" onclick="return doSearch(document.getElementById('search').value)" value="Find">Find</button>
+                                  <input type="text" id="search" class="form-control form-control-sm mr-2" size="10" placeholder="Search">
+                                        <button class="btn-sm my-2 mr-1 btn-outline-secondary tooltip-top" id="search-button" data-toggle="tooltip" type="button" onclick="return doSearch(document.getElementById('search').value)" value="Find">Find</button>
                                         {% if is_table %}
-                                        <button class="btn-sm my-2 mr-1 btn-light tooltip-bottom" id="filter-button" data-toggle="tooltip" onclick="return doFilter(document.getElementById('search').value)" value="Filter">Filter</button>
-                                        <button class="btn-sm my-2 mr-1 btn-light tooltip-top" id="unfilter-button" data-toggle="tooltip" onclick="return doUnfilter()" value="Unfilter">Unfilter</button>
+                                        <button class="btn-sm my-2 mr-1 btn-outline-secondary tooltip-bottom" id="filter-button" data-toggle="tooltip" onclick="return doFilter(document.getElementById('search').value)" value="Filter">Filter</button>
+                                        <button class="btn-sm my-2 mr-1 btn-outline-secondary tooltip-top" id="unfilter-button" data-toggle="tooltip" onclick="return doUnfilter()" value="Unfilter">Unfilter</button>
                                         {% endif %}
                            </form>
                         </div>

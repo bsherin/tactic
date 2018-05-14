@@ -12,7 +12,7 @@ function get_current_res_type() {
 }
 
 class ResourceManager {
-    constructor (module_id, res_type, resource_module_template, destination_selector, extras_dict=null, include_right=true, include_markdown=true) {
+    constructor (module_id, res_type, resource_module_template, destination_selector, class_string="", extras_dict=null, include_right=true, include_markdown=true) {
         this.destination_selector = destination_selector;
         this.res_type = res_type;
         this.module_id = module_id;
@@ -35,6 +35,7 @@ class ResourceManager {
         this.set_extra_properties();
         this.textify_button_names();
         this.resource_module_template = resource_module_template;
+        this.class_string = class_string;
         this.create_module_html();
         this.add_listeners();
         if (include_right) {
