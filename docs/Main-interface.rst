@@ -12,6 +12,8 @@ doesn’t delete them, and selecting :guilabel:`unhide` from the column menu wil
 make all hidden columns reappear. Hidden columns are also available to
 tiles.
 
+You can also reorder columns by clicking in the header and dragging left or right.
+
 Use the :guilabel:`Project` menu to save the current state of a project. You can
 also export the data table in a few different ways: (1) you can export
 it as a data collection back to your library, (2) you can export the

@@ -111,6 +111,16 @@ class TableSpec {
             }
         }
     }
+
+    reorder_columns(new_column_order) {
+        let new_widths = [];
+        for (let col of new_column_order) {
+            let old_index = this.header_list.indexOf(col);
+            new_widths.push(this.column_widths[old_index])
+        }
+        this.header_list = new_column_order;
+        this.column_widths = new_widths
+    }
 }
 
 class TableObjectClass {
@@ -279,6 +289,18 @@ class TableObjectClass {
                     deselect_header(self.selected_header)
                 }
                 select_header(the_header);
+            }
+        });
+
+        $("#table-area thead tr").sortable({
+            axis: "x",
+            zIndex: 9999,
+            stop: function() {
+                const new_header_order = $("#table-area thead tr").sortable("toArray");
+                tableObject.current_spec.reorder_columns(new_header_order);
+                tableObject.build_table();
+                updateHeaderList();
+                dirty = true;
             }
         });
 
