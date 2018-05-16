@@ -1,8 +1,8 @@
 import requests, markdown
-import re
+import re, os
 
 def get_api_from_rst():
-    f = open("../docs/Tile-Commands.rst")
+    f = open("./docs/Tile-Commands.rst")
     txt = f.read()
     categories = re.findall(r".. category_start([\s\S]*?).. category_end", txt)
     newres = []
@@ -48,6 +48,7 @@ def create_api_dict_by_name(api_dict_by_category):
 
 
 try:
+    print "getting api from directory " + os.getcwd()
     api_array = get_api_from_rst()
     api_dict_by_category, ordered_api_categories = create_api_dict_by_category(api_array)
     api_dict_by_name = create_api_dict_by_name(api_dict_by_category)
