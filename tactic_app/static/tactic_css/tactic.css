@@ -211,6 +211,9 @@ a[role="tab"] {
 .selector-button:hover {
   background-color: #cbcbcb !important; }
 
+.notrepo {
+  display: flex; }
+
 .notrepo .selector-button.active td {
   background-color: #9B79CC !important;
   color: white; }
@@ -302,6 +305,9 @@ a[role="tab"] {
 #creator-resources #notes-field-markdown-output {
   padding: 10px;
   overflow: auto; }
+#creator-resources .form-row button {
+  align-self: flex-end;
+  margin: 7px; }
 
 /* Tile related */
 .tile-panel-heading {

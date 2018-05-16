@@ -1,5 +1,5 @@
 <script id="resource-module-template" type="text/html">
-    <div class="{{class_string}}" id="{{module_id}}" style="height: 100%; overflow: hidden; {{#start_hidden}}display:none{{/start_hidden}}">
+    <div class="{{class_string}} flex-column align-items-start" id="{{module_id}}" style="height: 100%; overflow: hidden; {{#start_hidden}}display:none{{/start_hidden}}">
         {{#include_search_toolbar}}
         <div class="search-toolbar mx-3 my-2" style="margin-top: 10px">
             <div class="form-row">
@@ -27,8 +27,8 @@
         </div>
         {{/include_search_toolbar}}
     {{#include_button_well}}
-    <div class="well well-sm" style="display:inline-flex; flex-direction:column; margin-left:10px; margin-bottom:10px">
-        <div style="display:flex; flex-direction:row; justify-content:space-between">
+    <div class="well well-sm d-flex flex-column" style=" margin-left:10px; margin-bottom:10px">
+        <div class="d-flex flex-row">
         {{#file_adders}}
             <form action="" class="file-adder" style="display:inline-flex" method="post" target="_self" value="{{name}}-{{res_type}}-form" enctype="multipart/form-data">
                 <input class="btn btn-sm add-button btn-outline-secondary" style="display: inline" type="submit" value="{{name_text}}">
@@ -70,9 +70,9 @@
                 <div style="display: inline-block; vertical-align: top; max-height: 100%; overflow-y: scroll; line-height: 1" class="list-group main-content" data-toggle="buttons">
                 </div>
             </div>
-            <div class="right-div" style="display: inline-block; vertical-align:top">
+            <div class="right-div" style="vertical-align:top; margin-left:10px">
                 {{#include_metadata}}
-                <div style="display: inline-block; vertical-align: top; margin-left: 5px">
+                <div style="vertical-align: top; margin-left: 5px; max-width:600px">
                     {{^start_hidden}}
                     <button type="button" class="btn btn-sm btn-outline-secondary save-metadata-button" style="margin-bottom: 7px" value="{{res_type}}">Save Metadata</button>
                     {{/start_hidden}}
@@ -81,10 +81,10 @@
                     </div>
                     <div class="form-group">
                         <textarea class="form-control metadata-field notes-field" rows="10" placeholder="notes" {{#start_hidden}}readonly{{/start_hidden}}></textarea>
-                        <div class="notes-field-markdown-output {{#start_hidden}}repo-markdown{{/start_hidden}}"></div>
+                        <div class="notes-field-markdown-output {{#start_hidden}}repo-markdown{{/start_hidden}}" style="max"></div>
                     </div>
-                    <div class="created"></div>
-                    <div class="additional-mdata"></div>
+                    <div class="created d-flex"></div>
+                    <div class="additional-mdata d-flex flex-column"></div>
                 </div>
                 {{/include_metadata}}
                 {{ #aux_right}}

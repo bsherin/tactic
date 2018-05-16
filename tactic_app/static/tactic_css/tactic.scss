@@ -350,6 +350,10 @@ a[role="tab"] {
     background-color: #cbcbcb !important
 }
 
+.notrepo {
+    display: flex;
+}
+
 .notrepo .selector-button.active td {
     background-color: $selector-background-color!important;
     color: white;
@@ -496,6 +500,12 @@ a[role="tab"] {
     #notes-field-markdown-output {
         padding: 10px;
         overflow: auto;
+    }
+    .form-row {
+        button {
+            align-self: flex-end;
+            margin: 7px;
+        }
     }
 }
 
