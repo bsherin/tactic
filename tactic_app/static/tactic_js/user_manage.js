@@ -171,8 +171,9 @@ function toggleRepository() {
 
         }
         old_manager.get_module_dom().css("display", "none");
+        old_manager.get_module_dom().removeClass("d-flex");
         old_manager.turn_off_horizontal_resize();
-        new_manager.get_module_dom().css("display", "block");
+        new_manager.get_module_dom().css("display", "flex");
     }
     if (repository_visible) {
         repository_visible = false;

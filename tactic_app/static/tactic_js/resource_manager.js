@@ -53,7 +53,7 @@ class ResourceManager {
 
 
     update_width(new_width_fraction) {
-        const usable_width = window.innerWidth - 2 * MARGIN_SIZE - 30;
+        const usable_width = window.innerWidth - 2 * MARGIN_SIZE - 100;
         this.current_width_fraction = new_width_fraction;
         this.get_left_div().width(usable_width * new_width_fraction);
         if (this.include_right) {
@@ -67,7 +67,7 @@ class ResourceManager {
         this.get_left_div().resizable({
             handles: "e",
             resize: function (event, ui) {
-                const usable_width = window.innerWidth - 2 * MARGIN_SIZE - 30;
+                const usable_width = window.innerWidth - 2 * MARGIN_SIZE - 100;
                 let new_width_fraction = 1.0 * ui.size.width / usable_width;
                 ui.position.left = ui.originalPosition.left;
                 self.update_width(new_width_fraction)

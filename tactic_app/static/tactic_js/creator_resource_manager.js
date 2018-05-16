@@ -4,7 +4,7 @@
 
 class CreatorResourceManager extends ResourceManager {
     constructor (module_id, res_type, resource_module_template, destination_selector, extras_dict) {
-        super(module_id, res_type, resource_module_template, destination_selector, "", extras_dict, false);
+        super(module_id, res_type, resource_module_template, destination_selector, "d-flex", extras_dict, false);
         this.changed = false;
     }
 
