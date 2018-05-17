@@ -143,7 +143,7 @@ class UserManager(ResourceManager):
 
     def build_resource_array(self, user_obj=None):
         user_list = get_all_users()
-        larray = [["_id", "username", "full_name", "email"]]
+        larray = [["_id", "username", "full_name", "last_login", "email"]]
         for user in user_list:
             urow = []
             for field in larray[0]:

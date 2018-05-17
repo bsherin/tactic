@@ -129,6 +129,13 @@ class User(UserMixin):
                                          {'$set': {"tzoffset": tzoffset}})
         return
 
+    def set_last_login(self):
+        current_time = datetime.datetime.utcnow()
+        db["user_collection"].update_one({"username": self.username},
+                                         {'$set': {"last_login": current_time}})
+        return
+
+
     def localize_time(self, dt):
         tzoffset = self.get_tzoffset()
         return dt - datetime.timedelta(hours=tzoffset)
