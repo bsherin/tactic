@@ -911,6 +911,8 @@ html,body {
 /* tile */
 
 .tile-panel {
+    display: block;
+    overflow: hidden;
     height: 265px;
     margin: 7px;
     border: $tile-panel-border-style !important;
