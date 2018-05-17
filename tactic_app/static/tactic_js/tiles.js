@@ -408,7 +408,7 @@ class TileObject {
     showOptions  (){
         const self = this;
         $("#tile_body_" + this.tile_id + " .front").hide("slide", {"direction": "down"});
-        $("#tile_body_" + self.tile_id + " .back").show("slide", {"direction": "up"})
+        $("#tile_body_" + self.tile_id + " .back").show("slide", {"direction": "up"});
         $("#tile_body_" + this.tile_id + " .tile-log").hide("blind");
         this.refreshCodeAreas()
     }

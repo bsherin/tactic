@@ -43,6 +43,7 @@ def attempt_login():
     if user is not None and user.verify_password(data["password"]):
         login_user(user, remember=data["remember_me"])
         user.set_user_timezone_offset(data["tzOffset"])
+        user.set_last_login()
         result_dict["logged_in"] = True
     else:
         result_dict["logged_in"] = False
