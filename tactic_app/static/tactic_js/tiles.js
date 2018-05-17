@@ -400,15 +400,15 @@ class TileObject {
 
     hideOptions (){
         const self = this;
-        $("#tile_body_" + this.tile_id + " .back").hide("slide", {"direction": "up"});
-        $("#tile_body_" + self.tile_id + " .front").show("slide", {"direction": "down"});
+        $("#tile_body_" + this.tile_id + " .back").hide("blind");
+        $("#tile_body_" + self.tile_id + " .front").show("blind");
         $("#tile_body_" + this.tile_id + " .tile-log").hide("blind");
 
     }
     showOptions  (){
         const self = this;
-        $("#tile_body_" + this.tile_id + " .front").hide("slide", {"direction": "down"});
-        $("#tile_body_" + self.tile_id + " .back").show("slide", {"direction": "up"});
+        $("#tile_body_" + this.tile_id + " .front").hide("blind");
+        $("#tile_body_" + self.tile_id + " .back").show("blind");
         $("#tile_body_" + this.tile_id + " .tile-log").hide("blind");
         this.refreshCodeAreas()
     }
