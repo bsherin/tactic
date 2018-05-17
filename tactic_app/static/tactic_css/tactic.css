@@ -607,6 +607,8 @@ html, body {
 
 /* tile */
 .tile-panel {
+  display: block;
+  overflow: hidden;
   height: 265px;
   margin: 7px;
   border: 2px solid #BCE8F1 !important;
