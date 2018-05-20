@@ -22,9 +22,9 @@ class ListManager(UserManageResourceManager):
     collection_list_with_metadata = "list_names_with_metadata"
     collection_name = "list_collection_name"
     name_field = "list_name"
-    button_groups = [[{"name": "save_button", "button_class": "btn-outline-secondary", "name_text": "Save"},
-                      {"name": "save_as_button", "button_class": "btn-outline-secondary", "name_text": "Save as ..."},
-                      {"name": "share_button", "button_class": "btn-outline-secondary", "name_text": "Share"}
+    button_groups = [[{"name": "save_button", "button_class": "btn-outline-secondary", "name_text": "Save", "icon_name": "save"},
+                      {"name": "save_as_button", "button_class": "btn-outline-secondary", "name_text": "Save as...", "icon_name": "save"},
+                      {"name": "share_button", "button_class": "btn-outline-secondary", "name_text": "Share", "icon_name": "share"}
                       ]]
 
     def add_rules(self):
@@ -186,7 +186,7 @@ class ListManager(UserManageResourceManager):
 class RepositoryListManager(ListManager):
     rep_string = "repository-"
     is_repository = True
-    button_groups = [[{"name": "copy_button", "button_class": "btn-outline-secondary", "name_text": "Copy to library"}
+    button_groups = [[{"name": "copy_button", "button_class": "btn-outline-secondary", "name_text": "Copy", "icon_name": "share"}
                       ]]
 
     def add_rules(self):

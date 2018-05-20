@@ -16,7 +16,10 @@
                     {% for group in button_groups -%}
                          <div class="btn-group" role="group">
                              {% for button in group -%}
-                                <button type="button" value="{{button.name|e}}" class="btn btn-sm {{button.button_class|e}} action-button">{{button.name_text}}</button>
+                                <button type="button" value="{{button.name|e}}" class="btn btn-sm {{button.button_class|e}} action-button toolbar-button">
+                                    <span class="far fa-{{button.icon_name}} button-icon"></span>
+                                    <span class="button-text">{{button.name_text}}</span>
+                                </button>
                              {% endfor -%}
                          </div>
 
