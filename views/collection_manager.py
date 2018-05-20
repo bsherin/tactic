@@ -220,6 +220,8 @@ class CollectionManager(UserManageResourceManager):
     def delete_tag(self, tag):
         cnames_with_metadata = current_user.data_collection_names_with_metadata
         for [res_name, mdata] in cnames_with_metadata:
+            if mdata is None:
+                continue
             tagstring = mdata["tags"]
             taglist = tagstring.split()
             if tag in taglist:

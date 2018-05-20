@@ -66,6 +66,7 @@ class ResourceManager {
         let self = this;
         this.get_left_div().resizable({
             handles: "e",
+            ghost: true,
             resize: function (event, ui) {
                 const usable_width = window.innerWidth - 2 * MARGIN_SIZE - 100;
                 let new_width_fraction = 1.0 * ui.size.width / usable_width;
