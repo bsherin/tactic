@@ -307,7 +307,7 @@ def rename_tag():
         return jsonify({"success": True, "res_tags": res_tags, "all_tags": all_tags,
                         "message": "Deleted tag", "alert_type": "alert-success"})
     except:
-        error_string = "Error deleting a tag: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+        error_string = "Error renaming a tag: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
 @app.route('/search_resource', methods=['POST'])

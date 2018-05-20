@@ -19,18 +19,39 @@
     <div id="main-container" class="container-fluid d-flex">
         <div id="left-div" class="d-flex flex-column" style="margin-top: 10px; margin-right: 25px; vertical-align:top">
             <div style="margin-top: 10px" class="d-flex flex-row justify-content-between">
-                <button id="rename-button" type="button" style="padding-top:0" class="btn btn-outline-secondary res-name-button">{{ module_name }}</button>
-                <div class="" role="toolbar" >
-                    <div class="btn-group btn-group-sm" role="group">
-                        <button value="save_button" type="button" class="btn btn-outline-secondary">Save</button>
-                        <button value="load_button" type="button" class="btn btn-outline-secondary">Save+Load</button>
-                        <button value="checkpoint_button" type="button" class="btn btn-outline-secondary">Checkpoint</button>
-                        <button value="share_button" type="button" class="btn btn-outline-secondary">Share</button>
+                <button id="rename-button" type="button" style="padding-top:0" class="btn btn-outline-secondary flex-grow-0 res-name-button">{{ module_name }}</button>
+                <div class="d-flex flex-grow-1 justify-content-center">
+                    <div class="" role="toolbar" >
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button value="save_button" type="button" class="btn btn-outline-secondary toolbar-button">
+                                <span class="far fa-save button-icon"></span>
+                                <span class="button-text">Save</span>
+                            </button>
+                            <button value="load_button" type="button" class="btn btn-outline-secondary toolbar-button">
+                                <span class="far fa-arrow-from-bottom button-icon"></span>
+                                <span class="button-text">Load</span>
+                            </button>
 
-                    </div>
-                    <div class="btn-group btn-group-sm" role="group">
-                        <button type="button" value="history_button" class="btn btn-outline-secondary">History</button>
-                        <button type="button" value="differ_button" class="btn btn-outline-secondary">Compare</button>
+                            <button value="checkpoint_button" type="button" class="btn btn-outline-secondary toolbar-button">
+                                <span class="far fa-map-marker-alt button-icon"></span>
+                                <span class="button-text">Mark</span>
+                            </button>
+                            <button value="share_button" type="button" class="btn btn-outline-secondary toolbar-button">
+                                <span class="far fa-share button-icon"></span>
+                                <span class="button-text">Share</span>
+                            </button>
+
+                        </div>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" value="history_button" class="btn btn-outline-secondary toolbar-button">
+                                <span class="far fa-history button-icon"></span>
+                                <span class="button-text">History</span>
+                            </button>
+                            <button type="button" value="differ_button" class="btn btn-outline-secondary toolbar-button">
+                                <span class="far fa-code-branch button-icon"></span>
+                                <span class="button-text">Compare</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -62,7 +83,7 @@
             </div>
             <div class="d-flex flex-row justify-content-between align-items-baseline">
                 <a style=" margin-bottom:0px">render_content:</a>
-                <div class="btn-group" style= "margin-top: 10px; margin-bottom: 2px; role="group">
+                <div class="btn-group" style= "margin-top: 5px; margin-bottom: 2px">
                        {% for catdict in api_dlist%}
                         <div class="dropdown" role="group">
                             <button type="button" class="btn btn-outline-secondary btn-xs dropdown-toggle" data-toggle="dropdown">{{catdict.cat_name}}</button>

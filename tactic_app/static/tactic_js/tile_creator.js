@@ -392,13 +392,13 @@ class OptionManager extends CreatorResourceManager {
         this.button_groups = [
             {
                 "buttons": [
-                    {"name": "delete", "func": "delete_option_func", "button_class": "btn-outline-secondary"},
-                    {"name": "refresh", "func": "refresh_option_table", "button_class": "btn-outline-secondary"}
+                    {"name": "delete", "func": "delete_option_func", "button_class": "btn-outline-secondary", "icon_name": "trash"},
+                    {"name": "refresh", "func": "refresh_option_table", "button_class": "btn-outline-secondary", "icon_name": "sync-alt"}
                 ]
             },
             {
                 "buttons": [
-                    {"name": "document_options", "func": "send_doc_text", "button_class": "btn-outline-secondary"}
+                    {"name": "to meta", "func": "send_doc_text", "button_class": "btn-outline-secondary", "icon_name": "list"}
                 ]
             }
         ]
@@ -622,12 +622,12 @@ class ExportManager extends CreatorResourceManager {
         this.data_attr = "export_list";
         this.button_groups = [
             {"buttons": [
-                    {"name": "delete", "func": "delete_export_func", "button_class": "btn-outline-secondary"},
-                    {"name": "refresh", "func": "refresh_export_table", "button_class": "btn-outline-secondary"}]
+                    {"name": "delete", "func": "delete_export_func", "button_class": "btn-outline-secondary", "icon_name": "trash"},
+                    {"name": "refresh", "func": "refresh_export_table", "button_class": "btn-outline-secondary", "icon_name": "sync-alt"}]
             },
             {
                 "buttons": [
-                    {"name": "document_exports", "func": "send_doc_text", "button_class": "btn-outline-secondary"}
+                    {"name": "to meta", "func": "send_doc_text", "button_class": "btn-outline-secondary", "icon_name": "list"}
                 ]
             }
         ]
