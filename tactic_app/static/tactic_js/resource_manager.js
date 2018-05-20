@@ -39,7 +39,7 @@ class ResourceManager {
         this.create_module_html();
         this.add_listeners();
         if (include_right) {
-            this.update_width(.5);
+            this.update_width(.65);
         }
         else {
             this.update_width(1.0)
