@@ -325,7 +325,7 @@ class CollectionManager extends UserManagerResourceManager {
         ];
         this.button_groups = [
             {buttons: [
-                    {"name": "notebook", "func": "newNotebook", "button_class": "btn btn-outline-secondary", "icon_name": "book"},
+
                     {"name": "open", "func": "view_func", "button_class": "btn btn-outline-secondary", "icon_name": "book-open"}]
             },
             {buttons: [
@@ -343,13 +343,6 @@ class CollectionManager extends UserManagerResourceManager {
                     [{"name": "refresh", "func": "refresh_func", "button_class": "btn-outline-secondary", "icon_name": "sync-alt"}]
             }
         ];
-    }
-
-    newNotebook (event) {
-        const manager = event.data.manager;
-        const res_name = manager.check_for_selection("resource");
-        if (res_name == "") return;
-        window.open(`${$SCRIPT_ROOT}/new_notebook`)
     }
 
     displayImportResults(data) {
@@ -448,6 +441,7 @@ class ProjectManager extends UserManagerResourceManager {
         this.refresh_task = 'update_project_selector_list';
         this.button_groups = [
             {buttons: [
+                    {"name": "notebook", "func": "newNotebook", "button_class": "btn btn-outline-secondary", "icon_name": "book"},
                     {"name": "open", "func": "view_func", "button_class": "btn-outline-secondary", "icon_name": "book-open"}]
             },
             {buttons: [
@@ -464,6 +458,10 @@ class ProjectManager extends UserManagerResourceManager {
                 {"name": "refresh", "func": "refresh_func", "button_class": "btn-outline-secondary", "icon_name": "sync-alt"}]
             }
         ];
+    }
+
+    newNotebook (event) {
+        window.open(`${$SCRIPT_ROOT}/new_notebook`)
     }
 
 }
