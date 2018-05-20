@@ -25,16 +25,14 @@ class TileManager(UserManageResourceManager):
     collection_list_with_metadata = "tile_module_names_with_metadata"
     collection_name = "tile_collection_name"
     name_field = "tile_module_name"
-    button_groups = [[{"name": "save_button", "button_class": "btn-outline-secondary", "name_text": "Save"},
-                      {"name": "checkpoint_button", "button_class": "btn-outline-secondary", "name_text": "Save and checkpoint"},
-                      {"name": "save_as_button", "button_class": "btn-outline-secondary", "name_text": "Save as ..."},
-                      {"name": "load_button", "button_class": "btn-outline-secondary", "name_text": "Save and load"},
-                      {"name": "share_button", "button_class": "btn-outline-secondary", "name_text": "Share"}],
-                     [{"name": "history_button", "button_class": "btn-outline-secondary", "name_text": "View History"},
-                      {"name": "differ_button", "button_class": "btn-outline-secondary", "name_text": "Compare Tiles"}
-                      ],
-                     [{"name": "change_theme_button", "button_class": "btn-outline-secondary", "name_text": "Toggle theme"},
-                      {"name": "show_api_button", "button_class": "btn-outline-secondary", "name_text": "Show API"}]]
+    button_groups = [[{"name": "save_button", "button_class": "btn-outline-secondary", "name_text": "Save", "icon_name": "save"},
+                      {"name": "checkpoint_button", "button_class": "btn-outline-secondary", "name_text": "Mark", "icon_name": "map-marker-alt" },
+                      {"name": "save_as_button", "button_class": "btn-outline-secondary", "name_text": "Save as...", "icon_name": "save"},
+                      {"name": "load_button", "button_class": "btn-outline-secondary", "name_text": "Load", "icon_name": "arrow-from-bottom"},
+                      {"name": "share_button", "button_class": "btn-outline-secondary", "name_text": "Share", "icon_name": "share"}],
+                     [{"name": "history_button", "button_class": "btn-outline-secondary", "name_text": "History", "icon_name": "history"},
+                      {"name": "differ_button", "button_class": "btn-outline-secondary", "name_text": "Compare", "icon_name": "code-branch"}
+                      ]]
 
     def add_rules(self):
         app.add_url_rule('/view_module/<module_name>', "view_module",
@@ -364,7 +362,7 @@ class TileManager(UserManageResourceManager):
 class RepositoryTileManager(TileManager):
     rep_string = "repository-"
     is_repository = True
-    button_groups = [[{"name": "copy_button", "button_class": "btn-outline-secondary", "name_text": "Copy to library"}
+    button_groups = [[{"name": "copy_button", "button_class": "btn-outline-secondary", "name_text": "Copy", "icon_name": "share"}
                       ]]
 
     def add_rules(self):

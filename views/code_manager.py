@@ -22,12 +22,10 @@ class CodeManager(UserManageResourceManager):
     collection_list_with_metadata = "code_names_with_metadata"
     collection_name = "code_collection_name"
     name_field = "code_name"
-    button_groups = [[{"name": "save_button", "button_class": "btn-outline-secondary", "name_text": "Save"},
-                      {"name": "save_as_button", "button_class": "btn-outline-secondary", "name_text": "Save as ..."},
-                      {"name": "share_button", "button_class": "btn-outline-secondary", "name_text": "Share"}
-                      ],
-                     [{"name": "change_theme_button", "button_class": "btn-outline-secondary", "name_text": "Toggle theme"},
-                      {"name": "show_api_button", "button_class": "btn-outline-secondary", "name_text": "Show API"}]]
+    button_groups = [[{"name": "save_button", "button_class": "btn-outline-secondary", "name_text": "Save", "icon_name": "save"},
+                      {"name": "save_as_button", "button_class": "btn-outline-secondary", "name_text": "Save as...", "icon_name": "save"},
+                      {"name": "share_button", "button_class": "btn-outline-secondary", "name_text": "Share", "icon_name": "share"}
+                      ]]
 
     def add_rules(self):
         app.add_url_rule('/view_code/<code_name>', "view_code",
@@ -233,7 +231,7 @@ class CodeManager(UserManageResourceManager):
 class RepositoryCodeManager(CodeManager):
     rep_string = "repository-"
     is_repository = True
-    button_groups = [[{"name": "copy_button", "button_class": "btn-outline-secondary", "name_text": "Copy to library"}
+    button_groups = [[{"name": "copy_button", "button_class": "btn-outline-secondary", "name_text": "Copy", "icon_name": "share"}
                       ]]
 
     def add_rules(self):
