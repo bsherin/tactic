@@ -140,7 +140,7 @@ def account_info():
     user_data = current_user.user_data_dict
     field_list = []
     for key, val in user_data.items():
-        if not key == "username":
+        if not key == "username" and not key == "tzoffset":
             field_list.append({"name": key, "val": val})
     return render_template('auth/account.html', fields=field_list, version_string=tstring)
 
