@@ -135,15 +135,15 @@ class ContainerManager extends AdminResourceManager {
         this.button_groups = [
             {
                 "buttons": [
-                    {"name": "reset-server", "func": "reset_server_func", "button_class": "btn-outline-secondary"},
-                    {"name": "clear-user-containers", "func": "clear_user_func", "button_class": "btn-outline-secondary"},
-                    {"name": "destroy-container", "func": "destroy_container", "button_class": "btn-outline-secondary"},
+                    {"name": "reset", "func": "reset_server_func", "button_class": "btn-outline-secondary", "icon_name": "recycle"},
+                    {"name": "killall", "func": "clear_user_func", "button_class": "btn-outline-secondary", "icon_name": "skull"},
+                    {"name": "killone", "func": "destroy_container", "button_class": "btn-outline-secondary", "icon_name": "exclamation-triangle"},
                 ]
             },
             {
                 "buttons": [
-                    {"name": "container-logs", "func": "container_logs", "button_class": "btn-outline-secondary"},
-                    {"name": "refresh", "func": "refresh_container_table", "button_class": "btn-outline-secondary"}
+                    {"name": "log", "func": "container_logs", "button_class": "btn-outline-secondary", "icon_name": "file-alt"},
+                    {"name": "refresh", "func": "refresh_container_table", "button_class": "btn-outline-secondary", "icon_name": "sync-alt"}
                 ]
             }
         ]
@@ -194,12 +194,10 @@ class UserManager extends AdminResourceManager {
         this.button_groups = [
             {
                 "buttons": [
-                    {"name": "create_user", "func": "create_user_func", "button_class": "btn-outline-secondary"},
-                    {"name": "duplicate_user", "func": "duplicate_user_func", "button_class": "btn-outline-secondary"},
-                    {"name": "delete_user", "func": "delete_user_func", "button_class": "btn-outline-secondary"},
-                    {"name": "migrate_user", "func": "migrate_user_func", "button_class": "btn-outline-secondary"},
-                    {"name": "update_all_collections", "func": "update_all_collections", "button_class": "btn-outline-secondary"},
-                    {"name": "refresh", "func": "refresh_user_table", "button_class": "btn-outline-secondary"}
+                    {"name": "create", "func": "create_user_func", "button_class": "btn-outline-secondary", "icon_name": "user"},
+                    {"name": "duplicate", "func": "duplicate_user_func", "button_class": "btn-outline-secondary", "icon_name": "copy"},
+                    {"name": "delete", "func": "delete_user_func", "button_class": "btn-outline-secondary", "icon_name": "skull"},
+                    {"name": "refresh", "func": "refresh_user_table", "button_class": "btn-outline-secondary", "icon_name": "sync-alt"}
                 ]
             }
         ]
