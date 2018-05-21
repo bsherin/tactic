@@ -1288,6 +1288,7 @@ class RepositoryAllManager extends AllManager {
         this.update_view = "request_update_repository_selector_list";
         this.update_tag_view = "request_update_repository_tag_list";
         this.double_click_func = "view_func";
+        this.popup_buttons = [];
         this.button_groups = [
             {
                 "buttons": [
