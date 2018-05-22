@@ -333,7 +333,7 @@ class CollectionManager extends UserManagerResourceManager {
                     {"name": "rename", "func": "rename_func", "button_class": "btn-outline-secondary", "icon_name": "edit"},
                     {"name": "combine", "func": "combineCollections", "button_class": "btn-outline-secondary", "icon_name": "plus-square"}]
             },
-            {buttons: [{"name": "download", "func": "downloadCollection", "button_class": "btn btn-outline-secondary", "icon_name": "download"},
+            {buttons: [{"name": "download", "func": "downloadCollection", "button_class": "btn btn-outline-secondary", "icon_name": "cloud-download"},
                     {"name": "share", "func": "send_repository_func", "button_class": "btn-outline-secondary", "icon_name": "share"}]
             },
             {buttons: [
