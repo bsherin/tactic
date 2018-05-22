@@ -12,14 +12,14 @@ Creating the new tile
 
 With that said, here’s how to create a new tile with the creator:
 
-Go to the :guilabel:`tile` tab of your resource library and click :menuselection:`new in creator --> StandardTile`.
+Go to the :guilabel:`tile` tab of your resource library and click :menuselection:`+creator --> StandardTile`.
 
-|image0|
+.. figure:: images/create_in_creator.png
 
 When prompted give your tile some sort of useful name. Then you should
 see something that looks like this:
 
-|image1|
+.. figure:: images/starting_creator_view.png
 
 Writing the tile body
 ---------------------
@@ -93,7 +93,7 @@ Options <Tile-Structure.html#options>`__ that will appear on back of your
 tile. Here I have clicked on the options tab and then used the form at
 the bottom to create an option called ``some_user_text``.
 
-|image3|
+.. figure:: images/creator_options.png
 
 These option can now be referred to in the tile code as
 ``self.some_user_text``. So if you then change your code to be:

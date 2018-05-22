@@ -18,17 +18,17 @@ The second way to create a Notebook project is from the collection
 manager. Just click the :guilabel:`new notebook` button as as shown in the figure
 below.
 
-|new_notebook|
+.. figure:: images/new_notebook.png
 
 Logs and Notebooks pretty much work the same way. You use the buttons at
 the top to manually add new elements:
 
-|image1|
+.. figure:: images/console_top.png
 
 Text fields
 -----------
 
-You can create a text field by clicking the :guilabel:`+text` button. You’ll get
+You can create a text field by clicking the :guilabel:`text` button. You’ll get
 something that looks like this:
 
 |image2|
@@ -45,7 +45,7 @@ Clicking the bottom button again toggles the display back to plain text.
 Code fields
 -----------
 
-You create a code field by clicking the :guilabel:`+code` button:
+You create a code field by clicking the :guilabel:`code` button:
 
 |image4|
 
@@ -118,7 +118,6 @@ the appearance *and internal state* of the Notebook. The saving of internal
 state is still an iffy business however.
 
 .. |new_notebook| image:: imgs/new_notebook.png
-.. |image1| image:: imgs/console_top.png
 .. |image2| image:: imgs/06ca6226.png
 .. |image3| image:: imgs/a6aa511c.png
 .. |image4| image:: imgs/55cbd9bd.png
