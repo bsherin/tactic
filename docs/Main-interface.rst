@@ -95,7 +95,7 @@ The Log in brief
 At the bottom of the main interface, on the left, is the log. The top of
 the log looks like this. Nice, huh!
 
-|image3|
+.. figure:: images/console_top.png
 
 As mentioned above, if you click the log button on a tile, then the tile
 will send some sort of information to the log. That’s useful for
