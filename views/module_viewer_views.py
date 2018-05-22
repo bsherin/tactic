@@ -67,7 +67,7 @@ def checkpoint_to_recent():
 @app.route('/show_history_viewer/<module_name>', methods=['get', 'post'])
 @login_required
 def show_history_viewer(module_name):
-    button_groups = [[{"name": "save_button", "button_class": "btn-outline-secondary", "name_text": "Save"}]]
+    button_groups = [[{"name": "save_button", "button_class": "btn-outline-secondary", "name_text": "Save", "icon_name": "save"}]]
     javascript_source = url_for('static', filename='tactic_js/history_viewer.js')
     return render_template("user_manage/resource_viewer.html",
                            resource_name=module_name,
@@ -93,7 +93,7 @@ def get_api_dict():
 @app.route('/show_tile_differ/<module_name>', methods=['get', 'post'])
 @login_required
 def show_tile_differ(module_name):
-    button_groups = [[{"name": "save_button", "button_class": "btn-outline-secondary", "name_text": "Save"}]]
+    button_groups = [[{"name": "save_button", "button_class": "btn-outline-secondary", "name_text": "Save", "icon_name": "save"}]]
     javascript_source = url_for('static', filename='tactic_js/tile_differ.js')
     return render_template("user_manage/resource_viewer.html",
                            resource_name=module_name,
