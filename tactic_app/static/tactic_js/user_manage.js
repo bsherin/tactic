@@ -126,17 +126,6 @@ function start_post_load() {
                 resource_managers[mod_id].search_my_resource();
             }
         });
-        $(".resource-module").on("keyup", ".search-tags-field", function(e) {
-            if (e.which == 13) {
-                let mod_id = get_current_module_id();
-                resource_managers[mod_id].search_my_tags();
-                e.preventDefault();
-            }
-            else {
-                let mod_id = get_current_module_id();
-                resource_managers[mod_id].search_my_tags();
-            }
-        });
         resize_window();
         $('a[data-toggle="tab"]').on('shown.bs.tab', function (event) {
             // $(event.currentTarget).attr("href")
@@ -212,7 +201,14 @@ function selector_double_click(event) {
 }
 
 function tag_button_clicked(event) {
-    let but = $(event.target);
+    rawbut = event.target;
+    let but;
+    if (rawbut.tagName.toLowerCase() != "button") {
+        but = $(rawbut).closest(".tag-button")
+    }
+    else {
+        but = $(rawbut)
+    }
     if (but.hasClass('tag-button-delete')) return;  // We don't want a click on the delete to bubble up.
     let manager = resource_managers[get_current_module_id()];
     if (manager.tag_button_list.tag_button_mode == "edit") {
@@ -221,10 +217,20 @@ function tag_button_clicked(event) {
     }
     else {
         if (but.hasClass("active")) {
-            but.removeClass("active")
+            but.removeClass("active");
+            let tag = but.text();
+            manager.tag_button_list.deactivate_subtags(tag);
+            if (but.hasClass("has_children")) {
+                $(but.find(".fa-caret-down")[0]).css("display", "none");
+                $(but.find(".fa-caret-right")[0]).css("display", "inline-block")
+            }
         }
         else {
-            but.addClass("active")
+            but.addClass("active");
+            if (but.hasClass("has_children")) {
+                $(but.find(".fa-caret-right")[0]).css("display", "none");
+                $(but.find(".fa-caret-down")[0]).css("display", "inline-block")
+            }
         }
         manager.search_active_tag_buttons();
     }
