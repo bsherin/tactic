@@ -74,7 +74,7 @@ try:
     # to be useless here
     client.server_info()
     # noinspection PyUnresolvedReferences
-    db = client[db_name] # tactic_working
+    db = client[db_name]
 
     if ("ANYONE_CAN_REGISTER" in os.environ) and (os.environ.get("ANYONE_CAN_REGISTER") == "True"):
         ANYONE_CAN_REGISTER = True

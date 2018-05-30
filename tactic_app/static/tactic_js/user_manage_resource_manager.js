@@ -5,7 +5,8 @@
 class TagButtonList {
     constructor (manager) {
         this.manager = manager;
-        this.tag_button_mode = "select"
+        this.tag_button_mode = "select";
+        this.res_type = this.manager.res_type;
     }
 
     get_module_element(selector) {
@@ -36,7 +37,13 @@ class TagButtonList {
     create_tag_buttons(url_string) {
         const self = this;
         $.getJSON(`${$SCRIPT_ROOT}/${url_string}/${this.manager.res_type}`, function (data) {
-            self.create_button_html(data.tag_list, "all");
+            let visible_tags = [];
+            for (let the_tag of data.tag_list) {
+                if (the_tag.search("/") == -1) {
+                    visible_tags.push(the_tag)
+                }
+            }
+            self.create_button_html(data.tag_list, visible_tags);
         })
     }
 
@@ -69,13 +76,14 @@ class TagButtonList {
     set_button_state_from_taglist (tag_list) {
         const all_tag_buttons = this.get_all_tag_buttons();
         $.each(all_tag_buttons, function (index, but) {
-            if (tag_list.includes(but.innerText)) {
+            if (tag_list.includes(but.dataset.fulltag)) {
                 $(but).addClass("active")
             }
             else {
                 $(but).removeClass("active")
             }
-        })
+        });
+        this.show_hide_subtag_buttons_from_actives();
     }
 
     refresh_from_selectors() {
@@ -84,19 +92,21 @@ class TagButtonList {
     }
 
     refresh_given_taglist(tag_list) {
-        let active_tag_buttons = this.get_active_tag_buttons();
+        let active_tag_buttons = this.get_active_tags();
         let visible_tags = this.get_currently_visible_tags();
+        visible_tags = visible_tags.concat(active_tag_buttons);
+        visible_tags = remove_duplicates(visible_tags);
         this.create_button_html(tag_list, visible_tags);
         this.set_button_state_from_taglist(active_tag_buttons);
         this.set_edit_button_mode(this.tag_button_mode);
     }
 
-    get_active_tag_buttons () {
+    get_active_tags() {
         let all_tag_buttons = this.get_all_tag_buttons();
         let active_tag_buttons = [];
         $.each(all_tag_buttons, (index, but) => {
             if ($(but).hasClass("active")) {
-                active_tag_buttons.push($(but).text())
+                active_tag_buttons.push(but.dataset.fulltag)
             }
         });
         return active_tag_buttons
@@ -134,15 +144,44 @@ class TagButtonList {
         return all_tags.sort()
     }
 
+    get_all_parent_tags(tag_list){
+        var ptags = [];
+        for (let the_tag of tag_list){
+            ptags = ptags.concat(this.get_parent_tags(the_tag))
+        }
+        ptags = remove_duplicates(ptags);
+        return ptags
+    }
+
+    tag_depth(the_tag) {
+        return (the_tag.match(/\//g) || []).length;
+    }
+
     create_button_html(tag_list, visible_buttons) {
         let tag_button_html = `<div class="btn-group-vertical btn-group-sm" role="group">`;
+        let parent_tags = this.get_all_parent_tags(tag_list);
+        let indent_amount = 12;
         for (let tag of tag_list) {
             let new_html;
-            if ((visible_buttons == "all") || (visible_buttons.includes(tag))) {
-                new_html = `<button type="button" class="btn btn-outline-secondary tag-button showme" style="display: block" value="${this.res_type}">${tag}<span class="tag-button-delete"></span></button>`
+            let tag_base = this.get_tag_base(tag);
+            var prefix;
+            var hcclass;
+            let mleft = indent_amount * this.tag_depth(tag);
+            let has_children = parent_tags.includes(tag);
+
+            if (has_children) {
+                hcclass = "has_children";
+                prefix = `<span class="tag-expander fas fa-caret-right" style="margin-left:${mleft}px"></span><span class="tag-expander fas fa-caret-down" style="display:none; margin-left:${mleft}px"></span><span class="tag-icon fal fa-folder"></span>`
             }
             else {
-                new_html = `<button type="button" class="btn btn-outline-secondarytag-button hideme" style="display: none" value="${this.res_type}">${tag}<span class="tag-button-delete"></span></button>`
+                hcclass = "no_children";
+                prefix = `<span style="margin-left:${mleft + indent_amount}px"></span></span><span class="tag-icon fal fa-hashtag"></span>`
+            }
+            if ((visible_buttons == "all") || (visible_buttons.includes(tag))) {
+                new_html = `<button type="button" data-fulltag="${tag}" class="btn btn-outline-secondary tag-button ${hcclass} showme" style="display: block" value="${this.res_type}">${prefix}${tag_base}<span class="tag-button-delete"></span></button>`
+            }
+            else {
+                new_html = `<button type="button" data-fulltag="${tag}" class="btn btn-outline-secondary tag-button ${hcclass} hideme" style="display: none" value="${this.res_type}">${prefix}${tag_base}<span class="tag-button-delete"></span></button>`
             }
             tag_button_html = tag_button_html + new_html + "\n"
         }
@@ -159,14 +198,86 @@ class TagButtonList {
         this.resize_me()
     }
 
-    show_hide_buttons_given_taglist(searchtags) {
-        const all_tag_buttons = this.get_all_tag_buttons();
-        all_tag_buttons.removeClass("hideme");
-        all_tag_buttons.removeClass("showme");
+    has_slash(tag_text) {
+        return (tag_text.search("/") != -1)
+    }
 
-        $.each(all_tag_buttons, function (index, but) {
-            const tag_text = but.innerText;
-            if (searchtags.includes(tag_text) || searchtags.empty()) {
+    get_all_subtag_buttons() {
+        const all_tag_buttons = this.get_all_tag_buttons();
+        var subtag_buttons = [];
+        var self = this;
+         $.each(all_tag_buttons, function (index, but) {
+             const tag_text = but.dataset.fulltag;
+             if (self.has_slash(tag_text)) {
+                 subtag_buttons.push(but)
+             }
+         });
+        return $(subtag_buttons)
+    }
+
+    get_immediate_tag_parent(the_tag) {
+        let re = /\/\w*$/;
+        return the_tag.replace(re, "")
+    }
+
+    get_tag_base(the_tag) {
+        if (!this.has_slash(the_tag)){
+            return the_tag
+        }
+        else {
+            let re = /\/\w*$/;
+            return re.exec(the_tag)[0].slice(1)
+        }
+    }
+
+    expand_tags(item_tags) {
+        var expanded_tags = item_tags.slice(0);
+        for (let the_tag of item_tags) {
+            expanded_tags = expanded_tags.concat(this.get_parent_tags(the_tag))
+        }
+        expanded_tags = remove_duplicates(expanded_tags);
+        return expanded_tags
+    }
+
+    get_parent_tags(the_tag) {
+        if (the_tag.search("/") == -1) {
+            return []
+        }
+        else {
+            let parent_tag = this.get_immediate_tag_parent(the_tag);
+            let ptags = this.get_parent_tags(parent_tag);
+            ptags.push(parent_tag);
+            return ptags
+        }
+    }
+
+    deactivate_subtags(the_tag) {
+        let subtag_buttons = this.get_all_subtag_buttons();
+        let self = this;
+        $.each(subtag_buttons, function (index, but) {
+             let but_tag = but.dataset.fulltag;
+             let ptags = self.get_parent_tags(but_tag);
+             if (ptags.includes(the_tag)) {
+                 $(but).removeClass("active");
+             }
+         })
+    }
+
+    is_subtag_of(the_tag, active_tags) {
+        if (the_tag.search("/") == -1) {
+            return false
+        }
+        let the_parent = this.get_immediate_tag_parent(the_tag);
+        return active_tags.includes(the_parent)
+    }
+
+    show_hide_subtag_buttons_from_actives() {
+        const active_tags = this.get_active_tags();
+        const subtag_buttons = this.get_all_subtag_buttons();
+        var self = this;
+        $.each(subtag_buttons, function (index, but) {
+            const tag_text = but.dataset.fulltag;
+            if (self.is_subtag_of(tag_text, active_tags)) {
                 if ($(but).css("display") == "none") {
                     $(but).addClass("showme")
                 }
@@ -177,27 +288,84 @@ class TagButtonList {
                 }
             }
         });
-        this.show_buttons(all_tag_buttons.filter(".showme"));
+        this.show_buttons(subtag_buttons.filter(".showme"));
         this.fix_tag_button_width();
+        this.hide_buttons(subtag_buttons.filter(".hideme"));
+    }
+
+    show_hide_buttons_given_taglist(searchtags) {
+        const all_tag_buttons = this.get_all_tag_buttons();
+        all_tag_buttons.removeClass("hideme");
+        all_tag_buttons.removeClass("showme");
+        const active_tags = this.get_active_tags();
+        self = this;
+
+        if (searchtags.empty()) {
+            $.each(all_tag_buttons, function (index, but) {
+                const tag_text = but.dataset.fulltag;
+                if (!self.has_slash(tag_text)) {
+                    if ($(but).css("display") == "none") {
+                        $(but).addClass("showme")
+                    }
+                }
+                else {
+                    if ($(but).css("display") != "none") {
+                        $(but).addClass("hideme")
+                    }
+                }
+            })
+        }
+        else {
+            $.each(all_tag_buttons, function (index, but) {
+                const tag_text = but.dataset.fulltag;
+                if (searchtags.includes(tag_text) || self.is_subtag_of(tag_text, active_tags)) {
+                    if ($(but).css("display") == "none") {
+                        $(but).addClass("showme")
+                    }
+                }
+                else {
+                    if ($(but).css("display") != "none") {
+                        $(but).addClass("hideme")
+                    }
+                }
+            });
+        }
+
+        this.show_buttons(all_tag_buttons.filter(".showme"));
         this.hide_buttons(all_tag_buttons.filter(".hideme"));
+        this.show_hide_subtag_buttons_from_actives();
+        this.fix_tag_button_width();
     }
 
-    show_buttons(the_tags) {
-        the_tags.slideDown();
+    show_buttons(the_tag_buttons) {
+        the_tag_buttons.slideDown();
     }
 
-    hide_buttons(the_tags) {
-        the_tags.slideUp();
+    hide_buttons(the_tag_buttons) {
+        the_tag_buttons.slideUp();
     }
 
     unfilter_all() {
-        this.show_all_buttons();
         this.deactivate_all_buttons();
+        this.show_all_buttons();
     }
 
     show_all_buttons () {
         const all_tag_buttons = this.get_all_tag_buttons();
-        this.show_buttons(all_tag_buttons);
+        var buttons_to_show = [];
+        var buttons_to_hide = [];
+        var self = this;
+        $.each(all_tag_buttons, function (index, but) {
+            const tag_text = but.dataset.fulltag;
+            if (!self.has_slash(tag_text)) {
+                buttons_to_show.push(but)
+            }
+            else {
+                buttons_to_hide.push(but)
+            }
+        });
+        this.show_buttons($(buttons_to_show));
+        this.hide_buttons($(buttons_to_hide));
     }
 
     deactivate_all_buttons () {
@@ -211,7 +379,6 @@ class UserManagerResourceManager extends ResourceManager{
 
     constructor (module_id, res_type, resource_module_template, destination_selector, class_string) {
         super(module_id, res_type, resource_module_template, destination_selector, class_string);
-        this.last_search = null;
     }
 
     add_listeners() {
@@ -243,7 +410,6 @@ class UserManagerResourceManager extends ResourceManager{
         $.getJSON(`${$SCRIPT_ROOT}/${this.update_view}/${this.res_type}`, function (data) {
             self.fill_content(data.html, null);
             self.select_resource_button(null);
-            self.create_search_tag_editor();
         })
     }
 
@@ -271,7 +437,6 @@ class UserManagerResourceManager extends ResourceManager{
     }
 
     check_for_selection () {
-        //var res_name = $('#' + res_type + '-selector > .btn.active').text().trim();
         const res_name = this.get_active_selector_button().attr("value");
         if (res_name == "") {
             doFlash({"message": `Select a ${this.res_type} first.`, "alert_type": "alert-info"})
@@ -394,35 +559,13 @@ class UserManagerResourceManager extends ResourceManager{
             .catch(doFlash)
     }
 
-    // search related
-
-    // This currently isn't used
-    // replay_last_search() {
-    //     if (!this.last_search) return;
-    //     let func = this.last_search["function"];
-    //     let val = this.last_search["value"];
-    //     switch (func) {
-    //         case "search_my_resource":
-    //             this.get_search_field()[0].value = val;
-    //             this.search_my_resource();
-    //             break;
-    //         case "search_my_tags":
-    //             this.set_tag_button_state(val);
-    //             this.set_search_tag_list(taglist);
-    //             this.search_my_tags();
-    //             break;
-    //         case "search_active_tag_buttons":
-    //             this.set_tag_button_state(val);
-    //             this.search_active_tag_buttons()
-    //     }
-    // }
-
     tagMatch (search_tags, item_tags) {
         if (search_tags.empty()) {
             return true
         }
+        let expanded_item_tags = this.tag_button_list.expand_tags(item_tags);  // tactic_working
         for (let item of search_tags) {
-            if (!item_tags.includes(item)) {
+            if (!expanded_item_tags.includes(item)) {
                 return false
             }
         }
@@ -431,7 +574,7 @@ class UserManagerResourceManager extends ResourceManager{
 
     search_my_resource (){
         const txt = this.get_search_field()[0].value.toLowerCase();
-        const all_rows = this.get_all_selector_buttons();
+
         this.tag_button_list.deactivate_all_buttons();
         let searchtags = [];
         if (txt == "") {
@@ -440,34 +583,7 @@ class UserManagerResourceManager extends ResourceManager{
         else {
             searchtags = txt.split(" ");
         }
-        let self = this;
-        let current_tags = [];
-        $.each(all_rows, function (index, row_element) {
-            const cells = $(row_element).children();
-            const res_name = row_element.getAttribute("value").toLowerCase();
-            const tag_text = $(cells.slice(-1)[0]).text().toLowerCase();
-            const taglist = tag_text.split(" ");
-            if ((res_name.search(txt) == -1) && (!self.tagMatch(searchtags, taglist))) {
-                // $(row_element).css("display", "none")
-                $(row_element).removeClass("showme");
-                $(row_element).addClass("hideme");
-
-            }
-            else {
-                $(row_element).removeClass("hideme");
-                $(row_element).addClass("showme");
-                // $(row_element).css("display", "table-row");
-                current_tags = current_tags.concat(taglist);
-            }
-        });
-        this.hide_table_rows(all_rows.filter(".hideme"));
-        this.show_table_rows(all_rows.filter(".showme"));
-        current_tags = remove_duplicates(current_tags);
-        this.tag_button_list.show_hide_buttons_given_taglist(current_tags);
-        if (!this.active_selector_is_visible()){
-            this.select_first_row()
-        }
-        this.last_search = {"function": "search_my_resource", "value": txt}
+        this.search_given_tags(searchtags, txt);
     }
 
     unfilter_me () {
@@ -477,7 +593,6 @@ class UserManagerResourceManager extends ResourceManager{
         this.tag_button_list.deactivate_all_buttons();
         this.tag_button_list.show_all_buttons();
         this.get_search_field().val("");
-        this.last_search = null;
     }
 
     show_table_rows (the_rows) {
@@ -488,15 +603,16 @@ class UserManagerResourceManager extends ResourceManager{
         the_rows.css("display", "none")
     }
 
-    search_given_tags (searchtags) {
+    search_given_tags (searchtags, txt="__NONE__") {
         const all_rows = this.get_all_selector_buttons();
         let self = this;
         let current_tags = [];
         $.each(all_rows, function (index, row_element) {
             const cells = $(row_element).children();
+            const res_name = row_element.getAttribute("value").toLowerCase();
             const tag_text = $(cells.slice(-1)[0]).text().toLowerCase();
             const taglist = tag_text.split(" ");
-            if (!self.tagMatch(searchtags, taglist)) {
+            if ((res_name.search(txt) == -1) && (!self.tagMatch(searchtags, taglist))) {
                 $(row_element).addClass("hideme");
                 $(row_element).removeClass("showme");
             }
@@ -509,56 +625,22 @@ class UserManagerResourceManager extends ResourceManager{
         this.hide_table_rows(all_rows.filter(".hideme"));
         this.show_table_rows(all_rows.filter(".showme"));
         current_tags = remove_duplicates(current_tags);
-        this.tag_button_list.show_hide_buttons_given_taglist(current_tags);
+        var active_tags = this.tag_button_list.get_active_tags();
+        var tags_to_show = [];
+        for (let the_tag of current_tags) {
+            if ((the_tag.search("/") == -1) || (this.tag_button_list.is_subtag_of(the_tag, active_tags))) {
+                tags_to_show.push(the_tag)
+            }
+        }
+        for (let the_tag of active_tags) {
+            if (!tags_to_show.includes(the_tag)) {
+                tags_to_show.push(the_tag)
+            }
+        }
+        this.tag_button_list.show_hide_buttons_given_taglist(tags_to_show);
         if (!this.active_selector_is_visible()){
             this.select_first_row()
         }
-    }
-
-
-    create_search_tag_editor(initial_tag_list) {
-        let self = this;
-        let data_dict = {"res_type": this.res_type, "is_repository": this.is_repository};
-        postAjaxPromise("get_tag_list", data_dict)
-            .then(function(data) {
-                let all_tags = data.tag_list;
-                self.get_search_tags_field().tagEditor({
-                    initialTags: initial_tag_list,
-                    autocomplete: {
-                        delay: 0, // show suggestions immediately
-                        position: {collision: 'flip'}, // automatic menu position up/down
-                        source: all_tags
-                    },
-                    placeholder: "Tags...",
-                    onChange: function () {
-                        self.search_my_tags()
-                    }
-                });
-            })
-            .catch(doFlash)
-    }
-
-    get_search_tags() {
-        return this.get_search_tags_field().tagEditor('getTags')[0].tags
-    }
-
-    clear_search_tag_list() {
-        this.get_search_tags_field().tagEditor('destroy');
-        this.get_search_tags_field().val("");
-        this.create_search_tag_editor([]);
-    }
-
-    set_search_tag_list(taglist) {
-        this.get_search_tags_field().tagEditor('destroy');
-        this.get_search_tags_field().val("");
-    }
-
-    search_my_tags() {
-        const searchtags = this.get_search_tags();
-        this.search_given_tags(searchtags);
-        this.tag_button_list.set_button_state_from_taglist(searchtags);
-        this.last_search = {"function": "search_my_tags", "value": searchtags}
-
     }
 
     // tag button related
@@ -568,14 +650,12 @@ class UserManagerResourceManager extends ResourceManager{
         this.clear_search_tag_list();
         const all_rows = this.get_all_selector_buttons();
         this.show_table_rows(all_rows);
-        this.last_search = null
     }
 
     update_aux_content() {
         this.tag_button_list.create_tag_buttons(this.update_tag_view);
         this.get_aux_right_dom().css("display", "none");
     }
-
 
     update_selector_tags(res_name, new_tags) {
         this.get_selector_table_row(res_name).children().slice(-1)[0].innerHTML = new_tags;
@@ -700,9 +780,8 @@ class UserManagerResourceManager extends ResourceManager{
     }
 
     search_active_tag_buttons() {
-        let active_tag_buttons = this.tag_button_list.get_active_tag_buttons();
+        let active_tag_buttons = this.tag_button_list.get_active_tags();
         this.search_given_tags(active_tag_buttons);
-        this.last_search = {"function": "search_active_tag_buttons", "value": active_tag_buttons}
     }
 
     add_func(event) {
