@@ -212,7 +212,7 @@ function tag_button_clicked(event) {
     if (but.hasClass('tag-button-delete')) return;  // We don't want a click on the delete to bubble up.
     let manager = resource_managers[get_current_module_id()];
     if (manager.tag_button_list.tag_button_mode == "edit") {
-        let tag = but.text();
+        let tag = but[0].dataset.fulltag;
         manager.rename_tag(tag)
     }
     else {
@@ -232,7 +232,7 @@ function tag_button_clicked(event) {
                 $(but.find(".fa-caret-down")[0]).css("display", "inline-block")
             }
         }
-        manager.search_active_tag_buttons();
+        manager.search_active_tag_buttons();  // tactic_working
     }
 }
 
