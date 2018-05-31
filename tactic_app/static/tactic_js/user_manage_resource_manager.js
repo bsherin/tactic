@@ -161,6 +161,25 @@ class TagButtonList {
         let tag_button_html = `<div class="btn-group-vertical btn-group-sm" role="group">`;
         let parent_tags = this.get_all_parent_tags(tag_list);
         let indent_amount = 12;
+        let active_tag_buttons = this.get_active_tags();
+        for (let ptag of parent_tags) {
+            if (!tag_list.includes(ptag)) {
+                tag_list.push(ptag);
+                if (active_tag_buttons.length == 0) {
+                    if (!this.has_slash(ptag)) {
+                        visible_buttons.push(ptag)
+                    }
+                }
+                else {
+                    let pparent = this.get_immediate_tag_parent(ptag);
+                    if (active_tag_buttons.includes(pparent)) {
+                        visible_buttons.push(ptag)
+                    }
+                }
+            }
+        }
+
+        tag_list.sort();
         for (let tag of tag_list) {
             let new_html;
             let tag_base = this.get_tag_base(tag);
@@ -606,7 +625,7 @@ class UserManagerResourceManager extends ResourceManager{
     search_given_tags (searchtags, txt="__NONE__") {
         const all_rows = this.get_all_selector_buttons();
         let self = this;
-        let current_tags = [];
+        // let current_tags = [];
         $.each(all_rows, function (index, row_element) {
             const cells = $(row_element).children();
             const res_name = row_element.getAttribute("value").toLowerCase();
@@ -619,12 +638,20 @@ class UserManagerResourceManager extends ResourceManager{
             else {
                 $(row_element).addClass("showme");
                 $(row_element).removeClass("hideme");
-                current_tags = current_tags.concat(taglist);
+                // current_tags = current_tags.concat(taglist);
             }
         });
         this.hide_table_rows(all_rows.filter(".hideme"));
         this.show_table_rows(all_rows.filter(".showme"));
-        current_tags = remove_duplicates(current_tags);
+        // current_tags = remove_duplicates(current_tags);
+
+        let parent_tags = this.tag_button_list.get_all_parent_tags(current_tags);
+        for (let ptag of parent_tags) {
+            if (!current_tags.includes(ptag)) {
+                current_tags.push(ptag);
+            }
+        }
+
         var active_tags = this.tag_button_list.get_active_tags();
         var tags_to_show = [];
         for (let the_tag of current_tags) {
@@ -776,12 +803,11 @@ class UserManagerResourceManager extends ResourceManager{
         function RenameTag(new_tag) {
             self.DoTagRename(old_tag, new_tag)
         }
-
     }
 
     search_active_tag_buttons() {
         let active_tag_buttons = this.tag_button_list.get_active_tags();
-        this.search_given_tags(active_tag_buttons);
+        this.search_given_tags(active_tag_buttons);  // tactic_working
     }
 
     add_func(event) {
