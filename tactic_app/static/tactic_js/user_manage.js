@@ -126,17 +126,6 @@ function start_post_load() {
                 resource_managers[mod_id].search_my_resource();
             }
         });
-        $(".resource-module").on("keyup", ".search-tags-field", function(e) {
-            if (e.which == 13) {
-                let mod_id = get_current_module_id();
-                resource_managers[mod_id].search_my_tags();
-                e.preventDefault();
-            }
-            else {
-                let mod_id = get_current_module_id();
-                resource_managers[mod_id].search_my_tags();
-            }
-        });
         resize_window();
         $('a[data-toggle="tab"]').on('shown.bs.tab', function (event) {
             // $(event.currentTarget).attr("href")
@@ -211,22 +200,41 @@ function selector_double_click(event) {
     manager[manager.double_click_func](event)
 }
 
-function tag_button_clicked(event) {
-    let but = $(event.target);
-    if (but.hasClass('tag-button-delete')) return;  // We don't want a click on the delete to bubble up.
+function tag_button_clicked(event) {   // tactic_working
+    rawbut = event.target;
+    let but;
     let manager = resource_managers[get_current_module_id()];
+    if (rawbut.tagName.toLowerCase() != "button") {
+        if (rawbut.tagName.toLowerCase() != "svg") {
+            rawbut = $(rawbut).closest("svg")[0]
+        }
+        let svg_classes = rawbut.className.animVal.split(" ");
+        if (svg_classes.includes("tag-expander")) {
+            but = $(rawbut).closest(".tag-button");
+            if (but.hasClass("has_children")) {
+                manager.tag_button_list.toggle_shrink_state(but)
+            }
+            return
+        }
+        else {
+            rawbut = $(rawbut).closest(".tag-button")[0]
+        }
+    }
+    but = $(rawbut);
+    if (but.hasClass('tag-button-delete')) return;  // We don't want a click on the delete to bubble up.
     if (manager.tag_button_list.tag_button_mode == "edit") {
-        let tag = but.text();
-        manager.rename_tag(tag)
+        let tag = but[0].dataset.fulltag;
+        if (tag != "__all__") {
+            manager.rename_tag(tag)
+        }
     }
     else {
         if (but.hasClass("active")) {
-            but.removeClass("active")
+            manager.tag_button_list.set_active_tag("__all__");
         }
         else {
-            but.addClass("active")
+            manager.tag_button_list.set_active_button(but);
         }
-        manager.search_active_tag_buttons();
     }
 }
 

@@ -1710,6 +1710,8 @@ class mainWindow(object):
     def _set_cell_content(self, doc_name, the_id, column_header, new_content, cellchange=True):
         doc = self.doc_dict[doc_name]
         the_row = doc.data_rows[str(the_id)]
+        if column_header not in the_row:
+            the_row[column_header] = None
         old_content = the_row[column_header]
         if new_content != old_content:
             data = {"doc_name": doc_name, "id": the_id, "column_header": column_header,
