@@ -37,13 +37,7 @@ class TagButtonList {
     create_tag_buttons(url_string) {
         const self = this;
         $.getJSON(`${$SCRIPT_ROOT}/${url_string}/${this.manager.res_type}`, function (data) {
-            let visible_tags = [];
-            for (let the_tag of data.tag_list) {
-                if (the_tag.search("/") == -1) {
-                    visible_tags.push(the_tag)
-                }
-            }
-            self.create_button_html(data.tag_list, visible_tags);
+            self.create_button_html(data.tag_list);
         })
     }
 
@@ -73,58 +67,41 @@ class TagButtonList {
         }
     }
 
-    set_button_state_from_taglist (tag_list) {
-        const all_tag_buttons = this.get_all_tag_buttons();
-        $.each(all_tag_buttons, function (index, but) {
-            if (tag_list.includes(but.dataset.fulltag)) {
-                $(but).addClass("active")
-            }
-            else {
-                $(but).removeClass("active")
-            }
-        });
-        this.show_hide_subtag_buttons_from_actives();
-    }
-
     refresh_from_selectors() {
         let tag_list = this.get_all_selector_tags();
         this.refresh_given_taglist(tag_list)
     }
 
-    refresh_given_taglist(tag_list) {
-        let active_tag_buttons = this.get_active_tags();
-        let visible_tags = this.get_currently_visible_tags();
-        visible_tags = visible_tags.concat(active_tag_buttons);
-        visible_tags = remove_duplicates(visible_tags);
-        this.create_button_html(tag_list, visible_tags);
-        this.set_button_state_from_taglist(active_tag_buttons);
+    set_expanded_folders(expanded_folder_tags) {
+        for (let tag of expanded_folder_tags) {
+            let but = this.get_button_from_tag(tag);
+            if (but.length != 0) {
+                but.removeClass("shrunk");
+                but.addClass("expanded");
+            }
+        }
+        this.compute_visibility()
+    }
+
+    refresh_given_taglist(tag_list) {  // tactic_working
+        let active_tag = this.get_active_tag();
+        let expanded_folder_tags = this.get_expanded_folder_tags();
+        this.create_button_html(tag_list);
+        this.set_active_tag(active_tag);
+        this.set_expanded_folders(expanded_folder_tags);
         this.set_edit_button_mode(this.tag_button_mode);
     }
 
-    get_active_tags() {
-        let all_tag_buttons = this.get_all_tag_buttons();
-        let active_tag_buttons = [];
-        $.each(all_tag_buttons, (index, but) => {
-            if ($(but).hasClass("active")) {
-                active_tag_buttons.push(but.dataset.fulltag)
-            }
-        });
-        return active_tag_buttons
+    get_active_button () {
+        return this.get_module_element(".tag-button.active");
     }
 
-    get_currently_visible_tags() {
-        const all_rows = this.manager.get_all_selector_buttons();
-        const visible_rows = all_rows.filter(function() { return $(this).css("display") == "table-row" });
-        let self = this;
-        let visible_tags = [];
-        $.each(visible_rows, function (index, row_element) {
-            const cells = $(row_element).children();
-            const tag_text = $(cells.slice(-1)[0]).text().toLowerCase();
-            const taglist = tag_text.split(" ");
-            visible_tags = visible_tags.concat(taglist);
-        });
-        visible_tags = remove_duplicates(visible_tags);
-        return visible_tags
+    get_active_tag() {
+        const active_tag_button = this.get_active_button();
+        if (active_tag_button.length == 0) {
+            return "__all__"
+        }
+        return active_tag_button[0].dataset.fulltag
     }
 
     get_all_selector_tags() {
@@ -144,60 +121,152 @@ class TagButtonList {
         return all_tags.sort()
     }
 
-    get_all_parent_tags(tag_list){
-        var ptags = [];
-        for (let the_tag of tag_list){
-            ptags = ptags.concat(this.get_parent_tags(the_tag))
-        }
-        ptags = remove_duplicates(ptags);
-        return ptags
-    }
-
     tag_depth(the_tag) {
         return (the_tag.match(/\//g) || []).length;
     }
 
-    create_button_html(tag_list, visible_buttons) {
-        let tag_button_html = `<div class="btn-group-vertical btn-group-sm" role="group">`;
-        let parent_tags = this.get_all_parent_tags(tag_list);
-        let indent_amount = 12;
-        let active_tag_buttons = this.get_active_tags();
-        for (let ptag of parent_tags) {
-            if (!tag_list.includes(ptag)) {
-                tag_list.push(ptag);
-                if (active_tag_buttons.length == 0) {
-                    if (!this.has_slash(ptag)) {
-                        visible_buttons.push(ptag)
-                    }
-                }
-                else {
-                    let pparent = this.get_immediate_tag_parent(ptag);
-                    if (active_tag_buttons.includes(pparent)) {
-                        visible_buttons.push(ptag)
-                    }
-                }
+    get_expanded_folder_buttons() {
+        return this.get_module_element(".tag-button-list .has_children.expanded")
+    }
+
+    get_expanded_folder_tags() {
+        var exp_folders = this.get_expanded_folder_buttons();
+        var exp_tags = [];
+        $.each(exp_folders, function (index, but) {
+            exp_tags.push(but.dataset.fulltag)
+        });
+        return exp_tags
+    }
+
+    subtag_visible(the_tag, expanded_folders) {
+        let all_parents = this.get_parent_tags(the_tag);
+        for (let parent of all_parents) {
+            if (!expanded_folders.includes(parent)) {
+                return false
             }
         }
+        return true
+    }
 
+    compute_visibility() {
+        let expanded_folders = this.get_expanded_folder_tags();
+        const subtag_buttons = this.get_all_subtag_buttons();
+        var self = this;
+        subtag_buttons.removeClass("hideme");
+        subtag_buttons.removeClass("showme");
+        $.each(subtag_buttons, function (index, but) {
+            const tag_text = but.dataset.fulltag;
+            if (self.subtag_visible(tag_text, expanded_folders)) {
+                if ($(but).css("display") == "none") {
+                    $(but).addClass("showme")
+                }
+            }
+            else {
+                if ($(but).css("display") != "none") {
+                    $(but).addClass("hideme")
+                }
+            }
+        });
+        this.show_buttons(subtag_buttons.filter(".showme"));
+        this.hide_buttons(subtag_buttons.filter(".hideme"));
+        this.fix_tag_button_width();
+    }
+
+    toggle_shrink_state(but) {
+        but.toggleClass("shrunk expanded");
+        this.compute_visibility();
+    }
+
+    tagMatch(search_tag, item_tags) {
+        let tags_to_match = item_tags.concat(this.get_all_parent_tags(item_tags));
+        return tags_to_match.includes(search_tag)
+    }
+
+    search_given_tag(the_tag) {
+        const all_rows = this.manager.get_all_selector_buttons();
+        if (the_tag == "__all__") {
+            this.manager.show_table_rows(all_rows);
+        }
+        else {
+            let self = this;
+            $.each(all_rows, function (index, row_element) {
+                const cells = $(row_element).children();
+                const res_name = row_element.getAttribute("value").toLowerCase();
+                const tag_text = $(cells.slice(-1)[0]).text().toLowerCase();
+                const taglist = tag_text.split(" ");
+                if (!self.tagMatch(the_tag, taglist)) {   // tactic_working
+                    $(row_element).addClass("hideme");
+                    $(row_element).removeClass("showme");
+                }
+                else {
+                    $(row_element).addClass("showme");
+                    $(row_element).removeClass("hideme");
+                }
+            });
+            this.manager.hide_table_rows(all_rows.filter(".hideme"));
+            this.manager.show_table_rows(all_rows.filter(".showme"));
+        }
+    }
+
+    search_active_tag() {
+        const active_tag = this.get_active_tag();
+        this.search_given_tag(active_tag)
+    }
+
+    set_active_button(but) {
+        this.get_all_tag_buttons().removeClass("active");
+        if (but != null) {
+            but.addClass("active");
+        }
+        this.search_active_tag();
+        if (!this.manager.active_selector_is_visible()){
+            this.manager.select_first_row()
+        }
+    }
+
+    get_button_from_tag(tag) {
+        return this.get_module_element(`[data-fulltag='${tag}']`);
+    }
+
+    set_active_tag(tag) {
+        let the_but = this.get_button_from_tag(tag);
+        if (the_but.length == 0) {
+            this.set_active_button(null)
+        }
+        else {
+            this.set_active_button(the_but)
+        }
+    }
+
+    create_button_html(tag_list) {
+        let tag_button_html = `<div class="btn-group-vertical btn-group-sm" role="group">`;
+        let indent_amount = 12;
+        let parent_tags = this.get_all_parent_tags(tag_list);
+        tag_list = tag_list.concat(parent_tags);
+        tag_list = remove_duplicates(tag_list);
         tag_list.sort();
+
+        var prefix = `<span style="margin-left:${indent_amount}px"></span></span><span class="tag-icon-tag fal fa-tags"></span>`;
+        var new_html = `<button type="button" data-fulltag="__all__" class="btn btn-outline-secondary tag-button active root-tag ${hcclass} showme" style="display: block" value="${this.res_type}">${prefix}all</span></button>`;
+        tag_button_html = tag_button_html + new_html + "\n";
+
         for (let tag of tag_list) {
-            let new_html;
             let tag_base = this.get_tag_base(tag);
-            var prefix;
             var hcclass;
+
             let mleft = indent_amount * this.tag_depth(tag);
             let has_children = parent_tags.includes(tag);
 
             if (has_children) {
-                hcclass = "has_children";
-                prefix = `<span class="tag-expander fas fa-caret-right" style="margin-left:${mleft}px"></span><span class="tag-expander fas fa-caret-down" style="display:none; margin-left:${mleft}px"></span><span class="tag-icon fal fa-folder"></span>`
+                hcclass = "has_children shrunk";
+                prefix = `<span class="tag-expander fal fa-caret-right" style="margin-left:${mleft}px"></span><span class="tag-expander fal fa-caret-down" style="display:none; margin-left:${mleft}px"></span><span class="tag-icon-folder fal fa-folder"></span>`
             }
             else {
                 hcclass = "no_children";
-                prefix = `<span style="margin-left:${mleft + indent_amount}px"></span></span><span class="tag-icon fal fa-hashtag"></span>`
+                prefix = `<span style="margin-left:${mleft + indent_amount}px"></span></span><span class="tag-icon-tag fal fa-tag"></span>`
             }
-            if ((visible_buttons == "all") || (visible_buttons.includes(tag))) {
-                new_html = `<button type="button" data-fulltag="${tag}" class="btn btn-outline-secondary tag-button ${hcclass} showme" style="display: block" value="${this.res_type}">${prefix}${tag_base}<span class="tag-button-delete"></span></button>`
+            if (!this.has_slash(tag)) {
+                new_html = `<button type="button" data-fulltag="${tag}" class="btn btn-outline-secondary tag-button root-tag ${hcclass} showme" style="display: block" value="${this.res_type}">${prefix}${tag_base}<span class="tag-button-delete"></span></button>`
             }
             else {
                 new_html = `<button type="button" data-fulltag="${tag}" class="btn btn-outline-secondary tag-button ${hcclass} hideme" style="display: none" value="${this.res_type}">${prefix}${tag_base}<span class="tag-button-delete"></span></button>`
@@ -234,11 +303,6 @@ class TagButtonList {
         return $(subtag_buttons)
     }
 
-    get_immediate_tag_parent(the_tag) {
-        let re = /\/\w*$/;
-        return the_tag.replace(re, "")
-    }
-
     get_tag_base(the_tag) {
         if (!this.has_slash(the_tag)){
             return the_tag
@@ -258,6 +322,15 @@ class TagButtonList {
         return expanded_tags
     }
 
+    get_all_parent_tags(tag_list) {
+        var ptags = [];
+        for (let the_tag of tag_list){
+            ptags = ptags.concat(this.get_parent_tags(the_tag))
+        }
+        ptags = remove_duplicates(ptags);
+        return ptags
+    }
+
     get_parent_tags(the_tag) {
         if (the_tag.search("/") == -1) {
             return []
@@ -270,16 +343,23 @@ class TagButtonList {
         }
     }
 
-    deactivate_subtags(the_tag) {
-        let subtag_buttons = this.get_all_subtag_buttons();
-        let self = this;
-        $.each(subtag_buttons, function (index, but) {
-             let but_tag = but.dataset.fulltag;
-             let ptags = self.get_parent_tags(but_tag);
-             if (ptags.includes(the_tag)) {
-                 $(but).removeClass("active");
-             }
-         })
+    find_matching_tags(tag_list) {
+        const all_tag_buttons = this.get_all_tag_buttons();
+        var self = this;
+        var matching_tags = [];
+        $.each(all_tag_buttons, function (index, but) {
+            let but_tag = but.dataset.fulltag;
+            let tag_base = self.get_tag_base(but_tag);
+            if ((tag_list.includes(but_tag) || tag_list.includes(tag_base))) {
+                matching_tags.push(but_tag)
+            }
+        });
+        return matching_tags
+    }
+
+    get_immediate_tag_parent(the_tag) {
+        let re = /\/\w*$/;
+        return the_tag.replace(re, "")
     }
 
     is_subtag_of(the_tag, active_tags) {
@@ -290,84 +370,14 @@ class TagButtonList {
         return active_tags.includes(the_parent)
     }
 
-    show_hide_subtag_buttons_from_actives() {
-        const active_tags = this.get_active_tags();
-        const subtag_buttons = this.get_all_subtag_buttons();
-        var self = this;
-        $.each(subtag_buttons, function (index, but) {
-            const tag_text = but.dataset.fulltag;
-            if (self.is_subtag_of(tag_text, active_tags)) {
-                if ($(but).css("display") == "none") {
-                    $(but).addClass("showme")
-                }
-            }
-            else {
-                if ($(but).css("display") != "none") {
-                    $(but).addClass("hideme")
-                }
-            }
-        });
-        this.show_buttons(subtag_buttons.filter(".showme"));
-        this.fix_tag_button_width();
-        this.hide_buttons(subtag_buttons.filter(".hideme"));
-    }
-
-    show_hide_buttons_given_taglist(searchtags) {
-        const all_tag_buttons = this.get_all_tag_buttons();
-        all_tag_buttons.removeClass("hideme");
-        all_tag_buttons.removeClass("showme");
-        const active_tags = this.get_active_tags();
-        self = this;
-
-        if (searchtags.empty()) {
-            $.each(all_tag_buttons, function (index, but) {
-                const tag_text = but.dataset.fulltag;
-                if (!self.has_slash(tag_text)) {
-                    if ($(but).css("display") == "none") {
-                        $(but).addClass("showme")
-                    }
-                }
-                else {
-                    if ($(but).css("display") != "none") {
-                        $(but).addClass("hideme")
-                    }
-                }
-            })
-        }
-        else {
-            $.each(all_tag_buttons, function (index, but) {
-                const tag_text = but.dataset.fulltag;
-                if (searchtags.includes(tag_text) || self.is_subtag_of(tag_text, active_tags)) {
-                    if ($(but).css("display") == "none") {
-                        $(but).addClass("showme")
-                    }
-                }
-                else {
-                    if ($(but).css("display") != "none") {
-                        $(but).addClass("hideme")
-                    }
-                }
-            });
-        }
-
-        this.show_buttons(all_tag_buttons.filter(".showme"));
-        this.hide_buttons(all_tag_buttons.filter(".hideme"));
-        this.show_hide_subtag_buttons_from_actives();
-        this.fix_tag_button_width();
-    }
-
     show_buttons(the_tag_buttons) {
-        the_tag_buttons.slideDown();
+        the_tag_buttons.show("blind");
     }
 
     hide_buttons(the_tag_buttons) {
-        the_tag_buttons.slideUp();
+        the_tag_buttons.hide("blind");
     }
 
-    unfilter_all() {
-        this.deactivate_all_buttons();
-        this.show_all_buttons();
-    }
 
     show_all_buttons () {
         const all_tag_buttons = this.get_all_tag_buttons();
@@ -388,8 +398,7 @@ class TagButtonList {
     }
 
     deactivate_all_buttons () {
-        const all_tag_buttons = this.get_all_tag_buttons();
-        all_tag_buttons.removeClass("active");
+        this.set_active_button(null)
     }
 
 }
@@ -578,23 +587,18 @@ class UserManagerResourceManager extends ResourceManager{
             .catch(doFlash)
     }
 
-    tagMatch (search_tags, item_tags) {
-        if (search_tags.empty()) {
-            return true
-        }
-        let expanded_item_tags = this.tag_button_list.expand_tags(item_tags);  // tactic_working
-        for (let item of search_tags) {
-            if (!expanded_item_tags.includes(item)) {
-                return false
+    match_any_tag (search_tags, item_tags) {
+        for (let tag of item_tags) {
+            if (search_tags.includes(tag)) {
+                return true
             }
         }
-        return true
+        return false
     }
 
-    search_my_resource (){
+    search_my_resource (){  // tactic_working
         const txt = this.get_search_field()[0].value.toLowerCase();
-
-        this.tag_button_list.deactivate_all_buttons();
+        this.tag_button_list.get_all_tag_buttons().removeClass("active");
         let searchtags = [];
         if (txt == "") {
             searchtags = []
@@ -602,15 +606,43 @@ class UserManagerResourceManager extends ResourceManager{
         else {
             searchtags = txt.split(" ");
         }
-        this.search_given_tags(searchtags, txt);
+        let matching_tags = this.tag_button_list.find_matching_tags(searchtags);
+
+        const all_rows = this.get_all_selector_buttons();
+        if (matching_tags.empty() && (txt == "")) {
+            this.show_table_rows(all_rows);
+        }
+        else {
+            let self = this;
+            $.each(all_rows, function (index, row_element) {
+                const cells = $(row_element).children();
+                const res_name = row_element.getAttribute("value").toLowerCase();
+                const tag_text = $(cells.slice(-1)[0]).text().toLowerCase();
+                const taglist = tag_text.split(" ");
+
+                if ((res_name.search(txt) != -1) || (self.match_any_tag(matching_tags, taglist))) {   // tactic_working
+                    $(row_element).addClass("showme");
+                    $(row_element).removeClass("hideme");
+                }
+                else {
+                    $(row_element).addClass("hideme");
+                    $(row_element).removeClass("showme");
+                }
+            });
+            this.hide_table_rows(all_rows.filter(".hideme"));
+            this.show_table_rows(all_rows.filter(".showme"));
+        }
+        if (!this.active_selector_is_visible()){
+            this.select_first_row()
+        }
     }
 
     unfilter_me () {
-        const all_rows = this.get_all_selector_buttons();
-        this.show_table_rows(all_rows);
-
-        this.tag_button_list.deactivate_all_buttons();
-        this.tag_button_list.show_all_buttons();
+        // const all_rows = this.get_all_selector_buttons();
+        // this.show_table_rows(all_rows);
+        //
+        // this.tag_button_list.deactivate_all_buttons();
+        this.tag_button_list.set_active_tag("__all__")
         this.get_search_field().val("");
     }
 
@@ -622,62 +654,7 @@ class UserManagerResourceManager extends ResourceManager{
         the_rows.css("display", "none")
     }
 
-    search_given_tags (searchtags, txt="__NONE__") {
-        const all_rows = this.get_all_selector_buttons();
-        let self = this;
-        // let current_tags = [];
-        $.each(all_rows, function (index, row_element) {
-            const cells = $(row_element).children();
-            const res_name = row_element.getAttribute("value").toLowerCase();
-            const tag_text = $(cells.slice(-1)[0]).text().toLowerCase();
-            const taglist = tag_text.split(" ");
-            if ((res_name.search(txt) == -1) && (!self.tagMatch(searchtags, taglist))) {
-                $(row_element).addClass("hideme");
-                $(row_element).removeClass("showme");
-            }
-            else {
-                $(row_element).addClass("showme");
-                $(row_element).removeClass("hideme");
-                // current_tags = current_tags.concat(taglist);
-            }
-        });
-        this.hide_table_rows(all_rows.filter(".hideme"));
-        this.show_table_rows(all_rows.filter(".showme"));
-        // current_tags = remove_duplicates(current_tags);
-
-        let parent_tags = this.tag_button_list.get_all_parent_tags(current_tags);
-        for (let ptag of parent_tags) {
-            if (!current_tags.includes(ptag)) {
-                current_tags.push(ptag);
-            }
-        }
-
-        var active_tags = this.tag_button_list.get_active_tags();
-        var tags_to_show = [];
-        for (let the_tag of current_tags) {
-            if ((the_tag.search("/") == -1) || (this.tag_button_list.is_subtag_of(the_tag, active_tags))) {
-                tags_to_show.push(the_tag)
-            }
-        }
-        for (let the_tag of active_tags) {
-            if (!tags_to_show.includes(the_tag)) {
-                tags_to_show.push(the_tag)
-            }
-        }
-        this.tag_button_list.show_hide_buttons_given_taglist(tags_to_show);
-        if (!this.active_selector_is_visible()){
-            this.select_first_row()
-        }
-    }
-
     // tag button related
-
-    unfilter_tags () {
-        this.tag_button_list.unfilter_all();
-        this.clear_search_tag_list();
-        const all_rows = this.get_all_selector_buttons();
-        this.show_table_rows(all_rows);
-    }
 
     update_aux_content() {
         this.tag_button_list.create_tag_buttons(this.update_tag_view);
@@ -803,11 +780,6 @@ class UserManagerResourceManager extends ResourceManager{
         function RenameTag(new_tag) {
             self.DoTagRename(old_tag, new_tag)
         }
-    }
-
-    search_active_tag_buttons() {
-        let active_tag_buttons = this.tag_button_list.get_active_tags();
-        this.search_given_tags(active_tag_buttons);  // tactic_working
     }
 
     add_func(event) {

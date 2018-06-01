@@ -226,6 +226,16 @@ a[role="tab"] {
   border: 0px !important;
   font-size: 13px !important; }
 
+.tag-button.expanded .fa-caret-down {
+  display: inline-block !important; }
+.tag-button.expanded .fa-caret-right {
+  display: none !important; }
+
+.tag-button.shrunk .fa-caret-down {
+  display: none !important; }
+.tag-button.shrunk .fa-caret-right {
+  display: inline-block !important; }
+
 .tag-button.active, .tag-button:hover {
   font-weight: bolder !important;
   color: #9B79CC !important;
@@ -237,11 +247,15 @@ a[role="tab"] {
   box-shadow: none !important; }
 
 .tag-expander {
-  font-size: 16px;
+  font-size: 20px;
   margin-right: 6px; }
 
-.tag-icon {
+.tag-icon-folder {
   font-size: 14px;
+  margin-right: 6px; }
+
+.tag-icon-tag {
+  font-size: 13px;
   margin-right: 6px; }
 
 .tag-button-delete:before {
