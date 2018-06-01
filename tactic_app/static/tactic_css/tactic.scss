@@ -370,6 +370,25 @@ a[role="tab"] {
 
 }
 
+.tag-button.expanded {
+    .fa-caret-down {
+        display: inline-block !important;
+    }
+    .fa-caret-right {
+        display: none !important;
+    }
+}
+
+.tag-button.shrunk {
+    .fa-caret-down {
+        display: none !important;
+    }
+    .fa-caret-right {
+        display: inline-block !important;
+    }
+}
+
+
 .tag-button.active, .tag-button:hover {
     font-weight: bolder !important;
     color: $selector-background-color !important;
@@ -383,12 +402,17 @@ a[role="tab"] {
 }
 
 .tag-expander {
-    font-size: 16px;
+    font-size: 20px;
     margin-right: 6px;
 }
 
-.tag-icon {
+.tag-icon-folder {
     font-size: 14px;
+    margin-right: 6px;
+}
+
+.tag-icon-tag {
+    font-size: 13px;
     margin-right: 6px;
 }
 

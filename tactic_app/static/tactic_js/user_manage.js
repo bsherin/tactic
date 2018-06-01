@@ -200,39 +200,41 @@ function selector_double_click(event) {
     manager[manager.double_click_func](event)
 }
 
-function tag_button_clicked(event) {
+function tag_button_clicked(event) {   // tactic_working
     rawbut = event.target;
     let but;
-    if (rawbut.tagName.toLowerCase() != "button") {
-        but = $(rawbut).closest(".tag-button")
-    }
-    else {
-        but = $(rawbut)
-    }
-    if (but.hasClass('tag-button-delete')) return;  // We don't want a click on the delete to bubble up.
     let manager = resource_managers[get_current_module_id()];
+    if (rawbut.tagName.toLowerCase() != "button") {
+        if (rawbut.tagName.toLowerCase() != "svg") {
+            rawbut = $(rawbut).closest("svg")[0]
+        }
+        let svg_classes = rawbut.className.animVal.split(" ");
+        if (svg_classes.includes("tag-expander")) {
+            but = $(rawbut).closest(".tag-button");
+            if (but.hasClass("has_children")) {
+                manager.tag_button_list.toggle_shrink_state(but)
+            }
+            return
+        }
+        else {
+            rawbut = $(rawbut).closest(".tag-button")[0]
+        }
+    }
+    but = $(rawbut);
+    if (but.hasClass('tag-button-delete')) return;  // We don't want a click on the delete to bubble up.
     if (manager.tag_button_list.tag_button_mode == "edit") {
         let tag = but[0].dataset.fulltag;
-        manager.rename_tag(tag)
+        if (tag != "__all__") {
+            manager.rename_tag(tag)
+        }
     }
     else {
         if (but.hasClass("active")) {
-            but.removeClass("active");
-            let tag = but.text();
-            manager.tag_button_list.deactivate_subtags(tag);
-            if (but.hasClass("has_children")) {
-                $(but.find(".fa-caret-down")[0]).css("display", "none");
-                $(but.find(".fa-caret-right")[0]).css("display", "inline-block")
-            }
+            manager.tag_button_list.set_active_tag("__all__");
         }
         else {
-            but.addClass("active");
-            if (but.hasClass("has_children")) {
-                $(but.find(".fa-caret-right")[0]).css("display", "none");
-                $(but.find(".fa-caret-down")[0]).css("display", "inline-block")
-            }
+            manager.tag_button_list.set_active_button(but);
         }
-        manager.search_active_tag_buttons();  // tactic_working
     }
 }
 
