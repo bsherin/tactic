@@ -218,14 +218,45 @@ a[role="tab"] {
 .tag-button {
   padding: 5px 10px !important;
   color: #46799b;
-  background: #e0eaf1;
   white-space: nowrap;
   overflow: hidden;
   cursor: pointer;
   border-radius: 2px 0 0 2px !important;
   text-align: left;
-  border: 1px solid white;
-  font-size: 12px !important; }
+  border: 0px !important;
+  font-size: 13px !important; }
+
+.tag-button.expanded .fa-caret-down {
+  display: inline-block !important; }
+.tag-button.expanded .fa-caret-right {
+  display: none !important; }
+
+.tag-button.shrunk .fa-caret-down {
+  display: none !important; }
+.tag-button.shrunk .fa-caret-right {
+  display: inline-block !important; }
+
+.tag-button.active, .tag-button:hover {
+  font-weight: bolder !important;
+  color: #9B79CC !important;
+  background-color: white !important;
+  border-width: 0 !important; }
+
+.tag-button:focus {
+  border-width: 0 !important;
+  box-shadow: none !important; }
+
+.tag-expander {
+  font-size: 20px;
+  margin-right: 6px; }
+
+.tag-icon-folder {
+  font-size: 14px;
+  margin-right: 6px; }
+
+.tag-icon-tag {
+  font-size: 13px;
+  margin-right: 6px; }
 
 .tag-button-delete:before {
   color: #8ba7ba;

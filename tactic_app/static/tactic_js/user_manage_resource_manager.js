@@ -5,7 +5,8 @@
 class TagButtonList {
     constructor (manager) {
         this.manager = manager;
-        this.tag_button_mode = "select"
+        this.tag_button_mode = "select";
+        this.res_type = this.manager.res_type;
     }
 
     get_module_element(selector) {
@@ -36,7 +37,7 @@ class TagButtonList {
     create_tag_buttons(url_string) {
         const self = this;
         $.getJSON(`${$SCRIPT_ROOT}/${url_string}/${this.manager.res_type}`, function (data) {
-            self.create_button_html(data.tag_list, "all");
+            self.create_button_html(data.tag_list);
         })
     }
 
@@ -66,55 +67,41 @@ class TagButtonList {
         }
     }
 
-    set_button_state_from_taglist (tag_list) {
-        const all_tag_buttons = this.get_all_tag_buttons();
-        $.each(all_tag_buttons, function (index, but) {
-            if (tag_list.includes(but.innerText)) {
-                $(but).addClass("active")
-            }
-            else {
-                $(but).removeClass("active")
-            }
-        })
-    }
-
     refresh_from_selectors() {
         let tag_list = this.get_all_selector_tags();
         this.refresh_given_taglist(tag_list)
     }
 
-    refresh_given_taglist(tag_list) {
-        let active_tag_buttons = this.get_active_tag_buttons();
-        let visible_tags = this.get_currently_visible_tags();
-        this.create_button_html(tag_list, visible_tags);
-        this.set_button_state_from_taglist(active_tag_buttons);
+    set_expanded_folders(expanded_folder_tags) {
+        for (let tag of expanded_folder_tags) {
+            let but = this.get_button_from_tag(tag);
+            if (but.length != 0) {
+                but.removeClass("shrunk");
+                but.addClass("expanded");
+            }
+        }
+        this.compute_visibility()
+    }
+
+    refresh_given_taglist(tag_list) {  // tactic_working
+        let active_tag = this.get_active_tag();
+        let expanded_folder_tags = this.get_expanded_folder_tags();
+        this.create_button_html(tag_list);
+        this.set_active_tag(active_tag);
+        this.set_expanded_folders(expanded_folder_tags);
         this.set_edit_button_mode(this.tag_button_mode);
     }
 
-    get_active_tag_buttons () {
-        let all_tag_buttons = this.get_all_tag_buttons();
-        let active_tag_buttons = [];
-        $.each(all_tag_buttons, (index, but) => {
-            if ($(but).hasClass("active")) {
-                active_tag_buttons.push($(but).text())
-            }
-        });
-        return active_tag_buttons
+    get_active_button () {
+        return this.get_module_element(".tag-button.active");
     }
 
-    get_currently_visible_tags() {
-        const all_rows = this.manager.get_all_selector_buttons();
-        const visible_rows = all_rows.filter(function() { return $(this).css("display") == "table-row" });
-        let self = this;
-        let visible_tags = [];
-        $.each(visible_rows, function (index, row_element) {
-            const cells = $(row_element).children();
-            const tag_text = $(cells.slice(-1)[0]).text().toLowerCase();
-            const taglist = tag_text.split(" ");
-            visible_tags = visible_tags.concat(taglist);
-        });
-        visible_tags = remove_duplicates(visible_tags);
-        return visible_tags
+    get_active_tag() {
+        const active_tag_button = this.get_active_button();
+        if (active_tag_button.length == 0) {
+            return "__all__"
+        }
+        return active_tag_button[0].dataset.fulltag
     }
 
     get_all_selector_tags() {
@@ -134,15 +121,155 @@ class TagButtonList {
         return all_tags.sort()
     }
 
-    create_button_html(tag_list, visible_buttons) {
-        let tag_button_html = `<div class="btn-group-vertical btn-group-sm" role="group">`;
-        for (let tag of tag_list) {
-            let new_html;
-            if ((visible_buttons == "all") || (visible_buttons.includes(tag))) {
-                new_html = `<button type="button" class="btn btn-outline-secondary tag-button showme" style="display: block" value="${this.res_type}">${tag}<span class="tag-button-delete"></span></button>`
+    tag_depth(the_tag) {
+        return (the_tag.match(/\//g) || []).length;
+    }
+
+    get_expanded_folder_buttons() {
+        return this.get_module_element(".tag-button-list .has_children.expanded")
+    }
+
+    get_expanded_folder_tags() {
+        var exp_folders = this.get_expanded_folder_buttons();
+        var exp_tags = [];
+        $.each(exp_folders, function (index, but) {
+            exp_tags.push(but.dataset.fulltag)
+        });
+        return exp_tags
+    }
+
+    subtag_visible(the_tag, expanded_folders) {
+        let all_parents = this.get_parent_tags(the_tag);
+        for (let parent of all_parents) {
+            if (!expanded_folders.includes(parent)) {
+                return false
+            }
+        }
+        return true
+    }
+
+    compute_visibility() {
+        let expanded_folders = this.get_expanded_folder_tags();
+        const subtag_buttons = this.get_all_subtag_buttons();
+        var self = this;
+        subtag_buttons.removeClass("hideme");
+        subtag_buttons.removeClass("showme");
+        $.each(subtag_buttons, function (index, but) {
+            const tag_text = but.dataset.fulltag;
+            if (self.subtag_visible(tag_text, expanded_folders)) {
+                if ($(but).css("display") == "none") {
+                    $(but).addClass("showme")
+                }
             }
             else {
-                new_html = `<button type="button" class="btn btn-outline-secondarytag-button hideme" style="display: none" value="${this.res_type}">${tag}<span class="tag-button-delete"></span></button>`
+                if ($(but).css("display") != "none") {
+                    $(but).addClass("hideme")
+                }
+            }
+        });
+        this.show_buttons(subtag_buttons.filter(".showme"));
+        this.hide_buttons(subtag_buttons.filter(".hideme"));
+        this.fix_tag_button_width();
+    }
+
+    toggle_shrink_state(but) {
+        but.toggleClass("shrunk expanded");
+        this.compute_visibility();
+    }
+
+    tagMatch(search_tag, item_tags) {
+        let tags_to_match = item_tags.concat(this.get_all_parent_tags(item_tags));
+        return tags_to_match.includes(search_tag)
+    }
+
+    search_given_tag(the_tag) {
+        const all_rows = this.manager.get_all_selector_buttons();
+        if (the_tag == "__all__") {
+            this.manager.show_table_rows(all_rows);
+        }
+        else {
+            let self = this;
+            $.each(all_rows, function (index, row_element) {
+                const cells = $(row_element).children();
+                const res_name = row_element.getAttribute("value").toLowerCase();
+                const tag_text = $(cells.slice(-1)[0]).text().toLowerCase();
+                const taglist = tag_text.split(" ");
+                if (!self.tagMatch(the_tag, taglist)) {   // tactic_working
+                    $(row_element).addClass("hideme");
+                    $(row_element).removeClass("showme");
+                }
+                else {
+                    $(row_element).addClass("showme");
+                    $(row_element).removeClass("hideme");
+                }
+            });
+            this.manager.hide_table_rows(all_rows.filter(".hideme"));
+            this.manager.show_table_rows(all_rows.filter(".showme"));
+        }
+    }
+
+    search_active_tag() {
+        const active_tag = this.get_active_tag();
+        this.search_given_tag(active_tag)
+    }
+
+    set_active_button(but) {
+        this.get_all_tag_buttons().removeClass("active");
+        if (but != null) {
+            but.addClass("active");
+        }
+        this.search_active_tag();
+        if (!this.manager.active_selector_is_visible()){
+            this.manager.select_first_row()
+        }
+    }
+
+    get_button_from_tag(tag) {
+        return this.get_module_element(`[data-fulltag='${tag}']`);
+    }
+
+    set_active_tag(tag) {
+        let the_but = this.get_button_from_tag(tag);
+        if (the_but.length == 0) {
+            this.set_active_button(null)
+        }
+        else {
+            this.set_active_button(the_but)
+        }
+    }
+
+    create_button_html(tag_list) {
+        let tag_button_html = `<div class="btn-group-vertical btn-group-sm" role="group">`;
+        let indent_amount = 12;
+        let parent_tags = this.get_all_parent_tags(tag_list);
+        tag_list = tag_list.concat(parent_tags);
+        tag_list = remove_duplicates(tag_list);
+        tag_list.sort();
+
+        var prefix = `<span style="margin-left:${indent_amount}px"></span></span><span class="tag-icon-tag fal fa-tags"></span>`;
+        var new_html = `<button type="button" data-fulltag="__all__" class="btn btn-outline-secondary tag-button active root-tag ${hcclass} showme" style="display: block" value="${this.res_type}">${prefix}all</span></button>`;
+        tag_button_html = tag_button_html + new_html + "\n";
+
+        for (let tag of tag_list) {
+            let tag_base = this.get_tag_base(tag);
+            var hcclass;
+
+            let mleft = indent_amount * this.tag_depth(tag);
+            let has_children = parent_tags.includes(tag);
+
+            if (has_children) {
+                hcclass = "has_children shrunk";
+                prefix = `<span class="tag-expander fal fa-caret-right" style="margin-left:${mleft}px"></span><span class="tag-expander fal fa-caret-down" style="display:none; margin-left:${mleft}px"></span><span class="tag-icon-folder fal fa-folder"></span>`
+            }
+            else {
+                hcclass = "no_children";
+                prefix = `<span style="margin-left:${mleft + indent_amount}px"></span></span><span class="tag-icon-tag fal fa-tag"></span>`
+            }
+            if (!this.has_slash(tag)) {
+                new_html = `<button type="button" data-fulltag="${tag}" class="btn btn-outline-secondary tag-button root-tag ${hcclass} showme" style="display: block" value="${this.res_type}">${prefix}${tag_base}<span class="tag-button-delete"></span></button>`
+            }
+            else {
+                new_html = `<button type="button" data-fulltag="${tag}" class="btn btn-outline-secondary tag-button ${hcclass} hideme" style="display: none" value="${this.res_type}">${prefix}${tag_base}<span class="tag-button-delete"></span></button>`
             }
             tag_button_html = tag_button_html + new_html + "\n"
         }
@@ -159,50 +286,119 @@ class TagButtonList {
         this.resize_me()
     }
 
-    show_hide_buttons_given_taglist(searchtags) {
-        const all_tag_buttons = this.get_all_tag_buttons();
-        all_tag_buttons.removeClass("hideme");
-        all_tag_buttons.removeClass("showme");
+    has_slash(tag_text) {
+        return (tag_text.search("/") != -1)
+    }
 
+    get_all_subtag_buttons() {
+        const all_tag_buttons = this.get_all_tag_buttons();
+        var subtag_buttons = [];
+        var self = this;
+         $.each(all_tag_buttons, function (index, but) {
+             const tag_text = but.dataset.fulltag;
+             if (self.has_slash(tag_text)) {
+                 subtag_buttons.push(but)
+             }
+         });
+        return $(subtag_buttons)
+    }
+
+    get_tag_base(the_tag) {
+        if (!this.has_slash(the_tag)){
+            return the_tag
+        }
+        else {
+            let re = /\/\w*$/;
+            return re.exec(the_tag)[0].slice(1)
+        }
+    }
+
+    expand_tags(item_tags) {
+        var expanded_tags = item_tags.slice(0);
+        for (let the_tag of item_tags) {
+            expanded_tags = expanded_tags.concat(this.get_parent_tags(the_tag))
+        }
+        expanded_tags = remove_duplicates(expanded_tags);
+        return expanded_tags
+    }
+
+    get_all_parent_tags(tag_list) {
+        var ptags = [];
+        for (let the_tag of tag_list){
+            ptags = ptags.concat(this.get_parent_tags(the_tag))
+        }
+        ptags = remove_duplicates(ptags);
+        return ptags
+    }
+
+    get_parent_tags(the_tag) {
+        if (the_tag.search("/") == -1) {
+            return []
+        }
+        else {
+            let parent_tag = this.get_immediate_tag_parent(the_tag);
+            let ptags = this.get_parent_tags(parent_tag);
+            ptags.push(parent_tag);
+            return ptags
+        }
+    }
+
+    find_matching_tags(tag_list) {
+        const all_tag_buttons = this.get_all_tag_buttons();
+        var self = this;
+        var matching_tags = [];
         $.each(all_tag_buttons, function (index, but) {
-            const tag_text = but.innerText;
-            if (searchtags.includes(tag_text) || searchtags.empty()) {
-                if ($(but).css("display") == "none") {
-                    $(but).addClass("showme")
-                }
-            }
-            else {
-                if ($(but).css("display") != "none") {
-                    $(but).addClass("hideme")
-                }
+            let but_tag = but.dataset.fulltag;
+            let tag_base = self.get_tag_base(but_tag);
+            if ((tag_list.includes(but_tag) || tag_list.includes(tag_base))) {
+                matching_tags.push(but_tag)
             }
         });
-        this.show_buttons(all_tag_buttons.filter(".showme"));
-        this.fix_tag_button_width();
-        this.hide_buttons(all_tag_buttons.filter(".hideme"));
+        return matching_tags
     }
 
-    show_buttons(the_tags) {
-        the_tags.slideDown();
+    get_immediate_tag_parent(the_tag) {
+        let re = /\/\w*$/;
+        return the_tag.replace(re, "")
     }
 
-    hide_buttons(the_tags) {
-        the_tags.slideUp();
+    is_subtag_of(the_tag, active_tags) {
+        if (the_tag.search("/") == -1) {
+            return false
+        }
+        let the_parent = this.get_immediate_tag_parent(the_tag);
+        return active_tags.includes(the_parent)
     }
 
-    unfilter_all() {
-        this.show_all_buttons();
-        this.deactivate_all_buttons();
+    show_buttons(the_tag_buttons) {
+        the_tag_buttons.show("blind");
     }
+
+    hide_buttons(the_tag_buttons) {
+        the_tag_buttons.hide("blind");
+    }
+
 
     show_all_buttons () {
         const all_tag_buttons = this.get_all_tag_buttons();
-        this.show_buttons(all_tag_buttons);
+        var buttons_to_show = [];
+        var buttons_to_hide = [];
+        var self = this;
+        $.each(all_tag_buttons, function (index, but) {
+            const tag_text = but.dataset.fulltag;
+            if (!self.has_slash(tag_text)) {
+                buttons_to_show.push(but)
+            }
+            else {
+                buttons_to_hide.push(but)
+            }
+        });
+        this.show_buttons($(buttons_to_show));
+        this.hide_buttons($(buttons_to_hide));
     }
 
     deactivate_all_buttons () {
-        const all_tag_buttons = this.get_all_tag_buttons();
-        all_tag_buttons.removeClass("active");
+        this.set_active_button(null)
     }
 
 }
@@ -211,7 +407,6 @@ class UserManagerResourceManager extends ResourceManager{
 
     constructor (module_id, res_type, resource_module_template, destination_selector, class_string) {
         super(module_id, res_type, resource_module_template, destination_selector, class_string);
-        this.last_search = null;
     }
 
     add_listeners() {
@@ -243,7 +438,6 @@ class UserManagerResourceManager extends ResourceManager{
         $.getJSON(`${$SCRIPT_ROOT}/${this.update_view}/${this.res_type}`, function (data) {
             self.fill_content(data.html, null);
             self.select_resource_button(null);
-            self.create_search_tag_editor();
         })
     }
 
@@ -271,7 +465,6 @@ class UserManagerResourceManager extends ResourceManager{
     }
 
     check_for_selection () {
-        //var res_name = $('#' + res_type + '-selector > .btn.active').text().trim();
         const res_name = this.get_active_selector_button().attr("value");
         if (res_name == "") {
             doFlash({"message": `Select a ${this.res_type} first.`, "alert_type": "alert-info"})
@@ -394,45 +587,18 @@ class UserManagerResourceManager extends ResourceManager{
             .catch(doFlash)
     }
 
-    // search related
-
-    // This currently isn't used
-    // replay_last_search() {
-    //     if (!this.last_search) return;
-    //     let func = this.last_search["function"];
-    //     let val = this.last_search["value"];
-    //     switch (func) {
-    //         case "search_my_resource":
-    //             this.get_search_field()[0].value = val;
-    //             this.search_my_resource();
-    //             break;
-    //         case "search_my_tags":
-    //             this.set_tag_button_state(val);
-    //             this.set_search_tag_list(taglist);
-    //             this.search_my_tags();
-    //             break;
-    //         case "search_active_tag_buttons":
-    //             this.set_tag_button_state(val);
-    //             this.search_active_tag_buttons()
-    //     }
-    // }
-
-    tagMatch (search_tags, item_tags) {
-        if (search_tags.empty()) {
-            return true
-        }
-        for (let item of search_tags) {
-            if (!item_tags.includes(item)) {
-                return false
+    match_any_tag (search_tags, item_tags) {
+        for (let tag of item_tags) {
+            if (search_tags.includes(tag)) {
+                return true
             }
         }
-        return true
+        return false
     }
 
-    search_my_resource (){
+    search_my_resource (){  // tactic_working
         const txt = this.get_search_field()[0].value.toLowerCase();
-        const all_rows = this.get_all_selector_buttons();
-        this.tag_button_list.deactivate_all_buttons();
+        this.tag_button_list.get_all_tag_buttons().removeClass("active");
         let searchtags = [];
         if (txt == "") {
             searchtags = []
@@ -440,44 +606,44 @@ class UserManagerResourceManager extends ResourceManager{
         else {
             searchtags = txt.split(" ");
         }
-        let self = this;
-        let current_tags = [];
-        $.each(all_rows, function (index, row_element) {
-            const cells = $(row_element).children();
-            const res_name = row_element.getAttribute("value").toLowerCase();
-            const tag_text = $(cells.slice(-1)[0]).text().toLowerCase();
-            const taglist = tag_text.split(" ");
-            if ((res_name.search(txt) == -1) && (!self.tagMatch(searchtags, taglist))) {
-                // $(row_element).css("display", "none")
-                $(row_element).removeClass("showme");
-                $(row_element).addClass("hideme");
+        let matching_tags = this.tag_button_list.find_matching_tags(searchtags);
 
-            }
-            else {
-                $(row_element).removeClass("hideme");
-                $(row_element).addClass("showme");
-                // $(row_element).css("display", "table-row");
-                current_tags = current_tags.concat(taglist);
-            }
-        });
-        this.hide_table_rows(all_rows.filter(".hideme"));
-        this.show_table_rows(all_rows.filter(".showme"));
-        current_tags = remove_duplicates(current_tags);
-        this.tag_button_list.show_hide_buttons_given_taglist(current_tags);
+        const all_rows = this.get_all_selector_buttons();
+        if (matching_tags.empty() && (txt == "")) {
+            this.show_table_rows(all_rows);
+        }
+        else {
+            let self = this;
+            $.each(all_rows, function (index, row_element) {
+                const cells = $(row_element).children();
+                const res_name = row_element.getAttribute("value").toLowerCase();
+                const tag_text = $(cells.slice(-1)[0]).text().toLowerCase();
+                const taglist = tag_text.split(" ");
+
+                if ((res_name.search(txt) != -1) || (self.match_any_tag(matching_tags, taglist))) {   // tactic_working
+                    $(row_element).addClass("showme");
+                    $(row_element).removeClass("hideme");
+                }
+                else {
+                    $(row_element).addClass("hideme");
+                    $(row_element).removeClass("showme");
+                }
+            });
+            this.hide_table_rows(all_rows.filter(".hideme"));
+            this.show_table_rows(all_rows.filter(".showme"));
+        }
         if (!this.active_selector_is_visible()){
             this.select_first_row()
         }
-        this.last_search = {"function": "search_my_resource", "value": txt}
     }
 
     unfilter_me () {
-        const all_rows = this.get_all_selector_buttons();
-        this.show_table_rows(all_rows);
-
-        this.tag_button_list.deactivate_all_buttons();
-        this.tag_button_list.show_all_buttons();
+        // const all_rows = this.get_all_selector_buttons();
+        // this.show_table_rows(all_rows);
+        //
+        // this.tag_button_list.deactivate_all_buttons();
+        this.tag_button_list.set_active_tag("__all__")
         this.get_search_field().val("");
-        this.last_search = null;
     }
 
     show_table_rows (the_rows) {
@@ -488,94 +654,12 @@ class UserManagerResourceManager extends ResourceManager{
         the_rows.css("display", "none")
     }
 
-    search_given_tags (searchtags) {
-        const all_rows = this.get_all_selector_buttons();
-        let self = this;
-        let current_tags = [];
-        $.each(all_rows, function (index, row_element) {
-            const cells = $(row_element).children();
-            const tag_text = $(cells.slice(-1)[0]).text().toLowerCase();
-            const taglist = tag_text.split(" ");
-            if (!self.tagMatch(searchtags, taglist)) {
-                $(row_element).addClass("hideme");
-                $(row_element).removeClass("showme");
-            }
-            else {
-                $(row_element).addClass("showme");
-                $(row_element).removeClass("hideme");
-                current_tags = current_tags.concat(taglist);
-            }
-        });
-        this.hide_table_rows(all_rows.filter(".hideme"));
-        this.show_table_rows(all_rows.filter(".showme"));
-        current_tags = remove_duplicates(current_tags);
-        this.tag_button_list.show_hide_buttons_given_taglist(current_tags);
-        if (!this.active_selector_is_visible()){
-            this.select_first_row()
-        }
-    }
-
-
-    create_search_tag_editor(initial_tag_list) {
-        let self = this;
-        let data_dict = {"res_type": this.res_type, "is_repository": this.is_repository};
-        postAjaxPromise("get_tag_list", data_dict)
-            .then(function(data) {
-                let all_tags = data.tag_list;
-                self.get_search_tags_field().tagEditor({
-                    initialTags: initial_tag_list,
-                    autocomplete: {
-                        delay: 0, // show suggestions immediately
-                        position: {collision: 'flip'}, // automatic menu position up/down
-                        source: all_tags
-                    },
-                    placeholder: "Tags...",
-                    onChange: function () {
-                        self.search_my_tags()
-                    }
-                });
-            })
-            .catch(doFlash)
-    }
-
-    get_search_tags() {
-        return this.get_search_tags_field().tagEditor('getTags')[0].tags
-    }
-
-    clear_search_tag_list() {
-        this.get_search_tags_field().tagEditor('destroy');
-        this.get_search_tags_field().val("");
-        this.create_search_tag_editor([]);
-    }
-
-    set_search_tag_list(taglist) {
-        this.get_search_tags_field().tagEditor('destroy');
-        this.get_search_tags_field().val("");
-    }
-
-    search_my_tags() {
-        const searchtags = this.get_search_tags();
-        this.search_given_tags(searchtags);
-        this.tag_button_list.set_button_state_from_taglist(searchtags);
-        this.last_search = {"function": "search_my_tags", "value": searchtags}
-
-    }
-
     // tag button related
-
-    unfilter_tags () {
-        this.tag_button_list.unfilter_all();
-        this.clear_search_tag_list();
-        const all_rows = this.get_all_selector_buttons();
-        this.show_table_rows(all_rows);
-        this.last_search = null
-    }
 
     update_aux_content() {
         this.tag_button_list.create_tag_buttons(this.update_tag_view);
         this.get_aux_right_dom().css("display", "none");
     }
-
 
     update_selector_tags(res_name, new_tags) {
         this.get_selector_table_row(res_name).children().slice(-1)[0].innerHTML = new_tags;
@@ -696,13 +780,6 @@ class UserManagerResourceManager extends ResourceManager{
         function RenameTag(new_tag) {
             self.DoTagRename(old_tag, new_tag)
         }
-
-    }
-
-    search_active_tag_buttons() {
-        let active_tag_buttons = this.tag_button_list.get_active_tag_buttons();
-        this.search_given_tags(active_tag_buttons);
-        this.last_search = {"function": "search_active_tag_buttons", "value": active_tag_buttons}
     }
 
     add_func(event) {
