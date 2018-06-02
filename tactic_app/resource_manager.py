@@ -131,7 +131,10 @@ class ResourceManager(object):
             the_html += "<tr class='selector-button' value='{1}' >".format(self.res_type, r[0])
             for c in r:
                 if isinstance(c, list):
-                    the_html += "<td sorttable_customkey='{0}'>{1}</td>".format(c[1], c[0])
+                    if len(c) == 3:
+                        the_html += "<td sorttable_customkey='{0}' align='{2}'>{1}</td>".format(c[1], c[0], c[2])
+                    else:
+                        the_html += "<td sorttable_customkey='{0}'>{1}</td>".format(c[1], c[0])
                 else:
                     the_html += "<td>{0}</td>".format(c)
             the_html += "</tr>"
@@ -143,7 +146,10 @@ class ResourceManager(object):
         the_html = "<tr class='selector-button' value='{1}' style='display:none' >".format(self.res_type, row_data[0])
         for c in row_data:
             if isinstance(c, list):
-                the_html += "<td sorttable_customkey='{0}'>{1}</td>".format(c[1], c[0])
+                if len(c) == 3:
+                    the_html += "<td sorttable_customkey='{0}' align='{2}'>{1}</td>".format(c[1], c[0], c[2])
+                else:
+                    the_html += "<td sorttable_customkey='{0}'>{1}</td>".format(c[1], c[0])
             else:
                 the_html += "<td>{0}</td>".format(c)
         the_html += "</tr>"
