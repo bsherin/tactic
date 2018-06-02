@@ -83,7 +83,7 @@ class TagButtonList {
         this.compute_visibility()
     }
 
-    refresh_given_taglist(tag_list) {  // tactic_working
+    refresh_given_taglist(tag_list) {
         let active_tag = this.get_active_tag();
         let expanded_folder_tags = this.get_expanded_folder_tags();
         this.create_button_html(tag_list);
@@ -194,7 +194,7 @@ class TagButtonList {
                 const res_name = row_element.getAttribute("value").toLowerCase();
                 const tag_text = $(cells.slice(-1)[0]).text().toLowerCase();
                 const taglist = tag_text.split(" ");
-                if (!self.tagMatch(the_tag, taglist)) {   // tactic_working
+                if (!self.tagMatch(the_tag, taglist)) {
                     $(row_element).addClass("hideme");
                     $(row_element).removeClass("showme");
                 }
@@ -246,7 +246,7 @@ class TagButtonList {
         tag_list = remove_duplicates(tag_list);
         tag_list.sort();
 
-        var prefix = `<span style="margin-left:${indent_amount}px"></span></span><span class="tag-icon-tag fal fa-tags"></span>`;
+        var prefix = `<span style="margin-left:${indent_amount}px"></span></span><span class="tag-icon-tag fal fa-tags"></span><span class="tag-icon-tag fas fa-tags"></span>`;
         var new_html = `<button type="button" data-fulltag="__all__" class="btn btn-outline-secondary tag-button active root-tag ${hcclass} showme" style="display: block" value="${this.res_type}">${prefix}all</span></button>`;
         tag_button_html = tag_button_html + new_html + "\n";
 
@@ -259,11 +259,11 @@ class TagButtonList {
 
             if (has_children) {
                 hcclass = "has_children shrunk";
-                prefix = `<span class="tag-expander fal fa-caret-right" style="margin-left:${mleft}px"></span><span class="tag-expander fal fa-caret-down" style="display:none; margin-left:${mleft}px"></span><span class="tag-icon-folder fal fa-folder"></span>`
+                prefix = `<span class="tag-expander fal fa-caret-right" style="margin-left:${mleft}px"></span><span class="tag-expander fal fa-caret-down" style="display:none; margin-left:${mleft}px"></span><span class="tag-icon-folder fal fa-folder"></span><span class="tag-icon-folder fas fa-folder"></span>`
             }
             else {
                 hcclass = "no_children";
-                prefix = `<span style="margin-left:${mleft + indent_amount}px"></span></span><span class="tag-icon-tag fal fa-tag"></span>`
+                prefix = `<span style="margin-left:${mleft + indent_amount}px"></span></span><span class="tag-icon-tag fal fa-tag"></span><span class="tag-icon-tag fas fa-tags"></span>`
             }
             if (!this.has_slash(tag)) {
                 new_html = `<button type="button" data-fulltag="${tag}" class="btn btn-outline-secondary tag-button root-tag ${hcclass} showme" style="display: block" value="${this.res_type}">${prefix}${tag_base}<span class="tag-button-delete"></span></button>`
@@ -596,7 +596,7 @@ class UserManagerResourceManager extends ResourceManager{
         return false
     }
 
-    search_my_resource (){  // tactic_working
+    search_my_resource () {
         const txt = this.get_search_field()[0].value.toLowerCase();
         this.tag_button_list.get_all_tag_buttons().removeClass("active");
         let searchtags = [];
@@ -620,7 +620,7 @@ class UserManagerResourceManager extends ResourceManager{
                 const tag_text = $(cells.slice(-1)[0]).text().toLowerCase();
                 const taglist = tag_text.split(" ");
 
-                if ((res_name.search(txt) != -1) || (self.match_any_tag(matching_tags, taglist))) {   // tactic_working
+                if ((res_name.search(txt) != -1) || (self.match_any_tag(matching_tags, taglist))) {
                     $(row_element).addClass("showme");
                     $(row_element).removeClass("hideme");
                 }

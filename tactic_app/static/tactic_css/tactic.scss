@@ -287,6 +287,12 @@ a[role="tab"] {
     .right-div {
         overflow: auto;
     }
+    .selector-button {
+        td {
+            border: white;
+            padding-bottom: 2px !important;
+        }
+    }
 }
 
 .resource-module .dropdown-toggle.toolbar-button::after {
@@ -368,6 +374,12 @@ a[role="tab"] {
     border: 0px !important;
     font-size: 13px !important;
 
+    .tag-icon-tag.fal, .tag-icon-folder.fal {
+        display: inline-block !important;
+    }
+    .tag-icon-tag.fas, .tag-icon-folder.fas {
+        display: none !important;
+    }
 }
 
 .tag-button.expanded {
@@ -389,12 +401,28 @@ a[role="tab"] {
 }
 
 
-.tag-button.active, .tag-button:hover {
-    font-weight: bolder !important;
+.tag-button.active{
+    font-weight: 900 !important;
     color: $selector-background-color !important;
     background-color: white !important;
     border-width: 0 !important;
+
+    .tag-icon-tag.fal, .tag-icon-folder.fal {
+        display: none !important;
+    }
+    .tag-icon-tag.fas, .tag-icon-folder.fas {
+        display: inline-block !important;
+    }
+
 }
+
+.tag-button:hover {
+    font-weight: bolder !important;
+    color: gray;
+    background-color: white !important;
+    border-width: 0 !important;
+}
+
 
 .tag-button:focus{
     border-width: 0 !important;
