@@ -1152,7 +1152,7 @@ class AllManager extends UserManagerResourceManager {
         for (let i = 0; row_element = possible_rows[i]; ++i) {
             const cells = $(row_element).children();
             self.get_module_element(`tr[value='${name}']`);
-            let the_type = cells[1].innerHTML;
+            let the_type = cells[1].getAttribute("sorttable_customkey");
             if (the_type == res_type) {
                 result = $(row_element)
             }
