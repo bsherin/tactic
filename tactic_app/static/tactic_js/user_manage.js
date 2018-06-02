@@ -200,16 +200,12 @@ function selector_double_click(event) {
     manager[manager.double_click_func](event)
 }
 
-function tag_button_clicked(event) {   // tactic_working
+function tag_button_clicked(event) {
     rawbut = event.target;
     let but;
     let manager = resource_managers[get_current_module_id()];
     if (rawbut.tagName.toLowerCase() != "button") {
-        if (rawbut.tagName.toLowerCase() != "svg") {
-            rawbut = $(rawbut).closest("svg")[0]
-        }
-        let svg_classes = rawbut.className.animVal.split(" ");
-        if (svg_classes.includes("tag-expander")) {
+        if ($(rawbut).hasClass("tag-expander")) {
             but = $(rawbut).closest(".tag-button");
             if (but.hasClass("has_children")) {
                 manager.tag_button_list.toggle_shrink_state(but)
@@ -229,10 +225,7 @@ function tag_button_clicked(event) {   // tactic_working
         }
     }
     else {
-        if (but.hasClass("active")) {
-            manager.tag_button_list.set_active_tag("__all__");
-        }
-        else {
+        if (!but.hasClass("active")) {
             manager.tag_button_list.set_active_button(but);
         }
     }
@@ -913,11 +906,11 @@ class AllManager extends UserManagerResourceManager {
     }
 
     selected_resource_type() {
-        return $(this.get_active_selector_button()[0]).find("td")[1].innerHTML
+        return $(this.get_active_selector_button()[0]).find("td")[1].getAttribute("sorttable_customkey")
     }
 
     selected_resource_type_from_row_element(row_element) {
-        return $(row_element).children()[1].innerHTML
+        return $(row_element).children()[1].getAttribute("sorttable_customkey")
     }
 
     res_manager(res_type) {

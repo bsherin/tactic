@@ -7,6 +7,7 @@
       <link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap.min.css')}}">
       <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/tactic.css', v=version_string)}}">
       <link rel="stylesheet" href="{{url_for('static', filename='css/alertify_css/alertify.min.css')}}"/>
+    <link rel="stylesheet" href="{{url_for('static', filename='css/fontawesome-all.css')}}"/>
      <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/tactic_alertify_theme.css', v=version_string)}}" />
      <link rel="shortcut icon" href="{{url_for('static', filename='tactic_css/favicon.ico', v=version_string)}}" />
     <link rel="apple-touch-icon" href="{{url_for('static', filename='tactic_css/icons/favicon-256.png', v=version_string)}}" />
@@ -17,7 +18,6 @@
           <link rel="stylesheet" href="{{url_for('static', filename='css/show-hint.css')}}">
           <link rel="stylesheet" href="{{url_for('static', filename='css/merge.css')}}">
       {%  endif %}
-      <script defer src="{{url_for('static', filename='js/fontawesome-all.js', v=version_string)}}"></script>
       {% block head %}{% endblock %}
       {% block styles %}{% endblock %}
 
