@@ -190,6 +190,9 @@ class mainWindow(object):
         self.console_html = re.sub("panel panel-default log-panel ", "card log-panel ", self.console_html)
         self.console_html = re.sub("panel log-panel panel-default ", "card log-panel ", self.console_html)
         self.console_html = re.sub("panel-heading", "card-header", self.console_html)
+        self.console_html = re.sub(r'<svg class=\"svg-inline--fa[\s\S]*?/svg>', "", self.console_html)
+        self.console_html = re.sub(r'<!-- <span class="fa', '<span class="fa', self.console_html)
+        self.console_html = re.sub(r'span> -->', 'span>', self.console_html)
 
         replacements = {"trash": "trash-alt",
                         "triangle-bottom": "chevron-circle-down",
