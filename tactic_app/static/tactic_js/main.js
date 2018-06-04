@@ -123,14 +123,14 @@ function start_post_load() {
     tsocket.socket.on('finish-post-load', function (data) {
             if (is_project) {
                 $("#console").html(data.console_html);
-                    _collection_name = data.collection_name;
-                    doc_names = data.doc_names;
-                    $("#doc-selector-label").html(data.short_collection_name);
-                    let doc_popup = "";
-                    for (let dname of doc_names) {
-                        doc_popup = doc_popup + `<option>${dname}</option>`
-                    }
-                    $("#doc-selector").html(doc_popup)
+                _collection_name = data.collection_name;
+                doc_names = data.doc_names;
+                $("#doc-selector-label").html(data.short_collection_name);
+                let doc_popup = "";
+                for (let dname of doc_names) {
+                    doc_popup = doc_popup + `<option>${dname}</option>`
+                }
+                $("#doc-selector").html(doc_popup)
             }
             postWithCallback("host", "get_tile_types", {"user_id": user_id}, function (data) {
                 tile_types = data.tile_types;
