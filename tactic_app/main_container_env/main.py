@@ -907,7 +907,7 @@ class mainWindow(object):
                 result[fname] = self.sort_rows(f["data_rows"])
             else:
                 if "encoding" in f:
-                    the_text = self.fs.get(f["file_id"]).read().decode(f["encoding"])
+                    result[fname] = self.fs.get(f["file_id"]).read().decode(f["encoding"])
                 else:
                     result[fname] = self.fs.get(f["file_id"]).read()
         return {"the_collection": result}
