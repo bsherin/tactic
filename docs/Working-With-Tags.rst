@@ -36,9 +36,11 @@ then the user will only see lists with the stop_list tag when selecting a list o
 The image below shows what this will look like in the Creator.
 
 .. figure:: images/stop_list_tag.png
+    :width: 600px
 
 You can also assign tags to tile exports. Then if tags are assigned to a pipe_select option, the user
 will only see exports that match the tag.
 
 .. figure:: images/export_tags.png
+    :width: 400px
 

@@ -239,6 +239,10 @@ class ResourceManager {
         return this.get_module_element(".selector-button")
     }
 
+    get_visible_selector_buttons() {
+        return this.get_module_element(".selector-button:visible")
+    }
+
     get_named_selector_button(name) {
         return this.get_module_element(`.selector-button[value='${name}']`)
     }
@@ -308,18 +312,20 @@ class ResourceManager {
     }
 
     go_to_next_row() {
-        let rindex = this.get_active_selector_button()[0].rowIndex;
-        if (rindex < this.get_all_selector_buttons().length) {
-            let sbs = this.get_all_selector_buttons();
-            this.selector_click(sbs[rindex]) // Note that rindex is already one larger because of heading row
+        let all_visible = this.get_visible_selector_buttons();
+        let rindex = all_visible.index(this.get_active_selector_button()[0]);
+        let new_index = rindex + 1;
+        if (new_index < all_visible.length) {
+            this.selector_click(all_visible[new_index])
         }
     }
 
     go_to_previous_row() {
-        let rindex = this.get_active_selector_button()[0].rowIndex;
-        if (rindex > 1) {
-            let sbs = this.get_all_selector_buttons();
-            this.selector_click(sbs[rindex - 2]) // Note that rindex is already one larger because of heading row
+        let all_visible = this.get_visible_selector_buttons();
+        let rindex = all_visible.index(this.get_active_selector_button()[0]);
+        if (rindex > 0) {
+            let new_index = rindex - 1;
+            this.selector_click(all_visible[new_index])
         }
     }
 

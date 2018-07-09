@@ -263,7 +263,7 @@ class TagButtonList {
             }
             else {
                 hcclass = "no_children";
-                prefix = `<span style="margin-left:${mleft + indent_amount}px"></span></span><span class="tag-icon-tag fal fa-tag"></span><span class="tag-icon-tag fas fa-tags"></span>`
+                prefix = `<span style="margin-left:${mleft + indent_amount}px"></span></span><span class="tag-icon-tag fal fa-tag"></span><span class="tag-icon-tag fas fa-tag"></span>`
             }
             if (!this.has_slash(tag)) {
                 new_html = `<button type="button" data-fulltag="${tag}" class="btn btn-outline-secondary tag-button root-tag ${hcclass} showme" style="display: block" value="${this.res_type}">${prefix}${tag_base}<span class="tag-button-delete"></span></button>`

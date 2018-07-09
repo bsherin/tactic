@@ -598,7 +598,7 @@ class OptionManager extends CreatorResourceManager {
                 new_option["special_list"] = $("#option-list-input").val();
             }
             if (manager.taggable_option_types.indexOf(option_type) >= 0) {
-                new_option["tag"] = $("#option-tag-input").val()
+                new_option["tags"] = $("#option-tag-input").val()
             }
             manager.option_dict.push(new_option);
             manager.changed = true;
