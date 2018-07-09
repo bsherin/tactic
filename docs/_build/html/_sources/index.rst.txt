@@ -8,6 +8,7 @@ Tactic Text
 
    Getting-Started
    Uploading-Data
+   Working-With-Tags
    Main-interface
    Log-And-Notebook
    Which-tiles-are-available-when
