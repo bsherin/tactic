@@ -432,6 +432,7 @@ class UserManagerResourceManager extends ResourceManager{
         this.aux_left = true;
         this.repository_copy_view = '/copy_from_repository';
         this.send_repository_view = '/send_to_repository';
+        this.setting_tags = false;
     }
     update_main_content() {
         const self = this;
@@ -487,11 +488,15 @@ class UserManagerResourceManager extends ResourceManager{
         return tags.trim();
     }
 
-    remove_all_tags() {
-        let tags = this.get_tags();
+    add_tags(tags) {
+        let active_element = document.activeElement;
+        this.setting_tags = true;
         for (let i = 0; i < tags.length; i++) {
-            this.get_tags_field().tagEditor('removeTag', tags[i]);
+            this.get_tags_field().tagEditor('addTag', tags[i], true);
         }
+        this.setting_tags = false;
+        active_element.focus();
+        active_element.blur()
     }
 
     create_tag_editor(initial_tag_list) {
@@ -510,12 +515,12 @@ class UserManagerResourceManager extends ResourceManager{
                     },
                     placeholder: "Tags...",
                     beforeTagSave: function (field, editor, tags, tag, val) {
-                        if (self.is_repository) {
+                        if (self.is_repository && !self.setting_tags) {
                             return false
                         }
                     },
                     onChange: function () {
-                        if (!self.is_repository && self.tageditor_onchange_enabled) {
+                        if (!self.handling_selector_click && !self.is_repository && self.tageditor_onchange_enabled) {
                             self.save_my_metadata(false)
                         }
                 }});
@@ -524,11 +529,22 @@ class UserManagerResourceManager extends ResourceManager{
             .catch(doFlash)
     }
 
+    remove_all_tags() {
+        let tags = this.get_tags();
+        for (let i = 0; i < tags.length; i++) {
+            this.get_tags_field().tagEditor('removeTag', tags[i]);
+        }
+    }
+
     set_tag_list(tagstring) {
-        this.get_tags_field().tagEditor('destroy');
-        this.get_tags_field().html("");
         let taglist = tagstring.split(" ");
-        this.create_tag_editor(taglist);
+        if (this.get_tags() == undefined) {
+            this.create_tag_editor(taglist)
+        }
+        else {
+            this.remove_all_tags();
+            this.add_tags(taglist);
+        }
     }
 
     format_metadata(name, valstring) {
