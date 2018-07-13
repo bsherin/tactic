@@ -432,7 +432,6 @@ class UserManagerResourceManager extends ResourceManager{
         this.aux_left = true;
         this.repository_copy_view = '/copy_from_repository';
         this.send_repository_view = '/send_to_repository';
-        this.setting_tags = false;
     }
     update_main_content() {
         const self = this;
@@ -520,7 +519,7 @@ class UserManagerResourceManager extends ResourceManager{
                         }
                     },
                     onChange: function () {
-                        if (!self.handling_selector_click && !self.is_repository && self.tageditor_onchange_enabled) {
+                        if (!self.setting_tags && !self.is_repository && self.tageditor_onchange_enabled) {
                             self.save_my_metadata(false)
                         }
                 }});
@@ -531,9 +530,11 @@ class UserManagerResourceManager extends ResourceManager{
 
     remove_all_tags() {
         let tags = this.get_tags();
+        this.setting_tags = true;
         for (let i = 0; i < tags.length; i++) {
             this.get_tags_field().tagEditor('removeTag', tags[i]);
         }
+        this.setting_tags = false;
     }
 
     set_tag_list(tagstring) {
@@ -679,9 +680,9 @@ class UserManagerResourceManager extends ResourceManager{
 
     update_selector_tags(res_name, new_tags) {
         this.get_selector_table_row(res_name).children().slice(-1)[0].innerHTML = new_tags;
-        if (this.get_active_selector_button().attr("value") == res_name) {
-            this.set_tag_list(new_tags)
-        }
+        // if (this.get_active_selector_button().attr("value") == res_name) {
+        //     this.set_tag_list(new_tags)
+        // }
     }
 
     remove_tag_from_all_rows(tag) {
