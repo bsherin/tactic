@@ -1139,9 +1139,9 @@ class AllManager extends UserManagerResourceManager {
     update_selector_tags(res_name, res_type, new_tags) {
         let row_to_change = this.get_selector_table_row(res_name, res_type);
         row_to_change.children().slice(-1)[0].innerHTML = new_tags;
-        if (row_to_change.hasClass("active")) {
-            this.set_tag_list(new_tags)
-        }
+        // if (row_to_change.hasClass("active")) {
+        //     this.set_tag_list(new_tags)
+        // }
     }
 
     get_selector_table_row(name, res_type) {
