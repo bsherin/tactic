@@ -45,6 +45,7 @@ class ResourceManager {
             this.update_width(1.0)
         }
         this.handling_selector_click = false;
+        this.setting_tags = false;
         if (include_markdown) {
             this.markdown_helper = new MarkdownHelper(".notes-field", ".notes-field-markdown-output");
         }
