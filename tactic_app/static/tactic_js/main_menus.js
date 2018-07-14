@@ -89,7 +89,7 @@ class MenuObject {
     }
 
     disable_menu_item (item_id) {
-        $("#" + item_id).closest('li').addClass("disabled");
+        $("#" + item_id).addClass("disabled");
         const menu = menus[menu_item_index[item_id]];
         if (menu.shortcuts.hasOwnProperty(item_id)) {
             const scut = menu.shortcuts[item_id];
@@ -103,7 +103,7 @@ class MenuObject {
         }
     }
     enable_menu_item (item_id) {
-        $("#" + item_id).closest('li').removeClass("disabled");
+        $("#" + item_id).removeClass("disabled");
         const menu = menus[menu_item_index[item_id]];
         if (menu.shortcuts.hasOwnProperty(item_id)) {
             const scut = menu.shortcuts[item_id];
