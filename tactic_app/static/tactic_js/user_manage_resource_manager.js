@@ -494,8 +494,12 @@ class UserManagerResourceManager extends ResourceManager{
             this.get_tags_field().tagEditor('addTag', tags[i], true);
         }
         this.setting_tags = false;
-        active_element.focus();
-        active_element.blur()
+        if ($(active_element).hasClass("search-field")) {
+            active_element.focus()
+        }
+        else {
+            active_element.blur()
+        }
     }
 
     create_tag_editor(initial_tag_list) {
@@ -529,12 +533,19 @@ class UserManagerResourceManager extends ResourceManager{
     }
 
     remove_all_tags() {
+        let active_element = document.activeElement;
         let tags = this.get_tags();
         this.setting_tags = true;
         for (let i = 0; i < tags.length; i++) {
             this.get_tags_field().tagEditor('removeTag', tags[i]);
         }
         this.setting_tags = false;
+        if ($(active_element).hasClass("search-field")) {
+            active_element.focus()
+        }
+        else {
+            active_element.blur()
+        }
     }
 
     set_tag_list(tagstring) {
