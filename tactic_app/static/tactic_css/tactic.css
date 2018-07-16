@@ -356,9 +356,6 @@ a[role="tab"] {
 .resource-module form {
   padding: 5px; }
 
-.metadata-field {
-  width: 350px; }
-
 /* creator */
 .ui-resizable-e, .ui-resizable-w {
   width: 25px !important; }
