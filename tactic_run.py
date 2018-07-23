@@ -20,4 +20,4 @@ from views import module_viewer_views, history_viewer_views, tile_differ_views
 from tactic_app import host_workers
 
 import tactic_app
-tactic_app.global_tile_manager.get_all_default_tiles()
+# tactic_app.global_tile_manager.get_all_default_tiles()

@@ -197,6 +197,7 @@ class UserManager extends AdminResourceManager {
                     {"name": "create", "func": "create_user_func", "button_class": "btn-outline-secondary", "icon_name": "user"},
                     {"name": "duplicate", "func": "duplicate_user_func", "button_class": "btn-outline-secondary", "icon_name": "copy"},
                     {"name": "delete", "func": "delete_user_func", "button_class": "btn-outline-secondary", "icon_name": "skull"},
+                    {"name": "update", "func": "update_user_starters", "button_class": "btn-outline-secondary", "icon_name": "recycle"},
                     {"name": "refresh", "func": "refresh_user_table", "button_class": "btn-outline-secondary", "icon_name": "sync-alt"}
                 ]
             }
@@ -217,6 +218,17 @@ class UserManager extends AdminResourceManager {
         });
         event.preventDefault();
     }
+
+    update_user_starters (event) {
+        const manager = event.data.manager;
+        user_id = manager.check_for_selection("user", 0);
+        const confirm_text = "Are you sure that you want to update starter tiles for user " + String(user_id) + "?";
+        confirmDialog("Update User", confirm_text, "do nothing", "update", function () {
+            $.getJSON($SCRIPT_ROOT + '/update_user_starter_tiles/' + user_id, doFlash);
+        });
+        event.preventDefault();
+    }
+
 
     migrate_user_func (event) {
         const manager = event.data.manager;

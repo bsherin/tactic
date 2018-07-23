@@ -1,14 +1,15 @@
 import re
 import os
+import copy
 from flask import jsonify
 from flask_login import login_required, current_user
 from tactic_app import app, db, fs
-from tactic_app.users import get_all_users, remove_user, load_user
+from tactic_app.users import get_all_users, remove_user, load_user, User
 from tactic_app.communication_utils import make_python_object_jsonizable
 from tactic_app.resource_manager import ResourceManager
 from pymongo import MongoClient
 import gridfs
-from tactic_app import Database
+from tactic_app import Database, global_tile_manager
 
 if "DB_NAME" in os.environ:
     db_name = os.environ.get("DB_NAME")
@@ -21,8 +22,8 @@ class UserManager(ResourceManager):
                          login_required(self.refresh_user_table), methods=['get'])
         app.add_url_rule('/delete_user/<userid>', "delete_user",
                          login_required(self.delete_user), methods=['get', "post"])
-        app.add_url_rule('/migrate_user/<userid>', "migrate_user",
-                         login_required(self.migrate_user), methods=['get', "post"])
+        app.add_url_rule('/update_user_starter_tiles/<userid>', "update_user_starter_tiles",
+                         login_required(self.update_user_starter_tiles), methods=['get', "post"])
         app.add_url_rule('/update_all_collections', "update_all_collections",
                          login_required(self.update_all_collections), methods=['get'])
 
@@ -97,6 +98,22 @@ class UserManager(ResourceManager):
         result = remove_user(userid)
         self.update_selector_list()
         return jsonify(result)
+
+    def update_user_starter_tiles(self, userid):
+        if not (current_user.username == "admin"):
+            return jsonify({"success": False, "message": "not authorized", "alert_type": "alert-warning"})
+        repository_user = User.get_user_by_username("repository")
+        selected_user = load_user(userid)
+        all_user_tile_names = selected_user.get_resource_names("tile")
+        repository_starter_tile_names = repository_user.get_resource_names("tile", tag_filter="starter")
+        missing_tiles = list(set(repository_starter_tile_names) - set(all_user_tile_names))
+        for tname in missing_tiles:
+            repository_tile_dict = db[repository_user.tile_collection_name].find_one({"tile_module_name": tname})
+            metadata = copy.copy(repository_tile_dict["metadata"])
+            new_tile_dict = {"tile_module_name": tname, "tile_module": repository_tile_dict["tile_module"],
+                             "metadata": metadata}
+            db[selected_user.tile_collection_name].insert_one(new_tile_dict)
+        return jsonify({"success": True, "message": "added {} tiles".format(len(missing_tiles))})
 
     def migrate_user(self, userid):
         print "entering migrate user"

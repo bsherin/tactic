@@ -537,7 +537,7 @@ class UserManagerResourceManager extends ResourceManager{
         let tags = this.get_tags();
         this.setting_tags = true;
         for (let i = 0; i < tags.length; i++) {
-            this.get_tags_field().tagEditor('removeTag', tags[i]);
+            this.get_tags_field().tagEditor('removeTag', tags[i], true);
         }
         this.setting_tags = false;
         if ($(active_element).hasClass("search-field")) {

@@ -350,9 +350,14 @@ class TileManager(UserManageResourceManager):
     def render_loaded_tile_list(self, user_obj=None):
         if user_obj is None:
             user_obj = current_user
-        loaded_tiles = global_tile_manager.get_loaded_user_tiles_list(user_obj.username)
+        nondefault_tiles = global_tile_manager.get_nondefault_tiles_list(user_obj.username)
+        default_tiles = global_tile_manager.get_default_tiles(user_obj.username)
+        failed_loads = global_tile_manager.get_failed_loads_list(user_obj.username)
         with app.test_request_context():
-            result = render_template("user_manage/loaded_tile_list.html", user_tile_name_list=loaded_tiles)
+            result = render_template("user_manage/loaded_tile_list.html",
+                                     default_tiles_list=default_tiles,
+                                     nondefault_tiles_list=nondefault_tiles,
+                                     failed_tile_name_list=failed_loads)
         return result
 
     def request_update_loaded_tile_list(self):
