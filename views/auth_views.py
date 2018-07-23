@@ -44,7 +44,9 @@ def attempt_login():
         login_user(user, remember=data["remember_me"])
         user.set_user_timezone_offset(data["tzOffset"])
         user.set_last_login()
+        error_list = tactic_app.global_tile_manager.load_user_default_tiles(current_user.username)
         result_dict["logged_in"] = True
+        result_dict["tile_loading_errors"] = error_list
     else:
         result_dict["logged_in"] = False
     return jsonify(result_dict)
