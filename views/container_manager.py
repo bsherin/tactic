@@ -75,7 +75,7 @@ class ContainerManager(ResourceManager):
             self.show_um_message("initializing the global tile manager", user_manage_id)
             global_tile_manager.initialize()
             self.show_um_message("getting default tiles", user_manage_id)
-            global_tile_manager.get_all_default_tiles()
+            # global_tile_manager.get_all_default_tiles()
         except Exception as ex:
             template = "<pre>An exception of type {0} occured. Arguments:\n{1!r}</pre>"
             error_string = template.format(type(ex).__name__, ex.args)

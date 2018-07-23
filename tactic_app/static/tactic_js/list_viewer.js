@@ -17,7 +17,7 @@ function start_post_load ()  {
 class ListViewer extends ResourceViewer {
 
     construct_html_from_the_content(the_content) {
-        return `<textarea id="listarea" style="height: 100%; display:inline-block">${the_content}</textarea>`;
+        return `<textarea id="listarea" style="height: 100%; display:inline-block; resize:both">${the_content}</textarea>`;
     }
 
     get_current_content() {
