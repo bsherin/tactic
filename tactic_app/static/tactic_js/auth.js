@@ -30,7 +30,7 @@ function attempt_open_register() {
             window.open($SCRIPT_ROOT + "/register")
         }
         else {
-        doFlash({"message": "You aren't authorized. Email bsherin@northwestern.edu to request a new account.", "alert_type": "alert-info"})
+            doFlash({"message": "You aren't authorized. Email bsherin@northwestern.edu to request a new account.", "alert_type": "alert-info"})
         }
     });
 }

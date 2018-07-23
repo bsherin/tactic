@@ -61,7 +61,7 @@ def exec_user_code(the_code):
     try:
         exec the_code
     except:
-        error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+        error_string = unicode(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         return {"success": False, "message_string": error_string}
     return {"success": True, "classes": code_names["classes"].keys(), "functions": code_names["functions"].keys()}
 
@@ -589,7 +589,7 @@ class TileBase(object):
                 if not self.configured:
                     new_html = "Tile not configured"
                 else:
-                    new_html = str(self.render_content())
+                    new_html = unicode(self.render_content())
             self.current_html = new_html
             self.tworker.emit_tile_message("displayTileContent", {"html": new_html})
         except Exception as ex:
@@ -1364,31 +1364,31 @@ class TileBase(object):
                 the_html = "<table class='tile-table sidebyside-table table-striped table-bordered table-sm'>"
 
         if title is not None:
-            the_html += "<caption>{0}</caption>".format(title)
+            the_html += u"<caption>{0}</caption>".format(title)
         if has_header:
-            the_html += "<thead><tr>"
+            the_html += u"<thead><tr>"
             for c in data_list[0]:
-                the_html += "<th>{0}</th>".format(c)
-            the_html += "</tr></thead>"
-        the_html += "<tbody>"
+                the_html += u"<th>{0}</th>".format(c)
+            the_html += u"</tr></thead>"
+        the_html += u"<tbody>"
         for rnum, r in enumerate(data_list[1:]):
-            if click_type == "row-clickable":
-                the_html += "<tr class='row-clickable'>"
+            if click_type == u"row-clickable":
+                the_html += u"<tr class='row-clickable'>"
                 for c in r:
-                    the_html += "<td>{0}</td>".format(c)
-                the_html += "</tr>"
-            elif click_type == "word-clickable":
-                the_html += "<tr>"
+                    the_html += u"<td>{0}</td>".format(c)
+                the_html += u"</tr>"
+            elif click_type == u"word-clickable":
+                the_html += u"<tr>"
                 for c in r:
-                    the_html += "<td class='word-clickable'>{0}</td>".format(c)
-                the_html += "</tr>"
+                    the_html += u"<td class='word-clickable'>{0}</td>".format(c)
+                the_html += u"</tr>"
             else:
-                the_html += "<tr>"
+                the_html += u"<tr>"
                 for cnum, c in enumerate(r):
-                    the_html += "<td class='element-clickable' data-row='{1}' " \
-                                "data-col='{2}' data-val='{0}'>{0}</td>".format(c, str(rnum), str(cnum))
+                    the_html += u"<td class='element-clickable' data-row='{1}' " \
+                                "data-col='{2}' data-val='{0}'>{0}</td>".format(c, unicode(rnum), unicode(cnum))
                 the_html += "</tr>"
-        the_html += "</tbody></table>"
+        the_html += u"</tbody></table>"
         self.restore_stdout()
         return the_html
 

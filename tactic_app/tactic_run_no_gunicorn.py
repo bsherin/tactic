@@ -21,7 +21,7 @@ from tactic_app import host_workers
 print "imported app"
 
 import tactic_app
-tactic_app.global_tile_manager.get_all_default_tiles()
+# tactic_app.global_tile_manager.get_all_default_tiles()
 
 from views import tester_views
 

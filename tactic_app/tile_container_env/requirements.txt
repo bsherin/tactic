@@ -9,4 +9,4 @@ pandas
 scipy
 scikit-learn
 tweepy
-wordcloud==1.2
+wordcloud==1.4.1
