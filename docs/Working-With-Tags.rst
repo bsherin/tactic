@@ -44,3 +44,8 @@ will only see exports that match the tag.
 .. figure:: images/export_tags.png
     :width: 400px
 
+The **default** tag
+-------------------
+
+The tag **default** has a special meaning when it is assigned to a tile.
+You can read more `here <Which-tiles-are-available-when.html>`__.
