@@ -23,7 +23,7 @@ one of these collections, select it in the list and click the
 web browser tab should open and you should see a table (or freeform
 document) with your data.
 
-|image0|
+.. figure:: images/load_coll.png
 
 If you want, you can also explore additional sample collections
 available in the repository, which provides resources that can be used
