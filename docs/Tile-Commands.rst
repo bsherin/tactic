@@ -382,6 +382,7 @@ The libraries listed below are currently available for import from tiles.
     The `global_import` function, described above, can simplify things. If you write `global_import("nltk")`, for example, then
     nltk will be available to all methods.
 
+-  `fuzzywuzzy <https://github.com/seatgeek/fuzzywuzzy>`__
 -  `nltk <http://www.nltk.org>`__
 -  `numpy <http://www.numpy.org>`__
 -  `scipy <httsp://scipy.org>`__
