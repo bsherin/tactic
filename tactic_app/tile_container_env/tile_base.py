@@ -10,6 +10,7 @@ import os
 import cPickle
 from cPickle import UnpicklingError
 from communication_utils import is_jsonizable, make_python_object_jsonizable, debinarize_python_object
+from fuzzywuzzy import fuzz
 
 
 if "RETRIES" in os.environ:
@@ -398,18 +399,56 @@ class TileBase(object):
         choice_list.sort()
         return choice_list
 
-    def create_select_list_html(self, choice_list, starting_value=None):
+    def create_select_list_html(self, choice_list, starting_value=None, att_name=None):
+        if starting_value is None:
+            new_start_value = self.find_best_fuzzy_match(att_name, choice_list)
+        elif starting_value not in choice_list:
+            new_start_value = self.find_best_fuzzy_match(starting_value, choice_list)
+        else:
+            new_start_value = starting_value
         new_html = ""
         for choice in choice_list:
-            if choice == starting_value:
+            if choice == new_start_value:
                 new_html += self.select_option_selected_template.format(choice)
             else:
                 new_html += self.select_option_template.format(choice)
         return new_html
 
+    def find_best_fuzzy_match(self, the_item, the_list):
+        best_match_item = None
+        best_match_value = 0
+        for candidate in the_list:
+            new_val = fuzz.partial_ratio(the_item, candidate)
+            if best_match_item is None or new_val > best_match_value:
+                best_match_item = candidate
+                best_match_value = new_val
+        return best_match_item
+
+
+    def find_best_pipe_match(self, starting_value, att_name, option_tags):
+        best_match_item = None
+        best_match_value = 0
+        for tile_id, tile_entry in self._pipe_dict.items():
+            if tile_id == self.tworker.my_id:
+                continue
+            if starting_value is None:
+                att_to_match = att_name
+            else:
+                att_to_match = starting_value
+            for full_export_name, edict in tile_entry.items():
+                if self.check_for_tag_match(option_tags, edict["export_tags"].split()):
+                    if full_export_name == starting_value:
+                        return full_export_name
+                    else:
+                        new_val = fuzz.partial_ratio(att_to_match, full_export_name)
+                        if best_match_item is None or new_val > best_match_value:
+                            best_match_item = full_export_name
+                            best_match_value = new_val
+        return best_match_item
+
     # Info needed here: list_names, current_header_list, pipe_dict, doc_names
     @task_worthy
-    def create_form_html(self, data):
+    def create_form_html(self, data):  # tactic_working
         self._pipe_dict = data["pipe_dict"]
         try:
             form_html = ""
@@ -428,29 +467,30 @@ class TileBase(object):
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
                     header_list = data["current_header_list"]
-                    form_html += self.create_select_list_html(header_list, starting_value)
+                    form_html += self.create_select_list_html(header_list, starting_value, att_name)
                     form_html += '</select></div>'
                 elif option["type"] == "tokenizer_select":  # for backward compatibility
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
                     fnames = self.get_sorted_match_list(["tokenizer"], data["function_names"])
-                    form_html += self.create_select_list_html(fnames, starting_value)
+                    form_html += self.create_select_list_html(fnames, starting_value, att_name)
                     form_html += '</select></div>'
                 elif option["type"] == "weight_function_select":  # for backward compatibility
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
                     fnames = self.get_sorted_match_list(["weight_function"], data["function_names"])
-                    form_html += self.create_select_list_html(fnames, starting_value)
+                    form_html += self.create_select_list_html(fnames, starting_value, att_name)
                     form_html += '</select></div>'
                 elif option["type"] == "cluster_metric":  # for backward comptibility
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
                     cmetricnames = self.get_sorted_match_list(["cluster_metric"], data["function_names"])
-                    form_html += self.create_select_list_html(cmetricnames, starting_value)
+                    form_html += self.create_select_list_html(cmetricnames, starting_value, att_name)
                     form_html += '</select></div>'
                 elif option["type"] == "pipe_select":
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
+                    best_pipe_match = self.find_best_pipe_match(starting_value, att_name, option_tags)
                     for tile_id, tile_entry in self._pipe_dict.items():
                         if tile_id == self.tworker.my_id:
                             continue
@@ -463,7 +503,7 @@ class TileBase(object):
                         for full_export_name, edict in tile_entry.items():
                             if self.check_for_tag_match(option_tags, edict["export_tags"].split()):
                                 group_len += 1
-                                if full_export_name == starting_value:
+                                if full_export_name == best_pipe_match:
                                     group_html += self.select_option_val_selected_template.format(full_export_name, edict["export_name"])
                                 else:
                                     group_html += self.select_option_val_template.format(full_export_name, edict["export_name"])
@@ -476,47 +516,47 @@ class TileBase(object):
                     form_html += the_template.format(att_name)
                     tile_name_list = data["other_tile_names"]
                     tile_name_list.sort()
-                    form_html += self.create_select_list_html(tile_name_list, starting_value)
+                    form_html += self.create_select_list_html(tile_name_list, starting_value, att_name)
                     form_html += '</select></div>'
                 elif option["type"] == "document_select":
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
-                    form_html += self.create_select_list_html(data["doc_names"], starting_value)
+                    form_html += self.create_select_list_html(data["doc_names"], starting_value, att_name)
                     form_html += '</select></div>'
                 elif option["type"] == "list_select":
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
                     choice_list = self.get_sorted_match_list(option_tags, data["list_names"])
-                    form_html += self.create_select_list_html(choice_list, starting_value)
+                    form_html += self.create_select_list_html(choice_list, starting_value, att_name)
                     form_html += '</select></div>'
                 elif option["type"] == "collection_select":
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
                     choice_list = self.get_sorted_match_list(option_tags, data["collection_names"])
-                    form_html += self.create_select_list_html(choice_list, starting_value)
+                    form_html += self.create_select_list_html(choice_list, starting_value, att_name)
                     form_html += '</select></div>'
                 elif option["type"] == "function_select":
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
                     choice_list = self.get_sorted_match_list(option_tags, data["function_names"])
-                    form_html += self.create_select_list_html(choice_list, starting_value)
+                    form_html += self.create_select_list_html(choice_list, starting_value, att_name)
                     form_html += '</select></div>'
                 elif option["type"] == "class_select":
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
                     choice_list = self.get_sorted_match_list(option_tags, data["class_names"])
-                    form_html += self.create_select_list_html(choice_list, starting_value)
+                    form_html += self.create_select_list_html(choice_list, starting_value, att_name)
                     form_html += '</select></div>'
                 elif option["type"] == "palette_select":
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
                     color_palette_names.sort()
-                    form_html += self.create_select_list_html(color_palette_names, starting_value)
+                    form_html += self.create_select_list_html(color_palette_names, starting_value, att_name)
                     form_html += '</select></div>'
                 elif option["type"] == "custom_list":
                     the_template = self.input_start_template + self.select_base_template
                     form_html += the_template.format(att_name)
-                    form_html += self.create_select_list_html(option["special_list"], starting_value)
+                    form_html += self.create_select_list_html(option["special_list"], starting_value, att_name)
                     form_html += '</select></div>'
                 elif option["type"] == "textarea":
                     the_template = self.input_start_template + self.textarea_template
