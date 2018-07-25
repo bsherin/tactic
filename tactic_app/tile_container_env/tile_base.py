@@ -10,7 +10,7 @@ import os
 import cPickle
 from cPickle import UnpicklingError
 from communication_utils import is_jsonizable, make_python_object_jsonizable, debinarize_python_object
-from fuzzywuzzy import fuzz
+from fuzzywuzzy import fuzz, process
 
 
 if "RETRIES" in os.environ:
@@ -401,11 +401,12 @@ class TileBase(object):
 
     def create_select_list_html(self, choice_list, starting_value=None, att_name=None):
         if starting_value is None:
-            new_start_value = self.find_best_fuzzy_match(att_name, choice_list)
+            new_start_value= process.extractOne(att_name, choice_list, scorer=fuzz.partial_ratio)[0]
         elif starting_value not in choice_list:
-            new_start_value = self.find_best_fuzzy_match(starting_value, choice_list)
+            new_start_value = process.extractOne(starting_value, choice_list, scorer=fuzz.partial_ratio)[0]
         else:
             new_start_value = starting_value
+        print "for {} new_start_value is {}".format(att_name, new_start_value)
         new_html = ""
         for choice in choice_list:
             if choice == new_start_value:
@@ -413,17 +414,6 @@ class TileBase(object):
             else:
                 new_html += self.select_option_template.format(choice)
         return new_html
-
-    def find_best_fuzzy_match(self, the_item, the_list):
-        best_match_item = None
-        best_match_value = 0
-        for candidate in the_list:
-            new_val = fuzz.partial_ratio(the_item, candidate)
-            if best_match_item is None or new_val > best_match_value:
-                best_match_item = candidate
-                best_match_value = new_val
-        return best_match_item
-
 
     def find_best_pipe_match(self, starting_value, att_name, option_tags):
         best_match_item = None
@@ -448,7 +438,7 @@ class TileBase(object):
 
     # Info needed here: list_names, current_header_list, pipe_dict, doc_names
     @task_worthy
-    def create_form_html(self, data):  # tactic_working
+    def create_form_html(self, data):
         self._pipe_dict = data["pipe_dict"]
         try:
             form_html = ""

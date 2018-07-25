@@ -19,19 +19,20 @@ Python-related
 Scientific computing in Python
 ------------------------------
 
+-  `beautifulsoup4 <https://www.crummy.com/software/BeautifulSoup/>`__ (from bs4 import BeautifulSoup)
 -  `fuzzywuzzy <https://github.com/seatgeek/fuzzywuzzy>`__
+-  `gensim <https://radimrehurek.com/gensim/>`__
+-  `markdown <https://github.com/Python-Markdown/markdown>`__
+-  `networkx <https://networkx.github.io>`__
 -  `nltk <http://www.nltk.org>`__
 -  `numpy <http://www.numpy.org>`__
 -  `scipy <httsp://scipy.org>`__
 -  `matplotlib <https://matplotlib.org>`__
+-  `regex <https://pypi.org/project/regex/>`__
 -  `pandas <http://pandas.pydata.org>`__
--  `scikit-learn <http://scikit-learn.org/stable/index.html>`__
--  `gensim <https://radimrehurek.com/gensim/>`__
--  `beautifulsoup4 <https://www.crummy.com/software/BeautifulSoup/>`__
-   (from bs4 import BeautifulSoup)
--  `networkx <https://networkx.github.io>`__
--  `markdown <https://github.com/Python-Markdown/markdown>`__
+-  `sklearn <http://scikit-learn.org/stable/index.html>`__
 -  `wordcloud <https://github.com/amueller/word_cloud>`__
+
 
 Javascript
 ----------------------------
