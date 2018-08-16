@@ -69,7 +69,6 @@
   #table-area tr {
     height: auto; }
   #table-area td {
-    max-width: 700px;
     padding: 5px 10px;
     font-size: 10pt;
     vertical-align: top;

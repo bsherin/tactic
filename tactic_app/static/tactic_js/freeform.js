@@ -71,7 +71,6 @@ function doUnfilter() {
 class TableSpec {
     constructor(dict) {
         this.doc_name = dict.doc_name;
-        this.table_width = dict.table_width;
     }
 }
 
