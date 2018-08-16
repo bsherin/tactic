@@ -203,41 +203,45 @@ function build_and_render_menu_objects() {
 }
 
 function column_command(menu_id) {
-    const column_header = tableObject.selected_header;
-    if (column_header != null) {
+    const sanitized_column_header = tableObject.selected_header;
+    const column_header = tableObject.current_spec.header_from_sanitized_header(sanitized_column_header);
+    if (sanitized_column_header != null) {
         switch (menu_id) {
             case "shift-left":
             {
-                deselect_header(column_header);
+                deselect_header(sanitized_column_header);
                 tableObject.current_spec.shift_column_left(column_header);
                 tableObject.build_table();
                 updateHeaderList();
+                tableObject.broadcast_column_widths();
                 dirty = true;
                 break;
             }
             case "shift-right":
             {
-                deselect_header(column_header);
+                deselect_header(sanitized_column_header);
                 tableObject.current_spec.shift_column_right(column_header);
                 tableObject.build_table();
                 updateHeaderList();
+                tableObject.broadcast_column_widths();
                 dirty = true;
                 break;
             }
             case "hide":
             {
-                deselect_header(column_header);
-                const col_class = ".column-" + column_header;
+                deselect_header(sanitized_column_header);
+                const col_class = ".column-" + sanitized_column_header;
                 $(col_class).fadeOut();
                 tableObject.current_spec.hidden_columns_list.push(column_header);
                 dirty = true;
                 updateHeaderList();
+                tableObject.broadcast_column_widths();
                 break;
             }
             case "hide-in-all-docs":
             {
-                deselect_header(column_header);
-                const col_class = ".column-" + column_header;
+                deselect_header(sanitized_column_header);
+                const col_class = ".column-" + sanitized_column_header;
                 $(col_class).fadeOut();
                 tableObject.current_spec.hidden_columns_list.push(column_header);
                 dirty = true;
@@ -247,7 +251,7 @@ function column_command(menu_id) {
 
         }
     }
-    else if (menu_id == "unhide") {
+    if (menu_id == "unhide") {
         tableObject.current_spec.hidden_columns_list = ["__filename__"];
         tableObject.build_table();
         updateHeaderList();
@@ -283,10 +287,13 @@ function createColumn() {
     showModal("Create Column All Docs", "New Column Name", function (new_name) {
         const column_name = new_name;
         tableObject.current_spec.header_list.push(column_name);
+        let cwidth = tableObject.compute_added_column_width(column_name);
+        tableObject.current_spec.column_widths.push(cwidth);
+        tableObject.current_spec.sanitize_headers();
         tableObject.build_table();
-        get_column(column_name).text(" ");  // This seems to be necessary for the column to be editable
+        get_column(tableObject.current_spec.sanitized_header_from_header(column_name)).text(" ");  // This seems to be necessary for the column to be editable
 
-        const data_dict = {"column_name": column_name, "all_docs": true};
+        const data_dict = {"column_name": column_name, "column_width": cwidth, "all_docs": true};
         broadcast_event_to_server("CreateColumn", data_dict, function () {
             dirty = true
         })
@@ -297,15 +304,19 @@ function createColumnThisDoc() {
     showModal("Create Column This Doc", "New Column Name", function (new_name) {
         const column_name = new_name;
         tableObject.current_spec.header_list.push(column_name);
+        let cwidth = tableObject.compute_added_column_width(column_name);
+        tableObject.current_spec.column_widths.push(cwidth);
+        tableObject.current_spec.sanitize_headers();
         tableObject.build_table();
-        get_column(column_name).text(" ");  // This seems to be necessary for the column to be editable
+        get_column(tableObject.current_spec.sanitized_header_from_header(column_name)).text(" ");  // This seems to be necessary for the column to be editable
 
         const data_dict = {"column_name": column_name,
                            "doc_name": tableObject.current_doc_name,
+                            "column_width": cwidth,
                            "all_docs": false};
         broadcast_event_to_server("CreateColumn", data_dict, function () {
             dirty = true
-        })
+        });
     })
 }
 

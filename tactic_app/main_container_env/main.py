@@ -39,7 +39,9 @@ def task_worthy(m):
     task_worthy_methods[m.__name__] = "mainwindow"
     return m
 
+
 mongo_uri = os.environ.get("MONGO_URI")
+
 
 # noinspection PyPep8Naming,PyUnusedLocal
 class mainWindow(object):
@@ -183,7 +185,6 @@ class mainWindow(object):
     def clear_main_status_message(self):
         data = {"main_id": self.mworker.my_id}
         self.mworker.post_task("host", "clear_main_status_message", data)
-
 
     # legacy
     def update_legacy_console_html(self):
@@ -1485,7 +1486,7 @@ class mainWindow(object):
         print "entering UpdateColumnWidths with " + str(data)
         doc = self.doc_dict[data["doc_name"]]
         doc.table_spec.column_widths = data["column_widths"]
-        doc.table_spec.table_width = data["table_width"]
+        # doc.table_spec.table_width = data["table_width"]
         return None
 
     @task_worthy
@@ -1494,11 +1495,14 @@ class mainWindow(object):
         if not data["all_docs"]:
             doc = self.doc_dict[data["doc_name"]]
             doc.table_spec.header_list.append(column_name)
+            doc.table_spec.column_widths.append(data["column_width"])
             for r in doc.data_rows.values():
                 r[column_name] = ""
         else:
             for doc in self.doc_dict.values():
                 doc.table_spec.header_list.append(column_name)
+                if doc.table_spec.column_widths is not None:
+                    doc.table_spec.column_widths.append(data["column_width"])
                 for r in doc.data_rows.values():
                     r[column_name] = ""
 
