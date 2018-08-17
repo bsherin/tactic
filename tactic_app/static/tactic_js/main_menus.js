@@ -211,7 +211,6 @@ function column_command(menu_id) {
             {
                 deselect_header(sanitized_column_header);
                 tableObject.current_spec.shift_column_left(column_header);
-                tableObject.build_table();
                 updateHeaderList();
                 tableObject.broadcast_column_widths();
                 dirty = true;
@@ -221,7 +220,6 @@ function column_command(menu_id) {
             {
                 deselect_header(sanitized_column_header);
                 tableObject.current_spec.shift_column_right(column_header);
-                tableObject.build_table();
                 updateHeaderList();
                 tableObject.broadcast_column_widths();
                 dirty = true;

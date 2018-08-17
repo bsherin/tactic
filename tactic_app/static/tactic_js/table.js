@@ -109,41 +109,71 @@ class TableSpec {
         return this.header_list[this.header_list_sanitized.indexOf(sanitized_header)]
     }
 
-    shift_column_left (column_name) {
-        for (let i = 0; i < this.header_list.length; ++i) {
-            if (this.header_list[i] == column_name) {
-                if (i == 0) {
-                    return;
-                }
-                else {
-                    this.header_list.splice(i, 1);
-                    this.header_list.splice(i - 1, 0, column_name);
-                    let column_width = this.column_widths[i];
-                    this.column_widths.splice(i, 1);
-                    this.column_widths.splice(i - 1, 0, column_width)
-                }
-                break;
-            }
+    reorder_columns_in_dom(from, to, move_header, sanitized_id) {
+        let all_rows;
+        let h_class = "column-" + sanitized_id;
+        $("." + h_class).css("display", "none");
+        if (move_header) {
+            all_rows = $("#table-area tr");
         }
-        this.sanitize_headers();
+        else {
+            all_rows = $("#table-area tbody tr");
+        }
+        const nrows = all_rows.length;
+        for (let i = 0; i < nrows; ++i) {
+            let the_row = all_rows[i];
+            let the_cells = $(the_row).find("th, td");
+            if (to >= the_cells.length) {
+                let target = $(the_cells[the_cells.length - 1]);
+                $(the_cells[from]).detach().insertAfter(target);
+            }
+            else {
+                let target = $(the_cells[to]);
+                $(the_cells[from]).detach().insertBefore(target)
+            }
+
+        }
+        $("." + h_class).fadeIn("slow");
+    }
+
+    shift_column_left (column_name) {
+        let i = this.header_list.indexOf(column_name);
+        if (i != 0) {
+            this.header_list.splice(i, 1);
+            this.header_list.splice(i - 1, 0, column_name);
+            let column_width = this.column_widths[i];
+            this.column_widths.splice(i, 1);
+            this.column_widths.splice(i - 1, 0, column_width);
+            this.reorder_columns_in_dom(i, i - 1, true, this.header_list_sanitized[i]);
+            this.sanitize_headers();
+        }
     }
 
     shift_column_right (column_name) {
-        for (let i = 0; i < (this.header_list.length - 1); ++i) {
-            if (this.header_list[i] == column_name) {
-                this.header_list.splice(i, 1);
-                this.header_list.splice(i + 1, 0, column_name);
-                let column_width = this.column_widths[i];
-                this.column_widths.splice(i, 1);
-                this.column_widths.splice(i + 1, 0, column_width);
-                break
-            }
+        let i = this.header_list.indexOf(column_name);
+
+        if (i != this.header_list.length)  {
+            this.header_list.splice(i, 1);
+            this.header_list.splice(i + 1, 0, column_name);
+            let column_width = this.column_widths[i];
+            this.column_widths.splice(i, 1);
+            this.column_widths.splice(i + 1, 0, column_width);
+            this.reorder_columns_in_dom(i, i + 2, true, this.header_list_sanitized[i]);
+            this.sanitize_headers();
         }
-        this.sanitize_headers();
     }
 
-    reorder_columns(new_sanitized_column_order) {
+    reorder_columns(sanitized_id, new_sanitized_column_order) {
+        let ncols = this.header_list.length;
+        let original_position = this.header_list.indexOf(this.header_from_sanitized_header(sanitized_id));
+        let new_position = new_sanitized_column_order.indexOf(sanitized_id);
         let new_column_order = [];
+
+        // Without the next two lines, the next time that this header is dragged
+        // it appears above the header row during the drag
+        $("#" + sanitized_id).css("left", "");
+        $("#" + sanitized_id).css("top", "");
+        if (new_position == original_position) return false;
         for (let sanh of new_sanitized_column_order) {
             new_column_order.push(this.header_from_sanitized_header(sanh))
         }
@@ -154,7 +184,15 @@ class TableSpec {
         }
         this.header_list = new_column_order;
         this.column_widths = new_widths;
+        if (new_position > original_position) {
+            this.reorder_columns_in_dom(original_position, new_position + 1, false, sanitized_id);
+        }
+        else {
+            this.reorder_columns_in_dom(original_position, new_position, false, sanitized_id);
+        }
+
         this.sanitize_headers();
+        return true;
     }
 }
 
@@ -335,12 +373,14 @@ class TableObjectClass {
         $("#table-area thead tr").sortable({
             axis: "x",
             zIndex: 9999,
-            stop: function() {
+            stop: function(event, ui) {
                 const new_sanitized_header_order = $("#table-area thead tr").sortable("toArray");
-                tableObject.current_spec.reorder_columns(new_sanitized_header_order);
-                tableObject.build_table();
-                updateHeaderList();
-                dirty = true;
+                const sanitized_id = ui.item[0].id;
+                if (tableObject.current_spec.reorder_columns(sanitized_id, new_sanitized_header_order)) {
+                    updateHeaderList();
+                    self.broadcast_column_widths();
+                    dirty = true;
+                }
             }
         });
 
@@ -424,6 +464,8 @@ class TableObjectClass {
         }
 
         function save_column_widths() {
+            // Clearing the height of table-area is necessary because the resizing sets the height
+            $("#table-area").height("");
             self.broadcast_column_widths();
         }
 
