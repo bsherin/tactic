@@ -131,7 +131,6 @@ $selected-column-background: #e0e0e0;
     }
 
     td {
-        max-width: $cell-max-width;
         padding: $cell-padding-top-bottom $cell-padding-left-right;
         font-size: $table-font-size;
         vertical-align: top;

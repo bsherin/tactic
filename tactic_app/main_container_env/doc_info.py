@@ -11,6 +11,9 @@ PROTECTED_METADATA_KEYS = ["_id", "file_id", "name", "my_class_for_recreate", "t
 
 
 class TableSpec(object):
+    # table_width isn't used anymore for anything. But it's there in some old saves. So this is necessary
+    # to avoid getting an error
+    # legacy
     def __init__(self, doc_name=None, header_list=None, table_width=None, column_widths=None,
                  cell_backgrounds=None, hidden_columns_list=None):
         self.doc_name = doc_name
@@ -18,7 +21,6 @@ class TableSpec(object):
             self.header_list = []
         else:
             self.header_list = self.remove_duplicates(header_list)
-        self.table_width = table_width
         if column_widths is None:
             self.column_widths = None
         else:
@@ -40,7 +42,7 @@ class TableSpec(object):
     def compile_save_dict(self):
         print "in table_spec compile_save_dict"
         return {"doc_name": self.doc_name, "header_list": self.header_list,
-                "table_width": self.table_width, "column_widths": self.column_widths,
+                "column_widths": self.column_widths,
                 "cell_backgrounds": self.cell_backgrounds, "hidden_columns_list": self.hidden_columns_list}
 
     @staticmethod
