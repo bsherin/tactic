@@ -40,7 +40,7 @@ class TileWorker(QWorker):
         return {"success": True, "message": 'This is a tile communicating'}
 
     def ask_host(self, msg_type, task_data=None, callback_func=None):
-        task_data["main_id"] = self.tile_instance.main_id
+        task_data["main_id"] = self.tile_instance._main_id
         self.post_task("host", msg_type, task_data, callback_func)
         return
 
@@ -163,7 +163,7 @@ class TileWorker(QWorker):
                         del reload_dict[attr]
             for (attr, val) in reload_dict.items():
                 setattr(self.tile_instance, attr, val)
-            form_html = self.tile_instance.create_form_html(reload_dict["form_info"])["form_html"]
+            form_html = self.tile_instance._create_form_html(reload_dict["form_info"])["form_html"]
             print("leaving reinstantiate_tile_class")
             if not self.tile_instance.exports:
                 self.tile_instance.exports = []
@@ -226,14 +226,14 @@ class TileWorker(QWorker):
 
     @task_worthy
     def render_tile(self, data):
-        return self.tile_instance.render_me(data)
+        return self.tile_instance._render_me(data)
 
 
 if __name__ == "__main__":
     print "entering main"
-    tile_base.tworker = TileWorker()
-    print "tworker is created, about to start my_id is " + str(tile_base.tworker.my_id)
-    tile_base.tworker.start()
-    print "tworker started, my_id is " + str(tile_base.tworker.my_id)
+    tile_base._tworker = TileWorker()
+    print "tworker is created, about to start my_id is " + str(tile_base._tworker.my_id)
+    tile_base._tworker.start()
+    print "tworker started, my_id is " + str(tile_base._tworker.my_id)
     while True:
         time.sleep(1000)
