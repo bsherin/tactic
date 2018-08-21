@@ -373,6 +373,14 @@ class TableObjectClass {
         $("#table-area thead tr").sortable({
             axis: "x",
             zIndex: 9999,
+            opacity: 0.5,
+            start: function(event, ui) {
+                const sanitized_id = ui.item[0].id;
+                $(".dragspot").css("background-color", "yellow");
+                $(".dragspot").width(ui.item.outerWidth());
+                $("td.column-" + sanitized_id).fadeOut();
+            },
+            placeholder: "dragspot",
             stop: function(event, ui) {
                 const new_sanitized_header_order = $("#table-area thead tr").sortable("toArray");
                 const sanitized_id = ui.item[0].id;
@@ -380,6 +388,9 @@ class TableObjectClass {
                     updateHeaderList();
                     self.broadcast_column_widths();
                     dirty = true;
+                }
+                else {
+                    $("td.column-" + sanitized_id).fadeIn();
                 }
             }
         });

@@ -23,12 +23,12 @@ else:
 from qworker import task_worthy_methods
 
 
-def task_worthy(m):
+def _task_worthy(m):
     task_worthy_methods[m.__name__] = "tilebase"
     return m
 
 
-jsonizable_types = {
+_jsonizable_types = {
     "str": str,
     "list": list,
     "tuple": tuple,
@@ -42,19 +42,19 @@ jsonizable_types = {
 }
 
 
-code_names = {"classes": {},
-              "functions": {}}
+_code_names = {"classes": {},
+               "functions": {}}
 
-tworker = None
+_tworker = None
 
 
 def user_function(the_func):
-    code_names["functions"][the_func.__name__] = the_func
+    _code_names["functions"][the_func.__name__] = the_func
     return the_func
 
 
 def user_class(the_class):
-    code_names["classes"][the_class.__name__] = the_class
+    _code_names["classes"][the_class.__name__] = the_class
     return the_class
 
 
@@ -64,12 +64,12 @@ def exec_user_code(the_code):
     except:
         error_string = unicode(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         return {"success": False, "message_string": error_string}
-    return {"success": True, "classes": code_names["classes"].keys(), "functions": code_names["functions"].keys()}
+    return {"success": True, "classes": _code_names["classes"].keys(), "functions": _code_names["functions"].keys()}
 
 
 def clear_and_exec_user_code(the_code):
-    code_names["classes"] = {}
-    code_names["functions"] = {}
+    _code_names["classes"] = {}
+    _code_names["functions"] = {}
     return exec_user_code(the_code)
 
 
@@ -79,28 +79,26 @@ def clear_and_exec_user_code(the_code):
 class TileBase(object):
     category = "basic"
     exports = []
-    input_start_template = '<div class="form-group form-group-sm"">' \
-                           '<label>{0}</label>'
-    basic_input_template = '<input type="{1}" class="form-control form-control-sm" id="{0}" value="{2}"></input>' \
-                           '</div>'
-    textarea_template = '<textarea type="{1}" class="form-control form-control-sm" id="{0}" value="{2}">{2}</textarea>' \
-                        '</div>'
-    codearea_template = '<textarea type="{1}" class="form-control form-control-sm codearea" id="{0}" value="{2}">{2}' \
-                        '</textarea></div>'
-    select_base_template = '<select class="form-control form-control-sm" id="{0}">'
-    select_option_template = '<option value="{0}">{0}</option>'
-    select_option_val_template = '<option value="{0}">{1}</option>'
-    select_option_selected_template = '<option value="{0}" selected>{0}</option>'
-    select_option_val_selected_template = '<option value="{0}" selected>{1}</option>'
-    boolean_template = '<div class="form-group form-check"><label class="form-check-label" style="font-weight: 700">'\
-                       '<input type="checkbox" class="form-check-input" id="{0}" value="{0}" {1}>{0}</label>' \
-                       '</div>'
-    reload_attrs = ["tile_name", "tile_type", "base_figure_url", "user_id", "doc_type",
-                    "header_height", "front_height", "front_width", "back_height",
-                    "back_width", "tda_width", "tda_height", "width", "height", "full_tile_width",
-                    "tile_log_height", "tile_log_width",
-                    "full_tile_height", "is_shrunk", "configured"
-                    ]
+    _input_start_template = '<div class="form-group form-group-sm""><label>{0}</label>'
+    _basic_input_template = ('<input type="{1}" class="form-control form-control-sm" id="{0}" value="{2}"></input>'
+                             '</div>')
+    _textarea_template = ('<textarea type="{1}" class="form-control form-control-sm" id="{0}" value="{2}">'
+                          '{2}</textarea></div>')
+    _codearea_template = ('<textarea type="{1}" class="form-control form-control-sm codearea" id="{0}" value="{2}">{2}'
+                          '</textarea></div>')
+    _select_base_template = '<select class="form-control form-control-sm" id="{0}">'
+    _select_option_template = '<option value="{0}">{0}</option>'
+    _select_option_val_template = '<option value="{0}">{1}</option>'
+    _select_option_selected_template = '<option value="{0}" selected>{0}</option>'
+    _select_option_val_selected_template = '<option value="{0}" selected>{1}</option>'
+    _boolean_template = ('<div class="form-group form-check"><label class="form-check-label" style="font-weight: 700">'
+                         '<input type="checkbox" class="form-check-input" id="{0}" value="{0}" {1}>{0}</label>'
+                         '</div>')
+    _reload_attrs = ["tile_name", "tile_type", "base_figure_url", "user_id", "doc_type",
+                     "header_height", "front_height", "front_width", "back_height",
+                     "back_width", "tda_width", "tda_height", "width", "height", "full_tile_width",
+                     "tile_log_height", "tile_log_width",
+                     "full_tile_height", "is_shrunk", "configured"]
 
     def __init__(self, main_id_ignored=None, tile_id_ignored=None, tile_name=None):
         self._sleepperiod = .0001
@@ -111,7 +109,6 @@ class TileBase(object):
                            "full_tile_width", "full_tile_height", "is_shrunk", "img_dict", "is_d3"]
         # These define the state of a tile and should be saved
 
-        self.tworker = tworker
         self.tile_type = self.__class__.__name__
         if tile_name is None:
             self.tile_name = self.tile_type
@@ -119,30 +116,20 @@ class TileBase(object):
             self.tile_name = tile_name
         self.doc_type = None
 
-        # These will differ each time the tile is instantiated.
-        self.main_id = os.environ["PARENT"]
-        self.figure_id = 0
         self.width = ""
         self.height = ""
         self.full_tile_width = ""
         self.full_tile_height = ""
         self.img_dict = {}
         self.user_id = None
-        self.data_dict = {}
-        self.current_data_id = 0
-        self.current_unique_id_index = 0
         self.is_shrunk = False
-        # self.base_data_url = url_for("data_source", main_id=main_id, tile_id=tile_id, data_name="X")[:-1]
-        self.base_data_url = ""
         self.configured = False
-        self.list_names = []
-        self.class_names = []
-        self.function_names = []
-        self._pipe_dict = None  # This is set when the form is created
-        self.is_pseudo = False
-        self.current_html = None
-        self.old_stdout = None
         self.is_d3 = False
+        self.current_html = None
+        self._old_stdout = None
+        self._pipe_dict = None  # This is set when the form is created
+        self._main_id = os.environ["PARENT"]
+        self._tworker = _tworker
         return
 
     """
@@ -150,35 +137,29 @@ class TileBase(object):
     """
 
     def post_event(self, event_name, task_data=None):
-        self.tworker.post_task(self.tworker.my_id, event_name, task_data)
+        self._tworker.post_task(self._tworker.my_id, event_name, task_data)
         return
 
     @property
-    def current_reload_attrs(self):
+    def _current_reload_attrs(self):
         result = {}
-        for attr in self.reload_attrs:
+        for attr in self._reload_attrs:
             result[attr] = getattr(self, attr)
         return result
 
-    # def debug_log(self, msg):
-    #     print msg
-        # with self.app.test_request_context():
-        #     self.app.logger.debug(msg)
-
-    @task_worthy
+    @_task_worthy
     def RefreshTile(self, data):
-        self.do_the_refresh()
+        self._do_the_refresh()
         return None
 
-    @task_worthy
-    def get_property(self, data):
-        print "in get_property with data[property] " + str(data["property"])
+    @_task_worthy
+    def _get_property(self, data):
         data["val"] = getattr(self, data["property"])
         return data
 
     def get_function_names(self, tag=None):
-        func_tag_dict = self.tworker.post_and_wait("host", "get_function_tags_dict",
-                                                   {"user_id": self.user_id})["function_names"]
+        func_tag_dict = self._tworker.post_and_wait("host", "get_function_tags_dict",
+                                                    {"user_id": self.user_id})["function_names"]
         if tag is None:
             fnames = func_tag_dict.keys()
         else:
@@ -189,8 +170,8 @@ class TileBase(object):
         return fnames
 
     def get_class_names(self, tag=None):
-        class_tag_dict = self.tworker.post_and_wait("host", "get_class_tags_dict",
-                                                    {"user_id": self.user_id})["class_names"]
+        class_tag_dict = self._tworker.post_and_wait("host", "get_class_tags_dict",
+                                                     {"user_id": self.user_id})["class_names"]
         if tag is None:
             cnames = class_tag_dict.keys()
         else:
@@ -201,11 +182,10 @@ class TileBase(object):
         return cnames
 
     # noinspection PyAttributeOutsideInit
-
-    @task_worthy
+    @_task_worthy
     def TileSizeChange(self, data):
-        self.width = data["width"]
-        self.height = data["height"]
+        self.width = data["width"]  # this might not be used for anything
+        self.height = data["height"]  # this might not be used for anything
         self.full_tile_width = data["full_tile_width"]
         self.full_tile_height = data["full_tile_height"]
         self.header_height = data["header_height"]
@@ -217,144 +197,144 @@ class TileBase(object):
         self.tile_log_width = data["tile_log_width"]
         self.tda_height = data["tda_height"]
         self.tda_width = data["tda_width"]
-        self.margin = data["margin"]
+        self._margin = data["margin"]
         if self.configured:
             if isinstance(self, MplFigure):
-                self.resize_mpl_tile()
+                self._resize_mpl_tile()
             else:
                 self.handle_size_change()
         return None
 
-    @task_worthy
+    @_task_worthy
     def RefreshTileFromSave(self, data):
         print "in RefreshTileFromSave"
-        self.refresh_from_save()
+        self._refresh_from_save()
         return None
 
-    @task_worthy
+    @_task_worthy
     def SetSizeFromSave(self, data):
-        self.set_tile_size(self.full_tile_width, self.full_tile_height)
+        self._set_tile_size(self.full_tile_width, self.full_tile_height)
         return None
 
-    @task_worthy
+    @_task_worthy
     def UpdateOptions(self, data):
         self.update_options(data)
         return None
 
-    @task_worthy
+    @_task_worthy
     def CellChange(self, data):
         self.handle_cell_change(data["column_header"], data["id"], data["old_content"],
                                 data["new_content"], data["doc_name"])
         return None
 
-    @task_worthy
+    @_task_worthy
     def FreeformTextChange(self, data):
         self.handle_freeform_text_change(data["new_content"], data["doc_name"])
         return None
 
-    @task_worthy
+    @_task_worthy
     def TileButtonClick(self, data):
         try:
             self.handle_button_click(data["button_value"], data["doc_name"], data["active_row_id"])
         except Exception as ex:
-            self.handle_exception(ex)
+            self._handle_exception(ex)
         return None
 
-    @task_worthy
+    @_task_worthy
     def TileMessage(self, data):
         try:
             self.handle_tile_message(data["event_name"], data["event_data"])
         except Exception as ex:
-            self.handle_exception(ex)
+            self._handle_exception(ex)
         return None
 
-    @task_worthy
+    @_task_worthy
     def TileFormSubmit(self, data):
         try:
             self.handle_form_submit(data["form_data"], data["doc_name"], data["active_row_id"])
         except Exception as ex:
-            self.handle_exception(ex)
+            self._handle_exception(ex)
         return None
 
-    @task_worthy
+    @_task_worthy
     def SelectChange(self, data):
         try:
             self.handle_select_change(data["select_value"], data["doc_name"], data["active_row_id"])
         except Exception as ex:
-            self.handle_exception(ex)
+            self._handle_exception(ex)
         return None
 
-    @task_worthy
+    @_task_worthy
     def TileTextAreaChange(self, data):
         self.handle_textarea_change(data["text_value"])
         return None
 
-    @task_worthy
+    @_task_worthy
     def TextSelect(self, data):
         self.handle_text_select(data["selected_text"])
         return None
 
-    @task_worthy
+    @_task_worthy
     def DocChange(self, data):
         self.handle_doc_change(data["doc_name"])
         return None
 
-    @task_worthy
+    @_task_worthy
     def PipeUpdate(self, data):
         self.handle_pipe_update(data["pipe_name"])
         return None
 
-    @task_worthy
+    @_task_worthy
     def TileWordClick(self, data):
         self.handle_tile_word_click(data["clicked_text"], data["doc_name"], data["active_row_id"])
         return None
 
-    @task_worthy
+    @_task_worthy
     def TileRowClick(self, data):
         self.handle_tile_row_click(data["clicked_row"], data["doc_name"], data["active_row_id"])
         return None
 
-    @task_worthy
+    @_task_worthy
     def TileCellClick(self, data):
         self.handle_tile_cell_click(data["clicked_cell"], data["doc_name"], data["active_row_id"])
         return None
 
-    @task_worthy
+    @_task_worthy
     def TileElementClick(self, data):
         self.handle_tile_element_click(data["dataset"], data["doc_name"], data["active_row_id"])
         return None
 
-    @task_worthy
+    @_task_worthy
     def HideOptions(self, data):
-        self.hide_options()
+        self._hide_options()
         return None
 
-    @task_worthy
+    @_task_worthy
     def StartSpinner(self, data):
         self.start_spinner()
         return None
 
-    @task_worthy
+    @_task_worthy
     def StopSpinner(self, data):
         self.stop_spinner()
         return None
 
-    @task_worthy
+    @_task_worthy
     def ShrinkTile(self, data):
         self.is_shrunk = True
         return None
 
-    @task_worthy
+    @_task_worthy
     def ExpandTile(self, data):
         self.is_shrunk = False
         return None
 
-    @task_worthy
+    @_task_worthy
     def LogTile(self, data):
         self.handle_log_tile()
         return None
 
-    @task_worthy
+    @_task_worthy
     def LogParams(self, data):
         parray = [["name", "value"]]
         for opt in self.options:
@@ -365,43 +345,43 @@ class TileBase(object):
                     summary=summary)
         return None
 
-    @task_worthy
+    @_task_worthy
     def RebuildTileForms(self, data):
-        form_html = self.create_form_html(data)["form_html"]
-        self.tworker.emit_tile_message("displayFormContent", {"html": form_html})
+        form_html = self._create_form_html(data)["form_html"]
+        self._tworker.emit_tile_message("displayFormContent", {"html": form_html})
         return None
 
-    def get_tag_base(self, the_tag):
+    def _get_tag_base(self, the_tag):
         if "/" not in the_tag:
             return the_tag
         else:
             base = re.findall(r"/(\w*)$", the_tag)[0]
             return base
 
-    def check_for_tag_match(self, option_tags, source_tags):
+    def _check_for_tag_match(self, option_tags, source_tags):
         full_source_tag_list = []
         for source_tag in source_tags:
             full_source_tag_list.append(source_tag)
-            tbase = self.get_tag_base(source_tag)
+            tbase = self._get_tag_base(source_tag)
             if tbase not in full_source_tag_list:
                 full_source_tag_list.append(tbase)
 
         for opt_tag in option_tags:
-            if not opt_tag in full_source_tag_list:
+            if opt_tag not in full_source_tag_list:
                 return False
         return True
 
-    def get_sorted_match_list(self, option_tags, choice_dict):
+    def _get_sorted_match_list(self, option_tags, choice_dict):
         choice_list = []
         for choice, tags in choice_dict.items():
-            if self.check_for_tag_match(option_tags, tags.split()):
+            if self._check_for_tag_match(option_tags, tags.split()):
                 choice_list.append(choice)
         choice_list.sort()
         return choice_list
 
-    def create_select_list_html(self, choice_list, starting_value=None, att_name=None):
+    def _create_select_list_html(self, choice_list, starting_value=None, att_name=None):
         if starting_value is None:
-            new_start_value= process.extractOne(att_name, choice_list, scorer=fuzz.partial_ratio)[0]
+            new_start_value = process.extractOne(att_name, choice_list, scorer=fuzz.partial_ratio)[0]
         elif starting_value not in choice_list:
             new_start_value = process.extractOne(starting_value, choice_list, scorer=fuzz.partial_ratio)[0]
         else:
@@ -410,23 +390,23 @@ class TileBase(object):
         new_html = ""
         for choice in choice_list:
             if choice == new_start_value:
-                new_html += self.select_option_selected_template.format(choice)
+                new_html += self._select_option_selected_template.format(choice)
             else:
-                new_html += self.select_option_template.format(choice)
+                new_html += self._select_option_template.format(choice)
         return new_html
 
-    def find_best_pipe_match(self, starting_value, att_name, option_tags):
+    def _find_best_pipe_match(self, starting_value, att_name, option_tags):
         best_match_item = None
         best_match_value = 0
         for tile_id, tile_entry in self._pipe_dict.items():
-            if tile_id == self.tworker.my_id:
+            if tile_id == self._tworker.my_id:
                 continue
             if starting_value is None:
                 att_to_match = att_name
             else:
                 att_to_match = starting_value
             for full_export_name, edict in tile_entry.items():
-                if self.check_for_tag_match(option_tags, edict["export_tags"].split()):
+                if self._check_for_tag_match(option_tags, edict["export_tags"].split()):
                     if full_export_name == starting_value:
                         return full_export_name
                     else:
@@ -437,8 +417,8 @@ class TileBase(object):
         return best_match_item
 
     # Info needed here: list_names, current_header_list, pipe_dict, doc_names
-    @task_worthy
-    def create_form_html(self, data):
+    @_task_worthy
+    def _create_form_html(self, data):
         self._pipe_dict = data["pipe_dict"]
         try:
             form_html = ""
@@ -454,35 +434,35 @@ class TileBase(object):
                 self.save_attrs.append(att_name)
                 starting_value = getattr(self, att_name)
                 if option["type"] == "column_select":
-                    the_template = self.input_start_template + self.select_base_template
+                    the_template = self._input_start_template + self._select_base_template
                     form_html += the_template.format(att_name)
                     header_list = data["current_header_list"]
-                    form_html += self.create_select_list_html(header_list, starting_value, att_name)
+                    form_html += self._create_select_list_html(header_list, starting_value, att_name)
                     form_html += '</select></div>'
                 elif option["type"] == "tokenizer_select":  # for backward compatibility
-                    the_template = self.input_start_template + self.select_base_template
+                    the_template = self._input_start_template + self._select_base_template
                     form_html += the_template.format(att_name)
-                    fnames = self.get_sorted_match_list(["tokenizer"], data["function_names"])
-                    form_html += self.create_select_list_html(fnames, starting_value, att_name)
+                    fnames = self._get_sorted_match_list(["tokenizer"], data["function_names"])
+                    form_html += self._create_select_list_html(fnames, starting_value, att_name)
                     form_html += '</select></div>'
                 elif option["type"] == "weight_function_select":  # for backward compatibility
-                    the_template = self.input_start_template + self.select_base_template
+                    the_template = self._input_start_template + self._select_base_template
                     form_html += the_template.format(att_name)
-                    fnames = self.get_sorted_match_list(["weight_function"], data["function_names"])
-                    form_html += self.create_select_list_html(fnames, starting_value, att_name)
+                    fnames = self._get_sorted_match_list(["weight_function"], data["function_names"])
+                    form_html += self._create_select_list_html(fnames, starting_value, att_name)
                     form_html += '</select></div>'
                 elif option["type"] == "cluster_metric":  # for backward comptibility
-                    the_template = self.input_start_template + self.select_base_template
+                    the_template = self._input_start_template + self._select_base_template
                     form_html += the_template.format(att_name)
-                    cmetricnames = self.get_sorted_match_list(["cluster_metric"], data["function_names"])
-                    form_html += self.create_select_list_html(cmetricnames, starting_value, att_name)
+                    cmetricnames = self._get_sorted_match_list(["cluster_metric"], data["function_names"])
+                    form_html += self._create_select_list_html(cmetricnames, starting_value, att_name)
                     form_html += '</select></div>'
                 elif option["type"] == "pipe_select":
-                    the_template = self.input_start_template + self.select_base_template
+                    the_template = self._input_start_template + self._select_base_template
                     form_html += the_template.format(att_name)
-                    best_pipe_match = self.find_best_pipe_match(starting_value, att_name, option_tags)
+                    best_pipe_match = self._find_best_pipe_match(starting_value, att_name, option_tags)
                     for tile_id, tile_entry in self._pipe_dict.items():
-                        if tile_id == self.tworker.my_id:
+                        if tile_id == self._tworker.my_id:
                             continue
                         first_full_name = tile_entry.keys()[0]
                         first_short_name = tile_entry.values()[0]["export_name"]
@@ -491,77 +471,79 @@ class TileBase(object):
                         group_html = "<optgroup label={}>".format(tile_name)
                         group_len = 0
                         for full_export_name, edict in tile_entry.items():
-                            if self.check_for_tag_match(option_tags, edict["export_tags"].split()):
+                            if self._check_for_tag_match(option_tags, edict["export_tags"].split()):
                                 group_len += 1
                                 if full_export_name == best_pipe_match:
-                                    group_html += self.select_option_val_selected_template.format(full_export_name, edict["export_name"])
+                                    group_html += self._select_option_val_selected_template.format(full_export_name,
+                                                                                                   edict["export_name"])
                                 else:
-                                    group_html += self.select_option_val_template.format(full_export_name, edict["export_name"])
+                                    group_html += self._select_option_val_template.format(full_export_name,
+                                                                                          edict["export_name"])
                         if group_len > 0:
                             group_html += "</optgroup>"
                             form_html += group_html
                     form_html += '</select></div>'
                 elif option["type"] == "tile_select":
-                    the_template = self.input_start_template + self.select_base_template
+                    the_template = self._input_start_template + self._select_base_template
                     form_html += the_template.format(att_name)
                     tile_name_list = data["other_tile_names"]
                     tile_name_list.sort()
-                    form_html += self.create_select_list_html(tile_name_list, starting_value, att_name)
+                    form_html += self._create_select_list_html(tile_name_list, starting_value, att_name)
                     form_html += '</select></div>'
                 elif option["type"] == "document_select":
-                    the_template = self.input_start_template + self.select_base_template
+                    the_template = self._input_start_template + self._select_base_template
                     form_html += the_template.format(att_name)
-                    form_html += self.create_select_list_html(data["doc_names"], starting_value, att_name)
+                    form_html += self._create_select_list_html(data["doc_names"], starting_value, att_name)
                     form_html += '</select></div>'
                 elif option["type"] == "list_select":
-                    the_template = self.input_start_template + self.select_base_template
+                    the_template = self._input_start_template + self._select_base_template
                     form_html += the_template.format(att_name)
-                    choice_list = self.get_sorted_match_list(option_tags, data["list_names"])
-                    form_html += self.create_select_list_html(choice_list, starting_value, att_name)
+                    choice_list = self._get_sorted_match_list(option_tags, data["list_names"])
+                    form_html += self._create_select_list_html(choice_list, starting_value, att_name)
                     form_html += '</select></div>'
                 elif option["type"] == "collection_select":
-                    the_template = self.input_start_template + self.select_base_template
+                    the_template = self._input_start_template + self._select_base_template
                     form_html += the_template.format(att_name)
-                    choice_list = self.get_sorted_match_list(option_tags, data["collection_names"])
-                    form_html += self.create_select_list_html(choice_list, starting_value, att_name)
+                    choice_list = self._get_sorted_match_list(option_tags, data["collection_names"])
+                    form_html += self._create_select_list_html(choice_list, starting_value, att_name)
                     form_html += '</select></div>'
                 elif option["type"] == "function_select":
-                    the_template = self.input_start_template + self.select_base_template
+                    the_template = self._input_start_template + self._select_base_template
                     form_html += the_template.format(att_name)
-                    choice_list = self.get_sorted_match_list(option_tags, data["function_names"])
-                    form_html += self.create_select_list_html(choice_list, starting_value, att_name)
+                    choice_list = self._get_sorted_match_list(option_tags, data["function_names"])
+                    form_html += self._create_select_list_html(choice_list, starting_value, att_name)
                     form_html += '</select></div>'
                 elif option["type"] == "class_select":
-                    the_template = self.input_start_template + self.select_base_template
+                    the_template = self._input_start_template + self._select_base_template
                     form_html += the_template.format(att_name)
-                    choice_list = self.get_sorted_match_list(option_tags, data["class_names"])
-                    form_html += self.create_select_list_html(choice_list, starting_value, att_name)
+                    choice_list = self._get_sorted_match_list(option_tags, data["class_names"])
+                    form_html += self._create_select_list_html(choice_list, starting_value, att_name)
                     form_html += '</select></div>'
                 elif option["type"] == "palette_select":
-                    the_template = self.input_start_template + self.select_base_template
+                    the_template = self._input_start_template + self._select_base_template
                     form_html += the_template.format(att_name)
                     color_palette_names.sort()
-                    form_html += self.create_select_list_html(color_palette_names, starting_value, att_name)
+                    form_html += self._create_select_list_html(color_palette_names, starting_value, att_name)
                     form_html += '</select></div>'
                 elif option["type"] == "custom_list":
-                    the_template = self.input_start_template + self.select_base_template
+                    the_template = self._input_start_template + self._select_base_template
                     form_html += the_template.format(att_name)
-                    form_html += self.create_select_list_html(option["special_list"], starting_value, att_name)
+                    form_html += self._create_select_list_html(option["special_list"], starting_value, att_name)
                     form_html += '</select></div>'
                 elif option["type"] == "textarea":
-                    the_template = self.input_start_template + self.textarea_template
+                    the_template = self._input_start_template + self._textarea_template
                     form_html += the_template.format(att_name, option["type"], starting_value)
                 elif option["type"] == "codearea":
-                    the_template = self.input_start_template + self.codearea_template
+                    the_template = self._input_start_template + self._codearea_template
                     form_html += the_template.format(att_name, option["type"], starting_value)
                 elif option["type"] == "text":
-                    the_template = self.input_start_template + self.basic_input_template
+                    the_template = self._input_start_template + self._basic_input_template
                     form_html += the_template.format(att_name, option["type"], starting_value)
                 elif option["type"] == "int":
-                    the_template = self.input_start_template + self.basic_input_template
+                    the_template = self._input_start_template + self._basic_input_template
                     form_html += the_template.format(att_name, option["type"], str(starting_value))
                 elif option["type"] == "boolean":
-                    the_template = self.boolean_template
+                    the_template = self._boolean_template
                     if starting_value:
                         val = "checked"
                     else:
@@ -579,21 +561,21 @@ class TileBase(object):
             return {"form_html": form_html}
         except:
             error_string = ("error creating form for  " + self.__class__.__name__ + " tile: "
-                            + self.tworker.my_id + " " +
+                            + self._tworker.my_id + " " +
                             str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
-            self.tworker.debug_log("Got an error creating form " + error_string)
+            self._tworker.debug_log("Got an error creating form " + error_string)
             # self.display_message(error_string, True)
             return error_string
 
     # noinspection PyUnresolvedReferences
-    def resize_mpl_tile(self):
+    def _resize_mpl_tile(self):
         self.draw_plot()
         new_html = self.create_figure_html()
         self.refresh_tile_now(new_html)
         return
 
     @property
-    def current_options(self):
+    def _current_options(self):
         result = {}
         for option in self.options:
             attr = option["name"]
@@ -603,17 +585,17 @@ class TileBase(object):
 
     def distribute_event(self, event_name, data_dict):
         data_dict["event_name"] = event_name
-        self.tworker.post_task(self.main_id, "distribute_events_stub", data_dict)
+        self._tworker.post_task(self._main_id, "distribute_events_stub", data_dict)
 
-    def get_main_property(self, prop_name):
+    def _get_main_property(self, prop_name):
         data_dict = {"property": prop_name}
-        result = self.tworker.post_and_wait(self.main_id, "get_property", data_dict)
+        result = self._tworker.post_and_wait(self._main_id, "get_property", data_dict)
         return result["val"]
 
-    def hide_options(self):
-        self.tworker.emit_tile_message("hideOptions")
+    def _hide_options(self):
+        self._tworker.emit_tile_message("hideOptions")
 
-    def do_the_refresh(self, new_html=None):
+    def _do_the_refresh(self, new_html=None):
         try:
             if new_html is None:
                 if not self.configured:
@@ -621,16 +603,16 @@ class TileBase(object):
                 else:
                     new_html = unicode(self.render_content())
             self.current_html = new_html
-            self.tworker.emit_tile_message("displayTileContent", {"html": new_html})
+            self._tworker.emit_tile_message("displayTileContent", {"html": new_html})
         except Exception as ex:
-            self.handle_exception(ex)
+            self._handle_exception(ex)
         return
 
     def display_status(self, message):
-        self.do_the_refresh(message)
+        self._do_the_refresh(message)
         return
 
-    @task_worthy
+    @_task_worthy
     def compile_save_dict(self, data):
         result = {"my_class_for_recreate": "TileBase",
                   "binary_attrs": []}
@@ -648,12 +630,12 @@ class TileBase(object):
                     res[key] = val.compile_save_dict()
                 result[attr] = res
             else:
-                if type(attr_val) in jsonizable_types.values():
+                if type(attr_val) in _jsonizable_types.values():
                     if is_jsonizable(attr_val):
                         result[attr] = attr_val
                         continue
                 try:
-                    self.tworker.debug_log("Found non jsonizable attribute " + attr)
+                    self._tworker.debug_log("Found non jsonizable attribute " + attr)
                     result["binary_attrs"].append(attr)
                     bser_attr_val = make_python_object_jsonizable(attr_val)
                     result[attr] = bser_attr_val
@@ -695,10 +677,10 @@ class TileBase(object):
                     setattr(self, attr, decoded_val)
                 else:
                     setattr(self, attr, attr_val)
-        self.main_id = os.environ["PARENT"]  # this is for backward compatibility with some old project saves
+        self._main_id = os.environ["PARENT"]  # this is for backward compatibility with some old project saves
         return None
 
-    def get_type_info(self, avar):
+    def _get_type_info(self, avar):
         result = {}
         if avar == "__none__":
             result["type"] = "none"
@@ -735,26 +717,26 @@ class TileBase(object):
                 result["info_string"] = result["type"]
         return result
 
-    @task_worthy
-    def set_current_html(self, data):
+    @_task_worthy
+    def _set_current_html(self, data):
         self.current_html = data["current_html"]
         return {"success": True}
 
-    @task_worthy
-    def get_export_info(self, data):
+    @_task_worthy
+    def _get_export_info(self, data):
         try:
             ename = data["export_name"]
             self._pipe_dict = data["pipe_dict"]
             pipe_value = self.get_pipe_value(ename)
-            result = self.get_type_info(pipe_value)
+            result = self._get_type_info(pipe_value)
             result["success"] = True
         except Exception as Ex:
             result = {"success": False,
-                      "info_string": self.handle_exception(Ex, "", print_to_console=False)}
+                      "info_string": self._handle_exception(Ex, "", print_to_console=False)}
         return result
 
-    @task_worthy
-    def evaluate_export(self, data):
+    @_task_worthy
+    def _evaluate_export(self, data):
         self._pipe_dict = data["pipe_dict"]
         pipe_val = self.get_pipe_value(data["export_name"])
         success = True
@@ -762,36 +744,37 @@ class TileBase(object):
             success = False
             the_html = "pipe not found"
         else:
-            ev_string = "pipe_val"
+            ev_string = u"pipe_val"
             if "key" in data:
-                ev_string += "['{}']".format(data["key"])
+                ev_string += u"['{}']".format(data["key"])
             ev_string += data["tail"]
             try:
                 print "evaluating string " + ev_string
                 eval_result = eval(ev_string)
-                eval_type_info = self.get_type_info(eval_result)
+                eval_type_info = self._get_type_info(eval_result)
                 if eval_type_info["type"] == "dict":
                     the_array = []
                     for key, the_val in eval_result.items():
                         the_array.append([key, the_val])
-                    the_html = self.build_html_table_for_exports(the_array, title=eval_type_info["info_string"],
-                                                                 has_header=False)
+                    the_html = self._build_html_table_for_exports(the_array, title=eval_type_info["info_string"],
+                                                                  has_header=False)
                 elif eval_type_info["type"] == "list":
                     the_array = []
                     for i, the_val in enumerate(eval_result):
                         the_array.append([i, the_val])
-                    the_html = self.build_html_table_for_exports(the_array, title=eval_type_info["info_string"],
-                                                                 has_header=False)
+                    the_html = self._build_html_table_for_exports(the_array, title=eval_type_info["info_string"],
+                                                                  has_header=False)
                 else:
-                    the_html = "<h5>{}</h5>".format(eval_type_info["info_string"])
-                    the_html += str(eval_result)
+                    the_html = u"<h5>{}</h5>".format(eval_type_info["info_string"])
+                    the_html += unicode(eval_result)
             except:
                 succcess = False
-                the_html = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+                print "error in _evaluate_export in tile_base"
+                the_html = unicode(sys.exc_info()[0]) + " " + unicode(sys.exc_info()[1])
         return {"success": success, "the_html": the_html}
 
-    def render_me(self, form_info):
-        form_html = self.create_form_html(form_info)["form_html"]
+    def _render_me(self, form_info):
+        form_html = self._create_form_html(form_info)["form_html"]
         if self.is_shrunk:
             dsr_string = ""
             dbr_string = "display: none"
@@ -803,7 +786,7 @@ class TileBase(object):
             bda_string = ""
             main_height = self.full_tile_height
 
-        render_fields = {"tile_id": self.tworker.my_id,
+        render_fields = {"tile_id": self._tworker.my_id,
                          "tile_name": self.tile_name,
                          "form_text": form_html,
                          "current_html": self.current_html,
@@ -821,12 +804,12 @@ class TileBase(object):
                          "triangle_right_display_string": dsr_string,
                          "triangle_bottom_display_string": dbr_string,
                          "front_back_display_string": bda_string}
-        result = self.tworker.post_and_wait("host",
-                                            "request_render",
-                                            {"template": "saved_tile.html", "render_fields": render_fields})
+        result = self._tworker.post_and_wait("host",
+                                             "request_render",
+                                             {"template": "saved_tile.html", "render_fields": render_fields})
         return {"success": True, "tile_html": result["render_result"]}
 
-    def handle_exception(self, ex, special_string=None, print_to_console=True):
+    def _handle_exception(self, ex, special_string=None, print_to_console=True):
         if special_string is None:
             template = "An exception of type {0} occured. Arguments:\n{1!r}\n"
         else:
@@ -834,24 +817,17 @@ class TileBase(object):
         error_string = template.format(type(ex).__name__, ex.args)
         error_string += traceback.format_exc()
         error_string = "<pre>" + error_string + "</pre>"
-        self.tworker.debug_log(error_string)
+        self._tworker.debug_log(error_string)
         summary = "Exception of type {}".format(type(ex).__name__)
         if print_to_console:
             self.log_it(error_string, force_open=True, is_error=True, summary=summary)
         return error_string
 
-    def get_current_pipe_list(self):
-        pipe_list = []
-        for tile_entry in self._pipe_dict.values():
-            for full_export_name, edict in tile_entry.items():
-                pipe_list += [{"name": full_export_name, "tags": edict["export_tags"]}]
-        return pipe_list
+    def _refresh_from_save(self):
+        self._tworker.emit_tile_message("displayTileContent", {"html": self.current_html})
 
-    def refresh_from_save(self):
-        self.tworker.emit_tile_message("displayTileContent", {"html": self.current_html})
-
-    def set_tile_size(self, owidth, oheight):
-        self.tworker.emit_tile_message("setTileSize", {"width": owidth, "height": oheight})
+    def _set_tile_size(self, owidth, oheight):
+        self._tworker.emit_tile_message("setTileSize", {"width": owidth, "height": oheight})
 
     """
     Default Handlers
@@ -865,7 +841,7 @@ class TileBase(object):
             else:
                 setattr(self, opt["name"], form_data[opt["name"]])
         self.configured = True
-        self.hide_options()
+        self._hide_options()
         self.spin_and_refresh()
         return
 
@@ -928,7 +904,7 @@ class TileBase(object):
         return
 
     def render_content(self):
-        self.tworker.debug_log("render_content not implemented")
+        self._tworker.debug_log("render_content not implemented")
         return " "
 
     """
@@ -946,10 +922,10 @@ class TileBase(object):
         self.post_event("StopSpinner")
 
     def start_spinner(self):
-        self.tworker.emit_tile_message("startSpinner")
+        self._tworker.emit_tile_message("startSpinner")
 
     def stop_spinner(self):
-        self.tworker.emit_tile_message("stopSpinner")
+        self._tworker.emit_tile_message("stopSpinner")
 
     def refresh_tile_now(self, new_html=None):
         if new_html is None:
@@ -960,106 +936,151 @@ class TileBase(object):
 
     # Basic setting and access
 
-    def save_stdout(self):
-        self.old_stdout = sys.stdout
+    def _save_stdout(self):
+        self._old_stdout = sys.stdout
         sys.stdout = sys.stderr
         return
 
-    def restore_stdout(self):
-        sys.stdout = self.old_stdout
+    def _restore_stdout(self):
+        sys.stdout = self._old_stdout
+
+    def gdn(self):
+        return self.get_document_names()
 
     def get_document_names(self):
-        self.save_stdout()
-        result = self.get_main_property("doc_names")
-        self.restore_stdout()
+        self._save_stdout()
+        result = self._get_main_property("doc_names")
+        self._restore_stdout()
         return result
+
+    def gcdn(self):
+        return self.get_current_document_name()
 
     def get_current_document_name(self):
-        self.save_stdout()
-        result = self.get_main_property("visible_doc_name")
-        self.restore_stdout()
+        self._save_stdout()
+        result = self._get_main_property("visible_doc_name")
+        self._restore_stdout()
         return result
+
+    def gdd(self, document_name):
+        return self.get_document_data(document_name)
 
     def get_document_data(self, document_name):
-        self.save_stdout()
-        result = self.tworker.post_and_wait(self.main_id, "get_document_data", {"document_name": document_name})
-        self.restore_stdout()
+        self._save_stdout()
+        result = self._tworker.post_and_wait(self._main_id, "get_document_data", {"document_name": document_name})
+        self._restore_stdout()
         return result
+
+    def gdm(self, document_name):
+        return self.get_document_metadata(document_name)
 
     def get_document_metadata(self, document_name):
-        self.save_stdout()
-        result = self.tworker.post_and_wait(self.main_id, "get_document_metadata", {"document_name": document_name})
-        self.restore_stdout()
+        self._save_stdout()
+        result = self._tworker.post_and_wait(self._main_id, "get_document_metadata", {"document_name": document_name})
+        self._restore_stdout()
         return result
 
-    def set_document_metadata(self, document_name, metadata):
-        self.save_stdout()
-        self.tworker.post_task(self.main_id, "set_document_metadata", {"document_name": document_name,
-                                                                       "metadata": metadata})
-        self.restore_stdout()
+    def sdm(self, document_name, metadata):
+        self.set_document_metadata(document_name, metadata)
         return
 
+    def set_document_metadata(self, document_name, metadata):
+        self._save_stdout()
+        self._tworker.post_task(self._main_id, "set_document_metadata", {"document_name": document_name,
+                                                                         "metadata": metadata})
+        self._restore_stdout()
+        return
+
+    def gddl(self, document_name):
+        return self.get_document_data_as_list(document_name)
+
     def get_document_data_as_list(self, document_name):
-        self.save_stdout()
-        result = self.tworker.post_and_wait(self.main_id, "get_document_data_as_list", {"document_name": document_name})
-        self.restore_stdout()
+        self._save_stdout()
+        result = self._tworker.post_and_wait(self._main_id, "get_document_data_as_list",
+                                             {"document_name": document_name})
+        self._restore_stdout()
         return result["data_list"]
 
+    def gcn(self, document_name):
+        return self.get_column_names(document_name)
+
     def get_column_names(self, document_name):
-        self.save_stdout()
-        result = self.tworker.post_and_wait(self.main_id, "get_column_names", {"document_name": document_name})
-        self.restore_stdout()
+        self._save_stdout()
+        result = self._tworker.post_and_wait(self._main_id, "get_column_names", {"document_name": document_name})
+        self._restore_stdout()
         return result["header_list"]
 
+    def gnr(self, document_name):
+        return self.get_number_rows(document_name)
+
     def get_number_rows(self, document_name):
-        self.save_stdout()
-        result = self.tworker.post_and_wait(self.main_id, "get_number_rows", {"document_name": document_name})
-        self.restore_stdout()
+        self._save_stdout()
+        result = self._tworker.post_and_wait(self._main_id, "get_number_rows", {"document_name": document_name})
+        self._restore_stdout()
         return result["number_rows"]
 
+    def gr(self, document_name, row_id):
+        return self.get_row(document_name, row_id)
+
     def get_row(self, document_name, row_id):
-        self.save_stdout()
+        self._save_stdout()
         data = {"document_name": document_name, "row_id": row_id}
-        result = self.tworker.post_and_wait(self.main_id, "get_row", data)
-        self.restore_stdout()
+        result = self._tworker.post_and_wait(self._main_id, "get_row", data)
+        self._restore_stdout()
         return result
+
+    def gl(self, document_name, line_number):
+        return self.get_line(document_name, line_number)
 
     def get_line(self, document_name, line_number):
         data = {"document_name": document_name, "line_number": line_number}
-        result = self.tworker.post_and_wait(self.main_id, "get_line", data)
+        result = self._tworker.post_and_wait(self._main_id, "get_line", data)
         return result
 
+    def gc(self, document_name, row_id, column_name):
+        return self.get_cell(document_name, row_id, column_name)
+
     def get_cell(self, document_name, row_id, column_name):
-        self.save_stdout()
+        self._save_stdout()
         data = {"document_name": document_name, "row_id": row_id, "column_name": column_name}
-        result = self.tworker.post_and_wait(self.main_id, "get_cell", data)
-        self.restore_stdout()
+        result = self._tworker.post_and_wait(self._main_id, "get_cell", data)
+        self._restore_stdout()
         return result["the_cell"]
 
+    def gcd(self, column_name, document_name=None):
+        return self.get_column_data(column_name, document_name)
+
     def get_column_data(self, column_name, document_name=None):
-        self.save_stdout()
+        self._save_stdout()
 
         if document_name is not None:
             task_data = {"column_name": column_name, "doc_name": document_name}
-            result = self.tworker.post_and_wait(self.main_id, "get_column_data_for_doc", task_data)
+            result = self._tworker.post_and_wait(self._main_id, "get_column_data_for_doc", task_data)
         else:
             task_data = {"column_name": column_name}
-            result = self.tworker.post_and_wait(self.main_id, "get_column_data", task_data)
+            result = self._tworker.post_and_wait(self._main_id, "get_column_data", task_data)
 
-        self.restore_stdout()
+        self._restore_stdout()
         return result
 
+    def gcdd(self, column_name):
+        return self.get_column_data_dict(column_name)
+
     def get_column_data_dict(self, column_name):
-        self.save_stdout()
+        self._save_stdout()
         result = {}
         for doc_name in self.get_document_names():
             task_data = {"column_name": column_name, "doc_name": doc_name}
-            result[doc_name] = self.tworker.post_and_wait(self.main_id, "get_column_data_for_doc", task_data)
-        self.restore_stdout()
+            result[doc_name] = self._tworker.post_and_wait(self._main_id, "get_column_data_for_doc", task_data)
+        self._restore_stdout()
         return result
 
+    def sc(self, document_name, row_id, column_name, text, cellchange=True):
+        self.set_cell(document_name, row_id, column_name, text, cellchange)
+        return
+
     def set_cell(self, document_name, row_id, column_name, text, cellchange=True):
-        self.save_stdout()
+        self._save_stdout()
         task_data = {
             "doc_name": document_name,
             "id": row_id,
@@ -1067,51 +1088,60 @@ class TileBase(object):
             "new_content": text,
             "cellchange": cellchange
         }
-        self.tworker.post_task(self.main_id, "SetCellContent", task_data)
-        self.restore_stdout()
+        self._tworker.post_task(self._main_id, "SetCellContent", task_data)
+        self._restore_stdout()
+        return
+
+    def scb(self, document_name, row_id, column_name, color):
+        self.set_cell_background(document_name, row_id, column_name, color)
         return
 
     def set_cell_background(self, document_name, row_id, column_name, color):
-        self.save_stdout()
+        self._save_stdout()
         task_data = {"doc_name": document_name,
                      "row_id": row_id,
                      "column_name": column_name,
                      "color": color}
-        self.tworker.post_task(self.main_id, "SetCellBackground", task_data)
-        self.restore_stdout()
+        self._tworker.post_task(self._main_id, "SetCellBackground", task_data)
+        self._restore_stdout()
+        return
+
+    def stm(self, tile_name, event_name, data=None):
+        self.send_tile_message(tile_name, event_name, data)
         return
 
     def send_tile_message(self, tile_name, event_name, data=None):
-        self.save_stdout()
+        self._save_stdout()
         task_data = {"tile_name": tile_name,
                      "event_name": event_name,
                      "event_data": data}
-        self.tworker.post_task(self.main_id, "SendTileMessage", task_data)
-        self.restore_stdout()
+        self._tworker.post_task(self._main_id, "SendTileMessage", task_data)
+        self._restore_stdout()
         return
 
-    # def set_row(self, document_name, row_number, row_dictionary, cellchange=True):
-    #     for c in row_dictionary.keys():
-    #         self.perform_main_function("_set_cell_content",
-    #                                    [document_name, row_number,c, row_dictionary[c], cellchange])
-    #     return
+    def scd(self, document_name, column_name, data_list_or_dict, cellchange=False):
+        self.set_column_data(document_name, column_name, data_list_or_dict, cellchange)
+        return
 
     def set_column_data(self, document_name, column_name, data_list_or_dict, cellchange=False):
-        self.save_stdout()
+        self._save_stdout()
         task_data = {
             "doc_name": document_name,
             "column_header": column_name,
             "new_content": data_list_or_dict,
             "cellchange": cellchange
         }
-        self.tworker.post_task(self.main_id, "SetColumnData", task_data)
-        self.restore_stdout()
+        self._tworker.post_task(self._main_id, "SetColumnData", task_data)
+        self._restore_stdout()
         return
 
     # Filtering and iteration
 
+    def gmr(self, filter_function, document_name=None):
+        return self.get_matching_rows(filter_function, document_name)
+
     def get_matching_rows(self, filter_function, document_name=None):
-        self.save_stdout()
+        self._save_stdout()
         result = []
         if document_name is not None:
             data_list = self.get_document_data_as_list(document_name)
@@ -1124,18 +1154,22 @@ class TileBase(object):
                 for r in data_list:
                     if filter_function(r):
                         result.append(r)
-        self.restore_stdout()
+        self._restore_stdout()
         return result
 
     def update_document(self, new_data, document_name):
-        self.save_stdout()
-        result = self.tworker.post_and_wait(self.main_id, "update_document",
-                                            {"new_data": new_data, "document_name": document_name})
-        self.restore_stdout()
+        self._save_stdout()
+        result = self._tworker.post_and_wait(self._main_id, "update_document",
+                                             {"new_data": new_data, "document_name": document_name})
+        self._restore_stdout()
+        return
+
+    def dmr(self, filter_function, document_name=None):
+        self.display_matching_rows(filter_function, document_name)
         return
 
     def display_matching_rows(self, filter_function, document_name=None):
-        self.save_stdout()
+        self._save_stdout()
         if self.doc_type == "table":
             if document_name is not None:
                 result = []
@@ -1166,73 +1200,105 @@ class TileBase(object):
                     for rnum, rtxt in enumerate(data_list):
                         if filter_function(rtxt):
                             result[docname].append(rnum)
-        self.tworker.post_task(self.main_id, "display_matching_rows",
-                               {"result": result, "document_name": document_name})
-        self.restore_stdout()
+        self._tworker.post_task(self._main_id, "display_matching_rows",
+                                {"result": result, "document_name": document_name})
+        self._restore_stdout()
+        return
+
+    def cth(self):
+        self.clear_table_highlighting()
         return
 
     def clear_table_highlighting(self):
-        self.save_stdout()
-        self.distribute_event(self.main_id, {})
-        self.restore_stdout()
+        self._save_stdout()
+        self.distribute_event("SearchTable", {})
+        self._restore_stdout()
+        return
+
+    def hmt(self, txt):
+        self.highlight_matching_text(txt)
         return
 
     def highlight_matching_text(self, txt):
-        self.save_stdout()
+        self._save_stdout()
         self.distribute_event("SearchTable", {"text_to_find": txt})
+        self._restore_stdout()
+        return
+
+    def dar(self):
+        self.display_all_rows()
+        return
 
     def display_all_rows(self):
-        self.save_stdout()
-        self.tworker.post_task(self.main_id, "UnfilterTable")
-        self.restore_stdout()
+        self._save_stdout()
+        self._tworker.post_task(self._main_id, "UnfilterTable")
+        self._restore_stdout()
+        return
+
+    def atr(self, func, document_name=None, cellchange=False):
+        self.apply_to_rows(func, document_name, cellchange)
         return
 
     def apply_to_rows(self, func, document_name=None, cellchange=False):
-        self.save_stdout()
+        self._save_stdout()
         if document_name is not None:
             doc_dict = self.get_document_data(document_name)
             new_doc_dict = {}
             for the_id, r in doc_dict.items():
                 new_doc_dict[the_id] = func(r)
             self.set_document(document_name, new_doc_dict, cellchange)
-            self.restore_stdout()
+            self._restore_stdout()
             return None
         else:
             for doc_name in self.get_document_names():
                 self.apply_to_rows(func, doc_name, cellchange)
-            self.restore_stdout()
+            self._restore_stdout()
             return None
 
+    def sd(self, document_name, new_data, cellchange=False):
+        self.set_document(document_name, new_data, cellchange)
+
     def set_document(self, document_name, new_data, cellchange=False):
-        self.save_stdout()
+        self._save_stdout()
         task_data = {"new_data": new_data,
                      "doc_name": document_name,
                      "cellchange": cellchange}
-        self.tworker.post_and_wait(self.main_id, "SetDocument", task_data)
-        self.restore_stdout()
+        self._tworker.post_and_wait(self._main_id, "SetDocument", task_data)
+        self._restore_stdout()
         return
 
     # Other
 
+    def gtd(self, doc_name):
+        self.go_to_document(doc_name)
+        return
+
     def go_to_document(self, doc_name):
-        self.save_stdout()
+        self._save_stdout()
         data = {"doc_name": doc_name}
-        self.tworker.ask_host('go_to_row_in_document', data)
-        self.restore_stdout()
+        self._tworker.ask_host('go_to_row_in_document', data)
+        self._restore_stdout()
+        return
+
+    def gtrid(self, doc_name, row_id):
+        self.go_to_row_in_document(doc_name, row_id)
         return
 
     def go_to_row_in_document(self, doc_name, row_id):
-        self.save_stdout()
+        self._save_stdout()
         data = {"doc_name": doc_name,
                 "row_id": row_id}
-        self.tworker.ask_host('go_to_row_in_document', data)
-        self.restore_stdout()
+        self._tworker.ask_host('go_to_row_in_document', data)
+        self._restore_stdout()
         return
 
+    def gst(self):
+        return self.get_selected_text()
+
     def get_selected_text(self):
-        self.save_stdout()
-        result = self.get_main_property("selected_text")
-        self.restore_stdout()
+        self._save_stdout()
+        result = self._get_main_property("selected_text")
+        self._restore_stdout()
         return result
 
     def display_message(self, message_string, force_open=True, is_error=False, summary=None):
@@ -1244,128 +1310,136 @@ class TileBase(object):
         return
 
     def log_it(self, message_string, force_open=True, is_error=False, summary=None):
-        self.save_stdout()
-        self.tworker.post_task(self.main_id, "print_to_console_event", {"print_string": message_string,
-                                                                        "force_open": force_open,
-                                                                        "is_error": is_error,
-                                                                        "summary": summary})
-        self.restore_stdout()
+        self._save_stdout()
+        self._tworker.post_task(self._main_id, "print_to_console_event", {"print_string": message_string,
+                                                                          "force_open": force_open,
+                                                                          "is_error": is_error,
+                                                                          "summary": summary})
+        self._restore_stdout()
+        return
+
+    def cct(self, doc_name, row_id, column_name, tokenized_text, color_dict):
+        self.color_cell_text(doc_name, row_id, column_name, tokenized_text, color_dict)
         return
 
     def color_cell_text(self, doc_name, row_id, column_name, tokenized_text, color_dict):
-        # actual_row = self.tworker.post_and_wait(self.main_id, "get_actual_row", data)["actual_row"]
-        self.save_stdout()
+        self._save_stdout()
         data_dict = {"doc_name": doc_name,
                      "row_id": row_id,
                      "column_header": column_name,
                      "token_text": tokenized_text,
                      "color_dict": color_dict}
-        self.tworker.post_task(self.main_id, "ColorTextInCell", data_dict)
-        self.restore_stdout()
+        self._tworker.post_task(self._main_id, "ColorTextInCell", data_dict)
+        self._restore_stdout()
         return
 
+    def gulist(self, the_list):
+        return self.get_user_list(the_list)
+
     def get_user_list(self, the_list):
-        self.save_stdout()
-        result = self.tworker.post_and_wait("host", "get_list", {"user_id": self.user_id, "list_name": the_list})
-        self.restore_stdout()
+        self._save_stdout()
+        result = self._tworker.post_and_wait("host", "get_list", {"user_id": self.user_id, "list_name": the_list})
+        self._restore_stdout()
         return result["the_list"]
 
+    def gufunction(self, function_name):
+        return self.get_user_function(function_name)
+
     def get_user_function(self, function_name):
-        self.save_stdout()
-        result = self.tworker.post_and_wait("host", "get_code_with_function", {"user_id": self.user_id,
-                                                                               "function_name": function_name})
+        self._save_stdout()
+        result = self._tworker.post_and_wait("host", "get_code_with_function", {"user_id": self.user_id,
+                                                                                "function_name": function_name})
         the_code = result["the_code"]
         result = exec_user_code(the_code)
-        self.restore_stdout()
-        return code_names["functions"][function_name]
+        self._restore_stdout()
+        return _code_names["functions"][function_name]
+
+    def guclass(self, class_name):
+        return self.get_user_class(class_name)
 
     def get_user_class(self, class_name):
-        self.save_stdout()
-        result = self.tworker.post_and_wait("host", "get_code_with_class", {"user_id": self.user_id,
-                                                                            "class_name": class_name})
+        self._save_stdout()
+        result = self._tworker.post_and_wait("host", "get_code_with_class", {"user_id": self.user_id,
+                                                                             "class_name": class_name})
         the_code = result["the_code"]
         result = exec_user_code(the_code)
-        self.restore_stdout()
-        return code_names["classes"][class_name]
+        self._restore_stdout()
+        return _code_names["classes"][class_name]
+
+    def gucol(self, collection_name):
+        return self.get_user_collection(collection_name)
 
     def get_user_collection(self, collection_name):
-        self.save_stdout()
-        result = self.tworker.post_and_wait(self.main_id, "get_user_collection",
-                                            {"user_id": self.user_id, "collection_name": collection_name})
-        self.restore_stdout()
+        self._save_stdout()
+        result = self._tworker.post_and_wait(self._main_id, "get_user_collection",
+                                             {"user_id": self.user_id, "collection_name": collection_name})
+        self._restore_stdout()
         return result["the_collection"]
 
     # deprecated
     def get_tokenizer(self, tokenizer_name):
-        self.save_stdout()
+        self._save_stdout()
         result = self.get_user_function(tokenizer_name)
-        self.restore_stdout()
+        self._restore_stdout()
         return result
 
     # deprecated
     def get_cluster_metric(self, metric_name):
-        self.save_stdout()
+        self._save_stdout()
         result = self.get_user_function(metric_name)
-        self.restore_stdout()
+        self._restore_stdout()
         return result
 
     def get_pipe_value(self, pipe_key):
-        self.save_stdout()
+        self._save_stdout()
         for(tile_id, tile_entry) in self._pipe_dict.items():
             if pipe_key in tile_entry:
-                result = self.tworker.post_and_wait(tile_entry[pipe_key]["tile_id"],
-                                                    "transfer_pipe_value",
-                                                    {"export_name": tile_entry[pipe_key]["export_name"]},
-                                                    timeout=60,
-                                                    tries=RETRIES)
+                result = self._tworker.post_and_wait(tile_entry[pipe_key]["tile_id"],
+                                                     "_transfer_pipe_value",
+                                                     {"export_name": tile_entry[pipe_key]["export_name"]},
+                                                     timeout=60,
+                                                     tries=RETRIES)
                 encoded_val = result["encoded_val"]
                 val = debinarize_python_object(encoded_val)
-                self.restore_stdout()
+                self._restore_stdout()
                 return val
-        self.restore_stdout()
+        self._restore_stdout()
         return None
 
-    @task_worthy
-    def transfer_pipe_value(self, data):
-        self.save_stdout()
+    @_task_worthy
+    def _transfer_pipe_value(self, data):
+        self._save_stdout()
         export_name = data["export_name"]
         if hasattr(self, export_name):
             res = getattr(self, export_name)
         else:
             res = "__none__"
         encoded_val = make_python_object_jsonizable(res)
-        self.restore_stdout()
+        self._restore_stdout()
         return {"encoded_val": encoded_val}
 
     def get_weight_function(self, weight_function_name):
-        self.save_stdout()
+        self._save_stdout()
         result = self.get_user_function(weight_function_name)
-        self.restore_stdout()
+        self._restore_stdout()
         return result
 
-    def create_data_source(self, data):
-        dataname = str(self.current_data_id)
-        self.current_data_id += 1
-        self.data_dict[dataname] = data
-        return dataname
+    def cc(self, name, doc_dict, doc_type="table", doc_metadata=None):
+        self.create_collection(name, doc_dict, doc_type, doc_metadata)
+        return
 
     def create_collection(self, name, doc_dict, doc_type="table", doc_metadata=None):
-        self.save_stdout()
+        self._save_stdout()
         data = {"name": name,
                 "doc_dict": doc_dict,
                 "doc_type": doc_type}
         if doc_metadata is not None:
             data["doc_metadata"] = doc_metadata
         else:
-            doc_metadata = {}
-        self.tworker.post_task(self.main_id, "create_collection", data)
-        self.restore_stdout()
+            data["doc_metadata"] = {}
+        self._tworker.post_task(self._main_id, "create_collection", data)
+        self._restore_stdout()
         return
-
-    def get_unique_div_id(self):
-        unique_id = "div-{0}-{1}-{2}".format(self.main_id, self.tworker.my_id, self.current_unique_id_index)
-        self.current_unique_id_index += 1
-        return str(unique_id)
 
     """
 
@@ -1379,19 +1453,24 @@ class TileBase(object):
             result += it
         return result
 
+    def bht(self, data_list, title=None, click_type="word-clickable",
+            sortable=True, sidebyside=False, has_header=True):
+        return self.build_html_table_from_data_list(data_list, title, click_type,
+                                                    sortable, sidebyside, has_header)
+
     def build_html_table_from_data_list(self, data_list, title=None, click_type="word-clickable",
                                         sortable=True, sidebyside=False, has_header=True):
-        self.save_stdout()
+        self._save_stdout()
         if sortable:
             if not sidebyside:
-                the_html = "<table class='tile-table table table-striped table-bordered table-sm sortable'>"
+                the_html = u"<table class='tile-table table table-striped table-bordered table-sm sortable'>"
             else:
-                the_html = "<table class='tile-table sidebyside-table table-striped table-bordered table-sm sortable'>"
+                the_html = u"<table class='tile-table sidebyside-table table-striped table-bordered table-sm sortable'>"
         else:
             if not sidebyside:
-                the_html = "<table class='tile-table table table-striped table-bordered table-sm'>"
+                the_html = u"<table class='tile-table table table-striped table-bordered table-sm'>"
             else:
-                the_html = "<table class='tile-table sidebyside-table table-striped table-bordered table-sm'>"
+                the_html = u"<table class='tile-table sidebyside-table table-striped table-bordered table-sm'>"
 
         if title is not None:
             the_html += u"<caption>{0}</caption>".format(title)
@@ -1400,8 +1479,12 @@ class TileBase(object):
             for c in data_list[0]:
                 the_html += u"<th>{0}</th>".format(c)
             the_html += u"</tr></thead>"
+            start_from = 1
+        else:
+            start_from = 0
         the_html += u"<tbody>"
-        for rnum, r in enumerate(data_list[1:]):
+
+        for rnum, r in enumerate(data_list[start_from:]):
             if click_type == u"row-clickable":
                 the_html += u"<tr class='row-clickable'>"
                 for c in r:
@@ -1416,30 +1499,29 @@ class TileBase(object):
                 the_html += u"<tr>"
                 for cnum, c in enumerate(r):
                     the_html += u"<td class='element-clickable' data-row='{1}' " \
-                                "data-col='{2}' data-val='{0}'>{0}</td>".format(c, unicode(rnum), unicode(cnum))
+                                u"data-col='{2}' data-val='{0}'>{0}</td>".format(c, unicode(rnum), unicode(cnum))
                 the_html += "</tr>"
         the_html += u"</tbody></table>"
-        self.restore_stdout()
+        self._restore_stdout()
         return the_html
 
-    def build_html_table_for_exports(self, data_list, has_header=False, title=None):
-        the_html = "<table class='tile-table table sortable table-striped table-bordered table-sm'>"
+    def _build_html_table_for_exports(self, data_list, has_header=False, title=None):
+        the_html = u"<table class='tile-table table sortable table-striped table-bordered table-sm'>"
         if title is not None:
-            the_html += "<caption>{0}</caption>".format(title)
+            the_html += u"<caption>{0}</caption>".format(title)
         if has_header:
-            the_html += "<thead><tr>"
+            the_html += u"<thead><tr>"
             for c in data_list[0]:
-                the_html += "<th>{0}</th>".format(c)
-            the_html += "</tr><tbody>"
+                the_html += u"<th>{0}</th>".format(c)
+            the_html += u"</tr><tbody>"
             start = 1
         else:
             start = 0
         for r in data_list[start:]:
-            the_html += "<tr>".format()
+            the_html += u"<tr>".format()
             for c in r:
-                the_html += "<td>{0}</td>".format(str(c))
-            the_html += "</tr>"
+                the_html += u"<td>{0}</td>".format(unicode(c))
+            the_html += u"</tr>"
 
-        the_html += "</tbody></table>"
+        the_html += u"</tbody></table>"
         return the_html
-

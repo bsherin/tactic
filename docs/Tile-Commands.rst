@@ -5,6 +5,8 @@ This is the second part of the Tile API. These are the commands that are
 available to programmers of new tiles. Where they make sense, they can also
 be used in `Logs and Notebooks <Log-And-Notebook.html>`__.
 
+To save typing, many of the commmands have shorter equivalents.
+
 .. note::
 
     All of these commands are methods of the tile base class, ``TileBase``.
@@ -53,9 +55,13 @@ Data Access
 
         Returns a list of all document names in the current collection.
 
+        Synonym: ``gdn``
+
     .. py:method:: get_current_document_name()
 
         Returns the name of the current document.
+
+        Synonym: ``gcdn``
 
     .. py:method:: get_document_data(document_name)
 
@@ -65,6 +71,8 @@ Data Access
 
         For freeform documents, the document is returned as a string.
 
+        Synonym: ``gdd``
+
     .. py:method:: get_document_data_as_list(document_name)
 
         Returns all of the data in the document represented as a list.
@@ -72,14 +80,20 @@ Data Access
         For table documents, each item corresponds to a row. For freeform
         documents, each item corresponds to a line.
 
+        Synonym: ``gddl``
+
     .. py:method:: get_column_names (document_name)
 
         Returns a list containing the column names of the specified document. (Table documents only.)
+
+        Synonym: ``gcn``
 
     .. py:method:: get_number_rows(document_name)
 
         Returns the number of rows in the specified document for table
         documents. For freeform documents, returns the number of lines.
+
+        Synonym: ``gnr``
 
     .. py:method:: get_row(document_name, row_id)
 
@@ -87,16 +101,22 @@ Data Access
         documents, the specified line is returned. **self.get_line** is a
         synonym.
 
+        Synonym: ``gr``
+
     .. py:method:: get_cell(document_name, row_id, column_name)
 
         Returns the text in the specified cell.
         **row_id** should be the same as the value in \_\_id\_\_.
         Right now we are also assuming that is the same as the row number in the table. (Table documents only.)
 
+        Synonym: ``gc``
+
     .. py:method:: get_column_data(column_name, document_name)
 
         Get all contents of a column as a list. If document_name is not provided or is
         None then the content of the column from all documents is returned as one long list. (Table documents only.)
+
+        Synonym: ``gcd``
 
     .. py:method:: get_column_data_dict(column_name)
 
@@ -104,9 +124,13 @@ Data Access
         Each value is a list corresponding to the values in column_name for the
         document. (Table documents only.)
 
+        Synonym: ``gcdd``
+
     .. py:method:: get_document_metadata(document_name)
 
         Returns a the document-level metadata for the given document. Returns a dict.
+
+        Synonym: ``gdm``
 
 .. category_end
 
@@ -120,6 +144,8 @@ Data Setting
         Sets the text in the specified cell. By default generates a CellChange
         event. (Table documents only.) **row_id** should be the same as the value in \__id__.
 
+        Synonym: ``sc``
+
     .. py:method:: set_document(document_name, new_data, cellchange=False)
 
         This is a general utility for setting document data. For table documents, **new_data**
@@ -128,6 +154,8 @@ Data Setting
         If only some data is specified in **new_data_dict** then only those values will be changed.
         For freeform documents, **new_data** should be a string.
 
+        Synonym: ``sd``
+
     .. py:method:: set_column_data(document_name, column_name, column_data, cellchange=False)
 
         Sets the column in a document using column_data. column_data can be
@@ -135,11 +163,15 @@ Data Setting
         as the row_id. If it’s a list, then the ordinal position in the list is
         interpreted as the row_id. (Table documents only.)
 
+        Synonym: ``scd``
+
     .. py:method:: set_document_metadata(document_name, metadata_dict)
 
         Sets the document_level metadata for the given document. **metadata_dict** should be a dictionary.
         Note that certain keys are reserved and cannot appear as keys in the metadata dict: "_id", "file_id", "name",
         "my_class_for_recreate", "table_spec", "data_text", "length", "data_rows","header_list", "number_of_rows".
+
+        Synonym: ``sdm``
 
     .. py:method:: set_cell_background(document_name, row_id, column_name, color)
 
@@ -150,10 +182,14 @@ Data Setting
         **row_id** should be the same as the value in \_\_id\_\_.
         Right now we are also assuming that is the same as the row number in the table. (Table documents only.)
 
+        Synonym: ``scb``
+
     .. py:method:: color_cell_text(document_name, row_id, column_name, tokenized_text, color_dict)
 
         Highlights the words in the target cell. Color dict has a dictionary
         that maps words to colors. (Table documents only.)
+
+        Synonym: ``cct``
 
 .. category_end
 
@@ -170,29 +206,41 @@ Filtering-And-Iteration
         For freeform docs, **filter\_function** should take a string (corresponding to a line)
         as an argument, and should return a boolean. It returns a list of the matching lines.
 
+        Synonym: ``gmr``
+
     .. py:method:: display_matching_rows(filter_function, document_name)
 
         Will cause the table to only display rows matching the filter_function.
         If document_name is missing or None then this will apply to all
         documents in the collection. (Table documents only.)
 
+        Synonym: ``dmr``
+
     .. py:method:: clear_table_highlighting()
 
         Clears a main table highlighting.
+
+        Synonym: ``cth``
 
     .. py:method:: highlight_matching_text(text)
 
         Highlights matching text in the main table.
 
+        Synonym: ``hmt``
+
     .. py:method:: display_all_rows()
 
         Will cause the table to display all rows. (Table documents only.)
+
+        Synonym: ``dar``
 
     .. py:method:: apply_to_rows(func, document_name=None, cellchange=False)
 
         Applies the specified func to each row. func should expect a dict corresponding to the row as an input and it should return a dict corresponding to the modified row as output. If document_name is missing or None then this will apply to all documents in the collection.
 
         (Table documents only.)
+
+        Synonym: ``atr``
 
 .. category_end
 
@@ -205,22 +253,25 @@ Other TileBase Methods
 
         Shows the named document in the table.
 
+        Synonym: ``gtd``
+
     .. py:method:: go_to_row_in_document(document_name, row_id)
 
         For table documents, this shows the named document and selects the named
         row. For freeform documents, the corresponding line is scrolled into
         view.
 
+        Synonym: ``gtrid``
+
     .. py:method:: get_selected_text()
 
         Returns the text currently highlighted by the user
 
+        Synonym: ``gst``
+
     .. py:method:: log_it(html_string, force_open=True, is_error=False, summary=None)
 
-        Adds the given html to the log (formerly called the console). These
-        commands all do the same thing. ``display_message`` and ``dm`` are the
-        old names. ``log_it`` is the new name of the command that was added when
-        the name of the console was change to log.
+        Adds the given html to the log (formerly called the console).
 
         If ``force_open`` is True then the Log will be opened if it was closed.
         If ``is_error`` is True then the new panel that is created in the Log
@@ -229,7 +280,7 @@ Other TileBase Methods
 
         The optional ``summary`` parameter is a line of text to be displayed when the log item is shrunk.
 
-        Synonyms of ``self.log_it`` are ``self.dm`` and ``self.display_message``.
+        Synonyms: ``dm``, ``display_message``
 
     .. py:method:: get_container_log()
 
@@ -244,12 +295,16 @@ Other TileBase Methods
         handle_tile_message method. (See `Events and
         handlers <Tile-Structure.html#events-and-default-handlers>`__)
 
+        Synonym: ``stm``
+
     .. py:method:: get_function_names(tag=None); self.get_class_names(tag=None)
 
         Returns a list of the available user function names or class names. This
         list can be restricted to those with the specified tag. These names can
         then be used to access the associated function or class with
         ``get_user_function()`` or ``get_user_class()``.
+
+        Synonym: ``gfn``
 
     .. py:method:: get_user_list(list_name)
                get_pipe_value(pipe_name)
@@ -264,6 +319,9 @@ Other TileBase Methods
 
         You can also use these commands on their own if you happen to know, in
         advance, the name of one of yoru resources.
+
+        Synonyms: ``gulist``, ``gufunc``, ``guclass``, ``gucol`` for get_user_list, get_user_function,
+        get_user_class, and get_user_collection respectively.
 
     .. py:method:: build_html_table_from_data_list(data_list, title=None, click_type="word-clickable", sortable=True)
 
@@ -280,6 +338,8 @@ Other TileBase Methods
         ``handled_tile_word_click``, ``handle_tile_element_click``, or
         ``handle_tile_row_click``.
 
+        Synonym: ``bht``
+
     .. py:method:: create_collection(name, doc_dict, doc_type="table", metadata_dict=None)
 
         Creates a new collection in the user’s resource library. **name** is the
@@ -293,6 +353,8 @@ Other TileBase Methods
         **metadata_dict** is a dictionary that holds any document-level metadata
         you’d like to add. The keys are document names and the values are
         dictionaries of keys and values.
+
+        Synonym: ``cc``
 
 .. category_start
 
