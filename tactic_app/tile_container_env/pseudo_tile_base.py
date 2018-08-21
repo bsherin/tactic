@@ -6,7 +6,7 @@ import os
 import types
 import cPickle
 from cPickle import UnpicklingError
-from tile_base import TileBase, task_worthy, jsonizable_types
+from tile_base import TileBase, _task_worthy, _jsonizable_types
 from communication_utils import is_jsonizable, make_python_object_jsonizable, debinarize_python_object
 
 
@@ -31,7 +31,7 @@ class ConsoleStringIO(StringIO):
         StringIO.write(self, s)
         if not s == "\n":   # The print commmand automatically adds a \n. We don't want to print it.
             self.data["result_string"] = s
-            self.my_tile.tworker.post_task(self.my_tile.main_id, "got_console_print", self.data)
+            self.my_tile._tworker.post_task(self.my_tile._main_id, "got_console_print", self.data)
         return
 
 
@@ -42,22 +42,20 @@ class PseudoTileClass(TileBase, MplFigure):
 
     def __init__(self, main_id_ignored=None, tile_id_ignored=None, tile_name=None):
         TileBase.__init__(self, tile_name=tile_name)
-        self.is_pseudo = True
-        self.console_namespace = {"self": self}
         self.width = PSEUDO_WIDTH
         self.height = PSEUDO_HEIGHT
         MplFigure.__init__(self)
         globals()["self"] = self
-        self.saved_globals = copy.copy(globals())
+        self._saved_globals = copy.copy(globals())
         return
 
-    @task_worthy
+    @_task_worthy
     def compile_save_dict(self, data):
         print "entering compile_save_dict"
         result = {"binary_attrs": [], "imports": []}
         attrs = globals().keys()
         for attr in attrs:
-            if attr in self.saved_globals:
+            if attr in self._saved_globals:
                 continue
             attr_val = globals()[attr]
             if hasattr(attr_val, "compile_save_dict"):
@@ -71,12 +69,12 @@ class PseudoTileClass(TileBase, MplFigure):
                     res[key] = attr_val.compile_save_dict(data)
                 result[attr] = res
             else:
-                if type(attr_val) in jsonizable_types.values():
+                if type(attr_val) in _jsonizable_types.values():
                     if is_jsonizable(attr_val):
                         result[attr] = attr_val
                         continue
                 try:
-                    self.tworker.debug_log("Found non jsonizable attribute " + attr)
+                    self._tworker.debug_log("Found non jsonizable attribute " + attr)
                     result["binary_attrs"].append(attr)
                     bser_attr_val = make_python_object_jsonizable(attr_val)
                     result[attr] = bser_attr_val
@@ -128,7 +126,7 @@ class PseudoTileClass(TileBase, MplFigure):
                             print "trying to debinarize"
                             decoded_val = debinarize_python_object(attr_val)
                         except Exception as ex:  # legacy if above fails try the old method
-                            print self.handle_exception(ex, "got error", print_to_console=False)
+                            print self._handle_exception(ex, "got error", print_to_console=False)
                             decoded_val = cPickle.loads(str(attr_val.decode()))
                         print "debinarize succeeded"
                         globals()[attr] = decoded_val
@@ -137,16 +135,16 @@ class PseudoTileClass(TileBase, MplFigure):
             except:
                 print "failed to recreate attribute " + attr
 
-        self.main_id = os.environ["PARENT"]  # this is for backward compatibility with some old project saves
+        self._main_id = os.environ["PARENT"]  # this is for backward compatibility with some old project saves
         return None
 
-    @task_worthy
+    @_task_worthy
     def store_image(self, data):
         encoded_img = data["img"]
         self.img_dict[data["figure_name"]] = debinarize_python_object(encoded_img)
         return {"success": True}
 
-    @task_worthy
+    @_task_worthy
     def exec_console_code(self, data):
         old_stdout = sys.stdout
         try:
@@ -166,6 +164,6 @@ class PseudoTileClass(TileBase, MplFigure):
                 exec(data["the_code"], globals(), globals())
             sys.stdout = old_stdout
         except Exception as ex:
-            data["result_string"] = self.handle_exception(ex, "Error executing console code", print_to_console=False)
+            data["result_string"] = self._handle_exception(ex, "Error executing console code", print_to_console=False)
             sys.stdout = old_stdout
         return data

@@ -763,12 +763,6 @@ class mainWindow(object):
         self.mworker.emit_export_viewer_message("update_exports_popup", {})
         return
 
-    def get_current_pipe_list(self):
-        pipe_list = []
-        for tile_entry in self._pipe_dict.values():
-            pipe_list += tile_entry.keys()
-        return pipe_list
-
     def handle_exception(self, ex, special_string=None, print_to_console=True):
         if special_string is None:
             template = "An exception of type {0} occured. Arguments:\n{1!r}\n"
@@ -863,7 +857,7 @@ class mainWindow(object):
         form_info = self.compile_form_info()
 
         print "creating form html"
-        form_html = self.mworker.post_and_wait(tile_container_id, "create_form_html", form_info)["form_html"]
+        form_html = self.mworker.post_and_wait(tile_container_id, "_create_form_html", form_info)["form_html"]
         print "rebuilding tile forms"
         self.rebuild_other_tile_forms(tile_container_id, form_info)
         self.tile_sort_list.append(tile_container_id)
@@ -1051,7 +1045,6 @@ class mainWindow(object):
         self.mworker.post_task(self.pseudo_tile_id, "exec_console_code", data, self.got_console_result)
         return {"success": True}
 
-
     @task_worthy
     def convert_markdown(self, data):
         the_text = data["the_text"]
@@ -1129,7 +1122,7 @@ class mainWindow(object):
         if "key" in data:
             ndata["key"] = data["key"]
         ndata["tail"] = data["tail"]
-        result = self.mworker.post_and_wait(self.pseudo_tile_id, "evaluate_export", ndata)
+        result = self.mworker.post_and_wait(self.pseudo_tile_id, "_evaluate_export", ndata)
         return result
 
     @task_worthy
@@ -1139,7 +1132,7 @@ class mainWindow(object):
         ndata = {}
         ndata["export_name"] = data["export_name"]
         ndata["pipe_dict"] = self._pipe_dict
-        result = self.mworker.post_and_wait(self.pseudo_tile_id, "get_export_info", ndata)
+        result = self.mworker.post_and_wait(self.pseudo_tile_id, "_get_export_info", ndata)
         return result
 
     def create_pseudo_tile(self, globals_dict=None):
@@ -1163,10 +1156,13 @@ class mainWindow(object):
 
     @task_worthy
     def get_property(self, data_dict):
-        # tactic_todo eliminate get_property?
+        allowed_properties = ["doc_names", "visible_doc_name", "selected_text"]
         prop_name = data_dict["property"]
-        val = getattr(self, prop_name)
-        return {"success": True, "val": val}
+        if prop_name in allowed_properties:
+            val = getattr(self, prop_name)
+            return {"success": True, "val": val}
+        else:
+            return {"success": False, "val": None}
 
     @task_worthy
     def export_data(self, data):
@@ -1305,7 +1301,7 @@ class mainWindow(object):
                     "tile_save_results": self.tile_save_results}
 
     def get_tile_property(self, tile_id, prop_name):
-        result = self.mworker.post_and_wait(tile_id, 'get_property', {"property": prop_name})["val"]
+        result = self.mworker.post_and_wait(tile_id, '_get_property', {"property": prop_name})["val"]
         return result
 
     def compile_form_info(self, tile_id=None):
@@ -1354,8 +1350,8 @@ class mainWindow(object):
         print "getting code"
         module_code = self.mworker.post_and_wait("host", "get_module_code", data)["module_code"]
         print "getting tile properties"
-        reload_dict = copy.copy(self.get_tile_property(tile_id, "current_reload_attrs"))
-        saved_options = copy.copy(self.get_tile_property(tile_id, "current_options"))
+        reload_dict = copy.copy(self.get_tile_property(tile_id, "_current_reload_attrs"))
+        saved_options = copy.copy(self.get_tile_property(tile_id, "_current_options"))
         reload_dict.update(saved_options)
         reload_dict["old_option_names"] = saved_options.keys()
         print "stopping the tile"

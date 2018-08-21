@@ -266,7 +266,7 @@ class TileObject {
         console.log(String(data.arg_dict));
         try {
             this.d3func(data.selector + " .d3plot", w, h, data.arg_dict);
-            postWithCallback(this.tile_id, "set_current_html", {"current_html": this.get_current_html()})
+            postWithCallback(this.tile_id, "_set_current_html", {"current_html": this.get_current_html()})
         }
         catch(err) {
             doFlash({"alert-type": "alert-warning", "message": "Error executing javascript function: " + err.message})
@@ -461,7 +461,7 @@ class TileObject {
 
         $(this.full_selector()).on(click_event, ".header-but", function (e) {
             the_id = $(e.target).closest(".tile-panel").attr("id");
-            console.log(the_id)
+            console.log(the_id);
             const tobject = tile_dict[the_id];
             if ($(e.target).hasClass("header-but")){ // this is necessary to make this work on firefox
                 the_id = e.target.id
