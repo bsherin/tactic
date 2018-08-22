@@ -684,35 +684,35 @@ class TileBase(object):
         result = {}
         if avar == "__none__":
             result["type"] = "none"
-            result["info_string"] = "Not set"
+            result["info_string"] = u"Not set"
         elif type(avar) is dict:
             result["type"] = "dict"
-            result["info_string"] = "Dict with {} keys".format(str(len(avar.keys())))
+            result["info_string"] = u"Dict with {} keys".format(str(len(avar.keys())))
             keys_html = ""
             klist = avar.keys()
             klist.sort()
             for kname in klist:
-                keys_html += "<option>{}</option>\n".format(kname)
+                keys_html += u"<option>{}</option>\n".format(kname)
             result["key_list"] = klist
             result["keys_html"] = keys_html
         elif type(avar) is list:
             result["type"] = "list"
-            result["info_string"] = "List with {} elements".format(str(len(avar)))
+            result["info_string"] = u"List with {} elements".format(str(len(avar)))
         elif type(avar) is set:
             result["type"] = "set"
-            result["info_string"] = "Set with {} elements".format(str(len(avar)))
+            result["info_string"] = u"Set with {} elements".format(str(len(avar)))
         elif type(avar) is str:
             result["type"] = "string"
-            result["info_string"] = "String with {} characters".format(str(len(avar)))
+            result["info_string"] = "uString with {} characters".format(str(len(avar)))
         else:
             findtype = re.findall("(?:type|class) \'(.*?)\'", str(type(avar)))
             if len(findtype) > 0:
                 result["type"] = findtype[0]
             else:
-                result["type"] = "no type"
+                result["type"] = u"no type"
             try:
                 thel = len(avar)
-                result["info_string"] = "{} of length {}".format(result["type"], thel)
+                result["info_string"] = u"{} of length {}".format(result["type"], thel)
             except:
                 result["info_string"] = result["type"]
         return result
