@@ -634,7 +634,7 @@ class ExportManager extends CreatorResourceManager {
     }
 
     refresh_export_table () {
-        this.update_main_content()
+        manager.update_main_content()
     }
 
     send_doc_text (event) {
@@ -672,12 +672,21 @@ class ExportManager extends CreatorResourceManager {
         let export_name = manager.check_for_selection("export", 0);
         const confirm_text = "Are you sure that you want to delete export " + export_name + "?";
         confirmDialog("Delete Export", confirm_text, "do nothing", "delete", function () {
-            const index = manager.export_list.indexOf(export_name);
+            const index = manager.export_index(export_name);
             manager.export_list.splice(index, 1);
             manager.changed = true;
             manager.update_main_content()
         });
         return false
+    }
+
+    export_index (export_name) {
+        for (let i = 0; i < this.export_list.length; ++i) {
+            if (export_name == this.export_list[i].name) {
+                return i
+            }
+        }
+        return -1
     }
 
     fill_content(the_html) {
