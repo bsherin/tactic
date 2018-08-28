@@ -40,14 +40,12 @@ class TableSpec(object):
         return [x for x in seq if not (x in seen or seen_add(x))]
 
     def compile_save_dict(self):
-        print "in table_spec compile_save_dict"
         return {"doc_name": self.doc_name, "header_list": self.header_list,
                 "column_widths": self.column_widths,
                 "cell_backgrounds": self.cell_backgrounds, "hidden_columns_list": self.hidden_columns_list}
 
     @staticmethod
     def recreate_from_save(save_dict):
-        print "in table_spec recreate"
         new_instance = TableSpec(**save_dict)
         return new_instance
 
@@ -80,7 +78,6 @@ class DocInfoAbstract(object):
         return
 
     def compile_save_dict(self):
-        print "in docinfo compile_save_Dict"
         result = {"name": self.name,
                   "metadata": self.metadata,
                   "table_spec": self.table_spec.compile_save_dict()}
