@@ -125,11 +125,14 @@ def send_request_to_container(taddress, msg_type, data_dict=None, wait_for_succe
 
 def post_task_noqworker(source_id, dest_id, task_type, task_data=None):
     new_packet = {"source": source_id,
+                  "callback_type": "no_callback",
+                  "status": "presend",
                   "dest": dest_id,
                   "task_type": task_type,
                   "task_data": task_data,
                   "response_data": None,
-                  "callback_id": None}
+                  "callback_id": None,
+                  "deferral_state": None}
     result = send_request_to_megaplex("post_task", new_packet).json()
     if not result["success"]:
         error_string = "Error posting task with msg_type {} dest {} source {}. Error: {}".format(task_type,
