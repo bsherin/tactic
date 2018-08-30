@@ -8,15 +8,16 @@ MARGIN_SIZE = 17;
 
 let this_viewer;
 let tsocket;
-let user_manage_id;
 
 class ResourceViewerSocket extends TacticSocket {
     initialize_socket_stuff() {
-        this.socket.emit('join', {"user_id":  user_id, "user_manage_id":  user_manage_id});
+        this.socket.emit('join', {"room": user_id});
+        this.socket.emit('join-main', {"room": resource_viewer_id});
+        this.socket.on('handle-callback', handleCallback);
         this.socket.on('stop-spinner', stopSpinner);
         this.socket.on('start-spinner', startSpinner);
         this.socket.on('close-user-windows', (data) => {
-            if (!(data["originator"] == user_manage_id)) {
+            if (!(data["originator"] == resource_viewer_id)) {
                 window.close()
             }
         });
@@ -54,8 +55,7 @@ class ResourceViewer {
             self.resize_to_window()
         };
         if (get_url) {
-            user_manage_id = guid();
-            tsocket = new ResourceViewerSocket("user_manage", 5000);
+            tsocket = new ResourceViewerSocket("main", 5000);
             postAjaxPromise(`${get_url}/${resource_name}`, {})
                 .then(function (data) {
                     self.got_resource(data.the_content)

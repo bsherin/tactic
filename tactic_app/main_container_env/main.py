@@ -1,3 +1,4 @@
+
 from gevent import monkey; monkey.patch_all()
 import sys
 import re
@@ -17,7 +18,7 @@ from communication_utils import make_jsonizable_and_compress, read_project_dict,
 from doc_info import docInfo, FreeformDocInfo, PROTECTED_METADATA_KEYS
 
 # noinspection PyUnresolvedReferences
-from qworker import task_worthy_methods, task_worthy_with_deferral_methods, task_worthy_with_delegate_methods
+from qworker import task_worthy_methods, task_worthy_manual_submit_methods
 
 # getting environment variables
 INITIAL_LEFT_FRACTION = .69
@@ -39,12 +40,9 @@ def task_worthy(m):
     task_worthy_methods[m.__name__] = "mainwindow"
     return m
 
-def task_worthy_with_deferral(m):
-    task_worthy_with_deferral_methods[m.__name__] = "mainwindow"
-    return m
 
-def task_worthy_with_delegate(m):
-    task_worthy_with_delegate_methods[m.__name__] = "mainwindow"
+def task_worthy_manual_submit(m):
+    task_worthy_manual_submit_methods[m.__name__] = "mainwindow"
     return m
 
 
@@ -215,7 +213,7 @@ class mainWindow(object):
     def do_full_notebook_recreation(self, data_dict):
         tile_containers = {}
         try:
-            print "Entering do_full_notebook_ecreation"
+            print "Entering do_full_notebook_recreation"
             self.show_main_status_message("Entering do_full_recreation")
             if "unique_id" in data_dict:
                 success = self.recreate_from_save("", "", data_dict["unique_id"])
@@ -265,8 +263,10 @@ class mainWindow(object):
                 self.show_main_status_message("Error trying to recreate the project from save")
                 self.show_error_window(tile_info_dict)
                 return
-            self.mworker.post_and_wait("host", "load_modules",
-                                       {"loaded_modules": loaded_modules, "user_id": self.user_id})
+
+            for the_module in loaded_modules:
+                self.mworker.post_and_wait("host", "load_module_if_necessary",
+                                           {"tile_module_name": the_module, "user_id": self.user_id})
             doc_names = [str(doc_name) for doc_name in self.doc_names]
 
             self.show_main_status_message("Getting tile code")
@@ -496,8 +496,7 @@ class mainWindow(object):
                     doc_names.append(fname)
             self.doc_dict = self._build_doc_dict()
             self.visible_doc_name = self.doc_dict.keys()[0]
-            form_info = self.compile_form_info()
-            self.rebuild_other_tile_forms(None, form_info)
+            self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id": None})
             return_data = {"success": True,
                            "collection_name": self.collection_name,
                            "short_colleciton_name": self.short_collection_name,
@@ -717,22 +716,6 @@ class mainWindow(object):
         dinfo = self.doc_dict[self.visible_doc_name]
         return dinfo.table_spec.header_list
 
-    def get_list_names(self):
-        list_names = self.mworker.post_and_wait("host", "get_list_names", {"user_id": self.user_id})
-        return list_names
-
-    def get_class_names(self):
-        class_names = self.mworker.post_and_wait("host", "get_class_names", {"user_id": self.user_id})
-        return class_names
-
-    def get_function_tags_dict(self):
-        function_tags_dict = self.mworker.post_and_wait("host", "get_function_tags_dict", {"user_id": self.user_id})
-        return function_tags_dict
-
-    def get_lists_classes_functions(self):
-        result_dict = self.mworker.post_and_wait("host", "get_lists_classes_functions", {"user_id": self.user_id})
-        return result_dict
-
     def _delete_tile_instance(self, tile_id):
         self.tile_instances.remove(tile_id)
         self.tile_sort_list.remove(tile_id)
@@ -743,8 +726,7 @@ class mainWindow(object):
 
         if tile_id in self._pipe_dict:
             del self._pipe_dict[tile_id]
-            form_info = self.compile_form_info()
-            self.rebuild_other_tile_forms(None, form_info)
+            self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id": None})
         self.mworker.ask_host("delete_container", {"container_id": tile_id, "notify": False})
         self.mworker.emit_export_viewer_message("update_exports_popup", {})
         return
@@ -781,19 +763,29 @@ class mainWindow(object):
         else:
             self.mworker.emit_table_message("highlightTxtInDocument", {"text_to_find": txt})
 
+    def move_one_figure(self, tid, figid):
+        data = {"figure_name": figid}
+
+        def got_image(img_data):
+            encoded_img = img_data["img"]
+            data["img"] = encoded_img
+            self.mworker.post_task(self.pseudo_tile_id, "store_image", data)
+
+        self.mworker.post_task(tid, "get_image", data, got_image)
+        return
+
     def move_figures_to_pseudo_tile(self, html_string):
         matches = re.findall(r"/figure_source/(.*?)/([0-9A-Fa-f-]*)", html_string)
         new_html = html_string
+        if self.pseudo_tile_id is None:
+            self.create_pseudo_tile()
+        for match in matches:
+            tid = match[0]
+            new_html = re.sub(tid, self.pseudo_tile_id, new_html)
         for match in matches:
             tid = match[0]
             figid = match[1]
-            data = {"figure_name": figid}
-            encoded_img = self.mworker.post_and_wait(tid, "get_image", data)["img"]
-            data["img"] = encoded_img
-            if self.pseudo_tile_id is None:
-                self.create_pseudo_tile()
-            self.mworker.post_and_wait(self.pseudo_tile_id, "store_image", data)
-            new_html = re.sub(tid, self.pseudo_tile_id, new_html)
+            self.move_one_figure(match[0], match[1])
         return new_html
 
     @staticmethod
@@ -807,41 +799,58 @@ class mainWindow(object):
         return False
 
     # Task Worthy methods. These are eligible to be the recipient of posted tasks.
-    @task_worthy
-    def create_tile(self, data_dict):
+    @task_worthy_manual_submit
+    def create_tile(self, data_dict, task_packet):
         tile_name = data_dict["tile_name"]
-        create_container_dict = self.mworker.post_and_wait("host", "create_tile_container",
-                                                           {"user_id": self.user_id,
-                                                            "parent": self.mworker.my_id,
-                                                            "other_name": tile_name})
-        if not create_container_dict["success"]:
-            raise Exception("Error creating empty tile container")
-        tile_container_id = create_container_dict["tile_id"]
-        self.tile_instances.append(tile_container_id)
-        self.tile_id_dict[tile_name] = tile_container_id
+        local_task_packet = task_packet
 
-        data_dict["base_figure_url"] = self.base_figure_url.replace("tile_id", tile_container_id)
-        data_dict["doc_type"] = self.doc_type
+        def got_container(create_container_dict):
+            def got_module_code(code_result):
+                data_dict["tile_code"] = code_result["module_code"]
 
-        tile_code = self.mworker.post_and_wait("host", "get_module_code", data_dict)["module_code"]
-        data_dict["tile_code"] = tile_code
-        result = self.mworker.post_and_wait(tile_container_id, "load_source", data_dict)
-        if not result["success"]:
-            self.mworker.debug_log("got an exception " + result["message_string"])
-            raise Exception(result["message_string"])
-        instantiate_result = self.mworker.post_and_wait(tile_container_id, "instantiate_tile_class", data_dict)
-        if not instantiate_result["success"]:
-            self.mworker.debug_log("got an exception " + instantiate_result["message_string"])
-            raise Exception(instantiate_result["message_string"])
+                def loaded_source(result):
+                    if not result["success"]:
+                        self.mworker.debug_log("got an exception " + result["message_string"])
+                        raise Exception(result["message_string"])
 
-        exports = instantiate_result["exports"]
-        self.update_pipe_dict(exports, tile_container_id, tile_name)
-        form_info = self.compile_form_info()
-        form_html = self.mworker.post_and_wait(tile_container_id, "_create_form_html", form_info)["form_html"]
-        self.rebuild_other_tile_forms(tile_container_id, form_info)
-        self.tile_sort_list.append(tile_container_id)
-        self.current_tile_id += 1
-        return {"success": True, "html": form_html, "tile_id": tile_container_id}
+                    def instantiated_result(instantiate_result):
+                        if not instantiate_result["success"]:
+                            self.mworker.debug_log("got an exception " + instantiate_result["message_string"])
+                            raise Exception(instantiate_result["message_string"])
+
+                        exports = instantiate_result["exports"]
+                        self.update_pipe_dict(exports, tile_container_id, tile_name)
+
+                        def got_form_info(form_info):
+
+                            def got_form_html(response):
+                                form_html = response["form_html"]
+                                self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task",
+                                                       {"tile_id": tile_container_id})
+                                self.tile_sort_list.append(tile_container_id)
+                                self.current_tile_id += 1
+                                response_data = {"success": True, "html": form_html, "tile_id": tile_container_id}
+                                self.mworker.submit_response(local_task_packet, response_data)
+                            self.mworker.post_task(tile_container_id, "_create_form_html", form_info, got_form_html)
+                        self.mworker.post_task(self.mworker.my_id, "compile_form_info_task",
+                                               {"tile_id": tile_container_id}, got_form_info)
+                    self.mworker.post_task(tile_container_id, "instantiate_tile_class", data_dict, instantiated_result)
+                self.mworker.post_task(tile_container_id, "load_source", data_dict, loaded_source)
+
+            if not create_container_dict["success"]:
+                raise Exception("Error creating empty tile container")
+            tile_container_id = create_container_dict["tile_id"]
+            self.tile_instances.append(tile_container_id)
+            self.tile_id_dict[tile_name] = tile_container_id
+
+            data_dict["base_figure_url"] = self.base_figure_url.replace("tile_id", tile_container_id)
+            data_dict["doc_type"] = self.doc_type
+
+            self.mworker.post_task("host", "get_module_code", data_dict, got_module_code)
+
+        self.mworker.post_task("host", "create_tile_container", {"user_id": self.user_id, "parent": self.mworker.my_id,
+                               "other_name": tile_name}, got_container)
+        return
 
     @task_worthy
     def get_column_data(self, data):
@@ -859,35 +868,37 @@ class mainWindow(object):
             result.append(row_dict[str(r)])
         return result
 
+    @task_worthy_manual_submit
+    def get_user_collection(self, task_data, task_packet):
+        local_task_packet = task_packet
 
-    # context_data is the original task_packet
-    def finish_get_user_collection(self, response_data):
-        full_collection_name = response_data["full_collection_name"]
-        result = {}
-        the_collection = self.db[full_collection_name]
-        mdata = the_collection.find_one({"name": "__metadata__"})
-        if "type" in mdata and mdata["type"] == "freeform":
-            doc_type = "freeform"
-        else:
-            doc_type = "table"
-        for f in the_collection.find():
-            fname = f["name"].encode("ascii", "ignore")
-            if fname == "__metadata__":
-                continue
-            if doc_type == "table":
-                if "file_id" in f:
-                    f["data_rows"] = debinarize_python_object(self.fs.get(f["file_id"]).read())
-                result[fname] = self.sort_rows(f["data_rows"])
+        def finish_get_user_collection(response_data):
+            full_collection_name = response_data["full_collection_name"]
+            result = {}
+            the_collection = self.db[full_collection_name]
+            mdata = the_collection.find_one({"name": "__metadata__"})
+            if "type" in mdata and mdata["type"] == "freeform":
+                doc_type = "freeform"
             else:
-                if "encoding" in f:
-                    result[fname] = self.fs.get(f["file_id"]).read().decode(f["encoding"])
+                doc_type = "table"
+            for f in the_collection.find():
+                fname = f["name"].encode("ascii", "ignore")
+                if fname == "__metadata__":
+                    continue
+                if doc_type == "table":
+                    if "file_id" in f:
+                        f["data_rows"] = debinarize_python_object(self.fs.get(f["file_id"]).read())
+                    result[fname] = self.sort_rows(f["data_rows"])
                 else:
-                    result[fname] = self.fs.get(f["file_id"]).read()
-        return {"the_collection": result}
+                    if "encoding" in f:
+                        result[fname] = self.fs.get(f["file_id"]).read().decode(f["encoding"])
+                    else:
+                        result[fname] = self.fs.get(f["file_id"]).read()
 
-    @task_worthy_with_deferral
-    def get_user_collection(self, data):
-        return self.mworker.create_defer_packet("host", "get_full_collection_name", data, self.finish_get_user_collection)
+            self.mworker.submit_response(local_task_packet, {"the_collection": result})
+            return
+        self.mworker.post_task("host", "get_full_collection_name", task_data, finish_get_user_collection)
+        return
 
     @task_worthy
     def get_document_data(self, data):
@@ -1037,15 +1048,19 @@ class mainWindow(object):
         self.show_main_message("Resetting notebook ...")
         if self.pseudo_tile_id is not None:
             self.mworker.post_task(self.pseudo_tile_id, "kill_me", {})
-            self.mworker.post_and_wait("host", "restart_container", {"tile_id": self.pseudo_tile_id})
-            data_dict = {"base_figure_url": self.base_figure_url.replace("tile_id", self.pseudo_tile_id),
-                         "doc_type": self.doc_type, "globals_dict": {}, "img_dict": {}}
-            instantiate_result = self.mworker.post_and_wait(self.pseudo_tile_id,
-                                                            "instantiate_as_pseudo_tile", data_dict)
-            if not instantiate_result["success"]:
-                self.mworker.debug_log("got an exception " + instantiate_result["message_string"])
-                self.show_main_message("Error resetting notebook", 7)
-                raise Exception(instantiate_result["message_string"])
+
+            def container_restarted(nodata):
+                data_dict = {"base_figure_url": self.base_figure_url.replace("tile_id", self.pseudo_tile_id),
+                             "doc_type": self.doc_type, "globals_dict": {}, "img_dict": {}}
+
+                def instantiate_done(instantiate_result):
+                    if not instantiate_result["success"]:
+                        self.mworker.debug_log("got an exception " + instantiate_result["message_string"])
+                        self.show_main_message("Error resetting notebook", 7)
+                        raise Exception(instantiate_result["message_string"])
+                    self.show_main_message("Notebook reset", 7)
+                self.mworker.post_task(self.pseudo_tile_id, "instantiate_as_pseudo_tile", data_dict, instantiate_done)
+            self.mworker.post_task("host", "restart_container", {"tile_id": self.pseudo_tile_id}, container_restarted)
         self.show_main_message("Notebook reset", 7)
         return {"success": True}
 
@@ -1086,9 +1101,9 @@ class mainWindow(object):
                 the_html += group_html
         return {"success": True, "the_html": the_html, "export_list": export_list}
 
-
-    @task_worthy_with_delegate
-    def evaluate_export(self, data):  # tactic_working
+    @task_worthy_manual_submit
+    def evaluate_export(self, data, task_packet):
+        local_task_packet = task_packet
         if self.pseudo_tile_id is None:
             self.create_pseudo_tile()
         ndata = {}
@@ -1097,18 +1112,29 @@ class mainWindow(object):
         if "key" in data:
             ndata["key"] = data["key"]
         ndata["tail"] = data["tail"]
-        # result = self.mworker.post_and_wait(self.pseudo_tile_id, "_evaluate_export", ndata)
-        return self.mworker.create_delegate_packet(self.pseudo_tile_id, "_evaluate_export", ndata)
 
-    @task_worthy_with_delegate
-    def get_export_info(self, data):  # tactic_working
+        def got_evaluation(eval_result):
+            self.mworker.submit_response(local_task_packet, eval_result)
+            return
+
+        self.mworker.post_task(self.pseudo_tile_id, "_evaluate_export", ndata, got_evaluation)
+        return
+
+    @task_worthy_manual_submit
+    def get_export_info(self, data, task_packet):
+        local_task_packet = task_packet
         if self.pseudo_tile_id is None:
             self.create_pseudo_tile()
         ndata = {}
         ndata["export_name"] = data["export_name"]
         ndata["pipe_dict"] = self._pipe_dict
-        # result = self.mworker.post_and_wait(self.pseudo_tile_id, "_get_export_info", ndata)
-        return self.mworker.create_delegate_packet(self.pseudo_tile_id, "_get_export_info", ndata)
+
+        def got_info(info):
+            self.mworker.submit_response(local_task_packet, info)
+            return
+
+        self.mworker.post_task(self.pseudo_tile_id, "_get_export_info", ndata, got_info)
+        return
 
     def create_pseudo_tile(self, globals_dict=None):
         data = self.mworker.post_and_wait("host", "create_tile_container", {"user_id": self.user_id,
@@ -1213,9 +1239,8 @@ class mainWindow(object):
                                "get_full_collection_name",
                                {"collection_name": new_name,
                                 "user_id": self.user_id},
-                                self.finish_create_collection,
-                                data)
-
+                               self.finish_create_collection,
+                               data)
         return {"success": True}
 
     @task_worthy
@@ -1233,7 +1258,6 @@ class mainWindow(object):
 
     @task_worthy
     def set_property(self, data_dict):
-        # tactic_todo eliminate set_property as task
         prop_name = data_dict["property"]
         val = data_dict["val"]
         setattr(self, prop_name, val)
@@ -1282,25 +1306,13 @@ class mainWindow(object):
                     "table_spec": self.doc_dict[doc_name].table_spec.compile_save_dict(),
                     "tile_save_results": self.tile_save_results}
 
-    def get_tile_property(self, tile_id, prop_name):
-        result = self.mworker.post_and_wait(tile_id, '_get_property', {"property": prop_name})["val"]
-        return result
-
-    def compile_form_info(self, tile_id=None):
-        form_data = self.get_lists_classes_functions()
-        if tile_id is None:
-            other_tile_names = self.tile_id_dict.keys()
+    def get_tile_property(self, tile_id, prop_name, callback=None):
+        if callback is None:
+            result = self.mworker.post_and_wait(tile_id, '_get_property', {"property": prop_name})["val"]
+            return result
         else:
-            other_tile_names = self.get_other_tile_names(tile_id)
-        form_info = {"current_header_list": self.current_header_list,
-                     "pipe_dict": self._pipe_dict,
-                     "doc_names": self.doc_names,
-                     "list_names": form_data["list_names"],
-                     "function_names": form_data["function_names"],
-                     "class_names": form_data["class_names"],
-                     "collection_names": form_data["collection_names"],
-                     "other_tile_names": other_tile_names}
-        return form_info
+            self.mworker.post_task(tile_id, '_get_property', {"property": prop_name}, callback)
+            return
 
     def update_pipe_dict(self, exports, tile_id, tile_name):
         if len(exports) == 0:
@@ -1323,34 +1335,113 @@ class mainWindow(object):
                 form_info["other_tile_names"] = self.get_other_tile_names(tid)
                 self.mworker.post_task(tid, "RebuildTileForms", form_info)
 
-    @task_worthy
-    def reload_tile(self, ddict):
-        tile_id = ddict["tile_id"]
-        tile_type = self.get_tile_property(tile_id, "tile_type")
-        data = {"tile_type": tile_type, "user_id": self.user_id}
-        module_code = self.mworker.post_and_wait("host", "get_module_code", data)["module_code"]
-        reload_dict = copy.copy(self.get_tile_property(tile_id, "_current_reload_attrs"))
-        saved_options = copy.copy(self.get_tile_property(tile_id, "_current_options"))
-        reload_dict.update(saved_options)
-        reload_dict["old_option_names"] = saved_options.keys()
-        self.mworker.post_task(tile_id, "kill_me", {})
-        self.mworker.post_task("host", "restart_container", {"tile_id": tile_id})
-        result = self.mworker.post_and_wait(tile_id, "load_source", {"tile_code": module_code})
-        if not result["success"]:
-            raise Exception(result["message_string"])
-        form_info = self.compile_form_info(tile_id)
-        reload_dict["form_info"] = form_info
-        result = self.mworker.post_and_wait(tile_id, "reinstantiate_tile", reload_dict)
+    @task_worthy_manual_submit
+    def compile_form_info_task(self, data, task_packet):
+        local_task_packet = task_packet
+        tile_id = data["tile_id"]
 
-        if result["success"]:
-            exports = result["exports"]
-            self.update_pipe_dict(exports, tile_id, ddict["tile_name"])
-            form_info["pipe_dict"] = self._pipe_dict
-            self.rebuild_other_tile_forms(tile_id, form_info)
-            self.mworker.emit_export_viewer_message("update_exports_popup", {})
-            return {"success": True, "html": result["form_html"], "options_changed": result["options_changed"]}
+        def got_form_data(form_data):
+            if tile_id is None:
+                other_tile_names = self.tile_id_dict.keys()
+            else:
+                other_tile_names = self.get_other_tile_names(tile_id)
+            form_info = {"current_header_list": self.current_header_list,
+                         "pipe_dict": self._pipe_dict,
+                         "doc_names": self.doc_names,
+                         "list_names": form_data["list_names"],
+                         "function_names": form_data["function_names"],
+                         "class_names": form_data["class_names"],
+                         "collection_names": form_data["collection_names"],
+                         "other_tile_names": other_tile_names}
+            self.mworker.submit_response(task_packet, form_info)
+            return
+        self.mworker.post_task("host", "get_lists_classes_functions", {"user_id": self.user_id}, got_form_data)
+        return
+
+    @task_worthy
+    def rebuild_tile_forms_task(self, ddict):
+        if "tile_id" not in ddict:
+            tile_id = None
         else:
-            raise Exception(result["message_string"])
+            tile_id = ddict["tile_id"]
+
+        def finish_rebuild_tile_forms(form_data):
+            if tile_id is None:
+                other_tile_names = self.tile_id_dict.keys()
+            else:
+                other_tile_names = self.get_other_tile_names(tile_id)
+            form_info = {"current_header_list": self.current_header_list,
+                         "pipe_dict": self._pipe_dict,
+                         "doc_names": self.doc_names,
+                         "list_names": form_data["list_names"],
+                         "function_names": form_data["function_names"],
+                         "class_names": form_data["class_names"],
+                         "collection_names": form_data["collection_names"],
+                         "other_tile_names": other_tile_names}
+            for tid in self.tile_instances:
+                if tile_id is None or not tid == tile_id:
+                    form_info["other_tile_names"] = self.get_other_tile_names(tid)
+                    self.mworker.post_task(tid, "RebuildTileForms", form_info)
+            return
+
+        self.mworker.post_task("host",
+                               "get_lists_classes_functions",
+                               {"user_id": self.user_id},
+                               finish_rebuild_tile_forms)
+        return
+
+    @task_worthy_manual_submit
+    def reload_tile(self, ddict, task_packet):
+        local_task_packet = task_packet
+        tile_id = ddict["tile_id"]
+
+        def got_tile_type(gtp_response):
+            tile_type = gtp_response["val"]
+            data = {"tile_type": tile_type, "user_id": self.user_id}
+
+            def got_module_code(code_result):
+                module_code = code_result["module_code"]
+
+                def got_reload_attrs(gra_response):
+                    reload_dict = copy.copy(gra_response["val"])
+
+                    def got_current_options(gco_response):
+                        saved_options = copy.copy(gco_response["val"])
+                        reload_dict.update(saved_options)
+                        reload_dict["old_option_names"] = saved_options.keys()
+                        self.mworker.post_task(tile_id, "kill_me", {})
+                        self.mworker.post_task("host", "restart_container", {"tile_id": tile_id})
+
+                        def loaded_source(result):
+                            if not result["success"]:
+                                raise Exception(result["message_string"])
+
+                            def got_form_info(form_info):
+                                reload_dict["form_info"] = form_info
+
+                                def reinstantiate_done(reinst_result):
+                                    if reinst_result["success"]:
+                                        exports = reinst_result["exports"]  # This is the issue
+                                        self.update_pipe_dict(exports, tile_id, ddict["tile_name"])
+                                        form_info["pipe_dict"] = self._pipe_dict
+                                        self.rebuild_other_tile_forms(tile_id, form_info)
+                                        self.mworker.emit_export_viewer_message("update_exports_popup", {})
+                                        final_result = {"success": True, "html": reinst_result["form_html"],
+                                                        "options_changed": reinst_result["options_changed"]}
+                                        self.mworker.submit_response(local_task_packet, final_result)
+                                    else:
+                                        raise Exception(reinst_result["message_string"])
+
+                                self.mworker.post_task(tile_id, "reinstantiate_tile", reload_dict, reinstantiate_done)
+
+                            self.mworker.post_task(self.mworker.my_id, "compile_form_info_task", {"tile_id": tile_id},
+                                                   got_form_info)
+                        self.mworker.post_task(tile_id, "load_source", {"tile_code": module_code}, loaded_source)
+                    self.get_tile_property(tile_id, "_current_options", got_current_options)
+                self.get_tile_property(tile_id, "_current_reload_attrs", got_reload_attrs)
+            self.mworker.post_task("host", "get_module_code", data, got_module_code)
+
+        self.get_tile_property(tile_id, "tile_type", got_tile_type)
 
     @task_worthy
     def grab_chunk_with_row(self, data_dict):
@@ -1437,8 +1528,7 @@ class mainWindow(object):
                     if header not in header_list:
                         doc.table_spec.header_list.append(header)
 
-        form_info = self.compile_form_info()
-        self.rebuild_other_tile_forms(None, form_info)
+        self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id": None})
         return None
 
     @task_worthy
@@ -1473,8 +1563,7 @@ class mainWindow(object):
                 for r in doc.data_rows.values():
                     r[column_name] = ""
 
-        form_info = self.compile_form_info()
-        self.rebuild_other_tile_forms(None, form_info)
+        self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id": None})
         return None
 
     @task_worthy

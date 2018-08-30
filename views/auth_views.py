@@ -5,6 +5,7 @@ from flask_login import current_user
 
 from tactic_app.users import User, res_types, copy_between_accounts
 from flask_wtf import Form
+# noinspection PyProtectedMember
 from flask_wtf.csrf import CSRFError
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import Required, Length, Regexp, EqualTo
@@ -20,6 +21,7 @@ admin_user = User.get_user_by_username("admin")
 #   session.modified = True
 
 tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
+
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/login', methods=['GET', 'POST'])

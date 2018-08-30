@@ -17,14 +17,18 @@ global_tile_manager = tactic_app.global_tile_manager
 import datetime
 tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 
+
 class CodeManager(UserManageResourceManager):
     collection_list = "code_names"
     collection_list_with_metadata = "code_names_with_metadata"
     collection_name = "code_collection_name"
     name_field = "code_name"
-    button_groups = [[{"name": "save_button", "button_class": "btn-outline-secondary", "name_text": "Save", "icon_name": "save"},
-                      {"name": "save_as_button", "button_class": "btn-outline-secondary", "name_text": "Save as...", "icon_name": "save"},
-                      {"name": "share_button", "button_class": "btn-outline-secondary", "name_text": "Share", "icon_name": "share"}
+    button_groups = [[{"name": "save_button", "button_class": "btn-outline-secondary",
+                       "name_text": "Save", "icon_name": "save"},
+                      {"name": "save_as_button", "button_class": "btn-outline-secondary",
+                       "name_text": "Save as...", "icon_name": "save"},
+                      {"name": "share_button", "button_class": "btn-outline-secondary",
+                       "name_text": "Share", "icon_name": "share"}
                       ]]
 
     def add_rules(self):
@@ -33,16 +37,12 @@ class CodeManager(UserManageResourceManager):
 
         app.add_url_rule('/get_code_code/<code_name>', "get_code_code",
                          login_required(self.get_code_code), methods=['get', "post"])
-        app.add_url_rule('/add_code', "add_code",
-                         login_required(self.add_code), methods=['get', "post"])
         app.add_url_rule('/delete_code', "delete_code",
                          login_required(self.delete_code), methods=['post'])
         app.add_url_rule('/create_code', "create_code",
                          login_required(self.create_code), methods=['get', 'post'])
         app.add_url_rule('/create_duplicate_code', "create_duplicate_code",
                          login_required(self.create_duplicate_code), methods=['get', 'post'])
-        app.add_url_rule('/update_code', "update_code",
-                         login_required(self.update_code), methods=['get', 'post'])
 
     def rename_me(self, old_name):
         try:
@@ -80,7 +80,7 @@ class CodeManager(UserManageResourceManager):
     def delete_tag(self, tag):
         doclist = db[current_user.code_collection_name].find()
         for doc in doclist:
-            if not "metadata" in doc:
+            if "metadata" not in doc:
                 continue
             mdata = doc["metadata"]
             tagstring = mdata["tags"]
@@ -129,34 +129,6 @@ class CodeManager(UserManageResourceManager):
         the_code = user_obj.get_code(code_name)
         return jsonify({"success": True, "the_content": the_code})
 
-    def load_code(self, the_code):
-        res_dict = tactic_app.host_worker.post_and_wait(global_tile_manager.test_tile_container_id,
-                                                        "clear_and_load_code",
-                                                        {"the_code": the_code})
-        return res_dict
-
-    def add_code(self):
-        user_obj = current_user
-        f = request.files['file']
-        if db[user_obj.code_collection_name].find_one({"code_name": f.filename}) is not None:
-            return jsonify({"success": False, "alert_type": "alert-warning",
-                            "message": "A code resource with that name already exists"})
-        the_code = f.read()
-        metadata = global_tile_manager.create_initial_metadata()
-
-        load_result = self.load_code(the_code)
-        if not load_result["success"]:
-            return jsonify({"success": False, "message": "Error loading the code", "alert-type": "alert-warning"})
-
-        metadata["classes"] = load_result["classes"]
-        metadata["functions"] = load_result["functions"]
-
-        data_dict = {"code_name": f.filename, "the_code": the_code, "metadata": metadata}
-        db[user_obj.code_collection_name].insert_one(data_dict)
-        table_row = self.create_new_row(f.filename, metadata)
-        all_table_row = self.all_manager.create_new_all_row(f.filename, metadata, "code")
-        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
-
     def create_duplicate_code(self):
         user_obj = current_user
         code_to_copy = request.json['res_to_copy']
@@ -198,40 +170,12 @@ class CodeManager(UserManageResourceManager):
         # self.update_selector_list()
         return jsonify({"success": True})
 
-    def update_code(self):
-        try:
-            data_dict = request.json
-            code_name = data_dict["code_name"]
-            the_code = data_dict["new_code"]
-            doc = db[current_user.code_collection_name].find_one({"code_name": code_name})
-            if "metadata" in doc:
-                mdata = doc["metadata"]
-            else:
-                mdata = {}
-            mdata["tags"] = data_dict["tags"]
-            mdata["notes"] = data_dict["notes"]
-            mdata["updated"] = datetime.datetime.utcnow()
-
-            load_result = self.load_code(the_code)
-            if not load_result["success"]:
-                return jsonify(load_result)
-
-            mdata["classes"] = load_result["classes"]
-            mdata["functions"] = load_result["functions"]
-
-            db[current_user.code_collection_name].update_one({"code_name": code_name},
-                                                             {'$set': {"the_code": the_code, "metadata": mdata}})
-            self.update_selector_list()
-            return jsonify({"success": True, "message": "Module Successfully Saved", "alert_type": "alert-success"})
-        except:
-            error_string = "Error saving code resource " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-            return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
-
 
 class RepositoryCodeManager(CodeManager):
     rep_string = "repository-"
     is_repository = True
-    button_groups = [[{"name": "copy_button", "button_class": "btn-outline-secondary", "name_text": "Copy", "icon_name": "share"}
+    button_groups = [[{"name": "copy_button", "button_class": "btn-outline-secondary",
+                       "name_text": "Copy", "icon_name": "share"}
                       ]]
 
     def add_rules(self):
