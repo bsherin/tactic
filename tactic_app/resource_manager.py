@@ -156,7 +156,7 @@ class ResourceManager(object):
         return the_html
 
     def build_resource_array(self, res_list, user_obj=None):
-        if user_obj == None:
+        if user_obj is None:
             user_obj = current_user
         larray = [["Name", "Created", "Updated", "Tags"]]
         for res_item in res_list:

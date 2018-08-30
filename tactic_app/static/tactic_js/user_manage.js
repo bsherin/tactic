@@ -73,6 +73,7 @@ class UserTacticSocket extends TacticSocket {
             resource_managers[data.module_id].tag_button_list.refresh_given_taglist(data.tag_list)
         });
 
+        this.socket.on('handle-callback', handleCallback);
         this.socket.on('stop-spinner', stopSpinner);
         this.socket.on('start-spinner', startSpinner);
         this.socket.on('show-status-msg', statusMessage);
@@ -201,7 +202,7 @@ function selector_double_click(event) {
 }
 
 function tag_button_clicked(event) {
-    rawbut = event.target;
+    let rawbut = event.target;
     let but;
     let manager = resource_managers[get_current_module_id()];
     if (rawbut.tagName.toLowerCase() != "button") {
@@ -564,7 +565,9 @@ class TileManager extends UserManagerResourceManager {
         const manager = event.data.manager;
         const res_name = manager.check_for_selection("resource");
         if (res_name == "") return;
-        $.getJSON(`${$SCRIPT_ROOT}/load_tile_module/${res_name}`, doFlash)
+        postWithCallbackNoMain("host", "load_tile_module_task", {"tile_module_name": res_name, "user_id": user_id}, doFlash)
+
+       // $.getJSON(`${$SCRIPT_ROOT}/load_tile_module/${res_name}`, doFlash)
     }
     unload_func (event) {
         const manager = event.data.manager;
@@ -723,18 +726,7 @@ class CodeManager extends UserManagerResourceManager {
             {"buttons": [{"name": "refresh", "func": "refresh_func", "button_class": "btn-outline-secondary", "icon_name": "sync-alt"}]}
         ];
     }
-    add_code (event) {
-        const form_data = new FormData(this);
-        let manager = event.data.manager;
-        postAjaxUploadPromise("add_code", form_data)
-            .then((data) => {
-                    manager.insert_new_row(data.new_row, 0);
-                    manager.select_first_row();
-                    resource_managers["all_module"].insert_new_row(data.new_all_row, 0)
-            })
-            .catch(doFlash);
-        event.preventDefault();
-    }
+
     new_code (event, select_all = false) {
         const template_name = "BasicCodeTemplate";
         $.getJSON(`${$SCRIPT_ROOT}/get_resource_names/code`, function (data) {
@@ -1034,7 +1026,8 @@ class AllManager extends UserManagerResourceManager {
         if (res_name == "") return;
         const the_type = manager.selected_resource_type();
         if (!(the_type == "tile")) return;
-        $.getJSON(`${$SCRIPT_ROOT}/load_tile_module/${res_name}`, doFlash)
+        postWithCallbackNoMain("host", "load_tile_module_task", {"tile_module_name": res_name, "user_id": user_id}, doFlash)
+        // $.getJSON(`${$SCRIPT_ROOT}/load_tile_module/${res_name}`, doFlash);
     }
 
     unload_func(event) {

@@ -16,6 +16,7 @@ if "DB_NAME" in os.environ:
 else:
     db_name = "tacticdb"
 
+
 class UserManager(ResourceManager):
     def add_rules(self):
         app.add_url_rule('/refresh_user_table', "refresh_user_table",
@@ -50,7 +51,7 @@ class UserManager(ResourceManager):
             collection_to_copy = user_obj.full_collection_name(colname)
 
             regex = re.compile("__metadata__")
-            doc = db[collection_to_copy].find_one({"name" : { "$not" : regex}})
+            doc = db[collection_to_copy].find_one({"name": {"$not": regex}})
             if doc is None:
                 print colname + " only has metadata"
                 couldnt_process.append(colname)
@@ -90,7 +91,6 @@ class UserManager(ResourceManager):
                     doc["file_id"] = target_fs.put(doc_text)
                 target_db[collection_to_copy].insert_one(doc)
         return
-
 
     def delete_user(self, userid):
         if not (current_user.username == "admin"):
@@ -158,6 +158,7 @@ class UserManager(ResourceManager):
 
         return jsonify({"success": True})
 
+    # noinspection PyMethodOverriding
     def build_resource_array(self, user_obj=None):
         user_list = get_all_users()
         larray = [["_id", "username", "full_name", "last_login", "email"]]
@@ -175,4 +176,3 @@ class UserManager(ResourceManager):
         res_array = self.build_resource_array()
         result = self.build_html_table_from_data_list(res_array)
         return result
-

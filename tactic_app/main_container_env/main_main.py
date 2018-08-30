@@ -89,7 +89,7 @@ class MainWorker(QWorker):
         return {"success": False, "message": error_string}
 
     @task_worthy
-    def hello(self, data_dict):
+    def hello(self):
         return {"success": True, "message": 'This is mainwindow communicating'}
 
     @task_worthy

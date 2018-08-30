@@ -92,7 +92,6 @@ def copy_between_accounts(source_user, dest_user, res_type, new_res_name, res_na
                 new_res_dict["metadata"]["datetime"] = datetime.datetime.utcnow()
             if res_type == "project":
                 project_dict = read_project_dict(fs, new_res_dict["metadata"], old_dict["file_id"])
-                # project_dict = cPickle.loads(zlib.decompress(fs.get(old_dict["file_id"]).read()).decode("utf-8", "ignore").encode("ascii"))
                 project_dict["user_id"] = dest_user.get_id()
                 pdict = make_jsonizable_and_compress(project_dict)
                 new_res_dict["file_id"] = fs.put(pdict)
@@ -134,7 +133,6 @@ class User(UserMixin):
         db["user_collection"].update_one({"username": self.username},
                                          {'$set': {"last_login": current_time}})
         return
-
 
     def localize_time(self, dt):
         tzoffset = self.get_tzoffset()
@@ -440,7 +438,8 @@ class User(UserMixin):
         list_names_with_metadata = [d + ["list"] for d in self.list_names_with_metadata]
         tile_names_with_metadata = [d + ["tile"] for d in self.tile_module_names_with_metadata]
         code_names_with_metadata = [d + ["code"] for d in self.code_names_with_metadata]
-        names_with_metadata = col_names_with_metadata + proj_names_with_metadata + list_names_with_metadata + tile_names_with_metadata + code_names_with_metadata
+        names_with_metadata = col_names_with_metadata + proj_names_with_metadata + list_names_with_metadata + \
+            tile_names_with_metadata + code_names_with_metadata
         return sorted(names_with_metadata, key=self.sort_data_list_key)
 
     @property
@@ -498,9 +497,6 @@ class User(UserMixin):
     def get_list(self, list_name):
         list_dict = db[self.list_collection_name].find_one({"list_name": list_name})
         return list_dict["the_list"]
-
-    def get_collection(self, collection_name):  # tactic_todo This doesn't do anything. Delete?
-        full_collection_name = self.build_data_collection_name(collection_name)
 
     def get_tile_dict(self, tile_module_name):
         tile_dict = db[self.tile_collection_name].find_one({"tile_module_name": tile_module_name})

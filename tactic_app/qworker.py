@@ -3,10 +3,12 @@ import uuid
 import time
 import datetime
 import os
+import copy
 from communication_utils import send_request_to_megaplex
 import communication_utils
 
 callback_dict = {}
+callback_data_dict = {}
 
 blank_packet = {"source": None,
                 "dest": None,
@@ -34,6 +36,7 @@ else:
 
 
 task_worthy_methods = {}
+task_worthy_manual_submit_methods = {}
 
 
 def task_worthy(m):
@@ -41,6 +44,12 @@ def task_worthy(m):
     return m
 
 
+def task_worthy_manual_submit(m):
+    task_worthy_manual_submit_methods[m.__name__] = "this_worker"
+    return m
+
+
+# noinspection PyTypeChecker
 class QWorker(gevent.Greenlet):
     def __init__(self):
         self.short_sleep_period = SHORT_SLEEP_PERIOD
@@ -70,20 +79,20 @@ class QWorker(gevent.Greenlet):
     def post_and_wait(self, dest_id, task_type, task_data=None, sleep_time=.1, timeout=10, tries=RETRIES):
         callback_id = str(uuid.uuid4())
         new_packet = {"source": self.my_id,
+                      "callback_type": "wait",
+                      "callback_id": callback_id,
+                      "status": "presend",
                       "dest": dest_id,
                       "task_type": task_type,
                       "task_data": task_data,
-                      "response_data": None,
-                      "callback_id": callback_id}
+                      "response_data": None}
         # self.debug_log("in post and wait with new_packet " + str(new_packet))
-        result = send_request_to_megaplex("post_wait_task", new_packet)
+        send_request_to_megaplex("post_wait_task", new_packet)
         for i in range(tries):
             res = send_request_to_megaplex("check_wait_task", new_packet).json()
             if res["success"]:
-                # self.debug_log("Got result to post_and_wait")
                 return res["result"]
             else:
-                # self.debug_log("No result yet for post_and_wait after tries " + str(i))
                 time.sleep(sleep_time)
         error_string = "post_and_wait timed out with msg_type {}, destination {}, and source".format(task_type,
                                                                                                      dest_id,
@@ -91,13 +100,23 @@ class QWorker(gevent.Greenlet):
         self.debug_log(error_string)
         raise Exception(error_string)
 
-    def post_task(self, dest_id, task_type, task_data=None, callback_func=None):
+    def post_task(self, dest_id, task_type, task_data=None, callback_func=None, callback_data=None):
         if callback_func is not None:
             callback_id = str(uuid.uuid4())
             callback_dict[callback_id] = callback_func
+            if callback_data is not None:
+                cdata = copy.copy(callback_data)
+                callback_data_dict[callback_id] = cdata
+                callback_type = "callback_with_context"
+            else:
+                callback_type = "callback_no_context"
         else:
             callback_id = None
+            callback_type = "no_callback"
+
         new_packet = {"source": self.my_id,
+                      "status": "presend",
+                      "callback_type": callback_type,
                       "dest": dest_id,
                       "task_type": task_type,
                       "task_data": task_data,
@@ -112,7 +131,9 @@ class QWorker(gevent.Greenlet):
             raise Exception(error_string)
         return result
 
-    def submit_response(self, task_packet):
+    def submit_response(self, task_packet, response_data=None):
+        if response_data is not None:
+            task_packet["response_data"] = response_data
         send_request_to_megaplex("submit_response", task_packet)
         return
 
@@ -130,11 +151,17 @@ class QWorker(gevent.Greenlet):
                 self.handle_exception(ex, special_string)
             else:
                 if "empty" not in task_packet:
-                    if task_packet["response_data"] is not None:
+                    if task_packet["status"] == "submitted_response":
                         try:
                             func = callback_dict[task_packet["callback_id"]]
                             del callback_dict[task_packet["callback_id"]]
-                            func(task_packet["response_data"])
+                            callback_type = task_packet["callback_type"]
+                            if callback_type == "callback_with_context":
+                                cdata = callback_data_dict[task_packet["callback_id"]]
+                                del callback_data_dict[task_packet["callback_id"]]
+                                func(task_packet["response_data"], cdata)
+                            else:
+                                func(task_packet["response_data"])
                         except Exception as ex:
                             special_string = "Error handling callback for task type {} for my_id {}".format(task_packet["task_type"],
                                                                                                             self.my_id)
@@ -161,7 +188,7 @@ class QWorker(gevent.Greenlet):
 
     def handle_event(self, task_packet):
         task_type = task_packet["task_type"]
-        if task_type in task_worthy_methods.keys():
+        if task_type in task_worthy_methods:
             try:
                 response_data = getattr(self.handler_instances[task_worthy_methods[task_type]], task_type)(task_packet["task_data"])
             except Exception as ex:
@@ -177,6 +204,14 @@ class QWorker(gevent.Greenlet):
                     special_string = "Error submitting response for task type {} for my_id {}".format(task_type,
                                                                                                       self.my_id)
                     self.handle_exception(ex, special_string)
+
+        elif task_type in task_worthy_manual_submit_methods:
+            try:
+                getattr(self.handler_instances[task_worthy_manual_submit_methods[task_type]], task_type)(task_packet["task_data"], task_packet)
+            except Exception as ex:
+                special_string = "Error handling task of type {} for my_id {}".format(task_type,
+                                                                                      self.my_id)
+                self.handle_exception(ex, special_string)
         else:
             self.debug_log("Ignoring task type {} for my_id {}".format(task_type, self.my_id))
         return
