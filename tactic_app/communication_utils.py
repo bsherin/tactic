@@ -125,6 +125,8 @@ def send_request_to_container(taddress, msg_type, data_dict=None, wait_for_succe
 
 def post_task_noqworker(source_id, dest_id, task_type, task_data=None):
     new_packet = {"source": source_id,
+                  "callback_type": "no_callback",
+                  "status": "presend",
                   "dest": dest_id,
                   "task_type": task_type,
                   "task_data": task_data,

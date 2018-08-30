@@ -64,10 +64,11 @@ class CodeViewer extends ModuleViewerAbstract {
             "code_name": this.resource_name,
             "new_code": new_code,
             "tags": tags,
-            "notes": notes
+            "notes": notes,
+            "user_id": user_id
             };
         self = this;
-        postAjax("update_code", result_dict, update_success);
+        postWithCallback("host", "update_code_task", result_dict, update_success);
         function update_success(data) {
             if (data.success) {
                 self.myCodeMirror.getDoc().markClean();

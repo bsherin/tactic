@@ -19,7 +19,7 @@ class CreatorViewerSocket extends TacticSocket {
         this.socket.on('start-spinner', startSpinner);
         this.socket.on('handle-callback', handleCallback);
         this.socket.on('close-user-windows', (data) => {
-            if (!(data["originator"] == this.user_manage_id)) {
+            if (!(data["originator"] == module_viewer_id)) {
                 window.close()
             }
         });
