@@ -36,21 +36,18 @@ else:
 
 
 task_worthy_methods = {}
-task_worthy_with_deferral_methods = {}
-task_worthy_with_delegate_methods = {}
+task_worthy_manual_submit_methods = {}
 
 
 def task_worthy(m):
     task_worthy_methods[m.__name__] = "this_worker"
     return m
 
-def task_worthy_with_deferral(m):
-    task_worthy_with_deferral_methods[m.__name__] = "this_worker"
+
+def task_worthy_manual_submit(m):
+    task_worthy_manual_submit_methods[m.__name__] = "this_worker"
     return m
 
-def task_worthy_with_delegate(m):
-    task_worthy_with_delegate_methods[m.__name__] = "this_worker"
-    return m
 
 # noinspection PyTypeChecker
 class QWorker(gevent.Greenlet):
@@ -88,10 +85,9 @@ class QWorker(gevent.Greenlet):
                       "dest": dest_id,
                       "task_type": task_type,
                       "task_data": task_data,
-                      "response_data": None,
-                      "deferral_state": None}
+                      "response_data": None}
         # self.debug_log("in post and wait with new_packet " + str(new_packet))
-        result = send_request_to_megaplex("post_wait_task", new_packet)
+        send_request_to_megaplex("post_wait_task", new_packet)
         for i in range(tries):
             res = send_request_to_megaplex("check_wait_task", new_packet).json()
             if res["success"]:
@@ -104,7 +100,7 @@ class QWorker(gevent.Greenlet):
         self.debug_log(error_string)
         raise Exception(error_string)
 
-    def post_task(self, dest_id, task_type, task_data=None, callback_func=None, callback_data=None, is_referral=False, original_task_packet=None):
+    def post_task(self, dest_id, task_type, task_data=None, callback_func=None, callback_data=None):
         if callback_func is not None:
             callback_id = str(uuid.uuid4())
             callback_dict[callback_id] = callback_func
@@ -125,9 +121,7 @@ class QWorker(gevent.Greenlet):
                       "task_type": task_type,
                       "task_data": task_data,
                       "response_data": None,
-                      "callback_id": callback_id,
-                      "is_referral": is_referral,
-                      "original_task_packet": original_task_packet}
+                      "callback_id": callback_id}
         result = send_request_to_megaplex("post_task", new_packet).json()
         if not result["success"]:
             error_string = "Error posting task with msg_type {} dest {} source {}. Error: {}".format(task_type,
@@ -137,35 +131,11 @@ class QWorker(gevent.Greenlet):
             raise Exception(error_string)
         return result
 
-    def submit_response(self, task_packet):
-        print "in submit_response with task_packet with keys " + str(task_packet.keys())
-        print "source is " + str(task_packet["source"])
-        print "dest is " + str(task_packet["dest"])
-        print "callback_id is " + str(task_packet["callback_id"])
-
+    def submit_response(self, task_packet, response_data=None):
+        if response_data is not None:
+            task_packet["response_data"] = response_data
         send_request_to_megaplex("submit_response", task_packet)
         return
-
-    def create_delegate_packet(self, new_dest, new_task_type, task_data):
-        dpacket = copy.copy(task_data)
-        dpacket["new_dest"] = new_dest
-        dpacket["new_task_type"] = new_task_type
-        dpacket["task_data"] = task_data
-        return dpacket
-
-    def delegate_task(self, old_task_packet, response_data):
-        new_task_packet = copy.copy(old_task_packet)
-        new_task_packet["dest"] = response_data["new_dest"]
-        new_task_packet["task_type"] = response_data["new_task_type"]
-        new_task_data = copy.copy(response_data)
-        del new_task_data["new_dest"]
-        del new_task_data["new_task_type"]
-        new_task_packet["task_data"] = new_task_data
-        new_task_packet["status"] = "presend"
-        result = send_request_to_megaplex("post_task", new_task_packet).json()
-        if not result["success"]:
-            error_string = "Error delegating task with msg_type {}".format(task_type)
-            raise Exception(error_string)
 
     def special_long_sleep_function(self):
         pass
@@ -181,25 +151,12 @@ class QWorker(gevent.Greenlet):
                 self.handle_exception(ex, special_string)
             else:
                 if "empty" not in task_packet:
-                    print "status is " + task_packet["status"]
                     if task_packet["status"] == "submitted_response":
                         try:
                             func = callback_dict[task_packet["callback_id"]]
                             del callback_dict[task_packet["callback_id"]]
                             callback_type = task_packet["callback_type"]
-                            print "callback_type is " + callback_type
-                            if self.is_referral(task_packet):
-                                if callback_type == "callback_with_context":
-                                    cdata = callback_data_dict[task_packet["callback_id"]]
-                                    del callback_data_dict[task_packet["callback_id"]]
-                                    response_data = func(task_packet["response_data"], cdata)
-                                else:
-                                    response_data = func(task_packet["response_data"])
-                                original_task_packet = copy.copy(task_packet["original_task_packet"])
-                                original_task_packet["response_data"] = response_data
-                                print "entering submit_response from _run"
-                                self.submit_response(original_task_packet)
-                            elif callback_type == "callback_with_context":
+                            if callback_type == "callback_with_context":
                                 cdata = callback_data_dict[task_packet["callback_id"]]
                                 del callback_data_dict[task_packet["callback_id"]]
                                 func(task_packet["response_data"], cdata)
@@ -229,20 +186,8 @@ class QWorker(gevent.Greenlet):
                     else:
                         gevent.sleep(self.short_sleep_period)
 
-    def is_referral(self, task_packet):
-        return "is_referral" in task_packet and task_packet["is_referral"]
-
-    def create_defer_packet(self, new_dest, new_task_type, new_task_data, callback_func):
-        dpacket = {}
-        dpacket["new_dest"] = new_dest
-        dpacket["new_task_type"] = new_task_type
-        dpacket["new_task_data"] = new_task_data
-        dpacket["callback_func"] = callback_func
-        return dpacket
-
-    def handle_event(self, task_packet):  # tactic_working
+    def handle_event(self, task_packet):
         task_type = task_packet["task_type"]
-        print "task_type is " + str(task_type)
         if task_type in task_worthy_methods:
             try:
                 response_data = getattr(self.handler_instances[task_worthy_methods[task_type]], task_type)(task_packet["task_data"])
@@ -254,44 +199,19 @@ class QWorker(gevent.Greenlet):
             if task_packet["callback_id"] is not None:
                 try:
                     task_packet["response_data"] = response_data
-                    print "entering submit response from handle_event"
                     self.submit_response(task_packet)
                 except Exception as ex:
                     special_string = "Error submitting response for task type {} for my_id {}".format(task_type,
                                                                                                       self.my_id)
                     self.handle_exception(ex, special_string)
-        elif task_type in task_worthy_with_delegate_methods:
-            try:
-                response_data = getattr(self.handler_instances[task_worthy_with_delegate_methods[task_type]], task_type)(task_packet["task_data"])
-                self.delegate_task(task_packet, response_data)
-            except Exception as ex:
-                special_string = "Error handling delegation task of type {} for my_id {}".format(task_type,
-                                                                                      self.my_id)
-                self.handle_exception(ex, special_string)
 
-        elif task_type in task_worthy_with_deferral_methods:
+        elif task_type in task_worthy_manual_submit_methods:
             try:
-                response_data = getattr(self.handler_instances[task_worthy_with_deferral_methods[task_type]], task_type)(task_packet["task_data"])
+                getattr(self.handler_instances[task_worthy_manual_submit_methods[task_type]], task_type)(task_packet["task_data"], task_packet)
             except Exception as ex:
                 special_string = "Error handling task of type {} for my_id {}".format(task_type,
                                                                                       self.my_id)
                 self.handle_exception(ex, special_string)
-                if task_packet["callback_id"] is not None:
-                    task_packet["response_data"] = "__ERROR__"
-                    print "entering submit response from handle_event from error in deferral"
-                    self.submit_response(task_packet)
-            else:
-                try:
-                    self.post_task(response_data["new_dest"],
-                                   response_data["new_task_type"],
-                                   response_data["new_task_data"],
-                                   response_data["callback_func"],
-                                   is_referral=True,
-                                   original_task_packet=task_packet)
-                except Exception as ex:
-                    special_string = "Error posting for deferral task type {} for my_id {}".format(response_data["new_task_type"],
-                                                                                                   self.my_id)
-                    self.handle_exception(ex, special_string)
         else:
             self.debug_log("Ignoring task type {} for my_id {}".format(task_type, self.my_id))
         return

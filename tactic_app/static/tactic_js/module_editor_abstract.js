@@ -252,7 +252,7 @@ class ModuleViewerAbstract extends ResourceViewer {
         this.doSavePromise()
             .then(function () {
                 statusMessageText("Loading Module");
-                $.getJSON($SCRIPT_ROOT + '/load_tile_module/' + String(self.resource_name), load_success)
+                postWithCallback("host", "load_tile_module_task", {"tile_module_name": self.resource_name, "user_id": user_id}, load_success)
             })
             .catch(doFlashStopSpinner);
 

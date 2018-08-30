@@ -46,9 +46,6 @@ class TileManager(UserManageResourceManager):
                          login_required(self.last_saved_view), methods=['get'])
         app.add_url_rule('/get_api_html', "get_api_html",
                          login_required(self.get_api_html), methods=['get', 'post'])
-
-        app.add_url_rule('/load_tile_module/<tile_module_name>', "load_tile_module",
-                         login_required(self.load_tile_module), methods=['get', 'post'])
         app.add_url_rule('/unload_all_tiles', "unload_all_tiles",
                          login_required(self.unload_all_tiles), methods=['get', 'post'])
         app.add_url_rule('/add_tile_module', "add_tile_module",
@@ -98,7 +95,7 @@ class TileManager(UserManageResourceManager):
     def delete_tag(self, tag):
         doclist = db[current_user.tile_collection_name].find()
         for doc in doclist:
-            if not "metadata" in doc:
+            if "metadata" not in doc:
                 continue
             mdata = doc["metadata"]
             tagstring = mdata["tags"]
@@ -107,7 +104,8 @@ class TileManager(UserManageResourceManager):
                 taglist.remove(tag)
                 mdata["tags"] = " ".join(taglist)
                 res_name = doc["tile_module_name"]
-                db[current_user.tile_collection_name].update_one({"tile_module_name": res_name}, {'$set': {"metadata": mdata}})
+                db[current_user.tile_collection_name].update_one({"tile_module_name": res_name},
+                                                                 {'$set': {"metadata": mdata}})
         return
 
     def rename_tag(self, old_tag, new_tag):
@@ -124,7 +122,8 @@ class TileManager(UserManageResourceManager):
                     taglist.append(new_tag)
                 mdata["tags"] = " ".join(taglist)
                 res_name = doc["tile_module_name"]
-                db[current_user.tile_collection_name].update_one({"tile_module_name": res_name}, {'$set': {"metadata": mdata}})
+                db[current_user.tile_collection_name].update_one({"tile_module_name": res_name},
+                                                                 {'$set': {"metadata": mdata}})
 
     def get_api_html(self):
         return jsonify({"success": True, "api_html": api_html})
@@ -241,40 +240,6 @@ class TileManager(UserManageResourceManager):
                                version_string=tstring,
                                module_viewer_id=the_content["module_viewer_id"],
                                tile_collection_name=the_content["tile_collection_name"])
-
-    def load_tile_module(self, tile_module_name, return_json=True, user_obj=None):
-        try:
-            if user_obj is None:
-                user_obj = current_user
-            tile_module = user_obj.get_tile_module(tile_module_name)
-
-            # tactic_todo doing post_and_wait in main loop
-            res_dict = tactic_app.host_worker.post_and_wait(global_tile_manager.test_tile_container_id, "load_source",
-                                                            {"tile_code": tile_module})
-            if not res_dict["success"]:
-                return jsonify({"success": False, "message": res_dict["message_string"], "alert_type": "alert-warning"})
-            category = res_dict["category"]
-
-            global_tile_manager.add_user_tile_module(user_obj.username,
-                                                     category,
-                                                     res_dict["tile_name"],
-                                                     tile_module,
-                                                     tile_module_name)
-
-            socketio.emit('update-loaded-tile-list', {"html": self.render_loaded_tile_list(user_obj)},
-                          namespace='/user_manage', room=user_obj.get_id())
-            socketio.emit('update-menus', {}, namespace='/main', room=user_obj.get_id())
-            if return_json:
-                return jsonify({"success": True, "message": "Tile module successfully loaded",
-                                "alert_type": "alert-success"})
-            else:
-                return {"success": True}
-        except:
-            error_string = "Error loading tile: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-            if return_json:
-                return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
-            else:
-                return {"success": False, "message": error_string}
 
     def unload_all_tiles(self):
         try:

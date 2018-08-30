@@ -6,13 +6,13 @@ from users import User, load_user
 import tactic_app
 
 
+# noinspection PyAttributeOutsideInit
 class GlobalTileManager(object):
 
     def __init__(self):
         self.initialize()
 
     def initialize(self):
-        # self.tile_classes = {}
         self.user_tiles = {}  # dict[usernamer][category][tile_name] = module_code
         self.loaded_user_modules = {}  # dict[username] = [list of tile_module_names]
         self.tile_module_index = {}  # dict[username][tile_name] = tile_module_name
@@ -32,6 +32,8 @@ class GlobalTileManager(object):
         repository_user = User.get_user_by_username("repository")
         if repository_user is not None:
             tm_list = repository_user.get_resource_names("tile", tag_filter=tag)
+        else:
+            tm_list = []
         return tm_list
 
     def load_user_default_tiles(self, username):
@@ -43,22 +45,10 @@ class GlobalTileManager(object):
             tm_list = the_user.get_resource_names("tile", tag_filter="default")
 
             for tm in tm_list:
-                module_code = the_user.get_tile_module(tm)
-                # tactic_todo doing post_and_wait in main loop
-                res_dict = tactic_app.host_worker.post_and_wait(self.test_tile_container_id, "load_source",
-                                                                {"tile_code": module_code})
-                if res_dict["success"]:
-                    category = res_dict["category"]
-                    self.add_user_tile_module(username,
-                                              category,
-                                              res_dict["tile_name"],
-                                              module_code,
-                                              tm,
-                                              is_default=True)
-
-                else:
-                    print "Error loading tile " + res_dict["message_string"] + " tile " + str(tm)
-                    self.add_failed_load(tm, username)
+                tactic_app.host_worker.post_task("host", "load_tile_module_task", {"tile_module_name": tm,
+                                                                                   "user_id": the_user.get_id(),
+                                                                                   "show_failed_loads": True,
+                                                                                   "is_default": True})
 
         else:
             error_list.append("unable to load user")
@@ -92,7 +82,6 @@ class GlobalTileManager(object):
             del self.failed_loaded_default_modules[username]
         if username in self.default_tiles:
             del self.default_tiles[username]
-
 
     def get_tile_code(self, tile_type, user_id):
         user_obj = load_user(user_id)

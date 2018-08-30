@@ -1,15 +1,17 @@
-from qworker import QWorker, task_worthy
+from qworker import QWorker, task_worthy, task_worthy_manual_submit
 from flask import render_template, url_for
+from flask_login import current_user
 from users import load_user
 import gevent
 from communication_utils import send_request_to_megaplex
 from docker_functions import create_container, destroy_container, destroy_child_containers, destroy_user_containers
 from docker_functions import get_log, ContainerCreateError, container_exec, restart_container
-from tactic_app import app, socketio, use_ssl
+from tactic_app import app, socketio, use_ssl, db
 from views.user_manage_views import tile_manager, project_manager, collection_manager, list_manager
 from views.user_manage_views import code_manager, all_manager
 import tactic_app
 import uuid
+import sys
 import copy
 import traceback
 import datetime
@@ -40,6 +42,103 @@ class HostWorker(QWorker):
 
     def clear_um_status_message(self, user_manage_id):
         socketio.emit('clear-status-msg', {}, namespace='/user_manage', room=user_manage_id)
+
+    @task_worthy_manual_submit
+    def update_code_task(self, data_dict, task_packet):
+        try:
+            user_id = data_dict["user_id"]
+            user_obj = load_user(user_id)
+            local_task_packet = task_packet
+            code_name = data_dict["code_name"]
+            the_code = data_dict["new_code"]
+            doc = db[user_obj.code_collection_name].find_one({"code_name": code_name})
+            if "metadata" in doc:
+                mdata = doc["metadata"]
+            else:
+                mdata = {}
+            mdata["tags"] = data_dict["tags"]
+            mdata["notes"] = data_dict["notes"]
+            mdata["updated"] = datetime.datetime.utcnow()
+
+            def get_result(load_result):
+                if not load_result["success"]:
+                    return self.submit_response(task_packet, load_result)
+
+                mdata["classes"] = load_result["classes"]
+                mdata["functions"] = load_result["functions"]
+
+                db[user_obj.code_collection_name].update_one({"code_name": code_name},
+                                                             {'$set': {"the_code": the_code, "metadata": mdata}})
+                code_manager.update_selector_list(user_obj=user_obj)
+                result = {"success": True, "message": "Module Successfully Saved", "alert_type": "alert-success"}
+                self.submit_response(local_task_packet, result)
+                return
+
+            self.post_task(global_tile_manager.test_tile_container_id, "clear_and_load_code",
+                           {"the_code": the_code}, get_result)
+
+        except:
+            error_string = "Error saving code resource " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+            self.submit_response(task_packet, {"success": False, "message": error_string,
+                                               "alert_type": "alert-warning"})
+            return
+
+    @task_worthy_manual_submit
+    def load_tile_module_task(self, data, task_packet):
+        try:
+            user_id = data["user_id"]
+            tile_module_name = data["tile_module_name"]
+
+            user_obj = load_user(user_id)
+            tile_module = user_obj.get_tile_module(tile_module_name)
+
+            def loaded_source(res_dict):
+                if not res_dict["success"]:
+                    if "show_failed_loads" in data and data["show_failed_loads"]:
+                        global_tile_manager.add_failed_load(tile_module_name, user_obj.username)
+                        socketio.emit('update-loaded-tile-list',
+                                      {"html": tile_manager.render_loaded_tile_list(user_obj)},
+                                      namespace='/user_manage', room=user_obj.get_id())
+                    if not task_packet["callback_type"] == "no_callback":
+                        self.submit_response(task_packet, {"success": False, "message": res_dict["message_string"],
+                                                           "alert_type": "alert-warning"})
+                    return
+                category = res_dict["category"]
+
+                if "is_default" in data:
+                    is_default = data["is_default"]
+                else:
+                    is_default = False
+                global_tile_manager.add_user_tile_module(user_obj.username,
+                                                         category,
+                                                         res_dict["tile_name"],
+                                                         tile_module,
+                                                         tile_module_name,
+                                                         is_default)
+
+                socketio.emit('update-loaded-tile-list', {"html": tile_manager.render_loaded_tile_list(user_obj)},
+                              namespace='/user_manage', room=user_obj.get_id())
+                socketio.emit('update-menus', {}, namespace='/main', room=user_obj.get_id())
+                if "main_id" not in task_packet:
+                    task_packet["room"] = user_id
+                    task_packet["namespace"] = "/user_manage"
+
+                if not task_packet["callback_type"] == "no_callback":
+                    self.submit_response(task_packet, {"success": True, "message": "Tile module successfully loaded",
+                                                       "alert_type": "alert-success"})
+                return
+
+            self.post_task(global_tile_manager.test_tile_container_id, "load_source",
+                           {"tile_code": tile_module}, loaded_source)
+
+        except:
+            error_string = "Error loading tile: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+            if not task_packet["callback_type"] == "no_callback":
+                self.submit_response(task_packet, {"success": False, "message": error_string,
+                                                   "alert_type": "alert-warning"})
+            else:
+                print error_string
+            return
 
     @task_worthy
     def show_main_status_message(self, data):
@@ -159,18 +258,21 @@ class HostWorker(QWorker):
         user_obj = load_user(user_id)
         return {"loaded_modules": global_tile_manager.loaded_user_modules[user_obj.username]}
 
-    @task_worthy
-    def load_modules(self, data):
-        loaded_modules = data["loaded_modules"]
+    @task_worthy_manual_submit
+    def load_module_if_necessary(self, data, task_packet):
+
+        def did_load(result_data):
+            self.submit_response(task_packet, result_data)
+            return
+
         user_id = data["user_id"]
         user_obj = load_user(user_id)
-        for the_module in loaded_modules:
-            if the_module not in global_tile_manager.loaded_user_modules[user_obj.username]:
-                result = tile_manager.load_tile_module(the_module, return_json=False, user_obj=user_obj)
-                if not result["success"]:
-                    template = "Error loading module {}\n" + result["message"]
-                    raise Exception(template.format(the_module))
-        return {"success": True}
+        if data["tile_module_name"] in global_tile_manager.loaded_user_modules[user_obj.username]:
+            self.submit_response(task_packet, {"success": True})
+            return
+        else:
+            self.post_task("host", "load_tile_module_task", data, did_load)
+        return
 
     @task_worthy
     def update_tile_selector_list(self, data):
@@ -478,23 +580,36 @@ class ClientWorker(QWorker):
             except Exception as ex:
                 special_string = "Error in get_next_task for my_id {}".format(self.my_id)
                 self.handle_exception(ex, special_string)
-            if "empty" not in task_packet:
-                if task_packet["callback_id"] is not None:
-                    socketio.emit("handle-callback", task_packet, namespace='/main', room=task_packet["main_id"])
-                else:
-                    task_packet["table_message"] = task_packet["task_type"]
-                    socketio.emit("table-message", task_packet, namespace='/main', room=task_packet["main_id"])
-                self.last_contact = datetime.datetime.utcnow()
-                gevent.sleep(self.short_sleep_period)
             else:
-                self.special_long_sleep_function()
-                current_time = datetime.datetime.utcnow()
-                tdelta = current_time - self.last_contact
-                delta_seconds = tdelta.days * 24 * 60 + tdelta.seconds
-                if delta_seconds > self.gap_time_for_hiberate:
-                    gevent.sleep(self.hibernate_time)
-                else:
-                    gevent.sleep(self.short_sleep_period)
+                try:
+                    if "empty" not in task_packet:
+                        if task_packet["callback_id"] is not None:
+                            if "room" in task_packet:
+                                room = task_packet["room"]
+                            else:
+                                room = task_packet["main_id"]
+                            if "namespace" in task_packet:
+                                namespace = task_packet["namespace"]
+                            else:
+                                namespace = "/main"
+                            socketio.emit("handle-callback", task_packet, namespace=namespace, room=room)
+                        else:
+                            task_packet["table_message"] = task_packet["task_type"]
+                            socketio.emit("table-message", task_packet, namespace='/main', room=task_packet["main_id"])
+                        self.last_contact = datetime.datetime.utcnow()
+                        gevent.sleep(self.short_sleep_period)
+                    else:
+                        self.special_long_sleep_function()
+                        current_time = datetime.datetime.utcnow()
+                        tdelta = current_time - self.last_contact
+                        delta_seconds = tdelta.days * 24 * 60 + tdelta.seconds
+                        if delta_seconds > self.gap_time_for_hiberate:
+                            gevent.sleep(self.hibernate_time)
+                        else:
+                            gevent.sleep(self.short_sleep_period)
+                except Exception as ex:
+                    special_string = "Error handling task for my_id {}".format(self.my_id)
+                    self.handle_exception(ex, special_string)
 
 
 tactic_app.host_worker = HostWorker()
