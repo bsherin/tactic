@@ -140,7 +140,7 @@ class HostWorker(QWorker):
 
             else:
                 self.post_task(global_tile_manager.test_tile_container_id, "load_source",
-                           {"tile_code": tile_module}, loaded_source)
+                               {"tile_code": tile_module}, loaded_source)
 
         except:
             error_string = "Error loading tile: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
@@ -273,17 +273,36 @@ class HostWorker(QWorker):
     def load_module_if_necessary(self, data, task_packet):
 
         def did_load(result_data):
+            result_data["module_name"] = tile_module_name
             self.submit_response(task_packet, result_data)
             return
 
         user_id = data["user_id"]
         user_obj = load_user(user_id)
+        tile_module_name = data["tile_module_name"]
         if data["tile_module_name"] in global_tile_manager.loaded_user_modules[user_obj.username]:
+            self.submit_response(task_packet, {"success": True, "module_name": tile_module_name})
+            return
+        else:
+            self.post_task("host", "load_tile_module_task", data, did_load)
+        return
+
+    @task_worthy_manual_submit
+    def load_tile_type_if_necessary(self, data, task_packet):
+
+        def did_load(result_data):
+            self.submit_response(task_packet, result_data)
+            return
+
+        user_id = data["user_id"]
+        user_obj = load_user(user_id)
+        if data["tile_type"] in global_tile_manager.tile_module_index[user_obj.username]:
             self.submit_response(task_packet, {"success": True})
             return
         else:
             self.post_task("host", "load_tile_module_task", data, did_load)
         return
+
 
     @task_worthy
     def update_tile_selector_list(self, data):
@@ -501,7 +520,6 @@ class HostWorker(QWorker):
             return {"module_code": module_code, "success": False, "message": "Couldn't get module " + data["tile_type"]}
         else:
             return {"module_code": module_code, "success": True}
-
 
     @task_worthy
     def get_module_from_tile_type(self, data):

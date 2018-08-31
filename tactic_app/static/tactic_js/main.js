@@ -173,7 +173,9 @@ function create_tile_from_save(data) {
     if (tile_save_results.is_d3) {
         postWithCallback(tile_id, "RefreshTileFromSave", {})
     }
-
+    if (table_is_shrunk) {
+        $("#" + tile_id).addClass("tile-panel-float")
+    }
 }
 
 function continue_loading() {
