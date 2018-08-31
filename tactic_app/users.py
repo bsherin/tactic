@@ -22,6 +22,10 @@ def put_docs_in_collection(collection_name, dict_list):
     return db[collection_name].insert_many(dict_list)
 
 
+class ModuleNotFoundError(Exception):
+    pass
+
+
 @login_manager.user_loader
 def load_user(userid):
     # This expects that userid will be a string
@@ -504,6 +508,8 @@ class User(UserMixin):
 
     def get_tile_module(self, tile_module_name):
         tile_dict = db[self.tile_collection_name].find_one({"tile_module_name": tile_module_name})
+        if tile_dict is None:
+            raise ModuleNotFoundError
         return tile_dict["tile_module"]
 
     def get_tile_module_dict(self, tile_module_name):

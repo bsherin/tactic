@@ -138,7 +138,42 @@ function start_post_load() {
                 continue_loading()
             })
         });
+    tsocket.socket.on('recreate-saved-tile', create_tile_from_save)
     tsocket.socket.emit('ready-to-begin', {"room": main_id});
+}
+
+function create_tile_from_save(data) {
+    let tile_id = data["tile_id"];
+    let tile_save_results = data["tile_saved_results"];
+    let tile_sort_list = data["tile_sort_list"];
+    const tile_html = tile_save_results.tile_html;
+
+    // Get the index to position the tile properly
+    let current_sort_list = $("#tile-div").sortable("toArray");
+
+    let revised_tile_sort_list = [];
+
+    for (let t of tile_sort_list) {
+        if ((t == tile_id) || (current_sort_list.includes(t))) {
+            revised_tile_sort_list.push(t)
+        }
+    }
+    let new_tile_index = revised_tile_sort_list.indexOf(tile_id);
+
+    const new_tile_object = new TileObject(tile_id, tile_html, false, tile_save_results.tile_name, new_tile_index);
+    tile_dict[tile_id] = new_tile_object;
+    new_tile_object.saved_size = tile_save_results.saved_size;
+    const sortable_tables = $(new_tile_object.full_selector() + " table.sortable");
+    $.each(sortable_tables, function (index, the_table) {
+        sorttable.makeSortable(the_table)
+    });
+    new_tile_object.hideOptions();
+    new_tile_object.hideTileLog();
+    // If I don't do the thing below, then the tile doesn't resize unless it's rerun first
+    if (tile_save_results.is_d3) {
+        postWithCallback(tile_id, "RefreshTileFromSave", {})
+    }
+
 }
 
 function continue_loading() {
@@ -172,9 +207,9 @@ function continue_loading() {
                 // before creating the tiles. It is needed in order to set the list of column headers
                 // in tile forms.
                 set_visible_doc(doc_names[0], function () {
-                    $.each(data.tile_ids, function(index, tile_id){
-                        create_tile_from_save(tile_id)
-                    });
+                    // $.each(data.tile_ids, function(index, tile_id){
+                    //     create_tile_from_save(tile_id)
+                    // });
                     if (data.is_shrunk) {
                         tableObject.shrinkTable()
                     }
