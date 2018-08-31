@@ -89,9 +89,6 @@ class GlobalTileManager(object):
             for (category, the_dict) in self.user_tiles[user_obj.username].items():
                 if tile_type in the_dict:
                     return the_dict[tile_type]
-        for (category, the_dict) in self.tile_classes.items():
-            if tile_type in the_dict:
-                return the_dict[tile_type]
         return None
 
     def get_user_available_tile_types(self, username):

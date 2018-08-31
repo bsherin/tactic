@@ -1,7 +1,7 @@
 from qworker import QWorker, task_worthy, task_worthy_manual_submit
 from flask import render_template, url_for
 from flask_login import current_user
-from users import load_user
+from users import load_user, ModuleNotFoundError
 import gevent
 from communication_utils import send_request_to_megaplex
 from docker_functions import create_container, destroy_container, destroy_child_containers, destroy_user_containers
@@ -85,50 +85,61 @@ class HostWorker(QWorker):
 
     @task_worthy_manual_submit
     def load_tile_module_task(self, data, task_packet):
+        def loaded_source(res_dict):
+            if not res_dict["success"]:
+                if "show_failed_loads" in data and data["show_failed_loads"]:
+                    global_tile_manager.add_failed_load(tile_module_name, user_obj.username)
+                    socketio.emit('update-loaded-tile-list',
+                                  {"html": tile_manager.render_loaded_tile_list(user_obj)},
+                                  namespace='/user_manage', room=user_obj.get_id())
+                if not task_packet["callback_type"] == "no_callback":
+                    self.submit_response(task_packet, {"success": False, "message": res_dict["message_string"],
+                                                       "alert_type": "alert-warning"})
+                else:
+                    print error_string
+                return
+            category = res_dict["category"]
+
+            if "is_default" in data:
+                is_default = data["is_default"]
+            else:
+                is_default = False
+            global_tile_manager.add_user_tile_module(user_obj.username,
+                                                     category,
+                                                     res_dict["tile_name"],
+                                                     tile_module,
+                                                     tile_module_name,
+                                                     is_default)
+
+            socketio.emit('update-loaded-tile-list', {"html": tile_manager.render_loaded_tile_list(user_obj)},
+                          namespace='/user_manage', room=user_obj.get_id())
+            socketio.emit('update-menus', {}, namespace='/main', room=user_obj.get_id())
+            if "main_id" not in task_packet:
+                task_packet["room"] = user_id
+                task_packet["namespace"] = "/user_manage"
+
+            if not task_packet["callback_type"] == "no_callback":
+                self.submit_response(task_packet, {"success": True, "message": "Tile module successfully loaded",
+                                                   "alert_type": "alert-success"})
+            return
+
         try:
             user_id = data["user_id"]
             tile_module_name = data["tile_module_name"]
-
             user_obj = load_user(user_id)
-            tile_module = user_obj.get_tile_module(tile_module_name)
 
-            def loaded_source(res_dict):
-                if not res_dict["success"]:
-                    if "show_failed_loads" in data and data["show_failed_loads"]:
-                        global_tile_manager.add_failed_load(tile_module_name, user_obj.username)
-                        socketio.emit('update-loaded-tile-list',
-                                      {"html": tile_manager.render_loaded_tile_list(user_obj)},
-                                      namespace='/user_manage', room=user_obj.get_id())
-                    if not task_packet["callback_type"] == "no_callback":
-                        self.submit_response(task_packet, {"success": False, "message": res_dict["message_string"],
-                                                           "alert_type": "alert-warning"})
-                    return
-                category = res_dict["category"]
-
-                if "is_default" in data:
-                    is_default = data["is_default"]
-                else:
-                    is_default = False
-                global_tile_manager.add_user_tile_module(user_obj.username,
-                                                         category,
-                                                         res_dict["tile_name"],
-                                                         tile_module,
-                                                         tile_module_name,
-                                                         is_default)
-
-                socketio.emit('update-loaded-tile-list', {"html": tile_manager.render_loaded_tile_list(user_obj)},
-                              namespace='/user_manage', room=user_obj.get_id())
-                socketio.emit('update-menus', {}, namespace='/main', room=user_obj.get_id())
-                if "main_id" not in task_packet:
-                    task_packet["room"] = user_id
-                    task_packet["namespace"] = "/user_manage"
-
+            try:
+                tile_module = user_obj.get_tile_module(tile_module_name)
+            except ModuleNotFoundError:
+                error_string = "Error finding the tile module " + tile_module_name
                 if not task_packet["callback_type"] == "no_callback":
-                    self.submit_response(task_packet, {"success": True, "message": "Tile module successfully loaded",
-                                                       "alert_type": "alert-success"})
-                return
+                    self.submit_response(task_packet, {"success": False, "message": error_string,
+                                                       "alert_type": "alert-warning"})
+                else:
+                    print error_string
 
-            self.post_task(global_tile_manager.test_tile_container_id, "load_source",
+            else:
+                self.post_task(global_tile_manager.test_tile_container_id, "load_source",
                            {"tile_code": tile_module}, loaded_source)
 
         except:
@@ -486,7 +497,11 @@ class HostWorker(QWorker):
     @task_worthy
     def get_module_code(self, data):
         module_code = global_tile_manager.get_tile_code(data["tile_type"], data["user_id"])
-        return {"module_code": module_code}
+        if module_code is None:
+            return {"module_code": module_code, "success": False, "message": "Couldn't get module " + data["tile_type"]}
+        else:
+            return {"module_code": module_code, "success": True}
+
 
     @task_worthy
     def get_module_from_tile_type(self, data):
