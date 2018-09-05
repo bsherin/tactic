@@ -12,8 +12,15 @@ else {
 }
 
 
+function htmlToElement(html) {
+    var template = document.createElement('template');
+    html = html.trim(); // Never return a text node of whitespace as the result
+    template.innerHTML = html;
+    return template.content.firstChild;
+}
+
 class TileObject {
-    constructor(tile_id, html, is_new_tile, tile_name) {
+    constructor(tile_id, html, is_new_tile, tile_name, position_index) {
         this.tile_id = tile_id;
         this.codeMirrorObjects = {};
         this.tile_name = tile_name;
@@ -31,7 +38,16 @@ class TileObject {
 
         // tactic_todo This line can give an error if there's a problem with embedded javascript code
         try {
-            $("#tile-div").append(html);  // This append has to be after the flip or weird things happen
+            let current_tiles = $("#tile-div").children("div");
+            if ((position_index == null) || (position_index == current_tiles.length)) {
+                $("#tile-div").append(html);  // This append has to be after the flip or weird things happen
+            }
+            else {
+                let the_parent = $("#tile-div")[0];
+                let the_child = htmlToElement(html);
+                the_parent.insertBefore(the_child, the_parent.children[position_index])
+            }
+
         }
         catch (err) {
             console.log(`Got an error appending the html for tile ${this.tile_name}: ${err.message}`)

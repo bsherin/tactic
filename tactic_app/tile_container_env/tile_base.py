@@ -647,6 +647,9 @@ class TileBase(object):
                 except TypeError:
                     print "got a TypeError"
                     continue
+        data = {"tile_type": self.tile_type, "user_id": self.user_id}
+        result["tile_id"] = self._tworker.my_id
+        result["module_name"] = self._tworker.post_and_wait("host", "get_module_from_tile_type", data)["module_name"]
         print "done compiling attributes"
         return result
 

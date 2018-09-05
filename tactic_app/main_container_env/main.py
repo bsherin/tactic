@@ -18,7 +18,7 @@ from communication_utils import make_jsonizable_and_compress, read_project_dict,
 from doc_info import docInfo, FreeformDocInfo, PROTECTED_METADATA_KEYS
 
 # noinspection PyUnresolvedReferences
-from qworker import task_worthy_methods, task_worthy_manual_submit_methods
+from qworker import task_worthy_methods, task_worthy_manual_submit_methods, error_response_statuses
 
 # getting environment variables
 INITIAL_LEFT_FRACTION = .69
@@ -56,7 +56,7 @@ class mainWindow(object):
                   "console_html", "console_cm_code", "doc_type", "purgetiles"]
     notebook_save_attrs = ["project_name", "user_id", "console_html", "console_cm_code", "doc_type"]
     update_events = ["CellChange", "FreeformTextChange", "CreateColumn", "SearchTable", "SaveTableSpec", "MainClose",
-                     "DisplayCreateErrors", "DehighlightTable", "SetCellContent", "RemoveTile", "ColorTextInCell",
+                     "DehighlightTable", "SetCellContent", "RemoveTile", "ColorTextInCell",
                      "FilterTable", "UnfilterTable", "TextSelect", "UpdateSortList", "UpdateLeftFraction",
                      "UpdateTableShrinkState", "UpdateHeaderListOrder", "HideColumnInAllDocs", "UpdateColumnWidths"]
     select_option_val_template = '<option value="{0}">{1}</option>'
@@ -90,7 +90,6 @@ class mainWindow(object):
         self.visible_doc_name = None
         self._pipe_dict = {}
         self.selected_text = ""
-        self.recreate_errors = []
         self.project_dict = None
         self.tile_save_results = None
         self.mdata = None
@@ -124,9 +123,34 @@ class mainWindow(object):
         print "done with init"
 
     # Save and load-related methods
-
-    def compile_save_dict(self):
+    @task_worthy_manual_submit
+    def compile_save_dict(self, data, task_packet):
+        def track_tile_compile_receipts(tile_save_dict):
+            tile_id = tile_save_dict["tile_id"]
+            del tile_save_dict["tile_id"]
+            module_name = tile_save_dict["module_name"]
+            if module_name is not None:
+                result["used_modules"].append(module_name)
+            del tile_save_dict["module_name"]
+            tile_save_dicts[tile_id] = tile_save_dict
+            if tile_id in tile_ids_to_compile:
+                tile_ids_to_compile.remove(tile_id)
+            if not tile_ids_to_compile:
+                if self.pseudo_tile_id is None:
+                    result["pseudo_tile_instance"] = None
+                else:
+                    result["pseudo_tile_instance"] = tile_save_dicts[self.pseudo_tile_id]
+                    del tile_save_dicts[self.pseudo_tile_id]
+                result["tile_instances"] = tile_save_dicts
+                result["used_tile_types"] = []
+                for tid in tile_save_dicts.keys():
+                    tile_type = tile_save_dicts[tid]["tile_type"]
+                    result["used_tile_types"].append(tile_type)
+                self.mworker.submit_response(task_packet, result)
+                return
         result = {}
+        result["used_modules"] = []
+
         if self.doc_type == "notebook":
             save_attrs = self.notebook_save_attrs
         else:
@@ -142,26 +166,33 @@ class mainWindow(object):
                 result[attr] = res
             else:
                 result[attr] = attr_val
+        tile_save_dicts = {}
         if not self.doc_type == "notebook":
-            tile_instances = {}
-            for tile_id in self.tile_instances:
-                tile_save_dict = self.mworker.post_and_wait(tile_id, "compile_save_dict")
-                tile_instances[tile_id] = tile_save_dict  # tile_id isn't meaningful going forward.
-            result["tile_instances"] = tile_instances
-            if self.purgetiles:
-                used_modules = []
-                for tile_id in self.tile_instances:
-                    tile_type = self.get_tile_property(tile_id, "tile_type")
-                    data = {"tile_type": tile_type, "user_id": self.user_id}
-                    module_name = self.mworker.post_and_wait("host", "get_module_from_tile_type", data)["module_name"]
-                    if module_name is not None:
-                        used_modules.append(module_name)
-                result["loaded_modules"] = used_modules
-        if self.pseudo_tile_id is None:
-            result["pseudo_tile_instance"] = None
+            tile_ids_to_compile = copy.copy(self.tile_instances)
+            if not tile_ids_to_compile:
+                result["used_tile_types"] = []
+                result["used_modules"] = []
+                result["pseudo_tile_instance"] = None
+                result["tile_instances"] = {}
+                if self.purgetiles:
+                    result["loaded_modules"] = []
+                self.mworker.submit_response(task_packet, result)
+                return
+
+            if self.pseudo_tile_id is not None:
+                tile_ids_to_compile.append(self.pseudo_tile_id)
+                self.mworker.post_task(self.pseudo_tile_id, "compile_save_dict",
+                                       callback_func=track_tile_compile_receipts)
+            for _tid in self.tile_instances:
+                self.mworker.post_task(_tid, "compile_save_dict", callback_func=track_tile_compile_receipts)
         else:
-            result["pseudo_tile_instance"] = self.mworker.post_and_wait(self.pseudo_tile_id, "compile_save_dict")
-        return result
+            if self.pseudo_tile_id is not None:
+                tile_ids_to_compile = [self.pseudo_tile_id]
+                self.mworker.post_task(self.pseudo_tile_id, "compile_save_dict",
+                                       callback_func=track_tile_compile_receipts)
+            else:
+                self.mworker.submit_response(task_packet, result)
+        return
 
     def show_main_message(self, message, timeout=None):
         data = {"message": message, "timeout": timeout, "main_id": self.mworker.my_id}
@@ -186,6 +217,10 @@ class mainWindow(object):
     def clear_main_status_message(self):
         data = {"main_id": self.mworker.my_id}
         self.mworker.post_task("host", "clear_main_status_message", data)
+
+    def stop_main_status_spinner(self):
+        data = {"main_id": self.mworker.my_id}
+        self.mworker.post_task("host", "stop_main_status_spinner", data)
 
     # legacy
     def update_legacy_console_html(self):
@@ -251,103 +286,144 @@ class mainWindow(object):
             self.mworker.ask_host("delete_container_list", {"container_list": container_list})
         return
 
+    def dmsg(self, tname, msg):
+        print "rot: {} {}".format(tname, msg)
+
+    @task_worthy_manual_submit
+    def recreate_one_tile(self, data, task_packet):
+        old_tile_id = data["old_tile_id"]
+        tile_save_dict = data["tile_save_dict"]
+        tile_name = tile_save_dict["tile_name"]
+        new_id = []
+
+        def handle_response_error(task_packet_passed):
+            tphrc = copy.copy(task_packet_passed)
+            self.tile_sort_list.remove(old_tile_id)
+            if "response_data" in tphrc and tphrc["response_data"] is not None:
+                response_data = tphrc["response_data"]
+            else:
+                response_data = {}
+            status = tphrc["status"]
+            if new_id:
+                self.mworker.ask_host("delete_container", {"container_id": new_id[0]})
+            if "message" in response_data:
+                message = response_data["message"]
+            elif "message_string" in response_data:
+                message = response_data["message_string"]
+            else:
+                message = "Got a response error with status {} for event_type {}".format(tphrc["status"],
+                                                                                         tphrc["task_type"])
+            self.mworker.print_to_console(message, True, True, summary="Project recreation tphrc")
+            self.mworker.submit_response(task_packet, {"old_tile_id": old_tile_id})
+            return
+
+        def got_module_code(gmc_response):
+            tile_code = gmc_response["module_code"]
+
+            def got_container(gtc_response):
+                new_id.append(gtc_response["tile_id"])
+
+                def loaded_source(ls_response):
+
+                    def recreate_done(recreate_response):
+                        exports = recreate_response["exports"]
+                        self.update_pipe_dict(exports, new_id[0], tile_name)
+                        self.mworker.emit_export_viewer_message("update_exports_popup", {})
+
+                        def got_form_info(form_info):
+                            def rendered_tile(rt_response):
+                                recreate_response["tile_html"] = rt_response["tile_html"]
+                                self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task",
+                                                       {"tile_id": new_id[0]})
+                                self.tile_id_dict[tile_name] = new_id[0]
+                                self.tile_save_results[new_id[0]] = recreate_response
+                                self.tile_sort_list[self.tile_sort_list.index(old_tile_id)] = new_id[0]
+                                self.tile_instances.append(new_id[0])
+                                self.mworker.ask_host("emit_to_client", {"message": "recreate-saved-tile",
+                                                                         "tile_id": new_id[0],
+                                                                         "tile_saved_results": recreate_response,
+                                                                         "tile_sort_list": self.tile_sort_list})
+                                self.mworker.submit_response(task_packet, {"old_tile_id": old_tile_id})
+                                return
+
+                            self.mworker.post_task(new_id[0], "render_tile", form_info,
+                                                   rendered_tile, expiration=10, error_handler=handle_response_error)
+
+                        self.mworker.post_task(self.mworker.my_id, "compile_form_info_task",
+                                               {"tile_id": new_id[0]},
+                                               got_form_info, expiration=5, error_handler=handle_response_error)
+
+                    tile_save_dict["new_base_figure_url"] = self.base_figure_url.replace("tile_id", new_id[0])
+                    self.mworker.post_task(new_id[0], "recreate_from_save", tile_save_dict, recreate_done,
+                                           expiration=10, error_handler=handle_response_error)
+                self.mworker.post_task(new_id[0], "load_source", {"tile_code": tile_code}, loaded_source,
+                                       expiration=10, error_handler=handle_response_error)
+
+            self.mworker.post_task("host", "create_tile_container",
+                                   {"user_id": self.user_id, "parent": self.mworker.my_id, "other_name": tile_name},
+                                   got_container, expiration=10, error_handler=handle_response_error)
+
+        self.mworker.post_task("host", "get_module_code",
+                               {"user_id": self.user_id, "tile_type": tile_save_dict["tile_type"]},
+                               got_module_code, expiration=5, error_handler=handle_response_error)
+
     @task_worthy
     def do_full_recreation(self, data_dict):
-        tile_containers = {}
-        try:
-            print "Entering do_full_recreation"
-            self.show_main_status_message("Entering do_full_recreation")
-            tile_info_dict, loaded_modules, success = self.recreate_from_save(data_dict["project_collection_name"],
-                                                                              data_dict["project_name"])
-            if not success:
-                self.show_main_status_message("Error trying to recreate the project from save")
-                self.show_error_window(tile_info_dict)
+
+        def track_loaded_modules(tlmdata):
+            def track_recreated_tiles(trcdata):
+                if trcdata["old_tile_id"] in tiles_to_recreate:
+                    tiles_to_recreate.remove(trcdata["old_tile_id"])
+                if not tiles_to_recreate:
+                    self.clear_main_status_message()
+                    self.stop_main_status_spinner()
                 return
 
-            for the_module in loaded_modules:
-                self.mworker.post_and_wait("host", "load_module_if_necessary",
-                                           {"tile_module_name": the_module, "user_id": self.user_id})
-            doc_names = [str(doc_name) for doc_name in self.doc_names]
+            if tlmdata["module_name"] in modules_to_load:
+                modules_to_load.remove(tlmdata["module_name"])
+            if not modules_to_load:
+                self.show_main_status_message("Recreating tiles")
+                self.tile_save_results = {}
 
-            self.show_main_status_message("Getting tile code")
-            tile_code_dict = self.mworker.post_and_wait("host", "get_tile_code",
-                                                        {"tile_info_dict": tile_info_dict,
-                                                         "user_id": self.user_id})
-            self.show_main_status_message("Checking tile Code")
-            for old_tile_id in tile_code_dict.keys():
-                if tile_code_dict[old_tile_id] is None:
-                    self.recreate_errors.append("problem getting tile code for " +
-                                                tile_info_dict[old_tile_id] + "\n")
-                    del tile_info_dict[old_tile_id]
-                    del tile_code_dict[old_tile_id]
-            self.show_main_status_message("Creating empty containers")
+                tiles_to_recreate = self.project_dict["tile_instances"].keys()
+                for old_tile_id, tile_save_dict in self.project_dict["tile_instances"].items():
+                    data_for_tile = {"old_tile_id": old_tile_id,
+                                     "tile_save_dict": tile_save_dict}
+                    self.mworker.post_task(self.mworker.my_id, "recreate_one_tile", data_for_tile,
+                                           track_recreated_tiles)
 
-            new_tile_keys = []
-            for old_tile_id, tile_save_dict in self.project_dict["tile_instances"].items():
-                tile_name = tile_save_dict["tile_name"]
-                new_key = self.mworker.post_and_wait("host", "create_tile_container",
-                                                     {"user_id": self.user_id,
-                                                      "parent": self.mworker.my_id,
-                                                      "other_name": tile_name})["tile_id"]
-                new_tile_keys.append(new_key)
-                self.tile_id_dict[tile_name] = new_key
+        print "Entering do_full_recreation"
+        self.show_main_status_message("Entering do_full_recreation")
+        self.tile_instances = []
+        tile_info_dict, loaded_modules, success = self.recreate_from_save(data_dict["project_collection_name"],
+                                                                          data_dict["project_name"])
+        if not success:
+            self.show_main_status_message("Error trying to recreate the project from save")
+            self.show_error_window(tile_info_dict)
+            return
 
-            self.show_main_status_message("Got empty containers")
-            new_tile_info = {}
-            error_messages = ""
-            for i, old_tile_id in enumerate(tile_info_dict.keys()):
-                new_id = new_tile_keys[i]
-                new_tile_info[old_tile_id] = {"new_tile_id": new_id}
+        self.show_main_status_message("Recreating the console")
 
-                result = self.mworker.post_and_wait(new_id, "load_source",
-                                                    {"tile_code": tile_code_dict[old_tile_id]})
-                if not result["success"]:
-                    self.recreate_errors.append("problem loading source into container for "
-                                                "{}: {}".format(tile_info_dict[old_tile_id], result["message_string"]))
-                    self.mworker.ask_host("delete_container", {"container_id": new_id})
-                    del new_tile_info[old_tile_id]
-                    del tile_info_dict[old_tile_id]
-                    del tile_code_dict[old_tile_id]
-                    del self.project_dict["tile_instances"][old_tile_id]
-                    for n, tid in self.tile_id_dict.items():
-                        if tid == new_id:
-                            del self.tile_id_dict[n]
-                            break
-                    # raise Exception(result["message_string"])
-            self.show_main_status_message("Recreating the tiles")
-            # Note data_dict has class, function, and list_names
-            errors, self.tile_save_results = self.recreate_project_tiles(data_dict, new_tile_info)
-            for tid, error in errors.items():
-                print "problem recreating tile for {}: {}".format(tile_info_dict[tid], error)
-                self.recreate_errors.append("problem recreating tile for "
-                                            "{}: {}".format(tile_info_dict[tid], error))
-                self.mworker.ask_host("delete_container", {"container_id": new_tile_info[tid]["new_tile_id"]})
-                del new_tile_info[tid]
-                del tile_info_dict[tid]
-                del tile_code_dict[tid]
-                del self.project_dict["tile_instances"][tid]
-            self.clear_main_status_message()
-            matches = re.findall(r"/figure_source/(.*?)/([0-9A-Fa-f-]*)", self.console_html)
-            if len(matches) > 0:
-                if self.pseudo_tile_id is None:  # This really shouldn't be necessary
-                    self.create_pseudo_tile()
-                for match in matches:  # really they should all be the same, but loop over just in case
-                    self.console_html = re.sub(match[0], self.pseudo_tile_id, self.console_html)
+        self.update_legacy_console_html()
+        matches = re.findall(r"/figure_source/(.*?)/([0-9A-Fa-f-]*)", self.console_html)
+        if len(matches) > 0:
+            if self.pseudo_tile_id is None:  # This really shouldn't be necessary
+                self.create_pseudo_tile()
+            for match in matches:  # really they should all be the same, but loop over just in case
+                self.console_html = re.sub(match[0], self.pseudo_tile_id, self.console_html)
 
-            self.update_legacy_console_html()
-            self.mworker.ask_host("emit_to_client", {"message": "finish-post-load",
-                                                     "collection_name": self.collection_name,
-                                                     "short_collection_name": self.short_collection_name,
-                                                     "doc_names": self.doc_names,
-                                                     "console_html": self.console_html})
-        except Exception as ex:
-            template = "An exception of type {0} occured. Arguments:\n{1!r}\n"
-            error_string = template.format(type(ex).__name__, ex.args)
-            error_string += traceback.format_exc()
-            error_string = "<pre>" + error_string + "</pre>"
-            self.show_error_window(error_string)
-            container_list = [self.mworker.my_id] + tile_containers.keys()
-            self.mworker.ask_host("delete_container_list", {"container_list": container_list})
+        self.mworker.ask_host("emit_to_client", {"message": "finish-post-load",
+                                                 "collection_name": self.collection_name,
+                                                 "short_collection_name": self.short_collection_name,
+                                                 "doc_names": self.doc_names,
+                                                 "console_html": self.console_html})
+
+        self.show_main_status_message("Making modules available")
+        modules_to_load = copy.copy(loaded_modules)
+        for the_module in loaded_modules:
+            self.mworker.post_task("host", "load_module_if_necessary",
+                                   {"tile_module_name": the_module, "user_id": self.user_id},
+                                   track_loaded_modules)
         return
 
     def recreate_from_save(self, project_collection_name, project_name, unique_id=None):
@@ -369,7 +445,7 @@ class mainWindow(object):
             delete_temp_data(self.db, unique_id, fs=self.fs)
 
         error_messages = []
-        if "doc_type" not in project_dict:  # This is for backward compatibility
+        if "doc_type" not in project_dict:  # legacy this is for backward compatibility
             project_dict["doc_type"] = "table"
         for (attr, attr_val) in project_dict.items():
             if str(attr) != "tile_instances" and str(attr) != "pseudo_tile_instance":
@@ -417,56 +493,6 @@ class mainWindow(object):
         else:
             return True
 
-    def recreate_project_tiles(self, data_dict, new_tile_info):
-        self.tile_instances = []
-        tile_results = {}
-        errors = {}
-        for old_tile_id, tile_save_dict in self.project_dict["tile_instances"].items():
-            if old_tile_id not in new_tile_info:
-                continue
-            new_tile_id = new_tile_info[old_tile_id]["new_tile_id"]
-            self.tile_instances.append(new_tile_id)
-            self.tile_sort_list[self.tile_sort_list.index(old_tile_id)] = new_tile_id
-            tile_save_dict = self.project_dict["tile_instances"][old_tile_id]
-            tile_save_dict["new_base_figure_url"] = self.base_figure_url.replace("tile_id", new_tile_id)
-            tile_result = self.mworker.post_and_wait(new_tile_id,
-                                                     "recreate_from_save",
-                                                     tile_save_dict,
-                                                     timeout=60, tries=RETRIES)
-            if not tile_result["success"]:
-                errors[old_tile_id] = tile_result["message_string"]
-                self.tile_instances.remove(new_tile_id)
-            else:
-                tile_results[new_tile_id] = tile_result
-
-        for tile in self.tile_sort_list:
-            if tile not in self.tile_instances:
-                self.tile_sort_list.remove(tile)
-
-        # There's some extra work I have to do once all of the tiles are built.
-        # Each tile needs to know the main_id it's associated with.
-        # Also I have to build the pipe machinery.
-        for tile_id, tile_result in tile_results.items():
-            if "exports" in tile_result:
-                exports = tile_result["exports"]
-                self.update_pipe_dict(exports, tile_id, tile_result["tile_name"])
-
-        # We have to wait to here to actually render the tiles because
-        # the pipe_dict needs to be complete to build the forms.
-
-        form_info = {"current_header_list": self.current_header_list,
-                     "pipe_dict": self._pipe_dict,
-                     "doc_names": self.doc_names,
-                     "list_names": data_dict["list_names"],
-                     "class_names": data_dict["class_names"],
-                     "collection_names": data_dict["collection_names"],
-                     "function_names": data_dict["function_names"]}
-        for tile_id, tile_result in tile_results.items():
-            form_info["other_tile_names"] = self.get_other_tile_names(tile_id)
-            res = self.mworker.post_and_wait(tile_id, "render_tile", form_info)
-            tile_result["tile_html"] = res["tile_html"]
-        return errors, tile_results
-
     @task_worthy
     def change_collection(self, data_dict):
         try:
@@ -509,9 +535,40 @@ class mainWindow(object):
             return_data = {"success": False, "message_string": error_string}
         return return_data
 
-    @task_worthy
-    def save_new_project(self, data_dict):
-        # noinspection PyBroadException
+    @task_worthy_manual_submit
+    def save_new_project(self, data_dict, task_packet):
+
+        def got_loaded_modules(lm_response):
+            self.loaded_modules = lm_response["loaded_modules"]
+            self.loaded_modules = [str(the_module) for the_module in self.loaded_modules]
+
+            self.show_main_status_message("compiling save dictionary")
+
+            def got_save_dict(project_dict):
+                print "in got_save_dict in main"
+                self.mdata = self.create_initial_metadata()
+                self.mdata["type"] = self.doc_type
+                self.mdata["collection_name"] = self.collection_name
+                self.mdata["loaded_tiles"] = project_dict["used_tile_types"]
+                self.mdata["save_style"] = "b64save"
+                if self.purgetiles:
+                    project_dict["loaded_modules"] = project_dict["used_modules"]
+                save_dict = {"metadata": self.mdata,
+                             "project_name": project_dict["project_name"]}
+                self.show_main_status_message("Pickle, convert, compress")
+                pdict = make_jsonizable_and_compress(project_dict)
+                self.show_main_status_message("Writing the data")
+                save_dict["file_id"] = self.fs.put(pdict)
+                self.db[self.project_collection_name].insert_one(save_dict)
+                self.clear_main_status_message()
+
+                return_data = {"project_name": data_dict["project_name"],
+                               "success": True,
+                               "message_string": "Project Successfully Saved"}
+                self.mworker.submit_response(task_packet, return_data)
+
+            self.mworker.post_task(self.mworker.my_id, "compile_save_dict", {}, got_save_dict)
+
         try:
             self.project_name = data_dict["project_name"]
             self.purgetiles = data_dict["purgetiles"]
@@ -519,36 +576,14 @@ class mainWindow(object):
             self.console_cm_code = data_dict["console_cm_code"]
 
             self.show_main_status_message("Getting loaded modules")
-            self.loaded_modules = self.mworker.post_and_wait("host", "get_loaded_user_modules",
-                                                             {"user_id": self.user_id})[
-                "loaded_modules"]
-            self.loaded_modules = [str(the_module) for the_module in self.loaded_modules]
-
-            self.show_main_status_message("compiling save dictionary")
-            project_dict = self.compile_save_dict()
-            self.mdata = self.create_initial_metadata()
-            self.mdata["type"] = self.doc_type
-            self.mdata["collection_name"] = self.collection_name
-            self.mdata["loaded_tiles"] = self.get_used_tile_types()
-            self.mdata["save_style"] = "b64save"
-            save_dict = {"metadata": self.mdata,
-                         "project_name": project_dict["project_name"]}
-            self.show_main_status_message("Pickle, convert, compress")
-            pdict = make_jsonizable_and_compress(project_dict)
-            self.show_main_status_message("Writing the data")
-            save_dict["file_id"] = self.fs.put(pdict)
-            self.db[self.project_collection_name].insert_one(save_dict)
-            self.clear_main_status_message()
-
-            return_data = {"project_name": data_dict["project_name"],
-                           "success": True,
-                           "message_string": "Project Successfully Saved"}
+            self.mworker.post_task("host", "get_loaded_user_modules", {"user_id": self.user_id}, got_loaded_modules)
 
         except Exception as ex:
             self.mworker.debug_log("got an error in save_new_project")
             error_string = self.handle_exception(ex, "<pre>Error saving new project</pre>", print_to_console=False)
-            return_data = {"success": False, "message_string": error_string}
-        return return_data
+            _return_data = {"success": False, "message_string": error_string}
+            self.mworker.submit_reponse(task_packet, _return_data)
+        return
 
     @task_worthy
     def console_to_notebook(self, data_dict):
@@ -566,17 +601,10 @@ class mainWindow(object):
         self.mworker.ask_host("emit_to_client", {"message": "notebook-open", "the_id": unique_id})
         return {"success": True}
 
-    @task_worthy
-    def save_new_notebook_project(self, data_dict):
+    @task_worthy_manual_submit
+    def save_new_notebook_project(self, data_dict, task_packet):
         # noinspection PyBroadException
-        try:
-            self.project_name = data_dict["project_name"]
-            self.purgetiles = True
-            self.console_html = data_dict["console_html"]
-            self.console_cm_code = data_dict["console_cm_code"]
-
-            self.show_main_status_message("compiling save dictionary")
-            project_dict = self.compile_save_dict()
+        def got_save_dict(project_dict):
             self.mdata = self.create_initial_metadata()
             self.mdata["type"] = self.doc_type
             self.mdata["collection_name"] = ""
@@ -594,12 +622,23 @@ class mainWindow(object):
             return_data = {"project_name": data_dict["project_name"],
                            "success": True,
                            "message_string": "Project Successfully Saved"}
+            self.mworker.submit_response(task_packet, return_data)
+
+        try:
+            self.project_name = data_dict["project_name"]
+            self.purgetiles = True
+            self.console_html = data_dict["console_html"]
+            self.console_cm_code = data_dict["console_cm_code"]
+
+            self.show_main_status_message("compiling save dictionary")
+            self.mworker.post_task(self.mworker.my_id, "compile_save_dict", {}, got_save_dict)
 
         except Exception as ex:
             self.mworker.debug_log("got an error in save_new_project")
             error_string = self.handle_exception(ex, "<pre>Error saving new project</pre>", print_to_console=False)
-            return_data = {"success": False, "message_string": error_string}
-        return return_data
+            _return_data = {"success": False, "message_string": error_string}
+            self.mworker.submit_response(task_packet, _return_data)
+        return
 
     def get_used_tile_types(self):
         result = []
@@ -607,8 +646,62 @@ class mainWindow(object):
             result.append(self.get_tile_property(tile_id, "tile_type"))
         return result
 
+    @task_worthy_manual_submit
+    def update_project(self, data_dict, task_packet):
+        # noinspection PyBroadException
+        print "entering update_project"
+
+        def got_loaded_modules(lm_response):
+            print "got_loaded_modules"
+            if not self.doc_type == "notebook":
+                self.loaded_modules = lm_response["loaded_modules"]
+                self.loaded_modules = [str(the_module) for the_module in self.loaded_modules]
+
+            self.show_main_status_message("compiling save dictionary")
+
+            def got_save_dict(project_dict):
+                print "got save dict in update_project"
+                pname = project_dict["project_name"]
+                self.mdata["updated"] = datetime.datetime.utcnow()
+                self.mdata["save_style"] = "b64save"
+                if not self.doc_type == "notebook":
+                    self.mdata["collection_name"] = self.collection_name
+                    self.mdata["loaded_tiles"] = project_dict["used_tile_types"]
+                    if self.purgetiles:
+                        project_dict["loaded_modules"] = project_dict["used_modules"]
+                self.show_main_status_message("Pickle, convert, compress")
+                pdict = make_jsonizable_and_compress(project_dict)
+                self.show_main_status_message("Writing the data")
+                new_file_id = self.fs.put(pdict)
+                save_dict = self.db[self.project_collection_name].find_one({"project_name": pname})
+                self.fs.delete(save_dict["file_id"])
+                save_dict["project_name"] = pname
+                save_dict["metadata"] = self.mdata
+                save_dict["file_id"] = new_file_id
+                self.db[self.project_collection_name].update_one({"project_name": pname},
+                                                                 {'$set': save_dict})
+                self.clear_main_status_message()
+                return_data = {"project_name": pname,
+                               "success": True,
+                               "message": "Project Successfully Saved"}
+                self.mworker.submit_response(task_packet, return_data)
+
+            self.mworker.post_task(self.mworker.my_id, "compile_save_dict", {}, got_save_dict)
+
+        try:
+            self.console_html = data_dict["console_html"]
+            self.console_cm_code = data_dict["console_cm_code"]
+            self.show_main_status_message("Getting loaded modules")
+            self.mworker.post_task("host", "get_loaded_user_modules", {"user_id": self.user_id}, got_loaded_modules)
+
+        except Exception as ex:
+            error_string = self.handle_exception(ex, "Error saving project", print_to_console=False)
+            _return_data = {"success": False, "message": error_string}
+            self.mworker.submit_response(task_worker, _return_data)
+        return
+
     @task_worthy
-    def update_project(self, data_dict):
+    def update_project_old(self, data_dict):
         # noinspection PyBroadException
         try:
             self.console_html = data_dict["console_html"]
@@ -1680,14 +1773,6 @@ class mainWindow(object):
         else:
             is_error = False
         self.mworker.print_to_console(data["message"], force_open, is_error)
-        return None
-
-    @task_worthy
-    def DisplayCreateErrors(self, data):
-        for msg in self.recreate_errors:
-            self.mworker.debug_log("Got CreateError: " + msg)
-            self.mworker.print_to_console(msg, True, True, summary="Project recreation error")
-        self.recreate_errors = []
         return None
 
     @task_worthy

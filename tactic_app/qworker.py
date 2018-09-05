@@ -9,6 +9,10 @@ import communication_utils
 
 callback_dict = {}
 callback_data_dict = {}
+error_handler_dict = {}
+
+response_statuses = ["submitted_response", "submitted_response_with_error", "unclaimed", "unanswered"]
+error_response_statuses = ["submitted_response_with_error", "unclaimed", "unanswered"]
 
 blank_packet = {"source": None,
                 "dest": None,
@@ -85,7 +89,8 @@ class QWorker(gevent.Greenlet):
                       "dest": dest_id,
                       "task_type": task_type,
                       "task_data": task_data,
-                      "response_data": None}
+                      "response_data": None,
+                      "expiration": None}
         # self.debug_log("in post and wait with new_packet " + str(new_packet))
         send_request_to_megaplex("post_wait_task", new_packet)
         for i in range(tries):
@@ -100,10 +105,13 @@ class QWorker(gevent.Greenlet):
         self.debug_log(error_string)
         raise Exception(error_string)
 
-    def post_task(self, dest_id, task_type, task_data=None, callback_func=None, callback_data=None):
+    def post_task(self, dest_id, task_type, task_data=None, callback_func=None,
+                  callback_data=None, expiration=None, error_handler=None):
         if callback_func is not None:
             callback_id = str(uuid.uuid4())
             callback_dict[callback_id] = callback_func
+            if error_handler is not None:
+                error_handler_dict[callback_id] = error_handler
             if callback_data is not None:
                 cdata = copy.copy(callback_data)
                 callback_data_dict[callback_id] = cdata
@@ -121,7 +129,8 @@ class QWorker(gevent.Greenlet):
                       "task_type": task_type,
                       "task_data": task_data,
                       "response_data": None,
-                      "callback_id": callback_id}
+                      "callback_id": callback_id,
+                      "expiration": expiration}
         result = send_request_to_megaplex("post_task", new_packet).json()
         if not result["success"]:
             error_string = "Error posting task with msg_type {} dest {} source {}. Error: {}".format(task_type,
@@ -151,12 +160,25 @@ class QWorker(gevent.Greenlet):
                 self.handle_exception(ex, special_string)
             else:
                 if "empty" not in task_packet:
-                    if task_packet["status"] == "submitted_response":
+                    if task_packet["status"] in response_statuses:
                         try:
+                            cbid = task_packet["callback_id"]
+                            if cbid in error_handler_dict:
+                                error_handler = error_handler_dict[cbid]
+                                del error_handler_dict[cbid]
+                            else:
+                                error_handler = None
                             func = callback_dict[task_packet["callback_id"]]
                             del callback_dict[task_packet["callback_id"]]
                             callback_type = task_packet["callback_type"]
-                            if callback_type == "callback_with_context":
+                            if task_packet["status"] in error_response_statuses and error_handler is not None:
+                                if callback_type == "callback_with_context":
+                                    cdata = callback_data_dict[task_packet["callback_id"]]
+                                    del callback_data_dict[task_packet["callback_id"]]
+                                    error_handler(task_packet, cdata)
+                                else:
+                                    error_handler(task_packet)
+                            elif callback_type == "callback_with_context":
                                 cdata = callback_data_dict[task_packet["callback_id"]]
                                 del callback_data_dict[task_packet["callback_id"]]
                                 func(task_packet["response_data"], cdata)
