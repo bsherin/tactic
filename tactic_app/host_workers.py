@@ -160,6 +160,10 @@ class HostWorker(QWorker):
         socketio.emit('clear-status-msg', {}, namespace='/main', room=data["main_id"])
 
     @task_worthy
+    def stop_main_status_spinner(self, data):
+        socketio.emit('stop-status-spinner', {}, namespace='/main', room=data["main_id"])
+
+    @task_worthy
     def show_um_status_message_task(self, data):
         socketio.emit('show-status-msg', data, namespace='/user_manage', room=data["user_manage_id"])
 

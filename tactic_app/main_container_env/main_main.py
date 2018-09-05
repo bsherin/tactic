@@ -130,6 +130,7 @@ class MainWorker(QWorker):
         except Exception as ex:
             return self.handle_exception(ex, "Error initializing project mainwindow")
 
+    # noinspection PyUnusedLocal
     @task_worthy
     def get_saved_console_code(self, data_dict):
         print "entering saved console code"
