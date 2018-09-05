@@ -86,7 +86,8 @@ function postWithCallback(dest_id, task_type, task_data, callback_func){
         "task_type": task_type,
         "task_data": task_data,
         "response_data": null,
-        "main_id": main_id
+        "main_id": main_id,
+        "expiration": null
     };
     if ((typeof callback_func != "undefined") && (callback_func != null)) {
         const unique_id = guid();
@@ -117,7 +118,8 @@ function postAsyncFalse(dest_id, task_type, task_data){
         "response_data": null,
         "main_id": main_id,
         "callback_id": null,
-        "callback_type": "no_callback"
+        "callback_type": "no_callback",
+        "expiration": null
     };
 
     $.ajax({
@@ -136,7 +138,8 @@ function postWithCallbackNoMain(dest_id, task_type, task_data, callback_func){
         "dest": dest_id,
         "task_type": task_type,
         "task_data": task_data,
-        "response_data": null
+        "response_data": null,
+        "expiration": null
     };
     if (typeof callback_func != "undefined") {
         const unique_id = guid();

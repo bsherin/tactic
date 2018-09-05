@@ -303,7 +303,6 @@ class HostWorker(QWorker):
             self.post_task("host", "load_tile_module_task", data, did_load)
         return
 
-
     @task_worthy
     def update_tile_selector_list(self, data):
         user_id = data["user_id"]
