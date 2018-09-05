@@ -1,15 +1,13 @@
 from flask import Flask, jsonify, request
 import sys
-import os
 import logging
-import Queue
 import datetime
+
+from megaplex_task_manager import TaskManager
 sys.stdout = sys.stderr
 
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
-
-timeout_on_queue_full = .01
 
 # stalled_container_time is the max time a tile can go without making any contact at all with the megaplex.
 # A tile should be actively executing get_next task constantly. So this shouldn't happen unless the tile
@@ -27,31 +25,14 @@ old_container_time = 3 * 24 * 3600
 
 queue_dict = {}
 
-blank_packet = {"source": None,
-                "dest": None,
-                "task_type": None,
-                "task_data": None,
-                "response_data": None,
-                "callback_id": None}
-
 container_registry = {}
 
 app = Flask(__name__)
-
-MAX_QUEUE_LENGTH = int(os.environ.get("MAX_QUEUE_LENGTH"))
-print "max_queue_length is " + str(MAX_QUEUE_LENGTH)
 
 
 @app.route('/')
 def hello():
     return 'This is the megaplex communicating'
-
-
-def dmsg(msg):
-    timestring = datetime.datetime.utcnow().strftime("%b %d, %Y, %H:%M")
-    print timestring + ": " + msg
-    # app.logger.debug(msg)
-    return
 
 
 @app.route('/register_container', methods=["get", "post"])
@@ -96,7 +77,6 @@ def get_inactive():
     for cont_id, info in container_registry.items():
         tdelta = current_time - info["last_active_contact"]
         delta_seconds = tdelta.days * 24 * 60 + tdelta.seconds
-        # dmsg("delta_seconds is {}".format(str(delta_seconds)))
         if delta_seconds > inactive_container_time:
             inactive_containers.append(cont_id)
             del container_registry[cont_id]
@@ -147,45 +127,37 @@ def update_last_active_contact(container_id):
 @app.route('/post_task', methods=["get", "post"])
 def post_task():
     task_packet = request.json
-    update_last_active_contact(task_packet["source"])
-    # dmsg("post_task {0} to {1}".format(task_packet["task_type"], task_packet["dest"]))
     dest = task_packet["dest"]
-    task_packet["status"] = "on_megaplex_queue"
-    if dest not in queue_dict:
-        queue_dict[dest] = {"tasks": Queue.Queue(maxsize=MAX_QUEUE_LENGTH),
-                            "responses": Queue.Queue(),
-                            "wait_dict": {}}
+    source = task_packet["source"]
+    update_last_active_contact(source)
 
-    try:
-        queue_dict[dest]["tasks"].put(task_packet, block=True, timeout=timeout_on_queue_full)
-    except Queue.Full:
-        dmsg("Queue was full. Couldn't post task")
-        return jsonify({"success": False, "message": "Megaplex task queue is full"})
-    return jsonify({"success": True})
+    if dest not in queue_dict:
+        queue_dict[dest] = TaskManager(dest, queue_dict)
+    if source not in queue_dict:
+        queue_dict[source] = TaskManager(source, queue_dict)
+
+    result = queue_dict[dest].post_task(task_packet)
+    if result["success"]:
+        if task_packet["expiration"] is not None:
+            queue_dict[source].record_expiration_task(task_packet)
+    return jsonify(result)
 
 
 @app.route('/post_wait_task', methods=["get", "post"])
 def post_wait_task():
     task_packet = request.json
-    task_packet["status"] = "on_megaplex_queue"
     dest = task_packet["dest"]
     source = task_packet["source"]
     update_last_active_contact(source)
+
     if dest not in queue_dict:
-        queue_dict[dest] = {"tasks": Queue.Queue(maxsize=MAX_QUEUE_LENGTH),
-                            "responses": Queue.Queue(),
-                            "wait_dict": {}}
+        queue_dict[dest] = TaskManager(dest, queue_dict)
+
     if source not in queue_dict:
-        queue_dict[source] = {"tasks": Queue.Queue(maxsize=MAX_QUEUE_LENGTH),
-                              "responses": Queue.Queue(),
-                              "wait_dict": {}}
-    queue_dict[source]["wait_dict"][task_packet["callback_id"]] = None
-    try:
-        queue_dict[dest]["tasks"].put(task_packet, block=True, timeout=timeout_on_queue_full)
-    except Queue.Full:
-        dmsg("Queue was full. Couldn't post task")
-        return jsonify({"success": False, "message": "Megaplex task queue is full"})
-    return jsonify({"success": True})
+        queue_dict[source] = TaskManager(source, queue_dict)
+
+    queue_dict[source].add_wait_task(task_packet["callback_id"])
+    return jsonify(queue_dict[dest].post_task(task_packet))
 
 
 @app.route("/check_wait_task", methods=["get", "post"])
@@ -194,48 +166,36 @@ def check_wait_task():
     cbid = task_packet["callback_id"]
     source = task_packet["source"]
     update_last_passive_contact(source)
-    result = queue_dict[source]["wait_dict"][cbid]
-    if result is None:
-        return jsonify({"success": False})
-    else:
-        del queue_dict[source]["wait_dict"][cbid]
-        return jsonify({"success": True, "result": result})
+    return queue_dict[source].check_wait_task_result(cbid)
 
 
 @app.route('/get_next_task/<requester_id>', methods=["get", "post"])
 def get_next_task(requester_id):
-    # dmsg("got get_next_task request from " + str(requester_id))
     update_last_passive_contact(requester_id)
-    if requester_id not in queue_dict:
-        queue_dict[requester_id] = {"tasks": Queue.Queue(),
-                                    "responses": Queue.Queue(),
-                                    "wait_dict": {}}
-        return jsonify({"empty": True})
-    if not queue_dict[requester_id]["responses"].empty():
-        task_packet = queue_dict[requester_id]["responses"].get()
-        # dmsg("got response {0} for {1}".format(task_packet["task_type"], requester_id))
-        return jsonify(task_packet)
-    if not queue_dict[requester_id]["tasks"].empty():
-        task_packet = queue_dict[requester_id]["tasks"].get()
-        # dmsg("got task {0} for {1}".format(task_packet["task_type"], requester_id))
-        return jsonify(task_packet)
-    return jsonify({"empty": True})
 
+    if requester_id not in queue_dict:
+        queue_dict[requester_id] = TaskManager(requester_id, queue_dict)
+        return jsonify({"empty": True})
+    else:
+        return queue_dict[requester_id].get_next_task()
+
+
+# possible response statuses are:
+# submitted_response: response was submtitted with no error
+# response_submitted_with_error: Response was submitted but with success: False
+# unanswered: The task was claimed by the destbut no answer submitted
+# unclaimed: The task was never claimed by the dest
 
 @app.route('/submit_response', methods=["get", "post"])
 def submit_response():
     task_packet = request.json
     source = task_packet["source"]
-    update_last_active_contact(source)
+    update_last_active_contact(task_packet["dest"])
     if source not in queue_dict:  # This shouldn't happen
-        queue_dict[source] = {"tasks": Queue.Queue(),
-                              "responses": Queue.Queue(),
-                              "wait_dict": {}}
-    # dmsg("submitting response {0} for {1}".format(task_packet["task_type"], source))
-    cbid = task_packet["callback_id"]
-    task_packet["status"] = "submitted_response"
-    if cbid is not None and cbid in queue_dict[source]["wait_dict"]:
-        queue_dict[source]["wait_dict"][cbid] = task_packet["response_data"]
+        queue_dict[source] = TaskManager(source, queue_dict)
+    rdata = task_packet["response_data"]
+    if rdata and "success" in rdata and not rdata["success"]:
+        task_packet["status"] = "submitted_response_with_error"
     else:
-        queue_dict[source]["responses"].put(task_packet)
-    return jsonify({"success": True})
+        task_packet["status"] = "submitted_response"
+    return queue_dict[source].got_response(task_packet)
