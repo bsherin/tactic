@@ -87,6 +87,7 @@ class PseudoTileClass(TileBase, MplFigure):
                     continue
         result["tile_id"] = self._tworker.my_id  # I had to move this down here because it was being overwritten
         result["img_dict"] = make_python_object_jsonizable(self.img_dict)
+        result["module_name"] = None
         print "done compiling attributes " + str(result.keys())
         return result
 

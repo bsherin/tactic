@@ -62,6 +62,10 @@ class MainTacticSocket extends TacticSocket {
            clearStatusMessage()
         });
 
+        this.socket.on("stop-status-spinner", function (){
+           stopSpinner()
+        });
+
         this.socket.on('update-menus', function() {
             if (done_loading){
                 postWithCallback("host", "get_tile_types", {"user_id": user_id}, function (data) {
@@ -217,8 +221,7 @@ function continue_loading() {
                     }
 
                     menus["Project"].enable_menu_item("save");
-                    postWithCallback(main_id, "DisplayCreateErrors", {});
-                    stopSpinner();
+                    // stopSpinner();
                     })
                 })
         }
