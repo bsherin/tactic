@@ -138,7 +138,7 @@ function start_post_load() {
                 continue_loading()
             })
         });
-    tsocket.socket.on('recreate-saved-tile', create_tile_from_save)
+    tsocket.socket.on('recreate-saved-tile', create_tile_from_save);
     tsocket.socket.emit('ready-to-begin', {"room": main_id});
 }
 
@@ -209,9 +209,6 @@ function continue_loading() {
                 // before creating the tiles. It is needed in order to set the list of column headers
                 // in tile forms.
                 set_visible_doc(doc_names[0], function () {
-                    // $.each(data.tile_ids, function(index, tile_id){
-                    //     create_tile_from_save(tile_id)
-                    // });
                     if (data.is_shrunk) {
                         tableObject.shrinkTable()
                     }
@@ -222,23 +219,6 @@ function continue_loading() {
                     menus["Project"].enable_menu_item("save");
                     postWithCallback(main_id, "DisplayCreateErrors", {});
                     stopSpinner();
-
-                    function create_tile_from_save(tile_id) {
-                        const tile_html = data.tile_save_results[tile_id].tile_html;
-                        const new_tile_object = new TileObject(tile_id, tile_html, false, data.tile_save_results[tile_id].tile_name);
-                        tile_dict[tile_id] = new_tile_object;
-                        new_tile_object.saved_size = data.tile_save_results[tile_id].saved_size;
-                        const sortable_tables = $(new_tile_object.full_selector() + " table.sortable");
-                        $.each(sortable_tables, function (index, the_table) {
-                            sorttable.makeSortable(the_table)
-                        });
-                        new_tile_object.hideOptions();
-                        new_tile_object.hideTileLog();
-                        // If I don't do the thing below, then the tile doesn't resize unless it's rerun first
-                        if (data.tile_save_results[tile_id].is_d3) {
-                            postWithCallback(tile_id, "RefreshTileFromSave", {})
-                            }
-                        }
                     })
                 })
         }

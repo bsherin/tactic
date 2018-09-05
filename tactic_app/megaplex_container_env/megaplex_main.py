@@ -148,15 +148,21 @@ def update_last_active_contact(container_id):
 def post_task():
     task_packet = request.json
     update_last_active_contact(task_packet["source"])
-    # dmsg("post_task {0} to {1}".format(task_packet["task_type"], task_packet["dest"]))
+    # print "post_task {0} from {1} to {2}".format(task_packet["task_type"], task_packet["source"], task_packet["dest"])
     dest = task_packet["dest"]
     task_packet["status"] = "on_megaplex_queue"
     if dest not in queue_dict:
         queue_dict[dest] = {"tasks": Queue.Queue(maxsize=MAX_QUEUE_LENGTH),
                             "responses": Queue.Queue(),
-                            "wait_dict": {}}
-
+                            "wait_dict": {},
+                            "expiration_dict": {}}
     try:
+        if task_packet["expiration"] is not None:
+            task_packet["time_received"] = datetime.datetime.utcnow()
+            task_packet["status"] = "unclaimed"
+            cbid = task_packet["callback_id"]
+            queue_dict[task_packet["source"]]["expiration_dict"][cbid] = task_packet
+            print "about to post expiration task with task_type {}".format(task_packet["task_type"])
         queue_dict[dest]["tasks"].put(task_packet, block=True, timeout=timeout_on_queue_full)
     except Queue.Full:
         dmsg("Queue was full. Couldn't post task")
@@ -174,11 +180,13 @@ def post_wait_task():
     if dest not in queue_dict:
         queue_dict[dest] = {"tasks": Queue.Queue(maxsize=MAX_QUEUE_LENGTH),
                             "responses": Queue.Queue(),
-                            "wait_dict": {}}
+                            "wait_dict": {},
+                            "expiration_dict": {}}
     if source not in queue_dict:
         queue_dict[source] = {"tasks": Queue.Queue(maxsize=MAX_QUEUE_LENGTH),
                               "responses": Queue.Queue(),
-                              "wait_dict": {}}
+                              "wait_dict": {},
+                              "expiration_dict": {}}
     queue_dict[source]["wait_dict"][task_packet["callback_id"]] = None
     try:
         queue_dict[dest]["tasks"].put(task_packet, block=True, timeout=timeout_on_queue_full)
@@ -201,41 +209,90 @@ def check_wait_task():
         del queue_dict[source]["wait_dict"][cbid]
         return jsonify({"success": True, "result": result})
 
+def remove_task(cbid, the_queue):
+    for tn, tb in enumerate(the_queue.queue):
+        if tb["callback_id"] == cbid:
+            del the_queue.queue[tn]
+            break
+    return
+
+def clear_expired_tasks(requester_id):
+    expiration_dict = queue_dict[requester_id]["expiration_dict"]
+    if expiration_dict.keys():
+        current_time = datetime.datetime.utcnow()
+        for cbid, tp in expiration_dict.items():
+            if tp["expiration"] is not None:
+                tdelta = current_time - tp["time_received"]
+                delta_seconds = tdelta.days * 24 * 60 + tdelta.seconds
+                if delta_seconds > tp["expiration"]:
+                    del expiration_dict[cbid]
+                    post_response(tp)
+                    if tp["status"] == "claimed":
+                        tp["status"] = "unanswered"
+                    if tp["status"] == "unclaimed":
+                        remove_task(tp["callback_id"], queue_dict[tp["dest"]]["tasks"])
+    return
+
+def mark_task_claimed(task_packet):
+    queue_dict[task_packet["source"]]["expiration_dict"][task_packet["callback_id"]]["status"] = "claimed"
 
 @app.route('/get_next_task/<requester_id>', methods=["get", "post"])
 def get_next_task(requester_id):
-    # dmsg("got get_next_task request from " + str(requester_id))
     update_last_passive_contact(requester_id)
     if requester_id not in queue_dict:
         queue_dict[requester_id] = {"tasks": Queue.Queue(),
                                     "responses": Queue.Queue(),
-                                    "wait_dict": {}}
+                                    "wait_dict": {},
+                                    "expiration_dict": {}}
         return jsonify({"empty": True})
+    clear_expired_tasks(requester_id)
     if not queue_dict[requester_id]["responses"].empty():
         task_packet = queue_dict[requester_id]["responses"].get()
-        # dmsg("got response {0} for {1}".format(task_packet["task_type"], requester_id))
         return jsonify(task_packet)
     if not queue_dict[requester_id]["tasks"].empty():
         task_packet = queue_dict[requester_id]["tasks"].get()
-        # dmsg("got task {0} for {1}".format(task_packet["task_type"], requester_id))
+        if task_packet["expiration"] is not None:
+            mark_task_claimed(task_packet)
         return jsonify(task_packet)
-    return jsonify({"empty": True})
+    else:
+        return jsonify({"empty": True})
 
+# possible response statuses are:
+# submitted_response: response was submtitted with no error
+# response_submitted_with_error: Response was submitted but with success: False
+# unanswered: The task was claimed by the destbut no answer submitted
+# unclaimed: The task was never claimed by the dest
+
+def post_response(task_packet):
+    cbid = task_packet["callback_id"]
+    source = task_packet["source"]
+    if task_packet["response_data"] is None:
+        task_packet["response_data"] = {}
+    task_packet["response_data"]["_response_status_"] = task_packet["status"]
+    if cbid is not None and cbid in queue_dict[source]["wait_dict"]:
+        queue_dict[source]["wait_dict"][cbid] = task_packet["response_data"]
+    else:
+        queue_dict[source]["responses"].put(task_packet)
+        if cbid in queue_dict[source]["expiration_dict"]:
+            del queue_dict[source]["expiration_dict"][cbid]
+    return
 
 @app.route('/submit_response', methods=["get", "post"])
 def submit_response():
     task_packet = request.json
     source = task_packet["source"]
     update_last_active_contact(source)
+
+    if "success" in task_packet["response_data"] and not task_packet["response_data"]["success"]:
+        task_packet["status"] = "submitted_response_with_error"
+    else:
+        task_packet["status"] = "submitted_response"
+
+    print "got response with task_type {} status {}".format(task_packet["task_type"], task_packet["status"])
     if source not in queue_dict:  # This shouldn't happen
         queue_dict[source] = {"tasks": Queue.Queue(),
                               "responses": Queue.Queue(),
-                              "wait_dict": {}}
-    # dmsg("submitting response {0} for {1}".format(task_packet["task_type"], source))
-    cbid = task_packet["callback_id"]
-    task_packet["status"] = "submitted_response"
-    if cbid is not None and cbid in queue_dict[source]["wait_dict"]:
-        queue_dict[source]["wait_dict"][cbid] = task_packet["response_data"]
-    else:
-        queue_dict[source]["responses"].put(task_packet)
+                              "wait_dict": {},
+                              "expiration_dict": {}}
+    post_response(task_packet)
     return jsonify({"success": True})
