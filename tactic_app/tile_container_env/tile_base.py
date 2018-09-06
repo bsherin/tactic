@@ -380,13 +380,14 @@ class TileBase(object):
         return choice_list
 
     def _create_select_list_html(self, choice_list, starting_value=None, att_name=None):
+        if not choice_list:
+            return ""
         if starting_value is None:
             new_start_value = process.extractOne(att_name, choice_list, scorer=fuzz.partial_ratio)[0]
         elif starting_value not in choice_list:
             new_start_value = process.extractOne(starting_value, choice_list, scorer=fuzz.partial_ratio)[0]
         else:
             new_start_value = starting_value
-        print "for {} new_start_value is {}".format(att_name, new_start_value)
         new_html = ""
         for choice in choice_list:
             if choice == new_start_value:
