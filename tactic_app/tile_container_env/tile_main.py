@@ -147,7 +147,7 @@ class TileWorker(QWorker):
         sys.exit()
 
     @task_worthy
-    def reinstantiate_tile(self, reload_dict):
+    def reinstantiate_tile(self, reload_dict):  # tactic_working
         try:
             print("entering reinstantiate_tile_class")
             self.tile_instance = class_info["tile_class"](None, None, tile_name=reload_dict["tile_name"])
@@ -174,7 +174,7 @@ class TileWorker(QWorker):
             return self.handle_exception(ex, "Error reinstantiating tile")
 
     @task_worthy
-    def instantiate_as_pseudo_tile(self, data):
+    def instantiate_as_pseudo_tile(self, data):  # tactic_working
         try:
             print("entering load_source")
             self.tile_instance = PseudoTileClass()
@@ -197,7 +197,7 @@ class TileWorker(QWorker):
             return self.handle_exception(ex, "Error initializing pseudo tile")
 
     @task_worthy
-    def instantiate_tile_class(self, data):
+    def instantiate_tile_class(self, data):  # tactic_working
         try:
             print("entering instantiate_tile_class")
             self.tile_instance = class_info["tile_class"](None, None, tile_name=data["tile_name"])

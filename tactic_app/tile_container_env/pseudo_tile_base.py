@@ -91,7 +91,7 @@ class PseudoTileClass(TileBase, MplFigure):
         print "done compiling attributes " + str(result.keys())
         return result
 
-    def recreate_from_save(self, save_dict):  # tactic_working
+    def recreate_from_save(self, save_dict):
         print "entering recreate from save in pseudo_tile_base"
         print str(save_dict.keys())
         if "binary_attrs" not in save_dict:

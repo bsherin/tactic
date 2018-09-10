@@ -4,7 +4,8 @@ from flask_login import login_required, current_user
 from tactic_app import app, create_megaplex
 from tactic_app.users import User, load_user
 from tactic_app.resource_manager import ResourceManager
-from tactic_app.docker_functions import cli, destroy_container, container_owner, get_log, container_id
+from tactic_app.docker_functions import cli, destroy_container, container_owner, get_log
+from tactic_app.docker_functions import container_id, container_memory_usage
 from tactic_app.docker_functions import container_other_name
 from docker_cleanup import do_docker_cleanup
 import tactic_app
@@ -137,6 +138,12 @@ class ContainerManager(ResourceManager):
                 image_name = image_id_names[image_id]
             else:
                 image_name = image_id
+
+            # mem_usage = container_memory_usage(cont)
+            # if mem_usage is None:
+            #     musage = ""
+            # else:
+            #     musage = str(round(container_memory_usage(cont), 2)) + "MiB"
             larray.append([container_id(cont), container_other_name(cont), cont.attrs["Name"], image_name,
                            owner_name, cont.status, cont.attrs["Created"]])
         return larray

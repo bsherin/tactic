@@ -172,6 +172,16 @@ def container_id(container):
     else:
         return "system"
 
+def container_memory_usage(container, convert_to_mib=True):
+    try:
+        musage = container.stats(stream=False)["memory_stats"]["usage"]
+        if convert_to_mib:
+            return 1.0 * musage / 1048576
+        else:
+            return musage
+    except:
+        return None
+
 
 def create_network(network_name):
     return cli.create_network(network_name, "bridge")
