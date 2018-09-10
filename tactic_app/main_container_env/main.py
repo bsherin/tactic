@@ -589,16 +589,19 @@ class mainWindow(object):
     def console_to_notebook(self, data_dict):
         self.console_html = data_dict["console_html"]
         self.console_cm_code = data_dict["console_cm_code"]
-
         self.show_main_status_message("compiling save dictionary")
-        console_dict = self.compile_save_dict()
-        console_dict["doc_type"] = "notebook"
-        cdict = make_jsonizable_and_compress(console_dict)
-        save_dict = {}
-        save_dict["file_id"] = self.fs.put(cdict)
-        save_dict["user_id"] = self.user_id
-        unique_id = store_temp_data(self.db, save_dict)
-        self.mworker.ask_host("emit_to_client", {"message": "notebook-open", "the_id": unique_id})
+
+        def got_save_dict(console_dict):
+            console_dict["doc_type"] = "notebook"
+            cdict = make_jsonizable_and_compress(console_dict)
+            save_dict = {}
+            save_dict["file_id"] = self.fs.put(cdict)
+            save_dict["user_id"] = self.user_id
+            unique_id = store_temp_data(self.db, save_dict)
+            self.mworker.ask_host("emit_to_client", {"message": "notebook-open", "the_id": unique_id})
+            return
+
+        self.mworker.post_task(self.mworker.my_id, "compile_save_dict", {}, got_save_dict)
         return {"success": True}
 
     @task_worthy_manual_submit
@@ -893,7 +896,7 @@ class mainWindow(object):
 
     # Task Worthy methods. These are eligible to be the recipient of posted tasks.
     @task_worthy_manual_submit
-    def create_tile(self, data_dict, task_packet):
+    def create_tile(self, data_dict, task_packet):  # tactic_working
         tile_name = data_dict["tile_name"]
         local_task_packet = task_packet
 
@@ -1137,7 +1140,7 @@ class mainWindow(object):
         return {"success": True, "converted_markdown": converted_markdown}
 
     @task_worthy
-    def clear_console_namespace(self, data):
+    def clear_console_namespace(self, data):  # tactic_working
         self.show_main_message("Resetting notebook ...")
         if self.pseudo_tile_id is not None:
             self.mworker.post_task(self.pseudo_tile_id, "kill_me", {})
@@ -1229,7 +1232,7 @@ class mainWindow(object):
         self.mworker.post_task(self.pseudo_tile_id, "_get_export_info", ndata, got_info)
         return
 
-    def create_pseudo_tile(self, globals_dict=None):
+    def create_pseudo_tile(self, globals_dict=None):  # tactic_working
         data = self.mworker.post_and_wait("host", "create_tile_container", {"user_id": self.user_id,
                                                                             "parent": self.mworker.my_id,
                                                                             "other_name": "pseudo_tile"})
@@ -1484,7 +1487,7 @@ class mainWindow(object):
         return
 
     @task_worthy_manual_submit
-    def reload_tile(self, ddict, task_packet):
+    def reload_tile(self, ddict, task_packet):  # tactic_working
         local_task_packet = task_packet
         tile_id = ddict["tile_id"]
 
