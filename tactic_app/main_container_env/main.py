@@ -347,25 +347,25 @@ class mainWindow(object):
                                 return
 
                             self.mworker.post_task(new_id[0], "render_tile", form_info,
-                                                   rendered_tile, expiration=10, error_handler=handle_response_error)
+                                                   rendered_tile, expiration=60, error_handler=handle_response_error)
 
                         self.mworker.post_task(self.mworker.my_id, "compile_form_info_task",
                                                {"tile_id": new_id[0]},
-                                               got_form_info, expiration=5, error_handler=handle_response_error)
+                                               got_form_info, expiration=60, error_handler=handle_response_error)
 
                     tile_save_dict["new_base_figure_url"] = self.base_figure_url.replace("tile_id", new_id[0])
                     self.mworker.post_task(new_id[0], "recreate_from_save", tile_save_dict, recreate_done,
-                                           expiration=10, error_handler=handle_response_error)
+                                           expiration=60, error_handler=handle_response_error)
                 self.mworker.post_task(new_id[0], "load_source", {"tile_code": tile_code}, loaded_source,
-                                       expiration=10, error_handler=handle_response_error)
+                                       expiration=60, error_handler=handle_response_error)
 
             self.mworker.post_task("host", "create_tile_container",
                                    {"user_id": self.user_id, "parent": self.mworker.my_id, "other_name": tile_name},
-                                   got_container, expiration=10, error_handler=handle_response_error)
+                                   got_container, expiration=60, error_handler=handle_response_error)
 
         self.mworker.post_task("host", "get_module_code",
                                {"user_id": self.user_id, "tile_type": tile_save_dict["tile_type"]},
-                               got_module_code, expiration=5, error_handler=handle_response_error)
+                               got_module_code, expiration=60, error_handler=handle_response_error)
 
     @task_worthy
     def do_full_recreation(self, data_dict):
