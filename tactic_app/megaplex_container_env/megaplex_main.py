@@ -51,6 +51,8 @@ def register_container():
 def deregister_container():
     data = request.json
     del container_registry[data["container_id"]]
+    if data["container_id"] in queue_dict:
+        del queue_dict[data["container_id"]]
     return jsonify({"success": True})
 
 
