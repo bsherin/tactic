@@ -128,6 +128,7 @@ class TileBase(object):
         self.current_html = None
         self._old_stdout = None
         self._pipe_dict = None  # This is set when the form is created
+        self.my_address = None
         self._main_id = os.environ["PARENT"]
         self._tworker = _tworker
         return
@@ -1398,11 +1399,12 @@ class TileBase(object):
         self._save_stdout()
         for(tile_id, tile_entry) in self._pipe_dict.items():
             if pipe_key in tile_entry:
-                result = self._tworker.post_and_wait(tile_entry[pipe_key]["tile_id"],
-                                                     "_transfer_pipe_value",
-                                                     {"export_name": tile_entry[pipe_key]["export_name"]},
-                                                     timeout=60,
-                                                     tries=RETRIES)
+                result = self._tworker.post_and_wait_for_pipe(tile_entry[pipe_key]["tile_id"],
+                                                              "_transfer_pipe_value",
+                                                              {"export_name": tile_entry[pipe_key]["export_name"],
+                                                               "requester_address": self.my_address},
+                                                              timeout=60,
+                                                              tries=RETRIES)
                 encoded_val = result["encoded_val"]
                 val = debinarize_python_object(encoded_val)
                 self._restore_stdout()

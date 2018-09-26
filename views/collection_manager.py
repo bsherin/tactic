@@ -4,7 +4,7 @@ from collections import OrderedDict
 from flask_login import login_required, current_user
 from flask import jsonify, render_template, url_for, request, send_file
 from tactic_app.users import User
-from tactic_app.docker_functions import create_container, ContainerCreateError
+from tactic_app.docker_functions import create_container, ContainerCreateError, main_container_info
 from tactic_app import app, db, fs, use_ssl
 from tactic_app.communication_utils import make_python_object_jsonizable, debinarize_python_object
 from tactic_app.communication_utils import read_temp_data, delete_temp_data
@@ -53,8 +53,7 @@ class CollectionManager(UserManageResourceManager):
     def new_notebook(self):
         user_obj = current_user
         try:
-            main_id, container_id = create_container("tactic_main_image", owner=user_obj.get_id(),
-                                                     other_name="new_notebook")
+            main_id = main_container_info.create_main_container("new_notebook", user_obj.get_id())
         except ContainerCreateError:
             return render_template("error_window_template.html",
                                    window_tile="Load Failed",
@@ -76,8 +75,7 @@ class CollectionManager(UserManageResourceManager):
         the_data = read_temp_data(db, unique_id)
         user_obj = load_user(the_data["user_id"])
         try:
-            main_id, container_id = create_container("tactic_main_image", owner=user_obj.get_id(),
-                                                     other_name="new_notebook")
+            main_id = main_container_info.create_main_container("new_notebook", the_data["user_id"])
         except ContainerCreateError:
             return render_template("error_window_template.html",
                                    window_tile="Load Failed",
@@ -99,8 +97,7 @@ class CollectionManager(UserManageResourceManager):
         user_obj = current_user
         cname = user_obj.build_data_collection_name(collection_name)
         try:
-            main_id, container_id = create_container("tactic_main_image", owner=user_obj.get_id(),
-                                                     other_name=collection_name)
+            main_id = main_container_info.create_main_container(collection_name, user_obj.get_id())
         except ContainerCreateError:
             return render_template("error_window_template.html",
                                    window_tile="Load Failed",
@@ -135,6 +132,7 @@ class CollectionManager(UserManageResourceManager):
                                project_collection_name=user_obj.project_collection_name,
                                base_figure_url=url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
                                main_id=main_id,
+                               main_port = main_container_info.port(main_id),
                                temp_data_id="",
                                doc_names=doc_names,
                                use_ssl=str(use_ssl),

@@ -96,6 +96,7 @@ class mainWindow(object):
         self.pseudo_tile_id = None
         self.loaded_modules = None
         self.tile_id_dict = {}  # dict with the keys the names of tiles and ids as the values.
+        self.tile_addresses = {}
 
         if "project_name" not in data_dict:
             self.doc_type = data_dict["doc_type"]
@@ -249,7 +250,7 @@ class mainWindow(object):
         tile_containers = {}
         try:
             print "Entering do_full_notebook_recreation"
-            self.show_main_status_message("Entering do_full_recreation")
+            self.show_main_status_message("Entering do_full_notebook_recreation")
             if "unique_id" in data_dict:
                 success = self.recreate_from_save("", "", data_dict["unique_id"])
             else:
@@ -322,6 +323,7 @@ class mainWindow(object):
 
             def got_container(gtc_response):
                 new_id.append(gtc_response["tile_id"])
+                self.tile_addresses[gtc_response["tile_id"]] = gtc_response["tile_address"]
 
                 def loaded_source(ls_response):
 
@@ -333,8 +335,8 @@ class mainWindow(object):
                         def got_form_info(form_info):
                             def rendered_tile(rt_response):
                                 recreate_response["tile_html"] = rt_response["tile_html"]
-                                self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task",
-                                                       {"tile_id": new_id[0]})
+                                # self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task",
+                                #                        {"tile_id": new_id[0]})
                                 self.tile_id_dict[tile_name] = new_id[0]
                                 self.tile_save_results[new_id[0]] = recreate_response
                                 self.tile_sort_list[self.tile_sort_list.index(old_tile_id)] = new_id[0]
@@ -354,6 +356,7 @@ class mainWindow(object):
                                                got_form_info, expiration=60, error_handler=handle_response_error)
 
                     tile_save_dict["new_base_figure_url"] = self.base_figure_url.replace("tile_id", new_id[0])
+                    tile_save_dict["my_address"] = gtc_response["tile_address"]
                     self.mworker.post_task(new_id[0], "recreate_from_save", tile_save_dict, recreate_done,
                                            expiration=60, error_handler=handle_response_error)
                 self.mworker.post_task(new_id[0], "load_source", {"tile_code": tile_code}, loaded_source,
@@ -375,6 +378,7 @@ class mainWindow(object):
                 if trcdata["old_tile_id"] in tiles_to_recreate:
                     tiles_to_recreate.remove(trcdata["old_tile_id"])
                 if not tiles_to_recreate:
+                    self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {})
                     self.clear_main_status_message()
                     self.stop_main_status_spinner()
                 return
@@ -815,6 +819,7 @@ class mainWindow(object):
     def _delete_tile_instance(self, tile_id):
         self.tile_instances.remove(tile_id)
         self.tile_sort_list.remove(tile_id)
+        del self.tile_addresses[tile_id]
         for n, tid in self.tile_id_dict.items():
             if tid == tile_id:
                 del self.tile_id_dict[n]
@@ -896,7 +901,7 @@ class mainWindow(object):
 
     # Task Worthy methods. These are eligible to be the recipient of posted tasks.
     @task_worthy_manual_submit
-    def create_tile(self, data_dict, task_packet):  # tactic_working
+    def create_tile(self, data_dict, task_packet):
         tile_name = data_dict["tile_name"]
         local_task_packet = task_packet
 
@@ -937,6 +942,8 @@ class mainWindow(object):
                 raise Exception("Error creating empty tile container")
             tile_container_id = create_container_dict["tile_id"]
             self.tile_instances.append(tile_container_id)
+            self.tile_addresses[tile_container_id] = create_container_dict["tile_address"]
+            data_dict["tile_address"] = create_container_dict["tile_address"]
             self.tile_id_dict[tile_name] = tile_container_id
 
             data_dict["base_figure_url"] = self.base_figure_url.replace("tile_id", tile_container_id)
@@ -1122,11 +1129,14 @@ class mainWindow(object):
 
     @task_worthy
     def exec_console_code(self, data):
+        print "in exec_console_code"
         if self.pseudo_tile_id is None:
             self.create_pseudo_tile()
+        print "pseudo_tile is created"
         the_code = data["the_code"]
         self.dict = self._pipe_dict
         data["pipe_dict"] = self.dict
+        print "posting exec_console_code to the pseudo_tile"
         self.mworker.post_task(self.pseudo_tile_id, "exec_console_code", data, self.got_console_result)
         return {"success": True}
 
@@ -1140,7 +1150,7 @@ class mainWindow(object):
         return {"success": True, "converted_markdown": converted_markdown}
 
     @task_worthy
-    def clear_console_namespace(self, data):  # tactic_working
+    def clear_console_namespace(self, data):
         self.show_main_message("Resetting notebook ...")
         if self.pseudo_tile_id is not None:
             self.mworker.post_task(self.pseudo_tile_id, "kill_me", {})
@@ -1232,17 +1242,20 @@ class mainWindow(object):
         self.mworker.post_task(self.pseudo_tile_id, "_get_export_info", ndata, got_info)
         return
 
-    def create_pseudo_tile(self, globals_dict=None):  # tactic_working
+    def create_pseudo_tile(self, globals_dict=None):
+        print "entering create_pseudo_tile"
         data = self.mworker.post_and_wait("host", "create_tile_container", {"user_id": self.user_id,
                                                                             "parent": self.mworker.my_id,
                                                                             "other_name": "pseudo_tile"})
         if not data["success"]:
             raise Exception("Error creating empty tile container")
         self.pseudo_tile_id = data["tile_id"]
+        self.pseudo_tile_address = data["tile_address"]
         if globals_dict is None:
             globals_dict = {}
         data_dict = {"base_figure_url": self.base_figure_url.replace("tile_id", self.pseudo_tile_id),
-                     "doc_type": self.doc_type, "globals_dict": globals_dict}
+                     "doc_type": self.doc_type, "globals_dict": globals_dict, "tile_address": data["tile_address"]}
+        print "about to instantiate"
         instantiate_result = self.mworker.post_and_wait(self.pseudo_tile_id,
                                                         "instantiate_as_pseudo_tile", data_dict)
         if not instantiate_result["success"]:
@@ -1487,7 +1500,7 @@ class mainWindow(object):
         return
 
     @task_worthy_manual_submit
-    def reload_tile(self, ddict, task_packet):  # tactic_working
+    def reload_tile(self, ddict, task_packet):
         local_task_packet = task_packet
         tile_id = ddict["tile_id"]
 
@@ -1528,6 +1541,7 @@ class mainWindow(object):
                                     else:
                                         raise Exception(reinst_result["message_string"])
 
+                                reload_dict["tile_address"] = self.tile_addresses[tile_id]
                                 self.mworker.post_task(tile_id, "reinstantiate_tile", reload_dict, reinstantiate_done)
 
                             self.mworker.post_task(self.mworker.my_id, "compile_form_info_task", {"tile_id": tile_id},

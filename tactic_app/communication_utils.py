@@ -78,8 +78,12 @@ def read_project_dict(fs, mdata, file_id):
         project_dict = cPickle.loads(zlib.decompress(fs.get(file_id).read()).decode("utf-8", "ignore").encode("ascii"))
     return project_dict
 
-def send_request_to_megaplex(msg_type, data_dict=None, wait_for_success=True, timeout=3, tries=RETRIES, wait_time=.1):
-    if am_host is True:
+def send_request_to_megaplex(msg_type, data_dict=None, wait_for_success=True, timeout=3, tries=RETRIES, wait_time=.1,
+                             alt_address=None):
+    if alt_address is not None:
+        taddress = alt_address
+        port = "5000"
+    elif am_host is True:
         taddress = "0.0.0.0"
         port = "8085"
     else:
@@ -89,7 +93,7 @@ def send_request_to_megaplex(msg_type, data_dict=None, wait_for_success=True, ti
     if wait_for_success:
         for attempt in range(tries):
             try:
-                res = requests.post("http://{0}:{1}/{2}".format(taddress, port, msg_type),
+                res = requests.post("http://{0}:{1}/{2}".format(taddress, port, msg_type),  # tactic_working
                                     timeout=timeout, json=data_dict)
                 return res
             except:
