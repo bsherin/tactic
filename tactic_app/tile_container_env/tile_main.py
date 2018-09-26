@@ -1,5 +1,6 @@
 print "entering main_main"
 import os
+from communication_utils import send_request_to_megaplex
 
 if "DEBUG_MAIN_CONTAINER" in os.environ:
     if os.environ.get("DEBUG_TILE_CONTAINER") == "True":
@@ -9,7 +10,7 @@ if "DEBUG_MAIN_CONTAINER" in os.environ:
 
 import copy
 # noinspection PyUnresolvedReferences
-from qworker import QWorker, task_worthy
+from qworker import QWorker, task_worthy, RETRIES
 # noinspection PyUnresolvedReferences
 from gevent import monkey; monkey.patch_all()
 import qworker
@@ -21,10 +22,19 @@ from tile_base import clear_and_exec_user_code, TileBase
 from pseudo_tile_base import PseudoTileClass
 import gevent
 from communication_utils import make_python_object_jsonizable
+import uuid
+
+from tile_o_plex import app
+import tile_o_plex
 
 import sys, os
 sys.stdout = sys.stderr
 import time
+
+if "MAIN_ADDRESS" in os.environ:
+    main_address = os.environ["MAIN_ADDRESS"]
+else:
+    main_address = None  # this should only happen in the tile test container
 
 
 # noinspection PyUnusedLocal
@@ -34,10 +44,20 @@ class TileWorker(QWorker):
         QWorker.__init__(self)
         print "QWorker initialized"
         self.tile_instance = None
+        self.get_megaplex_task_now = False
 
     @task_worthy
     def hello(self, data_dict):
         return {"success": True, "message": 'This is a tile communicating'}
+
+    def get_next_task(self):
+        if self.get_megaplex_task_now:
+            alt_address = None
+        else:
+            alt_address = main_address
+        result = QWorker.get_next_task(self, alt_address)
+        self.get_megaplex_task_now = not self.get_megaplex_task_now
+        return result
 
     def ask_host(self, msg_type, task_data=None, callback_func=None):
         task_data["main_id"] = self.tile_instance._main_id
@@ -72,6 +92,64 @@ class TileWorker(QWorker):
         except Exception as ex:
             return self.handle_exception(ex, "Error loading source")
         return result
+
+    def post_task(self, dest_id, task_type, task_data=None, callback_func=None,
+                  callback_data=None, expiration=None, error_handler=None):
+        if dest_id in ["host", "client"]:
+            alt_address = None
+        else:
+            alt_address = main_address
+        return QWorker.post_task(self, dest_id, task_type, task_data, callback_func,
+                                 callback_data, expiration, error_handler, alt_address)
+
+    def post_and_wait(self, dest_id, task_type, task_data=None, sleep_time=.1,
+                      timeout=10, tries=RETRIES):
+        if dest_id in ["host", "client"]:
+            alt_address = None
+        else:
+            alt_address = main_address
+
+        return QWorker.post_and_wait(self, dest_id, task_type, task_data, sleep_time,
+                                     timeout, tries, alt_address=alt_address)
+
+    def post_and_wait_for_pipe(self, dest_id, task_type, task_data=None, sleep_time=.1,
+                               timeout=10, tries=RETRIES, alt_address=None):
+        callback_id = str(uuid.uuid4())
+        new_packet = {"source": self.my_id,
+                      "callback_type": "wait",
+                      "callback_id": callback_id,
+                      "status": "presend",
+                      "dest": dest_id,
+                      "task_type": task_type,
+                      "task_data": task_data,
+                      "response_data": None,
+                      "expiration": None}
+        # self.debug_log("in post and wait with new_packet " + str(new_packet))
+        tile_o_plex.transmitted_pipe_value = None
+        tile_o_plex.awaiting_pipe = True
+        send_request_to_megaplex("post_task", new_packet, alt_address=main_address)
+        for i in range(tries):
+            if not tile_o_plex.awaiting_pipe:
+                return tile_o_plex.transmitted_pipe_value
+            else:
+                time.sleep(sleep_time)
+        error_string = "post_and_wait timed out with msg_type {}, destination {}, and source".format(task_type,
+                                                                                                     dest_id,
+                                                                                                     self.my_id)
+        self.debug_log(error_string)
+        raise Exception(error_string)
+
+    def submit_response(self, task_packet, response_data=None):
+        if response_data is not None:
+            task_packet["response_data"] = response_data
+        if task_packet["task_type"] == "_transfer_pipe_value":
+            alt_address = task_packet["task_data"]["requester_address"]
+        elif task_packet["source"] in ["host", "client"]:
+            alt_address = None
+        else:
+            alt_address = main_address
+        send_request_to_megaplex("submit_response", task_packet, alt_address=alt_address)
+        return
 
     @task_worthy
     def get_options(self, data_dict):
@@ -113,6 +191,7 @@ class TileWorker(QWorker):
                 self.tile_instance.current_html = self.tile_instance.current_html.replace(data["base_figure_url"],
                                                                                           data["new_base_figure_url"])
             self.tile_instance.base_figure_url = data["new_base_figure_url"]
+            self.tile_instance.my_address = data["my_address"]
             if "doc_type" in data:
                 self.tile_instance.doc_type = data["doc_type"]
             else:
@@ -147,7 +226,7 @@ class TileWorker(QWorker):
         sys.exit()
 
     @task_worthy
-    def reinstantiate_tile(self, reload_dict):  # tactic_working
+    def reinstantiate_tile(self, reload_dict):
         try:
             print("entering reinstantiate_tile_class")
             self.tile_instance = class_info["tile_class"](None, None, tile_name=reload_dict["tile_name"])
@@ -164,6 +243,7 @@ class TileWorker(QWorker):
             for (attr, val) in reload_dict.items():
                 setattr(self.tile_instance, attr, val)
             form_html = self.tile_instance._create_form_html(reload_dict["form_info"])["form_html"]
+            self.tile_instance.my_address = reload_dict["tile_address"]
             print("leaving reinstantiate_tile_class")
             if not self.tile_instance.exports:
                 self.tile_instance.exports = []
@@ -174,13 +254,14 @@ class TileWorker(QWorker):
             return self.handle_exception(ex, "Error reinstantiating tile")
 
     @task_worthy
-    def instantiate_as_pseudo_tile(self, data):  # tactic_working
+    def instantiate_as_pseudo_tile(self, data):
         try:
             print("entering load_source")
             self.tile_instance = PseudoTileClass()
             self.handler_instances["tilebase"] = self.tile_instance
             self.tile_instance.user_id = os.environ["OWNER"]
             self.tile_instance.base_figure_url = data["base_figure_url"]
+            self.tile_instance.my_address = data["tile_address"]
             if "doc_type" in data:
                 self.tile_instance.doc_type = data["doc_type"]
             else:
@@ -197,13 +278,14 @@ class TileWorker(QWorker):
             return self.handle_exception(ex, "Error initializing pseudo tile")
 
     @task_worthy
-    def instantiate_tile_class(self, data):  # tactic_working
+    def instantiate_tile_class(self, data):
         try:
             print("entering instantiate_tile_class")
             self.tile_instance = class_info["tile_class"](None, None, tile_name=data["tile_name"])
             self.handler_instances["tilebase"] = self.tile_instance
             self.tile_instance.user_id = os.environ["OWNER"]
             self.tile_instance.base_figure_url = data["base_figure_url"]
+            self.tile_instance.my_address = data["tile_address"]
             if "doc_type" in data:
                 self.tile_instance.doc_type = data["doc_type"]
             else:
@@ -229,11 +311,11 @@ class TileWorker(QWorker):
         return self.tile_instance._render_me(data)
 
 
-if __name__ == "__main__":
-    print "entering main"
-    tile_base._tworker = TileWorker()
-    print "tworker is created, about to start my_id is " + str(tile_base._tworker.my_id)
-    tile_base._tworker.start()
-    print "tworker started, my_id is " + str(tile_base._tworker.my_id)
-    while True:
-        time.sleep(1000)
+# if __name__ == "__main__":
+print "entering main"
+tile_base._tworker = TileWorker()
+print "tworker is created, about to start my_id is " + str(tile_base._tworker.my_id)
+tile_base._tworker.start()
+print "tworker started, my_id is " + str(tile_base._tworker.my_id)
+# while True:
+#     time.sleep(1000)

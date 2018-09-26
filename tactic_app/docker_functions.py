@@ -47,7 +47,7 @@ else:
         ip_info = subprocess.check_output(['ip', '-4', 'addr', 'show', 'scope', 'global', 'dev', 'docker0'])
 
     host_ip = re.search("inet (.*?)/", ip_info).group(1)
-    mongo_uri ="mongodb://{}:27017/{}".format(host_ip, db_name)
+    mongo_uri = "mongodb://{}:27017/{}".format(host_ip, db_name)
 
 
 megaplex_address = None  # This is set in __init__.py
@@ -66,13 +66,54 @@ def get_address(container_identifier, network_name):
     return cli.containers.get(container_identifier).attrs["NetworkSettings"]["Networks"][network_name]["IPAddress"]
 
 
+class MainContainerTracker(object):
+    def __init__(self):
+        self.mc_dict = {}
+
+    def create_main_container(self, other_name, user_id):
+        main_id, _container_id = create_container("tactic_main_image", network_mode="bridge",
+                                                  owner=user_id, other_name=other_name,
+                                                  publish_all_ports=True)
+        self.mc_dict[main_id] = {
+            "address": get_address(_container_id, "bridge"),
+            "container_id": _container_id,
+            "port": self.extract_port(_container_id)
+        }
+        return main_id
+
+    def delete_main(self, unique_id):
+        if unique_id in self.mc_dict:
+            del self.mc_dict[unique_id]
+        return
+
+    def port(self, unique_id):
+        return self.mc_dict[unique_id]["port"]
+
+    def extract_port(self, container_identifier):
+        return cli.containers.get(container_identifier).attrs["NetworkSettings"]["Ports"]["5000/tcp"]
+
+    def address(self, unique_id):
+        return self.mc_dict[unique_id]["address"]
+
+    def get_container_id(self, unique_id):
+        return self.mc_dict[unique_id]["container_id"]
+
+    def is_main(self, unique_id):
+        return unique_id in self.mc_dict
+
+
+main_container_info = MainContainerTracker()
+
+
 class ContainerCreateError(Exception):
     pass
 
-cont_type_dict = {"megaplex_main:app":"megaplex",
+
+cont_type_dict = {"megaplex_main:app": "megaplex",
                   "tile_main.py": "tile",
                   "main_main.py": "main",
                   "module_viewer_main.py": "module_viewer"}
+
 
 def get_container_type(cont):
     for arg in cont.attrs["Args"]:
@@ -80,11 +121,13 @@ def get_container_type(cont):
             return cont_type_dict[arg]
     return
 
+
+# noinspection PyUnusedLocal
 def create_container(image_name, container_name=None, network_mode="bridge",
                      wait_until_running=True, owner="host", parent="host",
                      env_vars={}, port_bindings=None, wait_retries=50,
                      other_name="none",
-                     detach=True, register_container=True):
+                     detach=True, register_container=True, publish_all_ports=False):
     unique_id = str(uuid.uuid4())
     environ = {"MAX_QUEUE_LENGTH": MAX_QUEUE_LENGTH,
                "RETRIES": RETRIES,
@@ -95,12 +138,16 @@ def create_container(image_name, container_name=None, network_mode="bridge",
                "OWNER": owner,
                "PARENT": parent,
                "DB_NAME": db_name,
+               "IMAGE_NAME": image_name,
                "MONGO_URI": mongo_uri,
                "DEBUG_MAIN_CONTAINER": DEBUG_MAIN_CONTAINER,
                "DEBUG_TILE_CONTAINER": DEBUG_TILE_CONTAINER}
 
+    if main_container_info.is_main(parent):
+        environ["MAIN_ADDRESS"] = main_container_info.address(parent)
+
     if DEBUG_MAIN_CONTAINER or DEBUG_TILE_CONTAINER:
-        environ["PYCHARM_DEBUG"] =  True
+        environ["PYCHARM_DEBUG"] = True
         environ["GEVENT_SUPPORT"] = True
 
     for key, val in env_vars.items():
@@ -117,7 +164,8 @@ def create_container(image_name, container_name=None, network_mode="bridge",
                                        environment=environ,
                                        ports=port_bindings,
                                        detach=detach,
-                                       labels=labels)
+                                       labels=labels,
+                                       publish_all_ports=publish_all_ports)
     else:
         container = cli.containers.run(image=image_name,
                                        name=container_name,
@@ -125,7 +173,8 @@ def create_container(image_name, container_name=None, network_mode="bridge",
                                        environment=environ,
                                        ports=port_bindings,
                                        detach=detach,
-                                       labels=labels)
+                                       labels=labels,
+                                       publish_all_ports=publish_all_ports)
     cont_id = container.id
     container = cli.containers.get(cont_id)
     print "status " + str(container.status)
@@ -171,6 +220,7 @@ def container_id(container):
         return container.attrs["Config"]["Labels"]["my_id"]
     else:
         return "system"
+
 
 def container_memory_usage(container, convert_to_mib=True):
     try:
@@ -234,6 +284,7 @@ def destroy_container(tactic_id, notify=True):
         else:
             cont_type = get_container_type(cont)
             send_request_to_megaplex("deregister_container", {"container_id": tactic_id})
+
             if notify:
                 if cont_type == "main" or cont_type == "module_viewer":
                     message = "Underlying container has been destroyed. This window won't function now."
@@ -243,6 +294,8 @@ def destroy_container(tactic_id, notify=True):
                     dest_id = container_parent(cont)
                     message = "Container for tile {} has been destroyed".format(tile_name)
             cont.remove(force=True)
+            if cont_type == "main":
+                main_container_info.delete_main(tactic_id)
             if notify and message is not None:
                 data = {"message": message, "alert_type": "alert-warning", "main_id": dest_id}
                 post_task_noqworker("host", "host", "flash_to_main", data)

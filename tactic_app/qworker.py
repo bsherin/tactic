@@ -75,12 +75,13 @@ class QWorker(gevent.Greenlet):
         # with self.app.test_request_context():
         #     self.app.logger.debug(msg)
 
-    def get_next_task(self):
-        raw_result = send_request_to_megaplex("get_next_task/" + str(self.my_id))
+    def get_next_task(self, alt_address=None):
+        raw_result = send_request_to_megaplex("get_next_task/" + str(self.my_id), alt_address=alt_address)
         task_packet = raw_result.json()
         return task_packet
 
-    def post_and_wait(self, dest_id, task_type, task_data=None, sleep_time=.1, timeout=10, tries=RETRIES):
+    def post_and_wait(self, dest_id, task_type, task_data=None, sleep_time=.1,
+                      timeout=10, tries=RETRIES, alt_address=None):
         callback_id = str(uuid.uuid4())
         new_packet = {"source": self.my_id,
                       "callback_type": "wait",
@@ -91,10 +92,9 @@ class QWorker(gevent.Greenlet):
                       "task_data": task_data,
                       "response_data": None,
                       "expiration": None}
-        # self.debug_log("in post and wait with new_packet " + str(new_packet))
-        send_request_to_megaplex("post_wait_task", new_packet)
+        send_request_to_megaplex("post_wait_task", new_packet, alt_address=alt_address)
         for i in range(tries):
-            res = send_request_to_megaplex("check_wait_task", new_packet).json()
+            res = send_request_to_megaplex("check_wait_task", new_packet, alt_address=alt_address).json()
             if res["success"]:
                 return res["result"]
             else:
@@ -106,7 +106,7 @@ class QWorker(gevent.Greenlet):
         raise Exception(error_string)
 
     def post_task(self, dest_id, task_type, task_data=None, callback_func=None,
-                  callback_data=None, expiration=None, error_handler=None):
+                  callback_data=None, expiration=None, error_handler=None, alt_address=None):
         if callback_func is not None:
             callback_id = str(uuid.uuid4())
             callback_dict[callback_id] = callback_func
@@ -131,7 +131,7 @@ class QWorker(gevent.Greenlet):
                       "response_data": None,
                       "callback_id": callback_id,
                       "expiration": expiration}
-        result = send_request_to_megaplex("post_task", new_packet).json()
+        result = send_request_to_megaplex("post_task", new_packet, alt_address=alt_address).json()
         if not result["success"]:
             error_string = "Error posting task with msg_type {} dest {} source {}. Error: {}".format(task_type,
                                                                                                      dest_id,
@@ -140,14 +140,44 @@ class QWorker(gevent.Greenlet):
             raise Exception(error_string)
         return result
 
-    def submit_response(self, task_packet, response_data=None):
+    def submit_response(self, task_packet, response_data=None, alt_address=None):
         if response_data is not None:
             task_packet["response_data"] = response_data
-        send_request_to_megaplex("submit_response", task_packet)
+        send_request_to_megaplex("submit_response", task_packet, alt_address=alt_address)  ## tactic_todo
         return
 
     def special_long_sleep_function(self):
         pass
+
+    def handle_response(self, task_packet):
+        try:
+            cbid = task_packet["callback_id"]
+            if cbid in error_handler_dict:
+                error_handler = error_handler_dict[cbid]
+                del error_handler_dict[cbid]
+            else:
+                error_handler = None
+            func = callback_dict[task_packet["callback_id"]]
+            del callback_dict[task_packet["callback_id"]]
+            callback_type = task_packet["callback_type"]
+            if task_packet["status"] in error_response_statuses and error_handler is not None:
+                if callback_type == "callback_with_context":
+                    cdata = callback_data_dict[task_packet["callback_id"]]
+                    del callback_data_dict[task_packet["callback_id"]]
+                    error_handler(task_packet, cdata)
+                else:
+                    error_handler(task_packet)
+            elif callback_type == "callback_with_context":
+                cdata = callback_data_dict[task_packet["callback_id"]]
+                del callback_data_dict[task_packet["callback_id"]]
+                func(task_packet["response_data"], cdata)
+            else:
+                func(task_packet["response_data"])
+        except Exception as ex:
+            special_string = "Error handling callback for task type {} for my_id {}".format(task_packet["task_type"],
+                                                                                            self.my_id)
+            self.handle_exception(ex, special_string)
+        return
 
     def _run(self):
         self.debug_log("Entering _run")
@@ -161,33 +191,7 @@ class QWorker(gevent.Greenlet):
             else:
                 if "empty" not in task_packet:
                     if task_packet["status"] in response_statuses:
-                        try:
-                            cbid = task_packet["callback_id"]
-                            if cbid in error_handler_dict:
-                                error_handler = error_handler_dict[cbid]
-                                del error_handler_dict[cbid]
-                            else:
-                                error_handler = None
-                            func = callback_dict[task_packet["callback_id"]]
-                            del callback_dict[task_packet["callback_id"]]
-                            callback_type = task_packet["callback_type"]
-                            if task_packet["status"] in error_response_statuses and error_handler is not None:
-                                if callback_type == "callback_with_context":
-                                    cdata = callback_data_dict[task_packet["callback_id"]]
-                                    del callback_data_dict[task_packet["callback_id"]]
-                                    error_handler(task_packet, cdata)
-                                else:
-                                    error_handler(task_packet)
-                            elif callback_type == "callback_with_context":
-                                cdata = callback_data_dict[task_packet["callback_id"]]
-                                del callback_data_dict[task_packet["callback_id"]]
-                                func(task_packet["response_data"], cdata)
-                            else:
-                                func(task_packet["response_data"])
-                        except Exception as ex:
-                            special_string = "Error handling callback for task type {} for my_id {}".format(task_packet["task_type"],
-                                                                                                            self.my_id)
-                            self.handle_exception(ex, special_string)
+                        self.handle_response(task_packet)
                     else:
                         self.handle_event(task_packet)
                     if self.hibernating:

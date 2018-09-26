@@ -23,6 +23,7 @@ csrf = CSRFProtect()
 
 # global_stuff
 # these variables are imported by other modules
+
 use_ssl = os.environ.get("USE_SSL")
 app = None
 db = None
@@ -36,11 +37,11 @@ def print_message():
     print "got to the message"
 
 
-def create_megaplex():
+def create_megaplex():  # tactic_working
     global megaplex_id
     try:
         unique_id, megaplex_id = create_container("tactic_megaplex_image",
-                                                  port_bindings={5000: 8085},
+                                                  port_bindings={5000: 8085},  # tactic_working
                                                   register_container=False)
         docker_functions.megaplex_address = get_address(megaplex_id, "bridge")
     except ContainerCreateError:
