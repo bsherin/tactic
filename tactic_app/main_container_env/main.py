@@ -1157,7 +1157,8 @@ class mainWindow(object):
 
             def container_restarted(nodata):
                 data_dict = {"base_figure_url": self.base_figure_url.replace("tile_id", self.pseudo_tile_id),
-                             "doc_type": self.doc_type, "globals_dict": {}, "img_dict": {}}
+                             "doc_type": self.doc_type, "globals_dict": {}, "img_dict": {},
+                             "tile_address": self.pseudo_tile_address}
 
                 def instantiate_done(instantiate_result):
                     if not instantiate_result["success"]:
