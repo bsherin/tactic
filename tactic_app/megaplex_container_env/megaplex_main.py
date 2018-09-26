@@ -30,7 +30,7 @@ container_registry = {}
 app = Flask(__name__)
 
 
-@app.route('/')
+@app.route('/hello', methods=["get", "post"])
 def hello():
     return 'This is the megaplex communicating'
 
@@ -129,6 +129,15 @@ def update_last_active_contact(container_id):
 @app.route('/post_task', methods=["get", "post"])
 def post_task():
     task_packet = request.json
+    return post_the_task(task_packet)
+
+
+def post_task_local(task_packet):
+    with app.app_context():
+        return post_the_task(task_packet)
+
+
+def post_the_task(task_packet):
     dest = task_packet["dest"]
     source = task_packet["source"]
     update_last_active_contact(source)
@@ -148,6 +157,15 @@ def post_task():
 @app.route('/post_wait_task', methods=["get", "post"])
 def post_wait_task():
     task_packet = request.json
+    return post_the_wait_task(task_packet)
+
+
+def post_wait_task_local(task_packet):
+    with app.app_context():
+        return post_the_wait_task(task_packet)
+
+
+def post_the_wait_task(task_packet):
     dest = task_packet["dest"]
     source = task_packet["source"]
     update_last_active_contact(source)
@@ -165,6 +183,15 @@ def post_wait_task():
 @app.route("/check_wait_task", methods=["get", "post"])
 def check_wait_task():
     task_packet = request.json
+    return do_the_check_wait_task(task_packet)
+
+
+def check_wait_task_local(task_packet):
+    with app.app_context():
+        return do_the_check_wait_task(task_packet)
+
+
+def do_the_check_wait_task(task_packet):
     cbid = task_packet["callback_id"]
     source = task_packet["source"]
     update_last_passive_contact(source)
@@ -182,15 +209,24 @@ def get_next_task(requester_id):
         return queue_dict[requester_id].get_next_task()
 
 
+def get_next_task_local(requester_id):
+    with app.app_context():
+        return get_next_task(requester_id)
+
 # possible response statuses are:
 # submitted_response: response was submtitted with no error
 # response_submitted_with_error: Response was submitted but with success: False
 # unanswered: The task was claimed by the destbut no answer submitted
 # unclaimed: The task was never claimed by the dest
 
+
 @app.route('/submit_response', methods=["get", "post"])
 def submit_response():
     task_packet = request.json
+    return submit_response_local(task_packet)
+
+
+def submit_response_local(task_packet):
     source = task_packet["source"]
     update_last_active_contact(task_packet["dest"])
     if source not in queue_dict:  # This shouldn't happen
