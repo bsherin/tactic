@@ -21,6 +21,8 @@ else:
 
 mongo_uri = os.environ.get("MONGO_URI")
 
+
+# noinspection PyUnusedLocal
 class ModuleViewerWorker(QWorker):
     def __init__(self):
         print "about to initialize QWorker"

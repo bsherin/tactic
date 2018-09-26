@@ -4,7 +4,7 @@ from flask import jsonify, request, url_for, render_template
 from flask_login import login_required, current_user
 import tactic_app
 from tactic_app import app, db, fs, use_ssl
-from tactic_app.docker_functions import create_container, ContainerCreateError
+from tactic_app.docker_functions import create_container, ContainerCreateError, main_container_info
 from tactic_app.resource_manager import ResourceManager, UserManageResourceManager
 from tactic_app.users import User
 from tactic_app.communication_utils import make_jsonizable_and_compress, read_project_dict
@@ -36,8 +36,7 @@ class ProjectManager(UserManageResourceManager):
         user_id = user_obj.get_id()
 
         # noinspection PyTypeChecker
-        main_id, container_id = create_container("tactic_main_image", network_mode="bridge",
-                                                 owner=user_id, other_name=project_name)
+        main_id = main_container_info.create_main_container(project_name, user_id)
         global_tile_manager.add_user(user_obj.username)
 
         save_dict = db[user_obj.project_collection_name].find_one({"project_name": project_name})
@@ -52,6 +51,7 @@ class ProjectManager(UserManageResourceManager):
                      "user_id": user_id,
                      "use_ssl": str(use_ssl),
                      "main_id": main_id,
+                     "main_port": main_container_info.port(main_id),
                      "temp_data_id": "",
                      "use_codemirror": True,
                      "collection_name": "",

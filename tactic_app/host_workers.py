@@ -5,7 +5,7 @@ from users import load_user, ModuleNotFoundError
 import gevent
 from communication_utils import send_request_to_megaplex
 from docker_functions import create_container, destroy_container, destroy_child_containers, destroy_user_containers
-from docker_functions import get_log, ContainerCreateError, container_exec, restart_container
+from docker_functions import get_log, ContainerCreateError, container_exec, restart_container, get_address
 from tactic_app import app, socketio, use_ssl, db
 from views.user_manage_views import tile_manager, project_manager, collection_manager, list_manager
 from views.user_manage_views import code_manager, all_manager
@@ -499,11 +499,13 @@ class HostWorker(QWorker):
             tile_container_id, container_id = create_container("tactic_tile_image", network_mode="bridge",
                                                                owner=data["user_id"],
                                                                parent=data["parent"],
-                                                               other_name=data["other_name"])
+                                                               other_name=data["other_name"],
+                                                               publish_all_ports=True)
+            tile_address = get_address(container_id, "bridge")
         except ContainerCreateError:
             print "Error creating tile container"
             return {"success": False, "message": "Error creating empty tile container."}
-        return {"success": True, "tile_id": tile_container_id}
+        return {"success": True, "tile_id": tile_container_id, "tile_address": tile_address}
 
     @task_worthy
     def get_empty_tile_containers(self, data):

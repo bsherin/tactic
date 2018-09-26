@@ -35,6 +35,7 @@ class ConsoleStringIO(StringIO):
         return
 
 
+# noinspection PyUnusedLocal
 class PseudoTileClass(TileBase, MplFigure):
     category = "word"
     exports = []
