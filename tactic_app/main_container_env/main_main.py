@@ -1,3 +1,4 @@
+from gevent import monkey; monkey.patch_all()
 print "entering main_main"
 import os
 import uuid

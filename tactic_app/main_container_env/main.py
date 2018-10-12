@@ -1,5 +1,5 @@
 
-from gevent import monkey; monkey.patch_all()
+# from gevent import monkey; monkey.patch_all()
 import sys
 import re
 # noinspection PyUnresolvedReferences
@@ -900,21 +900,38 @@ class mainWindow(object):
         return False
 
     # Task Worthy methods. These are eligible to be the recipient of posted tasks.
+
+    def microdsecs(self, tstart):
+        tnow = datetime.datetime.now()
+        td = tnow - tstart
+        return td.seconds * 1000000 + td.microseconds
+
     @task_worthy_manual_submit
     def create_tile(self, data_dict, task_packet):
+        print "entering create tile"
         tile_name = data_dict["tile_name"]
         local_task_packet = task_packet
+        print "about to create container, starting timer"
+        self.tstart = datetime.datetime.now()
 
         def got_container(create_container_dict):
+            print "got container, time is {}".format(self.microdsecs(self.tstart))
+            self.tstart = datetime.datetime.now()
             def got_module_code(code_result):
+                print "got module code, time is {}".format(self.microdsecs(self.tstart))
+                self.tstart = datetime.datetime.now()
                 data_dict["tile_code"] = code_result["module_code"]
 
                 def loaded_source(result):
+                    print "loaded source, time is {}".format(self.microdsecs(self.tstart))
+                    self.tstart = datetime.datetime.now()
                     if not result["success"]:
                         self.mworker.debug_log("got an exception " + result["message_string"])
                         raise Exception(result["message_string"])
 
                     def instantiated_result(instantiate_result):
+                        print "got instantiate result, time is {}".format(self.microdsecs(self.tstart))
+                        self.tstart = datetime.datetime.now()
                         if not instantiate_result["success"]:
                             self.mworker.debug_log("got an exception " + instantiate_result["message_string"])
                             raise Exception(instantiate_result["message_string"])
@@ -923,8 +940,12 @@ class mainWindow(object):
                         self.update_pipe_dict(exports, tile_container_id, tile_name)
 
                         def got_form_info(form_info):
+                            print "got form info, time is {}".format(self.microdsecs(self.tstart))
+                            self.tstart = datetime.datetime.now()
 
                             def got_form_html(response):
+                                print "got form html, time is {}".format(self.microdsecs(self.tstart))
+                                self.tstart = datetime.datetime.now()
                                 form_html = response["form_html"]
                                 self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task",
                                                        {"tile_id": tile_container_id})
