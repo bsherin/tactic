@@ -383,13 +383,19 @@ class mainWindow(object):
                     self.stop_main_status_spinner()
                 return
 
-            if tlmdata["module_name"] in modules_to_load:
-                modules_to_load.remove(tlmdata["module_name"])
+            if tlmdata is not None:
+                if tlmdata["module_name"] in modules_to_load:
+                    modules_to_load.remove(tlmdata["module_name"])
             if not modules_to_load:
                 self.show_main_status_message("Recreating tiles")
                 self.tile_save_results = {}
 
                 tiles_to_recreate = self.project_dict["tile_instances"].keys()
+                if not tiles_to_recreate:
+                    self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {})
+                    self.clear_main_status_message()
+                    self.stop_main_status_spinner()
+                    return
                 for old_tile_id, tile_save_dict in self.project_dict["tile_instances"].items():
                     data_for_tile = {"old_tile_id": old_tile_id,
                                      "tile_save_dict": tile_save_dict}
@@ -424,10 +430,13 @@ class mainWindow(object):
 
         self.show_main_status_message("Making modules available")
         modules_to_load = copy.copy(loaded_modules)
-        for the_module in loaded_modules:
-            self.mworker.post_task("host", "load_module_if_necessary",
-                                   {"tile_module_name": the_module, "user_id": self.user_id},
-                                   track_loaded_modules)
+        if not modules_to_load:
+            track_loaded_modules(None)
+        else:
+            for the_module in loaded_modules:
+                self.mworker.post_task("host", "load_module_if_necessary",
+                                       {"tile_module_name": the_module, "user_id": self.user_id},
+                                       track_loaded_modules)
         return
 
     def recreate_from_save(self, project_collection_name, project_name, unique_id=None):
