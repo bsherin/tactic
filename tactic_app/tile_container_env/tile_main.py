@@ -1,3 +1,4 @@
+from gevent import monkey; monkey.patch_all()
 print "entering main_main"
 import os
 from communication_utils import send_request_to_megaplex
@@ -12,7 +13,7 @@ import copy
 # noinspection PyUnresolvedReferences
 from qworker import QWorker, task_worthy, RETRIES
 # noinspection PyUnresolvedReferences
-from gevent import monkey; monkey.patch_all()
+
 import qworker
 import tile_env
 from tile_env import class_info
