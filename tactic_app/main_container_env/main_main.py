@@ -3,6 +3,7 @@ print "entering main_main"
 import os
 import uuid
 import flask
+import copy
 from communication_utils import send_request_to_megaplex
 
 
@@ -16,7 +17,7 @@ from main import mainWindow
 import main
 
 # noinspection PyUnresolvedReferences
-from qworker import QWorker, task_worthy, RETRIES, callback_dict, error_handler_dict
+from qworker import QWorker, task_worthy, RETRIES, callback_dict, callback_data_dict, error_handler_dict
 # noinspection PyUnresolvedReferences
 import qworker
 
