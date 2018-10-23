@@ -252,6 +252,9 @@ class TileManager(UserManageResourceManager):
             error_string = "Error unloading tiles: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
             return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
+    def send_tile_source_changed_message(self, data):
+        socketio.emit('tile-source-change', data, namespace='/main', room=data["user_id"])
+
     def add_tile_module(self):
         user_obj = current_user
         f = request.files['file']

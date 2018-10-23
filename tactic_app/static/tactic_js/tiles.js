@@ -20,11 +20,12 @@ function htmlToElement(html) {
 }
 
 class TileObject {
-    constructor(tile_id, html, is_new_tile, tile_name, position_index) {
+    constructor(tile_id, html, is_new_tile, tile_name, position_index, tile_type) {
         this.tile_id = tile_id;
         this.codeMirrorObjects = {};
         this.tile_name = tile_name;
         this.spinner = null;
+        this.tile_type = tile_type;
         this.tileHeaderButtons = {
             "tile-close": "closeMe",
             "tile-reload": "reloadMe",
@@ -194,6 +195,7 @@ class TileObject {
             if (data.success) {
                 self.displayFormContent(data);
                 dirty = true;
+                $("#" + self.tile_id).removeClass("tile-source-changed");
                 if (data.options_changed) {
                     self.stopSpinner();
                     self.showOptions()

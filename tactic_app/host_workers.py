@@ -152,6 +152,10 @@ class HostWorker(QWorker):
             return
 
     @task_worthy
+    def send_tile_source_changed_message(self, data):
+        socketio.emit('tile-source-change', data, namespace='/main', room=data["user_id"])
+
+    @task_worthy
     def show_main_status_message(self, data):
         socketio.emit('show-status-msg', data, namespace='/main', room=data["main_id"])
 
