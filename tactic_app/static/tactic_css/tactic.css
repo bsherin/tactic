@@ -406,6 +406,9 @@ a[role="tab"] {
     margin: 0 7px 0 0;
     display: inline-flex; }
 
+.tile-source-changed .tile-panel-heading {
+  background-color: #f7d66b80 !important; }
+
 .tile-body .back button {
   width: 100%; }
 
@@ -692,6 +695,9 @@ html, body {
   border: 2px solid #BCE8F1 !important;
   background-color: white !important;
   color: #333 !important; }
+
+.tile-panel.tile-source-changed {
+  border: 2px solid #f7d66b80 !important; }
 
 .tile-panel-float {
   float: left; }

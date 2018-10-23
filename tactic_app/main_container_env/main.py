@@ -343,6 +343,7 @@ class mainWindow(object):
                                 self.tile_instances.append(new_id[0])
                                 self.mworker.ask_host("emit_to_client", {"message": "recreate-saved-tile",
                                                                          "tile_id": new_id[0],
+                                                                         "tile_type": tile_save_dict["tile_type"],
                                                                          "tile_saved_results": recreate_response,
                                                                          "tile_sort_list": self.tile_sort_list})
                                 self.mworker.submit_response(task_packet, {"old_tile_id": old_tile_id})

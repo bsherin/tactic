@@ -144,12 +144,22 @@ function start_post_load() {
         });
     tsocket.socket.on('recreate-saved-tile', create_tile_from_save);
     tsocket.socket.emit('ready-to-begin', {"room": main_id});
+    tsocket.socket.on('tile-source-change', function (data) {
+        for (let tid in tile_dict) {
+            if (!tile_dict.hasOwnProperty(tid)){
+                continue;
+            }
+            if (tile_dict[tid].tile_type == data["tile_type"])
+                $("#" + tid).addClass("tile-source-changed")
+        }
+    })
 }
 
 function create_tile_from_save(data) {
     let tile_id = data["tile_id"];
     let tile_save_results = data["tile_saved_results"];
     let tile_sort_list = data["tile_sort_list"];
+    let tile_type = data["tile_type"]
     const tile_html = tile_save_results.tile_html;
 
     // Get the index to position the tile properly
@@ -164,7 +174,7 @@ function create_tile_from_save(data) {
     }
     let new_tile_index = revised_tile_sort_list.indexOf(tile_id);
 
-    const new_tile_object = new TileObject(tile_id, tile_html, false, tile_save_results.tile_name, new_tile_index);
+    const new_tile_object = new TileObject(tile_id, tile_html, false, tile_save_results.tile_name, new_tile_index, tile_type);
     tile_dict[tile_id] = new_tile_object;
     new_tile_object.saved_size = tile_save_results.saved_size;
     const sortable_tables = $(new_tile_object.full_selector() + " table.sortable");
