@@ -37,11 +37,11 @@ def print_message():
     print "got to the message"
 
 
-def create_megaplex():  # tactic_working
+def create_megaplex():
     global megaplex_id
     try:
         unique_id, megaplex_id = create_container("tactic_megaplex_image",
-                                                  port_bindings={5000: 8085},  # tactic_working
+                                                  port_bindings={5000: 8085},
                                                   register_container=False)
         docker_functions.megaplex_address = get_address(megaplex_id, "bridge")
     except ContainerCreateError:

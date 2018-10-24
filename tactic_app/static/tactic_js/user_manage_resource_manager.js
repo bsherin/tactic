@@ -642,6 +642,30 @@ class UserManagerResourceManager extends ResourceManager{
         }
         else {
             let self = this;
+            if (this.allow_search_inside) {
+                if ($(this.get_module_element(".search-inside-checkbox")[0]).prop('checked')) {
+                    let search_info = {"search_text": txt};
+                    postAjaxPromise(self.search_inside_view, search_info)
+                        .then((data) => {
+                            let match_list = data.match_list;
+                            $.each(all_rows, function (index, row_element) {
+                                const res_name = row_element.getAttribute("value").toLowerCase();
+                                if (match_list.includes(res_name)) {
+                                    $(row_element).addClass("showme");
+                                    $(row_element).removeClass("hideme");
+                                }
+                                else {
+                                    $(row_element).addClass("hideme");
+                                    $(row_element).removeClass("showme");
+                                }
+                            });
+                            this.hide_table_rows(all_rows.filter(".hideme"));
+                            this.show_table_rows(all_rows.filter(".showme"));
+                        })
+                        .catch(doFlash);
+                    return
+                }
+            }
             $.each(all_rows, function (index, row_element) {
                 const cells = $(row_element).children();
                 const res_name = row_element.getAttribute("value").toLowerCase();

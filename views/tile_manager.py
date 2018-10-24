@@ -2,6 +2,7 @@
 import datetime
 import sys
 import copy
+import re
 
 from flask import render_template, request, jsonify, url_for
 from flask_login import login_required, current_user
@@ -58,6 +59,8 @@ class TileManager(UserManageResourceManager):
                          login_required(self.request_update_loaded_tile_list), methods=['get', 'post'])
         app.add_url_rule('/create_duplicate_tile', "create_duplicate_tile",
                          login_required(self.create_duplicate_tile), methods=['get', 'post'])
+        app.add_url_rule('/search_inside_tiles', "search_inside_tiles",
+                         login_required(self.search_inside_tiles), methods=['get', 'post'])
 
     def rename_me(self, old_name):
         try:
@@ -286,6 +289,16 @@ class TileManager(UserManageResourceManager):
         table_row = self.create_new_row(new_tile_name, metadata)
         all_table_row = self.all_manager.create_new_all_row(new_tile_name, metadata, "tile")
         return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
+
+    def search_inside_tiles(self):
+        user_obj = current_user
+        search_text = request.json['search_text']
+        reg = re.compile(".*" + search_text + ".*", re.IGNORECASE)
+        res = db[user_obj.tile_collection_name].find({"tile_module": reg})
+        res_list = []
+        for t in res:
+            res_list.append(t["tile_module_name"])
+        return jsonify({"success": True, "match_list": res_list})
 
     def create_tile_module(self):
         user_obj = current_user

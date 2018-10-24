@@ -17,6 +17,7 @@ class ResourceManager {
         this.res_type = res_type;
         this.module_id = module_id;
         this.include_right = include_right;
+        this.allow_search_inside = false;
 
         // These additional parameters are relevant to the rendering of the template
         this.include_metadata = false;
@@ -26,6 +27,7 @@ class ResourceManager {
         this.is_repository = false;
         this.include_search_toolbar = true;
         this.include_tags_search = true;
+        this.allow_search_inside = false;
         this.popup_buttons = [];
         this.button_groups = [];
         this.file_adders = [];
