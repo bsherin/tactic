@@ -486,6 +486,8 @@ class TileManager extends UserManagerResourceManager {
         super.set_extra_properties();
         this.aux_right = true;
         this.start_hidden = false;
+        this.allow_search_inside = true;
+        this.search_inside_view = "search_inside_tiles";
         this.update_view = "request_update_selector_list";
         this.update_tag_view = "request_update_tag_list";
         this.new_view = '/create_tile_module';

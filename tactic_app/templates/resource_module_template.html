@@ -54,6 +54,14 @@
                         <div class="form-inline">
                             <input type="text" class="form-control form-control-sm mr-2 search-field" size="30" placeholder="Search">
                              <button class="btn btn-sm btn-outline-secondary resource-unfilter-button" type="button" value="{{res_type}}">Clear</button>
+                            {{#allow_search_inside}}
+                             <div class="form-check form-control-sm">
+                                <input class="form-check-input search-inside-checkbox ml-3" type="checkbox" id="inlineFormCheck">
+                                <label class="form-check-label" for="inlineFormCheck">
+                                  Search Inside
+                                </label>
+                              </div>
+                            {{/allow_search_inside}}
                         </div>
                     </div>
                     {{/include_search_toolbar}}

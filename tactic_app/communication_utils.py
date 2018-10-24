@@ -93,7 +93,7 @@ def send_request_to_megaplex(msg_type, data_dict=None, wait_for_success=True, ti
     if wait_for_success:
         for attempt in range(tries):
             try:
-                res = requests.post("http://{0}:{1}/{2}".format(taddress, port, msg_type),  # tactic_working
+                res = requests.post("http://{0}:{1}/{2}".format(taddress, port, msg_type),
                                     timeout=timeout, json=data_dict)
                 return res
             except:
