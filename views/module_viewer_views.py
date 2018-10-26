@@ -132,6 +132,7 @@ def update_module():
                                                                    "last_saved": last_saved}})
         create_recent_checkpoint(module_name)
         tile_manager.update_selector_list()
+        tile_manager.send_tile_source_changed_message({'user_id': current_user.get_id(), 'tile_type': module_name})
         return jsonify({"success": True, "message": "Module Successfully Saved",
                         "alert_type": "alert-success"})
     except:

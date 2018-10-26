@@ -26,6 +26,8 @@ class ResourceManager {
         this.is_repository = false;
         this.include_search_toolbar = true;
         this.include_tags_search = true;
+        this.allow_search_inside = false;
+        this.allow_metadata_search = false;
         this.popup_buttons = [];
         this.button_groups = [];
         this.file_adders = [];
