@@ -1,5 +1,6 @@
 
 import sys
+import re
 from flask import jsonify, request, url_for, render_template
 from flask_login import login_required, current_user
 import tactic_app
@@ -30,6 +31,8 @@ class ProjectManager(UserManageResourceManager):
                          methods=['post'])
         app.add_url_rule('/duplicate_project', "duplicate_project",
                          login_required(self.duplicate_project), methods=['get', 'post'])
+        app.add_url_rule('/search_project_metadata', "search_project_metadata",
+                         login_required(self.search_project_metadata), methods=['get', 'post'])
 
     def main_project(self, project_name):
         user_obj = current_user
@@ -72,6 +75,18 @@ class ProjectManager(UserManageResourceManager):
             template_name = "main.html"
 
         return render_template(template_name, **data_dict)
+
+    def search_project_metadata(self):
+        user_obj = current_user
+        search_text = request.json['search_text']
+        reg = re.compile(".*" + search_text + ".*", re.IGNORECASE)
+        res = db[user_obj.project_collection_name].find({"$or": [{"project_name": reg}, {"metadata.notes": reg},
+                                                        {"metadata.tags": reg}, {"metadata.loaded_tiles": reg},
+                                                        {"metadata.collection_name": reg}]})
+        res_list = []
+        for t in res:
+            res_list.append(t["project_name"])
+        return jsonify({"success": True, "match_list": res_list})
 
     def duplicate_project(self):
         user_obj = current_user

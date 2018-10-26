@@ -5,7 +5,9 @@ $main-navbar-foreground-color: #5f5f5f;
 /* tile parameters */
 $tile-header-background-color: #d9edf7; // bootstrap default is #d9edf7
 $tile-header-foreground-color: #31708f; // boostrap default is #31708f
+$tile-header-sourcechange-color: #f7d66b80;
 $tile-panel-border-style: 2px solid #BCE8F1;
+$tile-panel-sourcechange-border-style: 2px solid #f7d66b80;
 $tile-panel-background-color: white;
 $tile-panel-foreground-color: #333; // bootstrap default is #333
 
@@ -648,6 +650,12 @@ a[role="tab"] {
     border-bottom: 0
 }
 
+.tile-source-changed {
+    .tile-panel-heading {
+        background-color: $tile-header-sourcechange-color !important;
+    }
+}
+
 .tile-body .back button {
     width: 100%
 }
@@ -1033,6 +1041,10 @@ html,body {
     border: $tile-panel-border-style !important;
     background-color: $tile-panel-background-color !important;
     color: $tile-panel-foreground-color !important;
+}
+
+.tile-panel.tile-source-changed {
+    border: $tile-panel-sourcechange-border-style !important;
 }
 
 .tile-panel-float {

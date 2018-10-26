@@ -539,7 +539,7 @@ function tile_command(menu_id) {
                 data_dict["form_html"] = create_data["html"];
                 data_dict["tile_id"] = create_data["tile_id"];
                 postWithCallback("host", "render_tile", data_dict, function (render_data) {
-                    const new_tile_object = new TileObject(tile_id, render_data.html, true, tile_name, null);
+                    const new_tile_object = new TileObject(tile_id, render_data.html, true, tile_name, null, tile_type);
                     tile_dict[tile_id] = new_tile_object;
                     new_tile_object.spin_and_refresh();
                     exportViewerObject.update_exports_popup();
