@@ -433,6 +433,8 @@ class ProjectManager extends UserManagerResourceManager {
     set_extra_properties() {
         super.set_extra_properties();
         this.start_hidden = false;
+        this.allow_metadata_search = true;
+        this.search_metadata_view = "search_project_metadata";
         this.update_view = "request_update_selector_list";
         this.update_tag_view = "request_update_tag_list";
         this.load_view = "";
@@ -487,7 +489,9 @@ class TileManager extends UserManagerResourceManager {
         this.aux_right = true;
         this.start_hidden = false;
         this.allow_search_inside = true;
+        this.allow_metadata_search = true;
         this.search_inside_view = "search_inside_tiles";
+        this.search_metadata_view = "search_tile_metadata";
         this.update_view = "request_update_selector_list";
         this.update_tag_view = "request_update_tag_list";
         this.new_view = '/create_tile_module';

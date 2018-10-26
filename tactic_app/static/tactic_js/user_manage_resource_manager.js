@@ -624,6 +624,23 @@ class UserManagerResourceManager extends ResourceManager{
         return false
     }
 
+    show_hide_from_matchlist(match_list) {
+        const all_rows = this.get_all_selector_buttons();
+        $.each(all_rows, function (index, row_element) {
+            const res_name = row_element.getAttribute("value");
+            if (match_list.includes(res_name)) {
+                $(row_element).addClass("showme");
+                $(row_element).removeClass("hideme");
+            }
+            else {
+                $(row_element).addClass("hideme");
+                $(row_element).removeClass("showme");
+            }
+        });
+        this.hide_table_rows(all_rows.filter(".hideme"));
+        this.show_table_rows(all_rows.filter(".showme"));
+    }
+
     search_my_resource () {
         const txt = this.get_search_field()[0].value.toLowerCase();
         this.tag_button_list.get_all_tag_buttons().removeClass("active");
@@ -647,20 +664,18 @@ class UserManagerResourceManager extends ResourceManager{
                     let search_info = {"search_text": txt};
                     postAjaxPromise(self.search_inside_view, search_info)
                         .then((data) => {
-                            let match_list = data.match_list;
-                            $.each(all_rows, function (index, row_element) {
-                                const res_name = row_element.getAttribute("value").toLowerCase();
-                                if (match_list.includes(res_name)) {
-                                    $(row_element).addClass("showme");
-                                    $(row_element).removeClass("hideme");
-                                }
-                                else {
-                                    $(row_element).addClass("hideme");
-                                    $(row_element).removeClass("showme");
-                                }
-                            });
-                            this.hide_table_rows(all_rows.filter(".hideme"));
-                            this.show_table_rows(all_rows.filter(".showme"));
+                            self.show_hide_from_matchlist(data.match_list)
+                        })
+                        .catch(doFlash);
+                    return
+                }
+            }
+            if (this.allow_metadata_search) {
+                if ($(this.get_module_element(".metadata-search-checkbox")[0]).prop('checked')) {
+                    let search_info = {"search_text": txt};
+                    postAjaxPromise(self.search_metadata_view, search_info)
+                        .then((data) => {
+                            self.show_hide_from_matchlist(data.match_list)
                         })
                         .catch(doFlash);
                     return
@@ -694,7 +709,7 @@ class UserManagerResourceManager extends ResourceManager{
         // this.show_table_rows(all_rows);
         //
         // this.tag_button_list.deactivate_all_buttons();
-        this.tag_button_list.set_active_tag("__all__")
+        this.tag_button_list.set_active_tag("__all__");
         this.get_search_field().val("");
     }
 
