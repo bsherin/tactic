@@ -57,11 +57,19 @@
                             {{#allow_search_inside}}
                              <div class="form-check form-control-sm">
                                 <input class="form-check-input search-inside-checkbox ml-3" type="checkbox" id="inlineFormCheck">
-                                <label class="form-check-label" for="inlineFormCheck">
+                                <label class="form-check-label btn-outline-secondary" for="inlineFormCheck">
                                   Search Inside
                                 </label>
                               </div>
                             {{/allow_search_inside}}
+                            {{#allow_metadata_search}}
+                             <div class="form-check form-control-sm">
+                                <input class="form-check-input metadata-search-checkbox ml-3" type="checkbox" id="metadataSearchCheck">
+                                <label class="form-check-label btn-outline-secondary" for="metadataSearchCheck">
+                                  Search Metadata
+                                </label>
+                              </div>
+                            {{/allow_metadata_search}}
                         </div>
                     </div>
                     {{/include_search_toolbar}}

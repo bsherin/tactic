@@ -61,6 +61,8 @@ class TileManager(UserManageResourceManager):
                          login_required(self.create_duplicate_tile), methods=['get', 'post'])
         app.add_url_rule('/search_inside_tiles', "search_inside_tiles",
                          login_required(self.search_inside_tiles), methods=['get', 'post'])
+        app.add_url_rule('/search_tile_metadata', "search_tile_metadata",
+                         login_required(self.search_tile_metadata), methods=['get', 'post'])
 
     def rename_me(self, old_name):
         try:
@@ -295,6 +297,17 @@ class TileManager(UserManageResourceManager):
         search_text = request.json['search_text']
         reg = re.compile(".*" + search_text + ".*", re.IGNORECASE)
         res = db[user_obj.tile_collection_name].find({"tile_module": reg})
+        res_list = []
+        for t in res:
+            res_list.append(t["tile_module_name"])
+        return jsonify({"success": True, "match_list": res_list})
+
+    def search_tile_metadata(self):
+        user_obj = current_user
+        search_text = request.json['search_text']
+        reg = re.compile(".*" + search_text + ".*", re.IGNORECASE)
+        res = db[user_obj.tile_collection_name].find({"$or": [{"tile_module_name": reg}, {"metadata.notes": reg},
+                                                     {"metadata.tags": reg}, {"metadata.type": reg}]})
         res_list = []
         for t in res:
             res_list.append(t["tile_module_name"])
