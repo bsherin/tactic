@@ -1,5 +1,6 @@
 
 import sys, datetime, copy
+import re
 from flask_login import login_required, current_user
 from flask import jsonify, render_template, url_for, request
 
@@ -37,6 +38,10 @@ class ListManager(UserManageResourceManager):
                          login_required(self.create_duplicate_list), methods=['get', 'post'])
         app.add_url_rule('/update_list', "update_list",
                          login_required(self.update_list), methods=['get', 'post'])
+        app.add_url_rule('/search_inside_lists', "search_inside_lists",
+                         login_required(self.search_inside_lists), methods=['get', 'post'])
+        app.add_url_rule('/search_list_metadata', "search_list_metadata",
+                         login_required(self.search_list_metadata), methods=['get', 'post'])
 
     def view_list(self, list_name):
         javascript_source = url_for('static', filename='tactic_js/list_viewer.js')
@@ -181,6 +186,27 @@ class ListManager(UserManageResourceManager):
         table_row = self.create_new_row(new_list_name, metadata)
         all_table_row = self.all_manager.create_new_all_row(new_list_name, metadata, "list")
         return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
+
+    def search_inside_lists(self):
+        user_obj = current_user
+        search_text = request.json['search_text']
+        reg = re.compile(".*" + search_text + ".*", re.IGNORECASE)
+        res = db[user_obj.list_collection_name].find({"the_list": reg})
+        res_list = []
+        for t in res:
+            res_list.append(t["list_name"])
+        return jsonify({"success": True, "match_list": res_list})
+
+    def search_list_metadata(self):
+        user_obj = current_user
+        search_text = request.json['search_text']
+        reg = re.compile(".*" + search_text + ".*", re.IGNORECASE)
+        res = db[user_obj.list_collection_name].find({"$or": [{"list_name": reg}, {"metadata.notes": reg},
+                                                     {"metadata.tags": reg}]})
+        res_list = []
+        for t in res:
+            res_list.append(t["list_name"])
+        return jsonify({"success": True, "match_list": res_list})
 
 
 class RepositoryListManager(ListManager):

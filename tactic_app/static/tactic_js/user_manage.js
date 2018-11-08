@@ -258,6 +258,10 @@ class ListManager extends UserManagerResourceManager {
     set_extra_properties() {
         super.set_extra_properties();
         this.start_hidden = false;
+        this.allow_search_inside = true;
+        this.allow_metadata_search = true;
+        this.search_inside_view = "search_inside_lists";
+        this.search_metadata_view = "search_list_metadata";
         this.update_view = "request_update_selector_list";
         this.update_tag_view = "request_update_tag_list";
         this.view_view = '/view_list/';
@@ -698,6 +702,10 @@ class CodeManager extends UserManagerResourceManager {
     set_extra_properties() {
         super.set_extra_properties();
         this.start_hidden = false;
+        this.allow_search_inside = true;
+        this.allow_metadata_search = true;
+        this.search_inside_view = "search_inside_code";
+        this.search_metadata_view = "search_code_metadata";
         this.update_view = "request_update_selector_list";
         this.update_tag_view = "request_update_tag_list";
         this.new_view = '/create_code';

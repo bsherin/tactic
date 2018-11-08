@@ -2,6 +2,7 @@
 import sys
 import datetime
 import copy
+import re
 
 import tactic_app
 from tactic_app import app, db, use_ssl  # global_stuff
@@ -43,6 +44,10 @@ class CodeManager(UserManageResourceManager):
                          login_required(self.create_code), methods=['get', 'post'])
         app.add_url_rule('/create_duplicate_code', "create_duplicate_code",
                          login_required(self.create_duplicate_code), methods=['get', 'post'])
+        app.add_url_rule('/search_inside_code', "search_inside_code",
+                         login_required(self.search_inside_code), methods=['get', 'post'])
+        app.add_url_rule('/search_code_metadata', "search_code_metadata",
+                         login_required(self.search_code_metadata), methods=['get', 'post'])
 
     def rename_me(self, old_name):
         try:
@@ -169,6 +174,28 @@ class CodeManager(UserManageResourceManager):
         db[user_obj.code_collection_name].delete_one({"code_name": code_name})
         # self.update_selector_list()
         return jsonify({"success": True})
+
+    def search_inside_code(self):
+        user_obj = current_user
+        search_text = request.json['search_text']
+        reg = re.compile(".*" + search_text + ".*", re.IGNORECASE)
+        res = db[user_obj.code_collection_name].find({"the_code": reg})
+        res_list = []
+        for t in res:
+            res_list.append(t["code_name"])
+        return jsonify({"success": True, "match_list": res_list})
+
+    def search_code_metadata(self):
+        user_obj = current_user
+        search_text = request.json['search_text']
+        reg = re.compile(".*" + search_text + ".*", re.IGNORECASE)
+        res = db[user_obj.code_collection_name].find({"$or": [{"code_name": reg}, {"metadata.notes": reg},
+                                                     {"metadata.tags": reg}, {"metadata.functions": reg},
+                                                     {"metadata.classes": reg}]})
+        res_list = []
+        for t in res:
+            res_list.append(t["code_name"])
+        return jsonify({"success": True, "match_list": res_list})
 
 
 class RepositoryCodeManager(CodeManager):
