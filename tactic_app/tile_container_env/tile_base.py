@@ -73,6 +73,10 @@ def clear_and_exec_user_code(the_code):
     return exec_user_code(the_code)
 
 
+class CollectionNotFound(Exception):
+    pass
+
+
 # noinspection PyMiss
 # ingConstructor
 # noinspection PyUnusedLocal
@@ -1379,7 +1383,23 @@ class TileBase(object):
         result = self._tworker.post_and_wait(self._main_id, "get_user_collection",
                                              {"user_id": self.user_id, "collection_name": collection_name})
         self._restore_stdout()
+        if not result["success"]:
+            raise CollectionNotFound(u"Couldn't find collection with name {}".format(collection_name))
         return result["the_collection"]
+
+    def get_collection_names(self):
+        self._save_stdout()
+        result = self._tworker.post_and_wait(self._main_id, "get_collection_names",
+                                             {"user_id": self.user_id})
+        self._restore_stdout()
+        return result["collection_names"]
+
+    def get_list_names(self):
+        self._save_stdout()
+        result = self._tworker.post_and_wait(self._main_id, "get_list_names",
+                                             {"user_id": self.user_id})
+        self._restore_stdout()
+        return result["list_names"]
 
     # deprecated
     def get_tokenizer(self, tokenizer_name):
@@ -1443,9 +1463,11 @@ class TileBase(object):
             data["doc_metadata"] = doc_metadata
         else:
             data["doc_metadata"] = {}
-        self._tworker.post_task(self._main_id, "create_collection", data)
+        result = self._tworker.post_and_wait(self._main_id, "create_collection", data)
         self._restore_stdout()
-        return
+        if not result["success"]:
+            raise Exception(result["message_string"])
+        return result["message_string"]
 
     """
 

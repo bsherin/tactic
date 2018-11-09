@@ -639,6 +639,17 @@ class UserManagerResourceManager extends ResourceManager{
         });
         this.hide_table_rows(all_rows.filter(".hideme"));
         this.show_table_rows(all_rows.filter(".showme"));
+        if (!this.active_selector_is_visible()){
+            this.select_first_row()
+        }
+    }
+
+    search_inside () {
+        return this.allow_search_inside && $(this.get_module_element(".search-inside-checkbox")[0]).prop('checked')
+    }
+
+    search_metadata () {
+        return this.allow_metadata_search && $(this.get_module_element(".metadata-search-checkbox")[0]).prop('checked')
     }
 
     search_my_resource () {
@@ -658,28 +669,36 @@ class UserManagerResourceManager extends ResourceManager{
             this.show_table_rows(all_rows);
         }
         else {
+
             let self = this;
-            if (this.allow_search_inside) {
-                if ($(this.get_module_element(".search-inside-checkbox")[0]).prop('checked')) {
-                    let search_info = {"search_text": txt};
-                    postAjaxPromise(self.search_inside_view, search_info)
-                        .then((data) => {
-                            self.show_hide_from_matchlist(data.match_list)
-                        })
-                        .catch(doFlash);
-                    return
-                }
+            if (this.search_inside()) {
+                let search_info = {"search_text": txt};
+                postAjaxPromise(self.search_inside_view, search_info)
+                    .then((data) => {
+                        var match_list = data.match_list;
+                        if (this.search_metadata()) {
+                            postAjaxPromise(self.search_metadata_view, search_info)
+                                .then((data) => {
+                                    match_list = match_list.concat(data.match_list);
+                                    self.show_hide_from_matchlist(match_list)
+                                })
+                                .catch(doFlash);
+                        }
+                        else {
+                            self.show_hide_from_matchlist(match_list)
+                        }
+                    })
+                    .catch(doFlash);
+                return
             }
-            if (this.allow_metadata_search) {
-                if ($(this.get_module_element(".metadata-search-checkbox")[0]).prop('checked')) {
-                    let search_info = {"search_text": txt};
-                    postAjaxPromise(self.search_metadata_view, search_info)
-                        .then((data) => {
-                            self.show_hide_from_matchlist(data.match_list)
-                        })
-                        .catch(doFlash);
-                    return
-                }
+            if (this.search_metadata()) {
+                let search_info = {"search_text": txt};
+                postAjaxPromise(self.search_metadata_view, search_info)
+                    .then((data) => {
+                        self.show_hide_from_matchlist(data.match_list)
+                    })
+                    .catch(doFlash);
+                return
             }
             $.each(all_rows, function (index, row_element) {
                 const cells = $(row_element).children();
@@ -698,9 +717,10 @@ class UserManagerResourceManager extends ResourceManager{
             });
             this.hide_table_rows(all_rows.filter(".hideme"));
             this.show_table_rows(all_rows.filter(".showme"));
-        }
-        if (!this.active_selector_is_visible()){
-            this.select_first_row()
+
+            if (!this.active_selector_is_visible()) {
+                this.select_first_row()
+            }
         }
     }
 

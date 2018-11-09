@@ -218,7 +218,10 @@ class HostWorker(QWorker):
         user_id = data["user_id"]
         collection_name = data["collection_name"]
         the_user = load_user(user_id)
-        return {"full_collection_name": the_user.build_data_collection_name(collection_name)}
+        name_exists = collection_name in the_user.data_collections
+        full_collection_name = the_user.build_data_collection_name(collection_name)
+        return {"full_collection_name": full_collection_name,
+                "name_exists": name_exists}
 
     @task_worthy
     def get_lists_classes_functions(self, data):
