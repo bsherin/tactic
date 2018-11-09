@@ -49,6 +49,10 @@ def task_worthy_manual_submit(m):
 mongo_uri = os.environ.get("MONGO_URI")
 
 
+class CollectionNameExistsError(Exception):
+    pass
+
+
 # noinspection PyPep8Naming,PyUnusedLocal,PyTypeChecker
 class mainWindow(object):
     save_attrs = ["short_collection_name", "collection_name", "current_tile_id", "tile_sort_list", "left_fraction",
@@ -544,7 +548,7 @@ class mainWindow(object):
 
         except Exception as ex:
             self.mworker.debug_log("got an error in changing collection")
-            error_string = self.handle_exception(ex, "<pre>Error changing changing collection</pre>",
+            error_string = self.handle_exception(ex, "<pre>Error changing collection</pre>",
                                                  print_to_console=False)
             return_data = {"success": False, "message_string": error_string}
         return return_data
@@ -927,6 +931,7 @@ class mainWindow(object):
         def got_container(create_container_dict):
             print "got container, time is {}".format(self.microdsecs(self.tstart))
             self.tstart = datetime.datetime.now()
+
             def got_module_code(code_result):
                 print "got module code, time is {}".format(self.microdsecs(self.tstart))
                 self.tstart = datetime.datetime.now()
@@ -1007,29 +1012,34 @@ class mainWindow(object):
         local_task_packet = task_packet
 
         def finish_get_user_collection(response_data):
-            full_collection_name = response_data["full_collection_name"]
             result = {}
-            the_collection = self.db[full_collection_name]
-            mdata = the_collection.find_one({"name": "__metadata__"})
-            if "type" in mdata and mdata["type"] == "freeform":
-                doc_type = "freeform"
+            if not response_data["name_exists"]:
+                result = {"success": False, "message": "Collection doesn't exist."}
             else:
-                doc_type = "table"
-            for f in the_collection.find():
-                fname = f["name"].encode("ascii", "ignore")
-                if fname == "__metadata__":
-                    continue
-                if doc_type == "table":
-                    if "file_id" in f:
-                        f["data_rows"] = debinarize_python_object(self.fs.get(f["file_id"]).read())
-                    result[fname] = self.sort_rows(f["data_rows"])
+                full_collection_name = response_data["full_collection_name"]
+                the_collection = self.db[full_collection_name]
+                new_collection_dict = {}
+                mdata = the_collection.find_one({"name": "__metadata__"})
+                if "type" in mdata and mdata["type"] == "freeform":
+                    doc_type = "freeform"
                 else:
-                    if "encoding" in f:
-                        result[fname] = self.fs.get(f["file_id"]).read().decode(f["encoding"])
+                    doc_type = "table"
+                for f in the_collection.find():
+                    fname = f["name"].encode("ascii", "ignore")
+                    if fname == "__metadata__":
+                        continue
+                    if doc_type == "table":
+                        if "file_id" in f:
+                            f["data_rows"] = debinarize_python_object(self.fs.get(f["file_id"]).read())
+                        new_collection_dict[fname] = self.sort_rows(f["data_rows"])
                     else:
-                        result[fname] = self.fs.get(f["file_id"]).read()
+                        if "encoding" in f:
+                            new_collection_dict[fname] = self.fs.get(f["file_id"]).read().decode(f["encoding"])
+                        else:
+                            new_collection_dict[fname] = self.fs.get(f["file_id"]).read()
 
-            self.mworker.submit_response(local_task_packet, {"the_collection": result})
+                result = {"success": True, "the_collection": new_collection_dict}
+            self.mworker.submit_response(local_task_packet, result)
             return
         self.mworker.post_task("host", "get_full_collection_name", task_data, finish_get_user_collection)
         return
@@ -1274,6 +1284,28 @@ class mainWindow(object):
         self.mworker.post_task(self.pseudo_tile_id, "_get_export_info", ndata, got_info)
         return
 
+    @task_worthy_manual_submit
+    def get_collection_names(self, data, task_packet):
+        local_task_packet = task_packet
+
+        def got_cnames(result):
+            self.mworker.submit_response(local_task_packet, result)
+            return
+
+        self.mworker.post_task("host", "get_collection_names", data, got_cnames)
+        return
+
+    @task_worthy_manual_submit
+    def get_list_names(self, data, task_packet):
+        local_task_packet = task_packet
+
+        def got_lnames(result):
+            self.mworker.submit_response(local_task_packet, result)
+            return
+
+        self.mworker.post_task("host", "get_list_names", data, got_lnames)
+        return
+
     def create_pseudo_tile(self, globals_dict=None):
         print "entering create_pseudo_tile"
         data = self.mworker.post_and_wait("host", "create_tile_container", {"user_id": self.user_id,
@@ -1324,65 +1356,75 @@ class mainWindow(object):
             self.db[full_collection_name].insert_one(ddict)
         return {"success": True}
 
-    def finish_create_collection(self, response_data, context_data):
-        full_collection_name = response_data["full_collection_name"]
-        mdata = self.create_initial_metadata()
-        mdata["name"] = "__metadata__"
-        doc_dict = context_data["doc_dict"]
-        mdata["number_of_docs"] = len(doc_dict.keys())
-        doc_type = context_data["doc_type"]
-        document_metadata = context_data["doc_metadata"]
-        if document_metadata is None:
-            document_metadata = {}
-        if doc_type == "table":
-            mdata["type"] = "table"
-            self.db[full_collection_name].insert_one(mdata)
-            for docname, doc_as_list in doc_dict.items():
-                header_list = doc_as_list[0].keys()
-                doc_as_dict = {}
-                for r, the_row in enumerate(doc_as_list):
-                    if "__id__" in the_row:
-                        del the_row["__id__"]
-                    if "__filename__" in the_row:
-                        del the_row["__filename__"]
-                    the_row["__id__"] = r
-                    the_row["__filename__"] = docname
-                    doc_as_dict[str(r)] = the_row
-                header_list = ["__id__", "__filename__"] + header_list
-                table_spec = {"doc_name": docname, "header_list": header_list}
-                metadata = {}
-                if docname in document_metadata:
-                    for k, val in document_metadata[docname].items():
-                        if k not in PROTECTED_METADATA_KEYS:
-                            metadata[k] = val
-                ddict = {"name": docname, "data_rows": doc_as_dict, "table_spec": table_spec, "metadata": metadata}
-                self.db[full_collection_name].insert_one(ddict)
-        else:
-            mdata["type"] = "freeform"
-            self.db[full_collection_name].insert_one(mdata)
-            for docname, doc in doc_dict.items():
-                file_id = self.fs.put(str(doc))
-
-                metadata = {}
-                if docname in document_metadata:
-                    for k, val in document_metadata[docname].items():
-                        if k not in PROTECTED_METADATA_KEYS:
-                            metadata[k] = val
-                ddict = {"name": docname, "file_id": file_id, "metadata": metadata}
-                self.db[full_collection_name].insert_one(ddict)
-            self.mworker.ask_host("update_collection_selector_list", {"user_id": self.user_id})
-        return {"success": True}
-
-    @task_worthy
-    def create_collection(self, data):
+    @task_worthy_manual_submit
+    def create_collection(self, data, task_packet):
+        local_task_packet = task_packet
         new_name = data["name"]
+
+        def finish_create_collection(response_data, context_data):
+            result = {}
+            try:
+                if response_data["name_exists"]:
+                    raise CollectionNameExistsError("Collection name exists")
+                full_collection_name = response_data["full_collection_name"]
+                mdata = self.create_initial_metadata()
+                mdata["name"] = "__metadata__"
+                doc_dict = context_data["doc_dict"]
+                mdata["number_of_docs"] = len(doc_dict.keys())
+                doc_type = context_data["doc_type"]
+                document_metadata = context_data["doc_metadata"]
+                if document_metadata is None:
+                    document_metadata = {}
+                if doc_type == "table":
+                    mdata["type"] = "table"
+                    self.db[full_collection_name].insert_one(mdata)
+                    for docname, doc_as_list in doc_dict.items():
+                        header_list = doc_as_list[0].keys()
+                        doc_as_dict = {}
+                        for r, the_row in enumerate(doc_as_list):
+                            the_row.pop("__id__", None)
+                            the_row.pop("__filename__", None)
+                            the_row["__id__"] = r
+                            the_row["__filename__"] = docname
+                            doc_as_dict[str(r)] = the_row
+                        header_list = ["__id__", "__filename__"] + header_list
+                        header_list = list(set(header_list))
+                        table_spec = {"doc_name": docname, "header_list": header_list}
+                        metadata = {}
+                        if docname in document_metadata:
+                            for k, val in document_metadata[docname].items():
+                                if k not in PROTECTED_METADATA_KEYS:
+                                    metadata[k] = val
+                        result_binary = make_python_object_jsonizable(doc_as_dict)
+                        file_id = self.fs.put(result_binary)
+                        self.db[full_collection_name].insert_one({"name": docname, "file_id": file_id,
+                                                                  "header_list": header_list, "metadata": metadata})
+                else:
+                    mdata["type"] = "freeform"
+                    self.db[full_collection_name].insert_one(mdata)
+                    for docname, doc in doc_dict.items():
+                        file_id = self.fs.put(str(doc))
+                        metadata = {}
+                        if docname in document_metadata:
+                            for k, val in document_metadata[docname].items():
+                                if k not in PROTECTED_METADATA_KEYS:
+                                    metadata[k] = val
+                        ddict = {"name": docname, "file_id": file_id, "metadata": metadata}
+                        self.db[full_collection_name].insert_one(ddict)
+                self.mworker.ask_host("update_collection_selector_list", {"user_id": self.user_id})
+                result = {"success": True, "message_string": "Collection created"}
+            except Exception as ex:
+                error_string = self.handle_exception(ex, print_to_console=False)
+                result = {"success": False, "message_string": error_string}
+            self.mworker.submit_response(local_task_packet, result)
+
         self.mworker.post_task("host",
                                "get_full_collection_name",
                                {"collection_name": new_name,
                                 "user_id": self.user_id},
-                               self.finish_create_collection,
+                               finish_create_collection,
                                data)
-        return {"success": True}
+        return
 
     @task_worthy
     def get_pseudo_tile_id(self, data):
