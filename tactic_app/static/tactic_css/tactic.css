@@ -241,25 +241,22 @@ a[role="tab"] {
 .tag-button.shrunk .fa-caret-right {
   display: inline-block !important; }
 
-.tag-button.active {
+.tag-button.active, .tag-button:focus {
   font-weight: 900 !important;
   color: #9B79CC !important;
   background-color: white !important;
-  border-width: 0 !important; }
-  .tag-button.active .tag-icon-tag.fal, .tag-button.active .tag-icon-folder.fal {
+  border-width: 0 !important;
+  box-shadow: none !important; }
+  .tag-button.active .tag-icon-tag.fal, .tag-button.active .tag-icon-folder.fal, .tag-button:focus .tag-icon-tag.fal, .tag-button:focus .tag-icon-folder.fal {
     display: none !important; }
-  .tag-button.active .tag-icon-tag.fas, .tag-button.active .tag-icon-folder.fas {
+  .tag-button.active .tag-icon-tag.fas, .tag-button.active .tag-icon-folder.fas, .tag-button:focus .tag-icon-tag.fas, .tag-button:focus .tag-icon-folder.fas {
     display: inline-block !important; }
 
-.tag-button:hover {
+.tag-button:hover, .tag-button.draghover {
   font-weight: bolder !important;
   color: gray;
   background-color: white !important;
   border-width: 0 !important; }
-
-.tag-button:focus {
-  border-width: 0 !important;
-  box-shadow: none !important; }
 
 .tag-expander {
   font-size: 20px;
@@ -289,7 +286,7 @@ a[role="tab"] {
 .tag-button-delete.delete-visible:hover:before {
   color: red; }
 
-.selector-button:hover {
+.selector-button:hover, .selector-button.draghover {
   background-color: #cbcbcb !important; }
 
 .notrepo {

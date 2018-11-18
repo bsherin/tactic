@@ -66,7 +66,7 @@ class UserTacticSocket extends TacticSocket {
             const manager = resource_managers[data.module_id];
             manager.fill_content(data.html);
             manager.select_resource_button(data.select);
-            manager.tag_button_list.refresh_from_selectors()
+            manager.tag_button_list.refresh_from_selectors();
         });
 
         this.socket.on('update-tag-list', (data) => {
@@ -110,23 +110,6 @@ function start_post_load() {
         resource_managers["all_module"] = new AllManager("all_module", "all", resource_module_template, "#all-module-outer", "notrepo");
         resource_managers["repository_all_module"] = new RepositoryAllManager("repository_all_module", "all", resource_module_template, "#all-module-outer", "repo");
 
-        $(".resource-module").on("click", ".main-content .selector-button", selector_click);
-        $(".resource-module").on("dblclick", ".main-content .selector-button", selector_double_click);
-        $(".resource-module").on("click", ".tag-button-list button", tag_button_clicked);
-        $(".resource-module").on("click", ".tag-button-delete", tag_button_delete_clicked);
-        $(".resource-module").on("click", ".edit-tags-button", edit_tags_button_clicked);
-
-        $(".resource-module").on("keyup", ".search-field", function(e) {
-            if (e.which == 13) {
-                let mod_id = get_current_module_id();
-                resource_managers[mod_id].search_my_resource();
-                e.preventDefault();
-            }
-            else {
-                let mod_id = get_current_module_id();
-                resource_managers[mod_id].search_my_resource();
-            }
-        });
         resize_window();
         $('a[data-toggle="tab"]').on('shown.bs.tab', function (event) {
             // $(event.currentTarget).attr("href")
@@ -184,63 +167,6 @@ function toggleRepository() {
     return(false)
 }
 
-function selector_click(event) {
-    if (event.originalEvent.detail <= 1) {  // Will suppress on second click of a double-click
-        const row_element = $(event.target).closest('tr');
-        resource_managers[get_current_module_id()].selector_click(row_element[0])
-    }
-}
-
-function selector_double_click(event) {
-    const row_element = $(event.target).closest('tr');
-    const res_type = get_current_res_type();
-    let manager = resource_managers[get_current_module_id()];
-    manager.get_all_selector_buttons().removeClass("active");
-    row_element.addClass("active");
-    event.data = {"manager": manager, "res_type": res_type};
-    manager[manager.double_click_func](event)
-}
-
-function tag_button_clicked(event) {
-    let rawbut = event.target;
-    let but;
-    let manager = resource_managers[get_current_module_id()];
-    if (rawbut.tagName.toLowerCase() != "button") {
-        if ($(rawbut).hasClass("tag-expander")) {
-            but = $(rawbut).closest(".tag-button");
-            if (but.hasClass("has_children")) {
-                manager.tag_button_list.toggle_shrink_state(but)
-            }
-            return
-        }
-        else {
-            rawbut = $(rawbut).closest(".tag-button")[0]
-        }
-    }
-    but = $(rawbut);
-    if (but.hasClass('tag-button-delete')) return;  // We don't want a click on the delete to bubble up.
-    if (manager.tag_button_list.tag_button_mode == "edit") {
-        let tag = but[0].dataset.fulltag;
-        if (tag != "__all__") {
-            manager.rename_tag(tag)
-        }
-    }
-    else {
-        if (!but.hasClass("active")) {
-            manager.tag_button_list.set_active_button(but);
-        }
-    }
-}
-
-function tag_button_delete_clicked(event) {
-    let but = $(event.target);
-    let tag = but.parent().text();
-    resource_managers[get_current_module_id()].delete_tag(tag);
-}
-
-function edit_tags_button_clicked(event) {
-    resource_managers[get_current_module_id()].tag_button_list.toggle_edit_button_mode();
-}
 
 function showAdmin() {
     window.open(`${$SCRIPT_ROOT}/admin_interface`)
@@ -944,7 +870,7 @@ class AllManager extends UserManagerResourceManager {
         }
     }
 
-    duplicate_func(event) {
+    duplicate_func(event) {  // tactic_working
         const manager = event.data.manager;
         const res_name = manager.check_for_selection();
         if (res_name == "") return;
@@ -960,7 +886,7 @@ class AllManager extends UserManagerResourceManager {
             };
             postAjaxPromise(manager.res_manager(res_type).duplicate_view, result_dict)
                 .then((data) => {
-                    manager.res_manager(res_type).insert_new_row(data.new_row, 0);
+                    manager.res_manager(res_type).insert_new_row(data.new_row, 0);  // tactic_working
                     manager.insert_new_row(data.new_all_row, 0);
                     manager.select_first_row();
                 })
@@ -1109,6 +1035,45 @@ class AllManager extends UserManagerResourceManager {
                 else {
                     $(`button[value=${but.name}-all]`).css("display", "none")
                 }
+            }
+        }
+    }
+
+    do_tag_drop(row_element, newtag) {
+        if (!this.handling_selector_click) {  // We want to make sure we are not already processing a click
+            if (this.is_repository) {
+                return
+            }
+            this.handling_selector_click = true;
+            const res_name = row_element.getAttribute("value");
+            const the_type = this.selected_resource_type_from_row_element(row_element);
+            this.set_button_activations(the_type);
+            const result_dict = {"res_type": the_type, "res_name": res_name, "is_repository": this.is_repository};
+            this.get_all_selector_buttons().removeClass("active");
+            const self = this;
+            if (this.include_metadata) {
+                postAjaxPromise("grab_metadata", result_dict)
+                    .then(got_metadata)
+                    .catch(got_metadata)
+            }
+            else {
+                self.handling_selector_click = false
+            }
+
+            $(row_element).addClass("active");
+
+            function got_metadata(data) {
+                if (data.success) {
+                    let new_tag_string = data.tags + " " + newtag;
+                    self.set_resource_metadata(data.datestring, new_tag_string, data.notes, data.additional_mdata);
+                    self.save_my_metadata(false);
+                    self.resize_to_window();
+                }
+                else {
+                    // doFlash(data)
+                    self.clear_resource_metadata()
+                }
+                self.handling_selector_click = false;
             }
         }
     }
