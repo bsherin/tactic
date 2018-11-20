@@ -203,8 +203,8 @@ class mainWindow(object):
         data = {"message": message, "timeout": timeout, "main_id": self.mworker.my_id}
         self.mworker.post_task("host", "show_main_status_message_task", data)
 
-    def clear_um_message(self, user_manage_id):
-        data = {"user_manage_id": user_manage_id}
+    def clear_um_message(self, library_id):
+        data = {"library_id": library_id}
         self.mworker.post_task("host", "clear_um_status_message_task", data)
 
     def show_main_status_message(self, message, timeout=None):

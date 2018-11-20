@@ -7,8 +7,8 @@ from communication_utils import send_request_to_megaplex
 from docker_functions import create_container, destroy_container, destroy_child_containers, destroy_user_containers
 from docker_functions import get_log, ContainerCreateError, container_exec, restart_container, get_address
 from tactic_app import app, socketio, use_ssl, db
-from views.user_manage_views import tile_manager, project_manager, collection_manager, list_manager
-from views.user_manage_views import code_manager, all_manager
+from views.library_views import tile_manager, project_manager, collection_manager, list_manager
+from views.library_views import code_manager, all_manager
 import tactic_app
 import uuid
 import sys
@@ -30,18 +30,18 @@ class HostWorker(QWorker):
         self.gap_time_for_hiberate = 60
 
     @task_worthy
-    def stop_user_manage_spinner(self, data):
-        socketio.emit('stop-spinner', {}, namespace='/user_manage', room=data["user_manage_id"])
+    def stop_library_spinner(self, data):
+        socketio.emit('stop-spinner', {}, namespace='/library', room=data["library_id"])
 
-    def show_um_status_message(self, msg, user_manage_id, timeout=3):
+    def show_um_status_message(self, msg, library_id, timeout=3):
         if timeout is None:
             data = {"message": msg}
         else:
             data = {"message": msg, "timeout": timeout}
-        socketio.emit('show-status-msg', data, namespace='/user_manage', room=user_manage_id)
+        socketio.emit('show-status-msg', data, namespace='/library', room=library_id)
 
-    def clear_um_status_message(self, user_manage_id):
-        socketio.emit('clear-status-msg', {}, namespace='/user_manage', room=user_manage_id)
+    def clear_um_status_message(self, library_id):
+        socketio.emit('clear-status-msg', {}, namespace='/library', room=library_id)
 
     @task_worthy_manual_submit
     def update_code_task(self, data_dict, task_packet):
@@ -91,7 +91,7 @@ class HostWorker(QWorker):
                     global_tile_manager.add_failed_load(tile_module_name, user_obj.username)
                     socketio.emit('update-loaded-tile-list',
                                   {"html": tile_manager.render_loaded_tile_list(user_obj)},
-                                  namespace='/user_manage', room=user_obj.get_id())
+                                  namespace='/library', room=user_obj.get_id())
                 if not task_packet["callback_type"] == "no_callback":
                     self.submit_response(task_packet, {"success": False, "message": res_dict["message_string"],
                                                        "alert_type": "alert-warning"})
@@ -112,11 +112,11 @@ class HostWorker(QWorker):
                                                      is_default)
 
             socketio.emit('update-loaded-tile-list', {"html": tile_manager.render_loaded_tile_list(user_obj)},
-                          namespace='/user_manage', room=user_obj.get_id())
+                          namespace='/library', room=user_obj.get_id())
             socketio.emit('update-menus', {}, namespace='/main', room=user_obj.get_id())
             if "main_id" not in task_packet:
                 task_packet["room"] = user_id
-                task_packet["namespace"] = "/user_manage"
+                task_packet["namespace"] = "/library"
 
             if not task_packet["callback_type"] == "no_callback":
                 self.submit_response(task_packet, {"success": True, "message": "Tile module successfully loaded",
@@ -169,7 +169,7 @@ class HostWorker(QWorker):
 
     @task_worthy
     def show_um_status_message_task(self, data):
-        socketio.emit('show-status-msg', data, namespace='/user_manage', room=data["user_manage_id"])
+        socketio.emit('show-status-msg', data, namespace='/library', room=data["library_id"])
 
     @task_worthy
     def show_main_status_message_task(self, data):
@@ -177,7 +177,7 @@ class HostWorker(QWorker):
 
     @task_worthy
     def clear_um_status_message_task(self, data):
-        socketio.emit('clear-status-msg', {}, namespace='/user_manage', room=data["user_manage_id"])
+        socketio.emit('clear-status-msg', {}, namespace='/library', room=data["library_id"])
 
     @task_worthy
     def update_collection_selector_list(self, data):

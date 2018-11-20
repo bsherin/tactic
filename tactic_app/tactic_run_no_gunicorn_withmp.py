@@ -13,7 +13,7 @@ docker_cleanup.do_docker_cleanup()
 from tactic_app import app, socketio # global_stuff ?
 
 from tactic_app import users, global_tile_management
-from views import auth_views, main_views, user_manage_views, admin_views
+from views import auth_views, main_views, library_views, admin_views
 from views import module_viewer_views, history_viewer_views, tile_differ_views
 from tactic_app import host_workers
 

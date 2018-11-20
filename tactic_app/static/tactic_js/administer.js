@@ -4,7 +4,7 @@
 
 let resource_module_template;
 const mousetrap = new Mousetrap();
-const user_manage_id = guid();
+const library_id = guid();
 
 mousetrap.bind("esc", function() {
     clearStatusMessage();
@@ -46,15 +46,15 @@ function get_current_module_id() {
 
 function start_post_load() {
     if (use_ssl) {
-        socket = io.connect('https://'+ document.domain + ':' + location.port  + '/user_manage');
+        socket = io.connect('https://'+ document.domain + ':' + location.port  + '/library');
     }
     else {
-        socket = io.connect('http://'+document.domain + ':' + location.port  + '/user_manage');
+        socket = io.connect('http://'+document.domain + ':' + location.port  + '/library');
     }
 
     window.onresize = resize_window;
 
-    socket.emit('join', {"user_id":  user_id, "user_manage_id":  user_manage_id});
+    socket.emit('join', {"user_id":  user_id, "library_id":  library_id});
 
     socket.on('stop-spinner', function () {
         stopSpinner()
@@ -150,12 +150,12 @@ class ContainerManager extends AdminResourceManager {
     }
     clear_user_func (event) {
         startSpinner();
-        $.getJSON($SCRIPT_ROOT + '/clear_user_containers/' + user_manage_id, doFlashStopSpinner);
+        $.getJSON($SCRIPT_ROOT + '/clear_user_containers/' + library_id, doFlashStopSpinner);
         event.preventDefault();
     }
     reset_server_func (event) {
         startSpinner();
-        $.getJSON($SCRIPT_ROOT + '/reset_server/' + user_manage_id, doFlashStopSpinner);
+        $.getJSON($SCRIPT_ROOT + '/reset_server/' + library_id, doFlashStopSpinner);
         event.preventDefault();
     }
     destroy_container (event) {

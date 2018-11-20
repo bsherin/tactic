@@ -7,7 +7,7 @@ import re
 import tactic_app
 from tactic_app import app, db, use_ssl  # global_stuff
 
-from tactic_app.resource_manager import ResourceManager, UserManageResourceManager
+from tactic_app.resource_manager import ResourceManager, LibraryResourceManager
 from flask import render_template, jsonify, url_for, request
 from flask_login import login_required, current_user
 
@@ -19,7 +19,7 @@ import datetime
 tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 
 
-class CodeManager(UserManageResourceManager):
+class CodeManager(LibraryResourceManager):
     collection_list = "code_names"
     collection_list_with_metadata = "code_names_with_metadata"
     collection_name = "code_collection_name"
@@ -116,7 +116,7 @@ class CodeManager(UserManageResourceManager):
 
     def view_code(self, code_name):
         javascript_source = url_for('static', filename='tactic_js/code_viewer.js')
-        return render_template("user_manage/resource_viewer.html",
+        return render_template("library/resource_viewer.html",
                                resource_name=code_name,
                                include_metadata=True,
                                include_right=True,
@@ -213,7 +213,7 @@ class RepositoryCodeManager(CodeManager):
 
     def repository_view_code(self, code_name):
         javascript_source = url_for('static', filename='tactic_js/code_viewer.js')
-        return render_template("user_manage/resource_viewer.html",
+        return render_template("library/resource_viewer.html",
                                resource_name=code_name,
                                include_metadata=True,
                                include_right=True,

@@ -236,7 +236,7 @@ class TagButtonList {
         }
     }
 
-    create_button_html(tag_list) {  // tactic_working
+    create_button_html(tag_list) {
         let tag_button_html = `<div class="btn-group-vertical btn-group-sm" role="group">`;
         let indent_amount = 12;
         let parent_tags = this.get_all_parent_tags(tag_list);
@@ -376,7 +376,6 @@ class TagButtonList {
     hide_buttons(the_tag_buttons) {
         the_tag_buttons.hide("blind");
     }
-
 
     show_all_buttons () {
         const all_tag_buttons = this.get_all_tag_buttons();

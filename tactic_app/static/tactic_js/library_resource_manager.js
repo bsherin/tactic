@@ -85,7 +85,7 @@ class TagButtonDragManager extends DragManager {
     }
 }
 
-class UserManagerResourceManager extends ResourceManager{
+class LibraryResourceManager extends ResourceManager{
 
     constructor (module_id, res_type, resource_module_template, destination_selector, class_string) {
         super(module_id, res_type, resource_module_template, destination_selector, class_string);
@@ -95,8 +95,8 @@ class UserManagerResourceManager extends ResourceManager{
         super.add_listeners();
         let self = this;
         let mcd = this.get_main_content_dom();
+        let md = this.get_module_dom();
         if (!this.is_repository) {
-            let md = this.get_module_dom();
             md.on("blur", ".notes-field", function () {
                 self.save_my_metadata(false)
             });
@@ -105,7 +105,6 @@ class UserManagerResourceManager extends ResourceManager{
                 self.markdown_helper.hideMarkdown(self.get_module_dom());
                 self.markdown_helper.focusNotes(self.get_module_dom())
             });
-            md.on("mouseup", ".tag-button-list button", event => self.tag_button_clicked(event));
             md.on("click", ".tag-button-delete", event => self.tag_button_delete_clicked(event));
             md.on("click", ".edit-tags-button", event => self.edit_tags_button_clicked(event));
             md.on("keyup", ".search-field", function(e) {
@@ -118,6 +117,7 @@ class UserManagerResourceManager extends ResourceManager{
                 }
             });
         }
+        md.on("mouseup", ".tag-button-list button", event => self.tag_button_clicked(event));
         mcd.on("dblclick", ".selector-button", event => self.selector_double_click(event));
         mcd.on("click", ".selector-button", function(event) {
             if (event.originalEvent.detail <= 1) {  // Will suppress on second click of a double-click
@@ -158,7 +158,8 @@ class UserManagerResourceManager extends ResourceManager{
                 return
             }
             else {
-                rawbut = $(rawbut).closest(".tag-button")[0]
+                rawbut = $(rawbut).closest(".tag-button")[0];
+                but = $(rawbut);
             }
         }
 
@@ -215,10 +216,7 @@ class UserManagerResourceManager extends ResourceManager{
         const updated_header = this.get_main_content_dom().find("table th").slice(-2)[0];
         sorttable.innerSortFunction.apply(updated_header, []);
         sorttable.innerSortFunction.apply(updated_header, []);
-        this.selector_drag_manager = new SelectorDragManager(this);  // tactic_working
-        // if (!this.is_repository) {
-        //     this.get_all_selector_buttons().attr("draggable", "true")
-        // }
+        this.selector_drag_manager = new SelectorDragManager(this);
     }
 
     check_for_selection () {

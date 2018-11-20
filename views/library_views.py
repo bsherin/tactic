@@ -60,38 +60,38 @@ def get_manager_for_type(res_type, is_repository=False):
 def start_spinner(user_id=None):
     if user_id is None:
         user_id = current_user.get_id()
-    socketio.emit('start-spinner', {}, namespace='/user_manage', room=user_id)
+    socketio.emit('start-spinner', {}, namespace='/library', room=user_id)
 
 
 def stop_spinner(user_id=None):
     if user_id is None:
         user_id = current_user.get_id()
-    socketio.emit('stop-spinner', {}, namespace='/user_manage', room=user_id)
+    socketio.emit('stop-spinner', {}, namespace='/library', room=user_id)
 
 
-@app.route('/user_manage')
+@app.route('/library')
 @login_required
-def user_manage():
-
+def library():
     if current_user.get_id() == admin_user.get_id():
         return render_template('admin_interface.html', use_ssl=str(use_ssl), version_string=tstring)
     else:
 
-        return render_template('user_manage/user_manage.html', use_ssl=str(use_ssl), version_string=tstring)
+        return render_template('library/library_home.html', use_ssl=str(use_ssl), version_string=tstring)
 
-@socketio.on('connect', namespace='/user_manage')
+
+@socketio.on('connect', namespace='/library')
 @login_required
 def connected_msg():
     print"client connected"
 
 
-@socketio.on('join', namespace='/user_manage')
+@socketio.on('join', namespace='/library')
 @login_required
 def on_join(data):
     room = data["user_id"]
     join_room(room)
     print "user joined room " + room
-    room = data["user_manage_id"]
+    room = data["library_id"]
     join_room(room)
     print "user joined room " + room
 
@@ -170,7 +170,7 @@ def grab_metadata():
     try:
         res_type = request.json["res_type"]
         res_name = request.json["res_name"]
-        is_repository=request.json["is_repository"]
+        is_repository = request.json["is_repository"]
         manager = get_manager_for_type(res_type, is_repository=is_repository)
         mdata = manager.grab_metadata(res_name)
         if mdata is None:
@@ -190,7 +190,8 @@ def grab_metadata():
                 localtime = current_user.localize_time(additional_mdata["updated"])
                 additional_mdata["updated"] = localtime.strftime("%b %d, %Y, %H:%M")
             if "collection_name" in additional_mdata:
-                additional_mdata["collection_name"] = re.sub("^.*?\.data_collection\.", "", additional_mdata["collection_name"])
+                additional_mdata["collection_name"] = re.sub("^.*?\.data_collection\.", "",
+                                                             additional_mdata["collection_name"])
             return jsonify({"success": True, "datestring": datestring, "tags": mdata["tags"],
                             "notes": mdata["notes"], "additional_mdata": additional_mdata})
     except:
@@ -217,6 +218,7 @@ def grab_repository_metadata():
     except:
         error_string = "Error getting metadata: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+
 
 @app.route('/convert_markdown', methods=['POST'])
 @login_required
@@ -259,25 +261,15 @@ def save_metadata():
         manager = get_manager_for_type(res_type)
         manager.save_metadata(res_name, tags, notes)
         res_tags = manager.get_tag_list()
-        all_manager = get_manager_for_type("all")
-        all_tags = all_manager.get_tag_list()
-        # if not tag_list == manager.tag_list:
-        #     socketio.emit('update-tag-list',
-        #                   {"tag_list": manager.request_update_tag_list(),
-        #                    "res_type": res_type,
-        #                    "module_id": module_id},
-        #                   namespace='/user_manage', room=current_user.get_id())
-        #     socketio.emit('update-tag-list',
-        #                   {"tag_list": all_manager.request_update_tag_list(),
-        #                    "res_type": "all",
-        #                    "module_id": "all_module"},
-        #                   namespace='/user_manage', room=current_user.get_id())
+        _all_manager = get_manager_for_type("all")
+        all_tags = _all_manager.get_tag_list()
 
         return jsonify({"success": True, "res_tags": res_tags, "all_tags": all_tags,
                         "message": "Saved metadata", "alert_type": "alert-success"})
     except:
         error_string = "Error saving metadata: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+
 
 @app.route('/delete_tag', methods=['POST'])
 def delete_tag():
@@ -294,6 +286,7 @@ def delete_tag():
         error_string = "Error deleting a tag: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
+
 @app.route('/rename_tag', methods=['POST'])
 def rename_tag():
     try:
@@ -309,6 +302,7 @@ def rename_tag():
     except:
         error_string = "Error renaming a tag: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+
 
 @app.route('/search_resource', methods=['POST'])
 @login_required
@@ -349,5 +343,3 @@ def get_modal_template():
 @login_required
 def get_resource_module_template():
     return send_file("templates/resource_module_template.html")
-
-

@@ -105,7 +105,7 @@ function start_post_load() {
                     "project_name": _project_name,
                     "doc_type": DOC_TYPE,
                     "project_collection_name": _project_collection_name,
-                    "user_manage_id": main_id,
+                    "library_id": main_id,
                     "base_figure_url": base_figure_url,
                     "use_ssl": use_ssl,
                     "user_id": user_id
@@ -159,7 +159,7 @@ function create_tile_from_save(data) {
     let tile_id = data["tile_id"];
     let tile_save_results = data["tile_saved_results"];
     let tile_sort_list = data["tile_sort_list"];
-    let tile_type = data["tile_type"]
+    let tile_type = data["tile_type"];
     const tile_html = tile_save_results.tile_html;
 
     // Get the index to position the tile properly

@@ -3,7 +3,7 @@ import datetime
 from flask import request, jsonify
 from flask_login import login_required, current_user
 from tactic_app import app, db
-from user_manage_views import tile_manager
+from library_views import tile_manager
 from module_viewer_views import create_recent_checkpoint
 
 

@@ -66,7 +66,7 @@ function start_post_load() {
         };
         if (is_project) {
             data_dict["project_name"] = _project_name;
-            data_dict["user_manage_id"] = main_id;
+            data_dict["library_id"] = main_id;
             postWithCallback(main_id, "initialize_project_mainwindow", data_dict)
         }
         else if (temp_data_id != "") {

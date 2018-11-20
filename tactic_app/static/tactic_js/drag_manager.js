@@ -7,10 +7,7 @@ class DragManager {
         this.accept_types = accept_types;
         this.hover_style = hover_style;
         let self = this;
-        selector_base.on("dragover", selector_extension, function (event) {
-            self.class_drag_over(event)
-        });
-        selector_base.on("dragleave", selector_extension, event => self.class_drag_leave(event));
+
         if (is_draggable) {
             selector_base.find(selector_extension).attr("draggable", "true");
             selector_base.on("dragstart", selector_extension, event => self.class_drag_start(event));
@@ -19,6 +16,8 @@ class DragManager {
             this.observer.observe(selector_base[0], config);
         }
         if (accept_types.length) {
+            selector_base.on("dragover", selector_extension, event => self.class_drag_over(event));
+            selector_base.on("dragleave", selector_extension, event => self.class_drag_leave(event));
             selector_base.on("drop", selector_extension, event => self.class_drag_leave(event));
             selector_base.on("drop", selector_extension, event => self.class_drop(event));
         }
