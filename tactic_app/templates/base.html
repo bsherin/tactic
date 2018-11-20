@@ -38,7 +38,7 @@
                     {% endblock %}
                     <li class="nav-item"><a class="nav-link" href="http://tactic.readthedocs.io/en/latest/index.html">Docs</a></li>
                     {% if current_user.is_authenticated %}
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('user_manage') }}">Resources</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('library') }}">Resources</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('account_info') }}">{{current_user.username}}</a></li>
                         <li class="nav-item"><a class="nav-link" href="" onclick="return doSignOut(page_id);">Sign Out</a></li>
                     {% else %}

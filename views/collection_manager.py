@@ -15,7 +15,7 @@ from tactic_app.file_handling import read_csv_file_to_dict, read_tsv_file_to_dic
 from tactic_app.file_handling import read_freeform_file, read_excel_file
 from tactic_app.users import load_user
 
-from tactic_app.resource_manager import ResourceManager, UserManageResourceManager
+from tactic_app.resource_manager import ResourceManager, LibraryResourceManager
 global_tile_manager = tactic_app.global_tile_manager
 repository_user = User.get_user_by_username("repository")
 
@@ -27,7 +27,7 @@ tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 
 
 # noinspection PyMethodMayBeStatic,PyBroadException,RegExpRedundantEscape
-class CollectionManager(UserManageResourceManager):
+class CollectionManager(LibraryResourceManager):
     collection_list = "data_collections"
     collection_list_with_metadata = "data_collection_names_with_metadata"
     collection_name = ""
@@ -35,11 +35,12 @@ class CollectionManager(UserManageResourceManager):
 
     def add_rules(self):
         app.add_url_rule('/new_notebook', "new_notebook", login_required(self.new_notebook), methods=['get'])
-        app.add_url_rule('/open_notebook/<unique_id>', "open_notebook", login_required(self.open_notebook), methods=['get'])
+        app.add_url_rule('/open_notebook/<unique_id>', "open_notebook",
+                         login_required(self.open_notebook), methods=['get'])
         app.add_url_rule('/main/<collection_name>', "main", login_required(self.main), methods=['get'])
-        app.add_url_rule('/import_as_table/<collection_name>/<user_manage_id>', "import_as_table",
+        app.add_url_rule('/import_as_table/<collection_name>/<library_id>', "import_as_table",
                          login_required(self.import_as_table), methods=['get', "post"])
-        app.add_url_rule('/import_as_freeform/<collection_name>/<user_manage_id>', "import_as_freeform",
+        app.add_url_rule('/import_as_freeform/<collection_name>/<library_id>', "import_as_freeform",
                          login_required(self.import_as_freeform), methods=['get', "post"])
         app.add_url_rule('/delete_collection', "delete_collection",
                          login_required(self.delete_collection), methods=['post'])
@@ -132,7 +133,7 @@ class CollectionManager(UserManageResourceManager):
                                project_collection_name=user_obj.project_collection_name,
                                base_figure_url=url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
                                main_id=main_id,
-                               main_port = main_container_info.port(main_id),
+                               main_port=main_container_info.port(main_id),
                                temp_data_id="",
                                doc_names=doc_names,
                                use_ssl=str(use_ssl),
@@ -184,8 +185,8 @@ class CollectionManager(UserManageResourceManager):
             for c, header in enumerate(header_list, start=1):
                 _ = ws.cell(row=1, column=c, value=header)
             sorted_int_keys = sorted([int(key) for key in data_rows.keys()])
-            for r, id in enumerate(sorted_int_keys, start=2):
-                row = data_rows[str(id)]
+            for r, _id in enumerate(sorted_int_keys, start=2):
+                row = data_rows[str(_id)]
                 for c, header in enumerate(header_list, start=1):
                     _ = ws.cell(row=r, column=c, value=row[header])
             # noinspection PyUnresolvedReferences
@@ -290,7 +291,7 @@ class CollectionManager(UserManageResourceManager):
             error_string = "Error combining collections: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
             return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
-    def import_as_table(self, collection_name, user_manage_id):
+    def import_as_table(self, collection_name, library_id):
         user_obj = current_user
         file_list = request.files.getlist("file")
         full_collection_name = user_obj.build_data_collection_name(collection_name)
@@ -323,7 +324,7 @@ class CollectionManager(UserManageResourceManager):
                 (success, result_dict, header_dict) = read_excel_file(the_file)
                 multidoc = True
             else:
-                self.show_um_message("Reading file {} and checking encoding".format(filename), user_manage_id,
+                self.show_um_message("Reading file {} and checking encoding".format(filename), library_id,
                                      timeout=10)
                 encoding = ""
                 if file_extension == ".csv":
@@ -332,7 +333,7 @@ class CollectionManager(UserManageResourceManager):
                     (success, result_dict, header_list, encoding, decoding_problems) = read_tsv_file_to_dict(the_file)
                 elif file_extension == ".txt":
                     (success, result_dict, header_list, encoding, decoding_problems) = read_txt_file_to_dict(the_file)
-                self.show_um_message("Got encoding {} for {}".format(encoding, filename), user_manage_id, timeout=10)
+                self.show_um_message("Got encoding {} for {}".format(encoding, filename), library_id, timeout=10)
 
             if not success:  # then result_dict contains an error object
                 e = result_dict
@@ -366,7 +367,7 @@ class CollectionManager(UserManageResourceManager):
                         "message": "Collection successfully loaded", "alert_type": "alert-success",
                         "file_decoding_errors": file_decoding_errors})
 
-    def import_as_freeform(self, collection_name, user_manage_id):
+    def import_as_freeform(self, collection_name, library_id):
         user_obj = current_user
         file_list = request.files.getlist("file")
         full_collection_name = user_obj.build_data_collection_name(collection_name)
@@ -387,9 +388,9 @@ class CollectionManager(UserManageResourceManager):
 
             filename, file_extension = os.path.splitext(the_file.filename)
             filename = filename.encode("ascii", "ignore")
-            self.show_um_message("Reading file {} and checking encoding".format(filename), user_manage_id, timeout=10)
+            self.show_um_message("Reading file {} and checking encoding".format(filename), library_id, timeout=10)
             (success, result_txt, encoding, decoding_problems) = read_freeform_file(the_file)
-            self.show_um_message("Got encoding {} for {}".format(encoding, filename), user_manage_id, timeout=10)
+            self.show_um_message("Got encoding {} for {}".format(encoding, filename), library_id, timeout=10)
             if not success:  # then result_dict contains an error object
                 e = result_txt
                 return jsonify({"message": e.message, "alert_type": "alert-danger"})
@@ -450,6 +451,7 @@ class CollectionManager(UserManageResourceManager):
         table_row = self.create_new_row(request.json['new_res_name'], metadata)
         all_table_row = self.all_manager.create_new_all_row(request.json['new_res_name'], metadata, "collection")
         return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
+
 
 class RepositoryCollectionManager(CollectionManager):
     rep_string = "repository-"

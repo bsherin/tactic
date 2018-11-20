@@ -1,13 +1,15 @@
 /**
  * Created by bls910 on 7/18/15.ss
  */
+
+let saved_title = $("#view-title").text();
 let resource_module_template;
 let repository_module_template;
 const mousetrap = new Mousetrap();
 let repository_visible = false;
 let tsocket;
-const user_manage_id = guid();
-const page_id = user_manage_id;
+const library_id = guid();
+const page_id = library_id;
 const res_types = ["list", "collection", "project", "tile", "code"];
 const resource_managers = {};
 
@@ -54,11 +56,11 @@ function get_current_module_id() {
     }
 }
 
-class UserTacticSocket extends TacticSocket {
+class LibraryTacticSocket extends TacticSocket {
 
     initialize_socket_stuff() {
 
-        this.socket.emit('join', {"user_id":  user_id, "user_manage_id":  user_manage_id});
+        this.socket.emit('join', {"user_id":  user_id, "library_id":  library_id});
 
         this.socket.on("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
 
@@ -66,7 +68,7 @@ class UserTacticSocket extends TacticSocket {
             const manager = resource_managers[data.module_id];
             manager.fill_content(data.html);
             manager.select_resource_button(data.select);
-            manager.tag_button_list.refresh_from_selectors()
+            manager.tag_button_list.refresh_from_selectors();
         });
 
         this.socket.on('update-tag-list', (data) => {
@@ -82,7 +84,7 @@ class UserTacticSocket extends TacticSocket {
             resource_managers["tile_module"].get_aux_right_dom().html(data.html)
         });
         this.socket.on('close-user-windows', (data) => {
-            if (!(data["originator"] == user_manage_id)) {
+            if (!(data["originator"] == library_id)) {
                 window.close()
             }
         });
@@ -90,43 +92,32 @@ class UserTacticSocket extends TacticSocket {
     }
 }
 
-function start_post_load() {
-    tsocket = new UserTacticSocket("user_manage", 5000);
+function _library_home_main() {
+    tsocket = new LibraryTacticSocket("library", 5000);
+
+    var module_info =
+        {"list_module": ListManager,
+            "repository_list_module": RepositoryListManager,
+            "collection_module": CollectionManager,
+            "repository_collection_module": RepositoryCollectionManager,
+            "project_module": ProjectManager,
+            "repository_project_module": RepositoryProjectManager,
+            "tile_module": TileManager,
+            "repository_tile_module": RepositoryTileManager,
+            "code_module": CodeManager,
+            "repository_code_module": RepositoryCodeManager,
+            "all_module": AllManager,
+            "repository_all_module": RepositoryAllManager
+        };
 
     window.onresize = resize_window;
     console.log("about to create");
     $.get(`${$SCRIPT_ROOT}/get_resource_module_template`, function(template) {
-        resource_module_template = $(template).filter('#resource-module-template').html();
-        resource_managers["list_module"] = new ListManager("list_module", "list", resource_module_template, "#list-module-outer", "notrepo");
-        resource_managers["repository_list_module"] = new RepositoryListManager("repository_list_module", "list", resource_module_template, "#list-module-outer", "repo");
-        resource_managers["collection_module"] = new CollectionManager("collection_module", "collection", resource_module_template, "#collection-module-outer", "notrepo");
-        resource_managers["repository_collection_module"] = new RepositoryCollectionManager("repository_collection_module", "collection", resource_module_template, "#collection-module-outer", "repo");
-        resource_managers["project_module"] = new ProjectManager("project_module", "project", resource_module_template, "#project-module-outer", "notrepo");
-        resource_managers["repository_project_module"] = new RepositoryProjectManager("repository_project_module", "project", resource_module_template, "#project-module-outer", "repo");
-        resource_managers["tile_module"] = new TileManager("tile_module", "tile", resource_module_template, "#tile-module-outer", "notrepo");
-        resource_managers["repository_tile_module"] = new RepositoryTileManager("repository_tile_module", "tile", resource_module_template, "#tile-module-outer", "repo");
-        resource_managers["code_module"] = new CodeManager("code_module", "code", resource_module_template, "#code-module-outer", "notrepo");
-        resource_managers["repository_code_module"] = new RepositoryCodeManager("repository_code_module", "code", resource_module_template, "#code-module-outer", "repo");
-        resource_managers["all_module"] = new AllManager("all_module", "all", resource_module_template, "#all-module-outer", "notrepo");
-        resource_managers["repository_all_module"] = new RepositoryAllManager("repository_all_module", "all", resource_module_template, "#all-module-outer", "repo");
+        let resource_module_template = $(template).filter('#resource-module-template').html();
+        for (var module_name in module_info) {
+            resource_managers[module_name] = new module_info[module_name](resource_module_template)
+        }
 
-        $(".resource-module").on("click", ".main-content .selector-button", selector_click);
-        $(".resource-module").on("dblclick", ".main-content .selector-button", selector_double_click);
-        $(".resource-module").on("click", ".tag-button-list button", tag_button_clicked);
-        $(".resource-module").on("click", ".tag-button-delete", tag_button_delete_clicked);
-        $(".resource-module").on("click", ".edit-tags-button", edit_tags_button_clicked);
-
-        $(".resource-module").on("keyup", ".search-field", function(e) {
-            if (e.which == 13) {
-                let mod_id = get_current_module_id();
-                resource_managers[mod_id].search_my_resource();
-                e.preventDefault();
-            }
-            else {
-                let mod_id = get_current_module_id();
-                resource_managers[mod_id].search_my_resource();
-            }
-        });
         resize_window();
         $('a[data-toggle="tab"]').on('shown.bs.tab', function (event) {
             // $(event.currentTarget).attr("href")
@@ -184,69 +175,6 @@ function toggleRepository() {
     return(false)
 }
 
-function selector_click(event) {
-    if (event.originalEvent.detail <= 1) {  // Will suppress on second click of a double-click
-        const row_element = $(event.target).closest('tr');
-        resource_managers[get_current_module_id()].selector_click(row_element[0])
-    }
-}
-
-function selector_double_click(event) {
-    const row_element = $(event.target).closest('tr');
-    const res_type = get_current_res_type();
-    let manager = resource_managers[get_current_module_id()];
-    manager.get_all_selector_buttons().removeClass("active");
-    row_element.addClass("active");
-    event.data = {"manager": manager, "res_type": res_type};
-    manager[manager.double_click_func](event)
-}
-
-function tag_button_clicked(event) {
-    let rawbut = event.target;
-    let but;
-    let manager = resource_managers[get_current_module_id()];
-    if (rawbut.tagName.toLowerCase() != "button") {
-        if ($(rawbut).hasClass("tag-expander")) {
-            but = $(rawbut).closest(".tag-button");
-            if (but.hasClass("has_children")) {
-                manager.tag_button_list.toggle_shrink_state(but)
-            }
-            return
-        }
-        else {
-            rawbut = $(rawbut).closest(".tag-button")[0]
-        }
-    }
-    but = $(rawbut);
-    if (but.hasClass('tag-button-delete')) return;  // We don't want a click on the delete to bubble up.
-    if (manager.tag_button_list.tag_button_mode == "edit") {
-        let tag = but[0].dataset.fulltag;
-        if (tag != "__all__") {
-            manager.rename_tag(tag)
-        }
-    }
-    else {
-        if (!but.hasClass("active")) {
-            manager.tag_button_list.set_active_button(but);
-        }
-    }
-}
-
-function tag_button_delete_clicked(event) {
-    let but = $(event.target);
-    let tag = but.parent().text();
-    resource_managers[get_current_module_id()].delete_tag(tag);
-}
-
-function edit_tags_button_clicked(event) {
-    resource_managers[get_current_module_id()].tag_button_list.toggle_edit_button_mode();
-}
-
-function showAdmin() {
-    window.open(`${$SCRIPT_ROOT}/admin_interface`)
-}
-
-
 function resize_window() {
     for (let module_id in resource_managers) {
         const manager = resource_managers[module_id];
@@ -254,7 +182,11 @@ function resize_window() {
     }
 }
 
-class ListManager extends UserManagerResourceManager {
+class ListManager extends LibraryResourceManager {
+    constructor (resource_module_template) {
+        super ("list_module", "list", resource_module_template, "#list-module-outer", "notrepo")
+    }
+
     set_extra_properties() {
         super.set_extra_properties();
         this.start_hidden = false;
@@ -297,7 +229,10 @@ class ListManager extends UserManagerResourceManager {
     }
 }
 
-class RepositoryListManager extends UserManagerResourceManager {
+class RepositoryListManager extends LibraryResourceManager {
+    constructor(resource_module_template) {
+        super("repository_list_module", "list", resource_module_template, "#list-module-outer", "repo")
+    }
     set_extra_properties() {
         super.set_extra_properties();
         this.is_repository = true;
@@ -314,7 +249,10 @@ class RepositoryListManager extends UserManagerResourceManager {
     }
 }
 
-class CollectionManager extends UserManagerResourceManager {
+class CollectionManager extends LibraryResourceManager {
+    constructor (resource_module_template) {
+        super ("collection_module", "collection", resource_module_template, "#collection-module-outer", "notrepo")
+    }
     set_extra_properties() {
         super.set_extra_properties();
         this.start_hidden = false;
@@ -385,7 +323,7 @@ class CollectionManager extends UserManagerResourceManager {
             else {
                 url_base = "import_as_table"
             }
-            postAjaxUploadPromise(`${url_base}/${new_name}/${user_manage_id}`, the_data)
+            postAjaxUploadPromise(`${url_base}/${new_name}/${library_id}`, the_data)
                 .then((data) => {
                         clearStatusMessage();
                         manager.displayImportResults(data);
@@ -420,7 +358,10 @@ class CollectionManager extends UserManagerResourceManager {
     }
 }
 
-class RepositoryCollectionManager extends UserManagerResourceManager {
+class RepositoryCollectionManager extends LibraryResourceManager {
+    constructor (resource_module_template) {
+        super ("repository_collection_module", "collection", resource_module_template, "#collection-module-outer", "repo")
+    }
     set_extra_properties() {
         super.set_extra_properties();
         this.is_repository = true;
@@ -433,7 +374,10 @@ class RepositoryCollectionManager extends UserManagerResourceManager {
     }
 }
 
-class ProjectManager extends UserManagerResourceManager {
+class ProjectManager extends LibraryResourceManager {
+    constructor (resource_module_template) {
+        super ("project_module", "project", resource_module_template, "#project-module-outer", "notrepo")
+    }
     set_extra_properties() {
         super.set_extra_properties();
         this.start_hidden = false;
@@ -474,7 +418,10 @@ class ProjectManager extends UserManagerResourceManager {
 
 }
 
-class RepositoryProjectManager extends UserManagerResourceManager {
+class RepositoryProjectManager extends LibraryResourceManager {
+    constructor (resource_module_template) {
+        super ("repository_project_module", "project", resource_module_template, "#project-module-outer", "repo")
+    }
     set_extra_properties() {
         super.set_extra_properties();
         this.is_repository = true;
@@ -487,7 +434,10 @@ class RepositoryProjectManager extends UserManagerResourceManager {
     }
 }
 
-class TileManager extends UserManagerResourceManager {
+class TileManager extends LibraryResourceManager {
+    constructor (resource_module_template) {
+        super ("tile_module", "tile", resource_module_template, "#tile-module-outer", "notrepo")
+    }
     set_extra_properties() {
         super.set_extra_properties();
         this.aux_right = true;
@@ -681,7 +631,10 @@ class TileManager extends UserManagerResourceManager {
     }
 }
 
-class RepositoryTileManager extends UserManagerResourceManager {
+class RepositoryTileManager extends LibraryResourceManager {
+    constructor (resource_module_template) {
+        super ("repository_tile_module", "tile", resource_module_template, "#tile-module-outer", "repo")
+    }
     set_extra_properties() {
         super.set_extra_properties();
         this.is_repository = true;
@@ -698,7 +651,10 @@ class RepositoryTileManager extends UserManagerResourceManager {
     };
 }
 
-class CodeManager extends UserManagerResourceManager {
+class CodeManager extends LibraryResourceManager {
+    constructor (resource_module_template) {
+        super ("code_module", "code", resource_module_template, "#code-module-outer", "notrepo")
+    }
     set_extra_properties() {
         super.set_extra_properties();
         this.start_hidden = false;
@@ -771,7 +727,10 @@ class CodeManager extends UserManagerResourceManager {
     }
 }
 
-class RepositoryCodeManager extends UserManagerResourceManager {
+class RepositoryCodeManager extends LibraryResourceManager {
+    constructor (resource_module_template) {
+        super ("repository_code_module", "code", resource_module_template, "#code-module-outer", "repo")
+    }
     set_extra_properties() {
         super.set_extra_properties();
         this.is_repository = true;
@@ -788,7 +747,10 @@ class RepositoryCodeManager extends UserManagerResourceManager {
     };
 }
 
-class AllManager extends UserManagerResourceManager {
+class AllManager extends LibraryResourceManager {
+    constructor (resource_module_template) {
+        super ("all_module", "all", resource_module_template, "#all-module-outer", "notrepo")
+    }
     set_extra_properties() {
         super.set_extra_properties();
         this.start_hidden = false;
@@ -1113,7 +1075,7 @@ class AllManager extends UserManagerResourceManager {
         }
     }
 
-    selector_click(row_element) {
+    selector_click(row_element, custom_got_metadata) {
         if (!this.handling_selector_click) {  // We want to make sure we are not already processing a click
             this.handling_selector_click = true;
             const res_name = row_element.getAttribute("value");
@@ -1122,6 +1084,13 @@ class AllManager extends UserManagerResourceManager {
             const result_dict = {"res_type": the_type, "res_name": res_name, "is_repository": this.is_repository};
             this.get_all_selector_buttons().removeClass("active");
             const self = this;
+            var got_metadata;
+            if (custom_got_metadata == undefined) {
+                got_metadata = default_got_metadata
+            }
+            else {
+                got_metadata = custom_got_metadata
+            }
             if (this.include_metadata) {
                 postAjaxPromise("grab_metadata", result_dict)
                     .then(got_metadata)
@@ -1130,7 +1099,7 @@ class AllManager extends UserManagerResourceManager {
 
             $(row_element).addClass("active");
 
-            function got_metadata(data) {
+            function default_got_metadata(data) {
                 if (data.success) {
                     self.set_resource_metadata(data.datestring, data.tags, data.notes, data.additional_mdata);
                 }
@@ -1167,7 +1136,7 @@ class AllManager extends UserManagerResourceManager {
         return result
     }
 
-    save_my_metadata(flash = true) {
+    save_my_metadata(flash = false) {
         const res_name = this.get_active_selector_button().attr("value");
         const tags = this.get_tags_string();
         const notes = this.markdown_helper.getNotesValue(this.get_module_dom());
@@ -1289,6 +1258,9 @@ class AllManager extends UserManagerResourceManager {
 }
 
 class RepositoryAllManager extends AllManager {
+    constructor (resource_module_template) {
+        super ("repository_all_module", "all", resource_module_template, "#all-module-outer", "repo")
+    }
     set_extra_properties() {
         super.set_extra_properties();
         this.is_repository = true;

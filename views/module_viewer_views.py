@@ -8,12 +8,11 @@ from flask_login import login_required, current_user
 from tactic_app import app, db, use_ssl
 from tactic_app.integrated_docs import api_dict_by_category, api_dict_by_name, ordered_api_categories
 
-from user_manage_views import tile_manager
+from library_views import tile_manager
 import datetime
 tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
-
-
 indent_unit = "    "
+
 
 @app.route('/checkpoint_module', methods=['post'])
 @login_required
@@ -69,7 +68,7 @@ def checkpoint_to_recent():
 def show_history_viewer(module_name):
     button_groups = [[{"name": "save_button", "button_class": "btn-outline-secondary", "name_text": "Save", "icon_name": "save"}]]
     javascript_source = url_for('static', filename='tactic_js/history_viewer.js')
-    return render_template("user_manage/resource_viewer.html",
+    return render_template("library/resource_viewer.html",
                            resource_name=module_name,
                            include_metadata=False,
                            include_above_main_area=True,
@@ -95,7 +94,7 @@ def get_api_dict():
 def show_tile_differ(module_name):
     button_groups = [[{"name": "save_button", "button_class": "btn-outline-secondary", "name_text": "Save", "icon_name": "save"}]]
     javascript_source = url_for('static', filename='tactic_js/tile_differ.js')
-    return render_template("user_manage/resource_viewer.html",
+    return render_template("library/resource_viewer.html",
                            resource_name=module_name,
                            include_metadata=False,
                            include_above_main_area=True,

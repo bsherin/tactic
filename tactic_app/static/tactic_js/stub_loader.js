@@ -3,20 +3,20 @@
  */
 
 const mousetrap = new Mousetrap();
-const user_manage_id = guid();
-const page_id = user_manage_id;
+const library_id = guid();
+const page_id = library_id;
 
 
 function start_post_load() {
     let socket;
     if (use_ssl) {
-        socket = io.connect(`https://${document.domain}:${location.port}/user_manage`);
+        socket = io.connect(`https://${document.domain}:${location.port}/library`);
     }
     else {
-        socket = io.connect(`http://${document.domain}:${location.port}/user_manage`);
+        socket = io.connect(`http://${document.domain}:${location.port}/library`);
     }
 
-    socket.emit('join', {"user_id":  user_id, "user_manage_id":  user_manage_id});
+    socket.emit('join', {"user_id":  user_id, "library_id":  library_id});
 
     socket.on("window-load", function(data) {
         x = window.open();
@@ -27,12 +27,12 @@ function start_post_load() {
     socket.on('show-status-msg', statusMessage);
     socket.on("clear-status-msg", clearStatusMessage);
     socket.on('close-user-windows', (data) => {
-        if (!(data["originator"] == user_manage_id)) {
+        if (!(data["originator"] == library_id)) {
             window.close()
         }
     });
     socket.on('doflash', doFlash);
 
-    ddata["user_manage_id"] = user_manage_id;
+    ddata["library_id"] = library_id;
     postWithCallbackNoMain("host", task, ddata)
 }

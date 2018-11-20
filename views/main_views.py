@@ -8,7 +8,7 @@ from flask import request, jsonify, render_template, send_file, url_for
 from flask_login import current_user, login_required
 from flask_socketio import join_room
 from tactic_app import app, db, fs, socketio
-from user_manage_views import collection_manager
+from library_views import collection_manager
 from tactic_app.docker_functions import destroy_container, destroy_child_containers
 from tactic_app.users import load_user
 from tactic_app.communication_utils import send_request_to_megaplex, debinarize_python_object

@@ -13,12 +13,12 @@ import tactic_app
 import datetime
 tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 
-@app.route('/direct_user_manage/<username>/<password>', methods=['GET', 'POST'])
-def direct_user_manage(username, password):
+@app.route('/direct_library/<username>/<password>', methods=['GET', 'POST'])
+def direct_library(username, password):
     user = User.get_user_by_username(username)
     if user is not None and user.verify_password(password):
         login_user(user, remember=False)
-    return redirect(url_for("user_manage"))
+    return redirect(url_for("library"))
 
 @app.route('/direct_creator/<module_name>/<username>/<password>', methods=['GET', 'POST'])
 def direct_creator(module_name, username, password):
