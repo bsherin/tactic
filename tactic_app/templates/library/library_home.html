@@ -73,16 +73,17 @@
     <script src="{{url_for('static', filename='js/jquery.caret.min.js')}}"></script>
     <script src="{{url_for('static', filename='js/jquery.tag-editor.min.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/markdown_utilities.js', v=version_string)}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/drag_manager.js', v=version_string)}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/tag_buttons.js', v=version_string)}}"></script>
     <script src="{{url_for('static', filename='tactic_js/resource_manager.js', v=version_string)}}"></script>
-    <script src="{{url_for('static', filename='tactic_js/user_manage_resource_manager.js', v=version_string)}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/library_resource_manager.js', v=version_string)}}"></script>
     <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
     <script src="{{url_for('static', filename='js/tab.js')}}"></script>
 
-    <script src="{{url_for('static', filename='tactic_js/user_manage.js', v=version_string)}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/library_home.js', v=version_string)}}"></script>
     <script>
         let user_id = "{{current_user.get_id()}}";
         let use_ssl = "{{use_ssl}}"=="True";
-        let saved_title = $("#view-title").text();
-        window.onload = start_post_load;
+        window.onload = _library_home_main();
     </script>
 {% endblock %}

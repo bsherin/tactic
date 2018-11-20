@@ -5,7 +5,7 @@ import json
 import StringIO
 
 # noinspection PyUnresolvedReferences
-from tactic_app.views import auth_views, user_manage_views
+from tactic_app.views import auth_views, library_views
 # noinspection PyUnresolvedReferences
 from werkzeug import FileStorage
 
@@ -31,8 +31,8 @@ class UserManageTest(unittest.TestCase):
         the_data = json.dumps(data_dict)
         return self.app.post('/attempt_login', content_type='application/json', data=the_data, follow_redirects=True)
 
-    def test_user_manage_general(self):
-        rv = self.app.get("/user_manage")
+    def test_library_general(self):
+        rv = self.app.get("/library")
         self.assertIn("<title>test_user library</title>", rv.data)
 
     def test_list_funcs(self):

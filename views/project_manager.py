@@ -6,7 +6,7 @@ from flask_login import login_required, current_user
 import tactic_app
 from tactic_app import app, db, fs, use_ssl
 from tactic_app.docker_functions import create_container, ContainerCreateError, main_container_info
-from tactic_app.resource_manager import ResourceManager, UserManageResourceManager
+from tactic_app.resource_manager import ResourceManager, LibraryResourceManager
 from tactic_app.users import User
 from tactic_app.communication_utils import make_jsonizable_and_compress, read_project_dict
 global_tile_manager = tactic_app.global_tile_manager
@@ -16,7 +16,7 @@ import datetime
 tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 
 
-class ProjectManager(UserManageResourceManager):
+class ProjectManager(LibraryResourceManager):
     collection_list = "project_names"
     collection_list_with_metadata = "project_names_with_metadata"
     collection_name = "project_collection_name"
