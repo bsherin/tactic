@@ -13,7 +13,7 @@ def doflash(message, alert_type='alert-info', user_id=None):
     if user_id is None:
         user_id = current_user.get_id()
     data = {"message": message, "alert_type": alert_type}
-    socketio.emit('stop-spinner', data, namespace='/user_manage', room=user_id)
+    socketio.emit('stop-spinner', data, namespace='/library', room=user_id)
 
 
 # noinspection PyMethodMayBeStatic
@@ -57,21 +57,21 @@ class ResourceManager(object):
                            "select": None,
                            "module_id": self.module_id,
                            "res_type": self.res_type},
-                          namespace='/user_manage', room=user_obj.get_id())
+                          namespace='/library', room=user_obj.get_id())
         elif select is None:
             socketio.emit('update-selector-list',
                           {"html": self.request_update_selector_list(user_obj=user_obj),
                            "select": None,
                            "module_id": self.module_id,
                            "res_type": self.res_type},
-                          namespace='/user_manage', room=user_obj.get_id())
+                          namespace='/library', room=user_obj.get_id())
         else:
             socketio.emit('update-selector-list',
                           {"html": self.request_update_selector_list(user_obj=user_obj),
                            "select": select,
                            "module_id": self.module_id,
                            "res_type": self.res_type},
-                          namespace='/user_manage', room=user_obj.get_id())
+                          namespace='/library', room=user_obj.get_id())
 
     def get_resource_list(self):
         if self.is_repository:
@@ -101,7 +101,7 @@ class ResourceManager(object):
         return self.get_tag_list(user_obj)
 
     def create_button_list(self, the_list):
-        the_html = render_template("user_manage/button_list_template.html",
+        the_html = render_template("library/button_list_template.html",
                                    button_list=the_list, res_type=self.res_type)
         return the_html
 
@@ -111,13 +111,13 @@ class ResourceManager(object):
         result = self.build_html_table_from_data_list(res_array)
         return result
 
-    def show_um_message(self, message, user_manage_id, timeout=3):
+    def show_um_message(self, message, library_id, timeout=3):
         data = {"message": message, "timeout": timeout}
 
-        socketio.emit('show-status-msg', data, namespace='/user_manage', room=user_manage_id)
+        socketio.emit('show-status-msg', data, namespace='/library', room=library_id)
 
-    def clear_um_message(self, user_manage_id):
-        socketio.emit('clear-status-msg', {}, namespace='/user_manage', room=user_manage_id)
+    def clear_um_message(self, library_id):
+        socketio.emit('clear-status-msg', {}, namespace='/library', room=library_id)
 
     def build_html_table_from_data_list(self, data_list, title=None):
         the_html = "<table class='tile-table table sortable table-striped table-bordered table-sm'>"
@@ -194,7 +194,7 @@ class ResourceManager(object):
         return table_row
 
 
-class UserManageResourceManager(ResourceManager):
+class LibraryResourceManager(ResourceManager):
 
     def __init__(self, res_type, all_manager):
         ResourceManager.__init__(self, res_type)
@@ -210,19 +210,19 @@ class UserManageResourceManager(ResourceManager):
                            "select": None,
                            "module_id": self.module_id,
                            "res_type": self.res_type},
-                          namespace='/user_manage', room=user_obj.get_id())
+                          namespace='/library', room=user_obj.get_id())
         elif select is None:
             socketio.emit('update-selector-list',
                           {"html": self.request_update_selector_list(user_obj=user_obj),
                            "select": None,
                            "module_id": self.module_id,
                            "res_type": self.res_type},
-                          namespace='/user_manage', room=user_obj.get_id())
+                          namespace='/library', room=user_obj.get_id())
         else:
             socketio.emit('update-selector-list',
                           {"html": self.request_update_selector_list(user_obj=user_obj),
                            "select": select,
                            "module_id": self.module_id,
                            "res_type": self.res_type},
-                          namespace='/user_manage', room=user_obj.get_id())
+                          namespace='/library', room=user_obj.get_id())
         self.all_manager.update_selector_list(select, user_obj)

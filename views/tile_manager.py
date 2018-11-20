@@ -9,7 +9,7 @@ from flask_login import login_required, current_user
 from tactic_app.integrated_docs import api_dict_by_category, ordered_api_categories
 import tactic_app
 from tactic_app import app, db, socketio, use_ssl
-from tactic_app.resource_manager import ResourceManager, UserManageResourceManager
+from tactic_app.resource_manager import ResourceManager, LibraryResourceManager
 from tactic_app.users import User
 from tactic_app.docker_functions import create_container, ContainerCreateError
 
@@ -21,7 +21,7 @@ tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 
 
 # noinspection PyMethodMayBeStatic,PyBroadException
-class TileManager(UserManageResourceManager):
+class TileManager(LibraryResourceManager):
     collection_list = "tile_module_names"
     collection_list_with_metadata = "tile_module_names_with_metadata"
     collection_name = "tile_collection_name"
@@ -166,7 +166,7 @@ class TileManager(UserManageResourceManager):
     def view_module(self, module_name):
         self.clear_old_recent_history(module_name)
         javascript_source = url_for('static', filename='tactic_js/module_viewer.js')
-        return render_template("user_manage/resource_viewer.html",
+        return render_template("library/resource_viewer.html",
                                resource_name=module_name,
                                include_metadata=True,
                                include_right=True,
@@ -235,7 +235,7 @@ class TileManager(UserManageResourceManager):
             if len(new_list) > 0:
                 revised_api_dlist.append({"cat_name": cat, "cat_list": new_list})
         the_content = self.initialize_module_viewer_container(module_name)
-        return render_template("user_manage/tile_creator.html",
+        return render_template("library/tile_creator.html",
                                module_name=module_name,
                                read_only_string="",
                                use_ssl=use_ssl,
@@ -250,7 +250,7 @@ class TileManager(UserManageResourceManager):
         try:
             global_tile_manager.unload_user_tiles(current_user.username)
             socketio.emit('update-loaded-tile-list', {"html": self.render_loaded_tile_list()},
-                          namespace='/user_manage', room=current_user.get_id())
+                          namespace='/library', room=current_user.get_id())
             socketio.emit('update-menus', {}, namespace='/main', room=current_user.get_id())
             return jsonify({"message": "Tiles successfully unloaded", "alert_type": "alert-success"})
         except:
@@ -351,7 +351,7 @@ class TileManager(UserManageResourceManager):
         default_tiles = global_tile_manager.get_default_tiles(uname)
         failed_loads = global_tile_manager.get_failed_loads_list(uname)
         with app.test_request_context():
-            result = render_template("user_manage/loaded_tile_list.html",
+            result = render_template("library/loaded_tile_list.html",
                                      default_tiles_list=default_tiles,
                                      nondefault_tiles_list=nondefault_tiles,
                                      failed_tile_name_list=failed_loads)
@@ -375,7 +375,7 @@ class RepositoryTileManager(TileManager):
 
     def repository_view_module(self, module_name):
         javascript_source = url_for('static', filename='tactic_js/module_viewer.js')
-        return render_template("user_manage/resource_viewer.html",
+        return render_template("library/resource_viewer.html",
                                resource_name=module_name,
                                include_metadata=True,
                                include_right=True,

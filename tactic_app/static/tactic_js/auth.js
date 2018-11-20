@@ -12,7 +12,7 @@ $('.submitter-field').keypress(function(e) {
 
 function submit_login_info() {
     startSpinner();
-    statusMessage({"message": "Attempting login ...", "timeout": null})
+    statusMessage({"message": "Attempting login ...", "timeout": null});
     const data = {};
     data.username = $("#username").val();
     data.password = $("#password").val();
@@ -44,7 +44,7 @@ function return_from_submit_login(data) {
     stopSpinner();
     clearStatusMessage();
     if (data.logged_in) {
-         window.open($SCRIPT_ROOT + "/user_manage", "_self")
+         window.open($SCRIPT_ROOT + "/library", "_self")
     }
     else {
         doFlash({"message": "Login Failed", "alert_type": "alert-warning"})

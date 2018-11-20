@@ -3,7 +3,7 @@ import datetime
 from flask import request, jsonify
 from flask_login import login_required, current_user
 from tactic_app import app, db
-from user_manage_views import tile_manager
+from library_views import tile_manager
 from module_viewer_views import create_recent_checkpoint
 
 
@@ -38,6 +38,7 @@ def get_checkpoint_history(module_name, include_code=False):
     checkpoints.reverse()
     return checkpoints
 
+
 @app.route('/get_checkpoint_dates', methods=['post'])
 @login_required
 def get_checkpoint_dates():
@@ -51,6 +52,7 @@ def get_checkpoint_dates():
     except:
         error_string = "Error getting checktpoint dates " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+
 
 @app.route('/get_checkpoint_code', methods=['post'])
 @login_required
@@ -68,6 +70,7 @@ def get_checkpoint_code():
     except:
         error_string = "Error getting checktpoint code " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+
 
 @app.route('/update_from_left', methods=['post'])
 @login_required

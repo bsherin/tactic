@@ -18,9 +18,9 @@ global_tile_manager = tactic_app.global_tile_manager
 class ContainerManager(ResourceManager):
 
     def add_rules(self):
-        app.add_url_rule('/reset_server/<user_manage_id>', "reset_server", login_required(self.reset_server),
+        app.add_url_rule('/reset_server/<library_id>', "reset_server", login_required(self.reset_server),
                          methods=['get'])
-        app.add_url_rule('/clear_user_containers/<user_manage_id>', "clear_user_containers",
+        app.add_url_rule('/clear_user_containers/<library_id>', "clear_user_containers",
                          login_required(self.clear_user_containers), methods=['get'])
         app.add_url_rule('/kill_container/<cont_id>', "kill_container",
                          login_required(self.kill_container), methods=['get'])
@@ -29,7 +29,7 @@ class ContainerManager(ResourceManager):
         app.add_url_rule('/refresh_container_table', "refresh_container_table",
                          login_required(self.refresh_container_table), methods=['get'])
 
-    def clear_user_containers(self, user_manage_id):
+    def clear_user_containers(self, library_id):
         tactic_image_names = ["tactic_tile_image", "tactic_main_image", "module_viewer_image"]
         tactic_image_ids = {}
         for iname in tactic_image_names:
@@ -38,22 +38,22 @@ class ContainerManager(ResourceManager):
         if not (current_user.get_id() == admin_user.get_id()):
             return jsonify({"success": False, "message": "not authorized", "alert_type": "alert-warning"})
         try:
-            self.show_um_message("removing user containers", user_manage_id, timeout=None)
+            self.show_um_message("removing user containers", library_id, timeout=None)
             all_containers = cli.containers.list(all=True)
             for cont in all_containers:
                 if cont.attrs["Image"] == tactic_image_ids["tactic_main_image"]:
-                    self.show_um_message("removing main container " + cont.attrs["Name"], user_manage_id, timeout=None)
+                    self.show_um_message("removing main container " + cont.attrs["Name"], library_id, timeout=None)
                     cont.remove(force=True)
                     continue
                 if cont.attrs["Image"] == tactic_image_ids["tactic_tile_image"]:
                     the_id = container_id(cont)
                     if not the_id == global_tile_manager.test_tile_container_id:
                         self.show_um_message("removing tile container " + cont.attrs["Name"],
-                                             user_manage_id, timeout=None)
+                                             library_id, timeout=None)
                         cont.remove(force=True)
                     continue
                 # if cont.attrs["Image"] == cont.attrs["ImageID"]:
-                #     self.show_um_message("removing image container " + cont["Id"], user_manage_id)
+                #     self.show_um_message("removing image container " + cont["Id"], library_id)
                 #     cli.remove_container(cont["Id"], force=True)
         except Exception as ex:
             template = "<pre>An exception of type {0} occured. Arguments:\n{1!r}</pre>"
@@ -61,21 +61,21 @@ class ContainerManager(ResourceManager):
             error_string += traceback.format_exc()
             return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
-        self.clear_um_message(user_manage_id)
+        self.clear_um_message(library_id)
         self.update_selector_list()
         return jsonify({"success": True, "message": "User Containers Cleared", "alert_type": "alert-success"})
 
-    def reset_server(self, user_manage_id):
+    def reset_server(self, library_id):
         if not (current_user.get_id() == admin_user.get_id()):
             return jsonify({"success": False, "message": "not authorized", "alert_type": "alert-warning"})
         try:
-            self.show_um_message("removing all containers", user_manage_id)
+            self.show_um_message("removing all containers", library_id)
             do_docker_cleanup()
-            self.show_um_message("recreating the megaplex", user_manage_id)
+            self.show_um_message("recreating the megaplex", library_id)
             create_megaplex()
-            self.show_um_message("initializing the global tile manager", user_manage_id)
+            self.show_um_message("initializing the global tile manager", library_id)
             global_tile_manager.initialize()
-            self.show_um_message("getting default tiles", user_manage_id)
+            self.show_um_message("getting default tiles", library_id)
             # global_tile_manager.get_all_default_tiles()
         except Exception as ex:
             template = "<pre>An exception of type {0} occured. Arguments:\n{1!r}</pre>"
@@ -83,7 +83,7 @@ class ContainerManager(ResourceManager):
             error_string += traceback.format_exc()
             return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
-        self.clear_um_message(user_manage_id)
+        self.clear_um_message(library_id)
         self.update_selector_list()
         return jsonify({"success": True, "message": "Server successefully reset", "alert_type": "alert-success"})
 

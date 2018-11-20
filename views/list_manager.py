@@ -8,7 +8,7 @@ from tactic_app import app, db, use_ssl
 import tactic_app
 
 from tactic_app.file_handling import load_a_list
-from tactic_app.resource_manager import ResourceManager, UserManageResourceManager
+from tactic_app.resource_manager import ResourceManager, LibraryResourceManager
 from tactic_app.users import User
 global_tile_manager = tactic_app.global_tile_manager
 repository_user = User.get_user_by_username("repository")
@@ -18,7 +18,7 @@ tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 
 
 # noinspection PyMethodMayBeStatic
-class ListManager(UserManageResourceManager):
+class ListManager(LibraryResourceManager):
     collection_list = "list_names"
     collection_list_with_metadata = "list_names_with_metadata"
     collection_name = "list_collection_name"
@@ -45,7 +45,7 @@ class ListManager(UserManageResourceManager):
 
     def view_list(self, list_name):
         javascript_source = url_for('static', filename='tactic_js/list_viewer.js')
-        return render_template("user_manage/resource_viewer.html",
+        return render_template("library/resource_viewer.html",
                                resource_name=list_name,
                                include_metadata=True,
                                include_above_main_area=False,
@@ -223,7 +223,7 @@ class RepositoryListManager(ListManager):
 
     def repository_view_list(self, list_name):
         javascript_source = url_for('static', filename='tactic_js/list_viewer.js')
-        return render_template("user_manage/resource_viewer.html",
+        return render_template("library/resource_viewer.html",
                                resource_name=list_name,
                                include_metadata=True,
                                include_above_main_area=False,
