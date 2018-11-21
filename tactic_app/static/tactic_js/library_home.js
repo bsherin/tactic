@@ -748,8 +748,13 @@ class RepositoryCodeManager extends LibraryResourceManager {
 }
 
 class AllManager extends LibraryResourceManager {
-    constructor (resource_module_template) {
-        super ("all_module", "all", resource_module_template, "#all-module-outer", "notrepo")
+    constructor (resource_module_template, is_repo=false) {
+        if (is_repo){
+            super ("repository_all_module", "all", resource_module_template, "#all-module-outer", "repo")
+        }
+        else {
+            super ("all_module", "all", resource_module_template, "#all-module-outer", "notrepo")
+        }
     }
     set_extra_properties() {
         super.set_extra_properties();
@@ -1259,7 +1264,7 @@ class AllManager extends LibraryResourceManager {
 
 class RepositoryAllManager extends AllManager {
     constructor (resource_module_template) {
-        super ("repository_all_module", "all", resource_module_template, "#all-module-outer", "repo")
+        super (resource_module_template, true)
     }
     set_extra_properties() {
         super.set_extra_properties();
