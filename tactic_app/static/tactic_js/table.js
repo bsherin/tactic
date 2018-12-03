@@ -236,10 +236,11 @@ class TableObjectClass {
             if (self.getting_new_chunk) {
                 return false
             }
-            if ($('#table-area tbody tr:last').isOnScreen()){
+            if ($('#table-area tbody tr:last').isOnScreen(.1, .1)){
                 if (!self.is_last_chunk ) {
                     self.getting_new_chunk = true;
                     const nrows = $('#table-area tbody tr').length;
+                    startSpinner();
                     postWithCallback(main_id, "grab_next_chunk", {"doc_name": self.current_doc_name}, function (data) {
                         const top_edge_pos = $("#table-area tbody tr:last").position().top;
                         tableObject.refill_table(data);
@@ -249,12 +250,14 @@ class TableObjectClass {
                         const rowpos = $(old_last_row).position();
                         $('#table-area tbody').scrollTop(rowpos.top - top_edge_pos);
                         self.getting_new_chunk = false;
+                        stopSpinner()
                     })
                 }
             }
-            if ($("#table-area tbody tr:first").isOnScreen()) {
+            if ($("#table-area tbody tr:first").isOnScreen(.1, .1)) {
                 if (!self.is_first_chunk) {
                     self.getting_new_chunk = true;
+                    startSpinner();
                     postWithCallback(main_id, "grab_previous_chunk", {"doc_name": self.current_doc_name}, function (data) {
                         const top_edge_pos = $("#table-area tbody tr:first").position().top;
                         tableObject.refill_table(data);
@@ -264,6 +267,7 @@ class TableObjectClass {
                         const rowpos = $(old_last_row).position();
                         $('#table-area tbody').scrollTop(rowpos.top - top_edge_pos);
                         self.getting_new_chunk = false;
+                        stopSpinner()
                     })
                 }
             }
