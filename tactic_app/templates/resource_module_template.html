@@ -80,9 +80,7 @@
             <div class="right-div" style="vertical-align:top; margin-top:120px; margin-left:10px">
                 {{#include_metadata}}
                 <div style="vertical-align: top; margin-left: 5px; max-width:600px">
-                    {{^start_hidden}}
-                    <button type="button" class="btn btn-sm btn-outline-secondary save-metadata-button" style="margin-bottom: 7px" value="{{res_type}}">Save Metadata</button>
-                    {{/start_hidden}}
+                    <h4 class="resource-name d-flex"></h4>
                     <div class="form-group" style="margin-bottom: 7px">
                         <textarea type="text" class="form-control metadata-field tags-field" rows="1" {{#start_hidden}}readonly{{/start_hidden}}></textarea>
                     </div>
@@ -90,6 +88,9 @@
                         <textarea class="form-control metadata-field notes-field" rows="10" placeholder="notes" {{#start_hidden}}readonly{{/start_hidden}}></textarea>
                         <div class="notes-field-markdown-output {{#start_hidden}}repo-markdown{{/start_hidden}}" style="max"></div>
                     </div>
+                    {{^start_hidden}}
+                    <button type="button" class="btn btn-sm btn-outline-secondary save-metadata-button" style="margin-bottom: 7px" value="{{res_type}}">Save Metadata</button>
+                    {{/start_hidden}}
                     <div class="created d-flex"></div>
                     <div class="additional-mdata d-flex flex-column"></div>
                 </div>
