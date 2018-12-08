@@ -278,6 +278,12 @@ a[role="tab"] {
 .resource-module {
     display: flex;
     margin: 10px;
+    .resource-name {
+        margin-bottom: 15px
+    }
+    .resource-name:hover {
+        cursor: pointer
+    }
     .notes-field {
         background-color: #f7f7f7;
     }

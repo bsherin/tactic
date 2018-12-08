@@ -157,6 +157,10 @@ a[role="tab"] {
 .resource-module {
   display: flex;
   margin: 10px; }
+  .resource-module .resource-name {
+    margin-bottom: 15px; }
+  .resource-module .resource-name:hover {
+    cursor: pointer; }
   .resource-module .notes-field {
     background-color: #f7f7f7; }
   .resource-module .notes-field-markdown-output {
