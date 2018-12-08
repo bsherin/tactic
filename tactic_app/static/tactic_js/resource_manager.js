@@ -217,6 +217,10 @@ class ResourceManager {
         return this.get_module_element(".created");
     }
 
+    get_resource_name_field() {
+        return this.get_module_element(".resource-name");
+    }
+
 
     get_tags_field() {
          return this.get_module_element(".tags-field")
@@ -309,7 +313,7 @@ class ResourceManager {
 
             function default_got_metadata(data) {
                 if (data.success) {
-                    self.set_resource_metadata(data.datestring, data.tags, data.notes, data.additional_mdata);
+                    self.set_resource_metadata(res_name, data.datestring, data.tags, data.notes, data.additional_mdata);
                     self.resize_to_window();
                 }
                 else {

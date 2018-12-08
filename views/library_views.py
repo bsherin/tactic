@@ -192,7 +192,7 @@ def grab_metadata():
             if "collection_name" in additional_mdata:
                 additional_mdata["collection_name"] = re.sub("^.*?\.data_collection\.", "",
                                                              additional_mdata["collection_name"])
-            return jsonify({"success": True, "datestring": datestring, "tags": mdata["tags"],
+            return jsonify({"success": True, "res_name": res_name, "datestring": datestring, "tags": mdata["tags"],
                             "notes": mdata["notes"], "additional_mdata": additional_mdata})
     except:
         error_string = "Error getting metadata: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
@@ -214,7 +214,7 @@ def grab_repository_metadata():
                 datestring = current_user.localize_time(mdata["datetime"]).strftime("%b %d, %Y, %H:%M")
             else:
                 datestring = ""
-            return jsonify({"success": True, "datestring": datestring, "tags": mdata["tags"], "notes": mdata["notes"]})
+            return jsonify({"success": True, "res_name": res_name, "datestring": datestring, "tags": mdata["tags"], "notes": mdata["notes"]})
     except:
         error_string = "Error getting metadata: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
