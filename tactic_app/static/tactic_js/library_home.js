@@ -1106,7 +1106,7 @@ class AllManager extends LibraryResourceManager {
 
             function default_got_metadata(data) {
                 if (data.success) {
-                    self.set_resource_metadata(data.datestring, data.tags, data.notes, data.additional_mdata);
+                    self.set_resource_metadata(res_name, data.datestring, data.tags, data.notes, data.additional_mdata);
                 }
                 else {
                     // doFlash(data)

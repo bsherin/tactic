@@ -37,7 +37,7 @@ class SelectorDragManager extends DragManager {
         function got_metadata(data) {
             if (data.success) {
                 let new_tag_string = data.tags + " " + newtag;
-                self.manager.set_resource_metadata(data.datestring, new_tag_string, data.notes, data.additional_mdata);
+                self.manager.set_resource_metadata(data.res_name, data.datestring, new_tag_string, data.notes, data.additional_mdata);
                 self.manager.save_my_metadata();
                 self.manager.resize_to_window();
             }
@@ -73,7 +73,7 @@ class TagButtonDragManager extends DragManager {
         function got_metadata(data) {
             if (data.success) {
                 let new_tag_string = data.tags + " " + newtag;
-                self.manager.set_resource_metadata(data.datestring, new_tag_string, data.notes, data.additional_mdata);
+                self.manager.set_resource_metadata(data.res_name, data.datestring, new_tag_string, data.notes, data.additional_mdata);
                 self.manager.save_my_metadata();
                 self.manager.resize_to_window();
             }
@@ -116,6 +116,10 @@ class LibraryResourceManager extends ResourceManager{
                     self.search_my_resource();
                 }
             });
+            md.on("click", ".resource-name", function () {
+                var fake_event = {"data": {"manager": self}};
+                self.rename_func(fake_event)
+            })
         }
         md.on("mouseup", ".tag-button-list button", event => self.tag_button_clicked(event));
         mcd.on("dblclick", ".selector-button", event => self.selector_double_click(event));
@@ -318,7 +322,8 @@ class LibraryResourceManager extends ResourceManager{
         return `<div><span class="text-primary">${name}:</span> ${valstring}</div>`
     }
 
-    set_resource_metadata(created, tags, notes, additional_mdata) {
+    set_resource_metadata(resource_name, created, tags, notes, additional_mdata) {
+        this.get_resource_name_field().html(resource_name);
         this.get_created_field().html(this.format_metadata("created", created));
         this.set_tag_list(tags);
         let md = this.get_module_dom();
@@ -697,8 +702,9 @@ class LibraryResourceManager extends ResourceManager{
                 else {
                     manager.get_selector_table_row(res_name).children()[0].innerHTML = new_name;
                     manager.get_selector_table_row(res_name).attr("value", new_name);
-                    resource_managers["all_module"].get_selector_table_row(res_name).children()[0].innerHTML = new_name;
-                    resource_managers["all_module"].get_selector_table_row(res_name).attr("value", new_name)
+                    manager.get_resource_name_field().html(new_name);
+                    resource_managers["all_module"].get_selector_table_row(res_name, the_type).children()[0].innerHTML = new_name;
+                    resource_managers["all_module"].get_selector_table_row(res_name, the_type).attr("value", new_name)
                 }
             }
         }
