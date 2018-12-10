@@ -300,6 +300,10 @@ a[role="tab"] {
   background-color: #9B79CC !important;
   color: white; }
 
+.notrepo .selector-button.context-menu-active td {
+  background-color: #ada2be !important;
+  color: white; }
+
 .repo .selector-button.active td {
   background-color: #ffc107 !important;
   color: #212529; }
