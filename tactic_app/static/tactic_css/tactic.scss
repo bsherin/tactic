@@ -476,6 +476,11 @@ a[role="tab"] {
     color: white;
 }
 
+.notrepo .selector-button.context-menu-active td {
+    background-color: #ada2be!important;
+    color: white;
+}
+
 .repo .selector-button.active td {
     background-color: $repository-distinctive-color!important;
     color: #212529;

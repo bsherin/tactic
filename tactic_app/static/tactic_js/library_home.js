@@ -287,6 +287,14 @@ class CollectionManager extends LibraryResourceManager {
                     [{"name": "refresh", "func": "refresh_func", "button_class": "btn-outline-secondary", "icon_name": "sync-alt"}]
             }
         ];
+        this.specific_context_menu_functions = {
+            "combine": this.combineCollections
+        };
+        this.specific_context_menu_items = {
+            "separator": { "type": "cm_separator" },
+            "combine": {name: "combine", icon: "fas fa-plus-square"}
+        };
+
     }
 
     displayImportResults(data) {
@@ -346,9 +354,11 @@ class CollectionManager extends LibraryResourceManager {
         }, res_name + ".xlsx")
     };
 
-    combineCollections (event) {
+    combineCollections (event, res_name) {
         const manager = event.data.manager;
-        const res_name = manager.check_for_selection("resource");
+        if (typeof(res_name) == "undefined") {
+            res_name = manager.check_for_selection("resource");
+        }
         if (res_name == "") return;
         showModal("Name of collection to combine with " + res_name, "collection Name", function (other_name) {
             startSpinner();
@@ -514,9 +524,11 @@ class TileManager extends LibraryResourceManager {
         window.open($SCRIPT_ROOT + manager.creator_view + String(res_name))
     }
 
-    dc_view_func (event) {
+    dc_view_func (event, res_name) {
         const manager = event.data.manager;
-        const res_name = manager.check_for_selection("resource");
+        if (typeof(res_name) == "undefined") {
+            res_name = manager.check_for_selection("resource");
+        }
         if (res_name == "") return;
         window.open($SCRIPT_ROOT + manager.last_saved_view + String(res_name))
     }
@@ -898,9 +910,11 @@ class AllManager extends LibraryResourceManager {
         window.open($SCRIPT_ROOT + manager.res_manager(res_type).view_view + String(res_name))
     }
 
-    dc_view_func(event) {
+    dc_view_func(event, res_name) {
         const manager = event.data.manager;
-        const res_name = manager.check_for_selection();
+        if (typeof(res_name) == "undefined") {
+            res_name = manager.check_for_selection("resource");
+        }
         if (res_name == "") return;
         const res_type = manager.selected_resource_type();
         if (res_type == "tile") {
@@ -911,9 +925,11 @@ class AllManager extends LibraryResourceManager {
         }
     }
 
-    duplicate_func(event) {
+    duplicate_func(event, res_name) {
         const manager = event.data.manager;
-        const res_name = manager.check_for_selection();
+        if (typeof(res_name) == "undefined") {
+            res_name = manager.check_for_selection("resource");
+        }
         if (res_name == "") return;
         const res_type = manager.selected_resource_type();
         $.getJSON($SCRIPT_ROOT + "get_resource_names/" + res_type, function (data) {
@@ -935,9 +951,11 @@ class AllManager extends LibraryResourceManager {
         }
     }
 
-    rename_func(event) {
+    rename_func(event, res_name) {
         const manager = event.data.manager;
-        const res_name = manager.check_for_selection("resource");
+        if (typeof(res_name) == "undefined") {
+            res_name = manager.check_for_selection("resource");
+        }
         if (res_name == "") return;
         const the_type = manager.selected_resource_type();
         $.getJSON($SCRIPT_ROOT + "get_resource_names/" + the_type, function (data) {
@@ -1045,9 +1063,11 @@ class AllManager extends LibraryResourceManager {
         return res_name
     }
 
-    delete_func(event) {
+    delete_func(event, res_name) {
         const manager = event.data.manager;
-        const res_name = manager.check_for_selection("resource");
+        if (typeof(res_name) == "undefined") {
+            res_name = manager.check_for_selection("resource");
+        }
         if (res_name == "") return;
         const confirm_text = `Are you sure that you want to delete ${res_name}?`;
         const the_type = manager.selected_resource_type();
