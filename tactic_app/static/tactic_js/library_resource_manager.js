@@ -119,7 +119,8 @@ class LibraryResourceManager extends ResourceManager{
             md.on("click", ".resource-name", function () {
                 var fake_event = {"data": {"manager": self}};
                 self.rename_func(fake_event)
-            })
+            });
+            this.setup_context_menus();
         }
         md.on("mouseup", ".tag-button-list button", event => self.tag_button_clicked(event));
         mcd.on("dblclick", ".selector-button", event => self.selector_double_click(event));
@@ -127,6 +128,41 @@ class LibraryResourceManager extends ResourceManager{
             if (event.originalEvent.detail <= 1) {  // Will suppress on second click of a double-click
                 const row_element = $(event.target).closest('tr');
                 self.selector_click(row_element[0])
+            }
+        });
+    }
+
+    setup_context_menus() {
+        this.context_menu_funcs = {
+            "open": this[this.double_click_func],
+            "rename": this.rename_func,
+            "duplicate": this.duplicate_func,
+            "delete": this.delete_func
+        };
+        this.context_menu_items = {
+            "open": {name: "Open", icon: "far fa-book-open"},
+            "rename": {name: "Rename", icon: "far fa-edit"},
+            "duplicate": {name: "Duplicate", icon: "far fa-copy"},
+            "delete": {name: "Delete", icon: "fas fa-trash"}
+        };
+        this.context_menu_funcs = {...this.context_menu_funcs, ...this.specific_context_menu_functions};
+        this.context_menu_items = {...this.context_menu_items, ...this.specific_context_menu_items};
+        let self = this;
+        $.contextMenu({
+            selector: `#${self.module_id} .selector-button`,
+            callback: function(key, options) {
+                var fake_event = {"data": {"manager": resource_managers[get_current_module_id()]}};
+                var res_name = $(this).attr("value");
+                self.context_menu_funcs[key](fake_event, res_name)
+            },
+            items: self.context_menu_items,
+            events: {
+                show: function (options) {
+                    this.addClass("context-menu-active")
+                },
+                hide: function (options) {
+                    this.removeClass("context-menu-active")
+                }
             }
         });
     }
@@ -189,6 +225,8 @@ class LibraryResourceManager extends ResourceManager{
         this.aux_left = true;
         this.repository_copy_view = '/copy_from_repository';
         this.send_repository_view = '/send_to_repository';
+        this.specific_context_menu_functions = {};
+        this.specific_context_menu_items = {}
     }
 
     update_main_content() {
@@ -641,9 +679,11 @@ class LibraryResourceManager extends ResourceManager{
 
     // button action functions
 
-    view_func (event) {
+    view_func (event, res_name) {
         const manager = event.data.manager;
-        const res_name = manager.check_for_selection("resource");
+        if (typeof(res_name) == "undefined") {
+            res_name = manager.check_for_selection("resource");
+        }
         if (res_name == "") return;
         window.open($SCRIPT_ROOT + manager.view_view + String(res_name))
     }
@@ -653,9 +693,11 @@ class LibraryResourceManager extends ResourceManager{
         this.get_resource_table().find("tbody > tr").eq(index).fadeIn("slow")
     }
 
-    duplicate_func (event) {
+    duplicate_func (event, res_name) {
         const manager = event.data.manager;
-        const res_name = manager.check_for_selection("resource");
+        if (typeof(res_name) == "undefined") {
+            res_name = manager.check_for_selection("resource");
+        }
         const the_type = manager.res_type;
         if (res_name == "") return;
         $.getJSON($SCRIPT_ROOT + "get_resource_names/" + the_type, function(data) {
@@ -677,9 +719,11 @@ class LibraryResourceManager extends ResourceManager{
         }
     }
 
-    rename_func (event) {
+    rename_func (event, res_name) {
         const manager = event.data.manager;
-        const res_name = manager.check_for_selection("resource");
+        if (typeof(res_name) == "undefined") {
+            res_name = manager.check_for_selection("resource");
+        }
         const the_type = manager.res_type;
         if (res_name == "") return;
         $.getJSON($SCRIPT_ROOT + "get_resource_names/" + the_type, function(data) {
@@ -719,9 +763,11 @@ class LibraryResourceManager extends ResourceManager{
     }
 
 
-    delete_func (event) {
+    delete_func (event, res_name) {
         const manager = event.data.manager;
-        const res_name = manager.check_for_selection("resource");
+        if (typeof(res_name) == "undefined") {
+            res_name = manager.check_for_selection("resource");
+        }
         if (res_name == "") return;
         const confirm_text = `Are you sure that you want to delete ${res_name}?`;
         confirmDialog(`Delete ${manager.res_type}`, confirm_text, "do nothing", "delete", function () {
