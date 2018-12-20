@@ -171,10 +171,21 @@ class LibraryResourceManager extends ResourceManager{
             items: {
                 "rename_tag": {
                     name: "Rename Tag",
+                    icon: "far fa-edit",
                     callback: function (key, options, event) {
                         let tag = this[0].dataset.fulltag;
                         if (tag != "__all__") {
                             self.rename_tag(tag)
+                        }
+                    }
+                },
+                "delete_tag": {
+                    name: "Delete Tag",
+                    icon: "far fa-trash",
+                    callback: function (key, options, event) {
+                        let tag = this[0].dataset.fulltag;
+                        if (tag != "__all__") {
+                            self.delete_tag(tag)
                         }
                     }
                 }
@@ -192,7 +203,7 @@ class LibraryResourceManager extends ResourceManager{
 
     tag_button_delete_clicked(event) {
         let but = $(event.target);
-        let tag = but.parent().text();
+        let tag = but.closest(".tag-button")[0].dataset.fulltag;
         this.delete_tag(tag);
     }
 
@@ -648,7 +659,7 @@ class LibraryResourceManager extends ResourceManager{
     }
 
     delete_tag(tag) {
-        const confirm_text = `Are you sure that you want delete to the tag ${tag} for this resource type?`;
+        const confirm_text = `Are you sure that you want to delete the tag <b style="color:red">${tag}</b> for this resource type?`;
         let self = this;
         confirmDialog(`Delete tag`, confirm_text, "do nothing", "delete", function () {
             self.DoTagDelete(tag)
