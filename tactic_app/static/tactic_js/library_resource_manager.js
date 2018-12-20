@@ -165,6 +165,21 @@ class LibraryResourceManager extends ResourceManager{
                 }
             }
         });
+
+        $.contextMenu({
+            selector: `#${self.module_id} .tag-button-list button`,
+            items: {
+                "rename_tag": {
+                    name: "Rename Tag",
+                    callback: function (key, options, event) {
+                        let tag = this[0].dataset.fulltag;
+                        if (tag != "__all__") {
+                            self.rename_tag(tag)
+                        }
+                    }
+                }
+            }
+        })
     }
 
     selector_double_click(event) {
@@ -640,30 +655,49 @@ class LibraryResourceManager extends ResourceManager{
         })
     }
 
-    DoTagRename(old_tag, new_tag) {
-        const result_dict = {"res_type": this.res_type, "old_tag": old_tag, "new_tag": new_tag, "module_id": this.module_id};
+    DoTagRename(old_tag, new_tag_base) {
+        let child_tags = this.tag_button_list.get_all_children(old_tag);
+        let immediate_parent = "";
+        if (old_tag.search("/") != -1) {
+            immediate_parent = this.tag_button_list.get_immediate_tag_parent(old_tag) + "/"
+        }
+        let new_tag = immediate_parent + new_tag_base;
+        let tag_changes = [[old_tag, new_tag]];
+        for (let child_tag of child_tags) {
+            let new_child_tag = child_tag.replace(old_tag, new_tag);  // this won't deal properly with all cases
+            tag_changes.push([child_tag, new_child_tag])
+        }
+
+        const result_dict = {"res_type": this.res_type, "tag_changes": tag_changes, "module_id": this.module_id};
         let self = this;
         postAjaxPromise("rename_tag", result_dict)
             .then(function (data) {
-                if (!(new_tag == old_tag)) {
-                    self.rename_tag_in_all_rows(old_tag, new_tag);
-                    self.tag_button_list.refresh_given_taglist(data.res_tags);
-                    resource_managers["all_module"].rename_tag_in_all_rows(old_tag, new_tag, self.res_type);
-                    resource_managers["all_module"].tag_button_list.refresh_given_taglist(data.all_tags);
-                    if (!self.active_selector_is_visible()){
-                        self.select_first_row()
+                for (let tag_change of tag_changes) {
+                    let new_tag = tag_change[1];
+                    let old_tag = tag_change[0];
+                    if (!(new_tag == old_tag)) {
+                        self.rename_tag_in_all_rows(old_tag, new_tag);
+                        resource_managers["all_module"].rename_tag_in_all_rows(old_tag, new_tag, self.res_type);
+
+                        if (!self.active_selector_is_visible()){
+                            self.select_first_row()
+                        }
                     }
                 }
+                self.tag_button_list.refresh_given_taglist(data.res_tags);
+                resource_managers["all_module"].tag_button_list.refresh_given_taglist(data.all_tags);
+
             })
             .catch(doFlash)
     }
 
     rename_tag(old_tag) {
         let self = this;
-        showModal(`Rename tag ${old_tag}`, `New name for this tag`, RenameTag, old_tag);
+        let tag_base = this.tag_button_list.get_tag_base(old_tag);
+        showModal(`Rename tag ${tag_base}`, `New name for this tag`, RenameTag, tag_base);
 
-        function RenameTag(new_tag) {
-            self.DoTagRename(old_tag, new_tag)
+        function RenameTag(new_tag_base) {
+            self.DoTagRename(old_tag, new_tag_base)
         }
     }
 

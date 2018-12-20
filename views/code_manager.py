@@ -97,7 +97,7 @@ class CodeManager(LibraryResourceManager):
                 db[current_user.code_collection_name].update_one({"code_name": res_name}, {'$set': {"metadata": mdata}})
         return
 
-    def rename_tag(self, old_tag, new_tag):
+    def rename_tag(self, tag_changes):
         doclist = db[current_user.code_collection_name].find()
         for doc in doclist:
             if "metadata" not in doc:
@@ -105,13 +105,15 @@ class CodeManager(LibraryResourceManager):
             mdata = doc["metadata"]
             tagstring = mdata["tags"]
             taglist = tagstring.split()
-            if old_tag in taglist:
-                taglist.remove(old_tag)
-                if new_tag not in taglist:
-                    taglist.append(new_tag)
-                mdata["tags"] = " ".join(taglist)
-                res_name = doc["code_name"]
-                db[current_user.code_collection_name].update_one({"code_name": res_name}, {'$set': {"metadata": mdata}})
+            for old_tag, new_tag in tag_changes:
+                if old_tag in taglist:
+                    taglist.remove(old_tag)
+                    if new_tag not in taglist:
+                        taglist.append(new_tag)
+                    mdata["tags"] = " ".join(taglist)
+                    res_name = doc["code_name"]
+                    db[current_user.code_collection_name].update_one({"code_name": res_name},
+                                                                     {'$set': {"metadata": mdata}})
         return
 
     def view_code(self, code_name):

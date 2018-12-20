@@ -292,7 +292,7 @@ class CollectionManager extends LibraryResourceManager {
         };
         this.specific_context_menu_items = {
             "separator": { "type": "cm_separator" },
-            "combine": {name: "combine", icon: "fas fa-plus-square"}
+            "combine": {name: "combine", icon: "far fa-plus-square"}
         };
 
     }
@@ -473,7 +473,7 @@ class TileManager extends LibraryResourceManager {
             "option_list": [{"opt_name": "BasicTileTemplate", "opt_func": "new_basic_tile"},
                 {"opt_name": "ExpandedTileTemplate", "opt_func": "new_expanded_tile"},
                 {"opt_name": "MatplotlibTileTemplate", "opt_func": "new_matplotlib_tile"}]
-            },
+        },
             {
                 "name": "creator",
                 "button_class": "btn-outline-secondary",
@@ -491,25 +491,94 @@ class TileManager extends LibraryResourceManager {
             // }
         ];
         this.button_groups = [
-            {buttons: [
-                    {"name": "edit", "func": "view_func", "button_class": "btn-outline-secondary", "icon_name": "pencil"},
-                    {"name": "creator", "func": "creator_view_func", "button_class": "btn-outline-secondary", "icon_name": "pencil-alt"},
-                    {"name": "load", "func": "load_func", "button_class": "btn-outline-secondary", "icon_name": "arrow-from-bottom"},
-                    {"name": "unload", "func": "unload_func", "button_class": "btn-outline-secondary", "icon_name": "ban"}]
+            {
+                buttons: [
+                    {
+                        "name": "edit",
+                        "func": "view_func",
+                        "button_class": "btn-outline-secondary",
+                        "icon_name": "pencil"
+                    },
+                    {
+                        "name": "creator",
+                        "func": "creator_view_func",
+                        "button_class": "btn-outline-secondary",
+                        "icon_name": "pencil-alt"
+                    },
+                    {
+                        "name": "load",
+                        "func": "load_func",
+                        "button_class": "btn-outline-secondary",
+                        "icon_name": "arrow-from-bottom"
+                    },
+                    {
+                        "name": "unload",
+                        "func": "unload_func",
+                        "button_class": "btn-outline-secondary",
+                        "icon_name": "ban"
+                    }]
             },
-            {buttons: [
-                    {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-outline-secondary", "icon_name": "copy"},
-                    {"name": "rename", "func": "rename_func", "button_class": "btn-outline-secondary", "icon_name": "edit"}]
+            {
+                buttons: [
+                    {
+                        "name": "duplicate",
+                        "func": "duplicate_func",
+                        "button_class": "btn-outline-secondary",
+                        "icon_name": "copy"
+                    },
+                    {
+                        "name": "rename",
+                        "func": "rename_func",
+                        "button_class": "btn-outline-secondary",
+                        "icon_name": "edit"
+                    }]
             },
-            {buttons: [
-                    {"name": "share", "func": "send_repository_func", "button_class": "btn-outline-secondary", "icon_name": "share"}]
+            {
+                buttons: [
+                    {
+                        "name": "share",
+                        "func": "send_repository_func",
+                        "button_class": "btn-outline-secondary",
+                        "icon_name": "share"
+                    }]
             },
-            {buttons: [
-                    {"name": "delete", "func": "delete_func", "button_class": "btn-outline-secondary", "icon_name": "trash"}]
+            {
+                buttons: [
+                    {
+                        "name": "delete",
+                        "func": "delete_func",
+                        "button_class": "btn-outline-secondary",
+                        "icon_name": "trash"
+                    }]
             },
-            {"buttons": [{"name": "refresh", "func": "refresh_func", "button_class": "btn-outline-secondary", "icon_name": "sync-alt"}]}
-        ]
-    }
+            {
+                "buttons": [{
+                    "name": "refresh",
+                    "func": "refresh_func",
+                    "button_class": "btn-outline-secondary",
+                    "icon_name": "sync-alt"
+                }]
+            }
+        ];
+
+        this.specific_context_menu_functions = {
+            "editor": this.view_func,
+            "creator": this.creator_view_func,
+            "load": this.load_func
+        };
+        this.specific_context_menu_items = {
+            "separator": { "type": "cm_separator" },
+            "folder": {
+                name: "Open in",
+                icon: "far fa-pencil",
+                items: {
+                    "editor": {name: "editor"},
+                    "creator": {name: "creator"}
+                }
+            },
+            "load": {name: "load", icon: "fas fa-arrow-from-bottom"}
+        }
+    };
 
     update_aux_content() {
         this.tag_button_list.create_tag_buttons(this.update_tag_view);
@@ -517,9 +586,11 @@ class TileManager extends LibraryResourceManager {
         this.get_aux_right_dom().load(`${$SCRIPT_ROOT}/request_update_loaded_tile_list`)
     }
 
-    creator_view_func (event) {
+    creator_view_func (event, res_name) {
         const manager = event.data.manager;
-        const res_name = manager.check_for_selection("resource");
+        if (typeof(res_name) == "undefined") {
+            res_name = manager.check_for_selection("resource");
+        }
         if (res_name == "") return;
         window.open($SCRIPT_ROOT + manager.creator_view + String(res_name))
     }
@@ -533,9 +604,11 @@ class TileManager extends LibraryResourceManager {
         window.open($SCRIPT_ROOT + manager.last_saved_view + String(res_name))
     }
 
-    load_func (event) {
+    load_func (event, res_name) {
         const manager = event.data.manager;
-        const res_name = manager.check_for_selection("resource");
+         if (typeof(res_name) == "undefined") {
+            res_name = manager.check_for_selection("resource");
+        }
         if (res_name == "") return;
         postWithCallbackNoMain("host", "load_tile_module_task", {"tile_module_name": res_name, "user_id": user_id}, doFlash)
 
@@ -1148,17 +1221,17 @@ class AllManager extends LibraryResourceManager {
     get_selector_table_row(name, res_type) {
         const possible_rows = this.get_module_element(`tr[value='${name}']`);
         let self = this;
-        let result = null;
         let row_element;
-        for (let i = 0; row_element = possible_rows[i]; ++i) {
+
+        for (let i = 0; i < possible_rows.length; ++i) {
+            row_element = possible_rows[i];
             const cells = $(row_element).children();
-            self.get_module_element(`tr[value='${name}']`);
             let the_type = cells[1].getAttribute("sorttable_customkey");
             if (the_type == res_type) {
-                result = $(row_element)
+                return $(row_element)
             }
         }
-        return result
+        return null
     }
 
     save_my_metadata(flash = false) {
@@ -1198,11 +1271,12 @@ class AllManager extends LibraryResourceManager {
 
     rename_tag(old_tag) {
         let self = this;
-        showModal(`Rename tag ${old_tag}`, `New name for this tag for all resource types`, RenameTag, old_tag);
+        let tag_base = this.tag_button_list.get_tag_base(old_tag);
+        showModal(`Rename tag ${tag_base}`, `New name for this tag for all resource types`, RenameTag, tag_base);
 
-        function RenameTag(new_tag) {
+        function RenameTag(new_tag_base) {
             for (let res_type of res_types) {
-                resource_managers[`${res_type}_module`].DoTagRename(old_tag, new_tag)
+                resource_managers[`${res_type}_module`].DoTagRename(old_tag, new_tag_base)
             }
         }
     }
@@ -1246,7 +1320,7 @@ class AllManager extends LibraryResourceManager {
         const all_rows = this.get_all_selector_buttons();
         $.each(all_rows, function (index, row_element) {
             const cells = $(row_element).children();
-            let the_type = cells[1].innerHTML;
+            let the_type = cells[1].getElementsByTagName("span")[0].dataset.restype;
             if ((res_type == "all") || (the_type == res_type)) {
                 const tag_text = $(cells.slice(-1)[0]).text().toLowerCase();
                 if (tag_text != "") {
