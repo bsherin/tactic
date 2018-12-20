@@ -291,10 +291,9 @@ def delete_tag():
 def rename_tag():
     try:
         res_type = request.json["res_type"]
-        old_tag = request.json["old_tag"]
-        new_tag = request.json["new_tag"]
+        tag_changes = request.json["tag_changes"]
         manager = get_manager_for_type(res_type)
-        manager.rename_tag(old_tag, new_tag)
+        manager.rename_tag(tag_changes)
         res_tags = manager.get_tag_list()
         all_tags = all_manager.get_tag_list()
         return jsonify({"success": True, "res_tags": res_tags, "all_tags": all_tags,
