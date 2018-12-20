@@ -244,13 +244,13 @@ class TagButtonList {
         tag_list = remove_duplicates(tag_list);
         tag_list.sort();
 
+        var hcclass = "";
         var prefix = `<span style="margin-left:${indent_amount}px"></span></span><span class="tag-icon-tag fal fa-tags"></span><span class="tag-icon-tag fas fa-tags"></span>`;
         var new_html = `<button type="button" data-fulltag="__all__" class="btn btn-outline-secondary tag-button active root-tag ${hcclass} showme" style="display: block" value="${this.res_type}">${prefix}all</span></button>`;
         tag_button_html = tag_button_html + new_html + "\n";
 
         for (let tag of tag_list) {
             let tag_base = this.get_tag_base(tag);
-            var hcclass;
 
             let mleft = indent_amount * this.tag_depth(tag);
             let has_children = parent_tags.includes(tag);
@@ -302,6 +302,15 @@ class TagButtonList {
         return $(subtag_buttons)
     }
 
+    get_all_tags() {
+        const all_tag_buttons = this.get_all_tag_buttons();
+        var tag_list = [];
+        $.each(all_tag_buttons, function (index, but) {
+             tag_list.push(but.dataset.fulltag);
+         });
+        return tag_list
+    }
+
     get_tag_base(the_tag) {
         if (!this.has_slash(the_tag)){
             return the_tag
@@ -340,6 +349,18 @@ class TagButtonList {
             ptags.push(parent_tag);
             return ptags
         }
+    }
+
+    get_all_children(the_tag) {
+        let all_tags = this.get_all_tags();
+        let child_list = [];
+        for (let tag of all_tags) {
+            let parents = this.get_parent_tags(tag);
+            if (parents.includes(the_tag)) {
+                child_list.push(tag)
+            }
+        }
+        return child_list
     }
 
     find_matching_tags(tag_list) {
