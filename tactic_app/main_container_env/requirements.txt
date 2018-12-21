@@ -1,4 +1,4 @@
 markdown
-Flask
+Flask==1.0.2
 gunicorn==18.0
 
