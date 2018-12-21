@@ -97,7 +97,7 @@ try:
 
     if use_ssl == "True":
         print "enabling sslify"
-        from flask.ext.sslify import SSLify
+        from flask_sslify import SSLify
         sslify = SSLify(app)
 
     "print starting login_manager, bootstratp, socketio"
