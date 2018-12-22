@@ -5,11 +5,11 @@ docker-compose==1.19.0
 Flask==1.0.2
 Flask-Bootstrap==3.3.7.1
 Flask-Login==0.4.1
-Flask-SocketIO==2.9.4
+Flask-SocketIO==3.1.2
 Flask-SSLify==0.1.5
 Flask-WTF==0.14.2
 gevent==1.2.2
-python-socketio==1.8.4
+python-socketio==2.1.0
 gevent-websocket==0.10.1
 greenlet
 gunicorn==18.0
