@@ -25,9 +25,9 @@ mongo_uri = os.environ.get("MONGO_URI")
 # noinspection PyUnusedLocal
 class ModuleViewerWorker(QWorker):
     def __init__(self):
-        print "about to initialize QWorker"
+        print("about to initialize QWorker")
         QWorker.__init__(self)
-        print "QWorker initialized"
+        print("QWorker initialized")
         self.tp = None
         self.tstring = None
         self.module_name = None
@@ -49,7 +49,7 @@ class ModuleViewerWorker(QWorker):
             self.db = client[db_name]
         except:
             error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-            print error_string
+            print(error_string)
             self.mworker.debug_log("error getting pymongo client: " + error_string)
             sys.exit()
         self.tile_collection_name = data_dict["tile_collection_name"]
@@ -71,7 +71,7 @@ class ModuleViewerWorker(QWorker):
             template = special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}"
         error_string = template.format(type(ex).__name__, ex.args)
         error_string = "<pre>" + error_string + "</pre>"
-        print error_string
+        print(error_string)
         return {"success": False, "message_string": error_string}
 
     @task_worthy
@@ -94,7 +94,7 @@ class ModuleViewerWorker(QWorker):
         for opt_dict in options:
             if "default" not in opt_dict:
                 opt_dict["default"] = "None"
-            elif isinstance(opt_dict["default"], basestring):
+            elif isinstance(opt_dict["default"], str):
                 opt_dict["default"] = '"' + opt_dict["default"] + '"'
             opt_dict["default"] = str(opt_dict["default"])
             if "special_list" in opt_dict:
@@ -140,7 +140,7 @@ class ModuleViewerWorker(QWorker):
                 else:
                     extra_methods_line_number = draw_plot_line_number - 1
             else:
-                extra_methods_line_number = self.tp.get_starting_line(self.tp.extra_methods.keys()[0])
+                extra_methods_line_number = self.tp.get_starting_line(list(self.tp.extra_methods)[0])
             doc = self.db[self.tile_collection_name].find_one({"tile_module_name": module_name})
             if "metadata" in doc:
                 mdata = doc["metadata"]
@@ -207,7 +207,7 @@ class ModuleViewerWorker(QWorker):
             else:
                 extra_methods_line_number = draw_plot_line_number - 1
         else:
-            extra_methods_line_number = self.tp.get_starting_line(self.tp.extra_methods.keys()[0])
+            extra_methods_line_number = self.tp.get_starting_line(list(self.tp.extra_methods)[0])
 
         parsed_data = {"option_dict": self.tp.options, "export_list": self.tp.exports,
                        "render_content_code": render_content_code,
@@ -248,9 +248,9 @@ class ModuleViewerWorker(QWorker):
 
     @task_worthy
     def stop_me(self, data):
-        print "killing me"
+        print("killing me")
         self.kill()
-        print "I'm killed"
+        print("I'm killed")
         return {"success": True}
 
     def build_html_table_from_data_list(self, data_list, res_type, title=None):
@@ -317,11 +317,11 @@ class ModuleViewerWorker(QWorker):
 
 
 if __name__ == "__main__":
-    print "entering main"
+    print("entering main")
     mworker = ModuleViewerWorker()
-    print "mworker is created, about to start my_id is " + str(mworker.my_id)
+    print("mworker is created, about to start my_id is " + str(mworker.my_id))
     mworker.start()
-    print "mworker started, my_id is " + str(mworker.my_id)
+    print("mworker started, my_id is " + str(mworker.my_id))
     app = Flask(__name__)
     while True:
         time.sleep(1000)

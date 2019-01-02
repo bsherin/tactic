@@ -1,17 +1,17 @@
-from gevent import monkey; monkey.patch_all()
-print "entering main_main"
 import os
+if "DEBUG_MAIN_CONTAINER" in os.environ:
+    if os.environ.get("DEBUG_MAIN_CONTAINER") == "True":
+        import pydevd
+        # pydevd.settrace('docker.for.mac.localhost', port=21000, stdoutToServer=True, stderrToServer=True, suspend=False)
+        print("settrace done")
+
+from gevent import monkey; monkey.patch_all()
+print("entering main_main")
+
 import uuid
 import flask
 import copy
 from communication_utils import send_request_to_megaplex
-
-
-if "DEBUG_MAIN_CONTAINER" in os.environ:
-    if os.environ.get("DEBUG_MAIN_CONTAINER") == "True":
-        import pydevd
-        pydevd.settrace('docker.for.mac.localhost', port=21000, stdoutToServer=True, stderrToServer=True, suspend=False)
-        print "settrace done"
 
 from main import mainWindow
 import main
@@ -26,7 +26,7 @@ import time
 # sys.stdout = sys.stderr
 from megaplex_main import app
 import megaplex_main
-print "imported megaplex_main"
+print("imported megaplex_main")
 
 
 @app.route('/main_hello', methods=["get", "post"])
@@ -39,7 +39,7 @@ class MainWorker(QWorker):
         QWorker.__init__(self)
         self.mwindow = None
         self.get_megaplex_task_now = False
-        print "starting mainworker"
+        print("starting mainworker")
 
     def ask_host(self, msg_type, task_data=None, callback_func=None):
         task_data["main_id"] = self.my_id
@@ -206,7 +206,7 @@ class MainWorker(QWorker):
         else:
             template = "<pre>" + special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}</pre>"
         error_string = template.format(type(ex).__name__, ex.args)
-        print error_string
+        print(error_string)
         return {"success": False, "message": error_string}
 
     @task_worthy
@@ -223,7 +223,7 @@ class MainWorker(QWorker):
 
             self.mwindow = mainWindow(self, data_dict)
             self.handler_instances["mainwindow"] = self.mwindow
-            print "ready to emit to client"
+            print("ready to emit to client")
             self.ask_host("emit_to_client", {"message": "finish-post-load",
                                              "collection_name": self.mwindow.collection_name,
                                              "doc_names": self.mwindow.doc_names})
@@ -254,7 +254,7 @@ class MainWorker(QWorker):
     # noinspection PyUnusedLocal
     @task_worthy
     def get_saved_console_code(self, data_dict):
-        print "entering saved console code"
+        print("entering saved console code")
         return {"saved_console_code": self.mwindow.console_cm_code}
 
 

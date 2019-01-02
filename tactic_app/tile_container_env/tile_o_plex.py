@@ -8,7 +8,7 @@ transmitted_pipe_value = None
 
 @app.route('/submit_response', methods=["get", "post"])
 def submit_response():
-    print "receiving a pipe value"
+    print("receiving a pipe value")
     global awaiting_pipe, transmitted_pipe_value
     transmitted_pipe_value = request.json["response_data"]
     awaiting_pipe = False

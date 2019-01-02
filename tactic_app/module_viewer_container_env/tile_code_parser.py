@@ -1,3 +1,4 @@
+from __future__ import print_function
 import re
 import ast
 from collections import OrderedDict
@@ -76,8 +77,9 @@ class TileParser(object):
     def get_options_dict(self):
         opt_code = self.methods["options"]["method_code_no_decs"]
         opt_code = remove_indents(opt_code, 1)
-        exec opt_code
-        return options(None)
+        tdict = {}
+        exec(opt_code, tdict)
+        return tdict["options"](None)
 
     def get_class_node(self):
         res = ast.parse(self.module_code)
@@ -118,13 +120,13 @@ class TileParser(object):
                     mdict[node.name]["last_line"] = self.cnode.body[i + 1].lineno - 2
                 else:
                     mdict[node.name]["last_line"] = None
-        for i, method_name in enumerate(mdict.keys()[:-1]):
+        for i, method_name in enumerate(list(mdict)[:-1]):
             md = mdict[method_name]
             md["method_code"] = "\n".join(self.module_lines[md["start_line"]:md["last_line"] + 1])
             md["method_body"] = "\n".join(self.module_lines[md["body_start"]:md["last_line"] + 1])
             md["method_code_no_decs"] = "\n".join(self.module_lines[md["start_line"] +
                                                                     len(md["node"].decorator_list):md["last_line"] + 1])
-        last_method = mdict.keys()[-1]
+        last_method = list(mdict)[-1]
         mdict[last_method]["method_code"] = "\n".join(self.module_lines[mdict[last_method]["start_line"]:])
         mdict[last_method]["method_body"] = "\n".join(self.module_lines[mdict[last_method]["body_start"]:])
         mdict[last_method]["method_code_no_decs"] = "\n".join(self.module_lines[mdict[last_method]["start_line"] +
@@ -154,7 +156,7 @@ class TileParser(object):
             new_code += "\n" + self.methods["draw_plot"]["method_code"]
         if "render_content" in self.methods:
             new_code += "\n" + self.methods["render_content"]["method_code"]
-        print "done rebuilding"
+        print("done rebuilding")
         return new_code
 
     def get_assignments(self):

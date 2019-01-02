@@ -4,11 +4,11 @@ import time
 from bson.binary import Binary
 # noinspection PyUnresolvedReferences
 from matplotlib_utilities import MplFigure, color_palette_names, ColorMapper
-from types import NoneType
+# from types import NoneType
 import traceback
 import os
-import cPickle
-from cPickle import UnpicklingError
+import pickle
+from pickle import UnpicklingError
 from communication_utils import is_jsonizable, make_python_object_jsonizable, debinarize_python_object
 from fuzzywuzzy import fuzz, process
 
@@ -32,13 +32,11 @@ _jsonizable_types = {
     "str": str,
     "list": list,
     "tuple": tuple,
-    "unicode": unicode,
     "int": int,
     "float": float,
-    "long": long,
     "bool": bool,
     "dict": dict,
-    "NoneType": NoneType
+    "NoneType": type(None)
 }
 
 
@@ -60,11 +58,11 @@ def user_class(the_class):
 
 def exec_user_code(the_code):
     try:
-        exec the_code
+        exec(the_code)
     except:
-        error_string = unicode(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+        error_string = sys.exc_info()[0] + " " + str(sys.exc_info()[1])
         return {"success": False, "message_string": error_string}
-    return {"success": True, "classes": _code_names["classes"].keys(), "functions": _code_names["functions"].keys()}
+    return {"success": True, "classes": list(_code_names["classes"].keys()), "functions": list(_code_names["functions"].keys())}
 
 
 def clear_and_exec_user_code(the_code):
@@ -166,7 +164,7 @@ class TileBase(object):
         func_tag_dict = self._tworker.post_and_wait("host", "get_function_tags_dict",
                                                     {"user_id": self.user_id})["function_names"]
         if tag is None:
-            fnames = func_tag_dict.keys()
+            fnames = list(func_tag_dict.keys())
         else:
             fnames = []
             for func_name, tags in func_tag_dict.items():
@@ -178,7 +176,7 @@ class TileBase(object):
         class_tag_dict = self._tworker.post_and_wait("host", "get_class_tags_dict",
                                                      {"user_id": self.user_id})["class_names"]
         if tag is None:
-            cnames = class_tag_dict.keys()
+            cnames = list(class_tag_dict.keys())
         else:
             cnames = []
             for class_name, tags in class_tag_dict.items():
@@ -212,7 +210,7 @@ class TileBase(object):
 
     @_task_worthy
     def RefreshTileFromSave(self, data):
-        print "in RefreshTileFromSave"
+        print("in RefreshTileFromSave")
         self._refresh_from_save()
         return None
 
@@ -429,7 +427,7 @@ class TileBase(object):
         try:
             form_html = ""
             for option in self.options:
-                print "got option " + str(option)
+                print("got option " + str(option))
                 att_name = option["name"]
                 if "tags" in option:
                     option_tags = option["tags"].split()
@@ -470,8 +468,8 @@ class TileBase(object):
                     for tile_id, tile_entry in self._pipe_dict.items():
                         if tile_id == self._tworker.my_id:
                             continue
-                        first_full_name = tile_entry.keys()[0]
-                        first_short_name = tile_entry.values()[0]["export_name"]
+                        first_full_name = list(tile_entry)[0]
+                        first_short_name = list(tile_entry.values())[0]["export_name"]
                         tile_name = re.sub("_" + first_short_name, "", first_full_name)
                         group_created = False
                         group_html = "<optgroup label={}>".format(tile_name)
@@ -556,7 +554,7 @@ class TileBase(object):
                         val = " '"
                     form_html += the_template.format(att_name, val)
                 else:
-                    print "Unknown option type specified"
+                    print("Unknown option type specified")
             fixed_attrs = []
             for attr in self.save_attrs:  # legacy to deal with tiles that have self.save_attrs += exports
                 if isinstance(attr, dict):
@@ -607,7 +605,7 @@ class TileBase(object):
                 if not self.configured:
                     new_html = "Tile not configured"
                 else:
-                    new_html = unicode(self.render_content())
+                    new_html = self.render_content()
             self.current_html = new_html
             self._tworker.emit_tile_message("displayTileContent", {"html": new_html})
         except Exception as ex:
@@ -630,7 +628,7 @@ class TileBase(object):
             if hasattr(attr_val, "compile_save_dict"):
                 result[attr] = attr_val.compile_save_dict()
             elif((type(attr_val) == dict) and(len(attr_val) > 0) and
-                 hasattr(attr_val.values()[0], "compile_save_dict")):
+                 hasattr(list(attr_val.values())[0], "compile_save_dict")):
                 res = {}
                 for(key, val) in attr_val.items():
                     res[key] = val.compile_save_dict()
@@ -645,44 +643,49 @@ class TileBase(object):
                     result["binary_attrs"].append(attr)
                     bser_attr_val = make_python_object_jsonizable(attr_val)
                     result[attr] = bser_attr_val
-                    if is_jsonizable(bser_attr_val, ensure_ascii=False):
-                        print "new bser_attr_val is jsonizable"
+                    if is_jsonizable(bser_attr_val):
+                        print("new bser_attr_val is jsonizable")
                     else:
-                        print "new bser_attr_val is not jsonizable"
+                        print("new bser_attr_val is not jsonizable")
 
                 except TypeError:
-                    print "got a TypeError"
+                    print("got a TypeError")
                     continue
         data = {"tile_type": self.tile_type, "user_id": self.user_id}
         result["tile_id"] = self._tworker.my_id
         result["module_name"] = self._tworker.post_and_wait("host", "get_module_from_tile_type", data)["module_name"]
-        print "done compiling attributes"
+        print("done compiling attributes")
         return result
 
     def recreate_from_save(self, save_dict):
-        print "entering recreate from save in tile_base"
+        print("entering recreate from save in tile_base")
         if "binary_attrs" not in save_dict:
             save_dict["binary_attrs"] = []
         for(attr, attr_val) in save_dict.items():
+            print("processing attribute {}".format(attr))
             if type(attr_val) == dict and hasattr(attr_val, "recreate_from_save"):
                 cls = getattr(sys.modules[__name__], attr_val["my_class_for_recreate"])
                 setattr(self, attr, cls.recreate_from_save(attr_val))
             elif((type(attr_val) == dict) and(len(attr_val) > 0) and
-                 hasattr(attr_val.values()[0], "recreate_from_save")):
-                cls = getattr(sys.modules[__name__], attr_val.values()[0]["my_class_for_recreate"])
+                 hasattr(list(attr_val.values())[0], "recreate_from_save")):
+                cls = getattr(sys.modules[__name__], list(attr_val.values())[0]["my_class_for_recreate"])
                 res = {}
                 for(key, val) in attr_val.items():
                     res[key] = cls.recreate_from_save(val)
                 setattr(self, attr, res)
             else:
                 if isinstance(attr_val, Binary):  # seems like this is never true even for old-style saves
-                    decoded_val = cPickle.loads(str(attr_val.decode()))
+                    decoded_val = pickle.loads(str(attr_val.decode()))
                     setattr(self, attr, decoded_val)
                 elif attr in save_dict["binary_attrs"]:
                     try:
                         decoded_val = debinarize_python_object(attr_val)
-                    except:  # legacy if above fails try the old method
-                        decoded_val = cPickle.loads(str(attr_val.decode()))
+                    except Exception as ex:  # legacy if above fails try the old method
+                        self._handle_exception(ex, "debinarizing failed for attr {}".format(attr), print_to_console=True)  # tactic_working
+                        if attr == "img_dict":
+                            decoded_val = {}
+                        else:
+                            decoded_val = None
                     setattr(self, attr, decoded_val)
                 else:
                     setattr(self, attr, attr_val)
@@ -693,35 +696,35 @@ class TileBase(object):
         result = {}
         if avar == "__none__":
             result["type"] = "none"
-            result["info_string"] = u"Not set"
+            result["info_string"] = "Not set"
         elif type(avar) is dict:
             result["type"] = "dict"
-            result["info_string"] = u"Dict with {} keys".format(str(len(avar.keys())))
+            result["info_string"] = "Dict with {} keys".format(str(len(avar.keys())))
             keys_html = ""
-            klist = avar.keys()
+            klist = list(avar.keys())
             klist.sort()
             for kname in klist:
-                keys_html += u"<option>{}</option>\n".format(kname)
+                keys_html += "<option>{}</option>\n".format(kname)
             result["key_list"] = klist
             result["keys_html"] = keys_html
         elif type(avar) is list:
             result["type"] = "list"
-            result["info_string"] = u"List with {} elements".format(str(len(avar)))
+            result["info_string"] = "List with {} elements".format(str(len(avar)))
         elif type(avar) is set:
             result["type"] = "set"
-            result["info_string"] = u"Set with {} elements".format(str(len(avar)))
+            result["info_string"] = "Set with {} elements".format(str(len(avar)))
         elif type(avar) is str:
             result["type"] = "string"
-            result["info_string"] = "uString with {} characters".format(str(len(avar)))
+            result["info_string"] = "String with {} characters".format(str(len(avar)))
         else:
             findtype = re.findall("(?:type|class) \'(.*?)\'", str(type(avar)))
             if len(findtype) > 0:
                 result["type"] = findtype[0]
             else:
-                result["type"] = u"no type"
+                result["type"] = "no type"
             try:
                 thel = len(avar)
-                result["info_string"] = u"{} of length {}".format(result["type"], thel)
+                result["info_string"] = "{} of length {}".format(result["type"], thel)
             except:
                 result["info_string"] = result["type"]
         return result
@@ -753,12 +756,12 @@ class TileBase(object):
             success = False
             the_html = "pipe not found"
         else:
-            ev_string = u"pipe_val"
+            ev_string = "pipe_val"
             if "key" in data:
-                ev_string += u"['{}']".format(data["key"])
+                ev_string += "['{}']".format(data["key"])
             ev_string += data["tail"]
             try:
-                print "evaluating string " + ev_string
+                print("evaluating string " + ev_string)
                 eval_result = eval(ev_string)
                 eval_type_info = self._get_type_info(eval_result)
                 if eval_type_info["type"] == "dict":
@@ -774,12 +777,12 @@ class TileBase(object):
                     the_html = self._build_html_table_for_exports(the_array, title=eval_type_info["info_string"],
                                                                   has_header=False)
                 else:
-                    the_html = u"<h5>{}</h5>".format(eval_type_info["info_string"])
-                    the_html += unicode(eval_result)
+                    the_html = "<h5>{}</h5>".format(eval_type_info["info_string"])
+                    the_html += str(eval_result)
             except:
                 succcess = False
-                print "error in _evaluate_export in tile_base"
-                the_html = unicode(sys.exc_info()[0]) + " " + unicode(sys.exc_info()[1])
+                print("error in _evaluate_export in tile_base")
+                the_html = sys.exc_info()[0] + " " + sys.exc_info()[1]
         return {"success": success, "the_html": the_html}
 
     def _render_me(self, form_info):
@@ -1220,7 +1223,7 @@ class TileBase(object):
 
     def clear_table_highlighting(self):
         self._save_stdout()
-        self.distribute_event("SearchTable", {})
+        self.distribute_event("DehighlightTable", {})
         self._restore_stdout()
         return
 
@@ -1327,6 +1330,12 @@ class TileBase(object):
         self._restore_stdout()
         return
 
+    def get_container_log(self):
+        self._save_stdout()
+        result = self._tworker.post_and_wait("host", "get_container_log", {"container_id": self._tworker.my_id})
+        self._restore_stdout()
+        return result["log_text"]
+
     def cct(self, doc_name, row_id, column_name, tokenized_text, color_dict):
         self.color_cell_text(doc_name, row_id, column_name, tokenized_text, color_dict)
         return
@@ -1384,7 +1393,7 @@ class TileBase(object):
                                              {"user_id": self.user_id, "collection_name": collection_name})
         self._restore_stdout()
         if not result["success"]:
-            raise CollectionNotFound(u"Couldn't find collection with name {}".format(collection_name))
+            raise CollectionNotFound("Couldn't find collection with name {}".format(collection_name))
         return result["the_collection"]
 
     def get_collection_names(self):
@@ -1526,10 +1535,10 @@ class TileBase(object):
             else:
                 the_html += u"<tr>"
                 for cnum, c in enumerate(r):
-                    the_html += u"<td class='element-clickable' data-row='{1}' " \
-                                u"data-col='{2}' data-val='{0}'>{0}</td>".format(c, unicode(rnum), unicode(cnum))
+                    the_html += "<td class='element-clickable' data-row='{1}' " \
+                                "data-col='{2}' data-val='{0}'>{0}</td>".format(c, str(rnum), str(cnum))
                 the_html += "</tr>"
-        the_html += u"</tbody></table>"
+        the_html += "</tbody></table>"
         self._restore_stdout()
         return the_html
 
@@ -1546,10 +1555,10 @@ class TileBase(object):
         else:
             start = 0
         for r in data_list[start:]:
-            the_html += u"<tr>".format()
+            the_html += "<tr>".format()
             for c in r:
-                the_html += u"<td>{0}</td>".format(unicode(c))
-            the_html += u"</tr>"
+                the_html += "<td>{0}</td>".format(str(c))
+            the_html += "</tr>"
 
-        the_html += u"</tbody></table>"
+        the_html += "</tbody></table>"
         return the_html

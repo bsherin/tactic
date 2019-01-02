@@ -1,5 +1,5 @@
 from gevent import monkey; monkey.patch_all()
-print "entering main_main"
+print("entering main_main")
 import os
 from communication_utils import send_request_to_megaplex
 
@@ -7,7 +7,7 @@ if "DEBUG_MAIN_CONTAINER" in os.environ:
     if os.environ.get("DEBUG_TILE_CONTAINER") == "True":
         import pydevd
         pydevd.settrace('docker.for.mac.localhost', port=21000, stdoutToServer=True, stderrToServer=True, suspend=False)
-        print "settrace done"
+        print("settrace done")
 
 import copy
 # noinspection PyUnresolvedReferences
@@ -41,9 +41,9 @@ else:
 # noinspection PyUnusedLocal
 class TileWorker(QWorker):
     def __init__(self):
-        print "about to initialize QWorker"
+        print("about to initialize QWorker")
         QWorker.__init__(self)
-        print "QWorker initialized"
+        print("QWorker initialized")
         self.tile_instance = None
         self.get_megaplex_task_now = False
 
@@ -81,7 +81,7 @@ class TileWorker(QWorker):
         error_string = template.format(type(ex).__name__, ex.args)
         error_string = "<pre>" + error_string + "</pre>"
         summary = "Exception of type {}".format(type(ex).__name__)
-        print error_string
+        print(error_string)
         return {"success": False, "message_string": error_string, "summary": summary}
 
     @task_worthy
@@ -181,13 +181,13 @@ class TileWorker(QWorker):
         try:
             print("entering recreate_from_save. class_name is " + class_info["class_name"])
             self.tile_instance = class_info["tile_class"](None, None, tile_name=data["tile_name"])
-            print "created class instance"
+            print("created class instance")
             self.handler_instances["tilebase"] = self.tile_instance
             if "tile_log_width" not in data:
                 data["tile_log_width"] = data["back_width"]
                 data["tile_log_height"] = data["back_height"]
             self.tile_instance.recreate_from_save(data)
-            print "returning from tile_instance.recreate_from_save"
+            print("returning from tile_instance.recreate_from_save")
             if self.tile_instance.current_html is not None:
                 self.tile_instance.current_html = self.tile_instance.current_html.replace(data["base_figure_url"],
                                                                                           data["new_base_figure_url"])
@@ -199,7 +199,7 @@ class TileWorker(QWorker):
                 self.tile_instance.doc_type = "table"
             print("tile instance started")
         except Exception as ex:
-            return self.handle_exception(ex, "Error loading source")
+            result = self.handle_exception(ex, "Error loading source in tile_main recreate from save")
         return {"success": True,
                 "is_shrunk": self.tile_instance.is_shrunk,
                 "saved_size": self.tile_instance.full_tile_height,
@@ -223,7 +223,7 @@ class TileWorker(QWorker):
 
     @task_worthy
     def kill_me(self, data):
-        print "about to exit"
+        print("about to exit")
         sys.exit()
 
     @task_worthy
@@ -237,9 +237,10 @@ class TileWorker(QWorker):
             new_option_names = self.extract_option_names(self.tile_instance.options)
             options_changed = not set(new_option_names) == set(old_option_names)
             if options_changed:  # Have to deal with case where an option no longer exists and shouldn't be copied
-                for attr in reload_dict.keys():
+                attr_list = list(reload_dict.keys())
+                for attr in attr_list:
                     if attr in old_option_names and attr not in new_option_names:
-                        print "removing options " + attr
+                        print("removing options " + attr)
                         del reload_dict[attr]
             for (attr, val) in reload_dict.items():
                 setattr(self.tile_instance, attr, val)
@@ -302,9 +303,9 @@ class TileWorker(QWorker):
 
     @task_worthy
     def stop_me(self, data):
-        print "killing me"
+        print("killing me")
         self.kill()
-        print "I'm killed"
+        print("I'm killed")
         return {"success": True}
 
     @task_worthy
@@ -313,10 +314,10 @@ class TileWorker(QWorker):
 
 
 # if __name__ == "__main__":
-print "entering main"
+print("entering main")
 tile_base._tworker = TileWorker()
-print "tworker is created, about to start my_id is " + str(tile_base._tworker.my_id)
+print("tworker is created, about to start my_id is " + str(tile_base._tworker.my_id))
 tile_base._tworker.start()
-print "tworker started, my_id is " + str(tile_base._tworker.my_id)
+print("tworker started, my_id is " + str(tile_base._tworker.my_id))
 # while True:
 #     time.sleep(1000)

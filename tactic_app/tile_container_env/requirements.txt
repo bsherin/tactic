@@ -14,4 +14,4 @@ regex
 scipy
 scikit-learn
 tweepy
-wordcloud==1.4.1
+wordcloud
