@@ -3,11 +3,8 @@ import sys
 import logging
 import datetime
 
-from megaplex_task_manager import TaskManager
 sys.stdout = sys.stderr
-
-log = logging.getLogger('werkzeug')
-log.setLevel(logging.ERROR)
+from megaplex_task_manager import TaskManager
 
 # stalled_container_time is the max time a tile can go without making any contact at all with the megaplex.
 # A tile should be actively executing get_next task constantly. So this shouldn't happen unless the tile
@@ -43,7 +40,7 @@ def register_container():
         "last_passive_contact": datetime.datetime.utcnow(),
         "last_active_contact": datetime.datetime.utcnow()
     }
-    print "registered container_id {}".format(data["container_id"])
+    print("registered container_id {}".format(data["container_id"]))
     return jsonify({"success": True})
 
 
@@ -109,7 +106,7 @@ def get_old_containers():
 
 @app.route('/get_old_inactive_stalled_containers', methods=["get", "post"])
 def get_old_inactive_stalled_containers():
-    print "checking for old and stalled containers"
+    print("checking for old and stalled containers")
 
     res = get_inactive() + get_stalled() + get_old()
     return jsonify({"old_inactive_stalled_containers": res})

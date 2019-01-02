@@ -96,7 +96,7 @@ class HostWorker(QWorker):
                     self.submit_response(task_packet, {"success": False, "message": res_dict["message_string"],
                                                        "alert_type": "alert-warning"})
                 else:
-                    print error_string
+                    print res_dict["message_string"]
                 return
             category = res_dict["category"]
 

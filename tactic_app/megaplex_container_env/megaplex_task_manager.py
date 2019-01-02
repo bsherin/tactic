@@ -1,12 +1,12 @@
 from flask import jsonify
-import Queue
+import queue
 import datetime
 import os
 import copy
 
 
 MAX_QUEUE_LENGTH = int(os.environ.get("MAX_QUEUE_LENGTH"))
-print "max_queue_length is " + str(MAX_QUEUE_LENGTH)
+print("max_queue_length is " + str(MAX_QUEUE_LENGTH))
 
 timeout_on_queue_full = .01
 
@@ -14,8 +14,8 @@ timeout_on_queue_full = .01
 class TaskManager(object):
     def __init__(self, my_id, queue_dict):
         self.my_id = my_id
-        self.tasks = Queue.Queue(maxsize=MAX_QUEUE_LENGTH)
-        self.responses = Queue.Queue()
+        self.tasks = queue.Queue(maxsize=MAX_QUEUE_LENGTH)
+        self.responses = queue.Queue()
         self.wait_dict = {}
         self.expiration_dict = {}
         self.queue_dict = queue_dict
@@ -26,7 +26,7 @@ class TaskManager(object):
             task_packet["status"] = "on_megaplex_queue"
             self.tasks.put(task_packet, block=True, timeout=timeout_on_queue_full)
         except:
-            print "Queue was full. Couldn't post task"
+            print("Queue was full. Couldn't post task")
             return {"success": False, "message": "Megaplex task queue is full"}
         return {"success": True}
 

@@ -7,13 +7,16 @@ import uuid
 import datetime
 from communication_utils import send_request_to_megaplex, post_task_noqworker
 from communication_utils import USE_FORWARDER
+import communication_utils
 import subprocess
 import re
 forwarder_address = None
 forwarder_id = None
 sys.stdout = sys.stderr
 
-print os.environ
+communication_utils.am_host = True  # For some reason itt's necessary to do this here
+
+print(os.environ)
 MAX_QUEUE_LENGTH = 5000
 CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
 STEP_SIZE = int(os.environ.get("STEP_SIZE"))
@@ -141,7 +144,8 @@ def create_container(image_name, container_name=None, network_mode="bridge",
                "IMAGE_NAME": image_name,
                "MONGO_URI": mongo_uri,
                "DEBUG_MAIN_CONTAINER": DEBUG_MAIN_CONTAINER,
-               "DEBUG_TILE_CONTAINER": DEBUG_TILE_CONTAINER}
+               "DEBUG_TILE_CONTAINER": DEBUG_TILE_CONTAINER,
+               "PYTHONUNBUFFERED": "Yes"}
 
     if main_container_info.is_main(parent):
         environ["MAIN_ADDRESS"] = main_container_info.address(parent)

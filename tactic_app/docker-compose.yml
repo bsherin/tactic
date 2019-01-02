@@ -13,6 +13,8 @@ services:
       context: .
       dockerfile: Dockerfile-megaplex
     image: tactic_megaplex_image
+    environment:
+      PYTHONUNBUFFERED: "Yes"
 
   tactic_main:
     build:

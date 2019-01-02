@@ -1,11 +1,11 @@
 import sys, copy
-from StringIO import StringIO
+from io import StringIO
 import ast
 from bson.binary import Binary
 import os
 import types
-import cPickle
-from cPickle import UnpicklingError
+import pickle
+from pickle import UnpicklingError
 from tile_base import TileBase, _task_worthy, _jsonizable_types
 from communication_utils import is_jsonizable, make_python_object_jsonizable, debinarize_python_object
 
@@ -52,7 +52,7 @@ class PseudoTileClass(TileBase, MplFigure):
 
     @_task_worthy
     def compile_save_dict(self, data):
-        print "entering compile_save_dict"
+        print("entering compile_save_dict")
         result = {"binary_attrs": [], "imports": []}
         attrs = globals().keys()
         for attr in attrs:
@@ -64,7 +64,7 @@ class PseudoTileClass(TileBase, MplFigure):
             elif isinstance(attr_val, types.ModuleType):
                 result["imports"].append(attr)
             elif((type(attr_val) == dict) and (len(attr_val) > 0) and
-                 hasattr(attr_val.values()[0], "compile_save_dict")):
+                 hasattr(list(attr_val.values())[0], "compile_save_dict")):
                 res = {}
                 for(key, val) in attr_val.items():
                     res[key] = attr_val.compile_save_dict(data)
@@ -79,22 +79,22 @@ class PseudoTileClass(TileBase, MplFigure):
                     result["binary_attrs"].append(attr)
                     bser_attr_val = make_python_object_jsonizable(attr_val)
                     result[attr] = bser_attr_val
-                    if is_jsonizable(bser_attr_val, ensure_ascii=False):
-                        print "new bser_attr_val is jsonizable"
+                    if is_jsonizable(bser_attr_val):
+                        print("new bser_attr_val is jsonizable")
                     else:
-                        print "new bser_attr_val is not jsonizable"
+                        print("new bser_attr_val is not jsonizable")
                 except TypeError:
-                    print "got a TypeError"
+                    print("got a TypeError")
                     continue
         result["tile_id"] = self._tworker.my_id  # I had to move this down here because it was being overwritten
         result["img_dict"] = make_python_object_jsonizable(self.img_dict)
         result["module_name"] = None
-        print "done compiling attributes " + str(result.keys())
+        print("done compiling attributes " + str(list(result.keys())))
         return result
 
     def recreate_from_save(self, save_dict):
-        print "entering recreate from save in pseudo_tile_base"
-        print str(save_dict.keys())
+        print("entering recreate from save in pseudo_tile_base")
+        print(str(list(save_dict.keys())))
         if "binary_attrs" not in save_dict:
             save_dict["binary_attrs"] = []
         if "imports" in save_dict:
@@ -102,11 +102,17 @@ class PseudoTileClass(TileBase, MplFigure):
                 try:
                     globals()[imp] = __import__(imp, globals(), locals(), [], -1)
                 except:
-                    print "problem importing " + str(imp)
+                    print("problem importing " + str(imp))
         if "img_dict" in save_dict:
-            self.img_dict = debinarize_python_object(save_dict["img_dict"])
+            try:
+                self.img_dict = debinarize_python_object(save_dict["img_dict"])
+            except Exception as ex:  # legacy if above fails
+                self.img_dict = {}
+                self._handle_exception(ex, "debinarizing failed for img_dict",
+                                       print_to_console=True)  # tactic_working
+
         for (attr, attr_val) in save_dict.items():
-            print "attr is " + attr
+            print("attr is " + attr)
             try:
                 if attr in ["binary_attrs", "imports", "functions", "img_dict"]:
                     continue
@@ -114,29 +120,30 @@ class PseudoTileClass(TileBase, MplFigure):
                     cls = getattr(sys.modules[__name__], attr_val["my_class_for_recreate"])
                     globals()[attr] = cls.recreate_from_save(attr_val)
                 elif((type(attr_val) == dict) and(len(attr_val) > 0) and
-                     hasattr(attr_val.values()[0], "recreate_from_save")):
-                    cls = getattr(sys.modules[__name__], attr_val.values()[0]["my_class_for_recreate"])
+                     hasattr(list(attr_val.values())[0], "recreate_from_save")):
+                    cls = getattr(sys.modules[__name__], list(attr_val.values())[0]["my_class_for_recreate"])
                     res = {}
                     for(key, val) in attr_val.items():
                         res[key] = cls.recreate_from_save(val)
                     globals()[attr] = res
                 else:
                     if isinstance(attr_val, Binary):  # seems like this is never true even for old-style saves
-                        decoded_val = cPickle.loads(str(attr_val.decode()))
+                        decoded_val = pickle.loads(str(attr_val.decode()))
                         globals()[attr] = decoded_val
                     elif attr in save_dict["binary_attrs"]:
                         try:
-                            print "trying to debinarize"
+                            print("trying to debinarize")
                             decoded_val = debinarize_python_object(attr_val)
-                        except Exception as ex:  # legacy if above fails try the old method
-                            print self._handle_exception(ex, "got error", print_to_console=False)
-                            decoded_val = cPickle.loads(str(attr_val.decode()))
-                        print "debinarize succeeded"
+                            print("debinarize succeeded")
+                        except Exception as ex:  # legacy if above fails
+                            self._handle_exception(ex, "debinarizing failed for attr {}".format(attr),
+                                                   print_to_console=True)  # tactic_working
+                            decoded_val = None
                         globals()[attr] = decoded_val
                     else:
                         globals()[attr] = attr_val
             except:
-                print "failed to recreate attribute " + attr
+                print("failed to recreate attribute " + attr)
 
         self._main_id = os.environ["PARENT"]  # this is for backward compatibility with some old project saves
         return None
@@ -162,7 +169,7 @@ class PseudoTileClass(TileBase, MplFigure):
                 code_to_eval = code_lines[lnumber]
                 code_to_exec = "\n".join(code_lines[:lnumber])
                 exec(code_to_exec, globals(), globals())
-                print eval(code_to_eval, globals(), globals())
+                print(eval(code_to_eval, globals(), globals()))
             else:
                 exec(data["the_code"], globals(), globals())
             sys.stdout = old_stdout

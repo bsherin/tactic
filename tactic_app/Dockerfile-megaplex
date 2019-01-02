@@ -1,4 +1,4 @@
-FROM python:2.7.11
+FROM python:3.7.1
 WORKDIR /code
 ADD ./megaplex_container_env/requirements.txt /code/requirements.txt
 RUN pip install -r requirements.txt

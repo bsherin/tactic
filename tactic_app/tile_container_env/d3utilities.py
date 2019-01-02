@@ -1,3 +1,4 @@
+from __future__ import print_function
 
 import matplotlib
 from matplotlib.colors import rgb2hex
@@ -59,7 +60,7 @@ class D3Tile(TileBase):
             self.post_event("RefreshTileFromSave")
 
     def _refresh_from_save(self):
-        print "in refresh_from_save in d3Tile"
+        print("in refresh_from_save in d3Tile")
         self._do_the_refresh(arg_dict=self._current_arg_dict)
 
     def _do_the_refresh(self, arg_dict=None):
@@ -77,5 +78,5 @@ class D3Tile(TileBase):
             self._current_arg_dict = arg_dict
             self._execute_d3(arg_dict)
         except Exception as ex:
-            print self._handle_exception(ex)
+            print(self._handle_exception(ex))
         return

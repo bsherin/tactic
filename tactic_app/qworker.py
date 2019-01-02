@@ -1,3 +1,5 @@
+from __future__ import print_function
+from __future__ import absolute_import
 import gevent
 import uuid
 import time
@@ -31,7 +33,7 @@ if "MEGAPLEX_ADDRESS" in os.environ:
 else:
     communication_utils.am_host = True
 
-print "got megaplex " + str(communication_utils.megaplex_address)
+print("got megaplex " + str(communication_utils.megaplex_address))
 
 if "RETRIES" in os.environ:
     RETRIES = int(os.environ.get("RETRIES"))
@@ -65,13 +67,13 @@ class QWorker(gevent.Greenlet):
             self.my_id = os.environ.get("MY_ID")
         else:
             self.my_id = "host"
-        print "my_id is " + self.my_id
+        print("my_id is " + self.my_id)
         self.hibernating = False
         self.handler_instances = {"this_worker": self}
 
     def debug_log(self, msg):
         timestring = datetime.datetime.utcnow().strftime("%b %d, %Y, %H:%M:%S")
-        print timestring + ": " + msg
+        print(timestring + ": " + msg)
         # with self.app.test_request_context():
         #     self.app.logger.debug(msg)
 
@@ -195,7 +197,7 @@ class QWorker(gevent.Greenlet):
                     else:
                         self.handle_event(task_packet)
                     if self.hibernating:
-                        print "left hibernation"
+                        print("left hibernation")
                         self.hibernating = False
                     self.last_contact = datetime.datetime.utcnow()
                     gevent.sleep(self.short_sleep_period)
@@ -206,7 +208,7 @@ class QWorker(gevent.Greenlet):
                     delta_seconds = tdelta.days * 24 * 60 + tdelta.seconds
                     if delta_seconds > self.gap_time_for_hiberate:
                         if not self.hibernating:
-                            print "hibernating"
+                            print("hibernating")
                             self.hibernating = True
                         gevent.sleep(self.hibernate_time)
                     else:
@@ -243,4 +245,4 @@ class QWorker(gevent.Greenlet):
         return
 
     def handle_exception(self, ex, special_string=None):
-        print "handle exception not implemented in qworker subclass"
+        print("handle exception not implemented in qworker subclass")

@@ -23,7 +23,7 @@ tile_class = None
 
 
 def global_import(imp):
-    globals()[imp] = __import__(imp, globals(), locals(), [], -1)
+    globals()[imp] = __import__(imp, globals(), locals(), [], 0)
     return
 
 
@@ -35,7 +35,7 @@ def user_tile(tclass):
 
 def exec_tile_code(tile_code):
     try:
-        exec tile_code
+        exec(tile_code)
     except:
         error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         return {"success": False, "message_string": error_string}
