@@ -4,7 +4,7 @@ from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 from matplotlib.colors import Normalize as mpl_Normalize
 from matplotlib.cm import get_cmap, ScalarMappable, register_cmap, datad
 import uuid
-import StringIO
+import io
 
 color_palette_names = [m for m in datad if not m.endswith("_r")]
 
@@ -64,18 +64,20 @@ register_cmap(cmap=ListedColormap(standard, name="standard"))
 color_palette_names = sorted(color_palette_names)
 color_palette_names = ["standard"] + color_palette_names
 
+
 class MplFigure(Figure):
     # kwargs for mplfigure are same as matplotlib Figure
     def __init__(self, **kwargs):
         if "dpi" not in kwargs:
             kwargs["dpi"] = 80
         if "figsize" not in kwargs:
-            kwargs["figsize"] = (self.width / kwargs["dpi"], self.height /kwargs["dpi"])
+            kwargs["figsize"] = (self.width / kwargs["dpi"], self.height / kwargs["dpi"])
         Figure.__init__(self, **kwargs)
+        self.canvas = FigureCanvas(self)  # it was necessary to add this in Python 3
         self.kwargs = kwargs
 
     def draw_plot(self):
-        print "draw_plot not implemented"
+        print("draw_plot not implemented")
         return
 
     def init_mpl_figure(self, **kwargs):
@@ -83,7 +85,7 @@ class MplFigure(Figure):
 
     def convert_figure_to_img(self):
         FigureCanvas(self)  # This does seem to be necessary or savefig won't work.
-        img_file = StringIO.StringIO()
+        img_file = io.BytesIO()
         self.savefig(img_file)
         img_file.seek(0)
         img = img_file.getvalue()
@@ -91,7 +93,7 @@ class MplFigure(Figure):
 
     def create_figure_html(self):
         FigureCanvas(self)  # This does seem to be necessary or savefig won't work.
-        img_file = StringIO.StringIO()
+        img_file = io.BytesIO()
         self.savefig(img_file)
         img_file.seek(0)
         figname = str(uuid.uuid4())
@@ -103,7 +105,7 @@ class MplFigure(Figure):
 
     def create_pyplot_html(self):
         import matplotlib.pyplot as plt
-        img_file = StringIO.StringIO()
+        img_file = io.BytesIO()
         plt.savefig(img_file)
         img_file.seek(0)
         figname = str(uuid.uuid4())

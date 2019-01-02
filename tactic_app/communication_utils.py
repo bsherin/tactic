@@ -6,7 +6,7 @@ import json
 import types
 from bson import Binary
 import base64
-import cPickle
+import pickle
 import cloudpickle
 import zlib
 import uuid
@@ -26,31 +26,35 @@ am_host = False
 megaplex_address = None
 
 
-def is_jsonizable(dat, ensure_ascii=True):
+def is_jsonizable(dat):
     try:
-        _ = json.dumps(dat, ensure_ascii)
+        _ = json.dumps(dat)
         return True
     except:
         return False
 
 def make_jsonizable_and_compress(dat):
-    return zlib.compress(make_python_object_jsonizable(dat))
+    return zlib.compress(make_python_object_jsonizable(dat, output_string=False))
 
-def make_python_object_jsonizable(dat):
+def make_python_object_jsonizable(dat, output_string=True):
     if (isinstance(dat, types.FunctionType)):  # handle functions specially
         dat.__module__ = "__main__"  # without this, cloudpickle only generates a reference to the function
-        return base64.b64encode(cloudpickle.dumps(dat))
-    try:
-        return base64.b64encode(cPickle.dumps(dat))
-    except:
-        return base64.b64encode(cloudpickle.dumps(dat))
+        jdat = base64.b64encode(cloudpickle.dumps(dat))
+    else:
+        try:
+            jdat = base64.b64encode(pickle.dumps(dat, protocol=2))
+        except:
+            jdat = base64.b64encode(cloudpickle.dumps(dat))
+    if output_string and not isinstance(jdat, str):
+        jdat = jdat.decode("utf-8")
+    return jdat
 
 def debinarize_python_object(bdat):
     if isinstance(bdat, Binary):
         dat = bdat.decode()
     else:
         dat = base64.b64decode(bdat)
-    return cPickle.loads(dat)
+    return pickle.loads(dat)
 
 def store_temp_data(db, data_dict):
     unique_id = str(uuid.uuid4())
@@ -75,7 +79,7 @@ def read_project_dict(fs, mdata, file_id):
             binarized_python_object = zlib.decompress(fs.get(file_id).read())
             project_dict = debinarize_python_object(binarized_python_object)
     else:  # legacy
-        project_dict = cPickle.loads(zlib.decompress(fs.get(file_id).read()).decode("utf-8", "ignore").encode("ascii"))
+        project_dict = pickle.loads(zlib.decompress(fs.get(file_id).read()).decode("utf-8", "ignore").encode("ascii"))
     return project_dict
 
 def send_request_to_megaplex(msg_type, data_dict=None, wait_for_success=True, timeout=3, tries=RETRIES, wait_time=.1,

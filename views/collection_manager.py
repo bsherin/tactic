@@ -398,7 +398,8 @@ class CollectionManager(LibraryResourceManager):
             if len(decoding_problems) > 0:
                 file_decoding_errors[filename] = decoding_problems
             try:
-                save_dict = {"name": filename, "encoding": encoding, "file_id": fs.put(result_txt, encoding=encoding)}
+                result_binary = make_python_object_jsonizable(result_txt)
+                save_dict = {"name": filename, "is_binarized": True, "file_id": fs.put(result_binary)}
                 db[full_collection_name].insert_one(save_dict)
             except:
                 error_string = "Error creating collection: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
