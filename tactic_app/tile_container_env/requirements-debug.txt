@@ -9,5 +9,6 @@ pandas
 scipy
 scikit-learn
 tweepy
-wordcloud==1.2
+wordcloud
+yellowbrick
 pydevd
