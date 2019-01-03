@@ -12,6 +12,8 @@ from pickle import UnpicklingError
 from communication_utils import is_jsonizable, make_python_object_jsonizable, debinarize_python_object
 from fuzzywuzzy import fuzz, process
 
+from document_object import TacticDocument
+
 
 if "RETRIES" in os.environ:
     RETRIES = int(os.environ.get("RETRIES"))
@@ -976,6 +978,14 @@ class TileBase(object):
 
     def gdd(self, document_name):
         return self.get_document_data(document_name)
+
+    def get_document(self, docname=None, grab_all_rows=True):
+        self._save_stdout()
+        if docname is None:
+            docname = self.get_current_document_name()
+        result = TacticDocument(self, docname, grab_all_rows)
+        self._restore_stdout()
+        return result
 
     def get_document_data(self, document_name):
         self._save_stdout()
