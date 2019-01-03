@@ -3,7 +3,6 @@ class TacticRow():
         self.__dict__["rowid"] = rowid
         self.__dict__["docname"] = docname
         self.__dict__["tbinstance"] = tbinstance
-        self.__dict__["column_names"] = tbinstance.get_column_names(docname)
         self.__dict__["row_dict"] = row_dict
 
     def get_column(self, colname):
@@ -23,31 +22,19 @@ class TacticRow():
         return
 
     def __getattr__(self, colname):
-        if not colname in self.row_dict:
-            raise AttributeError
-        else:
-            return self.get_column(colname)
+        return self.get_column(colname)
 
     def is_column(self, colname):
         return colname in self.__dict__["column_names"]
 
     def __getitem__(self, colname):
-        if not self.is_column(colname):
-            raise AttributeError
-        else:
-            return self.get_column(colname)
+        return self.get_column(colname)
 
     def __setitem__(self, colname, value):
-        if not self.is_column(colname):
-            raise AttributeError
-        else:
-            self.set_column(colname, value)
+        self.set_column(colname, value)
 
     def __setattr__(self, colname, value):
-        if not self.is_column(colname):
-            raise AttributeError
-        else:
-            self.set_column(colname, value)
+        self.set_column(colname, value)
 
     def __repr__(self):
         return "TacticRow(docname={}, rowid={})".format(self.__dict__["rowid"], self.__dict__["docname"])
