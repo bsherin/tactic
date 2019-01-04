@@ -980,11 +980,12 @@ class TileBase(object):
         return self.get_document_data(document_name)
 
     def get_document(self, docname=None, grab_all_rows=True):
-        self._save_stdout()
+        protected_standout = sys.stdout  # Need to do it this way because other calls were writing over self._old_stdout
+        sys.stdout = sys.stderr
         if docname is None:
             docname = self.get_current_document_name()
         result = TacticDocument(self, docname, grab_all_rows)
-        self._restore_stdout()
+        sys.stdout = protected_standout
         return result
 
     def get_document_data(self, document_name):
