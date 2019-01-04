@@ -985,7 +985,6 @@ class TileBase(object):
         if docname is None:
             docname = self.get_current_document_name()
         result = TacticDocument(self, docname, grab_all_rows)
-        print("about to restore stdout")
         sys.stdout = protected_standout
         return result
 
