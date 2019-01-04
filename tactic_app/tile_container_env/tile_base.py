@@ -12,7 +12,7 @@ from pickle import UnpicklingError
 from communication_utils import is_jsonizable, make_python_object_jsonizable, debinarize_python_object
 from fuzzywuzzy import fuzz, process
 
-from document_object import TacticDocument
+from document_object import TacticDocument, FreeformTacticDocument
 
 
 if "RETRIES" in os.environ:
@@ -984,7 +984,10 @@ class TileBase(object):
         sys.stdout = sys.stderr
         if docname is None:
             docname = self.get_current_document_name()
-        result = TacticDocument(self, docname, grab_all_rows)
+        if self.doc_type == "freeform":
+            result = FreeformTacticDocument(self, docname)
+        else:
+            result = TacticDocument(self, docname, grab_all_rows)
         sys.stdout = protected_standout
         return result
 
