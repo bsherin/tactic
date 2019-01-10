@@ -8,13 +8,13 @@ class TacticRow:
         self.__dict__["_tbinstance"] = tbinstance
         self.__dict__["_row_dict"] = row_dict
 
-    def get_column(self, colname):
+    def _get_field(self, colname):
         if self.__dict__["_row_dict"] is None:
             return self.__dict__["_tbinstance"].get_row(self.__dict__["_docname"], self.__dict__["_rowid"])[colname]
         else:
             return self.__dict__["_row_dict"][colname]
 
-    def set_column(self, colname, value):
+    def _set_field(self, colname, value):
         self.__dict__["_tbinstance"].set_cell(self.__dict__["_docname"],
                                               self.__dict__["_rowid"],
                                               colname,
@@ -36,16 +36,16 @@ class TacticRow:
             return self.__dict__["_row_dict"]
 
     def __getattr__(self, attr):
-        return self.get_column(attr)
+        return self._get_field(attr)
 
     def __getitem__(self, colname):
-        return self.get_column(colname)
+        return self._get_field(colname)
 
     def __setitem__(self, colname, value):
-        self.set_column(colname, value)
+        self._set_field(colname, value)
 
     def __setattr__(self, colname, value):
-        self.set_column(colname, value)
+        self._set_field(colname, value)
 
     def __contains__(self, name):
         return name in self.row_dict
@@ -76,7 +76,7 @@ class TacticLine:
         raise NotImplementedError
 
     def __repr__(self):
-        return "TacticLine(docname={}, line_number={})".format(self.__dict__["docname"], self.__dict__["line_number"])
+        return "TacticLine(docname={}, line_number={})".format(self.__dict__["_docname"], self.__dict__["_line_number"])
 
 
 class FreeformTacticDocument:
@@ -86,7 +86,9 @@ class FreeformTacticDocument:
         self._number_lines = self._tb_instance.get_number_rows(docname)
         self._iter_value = -1
         self._text = tb_instance.get_document_data(docname)
-        self._line_list = tb_instance.get_document_data_as_list(docname)
+        lines = tb_instance.get_document_data_as_list(docname)
+        self._line_list = [TacticLine(self._tb_instance, n, self._docname, the_line)
+                           for n, the_line in enumerate(lines)]
         self._iter_value = -1
 
     @property
@@ -103,12 +105,7 @@ class FreeformTacticDocument:
         return self._text
 
     def __getitem__(self, x):
-        if isinstance(x, slice):
-            start, stop, step = x.indices(self._number_lines)
-            return [TacticLine(self._tb_instance, n, self._docname, self._line_list[n])
-                    for n in range(start, stop, step)]
-        else:
-            return TacticLine(self._tb_instance, x, self._docname, self._line_list[x])
+        return self._line_list[x]
 
     def __iter__(self):
         return self
@@ -127,7 +124,7 @@ class FreeformTacticDocument:
         raise NotImplementedError
 
     def __repr__(self):
-        return "FreeformTacticDocument(docname)".format(self.__dict__["docname"])
+        return "FreeformTacticDocument({})".format(self._docname)
 
 
 class TacticDocument:
@@ -139,9 +136,15 @@ class TacticDocument:
         self._iter_value = -1
         self._grab_all_rows = grab_all_rows
         if grab_all_rows:
-            self._row_list = tb_instance.get_document_data_as_list(docname)
+            dict_list = tb_instance.get_document_data_as_list(docname)
+            self._row_list = [TacticRow(self._tb_instance, n, self._docname, rdict)
+                              for n, rdict in enumerate(dict_list)]
         else:
             self._row_list = None
+
+    @property
+    def name(self):
+        return self._docname
 
     @property
     def metadata(self):
@@ -156,30 +159,29 @@ class TacticDocument:
     def column_names(self):
         return self._column_names
 
+    @property
+    def dict_list(self):
+        if self._grab_all_rows:
+            return [r.row_dict for r in self._row_list]
+        else:
+            return self._tb_instance.get_document_data_as_list(docname)
+
     def get_matching_rows(self, func):
         self.rewind()
         return [r for r in self if func(r)]
 
-    def __getitem__(self, x):
-        if isinstance(x, slice):
-            start, stop, step = x.indices(self._number_rows)
-            if self._grab_all_rows:
-                return [TacticRow(self._tb_instance, n, self._docname, self._row_list[n])
-                        for n in range(start, stop, step)]
-            else:
-                return [TacticRow(self._tb_instance, n, self._docname) for n in range(start, stop, step)]
-        else:
-            if self._grab_all_rows:
-                return TacticRow(self._tb_instance, x, self._docname, self._row_list[x])
-            else:
-                return TacticRow(self._tb_instance, x, self._docname)
+    def set_column_data(self, column_name, data_list_or_dict, cellchange=False):
+        self._tb_instance.set_column_data(self._docname, column_name, data_list_or_dict, cellchange)
+        return
 
-    def update_document(self):
-        self._number_rows = self._tb_instance.get_number_rows(docname)
-        if grab_all_rows:
-            self._row_list = self._tb_instance.get_document_data_as_list(self._docname)
+    def __getitem__(self, x):
+        if self._grab_all_rows:
+            return self._row_list[x]
+        elif isinstance(x, slice):
+            start, stop, step = x.indices(self._number_rows)
+            return [TacticRow(self._tb_instance, n, self._docname) for n in range(start, stop, step)]
         else:
-            self._row_list = None
+            return TacticRow(self._tb_instance, x, self._docname)
 
     def __iter__(self):
         return self
@@ -199,11 +201,74 @@ class TacticDocument:
 
     def __setitem__(self, index, value):
         if isinstance(value, TacticRow):
-            new_value = value.row_dict
+            new_row = value
         else:
-            new_value = value
-        self._tb_instance.set_document(self, self._docname, {index: new_value})
+            new_row = TacticRow(self._tb_instance, index, self._docname, value)
+
+        if self._grab_all_rows:
+            self._row_list[index] = new_row
+
+        rdict = new_row.__dict__["_row_dict"]
+        if rdict is not None:
+            self._tb_instance.set_document(self._docname, {index: rdict}, cellchange=False)
         return
 
     def __repr__(self):
-        return "TacticDocument(docname)".format(self.__dict__["docname"])
+        return "TacticDocument({})".format(self._docname)
+
+
+class TacticCollection:
+    def __init__(self, tb_instance, grab_all_docs=False):
+        self._iter_value = -1
+        self._tb_instance = tb_instance
+        self._doc_type = tb_instance.doc_type
+        self._doc_names = self._tb_instance.get_document_names()
+        self._number_docs = len(self._doc_names)
+        self._grab_all_docs = grab_all_docs
+        if self._doc_type == "freeform":
+            self._doc_class = FreeformTacticDocument
+        else:
+            self._doc_class = TacticDocument
+
+        if grab_all_docs:
+            self._doc_dict = {dname: self._doc_class(self._tb_instance, dname)
+                              for dname in self._doc_names}
+        else:
+            self._doc_dict = None
+        return
+
+    @property
+    def document_names(self):
+        return self._doc_names
+
+    @property
+    def current_document(self):
+        return self[self._tb_instance.get_current_document_name()]
+
+    def __getitem__(self, x):
+        if self._grab_all_docs:
+            return self._doc_dict[x]
+        else:
+            return self._doc_class(self._tb_instance, x)
+
+    def __iter__(self):
+        return self
+
+    def rewind(self):
+        self._iter_value = -1
+
+    def __next__(self):
+        self._iter_value += 1
+        if self._iter_value == self._number_docs:
+            raise StopIteration
+        else:
+            return self[self._doc_names[self._iter_value]]
+
+    def __len__(self):
+        return self._number_docs
+
+    def __setitem__(self, docname, new_data):
+        raise NotImplementedError
+
+    def __repr__(self):
+        return "TacticCollection with {} docs".format(str(len(self)))

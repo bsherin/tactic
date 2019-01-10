@@ -5,5 +5,5 @@ RUN pip install --no-cache-dir -r requirements-debug.txt
 MAINTAINER "Bruce L Sherin"
 ADD  ./tile_container_env /code
 ADD ./nltk_data /root/nltk_data
-ADD ./pycharm-debug.egg /code
-CMD ["python", "tile_main.py"]
+EXPOSE 5000
+ENTRYPOINT ["/usr/local/bin/gunicorn", "-b", "0.0.0.0:5000", "tile_main:app"]
