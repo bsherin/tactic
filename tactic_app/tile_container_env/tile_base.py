@@ -12,7 +12,7 @@ from pickle import UnpicklingError
 from communication_utils import is_jsonizable, make_python_object_jsonizable, debinarize_python_object
 from fuzzywuzzy import fuzz, process
 
-from document_object import TacticDocument, FreeformTacticDocument
+from document_object import TacticDocument, FreeformTacticDocument, TacticCollection
 
 
 if "RETRIES" in os.environ:
@@ -135,6 +135,7 @@ class TileBase(object):
         self.my_address = None
         self._main_id = os.environ["PARENT"]
         self._tworker = _tworker
+        self._collection = None  # I have to create this later to impose a post loop when creating the pseudo_tile
         return
 
     """
@@ -144,6 +145,12 @@ class TileBase(object):
     def post_event(self, event_name, task_data=None):
         self._tworker.post_task(self._tworker.my_id, event_name, task_data)
         return
+
+    @property
+    def collection(self):
+        if self._collection is None:
+            self._collection = TacticCollection(self)
+        return self._collection
 
     @property
     def _current_reload_attrs(self):

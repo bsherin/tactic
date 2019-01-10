@@ -1816,8 +1816,9 @@ class mainWindow(object):
             for the_id, r in new_doc_dict.items():
                 old_r = current_doc_dict[the_id]
                 for key, val in r.items():
-                    if not val == old_r[key]:
-                        self._set_cell_content(doc_name, the_id, key, val, cellchange)
+                    if not key in ["__id__", "__filename__"]:
+                        if not val == old_r[key]:
+                            self._set_cell_content(doc_name, the_id, key, val, cellchange)
         else:
             new_doc_text = data["new_data"]
             self._set_freeform_data(doc_name, new_doc_text)
