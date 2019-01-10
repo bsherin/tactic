@@ -1,13 +1,14 @@
-from gevent import monkey; monkey.patch_all()
-print("entering main_main")
 import os
-from communication_utils import send_request_to_megaplex
-
-if "DEBUG_MAIN_CONTAINER" in os.environ:
+if "DEBUG_TILE_CONTAINER" in os.environ:
     if os.environ.get("DEBUG_TILE_CONTAINER") == "True":
         import pydevd
-        pydevd.settrace('docker.for.mac.localhost', port=21000, stdoutToServer=True, stderrToServer=True, suspend=False)
+        # pydevd.settrace('docker.for.mac.localhost', port=21000, stdoutToServer=True, stderrToServer=True, suspend=False)
         print("settrace done")
+
+from gevent import monkey; monkey.patch_all()
+print("entering tile__main")
+
+from communication_utils import send_request_to_megaplex
 
 import copy
 # noinspection PyUnresolvedReferences
