@@ -161,14 +161,14 @@ class TacticDocument:
 
     @property
     def dict_list(self):
-        if grab_all_rows:
+        if self._grab_all_rows:
             return [r.row_dict for r in self._row_list]
         else:
             return self._tb_instance.get_document_data_as_list(docname)
 
     def get_matching_rows(self, func):
         self.rewind()
-        return [r for r in self if func(r.row_dict)]
+        return [r for r in self if func(r)]
 
     def set_column_data(self, column_name, data_list_or_dict, cellchange=False):
         self._tb_instance.set_column_data(self._docname, column_name, data_list_or_dict, cellchange)
