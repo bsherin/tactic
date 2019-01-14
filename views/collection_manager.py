@@ -19,6 +19,8 @@ from tactic_app.resource_manager import ResourceManager, LibraryResourceManager
 global_tile_manager = tactic_app.global_tile_manager
 repository_user = User.get_user_by_username("repository")
 
+ILLEGAL_CHARACTERS_RE = re.compile(r'[\000-\010]|[\013-\014]|[\016-\037]')
+
 AUTOSPLIT = False
 AUTOSPLIT_SIZE = 10000
 
@@ -188,7 +190,8 @@ class CollectionManager(LibraryResourceManager):
             for r, _id in enumerate(sorted_int_keys, start=2):
                 row = data_rows[str(_id)]
                 for c, header in enumerate(header_list, start=1):
-                    _ = ws.cell(row=r, column=c, value=row[header])
+                    val = re.sub(ILLEGAL_CHARACTERS_RE, " ", unicode(row[header]))
+                    _ = ws.cell(row=r, column=c, value=val)
             # noinspection PyUnresolvedReferences
         virtual_notebook = openpyxl.writer.excel.save_virtual_workbook(wb)
         str_io = cStringIO.StringIO()
