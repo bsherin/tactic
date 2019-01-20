@@ -52,11 +52,6 @@ def on_join_main(data):
     socketio.emit("joined-mainid", room=room)
 
 
-@socketio.on('ready-to-begin', namespace='/main')
-def on_ready_to_begin(data):
-    socketio.emit("begin-post-load", data, namespace='/main', room=data["room"])
-
-
 @app.route("/register_heartbeat", methods=["GET", "POST"])
 @login_required
 def register_heartbeat():

@@ -800,7 +800,7 @@ align-items: baseline
     text-align: left;
     font-size: 14px;
     overflow: auto;
-    padding: 5px;
+    padding: 20px 5px;
 }
 
 #console_error_log {
@@ -875,29 +875,45 @@ align-items: baseline
 }
 
 .text-panel-output {
-    //padding: 10px;
+    h1 {
+        font-size: 2.0rem;
+    }
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    h3 {
+        font-size: 1.25rem;
+    }
+    h4 {
+        font-size: 1.125rem
+    }
+
 }
 
+
 .log-panel {
-    border: $log-panel-border-style !important;
+    border: none;
     margin: 1px;
     box-shadow: none;
     position: relative;
 
     .notclose {
         font-size: 15px;
-        padding-bottom: 9px
+        padding-bottom: 3px
     }
 
     .card-header {
+        opacity: 0;
         position: absolute;
         height: 100%;
         width: 30px;
         padding: 4px 4px !important;
         text-align: center;
-        background-color: $log-panel-header-background-color important;
         border-right: $log-panel-border-style;
         overflow-y: hidden;
+        border-bottom: none;
+        background-color: white
     }
 
     .CodeMirror {
@@ -909,7 +925,7 @@ align-items: baseline
     }
 
     .card-header:hover {
-        background-color: $log-panel-header-background-hover-color !important
+        // background-color: $log-panel-header-background-hover-color !important
     }
 
     .notclose {
@@ -917,8 +933,15 @@ align-items: baseline
     }
 }
 
+.log-panel:hover {
+    .card-header {
+        transition-delay: .5s;
+        opacity: 100;
+    }
+
+}
+
 .log-panel.log-panel-visible {
-    min-height: 128px;
 
     .log-panel-body {
         display: block
@@ -938,12 +961,39 @@ align-items: baseline
 
     .expand-log-button {
         display: none
+    }
+    .convert-markdown-button, .close-log-button, .run-log-button, .clear-code-button {
+        display: inline-block;
     }
 }
 
-.log-panel.log-panel-invisible {
-    height: 40px;
+.log-panel.log-panel-visible {
+    transition:min-height .5s ease-in-out;
+}
+
+.log-panel.log-panel-visible:not(:hover) {
     min-height: 0;
+}
+
+.log-panel.running{
+    .clear-code-button {
+        display: none;
+    }
+    .console-spin-outer {
+        display: inline-block;
+    }
+}
+
+.log-panel.log-panel-visible:hover {
+    min-height: 110px;
+}
+
+.log-panel.log-panel-visible.text-log-item:hover {
+    min-height: 82px;
+}
+
+.log-panel.log-panel-invisible {
+    max-height: 40px;
 
     .log-panel-body {
         display: none
@@ -965,6 +1015,10 @@ align-items: baseline
     .expand-log-button {
         display: inline-block
     }
+    .convert-markdown-button, .close-log-button, .run-log-button, .clear-code-button {
+        display: none
+    }
+
 }
 
 html,body {
@@ -974,8 +1028,8 @@ html,body {
 .log-panel-body {
     padding-left: 45px;
     padding-right: 45px;
-    padding-top: 14px;
-    padding-bottom: 10px;
+    padding-top: 3px;
+    padding-bottom: 3px;
     color: $log-panel-font-color !important;
 }
 
@@ -1010,6 +1064,7 @@ html,body {
 
 .outer-container {
     padding: 25px;
+    margin: 0px 5px;
 }
 
 #tile-div {

@@ -11,6 +11,7 @@ import traceback
 import os
 import uuid
 import markdown
+import json
 from communication_utils import make_python_object_jsonizable, debinarize_python_object, store_temp_data
 from communication_utils import make_jsonizable_and_compress, read_project_dict, read_temp_data, delete_temp_data
 
@@ -101,7 +102,7 @@ class mainWindow(object):
         self.tile_id_dict = {}  # dict with the keys the names of tiles and ids as the values.
         self.tile_addresses = {}
 
-        if "project_name" not in data_dict:
+        if ("project_name" not in data_dict) or (data_dict["doc_type"] == "jupyter"):
             self.doc_type = data_dict["doc_type"]
             self.current_tile_id = 0
             self.tile_instances = []
@@ -113,7 +114,7 @@ class mainWindow(object):
             self.console_cm_code = {}
             self.user_id = os.environ.get("OWNER")
             self.purgetiles = False
-            if self.doc_type == "notebook":
+            if self.doc_type == "notebook" or self.doc_type == "jupyter":
                 self.collection_name = ""
                 self.short_collection_name = ""
                 self.doc_dict = {}
@@ -246,6 +247,37 @@ class mainWindow(object):
             self.console_html = re.sub('style=\"font-size:13px\" class=\"glyphicon glyphicon-{}\"'.format(old),
                                        r'class="fas fa-{}"'.format(new),
                                        self.console_html)
+        return
+
+    @task_worthy
+    def do_full_jupyter_recreation(self, data_dict):
+        tile_containers = {}
+        try:
+            print("Entering do_full_jupyter_recreation")
+            self.show_main_status_message("Entering do_full_jupyter_recreation")
+            project_collection_name = data_dict["project_collection_name"]
+            project_name = data_dict["project_name"]
+            save_dict = self.db[project_collection_name].find_one({"project_name": project_name})
+            self.mdata = save_dict["metadata"]
+            project_dict = read_project_dict(self.fs, self.mdata, save_dict["file_id"])
+            jupyter_text = project_dict["jupyter_text"]
+            jupyter_dict = json.loads(jupyter_text)
+            self.jupyter_cells = jupyter_dict["cells"]
+            self.clear_main_status_message()
+            self.mworker.ask_host("emit_to_client", {"message": "finish-post-load",
+                                                     "collection_name": "",
+                                                     "short_collection_name": "",
+                                                     "doc_names": [],
+                                                     "console_html": ""})
+
+        except Exception as ex:
+            template = "An exception of type {0} occured. Arguments:\n{1!r}\n"
+            error_string = template.format(type(ex).__name__, ex.args)
+            error_string += traceback.format_exc()
+            error_string = "<pre>" + error_string + "</pre>"
+            self.show_error_window(error_string)
+            container_list = [self.mworker.my_id] + list(tile_containers.keys())
+            self.mworker.ask_host("delete_container_list", {"container_list": container_list})
         return
 
     @task_worthy
@@ -556,6 +588,44 @@ class mainWindow(object):
             return_data = {"success": False, "message_string": error_string}
         return return_data
 
+    @task_worthy
+    def export_to_jupyter_notebook(self, data_dict):
+        try:
+            new_project_name = data_dict["project_name"]
+            cell_list = data_dict["cell_list"]
+            for cell in cell_list:
+                source_text = cell["source"]
+                source_list = source_text.split("\n")
+                revised_source_list = [r +"\n" for r in source_list[:-1]] + [source_list[-1]]
+                cell["source"] = revised_source_list
+                cell["metadata"] = {}
+                cell["execution_count"] = 0
+            metadata = {}
+            metadata["kernelspec"] = {"display_name": "Python 3", "language": "python", "name": "python3"}
+            full_dict = {"metadata": metadata,
+                         "nbformat": 4,
+                          "nbformat_minor": 2,
+                          "cells": data_dict["cell_list"]}
+            notebook_json = json.dumps(full_dict, indent=1, sort_keys=True)
+            mdata = self.create_initial_metadata()
+            mdata["type"] = "jupyter"
+            mdata["save_style"] = "b64save"
+            save_dict = {"metadata": mdata,
+                         "project_name": new_project_name}
+            project_dict = {"jupyter_text": notebook_json}
+            pdict = make_jsonizable_and_compress(project_dict)
+            save_dict["file_id"] = self.fs.put(pdict)
+            self.db[self.project_collection_name].insert_one(save_dict)
+            _return_data = {"project_name": data_dict["project_name"],
+                           "success": True,
+                           "message_string": "Notebook Successfully Exported"}
+
+        except Exception as ex:
+            self.mworker.debug_log("got an error in export_to_jupyter_notebook")
+            error_string = self.handle_exception(ex, "<pre>Error exporting to jupyter notebook</pre>", print_to_console=False)
+            _return_data = {"success": False, "message_string": error_string}
+        return _return_data
+
     @task_worthy_manual_submit
     def save_new_project(self, data_dict, task_packet):
 
@@ -630,7 +700,7 @@ class mainWindow(object):
         # noinspection PyBroadException
         def got_save_dict(project_dict):
             self.mdata = self.create_initial_metadata()
-            self.mdata["type"] = self.doc_type
+            self.mdata["type"] = "notebook"
             self.mdata["collection_name"] = ""
             self.mdata["loaded_tiles"] = []
             self.mdata["save_style"] = "b64save"
@@ -641,6 +711,7 @@ class mainWindow(object):
             self.show_main_status_message("Writing the data")
             save_dict["file_id"] = self.fs.put(pdict)
             self.db[self.project_collection_name].insert_one(save_dict)
+
             self.clear_main_status_message()
 
             return_data = {"project_name": data_dict["project_name"],
@@ -655,6 +726,7 @@ class mainWindow(object):
             self.console_cm_code = data_dict["console_cm_code"]
 
             self.show_main_status_message("compiling save dictionary")
+            self.doc_type = "notebook"  # This is necessary in case we're saving a juypyter notebook
             self.mworker.post_task(self.mworker.my_id, "compile_save_dict", {}, got_save_dict)
 
         except Exception as ex:
@@ -1111,6 +1183,14 @@ class mainWindow(object):
         return the_row
 
     @task_worthy
+    def get_rows(self, data):
+        doc_name = data["document_name"]
+        start = data["start"]
+        stop = data["stop"]
+        row_list = self.doc_dict[doc_name].get_rows(start, stop)
+        return row_list
+
+    @task_worthy
     def get_line(self, data):
         return self.get_row(data)
 
@@ -1171,13 +1251,13 @@ class mainWindow(object):
 
     @task_worthy
     def got_console_result(self, data):
-        self.mworker.emit_table_message("stopConsoleSpinner", {"console_id": data["console_id"],
+        self.mworker.emit_console_message("stopConsoleSpinner", {"console_id": data["console_id"],
                                                                "force_open": True})
         return {"success": True}
 
     @task_worthy
     def got_console_print(self, data):
-        self.mworker.emit_table_message("consoleCodePrint", {"message_string": data["result_string"],
+        self.mworker.emit_console_message("consoleCodePrint", {"message_string": data["result_string"],
                                                              "console_id": data["console_id"],
                                                              "force_open": True})
         return {"success": True}
@@ -1225,17 +1305,6 @@ class mainWindow(object):
             self.mworker.post_task("host", "restart_container", {"tile_id": self.pseudo_tile_id}, container_restarted)
         self.show_main_message("Notebook reset", 7)
         return {"success": True}
-
-    def get_exports_list_html_old(self, data):
-        the_html = ""
-        export_list = []
-        for (tile_id, tile_entry) in self._pipe_dict.items():
-            for pname in tile_entry.keys():
-                export_list.append(pname)
-        export_list.sort()
-        for pname in export_list:
-            the_html += "<option>{}</option>\n".format(pname)
-        return {"success": True, "the_html": the_html, "export_list": export_list}
 
     @task_worthy
     def get_exports_list_html(self, data):
@@ -1463,6 +1532,7 @@ class mainWindow(object):
 
     @task_worthy
     def grab_data(self, data):
+        print("entering grab_datat")
         doc_name = data["doc_name"]
         if self.doc_type == "table":
             return {"doc_name": doc_name,
@@ -1702,6 +1772,19 @@ class mainWindow(object):
     def RemoveTile(self, data):
         self._delete_tile_instance(data["tile_id"])
         return None
+
+    @task_worthy
+    def OtherTileData(self, data):
+        other_tile_data = {}
+        for n, tid in self.tile_id_dict.items():
+            if not tid == data["tile_id"]:
+                new_entry = {"tile_id": tid}
+                if tid in self._pipe_dict:
+                    new_entry["pipes"] = list(self._pipe_dict[tid].values())
+                else:
+                    new_entry["pipes"] = None
+                other_tile_data[n] = new_entry
+        return other_tile_data
 
     def get_other_tile_names(self, tile_id):
         other_tile_names = []

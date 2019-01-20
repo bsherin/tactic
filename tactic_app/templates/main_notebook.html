@@ -78,7 +78,6 @@
     <script src="{{url_for('static', filename='tactic_js/markdown_utilities.js', v=version_string)}}"></script>
     <script src="{{url_for('static', filename='tactic_js/console.js', v=version_string)}}"></script>
     <script src="{{url_for('static', filename='tactic_js/main_notebook.js', v=version_string)}}"></script>
-    <script src="{{url_for('static', filename='tactic_js/notebook.js', v=version_string)}}"></script>
     <script>
     console.log("running scripts");
     var _project_name = "{{project_name}}";
@@ -92,7 +91,9 @@
     var is_project = _project_name != "";
     var use_ssl = "{{use_ssl}}"=="True";
     var is_notebook = true;
-    window.onload = start_post_load;
+    var is_jupyter = "{{is_jupyter}}" == "True";
+    var is_totally_new = !is_jupyter && !is_project && (temp_id == "");
+    window.onload = _notebook_main;
     window.onresize = function () {
         if (typeof tableObject != "undefined") {
             consoleObject.resize_to_window();
