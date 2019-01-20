@@ -162,6 +162,13 @@ class MainWorker(QWorker):
         self.ask_host("emit_table_message", data, callback_func)
         return
 
+    def emit_console_message(self, message, data=None, callback_func=None):
+        if data is None:
+            data = {}
+        data["console_message"] = message
+        self.ask_host("emit_console_message", data, callback_func)
+        return
+
     def emit_export_viewer_message(self, message, data=None, callback_func=None):
         if data is None:
             data = {}
@@ -226,7 +233,8 @@ class MainWorker(QWorker):
             print("ready to emit to client")
             self.ask_host("emit_to_client", {"message": "finish-post-load",
                                              "collection_name": self.mwindow.collection_name,
-                                             "doc_names": self.mwindow.doc_names})
+                                             "doc_names": self.mwindow.doc_names,
+                                             "console_html": ""})
             return {"success": True}
         except Exception as Ex:
             return self.handle_exception(Ex, "Error initializing mainwindow")
@@ -242,7 +250,9 @@ class MainWorker(QWorker):
                               "collection_names": the_lists["collection_names"]})
             self.mwindow = mainWindow(self, data_dict)
             self.handler_instances["mainwindow"] = self.mwindow
-            if data_dict["doc_type"] == "notebook":
+            if data_dict["doc_type"] == "jupyter":
+                self.post_task(self.my_id, "do_full_jupyter_recreation", data_dict)
+            elif data_dict["doc_type"] == "notebook":
                 self.post_task(self.my_id, "do_full_notebook_recreation", data_dict)
             else:
                 self.post_task(self.my_id, "do_full_recreation", data_dict)
@@ -256,6 +266,11 @@ class MainWorker(QWorker):
     def get_saved_console_code(self, data_dict):
         print("entering saved console code")
         return {"saved_console_code": self.mwindow.console_cm_code}
+
+    @task_worthy
+    def get_jupyter_cell_data(self, data_dict):
+        print("entering get_jupyter_cell_data")
+        return {"cell_data": self.mwindow.jupyter_cells}
 
 
 # if __name__ == "__main__":

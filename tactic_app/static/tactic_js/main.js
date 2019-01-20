@@ -1,7 +1,6 @@
 
 let tsocket;
 let dirty;
-let tile_types;
 var tableObject;
 
 const BOTTOM_MARGIN = 35;
@@ -33,6 +32,9 @@ class MainTacticSocket extends TacticSocket {
         });
         this.socket.on('table-message', function (data) {
             tableObject[data.table_message](data)
+        });
+        this.socket.on('console-message', function (data) {
+            consoleObject[data.console_message](data)
         });
         this.socket.on('export-viewer-message', function(data) {
             exportViewerObject[data.export_viewer_message](data)
@@ -69,9 +71,8 @@ class MainTacticSocket extends TacticSocket {
         this.socket.on('update-menus', function() {
             if (done_loading){
                 postWithCallback("host", "get_tile_types", {"user_id": user_id}, function (data) {
-                    tile_types = data.tile_types;
                     clear_all_menus();
-                    build_and_render_menu_objects();
+                    build_and_render_menu_objects(data.tile_types);
                     })
                 }
             });
@@ -91,59 +92,28 @@ class MainTacticSocket extends TacticSocket {
     }
 }
 
-
-function start_post_load() {
+function _main_main() {
     console.log("entering start_post_load");
     dirty = false;
-    $("#outer-container").css({"margin-left": String(MARGIN_SIZE) + "px"});
-    $("#outer-container").css({"margin-right": String(MARGIN_SIZE) + "px"});
-    $("#outer-container").css({"margin-top": "0px", "margin-bottom": "0px"});
     tsocket = new MainTacticSocket("main", 5000);
-    tsocket.socket.on("begin-post-load", function () {
-        if (is_project) {
-                let data_dict = {
-                    "project_name": _project_name,
-                    "doc_type": DOC_TYPE,
-                    "project_collection_name": _project_collection_name,
-                    "library_id": main_id,
-                    "base_figure_url": base_figure_url,
-                    "use_ssl": use_ssl,
-                    "user_id": user_id
-                };
-                postWithCallback(main_id, "initialize_project_mainwindow", data_dict)
-            }
-            else {
-                    let data_dict = {
-                        "collection_name": _collection_name,
-                        "doc_type": DOC_TYPE,
-                        "project_collection_name": _project_collection_name,
-                        "base_figure_url": base_figure_url,
-                        "use_ssl": use_ssl,
-                        "user_id": user_id
-                    };
-                    postWithCallback(main_id, "initialize_mainwindow", data_dict)
-            }
-    });
     tsocket.socket.on('finish-post-load', function (data) {
-            if (is_project) {
-                $("#console").html(data.console_html);
-                _collection_name = data.collection_name;
-                doc_names = data.doc_names;
-                $("#doc-selector-label").html(data.short_collection_name);
-                let doc_popup = "";
-                for (let dname of doc_names) {
-                    doc_popup = doc_popup + `<option>${dname}</option>`
-                }
-                $("#doc-selector").html(doc_popup)
+        if (is_project) {
+            _collection_name = data.collection_name;
+            doc_names = data.doc_names;
+            $("#doc-selector-label").html(data.short_collection_name);
+            let doc_popup = "";
+            for (let dname of doc_names) {
+                doc_popup = doc_popup + `<option>${dname}</option>`
             }
-            postWithCallback("host", "get_tile_types", {"user_id": user_id}, function (data) {
-                tile_types = data.tile_types;
-                build_and_render_menu_objects();
-                continue_loading()
-            })
-        });
+            $("#doc-selector").html(doc_popup)
+        }
+        let console_html = data.console_html;
+        postWithCallback("host", "get_tile_types", {"user_id": user_id}, function (data) {
+            build_and_render_menu_objects(data.tile_types);
+            create_table_and_console(console_html)
+        })
+    });
     tsocket.socket.on('recreate-saved-tile', create_tile_from_save);
-    tsocket.socket.emit('ready-to-begin', {"room": main_id});
     tsocket.socket.on('tile-source-change', function (data) {
         for (let tid in tile_dict) {
             if (!tile_dict.hasOwnProperty(tid)){
@@ -152,7 +122,30 @@ function start_post_load() {
             if (tile_dict[tid].tile_type == data["tile_type"])
                 $("#" + tid).addClass("tile-source-changed")
         }
-    })
+    });
+    if (is_project) {
+        let data_dict = {
+            "project_name": _project_name,
+            "doc_type": DOC_TYPE,
+            "project_collection_name": _project_collection_name,
+            "library_id": main_id,
+            "base_figure_url": base_figure_url,
+            "use_ssl": use_ssl,
+            "user_id": user_id
+        };
+        postWithCallback(main_id, "initialize_project_mainwindow", data_dict)
+    }
+    else {
+        let data_dict = {
+            "collection_name": _collection_name,
+            "doc_type": DOC_TYPE,
+            "project_collection_name": _project_collection_name,
+            "base_figure_url": base_figure_url,
+            "use_ssl": use_ssl,
+            "user_id": user_id
+        };
+        postWithCallback(main_id, "initialize_mainwindow", data_dict)
+    }
 }
 
 function create_tile_from_save(data) {
@@ -192,58 +185,41 @@ function create_tile_from_save(data) {
     }
 }
 
-function continue_loading() {
+function create_table_and_console(console_html) {
+    consoleObject = new ConsoleObjectClass();
+    exportViewerObject = new exportViewerObjectClass();
+    tableObject = new TableObjectClass();
     if (is_project) {
-            postWithCallback(main_id, "grab_project_data", {"doc_name": String(doc_names[0])}, function(data) {
-                console.log("Entering grab_project_data callback");
-                $("#outer-container").css("display", "block");
-                $("#table-area").css("display", "block");
-                tablespec_dict = {};
-                for (let spec in data.tablespec_dict) {
-                    if (!data.tablespec_dict.hasOwnProperty(spec)){
-                        continue;
-                    }
-                    tablespec_dict[spec] = new TableSpec(data.tablespec_dict[spec])
-                }
-                tableObject = new TableObjectClass((data)); // consoleObject is created in here
-                postWithCallback(main_id, "get_saved_console_code", {}, function (data) {
-                    const saved_console_code = data["saved_console_code"];
-                    for (let uid in saved_console_code) {
-                        if (!saved_console_code.hasOwnProperty(uid)) continue;
-                        console.log("getting codearea " + uid);
-                        const codearea = document.getElementById(uid);
-                        codearea.innerHTML = "";
-                        consoleObject.createConsoleCodeInCodearea(uid, codearea);
-                        consoleObject.consoleCMObjects[uid].doc.setValue(saved_console_code[uid]);
-                        consoleObject.consoleCMObjects[uid].refresh();
-                    }
-                });
-
-                // Note that the visible doc has to be definitely set
-                // before creating the tiles. It is needed in order to set the list of column headers
-                // in tile forms.
-                set_visible_doc(doc_names[0], function () {
-                    if (data.is_shrunk) {
-                        tableObject.shrinkTable()
-                    }
-                    else {
-                        table_is_shrunk = false
-                    }
-
-                    menus["Project"].enable_menu_item("save");
-                    // stopSpinner();
-                    })
-                })
-        }
-    else {
-        postWithCallback(main_id, "grab_data", {"doc_name":String(doc_names[0])}, function (data) {
+        postWithCallback(main_id, "grab_project_data", {"doc_name": String(doc_names[0])}, function(data) {
+            console.log("Entering grab_project_data callback");
             $("#outer-container").css("display", "block");
             $("#table-area").css("display", "block");
-            tableObject = new TableObjectClass((data));
-            set_visible_doc(doc_names[0], null);
-            stopSpinner();
-            clearStatusMessage();
-        })
+            tablespec_dict = {};
+            for (let spec in data.tablespec_dict) {
+                if (!data.tablespec_dict.hasOwnProperty(spec)){
+                    continue;
+                }
+                tablespec_dict[spec] = new TableSpec(data.tablespec_dict[spec])
+            }
+            tableObject.initialize_table(data);
+            consoleObject.load_saved_console_code(console_html);
+
+            // Note that the visible doc has to be definitely set
+            // before creating the tiles. It is needed in order to set the list of column headers
+            // in tile forms.
+            set_visible_doc(doc_names[0], function () {
+                if (data.is_shrunk) {
+                    tableObject.shrinkTable()
+                }
+                else {
+                    table_is_shrunk = false
+                }
+                menus["Project"].enable_menu_item("save");
+                })
+            })
+    }
+    else {
+        tableObject.set_doc(String(doc_names[0]));
     }
 
     $("#tile-div").sortable({
@@ -271,55 +247,6 @@ function set_visible_doc(doc_name, func) {
     }
 }
 
-function change_doc(el, row_id) {
-    $("#table-area").css("display", "none");
-    // $("#reload-message").css("display", "block");
-    startSpinner();
-    const doc_name = $(el).val();
-    if (row_id == null) {
-        postWithCallback(main_id, "grab_data", {"doc_name":doc_name}, function (data) {
-        $("#outer-container").css("display", "block");
-        $("#table-area").css("display", "block");
-        tableObject.initialize_table(data);
-        stopSpinner();
-        set_visible_doc(doc_name, null)
-        })
-    }
-    else {
-        const data_dict = {"doc_name": doc_name, "row_id": row_id};
-        if (DOC_TYPE == "table") {
-            postWithCallback(main_id, "grab_chunk_with_row", data_dict, function (data) {
-                // $("#loading-message").css("display", "none");
-                // $("#reload-message").css("display", "none");
-                $("#outer-container").css("display", "block");
-                $("#table-area").css("display", "block");
-                tableObject.initialize_table(data);
-                const tr_element = $("#table-area tbody")[0].rows[data.actual_row];
-                scrollIntoView(tr_element, $("#table-area tbody"));
-                $(tr_element).addClass("selected-row");
-                tableObject.active_row = data.actual_row;
-                tableObject.active_row_id = row_id;
-                set_visible_doc(doc_name, null);
-                stopSpinner();
-                clearStatusMessage();
-            })
-        }
-        else {
-            postWithCallback(main_id, "grab_data", {"doc_name":doc_name}, function (data) {
-                // $("#loading-message").css("display", "none");
-                // $("#reload-message").css("display", "none");
-                $("#outer-container").css("display", "block");
-                $("#table-area").css("display", "block");
-                tableObject.initialize_table(data);
-                myCodeMirror.scrollIntoView(row_id);
-                tableObject.active_row = row_id;
-                set_visible_doc(doc_name, null);
-                stopSpinner();
-                clearStatusMessage()
-            })
-        }
-    }
-}
 
 function removeMainwindow() {
     postAsyncFalse("host", "remove_mainwindow_task", {"main_id": main_id})
