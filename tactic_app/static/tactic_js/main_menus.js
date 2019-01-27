@@ -456,7 +456,9 @@ function saveProjectAs() {
                     is_jupyter = false;
                     clearStatusMessage();
                     menus["Project"].enable_menu_item("save");
-                    tableObject.project_name = data_object["project_name"];
+                    if (DOC_TYPE != "notebook") {
+                        tableObject.project_name = data_object["project_name"];
+                    }
                     //tableObject.set_table_title()
                     // $("#project-name").html(tableObject.project_name);
                     $("title").html(data_object["project_name"]);
@@ -492,7 +494,10 @@ function save_project() {
     postWithCallback(main_id, "update_project", result_dict, updateSuccess);
     function updateSuccess(data) {
         if (data.success) {
-            tableObject.stopTableSpinner();
+            if (DOC_TYPE != "notebook") {
+                tableObject.stopTableSpinner();
+            }
+
             clearStatusMessage();
             data.alert_type = "alert-success";
             dirty = false;
@@ -500,7 +505,9 @@ function save_project() {
             doFlashStopSpinner(data)
         }
         else {
-            tableObject.stopTableSpinner();
+            if (DOC_TYPE != "notebook") {
+                tableObject.stopTableSpinner();
+            }
             clearStatusMessage();
             data.alert_type = "alert-warning";
             dirty = false;

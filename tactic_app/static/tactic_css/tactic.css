@@ -597,7 +597,9 @@ td.cell-clickable:active {
   border: none;
   margin: 1px;
   box-shadow: none;
-  position: relative; }
+  position: relative;
+  overflow: hidden;
+  transition: min-height .5s ease-in-out, max-height .5s ease-in-out; }
   .log-panel .notclose {
     font-size: 15px;
     padding-bottom: 3px; }
@@ -611,60 +613,57 @@ td.cell-clickable:active {
     border-right: 1px solid #c7c7c7;
     overflow-y: hidden;
     border-bottom: none;
-    background-color: white; }
+    background-color: white;
+    transition-delay: 0s; }
   .log-panel .CodeMirror {
     border: 1px solid #c7c7c7 !important; }
   .log-panel .CodeMirror-lines {
     background-color: #f7f7f7 !important; }
-
-.log-panel:hover .card-header {
-  transition-delay: .5s;
-  opacity: 100; }
-
-.log-panel.log-panel-visible .log-panel-body {
-  display: block; }
-.log-panel.log-panel-visible .log-panel-summary {
-  display: none; }
-.log-panel.log-panel-visible .log-code-output {
-  display: block; }
-.log-panel.log-panel-visible .shrink-log-button {
-  display: inline-block; }
-.log-panel.log-panel-visible .expand-log-button {
-  display: none; }
-.log-panel.log-panel-visible .convert-markdown-button, .log-panel.log-panel-visible .close-log-button, .log-panel.log-panel-visible .run-log-button, .log-panel.log-panel-visible .clear-code-button {
-  display: inline-block; }
-
-.log-panel.log-panel-visible {
-  transition: min-height .5s ease-in-out; }
-
-.log-panel.log-panel-visible:not(:hover) {
-  min-height: 0; }
-
-.log-panel.running .clear-code-button {
-  display: none; }
-.log-panel.running .console-spin-outer {
-  display: inline-block; }
-
-.log-panel.log-panel-visible:hover {
-  min-height: 110px; }
-
-.log-panel.log-panel-visible.text-log-item:hover {
-  min-height: 82px; }
-
-.log-panel.log-panel-invisible {
-  max-height: 40px; }
-  .log-panel.log-panel-invisible .log-panel-body {
-    display: none; }
-  .log-panel.log-panel-invisible .log-panel-summary {
-    display: block; }
-  .log-panel.log-panel-invisible .log-code-output {
-    display: none; }
-  .log-panel.log-panel-invisible .shrink-log-button {
-    display: none; }
-  .log-panel.log-panel-invisible .expand-log-button {
-    display: inline-block; }
-  .log-panel.log-panel-invisible .convert-markdown-button, .log-panel.log-panel-invisible .close-log-button, .log-panel.log-panel-invisible .run-log-button, .log-panel.log-panel-invisible .clear-code-button {
-    display: none; }
+  .log-panel:hover .card-header {
+    opacity: 100;
+    transition-delay: .5s; }
+  .log-panel.log-panel-visible {
+    max-height: 9999px; }
+    .log-panel.log-panel-visible .log-panel-body {
+      display: block; }
+    .log-panel.log-panel-visible .log-panel-summary {
+      display: none; }
+    .log-panel.log-panel-visible .log-code-output {
+      display: block; }
+    .log-panel.log-panel-visible .shrink-log-button {
+      display: inline-block; }
+    .log-panel.log-panel-visible .expand-log-button {
+      display: none; }
+    .log-panel.log-panel-visible .convert-markdown-button, .log-panel.log-panel-visible .close-log-button, .log-panel.log-panel-visible .run-log-button, .log-panel.log-panel-visible .clear-code-button {
+      display: inline-block; }
+    .log-panel.log-panel-visible .console-spin-outer {
+      display: none; }
+    .log-panel.log-panel-visible :not(:hover) {
+      min-height: 0; }
+    .log-panel.log-panel-visible.running .clear-code-button {
+      display: none; }
+    .log-panel.log-panel-visible.running .console-spin-outer {
+      display: inline-block; }
+    .log-panel.log-panel-visible:hover {
+      min-height: 110px; }
+    .log-panel.log-panel-visible.text-log-item:hover {
+      min-height: 82px; }
+  .log-panel.log-panel-invisible {
+    max-height: 40px; }
+    .log-panel.log-panel-invisible .card-header {
+      border-right: 0; }
+    .log-panel.log-panel-invisible .log-panel-body {
+      display: none; }
+    .log-panel.log-panel-invisible .log-panel-summary {
+      display: block; }
+    .log-panel.log-panel-invisible .log-code-output {
+      display: none; }
+    .log-panel.log-panel-invisible .shrink-log-button {
+      display: none; }
+    .log-panel.log-panel-invisible .expand-log-button {
+      display: inline-block; }
+    .log-panel.log-panel-invisible .convert-markdown-button, .log-panel.log-panel-invisible .close-log-button, .log-panel.log-panel-invisible .run-log-button, .log-panel.log-panel-invisible .clear-code-button {
+      display: none; }
 
 html, body {
   height: 100%; }
