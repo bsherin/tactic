@@ -92,7 +92,7 @@
     var use_ssl = "{{use_ssl}}"=="True";
     var is_notebook = true;
     var is_jupyter = "{{is_jupyter}}" == "True";
-    var is_totally_new = !is_jupyter && !is_project && (temp_id == "");
+    var is_totally_new = !is_jupyter && !is_project && (temp_data_id == "");
     window.onload = _notebook_main;
     window.onresize = function () {
         if (typeof tableObject != "undefined") {

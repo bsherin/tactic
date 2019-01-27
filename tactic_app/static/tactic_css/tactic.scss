@@ -897,6 +897,8 @@ align-items: baseline
     margin: 1px;
     box-shadow: none;
     position: relative;
+    overflow: hidden;
+    transition:min-height .5s ease-in-out, max-height .5s ease-in-out;
 
     .notclose {
         font-size: 15px;
@@ -913,7 +915,8 @@ align-items: baseline
         border-right: $log-panel-border-style;
         overflow-y: hidden;
         border-bottom: none;
-        background-color: white
+        background-color: white;
+        transition-delay: 0s
     }
 
     .CodeMirror {
@@ -924,102 +927,94 @@ align-items: baseline
         background-color: $console-text-background-color !important;
     }
 
-    .card-header:hover {
-        // background-color: $log-panel-header-background-hover-color !important
+    &:hover{
+        .card-header {
+            opacity: 100;
+            transition-delay: .5s;
+        }
     }
 
-    .notclose {
-        //padding-left: 6px;
+    &.log-panel-visible {
+        max-height: 9999px;
+
+        .log-panel-body {
+            display: block
+        }
+
+        .log-panel-summary {
+            display: none
+        }
+
+        .log-code-output {
+            display: block
+        }
+
+        .shrink-log-button {
+            display: inline-block
+        }
+
+        .expand-log-button {
+            display: none
+        }
+        .convert-markdown-button, .close-log-button, .run-log-button, .clear-code-button {
+            display: inline-block;
+        }
+        .console-spin-outer {
+            display: none;
+        }
+        :not(:hover){
+            min-height: 0;
+        }
+        &.running {
+            .clear-code-button {
+                display: none;
+            }
+            .console-spin-outer {
+                display: inline-block;
+            }
+        }
+        &:hover{
+            min-height: 110px;
+        }
+
+        &.text-log-item:hover{
+            min-height: 82px;
+        }
+    }
+
+    &.log-panel-invisible {
+        max-height: 40px;
+
+        .card-header {
+            border-right: 0;
+        }
+
+        .log-panel-body {
+            display: none
+        }
+
+        .log-panel-summary {
+            display: block
+        }
+
+
+        .log-code-output {
+            display: none
+        }
+
+        .shrink-log-button {
+            display: none
+        }
+
+        .expand-log-button {
+            display: inline-block
+        }
+        .convert-markdown-button, .close-log-button, .run-log-button, .clear-code-button {
+            display: none
+        }
     }
 }
 
-.log-panel:hover {
-    .card-header {
-        transition-delay: .5s;
-        opacity: 100;
-    }
-
-}
-
-.log-panel.log-panel-visible {
-
-    .log-panel-body {
-        display: block
-    }
-
-    .log-panel-summary {
-        display: none
-    }
-
-    .log-code-output {
-        display: block
-    }
-
-    .shrink-log-button {
-        display: inline-block
-    }
-
-    .expand-log-button {
-        display: none
-    }
-    .convert-markdown-button, .close-log-button, .run-log-button, .clear-code-button {
-        display: inline-block;
-    }
-}
-
-.log-panel.log-panel-visible {
-    transition:min-height .5s ease-in-out;
-}
-
-.log-panel.log-panel-visible:not(:hover) {
-    min-height: 0;
-}
-
-.log-panel.running{
-    .clear-code-button {
-        display: none;
-    }
-    .console-spin-outer {
-        display: inline-block;
-    }
-}
-
-.log-panel.log-panel-visible:hover {
-    min-height: 110px;
-}
-
-.log-panel.log-panel-visible.text-log-item:hover {
-    min-height: 82px;
-}
-
-.log-panel.log-panel-invisible {
-    max-height: 40px;
-
-    .log-panel-body {
-        display: none
-    }
-
-    .log-panel-summary {
-        display: block
-    }
-
-
-    .log-code-output {
-        display: none
-    }
-
-    .shrink-log-button {
-        display: none
-    }
-
-    .expand-log-button {
-        display: inline-block
-    }
-    .convert-markdown-button, .close-log-button, .run-log-button, .clear-code-button {
-        display: none
-    }
-
-}
 
 html,body {
     height:100%;

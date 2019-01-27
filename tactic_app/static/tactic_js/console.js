@@ -566,7 +566,7 @@ class ConsoleObjectClass {
 
     startConsoleSpinner (uid) {
         let cc = $("#" + uid).parent();
-        cc.addClass("running")
+        cc.addClass("running");
         // cc.find(".clear-code-button").css("display", "none");
         // cc.find(".console-spin-outer").css("display", "inline-block");
         cc.find(".console-spin-place").html(console_spinner_html);
