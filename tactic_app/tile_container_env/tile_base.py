@@ -13,6 +13,9 @@ from communication_utils import is_jsonizable, make_python_object_jsonizable, de
 from fuzzywuzzy import fuzz, process
 
 from document_object import TacticDocument, FreeformTacticDocument, TacticCollection
+from document_object import DetachedTacticCollection, DetachedTacticRow, DetachedTacticDocument
+from document_object import DetachedFreeformTacticDocument, DetachedTacticLine
+from remote_tile_object import RemoteTiles
 
 
 if "RETRIES" in os.environ:
@@ -119,6 +122,7 @@ class TileBase(object):
         else:
             self.tile_name = tile_name
         self.doc_type = None
+        self._collection = None
 
         self.width = ""
         self.height = ""
@@ -136,6 +140,7 @@ class TileBase(object):
         self._main_id = os.environ["PARENT"]
         self._tworker = _tworker
         self._collection = None  # I have to create this later to impose a post loop when creating the pseudo_tile
+        self._remote_tiles = None
         return
 
     """
@@ -152,6 +157,29 @@ class TileBase(object):
             self._collection = TacticCollection(self)
         return self._collection
 
+    def create_row(self, row_dict=None):
+        if row_dict is None:
+            row_dict = {}
+        return DetachedTacticRow(row_dict)
+
+    def create_line(self, txt=""):
+        return DetachedTacticLine(txt)
+
+    def create_document(self, docname, column_names, dict_or_detached_row_list=None, metadata=None):
+        return DetachedTacticDocument(self, docname, column_names, dict_or_detached_row_list, metadata=None)
+
+    def create_freeform_document(self, docname, lines=None, metadata=None):
+        return DetachedFreeformTacticDocument(self, docname, lines, metadata)
+
+    def create_collection_object(self, doc_type, doc_dict=None):
+        return DetachedTacticCollection(self, doc_type, doc_dict)
+
+    @property
+    def tiles(self):
+        if self._remote_tiles is None:
+            self._remote_tiles = RemoteTiles(self)
+        return self._remote_tiles
+
     @property
     def _current_reload_attrs(self):
         result = {}
@@ -161,6 +189,7 @@ class TileBase(object):
 
     @_task_worthy
     def RefreshTile(self, data):
+        print("got RefreshTile")
         self._do_the_refresh()
         return None
 
@@ -974,6 +1003,12 @@ class TileBase(object):
         self._restore_stdout()
         return result
 
+    def get_collection_info(self):
+        self._save_stdout()
+        result = self._tworker.post_and_wait(self._main_id, "get_collection_info")
+        self._restore_stdout()
+        return result
+
     def gcdn(self):
         return self.get_current_document_name()
 
@@ -986,7 +1021,7 @@ class TileBase(object):
     def gdd(self, document_name):
         return self.get_document_data(document_name)
 
-    def get_document(self, docname=None, grab_all_rows=True):
+    def get_document(self, docname=None):
         protected_standout = sys.stdout  # Need to do it this way because other calls were writing over self._old_stdout
         sys.stdout = sys.stderr
         if docname is None:
@@ -994,9 +1029,12 @@ class TileBase(object):
         if self.doc_type == "freeform":
             result = FreeformTacticDocument(self, docname)
         else:
-            result = TacticDocument(self, docname, grab_all_rows)
+            result = TacticDocument(self, docname)
         sys.stdout = protected_standout
         return result
+
+    def new_collection(self, doc_type, doc_dict=None):
+        return DetachedTacticCollection(self, doc_type, doc_dict)
 
     def get_document_data(self, document_name):
         self._save_stdout()
@@ -1059,6 +1097,13 @@ class TileBase(object):
         self._save_stdout()
         data = {"document_name": document_name, "row_id": row_id}
         result = self._tworker.post_and_wait(self._main_id, "get_row", data)
+        self._restore_stdout()
+        return result
+
+    def get_rows(self, document_name, start, stop):
+        self._save_stdout()
+        data = {"document_name": document_name, "start": start, "stop": stop}
+        result = self._tworker.post_and_wait(self._main_id, "get_rows", data)
         self._restore_stdout()
         return result
 
@@ -1445,25 +1490,37 @@ class TileBase(object):
         self._restore_stdout()
         return result
 
-    def get_pipe_value(self, pipe_key):
+    def get_pipe_value(self, key_or_tile_name, export_name=None):
         self._save_stdout()
-        for(tile_id, tile_entry) in self._pipe_dict.items():
-            if pipe_key in tile_entry:
-                result = self._tworker.post_and_wait_for_pipe(tile_entry[pipe_key]["tile_id"],
-                                                              "_transfer_pipe_value",
-                                                              {"export_name": tile_entry[pipe_key]["export_name"],
-                                                               "requester_address": self.my_address},
-                                                              timeout=60,
-                                                              tries=RETRIES)
-                encoded_val = result["encoded_val"]
-                val = debinarize_python_object(encoded_val)
+        print("in get_pipe_value")
+        if export_name is None:  # then assume the first argument is a pipe_key
+            pipe_key = key_or_tile_name
+            for(tile_id, tile_entry) in self._pipe_dict.items():
+                if pipe_key in tile_entry:
+                    tile_id = tile_entry[pipe_key]["tile_id"]
+                    export_name = tile_entry[pipe_key]["export_name"]
+                    break
+            if export_name is None:
                 self._restore_stdout()
-                return val
+                return None
+        else: # otherwise assume first argument is the tile name
+            tile_id = self.tiles[key_or_tile_name]._tile_id
+
+        result = self._tworker.post_and_wait_for_pipe(tile_id,
+                                                      "_transfer_pipe_value",
+                                                      {"export_name": export_name,
+                                                       "requester_address": self.my_address},
+                                                      timeout=60,
+                                                      tries=RETRIES)
+        encoded_val = result["encoded_val"]
+        val = debinarize_python_object(encoded_val)
         self._restore_stdout()
-        return None
+        return val
+
 
     @_task_worthy
     def _transfer_pipe_value(self, data):
+        print("in _transfer_pipe_value")
         self._save_stdout()
         export_name = data["export_name"]
         if hasattr(self, export_name):

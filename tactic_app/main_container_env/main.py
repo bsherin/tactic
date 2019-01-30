@@ -1143,6 +1143,16 @@ class mainWindow(object):
         return mdata
 
     @task_worthy
+    def get_collection_info(self, data):
+        info = {}
+        for doc_name, ddict in self.doc_dict.items():
+            info[doc_name] = {}
+            info[doc_name]["number_rows"] = ddict.number_of_rows
+            if self.doc_type == "table":
+                info[doc_name]["column_names"] = ddict.table_spec.header_list
+        return info
+
+    @task_worthy
     def set_document_metadata(self, data):
         doc_name = data["document_name"]
         self.doc_dict[doc_name].set_additional_metadata(data["metadata"])
