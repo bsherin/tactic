@@ -30,7 +30,7 @@ class ConsoleObjectClass {
         this.markdown_helper = new MarkdownHelper(".console-text", ".text-panel-output");
         this.pseudo_tile_id = null;
         this.saved_console_dom_visibility = "block";
-        this.saved_error_dom_visibility = "none"
+        this.saved_error_dom_visibility = "none";
     }
 
     get console_panel () {
@@ -112,7 +112,7 @@ class ConsoleObjectClass {
             self.addConsoleCodearea(e)
         });
         $("#add-blank-text-button").click(function (e) {
-            self.addConsoleText("")
+            self.addConsoleText("");
             e.preventDefault();
         });
         $("#console-error-log-button").click(function(e) {
@@ -139,7 +139,7 @@ class ConsoleObjectClass {
 
     update_height(hgt) {
         this.console_panel.innerHeight(hgt);
-        this.console_dom.outerHeight(hgt - this.console_heading.outerHeight())
+        this.console_dom.outerHeight(hgt - this.console_heading.outerHeight());
         this.error_dom.outerHeight(hgt - this.console_heading.outerHeight())
     }
 
@@ -187,7 +187,7 @@ class ConsoleObjectClass {
         this.saved_console_dom_visibility = this.console_dom.css("display");
         this.saved_error_dom_visibility = this.error_dom.css("display");
         this.console_dom.css("display", "none");
-        this.error_dom.css("display", "none")
+        this.error_dom.css("display", "none");
         this.console_panel.outerHeight(this.console_heading.outerHeight());
         if (!is_notebook){
             exportViewerObject.exports_panel.outerHeight(this.console_heading.outerHeight());

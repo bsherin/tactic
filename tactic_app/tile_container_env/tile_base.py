@@ -1517,7 +1517,6 @@ class TileBase(object):
         self._restore_stdout()
         return val
 
-
     @_task_worthy
     def _transfer_pipe_value(self, data):
         print("in _transfer_pipe_value")
