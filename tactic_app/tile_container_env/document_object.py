@@ -1,5 +1,22 @@
 # These classes provide a more natural interface for getting and setting data in a project collection
 
+import os
+import copy
+CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
+_protected_column_names = ["__id__", "__filename__"]
+
+
+def remove_protected_fields_from_dict(adict):
+    ndict = copy.copy(adict)
+    for field in _protected_column_names:
+        if field in ndict:
+            del ndict[field]
+    return ndict
+
+
+def remove_protected_fields_from_list(alist):
+    return [it for it in alist if it not in _protected_column_names]
+
 
 class TacticRow:
     def __init__(self, tbinstance, rowid, docname, row_dict=None):
@@ -7,6 +24,12 @@ class TacticRow:
         self.__dict__["_docname"] = docname
         self.__dict__["_tbinstance"] = tbinstance
         self.__dict__["_row_dict"] = row_dict
+
+    def detach(self):
+        return DetachedTacticRow(self.row_dict)
+
+    def _remove_protected_fields(self):
+        self.__dict__["_row_dict"] = remove_protected_fields_from_dict(self.__dict__["_row_dict"])
 
     def _get_field(self, colname):
         if self.__dict__["_row_dict"] is None:
@@ -25,7 +48,8 @@ class TacticRow:
         return
 
     def set_background(self, column_name, color):
-        self.set_cell_background(self.__dict__["_docname"], self.__dict__["_rowid"], column_name, color)
+        self.__dict__["_tbinstance"].set_cell_background(self.__dict__["_docname"],
+                                                         self.__dict__["_rowid"], column_name, color)
         return
 
     @property
@@ -33,7 +57,7 @@ class TacticRow:
         if self.__dict__["_row_dict"] is None:
             return self.__dict__["_tbinstance"].get_row(self.__dict__["_docname"], self.__dict__["_rowid"])
         else:
-            return self.__dict__["_row_dict"]
+            return copy.copy(self.__dict__["_row_dict"])
 
     def __getattr__(self, attr):
         return self._get_field(attr)
@@ -54,6 +78,46 @@ class TacticRow:
         return "TacticRow(docname={}, rowid={})".format(self.__dict__["_docname"], self.__dict__["_rowid"])
 
 
+class DetachedTacticRow:
+    def __init__(self, row_dict):
+        self.__dict__["_row_dict"] = row_dict
+
+    @property
+    def row_dict(self):
+        return copy.copy(self.__dict__["_row_dict"])
+
+    def _set_field(self, colname, value):
+        self.__dict__["_row_dict"][colname] = value
+        return
+
+    def __getattr__(self, attr):
+        return self.__dict__["_row_dict"][attr]
+
+    def __getitem__(self, colname):
+        return self.__dict__["_row_dict"][colname]
+
+    def __setitem__(self, colname, value):
+        self._set_field(colname, value)
+
+    def __setattr__(self, colname, value):
+        self._set_field(colname, value)
+
+    def __contains__(self, name):
+        return name in self.row_dict
+
+    def __repr__(self):
+        return "DetachedTacticRow"
+
+    def __delitem__(self, key):
+        del self.__dict__["_row_dict"][key]
+
+    def __delattr__(self, attr):
+        self.__delitem__(attr)
+
+    def set_background(self, column_name, color):
+        raise NotImplementedError
+
+
 class TacticLine:
     def __init__(self, tbinstance, line_number, docname, line_text):
         self.__dict__["_line_number"] = line_number
@@ -69,8 +133,11 @@ class TacticLine:
     def line_number(self):
         return self._line_number
 
+    def detach(self):
+        return DetachedTacticLine(self.text)
+
     def __getitem__(self, charnum):
-        return self.__dict__["line_text"][charnum]
+        return self._text[charnum]
 
     def __setitem__(self, colname, value):
         raise NotImplementedError
@@ -79,17 +146,53 @@ class TacticLine:
         return "TacticLine(docname={}, line_number={})".format(self.__dict__["_docname"], self.__dict__["_line_number"])
 
 
+class DetachedTacticLine:
+    def __init__(self, line_text=""):
+        self._text = line_text
+
+    @property
+    def text(self):
+        return self._text
+
+    @text.setter
+    def text(self, new_text):
+        self._text = new_text
+
+    def __getitem__(self, charnum):
+        return self.line_text[charnum]
+
+    def __setitem__(self, charnum, value):
+        raise NotImplementedError
+
+    def __repr__(self):
+        return "DetachedTacticLine"
+
+    def set_background(self, column_name, color):
+        raise NotImplementedError
+
+
 class FreeformTacticDocument:
-    def __init__(self, tb_instance, docname):
+    def __init__(self, tb_instance, docname, number_rows=None):
         self._docname = docname
         self._tb_instance = tb_instance
-        self._number_lines = self._tb_instance.get_number_rows(docname)
+        if number_rows is None:
+            self._number_lines = self._tb_instance.get_number_rows(docname)
+        else:
+            self._number_lines = number_rows
         self._iter_value = -1
         self._text = tb_instance.get_document_data(docname)
         lines = tb_instance.get_document_data_as_list(docname)
         self._line_list = [TacticLine(self._tb_instance, n, self._docname, the_line)
                            for n, the_line in enumerate(lines)]
         self._iter_value = -1
+
+    @property
+    def line_list(self):
+        return self._line_list
+
+    @property
+    def name(self):
+        return self._docname
 
     @property
     def metadata(self):
@@ -120,6 +223,10 @@ class FreeformTacticDocument:
     def __len__(self):
         return self._number_lines
 
+    def detach(self):
+        detached_lines = [line.detach() for line in self.line_list]
+        return DetachedFreeformTacticDocument(self._tb_instance, self.name, detached_lines, self.metadata)
+
     def __setitem__(self, colname, value):
         raise NotImplementedError
 
@@ -127,20 +234,112 @@ class FreeformTacticDocument:
         return "FreeformTacticDocument({})".format(self._docname)
 
 
-class TacticDocument:
-    def __init__(self, tb_instance, docname, grab_all_rows=True):
+class DetachedFreeformTacticDocument(FreeformTacticDocument):
+    def __init__(self, tb_instance, docname, text=None, metadata=None):
         self._docname = docname
         self._tb_instance = tb_instance
-        self._number_rows = self._tb_instance.get_number_rows(docname)
-        self._column_names = self._tb_instance.get_column_names(docname)
         self._iter_value = -1
-        self._grab_all_rows = grab_all_rows
-        if grab_all_rows:
-            dict_list = tb_instance.get_document_data_as_list(docname)
-            self._row_list = [TacticRow(self._tb_instance, n, self._docname, rdict)
-                              for n, rdict in enumerate(dict_list)]
+        self._line_list = []
+        if metadata is None:
+            self._metadata = {}
         else:
-            self._row_list = None
+            self._metadata = metadata
+        if text is None:
+            self._line_list = []
+        elif isinstance(text, str):
+            lines = text.split("\n")
+            self._line_list = [DetachedTacticLine(the_line) for n, the_line in enumerate(lines)]
+        elif isinstance(text, list):
+            for the_line in text:
+                if isinstance(the_line, DetachedTacticLine):
+                    self._line_list.append(the_line)
+                elif isinstance(the_line, str):
+                    self._line_list.append(DetachedTacticLine(the_line))
+                else:
+                    raise TypeError("List argument to DetachedFreeformTacticDocument had an item of an unknown type.")
+        else:
+            raise TypeError("Text argument to DetachedFreeformTacticDocument is not a string or list")
+
+        self.update_props()
+        return
+
+    @property
+    def metadata(self):
+        return self._metadata
+
+    @metadata.setter
+    def metadata(self, new_metadata):
+        self._metadata = new_metadata
+        self.update_props()
+        return
+
+    @property
+    def name(self):
+        return self._docname
+
+    @name.setter
+    def name(self, newname):
+        self._docname = newname
+        self.update_props()
+        return
+
+    def update_props(self):
+        self._number_lines = len(self._line_list)
+        self._metadata["number_of_lines"] = self._number_lines
+        self._metadata["length"] = len(self.text)
+        self._metadata["name"] = self._docname
+
+    @property
+    def text(self):
+        txt = ""
+        for l in self._line_list:
+            txt = txt + l.text + "\n"
+        return txt
+
+    def __iadd__(self, other):
+        if not isinstance(other, DetachedFreeformTacticDocument):
+            raise TypeError("added object is not a DetachedFreeformTacticDocument")
+        self._line_list += other._line_list
+        self.update_props()
+        return self
+
+    def append(self, detached_line):
+        if not isinstance(detached_line, DetachedTacticLine):
+            raise TypeError("appended object is not a DetachedTacticRow")
+        self._line_list.append(detached_line)
+        self.update_props()
+        return
+
+    def __setitem__(self, index, value):
+        if isinstance(value, DetachedTacticLine):
+            new_line = value
+        elif isinstance(value, str):
+            new_line = DetachedTacticLine(value)
+        else:
+            raise TypeError("New line must be a DetachedTacticLine or a string")
+        self._line_list[index] = new_line
+        return
+
+
+class TacticDocument:
+    def __init__(self, tb_instance, docname, number_rows=None, column_names=None):
+        self._docname = docname
+        self._tb_instance = tb_instance
+        self._iter_value = -1
+        self._number_rows = number_rows
+        self._column_names = column_names
+        self._unprotected_column_names = remove_protected_fields_from_list(self._column_names)
+        self._current_chunk_start = 0
+        self._row_list = None
+        self._get_chunk()
+        return
+
+    def _get_chunk(self):
+        dict_list = self._tb_instance.get_rows(self._docname, self._current_chunk_start,
+                                               self._current_chunk_start + CHUNK_SIZE)
+        self._row_list = [TacticRow(self._tb_instance, n + self._current_chunk_start, self._docname, rdict)
+                          for n, rdict in enumerate(dict_list)]
+        return
 
     @property
     def name(self):
@@ -152,6 +351,8 @@ class TacticDocument:
 
     @metadata.setter
     def metadata(self, new_metadata):
+        if not isinstance(new_metadata, dict):
+            raise TypeError("Metadata must be set to a dict")
         self._tb_instance.set_document_metadata(self._docname, new_metadata)
         return
 
@@ -161,10 +362,7 @@ class TacticDocument:
 
     @property
     def dict_list(self):
-        if self._grab_all_rows:
-            return [r.row_dict for r in self._row_list]
-        else:
-            return self._tb_instance.get_document_data_as_list(docname)
+        return self._tb_instance.get_document_data_as_list(self._docname)
 
     def get_matching_rows(self, func):
         self.rewind()
@@ -174,14 +372,53 @@ class TacticDocument:
         self._tb_instance.set_column_data(self._docname, column_name, data_list_or_dict, cellchange)
         return
 
-    def __getitem__(self, x):
-        if self._grab_all_rows:
-            return self._row_list[x]
-        elif isinstance(x, slice):
-            start, stop, step = x.indices(self._number_rows)
-            return [TacticRow(self._tb_instance, n, self._docname) for n in range(start, stop, step)]
+    def _r_in_chunk(self, r):
+        return (r >= self._current_chunk_start) and (r < self._current_chunk_start + CHUNK_SIZE)
+
+    def _get_chunk_start(self, r):
+        return int(r / CHUNK_SIZE) * CHUNK_SIZE
+
+    def _relative_r(self, r):
+        return r - self._current_chunk_start
+
+    def _update_chunk(self, r):
+        if self._r_in_chunk(r):
+            return
         else:
-            return TacticRow(self._tb_instance, x, self._docname)
+            self._current_chunk_start = self._get_chunk_start(r)
+            self._get_chunk()
+        return
+
+    def detach(self):
+        return DetachedTacticDocument(self._tb_instance, self.name, self.column_names, self.dict_list, self.metadata)
+
+    def __getitem__(self, x):
+        if isinstance(x, slice):
+            start = x.start
+            stop = x.stop
+            if start is None:
+                start = 0
+            elif start < 0:
+                start = self._number_rows + start
+            if stop is None:
+                stop = self._number_rows
+            elif stop < 0:
+                stop = self._number_rows + stop
+            if stop <= start:
+                return []
+            if self._r_in_chunk(start) and self._r_in_chunk(stop):
+                return self._row_list[self._relative_r(start):self._relative_r(stop)]
+            elif (stop - start) < CHUNK_SIZE:
+                self._current_chunk_start = start
+                self._get_chunk()
+                return self._row_list[:(stop - start)]
+            else:
+                return [TacticRow(self._tb_instance, n, self._docname) for n in range(start, stop)]
+        else:
+            if x < 0:
+                x = self._number_rows + x
+            self._update_chunk(x)
+            return self._row_list[self._relative_r(x)]
 
     def __iter__(self):
         return self
@@ -205,8 +442,17 @@ class TacticDocument:
         else:
             new_row = TacticRow(self._tb_instance, index, self._docname, value)
 
-        if self._grab_all_rows:
-            self._row_list[index] = new_row
+        new_row._remove_protected_fields()
+
+        assert set(new_row.row_dict.keys()) == set(self._unprotected_column_names), "New row doesn't have " \
+                                                                                    "the correct field names."
+
+        if self._r_in_chunk(index):
+            old_row = self._row_list[self._relative_r(index)]
+            for k in old_row.row_dict.keys():  # To get protected data
+                if k not in new_row:
+                    new_row[k] = old_row[k]
+            self._row_list[self._relative_r(index)] = new_row
 
         rdict = new_row.__dict__["_row_dict"]
         if rdict is not None:
@@ -217,12 +463,145 @@ class TacticDocument:
         return "TacticDocument({})".format(self._docname)
 
 
+# To do: overload add
+
+class DetachedTacticDocument(TacticDocument):
+    def __init__(self, tb_instance, docname, column_names, dict_or_detached_row_list=None, metadata=None):
+        self._docname = docname
+        self._tb_instance = tb_instance
+        self._iter_value = -1
+        self._column_names = column_names
+        self._row_list = []
+        if metadata is None:
+            self._metadata = {}
+        else:
+            self._metadata = metadata
+        if dict_or_detached_row_list is not None:
+            for r in dict_or_detached_row_list:
+                if isinstance(r, DetachedTacticRow):
+                    self._row_list.append(r)
+                else:
+                    self._row_list.append(DetachedTacticRow(r))
+        self.update_props()
+        return
+
+    @property
+    def name(self):
+        return self._docname
+
+    @name.setter
+    def name(self, newname):
+        self._docname = newname
+        self.update_props()
+        return
+
+    @property
+    def metadata(self):
+        return self._metadata
+
+    @metadata.setter
+    def metadata(self, new_metadata):
+        self._metadata = new_metadata
+        self.update_props()
+        return
+
+    def update_props(self):
+        self._number_rows = len(self._row_list)
+        self._metadata["number_of_rows"] = self._number_rows
+        self._metadata["name"] = self._docname
+
+    @property
+    def dict_list(self):
+        return [r.row_dict for r in self._row_list]
+
+    def __iadd__(self, tdoc):
+        if not isinstance(tdoc, DetachedTacticDocument):
+            raise TypeError("added object is not a DetachedTacticDocument")
+        assert tdoc.column_names == self.column_names
+        self._row_list += tdoc._row_list
+        self.update_props()
+        return self
+
+    def add_column(self, column_name):
+        self._column_names.append(column_name)
+        for r in self._row_list:
+            r[column_name] = None
+        return
+
+    def set_column_data(self, column_name, data_list, cellchange=None):
+        for r, datum in enumerate(data_list):
+            self[r][column_name] = datum
+        return
+
+    def append(self, detached_row):
+        if not isinstance(detached_row, DetachedTacticRow):
+            raise TypeError("appended object is not a DetachedTacticRow")
+        self._row_list.append(detached_row)
+        self.update_props()
+        return
+
+    def insert(self, position, element):
+        if not isinstance(element, DetachedTacticRow):
+            element = DetachedTacticRow(element)
+        self._row_list.insert(position, element)
+        return
+
+    def __getitem__(self, x):
+        nrows = len(self._row_list)
+        if isinstance(x, slice):
+            start = x.start
+            stop = x.stop
+            if start is None:
+                start = 0
+            elif start < 0:
+                start = nrow + start
+            if stop is None:
+                stop = nrows
+            elif stop < 0:
+                stop = nrows + stop
+            if stop <= start:
+                return []
+
+            return self._row_list[start:stop]
+        else:
+            if x < 0:
+                x = nrows + x
+            return self._row_list[x]
+
+    def __setitem__(self, index, value):
+        if isinstance(value, DetachedTacticRow):
+            new_row = value
+        elif isinstance(value, dict):
+            new_row = DetachedTacticRow(value)
+        else:
+            raise TypeError("New row must be a DetachedTacticRow or a dict")
+        for colname in new_row.row_dict.keys():
+            if colname not in self.column_names:
+                raise NameError("Fieldname {} is not a column in this document.".format(colname))
+        for colname in self.column_names:
+            if colname not in new_row:
+                new_row[colname] = None
+        self._row_list[index] = new_row
+        return
+
+    def __len__(self):
+        return len(self._row_list)
+
+    def __delitem__(self, index):
+        del self._row_list[index]
+        return
+
+    def __repr__(self):
+        return "DetachedTacticDocument({})".format(self._docname)
+
+
 class TacticCollection:
     def __init__(self, tb_instance, grab_all_docs=False):
         self._iter_value = -1
         self._tb_instance = tb_instance
+        self._collection_info = tb_instance.get_collection_info()
         self._doc_type = tb_instance.doc_type
-        self._doc_names = self._tb_instance.get_document_names()
+        self._doc_names = list(self._collection_info.keys())
         self._number_docs = len(self._doc_names)
         self._grab_all_docs = grab_all_docs
         if self._doc_type == "freeform":
@@ -231,11 +610,16 @@ class TacticCollection:
             self._doc_class = TacticDocument
 
         if grab_all_docs:
-            self._doc_dict = {dname: self._doc_class(self._tb_instance, dname)
-                              for dname in self._doc_names}
+            self._doc_dict = {dname: self._create_doc_object(dname) for dname in self._doc_names}
         else:
             self._doc_dict = None
         return
+
+    def detach(self):
+        dict_for_detach = {}
+        for name in self.document_names:
+            dict_for_detach[name] = self[name].detach()
+        return DetachedTacticCollection(self._tb_instance, self._doc_type, dict_for_detach)
 
     @property
     def document_names(self):
@@ -245,11 +629,21 @@ class TacticCollection:
     def current_document(self):
         return self[self._tb_instance.get_current_document_name()]
 
+    def _create_doc_object(self, dname):
+        if self._doc_type == "freeform":
+            return self._doc_class(self._tb_instance, dname, self._collection_info[dname]["number_rows"])
+        else:
+            return self._doc_class(self._tb_instance, dname, self._collection_info[dname]["number_rows"],
+                                   self._collection_info[dname]["column_names"])
+
+
     def __getitem__(self, x):
+        if x not in self._doc_names:
+            raise KeyError("No document named '{}'".format(x))
         if self._grab_all_docs:
             return self._doc_dict[x]
         else:
-            return self._doc_class(self._tb_instance, x)
+            return self._create_doc_object(x)
 
     def __iter__(self):
         return self
@@ -272,3 +666,94 @@ class TacticCollection:
 
     def __repr__(self):
         return "TacticCollection with {} docs".format(str(len(self)))
+
+
+class DetachedTacticCollection(TacticCollection):
+    def __init__(self, tb_instance, doc_type, doc_dict=None):
+        self._tb_instance = tb_instance
+        self._iter_value = -1
+        self._doc_type = doc_type
+        self._doc_names = []
+        self._number_docs = 0
+        if self._doc_type == "freeform":
+            self._doc_class = DetachedFreeformTacticDocument
+        else:
+            self._doc_class = DetachedTacticDocument
+        self._grab_all_docs = True
+        if doc_dict is None:
+            self._doc_dict = {}
+        else:
+            for doc in doc_dict.values():
+                if not isinstance(doc, self._doc_class):
+                    raise TypeError("A new collection must be built from DetachedTacticDocument objects.")
+            self._doc_dict = doc_dict
+        self.update_props()
+        return
+
+    def append(self, detached_doc):
+        if not isinstance(detached_doc, self._doc_class):
+            raise TypeError("appended object is not a DetachedTacticDocument")
+        if detached_doc.name in self._doc_dict:
+            raise FileExistsError("document name exists")
+        self._doc_dict[detached_doc.name] = detached_doc
+        self.update_props()
+        return
+
+    def update(self, other_collection):
+        if not isinstance(other_collection, TacticCollection):
+            raise TypeError("Argument is not a TacticCollection or DetachedTacticCollection")
+        other_collection.rewind()
+        for doc in other_collection:
+            if not isinstance(doc, self._doc_class):
+                detached_doc = doc.detach()
+            else:
+                detached_doc = doc
+            self._doc_dict[detached_doc.name] = detached_doc
+            self.update_props()
+        return
+
+    def __add__(self, other):
+        if not isinstance(other_collection, TacticCollection):
+            raise TypeError("Can only combine with a DetachedTacticCollection")
+        new_doc_dict = self._doc_dict
+        new_doc_dict.update(other._doc_dict)
+        return DetachedTacticCollection(self._tb_instance, self._doc_type, new_doc_dict)
+
+    def __iadd__(self, other):
+        if not isinstance(other, DetachedTacticCollection):
+            raise TypeError("Not a DetachedTacticCollection")
+        self._doc_dict.update(other._doc_dict)
+        self.update_props()
+        return self
+
+    def __getitem__(self, x):
+        if x not in self._doc_names:
+            raise KeyError("No document named '{}'".format(x))
+        return self._doc_dict[x]
+
+    def update_props(self):
+        self._doc_names = list(self._doc_dict.keys())
+        self._number_docs = len(self._doc_names)
+        return
+
+    def current_document(self):
+        raise NotImplementedError
+
+    def __setitem__(self, docname, new_doc):
+        if not isinstance(new_doc, DetachedTacticDocument):
+            raise TypeError("Not a DetachedTacticDocument")
+        new_doc._docname = docname
+        self._doc_dict[docname] = new_doc
+        self.update_props()
+
+    def add_to_library(self, collection_name):
+        full_collection = {}
+        metadata_dict = {}
+        self.rewind()
+        for doc in self:
+            full_collection[doc.name] = doc.dict_list
+            metadata_dict[doc.name] = doc.metadata
+        self._tb_instance.create_collection(collection_name, full_collection, self._doc_type, metadata_dict)
+
+    def __repr__(self):
+        return "DetachedTacticCollection with {} docs".format(str(len(self)))
