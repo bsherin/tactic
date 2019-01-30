@@ -636,7 +636,6 @@ class TacticCollection:
             return self._doc_class(self._tb_instance, dname, self._collection_info[dname]["number_rows"],
                                    self._collection_info[dname]["column_names"])
 
-
     def __getitem__(self, x):
         if x not in self._doc_names:
             raise KeyError("No document named '{}'".format(x))

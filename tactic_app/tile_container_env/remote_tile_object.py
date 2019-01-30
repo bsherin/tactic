@@ -15,9 +15,9 @@ class RemoteTiles:
         return self._other_tile_names
 
     def _get_other_tile_data(self):
-        return  self._tbinstance._tworker.post_and_wait(self._tbinstance._main_id,
-                                                        "OtherTileData",
-                                                        {"tile_id": self._tbinstance._tworker.my_id})
+        return self._tbinstance._tworker.post_and_wait(self._tbinstance._main_id,
+                                                       "OtherTileData",
+                                                       {"tile_id": self._tbinstance._tworker.my_id})
 
     def __getitem__(self, x):
         return RemoteTile(self._tbinstance, x,
@@ -48,6 +48,7 @@ class RemoteTiles:
 
     def __repr__(self):
         return "RemoteTiles with {} Tiles".format(str(len(self)))
+
 
 class RemoteTile:
     def __init__(self, _tbinstance, tile_name, tile_id, pipe_list):

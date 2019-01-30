@@ -89,6 +89,7 @@ def get_mainwindow_property(main_id, prop_name, callback):
     tactic_app.host_worker.post_task(main_id, "get_property", {"property": prop_name}, callback)
     return
 
+
 @socketio.on('ready-to-begin', namespace='/main')
 def on_ready_to_begin(data):
     socketio.emit("begin-post-load", data, namespace='/main', room=data["room"])
