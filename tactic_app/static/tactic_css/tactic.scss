@@ -905,18 +905,26 @@ align-items: baseline
         padding-bottom: 3px
     }
 
+    &.running .card-header .button-div.spinner-div {
+        opacity: 100;
+    }
+
     .card-header {
-        opacity: 0;
         position: absolute;
         height: 100%;
         width: 30px;
         padding: 4px 4px !important;
         text-align: center;
-        border-right: $log-panel-border-style;
+        border-right: none;
         overflow-y: hidden;
         border-bottom: none;
         background-color: white;
-        transition-delay: 0s
+        transition-delay: 0s;
+
+        .button-div {
+            opacity: 0;
+        }
+
     }
 
     .CodeMirror {
@@ -927,11 +935,15 @@ align-items: baseline
         background-color: $console-text-background-color !important;
     }
 
-    &:hover{
+    &:focus-within{
         .card-header {
-            opacity: 100;
-            transition-delay: .5s;
+            border-right: $log-panel-border-style;
+            .button-div {
+                opacity: 100;
+                transition-delay: .25s;
+            }
         }
+
     }
 
     &.log-panel-visible {
@@ -949,22 +961,31 @@ align-items: baseline
             display: block
         }
 
-        .shrink-log-button {
-            display: inline-block
+
+        &.error-log-panel{
+            min-height: 82px;
+            .close-log-button, .shrink-log-button {
+                display: inline-block;
+            }
+            .card-header {
+                .button-div {
+                    opacity: 100;
+                    transition-delay: .25s;
+                }
+            }
+
         }
 
-        .expand-log-button {
-            display: none
-        }
-        .convert-markdown-button, .close-log-button, .run-log-button, .clear-code-button {
-            display: inline-block;
-        }
         .console-spin-outer {
             display: none;
         }
-        :not(:hover){
+        :not(:focus-within){
             min-height: 0;
         }
+        .convert-markdown-button, .close-log-button, .run-log-button, .clear-code-button, .console-spin-outer, .shrink-log-button, .expand-log-button {
+            display: none;
+        }
+
         &.running {
             .clear-code-button {
                 display: none;
@@ -972,13 +993,29 @@ align-items: baseline
             .console-spin-outer {
                 display: inline-block;
             }
+            &:focus-within {
+                .clear-code-button {
+                    display:none;
+                }
+            }
         }
-        &:hover{
+        &:focus-within{
             min-height: 110px;
+            .convert-markdown-button, .close-log-button, .run-log-button, .clear-code-button, .shrink-log-button {
+                display: inline-block;
+            }
         }
 
-        &.text-log-item:hover{
+        &.text-log-item:focus-within{
             min-height: 82px;
+        }
+
+
+        &:not(:focus-within):hover .button-div.shrink-expand-div {
+            opacity: 100;
+        }
+        &:not(:focus-within):hover .shrink-log-button {
+            display: inline-block
         }
     }
 
@@ -997,6 +1034,9 @@ align-items: baseline
             display: block
         }
 
+        .console-spin-outer {
+            display:none
+        }
 
         .log-code-output {
             display: none
@@ -1006,7 +1046,14 @@ align-items: baseline
             display: none
         }
 
-        .expand-log-button {
+        &.error-log-panel:hover .expand-log-buton{
+            display: inline-block
+        }
+
+        &:hover .button-div.shrink-expand-div {
+            opacity: 100;
+        }
+        &:hover .expand-log-button {
             display: inline-block
         }
         .convert-markdown-button, .close-log-button, .run-log-button, .clear-code-button {

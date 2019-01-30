@@ -457,6 +457,7 @@ class ConsoleObjectClass {
                 'Ctrl-Enter': function(cm) {
                     let the_code = cm.getValue();
                     self.startConsoleSpinner(cm.tactic_uid);
+
                     postWithCallback(main_id, "exec_console_code", {"the_code": the_code, "console_id": cm.tactic_uid})
                 },
                 'Cmd-Enter': function (cm) {
@@ -566,6 +567,7 @@ class ConsoleObjectClass {
 
     startConsoleSpinner (uid) {
         let cc = $("#" + uid).parent();
+        cc.find(".log-code-output").html("");
         cc.addClass("running");
         // cc.find(".clear-code-button").css("display", "none");
         // cc.find(".console-spin-outer").css("display", "inline-block");
