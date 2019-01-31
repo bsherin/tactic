@@ -110,6 +110,7 @@ class ConsoleObjectClass {
         });
         $("#add-blank-code-button").click(function (e) {
             self.addConsoleCodearea(e)
+            e.preventDefault();
         });
         $("#add-blank-text-button").click(function (e) {
             self.addConsoleText("");
@@ -178,6 +179,42 @@ class ConsoleObjectClass {
 
     update_grid_bottom_height() {
         $("#grid-bottom").innerHeight(Math.max(exportViewerObject.exports_panel.outerHeight(), consoleObject.console_panel.outerHeight()))
+    }
+
+    get_cell_with_focus() {
+        let el = document.activeElement;
+        parent = $(el).closest(".log-panel");
+        if (parent.length == 0) {
+            return null
+        }
+        else {
+            return parent[0]
+        }
+    }
+
+    go_to_next_cell() {
+        let c = this.get_cell_with_focus();
+        if (c == null) {
+            return
+        }
+        let next_cell = c.nextSibling;
+        if (next_cell == null) {
+            return
+        }
+        let code_element_list = next_cell.getElementsByClassName("console-code");
+        while (code_element_list.length == 0){
+            next_cell = next_cell.nextSibling;
+            if (next_cell == null) {
+                return
+            }
+            code_element_list = next_cell.getElementsByClassName("console-code");
+        }
+        let code_element = code_element_list[0];
+        let cm_object = this.consoleCMObjects[code_element.id];
+        cm_object.focus();
+        cm_object.setCursor({line: 0, ch: 0})
+
+
     }
 
     shrinkConsole () {
@@ -404,9 +441,20 @@ class ConsoleObjectClass {
     }
 
     bindTextKeys(el) {
-        Mousetrap(el).bind(['ctrl+enter', 'command+enter'], (e) => {
+        let self = this;
+        var mousetrap = new Mousetrap(el);
+        mousetrap.bind(['ctrl+enter', 'command+enter'], (e) => {
             const el = $(e.target).closest(".log-panel");
-            this.markdown_helper.toggleMarkdown(el);
+            self.markdown_helper.toggleMarkdown(el);
+            self.go_to_next_cell();
+            e.preventDefault()
+        });
+        mousetrap.bind(['ctrl+alt+c'], (e) => {
+            self.addConsoleCodearea();
+            e.preventDefault()
+        });
+        mousetrap.bind(['ctrl+alt+t'], (e) => {
+            self.addConsoleText("");
             e.preventDefault()
         })
     }
@@ -458,12 +506,26 @@ class ConsoleObjectClass {
                     let the_code = cm.getValue();
                     self.startConsoleSpinner(cm.tactic_uid);
 
-                    postWithCallback(main_id, "exec_console_code", {"the_code": the_code, "console_id": cm.tactic_uid})
+                    postWithCallback(main_id, "exec_console_code",
+                        {"the_code": the_code, "console_id": cm.tactic_uid},
+                        function() {
+                            self.go_to_next_cell();
+                        })
                 },
                 'Cmd-Enter': function (cm) {
                     let the_code = cm.getValue();
                     self.startConsoleSpinner(cm.tactic_uid);
-                    postWithCallback(main_id, "exec_console_code", {"the_code": the_code, "console_id": cm.tactic_uid})
+                    postWithCallback(main_id, "exec_console_code",
+                        {"the_code": the_code, "console_id": cm.tactic_uid},
+                        function () {
+                            self.go_to_next_cell()
+                        })
+                },
+                'Ctrl-Alt-C': function (cm) {
+                    self.addConsoleCodearea()
+                },
+                'Ctrl-Alt-T': function (cm) {
+                    self.addConsoleText("")
                 }
             }
         });
@@ -562,7 +624,6 @@ class ConsoleObjectClass {
                 })
             }
         });
-        e.preventDefault();
     }
 
     startConsoleSpinner (uid) {
