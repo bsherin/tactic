@@ -130,11 +130,11 @@ function bind_to_keys(shortcuts) {
     })
 }
 
-function build_and_render_menu_objects() {
+function build_and_render_menu_objects(tile_types) {
 
     // Create the project_menu object
     if (is_notebook){
-        project_menu = new MenuObject("Project", project_command,["save-as", "save"]);
+        project_menu = new MenuObject("Project", project_command,["save-as", "save", "export-as-jupyter-notebook"]);
     }
 
     else {
@@ -369,6 +369,55 @@ function consoleToNotebook() {
     postWithCallback(main_id, "console_to_notebook", result_dict)
 }
 
+function exportAsJupyter() {
+    startSpinner();
+    postWithCallback("host", "get_project_names", {"user_id": user_id}, function (data) {
+        let checkboxes;
+        showModal("Export Notebook in Jupyter Format", "New Project Name", ExportJuptyer,
+                  "NewJupyter", data["project_names"], checkboxes)
+    });
+    function ExportJuptyer (new_name, check_results) {
+        var log_panel_elements = document.getElementsByClassName("log-panel");
+        var cell_list = [];
+        for (let el of log_panel_elements) {
+            let new_cell = {};
+            if (el.classList.contains("text-log-item")) {
+                new_cell["cell_type"] = "markdown";
+                new_cell["source"] = el.getElementsByClassName("console-text")[0].textContent
+
+                }
+            else {
+                new_cell["cell_type"] = "code";
+                const uid = el.getElementsByClassName("console-code")[0].id;
+                new_cell["source"] = consoleObject.consoleCMObjects[uid].getValue();
+            }
+            cell_list.push(new_cell);
+        }
+        const result_dict = {
+            "project_name": new_name,
+            "main_id": main_id,
+            "cell_list": cell_list
+        };
+        postWithCallback(main_id, "export_to_jupyter_notebook", result_dict, save_as_success);
+
+        function save_as_success(data_object) {
+            if (data_object["success"]) {
+                clearStatusMessage();
+                data_object.alert_type = "alert-success";
+                data_object.timeout = 2000;
+                data_object["message"] = data_object["message_string"];
+                doFlashStopSpinner(data_object);
+            }
+            else {
+                clearStatusMessage();
+                data_object["message"] = data_object["message_string"];
+                data_object["alert-type"] = "alert-warning";
+                doFlashStopSpinner(data_object)
+            }
+        }
+    }
+}
+
 function saveProjectAs() {
     startSpinner();
     postWithCallback("host", "get_project_names", {"user_id": user_id}, function (data) {
@@ -404,9 +453,12 @@ function saveProjectAs() {
             function save_as_success(data_object) {
                 if (data_object["success"]) {
                     //tableObject.stopTableSpinner();
+                    is_jupyter = false;
                     clearStatusMessage();
                     menus["Project"].enable_menu_item("save");
-                    tableObject.project_name = data_object["project_name"];
+                    if (DOC_TYPE != "notebook") {
+                        tableObject.project_name = data_object["project_name"];
+                    }
                     //tableObject.set_table_title()
                     // $("#project-name").html(tableObject.project_name);
                     $("title").html(data_object["project_name"]);
@@ -442,7 +494,10 @@ function save_project() {
     postWithCallback(main_id, "update_project", result_dict, updateSuccess);
     function updateSuccess(data) {
         if (data.success) {
-            tableObject.stopTableSpinner();
+            if (DOC_TYPE != "notebook") {
+                tableObject.stopTableSpinner();
+            }
+
             clearStatusMessage();
             data.alert_type = "alert-success";
             dirty = false;
@@ -450,7 +505,9 @@ function save_project() {
             doFlashStopSpinner(data)
         }
         else {
-            tableObject.stopTableSpinner();
+            if (DOC_TYPE != "notebook") {
+                tableObject.stopTableSpinner();
+            }
             clearStatusMessage();
             data.alert_type = "alert-warning";
             dirty = false;
@@ -470,6 +527,11 @@ function project_command(menu_id) {
         case "save":
         {
             save_project();
+            break;
+        }
+        case "export-as-jupyter-notebook":
+        {
+            exportAsJupyter();
             break;
         }
         case "open-console-as-notebook":

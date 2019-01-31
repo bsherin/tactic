@@ -1,10 +1,10 @@
 
+from gevent import monkey; monkey.patch_all()
 import copy
 import datetime
 # noinspection PyUnresolvedReferences
 from qworker import QWorker, task_worthy
 # noinspection PyUnresolvedReferences
-from gevent import monkey; monkey.patch_all()
 import pymongo
 import qworker
 from flask import render_template, Flask

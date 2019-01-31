@@ -52,11 +52,6 @@ def on_join_main(data):
     socketio.emit("joined-mainid", room=room)
 
 
-@socketio.on('ready-to-begin', namespace='/main')
-def on_ready_to_begin(data):
-    socketio.emit("begin-post-load", data, namespace='/main', room=data["room"])
-
-
 @app.route("/register_heartbeat", methods=["GET", "POST"])
 @login_required
 def register_heartbeat():
@@ -93,6 +88,11 @@ def set_mainwindow_property(main_id, prop_name, prop_value):
 def get_mainwindow_property(main_id, prop_name, callback):
     tactic_app.host_worker.post_task(main_id, "get_property", {"property": prop_name}, callback)
     return
+
+
+@socketio.on('ready-to-begin', namespace='/main')
+def on_ready_to_begin(data):
+    socketio.emit("begin-post-load", data, namespace='/main', room=data["room"])
 
 
 @app.route('/load_temp_page/<the_id>', methods=['get', 'post'])

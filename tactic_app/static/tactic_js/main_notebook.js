@@ -1,9 +1,8 @@
 
 let tsocket;
 let dirty;
-let tile_types;
 var tableObject;
-
+DOC_TYPE = "notebook";
 const BOTTOM_MARGIN = 35;
 var done_loading = false;
 
@@ -24,8 +23,8 @@ class MainTacticSocket extends TacticSocket {
         this.socket.on('tile-message', function (data) {
             tile_dict[data.tile_id][data.tile_message](data)
         });
-        this.socket.on('table-message', function (data) {
-            tableObject[data.table_message](data)
+        this.socket.on('console-message', function (data) {
+            consoleObject[data.console_message](data)
         });
         this.socket.on('handle-callback', handleCallback);
         this.socket.on('close-user-windows', function(data){
@@ -49,67 +48,59 @@ class MainTacticSocket extends TacticSocket {
     }
 }
 
-function start_post_load() {
-    console.log("entering start_post_load");
+function _notebook_main() {
+    console.log("entering _notebook_main");
     dirty = false;
-    $("#outer-container").css({"margin-left": String(MARGIN_SIZE) + "px"});
-    $("#outer-container").css({"margin-right": String(MARGIN_SIZE) + "px"});
-    $("#outer-container").css({"margin-top": "0px", "margin-bottom": "0px"});
     tsocket = new MainTacticSocket("main", 5000);
-    tsocket.socket.on("begin-post-load", function () {
-        let data_dict = {
+    tsocket.socket.on('finish-post-load', function (data) {
+            build_and_render_menu_objects();
+            create_and_fill_console(data.console_html)
+        });
+    let data_dict = {
             "doc_type": "notebook",
             "project_collection_name": _project_collection_name,
             "base_figure_url": base_figure_url,
             "use_ssl": use_ssl,
-            "user_id": user_id
-        };
-        if (is_project) {
+            "user_id": user_id,
+            "library_id": main_id
+    };
+    if (is_totally_new) {
+        postWithCallback(main_id, "initialize_mainwindow", data_dict)
+    }
+    else  {
+        if (is_jupyter) {
+            data_dict["doc_type"] = "jupyter";
             data_dict["project_name"] = _project_name;
-            data_dict["library_id"] = main_id;
-            postWithCallback(main_id, "initialize_project_mainwindow", data_dict)
         }
-        else if (temp_data_id != "") {
+        else if (is_project) {
+            data_dict["project_name"] = _project_name;
+        }
+        else  {
             data_dict["unique_id"] = temp_data_id;
-            postWithCallback(main_id, "initialize_project_mainwindow", data_dict)
-            }
-        else {
-            postWithCallback(main_id, "initialize_mainwindow", data_dict)
         }
-    });
-    tsocket.socket.on('finish-post-load', function (data) {
-            if (is_project || (temp_data_id != "")) {
-                $("#console").html(data.console_html);
-            }
-            build_and_render_menu_objects();
-            continue_loading()
-        });
-    tsocket.socket.emit('ready-to-begin', {"room": main_id});
+        postWithCallback(main_id, "initialize_project_mainwindow", data_dict)
+    }
 }
 
-function continue_loading() {
+function create_and_fill_console(console_html) {
     $("#outer-container").css("display", "block");
-    tableObject = new TableObjectClass(({}));
-    if (is_project || temp_data_id != "") {
-        postWithCallback(main_id, "get_saved_console_code", {}, function (data) {
-                const saved_console_code = data["saved_console_code"];
-                for (let uid in saved_console_code) {
-                    if (!saved_console_code.hasOwnProperty(uid)) continue;
-                    console.log("getting codearea " + uid);
-                    const codearea = document.getElementById(uid);
-                    codearea.innerHTML = "";
-                    consoleObject.createConsoleCodeInCodearea(uid, codearea);
-                    consoleObject.consoleCMObjects[uid].doc.setValue(saved_console_code[uid]);
-                    consoleObject.consoleCMObjects[uid].refresh();
-                }
-            });
+    consoleObject = new ConsoleObjectClass();
+    let self = this;
+    if (is_jupyter) {
+        consoleObject.load_jupyter_cell_data();
+    }
+    else if (is_project || temp_data_id != "") {
+        consoleObject.load_saved_console_code(console_html)
     }
     consoleObject.prepareNotebook();
-    stopSpinner();
-    if (is_project) {
+    if (is_project && !is_jupyter) {
         menus["Project"].enable_menu_item("save");
     }
+    else {
+        menus["Project"].disable_menu_item("save")
+    }
     initializeTooltips();
+    stopSpinner();
     done_loading = true
 }
 

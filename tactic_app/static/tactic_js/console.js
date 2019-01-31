@@ -1,5 +1,9 @@
 let consoleObject = null;
 
+
+MARGIN_SIZE = 5;
+INITIAL_LEFT_FRACTION = .69;
+
 class ConsoleObjectClass {
     constructor () {
         this.saved_console_size = 150;
@@ -26,7 +30,7 @@ class ConsoleObjectClass {
         this.markdown_helper = new MarkdownHelper(".console-text", ".text-panel-output");
         this.pseudo_tile_id = null;
         this.saved_console_dom_visibility = "block";
-        this.saved_error_dom_visibility = "none"
+        this.saved_error_dom_visibility = "none";
     }
 
     get console_panel () {
@@ -106,9 +110,11 @@ class ConsoleObjectClass {
         });
         $("#add-blank-code-button").click(function (e) {
             self.addConsoleCodearea(e)
+            e.preventDefault();
         });
         $("#add-blank-text-button").click(function (e) {
-            self.addBlankConsoleText(e)
+            self.addConsoleText("");
+            e.preventDefault();
         });
         $("#console-error-log-button").click(function(e) {
             self.toggleConsoleErrorLog()
@@ -134,7 +140,7 @@ class ConsoleObjectClass {
 
     update_height(hgt) {
         this.console_panel.innerHeight(hgt);
-        this.console_dom.outerHeight(hgt - this.console_heading.outerHeight())
+        this.console_dom.outerHeight(hgt - this.console_heading.outerHeight());
         this.error_dom.outerHeight(hgt - this.console_heading.outerHeight())
     }
 
@@ -156,7 +162,9 @@ class ConsoleObjectClass {
             handles: "n",
             resize: function (event, ui) {
                 ui.position.top = 0;
-                tableObject.resize_table_area();
+                if (DOC_TYPE != "notebook") {
+                    tableObject.resize_table_area();
+                }
                 consoleObject.update_height(ui.size.height);
                 exportViewerObject.update_height(ui.size.height)
             }
@@ -173,6 +181,42 @@ class ConsoleObjectClass {
         $("#grid-bottom").innerHeight(Math.max(exportViewerObject.exports_panel.outerHeight(), consoleObject.console_panel.outerHeight()))
     }
 
+    get_cell_with_focus() {
+        let el = document.activeElement;
+        parent = $(el).closest(".log-panel");
+        if (parent.length == 0) {
+            return null
+        }
+        else {
+            return parent[0]
+        }
+    }
+
+    go_to_next_cell() {
+        let c = this.get_cell_with_focus();
+        if (c == null) {
+            return
+        }
+        let next_cell = c.nextSibling;
+        if (next_cell == null) {
+            return
+        }
+        let code_element_list = next_cell.getElementsByClassName("console-code");
+        while (code_element_list.length == 0){
+            next_cell = next_cell.nextSibling;
+            if (next_cell == null) {
+                return
+            }
+            code_element_list = next_cell.getElementsByClassName("console-code");
+        }
+        let code_element = code_element_list[0];
+        let cm_object = this.consoleCMObjects[code_element.id];
+        cm_object.focus();
+        cm_object.setCursor({line: 0, ch: 0})
+
+
+    }
+
     shrinkConsole () {
         const pan = this.console_panel;
         this.saved_console_size = $("#grid-bottom").outerHeight();
@@ -180,7 +224,7 @@ class ConsoleObjectClass {
         this.saved_console_dom_visibility = this.console_dom.css("display");
         this.saved_error_dom_visibility = this.error_dom.css("display");
         this.console_dom.css("display", "none");
-        this.error_dom.css("display", "none")
+        this.error_dom.css("display", "none");
         this.console_panel.outerHeight(this.console_heading.outerHeight());
         if (!is_notebook){
             exportViewerObject.exports_panel.outerHeight(this.console_heading.outerHeight());
@@ -188,7 +232,9 @@ class ConsoleObjectClass {
         pan.find(".triangle-bottom").hide();
         pan.find(".triangle-right").show();
         this.update_grid_bottom_height();
-        tableObject.resize_table_area();
+        if (DOC_TYPE != "notebook") {
+            tableObject.resize_table_area();
+        }
         this.console_visible = false;
         this.turn_off_resize()
     }
@@ -208,7 +254,9 @@ class ConsoleObjectClass {
         this.error_dom.css("display", this.saved_error_dom_visibility);
         consoleObject.update_height(gb.innerHeight());
         this.console_visible = true;
-        tableObject.resize_table_area();
+        if (DOC_TYPE != "notebook") {
+            tableObject.resize_table_area();
+        }
         this.turn_on_resize();
         for (let uid in this.consoleCMObjects) {
             if (!this.consoleCMObjects.hasOwnProperty(uid)) continue;
@@ -328,21 +376,120 @@ class ConsoleObjectClass {
         el.html("");
     }
 
-    addBlankConsoleText(e) {
-        const print_string = "<div class='console-text' contenteditable='true'></div>";
-        const task_data = {"print_string": print_string};
-        postWithCallback(main_id, "create_blank_text_area", task_data, function(data) {
+
+    check_for_element(elstring, callback) {
+        const rec = function () {
+            setTimeout(function () {
+                if ($(elstring).length > 0) {
+                    callback()
+                } else
+                    rec();
+            }, 10);
+        };
+        rec();
+    }
+
+    load_jupyter_cell_data() {
+        let self = this;
+        postWithCallback(main_id, "get_jupyter_cell_data", {}, function (data) {
+            let cell_data = data["cell_data"];
+
+            postWithCallbackAsyncFalse("host", "print_cells_to_console",
+                                    {"user_id": user_id, "cells": cell_data, "main_id": main_id},function(data) {
+                self.initialize_from_cell_list(data["cells"])
+            })
+        })
+    }
+
+    initialize_from_cell_list(new_cell_data) {
+        for (let cell_dict of new_cell_data) {
+            let content = cell_dict["source"].join("");
+            let unique_id = cell_dict["unique_id"];
+            let self = this;
+            this.check_for_element("#" + unique_id, function () {
+                if (cell_dict["cell_type"] == "code") {
+                    const codearea = document.getElementById(unique_id);
+                    self.createConsoleCodeInCodearea(unique_id, codearea);
+                    self.setConsoleCode(unique_id, content)
+                }
+                else {
+                    self.setTextContent(unique_id, content)
+                }
+            })
+        }
+    }
+
+    load_saved_console_code(console_html) {
+        $("#console").html(console_html);
+        this.bindAllTextKeys();
+        let self = this;
+        postWithCallback(main_id, "get_saved_console_code", {}, function (data) {
+                self.initialize_from_saved_console_code(data["saved_console_code"])
+        });
+    }
+
+    initialize_from_saved_console_code(saved_console_code) {
+        for (let uid in saved_console_code) {
+            if (!saved_console_code.hasOwnProperty(uid)) continue;
+            console.log("getting codearea " + uid);
+            const codearea = document.getElementById(uid);
+            codearea.innerHTML = "";
+            this.createConsoleCodeInCodearea(uid, codearea);
+            this.consoleCMObjects[uid].doc.setValue(saved_console_code[uid]);
+            this.consoleCMObjects[uid].refresh();
+        }
+    }
+
+    bindTextKeys(el) {
+        let self = this;
+        var mousetrap = new Mousetrap(el);
+        mousetrap.bind(['ctrl+enter', 'command+enter'], (e) => {
+            const el = $(e.target).closest(".log-panel");
+            self.markdown_helper.toggleMarkdown(el);
+            self.go_to_next_cell();
+            e.preventDefault()
+        });
+        mousetrap.bind(['ctrl+alt+c'], (e) => {
+            self.addConsoleCodearea();
+            e.preventDefault()
+        });
+        mousetrap.bind(['ctrl+alt+t'], (e) => {
+            self.addConsoleText("");
+            e.preventDefault()
+        })
+    }
+
+    bindAllTextKeys() {
+        var text_log_elements = document.getElementsByClassName("text-log-item");
+        for (let el of text_log_elements) {
+            this.bindTextKeys(el);
+        }
+
+    }
+
+    addConsoleText(the_text) {
+        let self = this;
+        postWithCallbackAsyncFalse(main_id, "create_blank_text_area", {}, function (data) {
             if (!data.success) {
                 doFlash(data)
             }
+            else {
+                self.check_for_element("#" + data["unique_id"], function() {
+                    $($("#" + data["unique_id"]).find(".console-text")[0]).html(the_text);
+                })
+            }
         });
-        e.preventDefault();
-
     }
 
     setConsoleCode(uid, the_code) {
         this.consoleCMObjects[uid].setValue(the_code);
         this.consoleCMObjects[uid].refresh()
+    }
+
+    setTextContent(uid, the_text) {
+        let el = document.getElementById(uid);
+        $($(el).find(".console-text")[0]).html(the_text);
+        this.markdown_helper.toggleMarkdown($(el));
     }
 
     createConsoleCodeInCodearea(uid, codearea) {
@@ -358,29 +505,33 @@ class ConsoleObjectClass {
                 'Ctrl-Enter': function(cm) {
                     let the_code = cm.getValue();
                     self.startConsoleSpinner(cm.tactic_uid);
-                    postWithCallback(main_id, "exec_console_code", {"the_code": the_code, "console_id": cm.tactic_uid})
+
+                    postWithCallback(main_id, "exec_console_code",
+                        {"the_code": the_code, "console_id": cm.tactic_uid},
+                        function() {
+                            self.go_to_next_cell();
+                        })
                 },
                 'Cmd-Enter': function (cm) {
                     let the_code = cm.getValue();
                     self.startConsoleSpinner(cm.tactic_uid);
-                    postWithCallback(main_id, "exec_console_code", {"the_code": the_code, "console_id": cm.tactic_uid})
+                    postWithCallback(main_id, "exec_console_code",
+                        {"the_code": the_code, "console_id": cm.tactic_uid},
+                        function () {
+                            self.go_to_next_cell()
+                        })
+                },
+                'Ctrl-Alt-C': function (cm) {
+                    self.addConsoleCodearea()
+                },
+                'Ctrl-Alt-T': function (cm) {
+                    self.addConsoleText("")
                 }
             }
         });
         this.consoleCMObjects[uid].tactic_uid = uid;
     }
 
-    check_for_element(elstring, callback) {
-        const rec = function () {
-            setTimeout(function () {
-                if ($(elstring).length > 0) {
-                    callback()
-                } else
-                    rec();
-            }, 10);
-        };
-        rec();
-    }
     /**
      * @param {{force_open:boolean, message_string:string}} data_object
      */
@@ -415,6 +566,7 @@ class ConsoleObjectClass {
         if ($(new_child).find(".console-text").length == 1) {
             $(new_child).find(".console-text").focus()
         }
+        this.bindAllTextKeys();
      }
     /**
      * @param {{force_open:boolean, console_id:string, message_string:string}} data_object
@@ -472,27 +624,29 @@ class ConsoleObjectClass {
                 })
             }
         });
-        e.preventDefault();
     }
 
     startConsoleSpinner (uid) {
         let cc = $("#" + uid).parent();
-        cc.find(".clear-code-button").css("display", "none");
-        cc.find(".console-spin-outer").css("display", "inline-block");
+        cc.find(".log-code-output").html("");
+        cc.addClass("running");
+        // cc.find(".clear-code-button").css("display", "none");
+        // cc.find(".console-spin-outer").css("display", "inline-block");
         cc.find(".console-spin-place").html(console_spinner_html);
     }
 
     stopConsoleSpinner (data_object) {
         let uid = data_object.console_id;
         let cc = $("#" + uid).parent();
-        cc.find(".console-spin-outer").css("display", "none");
+        cc.removeClass("running");
+        // cc.find(".console-spin-outer").css("display", "none");
         cc.find(".console-spin-place").html("");
-        cc.find(".clear-code-button").css("display", "inline-block")
+        // cc.find(".clear-code-button").css("display", null)
     }
 
-    addConsoleCodeWithCode(the_code) {
+    addConsoleCodeWithCode(the_code) {  // tactic_working
         let self = this;
-        postWithCallback(main_id, "create_console_code_area", {}, function(data) {
+        postWithCallbackAsyncFalse(main_id, "create_console_code_area", {}, function(data) {
             if (!data.success) {
                 doFlash(data)
             }

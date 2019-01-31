@@ -523,7 +523,7 @@ td.cell-clickable:active {
   text-align: left;
   font-size: 14px;
   overflow: auto;
-  padding: 5px; }
+  padding: 20px 5px; }
 
 #console_error_log {
   text-align: left;
@@ -584,56 +584,108 @@ td.cell-clickable:active {
   border: 1px solid #c7c7c7 !important;
   width: 100%; }
 
+.text-panel-output h1 {
+  font-size: 2.0rem; }
+.text-panel-output h2 {
+  font-size: 1.5rem; }
+.text-panel-output h3 {
+  font-size: 1.25rem; }
+.text-panel-output h4 {
+  font-size: 1.125rem; }
+
 .log-panel {
-  border: 1px solid #c7c7c7 !important;
+  border: none;
   margin: 1px;
   box-shadow: none;
-  position: relative; }
+  position: relative;
+  overflow: hidden;
+  transition: min-height .5s ease-in-out, max-height .5s ease-in-out; }
   .log-panel .notclose {
     font-size: 15px;
-    padding-bottom: 9px; }
+    padding-bottom: 3px; }
+  .log-panel.running .card-header .button-div.spinner-div {
+    opacity: 100; }
   .log-panel .card-header {
     position: absolute;
     height: 100%;
     width: 30px;
     padding: 4px 4px !important;
     text-align: center;
-    background-color: #f5f5f5 important;
-    border-right: 1px solid #c7c7c7;
-    overflow-y: hidden; }
+    border-right: none;
+    overflow-y: hidden;
+    border-bottom: none;
+    background-color: white;
+    transition-delay: 0s; }
+    .log-panel .card-header .button-div {
+      opacity: 0; }
   .log-panel .CodeMirror {
     border: 1px solid #c7c7c7 !important; }
   .log-panel .CodeMirror-lines {
     background-color: #f7f7f7 !important; }
-  .log-panel .card-header:hover {
-    background-color: #f5f5f5 !important; }
-
-.log-panel.log-panel-visible {
-  min-height: 128px; }
-  .log-panel.log-panel-visible .log-panel-body {
-    display: block; }
-  .log-panel.log-panel-visible .log-panel-summary {
-    display: none; }
-  .log-panel.log-panel-visible .log-code-output {
-    display: block; }
-  .log-panel.log-panel-visible .shrink-log-button {
-    display: inline-block; }
-  .log-panel.log-panel-visible .expand-log-button {
-    display: none; }
-
-.log-panel.log-panel-invisible {
-  height: 40px;
-  min-height: 0; }
-  .log-panel.log-panel-invisible .log-panel-body {
-    display: none; }
-  .log-panel.log-panel-invisible .log-panel-summary {
-    display: block; }
-  .log-panel.log-panel-invisible .log-code-output {
-    display: none; }
-  .log-panel.log-panel-invisible .shrink-log-button {
-    display: none; }
-  .log-panel.log-panel-invisible .expand-log-button {
-    display: inline-block; }
+  .log-panel:focus-within .card-header {
+    border-right: 1px solid #c7c7c7; }
+    .log-panel:focus-within .card-header .button-div {
+      opacity: 100;
+      transition-delay: .25s; }
+  .log-panel.log-panel-visible {
+    max-height: 9999px; }
+    .log-panel.log-panel-visible .log-panel-body {
+      display: block; }
+    .log-panel.log-panel-visible .log-panel-summary {
+      display: none; }
+    .log-panel.log-panel-visible .log-code-output {
+      display: block; }
+    .log-panel.log-panel-visible.error-log-panel {
+      min-height: 82px; }
+      .log-panel.log-panel-visible.error-log-panel .close-log-button, .log-panel.log-panel-visible.error-log-panel .shrink-log-button {
+        display: inline-block; }
+      .log-panel.log-panel-visible.error-log-panel .card-header .button-div {
+        opacity: 100;
+        transition-delay: .25s; }
+    .log-panel.log-panel-visible .console-spin-outer {
+      display: none; }
+    .log-panel.log-panel-visible :not(:focus-within) {
+      min-height: 0; }
+    .log-panel.log-panel-visible .convert-markdown-button, .log-panel.log-panel-visible .close-log-button, .log-panel.log-panel-visible .run-log-button, .log-panel.log-panel-visible .clear-code-button, .log-panel.log-panel-visible .console-spin-outer, .log-panel.log-panel-visible .shrink-log-button, .log-panel.log-panel-visible .expand-log-button {
+      display: none; }
+    .log-panel.log-panel-visible.running .clear-code-button {
+      display: none; }
+    .log-panel.log-panel-visible.running .console-spin-outer {
+      display: inline-block; }
+    .log-panel.log-panel-visible.running:focus-within .clear-code-button {
+      display: none; }
+    .log-panel.log-panel-visible:focus-within {
+      min-height: 110px; }
+      .log-panel.log-panel-visible:focus-within .convert-markdown-button, .log-panel.log-panel-visible:focus-within .close-log-button, .log-panel.log-panel-visible:focus-within .run-log-button, .log-panel.log-panel-visible:focus-within .clear-code-button, .log-panel.log-panel-visible:focus-within .shrink-log-button {
+        display: inline-block; }
+    .log-panel.log-panel-visible.text-log-item:focus-within {
+      min-height: 82px; }
+    .log-panel.log-panel-visible:not(:focus-within):hover .button-div.shrink-expand-div {
+      opacity: 100; }
+    .log-panel.log-panel-visible:not(:focus-within):hover .shrink-log-button {
+      display: inline-block; }
+  .log-panel.log-panel-invisible {
+    max-height: 40px; }
+    .log-panel.log-panel-invisible .card-header {
+      border-right: 0; }
+    .log-panel.log-panel-invisible .log-panel-body {
+      display: none; }
+    .log-panel.log-panel-invisible .log-panel-summary {
+      display: block; }
+    .log-panel.log-panel-invisible .console-spin-outer {
+      display: none; }
+    .log-panel.log-panel-invisible .log-code-output {
+      display: none; }
+    .log-panel.log-panel-invisible .shrink-log-button {
+      display: none; }
+    .log-panel.log-panel-invisible.error-log-panel:hover .expand-log-buton {
+      display: inline-block; }
+    .log-panel.log-panel-invisible:hover .button-div.shrink-expand-div {
+      opacity: 100; }
+    .log-panel.log-panel-invisible:hover .expand-log-button {
+      display: inline-block; }
+    .log-panel.log-panel-invisible .convert-markdown-button, .log-panel.log-panel-invisible .close-log-button, .log-panel.log-panel-invisible .run-log-button, .log-panel.log-panel-invisible .clear-code-button {
+      display: none; }
 
 html, body {
   height: 100%; }
@@ -641,8 +693,8 @@ html, body {
 .log-panel-body {
   padding-left: 45px;
   padding-right: 45px;
-  padding-top: 14px;
-  padding-bottom: 10px;
+  padding-top: 3px;
+  padding-bottom: 3px;
   color: #616161 !important; }
 
 .log-panel-summary {
@@ -669,7 +721,8 @@ html, body {
   vertical-align: top; }
 
 .outer-container {
-  padding: 25px; }
+  padding: 25px;
+  margin: 0px 5px; }
 
 #tile-div {
   padding: 5px; }

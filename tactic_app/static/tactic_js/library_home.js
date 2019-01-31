@@ -401,6 +401,9 @@ class ProjectManager extends LibraryResourceManager {
         this.double_click_func = "view_func";
         this.view_view = "/main_project/";
         this.refresh_task = 'update_project_selector_list';
+        this.file_adders = [
+            {"name": "import", "func": "import_jupyter", "button_class": "btn-outline-secondary", show_multiple: false, "icon_name": "cloud-upload"}
+        ];
         this.button_groups = [
             {buttons: [
                     {"name": "notebook", "func": "newNotebook", "button_class": "btn btn-outline-secondary", "icon_name": "book"},
@@ -411,6 +414,7 @@ class ProjectManager extends LibraryResourceManager {
                     {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-outline-secondary", "icon_name": "copy"}]
             },
             {buttons: [
+                    {"name": "toJupyter", "func": "downloadJupyter", "button_class": "btn btn-outline-secondary", "icon_name": "cloud-download"},
                     {"name": "share", "func": "send_repository_func", "button_class": "btn-outline-secondary", "icon_name": "share"}]
             },
             {buttons: [
@@ -421,6 +425,39 @@ class ProjectManager extends LibraryResourceManager {
             }
         ];
     }
+
+    downloadJupyter (event) {
+        const manager = event.data.manager;
+        const res_name = manager.check_for_selection("resource");
+        if (res_name == "") return;
+        showModal("Download Notebook as Jupyter Notebook", "New File Name", function (new_name) {
+            window.open(`${$SCRIPT_ROOT}/download_jupyter/` + res_name + "/" + new_name)
+        }, res_name + ".ipynb")
+    };
+
+
+    import_jupyter (event) {
+        const the_data = new FormData(this);
+        let manager = event.data.manager;
+        $.getJSON(`${$SCRIPT_ROOT}get_resource_names/project`, function (data) {
+                showModal("Import collection", "New collection Name", CreateNewJupyter, "NewJupyterNotebook", data["resource_names"], [])
+            }
+        );
+        function CreateNewJupyter(new_name, check_results) {
+            startSpinner();
+            postAjaxUploadPromise(`import_as_jupyter/${new_name}/${library_id}`, the_data)
+                .then((data) => {
+                        clearStatusMessage();
+                        manager.insert_new_row(data.new_row, 0);
+                        manager.select_first_row();
+                        resource_managers["all_module"].insert_new_row(data.new_all_row, 0);
+                        stopSpinner();
+                })
+                .catch(doFlash);
+        }
+        event.preventDefault();
+    };
+
 
     newNotebook (event) {
         window.open(`${$SCRIPT_ROOT}/new_notebook`)
