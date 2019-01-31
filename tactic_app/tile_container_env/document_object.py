@@ -364,6 +364,9 @@ class TacticDocument:
     def dict_list(self):
         return self._tb_instance.get_document_data_as_list(self._docname)
 
+    def column(self, column_name):
+        return self._tb_instance.get_column_data(column_name, self.name)
+
     def get_matching_rows(self, func):
         self.rewind()
         return [r for r in self if func(r)]
@@ -505,6 +508,15 @@ class DetachedTacticDocument(TacticDocument):
         self.update_props()
         return
 
+    def column(self, column_name):
+        data_list = []
+        if column_name in self.column_names:
+            self.rewind()
+            for r in self:
+                data_list.append(r[column_name])
+        return data_list
+
+
     def update_props(self):
         self._number_rows = len(self._row_list)
         self._metadata["number_of_rows"] = self._number_rows
@@ -636,6 +648,9 @@ class TacticCollection:
             return self._doc_class(self._tb_instance, dname, self._collection_info[dname]["number_rows"],
                                    self._collection_info[dname]["column_names"])
 
+    def column(self, column_name):
+        return self._tb_instance.get_column_data(column_name)
+
     def __getitem__(self, x):
         if x not in self._doc_names:
             raise KeyError("No document named '{}'".format(x))
@@ -697,6 +712,13 @@ class DetachedTacticCollection(TacticCollection):
         self._doc_dict[detached_doc.name] = detached_doc
         self.update_props()
         return
+
+    def column(self, column_name):
+        data_list = []
+        self.rewind()
+        for doc in self:
+            data_list += doc.column(column_name)
+        return data_list
 
     def update(self, other_collection):
         if not isinstance(other_collection, TacticCollection):
