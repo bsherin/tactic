@@ -122,6 +122,9 @@ class FreeformDocInfo(DocInfoAbstract):
     def get_row(self, line_number):
         return self.all_sorted_data_rows[line_number]
 
+    def get_rows(self, start, stop):
+        return self.all_sorted_data_rows[start:stop]
+
     def get_actual_row(self, row_id):
         return row_id
 
@@ -175,6 +178,9 @@ class docInfo(DocInfoAbstract):
 
     def get_row(self, row_id):
         return self.data_rows_int_keys[int(row_id)]
+
+    def get_rows(self, start, stop):
+        return self.all_sorted_data_rows[start:stop]
 
     def configure_for_current_data(self):
         self.start_of_current_chunk = 0

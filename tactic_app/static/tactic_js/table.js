@@ -6,8 +6,6 @@
 
 MAX_INITIAL_CELL_WIDTH = 400;
 EXTRA_TABLE_AREA_SPACE = 500;
-MARGIN_SIZE = 5;
-INITIAL_LEFT_FRACTION = .69;
 
 DOC_TYPE = "table";
 
@@ -69,6 +67,10 @@ function select_header(sanitized_header_name) {
     get_header(sanitized_header_name).addClass("selected-header");
     tableObject.selected_header = sanitized_header_name;
     enable_require_column_select()
+}
+
+function change_doc(el, row_id) {
+    tableObject.set_doc($(el).val(), row_id);
 }
 
 // This object stores information that defines how a table is displayed
@@ -197,13 +199,12 @@ class TableSpec {
 }
 
 class TableObjectClass {
-    constructor (data_object) {
+    constructor () {
         this.table_id = "table-area";
         this.collection_name = null;
         this.data_rows = null;
         this.selected_header = null;
         this.highlighted_cells = [];
-        this.initialize_table (data_object);
     }
 
     initialize_table (data_object){
@@ -274,6 +275,38 @@ class TableObjectClass {
         })
     }
 
+    set_doc(doc_name, row_id) {
+        $("#table-area").css("display", "none");
+        let self = this;
+        startSpinner();
+        if (row_id == null) {
+            postWithCallback(main_id, "grab_data", {"doc_name":doc_name}, function (data) {
+                $("#outer-container").css("display", "block");
+                $("#table-area").css("display", "block");
+                self.initialize_table(data);
+                set_visible_doc(doc_name, null);
+                stopSpinner();
+                clearStatusMessage();
+            })
+        }
+        else {
+            const data_dict = {"doc_name": doc_name, "row_id": row_id};
+            postWithCallback(main_id, "grab_chunk_with_row", data_dict, function (data) {
+                $("#outer-container").css("display", "block");
+                $("#table-area").css("display", "block");
+                tableObject.initialize_table(data);
+                const tr_element = $("#table-area tbody")[0].rows[data.actual_row];
+                scrollIntoView(tr_element, $("#table-area tbody"));
+                $(tr_element).addClass("selected-row");
+                self.active_row = data.actual_row;
+                self.active_row_id = row_id;
+                set_visible_doc(doc_name, null);
+                stopSpinner();
+                clearStatusMessage();
+            });
+        }
+    }
+
     refill_table (data_object) {
         this.data_rows = data_object["data_rows"];
         this.current_doc_name = data_object["doc_name"];
@@ -320,12 +353,6 @@ class TableObjectClass {
         const self = this;
         this.active_row = null;
         this.active_row_id = null;
-        if (consoleObject == null) {
-            consoleObject = new ConsoleObjectClass()
-        }
-        if (exportViewerObject == null) {
-            exportViewerObject = new exportViewerObjectClass()
-        }
         const html_result = create_all_html(this.table_id, this.data_rows, this.current_spec.header_list, this.current_spec.header_list_sanitized, max_table_size, this.is_last_chunk);
         $("#" + this.table_id).html(html_result);
         for (let i = 0; i < this.current_spec.hidden_columns_list.length; ++i) {

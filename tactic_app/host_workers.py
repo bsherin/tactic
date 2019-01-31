@@ -408,6 +408,12 @@ class HostWorker(QWorker):
         return {"success": True}
 
     @task_worthy
+    def emit_console_message(self, data):
+        from tactic_app import socketio
+        socketio.emit("console-message", data, namespace='/main', room=data["main_id"])
+        return {"success": True}
+
+    @task_worthy
     def emit_to_client(self, data):
         from tactic_app import socketio
         socketio.emit(data["message"], data, namespace='/main', room=data["main_id"])
@@ -443,8 +449,8 @@ class HostWorker(QWorker):
                 data["message_string"] = render_template("log_item.html", log_item=data["message_string"],
                                                          summary_text=summary_text)
 
-        data["table_message"] = "consoleLog"
-        self.emit_table_message(data)
+        data["console_message"] = "consoleLog"
+        self.emit_console_message(data)
         return {"success": True}
 
     @task_worthy
@@ -460,6 +466,35 @@ class HostWorker(QWorker):
         return {"success": True}
 
     @task_worthy
+    def print_cells_to_console(self, data):
+        from tactic_app import socketio
+        user_id = data["user_id"]
+        user_obj = load_user(user_id)
+        user_time = user_obj.localize_time(datetime.datetime.utcnow())
+        summary_text = "<b>text item </b> " + user_time.strftime("%b %d, %Y, %H:%M")
+        message_string = ""
+        new_cell_data = []
+        for cell_dict in data["cells"]:
+            unique_id = str(uuid.uuid4())
+            cell_dict["unique_id"] = unique_id
+            if cell_dict["cell_type"] == "code":
+                with app.test_request_context():
+                    message_string += render_template("code_log_item.html", unique_id=unique_id,
+                                                       summary_text=summary_text)
+
+                    new_cell_data.append(copy.deepcopy(cell_dict))
+            elif cell_dict["cell_type"] == "markdown":
+                with app.test_request_context():
+                    message_string += render_template("text_log_item.html", unique_id=unique_id,
+                                                        summary_text=summary_text)
+                    new_cell_data.append(copy.deepcopy(cell_dict))
+
+        data["console_message"] = "consoleLog"
+        data["message_string"] = message_string
+        self.emit_console_message(data)
+        return {"success": True, "cells": new_cell_data}
+
+    @task_worthy
     def print_text_area_to_console(self, data):
         from tactic_app import socketio
         user_id = data["user_id"]
@@ -470,8 +505,8 @@ class HostWorker(QWorker):
             data["message_string"] = render_template("text_log_item.html", unique_id=data["unique_id"],
                                                      summary_text=summary_text)
 
-        data["table_message"] = "consoleLog"
-        self.emit_table_message(data)
+        data["console_message"] = "consoleLog"
+        self.emit_console_message(data)
         return {"success": True}
 
     @task_worthy
@@ -485,8 +520,8 @@ class HostWorker(QWorker):
             data["message_string"] = render_template("code_log_item.html", unique_id=data["unique_id"],
                                                      summary_text=summary_text)
 
-        data["table_message"] = "consoleLog"
-        self.emit_table_message(data)
+        data["console_message"] = "consoleLog"
+        self.emit_console_message(data)
         return {"success": True}
 
     @task_worthy

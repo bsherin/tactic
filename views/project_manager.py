@@ -1,7 +1,10 @@
 
 import sys
 import re
-from flask import jsonify, request, url_for, render_template
+import os
+import cStringIO
+from collections import OrderedDict
+from flask import jsonify, request, url_for, render_template, send_file
 from flask_login import login_required, current_user
 import tactic_app
 from tactic_app import app, db, fs, use_ssl
@@ -11,6 +14,7 @@ from tactic_app.users import User
 from tactic_app.communication_utils import make_jsonizable_and_compress, read_project_dict
 global_tile_manager = tactic_app.global_tile_manager
 repository_user = User.get_user_by_username("repository")
+from tactic_app.file_handling import read_freeform_file
 
 import datetime
 tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
@@ -33,6 +37,62 @@ class ProjectManager(LibraryResourceManager):
                          login_required(self.duplicate_project), methods=['get', 'post'])
         app.add_url_rule('/search_project_metadata', "search_project_metadata",
                          login_required(self.search_project_metadata), methods=['get', 'post'])
+        app.add_url_rule('/import_as_jupyter/<jupyter_name>/<library_id>', "import_as_jupyter",
+                         login_required(self.import_as_jupyter), methods=['get', "post"])
+        app.add_url_rule('/download_jupyter/<project_name>/<new_name>', "download_jupyter",
+                         login_required(self.download_jupyter), methods=['get', "post"])
+
+
+    def download_jupyter(self, project_name, new_name):
+        user_obj = current_user
+        save_dict = db[user_obj.project_collection_name].find_one({"project_name": project_name})
+        mdata = save_dict["metadata"]
+
+        if not mdata["type"] == "jupyter":
+            return NotImplementedError
+
+        project_dict = read_project_dict(fs, mdata, save_dict["file_id"])
+        str_io = cStringIO.StringIO()
+        str_io.write(project_dict["jupyter_text"])
+        str_io.seek(0)
+        return send_file(str_io,
+                         attachment_filename=new_name,
+                         as_attachment=True)
+
+    def import_as_jupyter(self, jupyter_name, library_id):
+        file_list = request.files.getlist("file")
+        the_file = file_list[0]
+        filename, file_extension = os.path.splitext(the_file.filename)
+        filename = filename.encode("ascii", "ignore")
+        self.show_um_message("Reading file {} and checking encoding".format(filename), library_id, timeout=10)
+        file_decoding_errors = OrderedDict()
+        (success, result_txt, encoding, decoding_problems) = read_freeform_file(the_file)
+        self.show_um_message("Got encoding {} for {}".format(encoding, filename), library_id, timeout=10)
+        if not success:  # then result_dict contains an error object
+            e = result_txt
+            return jsonify({"message": e.message, "alert_type": "alert-danger"})
+        if len(decoding_problems) > 0:
+            file_decoding_errors[filename] = decoding_problems
+        mdata = global_tile_manager.create_initial_metadata()
+        mdata["type"] = "jupyter"
+        mdata["save_style"] = "b64save"
+
+        save_dict = {"metadata": mdata,
+                     "project_name": jupyter_name}
+
+        project_dict = {"jupyter_text": result_txt}
+
+        pdict = make_jsonizable_and_compress(project_dict)
+        save_dict["file_id"] = fs.put(pdict)
+        db[current_user.project_collection_name].insert_one(save_dict)
+
+        table_row = self.create_new_row(jupyter_name, mdata)
+        all_table_row = self.all_manager.create_new_all_row(jupyter_name, mdata, "project")
+        if len(file_decoding_errors.keys()) == 0:
+            file_decoding_errors = None
+        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row,
+                        "alert_type": "alert-success",
+                        "file_decoding_errors": file_decoding_errors})
 
     def main_project(self, project_name):
         user_obj = current_user
@@ -63,13 +123,14 @@ class ProjectManager(LibraryResourceManager):
                      "short_collection_name": "",
                      "project_collection_name": user_obj.project_collection_name,
                      "is_table": (doc_type == "table"),
-                     "is_notebook": (doc_type == 'notebook'),
+                     "is_notebook": (doc_type == 'notebook' or doc_type == 'jupyter'),
                      "is_freeform": (doc_type == 'freeform'),
+                     "is_jupyter":  (doc_type == 'jupyter'),
                      "base_figure_url": url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
                      "uses_codemirror": "True",
                      "version_string": tstring
                      }
-        if doc_type == 'notebook':
+        if doc_type in ['notebook', 'jupyter']:
             template_name = "main_notebook.html"
         else:
             template_name = "main.html"

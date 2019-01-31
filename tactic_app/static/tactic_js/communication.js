@@ -111,6 +111,36 @@ function postWithCallback(dest_id, task_type, task_data, callback_func){
     });
 }
 
+function postWithCallbackAsyncFalse(dest_id, task_type, task_data, callback_func){
+    const task_packet =  {
+        "source": "client",
+        "dest": dest_id,
+        "task_type": task_type,
+        "task_data": task_data,
+        "response_data": null,
+        "main_id": main_id,
+        "expiration": null
+    };
+    if ((typeof callback_func != "undefined") && (callback_func != null)) {
+        const unique_id = guid();
+        callbacks[unique_id] = callback_func;
+        task_packet.callback_id = unique_id;
+        task_packet.callback_type = "callback_no_context";
+    }
+    else {
+        task_packet.callback_id = null;
+        task_packet.callback_type = "no_callback"
+    }
+    $.ajax({
+        url: $SCRIPT_ROOT + "/post_from_client",
+        contentType : 'application/json',
+        type : 'POST',
+        async: false,
+        data: JSON.stringify(task_packet),
+        dataType: 'json'
+    });
+}
+
 function postAsyncFalse(dest_id, task_type, task_data){
     const task_packet =  {
         "source": "client",

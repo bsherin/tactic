@@ -48,6 +48,9 @@ function mySearchOverlay(query, caseInsensitive) {
     }};
   }
 
+function change_doc(el, row_id) {
+    tableObject.set_doc($(el).val(), row_id);
+}
 
 function doFilter(t) {
     console.log("do filter on " + t);
@@ -79,7 +82,14 @@ class TableObjectClass {
         this.collection_name = null;
         this.data_text = null;
         this.overlay_list = [];
-        this.initialize_table(data_object)
+        const tablearea = document.getElementById("freeform-area");
+        myCodeMirror = CodeMirror(tablearea, {
+            lineNumbers: true,
+            readOnly: false,
+            mode: "Plain Text",
+            lineWrapping: true,
+            firstLineNumber: 0
+        });
     }
 
     initialize_table (data_object) {
@@ -102,18 +112,36 @@ class TableObjectClass {
             menus["Project"].disable_menu_item('save')
         }
 
-        if (myCodeMirror == null) {
-            const tablearea = document.getElementById("freeform-area");
-            myCodeMirror = CodeMirror(tablearea, {
-                lineNumbers: true,
-                readOnly: false,
-                mode: "Plain Text",
-                lineWrapping: true,
-                firstLineNumber: 0
-            });
-        }
         //noinspection JSUnresolvedVariable
         this.build_table(); // This is separated out because it is called from elsewhere.
+    }
+
+    set_doc(doc_name, row_id) {
+        $("#table-area").css("display", "none");
+        let self = this;
+        startSpinner();
+        if (row_id == null) {
+            postWithCallback(main_id, "grab_data", {"doc_name":doc_name}, function (data) {
+                $("#outer-container").css("display", "block");
+                $("#table-area").css("display", "block");
+                self.initialize_table(data);
+                stopSpinner();
+                set_visible_doc(doc_name, null)
+            })
+        }
+        else {
+            const data_dict = {"doc_name": doc_name, "row_id": row_id};
+            postWithCallback(main_id, "grab_data", {"doc_name":doc_name}, function (data) {
+                $("#outer-container").css("display", "block");
+                $("#table-area").css("display", "block");
+                self.initialize_table(data);
+                myCodeMirror.scrollIntoView(row_id);
+                self.active_row = row_id;
+                set_visible_doc(doc_name, null);
+                stopSpinner();
+                clearStatusMessage()
+            })
+        }
     }
 
     // refill_table is currently not used for freeform docs
@@ -140,12 +168,6 @@ class TableObjectClass {
     build_table (max_table_size) {
         const self = this;
         this.active_line = null;
-        if (consoleObject == null) {
-            consoleObject = new ConsoleObjectClass()
-        }
-        if (exportViewerObject == null) {
-            exportViewerObject = new exportViewerObjectClass()
-        }
         let html_result = create_all_html(this.data_text);
         myCodeMirror.setValue(html_result);
         this.old_content = html_result;
