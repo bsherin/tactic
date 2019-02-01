@@ -26,7 +26,9 @@ class MainTacticSocket extends TacticSocket {
 
     initialize_socket_stuff() {
         this.socket.emit('join', {"room": user_id});
-        this.socket.emit('join-main', {"room": main_id});
+        this.socket.emit('join-main', {"room": main_id}, function() {
+            _after_main_joined();
+        });
         this.socket.on('tile-message', function (data) {
             tile_dict[data.tile_id][data.tile_message](data)
         });
@@ -116,13 +118,15 @@ function _main_main() {
     tsocket.socket.on('recreate-saved-tile', create_tile_from_save);
     tsocket.socket.on('tile-source-change', function (data) {
         for (let tid in tile_dict) {
-            if (!tile_dict.hasOwnProperty(tid)){
+            if (!tile_dict.hasOwnProperty(tid)) {
                 continue;
             }
             if (tile_dict[tid].tile_type == data["tile_type"])
                 $("#" + tid).addClass("tile-source-changed")
         }
     });
+}
+function _after_main_joined() {
     if (is_project) {
         let data_dict = {
             "project_name": _project_name,
