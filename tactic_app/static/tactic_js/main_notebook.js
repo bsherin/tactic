@@ -18,8 +18,11 @@ let tooltip_dict = {
 class MainTacticSocket extends TacticSocket {
 
     initialize_socket_stuff() {
+        self = this;
         this.socket.emit('join', {"room": user_id});
-        this.socket.emit('join-main', {"room": main_id});
+        this.socket.emit('join-main', {"room": main_id}, function() {
+            _after_main_joined();
+        });
         this.socket.on('tile-message', function (data) {
             tile_dict[data.tile_id][data.tile_message](data)
         });
@@ -53,9 +56,13 @@ function _notebook_main() {
     dirty = false;
     tsocket = new MainTacticSocket("main", 5000);
     tsocket.socket.on('finish-post-load', function (data) {
-            build_and_render_menu_objects();
-            create_and_fill_console(data.console_html)
-        });
+        console.log("got finish-post-load");
+        build_and_render_menu_objects();
+        create_and_fill_console(data.console_html)
+    });
+}
+
+function _after_main_joined() {
     let data_dict = {
             "doc_type": "notebook",
             "project_collection_name": _project_collection_name,
@@ -65,6 +72,7 @@ function _notebook_main() {
             "library_id": main_id
     };
     if (is_totally_new) {
+        console.log("about to intialize");
         postWithCallback(main_id, "initialize_mainwindow", data_dict)
     }
     else  {
