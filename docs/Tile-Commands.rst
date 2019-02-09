@@ -1,18 +1,19 @@
-Tile Commands
+The Tile API
 =============
 
-This is the second part of the Tile API. These are the commands that are
-available to programmers of new tiles. Where they make sense, they can also
+Here I explain the Tile API. By that, I mean the special commands and constructs that
+are available within the context of a tile. Where they make sense, they can also
 be used in `Logs and Notebooks <Log-And-Notebook.html>`__.
 
 To save typing, many of the commmands have shorter equivalents.
 
 .. note::
 
-    All of these commands are methods of the tile base class, ``TileBase``.
+    All of the commands here are methods of the tile base class, ``TileBase``.
     And you will always be calling them, essentially, from within another
     method of `TileBase <Tile-Structure.html>`__. That means that when you invoke these functions you will
-    almost always be writing ``self.function()``.
+    almost always be writing ``self.function()``.  In the case of properties, you'll
+    write ``self.property``.
 
 .. py:class:: TileBase()
 
@@ -50,6 +51,11 @@ Refreshing a Tile
 
 Data Access
 -----------
+
+    The following methods provide access to the data. Note that much of the same functionality is provided by the
+    `object-oriented api <Object-Oriented-API.html# Accessing and manipulating the collection>`__.
+    The object-oriented interface is a bit more intuitive.
+    However, the commands listed here will often produce tiles that run more quickly.
 
     .. py:method:: get_document_names()
 
@@ -138,6 +144,10 @@ Data Access
 
 Data Setting
 ------------
+
+    The following methods make it possible to set the data. Note that much of the same functionality is provided by the
+    `object-oriented interface <Object-Oriented-Interface.html# Accessing and manipulating the collection>`__.
+    The object-oriented interface is a bit more intuitive. However, the commands listed here will often produce tiles that run more quickly.
 
     .. py:function:: set_cell(document_name, row_id, column_name, text, cellchange=True)
 
@@ -246,8 +256,63 @@ Filtering-And-Iteration
 
 .. category_start
 
+Methods for the object-oriented interface
+-----------------------------------------
+
+    .. py:attribute:: collection
+
+        `self.collection` returns a TacticCollection object corresponding to the collection in the current project.
+
+    .. py:method:: create_collection(name, doc_dict, doc_type="table", metadata_dict=None)
+
+        Creates a new collection in the user’s resource library. **name** is the
+        name for the new collection. **doc_type** specifies whether the type of
+        the document is table or freeform. **doc_dict** is a dictionary in which
+        the keys are names for the individual documents that will comprise the
+        new collection. For freeform documents, the values of this dictionary
+        are strings. For tables, the values are a list of rows, with each row
+        being a dict.
+
+        **metadata_dict** is a dictionary that holds any document-level metadata
+        you’d like to add. The keys are document names and the values are
+        dictionaries of keys and values.
+
+        Synonym: ``cc``
+
+    .. py:method:: create_collection_object(doc_type, doc_dict=None)
+
+        Creates a new :py:class:`DetachedTacticCollection` object. ``doc_dict``, if provided
+        must be a dictionary with keys that are the name of the documents, and values that are
+        DetachedTacticDocument objects.
+
+    .. py:method:: create_document(docname, column_names, dict_or_detached_row_list=None, metadata=None)
+
+        Creates a new :py:class:`DetachedTacticDocument` object.
+
+    .. py:method:: create_freeform_document(docname, lines=None, metadata=None)
+
+        Creates a new :py:class:`DetachedFreeformTacticCollection` object.
+
+
+    .. py:method:: create_row(row_dict=None)
+
+        Creates a new :py:class:`DetachedTacticRow` object.
+
+    .. py:method:: create_line(txt=None)
+
+        Creates a new :py:class:`DetachedTacticLIne` object.
+
+    .. py:attribute:: tiles
+
+        ``self.tiles`` returns a RemoteTiles object corresponding to the tiles in the current project.
+
+.. category_end
+
+.. category_start
+
+
 Other TileBase Methods
-------------------------------
+----------------------
 
     .. py:method:: go_to_document(document_name)
 
@@ -340,21 +405,7 @@ Other TileBase Methods
 
         Synonym: ``bht``
 
-    .. py:method:: create_collection(name, doc_dict, doc_type="table", metadata_dict=None)
-
-        Creates a new collection in the user’s resource library. **name** is the
-        name for the new collection. **doc_type** specifies whether the type of
-        the document is table or freeform. **doc_dict** is a dictionary in which
-        the keys are names for the individual documents that will comprise the
-        new collection. For freeform documents, the values of this dictionary
-        are strings. For tables, the values are a list of rows, with each row
-        being a dict.
-
-        **metadata_dict** is a dictionary that holds any document-level metadata
-        you’d like to add. The keys are document names and the values are
-        dictionaries of keys and values.
-
-        Synonym: ``cc``
+.. category_end
 
 .. category_start
 
