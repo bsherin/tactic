@@ -54,11 +54,7 @@ else:
 
 
 megaplex_address = None  # This is set in __init__.py
-
-if "RETRIES" in os.environ:
-    RETRIES = int(os.environ.get("RETRIES"))
-else:
-    RETRIES = 60
+RETRIES = 60
 
 
 cli = docker.DockerClient(base_url='unix://var/run/docker.sock')

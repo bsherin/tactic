@@ -135,9 +135,9 @@ class TileWorker(QWorker):
                 return tile_o_plex.transmitted_pipe_value
             else:
                 time.sleep(sleep_time)
-        error_string = "post_and_wait timed out with msg_type {}, destination {}, and source".format(task_type,
-                                                                                                     dest_id,
-                                                                                                     self.my_id)
+        error_string = "post_and_wait_for_pipe timed out with msg_type {}, dest {}, source".format(task_type,
+                                                                                                   dest_id,
+                                                                                                   self.my_id)
         self.debug_log(error_string)
         raise Exception(error_string)
 

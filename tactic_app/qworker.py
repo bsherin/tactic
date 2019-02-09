@@ -35,10 +35,7 @@ else:
 
 print("got megaplex " + str(communication_utils.megaplex_address))
 
-if "RETRIES" in os.environ:
-    RETRIES = int(os.environ.get("RETRIES"))
-else:
-    RETRIES = 60
+RETRIES = 60
 
 
 task_worthy_methods = {}

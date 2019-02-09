@@ -23,11 +23,7 @@ from qworker import task_worthy_methods, task_worthy_manual_submit_methods, erro
 # getting environment variables
 INITIAL_LEFT_FRACTION = .69
 
-
-if "RETRIES" in os.environ:
-    RETRIES = int(os.environ.get("RETRIES"))
-else:
-    RETRIES = 60
+RETRIES = 60
 
 
 if "DB_NAME" in os.environ:
