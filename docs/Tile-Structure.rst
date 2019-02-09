@@ -1,6 +1,11 @@
 Tile Structure
 ==============
 
+This section explains the full structure of the code that describes a tile.
+If you us the `Tile Creator <Tile-Creator.html>`__ you might not need to know
+any of this. But, on occasion, you might want to directly edit the source of
+a tile.
+
 Every user tile is a subclass of ``TileBase``. Each tile is also
 associated with a queue to which events are added by the system. A
 separate process periodically checks this queue and sends relevant
@@ -18,7 +23,7 @@ whenever the tile receives a RefreshTile event from the system.
                 # user code here
                 return new_html
 
-The method ``render_conent`` should return html that will be displayed
+The method ``render_content`` should return html that will be displayed
 in the body of the tile. The decorator ``@user_tile`` informs the system
 that the following class is a tile that should be displayed in the menu
 of user tiles available for the user.

@@ -119,7 +119,7 @@ pipes. In order to figure out what’s going on in a project, it’s often
 helpful to be able to poke around inside these exported variables.
 That’s what the exports viewer allows you to do.
 
-|image4|
+|image3|
 
 The figure above explains what the various parts of the interface do.
 There’s a popup list that lets you select which variable you want to
@@ -140,6 +140,5 @@ variable in Python code. That’s what I’ve done in the figure.
 .. |image0| image:: imgs/20160929-094941.png
 .. |image1| image:: imgs/20160929-095746.png
 .. |image2| image:: imgs/20160929-133108.png
-.. |image3| image:: imgs/e64e7678.png
-.. |image4| image:: imgs/d0212a9e.png
+.. |image3| image:: imgs/d0212a9e.png
 

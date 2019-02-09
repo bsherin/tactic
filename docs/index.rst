@@ -31,6 +31,7 @@ Tactic Text
 
    Tile-Structure
    Tile-Commands
+   Object-Oriented-API
    Matplotlib-Tiles
    D3-Tiles
    Working-With-Code-Resources
