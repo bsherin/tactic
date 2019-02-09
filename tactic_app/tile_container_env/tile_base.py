@@ -18,10 +18,7 @@ from document_object import DetachedFreeformTacticDocument, DetachedTacticLine
 from remote_tile_object import RemoteTiles
 
 
-if "RETRIES" in os.environ:
-    RETRIES = int(os.environ.get("RETRIES"))
-else:
-    RETRIES = 60
+RETRIES = 60
 
 
 # noinspection PyUnresolvedReferences
