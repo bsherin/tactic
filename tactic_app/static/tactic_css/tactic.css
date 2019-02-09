@@ -635,11 +635,11 @@ td.cell-clickable:active {
       display: none; }
     .log-panel.log-panel-visible .log-code-output {
       display: block; }
-    .log-panel.log-panel-visible.error-log-panel {
+    .log-panel.log-panel-visible.fixed-log-panel {
       min-height: 82px; }
-      .log-panel.log-panel-visible.error-log-panel .close-log-button, .log-panel.log-panel-visible.error-log-panel .shrink-log-button {
+      .log-panel.log-panel-visible.fixed-log-panel .close-log-button, .log-panel.log-panel-visible.fixed-log-panel .shrink-log-button {
         display: inline-block; }
-      .log-panel.log-panel-visible.error-log-panel .card-header .button-div {
+      .log-panel.log-panel-visible.fixed-log-panel .card-header .button-div {
         opacity: 100;
         transition-delay: .25s; }
     .log-panel.log-panel-visible .console-spin-outer {
@@ -678,7 +678,7 @@ td.cell-clickable:active {
       display: none; }
     .log-panel.log-panel-invisible .shrink-log-button {
       display: none; }
-    .log-panel.log-panel-invisible.error-log-panel:hover .expand-log-buton {
+    .log-panel.log-panel-invisible.fixed-log-panel:hover .expand-log-buton {
       display: inline-block; }
     .log-panel.log-panel-invisible:hover .button-div.shrink-expand-div {
       opacity: 100; }
