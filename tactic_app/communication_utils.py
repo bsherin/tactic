@@ -16,11 +16,7 @@ if ("USE_FORWARDER" in os.environ) and (os.environ.get("USE_FORWARDER") == "True
 else:
     USE_FORWARDER = False
 
-
-if "RETRIES" in os.environ:
-    RETRIES = int(os.environ.get("RETRIES"))
-else:
-    RETRIES = 60
+RETRIES = 60
 
 am_host = False
 megaplex_address = None

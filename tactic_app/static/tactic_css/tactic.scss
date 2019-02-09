@@ -962,7 +962,7 @@ align-items: baseline
         }
 
 
-        &.error-log-panel{
+        &.fixed-log-panel{
             min-height: 82px;
             .close-log-button, .shrink-log-button {
                 display: inline-block;
@@ -1046,7 +1046,7 @@ align-items: baseline
             display: none
         }
 
-        &.error-log-panel:hover .expand-log-buton{
+        &.fixed-log-panel:hover .expand-log-buton{
             display: inline-block
         }
 
