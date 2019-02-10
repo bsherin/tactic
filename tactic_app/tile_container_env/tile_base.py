@@ -163,13 +163,13 @@ class TileBase(object):
         return DetachedTacticLine(txt)
 
     def create_document(self, docname, column_names, dict_or_detached_row_list=None, metadata=None):
-        return DetachedTacticDocument(self, docname, column_names, dict_or_detached_row_list, metadata=None)
+        return DetachedTacticDocument(docname, column_names, dict_or_detached_row_list, metadata=None)
 
     def create_freeform_document(self, docname, lines=None, metadata=None):
-        return DetachedFreeformTacticDocument(self, docname, lines, metadata)
+        return DetachedFreeformTacticDocument(docname, lines, metadata)
 
     def create_collection_object(self, doc_type, doc_dict=None):
-        return DetachedTacticCollection(self, doc_type, doc_dict)
+        return DetachedTacticCollection(doc_type, doc_dict)
 
     @property
     def tiles(self):
@@ -1031,7 +1031,7 @@ class TileBase(object):
         return result
 
     def new_collection(self, doc_type, doc_dict=None):
-        return DetachedTacticCollection(self, doc_type, doc_dict)
+        return DetachedTacticCollection(doc_type, doc_dict)
 
     def get_document_data(self, document_name):
         self._save_stdout()
@@ -1490,6 +1490,7 @@ class TileBase(object):
     def get_pipe_value(self, key_or_tile_name, export_name=None):
         self._save_stdout()
         print("in get_pipe_value")
+        tile_id = None
         if export_name is None:  # then assume the first argument is a pipe_key
             pipe_key = key_or_tile_name
             for(tile_id, tile_entry) in self._pipe_dict.items():
@@ -1500,7 +1501,7 @@ class TileBase(object):
             if export_name is None:
                 self._restore_stdout()
                 return None
-        else: # otherwise assume first argument is the tile name
+        else:  # otherwise assume first argument is the tile name
             tile_id = self.tiles[key_or_tile_name]._tile_id
 
         result = self._tworker.post_and_wait_for_pipe(tile_id,
