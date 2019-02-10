@@ -19,8 +19,8 @@ To save typing, many of the commmands have shorter equivalents.
 
 .. category_start
 
-Refreshing a Tile
------------------
+Refreshing
+----------
 
     .. py:method:: start_spinner()
 
@@ -205,7 +205,7 @@ Data Setting
 
 .. category_start
 
-Filtering-And-Iteration
+Filter-And-Iterate
 -----------------------
 
     .. py:method:: get_matching_rows(filter_function, document_name)
@@ -256,8 +256,8 @@ Filtering-And-Iteration
 
 .. category_start
 
-Methods for the object-oriented interface
------------------------------------------
+Object API
+----------
 
     .. py:attribute:: collection
 
@@ -311,8 +311,8 @@ Methods for the object-oriented interface
 .. category_start
 
 
-Other TileBase Methods
-----------------------
+Other TileBase
+--------------
 
     .. py:method:: go_to_document(document_name)
 
@@ -454,8 +454,8 @@ Plots
 
 .. category_start
 
-Global Functions
-----------------
+Global
+------
 
 .. note::
     The following commands are not called with ``self``.
