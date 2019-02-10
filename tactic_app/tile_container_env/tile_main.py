@@ -20,6 +20,7 @@ import tile_env
 from tile_env import class_info
 from tile_env import exec_tile_code
 import tile_base
+import document_object
 from tile_base import clear_and_exec_user_code, TileBase
 from pseudo_tile_base import PseudoTileClass
 import gevent
@@ -317,6 +318,7 @@ class TileWorker(QWorker):
 # if __name__ == "__main__":
 print("entering main")
 tile_base._tworker = TileWorker()
+document_object._tworker = tile_base._tworker
 print("tworker is created, about to start my_id is " + str(tile_base._tworker.my_id))
 tile_base._tworker.start()
 print("tworker started, my_id is " + str(tile_base._tworker.my_id))
