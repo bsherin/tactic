@@ -398,6 +398,14 @@ Communicating with other tiles
 
     Object corresponding to another tile in a project.
 
+    You can ask a tile for a pipe value as in the code below.
+
+    .. code-block:: python
+
+        other_tiles = self.tiles
+        other_tile = other_tiles["other_tile_name"]
+        pipe_value = other_tile["pipe_name"]
+
     .. py:attribute:: name
 
         The name of the tile.
