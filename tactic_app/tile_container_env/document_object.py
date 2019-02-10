@@ -35,12 +35,12 @@ class TacticRow:
 
     def _get_field(self, colname):
         if self.__dict__["_row_dict"] is None:
-            return self.__dict__["_tbinstance"].get_row(self.__dict__["_docname"], self.__dict__["_rowid"])[colname]
+            return _tworker.tile_instance.get_row(self.__dict__["_docname"], self.__dict__["_rowid"])[colname]
         else:
             return self.__dict__["_row_dict"][colname]
 
     def _set_field(self, colname, value):
-        self.__dict__["_tbinstance"].set_cell(self.__dict__["_docname"],
+        _tworker.tile_instance.set_cell(self.__dict__["_docname"],
                                               self.__dict__["_rowid"],
                                               colname,
                                               value,
@@ -50,14 +50,14 @@ class TacticRow:
         return
 
     def set_background(self, column_name, color):
-        self.__dict__["_tbinstance"].set_cell_background(self.__dict__["_docname"],
+        _tworker.tile_instance.set_cell_background(self.__dict__["_docname"],
                                                          self.__dict__["_rowid"], column_name, color)
         return
 
     @property
     def row_dict(self):
         if self.__dict__["_row_dict"] is None:
-            return self.__dict__["_tbinstance"].get_row(self.__dict__["_docname"], self.__dict__["_rowid"])
+            return _tworker.tile_instance.get_row(self.__dict__["_docname"], self.__dict__["_rowid"])
         else:
             return copy.copy(self.__dict__["_row_dict"])
 
@@ -128,10 +128,9 @@ class DetachedTacticRow:
 
 
 class TacticLine:
-    def __init__(self, tbinstance, line_number, docname, line_text):
+    def __init__(self, line_number, docname, line_text):
         self.__dict__["_line_number"] = line_number
         self.__dict__["_docname"] = docname
-        self.__dict__["_tbinstance"] = tbinstance
         self.__dict__["_text"] = line_text
 
     @property
@@ -197,7 +196,7 @@ class FreeformTacticDocument:
         self._iter_value = -1
         self._text = _tworker.tile_instance.get_document_data(docname)
         lines = _tworker.tile_instance.get_document_data_as_list(docname)
-        self._line_list = [TacticLine(_tworker.tile_instance, n, self._docname, the_line)
+        self._line_list = [TacticLine(n, self._docname, the_line)
                            for n, the_line in enumerate(lines)]
         self._iter_value = -1
 
@@ -712,7 +711,7 @@ class TacticCollection:
 
     def _create_doc_object(self, dname):
         if self._doc_type == "freeform":
-            return self._doc_class(_tworker.tile_instance, dname, self._collection_info[dname]["number_rows"])
+            return self._doc_class(dname, self._collection_info[dname]["number_rows"])
         else:
             return self._doc_class(dname, self._collection_info[dname]["number_rows"],
                                    self._collection_info[dname]["column_names"])
