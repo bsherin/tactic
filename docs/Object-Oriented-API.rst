@@ -39,6 +39,16 @@ Accessing and manipulating the collection
 
         Returns, as a list, the data in the specified column from all of the documents in the collection.
 
+    .. py:method:: tokenize(column_name=None, tokenizer_func=None)
+
+        In table documents, applies `tokenizer_func` to each entry in the column `column_name`, in every document,
+        and returns the result as a list.
+
+        In freeform documents, applies `tokenizer_func` to each line in every document
+        and returns the result as a list.
+
+        If `tokenizer_func` is None then uses ``nltk.word_tokenize``.
+
     .. py:method:: detach()
 
         Returns a :py:class:`DetachedTacticCollection` with the data corresponding to this collection.
@@ -100,6 +110,11 @@ Accessing and manipulating the collection
         Returns a list of rows meeting the requirement in `filter_function`.
         `filter_function` should expect a TacticRow as an argument, and it should return
         True or False.  See :py:meth:`get_matching_rows`.
+
+    .. py:method:: tokenize(column_name, tokenizer_func=None)
+
+        Applies tokenizer_func to each entry in the column `column_name` and returns the result as a list. If
+        `tokenizer_func` is None then uses ``nltk.word_tokenize``.
 
     .. py:method:: set_column_data(column_name, column_data, cellchange=False)
 
@@ -168,6 +183,11 @@ Accessing and manipulating the collection
         A dictionary with the metadata for the document.
 
         Writing ``self.metadata = a_dictionary`` sets the metadata to the provided dictionary.
+
+    .. py:method:: tokenize(tokenizer_func=None)
+
+        Applies tokenizer_func to each line and returns the result as a list. If
+        `tokenizer_func` is None then uses ``nltk.word_tokenize``.
 
     .. py:method:: rewind()
 
@@ -276,6 +296,11 @@ Creating and manipulating detached data
 
         Inserts the element in the specified position. Element can be either a :py:class:`DetachedTacticRow`
         or a ``dict``.
+
+
+    .. py:method:: to_html(title=None, click_type="word-clickable", sortable=True, sidebyside=False, has_header=True)
+
+        Returns an html table for the document. See :py:meth:`build_html_table_from_data_list`
 
 .. py:class:: DetachedTacticRow()
 
