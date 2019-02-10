@@ -203,6 +203,13 @@ class FreeformTacticDocument:
         self._tb_instance.set_document_metadata(self._docname, new_metadata)
         return
 
+    def tokenize(self, tokenizer_func=None):
+        if tokenizer_func is None:
+            import nltk
+            tokenizer_func = nltk.word_tokenize
+        self.rewind()
+        return [tokenizer_func(l.text) for l in self]
+
     @property
     def text(self):
         return self._text
@@ -219,6 +226,9 @@ class FreeformTacticDocument:
             raise StopIteration
         else:
             return self[self._iter_value]
+
+    def rewind(self):
+        self._iter_value = -1
 
     def __len__(self):
         return self._number_lines
@@ -392,6 +402,12 @@ class TacticDocument:
             self._get_chunk()
         return
 
+    def tokenize(self, column_name, tokenizer_func=None):
+        if tokenizer_func is None:
+            import nltk
+            tokenizer_func = nltk.word_tokenize
+        return [tokenizer_func(txt) for txt in self.column(column_name)]
+
     def detach(self):
         return DetachedTacticDocument(self._tb_instance, self.name, self.column_names, self.dict_list, self.metadata)
 
@@ -558,6 +574,15 @@ class DetachedTacticDocument(TacticDocument):
         self._row_list.insert(position, element)
         return
 
+    def to_html(self, title=None, click_type="word-clickable",
+                sortable=True, sidebyside=False, has_header=True):
+        self.rewind()
+        data_list = [self.column_names]
+        for r in self:
+            data_list.append([r[col] for col in self.column_names])
+        return self._tb_instance.build_html_table_from_data_list(data_list, title, click_type,
+                                                                 sortable, sidebyside, has_header)
+
     def __getitem__(self, x):
         nrows = len(self._row_list)
         if isinstance(x, slice):
@@ -649,7 +674,25 @@ class TacticCollection:
                                    self._collection_info[dname]["column_names"])
 
     def column(self, column_name):
+        if self._doc_type == "freeform":
+            raise Exception("TacticCollection.column not defined for freeform collections")
         return self._tb_instance.get_column_data(column_name)
+
+    def tokenize(self, column_name=None, tokenizer_func=None):
+        if tokenizer_func is None:
+            import nltk
+            tokenizer_func = nltk.word_tokenize
+        if self._doc_type == "table":
+            if column_name is None:
+                raise ValueError("column_name required for table collections.")
+            else:
+                return [tokenizer_func(txt) for txt in self.column(column_name)]
+        else:
+            result_list = []
+            self.rewind()
+            for doc in self:
+                result_list += doc.tokenize(tokenizer_func)
+            return result_list
 
     def __getitem__(self, x):
         if x not in self._doc_names:
