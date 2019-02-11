@@ -229,7 +229,7 @@ def submit_response_local(task_packet):
     if source not in queue_dict:  # This shouldn't happen
         queue_dict[source] = TaskManager(source, queue_dict)
     rdata = task_packet["response_data"]
-    if rdata and "success" in rdata and not rdata["success"]:
+    if rdata and isinstance(rdata, dict) and "success" in rdata and not rdata["success"]:
         task_packet["status"] = "submitted_response_with_error"
     else:
         task_packet["status"] = "submitted_response"
