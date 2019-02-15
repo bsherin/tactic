@@ -151,7 +151,7 @@ class TileBase(object):
     @property
     def collection(self):
         if self._collection is None:
-            self._collection = TacticCollection(self)
+            self._collection = TacticCollection()
         return self._collection
 
     def create_row(self, row_dict=None):
