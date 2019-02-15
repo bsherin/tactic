@@ -672,6 +672,14 @@ class TableObjectClass {
             $("#table-area tbody").height(window.innerHeight - $("#grid-bottom").outerHeight() - BOTTOM_MARGIN - $("#table-area tbody").offset().top);
         }
 
+        let hright = $("#heading-right");
+        let dsel = $("#doc-selector");
+        if (hright.position().left < (dsel.position().left + dsel.width() + 20)) {
+            hright.css("opacity", 0);
+        } else {
+            hright.css("opacity", "100")
+        }
+
         if ($("#tile-area").length > 0) {
             $("#tile-area").height(window.innerHeight - $("#grid-bottom").outerHeight() - BOTTOM_MARGIN - $("#tile-area").offset().top);
         }

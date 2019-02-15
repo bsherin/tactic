@@ -232,6 +232,14 @@ class TableObjectClass {
             $(".grid-left").width(usable_width * this.left_fraction);
         }
         $(".grid-right").width(usable_width * (1 - this.left_fraction));
+        let hright = $("#heading-right");
+        let dsel = $("#doc-selector");
+        if (hright.position().left < (dsel.position().left + dsel.width() + 20)) {
+            hright.css("opacity", 0);
+        } else {
+            hright.css("opacity", "100")
+        }
+
         if ($("#freeform-area .CodeMirror").length > 0) {
             $("#freeform-area .CodeMirror").height(window.innerHeight - $("#grid-bottom").outerHeight() - BOTTOM_MARGIN - $("#freeform-area .CodeMirror").offset().top);
         }
