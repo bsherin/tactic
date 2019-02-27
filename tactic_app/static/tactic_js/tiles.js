@@ -90,11 +90,11 @@ class TileObject {
             this.do_resize();
             this.broadcastTileSize();
         }
-        else {
-            const scripts = $(this.full_selector()).find(".tile-display-area").find("script");
-            for (let i = 0; i < scripts.length; i = i + 1) {
-                eval(scripts[i].innerHTML)
-            }
+        else { // I deleted the code below because it messes up bokeh loading. necessary?
+            // const scripts = $(this.full_selector()).find(".tile-display-area").find("script");
+            // for (let i = 0; i < scripts.length; i = i + 1) {
+            //     eval(scripts[i].innerHTML)
+            // }
             this.saved_size = $(this.full_selector()).outerHeight();
             this.resize_name_area()
         }
@@ -594,6 +594,31 @@ class TileObject {
                 data_dict.active_row_id = tableObject.active_line;
             }
             postWithCallback(data_dict["tile_id"], "TileRowClick", data_dict)
+        });
+
+        $(full_frontal_selector).on(click_event, 'g.g_clickable', function(e) {
+            const p = $(e.target).closest(".tile-panel")[0];
+            const data_dict = {};
+            data_dict["tile_id"] = $(p).data("my_tile_id");
+            let the_g = $(e.target).closest(".g_clickable")[0];
+            let the_id = the_g.id;
+            let the_dataset = the_g.dataset;
+            if ((the_id == "") || (the_id == undefined)) {
+                return
+            }
+            data_dict.gid = the_id;
+            data_dict.dataset = the_dataset;
+            data_dict.main_id = main_id;
+            data_dict.doc_name = tableObject.current_spec.doc_name;
+            if (DOC_TYPE == "table") {
+                data_dict.active_row_index = tableObject.active_row;
+                data_dict.active_row_id = tableObject.active_row_id;
+            }
+            else {
+                data_dict.active_row_id = tableObject.active_line;
+            }
+            postWithCallback(data_dict["tile_id"], "TileSVGClick", data_dict)
+
         });
 
         $(full_frontal_selector).on(click_event, 'button', function(e) {
