@@ -39,7 +39,6 @@ if "MAIN_ADDRESS" in os.environ:
 else:
     main_address = None  # this should only happen in the tile test container
 
-
 # noinspection PyUnusedLocal
 class TileWorker(QWorker):
     def __init__(self):
@@ -48,6 +47,7 @@ class TileWorker(QWorker):
         print("QWorker initialized")
         self.tile_instance = None
         self.get_megaplex_task_now = False
+        self.use_svg = True
 
     @task_worthy
     def hello(self, data_dict):

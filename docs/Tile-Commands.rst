@@ -420,7 +420,7 @@ Plots
         These commands are only available in `Matplotlib
         Tiles <Matplotlib-Tiles.html>`__ (i.e., those that subclass ``MplFigure``).
 
-    .. py:method:: init_mpl_figure(figsize=(self.width/80, self.height/80), dpi=80, facecolor=None, edgecolor=None, linewidth=0.0, frameon=None, subplotpars=None, tight_layout=None)
+    .. py:method:: init_mpl_figure(figsize=(self.width/PPI, self.height/PPI), dpi=80, facecolor=None, edgecolor=None, linewidth=0.0, frameon=None, subplotpars=None, tight_layout=None)
 
         This reinitializes the figure contained in a MatplotlibTile. It’s
         equivalent to calling ``MplFigure.__init__(self, kwargs).`` The kwargs
@@ -428,27 +428,55 @@ Plots
         class <https://matplotlib.org/api/_as_gen/matplotlib.figure.Figure.html>`__.
         But the default values are different for ``figsize`` and ``dpi``.
 
-    .. py:method:: create_figure_html()
+    .. py:method:: create_figure_html(use_svg=True)
 
         Given a MplFigure instance this generates html that can be included in a
-        tile to display the figure.
+        tile to display the figure. If ``use_svg`` is True, then this produces an svg element that is embedded directly
+        in the page. If it's false, then the html produced contains a link that references a png file hosted on the server.
 
-    .. py:method:: create_figure_html()
-
-        Given a MplFigure instance this generates html that can be included in a
-        tile to display the figure.
-
-    .. py:method:: create_pyplot_html()
+    .. py:method:: create_pyplot_html(use_svg=True)
 
         When using matplotlib.pyplot to work in interactive mode, use this alternative
-        command to generate html to display the figure. For example, this will work
-        in the log or a notebook:
+        command to generate html to display the figure. If ``use_svg`` is True, then this produces an svg
+        element that is embedded directly
+        in the page. If it's false, then the html produced contains a link that references a png file hosted on the server.
+
+        The following code will work in the log or a notebook:
 
         .. code-block:: python
 
             import matplotlib.pyplot as plt
             plt.plot([7, 4, 3])
             self.create_pyplot_html()
+
+    .. py:method:: create_bokeh_html(plot)
+
+        Given a bokeh plot, this returns html to display the plot. The entirety of what this method is below,
+        in case you want to do something slightly different. However, doing something other than Resources("inline")
+        can cause problems, especially when loading a saved project.
+
+        .. code-block:: python
+
+            def create_bokeh_html(self, the_plot):
+                from bokeh.embed import file_html
+                from bokeh.resources import Resources
+                return file_html(the_plot, Resources("inline"))
+
+       And here's some complete code that produces a bokeh plot:
+
+        .. code-block:: python
+
+            from bokeh.plotting import figure
+            from bokeh.resources import CDN
+            from bokeh.embed import file_html
+            from bokeh.resources import JSResources, CSSResources, Resources
+            p = figure(plot_width=400, plot_height=400, tools="pan,wheel_zoom,box_zoom,hover,reset",
+                       title=None, toolbar_location="below",
+                       toolbar_sticky=False)
+            p.circle([1, 2, 3, 4, 5], [2, 5, 8, 2, 7], size=10)
+            html = file_html(p, Resources("inline"), "my plot")
+            html
+
 
 .. category_end
 
