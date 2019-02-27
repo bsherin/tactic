@@ -23,7 +23,8 @@ class GlobalTileManager(object):
                                                                          network_mode="bridge",
                                                                          container_name="tile_test_container",
                                                                          register_container=False,
-                                                                         other_name="test_container")
+                                                                         other_name="test_container",
+                                                                         env_vars={"PPI": 0})
         except ContainerCreateError:
             print "failed to create the test tile_container. That's very bad."
             exit()

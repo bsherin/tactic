@@ -2,6 +2,7 @@
 let tsocket;
 let dirty;
 var tableObject;
+var ppi;
 
 const BOTTOM_MARGIN = 35;
 var done_loading = false;
@@ -97,6 +98,7 @@ class MainTacticSocket extends TacticSocket {
 function _main_main() {
     console.log("entering start_post_load");
     dirty = false;
+    ppi = get_ppi();
     tsocket = new MainTacticSocket("main", 5000);
     tsocket.socket.on('finish-post-load', function (data) {
         if (is_project) {
@@ -135,7 +137,8 @@ function _after_main_joined() {
             "library_id": main_id,
             "base_figure_url": base_figure_url,
             "use_ssl": use_ssl,
-            "user_id": user_id
+            "user_id": user_id,
+            "ppi": ppi
         };
         postWithCallback(main_id, "initialize_project_mainwindow", data_dict)
     }
@@ -146,7 +149,8 @@ function _after_main_joined() {
             "project_collection_name": _project_collection_name,
             "base_figure_url": base_figure_url,
             "use_ssl": use_ssl,
-            "user_id": user_id
+            "user_id": user_id,
+            "ppi": ppi
         };
         postWithCallback(main_id, "initialize_mainwindow", data_dict)
     }

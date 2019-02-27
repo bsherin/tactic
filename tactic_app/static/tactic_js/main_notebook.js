@@ -5,6 +5,7 @@ var tableObject;
 DOC_TYPE = "notebook";
 const BOTTOM_MARGIN = 35;
 var done_loading = false;
+var ppi;
 
 const HEARTBEAT_INTERVAL = 10000; //milliseconds
 setInterval( function(){
@@ -53,6 +54,7 @@ class MainTacticSocket extends TacticSocket {
 
 function _notebook_main() {
     console.log("entering _notebook_main");
+    ppi = get_ppi();
     dirty = false;
     tsocket = new MainTacticSocket("main", 5000);
     tsocket.socket.on('finish-post-load', function (data) {
@@ -69,7 +71,8 @@ function _after_main_joined() {
             "base_figure_url": base_figure_url,
             "use_ssl": use_ssl,
             "user_id": user_id,
-            "library_id": main_id
+            "library_id": main_id,
+            "ppi": ppi
     };
     if (is_totally_new) {
         console.log("about to intialize");
