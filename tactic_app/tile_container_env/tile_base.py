@@ -1481,6 +1481,11 @@ class TileBase(object):
         self._restore_stdout()
         return result["list_names"]
 
+    def create_bokeh_html(self, the_plot):
+        from bokeh.embed import file_html
+        from bokeh.resources import Resources
+        return file_html(the_plot, Resources("inline"))
+
     # deprecated
     def get_tokenizer(self, tokenizer_name):
         self._save_stdout()

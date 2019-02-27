@@ -360,9 +360,10 @@ function changeCollection() {
 }
 
 function consoleToNotebook() {
+    let console_node = cleanse_bokeh(document.getElementById("console"))
     const result_dict = {
         "main_id": main_id,
-        "console_html": $("#console").html(),
+        "console_html": console_node.innerHTTML,
         "user_id": user_id,
         "console_cm_code": consoleObject.getConsoleCMCode(),
     };
@@ -418,6 +419,15 @@ function exportAsJupyter() {
     }
 }
 
+function cleanse_bokeh(node) {
+    let new_node = node.cloneNode(true);
+    let bkroot_nodes = new_node.getElementsByClassName("bk-root");
+    for (let bknode of bkroot_nodes) {
+        bknode.innerHTML = ""
+    }
+    return new_node
+}
+
 function saveProjectAs() {
     startSpinner();
     postWithCallback("host", "get_project_names", {"user_id": user_id}, function (data) {
@@ -433,10 +443,11 @@ function saveProjectAs() {
     });
 
     function CreateNewProject (new_name, checkresults) {
+            let console_node = cleanse_bokeh(document.getElementById("console"))
             const result_dict = {
                 "project_name": new_name,
                 "main_id": main_id,
-                "console_html": $("#console").html(),
+                "console_html": console_node.innerHTML,
                 "console_cm_code": consoleObject.getConsoleCMCode(),
                 "doc_type": DOC_TYPE
             };
@@ -483,9 +494,10 @@ function saveProjectAs() {
 }
 
 function save_project() {
+    let console_node = cleanse_bokeh(document.getElementById("console"))
     const result_dict = {
         "main_id": main_id,
-        "console_html": $("#console").html(),
+        "console_html": console_node.innerHTML,
         "console_cm_code": consoleObject.getConsoleCMCode()
     };
 
