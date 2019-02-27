@@ -25,6 +25,13 @@ String.prototype.format = function() {
   return str;
 };
 
+function get_ppi() {
+  var d = $("<div/>").css({ position: 'absolute', top : '-1000in', left : '-1000in', height : '1000in', width : '1000in' }).appendTo('body');
+  var px_per_in = d.height() / 1000;
+  d.remove();
+  return px_per_in;
+}
+
 function remove_duplicates (arrArg) {
   return arrArg.filter((elem, pos, arr) => {
     return arr.indexOf(elem) == pos;

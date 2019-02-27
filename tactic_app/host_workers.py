@@ -538,10 +538,12 @@ class HostWorker(QWorker):
     @task_worthy
     def create_tile_container(self, data):
         try:
+            environ = {"PPI": data["ppi"]}
             tile_container_id, container_id = create_container("tactic_tile_image", network_mode="bridge",
                                                                owner=data["user_id"],
                                                                parent=data["parent"],
                                                                other_name=data["other_name"],
+                                                               env_vars=environ,
                                                                publish_all_ports=True)
             tile_address = get_address(container_id, "bridge")
         except ContainerCreateError:

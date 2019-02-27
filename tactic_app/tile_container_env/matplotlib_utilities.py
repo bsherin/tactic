@@ -5,6 +5,7 @@ from matplotlib.colors import Normalize as mpl_Normalize
 from matplotlib.cm import get_cmap, ScalarMappable, register_cmap, datad
 import uuid
 import io
+import os
 
 color_palette_names = [m for m in datad if not m.endswith("_r")]
 
@@ -64,14 +65,15 @@ register_cmap(cmap=ListedColormap(standard, name="standard"))
 color_palette_names = sorted(color_palette_names)
 color_palette_names = ["standard"] + color_palette_names
 
+PPI = int(os.environ["PPI"])
 
 class MplFigure(Figure):
     # kwargs for mplfigure are same as matplotlib Figure
     def __init__(self, **kwargs):
-        if "dpi" not in kwargs:
-            kwargs["dpi"] = 80
+        # self.ppi = self._tworker.ppi
+        self.use_svg = self._tworker.use_svg
         if "figsize" not in kwargs:
-            kwargs["figsize"] = (self.width / kwargs["dpi"], self.height / kwargs["dpi"])
+            kwargs["figsize"] = (self.width / PPI, self.height / PPI)
         Figure.__init__(self, **kwargs)
         self.canvas = FigureCanvas(self)  # it was necessary to add this in Python 3
         self.kwargs = kwargs
@@ -91,28 +93,42 @@ class MplFigure(Figure):
         img = img_file.getvalue()
         return img
 
-    def create_figure_html(self):
+    def create_figure_html(self, use_svg=True):
+        self._tworker.use_svg = use_svg
         FigureCanvas(self)  # This does seem to be necessary or savefig won't work.
-        img_file = io.BytesIO()
-        self.savefig(img_file)
-        img_file.seek(0)
-        figname = str(uuid.uuid4())
-        self.img_dict[figname] = img_file.getvalue()
-        fig_url = self.base_figure_url + figname
-        image_string = "<img class='output-plot' src='{}' lt='Image Placeholder'>"
-        the_html = image_string.format(fig_url)
+        if use_svg:
+            img_file = io.StringIO()
+            self.savefig(img_file, format="svg")
+            img_file.seek(0)
+            the_html = img_file.read()
+        else:
+            img_file = io.BytesIO()
+            self.savefig(img_file)
+            img_file.seek(0)
+            figname = str(uuid.uuid4())
+            self.img_dict[figname] = img_file.getvalue()
+            fig_url = self.base_figure_url + figname
+            image_string = "<img class='output-plot' src='{}' lt='Image Placeholder'>"
+            the_html = image_string.format(fig_url)
         return the_html
 
-    def create_pyplot_html(self):
+    def create_pyplot_html(self, use_svg=True):
         import matplotlib.pyplot as plt
-        img_file = io.BytesIO()
-        plt.savefig(img_file)
-        img_file.seek(0)
-        figname = str(uuid.uuid4())
-        self.img_dict[figname] = img_file.getvalue()
-        fig_url = self.base_figure_url + figname
-        image_string = "<img class='output-plot' src='{}' lt='Image Placeholder'>"
-        the_html = image_string.format(fig_url)
+        self._tworker.use_svg = use_svg
+        if use_svg:
+            img_file = io.StringIO()
+            plt.savefig(img_file, format="svg")
+            img_file.seek(0)
+            the_html = img_file.read()
+        else:
+            img_file = io.BytesIO()
+            plt.savefig(img_file)
+            img_file.seek(0)
+            figname = str(uuid.uuid4())
+            self.img_dict[figname] = img_file.getvalue()
+            fig_url = self.base_figure_url + figname
+            image_string = "<img class='output-plot' src='{}' lt='Image Placeholder'>"
+            the_html = image_string.format(fig_url)
         return the_html
 
 class GraphList(MplFigure):

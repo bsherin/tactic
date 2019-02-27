@@ -333,6 +333,11 @@ class TileBase(object):
         return None
 
     @_task_worthy
+    def TileSVGClick(self, data):
+        self.handle_tile_svg_click(data["gid"], data["dataset"], data["doc_name"], data["active_row_id"])
+        return None
+
+    @_task_worthy
     def TileCellClick(self, data):
         self.handle_tile_cell_click(data["clicked_cell"], data["doc_name"], data["active_row_id"])
         return None
@@ -609,7 +614,7 @@ class TileBase(object):
     # noinspection PyUnresolvedReferences
     def _resize_mpl_tile(self):
         self.draw_plot()
-        new_html = self.create_figure_html()
+        new_html = self.create_figure_html(self._tworker.use_svg)
         self.refresh_tile_now(new_html)
         return
 
@@ -930,6 +935,9 @@ class TileBase(object):
         return
 
     def handle_tile_row_click(self, clicked_row, doc_name, active_row_id):
+        return
+
+    def handle_tile_svg_click(self, gid, dataset, doc_name, active_row_id):
         return
 
     def handle_tile_cell_click(self, clicked_text, doc_name, active_row_id):
@@ -1472,6 +1480,11 @@ class TileBase(object):
                                              {"user_id": self.user_id})
         self._restore_stdout()
         return result["list_names"]
+
+    def create_bokeh_html(self, the_plot):
+        from bokeh.embed import file_html
+        from bokeh.resources import Resources
+        return file_html(the_plot, Resources("inline"))
 
     # deprecated
     def get_tokenizer(self, tokenizer_name):

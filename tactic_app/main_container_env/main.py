@@ -98,6 +98,8 @@ class mainWindow(object):
         self.tile_id_dict = {}  # dict with the keys the names of tiles and ids as the values.
         self.tile_addresses = {}
 
+        self.ppi = data_dict["ppi"]
+
         if ("project_name" not in data_dict) or (data_dict["doc_type"] == "jupyter"):
             self.doc_type = data_dict["doc_type"]
             self.current_tile_id = 0
@@ -390,14 +392,15 @@ class mainWindow(object):
 
                     tile_save_dict["new_base_figure_url"] = self.base_figure_url.replace("tile_id", new_id[0])
                     tile_save_dict["my_address"] = gtc_response["tile_address"]
+                    tile_save_dict["ppi"] = self.ppi
                     self.mworker.post_task(new_id[0], "recreate_from_save", tile_save_dict, recreate_done,
                                            expiration=60, error_handler=handle_response_error)
                 self.mworker.post_task(new_id[0], "load_source", {"tile_code": tile_code}, loaded_source,
                                        expiration=60, error_handler=handle_response_error)
 
             self.mworker.post_task("host", "create_tile_container",
-                                   {"user_id": self.user_id, "parent": self.mworker.my_id, "other_name": tile_name},
-                                   got_container, expiration=60, error_handler=handle_response_error)
+                                   {"user_id": self.user_id, "parent": self.mworker.my_id, "other_name": tile_name,
+                                    "ppi": self.ppi}, got_container, expiration=60, error_handler=handle_response_error)
 
         self.mworker.post_task("host", "get_module_code",
                                {"user_id": self.user_id, "tile_type": tile_save_dict["tile_type"]},
@@ -1065,7 +1068,7 @@ class mainWindow(object):
             self.mworker.post_task("host", "get_module_code", data_dict, got_module_code)
 
         self.mworker.post_task("host", "create_tile_container", {"user_id": self.user_id, "parent": self.mworker.my_id,
-                               "other_name": tile_name}, got_container)
+                               "other_name": tile_name, "ppi": self.ppi}, got_container)
         return
 
     @task_worthy
@@ -1399,7 +1402,8 @@ class mainWindow(object):
         print("entering create_pseudo_tile")
         data = self.mworker.post_and_wait("host", "create_tile_container", {"user_id": self.user_id,
                                                                             "parent": self.mworker.my_id,
-                                                                            "other_name": "pseudo_tile"})
+                                                                            "other_name": "pseudo_tile",
+                                                                            "ppi": self.ppi})
         if not data["success"]:
             raise Exception("Error creating empty tile container")
         self.pseudo_tile_id = data["tile_id"]
