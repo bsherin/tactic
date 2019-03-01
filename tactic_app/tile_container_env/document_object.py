@@ -705,6 +705,9 @@ class TacticCollection:
     def document_names(self):
         return self._doc_names
 
+    def matching_documents(self, filter_function):
+        return _tworker.tile_instance.get_matching_documents(filter_function)
+
     @property
     def current_document(self):
         return self[_tworker.tile_instance.get_current_document_name()]

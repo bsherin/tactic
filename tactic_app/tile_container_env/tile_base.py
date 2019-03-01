@@ -1247,6 +1247,14 @@ class TileBase(object):
         self._restore_stdout()
         return
 
+    def get_matching_documents(self, filter_function):
+        self._save_stdout()
+        jfilter_function = make_python_object_jsonizable(filter_function)
+        result = self._tworker.post_and_wait(self._main_id, "get_matching_documents",
+                                             {"filter_function": jfilter_function})
+        self._restore_stdout()
+        return result
+
     def dmr(self, filter_function, document_name=None):
         self.display_matching_rows(filter_function, document_name)
         return
