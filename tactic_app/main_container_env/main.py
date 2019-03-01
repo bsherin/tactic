@@ -3,6 +3,7 @@ import sys
 import re
 # noinspection PyUnresolvedReferences
 import requests
+import pickle
 import copy
 import pymongo
 import gridfs
@@ -1078,6 +1079,15 @@ class mainWindow(object):
         for doc_name in self.doc_dict.keys():
             ddata["doc_name"] = doc_name
             result += self.get_column_data_for_doc(ddata)
+        return result
+
+    @task_worthy
+    def get_matching_documents(self, data):
+        ffunction = debinarize_python_object(data["filter_function"])
+        result =[]
+        for doc_name, dinfo in self.doc_dict.items():
+            if (ffunction(dinfo.metadata)):
+                result.append(doc_name)
         return result
 
     def sort_rows(self, row_dict):

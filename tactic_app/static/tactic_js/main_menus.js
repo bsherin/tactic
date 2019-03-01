@@ -363,7 +363,7 @@ function consoleToNotebook() {
     let console_node = cleanse_bokeh(document.getElementById("console"))
     const result_dict = {
         "main_id": main_id,
-        "console_html": console_node.innerHTTML,
+        "console_html": console_node.innerHTML,
         "user_id": user_id,
         "console_cm_code": consoleObject.getConsoleCMCode(),
     };
