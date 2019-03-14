@@ -13,7 +13,7 @@ Accessing and manipulating the collection
 
 .. py:class:: TacticCollection()
 
-    ``self.collection`` returns a TacticCollection object corresponding to the collection in the current project.
+    ``Collection`` and ``self.collection`` both return a TacticCollection object corresponding to the collection in the current project.
 
     Iterating over this object iterates over the documents in the collection, giving TacticDocument objects.
     These can also be accessed by name.
@@ -373,17 +373,17 @@ Communicating with other tiles
 
 .. py:class:: RemoteTiles()
 
-    ``self.tiles`` returns a TacticCollection object corresponding to the collection in the current project.
+    ``Tiles`` and ``self.tiles`` both return a :py:class:`RemoteTiles` object corresponding to the
+    collection in the current project.
 
     Iterating over this object iterates over the tiles in the project, giving RemoteTile objects.
     These can also be accessed by name.
 
     .. code-block:: python
 
-        other_tiles = self.tiles
-        other_tile = other_tiles["other_tile_name"]  # Get the tile named other_tile_name
-        len(other_tiles)  # returns the number of other tiles
-        for tile in other_tiles:  # iterate of over tiles in the project
+        len(Tiles)  # returns the number of other tiles
+        Tile["tile_name"]  # returns a RemoteTile object corresponding to the tile
+        for tile in Tiles:  # iterate of over tiles in the project
             print(tile.name)
 
     .. py:attribute:: names
@@ -402,8 +402,7 @@ Communicating with other tiles
 
     .. code-block:: python
 
-        other_tiles = self.tiles
-        other_tile = other_tiles["other_tile_name"]
+        other_tile = Tiles["other_tile_name"]
         pipe_value = other_tile["pipe_name"]
 
     .. py:attribute:: name
@@ -427,5 +426,129 @@ Communicating with other tiles
         Send a message from the tile in which the code is executing to this RemoteTile object.
         Refer to py:meth:`send_tile_message`.
 
+
+.. category_end
+
+.. category_start
+
+The Pipes Object
+------------------------------
+
+    This class provides easy access to pipe values.
+
+
+.. py:class:: RemotePipes()
+
+    ``Pipes`` returns a :py:class:`RemotePipes` object
+
+    .. code-block:: python
+
+        Pipes.names  # Returns the keys for all of the pipes
+        Pipes["pipe_key"]  # Returns the value of the pipe
+
+    .. py:attribute:: names
+
+        Returns the keys for all of the pipes.
+
+.. category_end
+
+.. category_start
+
+The Library Object
+------------------------------
+
+    These classes provide access to the resources in a user's library.
+
+.. py:class:: Library()
+
+    ``Library`` returns a :py:class:`TacticLibrary` object corresponding to the user's library.
+
+    .. code-block:: python
+
+        Library.lists  # Returns a TacticListSet object corresponding to a user's list resources
+        Library.lists.names()  # Returns a list of the names of all list resources.
+        Library.collections  # Returns a TacticCollectionSet
+        Library.functions  # Returns a TacticFunctionSet
+
+
+.. py:class:: TacticListSet()
+
+    Object corresponding to a user's list resources.
+
+    .. code-block:: python
+
+        my_lists = Library.lists
+        my_lists.names()  # Returns the names of all list resources
+        my_lists["list_name"]  # Returns ListResource object corresponding to the list
+
+    .. py:method:: names(tag_filter=None, search_filter=None)
+
+        Returns the names of the user's list resources. If tag_filter or search_filter are specified, then
+        the results are filtered accordingly. (This behaves just as it does when typing into the corresponding
+        fields in the library interface.)
+
+.. py:class:: ListResource(list)
+
+    Corresponds to an item in the list library. It behaves just like a list except that it has a ``metadata`` attribute.
+
+    .. code-block:: python
+
+        my_list = Library.lists["list_name"]
+        my_list.metadata
+
+    .. py:attribute:: metadata
+
+        Returns the ListResource's metadata
+
+.. py:class:: TacticCollectionSet()
+
+    Object corresponding to a user's collection resources.
+
+    .. code-block:: python
+
+        my_collections = Library.collections
+        my_collections.names()  # Returns the names of all list resources
+        my_collection["collection _name"]  # Returns DetachedTacticCollection object corresponding to the collection
+
+    .. py:method:: names(tag_filter=None, search_filter=None)
+
+        Returns the names of the user's collection resources. If tag_filter or search_filter are specified, then
+        the results are filtered accordingly. (This behaves just as it does when typing into the corresponding
+        fields in the library interface.)
+
+.. py:class:: TacticFunctionSet()
+
+    Object corresponding to a user's function resources.
+
+    .. code-block:: python
+
+        my_functions = Library.functions
+        my_functions.names()  # Returns the names of all function resources
+        afunc = my_functions["function_name"]  # Returns FunctionResource object corresponding to the function
+        afunc(arguments)  # executes the function on the arguments
+
+    .. py:method:: names(tag_filter=None, search_filter=None)
+
+        Returns the names of the user's function resources. If tag_filter or search_filter are specified, then
+        the results are filtered accordingly. (This behaves just as it does when typing into the corresponding
+        fields in the library interface.)
+
+.. py:class:: FunctionResource()
+
+    Corresponds to a function library resource. It should be have like a function, except it has a couple of attributes,
+    as noted below.
+
+    .. code-block:: python
+
+        afunc = my_functions["function_name"]  # Returns FunctionResource object corresponding to the function
+        afunc(arguments)  # executes the function on the arguments
+
+    .. py:attribute:: metadata
+
+        Returns the FunctionResource's metadata
+
+    .. py:attribute:: code_resource
+
+        Returns the the name of the code resource containing the function.
 
 .. category_end

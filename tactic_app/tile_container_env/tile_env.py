@@ -21,6 +21,11 @@ class_info = {"class_name": "",
 tile_name = ""
 tile_class = None
 
+Tile = None
+from document_object import Collection
+from library_object import Library
+from remote_tile_object import Tiles
+from remote_tile_object import Pipes
 
 def global_import(imp):
     globals()[imp] = __import__(imp, globals(), locals(), [], 0)
