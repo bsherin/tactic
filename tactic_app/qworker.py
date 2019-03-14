@@ -219,8 +219,8 @@ class QWorker(gevent.Greenlet):
             except Exception as ex:
                 special_string = "Error handling task of type {} for my_id {}".format(task_type,
                                                                                       self.my_id)
-                response_data = "__ERROR__"
-                self.handle_exception(ex, special_string)
+                response_data = self.handle_exception(ex, special_string)
+
             if task_packet["callback_id"] is not None:
                 try:
                     task_packet["response_data"] = response_data
@@ -236,10 +236,13 @@ class QWorker(gevent.Greenlet):
             except Exception as ex:
                 special_string = "Error handling task of type {} for my_id {}".format(task_type,
                                                                                       self.my_id)
-                self.handle_exception(ex, special_string)
+                response_data = self.handle_exception(ex, special_string)
+                task_packet["response_data"] = response_data
+                self.submit_response(task_packet)
         else:
             self.debug_log("Ignoring task type {} for my_id {}".format(task_type, self.my_id))
         return
 
     def handle_exception(self, ex, special_string=None):
         print("handle exception not implemented in qworker subclass")
+        return {"success": False, "message_string": special_string}

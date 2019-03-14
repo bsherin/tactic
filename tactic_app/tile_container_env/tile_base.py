@@ -12,11 +12,13 @@ from pickle import UnpicklingError
 from communication_utils import is_jsonizable, make_python_object_jsonizable, debinarize_python_object
 from fuzzywuzzy import fuzz, process
 
-from document_object import TacticDocument, FreeformTacticDocument, TacticCollection
+from document_object import TacticDocument, FreeformTacticDocument
 from document_object import DetachedTacticCollection, DetachedTacticRow, DetachedTacticDocument
 from document_object import DetachedFreeformTacticDocument, DetachedTacticLine
+import document_object
 from remote_tile_object import RemoteTiles
-
+from tile_o_plex import app
+from flask import render_template
 
 RETRIES = 60
 
@@ -76,7 +78,6 @@ def clear_and_exec_user_code(the_code):
 class CollectionNotFound(Exception):
     pass
 
-
 # noinspection PyMiss
 # ingConstructor
 # noinspection PyUnusedLocal
@@ -119,7 +120,6 @@ class TileBase(object):
         else:
             self.tile_name = tile_name
         self.doc_type = None
-        self._collection = None
 
         self.width = ""
         self.height = ""
@@ -140,50 +140,7 @@ class TileBase(object):
         self._remote_tiles = None
         return
 
-    """
-    Basic Machinery to make the tile work.
-    """
-
-    def post_event(self, event_name, task_data=None):
-        self._tworker.post_task(self._tworker.my_id, event_name, task_data)
-        return
-
-    @property
-    def collection(self):
-        if self._collection is None:
-            self._collection = TacticCollection()
-        return self._collection
-
-    def create_row(self, row_dict=None):
-        if row_dict is None:
-            row_dict = {}
-        return DetachedTacticRow(row_dict)
-
-    def create_line(self, txt=""):
-        return DetachedTacticLine(txt)
-
-    def create_document(self, docname, column_names, dict_or_detached_row_list=None, metadata=None):
-        return DetachedTacticDocument(docname, column_names, dict_or_detached_row_list, metadata=None)
-
-    def create_freeform_document(self, docname, lines=None, metadata=None):
-        return DetachedFreeformTacticDocument(docname, lines, metadata)
-
-    def create_collection_object(self, doc_type, doc_dict=None):
-        return DetachedTacticCollection(doc_type, doc_dict)
-
-    @property
-    def tiles(self):
-        if self._remote_tiles is None:
-            self._remote_tiles = RemoteTiles(self)
-        return self._remote_tiles
-
-    @property
-    def _current_reload_attrs(self):
-        result = {}
-        for attr in self._reload_attrs:
-            result[attr] = getattr(self, attr)
-        return result
-
+    # <editor-fold desc="_task_worthy methods (events)">
     @_task_worthy
     def RefreshTile(self, data):
         print("got RefreshTile")
@@ -194,30 +151,6 @@ class TileBase(object):
     def _get_property(self, data):
         data["val"] = getattr(self, data["property"])
         return data
-
-    def get_function_names(self, tag=None):
-        func_tag_dict = self._tworker.post_and_wait("host", "get_function_tags_dict",
-                                                    {"user_id": self.user_id})["function_names"]
-        if tag is None:
-            fnames = list(func_tag_dict.keys())
-        else:
-            fnames = []
-            for func_name, tags in func_tag_dict.items():
-                if tag in tags.split():
-                    fnames.append(func_name)
-        return fnames
-
-    def get_class_names(self, tag=None):
-        class_tag_dict = self._tworker.post_and_wait("host", "get_class_tags_dict",
-                                                     {"user_id": self.user_id})["class_names"]
-        if tag is None:
-            cnames = list(class_tag_dict.keys())
-        else:
-            cnames = []
-            for class_name, tags in class_tag_dict.items():
-                if tag in tags.split():
-                    cnames.append(class_name)
-        return cnames
 
     # noinspection PyAttributeOutsideInit
     @_task_worthy
@@ -394,71 +327,18 @@ class TileBase(object):
         self._tworker.emit_tile_message("displayFormContent", {"html": form_html})
         return None
 
-    def _get_tag_base(self, the_tag):
-        if "/" not in the_tag:
-            return the_tag
+    @_task_worthy
+    def _transfer_pipe_value(self, data):
+        print("in _transfer_pipe_value")
+        self._save_stdout()
+        export_name = data["export_name"]
+        if hasattr(self, export_name):
+            res = getattr(self, export_name)
         else:
-            base = re.findall(r"/(\w*)$", the_tag)[0]
-            return base
-
-    def _check_for_tag_match(self, option_tags, source_tags):
-        full_source_tag_list = []
-        for source_tag in source_tags:
-            full_source_tag_list.append(source_tag)
-            tbase = self._get_tag_base(source_tag)
-            if tbase not in full_source_tag_list:
-                full_source_tag_list.append(tbase)
-
-        for opt_tag in option_tags:
-            if opt_tag not in full_source_tag_list:
-                return False
-        return True
-
-    def _get_sorted_match_list(self, option_tags, choice_dict):
-        choice_list = []
-        for choice, tags in choice_dict.items():
-            if self._check_for_tag_match(option_tags, tags.split()):
-                choice_list.append(choice)
-        choice_list.sort()
-        return choice_list
-
-    def _create_select_list_html(self, choice_list, starting_value=None, att_name=None):
-        if not choice_list:
-            return ""
-        if starting_value is None:
-            new_start_value = process.extractOne(att_name, choice_list, scorer=fuzz.partial_ratio)[0]
-        elif starting_value not in choice_list:
-            new_start_value = process.extractOne(starting_value, choice_list, scorer=fuzz.partial_ratio)[0]
-        else:
-            new_start_value = starting_value
-        new_html = ""
-        for choice in choice_list:
-            if choice == new_start_value:
-                new_html += self._select_option_selected_template.format(choice)
-            else:
-                new_html += self._select_option_template.format(choice)
-        return new_html
-
-    def _find_best_pipe_match(self, starting_value, att_name, option_tags):
-        best_match_item = None
-        best_match_value = 0
-        for tile_id, tile_entry in self._pipe_dict.items():
-            if tile_id == self._tworker.my_id:
-                continue
-            if starting_value is None:
-                att_to_match = att_name
-            else:
-                att_to_match = starting_value
-            for full_export_name, edict in tile_entry.items():
-                if self._check_for_tag_match(option_tags, edict["export_tags"].split()):
-                    if full_export_name == starting_value:
-                        return full_export_name
-                    else:
-                        new_val = fuzz.partial_ratio(att_to_match, full_export_name)
-                        if best_match_item is None or new_val > best_match_value:
-                            best_match_item = full_export_name
-                            best_match_value = new_val
-        return best_match_item
+            res = "__none__"
+        encoded_val = make_python_object_jsonizable(res)
+        self._restore_stdout()
+        return {"encoded_val": encoded_val}
 
     # Info needed here: list_names, current_header_list, pipe_dict, doc_names
     @_task_worthy
@@ -611,164 +491,6 @@ class TileBase(object):
             # self.display_message(error_string, True)
             return error_string
 
-    # noinspection PyUnresolvedReferences
-    def _resize_mpl_tile(self):
-        self.draw_plot()
-        new_html = self.create_figure_html(self._tworker.use_svg)
-        self.refresh_tile_now(new_html)
-        return
-
-    @property
-    def _current_options(self):
-        result = {}
-        for option in self.options:
-            attr = option["name"]
-            if hasattr(self, attr):
-                result[attr] = getattr(self, attr)
-        return result
-
-    def distribute_event(self, event_name, data_dict):
-        data_dict["event_name"] = event_name
-        self._tworker.post_task(self._main_id, "distribute_events_stub", data_dict)
-
-    def _get_main_property(self, prop_name):
-        data_dict = {"property": prop_name}
-        result = self._tworker.post_and_wait(self._main_id, "get_property", data_dict)
-        return result["val"]
-
-    def _hide_options(self):
-        self._tworker.emit_tile_message("hideOptions")
-
-    def _do_the_refresh(self, new_html=None):
-        try:
-            if new_html is None:
-                if not self.configured:
-                    new_html = "Tile not configured"
-                else:
-                    new_html = self.render_content()
-            self.current_html = new_html
-            self._tworker.emit_tile_message("displayTileContent", {"html": new_html})
-        except Exception as ex:
-            self._handle_exception(ex)
-        return
-
-    def display_status(self, message):
-        self._do_the_refresh(message)
-        return
-
-    @_task_worthy
-    def compile_save_dict(self, data):
-        result = {"my_class_for_recreate": "TileBase",
-                  "binary_attrs": []}
-        for attr in self.save_attrs:
-            if not hasattr(self, attr):
-                result[attr] = None
-                continue
-            attr_val = getattr(self, attr)
-            if hasattr(attr_val, "compile_save_dict"):
-                result[attr] = attr_val.compile_save_dict()
-            elif((type(attr_val) == dict) and(len(attr_val) > 0) and
-                 hasattr(list(attr_val.values())[0], "compile_save_dict")):
-                res = {}
-                for(key, val) in attr_val.items():
-                    res[key] = val.compile_save_dict()
-                result[attr] = res
-            else:
-                if type(attr_val) in _jsonizable_types.values():
-                    if is_jsonizable(attr_val):
-                        result[attr] = attr_val
-                        continue
-                try:
-                    self._tworker.debug_log("Found non jsonizable attribute " + attr)
-                    result["binary_attrs"].append(attr)
-                    bser_attr_val = make_python_object_jsonizable(attr_val)
-                    result[attr] = bser_attr_val
-                    if is_jsonizable(bser_attr_val):
-                        print("new bser_attr_val is jsonizable")
-                    else:
-                        print("new bser_attr_val is not jsonizable")
-
-                except TypeError:
-                    print("got a TypeError")
-                    continue
-        data = {"tile_type": self.tile_type, "user_id": self.user_id}
-        result["tile_id"] = self._tworker.my_id
-        result["module_name"] = self._tworker.post_and_wait("host", "get_module_from_tile_type", data)["module_name"]
-        print("done compiling attributes")
-        return result
-
-    def recreate_from_save(self, save_dict):
-        print("entering recreate from save in tile_base")
-        if "binary_attrs" not in save_dict:
-            save_dict["binary_attrs"] = []
-        for(attr, attr_val) in save_dict.items():
-            print("processing attribute {}".format(attr))
-            if type(attr_val) == dict and hasattr(attr_val, "recreate_from_save"):
-                cls = getattr(sys.modules[__name__], attr_val["my_class_for_recreate"])
-                setattr(self, attr, cls.recreate_from_save(attr_val))
-            elif((type(attr_val) == dict) and(len(attr_val) > 0) and
-                 hasattr(list(attr_val.values())[0], "recreate_from_save")):
-                cls = getattr(sys.modules[__name__], list(attr_val.values())[0]["my_class_for_recreate"])
-                res = {}
-                for(key, val) in attr_val.items():
-                    res[key] = cls.recreate_from_save(val)
-                setattr(self, attr, res)
-            else:
-                if isinstance(attr_val, Binary):  # seems like this is never true even for old-style saves
-                    decoded_val = pickle.loads(str(attr_val.decode()))
-                    setattr(self, attr, decoded_val)
-                elif attr in save_dict["binary_attrs"]:
-                    try:
-                        decoded_val = debinarize_python_object(attr_val)
-                    except Exception as ex:  # legacy if above fails try the old method
-                        self._handle_exception(ex, "debinarizing failed for attr {}".format(attr), print_to_console=True)  # tactic_working
-                        if attr == "img_dict":
-                            decoded_val = {}
-                        else:
-                            decoded_val = None
-                    setattr(self, attr, decoded_val)
-                else:
-                    setattr(self, attr, attr_val)
-        self._main_id = os.environ["PARENT"]  # this is for backward compatibility with some old project saves
-        return None
-
-    def _get_type_info(self, avar):
-        result = {}
-        if avar == "__none__":
-            result["type"] = "none"
-            result["info_string"] = "Not set"
-        elif type(avar) is dict:
-            result["type"] = "dict"
-            result["info_string"] = "Dict with {} keys".format(str(len(avar.keys())))
-            keys_html = ""
-            klist = list(avar.keys())
-            klist.sort()
-            for kname in klist:
-                keys_html += "<option>{}</option>\n".format(kname)
-            result["key_list"] = klist
-            result["keys_html"] = keys_html
-        elif type(avar) is list:
-            result["type"] = "list"
-            result["info_string"] = "List with {} elements".format(str(len(avar)))
-        elif type(avar) is set:
-            result["type"] = "set"
-            result["info_string"] = "Set with {} elements".format(str(len(avar)))
-        elif type(avar) is str:
-            result["type"] = "string"
-            result["info_string"] = "String with {} characters".format(str(len(avar)))
-        else:
-            findtype = re.findall("(?:type|class) \'(.*?)\'", str(type(avar)))
-            if len(findtype) > 0:
-                result["type"] = findtype[0]
-            else:
-                result["type"] = "no type"
-            try:
-                thel = len(avar)
-                result["info_string"] = "{} of length {}".format(result["type"], thel)
-            except:
-                result["info_string"] = result["type"]
-        return result
-
     @_task_worthy
     def _set_current_html(self, data):
         self.current_html = data["current_html"]
@@ -825,6 +547,241 @@ class TileBase(object):
                 the_html = sys.exc_info()[0] + " " + sys.exc_info()[1]
         return {"success": success, "the_html": the_html}
 
+    @_task_worthy
+    def compile_save_dict(self, data):
+        result = {"my_class_for_recreate": "TileBase",
+                  "binary_attrs": []}
+        for attr in self.save_attrs:
+            if not hasattr(self, attr):
+                result[attr] = None
+                continue
+            attr_val = getattr(self, attr)
+            if hasattr(attr_val, "compile_save_dict"):
+                result[attr] = attr_val.compile_save_dict()
+            elif ((type(attr_val) == dict) and (len(attr_val) > 0) and
+                  hasattr(list(attr_val.values())[0], "compile_save_dict")):
+                res = {}
+                for (key, val) in attr_val.items():
+                    res[key] = val.compile_save_dict()
+                result[attr] = res
+            else:
+                if type(attr_val) in _jsonizable_types.values():
+                    if is_jsonizable(attr_val):
+                        result[attr] = attr_val
+                        continue
+                try:
+                    self._tworker.debug_log("Found non jsonizable attribute " + attr)
+                    result["binary_attrs"].append(attr)
+                    bser_attr_val = make_python_object_jsonizable(attr_val)
+                    result[attr] = bser_attr_val
+                    if is_jsonizable(bser_attr_val):
+                        print("new bser_attr_val is jsonizable")
+                    else:
+                        print("new bser_attr_val is not jsonizable")
+
+                except TypeError:
+                    print("got a TypeError")
+                    continue
+        data = {"tile_type": self.tile_type, "user_id": self.user_id}
+        result["tile_id"] = self._tworker.my_id
+        result["module_name"] = self._tworker.post_and_wait("host", "get_module_from_tile_type", data)[
+            "module_name"]
+        print("done compiling attributes")
+        return result
+    # </editor-fold>
+
+    # <editor-fold desc="Tile Internal Machinery">
+
+    def post_event(self, event_name, task_data=None):
+        self._tworker.post_task(self._tworker.my_id, event_name, task_data)
+        return
+
+    @property
+    def _current_reload_attrs(self):
+        result = {}
+        for attr in self._reload_attrs:
+            result[attr] = getattr(self, attr)
+        return result
+
+    def _get_tag_base(self, the_tag):
+        if "/" not in the_tag:
+            return the_tag
+        else:
+            base = re.findall(r"/(\w*)$", the_tag)[0]
+            return base
+
+    def _check_for_tag_match(self, option_tags, source_tags):
+        full_source_tag_list = []
+        for source_tag in source_tags:
+            full_source_tag_list.append(source_tag)
+            tbase = self._get_tag_base(source_tag)
+            if tbase not in full_source_tag_list:
+                full_source_tag_list.append(tbase)
+
+        for opt_tag in option_tags:
+            if opt_tag not in full_source_tag_list:
+                return False
+        return True
+
+    def _get_sorted_match_list(self, option_tags, choice_dict):
+        choice_list = []
+        for choice, tags in choice_dict.items():
+            if self._check_for_tag_match(option_tags, tags.split()):
+                choice_list.append(choice)
+        choice_list.sort()
+        return choice_list
+
+    def _create_select_list_html(self, choice_list, starting_value=None, att_name=None):
+        if not choice_list:
+            return ""
+        if starting_value is None:
+            new_start_value = process.extractOne(att_name, choice_list, scorer=fuzz.partial_ratio)[0]
+        elif starting_value not in choice_list:
+            new_start_value = process.extractOne(starting_value, choice_list, scorer=fuzz.partial_ratio)[0]
+        else:
+            new_start_value = starting_value
+        new_html = ""
+        for choice in choice_list:
+            if choice == new_start_value:
+                new_html += self._select_option_selected_template.format(choice)
+            else:
+                new_html += self._select_option_template.format(choice)
+        return new_html
+
+    def _find_best_pipe_match(self, starting_value, att_name, option_tags):
+        best_match_item = None
+        best_match_value = 0
+        for tile_id, tile_entry in self._pipe_dict.items():
+            if tile_id == self._tworker.my_id:
+                continue
+            if starting_value is None:
+                att_to_match = att_name
+            else:
+                att_to_match = starting_value
+            for full_export_name, edict in tile_entry.items():
+                if self._check_for_tag_match(option_tags, edict["export_tags"].split()):
+                    if full_export_name == starting_value:
+                        return full_export_name
+                    else:
+                        new_val = fuzz.partial_ratio(att_to_match, full_export_name)
+                        if best_match_item is None or new_val > best_match_value:
+                            best_match_item = full_export_name
+                            best_match_value = new_val
+        return best_match_item
+
+    # noinspection PyUnresolvedReferences
+    def _resize_mpl_tile(self):
+        self.draw_plot()
+        new_html = self.create_figure_html(self._tworker.use_svg)
+        self.refresh_tile_now(new_html)
+        return
+
+    @property
+    def _current_options(self):
+        result = {}
+        for option in self.options:
+            attr = option["name"]
+            if hasattr(self, attr):
+                result[attr] = getattr(self, attr)
+        return result
+
+    def distribute_event(self, event_name, data_dict):
+        data_dict["event_name"] = event_name
+        self._tworker.post_task(self._main_id, "distribute_events_stub", data_dict)
+
+    def _get_main_property(self, prop_name):
+        data_dict = {"property": prop_name}
+        result = self._tworker.post_and_wait(self._main_id, "get_property", data_dict)
+        return result["val"]
+
+    def _hide_options(self):
+        self._tworker.emit_tile_message("hideOptions")
+
+    def _do_the_refresh(self, new_html=None):
+        try:
+            if new_html is None:
+                if not self.configured:
+                    new_html = "Tile not configured"
+                else:
+                    new_html = self.render_content()
+            self.current_html = new_html
+            self._tworker.emit_tile_message("displayTileContent", {"html": new_html})
+        except Exception as ex:
+            self._handle_exception(ex)
+        return
+
+    def recreate_from_save(self, save_dict):
+        print("entering recreate from save in tile_base")
+        if "binary_attrs" not in save_dict:
+            save_dict["binary_attrs"] = []
+        for(attr, attr_val) in save_dict.items():
+            print("processing attribute {}".format(attr))
+            if type(attr_val) == dict and hasattr(attr_val, "recreate_from_save"):
+                cls = getattr(sys.modules[__name__], attr_val["my_class_for_recreate"])
+                setattr(self, attr, cls.recreate_from_save(attr_val))
+            elif((type(attr_val) == dict) and(len(attr_val) > 0) and
+                 hasattr(list(attr_val.values())[0], "recreate_from_save")):
+                cls = getattr(sys.modules[__name__], list(attr_val.values())[0]["my_class_for_recreate"])
+                res = {}
+                for(key, val) in attr_val.items():
+                    res[key] = cls.recreate_from_save(val)
+                setattr(self, attr, res)
+            else:
+                if isinstance(attr_val, Binary):  # seems like this is never true even for old-style saves
+                    decoded_val = pickle.loads(str(attr_val.decode()))
+                    setattr(self, attr, decoded_val)
+                elif attr in save_dict["binary_attrs"]:
+                    try:
+                        decoded_val = debinarize_python_object(attr_val)
+                    except Exception as ex:  # legacy if above fails try the old method
+                        self._handle_exception(ex, "debinarizing failed for attr {}".format(attr), print_to_console=True)
+                        if attr == "img_dict":
+                            decoded_val = {}
+                        else:
+                            decoded_val = None
+                    setattr(self, attr, decoded_val)
+                else:
+                    setattr(self, attr, attr_val)
+        self._main_id = os.environ["PARENT"]  # this is for backward compatibility with some old project saves
+        return None
+
+    def _get_type_info(self, avar):
+        result = {}
+        if avar == "__none__":
+            result["type"] = "none"
+            result["info_string"] = "Not set"
+        elif type(avar) is dict:
+            result["type"] = "dict"
+            result["info_string"] = "Dict with {} keys".format(str(len(avar.keys())))
+            keys_html = ""
+            klist = list(avar.keys())
+            klist.sort()
+            for kname in klist:
+                keys_html += "<option>{}</option>\n".format(kname)
+            result["key_list"] = klist
+            result["keys_html"] = keys_html
+        elif type(avar) is list:
+            result["type"] = "list"
+            result["info_string"] = "List with {} elements".format(str(len(avar)))
+        elif type(avar) is set:
+            result["type"] = "set"
+            result["info_string"] = "Set with {} elements".format(str(len(avar)))
+        elif type(avar) is str:
+            result["type"] = "string"
+            result["info_string"] = "String with {} characters".format(str(len(avar)))
+        else:
+            findtype = re.findall("(?:type|class) \'(.*?)\'", str(type(avar)))
+            if len(findtype) > 0:
+                result["type"] = findtype[0]
+            else:
+                result["type"] = "no type"
+            try:
+                thel = len(avar)
+                result["info_string"] = "{} of length {}".format(result["type"], thel)
+            except:
+                result["info_string"] = result["type"]
+        return result
+
     def _render_me(self, form_info):
         form_html = self._create_form_html(form_info)["form_html"]
         if self.is_shrunk:
@@ -856,10 +813,11 @@ class TileBase(object):
                          "triangle_right_display_string": dsr_string,
                          "triangle_bottom_display_string": dbr_string,
                          "front_back_display_string": bda_string}
-        result = self._tworker.post_and_wait("host",
-                                             "request_render",
-                                             {"template": "saved_tile.html", "render_fields": render_fields})
-        return {"success": True, "tile_html": result["render_result"]}
+
+        with app.test_request_context():
+            render_result = render_template("saved_tile.html", **render_fields)
+
+        return {"success": True, "tile_html": render_result}
 
     def _handle_exception(self, ex, special_string=None, print_to_console=True):
         if special_string is None:
@@ -880,11 +838,9 @@ class TileBase(object):
 
     def _set_tile_size(self, owidth, oheight):
         self._tworker.emit_tile_message("setTileSize", {"width": owidth, "height": oheight})
+    # </editor-fold>
 
-    """
-    Default Handlers
-
-    """
+    # <editor-fold desc="Default Handlers">
 
     def update_options(self, form_data):
         for opt in self.options:
@@ -962,13 +918,23 @@ class TileBase(object):
         self._tworker.debug_log("render_content not implemented")
         return " "
 
+    # </editor-fold>
+
     """
 
     API
 
     """
+    def _save_stdout(self):
+        self._old_stdout = sys.stdout
+        sys.stdout = sys.stderr
+        return
 
-    # Refreshing a tile
+    def _restore_stdout(self):
+        sys.stdout = self._old_stdout
+
+
+    # <editor-fold desc="Refreshing a tile">
 
     def spin_and_refresh(self):
 
@@ -989,15 +955,13 @@ class TileBase(object):
             self.current_html = new_html
             self.post_event("RefreshTileFromSave")
 
-    # Basic setting and access
-
-    def _save_stdout(self):
-        self._old_stdout = sys.stdout
-        sys.stdout = sys.stderr
+    def display_status(self, message):
+        self._do_the_refresh(message)
         return
 
-    def _restore_stdout(self):
-        sys.stdout = self._old_stdout
+    # </editor-fold>
+
+    # <editor-fold desc="Data setting and access">
 
     def gdn(self):
         return self.get_document_names()
@@ -1025,21 +989,6 @@ class TileBase(object):
 
     def gdd(self, document_name):
         return self.get_document_data(document_name)
-
-    def get_document(self, docname=None):
-        protected_standout = sys.stdout  # Need to do it this way because other calls were writing over self._old_stdout
-        sys.stdout = sys.stderr
-        if docname is None:
-            docname = self.get_current_document_name()
-        if self.doc_type == "freeform":
-            result = FreeformTacticDocument(self, docname)
-        else:
-            result = TacticDocument(self, docname)
-        sys.stdout = protected_standout
-        return result
-
-    def new_collection(self, doc_type, doc_dict=None):
-        return DetachedTacticCollection(doc_type, doc_dict)
 
     def get_document_data(self, document_name):
         self._save_stdout()
@@ -1077,14 +1026,14 @@ class TileBase(object):
         self._restore_stdout()
         return result["data_list"]
 
-    def gcn(self, document_name):
-        return self.get_column_names(document_name)
-
     def get_column_names(self, document_name):
         self._save_stdout()
         result = self._tworker.post_and_wait(self._main_id, "get_column_names", {"document_name": document_name})
         self._restore_stdout()
         return result["header_list"]
+
+    def gcn(self, document_name):
+        return self.get_column_names(document_name)
 
     def gnr(self, document_name):
         return self.get_number_rows(document_name)
@@ -1218,8 +1167,24 @@ class TileBase(object):
         self._restore_stdout()
         return
 
-    # Filtering and iteration
+    def cct(self, doc_name, row_id, column_name, tokenized_text, color_dict):
+        self.color_cell_text(doc_name, row_id, column_name, tokenized_text, color_dict)
+        return
 
+    def color_cell_text(self, doc_name, row_id, column_name, tokenized_text, color_dict):
+        self._save_stdout()
+        data_dict = {"doc_name": doc_name,
+                     "row_id": row_id,
+                     "column_header": column_name,
+                     "token_text": tokenized_text,
+                     "color_dict": color_dict}
+        self._tworker.post_task(self._main_id, "ColorTextInCell", data_dict)
+        self._restore_stdout()
+        return
+
+    # </editor-fold>
+
+    # <editor-fold desc="Filtering and iteration">
     def gmr(self, filter_function, document_name=None):
         return self.get_matching_rows(filter_function, document_name)
 
@@ -1240,6 +1205,7 @@ class TileBase(object):
         self._restore_stdout()
         return result
 
+    # tactic_todo This doesn't seem to be used
     def update_document(self, new_data, document_name):
         self._save_stdout()
         result = self._tworker.post_and_wait(self._main_id, "update_document",
@@ -1357,85 +1323,18 @@ class TileBase(object):
         self._tworker.post_and_wait(self._main_id, "SetDocument", task_data)
         self._restore_stdout()
         return
+    # </editor-fold>
 
-    # Other
-
-    def gtd(self, doc_name):
-        self.go_to_document(doc_name)
-        return
-
-    def go_to_document(self, doc_name):
-        self._save_stdout()
-        data = {"doc_name": doc_name}
-        self._tworker.ask_host('go_to_row_in_document', data)
-        self._restore_stdout()
-        return
-
-    def gtrid(self, doc_name, row_id):
-        self.go_to_row_in_document(doc_name, row_id)
-        return
-
-    def go_to_row_in_document(self, doc_name, row_id):
-        self._save_stdout()
-        data = {"doc_name": doc_name,
-                "row_id": row_id}
-        self._tworker.ask_host('go_to_row_in_document', data)
-        self._restore_stdout()
-        return
-
-    def gst(self):
-        return self.get_selected_text()
-
-    def get_selected_text(self):
-        self._save_stdout()
-        result = self._get_main_property("selected_text")
-        self._restore_stdout()
-        return result
-
-    def display_message(self, message_string, force_open=True, is_error=False, summary=None):
-        self.log_it(message_string, force_open, is_error, summary)
-        return
-
-    def dm(self, message_string, force_open=True, is_error=False, summary=None):
-        self.log_it(message_string, force_open, is_error, summary)
-        return
-
-    def log_it(self, message_string, force_open=True, is_error=False, summary=None):
-        self._save_stdout()
-        self._tworker.post_task(self._main_id, "print_to_console_event", {"print_string": message_string,
-                                                                          "force_open": force_open,
-                                                                          "is_error": is_error,
-                                                                          "summary": summary})
-        self._restore_stdout()
-        return
-
-    def get_container_log(self):
-        self._save_stdout()
-        result = self._tworker.post_and_wait("host", "get_container_log", {"container_id": self._tworker.my_id})
-        self._restore_stdout()
-        return result["log_text"]
-
-    def cct(self, doc_name, row_id, column_name, tokenized_text, color_dict):
-        self.color_cell_text(doc_name, row_id, column_name, tokenized_text, color_dict)
-        return
-
-    def color_cell_text(self, doc_name, row_id, column_name, tokenized_text, color_dict):
-        self._save_stdout()
-        data_dict = {"doc_name": doc_name,
-                     "row_id": row_id,
-                     "column_header": column_name,
-                     "token_text": tokenized_text,
-                     "color_dict": color_dict}
-        self._tworker.post_task(self._main_id, "ColorTextInCell", data_dict)
-        self._restore_stdout()
-        return
+    # <editor-fold desc="Library access and manipulation">
 
     def gulist(self, the_list):
         return self.get_user_list(the_list)
 
     def get_user_list(self, the_list):
         self._save_stdout()
-        result = self._tworker.post_and_wait("host", "get_list", {"user_id": self.user_id, "list_name": the_list})
+        # result = self._tworker.post_and_wait("host", "get_list", {"user_id": self.user_id, "list_name": the_list})
+        raw_result = self._tworker.post_and_wait(self._main_id, "get_list_with_metadata", {"list_name": the_list})
+        result = debinarize_python_object(raw_result["list_data"])
         self._restore_stdout()
         return result["the_list"]
 
@@ -1443,16 +1342,24 @@ class TileBase(object):
         return self.get_user_function(function_name)
 
     def get_user_function(self, function_name):
-        self._save_stdout()
-        result = self._tworker.post_and_wait("host", "get_code_with_function", {"user_id": self.user_id,
-                                                                                "function_name": function_name})
-        the_code = result["the_code"]
-        result = exec_user_code(the_code)
-        self._restore_stdout()
-        return _code_names["functions"][function_name]
+        result = self.get_user_function_with_metadata(function_name)
+        return result["the_function"]
 
     def guclass(self, class_name):
         return self.get_user_class(class_name)
+
+    def get_user_function_with_metadata(self, function_name):
+        self._save_stdout()
+        raw_result = _tworker.post_and_wait(self._main_id, "get_function_with_metadata",
+                                            {"function_name": function_name})
+
+        result = debinarize_python_object(raw_result["function_data"])
+
+        the_code = result["the_code"]
+        _ = exec_user_code(the_code)
+        result["the_function"] = _code_names["functions"][function_name]
+        self._restore_stdout()
+        return result
 
     def get_user_class(self, class_name):
         self._save_stdout()
@@ -1489,10 +1396,49 @@ class TileBase(object):
         self._restore_stdout()
         return result["list_names"]
 
-    def create_bokeh_html(self, the_plot):
-        from bokeh.embed import file_html
-        from bokeh.resources import Resources
-        return file_html(the_plot, Resources("inline"))
+    def get_function_names(self, tag=None):
+        func_tag_dict = self._tworker.post_and_wait("host", "get_function_tags_dict",
+                                                    {"user_id": self.user_id})["function_names"]
+        if tag is None:
+            fnames = list(func_tag_dict.keys())
+        else:
+            fnames = []
+            for func_name, tags in func_tag_dict.items():
+                if tag in tags.split():
+                    fnames.append(func_name)
+        return fnames
+
+    def get_class_names(self, tag=None):
+        class_tag_dict = self._tworker.post_and_wait("host", "get_class_tags_dict",
+                                                     {"user_id": self.user_id})["class_names"]
+        if tag is None:
+            cnames = list(class_tag_dict.keys())
+        else:
+            cnames = []
+            for class_name, tags in class_tag_dict.items():
+                if tag in tags.split():
+                    cnames.append(class_name)
+        return cnames
+
+    def cc(self, name, doc_dict, doc_type="table", doc_metadata=None):
+        self.create_collection(name, doc_dict, doc_type, doc_metadata)
+        return
+
+    def create_collection(self, name, doc_dict, doc_type="table", doc_metadata=None):
+        self._save_stdout()
+        data = {"name": name,
+                "doc_dict": doc_dict,
+                "doc_type": doc_type}
+        if doc_metadata is not None:
+            data["doc_metadata"] = doc_metadata
+        else:
+            data["doc_metadata"] = {}
+        result = self._tworker.post_and_wait(self._main_id, "create_collection", data)
+        self._restore_stdout()
+        if not result["success"]:
+            raise Exception(result["message_string"])
+        return result["message_string"]
+
 
     # deprecated
     def get_tokenizer(self, tokenizer_name):
@@ -1507,6 +1453,78 @@ class TileBase(object):
         result = self.get_user_function(metric_name)
         self._restore_stdout()
         return result
+
+    # deprecated
+    def get_weight_function(self, weight_function_name):
+        self._save_stdout()
+        result = self.get_user_function(weight_function_name)
+        self._restore_stdout()
+        return result
+
+    # </editor-fold>
+
+    # <editor-fold desc="Table Navigation">
+    def gtd(self, doc_name):
+        self.go_to_document(doc_name)
+        return
+
+    def go_to_document(self, doc_name):
+        self._save_stdout()
+        data = {"doc_name": doc_name}
+        self._tworker.ask_host('go_to_row_in_document', data)
+        self._restore_stdout()
+        return
+
+    def gtrid(self, doc_name, row_id):
+        self.go_to_row_in_document(doc_name, row_id)
+        return
+
+    def go_to_row_in_document(self, doc_name, row_id):
+        self._save_stdout()
+        data = {"doc_name": doc_name,
+                "row_id": row_id}
+        self._tworker.ask_host('go_to_row_in_document', data)
+        self._restore_stdout()
+        return
+    # </editor-fold>
+
+    # <editor-fold desc="Other">
+    def gst(self):
+        return self.get_selected_text()
+
+    def get_selected_text(self):
+        self._save_stdout()
+        result = self._get_main_property("selected_text")
+        self._restore_stdout()
+        return result
+
+    def display_message(self, message_string, force_open=True, is_error=False, summary=None):
+        self.log_it(message_string, force_open, is_error, summary)
+        return
+
+    def dm(self, message_string, force_open=True, is_error=False, summary=None):
+        self.log_it(message_string, force_open, is_error, summary)
+        return
+
+    def log_it(self, message_string, force_open=True, is_error=False, summary=None):
+        self._save_stdout()
+        self._tworker.post_task(self._main_id, "print_to_console_event", {"print_string": message_string,
+                                                                          "force_open": force_open,
+                                                                          "is_error": is_error,
+                                                                          "summary": summary})
+        self._restore_stdout()
+        return
+
+    def get_container_log(self):
+        self._save_stdout()
+        result = self._tworker.post_and_wait("host", "get_container_log", {"container_id": self._tworker.my_id})
+        self._restore_stdout()
+        return result["log_text"]
+
+    def create_bokeh_html(self, the_plot):
+        from bokeh.embed import file_html
+        from bokeh.resources import Resources
+        return file_html(the_plot, Resources("inline"))
 
     def get_pipe_value(self, key_or_tile_name, export_name=None):
         self._save_stdout()
@@ -1535,50 +1553,55 @@ class TileBase(object):
         val = debinarize_python_object(encoded_val)
         self._restore_stdout()
         return val
+    # </editor-fold>
 
-    @_task_worthy
-    def _transfer_pipe_value(self, data):
-        print("in _transfer_pipe_value")
-        self._save_stdout()
-        export_name = data["export_name"]
-        if hasattr(self, export_name):
-            res = getattr(self, export_name)
+    # <editor-fold desc="Object-Oriented API-related">
+
+    @property
+    def collection(self):
+        return document_object.Collection
+
+    def get_document(self, docname=None):
+        protected_standout = sys.stdout  # Need to do it this way because other calls were writing over self._old_stdout
+        sys.stdout = sys.stderr
+        if docname is None:
+            docname = self.get_current_document_name()
+        if self.doc_type == "freeform":
+            result = FreeformTacticDocument(self, docname)
         else:
-            res = "__none__"
-        encoded_val = make_python_object_jsonizable(res)
-        self._restore_stdout()
-        return {"encoded_val": encoded_val}
-
-    def get_weight_function(self, weight_function_name):
-        self._save_stdout()
-        result = self.get_user_function(weight_function_name)
-        self._restore_stdout()
+            result = TacticDocument(self, docname)
+        sys.stdout = protected_standout
         return result
 
-    def cc(self, name, doc_dict, doc_type="table", doc_metadata=None):
-        self.create_collection(name, doc_dict, doc_type, doc_metadata)
-        return
+    def new_collection(self, doc_type, doc_dict=None):
+        return DetachedTacticCollection(doc_type, doc_dict)
 
-    def create_collection(self, name, doc_dict, doc_type="table", doc_metadata=None):
-        self._save_stdout()
-        data = {"name": name,
-                "doc_dict": doc_dict,
-                "doc_type": doc_type}
-        if doc_metadata is not None:
-            data["doc_metadata"] = doc_metadata
-        else:
-            data["doc_metadata"] = {}
-        result = self._tworker.post_and_wait(self._main_id, "create_collection", data)
-        self._restore_stdout()
-        if not result["success"]:
-            raise Exception(result["message_string"])
-        return result["message_string"]
+    def create_row(self, row_dict=None):
+        if row_dict is None:
+            row_dict = {}
+        return DetachedTacticRow(row_dict)
 
-    """
+    def create_line(self, txt=""):
+        return DetachedTacticLine(txt)
 
-    Odd utility methods
+    def create_document(self, docname, column_names, dict_or_detached_row_list=None, metadata=None):
+        return DetachedTacticDocument(docname, column_names, dict_or_detached_row_list, metadata=None)
 
-    """
+    def create_freeform_document(self, docname, lines=None, metadata=None):
+        return DetachedFreeformTacticDocument(docname, lines, metadata)
+
+    def create_collection_object(self, doc_type, doc_dict=None):
+        return DetachedTacticCollection(doc_type, doc_dict)
+
+    @property
+    def tiles(self):
+        if self._remote_tiles is None:
+            self._remote_tiles = RemoteTiles()
+        return self._remote_tiles
+
+    # </editor-fold>
+
+    # <editor-fold desc="Odd utility methods">
 
     def dict_to_list(self, the_dict):
         result = []
@@ -1658,3 +1681,4 @@ class TileBase(object):
 
         the_html += "</tbody></table>"
         return the_html
+    # </editor-fold>
