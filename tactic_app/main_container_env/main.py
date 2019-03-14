@@ -80,6 +80,9 @@ class mainWindow(object):
 
         self.base_figure_url = data_dict["base_figure_url"]
         self.project_collection_name = data_dict["project_collection_name"]
+        self.list_collection_name = data_dict["list_collection_name"]
+        self.code_collection_name = data_dict["code_collection_name"]
+        self.tile_collection_name = data_dict["tile_collection_name"]
 
         # These are the main attributes that define a project state
 
@@ -197,6 +200,10 @@ class mainWindow(object):
             else:
                 self.mworker.submit_response(task_packet, result)
         return
+
+    @property
+    def am_notebook_type(self):
+        return self.doc_type in ["notebook", "juptyer"]
 
     def show_main_message(self, message, timeout=None):
         data = {"message": message, "timeout": timeout, "main_id": self.mworker.my_id}
@@ -1139,6 +1146,111 @@ class mainWindow(object):
         self.mworker.post_task("host", "get_full_collection_name", task_data, finish_get_user_collection)
         return
 
+    @task_worthy_manual_submit
+    def get_user_collection_with_metadata(self, task_data, task_packet):
+        print("in get_user_collection")
+        local_task_packet = task_packet
+
+        def finish_get_user_collection(response_data):
+            print("in finish_get_user_collection")
+            result = {}
+            if not response_data["name_exists"]:
+                result = {"success": False, "message": "Collection doesn't exist."}
+            else:
+                full_collection_name = response_data["full_collection_name"]
+                print("got full_collection_name" + full_collection_name)
+                the_collection = self.db[full_collection_name]
+                new_collection_dict = {}
+                new_metadata_dict = {}
+                collection_metadata = the_collection.find_one({"name": "__metadata__"})
+                if "type" in collection_metadata and collection_metadata["type"] == "freeform":
+                    doc_type = "freeform"
+                else:
+                    doc_type = "table"
+                for f in the_collection.find():
+                    print("name is " + f["name"])
+                    fname = f["name"]
+
+                    if fname == "__metadata__":
+
+                        continue
+                    if doc_type == "table":
+                        if "file_id" in f:
+                            f["data_rows"] = debinarize_python_object(self.fs.get(f["file_id"]).read())
+                        new_collection_dict[fname] = self.sort_rows(f["data_rows"])
+                    else:
+                        if "encoding" in f:
+                            new_collection_dict[fname] = self.fs.get(f["file_id"]).read().decode(f["encoding"])
+                        else:
+                            new_collection_dict[fname] = self.fs.get(f["file_id"]).read()
+                    if "metadata" in f:
+                        new_metadata_dict[fname] = f["metadata"]
+                    else:
+                        new_metadata_dict[fname] = {}
+
+                result = {"success": True, "the_collection": new_collection_dict,
+                          "doc_metadata": new_metadata_dict,
+                          "collection_metadata": collection_metadata}
+            self.mworker.submit_response(local_task_packet, {"collection_data": make_python_object_jsonizable(result)})
+            return
+
+        self.mworker.post_task("host", "get_full_collection_name", task_data, finish_get_user_collection)
+        return
+
+    @task_worthy
+    def get_list_with_metadata(self, data):
+        result = self.db[self.list_collection_name].find_one({"list_name": data["list_name"]})
+        list_dict = {"the_list": result["the_list"],
+                     "list_name": result["list_name"],
+                     "metadata": result["metadata"]}
+        print("returning")
+        return {"list_data": make_python_object_jsonizable(list_dict)}
+
+    @task_worthy
+    def get_function_with_metadata(self, data):
+        function_name = data["function_name"]
+        if self.code_collection_name not in self.db.collection_names():
+            self.db.create_collection(self.code_collection_name)
+        found = False
+        for doc in self.db[self.code_collection_name].find():
+            if function_name in doc["metadata"]["functions"]:
+                found = True
+                break
+        if not found:
+            function_dict = None
+        else:
+            function_dict = {"the_code": doc["the_code"],
+                             "code_name": doc["code_name"],
+                              "metadata": doc["metadata"]}
+        return {"function_data": make_python_object_jsonizable(function_dict)}
+
+    @task_worthy
+    def get_function_names(self, data):
+        tag_filter = data["tag_filter"]
+        search_filter = data["search_filter"]
+        if tag_filter is not None:
+            tag_filter = tag_filter.lower()
+        if search_filter is not None:
+            search_filter = search_filter.lower()
+        if self.code_collection_name not in self.db.collection_names():
+            self.db.create_collection(self.code_collection_name)
+            return {}
+        function_names = []
+        for doc in self.db[self.code_collection_name].find():
+            if tag_filter is not None:
+                if "metadata" in doc:
+                    if "tags" in doc["metadata"]:
+                        if tag_filter in doc["metadata"]["tags"].lower():
+                            function_names += doc["metadata"]["functions"]
+            elif search_filter is not None:
+                for fname in doc["metadata"]["functions"]:
+                    if search_filter in fname.lower():
+                        function_names += doc[fnames]
+            else:
+                function_names += doc["metadata"]["functions"]
+        return {"function_names": function_names}
+
+
     @task_worthy
     def get_document_data(self, data):
         doc_name = data["document_name"]
@@ -1319,6 +1431,7 @@ class mainWindow(object):
                         self.mworker.debug_log("got an exception " + instantiate_result["message_string"])
                         self.show_main_message("Error resetting notebook", 7)
                         raise Exception(instantiate_result["message_string"])
+                    self.mworker.post_task(self.pseudo_tile_id, "create_pseudo_tile_collection_object", {})
                     self.show_main_message("Notebook reset", 7)
                 self.mworker.post_task(self.pseudo_tile_id, "instantiate_as_pseudo_tile", data_dict, instantiate_done)
             self.mworker.post_task("host", "restart_container", {"tile_id": self.pseudo_tile_id}, container_restarted)
@@ -1408,6 +1521,17 @@ class mainWindow(object):
         self.mworker.post_task("host", "get_list_names", data, got_lnames)
         return
 
+    @task_worthy_manual_submit
+    def get_resource_names(self, data, task_packet):
+        local_task_packet = task_packet
+
+        def got_rnames(result):
+            self.mworker.submit_response(local_task_packet, result)
+            return
+
+        self.mworker.post_task("host", "get_resource_names", data, got_rnames)
+        return
+
     def create_pseudo_tile(self, globals_dict=None):
         print("entering create_pseudo_tile")
         data = self.mworker.post_and_wait("host", "create_tile_container", {"user_id": self.user_id,
@@ -1425,6 +1549,8 @@ class mainWindow(object):
         print("about to instantiate")
         instantiate_result = self.mworker.post_and_wait(self.pseudo_tile_id,
                                                         "instantiate_as_pseudo_tile", data_dict)
+        if not self.am_notebook_type:
+            self.mworker.post_task(self.pseudo_tile_id, "create_pseudo_tile_collection_object", {})
         if not instantiate_result["success"]:
             self.mworker.debug_log("got an exception " + instantiate_result["message_string"])
             raise Exception(instantiate_result["message_string"])

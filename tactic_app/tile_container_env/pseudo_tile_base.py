@@ -8,7 +8,7 @@ import pickle
 from pickle import UnpicklingError
 from tile_base import TileBase, _task_worthy, _jsonizable_types
 from communication_utils import is_jsonizable, make_python_object_jsonizable, debinarize_python_object
-
+import document_object
 
 # noinspection PyUnresolvedReferences
 from qworker import task_worthy_methods
@@ -17,6 +17,13 @@ from matplotlib_utilities import MplFigure, ColorMapper
 
 PSEUDO_WIDTH = 300
 PSEUDO_HEIGHT = 300
+
+print("initializing objects")
+
+Tile = None
+Collection = None
+Tiles = None
+Pipes = None
 
 
 # noinspection PyTypeChecker
@@ -109,7 +116,7 @@ class PseudoTileClass(TileBase, MplFigure):
             except Exception as ex:  # legacy if above fails
                 self.img_dict = {}
                 self._handle_exception(ex, "debinarizing failed for img_dict",
-                                       print_to_console=True)  # tactic_working
+                                       print_to_console=True)
 
         for (attr, attr_val) in save_dict.items():
             print("attr is " + attr)
@@ -137,7 +144,7 @@ class PseudoTileClass(TileBase, MplFigure):
                             print("debinarize succeeded")
                         except Exception as ex:  # legacy if above fails
                             self._handle_exception(ex, "debinarizing failed for attr {}".format(attr),
-                                                   print_to_console=True)  # tactic_working
+                                                   print_to_console=True)
                             decoded_val = None
                         globals()[attr] = decoded_val
                     else:

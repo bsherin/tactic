@@ -259,9 +259,16 @@ Filter-And-Iterate
 Object API
 ----------
 
+    The commands ``Library``, ``Collection``, ``Tiles``, and ``Pipes`` return objects that provide direct access
+    to elements of the object-oriented API. Note that you do not type ``self`` before these commands. This is documented
+    in the `object-oriented interface <Object-Oriented-Interface.html# Accessing and manipulating the collection>`__
+
+    In addition, there are a few tile methods (which are preceded by ``self.``) that pertain to the object API.
+
     .. py:attribute:: collection
 
-        `self.collection` returns a TacticCollection object corresponding to the collection in the current project.
+        ``self.collection`` returns a TacticCollection object corresponding to the collection in the current project.
+        It is equivalent to typing ``Collection``.
 
     .. py:method:: create_collection(name, doc_dict, doc_type="table", metadata_dict=None)
 
@@ -304,7 +311,8 @@ Object API
 
     .. py:attribute:: tiles
 
-        ``self.tiles`` returns a RemoteTiles object corresponding to the tiles in the current project.
+        ``self.tiles`` returns a RemoteTiles object corresponding to the tiles in the current project. This is
+        equivalent to typing `Tiles.`
 
 .. category_end
 
@@ -369,7 +377,6 @@ Other TileBase
         then be used to access the associated function or class with
         ``get_user_function()`` or ``get_user_class()``.
 
-        Synonym: ``gfn``
 
     .. py:method:: get_user_list(list_name)
                get_pipe_value(pipe_name)
@@ -383,7 +390,10 @@ Other TileBase
         to the tile. These commands return the object associated with the name.
 
         You can also use these commands on their own if you happen to know, in
-        advance, the name of one of yoru resources.
+        advance, the name of one of your resources.
+
+        Finally, there are alternatives to all of these command in the object-oriented interface. For example
+        `Library.lists[list_name]` returns the corresponding list from the users library.
 
         Synonyms: ``gulist``, ``gufunc``, ``guclass``, ``gucol`` for get_user_list, get_user_function,
         get_user_class, and get_user_collection respectively.
@@ -417,7 +427,7 @@ Plots
 
     .. note::
 
-        These commands are only available in `Matplotlib
+        The Matplotlib-realted commands are only available in `Matplotlib
         Tiles <Matplotlib-Tiles.html>`__ (i.e., those that subclass ``MplFigure``).
 
     .. py:method:: init_mpl_figure(figsize=(self.width/PPI, self.height/PPI), dpi=80, facecolor=None, edgecolor=None, linewidth=0.0, frameon=None, subplotpars=None, tight_layout=None)

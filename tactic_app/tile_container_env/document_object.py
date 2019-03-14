@@ -5,7 +5,6 @@ import copy
 CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
 _protected_column_names = ["__id__", "__filename__"]
 
-
 def remove_protected_fields_from_dict(adict):
     ndict = copy.copy(adict)
     for field in _protected_column_names:
@@ -462,6 +461,8 @@ class TacticDocument:
             else:
                 return [TacticRow(n, self._docname) for n in range(start, stop)]
         else:
+            if isinstance(x, str):
+                x = int(x)
             if x < 0:
                 x = self._number_rows + x
             self._update_chunk(x)
@@ -484,6 +485,8 @@ class TacticDocument:
         return self._number_rows
 
     def __setitem__(self, index, value):
+        if isinstance(index, str):
+            index = int(index)
         if isinstance(value, TacticRow):
             new_row = value
         else:
@@ -645,6 +648,8 @@ class DetachedTacticDocument(TacticDocument):
 
             return self._row_list[start:stop]
         else:
+            if isinstance(x, str):
+                x = int(x)
             if x < 0:
                 x = nrows + x
             return self._row_list[x]
@@ -662,6 +667,8 @@ class DetachedTacticDocument(TacticDocument):
         for colname in self.column_names:
             if colname not in new_row:
                 new_row[colname] = None
+        if isinstance(index, str):
+            index = int(index)
         self._row_list[index] = new_row
         return
 
@@ -669,6 +676,8 @@ class DetachedTacticDocument(TacticDocument):
         return len(self._row_list)
 
     def __delitem__(self, index):
+        if isinstance(index, str):
+            index = int(index)
         del self._row_list[index]
         return
 
@@ -677,10 +686,24 @@ class DetachedTacticDocument(TacticDocument):
 
 
 class TacticCollection:
-    def __init__(self, grab_all_docs=False):
+    def __init__(self):
+        self._iter_value = -1
+        self._collection_info = None
+        self._doc_type = None
+        self._doc_names = None
+        self._number_docs = None
+        self._grab_all_docs = None
+        self._doc_class = None
+        self._doc_dict = None
+        self._metadata = None
+        return
+
+    def __fully_initialize__(self, grab_all_docs=False):
+        print('entering fully initialize')
         self._iter_value = -1
         self._collection_info = _tworker.tile_instance.get_collection_info()
         self._doc_type = _tworker.tile_instance.doc_type
+        print('got doc type {}'.format(self._doc_type))
         self._doc_names = list(self._collection_info.keys())
         self._number_docs = len(self._doc_names)
         self._grab_all_docs = grab_all_docs
@@ -732,12 +755,13 @@ class TacticCollection:
             if column_name is None:
                 raise ValueError("column_name required for table collections.")
             else:
-                return [tokenizer_func(txt) for txt in self.column(column_name)]
+                result = [tokenizer_func(txt) for txt in self.column(column_name)]
+                return result
         else:
             result_list = []
             self.rewind()
             for doc in self:
-                result_list += doc.tokenize(tokenizer_func)
+                result_list += doc.tokenize(column_name, tokenizer_func)
             return result_list
 
     def __getitem__(self, x):
@@ -772,7 +796,7 @@ class TacticCollection:
 
 
 class DetachedTacticCollection(TacticCollection):
-    def __init__(self, doc_type, doc_dict=None):
+    def __init__(self, doc_type, doc_dict=None, collection_metadata=None):
         self._iter_value = -1
         self._doc_type = doc_type
         self._doc_names = []
@@ -789,6 +813,10 @@ class DetachedTacticCollection(TacticCollection):
                 if not isinstance(doc, self._doc_class):
                     raise TypeError("A new collection must be built from DetachedTacticDocument objects.")
             self._doc_dict = doc_dict
+        if collection_metadata is None:
+            self.metadata = {}
+        else:
+            self.metadata = collection_metadata
         self.update_props()
         return
 
@@ -857,6 +885,7 @@ class DetachedTacticCollection(TacticCollection):
     def update_props(self):
         self._doc_names = list(self._doc_dict.keys())
         self._number_docs = len(self._doc_names)
+        self.metadata["number_of_docs"] = self._number_docs
         return
 
     def current_document(self):
@@ -880,3 +909,6 @@ class DetachedTacticCollection(TacticCollection):
 
     def __repr__(self):
         return "DetachedTacticCollection with {} docs".format(str(len(self)))
+
+
+Collection = TacticCollection()

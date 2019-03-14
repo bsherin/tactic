@@ -3,7 +3,7 @@ from flask import render_template, url_for
 from flask_login import current_user
 from users import load_user, ModuleNotFoundError
 import gevent
-from communication_utils import send_request_to_megaplex
+from communication_utils import send_request_to_megaplex, make_python_object_jsonizable
 from docker_functions import create_container, destroy_container, destroy_child_containers, destroy_user_containers
 from docker_functions import get_log, ContainerCreateError, container_exec, restart_container, get_address
 from tactic_app import app, socketio, use_ssl, db
@@ -232,6 +232,14 @@ class HostWorker(QWorker):
                 "function_names": the_user.function_tags_dict,
                 "collection_names": the_user.data_collection_tags_dict}
 
+
+    @task_worthy
+    def get_resource_names(self, data):
+        user_id = data["user_id"]
+        the_user = load_user(user_id)
+        res_names = the_user.get_resource_names(data["res_type"], data["tag_filter"], search_filter = data["search_filter"])
+        return {"res_names": res_names}
+
     @task_worthy
     def get_list_names(self, data):
         user_id = data["user_id"]
@@ -452,12 +460,6 @@ class HostWorker(QWorker):
         data["console_message"] = "consoleLog"
         self.emit_console_message(data)
         return {"success": True}
-
-    @task_worthy
-    def request_render(self, data):
-        with app.test_request_context():
-            render_result = render_template(data["template"], **data["render_fields"])
-        return {"success": True, "render_result": render_result}
 
     @task_worthy
     def flash_to_main(self, data):
