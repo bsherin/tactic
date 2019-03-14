@@ -21,8 +21,11 @@ from tile_env import class_info
 from tile_env import exec_tile_code
 import tile_base
 import document_object
+import remote_tile_object
 from tile_base import clear_and_exec_user_code, TileBase
 from pseudo_tile_base import PseudoTileClass
+import pseudo_tile_base
+import library_object
 import gevent
 from communication_utils import make_python_object_jsonizable
 import uuid
@@ -46,6 +49,7 @@ class TileWorker(QWorker):
         QWorker.__init__(self)
         print("QWorker initialized")
         self.tile_instance = None
+        tile_env.Tile = None
         self.get_megaplex_task_now = False
         self.use_svg = True
 
@@ -159,6 +163,7 @@ class TileWorker(QWorker):
         try:
             the_class = class_info["tile_class"]
             self.tile_instance = the_class(0, 0)
+            tile_env.Tile = self.tile_instance
             opt_dict = self.tile_instance.options
             export_list = self.tile_instance.exports
             if len(export_list) > 0:
@@ -183,6 +188,7 @@ class TileWorker(QWorker):
         try:
             print("entering recreate_from_save. class_name is " + class_info["class_name"])
             self.tile_instance = class_info["tile_class"](None, None, tile_name=data["tile_name"])
+            tile_env.Tile = self.tile_instance
             print("created class instance")
             self.handler_instances["tilebase"] = self.tile_instance
             if "tile_log_width" not in data:
@@ -199,6 +205,7 @@ class TileWorker(QWorker):
                 self.tile_instance.doc_type = data["doc_type"]
             else:
                 self.tile_instance.doc_type = "table"
+            document_object.Collection.__fully_initialize__()
             print("tile instance started")
         except Exception as ex:
             result = self.handle_exception(ex, "Error loading source in tile_main recreate from save")
@@ -233,6 +240,7 @@ class TileWorker(QWorker):
         try:
             print("entering reinstantiate_tile_class")
             self.tile_instance = class_info["tile_class"](None, None, tile_name=reload_dict["tile_name"])
+            tile_env.Tile = self.tile_instance
             self.handler_instances["tilebase"] = self.tile_instance
             old_option_names = reload_dict["old_option_names"]
             del reload_dict["old_option_names"]
@@ -248,6 +256,7 @@ class TileWorker(QWorker):
                 setattr(self.tile_instance, attr, val)
             form_html = self.tile_instance._create_form_html(reload_dict["form_info"])["form_html"]
             self.tile_instance.my_address = reload_dict["tile_address"]
+            document_object.Collection.__fully_initialize__()
             print("leaving reinstantiate_tile_class")
             if not self.tile_instance.exports:
                 self.tile_instance.exports = []
@@ -262,6 +271,8 @@ class TileWorker(QWorker):
         try:
             print("entering load_source")
             self.tile_instance = PseudoTileClass()
+            pseudo_tile_base.Tile = self.tile_instance
+            print("getting collection object")
             self.handler_instances["tilebase"] = self.tile_instance
             self.tile_instance.user_id = os.environ["OWNER"]
             self.tile_instance.base_figure_url = data["base_figure_url"]
@@ -282,10 +293,20 @@ class TileWorker(QWorker):
             return self.handle_exception(ex, "Error initializing pseudo tile")
 
     @task_worthy
+    def create_pseudo_tile_collection_object(self, data):
+        document_object.Collection.__fully_initialize__()
+        pseudo_tile_base.Collection = document_object.Collection
+        pseudo_tile_base.Library = library_object.Library
+        pseudo_tile_base.Tiles = remote_tile_object.Tiles
+        pseudo_tile_base.Pipes = remote_tile_object.Pipes
+        return data
+
+    @task_worthy
     def instantiate_tile_class(self, data):
         try:
             print("entering instantiate_tile_class")
             self.tile_instance = class_info["tile_class"](None, None, tile_name=data["tile_name"])
+            tile_env.Tile = self.tile_instance
             self.handler_instances["tilebase"] = self.tile_instance
             self.tile_instance.user_id = os.environ["OWNER"]
             self.tile_instance.base_figure_url = data["base_figure_url"]
@@ -296,6 +317,7 @@ class TileWorker(QWorker):
                 self.tile_instance.doc_type = "table"
             if not self.tile_instance.exports:
                 self.tile_instance.exports = []
+            document_object.Collection.__fully_initialize__()
             data["exports"] = self.tile_instance.exports
             print("leaving instantiate_tile_class")
             data["success"] = True
@@ -319,6 +341,9 @@ class TileWorker(QWorker):
 print("entering main")
 tile_base._tworker = TileWorker()
 document_object._tworker = tile_base._tworker
+library_object._tworker = tile_base._tworker
+remote_tile_object._tworker = tile_base._tworker
+
 print("tworker is created, about to start my_id is " + str(tile_base._tworker.my_id))
 tile_base._tworker.start()
 print("tworker started, my_id is " + str(tile_base._tworker.my_id))

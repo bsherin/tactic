@@ -644,7 +644,7 @@ class ConsoleObjectClass {
         // cc.find(".clear-code-button").css("display", null)
     }
 
-    addConsoleCodeWithCode(the_code) {  // tactic_working
+    addConsoleCodeWithCode(the_code) {
         let self = this;
         postWithCallbackAsyncFalse(main_id, "create_console_code_area", {}, function(data) {
             if (!data.success) {
