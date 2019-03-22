@@ -9,6 +9,7 @@ from gevent import monkey; monkey.patch_all()
 print("entering main_main")
 
 import uuid
+import datetime
 import flask
 import copy
 from communication_utils import send_request_to_megaplex
@@ -28,6 +29,8 @@ from megaplex_main import app
 import megaplex_main
 print("imported megaplex_main")
 
+queue_check_time = 60  # How often, in seconds, to inspect the queues
+
 
 @app.route('/main_hello', methods=["get", "post"])
 def main_hello():
@@ -39,6 +42,7 @@ class MainWorker(QWorker):
         QWorker.__init__(self)
         self.mwindow = None
         self.get_megaplex_task_now = False
+        self.last_queue_check = datetime.datetime.utcnow()
         print("starting mainworker")
 
     def ask_host(self, msg_type, task_data=None, callback_func=None):
@@ -239,15 +243,20 @@ class MainWorker(QWorker):
         except Exception as Ex:
             return self.handle_exception(Ex, "Error initializing mainwindow")
 
+    def special_long_sleep_function(self):
+        current_time = datetime.datetime.utcnow()
+        tdelta = current_time - self.last_queue_check
+        delta_seconds = tdelta.days * 24 * 60 + tdelta.seconds
+        if delta_seconds > queue_check_time:
+            print("Checking queue status")
+            for tmanager in megaplex_main.queue_dict.values():
+                print(tmanager.get_data_string())
+            self.last_queue_check = current_time
+
     @task_worthy
     def initialize_project_mainwindow(self, data_dict):
         try:
             print("entering intialize project mainwindow")
-            the_lists = self.post_and_wait("host", "get_lists_classes_functions", {"user_id": data_dict["user_id"]})
-            data_dict.update({"list_names": the_lists["list_names"],
-                              "class_names": the_lists["class_names"],
-                              "function_names": the_lists["function_names"],
-                              "collection_names": the_lists["collection_names"]})
             self.mwindow = mainWindow(self, data_dict)
             self.handler_instances["mainwindow"] = self.mwindow
             if data_dict["doc_type"] == "jupyter":

@@ -106,8 +106,9 @@ def get_old_containers():
 
 @app.route('/get_old_inactive_stalled_containers', methods=["get", "post"])
 def get_old_inactive_stalled_containers():
+    for tmanager in queue_dict.values():
+        print(tmanager.get_data_string())
     print("checking for old and stalled containers")
-
     res = get_inactive() + get_stalled() + get_old()
     return jsonify({"old_inactive_stalled_containers": res})
 

@@ -1,6 +1,7 @@
 git+https://github.com/pylangacq/pylangacq.git
 beautifulsoup4==4.5.1
 bokeh
+eli5
 fuzzywuzzy
 Flask==1.0.2
 gensim
