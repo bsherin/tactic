@@ -56,7 +56,7 @@ class CollectionManager(LibraryResourceManager):
     def new_notebook(self):
         user_obj = current_user
         try:
-            main_id = main_container_info.create_main_container("new_notebook", user_obj.get_id())
+            main_id = main_container_info.create_main_container("new_notebook", user_obj.get_id(), user_obj.username)
         except ContainerCreateError:
             return render_template("error_window_template.html",
                                    window_tile="Load Failed",
@@ -65,7 +65,6 @@ class CollectionManager(LibraryResourceManager):
         return render_template("main_notebook.html",
                                window_title="new notebook",
                                project_name='',
-                               project_collection_name=user_obj.project_collection_name,
                                base_figure_url=url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
                                main_id=main_id,
                                temp_data_id="",
@@ -78,7 +77,7 @@ class CollectionManager(LibraryResourceManager):
         the_data = read_temp_data(db, unique_id)
         user_obj = load_user(the_data["user_id"])
         try:
-            main_id = main_container_info.create_main_container("new_notebook", the_data["user_id"])
+            main_id = main_container_info.create_main_container("new_notebook", the_data["user_id"], user_obj.username)
         except ContainerCreateError:
             return render_template("error_window_template.html",
                                    window_tile="Load Failed",
@@ -87,7 +86,6 @@ class CollectionManager(LibraryResourceManager):
         return render_template("main_notebook.html",
                                window_title="new notebook",
                                project_name='',
-                               project_collection_name=user_obj.project_collection_name,
                                base_figure_url=url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
                                main_id=main_id,
                                temp_data_id=unique_id,
@@ -100,7 +98,7 @@ class CollectionManager(LibraryResourceManager):
         user_obj = current_user
         cname = user_obj.build_data_collection_name(collection_name)
         try:
-            main_id = main_container_info.create_main_container(collection_name, user_obj.get_id())
+            main_id = main_container_info.create_main_container(collection_name, user_obj.get_id(), user_obj.username)
         except ContainerCreateError:
             return render_template("error_window_template.html",
                                    window_tile="Load Failed",
@@ -132,10 +130,6 @@ class CollectionManager(LibraryResourceManager):
                                collection_name=cname,
                                window_title=short_collection_name,
                                project_name='',
-                               list_collection_name=user_obj.list_collection_name,
-                               tile_collection_name=user_obj.tile_collection_name,
-                               code_collection_name=user_obj.code_collection_name,
-                               project_collection_name=user_obj.project_collection_name,
                                base_figure_url=url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
                                main_id=main_id,
                                main_port=main_container_info.port(main_id),

@@ -18,7 +18,10 @@ else:
 
 RETRIES = 60
 
-am_host = False
+# set am_host to True when this is initially loaded.
+# in this case where this isn't the host, this will get changed when qworker is imported.
+
+am_host = True
 megaplex_address = None
 
 

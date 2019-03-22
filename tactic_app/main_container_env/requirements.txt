@@ -1,3 +1,4 @@
 markdown
+docker==3.7
 Flask==1.0.2
 gunicorn==18.0
