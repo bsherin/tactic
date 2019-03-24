@@ -99,7 +99,7 @@ class ProjectManager(LibraryResourceManager):
         user_id = user_obj.get_id()
 
         # noinspection PyTypeChecker
-        main_id = main_container_info.create_main_container(project_name, user_id)
+        main_id = main_container_info.create_main_container(project_name, user_id, user_obj.username)
         global_tile_manager.add_user(user_obj.username)
 
         save_dict = db[user_obj.project_collection_name].find_one({"project_name": project_name})

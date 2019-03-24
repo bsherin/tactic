@@ -7,7 +7,9 @@ from flask_socketio import join_room
 import markdown
 
 import tactic_app
-from tactic_app import app, socketio, use_ssl
+from tactic_app import app, socketio, use_ssl, db, fs
+from tactic_app.mongo_accesser import name_keys
+from communication_utils import make_jsonizable_and_compress, read_project_dict
 
 from list_manager import ListManager, RepositoryListManager
 from collection_manager import CollectionManager, RepositoryCollectionManager
@@ -15,7 +17,7 @@ from project_manager import ProjectManager, RepositoryProjectManager
 from tile_manager import TileManager, RepositoryTileManager
 from code_manager import CodeManager, RepositoryCodeManager
 from all_manager import AllManager, RepositoryAllManager
-from tactic_app.users import User, copy_between_accounts
+from tactic_app.users import User
 
 
 global_tile_manager = tactic_app.global_tile_manager
@@ -48,6 +50,52 @@ managers = {
 
 
 tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
+
+def copy_between_accounts(source_user, dest_user, res_type, new_res_name, res_name):
+    try:
+        if res_type == "collection":
+            collection_to_copy = source_user.full_collection_name(res_name)
+            new_collection_name = dest_user.full_collection_name(new_res_name)
+            for doc in db[collection_to_copy].find():
+                del doc["_id"]
+                if "file_id" in doc:
+                    doc_text = fs.get(doc["file_id"]).read()
+                    doc["file_id"] = fs.put(doc_text)
+                db[new_collection_name].insert_one(doc)
+            db[new_collection_name].update_one({"name": "__metadata__"},
+                                               {'$set': {"datetime": datetime.datetime.utcnow()}})
+        else:
+            name_field = name_keys[res_type]
+            collection_name = source_user.resource_collection_name(res_type)
+            old_dict = db[collection_name].find_one({name_field: res_name})
+            new_res_dict = {name_field: new_res_name}
+            for (key, val) in old_dict.items():
+                if (key == "_id") or (key == name_field):
+                    continue
+                new_res_dict[key] = val
+            if "metadata" not in new_res_dict:
+                mdata = {"datetime": datetime.datetime.utcnow(),
+                         "updated": datetime.datetime.utcnow(),
+                         "tags": "",
+                         "notes": ""}
+                new_res_dict["metadata"] = mdata
+            else:
+                new_res_dict["metadata"]["datetime"] = datetime.datetime.utcnow()
+            if res_type == "project":
+                project_dict = read_project_dict(fs, new_res_dict["metadata"], old_dict["file_id"])
+                project_dict["user_id"] = dest_user.get_id()
+                pdict = make_jsonizable_and_compress(project_dict)
+                new_res_dict["file_id"] = fs.put(pdict)
+            elif "file_id" in new_res_dict:
+                doc_text = fs.get(new_res_dict["file_id"]).read()
+                new_res_dict["file_id"] = fs.put(doc_text)
+            new_collection_name = dest_user.resource_collection_name(res_type)
+            db[new_collection_name].insert_one(new_res_dict)
+        return jsonify({"success": True, "message": "Resource Successfully Copied", "alert_type": "alert-success"})
+    except:
+        error_string = "Error copying resource" + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+
 
 
 def get_manager_for_type(res_type, is_repository=False):

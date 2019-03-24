@@ -6,5 +6,8 @@ MAINTAINER "Bruce L Sherin"
 ADD  ./main_container_env /code
 ADD ./megaplex_container_env/megaplex_main.py /code
 ADD ./megaplex_container_env/megaplex_task_manager.py /code
+add ./docker_functions.py /code
+ADD ./volume_manager.py /code
+ADD ./mongo_accesser.py /code
 EXPOSE 5000
 ENTRYPOINT ["/usr/local/bin/gunicorn", "-b", "0.0.0.0:5000", "main_main:app"]

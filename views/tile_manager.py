@@ -346,8 +346,8 @@ class TileManager(LibraryResourceManager):
         if user_obj is None:
             user_obj = current_user
         uname = user_obj.username
-        if uname not in global_tile_manager.user_tiles or uname not in global_tile_manager.default_tiles:
-            self.unload_all_tiles()
+        # if uname not in global_tile_manager.user_tiles.keys() or uname not in global_tile_manager.default_tiles.keys():
+        #     self.unload_all_tiles()
         nondefault_tiles = global_tile_manager.get_nondefault_tiles_list(uname)
         default_tiles = global_tile_manager.get_default_tiles(uname)
         failed_loads = global_tile_manager.get_failed_loads_list(uname)

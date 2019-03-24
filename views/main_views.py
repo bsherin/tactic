@@ -25,11 +25,6 @@ def connected_msg():
     print"client connected"
 
 
-@socketio.on('connect', namespace='/main')
-def connected_msg():
-    print"client connected"
-
-
 @socketio.on('disconnect', namespace='/test')
 def test_disconnect():
     print('Client disconnected')

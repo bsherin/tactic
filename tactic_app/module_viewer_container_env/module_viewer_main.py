@@ -236,16 +236,6 @@ class ModuleViewerWorker(QWorker):
             return self.handle_exception(ex, "Error extracting options from source")
         return {"success": True, "opt_dict": opt_dict, "export_list": export_list}
 
-    # This should only be used in the tester tile.
-    @task_worthy
-    def clear_and_load_code(self, data_dict):
-        try:
-            the_code = data_dict["the_code"]
-            result = clear_and_exec_user_code(the_code)
-        except Exception as ex:
-            return self.handle_exception(ex, "Error loading source")
-        return result
-
     @task_worthy
     def stop_me(self, data):
         print("killing me")

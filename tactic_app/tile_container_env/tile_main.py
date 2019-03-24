@@ -42,6 +42,8 @@ if "MAIN_ADDRESS" in os.environ:
 else:
     main_address = None  # this should only happen in the tile test container
 
+print("got main_address {}".format(main_address))
+
 # noinspection PyUnusedLocal
 class TileWorker(QWorker):
     def __init__(self):
@@ -184,6 +186,20 @@ class TileWorker(QWorker):
         return result
 
     @task_worthy
+    def load_source_and_recreate(self, data):
+        result = self.load_source(data)
+        if not result["success"]:
+            return result
+        return self.recreate_from_save(data["tile_save_dict"])
+
+    @task_worthy
+    def load_source_and_reinstantiate(self, data):
+        result = self.load_source(data)
+        if not result["success"]:
+            return result
+        return self.reinstantiate_tile(data["reload_dict"])
+
+    @task_worthy
     def recreate_from_save(self, data):
         try:
             print("entering recreate_from_save. class_name is " + class_info["class_name"])
@@ -300,6 +316,13 @@ class TileWorker(QWorker):
         pseudo_tile_base.Tiles = remote_tile_object.Tiles
         pseudo_tile_base.Pipes = remote_tile_object.Pipes
         return data
+
+    @task_worthy
+    def load_source_and_instantiate(self, data):
+        result = self.load_source(data)
+        if not result["success"]:
+            return result
+        return self.instantiate_tile_class(data)
 
     @task_worthy
     def instantiate_tile_class(self, data):
