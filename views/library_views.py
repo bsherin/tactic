@@ -9,7 +9,7 @@ import markdown
 import tactic_app
 from tactic_app import app, socketio, use_ssl, db, fs
 from tactic_app.mongo_accesser import name_keys
-from communication_utils import make_jsonizable_and_compress, read_project_dict
+from tactic_app.communication_utils import make_jsonizable_and_compress, read_project_dict
 
 from list_manager import ListManager, RepositoryListManager
 from collection_manager import CollectionManager, RepositoryCollectionManager
