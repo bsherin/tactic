@@ -32,7 +32,7 @@ class OtherAPIMIxin:
 
     def get_container_log(self):
         self._save_stdout()
-        result = self._tworker.post_and_wait("host", "get_container_log", {"container_id": self._tworker.my_id})
+        result = self._tworker.post_and_wait(self._main_id, "get_container_log", {"container_id": self._tworker.my_id})
         self._restore_stdout()
         return result["log_text"]
 
@@ -43,7 +43,6 @@ class OtherAPIMIxin:
 
     def get_pipe_value(self, key_or_tile_name, export_name=None):
         self._save_stdout()
-        print("in get_pipe_value")
         tile_id = None
         if export_name is None:  # then assume the first argument is a pipe_key
             pipe_key = key_or_tile_name

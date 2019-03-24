@@ -270,22 +270,6 @@ Object API
         ``self.collection`` returns a TacticCollection object corresponding to the collection in the current project.
         It is equivalent to typing ``Collection``.
 
-    .. py:method:: create_collection(name, doc_dict, doc_type="table", metadata_dict=None)
-
-        Creates a new collection in the user’s resource library. **name** is the
-        name for the new collection. **doc_type** specifies whether the type of
-        the document is table or freeform. **doc_dict** is a dictionary in which
-        the keys are names for the individual documents that will comprise the
-        new collection. For freeform documents, the values of this dictionary
-        are strings. For tables, the values are a list of rows, with each row
-        being a dict.
-
-        **metadata_dict** is a dictionary that holds any document-level metadata
-        you’d like to add. The keys are document names and the values are
-        dictionaries of keys and values.
-
-        Synonym: ``cc``
-
     .. py:method:: create_collection_object(doc_type, doc_dict=None)
 
         Creates a new :py:class:`DetachedTacticCollection` object. ``doc_dict``, if provided
@@ -321,6 +305,22 @@ Object API
 
 Other TileBase
 --------------
+
+    .. py:method:: create_collection(name, doc_dict, doc_type="table", metadata_dict=None)
+
+        Creates a new collection in the user’s resource library. **name** is the
+        name for the new collection. **doc_type** specifies whether the type of
+        the document is table or freeform. **doc_dict** is a dictionary in which
+        the keys are names for the individual documents that will comprise the
+        new collection. For freeform documents, the values of this dictionary
+        are strings. For tables, the values are a list of rows, with each row
+        being a dict.
+
+        **metadata_dict** is a dictionary that holds any document-level metadata
+        you’d like to add. The keys are document names and the values are
+        dictionaries of keys and values.
+
+        Synonym: ``cc``
 
     .. py:method:: go_to_document(document_name)
 

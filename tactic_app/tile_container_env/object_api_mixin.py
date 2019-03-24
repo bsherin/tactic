@@ -1,6 +1,7 @@
 from document_object import TacticDocument, FreeformTacticDocument
 from document_object import DetachedTacticCollection, DetachedTacticRow, DetachedTacticDocument
 from document_object import DetachedFreeformTacticDocument, DetachedTacticLine
+from remote_tile_object import RemoteTiles
 import document_object
 
 

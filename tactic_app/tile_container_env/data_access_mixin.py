@@ -138,7 +138,7 @@ class DataAccessMixin:
     def get_column_data_dict(self, column_name):
         self._save_stdout()
         result = {}
-        for doc_name in self.get_document_names():
+        for doc_name in self._get_main_property("doc_names"):
             task_data = {"column_name": column_name, "doc_name": doc_name}
             result[doc_name] = self._tworker.post_and_wait(self._main_id, "get_column_data_for_doc", task_data)
         self._restore_stdout()
