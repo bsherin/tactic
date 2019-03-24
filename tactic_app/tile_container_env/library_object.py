@@ -27,7 +27,7 @@ class TacticResourceSet:
 
     def get_resource_names(self, tag_filter=None, search_filter=None):
         self._tinst._save_stdout()
-        result = _tworker.post_and_wait(self._tinst._main_id, "get_resource_names",
+        result = _tworker.post_and_wait(self._tinst._main_id, "get_resource_names_task",
                                         {"user_id": self._tinst.user_id, "res_type": self._res_type,
                                         "tag_filter": tag_filter, "search_filter": search_filter})
         self._tinst._restore_stdout()
@@ -94,9 +94,7 @@ class TacticCollectionSet(TacticResourceSet):
         raw_result = _tworker.post_and_wait(self._tinst._main_id, "get_user_collection_with_metadata",
                                                  {"collection_name": the_collection,
                                                   "user_id": self._tinst.user_id})
-
         result = debinarize_python_object(raw_result["collection_data"])
-
         self._tinst._restore_stdout()
         return result
 

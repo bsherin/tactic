@@ -16,7 +16,7 @@ import copy
 import traceback
 import datetime
 
-check_for_dead_time = 300  # How often, in seconds, to ask the megaplex to check for stalled containers
+check_for_dead_time = 30  # How often, in seconds, to ask the megaplex to check for stalled containers
 no_heartbeat_time = 900  # If a mainwindow does send a heartbeat after this amount of time, remove mainwindow.
 global_tile_manager = tactic_app.global_tile_manager
 
@@ -286,7 +286,7 @@ class HostWorker(QWorker):
     def get_loaded_user_modules(self, data):
         user_id = data["user_id"]
         user_obj = load_user(user_id)
-        return {"loaded_modules": global_tile_manager.loaded_user_modules[user_obj.username]}
+        return {"loaded_modules": global_tile_manager.tile_manager[user_obj.username].loaded_user_modules.keys()}
 
     @task_worthy_manual_submit
     def load_module_if_necessary(self, data, task_packet):
@@ -299,7 +299,7 @@ class HostWorker(QWorker):
         user_id = data["user_id"]
         user_obj = load_user(user_id)
         tile_module_name = data["tile_module_name"]
-        if data["tile_module_name"] in global_tile_manager.loaded_user_modules[user_obj.username]:
+        if data["tile_module_name"] in global_tile_manager.tile_manager[user_obj.username].loaded_user_modules.keys():
             self.submit_response(task_packet, {"success": True, "module_name": tile_module_name})
             return
         else:
@@ -315,7 +315,7 @@ class HostWorker(QWorker):
 
         user_id = data["user_id"]
         user_obj = load_user(user_id)
-        if data["tile_type"] in global_tile_manager.tile_module_index[user_obj.username]:
+        if data["tile_type"] in global_tile_manager.tile_manager[user_obj.username].tile_module_index.keys():
             self.submit_response(task_packet, {"success": True})
             return
         else:
@@ -538,7 +538,7 @@ class HostWorker(QWorker):
         return {"success": True}
 
     @task_worthy
-    def create_tile_container(self, data):
+    def create_tile_container(self, data): # tactic_working
         try:
             environ = {"PPI": data["ppi"]}
             tile_container_id, container_id = create_container("tactic_tile_image", network_mode="bridge",
@@ -564,7 +564,7 @@ class HostWorker(QWorker):
             tile_containers.append(tile_container_id)
         return {"tile_containers": tile_containers}
 
-    @task_worthy
+    @task_worthy  # tactic_working
     def get_module_code(self, data):
         module_code = global_tile_manager.get_tile_code(data["tile_type"], data["user_id"])
         if module_code is None:

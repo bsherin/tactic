@@ -11,17 +11,17 @@ import pickle
 from pickle import UnpicklingError
 from communication_utils import is_jsonizable, make_python_object_jsonizable, debinarize_python_object
 from fuzzywuzzy import fuzz, process
-
-from document_object import TacticDocument, FreeformTacticDocument
-from document_object import DetachedTacticCollection, DetachedTacticRow, DetachedTacticDocument
-from document_object import DetachedFreeformTacticDocument, DetachedTacticLine
-import document_object
-from remote_tile_object import RemoteTiles
+from volume_manager import VolumeManager
 from tile_o_plex import app
 from flask import render_template
+from data_access_mixin import DataAccessMixin
+from filtering_mixin import FilteringMixin
+from library_access_mixin import LibraryAccessMixin
+from object_api_mixin import ObjectAPIMixin
+from other_api_mixin import OtherAPIMIxin
+from refreshing_mixin import RefreshingMixin
 
 RETRIES = 60
-
 
 # noinspection PyUnresolvedReferences
 from qworker import task_worthy_methods
@@ -66,7 +66,9 @@ def exec_user_code(the_code):
     except:
         error_string = sys.exc_info()[0] + " " + str(sys.exc_info()[1])
         return {"success": False, "message_string": error_string}
-    return {"success": True, "classes": list(_code_names["classes"].keys()), "functions": list(_code_names["functions"].keys())}
+    return {"success": True,
+            "classes": list(_code_names["classes"].keys()),
+            "functions": list(_code_names["functions"].keys())}
 
 
 def clear_and_exec_user_code(the_code):
@@ -78,10 +80,11 @@ def clear_and_exec_user_code(the_code):
 class CollectionNotFound(Exception):
     pass
 
+
 # noinspection PyMiss
 # ingConstructor
 # noinspection PyUnusedLocal
-class TileBase(object):
+class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMixin, OtherAPIMIxin, RefreshingMixin):
     category = "basic"
     exports = []
     _input_start_template = '<div class="form-group form-group-sm""><label>{0}</label>'
@@ -120,7 +123,7 @@ class TileBase(object):
         else:
             self.tile_name = tile_name
         self.doc_type = None
-
+        self.vmanager = VolumeManager("/persist")
         self.width = ""
         self.height = ""
         self.full_tile_width = ""
@@ -138,6 +141,8 @@ class TileBase(object):
         self._tworker = _tworker
         self._collection = None  # I have to create this later to impose a post loop when creating the pseudo_tile
         self._remote_tiles = None
+        self.RETRIES = RETRIES  # This is here so that it can be easily accessible form the mixins
+        self._std_out_nesting = 0
         return
 
     # <editor-fold desc="_task_worthy methods (events)">
@@ -584,8 +589,7 @@ class TileBase(object):
                     continue
         data = {"tile_type": self.tile_type, "user_id": self.user_id}
         result["tile_id"] = self._tworker.my_id
-        result["module_name"] = self._tworker.post_and_wait("host", "get_module_from_tile_type", data)[
-            "module_name"]
+        result["module_name"] = self.vmanager["tile_module_index"][self.tile_type].value
         print("done compiling attributes")
         return result
     # </editor-fold>
@@ -920,438 +924,26 @@ class TileBase(object):
 
     # </editor-fold>
 
-    """
-
-    API
-
-    """
     def _save_stdout(self):
-        self._old_stdout = sys.stdout
-        sys.stdout = sys.stderr
+        if self._std_out_nesting == 0:
+            self._old_stdout = sys.stdout
+            sys.stdout = sys.stderr
+        self._std_out_nesting += 1
         return
 
     def _restore_stdout(self):
-        sys.stdout = self._old_stdout
-
-
-    # <editor-fold desc="Refreshing a tile">
-
-    def spin_and_refresh(self):
-
-        self.post_event("StartSpinner")
-        self.post_event("RefreshTile")
-        self.post_event("StopSpinner")
-
-    def start_spinner(self):
-        self._tworker.emit_tile_message("startSpinner")
-
-    def stop_spinner(self):
-        self._tworker.emit_tile_message("stopSpinner")
-
-    def refresh_tile_now(self, new_html=None):
-        if new_html is None:
-            self.post_event("RefreshTile")
-        else:
-            self.current_html = new_html
-            self.post_event("RefreshTileFromSave")
-
-    def display_status(self, message):
-        self._do_the_refresh(message)
+        if self._std_out_nesting == 1:
+            sys.stdout = self._old_stdout
+        self._std_out_nesting -= 1
         return
 
-    # </editor-fold>
 
-    # <editor-fold desc="Data setting and access">
-
-    def gdn(self):
-        return self.get_document_names()
-
-    def get_document_names(self):
-        self._save_stdout()
-        result = self._get_main_property("doc_names")
-        self._restore_stdout()
-        return result
-
-    def get_collection_info(self):
-        self._save_stdout()
-        result = self._tworker.post_and_wait(self._main_id, "get_collection_info")
-        self._restore_stdout()
-        return result
-
-    def gcdn(self):
-        return self.get_current_document_name()
-
-    def get_current_document_name(self):
-        self._save_stdout()
-        result = self._get_main_property("visible_doc_name")
-        self._restore_stdout()
-        return result
-
-    def gdd(self, document_name):
-        return self.get_document_data(document_name)
-
-    def get_document_data(self, document_name):
-        self._save_stdout()
-        result = self._tworker.post_and_wait(self._main_id, "get_document_data", {"document_name": document_name})
-        self._restore_stdout()
-        return result
-
-    def gdm(self, document_name):
-        return self.get_document_metadata(document_name)
-
-    def get_document_metadata(self, document_name):
-        self._save_stdout()
-        result = self._tworker.post_and_wait(self._main_id, "get_document_metadata", {"document_name": document_name})
-        self._restore_stdout()
-        return result
-
-    def sdm(self, document_name, metadata):
-        self.set_document_metadata(document_name, metadata)
-        return
-
-    def set_document_metadata(self, document_name, metadata):
-        self._save_stdout()
-        self._tworker.post_task(self._main_id, "set_document_metadata", {"document_name": document_name,
-                                                                         "metadata": metadata})
-        self._restore_stdout()
-        return
-
-    def gddl(self, document_name):
-        return self.get_document_data_as_list(document_name)
-
-    def get_document_data_as_list(self, document_name):
-        self._save_stdout()
-        result = self._tworker.post_and_wait(self._main_id, "get_document_data_as_list",
-                                             {"document_name": document_name})
-        self._restore_stdout()
-        return result["data_list"]
-
-    def get_column_names(self, document_name):
-        self._save_stdout()
-        result = self._tworker.post_and_wait(self._main_id, "get_column_names", {"document_name": document_name})
-        self._restore_stdout()
-        return result["header_list"]
-
-    def gcn(self, document_name):
-        return self.get_column_names(document_name)
-
-    def gnr(self, document_name):
-        return self.get_number_rows(document_name)
-
-    def get_number_rows(self, document_name):
-        self._save_stdout()
-        result = self._tworker.post_and_wait(self._main_id, "get_number_rows", {"document_name": document_name})
-        self._restore_stdout()
-        return result["number_rows"]
-
-    def gr(self, document_name, row_id):
-        return self.get_row(document_name, row_id)
-
-    def get_row(self, document_name, row_id):
-        self._save_stdout()
-        data = {"document_name": document_name, "row_id": row_id}
-        result = self._tworker.post_and_wait(self._main_id, "get_row", data)
-        self._restore_stdout()
-        return result
-
-    def get_rows(self, document_name, start, stop):
-        self._save_stdout()
-        data = {"document_name": document_name, "start": start, "stop": stop}
-        result = self._tworker.post_and_wait(self._main_id, "get_rows", data)
-        self._restore_stdout()
-        return result
-
-    def gl(self, document_name, line_number):
-        return self.get_line(document_name, line_number)
-
-    def get_line(self, document_name, line_number):
-        data = {"document_name": document_name, "line_number": line_number}
-        result = self._tworker.post_and_wait(self._main_id, "get_line", data)
-        return result
-
-    def gc(self, document_name, row_id, column_name):
-        return self.get_cell(document_name, row_id, column_name)
-
-    def get_cell(self, document_name, row_id, column_name):
-        self._save_stdout()
-        data = {"document_name": document_name, "row_id": row_id, "column_name": column_name}
-        result = self._tworker.post_and_wait(self._main_id, "get_cell", data)
-        self._restore_stdout()
-        return result["the_cell"]
-
-    def gcd(self, column_name, document_name=None):
-        return self.get_column_data(column_name, document_name)
-
-    def get_column_data(self, column_name, document_name=None):
-        self._save_stdout()
-
-        if document_name is not None:
-            task_data = {"column_name": column_name, "doc_name": document_name}
-            result = self._tworker.post_and_wait(self._main_id, "get_column_data_for_doc", task_data)
-        else:
-            task_data = {"column_name": column_name}
-            result = self._tworker.post_and_wait(self._main_id, "get_column_data", task_data)
-
-        self._restore_stdout()
-        return result
-
-    def gcdd(self, column_name):
-        return self.get_column_data_dict(column_name)
-
-    def get_column_data_dict(self, column_name):
-        self._save_stdout()
-        result = {}
-        for doc_name in self.get_document_names():
-            task_data = {"column_name": column_name, "doc_name": doc_name}
-            result[doc_name] = self._tworker.post_and_wait(self._main_id, "get_column_data_for_doc", task_data)
-        self._restore_stdout()
-        return result
-
-    def sc(self, document_name, row_id, column_name, text, cellchange=True):
-        self.set_cell(document_name, row_id, column_name, text, cellchange)
-        return
-
-    def set_cell(self, document_name, row_id, column_name, text, cellchange=True):
-        self._save_stdout()
-        task_data = {
-            "doc_name": document_name,
-            "id": row_id,
-            "column_header": column_name,
-            "new_content": text,
-            "cellchange": cellchange
-        }
-        self._tworker.post_task(self._main_id, "SetCellContent", task_data)
-        self._restore_stdout()
-        return
-
-    def scb(self, document_name, row_id, column_name, color):
-        self.set_cell_background(document_name, row_id, column_name, color)
-        return
-
-    def set_cell_background(self, document_name, row_id, column_name, color):
-        self._save_stdout()
-        task_data = {"doc_name": document_name,
-                     "row_id": row_id,
-                     "column_name": column_name,
-                     "color": color}
-        self._tworker.post_task(self._main_id, "SetCellBackground", task_data)
-        self._restore_stdout()
-        return
-
-    def stm(self, tile_name, event_name, data=None):
-        self.send_tile_message(tile_name, event_name, data)
-        return
-
-    def send_tile_message(self, tile_name, event_name, data=None):
-        self._save_stdout()
-        task_data = {"tile_name": tile_name,
-                     "event_name": event_name,
-                     "event_data": data}
-        self._tworker.post_task(self._main_id, "SendTileMessage", task_data)
-        self._restore_stdout()
-        return
-
-    def scd(self, document_name, column_name, data_list_or_dict, cellchange=False):
-        self.set_column_data(document_name, column_name, data_list_or_dict, cellchange)
-        return
-
-    def set_column_data(self, document_name, column_name, data_list_or_dict, cellchange=False):
-        self._save_stdout()
-        task_data = {
-            "doc_name": document_name,
-            "column_header": column_name,
-            "new_content": data_list_or_dict,
-            "cellchange": cellchange
-        }
-        self._tworker.post_task(self._main_id, "SetColumnData", task_data)
-        self._restore_stdout()
-        return
-
-    def cct(self, doc_name, row_id, column_name, tokenized_text, color_dict):
-        self.color_cell_text(doc_name, row_id, column_name, tokenized_text, color_dict)
-        return
-
-    def color_cell_text(self, doc_name, row_id, column_name, tokenized_text, color_dict):
-        self._save_stdout()
-        data_dict = {"doc_name": doc_name,
-                     "row_id": row_id,
-                     "column_header": column_name,
-                     "token_text": tokenized_text,
-                     "color_dict": color_dict}
-        self._tworker.post_task(self._main_id, "ColorTextInCell", data_dict)
-        self._restore_stdout()
-        return
-
-    # </editor-fold>
-
-    # <editor-fold desc="Filtering and iteration">
-    def gmr(self, filter_function, document_name=None):
-        return self.get_matching_rows(filter_function, document_name)
-
-    def get_matching_rows(self, filter_function, document_name=None):
-        self._save_stdout()
-        result = []
-        if document_name is not None:
-            data_list = self.get_document_data_as_list(document_name)
-            for r in data_list:
-                if filter_function(r):
-                    result.append(r)
-        else:
-            for docname in self.get_document_names():
-                data_list = self.get_document_data_as_list(docname)
-                for r in data_list:
-                    if filter_function(r):
-                        result.append(r)
-        self._restore_stdout()
-        return result
-
-    # tactic_todo This doesn't seem to be used
-    def update_document(self, new_data, document_name):
-        self._save_stdout()
-        result = self._tworker.post_and_wait(self._main_id, "update_document",
-                                             {"new_data": new_data, "document_name": document_name})
-        self._restore_stdout()
-        return
-
-    def get_matching_documents(self, filter_function):
-        self._save_stdout()
-        jfilter_function = make_python_object_jsonizable(filter_function)
-        result = self._tworker.post_and_wait(self._main_id, "get_matching_documents",
-                                             {"filter_function": jfilter_function})
-        self._restore_stdout()
-        return result
-
-    def dmr(self, filter_function, document_name=None):
-        self.display_matching_rows(filter_function, document_name)
-        return
-
-    def display_matching_rows(self, filter_function, document_name=None):
-        self._save_stdout()
-        if self.doc_type == "table":
-            if document_name is not None:
-                result = []
-                data_list = self.get_document_data_as_list(document_name)
-                for r in data_list:
-                    if filter_function(r):
-                        result.append(r["__id__"])
-            else:
-                result = {}
-                for docname in self.get_document_names():
-                    result[docname] = []
-                    data_list = self.get_document_data_as_list(docname)
-                    for r in data_list:
-                        if filter_function(r):
-                            result[docname].append(r["__id__"])
-        else:
-            if document_name is not None:
-                result = []
-                data_list = self.get_document_data_as_list(document_name)
-                for rnum, rtxt in enumerate(data_list):
-                    if filter_function(rtxt):
-                        result.append(rnum)
-            else:
-                result = {}
-                for docname in self.get_document_names():
-                    result[docname] = []
-                    data_list = self.get_document_data_as_list(docname)
-                    for rnum, rtxt in enumerate(data_list):
-                        if filter_function(rtxt):
-                            result[docname].append(rnum)
-        self._tworker.post_task(self._main_id, "display_matching_rows",
-                                {"result": result, "document_name": document_name})
-        self._restore_stdout()
-        return
-
-    def cth(self):
-        self.clear_table_highlighting()
-        return
-
-    def clear_table_highlighting(self):
-        self._save_stdout()
-        self.distribute_event("DehighlightTable", {})
-        self._restore_stdout()
-        return
-
-    def hmt(self, txt):
-        self.highlight_matching_text(txt)
-        return
-
-    def highlight_matching_text(self, txt):
-        self._save_stdout()
-        self.distribute_event("SearchTable", {"text_to_find": txt})
-        self._restore_stdout()
-        return
-
-    def dar(self):
-        self.display_all_rows()
-        return
-
-    def display_all_rows(self):
-        self._save_stdout()
-        self._tworker.post_task(self._main_id, "UnfilterTable")
-        self._restore_stdout()
-        return
-
-    def atr(self, func, document_name=None, cellchange=False):
-        self.apply_to_rows(func, document_name, cellchange)
-        return
-
-    def apply_to_rows(self, func, document_name=None, cellchange=False):
-        self._save_stdout()
-        if document_name is not None:
-            doc_dict = self.get_document_data(document_name)
-            new_doc_dict = {}
-            for the_id, r in doc_dict.items():
-                new_doc_dict[the_id] = func(r)
-            self.set_document(document_name, new_doc_dict, cellchange)
-            self._restore_stdout()
-            return None
-        else:
-            for doc_name in self.get_document_names():
-                self.apply_to_rows(func, doc_name, cellchange)
-            self._restore_stdout()
-            return None
-
-    def sd(self, document_name, new_data, cellchange=False):
-        self.set_document(document_name, new_data, cellchange)
-
-    def set_document(self, document_name, new_data, cellchange=False):
-        self._save_stdout()
-        task_data = {"new_data": new_data,
-                     "doc_name": document_name,
-                     "cellchange": cellchange}
-        self._tworker.post_and_wait(self._main_id, "SetDocument", task_data)
-        self._restore_stdout()
-        return
-    # </editor-fold>
-
-    # <editor-fold desc="Library access and manipulation">
-
-    def gulist(self, the_list):
-        return self.get_user_list(the_list)
-
-    def get_user_list(self, the_list):
-        self._save_stdout()
-        # result = self._tworker.post_and_wait("host", "get_list", {"user_id": self.user_id, "list_name": the_list})
-        raw_result = self._tworker.post_and_wait(self._main_id, "get_list_with_metadata", {"list_name": the_list})
-        result = debinarize_python_object(raw_result["list_data"])
-        self._restore_stdout()
-        return result["the_list"]
-
-    def gufunction(self, function_name):
-        return self.get_user_function(function_name)
-
-    def get_user_function(self, function_name):
-        result = self.get_user_function_with_metadata(function_name)
-        return result["the_function"]
-
-    def guclass(self, class_name):
-        return self.get_user_class(class_name)
-
+    # These two methods here, rather than in library_access_mixin
+    # because its simpler having the execing machinery here.
     def get_user_function_with_metadata(self, function_name):
         self._save_stdout()
-        raw_result = _tworker.post_and_wait(self._main_id, "get_function_with_metadata",
-                                            {"function_name": function_name})
+        raw_result = self._tworker.post_and_wait(self._main_id, "get_function_with_metadata",
+                                                 {"function_name": function_name})
 
         result = debinarize_python_object(raw_result["function_data"])
 
@@ -1363,322 +955,16 @@ class TileBase(object):
 
     def get_user_class(self, class_name):
         self._save_stdout()
-        result = self._tworker.post_and_wait("host", "get_code_with_class", {"user_id": self.user_id,
-                                                                             "class_name": class_name})
+        result = self._tworker.post_and_wait(self._main_id, "get_code_with_class", {"class_name": class_name})
         the_code = result["the_code"]
-        result = exec_user_code(the_code)
+        _ = exec_user_code(the_code)
         self._restore_stdout()
         return _code_names["classes"][class_name]
 
-    def gucol(self, collection_name):
-        return self.get_user_collection(collection_name)
-
-    def get_user_collection(self, collection_name):
+    # tactic_todo This doesn't seem to be used
+    def update_document(self, new_data, document_name):
         self._save_stdout()
-        result = self._tworker.post_and_wait(self._main_id, "get_user_collection",
-                                             {"user_id": self.user_id, "collection_name": collection_name})
-        self._restore_stdout()
-        if not result["success"]:
-            raise CollectionNotFound("Couldn't find collection with name {}".format(collection_name))
-        return result["the_collection"]
-
-    def get_collection_names(self):
-        self._save_stdout()
-        result = self._tworker.post_and_wait(self._main_id, "get_collection_names",
-                                             {"user_id": self.user_id})
-        self._restore_stdout()
-        return result["collection_names"]
-
-    def get_list_names(self):
-        self._save_stdout()
-        result = self._tworker.post_and_wait(self._main_id, "get_list_names",
-                                             {"user_id": self.user_id})
-        self._restore_stdout()
-        return result["list_names"]
-
-    def get_function_names(self, tag=None):
-        func_tag_dict = self._tworker.post_and_wait("host", "get_function_tags_dict",
-                                                    {"user_id": self.user_id})["function_names"]
-        if tag is None:
-            fnames = list(func_tag_dict.keys())
-        else:
-            fnames = []
-            for func_name, tags in func_tag_dict.items():
-                if tag in tags.split():
-                    fnames.append(func_name)
-        return fnames
-
-    def get_class_names(self, tag=None):
-        class_tag_dict = self._tworker.post_and_wait("host", "get_class_tags_dict",
-                                                     {"user_id": self.user_id})["class_names"]
-        if tag is None:
-            cnames = list(class_tag_dict.keys())
-        else:
-            cnames = []
-            for class_name, tags in class_tag_dict.items():
-                if tag in tags.split():
-                    cnames.append(class_name)
-        return cnames
-
-    def cc(self, name, doc_dict, doc_type="table", doc_metadata=None):
-        self.create_collection(name, doc_dict, doc_type, doc_metadata)
-        return
-
-    def create_collection(self, name, doc_dict, doc_type="table", doc_metadata=None):
-        self._save_stdout()
-        data = {"name": name,
-                "doc_dict": doc_dict,
-                "doc_type": doc_type}
-        if doc_metadata is not None:
-            data["doc_metadata"] = doc_metadata
-        else:
-            data["doc_metadata"] = {}
-        result = self._tworker.post_and_wait(self._main_id, "create_collection", data)
-        self._restore_stdout()
-        if not result["success"]:
-            raise Exception(result["message_string"])
-        return result["message_string"]
-
-
-    # deprecated
-    def get_tokenizer(self, tokenizer_name):
-        self._save_stdout()
-        result = self.get_user_function(tokenizer_name)
-        self._restore_stdout()
-        return result
-
-    # deprecated
-    def get_cluster_metric(self, metric_name):
-        self._save_stdout()
-        result = self.get_user_function(metric_name)
-        self._restore_stdout()
-        return result
-
-    # deprecated
-    def get_weight_function(self, weight_function_name):
-        self._save_stdout()
-        result = self.get_user_function(weight_function_name)
-        self._restore_stdout()
-        return result
-
-    # </editor-fold>
-
-    # <editor-fold desc="Table Navigation">
-    def gtd(self, doc_name):
-        self.go_to_document(doc_name)
-        return
-
-    def go_to_document(self, doc_name):
-        self._save_stdout()
-        data = {"doc_name": doc_name}
-        self._tworker.ask_host('go_to_row_in_document', data)
+        result = self._tworker.post_and_wait(self._main_id, "update_document",
+                                             {"new_data": new_data, "document_name": document_name})
         self._restore_stdout()
         return
-
-    def gtrid(self, doc_name, row_id):
-        self.go_to_row_in_document(doc_name, row_id)
-        return
-
-    def go_to_row_in_document(self, doc_name, row_id):
-        self._save_stdout()
-        data = {"doc_name": doc_name,
-                "row_id": row_id}
-        self._tworker.ask_host('go_to_row_in_document', data)
-        self._restore_stdout()
-        return
-    # </editor-fold>
-
-    # <editor-fold desc="Other">
-    def gst(self):
-        return self.get_selected_text()
-
-    def get_selected_text(self):
-        self._save_stdout()
-        result = self._get_main_property("selected_text")
-        self._restore_stdout()
-        return result
-
-    def display_message(self, message_string, force_open=True, is_error=False, summary=None):
-        self.log_it(message_string, force_open, is_error, summary)
-        return
-
-    def dm(self, message_string, force_open=True, is_error=False, summary=None):
-        self.log_it(message_string, force_open, is_error, summary)
-        return
-
-    def log_it(self, message_string, force_open=True, is_error=False, summary=None):
-        self._save_stdout()
-        self._tworker.post_task(self._main_id, "print_to_console_event", {"print_string": message_string,
-                                                                          "force_open": force_open,
-                                                                          "is_error": is_error,
-                                                                          "summary": summary})
-        self._restore_stdout()
-        return
-
-    def get_container_log(self):
-        self._save_stdout()
-        result = self._tworker.post_and_wait("host", "get_container_log", {"container_id": self._tworker.my_id})
-        self._restore_stdout()
-        return result["log_text"]
-
-    def create_bokeh_html(self, the_plot):
-        from bokeh.embed import file_html
-        from bokeh.resources import Resources
-        return file_html(the_plot, Resources("inline"))
-
-    def get_pipe_value(self, key_or_tile_name, export_name=None):
-        self._save_stdout()
-        print("in get_pipe_value")
-        tile_id = None
-        if export_name is None:  # then assume the first argument is a pipe_key
-            pipe_key = key_or_tile_name
-            for(tile_id, tile_entry) in self._pipe_dict.items():
-                if pipe_key in tile_entry:
-                    tile_id = tile_entry[pipe_key]["tile_id"]
-                    export_name = tile_entry[pipe_key]["export_name"]
-                    break
-            if export_name is None:
-                self._restore_stdout()
-                return None
-        else:  # otherwise assume first argument is the tile name
-            tile_id = self.tiles[key_or_tile_name]._tile_id
-
-        result = self._tworker.post_and_wait_for_pipe(tile_id,
-                                                      "_transfer_pipe_value",
-                                                      {"export_name": export_name,
-                                                       "requester_address": self.my_address},
-                                                      timeout=60,
-                                                      tries=RETRIES)
-        encoded_val = result["encoded_val"]
-        val = debinarize_python_object(encoded_val)
-        self._restore_stdout()
-        return val
-    # </editor-fold>
-
-    # <editor-fold desc="Object-Oriented API-related">
-
-    @property
-    def collection(self):
-        return document_object.Collection
-
-    def get_document(self, docname=None):
-        protected_standout = sys.stdout  # Need to do it this way because other calls were writing over self._old_stdout
-        sys.stdout = sys.stderr
-        if docname is None:
-            docname = self.get_current_document_name()
-        if self.doc_type == "freeform":
-            result = FreeformTacticDocument(self, docname)
-        else:
-            result = TacticDocument(self, docname)
-        sys.stdout = protected_standout
-        return result
-
-    def new_collection(self, doc_type, doc_dict=None):
-        return DetachedTacticCollection(doc_type, doc_dict)
-
-    def create_row(self, row_dict=None):
-        if row_dict is None:
-            row_dict = {}
-        return DetachedTacticRow(row_dict)
-
-    def create_line(self, txt=""):
-        return DetachedTacticLine(txt)
-
-    def create_document(self, docname, column_names, dict_or_detached_row_list=None, metadata=None):
-        return DetachedTacticDocument(docname, column_names, dict_or_detached_row_list, metadata=None)
-
-    def create_freeform_document(self, docname, lines=None, metadata=None):
-        return DetachedFreeformTacticDocument(docname, lines, metadata)
-
-    def create_collection_object(self, doc_type, doc_dict=None):
-        return DetachedTacticCollection(doc_type, doc_dict)
-
-    @property
-    def tiles(self):
-        if self._remote_tiles is None:
-            self._remote_tiles = RemoteTiles()
-        return self._remote_tiles
-
-    # </editor-fold>
-
-    # <editor-fold desc="Odd utility methods">
-
-    def dict_to_list(self, the_dict):
-        result = []
-        for it in the_dict.values():
-            result += it
-        return result
-
-    def bht(self, data_list, title=None, click_type="word-clickable",
-            sortable=True, sidebyside=False, has_header=True):
-        return self.build_html_table_from_data_list(data_list, title, click_type,
-                                                    sortable, sidebyside, has_header)
-
-    def build_html_table_from_data_list(self, data_list, title=None, click_type="word-clickable",
-                                        sortable=True, sidebyside=False, has_header=True):
-        self._save_stdout()
-        if sortable:
-            if not sidebyside:
-                the_html = u"<table class='tile-table table table-striped table-bordered table-sm sortable'>"
-            else:
-                the_html = u"<table class='tile-table sidebyside-table table-striped table-bordered table-sm sortable'>"
-        else:
-            if not sidebyside:
-                the_html = u"<table class='tile-table table table-striped table-bordered table-sm'>"
-            else:
-                the_html = u"<table class='tile-table sidebyside-table table-striped table-bordered table-sm'>"
-
-        if title is not None:
-            the_html += u"<caption>{0}</caption>".format(title)
-        if has_header:
-            the_html += u"<thead><tr>"
-            for c in data_list[0]:
-                the_html += u"<th>{0}</th>".format(c)
-            the_html += u"</tr></thead>"
-            start_from = 1
-        else:
-            start_from = 0
-        the_html += u"<tbody>"
-
-        for rnum, r in enumerate(data_list[start_from:]):
-            if click_type == u"row-clickable":
-                the_html += u"<tr class='row-clickable'>"
-                for c in r:
-                    the_html += u"<td>{0}</td>".format(c)
-                the_html += u"</tr>"
-            elif click_type == u"word-clickable":
-                the_html += u"<tr>"
-                for c in r:
-                    the_html += u"<td class='word-clickable'>{0}</td>".format(c)
-                the_html += u"</tr>"
-            else:
-                the_html += u"<tr>"
-                for cnum, c in enumerate(r):
-                    the_html += "<td class='element-clickable' data-row='{1}' " \
-                                "data-col='{2}' data-val='{0}'>{0}</td>".format(c, str(rnum), str(cnum))
-                the_html += "</tr>"
-        the_html += "</tbody></table>"
-        self._restore_stdout()
-        return the_html
-
-    def _build_html_table_for_exports(self, data_list, has_header=False, title=None):
-        the_html = u"<table class='tile-table table sortable table-striped table-bordered table-sm'>"
-        if title is not None:
-            the_html += u"<caption>{0}</caption>".format(title)
-        if has_header:
-            the_html += u"<thead><tr>"
-            for c in data_list[0]:
-                the_html += u"<th>{0}</th>".format(c)
-            the_html += u"</tr><tbody>"
-            start = 1
-        else:
-            start = 0
-        for r in data_list[start:]:
-            the_html += "<tr>".format()
-            for c in r:
-                the_html += "<td>{0}</td>".format(str(c))
-            the_html += "</tr>"
-
-        the_html += "</tbody></table>"
-        return the_html
-    # </editor-fold>

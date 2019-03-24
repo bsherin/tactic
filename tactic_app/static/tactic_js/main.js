@@ -133,10 +133,6 @@ function _after_main_joined() {
         let data_dict = {
             "project_name": _project_name,
             "doc_type": DOC_TYPE,
-            "project_collection_name": _project_collection_name,
-            "list_collection_name": _list_collection_name,
-            "code_collection_name": _code_collection_name,
-            "tile_collection_name": _tile_collection_name,
             "library_id": main_id,
             "base_figure_url": base_figure_url,
             "use_ssl": use_ssl,
@@ -149,10 +145,6 @@ function _after_main_joined() {
         let data_dict = {
             "collection_name": _collection_name,
             "doc_type": DOC_TYPE,
-            "project_collection_name": _project_collection_name,
-            "list_collection_name": _list_collection_name,
-            "code_collection_name": _code_collection_name,
-            "tile_collection_name": _tile_collection_name,
             "base_figure_url": base_figure_url,
             "use_ssl": use_ssl,
             "user_id": user_id,
