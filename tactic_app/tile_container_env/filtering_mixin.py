@@ -1,4 +1,7 @@
 
+from communication_utils import make_python_object_jsonizable
+
+
 class FilteringMixin:
     def gmr(self, filter_function, document_name=None):
         return self.get_matching_rows(filter_function, document_name)
