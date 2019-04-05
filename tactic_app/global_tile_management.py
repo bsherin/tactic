@@ -111,10 +111,9 @@ class GlobalTileManager(object):
         loaded_tiles = []
         self.add_user(username)
         umanager = self.tile_manager[username]
-        if username in umanager.user_tiles.keys():
-            for category in umanager.user_tiles.keys():
-                cat = umanager.user_tiles[category]
-                loaded_tiles += cat.keys()
+        for category in umanager.user_tiles.keys():
+            cat = umanager.user_tiles[category]
+            loaded_tiles += cat.keys()
         return loaded_tiles
 
     def get_failed_loads_list(self, username):

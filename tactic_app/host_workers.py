@@ -17,7 +17,7 @@ import traceback
 import datetime
 
 check_for_dead_time = 30  # How often, in seconds, to ask the megaplex to check for stalled containers
-no_heartbeat_time = 900  # If a mainwindow does send a heartbeat after this amount of time, remove mainwindow.
+no_heartbeat_time = 3600  # If a mainwindow does send a heartbeat after this amount of time, remove mainwindow.
 global_tile_manager = tactic_app.global_tile_manager
 
 
@@ -204,7 +204,8 @@ class HostWorker(QWorker):
     def remove_mainwindow_task(self, data):
         main_id = data["main_id"]
         destroy_child_containers(main_id)
-        destroy_container(main_id)
+        destroy_container(main_id, notify=True)
+        socketio.emit('stop-heartbeat', {}, namespace='/main', room=main_id)
         tactic_app.client_worker.remove_from_heartbeat_table(main_id)
         return {"success": True}
 
@@ -644,6 +645,7 @@ class ClientWorker(QWorker):
 
     def remove_from_heartbeat_table(self, main_id):
         if main_id in self.main_heartbeat_table:
+            print "removing {} from main_heartbeat_table".format(main_id)
             del self.main_heartbeat_table[main_id]
 
     def check_for_dead_mainwindows(self):

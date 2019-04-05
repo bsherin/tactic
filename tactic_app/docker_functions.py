@@ -113,9 +113,12 @@ class ContainerCreateError(Exception):
 
 
 cont_type_dict = {"megaplex_main:app": "megaplex",
+                  "main_main:app": "main",
+                  "tile_main:app": "tile",
                   "tile_main.py": "tile",
                   "main_main.py": "main",
-                  "module_viewer_main.py": "module_viewer"}
+                  "module_viewer_main.py": "module_viewer",
+                  "module_viewer_main:app": "module_viewer"}
 
 
 def get_container_type(cont):

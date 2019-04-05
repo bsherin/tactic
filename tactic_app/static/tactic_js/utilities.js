@@ -170,7 +170,12 @@ function doFlash(data) {
     }
 
      $('body').one('click', function(){
-        msg.dismiss();
+         if (alert_type == "alert-warning") {
+             msg.destroy()
+         }
+         else {
+             msg.dismiss();
+         }
      });
 }
 

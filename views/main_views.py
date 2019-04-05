@@ -51,7 +51,14 @@ def on_join_main(data):
 @login_required
 def register_heartbeat():
     data = request.json
-    tactic_app.client_worker.update_heartbeat_table(data["main_id"])
+    try:
+        tactic_app.client_worker.update_heartbeat_table(data["main_id"])
+    except Exception as ex:
+        template = "<pre>An exception of type {0} occured. Arguments:\n{1!r}</pre>"
+        error_string = template.format(type(ex).__name__, ex.args)
+        error_string += traceback.format_exc()
+        print error_string
+        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
     return jsonify({"success": True})
 
 
