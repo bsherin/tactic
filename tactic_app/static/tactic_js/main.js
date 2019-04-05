@@ -8,7 +8,7 @@ const BOTTOM_MARGIN = 35;
 var done_loading = false;
 
 const HEARTBEAT_INTERVAL = 10000; //milliseconds
-setInterval( function(){
+var heartbeat_timer = setInterval( function(){
    postAjax("register_heartbeat", {"main_id": main_id}, function () {});
 }, HEARTBEAT_INTERVAL );
 
@@ -49,7 +49,9 @@ class MainTacticSocket extends TacticSocket {
                         window.close()
                     }
                 });
-
+        this.socket.on('stop-heartbeat', function(data) {
+            clearInterval(heartbeat_timer)
+        });
         this.socket.on("window-open", function(data) {
             window.open($SCRIPT_ROOT + "/load_temp_page/" + data["the_id"])
         });

@@ -7,7 +7,7 @@ let creator_viewer;
 const BOTTOM_MARGIN = 50;
 
 const HEARTBEAT_INTERVAL = 10000; //milliseconds
-setInterval( function(){
+var heartbeat_timer = setInterval( function(){
    postAjax("register_heartbeat", {"main_id": main_id}, function () {});
 }, HEARTBEAT_INTERVAL );
 
@@ -22,6 +22,9 @@ class CreatorViewerSocket extends TacticSocket {
             if (!(data["originator"] == module_viewer_id)) {
                 window.close()
             }
+        });
+        this.socket.on('stop-heartbeat', function(data) {
+            clearInterval(heartbeat_timer)
         });
         this.socket.on("doFlash", function(data) {
             doFlash(data)
