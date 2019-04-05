@@ -65,6 +65,10 @@ $selected-column-background: #e0e0e0;
     }
 }
 
+#doc-selector {
+    z-index: 4000;
+}
+
 .admin-table-row {
     font-size: $admin-table-row-font-size;
 }
