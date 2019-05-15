@@ -10,6 +10,7 @@ from volume_manager import VolumeManager, host_persist_dir
 
 vmanager = VolumeManager(host_persist_dir)
 
+
 # noinspection PyAttributeOutsideInit
 class GlobalTileManager(object):
 
@@ -74,7 +75,7 @@ class GlobalTileManager(object):
         if username in self.tile_manager.keys():
             del self.tile_manager[username]
 
-    def get_tile_code(self, tile_type, user_id):  # tactic_working
+    def get_tile_code(self, tile_type, user_id):
         user_obj = load_user(user_id)
         username = user_obj.username
         self.add_user(username)

@@ -6,7 +6,6 @@ class FilteringMixin:
     def gmr(self, filter_function, document_name=None):
         return self.get_matching_rows(filter_function, document_name)
 
-
     def get_matching_rows(self, filter_function, document_name=None):
         self._save_stdout()
         result = []
@@ -24,7 +23,6 @@ class FilteringMixin:
         self._restore_stdout()
         return result
 
-
     def get_matching_documents(self, filter_function):
         self._save_stdout()
         jfilter_function = make_python_object_jsonizable(filter_function)
@@ -33,11 +31,9 @@ class FilteringMixin:
         self._restore_stdout()
         return result
 
-
     def dmr(self, filter_function, document_name=None):
         self.display_matching_rows(filter_function, document_name)
         return
-
 
     def display_matching_rows(self, filter_function, document_name=None):
         self._save_stdout()
