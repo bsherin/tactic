@@ -360,7 +360,7 @@ function changeCollection() {
 }
 
 function consoleToNotebook() {
-    let console_node = cleanse_bokeh(document.getElementById("console"))
+    let console_node = cleanse_bokeh(document.getElementById("console"));
     const result_dict = {
         "main_id": main_id,
         "console_html": console_node.innerHTML,
@@ -374,6 +374,7 @@ function exportAsJupyter() {
     startSpinner();
     postWithCallback("host", "get_project_names", {"user_id": user_id}, function (data) {
         let checkboxes;
+        // noinspection JSUnusedAssignment
         showModal("Export Notebook in Jupyter Format", "New Project Name", ExportJuptyer,
                   "NewJupyter", data["project_names"], checkboxes)
     });
@@ -443,7 +444,7 @@ function saveProjectAs() {
     });
 
     function CreateNewProject (new_name, checkresults) {
-            let console_node = cleanse_bokeh(document.getElementById("console"))
+            let console_node = cleanse_bokeh(document.getElementById("console"));
             const result_dict = {
                 "project_name": new_name,
                 "main_id": main_id,
@@ -494,7 +495,7 @@ function saveProjectAs() {
 }
 
 function save_project() {
-    let console_node = cleanse_bokeh(document.getElementById("console"))
+    let console_node = cleanse_bokeh(document.getElementById("console"));
     const result_dict = {
         "main_id": main_id,
         "console_html": console_node.innerHTML,

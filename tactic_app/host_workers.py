@@ -539,7 +539,7 @@ class HostWorker(QWorker):
         return {"success": True}
 
     @task_worthy
-    def create_tile_container(self, data): # tactic_working
+    def create_tile_container(self, data):
         try:
             environ = {"PPI": data["ppi"]}
             tile_container_id, container_id = create_container("tactic_tile_image", network_mode="bridge",
@@ -565,7 +565,7 @@ class HostWorker(QWorker):
             tile_containers.append(tile_container_id)
         return {"tile_containers": tile_containers}
 
-    @task_worthy  # tactic_working
+    @task_worthy
     def get_module_code(self, data):
         module_code = global_tile_manager.get_tile_code(data["tile_type"], data["user_id"])
         if module_code is None:
