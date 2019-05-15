@@ -584,6 +584,18 @@ td.cell-clickable:active {
   border: 1px solid #c7c7c7 !important;
   width: 100%; }
 
+.console-code {
+  width: 100%;
+  padding-right: 20px !important; }
+
+.execution-counter {
+  padding-right: 20px;
+  padding-top: 10px;
+  color: #9B79CC;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap; }
+
 .text-panel-output h1 {
   font-size: 2.0rem; }
 .text-panel-output h2 {

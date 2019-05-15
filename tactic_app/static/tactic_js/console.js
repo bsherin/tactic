@@ -49,6 +49,21 @@ class ConsoleObjectClass {
         return $("#console_error_log")
     }
 
+     getOutputElement(cid) {
+         return $("#" + cid).closest(".log-panel").find(".log-code-output");
+     }
+
+     getContainingPanel(cid) {
+        return $("#" + cid).closest(".log-panel")
+     }
+
+     getSpinPlace(cid) {
+        return $("#" + cid).closest(".log-panel").find(".console-spin-place");
+     }
+     getExecutionCounterElement(cid) {
+        return $("#" + cid).closest(".log-panel").find(".execution-counter");
+     }
+
     update_width(new_width_fraction) {
         const usable_width = window.innerWidth - 2 * MARGIN_SIZE - 30;
         this.current_width_fraction = new_width_fraction;
@@ -109,7 +124,7 @@ class ConsoleObjectClass {
             self.deleteAllConsoleItems()
         });
         $("#add-blank-code-button").click(function (e) {
-            self.addConsoleCodearea(e)
+            self.addConsoleCodearea(e);
             e.preventDefault();
         });
         $("#add-blank-text-button").click(function (e) {
@@ -370,10 +385,11 @@ class ConsoleObjectClass {
     }
 
     clearConsoleCode(e) {
+        let self = e.data.cobject;
         let el = $(e.target).closest(".log-panel");
         const uid = el.find(".console-code")[0].id;
-        el = $("#" + uid).parent().find(".log-code-output");
-        el.html("");
+        let output_el = self.getOutputElement(uid);
+        output_el.html("");
     }
 
 
@@ -573,7 +589,7 @@ class ConsoleObjectClass {
      */
      consoleCodeLog (data_object) {
         const force_open = data_object.force_open;
-        let el = $("#" + data_object.console_id).parent().find(".log-code-output");
+        let el = this.getOutputElement(data_object.console_id);
         el.append(data_object.message_string);
         if (force_open && !this.console_visible) {
             this.expandConsole()
@@ -586,17 +602,18 @@ class ConsoleObjectClass {
      }
 
      consoleCodePrint (data_object) {
-        let el = $("#" + data_object.console_id).parent().find(".log-code-output");
+        let el = this.getOutputElement(data_object.console_id);
         let mstring = data_object.message_string + "<br>";
         el.append(mstring)
      }
 
     clearConsole () {
+         let self = this;
         $(".log-panel-body").each(function () {
             if ($(this).hasClass("console-code")) {
                 let uid = $(this).attr("id");
-                let el = $("#" + uid).parent().find(".log-code-output");
-                el.html("")
+                self.getOutputElement(uid).html("");
+                self.getExecutionCounterElement(uid).html("[]")
             }
             else if ($(this).hasClass("error-log-panel")) {
                 $($(this).closest(".log-panel")).remove()
@@ -627,21 +644,16 @@ class ConsoleObjectClass {
     }
 
     startConsoleSpinner (uid) {
-        let cc = $("#" + uid).parent();
-        cc.find(".log-code-output").html("");
-        cc.addClass("running");
-        // cc.find(".clear-code-button").css("display", "none");
-        // cc.find(".console-spin-outer").css("display", "inline-block");
-        cc.find(".console-spin-place").html(console_spinner_html);
+        this.getOutputElement(uid).html("");
+        this.getContainingPanel(uid).addClass("running");
+        this.getSpinPlace(uid).html(console_spinner_html);
     }
 
     stopConsoleSpinner (data_object) {
         let uid = data_object.console_id;
-        let cc = $("#" + uid).parent();
-        cc.removeClass("running");
-        // cc.find(".console-spin-outer").css("display", "none");
-        cc.find(".console-spin-place").html("");
-        // cc.find(".clear-code-button").css("display", null)
+        this.getContainingPanel(uid).removeClass("running");
+        this.getSpinPlace(uid).html("");
+        this.getExecutionCounterElement(uid).html("[" + String(data_object["execution_count"] + "]"))
     }
 
     addConsoleCodeWithCode(the_code) {
