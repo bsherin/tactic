@@ -65,7 +65,7 @@ def exec_user_code(the_code):
         exec(the_code)
     except:
         error_string = sys.exc_info()[0] + " " + str(sys.exc_info()[1])
-        return {"success": False, "message_string": error_string}
+        return {"success": False, "message": error_string}
     return {"success": True,
             "classes": list(_code_names["classes"].keys()),
             "functions": list(_code_names["functions"].keys())}
@@ -738,7 +738,8 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                     try:
                         decoded_val = debinarize_python_object(attr_val)
                     except Exception as ex:  # legacy if above fails try the old method
-                        self._handle_exception(ex, "debinarizing failed for attr {}".format(attr), print_to_console=True)
+                        self._handle_exception(ex, "debinarizing failed for attr {}".format(attr),
+                                               print_to_console=True)
                         if attr == "img_dict":
                             decoded_val = {}
                         else:
@@ -936,7 +937,6 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
             sys.stdout = self._old_stdout
         self._std_out_nesting -= 1
         return
-
 
     # These two methods here, rather than in library_access_mixin
     # because its simpler having the execing machinery here.

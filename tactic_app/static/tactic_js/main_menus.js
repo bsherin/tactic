@@ -351,7 +351,7 @@ function changeCollection() {
             }
             else {
                 clearStatusMessage();
-                data_object["message"] = data_object["message_string"];
+                data_object["message"] = data_object["message"];
                 doFlashStopSpinner(data_object)
             }
         }
@@ -360,7 +360,7 @@ function changeCollection() {
 }
 
 function consoleToNotebook() {
-    let console_node = cleanse_bokeh(document.getElementById("console"))
+    let console_node = cleanse_bokeh(document.getElementById("console"));
     const result_dict = {
         "main_id": main_id,
         "console_html": console_node.innerHTML,
@@ -374,6 +374,7 @@ function exportAsJupyter() {
     startSpinner();
     postWithCallback("host", "get_project_names", {"user_id": user_id}, function (data) {
         let checkboxes;
+        // noinspection JSUnusedAssignment
         showModal("Export Notebook in Jupyter Format", "New Project Name", ExportJuptyer,
                   "NewJupyter", data["project_names"], checkboxes)
     });
@@ -406,12 +407,12 @@ function exportAsJupyter() {
                 clearStatusMessage();
                 data_object.alert_type = "alert-success";
                 data_object.timeout = 2000;
-                data_object["message"] = data_object["message_string"];
+                data_object["message"] = data_object["message"];
                 doFlashStopSpinner(data_object);
             }
             else {
                 clearStatusMessage();
-                data_object["message"] = data_object["message_string"];
+                data_object["message"] = data_object["message"];
                 data_object["alert-type"] = "alert-warning";
                 doFlashStopSpinner(data_object)
             }
@@ -443,7 +444,7 @@ function saveProjectAs() {
     });
 
     function CreateNewProject (new_name, checkresults) {
-            let console_node = cleanse_bokeh(document.getElementById("console"))
+            let console_node = cleanse_bokeh(document.getElementById("console"));
             const result_dict = {
                 "project_name": new_name,
                 "main_id": main_id,
@@ -477,7 +478,7 @@ function saveProjectAs() {
                     data_object.timeout = 2000;
                     _project_name = data_object.project_name;  // When menus recreated, it checks _project_name
                     dirty = false;
-                    data_object["message"] = data_object["message_string"];
+                    data_object["message"] = data_object["message"];
 
                     postWithCallback("host", "update_project_selector_list", {'user_id': user_id});
                     doFlashStopSpinner(data_object);
@@ -485,7 +486,7 @@ function saveProjectAs() {
                 else {
                     //tableObject.stopTableSpinner();
                     clearStatusMessage();
-                    data_object["message"] = data_object["message_string"];
+                    data_object["message"] = data_object["message"];
                     data_object["alert-type"] = "alert-warning";
                     doFlashStopSpinner(data_object)
                 }
@@ -494,7 +495,7 @@ function saveProjectAs() {
 }
 
 function save_project() {
-    let console_node = cleanse_bokeh(document.getElementById("console"))
+    let console_node = cleanse_bokeh(document.getElementById("console"));
     const result_dict = {
         "main_id": main_id,
         "console_html": console_node.innerHTML,

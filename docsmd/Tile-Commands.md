@@ -257,7 +257,7 @@ Returns the text currently highlighted by the user
 ```python
     self.log_it(html_string, force_open=True, is_error=False)
     self.dm(html_string, force_open=True, is_error=False)
-    self.display_message(html_string, message_string, force_open=True, is_error=False)
+    self.display_message(html_string, message, force_open=True, is_error=False)
 ```
 Adds the given html to the log (formerly called the console). 
 These commands all do the same thing. `display_message` and `dm` are the old names. 

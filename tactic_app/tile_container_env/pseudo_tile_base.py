@@ -55,6 +55,7 @@ class PseudoTileClass(TileBase, MplFigure):
         MplFigure.__init__(self)
         globals()["self"] = self
         self._saved_globals = copy.copy(globals())
+        self.execution_counter = 0
         return
 
     @_task_worthy
@@ -96,6 +97,7 @@ class PseudoTileClass(TileBase, MplFigure):
         result["tile_id"] = self._tworker.my_id  # I had to move this down here because it was being overwritten
         result["img_dict"] = make_python_object_jsonizable(self.img_dict)
         result["module_name"] = None
+        result["execution_counter"] = self.execution_counter
         print("done compiling attributes " + str(list(result.keys())))
         return result
 
@@ -118,10 +120,12 @@ class PseudoTileClass(TileBase, MplFigure):
                 self._handle_exception(ex, "debinarizing failed for img_dict",
                                        print_to_console=True)
 
+        if "execution_counter" in save_dict:
+            self.execution_counter = save_dict["execution_counter"]
         for (attr, attr_val) in save_dict.items():
             print("attr is " + attr)
             try:
-                if attr in ["binary_attrs", "imports", "functions", "img_dict"]:
+                if attr in ["binary_attrs", "imports", "functions", "img_dict", "execution_counter"]:
                     continue
                 if type(attr_val) == dict and hasattr(attr_val, "recreate_from_save"):
                     cls = getattr(sys.modules[__name__], attr_val["my_class_for_recreate"])
@@ -180,7 +184,10 @@ class PseudoTileClass(TileBase, MplFigure):
             else:
                 exec(data["the_code"], globals(), globals())
             sys.stdout = old_stdout
+            self.execution_counter += 1
+            data["execution_count"] = self.execution_counter
         except Exception as ex:
+            data["execution_count"] = "*"
             data["result_string"] = self._handle_exception(ex, "Error executing console code", print_to_console=False)
             sys.stdout = old_stdout
         return data

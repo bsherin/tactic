@@ -142,7 +142,7 @@ class QWorker(gevent.Greenlet):
     def submit_response(self, task_packet, response_data=None, alt_address=None):
         if response_data is not None:
             task_packet["response_data"] = response_data
-        send_request_to_megaplex("submit_response", task_packet, alt_address=alt_address)  ## tactic_todo
+        send_request_to_megaplex("submit_response", task_packet, alt_address=alt_address)
         return
 
     def special_long_sleep_function(self):
@@ -245,4 +245,4 @@ class QWorker(gevent.Greenlet):
 
     def handle_exception(self, ex, special_string=None):
         print("handle exception not implemented in qworker subclass")
-        return {"success": False, "message_string": special_string}
+        return {"success": False, "message": special_string}

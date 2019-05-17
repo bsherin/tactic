@@ -1,6 +1,7 @@
 
 from communication_utils import debinarize_python_object
 
+
 class OtherAPIMIxin:
 
     # <editor-fold desc="Other">
@@ -13,17 +14,17 @@ class OtherAPIMIxin:
         self._restore_stdout()
         return result
 
-    def display_message(self, message_string, force_open=True, is_error=False, summary=None):
-        self.log_it(message_string, force_open, is_error, summary)
+    def display_message(self, message, force_open=True, is_error=False, summary=None):
+        self.log_it(message, force_open, is_error, summary)
         return
 
-    def dm(self, message_string, force_open=True, is_error=False, summary=None):
-        self.log_it(message_string, force_open, is_error, summary)
+    def dm(self, message, force_open=True, is_error=False, summary=None):
+        self.log_it(message, force_open, is_error, summary)
         return
 
-    def log_it(self, message_string, force_open=True, is_error=False, summary=None):
+    def log_it(self, message, force_open=True, is_error=False, summary=None):
         self._save_stdout()
-        self._tworker.post_task(self._main_id, "print_to_console_event", {"print_string": message_string,
+        self._tworker.post_task(self._main_id, "print_to_console_event", {"print_string": message,
                                                                           "force_open": force_open,
                                                                           "is_error": is_error,
                                                                           "summary": summary})
@@ -68,7 +69,6 @@ class OtherAPIMIxin:
         self._restore_stdout()
         return val
     # </editor-fold>
-
 
     # <editor-fold desc="Odd utility methods">
 

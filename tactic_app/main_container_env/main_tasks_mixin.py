@@ -6,12 +6,12 @@ import uuid
 import copy
 import markdown
 import json
-from mongo_accesser import MongoAccess
+from mongo_accesser import MongoAccess  # tactic_working whats the deal here
 from qworker import task_worthy_methods, task_worthy_manual_submit_methods
 from communication_utils import make_python_object_jsonizable, debinarize_python_object, store_temp_data
 from communication_utils import make_jsonizable_and_compress, read_project_dict
 import docker_functions
-from doc_info import PROTECTED_METADATA_KEYS
+
 
 def task_worthy(m):
     task_worthy_methods[m.__name__] = "mainwindow"
@@ -289,7 +289,7 @@ class LoadSaveTasksMixin:
 
             return_data = {"project_name": data_dict["project_name"],
                            "success": True,
-                           "message_string": "Project Successfully Saved"}
+                           "message": "Project Successfully Saved"}
             self.mworker.submit_response(task_packet, return_data)
 
         try:
@@ -306,7 +306,7 @@ class LoadSaveTasksMixin:
         except Exception as ex:
             self.mworker.debug_log("got an error in save_new_project")
             error_string = self.handle_exception(ex, "<pre>Error saving new project</pre>", print_to_console=False)
-            _return_data = {"success": False, "message_string": error_string}
+            _return_data = {"success": False, "message": error_string}
             self.mworker.submit_reponse(task_packet, _return_data)
         return
 
@@ -331,7 +331,7 @@ class LoadSaveTasksMixin:
 
             return_data = {"project_name": data_dict["project_name"],
                            "success": True,
-                           "message_string": "Project Successfully Saved"}
+                           "message": "Project Successfully Saved"}
             self.mworker.submit_response(task_packet, return_data)
 
         try:
@@ -347,7 +347,7 @@ class LoadSaveTasksMixin:
         except Exception as ex:
             self.mworker.debug_log("got an error in save_new_project")
             error_string = self.handle_exception(ex, "<pre>Error saving new project</pre>", print_to_console=False)
-            _return_data = {"success": False, "message_string": error_string}
+            _return_data = {"success": False, "message": error_string}
             self.mworker.submit_response(task_packet, _return_data)
         return
 
@@ -427,13 +427,13 @@ class LoadSaveTasksMixin:
             self.db[self.project_collection_name].insert_one(save_dict)
             _return_data = {"project_name": data_dict["project_name"],
                             "success": True,
-                            "message_string": "Notebook Successfully Exported"}
+                            "message": "Notebook Successfully Exported"}
 
         except Exception as ex:
             self.mworker.debug_log("got an error in export_to_jupyter_notebook")
             error_string = self.handle_exception(ex, "<pre>Error exporting to jupyter notebook</pre>",
                                                  print_to_console=False)
-            _return_data = {"success": False, "message_string": error_string}
+            _return_data = {"success": False, "message": error_string}
         return _return_data
 
     @task_worthy
@@ -471,7 +471,7 @@ class LoadSaveTasksMixin:
                 doc_type = "table"
             if not doc_type == self.doc_type:
                 error_string = "Cannot replace a collection with a different type"
-                return_data = {"success": False, "message_string": error_string}
+                return_data = {"success": False, "message": error_string}
                 return return_data
             doc_names = []
             self.short_collection_name = short_collection_name
@@ -497,7 +497,7 @@ class LoadSaveTasksMixin:
             self.mworker.debug_log("got an error in changing collection")
             error_string = self.handle_exception(ex, "<pre>Error changing collection</pre>",
                                                  print_to_console=False)
-            return_data = {"success": False, "message_string": error_string}
+            return_data = {"success": False, "message": error_string}
         return return_data
 
 
@@ -533,8 +533,8 @@ class TileCreationTasksMixin:
             print("got instantiate result, time is {}".format(self.microdsecs(self.tstart)))
             self.tstart = datetime.datetime.now()
             if not instantiate_result["success"]:
-                self.mworker.debug_log("got an exception " + instantiate_result["message_string"])
-                raise Exception(instantiate_result["message_string"])
+                self.mworker.debug_log("got an exception " + instantiate_result["message"])
+                raise Exception(instantiate_result["message"])
 
             exports = instantiate_result["exports"]
             self.update_pipe_dict(exports, tile_container_id, tile_name)
@@ -575,8 +575,8 @@ class TileCreationTasksMixin:
                 self.mworker.ask_host("delete_container", {"container_id": new_id[0]})
             if "message" in response_data:
                 message = response_data["message"]
-            elif "message_string" in response_data:
-                message = response_data["message_string"]
+            elif "message" in response_data:
+                message = response_data["message"]
             else:
                 message = "Got a response error with status {} for event_type {}".format(tphrc["status"],
                                                                                          tphrc["task_type"])
@@ -684,7 +684,7 @@ class TileCreationTasksMixin:
                                             "options_changed": reinst_result["options_changed"]}
                             self.mworker.submit_response(local_task_packet, final_result)
                         else:
-                            raise Exception(reinst_result["message_string"])
+                            raise Exception(reinst_result["message"])
 
                     form_info = self.compile_form_info(tile_id)
                     reload_dict["form_info"] = form_info
@@ -719,7 +719,6 @@ class TileCreationTasksMixin:
 
     @task_worthy_manual_submit
     def compile_form_info_task(self, data, task_packet):
-        local_task_packet = task_packet
         tile_id = data["tile_id"]
         if tile_id is None:
             other_tile_names = list(self.tile_id_dict.keys())
@@ -735,6 +734,7 @@ class TileCreationTasksMixin:
                      "other_tile_names": other_tile_names}
         self.mworker.submit_response(task_packet, form_info)
         return
+
 
 # noinspection PyUnusedLocal
 class APISupportTasksMixin:
@@ -787,79 +787,22 @@ class APISupportTasksMixin:
 
     @task_worthy
     def get_user_collection(self, task_data):
-        name_exists = task_data["collection_name"] in self.data_collections
-        result = {}
-        if not name_exists:
+        new_collection_dict, dmdict, hldict, cm = self.get_all_collection_info(task_data["collection_name"])
+        if new_collection_dict is None:
             result = {"success": False, "message": "Collection doesn't exist."}
         else:
-            full_collection_name = self.build_data_collection_name(task_data["collection_name"])
-            print("got full_collection_name" + full_collection_name)
-            the_collection = self.db[full_collection_name]
-            new_collection_dict = {}
-            mdata = the_collection.find_one({"name": "__metadata__"})
-            if "type" in mdata and mdata["type"] == "freeform":
-                doc_type = "freeform"
-            else:
-                doc_type = "table"
-            for f in the_collection.find():
-                print("name is " + f["name"])
-                fname = f["name"]
-
-                if fname == "__metadata__":
-                    continue
-                if doc_type == "table":
-                    if "file_id" in f:
-                        f["data_rows"] = debinarize_python_object(self.fs.get(f["file_id"]).read())
-                    new_collection_dict[fname] = self.sort_rows(f["data_rows"])
-                else:
-                    if "encoding" in f:
-                        new_collection_dict[fname] = self.fs.get(f["file_id"]).read().decode(f["encoding"])
-                    else:
-                        new_collection_dict[fname] = self.fs.get(f["file_id"]).read()
-
             result = {"success": True, "the_collection": new_collection_dict}
         return result
 
     @task_worthy
     def get_user_collection_with_metadata(self, task_data):
-        name_exists = task_data["collection_name"] in self.data_collections
-
-        result = {}
-        if not name_exists:
+        new_collection_dict, dmdict, hldict, cm = self.get_all_collection_info(task_data["collection_name"])
+        if new_collection_dict is None:
             result = {"success": False, "message": "Collection doesn't exist."}
         else:
-            full_collection_name = self.build_data_collection_name(task_data["collection_name"])
-            the_collection = self.db[full_collection_name]
-            new_collection_dict = {}
-            new_metadata_dict = {}
-            collection_metadata = the_collection.find_one({"name": "__metadata__"})
-            if "type" in collection_metadata and collection_metadata["type"] == "freeform":
-                doc_type = "freeform"
-            else:
-                doc_type = "table"
-            for f in the_collection.find():
-                print("name is " + f["name"])
-                fname = f["name"]
-
-                if fname == "__metadata__":
-                    continue
-                if doc_type == "table":
-                    if "file_id" in f:
-                        f["data_rows"] = debinarize_python_object(self.fs.get(f["file_id"]).read())
-                    new_collection_dict[fname] = self.sort_rows(f["data_rows"])
-                else:
-                    if "encoding" in f:
-                        new_collection_dict[fname] = self.fs.get(f["file_id"]).read().decode(f["encoding"])
-                    else:
-                        new_collection_dict[fname] = self.fs.get(f["file_id"]).read()
-                if "metadata" in f:
-                    new_metadata_dict[fname] = f["metadata"]
-                else:
-                    new_metadata_dict[fname] = {}
-
             result = {"the_collection": new_collection_dict,
-                      "doc_metadata": new_metadata_dict,
-                      "collection_metadata": collection_metadata}
+                      "doc_metadata": dmdict,
+                      "collection_metadata": cm}
         return {"success": True, "collection_data": make_python_object_jsonizable(result)}
 
     @task_worthy
@@ -1039,83 +982,38 @@ class APISupportTasksMixin:
 
     @task_worthy
     def export_data(self, data):
-        mdata = self.create_initial_metadata()
-        mdata["name"] = "__metadata__"
-        mdata["type"] = self.doc_type
-        full_collection_name = data["full_collection_name"]
-        self.db[full_collection_name].insert_one(mdata)
-        for docinfo in self.doc_dict.values():
-            tspec = docinfo.table_spec.compile_save_dict()
-            if self.doc_type == "freeform":
-                ddict = {"name": docinfo.name, "data_text": docinfo.data_text,
-                         "metadata": docinfo.metadata, "table_spec": tspec}
+        doc_dict = {}
+        metadata_dict = {}
+        header_list_dict = {}
+        for doc_name in self.doc_dict.keys():
+            if self.doc_type == "table":
+                doc_dict[doc_name] = self.doc_dict[doc_name].all_sorted_data_rows
+                header_list_dict[doc_name] = self.doc_dict[doc_name].table_spec.header_list
             else:
-                ddict = {"name": docinfo.name, "data_rows": docinfo.data_rows,
-                         "metadata": docinfo.metadata, "table_spec": tspec}
-            self.db[full_collection_name].insert_one(ddict)
-        return {"success": True}
+                doc_dict[doc_name] = self.doc_dict[doc_name].all_data
+            metadata_dict[doc_name] = self.doc_dict[doc_name].metadata
+        try:
+            result = self.create_complete_collection(data["export_name"],
+                                                     doc_dict,
+                                                     self.doc_type,
+                                                     metadata_dict,
+                                                     header_list_dict)
+            self.mworker.ask_host("update_collection_selector_list", {"user_id": self.user_id})
+            return result
+        except Exception as ex:
+            error_string = self.handle_exception(ex, print_to_console=True)
+            return {"succes": False, "message": error_string}
 
     @task_worthy
     def create_collection(self, data):
-        new_name = data["name"]
-        name_exists = new_name in self.data_collections
-        result = {}
-        if name_exists:
-            return {"success": False, "message_string": "There is a collection with that name exist."}
-        result = {}
-        try:
-            full_collection_name = self.build_data_collection_name(new_name)
-            mdata = self.create_initial_metadata()
-            mdata["name"] = "__metadata__"
-            doc_dict = data["doc_dict"]
-            mdata["number_of_docs"] = len(doc_dict.keys())
-            doc_type = data["doc_type"]
-            document_metadata = data["doc_metadata"]
-            if document_metadata is None:
-                document_metadata = {}
-            if doc_type == "table":
-                mdata["type"] = "table"
-                self.db[full_collection_name].insert_one(mdata)
-                for docname, doc_as_list in doc_dict.items():
-                    header_list = doc_as_list[0].keys()
-                    doc_as_dict = {}
-                    for r, the_row in enumerate(doc_as_list):
-                        the_row.pop("__id__", None)
-                        the_row.pop("__filename__", None)
-                        the_row["__id__"] = r
-                        the_row["__filename__"] = docname
-                        doc_as_dict[str(r)] = the_row
-                    header_list = ["__id__", "__filename__"] + list(header_list)
-                    header_list = list(set(header_list))
-                    table_spec = {"doc_name": docname, "header_list": header_list}
-                    metadata = {}
-                    if docname in document_metadata:
-                        for k, val in document_metadata[docname].items():
-                            if k not in PROTECTED_METADATA_KEYS:
-                                metadata[k] = val
-                    result_binary = make_python_object_jsonizable(doc_as_dict, output_string=False)
-                    file_id = self.fs.put(result_binary)
-                    self.db[full_collection_name].insert_one({"name": docname, "file_id": file_id,
-                                                              "header_list": header_list, "metadata": metadata})
-            else:
-                mdata["type"] = "freeform"
-                self.db[full_collection_name].insert_one(mdata)
-                for docname, doc in doc_dict.items():
-                    doc_binary = make_python_object_jsonizable(doc, output_string=False)
-                    file_id = self.fs.put(doc_binary)
-                    metadata = {}
-                    if docname in document_metadata:
-                        for k, val in document_metadata[docname].items():
-                            if k not in PROTECTED_METADATA_KEYS:
-                                metadata[k] = val
-                    ddict = {"name": docname, "is_binarized": True, "file_id": file_id, "metadata": metadata}
-                    self.db[full_collection_name].insert_one(ddict)
+        result = self.create_complete_collection(data["name"],
+                                                 data["doc_dict"],
+                                                 data["doc_type"],
+                                                 data["doc_metadata"],
+                                                 data["header_list_dict"],
+                                                 data["collection_metadata"])
+        if result["success"]:
             self.mworker.ask_host("update_collection_selector_list", {"user_id": self.user_id})
-            result = {"success": True, "message_string": "Collection created"}
-        except Exception as ex:
-            error_string = self.handle_exception(ex, print_to_console=False)
-            result = {"success": False, "message_string": error_string}
-
         return result
 
     @task_worthy
@@ -1250,13 +1148,12 @@ class APISupportTasksMixin:
         self._set_cell_background(data["doc_name"], data["row_id"], data["column_name"], data["color"])
         return None
 
-
     @task_worthy
-    def get_code_with_class(self, data):
+    def get_code_with_class(self, data):  # tactic_working whats up with this?
         class_name = data["class_name"]
         the_code = mongo_accesser.get_code_with_class(class_name)
         if the_code is None:
-            return {"succcess": False, "message_string": "Couldn't get the code."}
+            return {"succcess": False, "message": "Couldn't get the code."}
         return {"success": True, "the_code": the_code}
 
     @task_worthy
@@ -1361,12 +1258,13 @@ class ConsoleTasksMixin:
     @task_worthy
     def got_console_result(self, data):
         self.mworker.emit_console_message("stopConsoleSpinner", {"console_id": data["console_id"],
+                                                                 "execution_count": data["execution_count"],
                                                                  "force_open": True})
         return {"success": True}
 
     @task_worthy
     def got_console_print(self, data):
-        self.mworker.emit_console_message("consoleCodePrint", {"message_string": data["result_string"],
+        self.mworker.emit_console_message("consoleCodePrint", {"message": data["result_string"],
                                                                "console_id": data["console_id"],
                                                                "force_open": True})
         return {"success": True}
@@ -1402,9 +1300,9 @@ class ConsoleTasksMixin:
 
             def instantiate_done(instantiate_result):
                 if not instantiate_result["success"]:
-                    self.mworker.debug_log("got an exception " + instantiate_result["message_string"])
+                    self.mworker.debug_log("got an exception " + instantiate_result["message"])
                     self.show_main_message("Error resetting notebook", 7)
-                    raise Exception(instantiate_result["message_string"])
+                    raise Exception(instantiate_result["message"])
                 self.mworker.post_task(self.pseudo_tile_id, "create_pseudo_tile_collection_object", {})
                 self.show_main_message("Notebook reset", 7)
 

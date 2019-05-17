@@ -43,7 +43,7 @@ def exec_tile_code(tile_code):
         exec(tile_code)
     except:
         error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-        return {"success": False, "message_string": error_string}
+        return {"success": False, "message": error_string}
     return {"success": True, "tile_name": class_info["class_name"], "category": class_info["tile_class"].category}
 
 # I want nltk to only search here so that I can see

@@ -208,6 +208,11 @@ Data Setting
 Filter-And-Iterate
 -----------------------
 
+    .. py:method:: get_matching_documents(filter_function)
+
+        **filter\_function** should take a dict, corresponding to a document's metadata, as an argument,
+        and should output a boolean.  Returns a list of the matching documents.
+
     .. py:method:: get_matching_rows(filter_function, document_name)
 
         For table docs, **filter\_function** should take a dict (corresponding to a row) as an argument,
