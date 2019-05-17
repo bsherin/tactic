@@ -351,7 +351,7 @@ function changeCollection() {
             }
             else {
                 clearStatusMessage();
-                data_object["message"] = data_object["message_string"];
+                data_object["message"] = data_object["message"];
                 doFlashStopSpinner(data_object)
             }
         }
@@ -407,12 +407,12 @@ function exportAsJupyter() {
                 clearStatusMessage();
                 data_object.alert_type = "alert-success";
                 data_object.timeout = 2000;
-                data_object["message"] = data_object["message_string"];
+                data_object["message"] = data_object["message"];
                 doFlashStopSpinner(data_object);
             }
             else {
                 clearStatusMessage();
-                data_object["message"] = data_object["message_string"];
+                data_object["message"] = data_object["message"];
                 data_object["alert-type"] = "alert-warning";
                 doFlashStopSpinner(data_object)
             }
@@ -478,7 +478,7 @@ function saveProjectAs() {
                     data_object.timeout = 2000;
                     _project_name = data_object.project_name;  // When menus recreated, it checks _project_name
                     dirty = false;
-                    data_object["message"] = data_object["message_string"];
+                    data_object["message"] = data_object["message"];
 
                     postWithCallback("host", "update_project_selector_list", {'user_id': user_id});
                     doFlashStopSpinner(data_object);
@@ -486,7 +486,7 @@ function saveProjectAs() {
                 else {
                     //tableObject.stopTableSpinner();
                     clearStatusMessage();
-                    data_object["message"] = data_object["message_string"];
+                    data_object["message"] = data_object["message"];
                     data_object["alert-type"] = "alert-warning";
                     doFlashStopSpinner(data_object)
                 }

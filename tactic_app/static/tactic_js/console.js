@@ -549,7 +549,7 @@ class ConsoleObjectClass {
     }
 
     /**
-     * @param {{force_open:boolean, message_string:string}} data_object
+     * @param {{force_open:boolean, message:string}} data_object
      */
     consoleLog (data_object) {
         const force_open = data_object.force_open;
@@ -557,10 +557,10 @@ class ConsoleObjectClass {
             this.current_panel_focus = null
         }
         if (this.current_panel_focus == null) {
-            this.console_dom.append(data_object.message_string);
+            this.console_dom.append(data_object.message);
         }
         else {
-            this.current_panel_focus.after(data_object.message_string);
+            this.current_panel_focus.after(data_object.message);
 
         }
         if (force_open && !this.console_visible && !this.console_zoomed) {
@@ -585,12 +585,12 @@ class ConsoleObjectClass {
         this.bindAllTextKeys();
      }
     /**
-     * @param {{force_open:boolean, console_id:string, message_string:string}} data_object
+     * @param {{force_open:boolean, console_id:string, message:string}} data_object
      */
      consoleCodeLog (data_object) {
         const force_open = data_object.force_open;
         let el = this.getOutputElement(data_object.console_id);
-        el.append(data_object.message_string);
+        el.append(data_object.message);
         if (force_open && !this.console_visible) {
             this.expandConsole()
         }
@@ -603,7 +603,7 @@ class ConsoleObjectClass {
 
      consoleCodePrint (data_object) {
         let el = this.getOutputElement(data_object.console_id);
-        let mstring = data_object.message_string + "<br>";
+        let mstring = data_object.message + "<br>";
         el.append(mstring)
      }
 

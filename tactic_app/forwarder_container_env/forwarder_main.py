@@ -32,7 +32,7 @@ def handle_exception(ex, special_string=None):
         template = "<pre>" + special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}</pre>"
     error_string = template.format(type(ex).__name__, ex.args)
     print error_string
-    return jsonify({"success": False, "message_string": error_string})
+    return jsonify({"success": False, "message": error_string})
 
 @app.route('/forward_message', methods=["get", "post"])
 def forward_message():

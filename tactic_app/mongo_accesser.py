@@ -1,11 +1,32 @@
 
 import re
+import datetime
+from communication_utils import make_python_object_jsonizable, debinarize_python_object
 
 name_keys = {"tile": "tile_module_name", "list": "list_name", "project": "project_name", "code": "code_name"}
 res_types = ["list", "collection", "project", "tile", "code"]
 
 
+PROTECTED_METADATA_KEYS = ["_id", "file_id", "name", "my_class_for_recreate", "table_spec", "data_text", "length",
+                           "data_rows", "header_list", "number_of_rows"]
+
+
+class NameExistsError(Exception):
+    pass
+
+
+class NonexistentNameError(Exception):
+    pass
+
+
 class MongoAccess(object):
+
+    def create_initial_metadata(self):
+        mdata = {"datetime": datetime.datetime.utcnow(),
+                 "updated": datetime.datetime.utcnow(),
+                 "tags": "",
+                 "notes": ""}
+        return mdata
 
     @property
     def project_collection_name(self):
@@ -46,6 +67,193 @@ class MongoAccess(object):
                 my_collection_names.append([m.group(1), mdata])
 
         return sorted(my_collection_names, key=self.sort_data_list_key)
+
+    def rename_collection(self, old_name, new_name):
+        full_old_name = self.build_data_collection_name(old_name)
+        full_new_name = self.build_data_collection_name(new_name)
+        self.db[full_old_name].rename(full_new_name)
+        return
+
+    def update_number_of_docs(self, collection_name):
+        number_of_docs = self.db[collection_name].count() - 1
+        self.db[collection_name].update_one({"name": "__metadata__"},
+                                            {'$set': {"number_of_docs": number_of_docs}})
+
+    def update_collection_time(self, collection_name):
+        full_collection_name = self.build_data_collection_name(collection_name)
+        self.db[full_collection_name].update_one({"name": "__metadata__"},
+                                                 {'$set': {"updated": datetime.datetime.utcnow()}})
+
+    def create_complete_collection(self, new_name, doc_dict, doc_type, document_metadata=None,
+                                   header_list_dict=None, collection_metadata=None):
+        name_exists = new_name in self.data_collections
+        if name_exists:
+            raise NameExistsError("Collection name {} already exists".format(new_name))
+        full_collection_name = self.build_data_collection_name(new_name)
+        mdata = self.create_initial_metadata()
+        mdata["name"] = "__metadata__"
+        mdata["number_of_docs"] = len(doc_dict.keys())
+        if collection_metadata is not None:
+            for k, v in collection_metadata.items():
+                mdata[k] = v
+        if document_metadata is None:
+            document_metadata = {}
+        if doc_type == "table":
+            mdata["type"] = "table"
+            self.db[full_collection_name].insert_one(mdata)
+            for docname, doc_as_list in doc_dict.items():
+                if header_list_dict is not None and docname in header_list_dict:
+                    header_list = header_list_dict[docname]
+                else:
+                    header_list = None
+                if document_metadata is not None and docname in document_metadata:
+                    doc_mdata = document_metadata[docname]
+                else:
+                    doc_mdata = None
+                self.append_document_to_collection(new_name, docname, doc_as_list, "table", header_list, doc_mdata)
+        else:
+            mdata["type"] = "freeform"
+            self.db[full_collection_name].insert_one(mdata)
+            for docname, doc in doc_dict.items():
+                if document_metadata is not None and docname in document_metadata:
+                    doc_mdata = document_metadata[docname]
+                else:
+                    doc_mdata = None
+                self.append_document_to_collection(new_name, docname, doc, "freeform", None, doc_mdata)
+        return {"success": True, "message": "Collection created"}
+
+    def append_document_to_collection(self, collection_name, docname, doc, doc_type,
+                                      header_list=None, document_metadata=None):
+        name_exists = collection_name in self.data_collections
+        if not name_exists:
+            raise NonexistentNameError("Base collection name {} doesn't exists".format(collection_name))
+        full_collection_name = self.build_data_collection_name(collection_name)
+        metadata = {}
+        if document_metadata is not None:
+            for k, val in document_metadata.items():
+                if k not in PROTECTED_METADATA_KEYS:
+                    metadata[k] = val
+
+        if doc_type == "table":
+            if header_list is None:
+                header_list = list(doc[0].keys())
+            doc_as_dict = {}
+            for r, the_row in enumerate(doc):
+                the_row.pop("__id__", None)
+                the_row.pop("__filename__", None)
+                the_row["__id__"] = r
+                the_row["__filename__"] = docname
+                doc_as_dict[str(r)] = the_row
+            if "__filename__" not in header_list:
+                header_list = ["__filename__"] + header_list
+            if "__id__" not in header_list:
+                header_list = ["__id__"] + header_list
+
+            result_binary = make_python_object_jsonizable(doc_as_dict, output_string=False)
+            file_id = self.fs.put(result_binary)
+            self.db[full_collection_name].insert_one({"name": docname, "file_id": file_id,
+                                                      "header_list": header_list, "metadata": metadata})
+        else:
+            doc_binary = make_python_object_jsonizable(doc, output_string=False)
+            file_id = self.fs.put(doc_binary)
+            ddict = {"name": docname, "is_binarized": True, "file_id": file_id, "metadata": metadata}
+            self.db[full_collection_name].insert_one(ddict)
+        self.update_number_of_docs(collection_name)
+        return {"success": True}
+
+    def get_collection_metadata(self, short_collection_name):
+        name_exists = short_collection_name in self.data_collections
+        if not name_exists:
+            return None
+        full_collection_name = self.build_data_collection_name(short_collection_name)
+        the_collection = self.db[full_collection_name]
+        return the_collection.find_one({"name": "__metadata__"})
+
+    def set_collection_metadata(self, short_collection_name, tags, notes):
+        name_exists = short_collection_name in self.data_collections
+        if not name_exists:
+            return None
+        full_collection_name = self.build_data_collection_name(short_collection_name)
+        mdata = self.get_collection_metadata(short_collection_name)
+        if mdata is None:
+            self.db[full_collection_name].insert_one({"name": "__metadata__", "tags": tags, "notes": notes})
+        else:
+            self.db[full_collection_name].update_one({"name": "__metadata__"},
+                                                     {'$set': {"tags": tags, "notes": notes}})
+        return
+
+    def get_collection_docnames(self, short_collection_name):
+        name_exists = short_collection_name in self.data_collections
+        if not name_exists:
+            return None
+        full_collection_name = self.build_data_collection_name(short_collection_name)
+        the_collection = self.db[full_collection_name]
+        doc_names = []
+
+        for f in the_collection.find():
+            fname = f["name"].encode("ascii", "ignore")
+            if fname == "__metadata__":
+                continue
+            else:
+                doc_names.append(fname)
+
+        doc_names.sort()
+        return doc_names
+
+    def sort_rows(self, row_dict):
+        result = []
+        sorted_int_keys = sorted([int(key) for key in row_dict.keys()])
+        for r in sorted_int_keys:
+            result.append(row_dict[str(r)])
+        return result
+
+    def get_all_collection_info(self, short_collection_name, return_lists=True):
+        name_exists = short_collection_name in self.data_collections
+
+        if not name_exists:
+            return False, None, None, None
+        else:
+            full_collection_name = self.build_data_collection_name(short_collection_name)
+            the_collection = self.db[full_collection_name]
+            new_collection_dict = {}
+            header_list_dict = {}
+            doc_metadata_dict = {}
+            collection_metadata = the_collection.find_one({"name": "__metadata__"})
+            if "type" in collection_metadata and collection_metadata["type"] == "freeform":
+                doc_type = "freeform"
+            else:
+                doc_type = "table"
+            for f in the_collection.find():
+                fname = f["name"]
+
+                if fname == "__metadata__":
+                    continue
+                if doc_type == "table":
+                    if "file_id" in f:
+                        new_collection_dict[fname] = debinarize_python_object(self.fs.get(f["file_id"]).read())
+                    else:
+                        new_collection_dict[fname] = f["data_rows"]
+                    if return_lists:
+                        new_collection_dict[fname] = self.sort_rows(new_collection_dict[fname])
+                    if "header_list" in f:
+                        header_list_dict[fname] = f["header_list"]
+                    elif "table_spec" in f:
+                        header_list_dict[fname] = f["table_spec"]["header_list"]
+                    else:
+                        header_list_dict[fname] = None
+                else:
+                    if "is_binarized" in f and f["is_binarized"]:
+                        new_collection_dict[fname] = debinarize_python_object(self.fs.get(f["file_id"]).read())
+                    elif "encoding" in f:  # legacy
+                        new_collection_dict[fname] = self.fs.get(f["file_id"]).read().decode(f["encoding"])
+                    else:
+                        new_collection_dict[fname] = self.fs.get(f["file_id"]).read()
+                if "metadata" in f:
+                    doc_metadata_dict[fname] = f["metadata"]
+                else:
+                    doc_metadata_dict[fname] = {}
+
+        return new_collection_dict, doc_metadata_dict, header_list_dict, collection_metadata
 
     @property
     def data_collection_tags_dict(self):

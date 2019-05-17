@@ -72,7 +72,7 @@ class ModuleViewerWorker(QWorker):
         error_string = template.format(type(ex).__name__, ex.args)
         error_string = "<pre>" + error_string + "</pre>"
         print(error_string)
-        return {"success": False, "message_string": error_string}
+        return {"success": False, "message": error_string}
 
     @task_worthy
     def reintiailize_parser(self, data_dict):
