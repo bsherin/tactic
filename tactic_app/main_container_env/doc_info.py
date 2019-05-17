@@ -1,19 +1,14 @@
 
 import copy, os
 from communication_utils import debinarize_python_object
+from mongo_accesser import PROTECTED_METADATA_KEYS
 
 CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
 
 STEP_SIZE = int(os.environ.get("STEP_SIZE"))
 
-PROTECTED_METADATA_KEYS = ["_id", "file_id", "name", "my_class_for_recreate", "table_spec", "data_text", "length",
-                           "data_rows", "header_list", "number_of_rows"]
-
 
 class TableSpec(object):
-    # table_width isn't used anymore for anything. But it's there in some old saves. So this is necessary
-    # to avoid getting an error
-    # legacy
     def __init__(self, doc_name=None, header_list=None, table_width=None, column_widths=None,
                  cell_backgrounds=None, hidden_columns_list=None):
         self.doc_name = doc_name
@@ -53,23 +48,10 @@ class TableSpec(object):
 # Each doc should have fields:
 # name, data_rows or data_text, cell_background, table_spec, metadata
 class DocInfoAbstract(object):
-    def __init__(self, f):
-        self.name = f["name"]
-        if "metadata" in f:
-            self.metadata = f["metadata"]
-        else:
-            self.metadata = self.collect_legacy_metadata(f)
+    def __init__(self, name, metadata):
+        self.name = name
+        self.metadata = metadata
         return
-
-    def collect_legacy_metadata(self, f):  # Legacy older than about 2-27-17
-        mdata = {}
-        for key, val in f.items():
-            if key not in PROTECTED_METADATA_KEYS:
-                mdata[key] = val
-        return mdata
-
-    def compile_metadata(self, f):
-        return self.metadata
 
     def set_additional_metadata(self, mdict):
         for k, d in mdict.items():
@@ -87,25 +69,14 @@ class DocInfoAbstract(object):
 # Most of table_spec stuff, including table_width, doesn't do anything in freeform docs.
 class FreeformDocInfo(DocInfoAbstract):
 
-    def __init__(self, f, data_text=None):
-        DocInfoAbstract.__init__(self, f)
-        if data_text is None:
-            self.data_text = f["data_text"]
-        else:
-            self.data_text = data_text
-        self.metadata["length"] = len(self.data_text)
+    def __init__(self, name=None, metadata=None, data_text=None):
+        DocInfoAbstract.__init__(self, name, metadata)
+        self.data_text = data_text
+        self.metadata = metadata
 
-        if "table_spec" not in f:
-            self.table_spec = TableSpec(doc_name=f["name"])
-        else:
-            self.table_spec = TableSpec(**f["table_spec"])
+        self.table_spec = TableSpec(doc_name=name)
+
         return
-
-    def compile_save_dict(self):
-        result = DocInfoAbstract.compile_save_dict(self)
-        result.update({"data_text": self.data_text,
-                       "my_class_for_recreate": "FreeformDocInfo"})
-        return result
 
     @property
     def all_data(self):
@@ -128,24 +99,31 @@ class FreeformDocInfo(DocInfoAbstract):
     def get_actual_row(self, row_id):
         return row_id
 
+    def compile_save_dict(self):
+        result = DocInfoAbstract.compile_save_dict(self)
+        result.update({"data_text": self.data_text,
+                       "my_class_for_recreate": "FreeformDocInfo"})
+        return result
+
     @staticmethod
     def recreate_from_save(save_dict):
-        new_instance = FreeformDocInfo(save_dict)
+        new_instance = FreeformDocInfo(save_dict["name"], save_dict["metadata"], save_dict["data_text"])
         return new_instance
 
 
 # noinspection PyPep8Naming
 class docInfo(DocInfoAbstract):
-    def __init__(self, f):
-        DocInfoAbstract.__init__(self, f)
-        if "header_list" in f:
-            self.table_spec = TableSpec(f["name"], f["header_list"], None, None, None)  # Legacy older than 2-27-17
+    def __init__(self, name=None, header_list=None, metadata=None, data_rows=None, table_spec=None):
+        DocInfoAbstract.__init__(self, name, metadata)
+        if table_spec is not None:  # This will be the case if we are recreating
+            self.table_spec = TableSpec(**table_spec)
         else:
-            self.table_spec = TableSpec(**f["table_spec"])
-        self.data_rows = copy.deepcopy(f["data_rows"])  # All the data rows in the doc
+            self.table_spec = TableSpec(name, header_list, None, None, None)
+        self.data_rows = copy.deepcopy(data_rows)  # All the data rows in the doc
         self.current_data_rows = self.data_rows  # The current filtered set of data rows
 
         self.start_of_current_chunk = None
+
         self.is_first_chunk = None
         self.infinite_scroll_required = None
         self.is_last_chunk = None
@@ -155,7 +133,7 @@ class docInfo(DocInfoAbstract):
             self.max_table_size = CHUNK_SIZE
         else:
             self.max_table_size = len(self.data_rows.keys())
-        self.metadata["number_of_rows"] = len(f["data_rows"].keys())
+        self.metadata["number_of_rows"] = len(data_rows.keys())
         return
 
     def set_background_color(self, row, column_header, color):
@@ -197,12 +175,6 @@ class docInfo(DocInfoAbstract):
             if str(row_id) == str(the_row["__id__"]):
                 return i
         return None
-
-    def compile_save_dict(self):
-        result = DocInfoAbstract.compile_save_dict(self)
-        result.update({"data_rows": self.data_rows,
-                       "my_class_for_recreate": "docInfo"})
-        return result
 
     def get_id_from_actual_row(self, actual_row):
         return self.sorted_data_rows[actual_row]["__id__"]
@@ -277,7 +249,14 @@ class docInfo(DocInfoAbstract):
             result[int(key)] = val
         return result
 
+    def compile_save_dict(self):
+        result = DocInfoAbstract.compile_save_dict(self)
+        result.update({"data_rows": self.data_rows,
+                       "my_class_for_recreate": "docInfo"})
+        return result
+
     @staticmethod
     def recreate_from_save(save_dict):
-        new_instance = docInfo(save_dict)
+        new_instance = docInfo(name=save_dict["name"], metadata=save_dict["metadata"],
+                               data_rows=save_dict["data_rows"], table_spec=save_dict["table_spec"])
         return new_instance

@@ -3,7 +3,7 @@
          <div class="button-div shrink-expand-div">
             <button type="button" class="notclose shrink-log-button">
                 <span  class="fas fa-chevron-circle-down"> </span>
-            </button>
+            </button>`
             <button type="button" class="notclose expand-log-button">
                 <span  class="fas fa-chevron-circle-right"></span>
             </button>
@@ -28,7 +28,10 @@
      <div class='log-panel-summary' contenteditable="true">
          {{summary_text | safe}}
      </div>
-     <div class='log-panel-body mousetrap console-code' id="{{ unique_id }}">
+     <div class="d-flex flex-row">
+        <div class='log-panel-body mousetrap console-code' id="{{ unique_id }}">
+        </div>
+         <div class='execution-counter'>[ ]</div>
      </div>
       <div class='log-code-output'>
      </div>

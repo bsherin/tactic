@@ -1,6 +1,7 @@
 
 from communication_utils import debinarize_python_object
 
+
 class LibraryAccessMixin:
     def gulist(self, the_list):
         return self.get_user_list(the_list)
@@ -77,11 +78,15 @@ class LibraryAccessMixin:
         self.create_collection(name, doc_dict, doc_type, doc_metadata)
         return
 
-    def create_collection(self, name, doc_dict, doc_type="table", doc_metadata=None):
+    def create_collection(self, name, doc_dict, doc_type="table", doc_metadata=None,
+                          header_list_dict=None, collection_metadata=None):
         self._save_stdout()
         data = {"name": name,
                 "doc_dict": doc_dict,
-                "doc_type": doc_type}
+                "doc_type": doc_type,
+                "doc_metadata": doc_metadata,
+                "header_list_dict": header_list_dict,
+                "collection_metadata": collection_metadata}
         if doc_metadata is not None:
             data["doc_metadata"] = doc_metadata
         else:
@@ -89,9 +94,8 @@ class LibraryAccessMixin:
         result = self._tworker.post_and_wait(self._main_id, "create_collection", data)
         self._restore_stdout()
         if not result["success"]:
-            raise Exception(result["message_string"])
-        return result["message_string"]
-
+            raise Exception(result["message"])
+        return result["message"]
 
     # deprecated
     def get_tokenizer(self, tokenizer_name):

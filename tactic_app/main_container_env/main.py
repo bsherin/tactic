@@ -38,10 +38,6 @@ mongo_uri = os.environ.get("MONGO_URI")
 true_host_persist_dir = os.environ.get("TRUE_HOST_PERSIST_DIR")
 
 
-class CollectionNameExistsError(Exception):
-    pass
-
-
 # noinspection PyPep8Naming,PyUnusedLocal,PyTypeChecker
 class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationTasksMixin, APISupportTasksMixin,
                  ExportsTasksMixin, ConsoleTasksMixin, DataSupportTasksMixin):
@@ -190,7 +186,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                                                                                 parent=data["parent"],
                                                                                 other_name=data["other_name"],
                                                                                 env_vars=environ,
-                                                                                volume_dict = tile_volume_dict,
+                                                                                volume_dict=tile_volume_dict,
                                                                                 publish_all_ports=True)
             tile_address = docker_functions.get_address(container_id, "bridge")
         except docker_functions.ContainerCreateError:
@@ -207,7 +203,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
             except Exception as ex:
                 error_string = self.handle_exception(ex, "<pre>Error loading project dict</pre>", print_to_console=True)
                 print(error_string)
-                return_data = {"success": False, "message_string": error_string}
+                return_data = {"success": False, "message": error_string}
                 return error_string, {}, False
 
             project_dict["metadata"] = save_dict["metadata"]
@@ -276,25 +272,15 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
     def _build_doc_dict(self):
         print("in _build_doc_dict")
         result = {}
-        the_collection = self.db[self.collection_name]
-        for f in the_collection.find():
-            # fname = f["name"].encode("ascii", "ignore")
-            fname = f["name"]
-            print("fname is " + fname)
-            if fname == "__metadata__":
-                continue
+
+        coll_dict, dm_dict, hl_dict, coll_mdata = self.get_all_collection_info(self.short_collection_name,
+                                                                               return_lists=False)
+        for fname in coll_dict.keys():
             if self.doc_type == "table":
-                if "file_id" in f:
-                    f["data_rows"] = debinarize_python_object(self.fs.get(f["file_id"]).read())
-                result[fname] = docInfo(f)
+                result[fname] = docInfo(fname, hl_dict[fname], dm_dict[fname], coll_dict[fname])
             else:
-                if "is_binarized" in f and f["is_binarized"]:
-                    the_text = debinarize_python_object(self.fs.get(f["file_id"]).read())
-                elif "encoding" in f:  # legacy
-                    the_text = self.fs.get(f["file_id"]).read().decode(f["encoding"])
-                else:  # legacy, even older
-                    the_text = self.fs.get(f["file_id"]).read()
-                result[fname] = FreeformDocInfo(f, the_text)
+                result[fname] = FreeformDocInfo(fname, dm_dict[fname], coll_dict[fname])
+
         print("leaving _build_doc_dict")
         return result
 
@@ -316,13 +302,6 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
             if docinfo.table_spec:  # This will be false if table_spec == {}
                 tdict[key] = docinfo.table_spec.compile_save_dict()
         return tdict
-
-    def create_initial_metadata(self):
-        mdata = {"datetime": datetime.datetime.utcnow(),
-                 "updated": datetime.datetime.utcnow(),
-                 "tags": "",
-                 "notes": ""}
-        return mdata
 
     def refill_table(self):
         doc = self.doc_dict[self.visible_doc_name]
@@ -448,13 +427,6 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
     def get_loaded_user_modules(self):
         return self.vmanager["loaded_user_modules"].keys()
 
-    def sort_rows(self, row_dict):
-        result = []
-        sorted_int_keys = sorted([int(key) for key in row_dict.keys()])
-        for r in sorted_int_keys:
-            result.append(row_dict[str(r)])
-        return result
-
     def create_pseudo_tile(self, globals_dict=None):
         print("entering create_pseudo_tile")
 
@@ -472,11 +444,11 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         print("about to instantiate")
         instantiate_result = self.mworker.post_and_wait(self.pseudo_tile_id,
                                                         "instantiate_as_pseudo_tile", data_dict)
-        if not self.am_notebook_type:
-            self.mworker.post_task(self.pseudo_tile_id, "create_pseudo_tile_collection_object", {})
+        self.mworker.post_task(self.pseudo_tile_id, "create_pseudo_tile_collection_object",
+                               {"am_notebook": self.am_notebook_type})
         if not instantiate_result["success"]:
-            self.mworker.debug_log("got an exception " + instantiate_result["message_string"])
-            raise Exception(instantiate_result["message_string"])
+            self.mworker.debug_log("got an exception " + instantiate_result["message"])
+            raise Exception(instantiate_result["message"])
 
         return {"success": True}
 

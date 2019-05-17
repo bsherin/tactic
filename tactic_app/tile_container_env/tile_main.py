@@ -44,6 +44,7 @@ else:
 
 print("got main_address {}".format(main_address))
 
+
 # noinspection PyUnusedLocal
 class TileWorker(QWorker):
     def __init__(self):
@@ -90,7 +91,7 @@ class TileWorker(QWorker):
         error_string = "<pre>" + error_string + "</pre>"
         summary = "Exception of type {}".format(type(ex).__name__)
         print(error_string)
-        return {"success": False, "message_string": error_string, "summary": summary}
+        return {"success": False, "message": error_string, "summary": summary}
 
     @task_worthy
     def load_source(self, data_dict):
@@ -310,11 +311,13 @@ class TileWorker(QWorker):
 
     @task_worthy
     def create_pseudo_tile_collection_object(self, data):
-        document_object.Collection.__fully_initialize__()
-        pseudo_tile_base.Collection = document_object.Collection
+        am_notebook = data["am_notebook"]
+        if not am_notebook:
+            document_object.Collection.__fully_initialize__()
+            pseudo_tile_base.Collection = document_object.Collection
+            pseudo_tile_base.Tiles = remote_tile_object.Tiles
+            pseudo_tile_base.Pipes = remote_tile_object.Pipes
         pseudo_tile_base.Library = library_object.Library
-        pseudo_tile_base.Tiles = remote_tile_object.Tiles
-        pseudo_tile_base.Pipes = remote_tile_object.Pipes
         return data
 
     @task_worthy

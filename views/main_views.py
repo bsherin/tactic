@@ -116,9 +116,9 @@ def export_data():
         collection_manager.update_selector_list(user_obj=user_obj)
         return
     data_dict = request.json
-    full_collection_name = current_user.build_data_collection_name(data_dict['export_name'])
+    export_name = data_dict['export_name']
     tactic_app.host_worker.post_task(data_dict["main_id"], "export_data",
-                                     {"full_collection_name": full_collection_name},
+                                     {"export_name": export_name},
                                      export_success)
     return jsonify({"success": True})
 

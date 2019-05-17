@@ -11,7 +11,7 @@ from tactic_app.communication_utils import read_temp_data, delete_temp_data
 import openpyxl
 import cStringIO
 import tactic_app
-from tactic_app.file_handling import read_csv_file_to_dict, read_tsv_file_to_dict, read_txt_file_to_dict
+from tactic_app.file_handling import read_csv_file_to_list, read_tsv_file_to_list, read_txt_file_to_list
 from tactic_app.file_handling import read_freeform_file, read_excel_file
 from tactic_app.users import load_user
 
@@ -107,25 +107,15 @@ class CollectionManager(LibraryResourceManager):
 
         global_tile_manager.add_user(user_obj.username)
 
-        the_collection = db[cname]
-        mdata = the_collection.find_one({"name": "__metadata__"})
+        short_collection_name = re.sub("^.*?\.data_collection\.", "", collection_name)
+        mdata = user_obj.get_collection_metadata(short_collection_name)
         if "type" in mdata and mdata["type"] == "freeform":
             doc_type = "freeform"
         else:
             doc_type = "table"
 
-        short_collection_name = re.sub("^.*?\.data_collection\.", "", collection_name)
+        doc_names = user_obj.get_collection_docnames(short_collection_name)
 
-        doc_names = []
-
-        for f in the_collection.find():
-            fname = f["name"].encode("ascii", "ignore")
-            if fname == "__metadata__":
-                continue
-            else:
-                doc_names.append(fname)
-
-        doc_names.sort()
         return render_template("main.html",
                                collection_name=cname,
                                window_title=short_collection_name,
@@ -147,10 +137,7 @@ class CollectionManager(LibraryResourceManager):
     def rename_me(self, old_name):
         try:
             new_name = request.json["new_name"]
-            full_old_name = current_user.build_data_collection_name(old_name)
-            full_new_name = current_user.build_data_collection_name(new_name)
-            db[full_old_name].rename(full_new_name)
-            # self.update_selector_list()
+            current_user.rename_collection(old_name, new_name)
             return jsonify({"success": True, "message": "collection name changed", "alert_type": "alert-success"})
         except:
             error_string = "Error renaming collection " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
@@ -158,15 +145,11 @@ class CollectionManager(LibraryResourceManager):
 
     def download_collection(self, collection_name, new_name):
         user_obj = current_user
-        cname = user_obj.build_data_collection_name(collection_name)
-        the_collection = db[cname]
-
+        coll_dict, doc_mdata_dict, header_list_dict, coll_mdata = user_obj.get_all_collection_info(collection_name,
+                                                                                                   return_lists=False)
         wb = openpyxl.Workbook()
         first = True
-        for f in the_collection.find():
-            doc_name = f["name"].encode("ascii", "ignore")
-            if doc_name == "__metadata__":
-                continue
+        for doc_name in coll_dict.keys():
             sheet_name = re.sub(r"[\[\]\*\/\\ \?\:]", r"-", doc_name)[:25]
             if first:
                 ws = wb.active
@@ -174,13 +157,8 @@ class CollectionManager(LibraryResourceManager):
                 first = False
             else:
                 ws = wb.create_sheet(title=sheet_name)
-            if "file_id" in f:
-                f["data_rows"] = debinarize_python_object(fs.get(f["file_id"]).read())
-            data_rows = f["data_rows"]
-            if "header_list" in f:
-                header_list = f["header_list"]
-            else:
-                header_list = f["table_spec"]["header_list"]
+            data_rows = coll_dict[doc_name]
+            header_list = header_list_dict[doc_name]
             for c, header in enumerate(header_list, start=1):
                 _ = ws.cell(row=1, column=c, value=header)
             sorted_int_keys = sorted([int(key) for key in data_rows.keys()])
@@ -203,18 +181,11 @@ class CollectionManager(LibraryResourceManager):
             user_obj = repository_user
         else:
             user_obj = current_user
-        cname = user_obj.build_data_collection_name(res_name)
-        mdata = db[cname].find_one({"name": "__metadata__"})
-        return mdata
+        return user_obj.get_collection_metadata(res_name)
 
     def save_metadata(self, res_name, tags, notes):
-        cname = current_user.build_data_collection_name(res_name)
-        mdata = db[cname].find_one({"name": "__metadata__"})
-        if mdata is None:
-            db[cname].insert_one({"name": "__metadata__", "tags": tags, "notes": notes})
-        else:
-            db[cname].update_one({"name": "__metadata__"},
-                                 {'$set': {"tags": tags, "notes": notes}})
+        current_user.set_collection_metadata(res_name, tags, notes)
+        return
 
     def delete_tag(self, tag):
         cnames_with_metadata = current_user.data_collection_names_with_metadata
@@ -226,9 +197,7 @@ class CollectionManager(LibraryResourceManager):
             if tag in taglist:
                 taglist.remove(tag)
                 mdata["tags"] = " ".join(taglist)
-                cname = current_user.build_data_collection_name(res_name)
-                db[cname].update_one({"name": "__metadata__"},
-                                     {'$set': {"tags": mdata["tags"], "notes": mdata["notes"]}})
+                current_user.set_collection_metadata(res_name, mdata["tags"], mdata["notes"])
         return
 
     def rename_tag(self, tag_changes):
@@ -242,9 +211,7 @@ class CollectionManager(LibraryResourceManager):
                     if new_tag not in taglist:
                         taglist.append(new_tag)
                     mdata["tags"] = " ".join(taglist)
-                    cname = current_user.build_data_collection_name(res_name)
-                    db[cname].update_one({"name": "__metadata__"},
-                                         {'$set': {"tags": mdata["tags"], "notes": mdata["notes"]}})
+                    current_user.set_collection_metadata(res_name, mdata["tags"], mdata["notes"])
         return
 
     def autosplit_doc(self, filename, full_dict):
@@ -274,18 +241,20 @@ class CollectionManager(LibraryResourceManager):
     def combine_collections(self, base_collection_name, collection_to_add):
         try:
             user_obj = current_user
-            base_full_name = user_obj.build_data_collection_name(base_collection_name)
-            add_full_name = user_obj.build_data_collection_name(collection_to_add)
-            base_collection = db[base_full_name]
-            add_collection = db[add_full_name]
-            for f in add_collection.find():
-                fname = f["name"].encode("ascii", "ignore")
-                if fname == "__metadata__":
-                    continue
-                base_collection.insert_one(f)
-            db[base_full_name].update_one({"name": "__metadata__"},
-                                          {'$set': {"updated": datetime.datetime.utcnow()}})
-            self.update_number_of_docs(base_full_name)
+
+            if base_collection_name not in user_obj.data_collections:
+                error_string = base_collection_name + " doesn't exist"
+                return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+
+            if collection_to_add not in user_obj.data_collections:
+                error_string = base_collection_name + " doesn't exist"
+                return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+
+            coll_dict, dm_dict, hl_dict, coll_mdata = user_obj.get_all_collection_info(collection_to_add)
+            for dname, doc in coll_dict.items():
+                user_obj.append_document_to_collection(base_collection_name, dname, doc, coll_mdata["type"],
+                                                       hl_dict[dname], dm_dict[dname])
+            user_obj.update_collection_time(base_collection_name)
             self.update_selector_list(base_collection_name)
             return jsonify({"message": "Collections successfull combined", "alert_type": "alert-success"})
         except:
@@ -295,73 +264,60 @@ class CollectionManager(LibraryResourceManager):
     def import_as_table(self, collection_name, library_id):
         user_obj = current_user
         file_list = request.files.getlist("file")
-        full_collection_name = user_obj.build_data_collection_name(collection_name)
-        if full_collection_name in db.collection_names():
-            return jsonify({"success": False, "message": "There is already a collection with that name.",
-                            "alert_type": "alert-warning"})
-        mdata = global_tile_manager.create_initial_metadata()
-        try:
-            db[full_collection_name].insert_one({"name": "__metadata__", "datetime": mdata["datetime"],
-                                                 "updated": mdata["updated"], "tags": "", "notes": "", "type": "table"})
-        except:
-            error_string = "Error creating collection: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-            return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+
+        collection_mdata = global_tile_manager.create_initial_metadata()
 
         known_extensions = [".xlsx", ".csv", ".tsv", ".txt"]
 
         file_decoding_errors = OrderedDict()
+        new_doc_dict = {}
+        header_list_dict = {}
         for the_file in file_list:
-            multidoc = False
             filename, file_extension = os.path.splitext(the_file.filename)
             filename = filename.encode("ascii", "ignore")
             if file_extension not in known_extensions:
                 return jsonify({"success": False, "message": "Invalid file extension " + file_extension,
                                 "alert_type": "alert-warning"})
-            success = None
-            header_dict = None
-            header_list = None
+
             decoding_problems = []
             if file_extension == ".xlsx":
-                (success, result_dict, header_dict) = read_excel_file(the_file)
-                multidoc = True
+                (success, doc_dict, header_dict) = read_excel_file(the_file)
+                if not success:  # then doc_dict contains an error object
+                    e = doc_dict
+                    return jsonify({"message": e["message"], "alert_type": "alert-danger"})
+                new_doc_dict.update(doc_dict)
+                header_list_dict.update(header_dict)
             else:
                 self.show_um_message("Reading file {} and checking encoding".format(filename), library_id,
                                      timeout=10)
-                encoding = ""
                 if file_extension == ".csv":
-                    (success, result_dict, header_list, encoding, decoding_problems) = read_csv_file_to_dict(the_file)
+                    (success, row_list, header_list, encoding, decoding_problems) = read_csv_file_to_list(the_file)
                 elif file_extension == ".tsv":
-                    (success, result_dict, header_list, encoding, decoding_problems) = read_tsv_file_to_dict(the_file)
+                    (success, row_list, header_list, encoding, decoding_problems) = read_tsv_file_to_list(the_file)
                 elif file_extension == ".txt":
-                    (success, result_dict, header_list, encoding, decoding_problems) = read_txt_file_to_dict(the_file)
+                    (success, row_list, header_list, encoding, decoding_problems) = read_txt_file_to_list(the_file)
+                else:
+                    return jsonify({"message": "unkown file extension", "alert_type": "alert-danger"})
                 self.show_um_message("Got encoding {} for {}".format(encoding, filename), library_id, timeout=10)
 
-            if not success:  # then result_dict contains an error object
-                e = result_dict
-                return jsonify({"message": e["message"], "alert_type": "alert-danger"})
+                if not success:  # then row_list contains an error object
+                    e = row_list
+                    return jsonify({"message": e["message"], "alert_type": "alert-danger"})
+                new_doc_dict[filename] = row_list
+                header_list_dict[filename] = header_list
 
             if len(decoding_problems) > 0:
                 file_decoding_errors[filename] = decoding_problems
 
-            try:
-                if multidoc:
-                    for dname in result_dict.keys():
-                        result_binary = make_python_object_jsonizable(result_dict[dname])
-                        file_id = fs.put(result_binary)
-                        db[full_collection_name].insert_one({"name": dname, "file_id": file_id,
-                                                             "header_list": header_dict[dname]})
-                else:
-                    result_binary = make_python_object_jsonizable(result_dict)
-                    file_id = fs.put(result_binary)
-                    db[full_collection_name].insert_one({"name": filename, "file_id": file_id,
-                                                         "header_list": header_list})
-            except:
-                error_string = "Error creating collection: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-                return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+        try:
+            user_obj.create_complete_collection(collection_name, new_doc_dict, "table", None,
+                                                header_list_dict, collection_mdata)
+        except:
+            error_string = "Error creating collection: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+            return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
-        self.update_number_of_docs(full_collection_name)
-        table_row = self.create_new_row(collection_name, mdata)
-        all_table_row = self.all_manager.create_new_all_row(collection_name, mdata, "collection")
+        table_row = self.create_new_row(collection_name, collection_mdata)
+        all_table_row = self.all_manager.create_new_all_row(collection_name, collection_mdata, "collection")
         if len(file_decoding_errors.keys()) == 0:
             file_decoding_errors = None
         return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row,
@@ -371,20 +327,10 @@ class CollectionManager(LibraryResourceManager):
     def import_as_freeform(self, collection_name, library_id):
         user_obj = current_user
         file_list = request.files.getlist("file")
-        full_collection_name = user_obj.build_data_collection_name(collection_name)
-        if full_collection_name in db.collection_names():
-            return jsonify({"success": False, "message": "There is already a collection with that name.",
-                            "alert_type": "alert-warning"})
-        mdata = global_tile_manager.create_initial_metadata()
-        try:
-            db[full_collection_name].insert_one({"name": "__metadata__", "datetime": mdata["datetime"],
-                                                 "updated": mdata["updated"], "tags": "",
-                                                 "notes": "", "type": "freeform"})
-        except:
-            error_string = "Error creating collection: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-            return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
+        collection_mdata = global_tile_manager.create_initial_metadata()
         file_decoding_errors = OrderedDict()
+        new_doc_dict = {}
         for the_file in file_list:
 
             filename, file_extension = os.path.splitext(the_file.filename)
@@ -392,22 +338,22 @@ class CollectionManager(LibraryResourceManager):
             self.show_um_message("Reading file {} and checking encoding".format(filename), library_id, timeout=10)
             (success, result_txt, encoding, decoding_problems) = read_freeform_file(the_file)
             self.show_um_message("Got encoding {} for {}".format(encoding, filename), library_id, timeout=10)
-            if not success:  # then result_dict contains an error object
+            if not success:  # then result_txt contains an error object
                 e = result_txt
                 return jsonify({"message": e.message, "alert_type": "alert-danger"})
+            new_doc_dict[filename] = result_txt
             if len(decoding_problems) > 0:
                 file_decoding_errors[filename] = decoding_problems
-            try:
-                result_binary = make_python_object_jsonizable(result_txt)
-                save_dict = {"name": filename, "is_binarized": True, "file_id": fs.put(result_binary)}
-                db[full_collection_name].insert_one(save_dict)
-            except:
-                error_string = "Error creating collection: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-                return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
-        self.update_number_of_docs(full_collection_name)
-        table_row = self.create_new_row(collection_name, mdata)
-        all_table_row = self.all_manager.create_new_all_row(collection_name, mdata, "collection")
+        try:
+            user_obj.create_complete_collection(collection_name, new_doc_dict, "freeform", None,
+                                                None, collection_mdata)
+        except:
+            error_string = "Error creating collection: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+            return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+
+        table_row = self.create_new_row(collection_name, collection_mdata)
+        all_table_row = self.all_manager.create_new_all_row(collection_name, collection_mdata, "collection")
         if len(file_decoding_errors.keys()) == 0:
             file_decoding_errors = None
         return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row,
@@ -421,37 +367,26 @@ class CollectionManager(LibraryResourceManager):
         # self.update_selector_list()
         return jsonify({"success": result})
 
-    def update_number_of_docs(self, collection_name):
-        number_of_docs = db[collection_name].count() - 1
-        db[collection_name].update_one({"name": "__metadata__"},
-                                       {'$set': {"number_of_docs": number_of_docs}})
-
     def duplicate_collection(self):
         user_obj = current_user
-        collection_to_copy = user_obj.full_collection_name(request.json['res_to_copy'])
-        new_collection_name = user_obj.full_collection_name(request.json['new_res_name'])
-        if new_collection_name in db.collection_names():
-            return jsonify({"success": False, "message": "There is already a collection with that name.",
-                            "alert_type": "alert-warning"})
-        metadata = db[collection_to_copy].find_one({"name": "__metadata__"})
+        new_res_name = request.json["new_res_name"]
+        coll_dict, dm_dict, hl_dict, coll_mdata = user_obj.get_all_collection_info(request.json['res_to_copy'])
 
-        if "number_of_docs" not in metadata:  # legacy this is a way to get this into older collections
-            self.update_number_of_docs(collection_to_copy)
+        result = user_obj.create_complete_collection(new_res_name,
+                                                     coll_dict,
+                                                     coll_mdata["type"],
+                                                     dm_dict,
+                                                     hl_dict,
+                                                     coll_mdata)
 
-        for doc in db[collection_to_copy].find():
-            if not doc["name"] == "__metadata__":
-                if "file_id" in doc:
-                    doc_text = fs.get(doc["file_id"]).read()
-                else:
-                    doc_text = make_python_object_jsonizable(doc["data_rows"])
-                    del doc["data_rows"]
-                doc["file_id"] = fs.put(doc_text)
-            db[new_collection_name].insert_one(doc)
+        if not result["success"]:
+            result["message"] = result["message"]
+            result["alert_type"] = "alert-warning"
+            return jsonify(result)
 
-        self.update_number_of_docs(new_collection_name)
-        metadata = db[new_collection_name].find_one({"name": "__metadata__"})
-        table_row = self.create_new_row(request.json['new_res_name'], metadata)
-        all_table_row = self.all_manager.create_new_all_row(request.json['new_res_name'], metadata, "collection")
+        metadata = user_obj.get_collection_metadata(new_res_name)
+        table_row = self.create_new_row(new_res_name, metadata)
+        all_table_row = self.all_manager.create_new_all_row(new_res_name, metadata, "collection")
         return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
 
 
