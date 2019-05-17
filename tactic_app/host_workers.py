@@ -93,10 +93,10 @@ class HostWorker(QWorker):
                                   {"html": tile_manager.render_loaded_tile_list(user_obj)},
                                   namespace='/library', room=user_obj.get_id())
                 if not task_packet["callback_type"] == "no_callback":
-                    self.submit_response(task_packet, {"success": False, "message": res_dict["message_string"],
+                    self.submit_response(task_packet, {"success": False, "message": res_dict["message"],
                                                        "alert_type": "alert-warning"})
                 else:
-                    print res_dict["message_string"]
+                    print res_dict["message"]
                 return
             category = res_dict["category"]
 
@@ -233,12 +233,12 @@ class HostWorker(QWorker):
                 "function_names": the_user.function_tags_dict,
                 "collection_names": the_user.data_collection_tags_dict}
 
-
     @task_worthy
     def get_resource_names(self, data):
         user_id = data["user_id"]
         the_user = load_user(user_id)
-        res_names = the_user.get_resource_names(data["res_type"], data["tag_filter"], search_filter = data["search_filter"])
+        res_names = the_user.get_resource_names(data["res_type"], data["tag_filter"],
+                                                search_filter=data["search_filter"])
         return {"res_names": res_names}
 
     @task_worthy
@@ -448,15 +448,15 @@ class HostWorker(QWorker):
                     summary_text = data["summary"]
                 else:
                     summary_text = "<b>error</b> " + user_time.strftime("%b %d, %Y, %H:%M")
-                data["message_string"] = render_template("error_log_item.html", log_item=data["message_string"],
-                                                         summary_text=summary_text)
+                data["message"] = render_template("error_log_item.html", log_item=data["message"],
+                                                  summary_text=summary_text)
             else:
                 if "summary" in data:
                     summary_text = data["summary"]
                 else:
                     summary_text = "<b>log_it item</b> " + user_time.strftime("%b %d, %Y, %H:%M")
-                data["message_string"] = render_template("log_item.html", log_item=data["message_string"],
-                                                         summary_text=summary_text)
+                data["message"] = render_template("log_item.html", log_item=data["message"],
+                                                  summary_text=summary_text)
 
         data["console_message"] = "consoleLog"
         self.emit_console_message(data)
@@ -475,25 +475,25 @@ class HostWorker(QWorker):
         user_obj = load_user(user_id)
         user_time = user_obj.localize_time(datetime.datetime.utcnow())
         summary_text = "<b>text item </b> " + user_time.strftime("%b %d, %Y, %H:%M")
-        message_string = ""
+        message = ""
         new_cell_data = []
         for cell_dict in data["cells"]:
             unique_id = str(uuid.uuid4())
             cell_dict["unique_id"] = unique_id
             if cell_dict["cell_type"] == "code":
                 with app.test_request_context():
-                    message_string += render_template("code_log_item.html", unique_id=unique_id,
-                                                       summary_text=summary_text)
+                    message += render_template("code_log_item.html", unique_id=unique_id,
+                                               summary_text=summary_text)
 
                     new_cell_data.append(copy.deepcopy(cell_dict))
             elif cell_dict["cell_type"] == "markdown":
                 with app.test_request_context():
-                    message_string += render_template("text_log_item.html", unique_id=unique_id,
-                                                        summary_text=summary_text)
+                    message += render_template("text_log_item.html", unique_id=unique_id,
+                                               summary_text=summary_text)
                     new_cell_data.append(copy.deepcopy(cell_dict))
 
         data["console_message"] = "consoleLog"
-        data["message_string"] = message_string
+        data["message"] = message
         self.emit_console_message(data)
         return {"success": True, "cells": new_cell_data}
 
@@ -505,8 +505,8 @@ class HostWorker(QWorker):
         user_time = user_obj.localize_time(datetime.datetime.utcnow())
         summary_text = "<b>text item </b> " + user_time.strftime("%b %d, %Y, %H:%M")
         with app.test_request_context():
-            data["message_string"] = render_template("text_log_item.html", unique_id=data["unique_id"],
-                                                     summary_text=summary_text)
+            data["message"] = render_template("text_log_item.html", unique_id=data["unique_id"],
+                                              summary_text=summary_text)
 
         data["console_message"] = "consoleLog"
         self.emit_console_message(data)
@@ -520,8 +520,8 @@ class HostWorker(QWorker):
         user_time = user_obj.localize_time(datetime.datetime.utcnow())
         summary_text = "<b>code item </b> " + user_time.strftime("%b %d, %Y, %H:%M")
         with app.test_request_context():
-            data["message_string"] = render_template("code_log_item.html", unique_id=data["unique_id"],
-                                                     summary_text=summary_text)
+            data["message"] = render_template("code_log_item.html", unique_id=data["unique_id"],
+                                              summary_text=summary_text)
 
         data["console_message"] = "consoleLog"
         self.emit_console_message(data)

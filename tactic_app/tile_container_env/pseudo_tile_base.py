@@ -187,6 +187,7 @@ class PseudoTileClass(TileBase, MplFigure):
             self.execution_counter += 1
             data["execution_count"] = self.execution_counter
         except Exception as ex:
+            data["execution_count"] = "*"
             data["result_string"] = self._handle_exception(ex, "Error executing console code", print_to_console=False)
             sys.stdout = old_stdout
         return data

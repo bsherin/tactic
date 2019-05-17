@@ -50,9 +50,10 @@ def load_a_list(the_file):
 
 def make_fieldnames_unique(flist):
     new_list = []
+    standard_fields = ["__id__", "__filename__"]
     for fname in flist:
         counter = 1
-        if fname in new_list:
+        if fname in new_list and fname not in standard_fields:
             while fname + str(counter) in new_list:
                 counter += 1
             fname = fname + str(counter)
@@ -70,8 +71,9 @@ def add_standard_fields(header_list):
     return new_list
 
 
-def read_table_file_to_dict(tsvfile, separator):
+def read_table_file_to_list(tsvfile, separator):
     tsvfile.seek(0)
+    standard_fields = ["__id__", "__filename__"]
     i = 0
     try:
         raw_text = tsvfile.read()
@@ -81,26 +83,28 @@ def read_table_file_to_dict(tsvfile, separator):
         header_list = [utf_solver(header) for header in header_list]
         header_list = make_fieldnames_unique(header_list)
         filename, file_extension = os.path.splitext(tsvfile.filename)
-        result_dict = {}
+        result_list = []
         decoding_problems = []
         for line in csv.reader(raw_lines[1:], delimiter=separator):
             row = {}
             for col, val in enumerate(line):
                 try:
+                    if header_list[col] in standard_fields:
+                        continue
                     row[header_list[col]] = val.decode(encoding)
                 except UnicodeDecodeError:
                     decoding_problems.append(str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
                     row[header_list[col]] = val.decode(encoding, "ignore")
             row["__filename__"] = filename
             row["__id__"] = i
-            result_dict[str(i)] = row
+            result_list.append(row)
             i += 1
         tsvfile.seek(0)
         header_list = add_standard_fields(header_list)
-    except :
+    except:
         ermsg = "Error reading text file " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-        return None, {"message": ermsg}, None, None
-    return filename, result_dict, header_list, encoding, decoding_problems
+        return None, {"message": ermsg}, None, None, None
+    return filename, result_list, header_list, encoding, decoding_problems
 
 
 # Field names in mongo cannot contain dots or null characters, and they must not start with a dollar sign
@@ -113,13 +117,13 @@ def read_excel_file(xlfile):
     try:
         filename, file_extension = os.path.splitext(xlfile.filename)
         wb = openpyxl.reader.excel.load_workbook(xlfile)
-        sheet_names = wb.get_sheet_names()
+        sheet_names = wb.sheetnames
         doc_dict = {}
         header_dict = {}
 
         for sname in sheet_names:
-            sheet_dict = {}
-            ws = wb.get_sheet_by_name(sname)
+            sheet_list = []
+            ws = wb[sname]
             allrows = tuple(ws.rows)
             header_row = allrows[0]
             header_list = []
@@ -147,13 +151,12 @@ def read_excel_file(xlfile):
                     row[header_list[col]] = the_val
                     row["__filename__"] = filename
                     row["__id__"] = i
-                    sheet_dict[str(i)] = row
-            for r in range(highest_nonblank_line + 1, i + 1):
-                del sheet_dict[str(r)]
-            for rname in sheet_dict.keys():
+                    sheet_list.append(row)
+            sheet_list = sheet_list[:highest_nonblank_line + 1]
+            for r in sheet_list:
                 for col in range(highest_nonblank_column + 1, len(header_list)):
-                    del sheet_dict[rname][header_list[col]]
-            doc_dict[sname] = sheet_dict
+                    del r[header_list[col]]
+            doc_dict[sname] = sheet_list
             header_list = header_list[:highest_nonblank_column + 1]
             header_list = add_standard_fields(header_list)
             header_dict[sname] = header_list
@@ -163,19 +166,19 @@ def read_excel_file(xlfile):
     return filename, doc_dict, header_dict
 
 
-def read_csv_file_to_dict(csvfile):
-    return read_table_file_to_dict(csvfile, ",")
+def read_csv_file_to_list(csvfile):
+    return read_table_file_to_list(csvfile, ",")
 
 
-def read_tsv_file_to_dict(tsvfile):
-    return read_table_file_to_dict(tsvfile, "\t")
+def read_tsv_file_to_list(tsvfile):
+    return read_table_file_to_list(tsvfile, "\t")
 
 
 def utf_solver(txt):
     return txt.decode("utf-8", 'ignore').encode("ascii", "ignore")
 
 
-def read_txt_file_to_dict(txtfile):
+def read_txt_file_to_list(txtfile):
     decoding_problems = []
     try:
         filename, file_extension = os.path.splitext(txtfile.filename)
@@ -188,17 +191,17 @@ def read_txt_file_to_dict(txtfile):
             decoded_text = raw_text.decode(detected["encoding"], "ignore")
 
         lines = decoded_text.splitlines()
-        result_dict = {}
+        result_list = []
         i = 0
         for l in lines:
-            result_dict[str(i)] = {"__id__": i, "__filename__": filename, "text": l}
+            result_list.append({"__id__": i, "__filename__": filename, "text": l})
             i = i + 1
 
         header_list = ["__id__", "__filename__", "text"]
     except:
         ermsg = "Error reading text file " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
         return None, {"message": ermsg}, None, None
-    return filename, result_dict, header_list, detected["encoding"], decoding_problems
+    return filename, result_list, header_list, detected["encoding"], decoding_problems
 
 
 def read_freeform_file(txtfile):
