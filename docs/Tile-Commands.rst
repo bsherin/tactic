@@ -311,7 +311,7 @@ Object API
 Other TileBase
 --------------
 
-    .. py:method:: create_collection(name, doc_dict, doc_type="table", metadata_dict=None)
+    .. py:method:: create_collection(name, doc_dict, doc_type="table", doc_metadata=None, header_list_dict=None, collection_metadata=None)
 
         Creates a new collection in the user’s resource library. **name** is the
         name for the new collection. **doc_type** specifies whether the type of
@@ -324,6 +324,11 @@ Other TileBase
         **metadata_dict** is a dictionary that holds any document-level metadata
         you’d like to add. The keys are document names and the values are
         dictionaries of keys and values.
+
+        **header_list_dict** is a dictionary of lists. The keys are document names and each value is a list
+        of column names. This allows you to specify the order in which columns will appear in a table.
+
+        **collection_metadata** is a dictionary of metadata to be associated with the collection as a whole.
 
         Synonym: ``cc``
 
