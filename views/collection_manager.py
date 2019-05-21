@@ -9,6 +9,7 @@ from tactic_app import app, db, fs, use_ssl
 from tactic_app.communication_utils import make_python_object_jsonizable, debinarize_python_object
 from tactic_app.communication_utils import read_temp_data, delete_temp_data
 import openpyxl
+from openpyxl.styles import Alignment, Font
 import cStringIO
 import tactic_app
 from tactic_app.file_handling import read_csv_file_to_list, read_tsv_file_to_list, read_txt_file_to_list
@@ -143,7 +144,26 @@ class CollectionManager(LibraryResourceManager):
             error_string = "Error renaming collection " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
             return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
-    def download_collection(self, collection_name, new_name):
+    def adjust_ws_col_widths(self, ws, max_col_width):
+        def as_text(value):
+            if value is None:
+                return ""
+            return unicode(value)
+        for column_cells in ws.columns:
+            wrap = False
+            length = max(len(as_text(cell.value)) for cell in column_cells) + 5
+            if length > max_col_width:
+                length = max_col_width
+                wrap = True
+            col = ws.column_dimensions[column_cells[0].column]
+            col.width = length
+            if wrap:
+                for cell in column_cells:
+                    cell.alignment = Alignment(wrap_text=True)
+                # col.alignment = Alignment(wrap_text=True)
+        return
+
+    def download_collection(self, collection_name, new_name, max_col_width=50):
         user_obj = current_user
         coll_dict, doc_mdata_dict, header_list_dict, coll_mdata = user_obj.get_all_collection_info(collection_name,
                                                                                                    return_lists=False)
@@ -161,12 +181,14 @@ class CollectionManager(LibraryResourceManager):
             header_list = header_list_dict[doc_name]
             for c, header in enumerate(header_list, start=1):
                 _ = ws.cell(row=1, column=c, value=header)
+                ws.cell(1, c).font = Font(bold=True)
             sorted_int_keys = sorted([int(key) for key in data_rows.keys()])
             for r, _id in enumerate(sorted_int_keys, start=2):
                 row = data_rows[str(_id)]
                 for c, header in enumerate(header_list, start=1):
                     val = re.sub(ILLEGAL_CHARACTERS_RE, " ", unicode(row[header]))
                     _ = ws.cell(row=r, column=c, value=val)
+            self.adjust_ws_col_widths(ws, max_col_width)
             # noinspection PyUnresolvedReferences
         virtual_notebook = openpyxl.writer.excel.save_virtual_workbook(wb)
         str_io = cStringIO.StringIO()
