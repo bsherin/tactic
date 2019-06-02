@@ -58,7 +58,7 @@ class GlobalTileManager(object):
 
     def add_failed_load(self, module_name, username):
         self.add_user(username)
-        if module_name not in self.failed_loaded_default_modules[username].keys():
+        if module_name not in self.tile_manager[username].failed_loaded_default_modules.keys():
             self.tile_manager[username].failed_loaded_default_modules[module_name] = ""
 
     def add_user(self, username):
@@ -66,10 +66,12 @@ class GlobalTileManager(object):
             self.tile_manager.add_key(username)
             umanager = self.tile_manager[username]
             umanager.add_keys(["loaded_user_modules",
-                              "user_tiles",
-                              "tile_module_index",
-                              "failed_loaded_default_modules",
-                              "default_tiles"])
+                               "user_tiles",
+                               "tile_module_index",
+                               "failed_loaded_default_modules",
+                               "default_tiles"])
+            self.load_user_default_tiles(username)
+        return
 
     def remove_user(self, username):
         if username in self.tile_manager.keys():

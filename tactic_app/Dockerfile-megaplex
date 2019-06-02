@@ -1,7 +1,6 @@
 FROM python:3.7.1
 WORKDIR /code
-ADD ./megaplex_container_env/requirements.txt /code/requirements.txt
+ADD  ./megaplex_container_env /code
 RUN pip install -r requirements.txt
 MAINTAINER "Bruce L Sherin"
-ADD  ./megaplex_container_env /code
 ENTRYPOINT ["/usr/local/bin/gunicorn", "-b", "0.0.0.0:5000", "megaplex_main:app"]

@@ -9,6 +9,7 @@ import pymongo
 import qworker
 from flask import render_template, Flask
 from tile_code_parser import TileParser, remove_indents, insert_indents
+import exception_mixin
 
 import sys, os
 sys.stdout = sys.stderr
@@ -47,10 +48,10 @@ class ModuleViewerWorker(QWorker):
             client.server_info()
             # noinspection PyUnresolvedReferences
             self.db = client[db_name]
-        except:
-            error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+        except Exception as ex:
+            error_string = self.extract_short_error_message(ex, "error getting pymongo client")
             print(error_string)
-            self.mworker.debug_log("error getting pymongo client: " + error_string)
+            self.mworker.debug_log(error_string)
             sys.exit()
         self.tile_collection_name = data_dict["tile_collection_name"]
         tile_dict = self.db[self.tile_collection_name].find_one({"tile_module_name": self.module_name})
@@ -63,16 +64,6 @@ class ModuleViewerWorker(QWorker):
     @task_worthy
     def hello(self, data_dict):
         return {"success": True, "message": 'This is a tile communicating'}
-
-    def handle_exception(self, ex, special_string=None):
-        if special_string is None:
-            template = "An exception of type {0} occured. Arguments:\n{1!r}"
-        else:
-            template = special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}"
-        error_string = template.format(type(ex).__name__, ex.args)
-        error_string = "<pre>" + error_string + "</pre>"
-        print(error_string)
-        return {"success": False, "message": error_string}
 
     @task_worthy
     def reintiailize_parser(self, data_dict):
@@ -168,9 +159,8 @@ class ModuleViewerWorker(QWorker):
                     "alert_type": "alert-success", "render_content_line_number": render_content_line_number,
                     "draw_plot_line_number": draw_plot_line_number,
                     "extra_methods_line_number": extra_methods_line_number}
-        except:
-            error_string = "Error saving module " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-            return {"success": False, "message": error_string, "alert_type": "alert-warning"}
+        except Exception as ex:
+            return self.get_traceback_exception_dict(ex, "Error saving module")
 
     def assemble_parse_information(self):
         for option in self.tp.options:
@@ -233,7 +223,7 @@ class ModuleViewerWorker(QWorker):
                 if not isinstance(export_list[0], dict):  # legacy old exports specified as list of strings
                     export_list = [{"name": exp, "tags": ""} for exp in export_list]
         except Exception as ex:
-            return self.handle_exception(ex, "Error extracting options from source")
+            return self.get_traceback_exception_dict(ex, "Error extracting options from source")
         return {"success": True, "opt_dict": opt_dict, "export_list": export_list}
 
     @task_worthy
@@ -313,5 +303,6 @@ if __name__ == "__main__":
     mworker.start()
     print("mworker started, my_id is " + str(mworker.my_id))
     app = Flask(__name__)
+    exception_mixin.app = app
     while True:
         time.sleep(1000)

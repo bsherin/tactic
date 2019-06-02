@@ -67,6 +67,7 @@ color_palette_names = ["standard"] + color_palette_names
 
 PPI = int(os.environ["PPI"])
 
+
 class MplFigure(Figure):
     # kwargs for mplfigure are same as matplotlib Figure
     def __init__(self, **kwargs):
@@ -130,6 +131,7 @@ class MplFigure(Figure):
             image_string = "<img class='output-plot' src='{}' lt='Image Placeholder'>"
             the_html = image_string.format(fig_url)
         return the_html
+
 
 class GraphList(MplFigure):
     def draw_plot(self):

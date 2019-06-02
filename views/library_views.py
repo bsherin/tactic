@@ -10,6 +10,8 @@ import tactic_app
 from tactic_app import app, socketio, use_ssl, db, fs
 from tactic_app.mongo_accesser import name_keys
 from tactic_app.communication_utils import make_jsonizable_and_compress, read_project_dict
+from tactic_app.exception_mixin import generic_exception_handler
+from tactic_app.docker_functions import ContainerCreateError
 
 from list_manager import ListManager, RepositoryListManager
 from collection_manager import CollectionManager, RepositoryCollectionManager
@@ -50,6 +52,7 @@ managers = {
 
 
 tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
+
 
 def copy_between_accounts(source_user, dest_user, res_type, new_res_name, res_name):
     try:
@@ -92,10 +95,8 @@ def copy_between_accounts(source_user, dest_user, res_type, new_res_name, res_na
             new_collection_name = dest_user.resource_collection_name(res_type)
             db[new_collection_name].insert_one(new_res_dict)
         return jsonify({"success": True, "message": "Resource Successfully Copied", "alert_type": "alert-success"})
-    except:
-        error_string = "Error copying resource" + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
-
+    except Exception as ex:
+        return generic_exception_handler.get_exception_for_ajax(ex, "Error copying resource")
 
 
 def get_manager_for_type(res_type, is_repository=False):
@@ -242,9 +243,8 @@ def grab_metadata():
                                                              additional_mdata["collection_name"])
             return jsonify({"success": True, "res_name": res_name, "datestring": datestring, "tags": mdata["tags"],
                             "notes": mdata["notes"], "additional_mdata": additional_mdata})
-    except:
-        error_string = "Error getting metadata: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+    except Exception as ex:
+        return generic_exception_handler.get_exception_for_ajax(ex, "Error getting metadata")
 
 
 @app.route('/grab_repository_metadata', methods=['POST'])
@@ -263,9 +263,8 @@ def grab_repository_metadata():
             else:
                 datestring = ""
             return jsonify({"success": True, "res_name": res_name, "datestring": datestring, "tags": mdata["tags"], "notes": mdata["notes"]})
-    except:
-        error_string = "Error getting metadata: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+    except Exception as ex:
+        return generic_exception_handler.get_exception_for_ajax(ex, "Error getting repository metadata")
 
 
 @app.route('/convert_markdown', methods=['POST'])
@@ -278,9 +277,8 @@ def convert_markdown():
         the_text = re.sub("&nbsp;", " ", the_text)
         converted_markdown = markdown.markdown(the_text)
         return jsonify({"success": True, "converted_markdown": converted_markdown})
-    except:
-        error_string = "Error converting markdown: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+    except Exception as ex:
+        return generic_exception_handler.get_exception_for_ajax(ex, "Error converting markdown")
 
 
 @app.route('/get_tag_list', methods=['POST'])
@@ -292,9 +290,8 @@ def get_tag_list():
         manager = get_manager_for_type(res_type, is_repository=is_repository)
         tag_list = manager.get_tag_list()
         return jsonify({"success": True, "tag_list": tag_list})
-    except:
-        error_string = "Error getting tag list: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+    except Exception as ex:
+        return generic_exception_handler.get_exception_for_ajax(ex, "Error getting tag list")
 
 
 @app.route('/save_metadata', methods=['POST'])
@@ -314,9 +311,8 @@ def save_metadata():
 
         return jsonify({"success": True, "res_tags": res_tags, "all_tags": all_tags,
                         "message": "Saved metadata", "alert_type": "alert-success"})
-    except:
-        error_string = "Error saving metadata: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+    except Exception as ex:
+        return generic_exception_handler.get_exception_for_ajax(ex, "Error saving metadata")
 
 
 @app.route('/delete_tag', methods=['POST'])
@@ -330,9 +326,8 @@ def delete_tag():
         all_tags = all_manager.get_tag_list()
         return jsonify({"success": True, "res_tags": res_tags, "all_tags": all_tags,
                         "message": "Deleted tag", "alert_type": "alert-success"})
-    except:
-        error_string = "Error deleting a tag: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+    except Exception as ex:
+        return generic_exception_handler.get_exception_for_ajax(ex, "Error deleting a tag")
 
 
 @app.route('/rename_tag', methods=['POST'])
@@ -346,9 +341,8 @@ def rename_tag():
         all_tags = all_manager.get_tag_list()
         return jsonify({"success": True, "res_tags": res_tags, "all_tags": all_tags,
                         "message": "Deleted tag", "alert_type": "alert-success"})
-    except:
-        error_string = "Error renaming a tag: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+    except Exception as ex:
+        return generic_exception_handler.get_exception_for_ajax(ex, "Error renaming a tag")
 
 
 @app.route('/search_resource', methods=['POST'])
@@ -390,3 +384,11 @@ def get_modal_template():
 @login_required
 def get_resource_module_template():
     return send_file("templates/resource_module_template.html")
+
+
+@app.errorhandler(ContainerCreateError)
+def handle_container_create_error(e):
+    return render_template("error_window_template.html",
+                           base_string="Error creating container",
+                           error_string=e.args[0],
+                           version_string=tstring)

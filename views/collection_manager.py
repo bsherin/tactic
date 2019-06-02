@@ -4,10 +4,11 @@ from collections import OrderedDict
 from flask_login import login_required, current_user
 from flask import jsonify, render_template, url_for, request, send_file
 from tactic_app.users import User
-from tactic_app.docker_functions import create_container, ContainerCreateError, main_container_info
+from tactic_app.docker_functions import create_container, main_container_info
 from tactic_app import app, db, fs, use_ssl
 from tactic_app.communication_utils import make_python_object_jsonizable, debinarize_python_object
 from tactic_app.communication_utils import read_temp_data, delete_temp_data
+from tactic_app.mongo_accesser import MongoAccessException
 import openpyxl
 from openpyxl.styles import Alignment, Font
 import cStringIO
@@ -56,13 +57,7 @@ class CollectionManager(LibraryResourceManager):
 
     def new_notebook(self):
         user_obj = current_user
-        try:
-            main_id = main_container_info.create_main_container("new_notebook", user_obj.get_id(), user_obj.username)
-        except ContainerCreateError:
-            return render_template("error_window_template.html",
-                                   window_tile="Load Failed",
-                                   error_string="Load failed: Could not create container",
-                                   version_string=tstring)
+        main_id = main_container_info.create_main_container("new_notebook", user_obj.get_id(), user_obj.username)
         return render_template("main_notebook.html",
                                window_title="new notebook",
                                project_name='',
@@ -77,13 +72,7 @@ class CollectionManager(LibraryResourceManager):
     def open_notebook(self, unique_id):
         the_data = read_temp_data(db, unique_id)
         user_obj = load_user(the_data["user_id"])
-        try:
-            main_id = main_container_info.create_main_container("new_notebook", the_data["user_id"], user_obj.username)
-        except ContainerCreateError:
-            return render_template("error_window_template.html",
-                                   window_tile="Load Failed",
-                                   error_string="Load failed: Could not create container",
-                                   version_string=tstring)
+        main_id = main_container_info.create_main_container("new_notebook", the_data["user_id"], user_obj.username)
         return render_template("main_notebook.html",
                                window_title="new notebook",
                                project_name='',
@@ -98,17 +87,10 @@ class CollectionManager(LibraryResourceManager):
     def main(self, collection_name):
         user_obj = current_user
         cname = user_obj.build_data_collection_name(collection_name)
-        try:
-            main_id = main_container_info.create_main_container(collection_name, user_obj.get_id(), user_obj.username)
-        except ContainerCreateError:
-            return render_template("error_window_template.html",
-                                   window_tile="Load Failed",
-                                   error_string="Load failed: Could not create container",
-                                   version_string=tstring)
-
+        main_id = main_container_info.create_main_container(collection_name, user_obj.get_id(), user_obj.username)
         global_tile_manager.add_user(user_obj.username)
 
-        short_collection_name = re.sub("^.*?\.data_collection\.", "", collection_name)
+        short_collection_name = re.sub(r"^.*?\.data_collection\.", "", collection_name)
         mdata = user_obj.get_collection_metadata(short_collection_name)
         if "type" in mdata and mdata["type"] == "freeform":
             doc_type = "freeform"
@@ -140,9 +122,8 @@ class CollectionManager(LibraryResourceManager):
             new_name = request.json["new_name"]
             current_user.rename_collection(old_name, new_name)
             return jsonify({"success": True, "message": "collection name changed", "alert_type": "alert-success"})
-        except:
-            error_string = "Error renaming collection " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-            return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+        except Exception as ex:
+            return self.get_exception_for_ajax(ex, "Error renaming collection")
 
     def adjust_ws_col_widths(self, ws, max_col_width):
         def as_text(value):
@@ -163,6 +144,7 @@ class CollectionManager(LibraryResourceManager):
                 # col.alignment = Alignment(wrap_text=True)
         return
 
+    # noinspection PyTypeChecker
     def download_collection(self, collection_name, new_name, max_col_width=50):
         user_obj = current_user
         coll_dict, doc_mdata_dict, header_list_dict, coll_mdata = user_obj.get_all_collection_info(collection_name,
@@ -279,9 +261,8 @@ class CollectionManager(LibraryResourceManager):
             user_obj.update_collection_time(base_collection_name)
             self.update_selector_list(base_collection_name)
             return jsonify({"message": "Collections successfull combined", "alert_type": "alert-success"})
-        except:
-            error_string = "Error combining collections: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-            return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+        except Exception as ex:
+            return self.get_exception_for_ajax(ex, "Error combining collection")
 
     def import_as_table(self, collection_name, library_id):
         user_obj = current_user
@@ -334,9 +315,8 @@ class CollectionManager(LibraryResourceManager):
         try:
             user_obj.create_complete_collection(collection_name, new_doc_dict, "table", None,
                                                 header_list_dict, collection_mdata)
-        except:
-            error_string = "Error creating collection: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-            return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+        except Exception as ex:
+            return self.get_exception_for_ajax(ex, "Error creating collection")
 
         table_row = self.create_new_row(collection_name, collection_mdata)
         all_table_row = self.all_manager.create_new_all_row(collection_name, collection_mdata, "collection")
@@ -370,9 +350,8 @@ class CollectionManager(LibraryResourceManager):
         try:
             user_obj.create_complete_collection(collection_name, new_doc_dict, "freeform", None,
                                                 None, collection_mdata)
-        except:
-            error_string = "Error creating collection: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-            return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+        except Exception as ex:
+            return self.get_exception_for_ajax(ex, "Error creating collection")
 
         table_row = self.create_new_row(collection_name, collection_mdata)
         all_table_row = self.all_manager.create_new_all_row(collection_name, collection_mdata, "collection")

@@ -5,6 +5,7 @@ RUN pip install -r requirements-debug.txt
 MAINTAINER "Bruce L Sherin"
 ADD ./pycharm-debug-py3k.egg /code
 ADD  ./main_container_env /code
+add ./exception_mixin.py /code
 ADD ./megaplex_container_env/megaplex_main.py /code
 ADD ./megaplex_container_env/megaplex_task_manager.py /code
 EXPOSE 5000

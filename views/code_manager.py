@@ -56,9 +56,8 @@ class CodeManager(LibraryResourceManager):
                                                              {'$set': {"code_name": new_name}})
             # self.update_selector_list()
             return jsonify({"success": True, "message": "Module Successfully Saved", "alert_type": "alert-success"})
-        except:
-            error_string = "Error renaming module " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-            return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+        except Exception as ex:
+            return self.get_exception_for_ajax(ex, "Error renaming module")
 
     def grab_metadata(self, res_name):
         if self.is_repository:
