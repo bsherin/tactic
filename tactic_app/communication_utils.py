@@ -10,6 +10,7 @@ import pickle
 import cloudpickle
 import zlib
 import uuid
+from exception_mixin import generic_exception_handler
 
 if ("USE_FORWARDER" in os.environ) and (os.environ.get("USE_FORWARDER") == "True"):
     USE_FORWARDER = True
@@ -32,11 +33,13 @@ def is_jsonizable(dat):
     except:
         return False
 
+
 def make_jsonizable_and_compress(dat):
     return zlib.compress(make_python_object_jsonizable(dat, output_string=False))
 
+
 def make_python_object_jsonizable(dat, output_string=True):
-    if (isinstance(dat, types.FunctionType)):  # handle functions specially
+    if isinstance(dat, types.FunctionType):  # handle functions specially
         dat.__module__ = "__main__"  # without this, cloudpickle only generates a reference to the function
         jdat = base64.b64encode(cloudpickle.dumps(dat))
     else:
@@ -48,6 +51,7 @@ def make_python_object_jsonizable(dat, output_string=True):
         jdat = jdat.decode("utf-8")
     return jdat
 
+
 def debinarize_python_object(bdat):
     if isinstance(bdat, Binary):
         dat = bdat.decode()
@@ -55,14 +59,17 @@ def debinarize_python_object(bdat):
         dat = base64.b64decode(bdat)
     return pickle.loads(dat)
 
+
 def store_temp_data(db, data_dict):
     unique_id = str(uuid.uuid4())
     data_dict["unique_id"] = unique_id
     db["temp_data"].insert_one(data_dict)
     return unique_id
 
+
 def read_temp_data(db, unique_id):
     return db["temp_data"].find_one({"unique_id": unique_id})
+
 
 def delete_temp_data(db, unique_id, fs=None):
     save_dict = read_temp_data(db, unique_id)
@@ -70,6 +77,7 @@ def delete_temp_data(db, unique_id, fs=None):
     if fs is not None and "file_id" in save_dict:
         fs.delete(save_dict["file_id"])
     return
+
 
 def read_project_dict(fs, mdata, file_id):
     project_dict = None
@@ -80,6 +88,7 @@ def read_project_dict(fs, mdata, file_id):
     else:  # legacy
         project_dict = pickle.loads(zlib.decompress(fs.get(file_id).read()).decode("utf-8", "ignore").encode("ascii"))
     return project_dict
+
 
 def send_request_to_megaplex(msg_type, data_dict=None, wait_for_success=True, timeout=3, tries=RETRIES, wait_time=.1,
                              alt_address=None):
@@ -99,11 +108,12 @@ def send_request_to_megaplex(msg_type, data_dict=None, wait_for_success=True, ti
                 res = requests.post("http://{0}:{1}/{2}".format(taddress, port, msg_type),
                                     timeout=timeout, json=data_dict)
                 return res
-            except:
-                last_fail = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+            except Exception as ex:
+                last_fail = generic_exception_handler.get_traceback_message(ex)
                 time.sleep(wait_time)
                 continue
-        error_string = "Send request to megaplex timed out with msg_type {} and last fail {}".format(msg_type, last_fail)
+        error_string = "Send request to megaplex timed out with msg_type {} and last fail {}".format(msg_type,
+                                                                                                     last_fail)
         raise Exception(error_string)
     else:
         return requests.post("http://{0}:{1}/{2}".format(taddress, port, msg_type), timeout=timeout, json=data_dict)
@@ -120,8 +130,8 @@ def send_request_to_container(taddress, msg_type, data_dict=None, wait_for_succe
                 res = requests.post("http://{0}:{1}/{2}".format(taddress, port, msg_type),
                                     timeout=timeout, json=data_dict)
                 return res
-            except:
-                last_fail = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+            except Exception as ex:
+                last_fail = generic_exception_handler.get_traceback_message(ex)
                 time.sleep(wait_time)
                 continue
         error_string = "Send container request timed out with msg_type {} " \
@@ -129,6 +139,7 @@ def send_request_to_container(taddress, msg_type, data_dict=None, wait_for_succe
         raise Exception(error_string)
     else:
         return requests.post("http://{0}:5000/{1}".format(taddress, msg_type), timeout=timeout, json=data_dict)
+
 
 def post_task_noqworker(source_id, dest_id, task_type, task_data=None):
     new_packet = {"source": source_id,

@@ -2,9 +2,6 @@ FROM tactic_base_image
 WORKDIR /code
 ADD ./tile_container_env/requirements.txt /code/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
-MAINTAINER "Bruce L Sherin"
-ADD  ./tile_container_env /code
-ADD ./nltk_data /root/nltk_data
-ADD ./volume_manager.py /code
+ADD  ./tile_container_env ./volume_manager.py ./exception_mixin.py ./qworker.py ./communication_utils.py /code/
 EXPOSE 5000
 ENTRYPOINT ["/usr/local/bin/gunicorn", "-b", "0.0.0.0:5000", "tile_main:app"]

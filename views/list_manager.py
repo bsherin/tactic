@@ -75,9 +75,8 @@ class ListManager(LibraryResourceManager):
                                                              {'$set': {"the_list": new_list, "metadata": mdata}})
             self.update_selector_list()
             return jsonify({"success": True, "message": "List Successfully Saved", "alert_type": "alert-success"})
-        except:
-            error_string = "Error saving list " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-            return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+        except Exception as ex:
+            return self.get_exception_for_ajax(ex, "Error saving list")
 
     def rename_me(self, old_name):
         try:
@@ -86,9 +85,8 @@ class ListManager(LibraryResourceManager):
                                                              {'$set': {"list_name": new_name}})
             # self.update_selector_list()
             return jsonify({"success": True, "message": "List name changed", "alert_type": "alert-success"})
-        except:
-            error_string = "Error renaming list " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-            return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+        except Exception as ex:
+            return self.get_exception_for_ajax(ex, "Error renaming list")
 
     def get_list(self, list_name):
         the_list = current_user.get_list(list_name)
@@ -122,7 +120,7 @@ class ListManager(LibraryResourceManager):
     def delete_tag(self, tag):
         doclist = db[current_user.list_collection_name].find()
         for doc in doclist:
-            if not "metadata" in doc:
+            if "metadata" not in doc:
                 continue
             mdata = doc["metadata"]
             tagstring = mdata["tags"]
@@ -137,7 +135,7 @@ class ListManager(LibraryResourceManager):
     def rename_tag(self, tag_changes):
         doclist = db[current_user.list_collection_name].find()
         for doc in doclist:
-            if not "metadata" in doc:
+            if "metadata" not in doc:
                 continue
             mdata = doc["metadata"]
             tagstring = mdata["tags"]

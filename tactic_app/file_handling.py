@@ -7,6 +7,7 @@ import xmltodict
 import chardet
 import openpyxl
 from xml.parsers.expat import ExpatError
+from exception_mixin import generic_exception_handler
 
 
 def read_xml_file_to_dict(the_file):
@@ -92,8 +93,8 @@ def read_table_file_to_list(tsvfile, separator):
                     if header_list[col] in standard_fields:
                         continue
                     row[header_list[col]] = val.decode(encoding)
-                except UnicodeDecodeError:
-                    decoding_problems.append(str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
+                except UnicodeDecodeError as ex:
+                    decoding_problems.append(generic_exception_handler.extract_short_error_message(ex))
                     row[header_list[col]] = val.decode(encoding, "ignore")
             row["__filename__"] = filename
             row["__id__"] = i
@@ -101,8 +102,8 @@ def read_table_file_to_list(tsvfile, separator):
             i += 1
         tsvfile.seek(0)
         header_list = add_standard_fields(header_list)
-    except:
-        ermsg = "Error reading text file " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+    except Exception as ex:
+        ermsg = generic_exception_handler.extract_short_error_message(ex, "Error reading text file")
         return None, {"message": ermsg}, None, None, None
     return filename, result_list, header_list, encoding, decoding_problems
 
@@ -160,8 +161,8 @@ def read_excel_file(xlfile):
             header_list = header_list[:highest_nonblank_column + 1]
             header_list = add_standard_fields(header_list)
             header_dict[sname] = header_list
-    except:
-        ermsg = "Error reading excel file " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+    except Exception as ex:
+        ermsg = generic_exception_handler.extract_short_error_message(ex, "Error reading excel file")
         return None, {"message": ermsg}, None
     return filename, doc_dict, header_dict
 
@@ -186,8 +187,8 @@ def read_txt_file_to_list(txtfile):
         detected = chardet.detect(raw_text[:100000])
         try:
             decoded_text = raw_text.decode(detected["encoding"])
-        except UnicodeDecodeError:
-            decoding_problems.append(str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
+        except UnicodeDecodeError as ex:
+            decoding_problems.append(generic_exception_handler.extract_short_error_message(ex))
             decoded_text = raw_text.decode(detected["encoding"], "ignore")
 
         lines = decoded_text.splitlines()
@@ -198,8 +199,8 @@ def read_txt_file_to_list(txtfile):
             i = i + 1
 
         header_list = ["__id__", "__filename__", "text"]
-    except:
-        ermsg = "Error reading text file " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+    except Exception as ex:
+        ermsg = generic_exception_handler.extract_short_error_message(ex, "Error reading text file")
         return None, {"message": ermsg}, None, None
     return filename, result_list, header_list, detected["encoding"], decoding_problems
 
@@ -212,11 +213,11 @@ def read_freeform_file(txtfile):
         decoding_problems = []
         try:
             decoded_text = raw_text.decode(detected["encoding"])
-        except UnicodeDecodeError:
-            decoding_problems.append(str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
+        except UnicodeDecodeError as ex:
+            decoding_problems.append(generic_exception_handler.extract_short_error_message(ex))
             decoded_text = raw_text.decode(detected["encoding"], "ignore")
-    except:
-        ermsg = "Error reading text file " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+    except Exception as ex:
+        ermsg = generic_exception_handler.extract_short_error_message(ex, "Error reading text file")
         return None, {"message": ermsg}
     return filename, decoded_text, detected["encoding"], decoding_problems
 

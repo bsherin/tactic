@@ -11,8 +11,8 @@
 
 {% block page_content %}
     {% include 'modals/show_image_modal.html' %}
-    <div id="error-message">
-        {{error_string | safe}}
+    <div id="error-message" class="container-fluid" style="padding-top:25px">
+        {{ base_string | safe }}: {{error_string | safe}}
     </div>
 
 {% endblock %}

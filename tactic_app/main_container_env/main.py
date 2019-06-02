@@ -8,7 +8,6 @@ import copy
 import pymongo
 import gridfs
 import datetime
-import traceback
 import os
 from communication_utils import debinarize_python_object, store_temp_data
 from communication_utils import make_jsonizable_and_compress, read_project_dict, read_temp_data, delete_temp_data
@@ -17,6 +16,7 @@ from volume_manager import VolumeManager, host_persist_dir
 from mongo_accesser import MongoAccess
 from main_tasks_mixin import StateTasksMixin, LoadSaveTasksMixin, TileCreationTasksMixin, APISupportTasksMixin
 from main_tasks_mixin import ExportsTasksMixin, ConsoleTasksMixin, DataSupportTasksMixin
+from exception_mixin import ExceptionMixin
 
 docker_functions.megaplex_address = os.environ.get("MEGAPLEX_ADDRESS")
 
@@ -36,11 +36,12 @@ else:
 
 mongo_uri = os.environ.get("MONGO_URI")
 true_host_persist_dir = os.environ.get("TRUE_HOST_PERSIST_DIR")
+true_host_nltk_data_dir = os.environ.get("TRUE_HOST_NLTK_DATA_DIR")
 
 
 # noinspection PyPep8Naming,PyUnusedLocal,PyTypeChecker
 class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationTasksMixin, APISupportTasksMixin,
-                 ExportsTasksMixin, ConsoleTasksMixin, DataSupportTasksMixin):
+                 ExportsTasksMixin, ConsoleTasksMixin, DataSupportTasksMixin, ExceptionMixin):
     save_attrs = ["short_collection_name", "collection_name", "current_tile_id", "tile_sort_list", "left_fraction",
                   "is_shrunk", "doc_dict", "project_name", "loaded_modules", "user_id",
                   "console_html", "console_cm_code", "doc_type", "purgetiles"]
@@ -62,9 +63,8 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
             # noinspection PyUnresolvedReferences
             self.db = client[db_name]
             self.fs = gridfs.GridFS(self.db)
-        except:
-            error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-            self.mworker.debug_log("error getting pymongo client: " + error_string)
+        except Exception as ex:
+            self.mworker.debug_log(self.extract_short_error_message(ex, "error getting pymongo client"))
             sys.exit()
 
         self.base_figure_url = data_dict["base_figure_url"]
@@ -180,6 +180,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
             user_host_persist_dir = true_host_persist_dir + "/tile_manager/" + self.username
             tile_volume_dict = {}
             tile_volume_dict[user_host_persist_dir] = {"bind": "/persist", "mode": "rw"}
+            tile_volume_dict[true_host_nltk_data_dir] = {"bind": "/root/nltk_data", "mode": "ro"}
             tile_container_id, container_id = docker_functions.create_container("tactic_tile_image",
                                                                                 network_mode="bridge",
                                                                                 owner=data["user_id"],
@@ -189,9 +190,9 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                                                                                 volume_dict=tile_volume_dict,
                                                                                 publish_all_ports=True)
             tile_address = docker_functions.get_address(container_id, "bridge")
-        except docker_functions.ContainerCreateError:
+        except docker_functions.ContainerCreateError as ex:
             print("Error creating tile container")
-            return {"success": False, "message": "Error creating empty tile container."}
+            return self.get_short_exception_dict(ex, "Error creating empty tile container")
         return {"success": True, "tile_id": tile_container_id, "tile_address": tile_address}
 
     def recreate_from_save(self, project_name, unique_id=None):
@@ -342,13 +343,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         return
 
     def handle_exception(self, ex, special_string=None, print_to_console=True):
-        if special_string is None:
-            template = "An exception of type {0} occured. Arguments:\n{1!r}\n"
-        else:
-            template = special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}\n"
-        error_string = template.format(type(ex).__name__, ex.args)
-        error_string += traceback.format_exc()
-        error_string = "<pre>" + error_string + "</pre>"
+        error_string = self.get_traceback_message(ex, special_string)
         self.mworker.debug_log(error_string)
         if print_to_console:
             summary = "An exception of type {}".format(type(ex).__name__)

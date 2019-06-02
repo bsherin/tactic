@@ -7,9 +7,9 @@ from tactic_app.resource_manager import ResourceManager
 from tactic_app.docker_functions import cli, destroy_container, container_owner, get_log
 from tactic_app.docker_functions import container_id, container_memory_usage
 from tactic_app.docker_functions import container_other_name
+from tactic_app.exception_mixin import generic_exception_handler
 from docker_cleanup import do_docker_cleanup
 import tactic_app
-import traceback
 
 admin_user = User.get_user_by_username("admin")
 global_tile_manager = tactic_app.global_tile_manager
@@ -56,10 +56,7 @@ class ContainerManager(ResourceManager):
                 #     self.show_um_message("removing image container " + cont["Id"], library_id)
                 #     cli.remove_container(cont["Id"], force=True)
         except Exception as ex:
-            template = "<pre>An exception of type {0} occured. Arguments:\n{1!r}</pre>"
-            error_string = template.format(type(ex).__name__, ex.args)
-            error_string += traceback.format_exc()
-            return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+            return generic_exception_handler.get_traceback_exception_for_ajax(ex, "Error clearing user containers")
 
         self.clear_um_message(library_id)
         self.update_selector_list()
@@ -78,10 +75,7 @@ class ContainerManager(ResourceManager):
             self.show_um_message("getting default tiles", library_id)
             # global_tile_manager.get_all_default_tiles()
         except Exception as ex:
-            template = "<pre>An exception of type {0} occured. Arguments:\n{1!r}</pre>"
-            error_string = template.format(type(ex).__name__, ex.args)
-            error_string += traceback.format_exc()
-            return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+            return generic_exception_handler.get_traceback_exception_for_ajax(ex, "Error resetting server")
 
         self.clear_um_message(library_id)
         self.update_selector_list()
@@ -93,10 +87,7 @@ class ContainerManager(ResourceManager):
         try:
             destroy_container(cont_id)
         except Exception as ex:
-            template = "<pre>An exception of type {0} occured. Arguments:\n{1!r}</pre>"
-            error_string = template.format(type(ex).__name__, ex.args)
-            error_string += traceback.format_exc()
-            return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+            return generic_exception_handler.get_traceback_exception_for_ajax(ex, "Error killing container")
         self.update_selector_list()
         return jsonify({"success": True, "message": "Container Destroeyd", "alert_type": "alert-success"})
 
@@ -106,10 +97,7 @@ class ContainerManager(ResourceManager):
         try:
             log_text = get_log(cont_id)
         except Exception as ex:
-            template = "<pre>An exception of type {0} occured. Arguments:\n{1!r}</pre>"
-            error_string = template.format(type(ex).__name__, ex.args)
-            error_string += traceback.format_exc()
-            return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+            return generic_exception_handler.get_traceback_exception_for_ajax(ex, "Error getting container logs")
         return jsonify({"success": True, "message": "Got Logs", "log_text": log_text, "alert_type": "alert-success"})
 
     def refresh_container_table(self):
