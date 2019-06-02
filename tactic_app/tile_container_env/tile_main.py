@@ -2,7 +2,8 @@ import os
 if "DEBUG_TILE_CONTAINER" in os.environ:
     if os.environ.get("DEBUG_TILE_CONTAINER") == "True":
         import pydevd
-        # pydevd.settrace('docker.for.mac.localhost', port=21000, stdoutToServer=True, stderrToServer=True, suspend=False)
+        # pydevd.settrace('docker.for.mac.localhost', port=21000, stdoutToServer=True,
+        # stderrToServer=True, suspend=False)
         print("settrace done")
 
 from gevent import monkey; monkey.patch_all()
@@ -83,12 +84,7 @@ class TileWorker(QWorker):
         return
 
     def handle_exception(self, ex, special_string=None):
-        if special_string is None:
-            template = "An exception of type {0} occured. Arguments:\n{1!r}"
-        else:
-            template = special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}"
-        error_string = template.format(type(ex).__name__, ex.args)
-        error_string = "<pre>" + error_string + "</pre>"
+        error_string = self.get_traceback_message(ex)
         summary = "Exception of type {}".format(type(ex).__name__)
         print(error_string)
         return {"success": False, "message": error_string, "summary": summary}

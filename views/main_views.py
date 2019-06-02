@@ -13,6 +13,7 @@ from tactic_app.docker_functions import destroy_container, destroy_child_contain
 from tactic_app.users import load_user
 from tactic_app.communication_utils import send_request_to_megaplex, debinarize_python_object
 from tactic_app.communication_utils import read_temp_data, delete_temp_data
+from tactic_app.exception_mixin import generic_exception_handler
 import tactic_app
 
 import datetime
@@ -54,11 +55,7 @@ def register_heartbeat():
     try:
         tactic_app.client_worker.update_heartbeat_table(data["main_id"])
     except Exception as ex:
-        template = "<pre>An exception of type {0} occured. Arguments:\n{1!r}</pre>"
-        error_string = template.format(type(ex).__name__, ex.args)
-        error_string += traceback.format_exc()
-        print error_string
-        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+        return generic_exception_handler.get_traceback_exception_for_ajax(ex)
     return jsonify({"success": True})
 
 

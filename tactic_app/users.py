@@ -10,9 +10,9 @@ from flask_login import UserMixin
 from tactic_app import login_manager, db, fs, list_collections  # global_stuff db
 from tactic_app.communication_utils import read_project_dict, make_jsonizable_and_compress
 from bson.objectid import ObjectId
+from exception_mixin import generic_exception_handler
 from werkzeug.security import generate_password_hash, check_password_hash
 from mongo_accesser import MongoAccess
-import traceback
 
 user_data_fields = ["username", "email", "full_name", "favorite_dumpling", "tzoffset"]
 
@@ -49,18 +49,11 @@ def remove_user(userid):
         db.user_collection.delete_one({"_id": ObjectId(userid)})
         return {"success": True, "message": "User successfully revmoed."}
     except Exception as ex:
-        return process_exception(ex)
+        return generic_exception_handler.get_traceback_exception_dict(ex)
 
 
 def get_all_users():
     return db.user_collection.find()
-
-
-def process_exception(ex):
-    template = "<pre>An exception of type {0} occured. Arguments:\n{1!r}</pre>"
-    error_string = template.format(type(ex).__name__, ex.args)
-    error_string += traceback.format_exc()
-    return {"success": False, "message": error_string, "alert_type": "alert-warning"}
 
 
 class User(UserMixin, MongoAccess):
@@ -68,7 +61,7 @@ class User(UserMixin, MongoAccess):
     def __init__(self, user_dict):
         self.username = ""  # This is just to be make introspection happy
         self.db = db  # This is to make mongoaccesser work
-        self.fs = fs # This is to make mongoaccesser work
+        self.fs = fs  # This is to make mongoaccesser work
         for key in user_data_fields:
             if key in user_dict:
                 setattr(self, key, user_dict[key])
@@ -169,7 +162,6 @@ class User(UserMixin, MongoAccess):
     def get_user_dict(self):
         return {"username": self.username, "password_hash": self.password_hash}
 
-
     @property
     def my_record(self):
         return db.user_collection.find_one({"username": self.username})
@@ -186,6 +178,7 @@ def load_remote_user(userid, the_db):
         return User(result)
 
 
+# noinspection PyMethodOverriding
 class RemoteUser(User):
     def __init__(self, user_dict, remote_db):
         self.username = ""  # This is just to be make introspection happy

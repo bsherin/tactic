@@ -4,6 +4,7 @@ import sys
 # from sentiment_tools import vader_sentiment_analyzer, sentiwordnet, TacticVader
 import warnings
 import matplotlib
+from exception_mixin import generic_exception_handler
 matplotlib.use("Agg")
 
 with warnings.catch_warnings():
@@ -27,6 +28,7 @@ from library_object import Library
 from remote_tile_object import Tiles
 from remote_tile_object import Pipes
 
+
 def global_import(imp):
     globals()[imp] = __import__(imp, globals(), locals(), [], 0)
     return
@@ -38,16 +40,14 @@ def user_tile(tclass):
     return tclass
 
 
+# noinspection PyRedundantParentheses
 def exec_tile_code(tile_code):
     try:
         exec(tile_code)
-    except:
-        error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-        return {"success": False, "message": error_string}
+    except Exception as ex:
+        return generic_exception_handler.get_traceback_exception_dict(ex)
     return {"success": True, "tile_name": class_info["class_name"], "category": class_info["tile_class"].category}
 
 # I want nltk to only search here so that I can see
 # what behavior on remote will be like.
 # nltk.data.path = ['/code/lexicons/']
-
-

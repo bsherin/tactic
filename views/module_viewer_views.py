@@ -7,6 +7,7 @@ from flask import render_template, request, jsonify, url_for
 from flask_login import login_required, current_user
 from tactic_app import app, db, use_ssl
 from tactic_app.integrated_docs import api_dict_by_category, api_dict_by_name, ordered_api_categories
+from tactic_app.exception_mixin import generic_exception_handler
 
 from library_views import tile_manager
 import datetime
@@ -32,9 +33,8 @@ def checkpoint_module():
         return jsonify({"success": True, "message": "Module successfully saved and checkpointed",
                         "alert_type": "alert-success"})
 
-    except:
-        error_string = "Error checkpointing module " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+    except Exception as ex:
+        return generic_exception_handler.get_exception_for_ajax(ex, "Error checkpointing module")
 
 
 def create_recent_checkpoint(module_name):
@@ -49,10 +49,8 @@ def create_recent_checkpoint(module_name):
         db[current_user.tile_collection_name].update_one({"tile_module_name": module_name},
                                                          {'$set': {"recent_history": recent_history}})
         return jsonify({"success": True})
-
-    except:
-        error_string = "Error checkpointing module to recent" + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+    except Exception as ex:
+        return generic_exception_handler.get_exception_for_ajax(ex, "Error checkpointing module to recent")
 
 
 @app.route('/checkpoint_to_recent', methods=['post'])
@@ -134,6 +132,5 @@ def update_module():
         tile_manager.send_tile_source_changed_message({'user_id': current_user.get_id(), 'tile_type': module_name})
         return jsonify({"success": True, "message": "Module Successfully Saved",
                         "alert_type": "alert-success"})
-    except:
-        error_string = "Error saving module " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-        return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+    except Exception as ex:
+        return generic_exception_handler.get_exception_for_ajax(ex, "Error saving module")

@@ -10,7 +10,7 @@ from communication_utils import USE_FORWARDER
 import communication_utils
 import subprocess
 import re
-from volume_manager import host_persist_dir
+from volume_manager import host_persist_dir, host_nltk_data_dir
 forwarder_address = None
 forwarder_id = None
 sys.stdout = sys.stderr
@@ -58,14 +58,18 @@ RETRIES = 60
 
 cli = docker.DockerClient(base_url='unix://var/run/docker.sock')
 
+
+# noinspection PyTypeChecker
 def get_my_address():
     res = subprocess.check_output(["hostname", "-i"]).decode()
-    res = re.sub("\s", "", res)
+    res = re.sub(r"\s", r"", res)
     return res
+
 
 # Note that get_address assumes that the network is named usernet
 def get_address(container_identifier, network_name):
     return cli.containers.get(container_identifier).attrs["NetworkSettings"]["Networks"][network_name]["IPAddress"]
+
 
 class MainContainerTracker(object):
     def __init__(self):
@@ -78,7 +82,8 @@ class MainContainerTracker(object):
         main_id, _container_id = create_container("tactic_main_image", network_mode="bridge",
                                                   owner=user_id, other_name=other_name, username=username,
                                                   volume_dict=main_volume_dict,
-                                                  publish_all_ports=True, true_host_persist_dir=host_persist_dir)
+                                                  publish_all_ports=True, true_host_persist_dir=host_persist_dir,
+                                                  true_host_nltk_data_dir=host_nltk_data_dir)
         self.mc_dict[main_id] = {
             "address": get_address(_container_id, "bridge"),
             "container_id": _container_id,
@@ -106,7 +111,9 @@ class MainContainerTracker(object):
     def is_main(self, unique_id):
         return unique_id in self.mc_dict
 
+
 main_container_info = MainContainerTracker()
+
 
 class ContainerCreateError(Exception):
     pass
@@ -131,10 +138,12 @@ def get_container_type(cont):
 # noinspection PyUnusedLocal
 def create_container(image_name, container_name=None, network_mode="bridge",
                      wait_until_running=True, owner="host", parent="host",
-                     env_vars={}, port_bindings=None, wait_retries=50,
+                     env_vars=None, port_bindings=None, wait_retries=50,
                      other_name="none", volume_dict=None, username=None,
                      detach=True, register_container=True, publish_all_ports=False,
-                     main_address=None, true_host_persist_dir=None):
+                     main_address=None, true_host_persist_dir=None, true_host_nltk_data_dir=None):
+    if env_vars is None:
+        env_vars = {}
     unique_id = str(uuid.uuid4())
     environ = {"MAX_QUEUE_LENGTH": MAX_QUEUE_LENGTH,
                "RETRIES": RETRIES,
@@ -150,7 +159,8 @@ def create_container(image_name, container_name=None, network_mode="bridge",
                "DEBUG_MAIN_CONTAINER": DEBUG_MAIN_CONTAINER,
                "DEBUG_TILE_CONTAINER": DEBUG_TILE_CONTAINER,
                "PYTHONUNBUFFERED": "Yes",
-               "TRUE_HOST_PERSIST_DIR": true_host_persist_dir}
+               "TRUE_HOST_PERSIST_DIR": true_host_persist_dir,
+               "TRUE_HOST_NLTK_DATA_DIR": true_host_nltk_data_dir}
 
     if username is not None:
         environ["USERNAME"] = username
@@ -173,7 +183,6 @@ def create_container(image_name, container_name=None, network_mode="bridge",
     if image_name == "tactic_tile_image":  # We don't want people to be able to see the mongo_uri
         del environ["MONGO_URI"]
 
-
     if container_name is None:
         container = cli.containers.run(image=image_name,
                                        network_mode="bridge",
@@ -181,7 +190,7 @@ def create_container(image_name, container_name=None, network_mode="bridge",
                                        ports=port_bindings,
                                        detach=detach,
                                        labels=labels,
-                                       volumes = volume_dict,
+                                       volumes=volume_dict,
                                        publish_all_ports=publish_all_ports)
     else:
         container = cli.containers.run(image=image_name,

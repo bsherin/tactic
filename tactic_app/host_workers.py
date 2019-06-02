@@ -13,7 +13,6 @@ import tactic_app
 import uuid
 import sys
 import copy
-import traceback
 import datetime
 
 check_for_dead_time = 30  # How often, in seconds, to ask the megaplex to check for stalled containers
@@ -77,10 +76,8 @@ class HostWorker(QWorker):
             self.post_task(global_tile_manager.test_tile_container_id, "clear_and_load_code",
                            {"the_code": the_code}, get_result)
 
-        except:
-            error_string = "Error saving code resource " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-            self.submit_response(task_packet, {"success": False, "message": error_string,
-                                               "alert_type": "alert-warning"})
+        except Exception as ex:
+            self.submit_response(task_packet, self.get_short_exception_dict(ex, "Error saving code resource"))
             return
 
     @task_worthy_manual_submit
@@ -92,6 +89,9 @@ class HostWorker(QWorker):
                     socketio.emit('update-loaded-tile-list',
                                   {"html": tile_manager.render_loaded_tile_list(user_obj)},
                                   namespace='/library', room=user_obj.get_id())
+                if "main_id" not in task_packet:
+                    task_packet["room"] = user_id
+                    task_packet["namespace"] = "/library"
                 if not task_packet["callback_type"] == "no_callback":
                     self.submit_response(task_packet, {"success": False, "message": res_dict["message"],
                                                        "alert_type": "alert-warning"})
@@ -130,25 +130,22 @@ class HostWorker(QWorker):
 
             try:
                 tile_module = user_obj.get_tile_module(tile_module_name)
-            except ModuleNotFoundError:
-                error_string = "Error finding the tile module " + tile_module_name
+            except ModuleNotFoundError as ex:
+                special_string = "Error finding the tile module " + tile_module_name
                 if not task_packet["callback_type"] == "no_callback":
-                    self.submit_response(task_packet, {"success": False, "message": error_string,
-                                                       "alert_type": "alert-warning"})
+                    self.submit_response(task_packet, self.get_short_exception_dict(ex, special_string))
                 else:
-                    print error_string
+                    print self.extract_short_error_message(ex, special_string)
 
             else:
                 self.post_task(global_tile_manager.test_tile_container_id, "load_source",
                                {"tile_code": tile_module}, loaded_source)
 
-        except:
-            error_string = "Error loading tile: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+        except Exception as ex:
             if not task_packet["callback_type"] == "no_callback":
-                self.submit_response(task_packet, {"success": False, "message": error_string,
-                                                   "alert_type": "alert-warning"})
+                self.submit_response(task_packet, self.get_short_exception_dict(ex, "Error loading tile"))
             else:
-                print error_string
+                print self.extract_short_error_message(ex, "Error loading tile")
             return
 
     @task_worthy
@@ -549,9 +546,10 @@ class HostWorker(QWorker):
                                                                env_vars=environ,
                                                                publish_all_ports=True)
             tile_address = get_address(container_id, "bridge")
-        except ContainerCreateError:
-            print "Error creating tile container"
-            return {"success": False, "message": "Error creating empty tile container."}
+        except ContainerCreateError as ex:
+            special_string = "Error creating tile container"
+            print special_string
+            return self.get_short_exception_dict(ex, special_string)
         return {"success": True, "tile_id": tile_container_id, "tile_address": tile_address}
 
     @task_worthy
@@ -593,15 +591,6 @@ class HostWorker(QWorker):
         ddict["html"] = the_html
         return ddict
 
-    def handle_exception(self, ex, special_string=None):
-        if special_string is None:
-            template = "An exception of type {0} occured. Arguments:\n{1!r}"
-        else:
-            template = special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}"
-        error_string = template.format(type(ex).__name__, ex.args)
-        print error_string
-        return
-
     def clear_stale_containers(self):
         res = send_request_to_megaplex("get_old_inactive_stalled_containers").json()
         cont_list = res["old_inactive_stalled_containers"]
@@ -630,16 +619,6 @@ class ClientWorker(QWorker):
         send_request_to_megaplex("post_task", task_packet)
         return
 
-    def handle_exception(self, ex, special_string=None):
-        if special_string is None:
-            template = "An exception of type {0} occured. Arguments:\n{1!r}\n"
-        else:
-            template = special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}\n"
-        error_string = template.format(type(ex).__name__, ex.args)
-        error_string += traceback.format_exc()
-        print error_string
-        return
-
     def update_heartbeat_table(self, main_id):
         self.main_heartbeat_table[main_id] = datetime.datetime.utcnow()
 
@@ -665,7 +644,7 @@ class ClientWorker(QWorker):
                 task_packet = self.get_next_task()
             except Exception as ex:
                 special_string = "Error in get_next_task for my_id {}".format(self.my_id)
-                self.handle_exception(ex, special_string)
+                print self.get_traceback_message(ex, special_string)
             else:
                 try:
                     if "empty" not in task_packet:
@@ -695,7 +674,7 @@ class ClientWorker(QWorker):
                             gevent.sleep(self.short_sleep_period)
                 except Exception as ex:
                     special_string = "Error handling task for my_id {}".format(self.my_id)
-                    self.handle_exception(ex, special_string)
+                    print self.get_traceback_message(ex, special_string)
 
 
 tactic_app.host_worker = HostWorker()

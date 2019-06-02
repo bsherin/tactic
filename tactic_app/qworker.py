@@ -8,6 +8,7 @@ import os
 import copy
 from communication_utils import send_request_to_megaplex
 import communication_utils
+from exception_mixin import ExceptionMixin, MessagePostException
 
 callback_dict = {}
 callback_data_dict = {}
@@ -53,7 +54,7 @@ def task_worthy_manual_submit(m):
 
 
 # noinspection PyTypeChecker
-class QWorker(gevent.Greenlet):
+class QWorker(gevent.Greenlet, ExceptionMixin):
     def __init__(self):
         self.short_sleep_period = SHORT_SLEEP_PERIOD
         self.hibernate_time = HIBERNATE_TIME
@@ -79,6 +80,7 @@ class QWorker(gevent.Greenlet):
         task_packet = raw_result.json()
         return task_packet
 
+    # noinspection PyUnusedLocal
     def post_and_wait(self, dest_id, task_type, task_data=None, sleep_time=.1,
                       timeout=10, tries=RETRIES, alt_address=None):
         callback_id = str(uuid.uuid4())
@@ -102,7 +104,7 @@ class QWorker(gevent.Greenlet):
                                                                                                      dest_id,
                                                                                                      self.my_id)
         self.debug_log(error_string)
-        raise Exception(error_string)
+        raise MessagePostException(error_string)
 
     def post_task(self, dest_id, task_type, task_data=None, callback_func=None,
                   callback_data=None, expiration=None, error_handler=None, alt_address=None):
@@ -136,7 +138,7 @@ class QWorker(gevent.Greenlet):
                                                                                                      dest_id,
                                                                                                      self.my_id,
                                                                                                      result["message"])
-            raise Exception(error_string)
+            raise MessagePostException(error_string)
         return result
 
     def submit_response(self, task_packet, response_data=None, alt_address=None):
@@ -228,7 +230,7 @@ class QWorker(gevent.Greenlet):
                 except Exception as ex:
                     special_string = "Error submitting response for task type {} for my_id {}".format(task_type,
                                                                                                       self.my_id)
-                    self.handle_exception(ex, special_string)
+                    print(self.extract_short_error_message(ex, special_string))
 
         elif task_type in task_worthy_manual_submit_methods:
             try:
@@ -244,5 +246,4 @@ class QWorker(gevent.Greenlet):
         return
 
     def handle_exception(self, ex, special_string=None):
-        print("handle exception not implemented in qworker subclass")
-        return {"success": False, "message": special_string}
+        return self.extract_short_error_message(ex, special_string)

@@ -5,7 +5,6 @@ from bson.binary import Binary
 # noinspection PyUnresolvedReferences
 from matplotlib_utilities import MplFigure, color_palette_names, ColorMapper
 # from types import NoneType
-import traceback
 import os
 import pickle
 from pickle import UnpicklingError
@@ -20,6 +19,7 @@ from library_access_mixin import LibraryAccessMixin
 from object_api_mixin import ObjectAPIMixin
 from other_api_mixin import OtherAPIMIxin
 from refreshing_mixin import RefreshingMixin
+from exception_mixin import ExceptionMixin, generic_exception_handler
 
 RETRIES = 60
 
@@ -60,12 +60,12 @@ def user_class(the_class):
     return the_class
 
 
+# noinspection PyRedundantParentheses
 def exec_user_code(the_code):
     try:
         exec(the_code)
-    except:
-        error_string = sys.exc_info()[0] + " " + str(sys.exc_info()[1])
-        return {"success": False, "message": error_string}
+    except Exception as ex:
+        return generic_exception_handler.get_traceback_exception_dict(ex)
     return {"success": True,
             "classes": list(_code_names["classes"].keys()),
             "functions": list(_code_names["functions"].keys())}
@@ -84,7 +84,8 @@ class CollectionNotFound(Exception):
 # noinspection PyMiss
 # ingConstructor
 # noinspection PyUnusedLocal
-class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMixin, OtherAPIMIxin, RefreshingMixin):
+class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMixin,
+               OtherAPIMIxin, RefreshingMixin, ExceptionMixin):
     category = "basic"
     exports = []
     _input_start_template = '<div class="form-group form-group-sm""><label>{0}</label>'
@@ -488,11 +489,10 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                     fixed_attrs.append(attr)
             self.save_attrs = list(set(fixed_attrs))
             return {"form_html": form_html}
-        except:
-            error_string = ("error creating form for  " + self.__class__.__name__ + " tile: "
-                            + self._tworker.my_id + " " +
-                            str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
-            self._tworker.debug_log("Got an error creating form " + error_string)
+        except Exception as ex:
+            special_string = ("error creating form for  " + self.__class__.__name__ + " tile: " + self._tworker.my_id)
+            error_string = self.get_traceback_message(ex, special_string)
+            self._tworker.debug_log(error_string)
             # self.display_message(error_string, True)
             return error_string
 
@@ -546,10 +546,10 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                 else:
                     the_html = "<h5>{}</h5>".format(eval_type_info["info_string"])
                     the_html += str(eval_result)
-            except:
+            except Exception as ex:
                 succcess = False
                 print("error in _evaluate_export in tile_base")
-                the_html = sys.exc_info()[0] + " " + sys.exc_info()[1]
+                the_html = self.get_traceback_message(ex)
         return {"success": success, "the_html": the_html}
 
     @_task_worthy
@@ -584,8 +584,8 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                     else:
                         print("new bser_attr_val is not jsonizable")
 
-                except TypeError:
-                    print("got a TypeError")
+                except TypeError as ex:
+                    print(self.extract_short_error_message(ex))
                     continue
         data = {"tile_type": self.tile_type, "user_id": self.user_id}
         result["tile_id"] = self._tworker.my_id
@@ -825,13 +825,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         return {"success": True, "tile_html": render_result}
 
     def _handle_exception(self, ex, special_string=None, print_to_console=True):
-        if special_string is None:
-            template = "An exception of type {0} occured. Arguments:\n{1!r}\n"
-        else:
-            template = special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}\n"
-        error_string = template.format(type(ex).__name__, ex.args)
-        error_string += traceback.format_exc()
-        error_string = "<pre>" + error_string + "</pre>"
+        error_string = self.get_traceback_message(ex, special_string)
         self._tworker.debug_log(error_string)
         summary = "Exception of type {}".format(type(ex).__name__)
         if print_to_console:

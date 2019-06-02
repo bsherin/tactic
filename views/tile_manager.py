@@ -11,7 +11,7 @@ import tactic_app
 from tactic_app import app, db, socketio, use_ssl
 from tactic_app.resource_manager import ResourceManager, LibraryResourceManager
 from tactic_app.users import User
-from tactic_app.docker_functions import create_container, ContainerCreateError
+from tactic_app.docker_functions import create_container
 
 global_tile_manager = tactic_app.global_tile_manager
 repository_user = User.get_user_by_username("repository")
@@ -26,13 +26,20 @@ class TileManager(LibraryResourceManager):
     collection_list_with_metadata = "tile_module_names_with_metadata"
     collection_name = "tile_collection_name"
     name_field = "tile_module_name"
-    button_groups = [[{"name": "save_button", "button_class": "btn-outline-secondary", "name_text": "Save", "icon_name": "save"},
-                      {"name": "checkpoint_button", "button_class": "btn-outline-secondary", "name_text": "Mark", "icon_name": "map-marker-alt" },
-                      {"name": "save_as_button", "button_class": "btn-outline-secondary", "name_text": "Save as...", "icon_name": "save"},
-                      {"name": "load_button", "button_class": "btn-outline-secondary", "name_text": "Load", "icon_name": "arrow-from-bottom"},
-                      {"name": "share_button", "button_class": "btn-outline-secondary", "name_text": "Share", "icon_name": "share"}],
-                     [{"name": "history_button", "button_class": "btn-outline-secondary", "name_text": "History", "icon_name": "history"},
-                      {"name": "differ_button", "button_class": "btn-outline-secondary", "name_text": "Compare", "icon_name": "code-branch"}
+    button_groups = [[{"name": "save_button", "button_class": "btn-outline-secondary",
+                       "name_text": "Save", "icon_name": "save"},
+                      {"name": "checkpoint_button", "button_class": "btn-outline-secondary",
+                       "name_text": "Mark", "icon_name": "map-marker-alt"},
+                      {"name": "save_as_button", "button_class": "btn-outline-secondary",
+                       "name_text": "Save as...", "icon_name": "save"},
+                      {"name": "load_button", "button_class": "btn-outline-secondary",
+                       "name_text": "Load", "icon_name": "arrow-from-bottom"},
+                      {"name": "share_button", "button_class": "btn-outline-secondary",
+                       "name_text": "Share", "icon_name": "share"}],
+                     [{"name": "history_button", "button_class": "btn-outline-secondary",
+                       "name_text": "History", "icon_name": "history"},
+                      {"name": "differ_button", "button_class": "btn-outline-secondary",
+                       "name_text": "Compare", "icon_name": "code-branch"}
                       ]]
 
     def add_rules(self):
@@ -71,9 +78,8 @@ class TileManager(LibraryResourceManager):
                                                              {'$set': {"tile_module_name": new_name}})
             # self.update_selector_list()
             return jsonify({"success": True, "message": "Module Successfully Saved", "alert_type": "alert-success"})
-        except:
-            error_string = "Error renaming module " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-            return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+        except Exception as ex:
+            return self.get_exception_for_ajax(ex, "Error renaming collection")
 
     def grab_metadata(self, res_name):
         if self.is_repository:
@@ -194,14 +200,8 @@ class TileManager(LibraryResourceManager):
 
     def initialize_module_viewer_container(self, module_name):
         user_obj = current_user
-        try:
-            module_viewer_id, container_id = create_container("module_viewer_image", owner=user_obj.get_id(),
-                                                              other_name=module_name)
-        except ContainerCreateError:
-            return render_template("error_window_template.html",
-                                   window_tile="Failure",
-                                   error_string="Load failed: Could not create container",
-                                   version_string=tstring)
+        module_viewer_id, container_id = create_container("module_viewer_image", owner=user_obj.get_id(),
+                                                          other_name=module_name)
 
         the_content = {"module_name": module_name,
                        "module_viewer_id": module_viewer_id,
@@ -254,9 +254,8 @@ class TileManager(LibraryResourceManager):
                           namespace='/library', room=current_user.get_id())
             socketio.emit('update-menus', {}, namespace='/main', room=current_user.get_id())
             return jsonify({"message": "Tiles successfully unloaded", "alert_type": "alert-success"})
-        except:
-            error_string = "Error unloading tiles: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-            return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+        except Exception as ex:
+            return self.get_exception_for_ajax(ex, "Error unloading tiles")
 
     def send_tile_source_changed_message(self, data):
         socketio.emit('tile-source-change', data, namespace='/main', room=data["user_id"])
@@ -346,8 +345,6 @@ class TileManager(LibraryResourceManager):
         if user_obj is None:
             user_obj = current_user
         uname = user_obj.username
-        # if uname not in global_tile_manager.user_tiles.keys() or uname not in global_tile_manager.default_tiles.keys():
-        #     self.unload_all_tiles()
         nondefault_tiles = global_tile_manager.get_nondefault_tiles_list(uname)
         default_tiles = global_tile_manager.get_default_tiles(uname)
         failed_loads = global_tile_manager.get_failed_loads_list(uname)
@@ -365,7 +362,8 @@ class TileManager(LibraryResourceManager):
 class RepositoryTileManager(TileManager):
     rep_string = "repository-"
     is_repository = True
-    button_groups = [[{"name": "copy_button", "button_class": "btn-outline-secondary", "name_text": "Copy", "icon_name": "share"}
+    button_groups = [[{"name": "copy_button", "button_class": "btn-outline-secondary",
+                       "name_text": "Copy", "icon_name": "share"}
                       ]]
 
     def add_rules(self):

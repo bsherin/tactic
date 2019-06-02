@@ -135,7 +135,7 @@ function doFlash(data) {
     let message;
     let timeout;
     let msg;
-    let alert_settings = {'pinnable': false, 'modal':false, 'maximizable': true, 'overflow': false};
+    let alert_settings = {'pinnable': false, 'modal':false};
     if (!data.hasOwnProperty("alert_type")){
         alert_type = "alert-info"
     }
@@ -160,10 +160,10 @@ function doFlash(data) {
     } else if(alert_type =="alert-warning") {
         // msg = alertify.error(message, timeout);
         if ("title" in data) {
-            msg = alertify.alert(title, `<pre>${message}</pre>`).set(alert_settings);
+            msg = alertify.alert(title, `${message}`).set(alert_settings);
         }
         else {
-            msg = alertify.alert("Error", `<pre>${message}</pre>`).set(alert_settings);
+            msg = alertify.alert("Error", `${message}`).set(alert_settings);
         }
 
     } else {

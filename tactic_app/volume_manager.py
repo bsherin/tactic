@@ -4,6 +4,8 @@ import copy
 
 
 host_persist_dir = os.getcwd() + "/persist"
+host_nltk_data_dir = os.getcwd() + "/tactic_app/nltk_data"
+
 
 class VolumeManager:
     def __init__(self, base_dir):
@@ -112,6 +114,7 @@ class VolumeManager:
         self.root.delete_all_contents()
         return
 
+
 class VolumeDir:
     def __init__(self, keylist, vmanager):
         self.__dict__["keylist"] = keylist
@@ -175,6 +178,7 @@ class VolumeDir:
     def __repr__(self):
         return "volume dir with keylist {}".format(str(self.keylist))
 
+
 class DataObject:
     def __init__(self, keylist, dataname, vmanager):
         self.keylist = keylist
@@ -184,7 +188,3 @@ class DataObject:
     @property
     def value(self):
         return self.vmanager.get_data(self.keylist, self.dataname)
-
-
-
-

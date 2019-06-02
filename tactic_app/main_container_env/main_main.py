@@ -91,6 +91,7 @@ class MainWorker(QWorker):
             raise Exception(error_string)
         return result
 
+    # noinspection PyUnusedLocal
     def post_and_wait(self, dest_id, task_type, task_data=None, sleep_time=.1,
                       timeout=10, tries=RETRIES, alt_address=None):
         callback_id = str(uuid.uuid4())
@@ -211,15 +212,6 @@ class MainWorker(QWorker):
             self.post_task(self.my_id, event_name, data_dict)
         return True
 
-    def handle_exception(self, ex, special_string=None):
-        if special_string is None:
-            template = "<pre>An exception of type {0} occured. Arguments:\n{1!r}</pre>"
-        else:
-            template = "<pre>" + special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}</pre>"
-        error_string = template.format(type(ex).__name__, ex.args)
-        print(error_string)
-        return {"success": False, "message": error_string}
-
     @task_worthy
     def hello(self):
         return {"success": True, "message": 'This is mainwindow communicating'}
@@ -276,6 +268,7 @@ class MainWorker(QWorker):
         print("entering saved console code")
         return {"saved_console_code": self.mwindow.console_cm_code}
 
+    # noinspection PyUnusedLocal
     @task_worthy
     def get_jupyter_cell_data(self, data_dict):
         print("entering get_jupyter_cell_data")
