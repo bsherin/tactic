@@ -1,4 +1,3 @@
-
 import re
 import datetime
 from communication_utils import make_python_object_jsonizable, debinarize_python_object
@@ -6,16 +5,19 @@ from communication_utils import make_python_object_jsonizable, debinarize_python
 name_keys = {"tile": "tile_module_name", "list": "list_name", "project": "project_name", "code": "code_name"}
 res_types = ["list", "collection", "project", "tile", "code"]
 
-
 PROTECTED_METADATA_KEYS = ["_id", "file_id", "name", "my_class_for_recreate", "table_spec", "data_text", "length",
                            "data_rows", "header_list", "number_of_rows"]
 
 
-class NameExistsError(Exception):
+class MongoAccessException(Exception):
     pass
 
 
-class NonexistentNameError(Exception):
+class NameExistsError(MongoAccessException):
+    pass
+
+
+class NonexistentNameError(MongoAccessException):
     pass
 
 
@@ -92,7 +94,7 @@ class MongoAccess(object):
         full_collection_name = self.build_data_collection_name(new_name)
         mdata = self.create_initial_metadata()
         mdata["name"] = "__metadata__"
-        mdata["number_of_docs"] = len(doc_dict.keys())
+        mdata["number_of_docs"] = len(list(doc_dict.keys()))
         if collection_metadata is not None:
             for k, v in collection_metadata.items():
                 mdata[k] = v

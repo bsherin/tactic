@@ -1,7 +1,6 @@
 
 import datetime
 import re
-import traceback
 import uuid
 import copy
 import markdown
@@ -148,10 +147,7 @@ class LoadSaveTasksMixin:
                                                      "console_html": ""})
 
         except Exception as ex:
-            template = "An exception of type {0} occured. Arguments:\n{1!r}\n"
-            error_string = template.format(type(ex).__name__, ex.args)
-            error_string += traceback.format_exc()
-            error_string = "<pre>" + error_string + "</pre>"
+            error_string = self.get_traceback_message(ex)
             self.show_error_window(error_string)
             container_list = [self.mworker.my_id] + list(tile_containers.keys())
             self.mworker.ask_host("delete_container_list", {"container_list": container_list})
@@ -257,10 +253,7 @@ class LoadSaveTasksMixin:
                                                      "console_html": self.console_html})
 
         except Exception as ex:
-            template = "An exception of type {0} occured. Arguments:\n{1!r}\n"
-            error_string = template.format(type(ex).__name__, ex.args)
-            error_string += traceback.format_exc()
-            error_string = "<pre>" + error_string + "</pre>"
+            error_string = self.get_traceback_message(ex)
             self.show_error_window(error_string)
             container_list = [self.mworker.my_id] + list(tile_containers.keys())
             self.mworker.ask_host("delete_container_list", {"container_list": container_list})
@@ -1081,7 +1074,7 @@ class APISupportTasksMixin:
             for the_id, r in new_doc_dict.items():
                 old_r = current_doc_dict[the_id]
                 for key, val in r.items():
-                    if not key in ["__id__", "__filename__"]:
+                    if key not in ["__id__", "__filename__"]:
                         if not val == old_r[key]:
                             self._set_cell_content(doc_name, the_id, key, val, cellchange)
         else:
@@ -1303,7 +1296,8 @@ class ConsoleTasksMixin:
                     self.mworker.debug_log("got an exception " + instantiate_result["message"])
                     self.show_main_message("Error resetting notebook", 7)
                     raise Exception(instantiate_result["message"])
-                self.mworker.post_task(self.pseudo_tile_id, "create_pseudo_tile_collection_object", {})
+                self.mworker.post_task(self.pseudo_tile_id, "create_pseudo_tile_collection_object",
+                                       {"am_notebook": self.am_notebook_type})
                 self.show_main_message("Notebook reset", 7)
 
             data_dict = {"base_figure_url": self.base_figure_url.replace("tile_id", self.pseudo_tile_id),

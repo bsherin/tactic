@@ -8,7 +8,7 @@ from flask import jsonify, request, url_for, render_template, send_file
 from flask_login import login_required, current_user
 import tactic_app
 from tactic_app import app, db, fs, use_ssl
-from tactic_app.docker_functions import create_container, ContainerCreateError, main_container_info
+from tactic_app.docker_functions import create_container, main_container_info
 from tactic_app.resource_manager import ResourceManager, LibraryResourceManager
 from tactic_app.users import User
 from tactic_app.communication_utils import make_jsonizable_and_compress, read_project_dict
@@ -41,7 +41,6 @@ class ProjectManager(LibraryResourceManager):
                          login_required(self.import_as_jupyter), methods=['get', "post"])
         app.add_url_rule('/download_jupyter/<project_name>/<new_name>', "download_jupyter",
                          login_required(self.download_jupyter), methods=['get', "post"])
-
 
     def download_jupyter(self, project_name, new_name):
         user_obj = current_user
@@ -180,9 +179,8 @@ class ProjectManager(LibraryResourceManager):
                                                                 {'$set': {"project_name": new_name}})
             # self.update_selector_list()
             return jsonify({"success": True, "message": "project name changed", "alert_type": "alert-success"})
-        except:
-            error_string = "Error renaming project " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-            return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+        except Exception as ex:
+            return self.get_exception_for_ajax(ex, "Error renaming project")
 
     def delete_project(self):
         project_name = request.json["resource_name"]

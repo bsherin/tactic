@@ -25,7 +25,7 @@ class FilteringMixin:
 
     def get_matching_documents(self, filter_function):
         self._save_stdout()
-        jfilter_function = make_python_object_jsonizable(filter_function)
+        filter_function = make_python_object_jsonizable(filter_function)
         result = self._tworker.post_and_wait(self._main_id, "get_matching_documents",
                                              {"filter_function": jfilter_function})
         self._restore_stdout()
@@ -72,11 +72,9 @@ class FilteringMixin:
         self._restore_stdout()
         return
 
-
     def cth(self):
         self.clear_table_highlighting()
         return
-
 
     def clear_table_highlighting(self):
         self._save_stdout()
@@ -84,11 +82,9 @@ class FilteringMixin:
         self._restore_stdout()
         return
 
-
     def hmt(self, txt):
         self.highlight_matching_text(txt)
         return
-
 
     def highlight_matching_text(self, txt):
         self._save_stdout()
@@ -96,11 +92,9 @@ class FilteringMixin:
         self._restore_stdout()
         return
 
-
     def dar(self):
         self.display_all_rows()
         return
-
 
     def display_all_rows(self):
         self._save_stdout()
@@ -108,11 +102,9 @@ class FilteringMixin:
         self._restore_stdout()
         return
 
-
     def atr(self, func, document_name=None, cellchange=False):
         self.apply_to_rows(func, document_name, cellchange)
         return
-
 
     def apply_to_rows(self, func, document_name=None, cellchange=False):
         self._save_stdout()
@@ -130,10 +122,8 @@ class FilteringMixin:
             self._restore_stdout()
             return None
 
-
     def sd(self, document_name, new_data, cellchange=False):
         self.set_document(document_name, new_data, cellchange)
-
 
     def set_document(self, document_name, new_data, cellchange=False):
         self._save_stdout()

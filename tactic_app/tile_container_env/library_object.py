@@ -29,7 +29,7 @@ class TacticResourceSet:
         self._tinst._save_stdout()
         result = _tworker.post_and_wait(self._tinst._main_id, "get_resource_names_task",
                                         {"user_id": self._tinst.user_id, "res_type": self._res_type,
-                                        "tag_filter": tag_filter, "search_filter": search_filter})
+                                         "tag_filter": tag_filter, "search_filter": search_filter})
         self._tinst._restore_stdout()
         return result["res_names"]
 
@@ -39,6 +39,7 @@ class TacticResourceSet:
 
 
 class TacticResource:
+    # noinspection PyUnusedLocal
     def __init__(self, raw_resource, metadata):
         self.metadata = metadata
         return
@@ -56,16 +57,16 @@ class TacticListSet(TacticResourceSet):
         list_dict = self.get_user_list_with_metadata(name)
         return ListResource(list_dict["the_list"], list_dict["metadata"])
 
-
     def get_user_list_with_metadata(self, the_list):
         self._tinst._save_stdout()
         raw_result = _tworker.post_and_wait(self._tinst._main_id, "get_list_with_metadata",
-                                                 {"list_name": the_list})
+                                            {"list_name": the_list})
 
         result = debinarize_python_object(raw_result["list_data"])
 
         self._tinst._restore_stdout()
         return result
+
 
 class TacticCollectionSet(TacticResourceSet):
     def __init__(self, library_object):
@@ -92,8 +93,7 @@ class TacticCollectionSet(TacticResourceSet):
     def get_user_collection_with_metadata(self, the_collection):
         self._tinst._save_stdout()
         raw_result = _tworker.post_and_wait(self._tinst._main_id, "get_user_collection_with_metadata",
-                                                 {"collection_name": the_collection,
-                                                  "user_id": self._tinst.user_id})
+                                            {"collection_name": the_collection, "user_id": self._tinst.user_id})
         result = debinarize_python_object(raw_result["collection_data"])
         self._tinst._restore_stdout()
         return result
@@ -125,7 +125,7 @@ class ListResource(list):
         return
 
 
-class FunctionResource():
+class FunctionResource:
     def __init__(self, the_function, metadata, code_resource):
         self.the_function = the_function
         self.metadata = metadata

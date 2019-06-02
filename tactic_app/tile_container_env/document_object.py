@@ -5,6 +5,7 @@ import copy
 CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
 _protected_column_names = ["__id__", "__filename__"]
 
+
 def remove_protected_fields_from_dict(adict):
     ndict = copy.copy(adict)
     for field in _protected_column_names:
@@ -40,17 +41,17 @@ class TacticRow:
 
     def _set_field(self, colname, value):
         _tworker.tile_instance.set_cell(self.__dict__["_docname"],
-                                              self.__dict__["_rowid"],
-                                              colname,
-                                              value,
-                                              cellchange=False)
+                                        self.__dict__["_rowid"],
+                                        colname,
+                                        value,
+                                        cellchange=False)
         if self.__dict__["_row_dict"] is not None:
             self.__dict__["_row_dict"][colname] = value
         return
 
     def set_background(self, column_name, color):
         _tworker.tile_instance.set_cell_background(self.__dict__["_docname"],
-                                                         self.__dict__["_rowid"], column_name, color)
+                                                   self.__dict__["_rowid"], column_name, color)
         return
 
     @property
@@ -533,7 +534,6 @@ class DetachedTacticDocument(TacticDocument):
                     self._row_list.append(DetachedTacticRow(r))
         self.update_props()
         return
-
 
     def __getstate__(self):
         return {"_docname": self._docname,

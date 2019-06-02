@@ -18,6 +18,7 @@ import docker_functions
 from communication_utils import send_request_to_container, USE_FORWARDER
 from integrated_docs import api_array
 from docker_functions import db_name, mongo_uri
+import exception_mixin
 
 csrf = CSRFProtect()
 
@@ -32,6 +33,7 @@ socketio = None
 global_tile_manager = None
 client_worker = None
 host_worker = None
+
 
 def print_message():
     print "got to the message"
@@ -54,11 +56,14 @@ def list_collections(self):
     dictlist = self.command("listCollections")["cursor"]["firstBatch"]
     return [d["name"] for d in dictlist]
 
+
 Database.collection_names = list_collections
+
 
 def create_collection(self, collection_name):
     self.command("create", collection_name)
     return
+
 
 Database.create_collection = create_collection
 
@@ -92,6 +97,8 @@ try:
     app = Flask(__name__)
     app.config.from_object('config')
 
+    exception_mixin.app = app
+
     if ("TESTING" in os.environ) and (os.environ.get("TESTING") == "True"):
         app.config["WTF_CSRF_ENABLED"] = False
 
@@ -109,7 +116,7 @@ try:
     print "creating the megaplex"
     create_megaplex()
 
-    if not "temp_data" in db.collection_names():
+    if "temp_data" not in db.collection_names():
         db.create_collection("temp_data")
     else:
         for rec in db["temp_data"].find():

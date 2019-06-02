@@ -1,10 +1,10 @@
-from flask import render_template
+from flask import render_template, jsonify
 from flask_login import current_user
-import traceback
 
 import tactic_app
 from tactic_app import socketio
 from tactic_app.users import User
+from tactic_app.exception_mixin import ExceptionMixin
 
 repository_user = User.get_user_by_username("repository")
 
@@ -17,7 +17,7 @@ def doflash(message, alert_type='alert-info', user_id=None):
 
 
 # noinspection PyMethodMayBeStatic
-class ResourceManager(object):
+class ResourceManager(ExceptionMixin):
     is_repository = False
     rep_string = ""
     collection_list = ""
@@ -33,16 +33,6 @@ class ResourceManager(object):
             self.module_id = self.res_type + "_module"
         self.add_rules()
         self.tag_list = []
-
-    def handle_exception(self, ex, special_string=None):
-        if special_string is None:
-            template = "An exception of type {0} occured. Arguments:\n{1!r}\n"
-        else:
-            template = special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}\n"
-        error_string = template.format(type(ex).__name__, ex.args)
-        error_string += traceback.format_exc()
-        doflash("error_string", alert_type="alert-warning")
-        return
 
     def add_rules(self):
         print "not implemented"
