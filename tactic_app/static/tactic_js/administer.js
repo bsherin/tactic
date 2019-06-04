@@ -5,6 +5,7 @@
 let resource_module_template;
 const mousetrap = new Mousetrap();
 const library_id = guid();
+const page_id = library_id;
 
 mousetrap.bind("esc", function() {
     clearStatusMessage();
