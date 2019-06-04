@@ -90,7 +90,7 @@ try:
     fs = gridfs.GridFS(db)
     "print creating login stuff"
     login_manager = LoginManager()
-    login_manager.session_protection = 'strong'
+    login_manager.session_protection = 'basic'
     login_manager.login_view = 'login'
 
     "print creating app and confiruting"

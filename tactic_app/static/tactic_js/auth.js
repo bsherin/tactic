@@ -44,7 +44,7 @@ function return_from_submit_login(data) {
     stopSpinner();
     clearStatusMessage();
     if (data.logged_in) {
-         window.open($SCRIPT_ROOT + "/library", "_self")
+         window.open($SCRIPT_ROOT + _next_view, "_self")
     }
     else {
         doFlash({"message": "Login Failed", "alert_type": "alert-warning"})
