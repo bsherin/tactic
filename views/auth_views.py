@@ -1,7 +1,9 @@
 import datetime
-from flask import render_template, request, jsonify
-from flask_login import login_user, login_required, logout_user
+import re
+from flask import render_template, request, jsonify, redirect, url_for
+from flask_login import login_user, login_required, logout_user, fresh_login_required
 from flask_login import current_user
+from tactic_app import login_manager
 
 from tactic_app.users import User
 from tactic_app.mongo_accesser import res_types
@@ -29,7 +31,26 @@ tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     print "entering login view"
-    return render_template('auth/login.html', after_register="no", message="", alert_type="", version_string=tstring)
+    next_view = request.args.get('next')
+    if next_view is None:
+        if current_user.is_authenticated:
+            return redirect(url_for("library"))
+        next_view = "/library"
+    return render_template('auth/login.html', after_register="no", message="", alert_type="",
+                           next_view=next_view, version_string=tstring)
+
+
+@app.route('/relogin', methods=['GET', 'POST'])
+def relogin():
+    print "entering relogin view"
+    next_view = request.args.get('next')
+    if next_view is None:
+        next_view = "/library"
+    return render_template('auth/login.html', after_register="no", message="",
+                           alert_type="", next_view=next_view, version_string=tstring)
+
+
+login_manager.refresh_view = "relogin"
 
 
 @app.route('/login_after_register', methods=['GET', 'POST'])
@@ -80,8 +101,7 @@ def logout(page_id):
     # The containers should be gone by this point. But make sure.
     tactic_app.host_worker.post_task("host", "destroy_a_users_containers", {"user_id": user_id})
     logout_user()
-    return render_template('auth/login.html', show_message="yes",
-                           message="You have been logged out.", alert_type="alert-info", version_string=tstring)
+    return redirect(url_for("login"))
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -141,7 +161,7 @@ def attempt_duplicate():
 
 
 @app.route('/account_info', methods=['GET', 'POST'])
-@login_required
+@fresh_login_required
 def account_info():
     user_data = current_user.user_data_dict
     field_list = []
@@ -152,7 +172,7 @@ def account_info():
 
 
 @app.route('/update_account_info', methods=['GET', 'POST'])
-@login_required
+@fresh_login_required
 def update_account_info():
     data = request.json
     result_dict = current_user.update_account(data)
