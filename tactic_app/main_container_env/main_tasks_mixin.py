@@ -101,6 +101,10 @@ class LoadSaveTasksMixin:
         tile_save_dicts = {}
         if not self.doc_type == "notebook":
             tile_ids_to_compile = copy.copy(self.tile_instances)
+            if self.pseudo_tile_id is not None:
+                tile_ids_to_compile.append(self.pseudo_tile_id)
+                self.mworker.post_task(self.pseudo_tile_id, "compile_save_dict",
+                                       callback_func=track_tile_compile_receipts)
             if not tile_ids_to_compile:
                 result["used_tile_types"] = []
                 result["used_modules"] = []
@@ -111,10 +115,6 @@ class LoadSaveTasksMixin:
                 self.mworker.submit_response(task_packet, result)
                 return
 
-            if self.pseudo_tile_id is not None:
-                tile_ids_to_compile.append(self.pseudo_tile_id)
-                self.mworker.post_task(self.pseudo_tile_id, "compile_save_dict",
-                                       callback_func=track_tile_compile_receipts)
             for _tid in self.tile_instances:
                 self.mworker.post_task(_tid, "compile_save_dict", callback_func=track_tile_compile_receipts)
         else:

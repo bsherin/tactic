@@ -437,13 +437,15 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         data_dict = {"base_figure_url": self.base_figure_url.replace("tile_id", self.pseudo_tile_id),
                      "doc_type": self.doc_type, "globals_dict": globals_dict, "tile_address": data["tile_address"]}
         print("about to instantiate")
-        instantiate_result = self.mworker.post_and_wait(self.pseudo_tile_id,
-                                                        "instantiate_as_pseudo_tile", data_dict)
-        self.mworker.post_task(self.pseudo_tile_id, "create_pseudo_tile_collection_object",
-                               {"am_notebook": self.am_notebook_type})
-        if not instantiate_result["success"]:
-            self.mworker.debug_log("got an exception " + instantiate_result["message"])
-            raise Exception(instantiate_result["message"])
+
+        def instantiate_done(instantiate_result):
+            self.mworker.post_task(self.pseudo_tile_id, "create_pseudo_tile_collection_object",
+                                   {"am_notebook": self.am_notebook_type})
+            if not instantiate_result["success"]:
+                self.mworker.debug_log("got an exception " + instantiate_result["message"])
+                raise Exception(instantiate_result["message"])
+
+        self.mworker.post_task(self.pseudo_tile_id, "instantiate_as_pseudo_tile", data_dict, instantiate_done)
 
         return {"success": True}
 
