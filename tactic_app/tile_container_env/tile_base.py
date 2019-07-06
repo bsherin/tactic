@@ -20,6 +20,7 @@ from object_api_mixin import ObjectAPIMixin
 from other_api_mixin import OtherAPIMIxin
 from refreshing_mixin import RefreshingMixin
 from exception_mixin import ExceptionMixin, generic_exception_handler
+from document_object import ROWS_TO_PRINT
 
 RETRIES = 60
 
@@ -519,7 +520,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         self._pipe_dict = data["pipe_dict"]
         pipe_val = self.get_pipe_value(data["export_name"])
         success = True
-        if pipe_val == "__none__":
+        if isinstance(pipe_val, str) and pipe_val == "__none__":
             success = False
             the_html = "pipe not found"
         else:
@@ -531,12 +532,15 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                 print("evaluating string " + ev_string)
                 eval_result = eval(ev_string)
                 eval_type_info = self._get_type_info(eval_result)
-                if eval_type_info["type"] == "dict":
-                    the_array = []
-                    for key, the_val in eval_result.items():
-                        the_array.append([key, the_val])
-                    the_html = self._build_html_table_for_exports(the_array, title=eval_type_info["info_string"],
-                                                                  has_header=False)
+                use_html_table = False
+                for c in self.html_table_classes:
+                    if isinstance(eval_result, c):
+                        use_html_table = True
+                if use_html_table:
+                    the_html = self.html_table(eval_result, title=eval_type_info["info_string"],
+                                               header_style="font-size:12px",
+                                               body_style="font-size:12px",
+                                               max_rows=ROWS_TO_PRINT)
                 elif eval_type_info["type"] == "list":
                     the_array = []
                     for i, the_val in enumerate(eval_result):
@@ -752,7 +756,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
 
     def _get_type_info(self, avar):
         result = {}
-        if avar == "__none__":
+        if isinstance(avar, str) and avar == "__none__":
             result["type"] = "none"
             result["info_string"] = "Not set"
         elif type(avar) is dict:

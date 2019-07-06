@@ -33,10 +33,10 @@ class ObjectAPIMixin:
     def create_line(self, txt=""):
         return DetachedTacticLine(txt)
 
-    def create_document(self, docname, column_names, dict_or_detached_row_list=None, metadata=None):
-        return DetachedTacticDocument(docname, column_names, dict_or_detached_row_list, metadata=None)
+    def create_document(self, doc_data=None, docname="document1", metadata=None):
+        return DetachedTacticDocument(doc_data, docname, metadata)
 
-    def create_freeform_document(self, docname, lines=None, metadata=None):
+    def create_freeform_document(self, docname="document1", lines=None, metadata=None):
         return DetachedFreeformTacticDocument(docname, lines, metadata)
 
     def create_collection_object(self, doc_type, doc_dict=None):

@@ -1,5 +1,8 @@
 
 from communication_utils import debinarize_python_object
+# noinspection PyPackageRequirements
+import pandas as _pd
+import nltk
 
 
 class OtherAPIMIxin:
@@ -37,6 +40,7 @@ class OtherAPIMIxin:
         self._restore_stdout()
         return result["log_text"]
 
+    # noinspection PyPackageRequirements
     def create_bokeh_html(self, the_plot):
         from bokeh.embed import file_html
         from bokeh.resources import Resources
@@ -72,20 +76,89 @@ class OtherAPIMIxin:
 
     # <editor-fold desc="Odd utility methods">
 
+    html_table_classes = [_pd.DataFrame, nltk.FreqDist, dict, _pd.Series]
+
     def dict_to_list(self, the_dict):
         result = []
         for it in the_dict.values():
             result += it
         return result
 
+    def convert_df_to_datalist(self, df, max_rows=None, include_row_labels=False):
+        if max_rows is not None:
+            new_df = df.head(max_rows)
+        else:
+            new_df = df
+        if not include_row_labels:
+            columns = list(new_df.columns)
+            mat = new_df.get_values()
+            res = [columns] + mat.tolist()
+        else:
+            res = [["label"] + list(new_df.columns)]
+            for label, s in df.iterrows():
+                res.append([label] + s.tolist())
+        return res
+
+    def html_table(self, data, title=None, click_type="word-clickable", sortable=True,
+                   sidebyside=False, has_header=True, max_rows=None, header_style=None, body_style=None,
+                   column_order=None, include_row_labels=True):
+        self._save_stdout()
+        show_header = has_header
+        if isinstance(data, _pd.DataFrame):
+            if column_order is not None:
+                df = data.reindex(columns=column_order)
+            else:
+                df = data
+            dlist = self.convert_df_to_datalist(df, max_rows, include_row_labels=include_row_labels)
+            show_header = True
+        elif isinstance(data, list) and isinstance(data[0], dict):
+            df = _pd.DataFrame(data)
+            if column_order is not None:
+                df = df.reindex(columns=column_order)
+            dlist = self.convert_df_to_datalist(df, max_rows, include_row_labels=include_row_labels)
+            show_header = True
+        elif isinstance(data, nltk.FreqDist):
+            if max_rows is None:
+                nrows = 100
+            else:
+                nrows = max_rows
+            dlist = [["word", "freq"]] + data.most_common(nrows)
+            show_header = True
+        elif isinstance(data, dict):
+            dlist = [["key", "value"]]
+            for key, the_val in data.items():
+                dlist.append([key, the_val])
+            show_header = True
+        elif isinstance(data, _pd.Series):
+            ddict = dict(data)
+            dlist = [["key", "value"]]
+            for key, the_val in ddict.items():
+                dlist.append([key, the_val])
+            show_header = True
+        else:
+            dlist = data
+        self._restore_stdout()
+        return self.build_html_table_from_data_list(dlist, title, click_type, sortable, sidebyside,
+                                                    show_header, header_style, body_style)
+
     def bht(self, data_list, title=None, click_type="word-clickable",
-            sortable=True, sidebyside=False, has_header=True):
+            sortable=True, sidebyside=False, has_header=True, header_style=None, body_style=None):
         return self.build_html_table_from_data_list(data_list, title, click_type,
-                                                    sortable, sidebyside, has_header)
+                                                    sortable, sidebyside, has_header,
+                                                    header_style, body_style)
 
     def build_html_table_from_data_list(self, data_list, title=None, click_type="word-clickable",
-                                        sortable=True, sidebyside=False, has_header=True):
+                                        sortable=True, sidebyside=False, has_header=True,
+                                        header_style=None, body_style=None):
         self._save_stdout()
+        if header_style is None:
+            hstyle = "{}"
+        else:
+            hstyle = header_style
+        if body_style is None:
+            bstyle = "{}"
+        else:
+            bstyle = body_style
         if sortable:
             if not sidebyside:
                 the_html = u"<table class='tile-table table table-striped table-bordered table-sm sortable'>"
@@ -102,7 +175,7 @@ class OtherAPIMIxin:
         if has_header:
             the_html += u"<thead><tr>"
             for c in data_list[0]:
-                the_html += u"<th>{0}</th>".format(c)
+                the_html += u"<th style='{1}'>{0}</th>".format(c, hstyle)
             the_html += u"</tr></thead>"
             start_from = 1
         else:
@@ -113,18 +186,18 @@ class OtherAPIMIxin:
             if click_type == u"row-clickable":
                 the_html += u"<tr class='row-clickable'>"
                 for c in r:
-                    the_html += u"<td>{0}</td>".format(c)
+                    the_html += u"<td style='{1}'>{0}</td>".format(c, bstyle)
                 the_html += u"</tr>"
             elif click_type == u"word-clickable":
                 the_html += u"<tr>"
                 for c in r:
-                    the_html += u"<td class='word-clickable'>{0}</td>".format(c)
+                    the_html += u"<td class='word-clickable' style='{1}'>{0}</td>".format(c, bstyle)
                 the_html += u"</tr>"
             else:
                 the_html += u"<tr>"
                 for cnum, c in enumerate(r):
-                    the_html += "<td class='element-clickable' data-row='{1}' " \
-                                "data-col='{2}' data-val='{0}'>{0}</td>".format(c, str(rnum), str(cnum))
+                    the_html += "<td class='element-clickable' data-row='{1}' style='{3}' " \
+                                "data-col='{2}' data-val='{0}'>{0}</td>".format(c, str(rnum), str(cnum), bstyle)
                 the_html += "</tr>"
         the_html += "</tbody></table>"
         self._restore_stdout()

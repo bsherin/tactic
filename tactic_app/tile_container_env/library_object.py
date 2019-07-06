@@ -81,11 +81,7 @@ class TacticCollectionSet(TacticResourceSet):
         doc_object_dict = {}
         for docname, dlist in doc_dict.items():
             mdata = doc_metadata[docname]
-            if "header_list" in mdata:
-                column_names = header_list
-            else:
-                column_names = list(dlist[0].keys())
-            doc_object_dict[docname] = DetachedTacticDocument(docname, column_names, dlist, mdata)
+            doc_object_dict[docname] = DetachedTacticDocument(dlist, docname, mdata)
         if "type" not in collection_metadata:
             collection_metadata["type"] = "table"
         return DetachedTacticCollection(collection_metadata["type"], doc_object_dict, collection_metadata)
