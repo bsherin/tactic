@@ -1,5 +1,6 @@
 
 from communication_utils import debinarize_python_object
+# noinspection PyPackageRequirements
 import pandas as _pd
 import nltk
 
@@ -39,6 +40,7 @@ class OtherAPIMIxin:
         self._restore_stdout()
         return result["log_text"]
 
+    # noinspection PyPackageRequirements
     def create_bokeh_html(self, the_plot):
         from bokeh.embed import file_html
         from bokeh.resources import Resources

@@ -110,9 +110,6 @@ class TacticRow:
 
 class DetachedTacticRow:
 
-    def keys(self):
-        return self.row_dict.keys()
-
     def __init__(self, row_dict):
         if isinstance(row_dict, _pd.Series):
             the_dict = row_dict.to_dict()
@@ -120,6 +117,9 @@ class DetachedTacticRow:
             the_dict = row_dict
         self.__dict__["_row_dict"] = the_dict
         return
+
+    def keys(self):
+        return self.row_dict.keys()
 
     def __getstate__(self):
         return {"_row_dict": self._row_dict}
@@ -343,7 +343,7 @@ class FreeformTacticDocument:
 
 
 class DetachedFreeformTacticDocument(FreeformTacticDocument):
-    def __init__(self, docname, text=None, metadata=None):
+    def __init__(self, docname="document1", text=None, metadata=None):
         self._docname = docname
         self._iter_value = -1
         self._line_list = []
@@ -428,7 +428,7 @@ class DetachedFreeformTacticDocument(FreeformTacticDocument):
 
     def append(self, detached_line):
         if not isinstance(detached_line, DetachedTacticLine):
-            raise TypeError("appended object is not a DetachedTacticRow")
+            raise TypeError("appended object is not a DetachedTacticLine")
         self._line_list.append(detached_line)
         self.update_props()
         return
@@ -537,6 +537,14 @@ class TacticDocument:
             import nltk
             tokenizer_func = nltk.word_tokenize
         return [tokenizer_func(txt) for txt in self.column(column_name)]
+
+    def to_html(self, title=None, click_type="word-clickable",
+                sortable=True, sidebyside=False, has_header=True,
+                max_rows=None, header_style=None, body_style=None,
+                column_order=None, include_row_labels=False):
+        self.rewind()
+        return _tworker.tile_instance.html_table(self.df, title, click_type, sortable, sidebyside, has_header,
+                                                 max_rows, header_style, body_style, column_order, include_row_labels)
 
     def detach(self):
         return DetachedTacticDocument(self.dict_list, self.name, self.metadata)
@@ -734,14 +742,6 @@ class DetachedTacticDocument(TacticDocument):
         self._row_list.insert(position, element)
         self.update_props()
         return
-
-    def to_html(self, title=None, click_type="word-clickable",
-                sortable=True, sidebyside=False, has_header=True,
-                max_rows=None, header_style=None, body_style=None,
-                column_order=None, include_row_labels=False):
-        self.rewind()
-        return _tworker.tile_instance.html_table(self.df, title, click_type, sortable, sidebyside, has_header,
-                                                 max_rows, header_style, body_style, column_order, include_row_labels)
 
     def __getitem__(self, x):
         nrows = len(self._row_list)

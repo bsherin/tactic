@@ -277,22 +277,24 @@ Object API
 
     .. py:method:: create_collection_object(doc_type, doc_dict=None)
 
-        Creates a new :py:class:`DetachedTacticCollection` object. ``doc_dict``, if provided
-        must be a dictionary with keys that are the name of the documents, and values that are
-        DetachedTacticDocument objects.
+        Creates a new :py:class:`DetachedTacticCollection` object. *doc_dict*, if provided
+        must be a dictionary with keys that are the names of the documents, and values that are
+        :py:class:`DetachedTacticDocument` objects.
 
-    .. py:method:: create_document(docname, column_names, dict_or_detached_row_list=None, metadata=None)
+    .. py:method:: create_document(doc_data=None, docname="document1", metadata=None)
 
         Creates a new :py:class:`DetachedTacticDocument` object.
 
-    .. py:method:: create_freeform_document(docname, lines=None, metadata=None)
+        *doc_data* can be either pandas DataFrame, a list of :py:class:`TacticRow` objects, or a list of dicts.
+
+    .. py:method:: create_freeform_document(docname="document1", lines=None, metadata=None)
 
         Creates a new :py:class:`DetachedFreeformTacticCollection` object.
 
 
     .. py:method:: create_row(row_dict=None)
 
-        Creates a new :py:class:`DetachedTacticRow` object.
+        Creates a new :py:class:`DetachedTacticRow` object. *row_dict* and be a dict or a pandas Series.
 
     .. py:method:: create_line(txt=None)
 
@@ -321,7 +323,7 @@ Other TileBase
         are strings. For tables, the values are a list of rows, with each row
         being a dict.
 
-        **metadata_dict** is a dictionary that holds any document-level metadata
+        **doc_metadata** is a dictionary that holds any document-level metadata
         you’d like to add. The keys are document names and the values are
         dictionaries of keys and values.
 
@@ -387,7 +389,6 @@ Other TileBase
         then be used to access the associated function or class with
         ``get_user_function()`` or ``get_user_class()``.
 
-
     .. py:method:: get_user_list(list_name)
                get_pipe_value(pipe_name)
                get_user_function(function_name)
@@ -408,11 +409,17 @@ Other TileBase
         Synonyms: ``gulist``, ``gufunc``, ``guclass``, ``gucol`` for get_user_list, get_user_function,
         get_user_class, and get_user_collection respectively.
 
-    .. py:method:: build_html_table_from_data_list(data_list, title=None, click_type="word-clickable", sortable=True)
+    .. py:method:: html_table(data, title=None, click_type="word-clickable", sortable=True, sidebyside=False, has_header=True, max_rows=None, header_style=None, body_style=None, column_order=None, include_row_labels=True)
 
-        Returns html for a table given data in the form of a list of lists. The
-        first row is treated as the heading row. A title can optionally be
-        given. ``click_type`` can be ``"word-clickable"``,
+        Returns html for a table. ``data`` can be given in a number of forms. It can be a a pandas DataFrame, a list of
+        dicts, an nltk FreqDist, a list of lists, a dict, or a pandas Series.
+
+        If the data is a dict or a Series, the table produced has two columns, one corresponding to the keys, the other
+        to the values.
+
+        *title* is an optional title.
+
+        *click_type* can be can be ``"word-clickable"``,
         ``"element-clickable"``, or ``"row-clickable"``. If it’s word-clickable
         or element-clickable, then every cell in the table is assigned the
         corresponding class, and hence will lead to generating a TileWordClick
@@ -422,6 +429,52 @@ Other TileBase
         then be handled by the appropriate handlers in a tile:
         ``handled_tile_word_click``, ``handle_tile_element_click``, or
         ``handle_tile_row_click``.
+
+        If *sortable* is True, then the header can be clicked to sort by a column.
+
+        If *sidebyside* is False, then the table will expand to take up the entire width available.
+
+        *has_header* only matters if data is in the form of a list of lists. If it is True, and the data is in the
+        form of a list of lists, then the first list is treates as headers.
+
+        *max_rows* specifies the max number of rows to be included in the table. It only matters if the data is
+        a dataframe, a list of dicts or a FreqDist.
+
+
+        ``header_style`` and ``body_style`` are optional styles that will be applied to header cells and body cells
+        respectively.
+
+        If *column_order* is not None, then it specifies an order for the columns. It only matters if *data* is
+        a DataFrame or a list of dicts.
+
+        *include_row_labels* only matters if *data* is a DataFrame or a list of dicts. If *data* is a DataFrame, then
+        the row labels will be included as the first column in the table. If it is a list of dicts, then the rows will
+        be numbered.
+
+
+    .. py:method:: build_html_table_from_data_list(data_list, title=None, click_type="word-clickable", sortable=True, sidebyside=False, has_header=True header_style=None, body_style=None)
+
+        Returns html for table. *data_list* must be in the form of a list of lists. The
+        first row is treated as the heading row. A title can optionally be
+        given. If *has_header* is True, then the first list is treated as headers.
+
+        ``click_type`` can be ``"word-clickable"``,
+        ``"element-clickable"``, or ``"row-clickable"``. If it’s word-clickable
+        or element-clickable, then every cell in the table is assigned the
+        corresponding class, and hence will lead to generating a TileWordClick
+        or TileElementClick event when clicked. If the click_type is
+        row-clickable, then the row is assigned a row-clickable class (and will
+        lead to the generation of TileRowClick events.) These various events can
+        then be handled by the appropriate handlers in a tile:
+        ``handled_tile_word_click``, ``handle_tile_element_click``, or
+        ``handle_tile_row_click``.
+
+        If *sortable* is True, then the header can be clicked to sort by a column.
+
+        If *sidebyside* is False, then the table will expand to take up the entire width available.
+
+        ``header_style`` and ``body_style`` are optional styles that will be applied to header cells and body cells
+        respectively.
 
         Synonym: ``bht``
 
