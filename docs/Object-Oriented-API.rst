@@ -97,6 +97,10 @@ Accessing and manipulating the collection
 
         A list of the column_names for the document.
 
+    .. py:attribute:: df
+
+        Returns the document as a pandas DataFrame.
+
     .. py:method:: column(column_name)
 
         Returns, as a list, the data in the specified column.
@@ -122,6 +126,13 @@ Accessing and manipulating the collection
         either a dict or a list. If it’s a dict, then the keys are interpreted
         as the row_id. If it’s a list, then the ordinal position in the list is
         interpreted as the row_id.  See :py:meth:`set_column_data`.
+
+
+    .. py:method:: to_html(title=None, click_type="word-clickable", sortable=True, sidebyside=False, has_header=True,
+                           max_rows=None, header_style=None, body_style=None,
+                           column_order=None, include_row_labels=False)
+
+        Returns an html table for the document. See :py:meth:`html_table`
 
     .. py:method:: detach()
 
@@ -150,6 +161,10 @@ Accessing and manipulating the collection
     .. py:attribute:: row_dict
 
         A dictionary with the data corresponding to the row.
+
+    .. py:attribute:: series
+
+        Returns the row as a pandas Series.
 
     .. py:method:: detach()
 
@@ -297,15 +312,18 @@ Creating and manipulating detached data
         Inserts the element in the specified position. Element can be either a :py:class:`DetachedTacticRow`
         or a ``dict``.
 
-
-    .. py:method:: to_html(title=None, click_type="word-clickable", sortable=True, sidebyside=False, has_header=True)
-
-        Returns an html table for the document. See :py:meth:`build_html_table_from_data_list`
-
 .. py:class:: DetachedTacticRow()
 
     A DetachedTacticDocument can be created either via the ``.detach()`` method of a TacticRow or
     using the :py:meth:`create_row` method of TileBase.
+
+    .. py:attribute:: row_dict
+
+        A dictionary with the data corresponding to the row.
+
+    .. py:attribute:: series
+
+        Returns the row as a pandas Series.
 
     The fields in a row can be accessed and set just as in a TacticRow:
 
