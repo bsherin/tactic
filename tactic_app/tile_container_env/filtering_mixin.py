@@ -27,7 +27,7 @@ class FilteringMixin:
         self._save_stdout()
         filter_function = make_python_object_jsonizable(filter_function)
         result = self._tworker.post_and_wait(self._main_id, "get_matching_documents",
-                                             {"filter_function": jfilter_function})
+                                             {"filter_function": filter_function})
         self._restore_stdout()
         return result
 

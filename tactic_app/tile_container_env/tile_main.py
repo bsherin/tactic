@@ -298,10 +298,9 @@ class TileWorker(QWorker):
             # There won't be many of these old notebooks
             if (data["globals_dict"] is not None) and (isinstance(data["globals_dict"], dict)):  # legacy
                 self.tile_instance.recreate_from_save(data["globals_dict"])
-            data["exports"] = []
             print("leaving instantiate_tile_class")
-            data["success"] = True
-            return data
+            result = {"success": True}
+            return result
         except Exception as ex:
             return self.handle_exception(ex, "Error initializing pseudo tile")
 
