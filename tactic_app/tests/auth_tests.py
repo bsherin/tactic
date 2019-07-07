@@ -39,5 +39,6 @@ class TestAuth(unittest.TestCase):
         rv = self.attempt_login('test_user', 'defaultx')
         self.assertEqual(rv.data, '{\n  "logged_in": false\n}')
 
+
 if __name__ == '__main__':
     unittest.main()
