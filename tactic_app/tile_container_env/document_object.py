@@ -263,8 +263,8 @@ class FreeformTacticDocument:
 
     def _initialize_state(self):
         self._iter_value = -1
-        self._text = _tworker.tile_instance.get_document_data(docname)
-        lines = _tworker.tile_instance.get_document_data_as_list(docname)
+        self._text = _tworker.tile_instance.get_document_data(self._docname)
+        lines = _tworker.tile_instance.get_document_data_as_list(self._docname)
         self._line_list = [TacticLine(n, self._docname, the_line)
                            for n, the_line in enumerate(lines)]
         self._iter_value = -1
