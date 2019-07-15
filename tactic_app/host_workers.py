@@ -439,19 +439,19 @@ class HostWorker(QWorker):
         user_id = data["user_id"]
         user_obj = load_user(user_id)
         with app.test_request_context():
-            user_time = user_obj.localize_time(datetime.datetime.utcnow())
+            user_tstring = user_obj.get_timestrings(datetime.datetime.utcnow())[0]
             if data["is_error"]:
                 if "summary" in data:
                     summary_text = data["summary"]
                 else:
-                    summary_text = "<b>error</b> " + user_time.strftime("%b %d, %Y, %H:%M")
+                    summary_text = "<b>error</b> " + user_tstring
                 data["message"] = render_template("error_log_item.html", log_item=data["message"],
                                                   summary_text=summary_text)
             else:
                 if "summary" in data:
                     summary_text = data["summary"]
                 else:
-                    summary_text = "<b>log_it item</b> " + user_time.strftime("%b %d, %Y, %H:%M")
+                    summary_text = "<b>log_it item</b> " + user_tstring
                 data["message"] = render_template("log_item.html", log_item=data["message"],
                                                   summary_text=summary_text)
 
@@ -470,8 +470,8 @@ class HostWorker(QWorker):
         from tactic_app import socketio
         user_id = data["user_id"]
         user_obj = load_user(user_id)
-        user_time = user_obj.localize_time(datetime.datetime.utcnow())
-        summary_text = "<b>text item </b> " + user_time.strftime("%b %d, %Y, %H:%M")
+        user_tstring = user_obj.get_timestrings(datetime.datetime.utcnow())[0]
+        summary_text = "<b>text item </b> " + user_tstring
         message = ""
         new_cell_data = []
         for cell_dict in data["cells"]:
@@ -499,8 +499,8 @@ class HostWorker(QWorker):
         from tactic_app import socketio
         user_id = data["user_id"]
         user_obj = load_user(user_id)
-        user_time = user_obj.localize_time(datetime.datetime.utcnow())
-        summary_text = "<b>text item </b> " + user_time.strftime("%b %d, %Y, %H:%M")
+        user_tstring = user_obj.get_timestrings(datetime.datetime.utcnow())[0]
+        summary_text = "<b>text item </b> " + user_tstring
         with app.test_request_context():
             data["message"] = render_template("text_log_item.html", unique_id=data["unique_id"],
                                               summary_text=summary_text)
@@ -514,8 +514,8 @@ class HostWorker(QWorker):
         from tactic_app import socketio
         user_id = data["user_id"]
         user_obj = load_user(user_id)
-        user_time = user_obj.localize_time(datetime.datetime.utcnow())
-        summary_text = "<b>code item </b> " + user_time.strftime("%b %d, %Y, %H:%M")
+        user_tstring = user_obj.get_timestrings(datetime.datetime.utcnow())[0]
+        summary_text = "<b>code item </b> " + user_tstring
         with app.test_request_context():
             data["message"] = render_template("code_log_item.html", unique_id=data["unique_id"],
                                               summary_text=summary_text)

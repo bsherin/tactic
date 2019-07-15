@@ -127,7 +127,7 @@ class TileDiffer extends ModuleViewerAbstract {
         let self = this;
         postAjaxPromise("get_tile_names")
             .then(function (data) {
-                    self.tile_list = data.tile_names;
+                self.tile_list = data.tile_names;
                     self.populateTileList();
                     postAjaxPromise("get_module_code/" + self.resource_name, {})
                         .then((data) => {
@@ -137,6 +137,10 @@ class TileDiffer extends ModuleViewerAbstract {
                                 window.onresize = function () {
                                     resize_dom_to_bottom_given_selector("#main_content", 40);
                                     self.refreshAreas();
+                                };
+                                if (!(second_resource_name == "none")) {
+                                    self.tile_popup.val(second_resource_name);
+                                    self.update_right_viewer(second_resource_name)
                                 }
                             })
                         .catch(doFlash)

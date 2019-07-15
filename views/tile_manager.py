@@ -49,7 +49,6 @@ class TileManager(LibraryResourceManager):
                          login_required(self.get_module_code), methods=['get', 'post'])
         app.add_url_rule('/view_in_creator/<module_name>', "view_in_creator",
                          login_required(self.view_in_creator), methods=['get'])
-
         app.add_url_rule('/last_saved_view/<module_name>', "last_saved_view",
                          login_required(self.last_saved_view), methods=['get'])
         app.add_url_rule('/get_api_html', "get_api_html",
@@ -335,11 +334,16 @@ class TileManager(LibraryResourceManager):
         return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
 
     def delete_tile_module(self):
-        user_obj = current_user
-        tile_module_name = request.json["resource_name"]
-        db[user_obj.tile_collection_name].delete_one({"tile_module_name": tile_module_name})
-        # self.update_selector_list()
-        return jsonify({"success": True})
+        try:
+            user_obj = current_user
+            tile_module_names = request.json["resource_names"]
+            for tile_module_name in tile_module_names:
+                db[user_obj.tile_collection_name].delete_one({"tile_module_name": tile_module_name})
+            return jsonify({"success": True, "message": "Tiles(s) successfully deleted",
+                            "alert_type": "alert-success"})
+
+        except Exception as ex:
+            return self.get_exception_for_ajax(ex, "Error deleting tiles")
 
     def render_loaded_tile_list(self, user_obj=None):
         if user_obj is None:
