@@ -183,11 +183,14 @@ class ProjectManager(LibraryResourceManager):
             return self.get_exception_for_ajax(ex, "Error renaming project")
 
     def delete_project(self):
-        project_name = request.json["resource_name"]
-        current_user.remove_project(project_name)
+        try:
+            project_names = request.json["resource_names"]
+            for project_name in project_names:
+                current_user.remove_project(project_name)
+            return jsonify({"success": True})
 
-        # self.update_selector_list()
-        return jsonify({"success": True})
+        except Exception as ex:
+            return self.get_exception_for_ajax(ex, "Error deleting collections")
 
     def grab_metadata(self, res_name):
         if self.is_repository:

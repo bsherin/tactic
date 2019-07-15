@@ -226,8 +226,7 @@ def grab_metadata():
             return jsonify({"success": False, "message": "No metadata found", "alert_type": "alert-warning"})
         else:
             if "datetime" in mdata:
-                localtime = current_user.localize_time(mdata["datetime"])
-                datestring = localtime.strftime("%b %d, %Y, %H:%M")
+                datestring = current_user.get_timestrings(mdata["datetime"])[0]
             else:
                 datestring = ""
             additional_mdata = copy.copy(mdata)
@@ -236,13 +235,117 @@ def grab_metadata():
                 if field in additional_mdata:
                     del additional_mdata[field]
             if "updated" in additional_mdata:
-                localtime = current_user.localize_time(additional_mdata["updated"])
-                additional_mdata["updated"] = localtime.strftime("%b %d, %Y, %H:%M")
+                additional_mdata["updated"] = current_user.get_timestrings(additional_mdata["updated"])[0]
             if "collection_name" in additional_mdata:
-                additional_mdata["collection_name"] = re.sub("^.*?\.data_collection\.", "",
-                                                             additional_mdata["collection_name"])
+                additional_mdata["collection_name"] = current_user.short_collection_name(additional_mdata["collection_name"])
             return jsonify({"success": True, "res_name": res_name, "datestring": datestring, "tags": mdata["tags"],
                             "notes": mdata["notes"], "additional_mdata": additional_mdata})
+    except Exception as ex:
+        return generic_exception_handler.get_exception_for_ajax(ex, "Error getting metadata")
+
+
+@app.route('/add_tags', methods=['POST'])
+@login_required
+def add_tags():
+    try:
+        res_type = request.json["res_type"]
+        res_names = request.json["res_names"]
+        tags = request.json["tags"]
+        manager = get_manager_for_type(res_type)
+        updated_tags = {}
+        for res_name in res_names:
+            mdata = manager.grab_metadata(res_name)
+            old_tags = mdata["tags"].split()
+            new_tags = list(set(old_tags + tags))
+            new_tags_string = " ".join(new_tags)
+            updated_tags[res_name] = new_tags_string
+            manager.save_metadata(res_name, new_tags_string, mdata["notes"])
+        res_tags = manager.get_tag_list()
+        _all_manager = get_manager_for_type("all")
+        all_tags = _all_manager.get_tag_list()
+
+        return jsonify({"success": True, "res_tags": res_tags, "all_tags": all_tags, "updated_tags": updated_tags,
+                        "message": "Saved metadata", "alert_type": "alert-success"})
+    except Exception as ex:
+        return generic_exception_handler.get_exception_for_ajax(ex, "Error adding tags")
+
+
+@app.route('/overwrite_common_tags', methods=['POST'])
+@login_required
+def overwrite_common_tags():
+    try:
+        res_type = request.json["res_type"]
+        res_names = request.json["res_names"]
+        tags = request.json["tags"].split()
+        manager = get_manager_for_type(res_type)
+        common_tags = grab_m_mdata(res_type, res_names)["common_tags"].split()
+        updated_tags = {}
+        for res_name in res_names:
+            mdata = manager.grab_metadata(res_name)
+            old_tags = mdata["tags"].split()
+            new_tags = []
+            for tag in old_tags:
+                if tag not in common_tags and tag not in tags:
+                    new_tags.append(tag)
+            new_tags += tags
+            new_tags_string = " ".join(new_tags)
+            updated_tags[res_name] = new_tags_string
+            manager.save_metadata(res_name, new_tags_string, mdata["notes"])
+        res_tags = manager.get_tag_list()
+        _all_manager = get_manager_for_type("all")
+        all_tags = _all_manager.get_tag_list()
+
+        return jsonify({"success": True, "res_tags": res_tags, "all_tags": all_tags, "updated_tags": updated_tags,
+                        "message": "Saved metadata", "alert_type": "alert-success"})
+    except Exception as ex:
+        return generic_exception_handler.get_exception_for_ajax(ex, "Error saving metadata")
+
+
+def grab_m_mdata(res_type, res_name_list, is_repository=False):
+    manager = get_manager_for_type(res_type, is_repository=is_repository)
+    mdata_list = []
+    for res_name in res_name_list:
+        mdata = manager.grab_metadata(res_name)
+        if mdata is None:
+            return jsonify({"success": False, "message": "No metadata found", "alert_type": "alert-warning"})
+        else:
+            if "datetime" in mdata:
+                datestring = current_user.get_timestrings(mdata["datetime"])[0]
+            else:
+                datestring = ""
+            additional_mdata = copy.copy(mdata)
+            standard_mdata = ["datetime", "tags", "notes", "_id", "name"]
+            for field in standard_mdata:
+                if field in additional_mdata:
+                    del additional_mdata[field]
+            if "updated" in additional_mdata:
+                additional_mdata["updated"] = current_user.get_timestrings(additional_mdata["updated"])[0]
+            if "collection_name" in additional_mdata:
+                additional_mdata["collection_name"] = current_user.short_collection_name(additional_mdata["collection_name"])
+            one_result = {"res_name": res_name, "datestring": datestring, "tags": mdata["tags"],
+                          "notes": mdata["notes"], "additional_mdata": additional_mdata}
+            mdata_list.append(one_result)
+    common_tags = mdata_list[0]["tags"].split()
+    for mdata in mdata_list[1:]:
+        new_common_tags = []
+        next_tags = mdata["tags"].split()
+        for tag in common_tags:
+            if tag in next_tags:
+                new_common_tags.append(tag)
+        common_tags = new_common_tags
+    common_tags = " ".join(common_tags)
+    return {"success": True, "metadata_list": mdata_list, "common_tags": common_tags}
+
+
+@app.route('/grab_multi_metadata', methods=['POST'])
+@login_required
+def grab_multi_metadata():
+    try:
+        res_type = request.json["res_type"]
+        res_name_list = request.json["res_name_list"]
+        is_repository = request.json["is_repository"]
+        result_dict = grab_m_mdata(res_type, res_name_list, is_repository)
+        return jsonify(result_dict)
     except Exception as ex:
         return generic_exception_handler.get_exception_for_ajax(ex, "Error getting metadata")
 
@@ -259,7 +362,7 @@ def grab_repository_metadata():
             return jsonify({"success": False, "message": "No repository metadata found", "alert_type": "alert-warning"})
         else:
             if "datetime" in mdata:
-                datestring = current_user.localize_time(mdata["datetime"]).strftime("%b %d, %Y, %H:%M")
+                datestring = current_user.get_timestrings(mdata["datetime"])[0]
             else:
                 datestring = ""
             return jsonify({"success": True, "res_name": res_name, "datestring": datestring, "tags": mdata["tags"], "notes": mdata["notes"]})

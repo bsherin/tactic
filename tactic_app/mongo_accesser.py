@@ -9,6 +9,16 @@ PROTECTED_METADATA_KEYS = ["_id", "file_id", "name", "my_class_for_recreate", "t
                            "data_rows", "header_list", "number_of_rows"]
 
 
+def make_name_unique(new_name, existing_names):
+    counter = 1
+    revised_name = new_name
+    if new_name in existing_names:
+        while new_name + str(counter) in existing_names:
+            counter += 1
+        revised_name = new_name + str(counter)
+    return revised_name
+
+
 class MongoAccessException(Exception):
     pass
 
@@ -124,7 +134,7 @@ class MongoAccess(object):
                 self.append_document_to_collection(new_name, docname, doc, "freeform", None, doc_mdata)
         return {"success": True, "message": "Collection created"}
 
-    def append_document_to_collection(self, collection_name, docname, doc, doc_type,
+    def append_document_to_collection(self, collection_name, given_docname, doc, doc_type,
                                       header_list=None, document_metadata=None):
         name_exists = collection_name in self.data_collections
         if not name_exists:
@@ -135,6 +145,8 @@ class MongoAccess(object):
             for k, val in document_metadata.items():
                 if k not in PROTECTED_METADATA_KEYS:
                     metadata[k] = val
+
+        docname = make_name_unique(given_docname, self.get_collection_docnames(collection_name))
 
         if doc_type == "table":
             if header_list is None:
@@ -283,6 +295,9 @@ class MongoAccess(object):
 
     def build_data_collection_name(self, collection_name):
         return '{}.data_collection.{}'.format(self.username, collection_name)
+
+    def short_collection_name(self, full_collection_name):
+        return re.sub(r"^.*?\.data_collection\.", "", full_collection_name)
 
     def remove_collection(self, collection_name):
         fcname = self.full_collection_name(collection_name)

@@ -256,9 +256,15 @@ a[role="tab"] {
   .tag-button.active .tag-icon-tag.fas, .tag-button.active .tag-icon-folder.fas, .tag-button:focus .tag-icon-tag.fas, .tag-button:focus .tag-icon-folder.fas {
     display: inline-block !important; }
 
-.tag-button:hover, .tag-button.draghover {
+.tag-button:hover {
   font-weight: bolder !important;
   color: gray;
+  background-color: white !important;
+  border-width: 0 !important; }
+
+.tag-button.draghover {
+  font-weight: bolder !important;
+  color: red;
   background-color: white !important;
   border-width: 0 !important; }
 
@@ -296,7 +302,7 @@ a[role="tab"] {
 .notrepo {
   display: flex; }
 
-.notrepo .selector-button.active td {
+.notrepo .selector-button.active td, #creator-resources .selector-button.active td {
   background-color: #9B79CC !important;
   color: white; }
 
@@ -718,7 +724,7 @@ html, body {
 
 .log-code-output {
   padding-left: 85px;
-  padding-right: 75px;
+  padding-right: 45px;
   padding-bottom: 10px; }
 
 /*main window*/
