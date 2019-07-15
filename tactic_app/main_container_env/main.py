@@ -111,7 +111,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                 self.visible_doc_name = ""
             else:
                 self.collection_name = data_dict["collection_name"]
-                self.short_collection_name = re.sub("^.*?\.data_collection\.", "", self.collection_name)
+                self.short_collection_name = self.short_collection_name(self.collection_name)
                 self.doc_dict = self._build_doc_dict()
                 self.visible_doc_name = list(self.doc_dict)[0]
 

@@ -206,12 +206,12 @@ class ListManager extends LibraryResourceManager {
             {"name": "add_list", "func": "add_list", "button_class": "btn-outline-secondary", "show_multiple": false,"icon_name": "cloud-upload"}
         ];
         this.button_groups = [
-            {"buttons": [{"name": "edit", "func": "view_func", "button_class": "btn-outline-secondary", "icon_name": "pencil"}]},
-            {"buttons": [{"name": "duplicate", "func": "duplicate_func", "button_class": "btn-outline-secondary", "icon_name": "copy"},
-                         {"name": "rename", "func": "rename_func", "button_class": "btn-outline-secondary", "icon_name": "edit"}]},
-            {"buttons": [{"name": "share", "func": "send_repository_func", "button_class": "btn-outline-secondary", "icon_name": "share"}]},
-            {"buttons": [{"name": "delete", "func": "delete_func", "button_class": "btn-outline-secondary", "icon_name": "trash"}]},
-            {"buttons": [{"name": "refresh", "func": "refresh_func", "button_class": "btn-outline-secondary", "icon_name": "sync-alt"}]}
+            {"buttons": [{"name": "edit", "func": "view_func", "button_class": "btn-outline-secondary", "icon_name": "pencil", "multi_select": false}]},
+            {"buttons": [{"name": "duplicate", "func": "duplicate_func", "button_class": "btn-outline-secondary", "icon_name": "copy", "multi_select": false},
+                         {"name": "rename", "func": "rename_func", "button_class": "btn-outline-secondary", "icon_name": "edit", "multi_select": false}]},
+            {"buttons": [{"name": "share", "func": "send_repository_func", "button_class": "btn-outline-secondary", "icon_name": "share", "multi_select": false}]},
+            {"buttons": [{"name": "delete", "func": "delete_func", "button_class": "btn-outline-secondary", "icon_name": "trash", "multi_select": true}]},
+            {"buttons": [{"name": "refresh", "func": "refresh_func", "button_class": "btn-outline-secondary", "icon_name": "sync-alt", "multi_select": false}]}
         ]
     }
 
@@ -270,21 +270,21 @@ class CollectionManager extends LibraryResourceManager {
         this.button_groups = [
             {buttons: [
 
-                    {"name": "open", "func": "view_func", "button_class": "btn btn-outline-secondary", "icon_name": "book-open"}]
+                    {"name": "open", "func": "view_func", "button_class": "btn btn-outline-secondary", "icon_name": "book-open", "multi_select": false}]
             },
             {buttons: [
-                    {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-outline-secondary", "icon_name": "copy"},
-                    {"name": "rename", "func": "rename_func", "button_class": "btn-outline-secondary", "icon_name": "edit"},
-                    {"name": "combine", "func": "combineCollections", "button_class": "btn-outline-secondary", "icon_name": "plus-square"}]
+                    {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-outline-secondary", "icon_name": "copy", "multi_select": false},
+                    {"name": "rename", "func": "rename_func", "button_class": "btn-outline-secondary", "icon_name": "edit", "multi_select": false},
+                    {"name": "combine", "func": "combineCollections", "button_class": "btn-outline-secondary", "icon_name": "plus-square", "multi_select": true}]
             },
-            {buttons: [{"name": "download", "func": "downloadCollection", "button_class": "btn btn-outline-secondary", "icon_name": "cloud-download"},
-                    {"name": "share", "func": "send_repository_func", "button_class": "btn-outline-secondary", "icon_name": "share"}]
+            {buttons: [{"name": "download", "func": "downloadCollection", "button_class": "btn btn-outline-secondary", "icon_name": "cloud-download", "multi_select": false},
+                    {"name": "share", "func": "send_repository_func", "button_class": "btn-outline-secondary", "icon_name": "share", "multi_select": false}]
             },
             {buttons: [
-                    {"name": "delete", "func": "delete_func", "button_class": "btn-outline-secondary", "icon_name": "trash"}]
+                    {"name": "delete", "func": "delete_func", "button_class": "btn-outline-secondary", "icon_name": "trash", "multi_select": true}]
             },
-            {"buttons":
-                    [{"name": "refresh", "func": "refresh_func", "button_class": "btn-outline-secondary", "icon_name": "sync-alt"}]
+            {buttons:
+                    [{"name": "refresh", "func": "refresh_func", "button_class": "btn-outline-secondary", "icon_name": "sync-alt", "multi_select": false}]
             }
         ];
         this.specific_context_menu_functions = {
@@ -356,15 +356,38 @@ class CollectionManager extends LibraryResourceManager {
 
     combineCollections (event, res_name) {
         const manager = event.data.manager;
+        var res_names;
         if (typeof(res_name) == "undefined") {
-            res_name = manager.check_for_selection("resource");
+            res_names = manager.get_all_active_selector_names("resource");
+            if (res_names.length == 0) return;
         }
-        if (res_name == "") return;
-        showModal("Name of collection to combine with " + res_name, "collection Name", function (other_name) {
-            startSpinner();
-            const target = `${$SCRIPT_ROOT}/combine_collections/${res_name }/${other_name}`;
-            $.post(target, doFlashStopSpinner);
-        })
+        else {
+            res_names = [res_name]
+        }
+        if (res_names.length == 1) {
+            showModal("Name of collection to combine with " + res_names[0], "collection Name", function (other_name) {
+                startSpinner();
+                const target = `${$SCRIPT_ROOT}/combine_collections/${res_names[0]}/${other_name}`;
+                $.post(target, doFlashStopSpinner);
+            })
+        }
+        else {
+            $.getJSON(`${$SCRIPT_ROOT}get_resource_names/collection`, function (data) {
+                showModal("Combine Collections", "Name for combined collection", CreateCombinedCollection, "NewCollection", data["resource_names"])
+            });
+        }
+
+        function CreateCombinedCollection(new_name) {
+            postAjaxPromise("combine_to_new_collection",
+                {"original_collections": res_names, "new_name": new_name})
+                .then((data) => {
+                    manager.insert_new_row(data.new_row, 0);
+                    manager.select_first_row();
+                    resource_managers["all_module"].insert_new_row(data.new_all_row, 0);
+                })
+                .catch(doFlash)
+
+        }
     }
 }
 
@@ -406,22 +429,22 @@ class ProjectManager extends LibraryResourceManager {
         ];
         this.button_groups = [
             {buttons: [
-                    {"name": "notebook", "func": "newNotebook", "button_class": "btn btn-outline-secondary", "icon_name": "book"},
-                    {"name": "open", "func": "view_func", "button_class": "btn-outline-secondary", "icon_name": "book-open"}]
+                    {"name": "notebook", "func": "newNotebook", "button_class": "btn btn-outline-secondary", "icon_name": "book", "multi_select": false},
+                    {"name": "open", "func": "view_func", "button_class": "btn-outline-secondary", "icon_name": "book-open", "multi_select": false}]
             },
             {buttons: [
-                    {"name": "rename", "func": "rename_func", "button_class": "btn-outline-secondary", "icon_name": "edit"},
-                    {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-outline-secondary", "icon_name": "copy"}]
+                    {"name": "rename", "func": "rename_func", "button_class": "btn-outline-secondary", "icon_name": "edit", "multi_select": false},
+                    {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-outline-secondary", "icon_name": "copy", "multi_select": false}]
             },
             {buttons: [
-                    {"name": "toJupyter", "func": "downloadJupyter", "button_class": "btn btn-outline-secondary", "icon_name": "cloud-download"},
-                    {"name": "share", "func": "send_repository_func", "button_class": "btn-outline-secondary", "icon_name": "share"}]
+                    {"name": "toJupyter", "func": "downloadJupyter", "button_class": "btn btn-outline-secondary", "icon_name": "cloud-download", "multi_select": false},
+                    {"name": "share", "func": "send_repository_func", "button_class": "btn-outline-secondary", "icon_name": "share", "multi_select": false}]
             },
             {buttons: [
-                    {"name": "delete", "func": "delete_func", "button_class": "btn-outline-secondary", "icon_name": "trash"}]
+                    {"name": "delete", "func": "delete_func", "button_class": "btn-outline-secondary", "icon_name": "trash", "multi_select": true}]
             },
             {"buttons": [
-                {"name": "refresh", "func": "refresh_func", "button_class": "btn-outline-secondary", "icon_name": "sync-alt"}]
+                {"name": "refresh", "func": "refresh_func", "button_class": "btn-outline-secondary", "icon_name": "sync-alt", "multi_select": false}]
             }
         ];
     }
@@ -520,12 +543,6 @@ class TileManager extends LibraryResourceManager {
                     {"opt_name": "D3Tile", "opt_func": "new_d3_in_creator"}]
             }];
         this.file_adders = [
-            // {
-            //     "name": "add_module",
-            //     "func": "add_tile_module",
-            //     "button_class": "btn-outline-secondary",
-            //     "show_multiple": false,
-            // }
         ];
         this.button_groups = [
             {
@@ -534,25 +551,31 @@ class TileManager extends LibraryResourceManager {
                         "name": "edit",
                         "func": "view_func",
                         "button_class": "btn-outline-secondary",
-                        "icon_name": "pencil"
+                        "icon_name": "pencil", "multi_select": false
                     },
                     {
                         "name": "creator",
                         "func": "creator_view_func",
                         "button_class": "btn-outline-secondary",
-                        "icon_name": "pencil-alt"
+                        "icon_name": "pencil-alt", "multi_select": false
+                    },
+                    {
+                        "name": "compare",
+                        "func": "compare_func",
+                        "button_class": "btn-outline-secondary",
+                        "icon_name": "code-branch", "multi_select": true
                     },
                     {
                         "name": "load",
                         "func": "load_func",
                         "button_class": "btn-outline-secondary",
-                        "icon_name": "arrow-from-bottom"
+                        "icon_name": "arrow-from-bottom", "multi_select": false
                     },
                     {
                         "name": "unload",
                         "func": "unload_func",
                         "button_class": "btn-outline-secondary",
-                        "icon_name": "ban"
+                        "icon_name": "ban", "multi_select": false
                     }]
             },
             {
@@ -561,13 +584,13 @@ class TileManager extends LibraryResourceManager {
                         "name": "duplicate",
                         "func": "duplicate_func",
                         "button_class": "btn-outline-secondary",
-                        "icon_name": "copy"
+                        "icon_name": "copy", "multi_select": false
                     },
                     {
                         "name": "rename",
                         "func": "rename_func",
                         "button_class": "btn-outline-secondary",
-                        "icon_name": "edit"
+                        "icon_name": "edit", "multi_select": false
                     }]
             },
             {
@@ -576,7 +599,7 @@ class TileManager extends LibraryResourceManager {
                         "name": "share",
                         "func": "send_repository_func",
                         "button_class": "btn-outline-secondary",
-                        "icon_name": "share"
+                        "icon_name": "share", "multi_select": false
                     }]
             },
             {
@@ -585,7 +608,7 @@ class TileManager extends LibraryResourceManager {
                         "name": "delete",
                         "func": "delete_func",
                         "button_class": "btn-outline-secondary",
-                        "icon_name": "trash"
+                        "icon_name": "trash", "multi_select": true
                     }]
             },
             {
@@ -593,7 +616,7 @@ class TileManager extends LibraryResourceManager {
                     "name": "refresh",
                     "func": "refresh_func",
                     "button_class": "btn-outline-secondary",
-                    "icon_name": "sync-alt"
+                    "icon_name": "sync-alt", "multi_select": false
                 }]
             }
         ];
@@ -639,6 +662,24 @@ class TileManager extends LibraryResourceManager {
         }
         if (res_name == "") return;
         window.open($SCRIPT_ROOT + manager.last_saved_view + String(res_name))
+    }
+
+    compare_func(event) {
+        const manager = event.data.manager;
+        var res_names;
+        res_names = manager.get_all_active_selector_names();
+        if (res_names.length == 0) return;
+        if (res_names.length == 1) {
+            window.open(`${$SCRIPT_ROOT}/show_tile_differ/${res_names[0]}`)
+        }
+        else if (res_names.length == 2){
+            window.open(`${$SCRIPT_ROOT}/show_tile_differ/both_names/${res_names[0]}/${res_names[1]}`)
+        }
+        else {
+            doFlash({"alert-type": "alert-warning",
+                "message": "Select only one or two tiles before launching compare"})
+        }
+
     }
 
     load_func (event, res_name) {
@@ -803,19 +844,19 @@ class CodeManager extends LibraryResourceManager {
         ];
         this.button_groups = [
             {buttons: [
-                    {"name": "edit", "func": "view_func", "button_class": "btn-outline-secondary", "icon_name": "pencil"}]
+                    {"name": "edit", "func": "view_func", "button_class": "btn-outline-secondary", "icon_name": "pencil", "multi_select": false}]
             },
             {buttons: [
-                    {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-outline-secondary", "icon_name": "copy"},
-                    {"name": "rename", "func": "rename_func", "button_class": "btn-outline-secondary", "icon_name": "edit"}]
+                    {"name": "duplicate", "func": "duplicate_func", "button_class": "btn-outline-secondary", "icon_name": "copy", "multi_select": false},
+                    {"name": "rename", "func": "rename_func", "button_class": "btn-outline-secondary", "icon_name": "edit", "multi_select": false}]
             },
             {buttons: [
-                    {"name": "share", "func": "send_repository_func", "button_class": "btn-outline-secondary", "icon_name": "share"}]
+                    {"name": "share", "func": "send_repository_func", "button_class": "btn-outline-secondary", "icon_name": "share", "multi_select": false}]
             },
             {buttons: [
-                    {"name": "delete", "func": "delete_func", "button_class": "btn-outline-secondary", "icon_name": "trash"}]
+                    {"name": "delete", "func": "delete_func", "button_class": "btn-outline-secondary", "icon_name": "trash", "multi_select": true}]
             },
-            {"buttons": [{"name": "refresh", "func": "refresh_func", "button_class": "btn-outline-secondary", "icon_name": "sync-alt"}]}
+            {"buttons": [{"name": "refresh", "func": "refresh_func", "button_class": "btn-outline-secondary", "icon_name": "sync-alt", "multi_select": false}]}
         ];
     }
 
@@ -1210,7 +1251,7 @@ class AllManager extends LibraryResourceManager {
         }
     }
 
-    selector_click(row_element, custom_got_metadata) {
+    selector_click(row_element, custom_got_metadata="__none__") {
         if (!this.handling_selector_click) {  // We want to make sure we are not already processing a click
             this.handling_selector_click = true;
             const res_name = row_element.getAttribute("value");
@@ -1220,7 +1261,7 @@ class AllManager extends LibraryResourceManager {
             this.get_all_selector_buttons().removeClass("active");
             const self = this;
             var got_metadata;
-            if (custom_got_metadata == undefined) {
+            if (custom_got_metadata == "__none__") {
                 got_metadata = default_got_metadata
             }
             else {

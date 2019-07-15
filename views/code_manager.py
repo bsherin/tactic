@@ -170,11 +170,16 @@ class CodeManager(LibraryResourceManager):
         return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
 
     def delete_code(self):
-        user_obj = current_user
-        code_name = request.json["resource_name"]
-        db[user_obj.code_collection_name].delete_one({"code_name": code_name})
-        # self.update_selector_list()
-        return jsonify({"success": True})
+        try:
+            user_obj = current_user
+            code_names = request.json["resource_names"]
+            for code_name in code_names:
+                db[user_obj.code_collection_name].delete_one({"code_name": code_name})
+            return jsonify({"success": True, "message": "Tiles(s) successfully deleted",
+                            "alert_type": "alert-success"})
+
+        except Exception as ex:
+            return self.get_exception_for_ajax(ex, "Error deleting tiles")
 
     def search_inside_code(self):
         user_obj = current_user

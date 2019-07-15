@@ -86,6 +86,18 @@ class User(UserMixin, MongoAccess):
                                          {'$set': {"last_login": current_time}})
         return
 
+    def dt_to_datestring(self, dt):
+        return dt.strftime("%b %d, %Y, %H:%M")
+
+    def dt_to_sortstring(self, dt):
+        return dt.strftime("%Y%m%d%H%M%S")
+
+    def get_timestrings(self, dt):
+        localtime = self.localize_time(dt)
+        datestring = self.dt_to_datestring(localtime)
+        datestring_for_sort = self.dt_to_sortstring(dt)
+        return datestring, datestring_for_sort
+
     def localize_time(self, dt):
         tzoffset = self.get_tzoffset()
         return dt - datetime.timedelta(hours=tzoffset)

@@ -5,7 +5,6 @@ import uuid
 import copy
 import markdown
 import json
-from mongo_accesser import MongoAccess  # tactic_working whats the deal here
 from qworker import task_worthy_methods, task_worthy_manual_submit_methods
 from communication_utils import make_python_object_jsonizable, debinarize_python_object, store_temp_data
 from communication_utils import make_jsonizable_and_compress, read_project_dict
@@ -1142,7 +1141,7 @@ class APISupportTasksMixin:
         return None
 
     @task_worthy
-    def get_code_with_class(self, data):  # tactic_working whats up with this?
+    def get_code_with_class(self, data):  # tactic_working This won't work now
         class_name = data["class_name"]
         the_code = mongo_accesser.get_code_with_class(class_name)
         if the_code is None:
