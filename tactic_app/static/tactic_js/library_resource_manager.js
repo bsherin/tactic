@@ -20,14 +20,44 @@ class SelectorDragManager extends DragManager {
 
     handle_drag_start(event) {
         let res_name = event.target.getAttribute("value");
-        this.set_datum(event, "resourcename", res_name);
+        let res_names = this.manager.get_all_active_selector_names();
+        if (res_names.length > 1 && res_names.includes(res_name)) {
+            // this.set_datum(event, "multi_select", "true");
+            this.set_datum(event, "multi_select", "true");
+        }
+        else {
+            this.set_datum(event, "multi_select", "false");
+            this.set_datum(event, "resourcename", res_name);
+        }
+
     }
 
     handle_drop(event) {
+        const self = this;
         var tag = this.get_datum(event, "tagname");
         const row_element = $(event.target).closest('tr');
         row_element.removeClass(this.hover_style);
-        this.select_and_add_tag(row_element[0], tag)
+        const res_name = row_element[0].getAttribute("value");
+        let res_names = this.manager.get_all_active_selector_names();
+        if (res_names.length == 1 || !res_names.includes(res_name)) {
+            this.select_and_add_tag(row_element[0], tag);
+        }
+        else {
+            const result_dict = {"res_type": this.manager.res_type, "res_names": res_names,
+                "tags": [tag], "module_id": this.manager.module_id};
+            postAjaxPromise("add_tags", result_dict)
+                .then(function(data) {
+                    let utags = data.updated_tags;
+                    for (let res_name in utags) {
+                        self.manager.get_selector_table_row(res_name).children().slice(-1)[0].innerHTML = utags[res_name];
+                        resource_managers["all_module"].update_selector_tags(res_name, self.manager.res_type, utags[res_name]);
+                    }
+                    self.manager.tag_button_list.refresh_given_taglist(data.res_tags);
+                    resource_managers["all_module"].tag_button_list.refresh_given_taglist(data.all_tags);
+                    self.manager.selector_click(row_element[0], "__none__", true)
+                })
+                .catch(doFlash)
+        }
     }
 
     select_and_add_tag(row_element, newtag) {
@@ -50,7 +80,8 @@ class SelectorDragManager extends DragManager {
 }
 class TagButtonDragManager extends DragManager {
     constructor (manager) {
-        super(manager, manager.get_aux_left_dom(), ".tag-button-list button", ["resourcename"], "draghover", true)
+        super(manager, manager.get_aux_left_dom(), ".tag-button-list button",
+            ["multi_select", "resourcename"], "draghover", true)
     }
 
     handle_drag_start(event) {
@@ -59,11 +90,34 @@ class TagButtonDragManager extends DragManager {
     }
 
     handle_drop(event) {
-        var res_name = this.get_datum(event, "resourcename");
         let tag = event.target.dataset.fulltag;
         $(event.target).removeClass(this.hover_style);
-        let row_element = this.manager.get_named_selector_button(res_name);
-        this.select_and_add_tag(row_element[0], tag)
+        var multi_select = this.get_datum(event,"multi_select");
+        let self = this;
+        if (multi_select == "true") {  // seems like it comes through as a string
+            let res_names = this.manager.get_all_active_selector_names();
+            const result_dict = {"res_type": this.manager.res_type, "res_names": res_names,
+                "tags": [tag], "module_id": this.manager.module_id};
+            postAjaxPromise("add_tags", result_dict)
+                .then(function(data) {
+                    let utags = data.updated_tags;
+                    for (let res_name in utags) {
+                        self.manager.get_selector_table_row(res_name).children().slice(-1)[0].innerHTML = utags[res_name];
+                        resource_managers["all_module"].update_selector_tags(res_name, self.manager.res_type, utags[res_name]);
+                    }
+                    self.manager.tag_button_list.refresh_given_taglist(data.res_tags);
+                    resource_managers["all_module"].tag_button_list.refresh_given_taglist(data.all_tags);
+                    let one_res_name = Object.keys(utags)[0];
+                    self.manager.selector_click(self.manager.get_selector_table_row(one_res_name)[0], "__none__", true)
+                })
+                .catch(doFlash)
+        }
+        else {
+            var res_name = this.get_datum(event, "resourcename");
+            let row_element = this.manager.get_named_selector_button(res_name);
+            this.select_and_add_tag(row_element[0], tag)
+        }
+
     }
 
     select_and_add_tag(row_element, newtag) {
@@ -117,8 +171,10 @@ class LibraryResourceManager extends ResourceManager{
                 }
             });
             md.on("click", ".resource-name", function () {
-                var fake_event = {"data": {"manager": self}};
-                self.rename_func(fake_event)
+                if (self.get_all_active_selector_names().length == 1) {
+                    var fake_event = {"data": {"manager": self}};
+                    self.rename_func(fake_event)
+                }
             });
             this.setup_context_menus();
         }
@@ -127,7 +183,7 @@ class LibraryResourceManager extends ResourceManager{
         mcd.on("click", ".selector-button", function(event) {
             if (event.originalEvent.detail <= 1) {  // Will suppress on second click of a double-click
                 const row_element = $(event.target).closest('tr');
-                self.selector_click(row_element[0])
+                self.selector_click(row_element[0], "__none__", event.shiftKey)
             }
         });
     }
@@ -191,6 +247,29 @@ class LibraryResourceManager extends ResourceManager{
                 }
             }
         })
+    }
+
+    set_button_activations(multi_select=false) {
+        if (!multi_select) {
+            for (let group of this.button_groups) {
+                for (let but of group.buttons) {
+                    $(`button[value=${but.name}-${this.res_type}]`).css("display", "flex")
+                }
+            }
+        }
+        else {
+            for (let group of this.button_groups) {
+                for (let but of group.buttons) {
+                    if (but.multi_select) {
+                        $(`button[value=${but.name}-${this.res_type}]`).css("display", "flex")
+                    }
+                    else {
+                        $(`button[value=${but.name}-${this.res_type}]`).css("display", "none")
+                    }
+                }
+            }
+        }
+
     }
 
     selector_double_click(event) {
@@ -382,6 +461,78 @@ class LibraryResourceManager extends ResourceManager{
         }
     }
 
+    selector_click(row_element, custom_got_metadata="__none__", shift_key_down=false) {
+        if (!this.handling_selector_click) {  // We want to make sure we are not already processing a click
+            this.handling_selector_click = true;
+            const res_name = row_element.getAttribute("value");
+            const result_dict = {"res_type": this.res_type, "res_name": res_name, "is_repository": this.is_repository};
+            if (!shift_key_down) {
+                this.get_all_selector_buttons().removeClass("active");
+            }
+
+            const self = this;
+            var got_metadata;
+            $(row_element).addClass("active");
+
+            if (shift_key_down) {
+                this.set_button_activations(true);
+                this.get_notes_field()[0].readOnly = true;
+                if (this.include_metadata) {
+                    result_dict["res_name_list"] = this.get_all_active_selector_names();
+                    postAjaxPromise("grab_multi_metadata", result_dict)
+                        .then(got_multi_metadata)
+                        .catch(got_multi_metadata)
+                } else {
+                    self.handling_selector_click = false
+                }
+
+
+                this.handling_selector_click = false
+            }
+            else {
+                this.set_button_activations(false);
+                this.get_notes_field()[0].readOnly = false;
+                if (custom_got_metadata == "__none__") {
+                    got_metadata = default_got_metadata
+                } else {
+                    got_metadata = custom_got_metadata
+                }
+                if (this.include_metadata) {
+                    postAjaxPromise("grab_metadata", result_dict)
+                        .then(got_metadata)
+                        .catch(got_metadata)
+                } else {
+                    self.handling_selector_click = false
+                }
+            }
+
+            function default_got_metadata(data) {
+                if (data.success) {
+                    self.set_resource_metadata(res_name, data.datestring, data.tags, data.notes, data.additional_mdata);
+                    self.resize_to_window();
+                }
+                else {
+                    // doFlash(data)
+                    self.clear_resource_metadata()
+                }
+                self.handling_selector_click = false;
+            }
+
+            function got_multi_metadata(data) {
+                if (data.success) {
+                    self.set_resource_metadata("__multiple__", "", data.common_tags, "", {});
+                    self.resize_to_window();
+                }
+                else {
+                    // doFlash(data)
+                    self.clear_resource_metadata()
+                }
+                self.handling_selector_click = false;
+            }
+
+        }
+    }
+
     format_metadata(name, valstring) {
         return `<div><span class="text-primary">${name}:</span> ${valstring}</div>`
     }
@@ -419,24 +570,48 @@ class LibraryResourceManager extends ResourceManager{
     }
 
     save_my_metadata (flash = false) {
-        const res_name = this.get_active_selector_button().attr("value");
+        let res_names = this.get_all_active_selector_names();
         const tags = this.get_tags_string();
-        const notes = this.markdown_helper.getNotesValue(this.get_module_dom());
-        const result_dict = {"res_type": this.res_type, "res_name": res_name,
-            "tags": tags, "notes": notes, "module_id": this.module_id};
-        const self = this;
-        postAjaxPromise("save_metadata", result_dict)
-            .then(function(data) {
-                self.get_selector_table_row(res_name).children().slice(-1)[0].innerHTML = tags;
-                self.tag_button_list.refresh_given_taglist(data.res_tags);
-                resource_managers["all_module"].update_selector_tags(res_name, self.res_type, tags);
-                resource_managers["all_module"].tag_button_list.refresh_given_taglist(data.all_tags);
-                self.markdown_helper.convertMarkdown(self.get_module_dom());
-                if (flash) {
-                    doFlash(data)
-                }
-            })
-            .catch(doFlash)
+        if (res_names.length == 1) {
+            const res_name = res_names[0];
+            const notes = this.markdown_helper.getNotesValue(this.get_module_dom());
+            const result_dict = {"res_type": this.res_type, "res_name": res_name,
+                "tags": tags, "notes": notes, "module_id": this.module_id};
+            const self = this;
+            postAjaxPromise("save_metadata", result_dict)
+                .then(function(data) {
+                    self.get_selector_table_row(res_name).children().slice(-1)[0].innerHTML = tags;
+                    self.tag_button_list.refresh_given_taglist(data.res_tags);
+                    resource_managers["all_module"].update_selector_tags(res_name, self.res_type, tags);
+                    resource_managers["all_module"].tag_button_list.refresh_given_taglist(data.all_tags);
+                    self.markdown_helper.convertMarkdown(self.get_module_dom());
+                    if (flash) {
+                        doFlash(data)
+                    }
+                })
+                .catch(doFlash)
+        }
+        else {
+            const result_dict = {"res_type": this.res_type, "res_names": res_names, "tags": tags,
+                "module_id": this.module_id};
+            const self = this;
+            postAjaxPromise("overwrite_common_tags", result_dict)
+                .then(function(data) {
+                    let utags = data.updated_tags;
+                    for (let res_name in utags) {
+                        self.get_selector_table_row(res_name).children().slice(-1)[0].innerHTML = utags[res_name];
+                        resource_managers["all_module"].update_selector_tags(res_name, self.res_type, utags[res_name]);
+                    }
+                    self.tag_button_list.refresh_given_taglist(data.res_tags);
+                    resource_managers["all_module"].tag_button_list.refresh_given_taglist(data.all_tags);
+                    self.markdown_helper.convertMarkdown(self.get_module_dom());
+                    if (flash) {
+                        doFlash(data)
+                    }
+                })
+                .catch(doFlash)
+        }
+
     }
 
     match_any_tag (search_tags, item_tags) {
@@ -810,23 +985,41 @@ class LibraryResourceManager extends ResourceManager{
 
     delete_func (event, res_name) {
         const manager = event.data.manager;
+        var res_names;
         if (typeof(res_name) == "undefined") {
-            res_name = manager.check_for_selection("resource");
+            res_names = manager.get_all_active_selector_names();
+            if (res_names.length == 0) return;
         }
-        if (res_name == "") return;
-        const confirm_text = `Are you sure that you want to delete ${res_name}?`;
+        else {
+            res_names = [res_name];
+        }
+
+        var confirm_text;
+        if (res_names.length==1) {
+            let res_name = res_names[0];
+            confirm_text = `Are you sure that you want to delete ${res_name}?`;
+        }
+        else {
+            confirm_text = `Are you sure that you want to delete multiple items?`;
+        }
+
         confirmDialog(`Delete ${manager.res_type}`, confirm_text, "do nothing", "delete", function () {
-            postAjaxPromise(manager.delete_view, {"resource_name": res_name})
+            postAjaxPromise(manager.delete_view, {"resource_names": res_names})
                 .then(() => {
-                    let active_row = manager.get_active_selector_button();
-                    active_row.fadeOut("slow", function () {
-                        active_row.remove();
-                        manager.select_first_row()
-                    });
-                    let all_manager_row = resource_managers["all_module"].get_selector_table_row(res_name, manager.res_type);
-                    all_manager_row.fadeOut("slow", function () {
-                        all_manager_row.remove();
-                    });
+                    for (let res_name of res_names) {
+                        let arow = manager.get_selector_table_row(res_name);
+                        arow.fadeOut("slow", function () {
+                            arow.remove();
+                            manager.select_first_row()
+                        })
+                    }
+                    for (let res_name of res_names) {
+                        let all_manager_row = resource_managers["all_module"].get_selector_table_row(res_name, manager.res_type);
+                        all_manager_row.fadeOut("slow", function () {
+                            all_manager_row.remove();
+                        });
+                    }
+
                 })
                 .catch(doFlash);
         })

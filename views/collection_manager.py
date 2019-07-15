@@ -54,6 +54,8 @@ class CollectionManager(LibraryResourceManager):
                          login_required(self.download_collection), methods=['post', 'get'])
         app.add_url_rule('/combine_collections/<base_collection_name>/<collection_to_add>', "combine_collections",
                          login_required(self.combine_collections), methods=['post', 'get'])
+        app.add_url_rule('/combine_to_new_collection', "combine_to_new_collection",
+                         login_required(self.combine_to_new_collection), methods=['post'])
 
     def new_notebook(self):
         user_obj = current_user
@@ -90,7 +92,7 @@ class CollectionManager(LibraryResourceManager):
         main_id = main_container_info.create_main_container(collection_name, user_obj.get_id(), user_obj.username)
         global_tile_manager.add_user(user_obj.username)
 
-        short_collection_name = re.sub(r"^.*?\.data_collection\.", "", collection_name)
+        short_collection_name = user_obj.short_collection_name(collection_name)
         mdata = user_obj.get_collection_metadata(short_collection_name)
         if "type" in mdata and mdata["type"] == "freeform":
             doc_type = "freeform"
@@ -362,11 +364,40 @@ class CollectionManager(LibraryResourceManager):
                         "file_decoding_errors": file_decoding_errors})
 
     def delete_collection(self):
-        user_obj = current_user
-        collection_name = request.json["resource_name"]
-        result = user_obj.remove_collection(collection_name)
-        # self.update_selector_list()
-        return jsonify({"success": result})
+        try:
+            user_obj = current_user
+            collection_names = request.json["resource_names"]
+            for collection_name in collection_names:
+                user_obj.remove_collection(collection_name)
+            return jsonify({"success": True, "message": "Collection(s) successfully deleted",
+                            "alert_type": "alert-success"})
+
+        except Exception as ex:
+            return self.get_exception_for_ajax(ex, "Error deleting collections")
+
+    def combine_to_new_collection(self):
+        try:
+            user_obj = current_user
+            original_collections = request.json["original_collections"]
+            new_name = request.json["new_name"]
+            coll_dict, dm_dict, hl_dict, coll_mdata = user_obj.get_all_collection_info(original_collections[0])
+            user_obj.create_complete_collection(new_name,
+                                                coll_dict,
+                                                coll_mdata["type"],
+                                                dm_dict,
+                                                hl_dict,
+                                                coll_mdata)
+            for col in original_collections[1:]:
+                coll_dict, dm_dict, hl_dict, coll_mdata = user_obj.get_all_collection_info(col)
+                for dname, doc in coll_dict.items():
+                    user_obj.append_document_to_collection(new_name, dname, doc, coll_mdata["type"],
+                                                           hl_dict[dname], dm_dict[dname])
+            user_obj.update_collection_time(new_name)
+            self.update_selector_list(new_name)
+            return jsonify({"message": "Collections successfull combined", "alert_type": "alert-success"})
+
+        except Exception as ex:
+            return self.get_exception_for_ajax(ex, "Error combining collections")
 
     def duplicate_collection(self):
         user_obj = current_user

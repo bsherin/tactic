@@ -423,9 +423,16 @@ a[role="tab"] {
 
 }
 
-.tag-button:hover, .tag-button.draghover {
+.tag-button:hover {
     font-weight: bolder !important;
     color: gray;
+    background-color: white !important;
+    border-width: 0 !important;
+}
+
+.tag-button.draghover {
+    font-weight: bolder !important;
+    color: red;
     background-color: white !important;
     border-width: 0 !important;
 }
@@ -471,7 +478,7 @@ a[role="tab"] {
     display: flex;
 }
 
-.notrepo .selector-button.active td {
+.notrepo .selector-button.active td, #creator-resources .selector-button.active td{
     background-color: $selector-background-color!important;
     color: white;
 }

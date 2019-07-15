@@ -226,6 +226,10 @@ class ResourceManager {
          return this.get_module_element(".tags-field")
     }
 
+    get_notes_field() {
+        return this.get_module_element(".notes-field")
+    }
+
     get_additional_mdata_field() {
         return this.get_module_element(".additional-mdata")
     }
@@ -286,42 +290,53 @@ class ResourceManager {
         }
     }
 
-    selector_click(row_element, custom_got_metadata) {
+    get_all_active_selector_names() {
+        let active_rows = this.get_active_selector_button();
+        let res_names = [];
+        active_rows.each(function (ind, el) {
+            res_names.push($(el).attr("value"))
+        });
+        return res_names
+    }
+
+    set_button_activations(multi_select=false) {
+
+    }
+
+    selector_click(row_element) {
         if (!this.handling_selector_click) {  // We want to make sure we are not already processing a click
             this.handling_selector_click = true;
             const res_name = row_element.getAttribute("value");
             const result_dict = {"res_type": this.res_type, "res_name": res_name, "is_repository": this.is_repository};
             this.get_all_selector_buttons().removeClass("active");
+
             const self = this;
             var got_metadata;
-            if (custom_got_metadata == undefined) {
-                got_metadata = default_got_metadata
-            }
-            else {
-                got_metadata = custom_got_metadata
-            }
+            $(row_element).addClass("active");
+
+            this.set_button_activations(false);
+
+            got_metadata = default_got_metadata;
+
             if (this.include_metadata) {
                 postAjaxPromise("grab_metadata", result_dict)
                     .then(got_metadata)
                     .catch(got_metadata)
-            }
-            else {
+            } else {
                 self.handling_selector_click = false
             }
+        }
 
-            $(row_element).addClass("active");
-
-            function default_got_metadata(data) {
-                if (data.success) {
-                    self.set_resource_metadata(res_name, data.datestring, data.tags, data.notes, data.additional_mdata);
-                    self.resize_to_window();
-                }
-                else {
-                    // doFlash(data)
-                    self.clear_resource_metadata()
-                }
-                self.handling_selector_click = false;
+        function default_got_metadata(data) {
+            if (data.success) {
+                self.set_resource_metadata(res_name, data.datestring, data.tags, data.notes, data.additional_mdata);
+                self.resize_to_window();
             }
+            else {
+                // doFlash(data)
+                self.clear_resource_metadata()
+            }
+            self.handling_selector_click = false;
         }
     }
 

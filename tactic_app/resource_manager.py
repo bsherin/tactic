@@ -159,16 +159,12 @@ class ResourceManager(ExceptionMixin):
                 updatestring_for_sort = ""
             else:
                 if "datetime" in mdata:
-                    localtime = user_obj.localize_time(mdata["datetime"])  # note that we always want current_user
-                    datestring = localtime.strftime("%b %d, %Y, %H:%M")
-                    datestring_for_sort = mdata["datetime"].strftime("%Y%m%d%H%M%S")
+                    datestring, datestring_for_sort = user_obj.get_timestrings(mdata["datetime"])
                 else:
                     datestring = ""
                     datestring_for_sort = ""
                 if "updated" in mdata:
-                    localtime = user_obj.localize_time(mdata["updated"])
-                    updatestring = localtime.strftime("%b %d, %Y, %H:%M")
-                    updatestring_for_sort = mdata["updated"].strftime("%Y%m%d%H%M%S")
+                    updatestring, updatestring_for_sort = user_obj.get_timestrings(mdata["updated"])
                 else:
                     updatestring = datestring
                     updatestring_for_sort = datestring_for_sort

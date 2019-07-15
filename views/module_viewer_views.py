@@ -87,13 +87,15 @@ def get_api_dict():
                     "ordered_api_categories": ordered_api_categories})
 
 
-@app.route('/show_tile_differ/<module_name>', methods=['get', 'post'])
+@app.route('/show_tile_differ/<module_name>', defaults={'second_module_name': "none"})
+@app.route('/show_tile_differ/both_names/<module_name>/<second_module_name>')
 @login_required
-def show_tile_differ(module_name):
+def show_tile_differ(module_name, second_module_name):
     button_groups = [[{"name": "save_button", "button_class": "btn-outline-secondary", "name_text": "Save", "icon_name": "save"}]]
     javascript_source = url_for('static', filename='tactic_js/tile_differ.js')
     return render_template("library/resource_viewer.html",
                            resource_name=module_name,
+                           second_resource_name=second_module_name,
                            include_metadata=False,
                            include_above_main_area=True,
                            include_right=False,

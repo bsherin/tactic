@@ -165,11 +165,16 @@ class ListManager(LibraryResourceManager):
         return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
 
     def delete_list(self):
-        user_obj = current_user
-        list_name = request.json["resource_name"]
-        db[user_obj.list_collection_name].delete_one({"list_name": list_name})
-        # self.update_selector_list()
-        return jsonify({"success": True})
+        try:
+            user_obj = current_user
+            list_names = request.json["resource_names"]
+            for list_name in list_names:
+                db[user_obj.list_collection_name].delete_one({"list_name": list_name})
+            return jsonify({"success": True, "message": "Lists(s) successfully deleted",
+                            "alert_type": "alert-success"})
+
+        except Exception as ex:
+            return self.get_exception_for_ajax(ex, "Error deleting lists")
 
     def create_duplicate_list(self):
         user_obj = current_user
