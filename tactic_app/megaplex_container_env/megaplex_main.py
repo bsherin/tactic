@@ -15,6 +15,7 @@ stalled_container_time = 2 * 3600
 # go without making active contact with the megaplex. It can still be executiving get_next_task
 # this is longer than stalled_container_time because it's plausible that the user could be working
 # actively on a project for several hours and not doing much with one of the tiles.
+
 inactive_container_time = 10 * 3600
 
 # old_container_time is the max time a tile can exist after being created.
@@ -56,12 +57,13 @@ def deregister_container():
 def get_stalled():
     current_time = datetime.datetime.utcnow()
     stalled_containers = []
-    for cont_id, info in container_registry.items():
+    current_items = list(container_registry.items())
+    for cont_id, info in current_items:
         tdelta = current_time - info["last_passive_contact"]
         delta_seconds = tdelta.days * 24 * 60 + tdelta.seconds
         if delta_seconds > stalled_container_time:
             stalled_containers.append(cont_id)
-            del container_registry[cont_id]
+            print("found a stalled container")
     return stalled_containers
 
 
@@ -73,12 +75,13 @@ def get_stalled_containers():
 def get_inactive():
     current_time = datetime.datetime.utcnow()
     inactive_containers = []
-    for cont_id, info in container_registry.items():
+    current_items = list(container_registry.items())
+    for cont_id, info in current_items:
         tdelta = current_time - info["last_active_contact"]
         delta_seconds = tdelta.days * 24 * 60 + tdelta.seconds
         if delta_seconds > inactive_container_time:
             inactive_containers.append(cont_id)
-            del container_registry[cont_id]
+            print("found an inactive container")
     return inactive_containers
 
 
@@ -90,12 +93,13 @@ def get_inactive_containers():
 def get_old():
     current_time = datetime.datetime.utcnow()
     old_containers = []
-    for cont_id, info in container_registry.items():
+    current_items = list(container_registry.items())
+    for cont_id, info in current_items:
         tdelta = current_time - info["created"]
         delta_seconds = tdelta.days * 24 * 60 + tdelta.seconds
         if delta_seconds > old_container_time:
             old_containers.append(cont_id)
-            del container_registry[cont_id]
+            print("found an old container")
     return old_containers
 
 
