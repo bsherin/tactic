@@ -13,6 +13,7 @@ timeout_on_queue_full = .01
 
 class TaskManager(object):
     data_template = "cid: {}\ttasks: {}\tresponses: {}\twait_dict: {}\texpiration_dict: {}\texpired_tasks: {}"
+
     def __init__(self, my_id, queue_dict):
         self.my_id = my_id
         self.tasks = queue.Queue(maxsize=MAX_QUEUE_LENGTH)
