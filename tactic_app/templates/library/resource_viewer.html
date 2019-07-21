@@ -47,7 +47,9 @@
                         </div>
                     </div>
                     {% endif -%}
+                    <div id="like_button_container"></div>
                     <div id="aux-area" style="display:none; overflow:auto"></div>
+
                 </div>
                 {% endif %}
             </div>
@@ -55,6 +57,9 @@
 {%  endblock %}
 
 {% block scripts %}
+    <script src="https://unpkg.com/react@16/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="{{url_for('static', filename='tactic_js/like_button.js', version_string=tstring)}}"></script>
     <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
     <script src="{{url_for('static', filename='js/jquery.caret.min.js')}}"></script>
     <script src="{{url_for('static', filename='js/jquery.tag-editor.min.js')}}"></script>
