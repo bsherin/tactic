@@ -22,6 +22,7 @@ class ListManager(LibraryResourceManager):
     collection_list = "list_names"
     collection_list_with_metadata = "list_names_with_metadata"
     collection_name = "list_collection_name"
+
     name_field = "list_name"
     button_groups = [[{"name": "save_button", "button_class": "btn-outline-secondary", "name_text": "Save", "icon_name": "save"},
                       {"name": "save_as_button", "button_class": "btn-outline-secondary", "name_text": "Save as...", "icon_name": "save"},
@@ -44,8 +45,8 @@ class ListManager(LibraryResourceManager):
                          login_required(self.search_list_metadata), methods=['get', 'post'])
 
     def view_list(self, list_name):
-        javascript_source = url_for('static', filename='tactic_js/list_viewer.js')
-        return render_template("library/resource_viewer.html",
+        javascript_source = url_for('static', filename='tactic_js/list_viewer_react.js')
+        return render_template("library/resource_viewer_react.html",
                                resource_name=list_name,
                                include_metadata=True,
                                include_above_main_area=False,
@@ -54,7 +55,7 @@ class ListManager(LibraryResourceManager):
                                use_ssl=use_ssl,
                                is_repository=False,
                                javascript_source=javascript_source,
-                               button_groups=self.button_groups, version_string=tstring)
+                               version_string=tstring)
 
     def update_list(self):  # This is called from the list viewer
         try:

@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}{{resource_name}}{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{{url_for('static', filename='css/jquery-ui.min.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/jquery.tag-editor.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/loader.css', version_string=tstring)}}">
+{% endblock %}
+
+{% block page_content %}
+    <div id="modal-area">
+    </div>
+    <div class="container-fluid">
+        <div id="toolbar-place" style="margin-top: 20px">
+
+        </div>
+        <div id="left-div" class="res-viewer-resizer" style="margin-top: 20px; display: inline-block; vertical-align:top">
+            {% if include_above_main_area %}
+            <div id="above_main" style="position: relative"></div>
+            {% endif %}
+            <div id="main_content"></div>
+        </div>
+        {% if include_right %}
+        <div id="right-div" class="resource-viewer-right" style="margin-top: 20px; display: inline-block; vertical-align:top">
+            {% if include_metadata %}
+            <div id="resource-area" style="vertical-align: top; margin-left: 5px; margin-top: 10px; max-width:600px">
+
+            </div>
+            {% endif -%}
+            <div id="aux-area" style="display:none; overflow:auto"></div>
+
+        </div>
+        {% endif %}
+    </div>
+
+{%  endblock %}
+
+{% block scripts %}
+    <script src="{{url_for('static', filename='js/react.development.js')}}"></script>
+    <script src="{{url_for('static', filename='js/react-dom.development.js')}}"></script>
+{#    <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>#}
+{#    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>#}
+    <script src="{{url_for('static', filename='tactic_js/react_toolbar.js', version_string=tstring)}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/react_mdata_fields.js', version_string=tstring)}}"></script>
+    <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
+    <script src="{{url_for('static', filename='js/jquery.caret.min.js')}}"></script>
+    <script src="{{url_for('static', filename='js/jquery.tag-editor.min.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/markdown_utilities.js', v=version_string)}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/resource_viewer_class_react.js', version_string=tstring)}}"></script>
+    {% if uses_codemirror == "True" %}
+        <script src="{{url_for('static', filename='tactic_js/module_editor_abstract.js', version_string=tstring)}}"></script>
+    {% endif %}
+    <script src="{{javascript_source}}"></script>
+    <script>
+        let user_id = "{{current_user.get_id()}}";
+        let resource_name = "{{resource_name}}";
+        let second_resource_name = "{{second_resource_name}}";
+        let is_repository = "{{is_repository}}" == "True";
+        let include_right = "{{include_right}}" == "True";
+        let use_ssl = "{{use_ssl}}"=="True";
+        let resource_viewer_id = guid();
+        let main_id = resource_viewer_id;
+        window.onload = start_post_load;
+        window.onbeforeunload = function(e) {
+            if (this_viewer.dirty()) {
+                return "Any unsaved changes will be lost."
+            }
+        };
+
+    </script>
+{% endblock %}

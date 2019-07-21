@@ -358,11 +358,11 @@ a[role="tab"] {
 .resource-viewer-right {
     overflow: auto;
 
-    #notes {
+    #notes, .notes-field {
         background-color: #f7f7f7;
     }
 
-    #notes-field-markdown-output {
+    #notes-field-markdown-output, .notes-field-markdown-output {
         padding: 10px;
         overflow: auto;
     }
