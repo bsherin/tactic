@@ -1,4 +1,5 @@
 
+export {TagsField, NotesField, CombinedMetadata}
 
 class TagsField extends React.Component {
     constructor(props) {
@@ -51,8 +52,9 @@ class NotesField extends React.Component {
         super(props);
 
         this.state = {
-            "notes_display": "block",
-            "md_display": "none",
+            "show_markdown": false,
+            //"notes_display": "block",
+            // "md_display": "none",
             "md_height": 500,
             "converted_markdown": "",
         };
@@ -91,9 +93,9 @@ class NotesField extends React.Component {
     }
 
     convertMarkdown() {
-        let the_text = this.props.notes_value;
+        let the_text = this.props.notes;
         if (the_text == "") {
-            this.setState({"converted_markdown": "", "notes_value": ""});
+            this.setState({"converted_markdown": ""});
             this.hideMarkdown()
         }
         else {
@@ -103,8 +105,7 @@ class NotesField extends React.Component {
                 .then(function(data) {
                     self.setState({
                         "converted_markdown": data["converted_markdown"],
-                         "notes_display": "none",
-                         "md_display": "block"});
+                         "show_markdown": true});
                     self.updateMarkdownHeight(self.props.outer_selector);
                     })
                 .catch(doFlash)
@@ -112,12 +113,14 @@ class NotesField extends React.Component {
     }
 
     hideMarkdown() {
-        this.setState({"notes_display": "block", "md_display": "none"});
+        // this.setState({"notes_display": "block", "md_display": "none"});
+        this.setState({"show_markdown": false});
         this.focusNotes()
     }
 
     showMarkdown() {
-        this.setState({"notes_display": "none", "md_display": "block"})
+        // this.setState({"notes_display": "none", "md_display": "block"})
+        this.setState({"show_markdown": true})
     }
 
     componentDidMount() {
@@ -126,12 +129,13 @@ class NotesField extends React.Component {
 
     render() {
         let notes_style = {
-            "display": this.state.notes_display
+            "display": this.state.show_markdown ? "none" : "block"
         };
         let md_style = {
-            "display": this.state.md_display,
+            "display": this.state.show_markdown ? "block": "none",
             "maxHeight": this.state.md_height
         };
+
         let converted = {__html: this.state.converted_markdown};
         return (
         <div className="form-group">
@@ -142,7 +146,7 @@ class NotesField extends React.Component {
                       style={notes_style}
                       onBlur={this.convertMarkdown}
                       onChange={this.props.handleChange}
-                      value={this.props.notes_value}/>
+                      value={this.props.notes}/>
             <div ref={this.md_ref}
                  style={md_style}
                  onClick={this.hideMarkdown}
@@ -157,26 +161,7 @@ class CombinedMetadata extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {"notes_value": props.notes, "tags": this.props.tags};
-        this.handleNotesChange = this.handleNotesChange.bind(this)
-        this.handleTagsChange = this.handleTagsChange.bind(this)
 
-    }
-
-    get notes() {
-        return this.state.notes_value
-    }
-
-    get tags() {
-        return this.state.tags
-    }
-
-    handleNotesChange(event) {
-        this.setState({"notes_value": event.target.value});
-    }
-
-    handleTagsChange(field, editor, tags){
-        this.setState({"tags": tags})
     }
 
     render () {
@@ -184,12 +169,12 @@ class CombinedMetadata extends React.Component {
             <div>
             <div>{this.props.created}</div>
             <div className="form-group">
-                <TagsField tags={this.state.tags}
-                           handleChange={this.handleTagsChange}
+                <TagsField tags={this.props.tags}
+                           handleChange={this.props.handleTagsChange}
                            res_type={this.props.res_type}/>
             </div>
-                <NotesField notes_value={this.state.notes_value}
-                            handleChange={this.handleNotesChange}
+                <NotesField notes={this.props.notes}
+                            handleChange={this.props.handleNotesChange}
                             convert={true}
                             outer_selector={this.props.meta_outer}/>
         </div>

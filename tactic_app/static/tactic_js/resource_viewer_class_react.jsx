@@ -4,11 +4,16 @@
  * the contents of a resource.
  */
 
+
 const MARGIN_SIZE = 17;
 
 let this_viewer;
 let tsocket;
 
+import {Toolbar} from "./react_toolbar.js"
+import {CombinedMetadata} from "./react_mdata_fields.js";
+
+export {ResourceViewer, ResourceviewerToolbar}
 
 class ResourceViewerSocket extends TacticSocket {
     initialize_socket_stuff() {
@@ -32,7 +37,6 @@ class Namebutton extends React.Component {
 
     constructor(props) {
         super(props);
-        this.resource_viewer = props.resource_viewer;
         this.state = {"current_name": props.resource_name};
         this.rename_me = this.rename_me.bind(this)
     }
@@ -40,7 +44,7 @@ class Namebutton extends React.Component {
     rename_me() {
         console.log("entering rename");
         var self = this;
-        var res_type = this.resource_viewer.res_type;
+        var res_type = this.props.res_type;
         var current_name = this.state.current_name;
         $.getJSON($SCRIPT_ROOT + `get_resource_names/${res_type}`, function (data) {
                 const res_names = data["resource_names"];
@@ -56,7 +60,7 @@ class Namebutton extends React.Component {
             postAjax(`rename_resource/${res_type}/${current_name}`, the_data, renameSuccess);
             function renameSuccess(data) {
                 if (data.success) {
-                    self.resource_viewer.resource_name = new_name;
+                    self.props.resource_name = new_name;
                     self.setState({"current_name": new_name});
                 }
                 else {
@@ -83,8 +87,8 @@ function ResourceviewerToolbar(props) {
     return (
         <span>
             <Toolbar button_groups={props.button_groups}/>
-            <Namebutton resource_name={props.resource_name} 
-                        resource_viewer={props.resource_viewer}/>
+            <Namebutton resource_name={props.resource_name}
+                        res_type={props.res_type}/>
         </span>
     )
 }
