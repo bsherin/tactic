@@ -1,4 +1,5 @@
 
+
 export {TagsField, NotesField, CombinedMetadata}
 
 class TagsField extends React.Component {
@@ -45,6 +46,12 @@ class TagsField extends React.Component {
     }
 }
 
+TagsField.propTypes = {
+    tags: PropTypes.array,
+    handleChange: PropTypes.func,
+    res_type: PropTypes.string
+};
+
 
 class NotesField extends React.Component {
 
@@ -53,8 +60,6 @@ class NotesField extends React.Component {
 
         this.state = {
             "show_markdown": false,
-            //"notes_display": "block",
-            // "md_display": "none",
             "md_height": 500,
             "converted_markdown": "",
         };
@@ -80,11 +85,11 @@ class NotesField extends React.Component {
     }
 
     toggleMarkdown() {
-        if (this.state.notes_display == "block") {
-            this.convertMarkdown()
+        if (this.state.show_markdown) {
+            this.hideMarkdown()
         }
         else {
-           this.hideMarkdown()
+           this.convertMarkdown()
         }
     }
 
@@ -113,13 +118,11 @@ class NotesField extends React.Component {
     }
 
     hideMarkdown() {
-        // this.setState({"notes_display": "block", "md_display": "none"});
         this.setState({"show_markdown": false});
         this.focusNotes()
     }
 
     showMarkdown() {
-        // this.setState({"notes_display": "none", "md_display": "block"})
         this.setState({"show_markdown": true})
     }
 
@@ -157,6 +160,13 @@ class NotesField extends React.Component {
     }
 }
 
+NotesField.propTypes = {
+    notes: PropTypes.string,
+    handleChange: PropTypes.func,
+    outer_selector: PropTypes.string
+};
+
+
 class CombinedMetadata extends React.Component {
 
     constructor(props) {
@@ -175,10 +185,19 @@ class CombinedMetadata extends React.Component {
             </div>
                 <NotesField notes={this.props.notes}
                             handleChange={this.props.handleNotesChange}
-                            convert={true}
                             outer_selector={this.props.meta_outer}/>
         </div>
         )
     }
 
 }
+
+CombinedMetadata.propTypes = {
+    res_type: PropTypes.string,
+    created: PropTypes.string,
+    tags: PropTypes.array,
+    notes: PropTypes.string,
+    handleTagsChange: PropTypes.func,
+    handleNotesChange: PropTypes.func,
+    meta_outer: PropTypes.string
+};

@@ -1,6 +1,5 @@
 
 export {Toolbar, ToolbarButton, ResourceviewerToolbar}
-// The button4
 
 function ResourceviewerToolbar(props) {
     let tstyle = {"marginTop": 20};
@@ -13,6 +12,10 @@ function ResourceviewerToolbar(props) {
     )
 }
 
+ResourceviewerToolbar.propTypes = {
+    button_groups: PropTypes.array,
+    resource_name: PropTypes.string,
+};
 
 class ToolbarButton extends React.Component {
 
@@ -32,6 +35,13 @@ class ToolbarButton extends React.Component {
   }
 }
 
+ToolbarButton.propTypes = {
+    name: PropTypes.string,
+    click_handler: PropTypes.func,
+    button_class: PropTypes.string,
+    name_text: PropTypes.string
+};
+
 
 class Toolbar extends React.Component {
 
@@ -42,11 +52,11 @@ class Toolbar extends React.Component {
             // let group_items = [];
             let group_items = group.map((button) =>
                 <ToolbarButton name={button.name}
-                   icon_name={button.icon_name}
-                   click_handler={button.click_handler}
-                   button_class={button.button_class}
-                   name_text={button.name_text}
-                   key={button.name}
+                               icon_name={button.icon_name}
+                               click_handler={button.click_handler}
+                               button_class={button.button_class}
+                               name_text={button.name_text}
+                               key={button.name}
                 />
             );
             items.push(
@@ -63,6 +73,10 @@ class Toolbar extends React.Component {
         )
     }
 }
+
+Toolbar.propTypes = {
+    button_groups: PropTypes.array,
+};
 
 class Namebutton extends React.Component {
 
@@ -104,14 +118,18 @@ class Namebutton extends React.Component {
         }
     }
 
-
     render() {
         return (<button id="rename-button"
                         type="button"
                         className="btn btn-outline-secondary res-name-button"
                         onClick={this.rename_me}>
-                {this.state.current_name}
-            </button>
+                    {this.state.current_name}
+                </button>
         )
     }
 }
+
+Namebutton.propTypes = {
+    resource_name: PropTypes.string,
+    res_type: PropTypes.string
+};
