@@ -213,12 +213,22 @@ a[role="tab"] {
     font-size: 10px; }
 
 .resource-viewer-right {
-  overflow: auto; }
+  overflow: auto;
+  margin-top: 20px;
+  display: inline-block;
+  vertical-align: top; }
   .resource-viewer-right #notes, .resource-viewer-right .notes-field {
     background-color: #f7f7f7; }
   .resource-viewer-right #notes-field-markdown-output, .resource-viewer-right .notes-field-markdown-output {
     padding: 10px;
     overflow: auto; }
+
+#listarea-container {
+  height: 100%; }
+
+#listarea {
+  height: 100%;
+  display: inline-block; }
 
 .tag-button {
   padding: 5px 10px !important;
@@ -228,7 +238,7 @@ a[role="tab"] {
   cursor: pointer;
   border-radius: 2px 0 0 2px !important;
   text-align: left;
-  border: 0px !important;
+  border: 0 !important;
   font-size: 13px !important; }
   .tag-button .tag-icon-tag.fal, .tag-button .tag-icon-folder.fal {
     display: inline-block !important; }
@@ -327,16 +337,22 @@ a[role="tab"] {
   color: #1b6d85; }
 
 .res-viewer-resizer {
-  border-right: 0.5px solid #eeeeee; }
+  border-right: 0.5px solid #eeeeee;
+  margin-top: 20px;
+  display: inline-block;
+  vertical-align: top; }
+
+#metadata-holder {
+  vertical-align: top;
+  margin-left: 5px;
+  margin-top: 10px;
+  max-width: 600px; }
 
 .tag-button-list, .resource-tag-button-list {
   vertical-align: top;
   overflow-y: auto;
   border-top: none;
-  border-top-right-radius: 4px;
-  border-top-left-radius: 4px;
-  border-bottom-right-radius: 4px;
-  border-bottom-left-radius: 4px; }
+  border-radius: 4px; }
   .tag-button-list .btn-default:hover, .resource-tag-button-list .btn-default:hover {
     background-color: lightgray; }
   .tag-button-list .btn-default:focus, .resource-tag-button-list .btn-default:focus {
@@ -545,10 +561,7 @@ td.cell-clickable:active {
   display: flex;
   justify-content: space-between;
   font-size: 16px;
-  padding-top: 2px;
-  padding-bottom: 2px;
-  padding-left: 10px;
-  padding-right: 15px;
+  padding: 2px 15px 2px 10px;
   color: #333 !important;
   background-color: #f5f5f5 !important;
   font-family: Arial, Helvetica, sans-serif; }
@@ -560,10 +573,7 @@ td.cell-clickable:active {
   justify-content: flex-start;
   align-items: center;
   font-size: 16px;
-  padding-top: 2px;
-  padding-bottom: 2px;
-  padding-left: 10px;
-  padding-right: 15px;
+  padding: 2px 15px 2px 10px;
   color: #333 !important;
   background-color: #f5f5f5 !important;
   font-family: Arial, Helvetica, sans-serif; }
@@ -709,17 +719,11 @@ html, body {
   height: 100%; }
 
 .log-panel-body {
-  padding-left: 45px;
-  padding-right: 45px;
-  padding-top: 3px;
-  padding-bottom: 3px;
+  padding: 3px 45px;
   color: #616161 !important; }
 
 .log-panel-summary {
-  padding-left: 45px;
-  padding-right: 45px;
-  padding-top: 10px;
-  padding-bottom: 10px;
+  padding: 10px 45px;
   color: #616161 !important; }
 
 .log-code-output {
@@ -740,7 +744,7 @@ html, body {
 
 .outer-container {
   padding: 25px;
-  margin: 0px 5px; }
+  margin: 0 5px; }
 
 #tile-div {
   padding: 5px; }
