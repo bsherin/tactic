@@ -24,13 +24,6 @@ class CodeManager(LibraryResourceManager):
     collection_list_with_metadata = "code_names_with_metadata"
     collection_name = "code_collection_name"
     name_field = "code_name"
-    button_groups = [[{"name": "save_button", "button_class": "btn-outline-secondary",
-                       "name_text": "Save", "icon_name": "save"},
-                      {"name": "save_as_button", "button_class": "btn-outline-secondary",
-                       "name_text": "Save as...", "icon_name": "save"},
-                      {"name": "share_button", "button_class": "btn-outline-secondary",
-                       "name_text": "Share", "icon_name": "share"}
-                      ]]
 
     def add_rules(self):
         app.add_url_rule('/view_code/<code_name>', "view_code",
@@ -116,18 +109,17 @@ class CodeManager(LibraryResourceManager):
         return
 
     def view_code(self, code_name):
-        javascript_source = url_for('static', filename='tactic_js/code_viewer.js')
-        return render_template("library/resource_viewer.html",
+        javascript_source = url_for('static', filename='tactic_js/code_viewer_react.js')
+        return render_template("library/resource_viewer_react.html",
                                resource_name=code_name,
                                include_metadata=True,
                                include_right=True,
                                include_above_main_area=False,
-                               readonly=False,
+                               read_only=False,
                                is_repository=False,
                                use_ssl=use_ssl,
                                javascript_source=javascript_source,
                                uses_codemirror="True",
-                               button_groups=self.button_groups,
                                version_string=tstring)
 
     def get_code_code(self, code_name):
@@ -207,9 +199,6 @@ class CodeManager(LibraryResourceManager):
 class RepositoryCodeManager(CodeManager):
     rep_string = "repository-"
     is_repository = True
-    button_groups = [[{"name": "copy_button", "button_class": "btn-outline-secondary",
-                       "name_text": "Copy", "icon_name": "share"}
-                      ]]
 
     def add_rules(self):
         app.add_url_rule('/repository_view_code/<code_name>', "repository_view_code",
@@ -218,18 +207,18 @@ class RepositoryCodeManager(CodeManager):
                          login_required(self.repository_get_code_code), methods=['get', 'post'])
 
     def repository_view_code(self, code_name):
-        javascript_source = url_for('static', filename='tactic_js/code_viewer.js')
-        return render_template("library/resource_viewer.html",
+        javascript_source = url_for('static', filename='tactic_js/code_viewer_react.js')
+        return render_template("library/resource_viewer_react.html",
                                resource_name=code_name,
                                include_metadata=True,
                                include_right=True,
                                include_above_main_area=False,
-                               readonly=True,
+                               read_only=True,
                                use_ssl=use_ssl,
                                is_repository=True,
                                javascript_source=javascript_source,
                                uses_codemirror="True",
-                               button_groups=self.button_groups, version_string=tstring)
+                               version_string=tstring)
 
     def repository_get_code_code(self, code_name):
         user_obj = repository_user

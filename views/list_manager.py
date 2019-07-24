@@ -24,10 +24,6 @@ class ListManager(LibraryResourceManager):
     collection_name = "list_collection_name"
 
     name_field = "list_name"
-    button_groups = [[{"name": "save_button", "button_class": "btn-outline-secondary", "name_text": "Save", "icon_name": "save"},
-                      {"name": "save_as_button", "button_class": "btn-outline-secondary", "name_text": "Save as...", "icon_name": "save"},
-                      {"name": "share_button", "button_class": "btn-outline-secondary", "name_text": "Share", "icon_name": "share"}
-                      ]]
 
     def add_rules(self):
         app.add_url_rule('/view_list/<list_name>', "view_list", login_required(self.view_list), methods=['get'])
@@ -51,7 +47,7 @@ class ListManager(LibraryResourceManager):
                                include_metadata=True,
                                include_above_main_area=False,
                                include_right=True,
-                               readonly=False,
+                               read_only=False,
                                use_ssl=use_ssl,
                                is_repository=False,
                                javascript_source=javascript_source,
@@ -217,8 +213,6 @@ class ListManager(LibraryResourceManager):
 class RepositoryListManager(ListManager):
     rep_string = "repository-"
     is_repository = True
-    button_groups = [[{"name": "copy_button", "button_class": "btn-outline-secondary", "name_text": "Copy", "icon_name": "share"}
-                      ]]
 
     def add_rules(self):
         app.add_url_rule('/repository_view_list/<list_name>', "repository_view_list",
@@ -227,17 +221,17 @@ class RepositoryListManager(ListManager):
                          login_required(self.repository_get_list), methods=['get', 'post'])
 
     def repository_view_list(self, list_name):
-        javascript_source = url_for('static', filename='tactic_js/list_viewer.js')
-        return render_template("library/resource_viewer.html",
+        javascript_source = url_for('static', filename='tactic_js/list_viewer_react.js')
+        return render_template("library/resource_viewer_react.html",
                                resource_name=list_name,
                                include_metadata=True,
                                include_above_main_area=False,
                                include_right=True,
-                               readonly=True,
+                               read_only=True,
                                use_ssl=use_ssl,
                                is_repository=True,
                                javascript_source=javascript_source,
-                               button_groups=self.button_groups, version_string=tstring)
+                               version_string=tstring)
 
     def repository_get_list(self, list_name):
         the_list = repository_user.get_list(list_name)

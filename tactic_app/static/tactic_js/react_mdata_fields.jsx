@@ -1,8 +1,10 @@
 
-
 export {TagsField, NotesField, CombinedMetadata}
 
+import {ViewerContext} from "./resource_viewer_context.js";
+
 class TagsField extends React.Component {
+
     constructor(props) {
         super(props);
         this.tags_field_ref = React.createRef()
@@ -37,14 +39,22 @@ class TagsField extends React.Component {
     }
 
     render() {
+        let dstyle;
+        if (this.context.readOnly) {
+            dstyle = {"pointerEvents": "none"}
+        }
+        else {
+            dstyle = {"pointerEvents": "all"}
+        }
         return (
-            <div>
+            <div style={dstyle}>
                 <textarea ref={this.tags_field_ref}
                           className="form-control metadata-field" rows="1" ></textarea>
             </div>
         )
     }
 }
+TagsField.contextType = ViewerContext;
 
 TagsField.propTypes = {
     tags: PropTypes.array,
@@ -149,7 +159,9 @@ class NotesField extends React.Component {
                       style={notes_style}
                       onBlur={this.convertMarkdown}
                       onChange={this.props.handleChange}
-                      value={this.props.notes}/>
+                      readOnly={this.context.readOnly}
+                      value={this.props.notes}
+            />
             <div ref={this.md_ref}
                  style={md_style}
                  onClick={this.hideMarkdown}
@@ -159,6 +171,7 @@ class NotesField extends React.Component {
         )
     }
 }
+NotesField.contextType = ViewerContext;
 
 NotesField.propTypes = {
     notes: PropTypes.string,
@@ -168,11 +181,6 @@ NotesField.propTypes = {
 
 
 class CombinedMetadata extends React.Component {
-
-    constructor(props) {
-        super(props);
-
-    }
 
     render () {
         return (
