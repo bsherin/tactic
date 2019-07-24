@@ -3,7 +3,8 @@
 import {ResourceviewerToolbar} from "./react_toolbar.js";
 import {CombinedMetadata} from "./react_mdata_fields.js";
 
-export {ResourceViewerApp, ResourceViewerSocket}
+export {ResourceViewerApp, ResourceViewerSocket, copyToLibrary, sendToRepository}
+
 
 const MARGIN_SIZE = 17;
 
@@ -25,6 +26,35 @@ class ResourceViewerSocket extends TacticSocket {
     }
 }
 
+function copyToLibrary(res_type, resource_name) {
+    $.getJSON($SCRIPT_ROOT + `get_resource_names/${res_type}`, function(data) {
+        showModal(`Import ${res_type}`, `New ${res_type} Name`, ImportResource, resource_name, data["resource_names"])
+        }
+    );
+    function ImportResource(new_name) {
+        const result_dict = {
+            "res_type": res_type,
+            "res_name": resource_name,
+            "new_res_name": new_name
+        };
+        postAjax("copy_from_repository", result_dict, doFlashAlways);
+    }
+}
+
+function sendToRepository(res_type, resource_nam) {
+    $.getJSON($SCRIPT_ROOT + `get_repository_resource_names/${res_type}`, function(data) {
+        showModal(`Share list ${res_type}`, `New list Name`, ShareResource, resource_name, data["resource_names"])
+        }
+    );
+    function ShareResource(new_name) {
+        const result_dict = {
+            "res_type": res_type,
+            "res_name": resource_name,
+            "new_res_name": new_name
+        };
+        postAjax("send_to_repository", result_dict, doFlashAlways)
+    }
+}
 
 class ResourceViewerApp extends React.Component {
 

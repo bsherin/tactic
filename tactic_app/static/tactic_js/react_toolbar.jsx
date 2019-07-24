@@ -1,5 +1,8 @@
 
+
 export {Toolbar, ToolbarButton, ResourceviewerToolbar}
+
+const default_button_class = "btn-outline-secondary";
 
 function ResourceviewerToolbar(props) {
     let tstyle = {"marginTop": 20};
@@ -16,6 +19,7 @@ ResourceviewerToolbar.propTypes = {
     button_groups: PropTypes.array,
     resource_name: PropTypes.string,
 };
+
 
 class ToolbarButton extends React.Component {
 
@@ -45,6 +49,15 @@ ToolbarButton.propTypes = {
 
 class Toolbar extends React.Component {
 
+    get_button_class(but) {
+        if (but.button_class == undefined) {
+            return  default_button_class
+        }
+        else {
+            return but.button_class
+        }
+    }
+
     render() {
         const items = [];
         var group_counter = 0;
@@ -54,7 +67,7 @@ class Toolbar extends React.Component {
                 <ToolbarButton name={button.name}
                                icon_name={button.icon_name}
                                click_handler={button.click_handler}
-                               button_class={button.button_class}
+                               button_class={this.get_button_class(button)}
                                name_text={button.name_text}
                                key={button.name}
                 />

@@ -3,22 +3,24 @@
  */
 
 import {ResourceViewerSocket, ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app.js";
+import {ReactCodemirror} from "./react-codemirror.js";
 import {ViewerContext} from "./resource_viewer_context.js";
 
+let get_url = "get_code_code";
 
-function list_viewer_main ()  {
-    let get_url = is_repository ? "repository_get_list" : "get_list";
+function start_post_load ()  {
+    let get_url = is_repository ? "repository_get_code_code" : "get_code_code";
     let get_mdata_url = is_repository ? "grab_repository_metadata" : "grab_metadata";
 
     var tsocket = new ResourceViewerSocket("main", 5000);
     postAjaxPromise(`${get_url}/${resource_name}`, {})
         .then(function (data) {
             var the_content = data.the_content;
-            let result_dict = {"res_type": "list", "res_name": resource_name, "is_repository": false};
+            let result_dict = {"res_type": "code", "res_name": resource_name, "is_repository": false};
             let domContainer = document.querySelector('#root');
             postAjaxPromise(get_mdata_url, result_dict)
 			        .then(function (data) {
-                        ReactDOM.render(<ListViewerApp resource_name={resource_name}
+                        ReactDOM.render(<CodeViewerApp resource_name={resource_name}
                                                        the_content={the_content}
                                                        created={data.datestring}
                                                        tags={data.tags.split(" ")}
@@ -28,7 +30,7 @@ function list_viewer_main ()  {
                                                        meta_outer="#right-div"/>, domContainer);
 			        })
 			        .catch(function () {
-			            ReactDOM.render(<ListViewerApp resource_name={resource_name}
+			            ReactDOM.render(<CodeViewerApp resource_name={resource_name}
                                                        the_content={the_content}
                                                        created=""
                                                        tags={[]}
@@ -41,32 +43,7 @@ function list_viewer_main ()  {
         .catch(doFlash);
 }
 
-class ListEditor extends React.Component {
-
-    render() {
-        let tastyle = {"resize": "horizontal"};
-        return (
-            <div id="listarea-container">
-                <textarea id="listarea"
-                          style={tastyle}
-                          value={this.props.the_content}
-                          onChange={this.props.handleChange}
-                          readOnly={this.context.readOnly}
-                />
-            </div>
-        )
-
-    }
-}
-ListEditor.contextType = ViewerContext;
-
-ListEditor.propTypes = {
-    the_content: PropTypes.string,
-    handleChange: PropTypes.func,
-    readOnly: PropTypes.bool
-};
-
-class ListViewerApp extends React.Component {
+class CodeViewerApp extends React.Component {
 
     constructor(props) {
         super(props);
@@ -80,15 +57,15 @@ class ListViewerApp extends React.Component {
         };
 
         this.state = {
-            "list_content": props.the_content,
+            "code_content": props.the_content,
             "notes": props.notes,
             "tags": props.tags,
         };
         let self = this;
 
-        this.handleListChange = this.handleListChange.bind(this);
         this.handleNotesChange = this.handleNotesChange.bind(this);
         this.handleTagsChange = this.handleTagsChange.bind(this);
+        this.handleCodeChange = this.handleCodeChange.bind(this);
         this.saveMe = this.saveMe.bind(this);
         this.saveMeAs = this.saveMeAs.bind(this)
     }
@@ -96,7 +73,7 @@ class ListViewerApp extends React.Component {
     get button_groups() {
         if (this.props.is_repository) {
             return [[{"name": "copy_button", "name_text": "Copy", "icon_name": "share",
-                "click_handler": () => {copyToLibrary("list", this.props.resource_name)}}
+                "click_handler": () => {copyToLibrary("code", this.props.resource_name)}}
                       ]
             ]
         }
@@ -104,9 +81,14 @@ class ListViewerApp extends React.Component {
             return [[{"name": "save_button",  "name_text": "Save", "icon_name": "save", "click_handler": this.saveMe},
                      {"name": "save_as_button", "name_text": "Save as...", "icon_name": "save", "click_handler": this.saveMeAs},
                       {"name": "share_button", "name_text": "Share", "icon_name": "share",
-                          "click_handler": () => {sendToRepository("list", this.props.resource_name)}}
+                          "click_handler": () => {sendToRepository("code", this.props.resource_name)}}
                       ]]
         }
+
+    }
+
+    handleCodeChange(new_code) {
+        this.setState({"code_content": new_code})
     }
 
     handleNotesChange(event) {
@@ -117,25 +99,11 @@ class ListViewerApp extends React.Component {
         this.setState({"tags": tags})
     }
 
-    handleListChange(event) {
-        this.setState({"list_content": event.target.value});
-    }
-
-    get_tags_string() {
-        let taglist = this.state.tags;
-        let tags = "";
-        for (let tag of taglist) {
-            tags = tags + tag + " "
-        }
-        return tags.trim();
-    }
-
     render() {
-
         let the_context = {"readOnly": this.props.readOnly};
         return (
             <ViewerContext.Provider value={the_context}>
-                <ResourceViewerApp res_type="list"
+                <ResourceViewerApp res_type="code"
                                    resource_name={this.props.resource_name}
                                    button_groups={this.button_groups}
                                    handleNotesChange={this.handleNotesChange}
@@ -145,29 +113,41 @@ class ListViewerApp extends React.Component {
                                    tags={this.state.tags}
                                    saveMe={this.saveMe}
                                    meta_outer={this.props.meta_outer}>
-                        <ListEditor the_content={this.state.list_content}
-                                    handleChange={this.handleListChange}
-                        />
+                    <ReactCodemirror code_content={this.state.code_content}
+                                     handleChange={this.handleCodeChange}
+                                     saveMe={this.saveMe}
+                                     readOnly={this.props.readOnly}
+                      />
                 </ResourceViewerApp>
             </ViewerContext.Provider>
         )
     }
+    
+    get_tags_string() {
+        let taglist = this.state.tags;
+        let tags = "";
+        for (let tag of taglist) {
+            tags = tags + tag + " "
+        }
+        return tags.trim();
+    }
 
     saveMe() {
-        const new_list_as_string = this.state.list_content;
+        const new_code = this.state.code_content;
         const tagstring = this.get_tags_string();
         const notes = this.state.notes;
         const result_dict = {
-            "list_name": this.props.resource_name,
-            "new_list_as_string": new_list_as_string,
+            "code_name": this.props.resource_name,
+            "new_code": new_code,
             "tags": tagstring,
-            "notes": notes
+            "notes": notes,
+            "user_id": user_id
         };
         let self = this;
-        postAjax("update_list", result_dict, update_success);
+        postWithCallback("host","update_code_task", result_dict, update_success);
         function update_success(data) {
             if (data.success) {
-                self.savedContent = new_list_as_string;
+                self.savedContent = new_code;
                 self.savedTags = self.state.tags;
                 self.savedNotes = notes;
                 data.timeout = 2000;
@@ -184,14 +164,14 @@ class ListViewerApp extends React.Component {
 
 
     dirty() {
-        let current_content = this.state.list_content;
+        let current_content = this.state.code_content;
         const tags = this.state.tags;
         const notes = this.state.notes;
         return !((current_content == this.savedContent) && (tags == this.savedTags) && (notes == this.savedNotes))
     }
 }
 
-ListViewerApp.propTypes = {
+CodeViewerApp.propTypes = {
     resource_name: PropTypes.string,
     the_content: PropTypes.string,
     created: PropTypes.string,
@@ -203,4 +183,4 @@ ListViewerApp.propTypes = {
 };
 
 
-list_viewer_main();
+start_post_load();
