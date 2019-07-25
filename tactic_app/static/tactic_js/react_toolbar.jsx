@@ -30,7 +30,7 @@ class ToolbarButton extends React.Component {
     render() {
 
         return (
-            <button type="button" value={this.props.name} onClick={this.props.click_handler}
+            <button type="button" onClick={this.props.click_handler}
                     className={"btn btn-sm action-button toolbar-button " + this.props.button_class}>
                 <span className={"far button-icon fa-" + this.props.icon_name}/>
                 <span className="button-text">{this.props.name_text}</span>

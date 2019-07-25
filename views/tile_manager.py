@@ -26,21 +26,6 @@ class TileManager(LibraryResourceManager):
     collection_list_with_metadata = "tile_module_names_with_metadata"
     collection_name = "tile_collection_name"
     name_field = "tile_module_name"
-    button_groups = [[{"name": "save_button", "button_class": "btn-outline-secondary",
-                       "name_text": "Save", "icon_name": "save"},
-                      {"name": "checkpoint_button", "button_class": "btn-outline-secondary",
-                       "name_text": "Mark", "icon_name": "map-marker-alt"},
-                      {"name": "save_as_button", "button_class": "btn-outline-secondary",
-                       "name_text": "Save as...", "icon_name": "save"},
-                      {"name": "load_button", "button_class": "btn-outline-secondary",
-                       "name_text": "Load", "icon_name": "arrow-from-bottom"},
-                      {"name": "share_button", "button_class": "btn-outline-secondary",
-                       "name_text": "Share", "icon_name": "share"}],
-                     [{"name": "history_button", "button_class": "btn-outline-secondary",
-                       "name_text": "History", "icon_name": "history"},
-                      {"name": "differ_button", "button_class": "btn-outline-secondary",
-                       "name_text": "Compare", "icon_name": "code-branch"}
-                      ]]
 
     def add_rules(self):
         app.add_url_rule('/view_module/<module_name>', "view_module",
@@ -148,7 +133,7 @@ class TileManager(LibraryResourceManager):
         yesterday = datetime.datetime.utcnow() - datetime.timedelta(days=1)
         yesterday_date = yesterday.date()
         # We want to keep every element of the recent history from yesterday or today
-        # Plus we want to keep the last entry from each date taht appears.
+        # Plus we want to keep the last entry from each date that appears.
         for cp in tile_dict["recent_history"]:
             cp_date = cp["updated"].date()
             if cp_date > yesterday_date:  # If it's more recent than yesterday, keep it.
@@ -171,8 +156,8 @@ class TileManager(LibraryResourceManager):
 
     def view_module(self, module_name):
         self.clear_old_recent_history(module_name)
-        javascript_source = url_for('static', filename='tactic_js/module_viewer.js')
-        return render_template("library/resource_viewer.html",
+        javascript_source = url_for('static', filename='tactic_js/module_viewer_react.js')
+        return render_template("library/resource_viewer_react.html",
                                resource_name=module_name,
                                include_metadata=True,
                                include_right=True,
@@ -182,7 +167,7 @@ class TileManager(LibraryResourceManager):
                                use_ssl=use_ssl,
                                javascript_source=javascript_source,
                                uses_codemirror="True",
-                               button_groups=self.button_groups, version_string=tstring)
+                               version_string=tstring)
 
     def get_module_code(self, module_name):
         user_obj = current_user
@@ -366,9 +351,6 @@ class TileManager(LibraryResourceManager):
 class RepositoryTileManager(TileManager):
     rep_string = "repository-"
     is_repository = True
-    button_groups = [[{"name": "copy_button", "button_class": "btn-outline-secondary",
-                       "name_text": "Copy", "icon_name": "share"}
-                      ]]
 
     def add_rules(self):
         app.add_url_rule('/repository_view_module/<module_name>', "repository_view_module",
@@ -377,8 +359,8 @@ class RepositoryTileManager(TileManager):
                          login_required(self.repository_get_module_code), methods=['get', 'post'])
 
     def repository_view_module(self, module_name):
-        javascript_source = url_for('static', filename='tactic_js/module_viewer.js')
-        return render_template("library/resource_viewer.html",
+        javascript_source = url_for('static', filename='tactic_js/module_viewer_react.js')
+        return render_template("library/resource_viewer_react.html",
                                resource_name=module_name,
                                include_metadata=True,
                                include_right=True,
@@ -388,7 +370,6 @@ class RepositoryTileManager(TileManager):
                                use_ssl=use_ssl,
                                javascript_source=javascript_source,
                                uses_codemirror="True",
-                               button_groups=self.button_groups,
                                version_string=tstring)
 
     def repository_get_module_code(self, module_name):
