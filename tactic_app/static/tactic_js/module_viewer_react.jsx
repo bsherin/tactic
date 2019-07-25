@@ -6,19 +6,20 @@ import {ResourceViewerSocket, ResourceViewerApp, copyToLibrary, sendToRepository
 import {ReactCodemirror} from "./react-codemirror.js";
 import {ViewerContext} from "./resource_viewer_context.js";
 
-function code_viewer_main ()  {
-    let get_url = is_repository ? "repository_get_code_code" : "get_code_code";
+
+function module_viewer_main ()  {
+    let get_url = is_repository ? "repository_get_module_code" : "get_module_code";
     let get_mdata_url = is_repository ? "grab_repository_metadata" : "grab_metadata";
 
     var tsocket = new ResourceViewerSocket("main", 5000);
     postAjaxPromise(`${get_url}/${resource_name}`, {})
         .then(function (data) {
             var the_content = data.the_content;
-            let result_dict = {"res_type": "code", "res_name": resource_name, "is_repository": false};
+            let result_dict = {"res_type": "tile", "res_name": resource_name, "is_repository": false};
             let domContainer = document.querySelector('#root');
             postAjaxPromise(get_mdata_url, result_dict)
 			        .then(function (data) {
-                        ReactDOM.render(<CodeViewerApp resource_name={resource_name}
+                        ReactDOM.render(<ModuleViewerApp resource_name={resource_name}
                                                        the_content={the_content}
                                                        created={data.datestring}
                                                        tags={data.tags.split(" ")}
@@ -28,7 +29,7 @@ function code_viewer_main ()  {
                                                        meta_outer="#right-div"/>, domContainer);
 			        })
 			        .catch(function () {
-			            ReactDOM.render(<CodeViewerApp resource_name={resource_name}
+			            ReactDOM.render(<ModuleViewerApp resource_name={resource_name}
                                                        the_content={the_content}
                                                        created=""
                                                        tags={[]}
@@ -41,7 +42,7 @@ function code_viewer_main ()  {
         .catch(doFlash);
 }
 
-class CodeViewerApp extends React.Component {
+class ModuleViewerApp extends React.Component {
 
     constructor(props) {
         super(props);
@@ -69,15 +70,21 @@ class CodeViewerApp extends React.Component {
     get button_groups() {
         let bgs;
         if (this.props.is_repository) {
-             bgs =[[{"name_text": "Copy", "icon_name": "share",
-                        "click_handler": () => {copyToLibrary("code", this.props.resource_name)}}]
+            bgs = [
+                    [{"name_text": "Copy", "icon_name": "share",
+                        "click_handler": () => {copyToLibrary("modules", this.props.resource_name)}}]
             ]
         }
         else {
-            bgs = [[{"name_text": "Save", "icon_name": "save", "click_handler": this.saveMe},
-                    {"name_text": "Save as...", "icon_name": "save", "click_handler": this.saveMeAs},
-                    {"name_text": "Share", "icon_name": "share",
-                          "click_handler": () => {sendToRepository("code", this.props.resource_name)}}]
+            bgs = [
+                    [{"name_text": "Save", "icon_name": "save","click_handler": this.saveMe},
+                     {"name_text": "Mark", "icon_name": "map-marker-alt", "click_handler": this.saveAndCheckpoint},
+                     {"name_text": "Save as...", "icon_name": "save", "click_handler": this.saveMeAs},
+                     {"name_text": "Load", "icon_name": "arrow-from-bottom", "click_handler": this.loadModule},
+                     {"name_text": "Share", "icon_name": "share",
+                        "click_handler": () => {sendToRepository("code", this.props.resource_name)}}],
+                    [{"name_text": "History", "icon_name": "history", "click_handler": this.showHistoryViewer},
+                     {"name_text": "Compare", "icon_name": "code-branch", "click_handler": this.showTileDiffer}]
             ]
         }
 
@@ -87,7 +94,6 @@ class CodeViewerApp extends React.Component {
             }
         }
         return bgs
-
     }
 
     handleCodeChange(new_code) {
@@ -100,6 +106,15 @@ class CodeViewerApp extends React.Component {
 
     handleTagsChange(field, editor, tags){
         this.setState({"tags": tags})
+    }
+
+    get_tags_string() {
+        let taglist = this.state.tags;
+        let tags = "";
+        for (let tag of taglist) {
+            tags = tags + tag + " "
+        }
+        return tags.trim();
     }
 
     render() {
@@ -125,45 +140,109 @@ class CodeViewerApp extends React.Component {
             </ViewerContext.Provider>
         )
     }
-    
-    get_tags_string() {
-        let taglist = this.state.tags;
-        let tags = "";
-        for (let tag of taglist) {
-            tags = tags + tag + " "
-        }
-        return tags.trim();
-    }
 
     saveMe() {
-        const new_code = this.state.code_content;
-        const tagstring = this.get_tags_string();
-        const notes = this.state.notes;
-        const tags = this.state.tags;  // In case it's modified wile saving
-        const result_dict = {
-            "code_name": this.props.resource_name,
-            "new_code": new_code,
-            "tags": tagstring,
-            "notes": notes,
-            "user_id": user_id
-        };
+        startSpinner();
+        statusMessageText("Saving Module");
+        this.doSavePromise()
+            .then(doFlashStopSpinner)
+            .catch(doFlashStopSpinner);
+        return false
+    }
+
+    doSavePromise() {
         let self = this;
-        postWithCallback("host","update_code_task", result_dict, update_success);
-        function update_success(data) {
-            if (data.success) {
-                self.savedContent = new_code;
-                self.savedTags = tags;
-                self.savedNotes = notes;
-                data.timeout = 2000;
-            }
-            doFlash(data);
-            return false
-        }
+        return new Promise (function (resolve, reject) {
+            const new_code = self.state.code_content;
+            const tagstring = self.get_tags_string();
+            const tags = self.state.tags;  // In case it's modified while saving
+            const notes = self.state.notes;
+            let result_dict;
+            let category;
+            category = null;
+            result_dict = {
+                "module_name": self.props.resource_name,
+                "category": category,
+                "tags": tagstring,
+                "notes": notes,
+                "new_code": new_code,
+                "last_saved": "viewer"
+            };
+            postAjax("update_module", result_dict, function (data) {
+                if (data.success) {
+                    self.savedContent = new_code;
+                    self.savedTags = tags;
+                    self.savedNotes = notes;
+                    data.timeout = 2000;
+                    resolve(data)
+                }
+                else {
+                    reject(data)
+                }
+            });
+
+        })
     }
 
     saveMeAs(e) {
         doFlash({"message": "not implemented yet", "timeout": 10});
         return false
+    }
+
+    loadModule() {
+        let self = this;
+        startSpinner();
+        this.doSavePromise()
+            .then(function () {
+                statusMessageText("Loading Module");
+                postWithCallback("host", "load_tile_module_task", {"tile_module_name": self.props.resource_name, "user_id": user_id}, load_success)
+            })
+            .catch(doFlashStopSpinner);
+
+        function load_success(data) {
+            if (data.success) {
+                data.timeout = 2000;
+            }
+            doFlashStopSpinner(data);
+            return false
+        }
+    }
+
+    saveAndCheckpoint() {
+        startSpinner();
+        let self = this;
+        this.doSavePromise()
+            .then(function (){
+                statusMessage("Checkpointing");
+                self.doCheckpointPromise()
+                    .then(doFlashStopSpinner)
+                    .catch(doFlashStopSpinner)
+            })
+            .catch(doFlashStopSpinner);
+        return false
+
+    }
+
+    doCheckpointPromise() {
+        let self = this;
+        return new Promise (function (resolve, reject) {
+            postAjax("checkpoint_module", {"module_name": self.props.resource_name}, function (data) {
+                if (data.success) {
+                    resolve(data)
+                }
+                else {
+                    reject(data)
+                }
+            });
+        })
+    }
+
+    showHistoryViewer () {
+        window.open(`${$SCRIPT_ROOT}/show_history_viewer/${this.props.resource_name}`)
+    }
+
+    showTileDiffer () {
+        window.open(`${$SCRIPT_ROOT}/show_tile_differ/${this.props.resource_name}`)
     }
 
 
@@ -175,7 +254,7 @@ class CodeViewerApp extends React.Component {
     }
 }
 
-CodeViewerApp.propTypes = {
+ModuleViewerApp.propTypes = {
     resource_name: PropTypes.string,
     the_content: PropTypes.string,
     created: PropTypes.string,
@@ -187,4 +266,4 @@ CodeViewerApp.propTypes = {
 };
 
 
-code_viewer_main();
+module_viewer_main();

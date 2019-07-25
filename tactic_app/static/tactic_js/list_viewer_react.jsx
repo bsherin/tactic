@@ -73,6 +73,7 @@ class ListViewerApp extends React.Component {
         this.savedContent = props.the_content;
         this.savedTags = props.tags;
         this.savedNotes = props.notes;
+        let self = this;
         window.onbeforeunload = function(e) {
             if (self.dirty()) {
                 return "Any unsaved changes will be lost."
@@ -84,29 +85,32 @@ class ListViewerApp extends React.Component {
             "notes": props.notes,
             "tags": props.tags,
         };
-        let self = this;
 
         this.handleListChange = this.handleListChange.bind(this);
         this.handleNotesChange = this.handleNotesChange.bind(this);
         this.handleTagsChange = this.handleTagsChange.bind(this);
-        this.saveMe = this.saveMe.bind(this);
-        this.saveMeAs = this.saveMeAs.bind(this)
     }
 
     get button_groups() {
+        let bgs;
         if (this.props.is_repository) {
-            return [[{"name": "copy_button", "name_text": "Copy", "icon_name": "share",
-                "click_handler": () => {copyToLibrary("list", this.props.resource_name)}}
-                      ]
+            bgs = [[{"name_text": "Copy", "icon_name": "share",
+                        "click_handler": () => {copyToLibrary("list", this.props.resource_name)}}]
             ]
         }
         else {
-            return [[{"name": "save_button",  "name_text": "Save", "icon_name": "save", "click_handler": this.saveMe},
-                     {"name": "save_as_button", "name_text": "Save as...", "icon_name": "save", "click_handler": this.saveMeAs},
-                      {"name": "share_button", "name_text": "Share", "icon_name": "share",
-                          "click_handler": () => {sendToRepository("list", this.props.resource_name)}}
-                      ]]
+            bgs = [[{"name_text": "Save", "icon_name": "save", "click_handler": this.saveMe},
+                    {"name_text": "Save as...", "icon_name": "save", "click_handler": this.saveMeAs},
+                    {"name_text": "Share", "icon_name": "share",
+                          "click_handler": () => {sendToRepository("list", this.props.resource_name)}}]
+            ]
         }
+        for (let bg of bgs) {
+            for (let but of bg) {
+                but.click_handler = but.click_handler.bind(this)
+            }
+        }
+        return bgs
     }
 
     handleNotesChange(event) {
@@ -157,6 +161,7 @@ class ListViewerApp extends React.Component {
         const new_list_as_string = this.state.list_content;
         const tagstring = this.get_tags_string();
         const notes = this.state.notes;
+        const tags = this.state.tags;  // In case it's modified wile saving
         const result_dict = {
             "list_name": this.props.resource_name,
             "new_list_as_string": new_list_as_string,
@@ -168,7 +173,7 @@ class ListViewerApp extends React.Component {
         function update_success(data) {
             if (data.success) {
                 self.savedContent = new_list_as_string;
-                self.savedTags = self.state.tags;
+                self.savedTags = tags;
                 self.savedNotes = notes;
                 data.timeout = 2000;
             }

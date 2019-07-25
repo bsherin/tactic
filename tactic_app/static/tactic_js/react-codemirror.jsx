@@ -9,6 +9,7 @@ class ReactCodemirror extends React.Component {
         this.handleChange = this.handleChange.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.mousetrap = new Mousetrap();
+        this.create_api();
     }
 
     createCMArea(codearea, include_in_global_search = false, first_line_number = 1) {
@@ -55,6 +56,30 @@ class ReactCodemirror extends React.Component {
     clearSelections() {
         CodeMirror.commands.clearSearch(this.cmobject);
         CodeMirror.commands.singleSelection(this.cmobject);
+    }
+
+    create_api() {
+        let self = this;
+        postAjax("get_api_dict", {}, function (data) {
+            self.api_dict_by_category = data.api_dict_by_category;
+            self.api_dict_by_name = data.api_dict_by_name;
+            self.ordered_api_categories = data.ordered_api_categories;
+
+            self.api_list = [];
+            for (let cat of self.ordered_api_categories) {
+                for (let entry of self.api_dict_by_category[cat]) {
+                    self.api_list.push(entry["name"])
+                }
+            }
+            //noinspection JSUnresolvedVariable
+            CodeMirror.commands.autocomplete = function (cm) {
+                //noinspection JSUnresolvedFunction
+                cm.showHint({
+                    hint: CodeMirror.hint.anyword, api_list: self.api_list,
+                    extra_autocomplete_list: self.extra_autocomplete_list
+                });
+            };
+        })
     }
 
     create_keymap() {

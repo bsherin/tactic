@@ -39,13 +39,7 @@ class TagsField extends React.Component {
     }
 
     render() {
-        let dstyle;
-        if (this.context.readOnly) {
-            dstyle = {"pointerEvents": "none"}
-        }
-        else {
-            dstyle = {"pointerEvents": "all"}
-        }
+        let dstyle = {"pointerEvents": this.context.readOnly ? "none" : "all"};
         return (
             <div style={dstyle}>
                 <textarea ref={this.tags_field_ref}
@@ -110,8 +104,7 @@ class NotesField extends React.Component {
     convertMarkdown() {
         let the_text = this.props.notes;
         if (the_text == "") {
-            this.setState({"converted_markdown": ""});
-            this.hideMarkdown()
+            this.setState({"converted_markdown": "", "show_markdown": false});
         }
         else {
             let ddict = {"the_text": the_text};
@@ -171,6 +164,7 @@ class NotesField extends React.Component {
         )
     }
 }
+
 NotesField.contextType = ViewerContext;
 
 NotesField.propTypes = {
