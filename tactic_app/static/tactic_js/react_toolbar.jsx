@@ -63,13 +63,13 @@ class Toolbar extends React.Component {
         var group_counter = 0;
         for (let group of this.props.button_groups) {
             // let group_items = [];
-            let group_items = group.map((button) =>
+            let group_items = group.map((button, index) =>
                 <ToolbarButton name={button.name}
                                icon_name={button.icon_name}
                                click_handler={button.click_handler}
                                button_class={this.get_button_class(button)}
                                name_text={button.name_text}
-                               key={button.name}
+                               key={index}
                 />
             );
             items.push(

@@ -64,19 +64,13 @@ def checkpoint_to_recent():
 @app.route('/show_history_viewer/<module_name>', methods=['get', 'post'])
 @login_required
 def show_history_viewer(module_name):
-    button_groups = [[{"name": "save_button", "button_class": "btn-outline-secondary", "name_text": "Save", "icon_name": "save"}]]
-    javascript_source = url_for('static', filename='tactic_js/history_viewer.js')
-    return render_template("library/resource_viewer.html",
+    javascript_source = url_for('static', filename='tactic_js/history_viewer_react.js')
+    return render_template("library/resource_viewer_react.html",
                            resource_name=module_name,
-                           include_metadata=False,
-                           include_above_main_area=True,
-                           include_right=False,
-                           readonly=False,
-                           is_repository=False,
                            use_ssl=use_ssl,
                            javascript_source=javascript_source,
                            uses_codemirror="True",
-                           button_groups=button_groups, version_string=tstring)
+                           version_string=tstring)
 
 
 @app.route('/get_api_dict', methods=['GET', 'POST'])
@@ -121,8 +115,10 @@ def update_module():
             mdata = doc["metadata"]
         else:
             mdata = {}
-        mdata["tags"] = data_dict["tags"]
-        mdata["notes"] = data_dict["notes"]
+        if "tags" in data_dict:
+            mdata["tags"] = data_dict["tags"]
+        if "notes" in data_dict:
+            mdata["notes"] = data_dict["notes"]
         mdata["updated"] = datetime.datetime.utcnow()
         mdata["last_viewer"] = last_saved
         mdata["type"] = ""

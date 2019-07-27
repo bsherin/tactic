@@ -1,7 +1,7 @@
 
-export {ReactCodemirror}
+export {ReactCodemirrorMergeView}
 
-class ReactCodemirror extends React.Component {
+class ReactCodemirrorMergeView extends React.Component {
 
     constructor(props) {
         super(props);
@@ -11,50 +11,68 @@ class ReactCodemirror extends React.Component {
         this.create_api();
     }
 
-    createCMArea(codearea, include_in_global_search = false, first_line_number = 1) {
-        let cmobject = CodeMirror(codearea, {
+    createMergeArea(codearea) {
+        let cmobject = CodeMirror.MergeView(codearea, {
+            value: this.props.editor_content,
             lineNumbers: true,
             matchBrackets: true,
             highlightSelectionMatches: true,
             autoCloseBrackets: true,
             indentUnit: 4,
-            mode: "python",
-            readOnly: this.props.readOnly
+            origRight: this.props.right_content
         });
-        if (first_line_number != 1) {
-            cmobject.setOption("firstLineNumber", first_line_number)
-        }
 
-        cmobject.setOption("extraKeys", {
+        cmobject.editor().setOption("extraKeys", {
             Tab: function (cm) {
                 let spaces = new Array(5).join(" ");
                 cm.replaceSelection(spaces);
             },
             "Ctrl-Space": "autocomplete"
         });
-        cmobject.setSize(null, "100%");
-        cmobject.on("change", this.handleChange);
+
+        cmobject.editor().on("change", this.handleChange);
         return cmobject
     }
-    
-    handleChange(cm, changeObject) {
-        this.props.handleChange(cm.getDoc().getValue())
+
+    mergeViewHeight() {
+        function editorHeight(editor) {
+            return editor ? editor.getScrollInfo().height : 0;
+        }
+        return Math.max(editorHeight(this.cmobject.editor()), editorHeight(this.cmobject.rightOriginal()));
+    }
+
+    resizeHeights(max_height) {
+        var height = Math.min(this.mergeViewHeight(), max_height);
+        this.cmobject.editor().setSize(null, height);
+        if (this.cmobject.rightOriginal()) {
+            this.cmobject.rightOriginal().setSize(null, height);
+        }
+        this.cmobject.wrap.style.height = height + "px";
+    }
+
+    componentDidUpdate() {
+        if (this.cmobject.editor().getValue() != this.props.editor_content) {
+            this.cmobject.editor().setValue(this.props.editor_content)
+        }
+        this.cmobject.rightOriginal().setValue(this.props.right_content);
+        this.resizeHeights(this.props.max_height);
     }
 
     componentDidMount() {
-        this.cmobject = this.createCMArea(this.code_container_ref.current);
-        this.cmobject.setValue(this.props.code_content);
-        this.cmobject.refresh();
+        this.cmobject = this.createMergeArea(this.code_container_ref.current);
+        this.resizeHeights(this.props.max_height);
+        this.refreshAreas();
         this.create_keymap()
     }
 
-    searchCM() {
-        CodeMirror.commands.find(this.cmobject)
+    handleChange(cm, changeObject) {
+        this.props.handleEditorChange(cm.getValue());
+        this.resizeHeights(this.props.max_height);
     }
 
-    clearSelections() {
-        CodeMirror.commands.clearSearch(this.cmobject);
-        CodeMirror.commands.singleSelection(this.cmobject);
+    refreshAreas() {
+        this.cmobject.editor().refresh();
+        this.cmobject.rightOriginal().refresh()
     }
 
     create_api() {
@@ -81,6 +99,16 @@ class ReactCodemirror extends React.Component {
         })
     }
 
+
+    searchCM() {
+        CodeMirror.commands.find(this.cmobject)
+    }
+
+    clearSelections() {
+        CodeMirror.commands.clearSearch(this.cmobject.editor());
+        CodeMirror.commands.singleSelection(this.cmobject.editor());
+    }
+
     create_keymap() {
         let self = this;
         CodeMirror.keyMap["default"]["Esc"] = function () {self.clearSelections()};
@@ -94,10 +122,6 @@ class ReactCodemirror extends React.Component {
         if (is_mac) {
             CodeMirror.keyMap["default"]["Cmd-S"] = function () {self.props.saveMe()};
 
-            this.mousetrap.bind(['command+l'], function (e) {
-                // self.loadModule();
-                e.preventDefault()
-            });
             this.mousetrap.bind(['command+f'], function (e) {
                 self.searchCM();
                 e.preventDefault()
@@ -106,10 +130,6 @@ class ReactCodemirror extends React.Component {
         else {
             CodeMirror.keyMap["default"]["Ctrl-S"] = function () {self.props.saveMe()};
 
-            this.mousetrap.bind(['ctrl+l'], function (e) {
-                // self.loadModule();
-                e.preventDefault()
-            });
             this.mousetrap.bind(['ctrl+f'], function (e) {
                 self.searchCM();
                 e.preventDefault()
@@ -130,10 +150,10 @@ class ReactCodemirror extends React.Component {
     }
 }
 
-
-ReactCodemirror.propTypes = {
-    handleChange: PropTypes.func,
-    code_content: PropTypes.string,
+ReactCodemirrorMergeView.propTypes = {
+    handleEditorChange: PropTypes.func,
+    editor_content: PropTypes.string,
+    right_content: PropTypes.string,
     saveMe: PropTypes.func,
-    readOnly: PropTypes.bool
+    max_height: PropTypes.number
 };
