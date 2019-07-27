@@ -92,10 +92,10 @@ class ResourceViewerApp extends React.Component {
 
     get_new_height (element_ref, bottom_margin) {
         if (this.state.mounted) {  // This will be true after the initial render
-            return window.innerHeight - $(element_ref.current).offset().top - bottom_margin
+            return this.state.inner_height- $(element_ref.current).offset().top - bottom_margin
         }
         else {
-            return window.innerHeight - 45 - bottom_margin
+            return this.state.inner_height - 45 - bottom_margin
         }
     }
 
