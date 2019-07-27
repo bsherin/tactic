@@ -66,7 +66,7 @@ class ReactCodemirrorMergeView extends React.Component {
     }
 
     handleChange(cm, changeObject) {
-        this.props.handleEditorChange(cm.getValue());
+        this.props.handleEditChange(cm.getValue());
         this.resizeHeights(this.props.max_height);
     }
 
@@ -151,7 +151,7 @@ class ReactCodemirrorMergeView extends React.Component {
 }
 
 ReactCodemirrorMergeView.propTypes = {
-    handleEditorChange: PropTypes.func,
+    handleEditChange: PropTypes.func,
     editor_content: PropTypes.string,
     right_content: PropTypes.string,
     saveMe: PropTypes.func,

@@ -32,6 +32,6 @@ class SelectList extends React.Component {
 
 SelectList.propTypes = {
     option_list: PropTypes.array,
-    handlChange: PropTypes.func,
+    handleChange: PropTypes.func,
     value: PropTypes.string
 };

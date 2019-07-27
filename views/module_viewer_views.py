@@ -85,20 +85,14 @@ def get_api_dict():
 @app.route('/show_tile_differ/both_names/<module_name>/<second_module_name>')
 @login_required
 def show_tile_differ(module_name, second_module_name):
-    button_groups = [[{"name": "save_button", "button_class": "btn-outline-secondary", "name_text": "Save", "icon_name": "save"}]]
-    javascript_source = url_for('static', filename='tactic_js/tile_differ.js')
-    return render_template("library/resource_viewer.html",
+    javascript_source = url_for('static', filename='tactic_js/tile_differ_react.js')
+    return render_template("library/resource_viewer_react.html",
                            resource_name=module_name,
                            second_resource_name=second_module_name,
-                           include_metadata=False,
-                           include_above_main_area=True,
-                           include_right=False,
-                           readonly=False,
-                           is_repository=False,
                            use_ssl=use_ssl,
                            javascript_source=javascript_source,
                            uses_codemirror="True",
-                           button_groups=button_groups, version_string=tstring)
+                           version_string=tstring)
 
 
 @app.route('/update_module', methods=['post'])
