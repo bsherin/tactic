@@ -7,34 +7,34 @@ import {ReactCodemirror} from "./react-codemirror.js";
 import {ViewerContext} from "./resource_viewer_context.js";
 
 function code_viewer_main ()  {
-    let get_url = is_repository ? "repository_get_code_code" : "get_code_code";
-    let get_mdata_url = is_repository ? "grab_repository_metadata" : "grab_metadata";
+    let get_url = window.is_respository ? "repository_get_code_code" : "get_code_code";
+    let get_mdata_url = window.is_respository ? "grab_repository_metadata" : "grab_metadata";
 
     var tsocket = new ResourceViewerSocket("main", 5000);
-    postAjaxPromise(`${get_url}/${resource_name}`, {})
+    postAjaxPromise(`${get_url}/${window.resource_name}`, {})
         .then(function (data) {
             var the_content = data.the_content;
-            let result_dict = {"res_type": "code", "res_name": resource_name, "is_repository": false};
+            let result_dict = {"res_type": "code", "res_name": window.resource_name, "window.is_respository": false};
             let domContainer = document.querySelector('#root');
             postAjaxPromise(get_mdata_url, result_dict)
 			        .then(function (data) {
-                        ReactDOM.render(<CodeViewerApp resource_name={resource_name}
+                        ReactDOM.render(<CodeViewerApp resource_name={window.resource_name}
                                                        the_content={the_content}
                                                        created={data.datestring}
                                                        tags={data.tags.split(" ")}
                                                        notes={data.notes}
-                                                       readOnly={read_only}
-                                                       is_repository={is_repository}
+                                                       readOnly={window.read_only}
+                                                       window.is_respository={window.is_respository}
                                                        meta_outer="#right-div"/>, domContainer);
 			        })
 			        .catch(function () {
-			            ReactDOM.render(<CodeViewerApp resource_name={resource_name}
+			            ReactDOM.render(<CodeViewerApp resource_name={window.resource_name}
                                                        the_content={the_content}
                                                        created=""
                                                        tags={[]}
                                                        notes=""
-                                                       readOnly={read_only}
-                                                       is_repository={is_repository}
+                                                       readOnly={window.read_only}
+                                                       window.is_respository={window.is_respository}
                                                        meta_outer="#right-div"/>, domContainer);
 			        })
         })
@@ -68,7 +68,7 @@ class CodeViewerApp extends React.Component {
 
     get button_groups() {
         let bgs;
-        if (this.props.is_repository) {
+        if (this.props.is_respository) {
              bgs =[[{"name_text": "Copy", "icon_name": "share",
                         "click_handler": () => {copyToLibrary("code", this.props.resource_name)}}]
             ]
@@ -145,7 +145,7 @@ class CodeViewerApp extends React.Component {
             "new_code": new_code,
             "tags": tagstring,
             "notes": notes,
-            "user_id": user_id
+            "window.user_id": window.user_id
         };
         let self = this;
         postWithCallback("host","update_code_task", result_dict, update_success);
@@ -182,7 +182,7 @@ CodeViewerApp.propTypes = {
     tags: PropTypes.array,
     notes: PropTypes.string,
     readOnly: PropTypes.bool,
-    is_repository: PropTypes.bool,
+    is_respository: PropTypes.bool,
     meta_outer: PropTypes.string
 };
 

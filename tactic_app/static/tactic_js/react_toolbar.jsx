@@ -1,8 +1,11 @@
 
 
-export {Toolbar, ToolbarButton, ResourceviewerToolbar}
+export {Toolbar, ToolbarButton, Namebutton, ResourceviewerToolbar}
+import {showModalReact} from "./modal_react.js";
 
 const default_button_class = "btn-outline-secondary";
+
+var Rbs = window.ReactBootstrap;
 
 function ResourceviewerToolbar(props) {
     let tstyle = {"marginTop": 20};
@@ -15,12 +18,6 @@ function ResourceviewerToolbar(props) {
     )
 }
 
-ResourceviewerToolbar.propTypes = {
-    button_groups: PropTypes.array,
-    resource_name: PropTypes.string,
-};
-
-
 class ToolbarButton extends React.Component {
 
     constructor(props) {
@@ -30,11 +27,11 @@ class ToolbarButton extends React.Component {
     render() {
 
         return (
-            <button type="button" onClick={this.props.click_handler}
+            <Rbs.Button onClick={this.props.click_handler}
                     className={"btn btn-sm action-button toolbar-button " + this.props.button_class}>
                 <span className={"far button-icon fa-" + this.props.icon_name}/>
                 <span className="button-text">{this.props.name_text}</span>
-            </button>
+            </Rbs.Button>
      )
   }
 }
@@ -62,7 +59,6 @@ class Toolbar extends React.Component {
         const items = [];
         var group_counter = 0;
         for (let group of this.props.button_groups) {
-            // let group_items = [];
             let group_items = group.map((button, index) =>
                 <ToolbarButton name={button.name}
                                icon_name={button.icon_name}
@@ -73,9 +69,9 @@ class Toolbar extends React.Component {
                 />
             );
             items.push(
-                <div className="btn-group" role="group" key={group_counter}>
+                <Rbs.ButtonGroup className="toolbar-button-group" role="group" key={group_counter}>
                     {group_items}
-                </div>
+                </Rbs.ButtonGroup>
             );
             group_counter += 1
         }
@@ -96,7 +92,8 @@ class Namebutton extends React.Component {
     constructor(props) {
         super(props);
         this.state = {"current_name": props.resource_name};
-        this.rename_me = this.rename_me.bind(this)
+        this.rename_me = this.rename_me.bind(this);
+        this.RenameResource = this.props.handleRename == null ? this.defaultRenameResource.bind(this) : this.props.handleRename
     }
 
     rename_me() {
@@ -110,39 +107,45 @@ class Namebutton extends React.Component {
                 if (index >= 0) {
                     res_names.splice(index, 1);
                 }
-                showModal(`Rename ${res_type}`, `Name for this ${res_type}`, RenameResource, current_name, res_names)
+                showModalReact(`Rename ${res_type}`, `Name for this ${res_type}`, self.RenameResource, current_name, res_names)
             }
         );
+    }
 
-        function RenameResource(new_name) {
-            const the_data = {"new_name": new_name};
-            postAjax(`rename_resource/${res_type}/${current_name}`, the_data, renameSuccess);
+    defaultRenameResource(new_name) {
+        const the_data = {"new_name": new_name};
+        var self = this;
+        postAjax(`rename_resource/${this.props.res_type}/${this.state.current_name}`, the_data, renameSuccess);
 
-            function renameSuccess(data) {
-                if (data.success) {
-                    self.props.resource_name = new_name;
-                    self.setState({"current_name": new_name});
-                } else {
-                    doFlash(data);
-                    return false
-                }
-
+        function renameSuccess(data) {
+            if (data.success) {
+                self.setState({"current_name": new_name});
+                doFlash(data)
+            } else {
+                doFlash(data);
+                return false
             }
+
         }
     }
 
     render() {
-        return (<button id="rename-button"
-                        type="button"
+        let name = this.props.handleRename == null ? this.state.current_name : this.props.resource_name;
+        return (<Rbs.Button id="rename-button"
                         className="btn btn-outline-secondary res-name-button"
                         onClick={this.rename_me}>
-                    {this.state.current_name}
-                </button>
+                    {name}
+                </Rbs.Button>
         )
     }
 }
 
 Namebutton.propTypes = {
     resource_name: PropTypes.string,
-    res_type: PropTypes.string
+    res_type: PropTypes.string,
+    handleRename: PropTypes.func
+};
+
+Namebutton.defaultProps = {
+    handleRename: null
 };

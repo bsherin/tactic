@@ -196,21 +196,6 @@ class TileManager(LibraryResourceManager):
 
     def view_in_creator(self, module_name):
         self.clear_old_recent_history(module_name)
-        option_types = [{"name": "text"},
-                        {"name": "int"},
-                        {"name": "boolean"},
-                        {"name": "textarea"},
-                        {"name": "codearea"},
-                        {"name": "column_select"},
-                        {"name": "document_select"},
-                        {"name": "list_select"},
-                        {"name": "collection_select"},
-                        {"name": "palette_select"},
-                        {"name": "pipe_select"},
-                        {"name": "custom_list"},
-                        {"name": "function_select"},
-                        {"name": "class_select"},
-                        {"name": "tile_select"}]
         revised_api_dlist = []
         for cat in ordered_api_categories:
             the_list = api_dict_by_category[cat]
@@ -220,15 +205,14 @@ class TileManager(LibraryResourceManager):
             if len(new_list) > 0:
                 revised_api_dlist.append({"cat_name": cat, "cat_list": new_list})
         the_content = self.initialize_module_viewer_container(module_name)
-        return render_template("library/tile_creator.html",
+        javascript_source = url_for('static', filename='tactic_js/tile_creator_react.js')
+        return render_template("library/tile_creator_react.html",
                                module_name=module_name,
-                               read_only_string="",
                                use_ssl=use_ssl,
-                               option_types=option_types,
-                               api_dlist=revised_api_dlist,
                                uses_codemirror="True",
-                               version_string=tstring,
+                               tstring=tstring,
                                module_viewer_id=the_content["module_viewer_id"],
+                               javascript_source=javascript_source,
                                tile_collection_name=the_content["tile_collection_name"])
 
     def unload_all_tiles(self):

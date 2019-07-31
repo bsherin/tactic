@@ -1,9 +1,9 @@
 import {SelectList} from "./react_widgets.js";
 import {ReactCodemirrorMergeView} from "./react-codemirror-mergeview.js";
 import {Toolbar} from "./react_toolbar.js";
+import {TacticSocket} from "./tactic_socket.js"
 
 export{MergeViewerApp, MergeViewerSocket}
-
 
 class MergeViewerSocket extends TacticSocket {
     initialize_socket_stuff() {
@@ -22,6 +22,7 @@ class MergeViewerSocket extends TacticSocket {
         });
     }
 }
+
 
 class MergeViewerApp extends React.Component {
 
@@ -89,7 +90,7 @@ class MergeViewerApp extends React.Component {
                 <div style={toolbar_holder_style}>
                     <Toolbar button_groups={this.button_groups}/>
                 </div>
-                <div id="left-div" ref={this.left_div_ref} style={left_div_style} className="res-viewer-resizer">
+                <div id="left-div" ref={this.left_div_ref} style={left_div_style}>
                     <div id="above-main" ref={this.above_main_ref} className="d-flex flex-row justify-content-between">
                         <span className="align-self-end">Current</span>
                         <SelectList handleChange={this.props.handleSelectChange}
@@ -109,7 +110,6 @@ class MergeViewerApp extends React.Component {
             </React.Fragment>
         )
     }
-
 }
 
 MergeViewerApp.propTypes = {

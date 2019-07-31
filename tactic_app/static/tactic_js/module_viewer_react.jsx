@@ -8,34 +8,34 @@ import {ViewerContext} from "./resource_viewer_context.js";
 
 
 function module_viewer_main ()  {
-    let get_url = is_repository ? "repository_get_module_code" : "get_module_code";
-    let get_mdata_url = is_repository ? "grab_repository_metadata" : "grab_metadata";
+    let get_url = window.is_repository ? "repository_get_module_code" : "get_module_code";
+    let get_mdata_url = window.is_repository ? "grab_repository_metadata" : "grab_metadata";
 
     var tsocket = new ResourceViewerSocket("main", 5000);
-    postAjaxPromise(`${get_url}/${resource_name}`, {})
+    postAjaxPromise(`${get_url}/${window.resource_name}`, {})
         .then(function (data) {
             var the_content = data.the_content;
-            let result_dict = {"res_type": "tile", "res_name": resource_name, "is_repository": false};
+            let result_dict = {"res_type": "tile", "res_name": window.resource_name, "is_repository": false};
             let domContainer = document.querySelector('#root');
             postAjaxPromise(get_mdata_url, result_dict)
 			        .then(function (data) {
-                        ReactDOM.render(<ModuleViewerApp resource_name={resource_name}
+                        ReactDOM.render(<ModuleViewerApp resource_name={window.resource_name}
                                                        the_content={the_content}
                                                        created={data.datestring}
                                                        tags={data.tags.split(" ")}
                                                        notes={data.notes}
-                                                       readOnly={read_only}
-                                                       is_repository={is_repository}
+                                                       readOnly={window.read_only}
+                                                       is_repository={window.is_repository}
                                                        meta_outer="#right-div"/>, domContainer);
 			        })
 			        .catch(function () {
-			            ReactDOM.render(<ModuleViewerApp resource_name={resource_name}
+			            ReactDOM.render(<ModuleViewerApp resource_name={window.resource_name}
                                                        the_content={the_content}
                                                        created=""
                                                        tags={[]}
                                                        notes=""
-                                                       readOnly={read_only}
-                                                       is_repository={is_repository}
+                                                       readOnly={window.read_only}
+                                                       is_repository={window.is_repository}
                                                        meta_outer="#right-div"/>, domContainer);
 			        })
         })
@@ -82,7 +82,7 @@ class ModuleViewerApp extends React.Component {
                      {"name_text": "Save as...", "icon_name": "save", "click_handler": this.saveMeAs},
                      {"name_text": "Load", "icon_name": "arrow-from-bottom", "click_handler": this.loadModule},
                      {"name_text": "Share", "icon_name": "share",
-                        "click_handler": () => {sendToRepository("code", this.props.resource_name)}}],
+                        "click_handler": () => {sendToRepository("tile", this.props.resource_name)}}],
                     [{"name_text": "History", "icon_name": "history", "click_handler": this.showHistoryViewer},
                      {"name_text": "Compare", "icon_name": "code-branch", "click_handler": this.showTileDiffer}]
             ]
@@ -121,7 +121,7 @@ class ModuleViewerApp extends React.Component {
         let the_context = {"readOnly": this.props.readOnly};
         return (
             <ViewerContext.Provider value={the_context}>
-                <ResourceViewerApp res_type="code"
+                <ResourceViewerApp res_type="tile"
                                    resource_name={this.props.resource_name}
                                    button_groups={this.button_groups}
                                    handleNotesChange={this.handleNotesChange}

@@ -9,14 +9,14 @@ function history_viewer_main ()  {
     let get_url = "get_module_code";
 
     var tsocket = new MergeViewerSocket("main", 5000);
-    postAjaxPromise(`${get_url}/${resource_name}`, {})
+    postAjaxPromise(`${get_url}/${window.resource_name}`, {})
         .then(function (data) {
             var edit_content = data.the_content;
-            postAjaxPromise("get_checkpoint_dates", {"module_name": resource_name})
+            postAjaxPromise("get_checkpoint_dates", {"module_name": window.resource_name})
                 .then(function (data) {
                     let history_list = data.checkpoints;
                     let domContainer = document.querySelector('#root');
-                    ReactDOM.render(<HistoryViewerApp resource_name={resource_name}
+                    ReactDOM.render(<HistoryViewerApp resource_name={window.resource_name}
                                                       history_list={history_list}
                                                       edit_content={edit_content}/>, domContainer);
                 })
