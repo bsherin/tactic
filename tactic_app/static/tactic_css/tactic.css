@@ -212,6 +212,9 @@ a[role="tab"] {
   .toolbar-button .button-text {
     font-size: 10px; }
 
+.toolbar-button-group {
+  margin-left: 5px; }
+
 .resource-viewer-right {
   overflow: auto;
   margin-top: 20px;
@@ -390,29 +393,53 @@ a[role="tab"] {
 .ui-resizable-s, .ui-resizable-n {
   height: 25px !important; }
 
-#creator-resources .tab-pane {
-  padding: 10px;
-  border-style: solid;
-  border-color: #dddddd;
-  border-width: 1px;
-  margin-right: 10px; }
-#creator-resources .form-inline label {
-  margin-bottom: 0;
-  margin-left: 4px; }
-#creator-resources .indent-row {
-  margin-bottom: 10px; }
-#creator-resources .resource-module {
-  margin: 0; }
-#creator-resources input {
-  width: 150px; }
-#creator-resources #notes {
-  background-color: #f7f7f7; }
-#creator-resources #notes-field-markdown-output {
-  padding: 10px;
-  overflow: auto; }
-#creator-resources .form-row button {
-  align-self: flex-end;
-  margin: 7px; }
+#creator-left-div {
+  margin-right: 25px;
+  vertical-align: top; }
+  #creator-left-div .code-holder {
+    height: 100%; }
+
+#creator-right-div {
+  margin-top: 25px;
+  vertical-align: top; }
+  #creator-right-div .combined-metadata {
+    margin-top: 25px;
+    margin-left: 25px;
+    margin-right: 25px; }
+  #creator-right-div .toolbar-button-group {
+    margin-bottom: 15px; }
+
+#creator-resources {
+  height: 100%; }
+  #creator-resources .tab-pane {
+    padding: 10px;
+    border-style: solid;
+    border-color: #dddddd;
+    border-width: 1px;
+    margin-right: 10px;
+    height: 100%; }
+  #creator-resources .tab-content {
+    height: 100%;
+    padding-bottom: 25px; }
+  #creator-resources .nav-tabs {
+    border-bottom: none; }
+  #creator-resources .form-inline label {
+    margin-bottom: 0;
+    margin-left: 4px; }
+  #creator-resources .indent-row {
+    margin-bottom: 10px; }
+  #creator-resources .resource-module {
+    margin: 0; }
+  #creator-resources input {
+    width: 150px; }
+  #creator-resources #notes {
+    background-color: #f7f7f7; }
+  #creator-resources #notes-field-markdown-output {
+    padding: 10px;
+    overflow: auto; }
+  #creator-resources .form-row button {
+    align-self: flex-end;
+    margin: 7px; }
 
 /* Tile related */
 .tile-panel-heading {

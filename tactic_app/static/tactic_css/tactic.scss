@@ -355,6 +355,10 @@ a[role="tab"] {
   }
 }
 
+.toolbar-button-group {
+    margin-left: 5px
+}
+
 .resource-viewer-right {
     overflow: auto;
     margin-top: 20px;
@@ -613,18 +617,49 @@ a[role="tab"] {
     height: 25px !important;
 }
 
-//.ui-resizable-se {
-//        height: 25px !important;
-//        width: 25px !important;
-//}
+#creator-left-div {
+    margin-right: 25px;
+    vertical-align: top;
+
+    .code-holder {
+        height: 100%
+    }
+}
+
+#creator-right-div {
+    margin-top: 25px;
+    vertical-align: top;
+
+    .combined-metadata {
+        margin-top: 25px;
+        margin-left: 25px;
+        margin-right: 25px
+    }
+
+    .toolbar-button-group {
+        margin-bottom: 15px
+    }
+}
 
 #creator-resources {
+    height: 100%;
+
     .tab-pane {
         padding: 10px;
         border-style: solid;
         border-color: $bootstrap-border-color;
         border-width: 1px;
         margin-right: 10px;
+        height: 100%
+    }
+
+    .tab-content {
+        height: 100%;
+        padding-bottom: 25px
+    }
+
+    .nav-tabs {
+        border-bottom: none;
     }
 
     .form-inline label {

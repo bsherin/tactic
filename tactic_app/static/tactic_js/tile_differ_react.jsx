@@ -1,23 +1,21 @@
 
 import {MergeViewerSocket, MergeViewerApp} from "./merge_viewer_app.js";
 
-
 function tile_differ_main ()  {
     let get_url = "get_module_code";
 
     var tsocket = new MergeViewerSocket("main", 5000);
-    postAjaxPromise(`${get_url}/${resource_name}`, {})
+    postAjaxPromise(`${get_url}/${window.resource_name}`, {})
         .then(function (data) {
             var edit_content = data.the_content;
             postAjaxPromise("get_tile_names")
                 .then(function (data) {
                     let tile_list = data.tile_names;
                     let domContainer = document.querySelector('#root');
-                    ReactDOM.render(<TileDifferApp resource_name={resource_name}
+                    ReactDOM.render(<TileDifferApp resource_name={window.resource_name}
                                                    tile_list={tile_list}
                                                    edit_content={edit_content}
-                                                   second_resource_name={second_resource_name}
-
+                                                   second_resource_name={window.second_resource_name}
                     />, domContainer);
                 })
                 .catch(doFlash)

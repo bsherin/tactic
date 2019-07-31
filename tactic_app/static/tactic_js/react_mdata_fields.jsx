@@ -3,6 +3,8 @@ export {TagsField, NotesField, CombinedMetadata}
 
 import {ViewerContext} from "./resource_viewer_context.js";
 
+var Rbs = window.ReactBootstrap;
+
 class TagsField extends React.Component {
 
     constructor(props) {
@@ -42,8 +44,10 @@ class TagsField extends React.Component {
         let dstyle = {"pointerEvents": this.context.readOnly ? "none" : "all"};
         return (
             <div style={dstyle}>
-                <textarea ref={this.tags_field_ref}
-                          className="form-control metadata-field" rows="1" ></textarea>
+                <Rbs.Form.Control as="textarea"
+                                  ref={this.tags_field_ref}
+                                  className="metadata-field" rows="1" >
+                </Rbs.Form.Control>
             </div>
         )
     }
@@ -66,6 +70,7 @@ class NotesField extends React.Component {
             "show_markdown": false,
             "md_height": 500,
             "converted_markdown": "",
+            "notes_at_last_convert": ""
         };
         this.convertMarkdown = this.convertMarkdown.bind(this);
         this.hideMarkdown = this.hideMarkdown.bind(this);
@@ -120,6 +125,10 @@ class NotesField extends React.Component {
         }
     }
 
+    componentDidMount () {
+        this.convertMarkdown()
+    }
+
     hideMarkdown() {
         this.setState({"show_markdown": false});
         this.focusNotes()
@@ -127,10 +136,6 @@ class NotesField extends React.Component {
 
     showMarkdown() {
         this.setState({"show_markdown": true})
-    }
-
-    componentDidMount() {
-        this.convertMarkdown()
     }
 
     render() {
@@ -144,8 +149,9 @@ class NotesField extends React.Component {
 
         let converted = {__html: this.state.converted_markdown};
         return (
-        <div className="form-group">
-            <textarea className="form-control metadata-field notes-field"
+        <Rbs.Form.Group>
+            <Rbs.Form.Control as="textarea"
+                className="metadata-field notes-field"
                       ref={this.notes_ref}
                       rows="10"
                       placeholder="notes"
@@ -160,7 +166,7 @@ class NotesField extends React.Component {
                  onClick={this.hideMarkdown}
                  className="notes-field-markdown-output"
                  dangerouslySetInnerHTML={converted}/>
-        </div>
+        </Rbs.Form.Group>
         )
     }
 }
@@ -178,28 +184,34 @@ class CombinedMetadata extends React.Component {
 
     render () {
         return (
-            <div>
-            <div>{this.props.created}</div>
-            <div className="form-group">
-                <TagsField tags={this.props.tags}
-                           handleChange={this.props.handleTagsChange}
-                           res_type={this.props.res_type}/>
-            </div>
+            <div className="combined-metadata" style={this.props.outer_style} id={this.props.outer_id}>
+                <div>{this.props.created}</div>
+                <Rbs.Form.Group>
+                    <TagsField tags={this.props.tags}
+                               handleChange={this.props.handleTagsChange}
+                               res_type={this.props.res_type}/>
+                </Rbs.Form.Group>
                 <NotesField notes={this.props.notes}
                             handleChange={this.props.handleNotesChange}
-                            outer_selector={this.props.meta_outer}/>
-        </div>
+                            outer_selector={"#" + this.props.outer_id}/>
+            </div>
         )
     }
 
 }
 
 CombinedMetadata.propTypes = {
+    outer_style: PropTypes.object,
+    outer_id: PropTypes.string,
     res_type: PropTypes.string,
     created: PropTypes.string,
     tags: PropTypes.array,
     notes: PropTypes.string,
     handleTagsChange: PropTypes.func,
     handleNotesChange: PropTypes.func,
-    meta_outer: PropTypes.string
+};
+
+CombinedMetadata.defaultProps = {
+    outer_style: {},
+    outer_id: "metadata-holder"
 };

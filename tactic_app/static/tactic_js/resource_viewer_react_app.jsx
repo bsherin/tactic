@@ -2,21 +2,24 @@
 
 import {ResourceviewerToolbar} from "./react_toolbar.js";
 import {CombinedMetadata} from "./react_mdata_fields.js";
+import {showModalReact} from "./modal_react.js";
+import {TacticSocket} from "./tactic_socket.js"
 
 export {ResourceViewerApp, ResourceViewerSocket, copyToLibrary, sendToRepository}
 
 
 const MARGIN_SIZE = 17;
 
+
 class ResourceViewerSocket extends TacticSocket {
     initialize_socket_stuff() {
-        this.socket.emit('join', {"room": user_id});
-        this.socket.emit('join-main', {"room": resource_viewer_id});
+        this.socket.emit('join', {"room": window.user_id});
+        this.socket.emit('join-main', {"room": window.resource_viewer_id});
         this.socket.on('handle-callback', handleCallback);
         this.socket.on('stop-spinner', stopSpinner);
         this.socket.on('start-spinner', startSpinner);
         this.socket.on('close-user-windows', (data) => {
-            if (!(data["originator"] == resource_viewer_id)) {
+            if (!(data["originator"] == window.resource_viewer_id)) {
                 window.close()
             }
         });
@@ -27,7 +30,7 @@ class ResourceViewerSocket extends TacticSocket {
 }
 
 function copyToLibrary(res_type, resource_name) {
-    $.getJSON($SCRIPT_ROOT + `get_resource_names/${res_type}`, function(data) {
+    $.getJSON($SCRIPT_ROOT + `get_getresource_names/${res_type}`, function(data) {
         showModal(`Import ${res_type}`, `New ${res_type} Name`, ImportResource, resource_name, data["resource_names"])
         }
     );
@@ -43,18 +46,19 @@ function copyToLibrary(res_type, resource_name) {
 
 function sendToRepository(res_type, resource_nam) {
     $.getJSON($SCRIPT_ROOT + `get_repository_resource_names/${res_type}`, function(data) {
-        showModal(`Share list ${res_type}`, `New list Name`, ShareResource, resource_name, data["resource_names"])
+        showModalReact(`Share list ${res_type}`, `New list Name`, ShareResource, window.resource_name, data["resource_names"])
         }
     );
     function ShareResource(new_name) {
         const result_dict = {
             "res_type": res_type,
-            "res_name": resource_name,
+            "res_name": window.resource_name,
             "new_res_name": new_name
         };
         postAjax("send_to_repository", result_dict, doFlashAlways)
     }
 }
+
 
 class ResourceViewerApp extends React.Component {
 
@@ -145,15 +149,12 @@ class ResourceViewerApp extends React.Component {
                     {this.props.children}
                 </div>
                 <div id="right-div" ref={this.right_div_ref} className="resource-viewer-right"  style={right_div_style}>
-                    <div id="metadata-holder">
-                        <CombinedMetadata tags={this.props.tags}
-                                          created={this.props.created}
-                                          notes={this.props.notes}
-                                          meta_outer={this.props.meta_outer}
-                                          handleTagsChange={this.props.handleTagsChange}
-                                          handleNotesChange={this.props.handleNotesChange}
-                                          res_type={this.props.res_type}/>
-                    </div>
+                    <CombinedMetadata tags={this.props.tags}
+                                      created={this.props.created}
+                                      notes={this.props.notes}
+                                      handleTagsChange={this.props.handleTagsChange}
+                                      handleNotesChange={this.props.handleNotesChange}
+                                      res_type={this.props.res_type}/>
                 </div>
             </React.Fragment>
         )

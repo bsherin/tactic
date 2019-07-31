@@ -11,7 +11,7 @@
 {% block page_content %}
     <div id="modal-area">
     </div>
-    <div class="container-fluid" id="root">
+    <div class="container-fluid d-flex" id="root">
     </div>
 
 {%  endblock %}
@@ -24,14 +24,11 @@
     <script type="module" src="{{javascript_source}}"></script>
     <script>
         window.user_id = "{{current_user.get_id()}}";
-        window.resource_name = "{{resource_name}}";
-        window.second_resource_name = "{{second_resource_name}}";
-        window.is_repository = "{{is_repository}}" == "True";
-        window.include_right = "{{include_right}}" == "True";
+        window.module_name = "{{module_name}}";
         window.use_ssl = "{{use_ssl}}"=="True";
-        window.resource_viewer_id = guid();
-        window.main_id = resource_viewer_id;
-        window.read_only = "{{read_only}}" == "True";
-
+        window.module_viewer_id = "{{module_viewer_id}}";
+        window.main_id = window.module_viewer_id;
+        window.tile_collection_name = "{{tile_collection_name}}";
+        window.version_string = "{{tstring}}";
     </script>
 {% endblock %}

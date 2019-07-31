@@ -10,7 +10,7 @@ const MARGIN_SIZE = 17;
 let this_viewer;
 let tsocket;
 
-import {Toolbar} from "./react_toolbar.js"
+import {Toolbar, Namebutton} from "./react_toolbar.js"
 import {CombinedMetadata} from "./react_mdata_fields.js";
 
 export {ResourceViewer, ResourceviewerToolbar}
@@ -30,56 +30,6 @@ class ResourceViewerSocket extends TacticSocket {
         this.socket.on("doFlash", function(data) {
             doFlash(data)
         });
-    }
-}
-
-class Namebutton extends React.Component {
-
-    constructor(props) {
-        super(props);
-        this.state = {"current_name": props.resource_name};
-        this.rename_me = this.rename_me.bind(this)
-    }
-
-    rename_me() {
-        console.log("entering rename");
-        var self = this;
-        var res_type = this.props.res_type;
-        var current_name = this.state.current_name;
-        $.getJSON($SCRIPT_ROOT + `get_resource_names/${res_type}`, function (data) {
-                const res_names = data["resource_names"];
-                const index = res_names.indexOf(current_name);
-                if (index >= 0) {
-                    res_names.splice(index, 1);
-                }
-                showModal(`Rename ${res_type}`, `Name for this ${res_type}`, RenameResource, current_name, res_names)
-            }
-        );
-        function RenameResource(new_name) {
-            const the_data = {"new_name": new_name};
-            postAjax(`rename_resource/${res_type}/${current_name}`, the_data, renameSuccess);
-            function renameSuccess(data) {
-                if (data.success) {
-                    self.props.resource_name = new_name;
-                    self.setState({"current_name": new_name});
-                }
-                else {
-                    doFlash(data);
-                    return false
-                }
-
-            }
-        }
-    }
-
-    render() {
-        return (<button id="rename-button"
-                        type="button"
-                        className="btn btn-outline-secondary res-name-button"
-                        onClick={this.rename_me}>
-                {this.state.current_name}
-            </button>
-        )
     }
 }
 

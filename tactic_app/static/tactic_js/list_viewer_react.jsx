@@ -5,36 +5,35 @@
 import {ResourceViewerSocket, ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app.js";
 import {ViewerContext} from "./resource_viewer_context.js";
 
-
 function list_viewer_main ()  {
-    let get_url = is_repository ? "repository_get_list" : "get_list";
-    let get_mdata_url = is_repository ? "grab_repository_metadata" : "grab_metadata";
+    let get_url = window.is_repository ? "repository_get_list" : "get_list";
+    let get_mdata_url = window.is_repository ? "grab_repository_metadata" : "grab_metadata";
 
     var tsocket = new ResourceViewerSocket("main", 5000);
-    postAjaxPromise(`${get_url}/${resource_name}`, {})
+    postAjaxPromise(`${get_url}/${window.resource_name}`, {})
         .then(function (data) {
             var the_content = data.the_content;
-            let result_dict = {"res_type": "list", "res_name": resource_name, "is_repository": false};
+            let result_dict = {"res_type": "list", "res_name": window.resource_name, "is_repository": false};
             let domContainer = document.querySelector('#root');
             postAjaxPromise(get_mdata_url, result_dict)
 			        .then(function (data) {
-                        ReactDOM.render(<ListViewerApp resource_name={resource_name}
+                        ReactDOM.render(<ListViewerApp resource_name={window.resource_name}
                                                        the_content={the_content}
                                                        created={data.datestring}
                                                        tags={data.tags.split(" ")}
                                                        notes={data.notes}
-                                                       readOnly={read_only}
-                                                       is_repository={is_repository}
+                                                       readOnly={window.read_only}
+                                                       is_repository={window.is_repository}
                                                        meta_outer="#right-div"/>, domContainer);
 			        })
 			        .catch(function () {
-			            ReactDOM.render(<ListViewerApp resource_name={resource_name}
+			            ReactDOM.render(<ListViewerApp resource_name={window.resource_name}
                                                        the_content={the_content}
                                                        created=""
                                                        tags={[]}
                                                        notes=""
-                                                       readOnly={read_only}
-                                                       is_repository={is_repository}
+                                                       readOnly={window.read_only}
+                                                       is_repository={window.is_repository}
                                                        meta_outer="#right-div"/>, domContainer);
 			        })
         })
@@ -206,6 +205,5 @@ ListViewerApp.propTypes = {
     is_repository: PropTypes.bool,
     meta_outer: PropTypes.string
 };
-
 
 list_viewer_main();

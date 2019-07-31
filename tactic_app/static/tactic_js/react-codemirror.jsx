@@ -11,7 +11,7 @@ class ReactCodemirror extends React.Component {
         this.create_api();
     }
 
-    createCMArea(codearea, include_in_global_search = false, first_line_number = 1) {
+    createCMArea(codearea, first_line_number = 1) {
         let cmobject = CodeMirror(codearea, {
             lineNumbers: true,
             matchBrackets: true,
@@ -42,11 +42,18 @@ class ReactCodemirror extends React.Component {
     }
 
     componentDidMount() {
-        this.cmobject = this.createCMArea(this.code_container_ref.current);
+        this.cmobject = this.createCMArea(this.code_container_ref.current, this.props.first_line_number);
         this.cmobject.setValue(this.props.code_content);
-        this.cmobject.refresh();
         this.create_keymap()
     }
+
+    componentDidUpdate() {
+        if (this.props.first_line_number != 1) {
+            this.cmobject.setOption("firstLineNumber", this.props.first_line_number);
+        }
+        this.cmobject.refresh()
+    }
+
 
     searchCM() {
         CodeMirror.commands.find(this.cmobject)
@@ -118,8 +125,8 @@ class ReactCodemirror extends React.Component {
     }
 
     render() {
-        let ccstyle = {
-            "height": "100%"
+        let ccstyle = {npm install --save react-resizable
+            "width": "100%"
         };
         return (
             <div id="code-container" style={ccstyle} ref={this.code_container_ref}>
@@ -135,5 +142,12 @@ ReactCodemirror.propTypes = {
     handleChange: PropTypes.func,
     code_content: PropTypes.string,
     saveMe: PropTypes.func,
-    readOnly: PropTypes.bool
+    readOnly: PropTypes.bool,
+    first_line_number: PropTypes.number,
+    code_container_height: PropTypes.string
+};
+
+ReactCodemirror.defaultProps = {
+  first_line_number: 1,
+    code_container_height: "100%"
 };

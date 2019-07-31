@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+      <base href="/" target="_blank">
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap.min.css')}}">
+      <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/tactic.css', v=version_string)}}">
+      <link rel="stylesheet" href="{{url_for('static', filename='css/alertify_css/alertify.min.css')}}"/>
+    <link rel="stylesheet" href="{{url_for('static', filename='css/fontawesome-all.css')}}"/>
+  <link rel="stylesheet" href="{{url_for('static', filename='css/jquery.contextMenu.css')}}"/>
+     <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/tactic_alertify_theme.css', v=version_string)}}" />
+     <link rel="shortcut icon" href="{{url_for('static', filename='tactic_css/favicon.ico', v=version_string)}}" />
+    <link rel="apple-touch-icon" href="{{url_for('static', filename='tactic_css/icons/favicon-256.png', v=version_string)}}" />
+      {% if uses_codemirror == "True" %}
+          <link rel="stylesheet" href="{{url_for('static', filename='css/codemirrorthemes/codemirror.css')}}">
+          <link rel="stylesheet" href="{{url_for('static', filename='css/codemirrorthemes/pastel-on-dark.css')}}">
+          <link rel="stylesheet" href="{{url_for('static', filename='css/codemirrorthemes/dialog.css')}}">
+          <link rel="stylesheet" href="{{url_for('static', filename='css/show-hint.css')}}">
+          <link rel="stylesheet" href="{{url_for('static', filename='css/merge.css')}}">
+      {%  endif %}
+      {% block head %}{% endblock %}
+      {% block styles %}{% endblock %}
+
+      <title>{% block title %}Tactic{% endblock %}</title>
+  </head>
+  <body>
+    <div class="navbar navbar-expand-lg navbar-light bg-light" id="main-tactic-navbar" style="margin-bottom: 1px" role="navigation">
+        <a id="mybrand" class="navbar-brand" href="/"><img class="mr-2" src="{{url_for('static', filename='tactic_css/icons/favicon-256.png', v=version_string)}}" alt="" width="32 " height="32">Tactic</a>
+            <div class="navbar-collapse collapse" id="collapse-area">
+                <div class="navbar-collapse collapse" style="display:inline-block !important">
+                    <ul class="nav navbar-nav" id="menu-area">
+                        {% block navbar %}
+                        {% endblock %}
+                    </ul>
+                </div>
+                <ul id="my-navbar-right" class="nav navbar-nav ml-auto">
+                    {% block morenavbar %}
+                    {% endblock %}
+                    <li class="nav-item"><a class="nav-link" href="http://tactic.readthedocs.io/en/latest/index.html">Docs</a></li>
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('library') }}">Resources</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('account_info') }}">{{current_user.username}}</a></li>
+                        <li class="nav-item"><a class="nav-link" href="" onclick="return doSignOut(page_id);">Sign Out</a></li>
+                    {% else %}
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Sign In</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+
+    </div>
+
+  {% block page_content %}{% endblock %}
+    <div class="container-fluid">
+        <div id="status-div" class="" style="position:absolute; bottom:10px; display:block">
+            <span id="spinner" class="loader-medium"></span>
+            <span id="status-msg-area" style="display:none" class="status-msg" ></span>
+        </div>
+    </div>
+    <script type=text/javascript>
+        $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+    </script>
+    <script src="{{url_for('static', filename='js/alertify.js')}}"></script>
+    <script src="{{url_for('static', filename='js/socket.io.js')}}"></script>
+    <script src="{{url_for('static', filename='js/jquery.js')}}"></script>
+    <script src="{{url_for('static', filename='js/jquery-ui.min.js')}}"></script>
+    <script src="{{url_for('static', filename='js/jquery.ui.position.js')}}"></script>
+    <script src="{{url_for('static', filename='js/jquery.contextMenu.js')}}"></script>
+    <script src="{{url_for('static', filename='js/jquery.ui.touch-punch.min.js')}}"></script>
+{#    <script src="{{url_for('static', filename='js/popper.js')}}"></script>#}
+{#    <script src="{{url_for('static', filename='js/bootstrap.min.js')}}"></script>#}
+    <script src="{{url_for('static', filename='js/mustache.js')}}"></script>
+    <script src="{{url_for('static', filename='js/react.development.js')}}"></script>
+    <script src="{{url_for('static', filename='js/react-dom.development.js')}}"></script>
+    <script src="{{url_for('static', filename='js/prop-types.js')}}"></script>
+    <script src="{{url_for('static', filename='js/react-bootstrap.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/utilities_react.js', v=version_string)}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/communication_react.js', v=version_string)}}"></script>
+    {% if uses_codemirror == "True" %}
+        <script src="{{url_for('static', filename='js/codemirror.js')}}"></script>
+        <script src="{{url_for('static', filename='js/codemirror/search.js')}}"></script>
+        <script src="{{url_for('static', filename='js/codemirror/searchcursor.js')}}"></script>
+        <script src="{{url_for('static', filename='js/diff_match_patch.js')}}"></script>
+        <script src="{{url_for('static', filename='js/codemirror/merge.js')}}"></script>
+        <script src="{{url_for('static', filename='js/codemirror/jump-to-line.js')}}"></script>
+        <script src="{{url_for('static', filename='js/codemirror/dialog.js')}}"></script>
+        <script src="{{url_for('static', filename='js/python.js')}}"></script>
+        <script src="{{url_for('static', filename='js/matchbrackets.js')}}"></script>
+        <script src="{{url_for('static', filename='js/show-hint.js')}}"></script>
+        <script src="{{url_for('static', filename='js/match-highlighter.js')}}"></script>
+        <script src="{{url_for('static', filename='tactic_js/tactic-anyword-hint.js', v=version_string)}}"></script>
+        <script src="{{url_for('static', filename='js/closebrackets.js')}}"></script>
+    {% endif %}
+    <script type="text/javascript">
+    //override defaults
+    alertify.defaults.transition = "slide";
+    alertify.defaults.theme.ok = "btn btn-primary";
+    alertify.defaults.theme.cancel = "btn btn-danger";
+    alertify.defaults.theme.input = "form-control";
+    </script>
+    <script type="text/javascript">
+        var csrftoken = "{{ csrf_token() }}";
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken)
+                }
+            }
+        })
+    </script>
+  {% block scripts %}
+  {% endblock %}
+  </body>
+</html>
