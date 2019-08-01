@@ -185,15 +185,27 @@ class CombinedMetadata extends React.Component {
     render () {
         return (
             <div className="combined-metadata" style={this.props.outer_style} id={this.props.outer_id}>
-                <div>{this.props.created}</div>
+                <Rbs.Form.Label>{"Created: " + this.props.created}</Rbs.Form.Label>
                 <Rbs.Form.Group>
+                    <Rbs.Form.Label>Tags</Rbs.Form.Label>
                     <TagsField tags={this.props.tags}
                                handleChange={this.props.handleTagsChange}
                                res_type={this.props.res_type}/>
                 </Rbs.Form.Group>
-                <NotesField notes={this.props.notes}
-                            handleChange={this.props.handleNotesChange}
-                            outer_selector={"#" + this.props.outer_id}/>
+                {this.props.category != null &&
+                    <Rbs.Form.Group>
+                        <Rbs.Form.Label>Category</Rbs.Form.Label>
+                        <Rbs.Form.Control as="input"
+                                          onChange={this.props.handleCategoryChange}
+                                          value={this.props.category} />
+                    </Rbs.Form.Group>
+                }
+                <Rbs.Form.Group>
+                    <Rbs.Form.Label>Notes</Rbs.Form.Label>
+                    <NotesField notes={this.props.notes}
+                                handleChange={this.props.handleNotesChange}
+                                outer_selector={"#" + this.props.outer_id}/>
+                </Rbs.Form.Group>
             </div>
         )
     }
@@ -207,11 +219,14 @@ CombinedMetadata.propTypes = {
     created: PropTypes.string,
     tags: PropTypes.array,
     notes: PropTypes.string,
+    category: PropTypes.string,
     handleTagsChange: PropTypes.func,
     handleNotesChange: PropTypes.func,
+    handleCategoryChange: PropTypes.func
 };
 
 CombinedMetadata.defaultProps = {
-    outer_style: {},
-    outer_id: "metadata-holder"
+    outer_style: {"marginLeft": 20},
+    outer_id: "metadata-holder",
+    category: null
 };

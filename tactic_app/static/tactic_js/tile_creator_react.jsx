@@ -5,6 +5,7 @@ import {sendToRepository} from "./resource_viewer_react_app.js";
 import {ReactCodemirror} from "./react-codemirror.js";
 import {CombinedMetadata} from "./react_mdata_fields.js";
 import {OptionModule, ExportModule} from "./creator_modules_react.js";
+import {HorizontalPanes, VerticalPanes} from "./resizing_layouts.js";
 
 var Rbs = window.ReactBootstrap;
 
@@ -53,7 +54,7 @@ function tile_creator_main() {
 }
 
 function got_parsed_data (data_object) {
-    let domContainer = document.querySelector('#root');
+    let domContainer = document.querySelector('#creator-root');
     let parsed_data = data_object.the_content;
     let result_dict = {"res_type": "tile", "res_name": window.module_name, "is_repository": false};
     postAjaxPromise("grab_metadata", result_dict)
@@ -87,7 +88,7 @@ function got_parsed_data (data_object) {
 }
 
 function TileCreatorToolbar(props) {
-    let tstyle = {"marginTop": 20, "width": "100%"};
+    let tstyle = {"marginTop": 20, "paddingRight": 20, "width": "100%"};
     return (
         <div style={tstyle} className="d-flex flex-row justify-content-between">
             <Namebutton resource_name={props.tile_name}
@@ -101,15 +102,17 @@ function TileCreatorToolbar(props) {
     )
 }
 
-class MetadataModule extends React.Component {
-
-}
-
 class CreatorApp extends React.Component {
     constructor(props) {
         super(props);
+        let initial_usable_height = window.innerHeight - 45 - MARGIN_SIZE;
+        let initial_usable_width = window.innerWidth - 2 * MARGIN_SIZE - 30;
         this.left_div_ref = React.createRef();
         this.right_div_ref = React.createRef();
+        this.tc_span_ref = React.createRef();
+        this.rc_span_ref = React.createRef();
+        this.vp_ref = React.createRef();
+        this.hp_ref = React.createRef();
         this.draw_plot_bounding_ref = React.createRef();
         this.state = {
             tile_name: this.props.tile_name,
@@ -125,11 +128,11 @@ class CreatorApp extends React.Component {
             option_list: this.props.option_list,
             export_list: this.props.export_list,
             category: this.props.category,
-            usable_width: this.get_usable_width(),
-            usable_height: window.innerHeight - 45 - MARGIN_SIZE,
-            current_width_fraction: .5,
-            current_height_fraction: .5,
-            inner_height: window.innerHeight,
+            usable_width: initial_usable_width,
+            usable_height: initial_usable_height,
+            top_pane_height: this.props.is_mpl ? initial_usable_height / 2 - 25 : null,
+            bottom_pane_height: this.props.is_mpl ? initial_usable_height / 2 - 25 : null,
+            left_pane_width: initial_usable_width / 2 - 25,
             methodsTabRefreshRequired: true
         };
         this.saved_state_vars = ["tile_name", "render_content_code", "draw_plot_code", "jscript_code",
@@ -140,21 +143,17 @@ class CreatorApp extends React.Component {
         this.handleNotesChange = this.handleNotesChange.bind(this);
         this.handleNotesAppend = this.handleNotesAppend.bind(this);
         this.handleTagsChange = this.handleTagsChange.bind(this);
+        this.handleCategoryChange = this.handleCategoryChange.bind(this);
         this.handleRenderContentChange = this.handleRenderContentChange.bind(this);
         this.handleDrawPlotCodeChange = this.handleDrawPlotCodeChange.bind(this);
-        this.resize_to_window = this.resize_to_window.bind(this);
+        this.update_window_dimensions = this.update_window_dimensions.bind(this);
         this.handleOptionsChange = this.handleOptionsChange.bind(this);
         this.handleExportsChange = this.handleExportsChange.bind(this);
         this.handleMethodsChange = this.handleMethodsChange.bind(this);
         this.handleTabSelect = this.handleTabSelect.bind(this);
-        let self = this;
-        window.onbeforeunload = function(e) {
-            if (self.dirty()) {
-                return "Any unsaved changes will be lost."
-            }
-        };
+        this.handleLeftPaneResize = this.handleLeftPaneResize.bind(this);
+        this.handleTopPaneResize = this.handleTopPaneResize.bind(this)
     }
-
 
     update_saved_state() {
         for (let thevar of this.saved_state_vars) {
@@ -170,10 +169,6 @@ class CreatorApp extends React.Component {
             }
         }
         return false
-    }
-
-    get_usable_width() {
-        return window.innerWidth - 2 * MARGIN_SIZE - 30;
     }
 
     get button_groups() {
@@ -319,78 +314,18 @@ class CreatorApp extends React.Component {
         this.update_saved_state();
     }
 
-
-    update_width(new_width_fraction) {
-        this.setState({"current_width_fraction": new_width_fraction})
-    }
-
-    update_height(new_height_fraction) {
-        this.setState({"current_height_fraction": new_height_fraction})
-    }
-
-    get_new_height (element_ref, bottom_margin) {
-        if (this.state.mounted) {  // This will be true after the initial render
-            return this.state.inner_height- $(element_ref.current).offset().top - bottom_margin
-        }
-        else {
-            return this.state.inner_height - 45 - bottom_margin
-        }
-    }
-
-    resize_to_window() {
+    update_window_dimensions() {
         this.setState({
-            "inner_height": window.innerHeight,
-            "usable_width": this.get_usable_width(),
-            "usable_height": this.get_usable_height()
+            "usable_width": window.innerWidth - 2 * MARGIN_SIZE - 30,
+            "usable_height": window.innerHeight - 50
         });
     }
 
     componentDidMount() {
-        this.turn_on_horizontal_resize();
-        if (this.props.is_mpl) {
-            this.turn_on_vertical_resize();
-        }
-        window.addEventListener("resize", this.resize_to_window);
         this.setState({"mounted": true});
-        this.resize_to_window();
+        this.update_window_dimensions();
+        window.addEventListener("resize", this.update_window_dimensions);
         stopSpinner();
-    }
-
-    turn_on_horizontal_resize () {
-        let self = this;
-        $(this.left_div_ref.current).resizable({
-            handles: "e",
-            resize: function (event, ui) {
-                const usable_width = self.get_usable_width();
-                let new_width_fraction = 1.0 * ui.size.width / usable_width;
-                ui.position.left = ui.originalPosition.left;
-                self.update_width(new_width_fraction)
-            }
-        });
-    }
-
-    get_usable_height() {
-        if (this.state.mounted) {
-            return window.innerHeight - $(this.draw_plot_bounding_ref.current).offset().top - MARGIN_SIZE;
-        }
-        else {
-            return window.innerHeight - 45 - MARGIN_SIZE;
-        }
-
-
-    }
-
-    turn_on_vertical_resize() {
-        let self = this;
-        let dpba = $(this.draw_plot_bounding_ref.current);
-        dpba.resizable({
-            handles: "s",
-            resize: function (event, ui) {
-                const usable_height = self.get_usable_height();
-                let new_height_fraction = 1.0 * ui.size.height / usable_height;
-                self.update_height(new_height_fraction)
-            }
-        });
     }
     
     handleTabSelect() {
@@ -405,6 +340,9 @@ class CreatorApp extends React.Component {
         this.setState({"notes": this.state.notes + new_text});
     }
 
+    handleCategoryChange(event) {
+        this.setState({"category": event.target.value});
+    }
 
     handleTagsChange(field, editor, tags){
         this.setState({"tags": tags})
@@ -422,79 +360,128 @@ class CreatorApp extends React.Component {
         this.setState({"extra_functions": new_methods})
     }
 
-    render() {
-        let left_div_style = {
-            "width": this.state.usable_width * this.state.current_width_fraction,
-            "height": this.get_new_height(this.left_div_ref, 40),
-
-        };
-        let right_div_style = {
-            "width": (1 - this.state.current_width_fraction) * this.state.usable_width,
-            "height": this.get_new_height(this.right_div_ref, 40),
-
-        };
-        let dp_style;
-        let rc_style;
-        let dp_cc_height;
-        let rc_cc_height;
-        if (this.props.is_mpl) {
-            dp_style = {
-                "height": this.state.usable_height * this.state.current_height_fraction
-            };
-            dp_cc_height = dp_style.height - 50;
-            rc_style = {
-                "height": (1 - this.state.current_height_fraction) * this.state.usable_height,
-
-            };
-            rc_cc_height = rc_style.height - 50;
+    get_height_minus_top_offset (element_ref) {
+        if (this.state.mounted) {  // This will be true after the initial render
+            return this.state.usable_height - $(element_ref.current).offset().top
         }
         else {
-            rc_style = {};
-            rc_cc_height = "100%"
+            return this.state.usable_height - 50
         }
-        let code_items = [];
+    }
 
-        code_items.push (
-                <TileCreatorToolbar tile_name={this.state.tile_name}
-                                    res_type="tile"
-                                    handleRename={this.handleRename}
-                                    button_groups={this.button_groups}
-                                    key="toolbar"
-                />
-        );
+    get_new_tc_height () {
+        if (this.state.mounted) {  // This will be true after the initial render
+            return this.state.top_pane_height - this.tc_span_ref.current.offsetHeight
+        }
+        else {
+            return this.state.top_pane_height - 50
+        }
+    }
+
+    get_new_rc_height (outer_rc_height) {
+        if (this.state.mounted) {
+            return outer_rc_height - this.rc_span_ref.current.offsetHeight
+        }
+        else {
+            return outer_rc_height - 50
+        }
+    }
+
+    handleTopPaneResize (top_height, bottom_height, top_fraction) {
+        this.setState({"top_pane_height": top_height,
+            "bottom_pane_height": bottom_height
+        })
+    }
+    
+    handleLeftPaneResize(left_width, right_width, left_fraction) {
+        this.setState({"left_pane_width": left_width,
+        })
+    }
+
+    render() {
+        let hp_height = this.get_height_minus_top_offset(this.hp_ref);
+        let vp_height = this.get_height_minus_top_offset(this.vp_ref);
+
+        let code_width = this.state.left_pane_width - 10;
+        let ch_style = {"width": code_width};
+
+        let tc_item;
         if (this.props.is_mpl) {
-            code_items.push(
-                <div key="dpcode" style={dp_style} ref={this.draw_plot_bounding_ref} className="d-flex flex-column align-items-baseline code-holder">
-                    <span>draw_plot</span>
+            let tc_height = this.get_new_tc_height();
+            tc_item = (
+                <div key="dpcode" style={ch_style} className="d-flex flex-column align-items-baseline code-holder">
+                    <span ref={this.tc_span_ref}>draw_plot</span>
                     <ReactCodemirror code_content={this.state.draw_plot_code}
                                      handleChange={this.handleDrawPlotCodeChange}
                                      saveMe={this.saveAndCheckpoint}
                                      readOnly={false}
                                      first_line_number={this.state.draw_plot_line_number}
-                                     code_container_height={dp_cc_height}
+                                     code_container_height={tc_height}
                     />
                 </div>
              );
         }
-        code_items.push(
-            <div key="regcode" style={rc_style} className="d-flex flex-column align-items-baseline code-holder">
-                <span>render_content</span>
+        let rc_height;
+        if (this.props.is_mpl) {
+            rc_height = this.get_new_rc_height(this.state.bottom_pane_height)
+        }
+        else {
+            rc_height = this.get_new_rc_height(vp_height)
+        }
+
+        let bc_item = (
+            <div key="regcode" style={ch_style} className="d-flex flex-column align-items-baseline code-holder">
+                <span ref={this.rc_span_ref}>render_content</span>
                 <ReactCodemirror code_content={this.state.render_content_code}
                                  handleChange={this.handleRenderContentChange}
                                  saveMe={this.saveAndCheckpoint}
                                  readOnly={false}
                                  first_line_number={this.state.render_content_line_number}
-                                 code_container_height={rc_cc_height}
+                                 code_container_height={rc_height}
                 />
             </div>
          );
-        return (
-            <React.Fragment>
-                <div id="creator-left-div" ref={this.left_div_ref} className="d-flex flex-column" style={left_div_style}>
-                    {code_items}
-                </div>
-                <div id="creator-right-div" ref={this.right_div_ref} className="d-inline-block"  style={right_div_style}>
-                    <div id="creator-resources" className="d-block">
+        let left_pane;
+        if (this.props.is_mpl) {
+            left_pane = (
+                <React.Fragment>
+                    <TileCreatorToolbar tile_name={this.state.tile_name}
+                                        res_type="tile"
+                                        handleRename={this.handleRename}
+                                        button_groups={this.button_groups}
+                                        key="toolbar"
+                                        />
+                    <div ref={this.vp_ref}/>
+                    <VerticalPanes top_pane={tc_item}
+                                   bottom_pane={bc_item}
+                                   available_height={vp_height}
+                                   available_width={this.state.left_pane_width}
+                                   handleSplitUpdate={this.handleTopPaneResize}
+                                   id="creator-left"
+                                   />
+                </React.Fragment>
+            );
+        }
+        else {
+            left_pane = (
+                <React.Fragment>
+                    <TileCreatorToolbar tile_name={this.state.tile_name}
+                                        res_type="tile"
+                                        handleRename={this.handleRename}
+                                        button_groups={this.button_groups}
+                                        key="toolbar"
+                                        />
+                    <div ref={this.vp_ref}>
+                        {bc_item}
+                    </div>
+
+                </React.Fragment>
+            );
+        }{}
+
+        let right_pane = (
+                <React.Fragment>
+                    <div id="creator-resources" className="d-block mt-2">
                         <Rbs.Tabs id="resource_tabs" onSelect={this.handleTabSelect}>
                             <Rbs.Tab eventKey="metadata" title="metadata">
                                 <CombinedMetadata tags={this.state.tags}
@@ -504,6 +491,7 @@ class CreatorApp extends React.Component {
                                                   res_type="tile"
                                                   handleTagsChange={this.handleTagsChange}
                                                   handleNotesChange={this.handleNotesChange}
+                                                  handleCategoryChange={this.handleCategoryChange}
                                                   outer_id="metadata-pane"
                                                 />
                             </Rbs.Tab>
@@ -530,7 +518,18 @@ class CreatorApp extends React.Component {
                             </Rbs.Tab>
                         </Rbs.Tabs>
                     </div>
-                </div>
+                </React.Fragment>
+        );
+        return (
+            <React.Fragment>
+                <div ref={this.hp_ref}/>
+                <HorizontalPanes left_pane={left_pane}
+                                 right_pane={right_pane}
+                                 available_height={hp_height}
+                                 available_width={this.state.usable_width}
+                                 handleSplitUpdate={this.handleLeftPaneResize}
+                />
+
             </React.Fragment>
         )
 
