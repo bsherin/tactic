@@ -387,6 +387,8 @@ a[role="tab"] {
   vertical-align: top; }
   #creator-root .code-holder {
     height: 100%; }
+  #creator-root #rccode span {
+    margin-top: 10px; }
 
 .combined-metadata .notes-field {
   background-color: #f7f7f7; }
@@ -414,9 +416,6 @@ a[role="tab"] {
     margin: 0; }
   #creator-resources input {
     width: 150px; }
-  #creator-resources #notes-field-markdown-output {
-    padding: 10px;
-    overflow: auto; }
   #creator-resources .form-row button {
     align-self: flex-end;
     margin: 7px; }
