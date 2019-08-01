@@ -215,17 +215,6 @@ a[role="tab"] {
 .toolbar-button-group {
   margin-left: 5px; }
 
-.resource-viewer-right {
-  overflow: auto;
-  margin-top: 20px;
-  display: inline-block;
-  vertical-align: top; }
-  .resource-viewer-right #notes, .resource-viewer-right .notes-field {
-    background-color: #f7f7f7; }
-  .resource-viewer-right #notes-field-markdown-output, .resource-viewer-right .notes-field-markdown-output {
-    padding: 10px;
-    overflow: auto; }
-
 #listarea-container {
   height: 100%; }
 
@@ -393,21 +382,14 @@ a[role="tab"] {
 .ui-resizable-s, .ui-resizable-n {
   height: 25px !important; }
 
-#creator-left-div {
+#creator-root {
   margin-right: 25px;
   vertical-align: top; }
-  #creator-left-div .code-holder {
+  #creator-root .code-holder {
     height: 100%; }
 
-#creator-right-div {
-  margin-top: 25px;
-  vertical-align: top; }
-  #creator-right-div .combined-metadata {
-    margin-top: 25px;
-    margin-left: 25px;
-    margin-right: 25px; }
-  #creator-right-div .toolbar-button-group {
-    margin-bottom: 15px; }
+.combined-metadata .notes-field {
+  background-color: #f7f7f7; }
 
 #creator-resources {
   height: 100%; }
@@ -432,8 +414,6 @@ a[role="tab"] {
     margin: 0; }
   #creator-resources input {
     width: 150px; }
-  #creator-resources #notes {
-    background-color: #f7f7f7; }
   #creator-resources #notes-field-markdown-output {
     padding: 10px;
     overflow: auto; }

@@ -4,6 +4,7 @@ import {ResourceviewerToolbar} from "./react_toolbar.js";
 import {CombinedMetadata} from "./react_mdata_fields.js";
 import {showModalReact} from "./modal_react.js";
 import {TacticSocket} from "./tactic_socket.js"
+import {HorizontalPanes} from "./resizing_layouts.js";
 
 export {ResourceViewerApp, ResourceViewerSocket, copyToLibrary, sendToRepository}
 
@@ -64,98 +65,73 @@ class ResourceViewerApp extends React.Component {
 
     constructor(props) {
         super(props);
-        this.left_div_ref = React.createRef();
-        this.right_div_ref = React.createRef();
         this.savedContent = props.the_content;
         this.savedTags = props.tags;
         this.savedNotes = props.notes;
+        this.hp_ref = React.createRef();
 
-        this.state = {
-            "current_width_fraction": .5,
-            "inner_height": window.innerHeight,
-            "usable_width": this.get_usable_width(),
-            "mounted": false
-        };
         let self = this;
         this.mousetrap = new Mousetrap();
         this.mousetrap.bind(['command+s', 'ctrl+s'], function (e) {
             self.props.saveMe();
             e.preventDefault()
         });
-
-        this.resize_to_window = this.resize_to_window.bind(this)
-    }
-
-    get_usable_width() {
-        return window.innerWidth - 2 * MARGIN_SIZE - 30;
-    }
-
-    update_width(new_width_fraction) {
-        this.setState({"current_width_fraction": new_width_fraction})
-    }
-
-    get_new_height (element_ref, bottom_margin) {
-        if (this.state.mounted) {  // This will be true after the initial render
-            return this.state.inner_height- $(element_ref.current).offset().top - bottom_margin
-        }
-        else {
-            return this.state.inner_height - 45 - bottom_margin
-        }
-    }
-
-    resize_to_window() {
-        this.setState({
-            "inner_height": window.innerHeight,
-            "usable_width": this.get_usable_width()
-        });
-    }
-
-    turn_on_horizontal_resize () {
-        let self = this;
-        $(this.left_div_ref.current).resizable({
-            handles: "e",
-            resize: function (event, ui) {
-                const usable_width = window.innerWidth - 2 * MARGIN_SIZE - 30;
-                let new_width_fraction = 1.0 * ui.size.width / usable_width;
-                ui.position.left = ui.originalPosition.left;
-                self.update_width(new_width_fraction)
-            }
-        });
+        this.update_window_dimensions = this.update_window_dimensions.bind(this);
+        this.state = {"mounted": false,
+                    "usable_width": window.innerWidth - 2 * MARGIN_SIZE - 30,
+                    "usable_height": window.innerHeight - 50}
     }
 
     componentDidMount() {
-        this.turn_on_horizontal_resize();
-        window.addEventListener("resize", this.resize_to_window);
+        window.addEventListener("resize", this.update_window_dimensions);
         this.setState({"mounted": true});
-        this.resize_to_window();
-        stopSpinner();
+        this.update_window_dimensions();
+        stopSpinner()
+    }
+
+    update_window_dimensions() {
+        this.setState({
+            "usable_width": window.innerWidth - 2 * MARGIN_SIZE - 30,
+            "usable_height": window.innerHeight - 50
+        });
+    }
+
+    get_new_hp_height (element_ref) {
+        if (this.state.mounted) {  // This will be true after the initial render
+            return this.state.usable_height - $(element_ref.current).offset().top
+        }
+        else {
+            return this.state.usable_height - 45
+        }
     }
 
     render() {
-        let left_div_style = {
-            "width": this.state.usable_width * this.state.current_width_fraction,
-            "height": this.get_new_height(this.left_div_ref, 40)
-        };
-        let right_div_style = {
-            "width": (1 - this.state.current_width_fraction) * this.state.usable_width,
-            "height": this.get_new_height(this.right_div_ref, 40)
-        };
+        let left_pane = (
+            <React.Fragment>
+                {this.props.children}
+            </React.Fragment>
+        );
+        let available_height = this.get_new_hp_height(this.hp_ref);
+        let right_pane = (
+                <CombinedMetadata tags={this.props.tags}
+                                  created={this.props.created}
+                                  notes={this.props.notes}
+                                  handleTagsChange={this.props.handleTagsChange}
+                                  handleNotesChange={this.props.handleNotesChange}
+                                  res_type={this.props.res_type} />
+        );
+
         return(
             <React.Fragment>
                 <ResourceviewerToolbar button_groups={this.props.button_groups}
-                                       resource_name={this.props.resource_name}
-                                       res_type={this.props.res_type}/>
-                <div id="left-div" ref={this.left_div_ref} className="res-viewer-resizer" style={left_div_style}>
-                    {this.props.children}
-                </div>
-                <div id="right-div" ref={this.right_div_ref} className="resource-viewer-right"  style={right_div_style}>
-                    <CombinedMetadata tags={this.props.tags}
-                                      created={this.props.created}
-                                      notes={this.props.notes}
-                                      handleTagsChange={this.props.handleTagsChange}
-                                      handleNotesChange={this.props.handleNotesChange}
-                                      res_type={this.props.res_type}/>
-                </div>
+                                           resource_name={this.props.resource_name}
+                                           res_type={this.props.res_type}/>
+               <div ref={this.hp_ref}/>
+                <HorizontalPanes left_pane={left_pane}
+                                 right_pane={right_pane}
+                                 available_height={available_height}
+                                 available_width={this.state.usable_width}
+                />
             </React.Fragment>
         )
     }

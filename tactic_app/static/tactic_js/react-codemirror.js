@@ -1,5 +1,5 @@
 
-export {ReactCodemirror}
+export { ReactCodemirror };
 
 class ReactCodemirror extends React.Component {
 
@@ -22,7 +22,7 @@ class ReactCodemirror extends React.Component {
             readOnly: this.props.readOnly
         });
         if (first_line_number != 1) {
-            cmobject.setOption("firstLineNumber", first_line_number)
+            cmobject.setOption("firstLineNumber", first_line_number);
         }
 
         cmobject.setOption("extraKeys", {
@@ -34,29 +34,28 @@ class ReactCodemirror extends React.Component {
         });
         cmobject.setSize(null, "100%");
         cmobject.on("change", this.handleChange);
-        return cmobject
+        return cmobject;
     }
-    
+
     handleChange(cm, changeObject) {
-        this.props.handleChange(cm.getDoc().getValue())
+        this.props.handleChange(cm.getDoc().getValue());
     }
 
     componentDidMount() {
         this.cmobject = this.createCMArea(this.code_container_ref.current, this.props.first_line_number);
         this.cmobject.setValue(this.props.code_content);
-        this.create_keymap()
+        this.create_keymap();
     }
 
     componentDidUpdate() {
         if (this.props.first_line_number != 1) {
             this.cmobject.setOption("firstLineNumber", this.props.first_line_number);
         }
-        this.cmobject.refresh()
+        this.cmobject.refresh();
     }
 
-
     searchCM() {
-        CodeMirror.commands.find(this.cmobject)
+        CodeMirror.commands.find(this.cmobject);
     }
 
     clearSelections() {
@@ -74,7 +73,7 @@ class ReactCodemirror extends React.Component {
             self.api_list = [];
             for (let cat of self.ordered_api_categories) {
                 for (let entry of self.api_dict_by_category[cat]) {
-                    self.api_list.push(entry["name"])
+                    self.api_list.push(entry["name"]);
                 }
             }
             //noinspection JSUnresolvedVariable
@@ -85,41 +84,46 @@ class ReactCodemirror extends React.Component {
                     extra_autocomplete_list: self.extra_autocomplete_list
                 });
             };
-        })
+        });
     }
 
     create_keymap() {
         let self = this;
-        CodeMirror.keyMap["default"]["Esc"] = function () {self.clearSelections()};
+        CodeMirror.keyMap["default"]["Esc"] = function () {
+            self.clearSelections();
+        };
         let is_mac = CodeMirror.keyMap["default"].hasOwnProperty("Cmd-S");
 
         this.mousetrap.bind(['escape'], function (e) {
             self.clearSelections();
-            e.preventDefault()
+            e.preventDefault();
         });
 
         if (is_mac) {
-            CodeMirror.keyMap["default"]["Cmd-S"] = function () {self.props.saveMe()};
+            CodeMirror.keyMap["default"]["Cmd-S"] = function () {
+                self.props.saveMe();
+            };
 
             this.mousetrap.bind(['command+l'], function (e) {
                 // self.loadModule();
-                e.preventDefault()
+                e.preventDefault();
             });
             this.mousetrap.bind(['command+f'], function (e) {
                 self.searchCM();
-                e.preventDefault()
+                e.preventDefault();
             });
-        }
-        else {
-            CodeMirror.keyMap["default"]["Ctrl-S"] = function () {self.props.saveMe()};
+        } else {
+            CodeMirror.keyMap["default"]["Ctrl-S"] = function () {
+                self.props.saveMe();
+            };
 
             this.mousetrap.bind(['ctrl+l'], function (e) {
                 // self.loadModule();
-                e.preventDefault()
+                e.preventDefault();
             });
             this.mousetrap.bind(['ctrl+f'], function (e) {
                 self.searchCM();
-                e.preventDefault()
+                e.preventDefault();
             });
         }
     }
@@ -129,15 +133,9 @@ class ReactCodemirror extends React.Component {
             "height": this.props.code_container_height,
             "width": "100%"
         };
-        return (
-            <div id="code-container" style={ccstyle} ref={this.code_container_ref}>
-
-            </div>
-        )
-
+        return React.createElement("div", { id: "code-container", style: ccstyle, ref: this.code_container_ref });
     }
 }
-
 
 ReactCodemirror.propTypes = {
     handleChange: PropTypes.func,
@@ -145,12 +143,10 @@ ReactCodemirror.propTypes = {
     saveMe: PropTypes.func,
     readOnly: PropTypes.bool,
     first_line_number: PropTypes.number,
-    code_container_height: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.number])
+    code_container_height: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
 };
 
 ReactCodemirror.defaultProps = {
-  first_line_number: 1,
+    first_line_number: 1,
     code_container_height: "100%"
 };
