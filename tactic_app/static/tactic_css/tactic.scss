@@ -625,23 +625,14 @@ a[role="tab"] {
       height: 100%;
 
     }
+
+    #rccode {
+        span {
+            margin-top: 10px
+        }
+    }
 }
 
-
-//#creator-right-div {
-//    margin-top: 25px;
-//    vertical-align: top;
-//
-//    .combined-metadata {
-//        margin-top: 25px;
-//        margin-left: 25px;
-//        margin-right: 25px
-//    }
-//
-//    .toolbar-button-group {
-//        margin-bottom: 15px
-//    }
-//}
 
 .combined-metadata {
     .notes-field {
@@ -684,10 +675,6 @@ a[role="tab"] {
         width: 150px;
     }
 
-    #notes-field-markdown-output {
-        padding: 10px;
-        overflow: auto;
-    }
     .form-row {
         button {
             align-self: flex-end;

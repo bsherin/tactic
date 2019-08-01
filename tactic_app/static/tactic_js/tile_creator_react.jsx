@@ -130,8 +130,8 @@ class CreatorApp extends React.Component {
             category: this.props.category,
             usable_width: initial_usable_width,
             usable_height: initial_usable_height,
-            top_pane_height: this.props.is_mpl ? initial_usable_height / 2 - 25 : null,
-            bottom_pane_height: this.props.is_mpl ? initial_usable_height / 2 - 25 : null,
+            top_pane_height: this.props.is_mpl || this.props.is_d3 ? initial_usable_height / 2 - 25 : null,
+            bottom_pane_height: this.props.is_mpl || this.props.is_d3? initial_usable_height / 2 - 25 : null,
             left_pane_width: initial_usable_width / 2 - 25,
             methodsTabRefreshRequired: true
         };
@@ -145,7 +145,7 @@ class CreatorApp extends React.Component {
         this.handleTagsChange = this.handleTagsChange.bind(this);
         this.handleCategoryChange = this.handleCategoryChange.bind(this);
         this.handleRenderContentChange = this.handleRenderContentChange.bind(this);
-        this.handleDrawPlotCodeChange = this.handleDrawPlotCodeChange.bind(this);
+        this.handleTopCodeChange = this.handleTopCodeChange.bind(this);
         this.update_window_dimensions = this.update_window_dimensions.bind(this);
         this.handleOptionsChange = this.handleOptionsChange.bind(this);
         this.handleExportsChange = this.handleExportsChange.bind(this);
@@ -406,23 +406,28 @@ class CreatorApp extends React.Component {
         let ch_style = {"width": code_width};
 
         let tc_item;
-        if (this.props.is_mpl) {
+        if (this.props.is_mpl || this.props.is_d3) {
             let tc_height = this.get_new_tc_height();
+            let mode = this.props.is_mpl ? "python" : "javascript";
+            let code_content = this.props.is_mpl ? this.state.draw_plot_code : this.state.jscript_code;
+            let first_line_number =this.props.is_mpl ? this.state.draw_plot_line_number: 1;
+            let title_label = this.props.is_mpl ? "draw_plot" : "d3javascript";
             tc_item = (
                 <div key="dpcode" style={ch_style} className="d-flex flex-column align-items-baseline code-holder">
-                    <span ref={this.tc_span_ref}>draw_plot</span>
-                    <ReactCodemirror code_content={this.state.draw_plot_code}
-                                     handleChange={this.handleDrawPlotCodeChange}
+                    <span ref={this.tc_span_ref}>{title_label}</span>
+                    <ReactCodemirror code_content={code_content}
+                                     mode={mode}
+                                     handleChange={this.handleTopCodeChange}
                                      saveMe={this.saveAndCheckpoint}
                                      readOnly={false}
-                                     first_line_number={this.state.draw_plot_line_number}
+                                     first_line_number={first_line_number}
                                      code_container_height={tc_height}
                     />
                 </div>
              );
         }
         let rc_height;
-        if (this.props.is_mpl) {
+        if (this.props.is_mpl || this.props.is_d3) {
             rc_height = this.get_new_rc_height(this.state.bottom_pane_height)
         }
         else {
@@ -430,7 +435,7 @@ class CreatorApp extends React.Component {
         }
 
         let bc_item = (
-            <div key="regcode" style={ch_style} className="d-flex flex-column align-items-baseline code-holder">
+            <div key="rccode" id="rccode" style={ch_style} className="d-flex flex-column align-items-baseline code-holder">
                 <span ref={this.rc_span_ref}>render_content</span>
                 <ReactCodemirror code_content={this.state.render_content_code}
                                  handleChange={this.handleRenderContentChange}
@@ -442,7 +447,7 @@ class CreatorApp extends React.Component {
             </div>
          );
         let left_pane;
-        if (this.props.is_mpl) {
+        if (this.props.is_mpl || this.props.is_d3) {
             left_pane = (
                 <React.Fragment>
                     <TileCreatorToolbar tile_name={this.state.tile_name}
@@ -535,8 +540,14 @@ class CreatorApp extends React.Component {
 
     }
 
-    handleDrawPlotCodeChange(new_code) {
-        this.setState({"draw_plot_code": new_code})
+    handleTopCodeChange(new_code) {
+        if (this.props.is_mpl) {
+            this.setState({"draw_plot_code": new_code})
+        }
+        else {
+            this.setState({"jscript_code": new_code})
+        }
+
     }
     handleRenderContentChange(new_code) {
         this.setState({"render_content_code": new_code})

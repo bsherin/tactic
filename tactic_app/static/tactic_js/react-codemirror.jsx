@@ -18,7 +18,7 @@ class ReactCodemirror extends React.Component {
             highlightSelectionMatches: true,
             autoCloseBrackets: true,
             indentUnit: 4,
-            mode: "python",
+            mode: this.props.mode,
             readOnly: this.props.readOnly
         });
         if (first_line_number != 1) {
@@ -142,6 +142,7 @@ class ReactCodemirror extends React.Component {
 ReactCodemirror.propTypes = {
     handleChange: PropTypes.func,
     code_content: PropTypes.string,
+    mode: PropTypes.string,
     saveMe: PropTypes.func,
     readOnly: PropTypes.bool,
     first_line_number: PropTypes.number,
@@ -151,6 +152,9 @@ ReactCodemirror.propTypes = {
 };
 
 ReactCodemirror.defaultProps = {
-  first_line_number: 1,
-    code_container_height: "100%"
+    first_line_number: 1,
+    code_container_height: "100%",
+    mode: "python",
+    readOnly: false
+
 };

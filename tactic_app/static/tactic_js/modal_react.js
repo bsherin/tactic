@@ -142,10 +142,5 @@ function showModalReact(modal_title, field_title, submit_function, default_value
         default_value: default_value,
         existing_names: existing_names }), domContainer);
 
-    // $('.submitter-field').keypress(function(e) {
-    //     if (e.which == 13) {
-    //         submit_handler();
-    //         e.preventDefault();
-    //     }
-    // });
+
 }

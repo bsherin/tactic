@@ -42,14 +42,14 @@ function copyToLibrary(res_type, resource_name) {
     }
 }
 
-function sendToRepository(res_type, resource_nam) {
+function sendToRepository(res_type, resource_name) {
     $.getJSON($SCRIPT_ROOT + `get_repository_resource_names/${res_type}`, function (data) {
-        showModalReact(`Share list ${res_type}`, `New list Name`, ShareResource, window.resource_name, data["resource_names"]);
+        showModalReact(`Share ${res_type}`, `New ${res_type} Name`, ShareResource, resource_name, data["resource_names"]);
     });
     function ShareResource(new_name) {
         const result_dict = {
             "res_type": res_type,
-            "res_name": window.resource_name,
+            "res_name": resource_name,
             "new_res_name": new_name
         };
         postAjax("send_to_repository", result_dict, doFlashAlways);
