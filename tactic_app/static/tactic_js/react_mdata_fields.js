@@ -109,22 +109,23 @@ class NotesField extends React.Component {
         super(props);
 
         this.state = {
-            "show_markdown": false,
             "md_height": 500,
-            "converted_markdown": ""
+            "show_markdown": this.hasOnlyWhitespace ? false : this.props.show_markdown_initial
         };
-        this.convertMarkdown = this.convertMarkdown.bind(this);
         this.hideMarkdown = this.hideMarkdown.bind(this);
-        this.doFocus = this.doFocus.bind(this);
-        this.doBlur = this.doBlur.bind(this);
+        this.showMarkdown = this.showMarkdown.bind(this);
         this.notes_ref = React.createRef();
         this.md_ref = React.createRef();
-        this.notes_at_last_convert = "";
-        this.notes_have_focus = false;
+        this.converter = new showdown.Converter();
+        this.awaiting_focus = false;
     }
 
     getNotesField() {
         return $(this.notes_ref.current);
+    }
+
+    get hasOnlyWhitespace() {
+        return !this.props.notes.trim().length;
     }
 
     getMarkdownField() {
@@ -138,11 +139,13 @@ class NotesField extends React.Component {
         this.setState({ 'md_height': new_max_height });
     }
 
-    toggleMarkdown() {
-        if (this.state.show_markdown) {
-            this.hideMarkdown();
-        } else {
-            this.convertMarkdown();
+    componentDidUpdate() {
+        if (this.awaiting_focus) {
+            this.focusNotes();
+            this.awaiting_focus = false;
+        } else if (!this.state.show_markdown && this.notes_ref.current != document.activeElement) {
+            // If we are here it means the change was initiated externally
+            this.showMarkdown();
         }
     }
 
@@ -150,67 +153,32 @@ class NotesField extends React.Component {
         this.getNotesField().focus();
     }
 
-    convertMarkdown() {
-        let the_text = this.props.notes;
-        if (the_text == "") {
-            this.notes_at_last_convert = the_text;
-            this.setState({ "converted_markdown": "", "show_markdown": false });
-        } else {
-            let ddict = { "the_text": the_text };
-            let self = this;
-            this.notes_at_last_convert = the_text;
-            postAjaxPromise("convert_markdown", ddict).then(function (data) {
-                self.notes_have_focus = false;
-                self.setState({
-                    "converted_markdown": data["converted_markdown"],
-                    "show_markdown": true });
-                self.updateMarkdownHeight(self.props.outer_selector);
-            }).catch(doFlash);
-        }
-    }
-
-    componentDidMount() {
-        this.convertMarkdown();
-    }
-
-    componentDidUpdate() {
-        if (this.notes_have_focus) {
-            return;
-        }
-        if (this.props.notes != this.notes_at_last_convert) {
-            this.notes_at_last_convert = this.props.notes;
-            this.convertMarkdown();
-        }
-    }
-
-    doFocus() {
-        this.notes_have_focus = true;
-    }
-
-    doBlur() {
-        this.notes_have_focus = false;
-        this.convertMarkdown();
-    }
-
     hideMarkdown() {
+        this.awaiting_focus = true; // We can't set focus until the input is visible
         this.setState({ "show_markdown": false });
-        this.focusNotes();
     }
 
     showMarkdown() {
-        this.setState({ "show_markdown": true });
+        if (!this.hasOnlyWhitespace) {
+            this.setState({ "show_markdown": true });
+        }
     }
 
     render() {
+        let really_show_markdown = this.hasOnlyWhitespace ? false : this.state.show_markdown;
         let notes_style = {
-            "display": this.state.show_markdown ? "none" : "block"
+            "display": really_show_markdown ? "none" : "block"
         };
         let md_style = {
-            "display": this.state.show_markdown ? "block" : "none",
+            "display": really_show_markdown ? "block" : "none",
             "maxHeight": this.state.md_height
         };
+        var converted_markdown;
+        if (really_show_markdown) {
+            converted_markdown = this.converter.makeHtml(this.props.notes);
+        }
 
-        let converted = { __html: this.state.converted_markdown };
+        let converted_dict = { __html: converted_markdown };
         return React.createElement(
             Rbs.Form.Group,
             null,
@@ -220,8 +188,7 @@ class NotesField extends React.Component {
                 rows: "10",
                 placeholder: "notes",
                 style: notes_style,
-                onFocus: this.doFocus,
-                onBlur: this.doBlur,
+                onBlur: this.showMarkdown,
                 onChange: this.props.handleChange,
                 readOnly: this.context.readOnly,
                 value: this.props.notes
@@ -230,7 +197,7 @@ class NotesField extends React.Component {
                 style: md_style,
                 onClick: this.hideMarkdown,
                 className: "notes-field-markdown-output",
-                dangerouslySetInnerHTML: converted })
+                dangerouslySetInnerHTML: converted_dict })
         );
     }
 }
@@ -240,11 +207,8 @@ NotesField.contextType = ViewerContext;
 NotesField.propTypes = {
     notes: PropTypes.string,
     handleChange: PropTypes.func,
-    outer_selector: PropTypes.string
-};
-
-NotesField.defaultTypes = {
-    show_notes: true
+    outer_selector: PropTypes.string,
+    show_markdown_initial: PropTypes.bool
 };
 
 class CombinedMetadata extends React.Component {
@@ -311,6 +275,7 @@ class CombinedMetadata extends React.Component {
                 ),
                 React.createElement(NotesField, { notes: this.props.notes,
                     handleChange: this.handleNotesChange,
+                    show_markdown_initial: true,
                     outer_selector: "#" + this.props.outer_id })
             )
         );
