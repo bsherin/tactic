@@ -24,7 +24,7 @@ function code_viewer_main ()  {
                                                        tags={data.tags.split(" ")}
                                                        notes={data.notes}
                                                        readOnly={window.read_only}
-                                                       window.is_respository={window.is_respository}
+                                                       is_respository={window.is_respository}
                                                        meta_outer="#right-div"/>, domContainer);
 			        })
 			        .catch(function () {
@@ -34,7 +34,7 @@ function code_viewer_main ()  {
                                                        tags={[]}
                                                        notes=""
                                                        readOnly={window.read_only}
-                                                       window.is_respository={window.is_respository}
+                                                       is_respository={window.is_respository}
                                                        meta_outer="#right-div"/>, domContainer);
 			        })
         })
@@ -61,8 +61,7 @@ class CodeViewerApp extends React.Component {
             "tags": props.tags,
         };
 
-        this.handleNotesChange = this.handleNotesChange.bind(this);
-        this.handleTagsChange = this.handleTagsChange.bind(this);
+        this.handleStateChange = this.handleStateChange.bind(this);
         this.handleCodeChange = this.handleCodeChange.bind(this);
     }
 
@@ -94,12 +93,8 @@ class CodeViewerApp extends React.Component {
         this.setState({"code_content": new_code})
     }
 
-    handleNotesChange(event) {
-        this.setState({"notes": event.target.value});
-    }
-
-    handleTagsChange(field, editor, tags){
-        this.setState({"tags": tags})
+    handleStateChange(state_stuff) {
+        this.setState(state_stuff)
     }
 
     render() {
@@ -109,8 +104,7 @@ class CodeViewerApp extends React.Component {
                 <ResourceViewerApp res_type="code"
                                    resource_name={this.props.resource_name}
                                    button_groups={this.button_groups}
-                                   handleNotesChange={this.handleNotesChange}
-                                   handleTagsChange={this.handleTagsChange}
+                                   handleStateChange={this.handleStateChange}
                                    created={this.props.created}
                                    notes={this.state.notes}
                                    tags={this.state.tags}
@@ -125,19 +119,10 @@ class CodeViewerApp extends React.Component {
             </ViewerContext.Provider>
         )
     }
-    
-    get_tags_string() {
-        let taglist = this.state.tags;
-        let tags = "";
-        for (let tag of taglist) {
-            tags = tags + tag + " "
-        }
-        return tags.trim();
-    }
 
     saveMe() {
         const new_code = this.state.code_content;
-        const tagstring = this.get_tags_string();
+        const tagstring = this.state.tags.join(" ");
         const notes = this.state.notes;
         const tags = this.state.tags;  // In case it's modified wile saving
         const result_dict = {
@@ -145,7 +130,7 @@ class CodeViewerApp extends React.Component {
             "new_code": new_code,
             "tags": tagstring,
             "notes": notes,
-            "window.user_id": window.user_id
+            "user_id": window.user_id
         };
         let self = this;
         postWithCallback("host","update_code_task", result_dict, update_success);

@@ -13,7 +13,7 @@ class HorizontalPanes extends React.Component {
         this.old_left_width = 0;
         this.old_right_width = 0;
         this.state = this.state = {
-            "current_width_fraction": .5,
+            "current_width_fraction": this.props.initial_width_fraction,
             "mounted": false
         };
     }
@@ -92,11 +92,13 @@ HorizontalPanes.propTypes = {
     available_height: PropTypes.number,
     left_pane: PropTypes.object,
     right_pane: PropTypes.object,
-    handleSplitResize: PropTypes.func
+    handleSplitUpdate: PropTypes.func,
+    initial_width_fraction: PropTypes.number
 };
 
 HorizontalPanes.defaultProps = {
-    handleSplitUpdate: null
+    handleSplitUpdate: null,
+    initial_width_fraction: .5
 };
 
 

@@ -63,7 +63,6 @@ class OptionModuleForm extends React.Component {
                     <LabeledFormField label="Default" onChange={this.handleDefaultChange} the_value={this.state.default_value}/>
                     <LabeledFormField label="Special List" onChange={this.handleSpecialListChange} the_value={this.state.special_list} show={this.state.type == "custom_list"}/>
                     <LabeledFormField label="Tag" onChange={this.handleTagChange} the_value={this.state.tag} show={this.taggable_types.includes(this.state.type)}/>
-
                 </Rbs.Form.Row>
                     <Rbs.Button variant="outline-secondary" type="button" onClick={this.handleSubmit}>
                         Create
@@ -138,7 +137,7 @@ class OptionModule extends React.Component {
         return (
 
             <div id="options-pane" className="d-flex flex-column" style={options_pane_style}>
-                <div className="d-flex flex-row">
+                <div className="d-flex flex-row mb-2">
                     <Toolbar button_groups={this.button_groups}/>
                 </div>
                 <OrderableTable columns={cols}
@@ -267,7 +266,7 @@ class ExportModule extends React.Component {
         return (
 
             <div id="exports-pane" className="d-flex flex-column" style={exports_pane_style}>
-                <div className="d-flex flex-row">
+                <div className="d-flex flex-row mb-2">
                     <Toolbar button_groups={this.button_groups}/>
                 </div>
                 <OrderableTable columns={cols}

@@ -116,8 +116,7 @@ class ResourceViewerApp extends React.Component {
                 <CombinedMetadata tags={this.props.tags}
                                   created={this.props.created}
                                   notes={this.props.notes}
-                                  handleTagsChange={this.props.handleTagsChange}
-                                  handleNotesChange={this.props.handleNotesChange}
+                                  handleChange={this.props.handleStateChange}
                                   res_type={this.props.res_type} />
         );
 
@@ -144,8 +143,7 @@ ResourceViewerApp.propTypes = {
     created: PropTypes.string,
     tags: PropTypes.array,
     notes: PropTypes.string,
-    handleTagsChange: PropTypes.func,
-    handleNotesChange: PropTypes.func,
+    handleStateChange: PropTypes.func,
     meta_outer: PropTypes.string,
     saveMe: PropTypes.func,
     children: PropTypes.element
