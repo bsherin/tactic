@@ -125,7 +125,7 @@ def library():
         return render_template('admin_interface.html', use_ssl=str(use_ssl), version_string=tstring)
     else:
 
-        return render_template('library/library_home.html', use_ssl=str(use_ssl), version_string=tstring)
+        return render_template('library/library_home_react.html', use_ssl=str(use_ssl), version_string=tstring)
 
 
 @socketio.on('connect', namespace='/library')
@@ -211,8 +211,13 @@ def request_update_repository_selector_list(res_type):
     return jsonify({"html": managers[res_type][1].request_update_selector_list()})
 
 
-# Metadata views
+@app.route('/resource_list_with_metadata/<res_type>', methods=['GET', 'POST'])
+@login_required
+def get_resource_data_list(res_type):
+    return jsonify({"data_list": managers[res_type][0].get_resource_data_list()})
 
+
+# Metadata views
 @app.route('/grab_metadata', methods=['POST'])
 @login_required
 def grab_metadata():

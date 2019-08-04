@@ -57,8 +57,7 @@ class ModuleViewerApp extends React.Component {
             "tags": props.tags
         };
 
-        this.handleNotesChange = this.handleNotesChange.bind(this);
-        this.handleTagsChange = this.handleTagsChange.bind(this);
+        this.handleStateChange = this.handleStateChange.bind(this);
         this.handleCodeChange = this.handleCodeChange.bind(this);
     }
 
@@ -88,21 +87,8 @@ class ModuleViewerApp extends React.Component {
         this.setState({ "code_content": new_code });
     }
 
-    handleNotesChange(event) {
-        this.setState({ "notes": event.target.value });
-    }
-
-    handleTagsChange(field, editor, tags) {
-        this.setState({ "tags": tags });
-    }
-
-    get_tags_string() {
-        let taglist = this.state.tags;
-        let tags = "";
-        for (let tag of taglist) {
-            tags = tags + tag + " ";
-        }
-        return tags.trim();
+    handleStateChange(state_stuff) {
+        this.setState(state_stuff);
     }
 
     render() {
@@ -115,8 +101,7 @@ class ModuleViewerApp extends React.Component {
                 { res_type: "tile",
                     resource_name: this.props.resource_name,
                     button_groups: this.button_groups,
-                    handleNotesChange: this.handleNotesChange,
-                    handleTagsChange: this.handleTagsChange,
+                    handleStateChange: this.handleStateChange,
                     created: this.props.created,
                     notes: this.state.notes,
                     tags: this.state.tags,
@@ -142,7 +127,7 @@ class ModuleViewerApp extends React.Component {
         let self = this;
         return new Promise(function (resolve, reject) {
             const new_code = self.state.code_content;
-            const tagstring = self.get_tags_string();
+            const tagstring = self.state.tags.join(" ");
             const tags = self.state.tags; // In case it's modified while saving
             const notes = self.state.notes;
             let result_dict;

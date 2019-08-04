@@ -7,31 +7,31 @@ import { ReactCodemirror } from "./react-codemirror.js";
 import { ViewerContext } from "./resource_viewer_context.js";
 
 function code_viewer_main() {
-    let get_url = is_repository ? "repository_get_code_code" : "get_code_code";
-    let get_mdata_url = is_repository ? "grab_repository_metadata" : "grab_metadata";
+    let get_url = window.is_respository ? "repository_get_code_code" : "get_code_code";
+    let get_mdata_url = window.is_respository ? "grab_repository_metadata" : "grab_metadata";
 
     var tsocket = new ResourceViewerSocket("main", 5000);
-    postAjaxPromise(`${get_url}/${resource_name}`, {}).then(function (data) {
+    postAjaxPromise(`${get_url}/${window.resource_name}`, {}).then(function (data) {
         var the_content = data.the_content;
-        let result_dict = { "res_type": "code", "res_name": resource_name, "is_repository": false };
+        let result_dict = { "res_type": "code", "res_name": window.resource_name, "window.is_respository": false };
         let domContainer = document.querySelector('#root');
         postAjaxPromise(get_mdata_url, result_dict).then(function (data) {
-            ReactDOM.render(React.createElement(CodeViewerApp, { resource_name: resource_name,
+            ReactDOM.render(React.createElement(CodeViewerApp, { resource_name: window.resource_name,
                 the_content: the_content,
                 created: data.datestring,
                 tags: data.tags.split(" "),
                 notes: data.notes,
-                readOnly: read_only,
-                is_repository: is_repository,
+                readOnly: window.read_only,
+                is_respository: window.is_respository,
                 meta_outer: "#right-div" }), domContainer);
         }).catch(function () {
-            ReactDOM.render(React.createElement(CodeViewerApp, { resource_name: resource_name,
+            ReactDOM.render(React.createElement(CodeViewerApp, { resource_name: window.resource_name,
                 the_content: the_content,
                 created: "",
                 tags: [],
                 notes: "",
-                readOnly: read_only,
-                is_repository: is_repository,
+                readOnly: window.read_only,
+                is_respository: window.is_respository,
                 meta_outer: "#right-div" }), domContainer);
         });
     }).catch(doFlash);
@@ -57,14 +57,13 @@ class CodeViewerApp extends React.Component {
             "tags": props.tags
         };
 
-        this.handleNotesChange = this.handleNotesChange.bind(this);
-        this.handleTagsChange = this.handleTagsChange.bind(this);
+        this.handleStateChange = this.handleStateChange.bind(this);
         this.handleCodeChange = this.handleCodeChange.bind(this);
     }
 
     get button_groups() {
         let bgs;
-        if (this.props.is_repository) {
+        if (this.props.is_respository) {
             bgs = [[{ "name_text": "Copy", "icon_name": "share",
                 "click_handler": () => {
                     copyToLibrary("code", this.props.resource_name);
@@ -88,12 +87,8 @@ class CodeViewerApp extends React.Component {
         this.setState({ "code_content": new_code });
     }
 
-    handleNotesChange(event) {
-        this.setState({ "notes": event.target.value });
-    }
-
-    handleTagsChange(field, editor, tags) {
-        this.setState({ "tags": tags });
+    handleStateChange(state_stuff) {
+        this.setState(state_stuff);
     }
 
     render() {
@@ -106,8 +101,7 @@ class CodeViewerApp extends React.Component {
                 { res_type: "code",
                     resource_name: this.props.resource_name,
                     button_groups: this.button_groups,
-                    handleNotesChange: this.handleNotesChange,
-                    handleTagsChange: this.handleTagsChange,
+                    handleStateChange: this.handleStateChange,
                     created: this.props.created,
                     notes: this.state.notes,
                     tags: this.state.tags,
@@ -122,18 +116,9 @@ class CodeViewerApp extends React.Component {
         );
     }
 
-    get_tags_string() {
-        let taglist = this.state.tags;
-        let tags = "";
-        for (let tag of taglist) {
-            tags = tags + tag + " ";
-        }
-        return tags.trim();
-    }
-
     saveMe() {
         const new_code = this.state.code_content;
-        const tagstring = this.get_tags_string();
+        const tagstring = this.state.tags.join(" ");
         const notes = this.state.notes;
         const tags = this.state.tags; // In case it's modified wile saving
         const result_dict = {
@@ -141,7 +126,7 @@ class CodeViewerApp extends React.Component {
             "new_code": new_code,
             "tags": tagstring,
             "notes": notes,
-            "user_id": user_id
+            "user_id": window.user_id
         };
         let self = this;
         postWithCallback("host", "update_code_task", result_dict, update_success);
@@ -177,7 +162,7 @@ CodeViewerApp.propTypes = {
     tags: PropTypes.array,
     notes: PropTypes.string,
     readOnly: PropTypes.bool,
-    is_repository: PropTypes.bool,
+    is_respository: PropTypes.bool,
     meta_outer: PropTypes.string
 };
 

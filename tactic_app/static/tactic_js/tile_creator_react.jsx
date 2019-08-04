@@ -140,10 +140,7 @@ class CreatorApp extends React.Component {
         this.saved_state = {};
         this.update_saved_state();
         this.handleRename = this.handleRename.bind(this);
-        this.handleNotesChange = this.handleNotesChange.bind(this);
-        this.handleNotesAppend = this.handleNotesAppend.bind(this);
-        this.handleTagsChange = this.handleTagsChange.bind(this);
-        this.handleCategoryChange = this.handleCategoryChange.bind(this);
+        this.handleStateChange = this.handleStateChange.bind(this);
         this.handleRenderContentChange = this.handleRenderContentChange.bind(this);
         this.handleTopCodeChange = this.handleTopCodeChange.bind(this);
         this.update_window_dimensions = this.update_window_dimensions.bind(this);
@@ -332,20 +329,12 @@ class CreatorApp extends React.Component {
         this.setState({"methodsTabRefreshRequired": false})  // This is needed or the methods tab will be blank
     }
 
-    handleNotesChange(event) {
-        this.setState({"notes": event.target.value});
-    }
-
     handleNotesAppend(new_text) {
         this.setState({"notes": this.state.notes + new_text});
     }
 
-    handleCategoryChange(event) {
-        this.setState({"category": event.target.value});
-    }
-
-    handleTagsChange(field, editor, tags){
-        this.setState({"tags": tags})
+    handleStateChange(state_stuff) {
+        this.setState(state_stuff)
     }
     
     handleOptionsChange(new_option_list) {
@@ -396,6 +385,23 @@ class CreatorApp extends React.Component {
     handleLeftPaneResize(left_width, right_width, left_fraction) {
         this.setState({"left_pane_width": left_width,
         })
+    }
+
+    handleTopCodeChange(new_code) {
+        if (this.props.is_mpl) {
+            this.setState({"draw_plot_code": new_code})
+        }
+        else {
+            this.setState({"jscript_code": new_code})
+        }
+
+    }
+    handleRenderContentChange(new_code) {
+        this.setState({"render_content_code": new_code})
+    }
+
+    handleRename(new_name) {
+        // this.setState({"tile_name": new_name})
     }
 
     render() {
@@ -482,7 +488,7 @@ class CreatorApp extends React.Component {
 
                 </React.Fragment>
             );
-        }{}
+        }
 
         let right_pane = (
                 <React.Fragment>
@@ -494,9 +500,7 @@ class CreatorApp extends React.Component {
                                                   created={this.props.created}
                                                   category={this.state.category}
                                                   res_type="tile"
-                                                  handleTagsChange={this.handleTagsChange}
-                                                  handleNotesChange={this.handleNotesChange}
-                                                  handleCategoryChange={this.handleCategoryChange}
+                                                  handleChange={this.handleStateChange}
                                                   outer_id="metadata-pane"
                                                 />
                             </Rbs.Tab>
@@ -538,23 +542,6 @@ class CreatorApp extends React.Component {
             </React.Fragment>
         )
 
-    }
-
-    handleTopCodeChange(new_code) {
-        if (this.props.is_mpl) {
-            this.setState({"draw_plot_code": new_code})
-        }
-        else {
-            this.setState({"jscript_code": new_code})
-        }
-
-    }
-    handleRenderContentChange(new_code) {
-        this.setState({"render_content_code": new_code})
-    }
-
-    handleRename(new_name) {
-        // this.setState({"tile_name": new_name})
     }
 }
 

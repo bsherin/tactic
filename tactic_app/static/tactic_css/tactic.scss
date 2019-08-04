@@ -237,6 +237,23 @@ table.sortable thead {
     color: $repository-title-color;
 }
 
+
+#library-home-root {
+    .selector-button {
+        td {
+            border: white;
+            padding-bottom: 2px !important;
+        }
+    }
+
+    .selector-button.active {
+        td {
+            background-color: $selector-background-color !important;
+            color: white;
+        }
+    }
+}
+
 a[role="tab"] {
     font-size: $resource-manager-tab-font-size
 }
@@ -245,6 +262,8 @@ a[role="tab"] {
     .nav-link {
         font-size: 16px;
         color: #212529;
+        display: flex;
+
     }
     .nav-link:hover {
         background-color: #9b79cc3d;
@@ -359,21 +378,6 @@ a[role="tab"] {
     margin-left: 5px
 }
 
-//.resource-viewer-right {
-//    overflow: auto;
-//    margin-top: 20px;
-//    display: inline-block;
-//    vertical-align: top;
-//
-//    #notes, .notes-field {
-//        background-color: #f7f7f7;
-//    }
-//
-//    #notes-field-markdown-output, .notes-field-markdown-output {
-//        padding: 10px;
-//        overflow: auto;
-//    }
-//}
 
 #listarea-container {
     height: 100%

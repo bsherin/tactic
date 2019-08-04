@@ -137,7 +137,7 @@ class OptionModule extends React.Component {
             { id: "options-pane", className: "d-flex flex-column", style: options_pane_style },
             React.createElement(
                 "div",
-                { className: "d-flex flex-row" },
+                { className: "d-flex flex-row mb-2" },
                 React.createElement(Toolbar, { button_groups: this.button_groups })
             ),
             React.createElement(OrderableTable, { columns: cols,
@@ -267,7 +267,7 @@ class ExportModule extends React.Component {
             { id: "exports-pane", className: "d-flex flex-column", style: exports_pane_style },
             React.createElement(
                 "div",
-                { className: "d-flex flex-row" },
+                { className: "d-flex flex-row mb-2" },
                 React.createElement(Toolbar, { button_groups: this.button_groups })
             ),
             React.createElement(OrderableTable, { columns: cols,

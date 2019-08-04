@@ -130,12 +130,20 @@ table.sortable thead {
 .repository-title {
   color: #4EA818; }
 
+#library-home-root .selector-button td {
+  border: white;
+  padding-bottom: 2px !important; }
+#library-home-root .selector-button.active td {
+  background-color: #9B79CC !important;
+  color: white; }
+
 a[role="tab"] {
   font-size: 20px; }
 
 .left-vertical-nav .nav-link {
   font-size: 16px;
-  color: #212529; }
+  color: #212529;
+  display: flex; }
 .left-vertical-nav .nav-link:hover {
   background-color: #9b79cc3d; }
 .left-vertical-nav .nav-link.active {
