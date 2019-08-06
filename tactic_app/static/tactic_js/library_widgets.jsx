@@ -9,15 +9,24 @@ class SearchForm extends React.Component {
     render() {
         return (
             <Rbs.Form inline={true}>
-                <Rbs.Form.Control as="input" placeholder="Search" />
-                <Rbs.Button variant="outline-secondary" type="button" onClick={this.handleClear}>
+                <Rbs.Form.Control as="input"
+                                  placeholder="Search"
+                                  value={this.props.search_field_value}
+                                  onChange={this.props.onChange}/>
+                <Rbs.Button variant="outline-secondary" type="button" onClick={this.props.handleClear}>
                         clear
                 </Rbs.Button>
-                {this.props.search_inside &&
-                    <Rbs.Form.Check inline label="search inside" id={`${this.props.res_type}-search-inside`}/>
+                {this.props.allow_search_inside &&
+                    <Rbs.Form.Check inline label="search inside"
+                                    checked={this.props.search_inside_checked}
+                                    onChange={this.props.handleSearchInsideChange}
+                    />
                 }
-                {this.props.search_metadata &&
-                    <Rbs.Form.Check inline label="search metadata" id={`${this.props.res_type}-search-metadata`}/>
+                {this.props.allow_search_metadata &&
+                    <Rbs.Form.Check inline label="search metadata"
+                                    checked={this.props.search_metadata_checked}
+                                    onChange={this.props.handleSearchMetadataChange}
+                    />
                 }
             </Rbs.Form>
         )
@@ -25,10 +34,15 @@ class SearchForm extends React.Component {
 }
 
 SearchForm.propTypes = {
-    res_type: PropTypes.string,
     handleClear: PropTypes.func,
-    search_inside: PropTypes.bool,
-    search_metadata: PropTypes.bool
+    allow_search_inside: PropTypes.bool,
+    allow_search_metadata: PropTypes.bool,
+    search_inside_checked: PropTypes.bool,
+    search_metadata_checked: PropTypes.bool,
+    handleSearchInsideChange: PropTypes.func,
+    handleSearchMetadataChange: PropTypes.func,
+    onChange: PropTypes.func,
+    search_field_value: PropTypes.string
 };
 
 class SelectorTableCell extends React.Component {
@@ -52,8 +66,9 @@ class SelectorTableRow extends React.Component {
         this.handleClick = this.handleClick.bind(this)
     }
 
-    handleClick(){
-        this.props.handleRowClick(this.props.data_dict)
+    handleClick(event){
+        this.props.handleRowClick(this.props.data_dict, event.shiftKey);
+        event.preventDefault()
     }
 
 
@@ -166,7 +181,7 @@ class SelectorTable extends React.Component {
                       data_dict={ddict}
                       key={ddict[colnames[0]]}
                       row_index={index}
-                      active={ddict["name"] == this.props.selected_resource_name}
+                      active={this.props.selected_resource_names.includes(ddict.name)}
                       handleRowClick={this.props.handleRowClick}
             />
         );
@@ -187,8 +202,7 @@ class SelectorTable extends React.Component {
 SelectorTable.propTypes = {
     columns: PropTypes.object,
     data_list: PropTypes.array,
-    selected_resource_name: PropTypes.string,
-    handleActiveRowChange: PropTypes.func,
+    selected_resource_names: PropTypes.array,
     handleHeaderCellClick: PropTypes.func,
     content_editable: PropTypes.bool,
     handleRowClick: PropTypes.func

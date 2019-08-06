@@ -13,6 +13,7 @@ class TagsField extends React.Component {
         this.last_tags_list = [];
         this.handleMyChange = this.handleMyChange.bind(this);
         this.setting_tags = false;
+        this.state = { has_focus: false };
         this.all_tags = [];
     }
 
@@ -49,6 +50,10 @@ class TagsField extends React.Component {
         this.create_tag_editor(this.props.tags);
     }
 
+    get has_focus() {
+        return this.tags_field_ref.current == document.activeElement;
+    }
+
     componentDidUpdate() {
         if (this.props.tags != this.last_tags_list) {
             this.last_tags_list = this.props.tags;
@@ -61,18 +66,20 @@ class TagsField extends React.Component {
     }
 
     add_tags(tags) {
+        let hf = this.has_focus;
         this.setting_tags = true;
-        for (let i = 0; i < tags.length; i++) {
-            this.get_tags_field().tagEditor('addTag', tags[i], true);
+        for (let tag of tags) {
+            this.get_tags_field().tagEditor('addTag', tag, !hf);
         }
         this.setting_tags = false;
     }
 
     remove_all_tags() {
+        let hf = this.has_focus;
         let tags = this.get_tags();
         this.setting_tags = true;
-        for (let i = 0; i < tags.length; i++) {
-            this.get_tags_field().tagEditor('removeTag', tags[i], true);
+        for (let tag of tags) {
+            this.get_tags_field().tagEditor('removeTag', tag, !hf);
         }
         this.setting_tags = false;
     }
@@ -114,6 +121,7 @@ class NotesField extends React.Component {
         };
         this.hideMarkdown = this.hideMarkdown.bind(this);
         this.showMarkdown = this.showMarkdown.bind(this);
+        this.handleMyBlur = this.handleMyBlur.bind(this);
         this.notes_ref = React.createRef();
         this.md_ref = React.createRef();
         this.converter = new showdown.Converter();
@@ -158,6 +166,13 @@ class NotesField extends React.Component {
         this.setState({ "show_markdown": false });
     }
 
+    handleMyBlur() {
+        this.showMarkdown();
+        if (this.props.handleBlur != null) {
+            this.props.handleBlur();
+        }
+    }
+
     showMarkdown() {
         if (!this.hasOnlyWhitespace) {
             this.setState({ "show_markdown": true });
@@ -188,7 +203,7 @@ class NotesField extends React.Component {
                 rows: "10",
                 placeholder: "notes",
                 style: notes_style,
-                onBlur: this.showMarkdown,
+                onBlur: this.handleMyBlur,
                 onChange: this.props.handleChange,
                 readOnly: this.context.readOnly,
                 value: this.props.notes
@@ -208,7 +223,12 @@ NotesField.propTypes = {
     notes: PropTypes.string,
     handleChange: PropTypes.func,
     outer_selector: PropTypes.string,
-    show_markdown_initial: PropTypes.bool
+    show_markdown_initial: PropTypes.bool,
+    handleBlur: PropTypes.func
+};
+
+NotesField.defaultProops = {
+    handleBlur: null
 };
 
 class CombinedMetadata extends React.Component {
@@ -276,7 +296,9 @@ class CombinedMetadata extends React.Component {
                 React.createElement(NotesField, { notes: this.props.notes,
                     handleChange: this.handleNotesChange,
                     show_markdown_initial: true,
-                    outer_selector: "#" + this.props.outer_id })
+                    outer_selector: "#" + this.props.outer_id,
+                    handleBlur: this.props.handleNotesBlur
+                })
             )
         );
     }
@@ -291,11 +313,13 @@ CombinedMetadata.propTypes = {
     tags: PropTypes.array,
     notes: PropTypes.string,
     category: PropTypes.string,
-    handleChange: PropTypes.func
+    handleChange: PropTypes.func,
+    handleNotesBlur: PropTypes.func
 };
 
 CombinedMetadata.defaultProps = {
     outer_style: { "marginLeft": 20 },
     outer_id: "metadata-holder",
+    handleNotesBlur: null,
     category: null
 };
