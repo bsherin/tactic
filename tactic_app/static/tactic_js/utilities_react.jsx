@@ -7,6 +7,15 @@ let select_modal_template;
 let confirm_template;
 let tooltips;
 
+function doBinding(obj) {
+    const proto = Object.getPrototypeOf(obj);
+    for (const key of Object.getOwnPropertyNames(proto)) {
+        if (key.startsWith("_")) {
+            obj[key] = obj[key].bind(obj);
+        }
+    }
+}
+
 function updateObject(o1, o2) {
     for (let prop in o2) {
         if (o2.hasOwnProperty(prop)){

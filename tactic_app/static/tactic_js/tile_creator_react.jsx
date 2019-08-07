@@ -501,7 +501,6 @@ class CreatorApp extends React.Component {
                                                   category={this.state.category}
                                                   res_type="tile"
                                                   handleChange={this.handleStateChange}
-                                                  outer_id="metadata-pane"
                                                 />
                             </Rbs.Tab>
                             <Rbs.Tab eventKey="options" title="options">
