@@ -23,17 +23,17 @@ class LibraryHomeApp extends React.Component {
             "usable_width": window.innerWidth - 2 * MARGIN_SIZE - 30,
             "usable_height": window.innerHeight - 50
         };
-        this.update_window_dimensions = this.update_window_dimensions.bind(this)
+        doBinding(this);
     }
 
     componentDidMount() {
-        window.addEventListener("resize", this.update_window_dimensions);
+        window.addEventListener("resize", this._update_window_dimensions);
         this.setState({"mounted": true});
-        this.update_window_dimensions();
+        this._update_window_dimensions();
         stopSpinner()
     }
 
-    update_window_dimensions() {
+    _update_window_dimensions() {
         this.setState({
             "usable_width": window.innerWidth - 2 * MARGIN_SIZE - 30,
             "usable_height": window.innerHeight - 50
@@ -113,6 +113,15 @@ class LibraryHomeApp extends React.Component {
     }
 }
 
+function doBinding(obj) {
+    const proto = Object.getPrototypeOf(obj);
+    for (const key of Object.getOwnPropertyNames(proto)) {
+        if (key.startsWith("_")) {
+            obj[key] = obj[key].bind(obj);
+        }
+    }
+}
+
 class LibraryPane extends React.Component {
 
     constructor(props) {
@@ -130,17 +139,7 @@ class LibraryPane extends React.Component {
             search_inside_checked: false,
             search_metadata_checked: false
         };
-        this.handleSplitResize = this.handleSplitResize.bind(this);
-        this.sortOnField = this.sortOnField.bind(this);
-        this.handleRowClick = this.handleRowClick.bind(this);
-        this.handleMetadataChange = this.handleMetadataChange.bind(this);
-        this.saveFromSelectedResource = this.saveFromSelectedResource.bind(this);
-        this.handleSearchFieldChange = this.handleSearchFieldChange.bind(this);
-        this.handleClearSearch = this.handleClearSearch.bind(this);
-        this.handleSearchInsideChange = this.handleSearchInsideChange.bind(this);
-        this.handleSearchMetadataChange = this.handleSearchMetadataChange.bind(this);
-        this.filter_func = this.filter_func.bind(this);
-        this.filter_on_match_list = this.filter_on_match_list.bind(this)
+        doBinding(this);
     }
 
     get_height_minus_top_offset (element_ref) {
@@ -166,7 +165,7 @@ class LibraryPane extends React.Component {
         this.setState({"mounted": true});
         postAjax(`resource_list_with_metadata/${this.props.res_type}`, {}, function(data) {
             self.setState({"data_list": data.data_list});
-            self.sortOnField("updated_for_sort", "descending")
+            self._sortOnField("updated_for_sort", "descending")
             }
         )
     }
@@ -194,7 +193,7 @@ class LibraryPane extends React.Component {
         return null
     }
 
-    saveFromSelectedResource() {
+    _saveFromSelectedResource() {
         const result_dict = {"res_type": this.props.res_type,
             "res_name": this.state.list_of_selected[0],
             "tags": this.state.selected_resource.tags,
@@ -231,13 +230,13 @@ class LibraryPane extends React.Component {
             .catch(doFlash)
     }
 
-    handleMetadataChange(changed_state_elements) {
+    _handleMetadataChange(changed_state_elements) {
         if (!this.state.multi_select) {
             let revised_selected_resource = Object.assign({}, this.state.selected_resource);
             revised_selected_resource = Object.assign(revised_selected_resource, changed_state_elements);
             if (Object.keys(changed_state_elements).includes("tags")) {
                 revised_selected_resource["tags"] = revised_selected_resource["tags"].join(" ");
-                this.setState({selected_resource: revised_selected_resource}, this.saveFromSelectedResource)
+                this.setState({selected_resource: revised_selected_resource}, this._saveFromSelectedResource)
             }
             else {
                 this.setState({selected_resource: revised_selected_resource})
@@ -251,7 +250,7 @@ class LibraryPane extends React.Component {
         }
     }
 
-    sortOnField(sort_field, direction) {
+    _sortOnField(sort_field, direction) {
         function compare_func (a, b) {
             let result;
             if (a[sort_field] < b[sort_field]) {
@@ -276,14 +275,14 @@ class LibraryPane extends React.Component {
         })
     }
 
-    handleSplitResize(left_width, right_width, width_fraction) {
+    _handleSplitResize(left_width, right_width, width_fraction) {
         this.setState({"left_width": left_width - 50})
     }
 
-    handleRowClick(row_dict, shift_key_down=false) {
+    _handleRowClick(row_dict, shift_key_down=false) {
         if (!this.state.multi_select &&
             (this.state.selected_resource.notes != this.get_data_list_entry(this.state.selected_resource.name).notes)) {
-            this.saveFromSelectedResource()
+            this._saveFromSelectedResource()
         }
         if (shift_key_down && (row_dict.name != this.state.selected_resource.name)) {
             let common_tags = [];
@@ -331,13 +330,12 @@ class LibraryPane extends React.Component {
         }
     }
 
-    handleSearchFieldChange(event) {
+    _handleSearchFieldChange(event) {
         this.setState({"search_field_value": event.target.value}, this.update_match_lists);
 
     }
 
-
-    handleClearSearch() {
+    _handleClearSearch() {
         this.setState({"search_field_value": ""}, this.update_match_lists)
     }
 
@@ -355,7 +353,7 @@ class LibraryPane extends React.Component {
             .catch(doFlash);
     }
 
-    handleSearchMetadataChange(event) {
+    _handleSearchMetadataChange(event) {
         let search_info ={"search_text": this.state.search_field_value};
         let self = this;
         this.setState({"search_metadata_checked": event.target.checked},
@@ -390,16 +388,16 @@ class LibraryPane extends React.Component {
             .catch(doFlash);
     }
 
-    handleSearchInsideChange(event) {
+    _handleSearchInsideChange(event) {
         this.setState({"search_inside_checked": event.target.checked},
             this.update_match_lists)
     }
 
-    filter_func(resource_dict) {
+    _filter_func(resource_dict) {
         return resource_dict.name.toLowerCase().search(this.state.search_field_value) != -1
     }
 
-    filter_on_match_list(resource_dict) {
+    _filter_on_match_list(resource_dict) {
         return this.state.match_list.includes(resource_dict.name)
     }
 
@@ -411,9 +409,9 @@ class LibraryPane extends React.Component {
                 <CombinedMetadata tags={this.state.selected_resource.tags.split(" ")}
                                   created={this.state.selected_resource.created}
                                   notes={this.state.selected_resource.notes}
-                                  handleChange={this.handleMetadataChange}
+                                  handleChange={this._handleMetadataChange}
                                   res_type={this.props.res_type}
-                                  handleNotesBlur={this.state.multi_select ? null : this.saveFromSelectedResource}
+                                  handleNotesBlur={this.state.multi_select ? null : this._saveFromSelectedResource}
                 />
         );
         let th_style= {
@@ -431,10 +429,10 @@ class LibraryPane extends React.Component {
             filtered_data_list = this.state.data_list
         }
         else if (this.state.search_metadata_checked || this.state.search_inside_checked) {
-            filtered_data_list = this.state.data_list.filter(this.filter_on_match_list)
+            filtered_data_list = this.state.data_list.filter(this._filter_on_match_list)
         }
         else {
-            filtered_data_list = this.state.data_list.filter(this.filter_func)
+            filtered_data_list = this.state.data_list.filter(this._filter_func)
         }
 
         let left_pane = (
@@ -446,19 +444,19 @@ class LibraryPane extends React.Component {
                     <div className="d-flex flex-column">
                         <Toolbar button_groups={this.props.button_groups}/>
                         <SearchForm res_type={this.props.res_type}
-                                    handleClear={this.handleClearSearch}
+                                    handleClear={this._handleClearSearch}
                                     allow_search_inside={this.props.allow_search_inside}
                                     allow_search_metadata={this.props.allow_search_metadata}
-                                    onChange={this.handleSearchFieldChange}
-                                    handleSearchInsideChange={this.handleSearchInsideChange}
-                                    handleSearchMetadataChange={this.handleSearchMetadataChange}
+                                    onChange={this._handleSearchFieldChange}
+                                    handleSearchInsideChange={this._handleSearchInsideChange}
+                                    handleSearchMetadataChange={this._handleSearchMetadataChange}
                                     search_field_value={this.state.search_field_value}
                         />
                         <div style={th_style}>
                             <SelectorTable data_list={filtered_data_list}
-                                           handleHeaderCellClick={this.sortOnField}
+                                           handleHeaderCellClick={this._sortOnField}
                                            selected_resource_names={this.state.list_of_selected}
-                                           handleRowClick={this.handleRowClick}
+                                           handleRowClick={this._handleRowClick}
 
                             />
                         </div>
@@ -473,8 +471,8 @@ class LibraryPane extends React.Component {
                     right_pane={right_pane}
                     available_height={available_height}
                     available_width={available_width}
-                    initial_width_fraction={.75}
-                    handleSplitUpdate={this.handleSplitResize}
+                    initial_width_fraction={.65}
+                    handleSplitUpdate={this._handleSplitResize}
                 />
             </div>
         )

@@ -490,8 +490,7 @@ class CreatorApp extends React.Component {
                             created: this.props.created,
                             category: this.state.category,
                             res_type: "tile",
-                            handleChange: this.handleStateChange,
-                            outer_id: "metadata-pane"
+                            handleChange: this.handleStateChange
                         })
                     ),
                     React.createElement(

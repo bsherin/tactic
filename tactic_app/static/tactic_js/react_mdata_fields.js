@@ -10,6 +10,7 @@ class TagsField extends React.Component {
     constructor(props) {
         super(props);
         this.tags_field_ref = React.createRef();
+        this.tag_containing_div = React.createRef();
         this.last_tags_list = [];
         this.handleMyChange = this.handleMyChange.bind(this);
         this.setting_tags = false;
@@ -50,15 +51,20 @@ class TagsField extends React.Component {
         this.create_tag_editor(this.props.tags);
     }
 
-    get has_focus() {
-        return this.tags_field_ref.current == document.activeElement;
-    }
-
     componentDidUpdate() {
         if (this.props.tags != this.last_tags_list) {
             this.last_tags_list = this.props.tags;
             this.set_tag_list(this.props.tags);
         }
+    }
+
+    // The stuff with has_focus is necessary to get the tag editor to behave differently
+    // when the tags are changed by direct editing or because the user has clicked on
+    // a row in the table. Otherwise the tag editor does ugly things, positioning the curoor
+    // in a weird place or inserting randoom spaces.
+
+    get has_focus() {
+        return this.tag_containing_div.current.contains(document.activeElement);
     }
 
     get_tags() {
@@ -95,7 +101,7 @@ class TagsField extends React.Component {
         let dstyle = { "pointerEvents": this.context.readOnly ? "none" : "all" };
         return React.createElement(
             "div",
-            { style: dstyle },
+            { ref: this.tag_containing_div, style: dstyle },
             React.createElement(Rbs.Form.Control, { as: "textarea",
                 ref: this.tags_field_ref,
                 className: "metadata-field", rows: "1" })
@@ -138,13 +144,6 @@ class NotesField extends React.Component {
 
     getMarkdownField() {
         return $(this.md_ref.current);
-    }
-
-    updateMarkdownHeight() {
-        let me = this.getMarkdownField();
-        let outer = $(this.props.outer_selector);
-        let new_max_height = outer.height() - (me.offset().top - outer.offset().top);
-        this.setState({ 'md_height': new_max_height });
     }
 
     componentDidUpdate() {
@@ -222,7 +221,6 @@ NotesField.contextType = ViewerContext;
 NotesField.propTypes = {
     notes: PropTypes.string,
     handleChange: PropTypes.func,
-    outer_selector: PropTypes.string,
     show_markdown_initial: PropTypes.bool,
     handleBlur: PropTypes.func
 };
@@ -255,7 +253,7 @@ class CombinedMetadata extends React.Component {
     render() {
         return React.createElement(
             "div",
-            { className: "combined-metadata", style: this.props.outer_style, id: this.props.outer_id },
+            { className: "combined-metadata", style: this.props.outer_style },
             React.createElement(
                 Rbs.Form.Label,
                 null,
@@ -296,18 +294,15 @@ class CombinedMetadata extends React.Component {
                 React.createElement(NotesField, { notes: this.props.notes,
                     handleChange: this.handleNotesChange,
                     show_markdown_initial: true,
-                    outer_selector: "#" + this.props.outer_id,
                     handleBlur: this.props.handleNotesBlur
                 })
             )
         );
     }
-
 }
 
 CombinedMetadata.propTypes = {
     outer_style: PropTypes.object,
-    outer_id: PropTypes.string,
     res_type: PropTypes.string,
     created: PropTypes.string,
     tags: PropTypes.array,
@@ -319,7 +314,6 @@ CombinedMetadata.propTypes = {
 
 CombinedMetadata.defaultProps = {
     outer_style: { "marginLeft": 20 },
-    outer_id: "metadata-holder",
     handleNotesBlur: null,
     category: null
 };
