@@ -330,8 +330,12 @@ class LibraryPane extends React.Component {
             return resource_dict.name.toLowerCase().search(search_field_value) != -1
     }
 
+    get all_names() {
+        return this.state.data_list.map((rec) => rec.name);
+    }
+
     match_all() {
-        let new_match_list = this.state.data_list.map((rec) => rec.name);
+        let new_match_list = this.all_names;
         this.setState({"match_list": new_match_list})
     }
 
@@ -380,10 +384,6 @@ class LibraryPane extends React.Component {
                             self.props._handleMatchListUpdate(match_list);
                             self.setState({"match_list": match_list})
                         })
-                            // self.setState({
-                            //     "search_inside_checked": true,
-                            //     "search_metadata_checked": true})
-                            // })
                         .catch(doFlash);
                 }
                 else {
@@ -417,6 +417,31 @@ class LibraryPane extends React.Component {
             this.setState({"match_list": new_match_list})
         }
 
+    }
+
+    _handleArrowKeyPress(key) {
+        if (this.state.multi_select) return;
+        let anames = this.all_names;
+        let current_index = anames.indexOf(this.state.selected_resource.name);
+        let new_index;
+        let new_selected_res;
+        if (key == "ArrowDown") {
+            new_index =  current_index + 1;
+            while (!this.state.match_list.includes(anames[new_index])) {
+                new_index += 1;
+                if (new_index >= anames.length) return
+            }
+        }
+        else {
+            new_index = current_index - 1;
+            while (!this.state.match_list.includes(anames[new_index])) {
+                new_index -= 1;
+                if (new_index < 0) return
+            }
+        }
+        this.setState({"selected_resource": this.state.data_list[new_index],
+            "list_of_selected": [anames[new_index]]
+        })
     }
 
     render() {
@@ -464,7 +489,7 @@ class LibraryPane extends React.Component {
                                            handleHeaderCellClick={this._sortOnField}
                                            selected_resource_names={this.state.list_of_selected}
                                            handleRowClick={this._handleRowClick}
-
+                                           handleArrowKeyPress={this._handleArrowKeyPress}
                             />
                         </div>
                     </div>
