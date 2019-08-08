@@ -6,26 +6,64 @@ var Rbs = window.ReactBootstrap;
 
 class SearchForm extends React.Component {
 
+    constructor(props) {
+        super(props);
+        doBinding(this);
+        this.state = {
+            search_field_value: "",
+            search_inside_checked: false,
+            search_metadata_checked: false
+        }
+    }
+
+    componentDidMount() {
+        this._do_update()
+    }
+
+    _handleSearchFieldChange(event) {
+        this.setState({"search_field_value": event.target.value}, this._do_update);
+
+    }
+
+    _handleClearSearch() {
+        this.setState({"search_field_value": ""}, this._do_update);
+    }
+
+    _handleSearchMetadataChange(event) {
+        this.setState({"search_metadata_checked": event.target.checked}, this._do_update);
+    }
+
+    _handleSearchInsideChange(event) {
+        this.setState({"search_inside_checked": event.target.checked}, this._do_update);
+
+    }
+
+    _do_update() {
+        this.props._update_match_lists(this.state.search_field_value,
+            this.state.search_inside_checked,
+            this.state.search_metadata_checked)
+    }
+
     render() {
         return (
             <Rbs.Form inline={true}>
                 <Rbs.Form.Control as="input"
                                   placeholder="Search"
-                                  value={this.props.search_field_value}
-                                  onChange={this.props.onChange}/>
-                <Rbs.Button variant="outline-secondary" type="button" onClick={this.props.handleClear}>
+                                  value={this.state.search_field_value}
+                                  onChange={this._handleSearchFieldChange}/>
+                <Rbs.Button variant="outline-secondary" type="button" onClick={this._handleClearSearch}>
                         clear
                 </Rbs.Button>
                 {this.props.allow_search_inside &&
                     <Rbs.Form.Check inline label="search inside"
-                                    checked={this.props.search_inside_checked}
-                                    onChange={this.props.handleSearchInsideChange}
+                                    checked={this.state.search_inside_checked}
+                                    onChange={this._handleSearchInsideChange}
                     />
                 }
                 {this.props.allow_search_metadata &&
                     <Rbs.Form.Check inline label="search metadata"
-                                    checked={this.props.search_metadata_checked}
-                                    onChange={this.props.handleSearchMetadataChange}
+                                    checked={this.state.search_metadata_checked}
+                                    onChange={this._handleSearchMetadataChange}
                     />
                 }
             </Rbs.Form>
@@ -34,15 +72,9 @@ class SearchForm extends React.Component {
 }
 
 SearchForm.propTypes = {
-    handleClear: PropTypes.func,
     allow_search_inside: PropTypes.bool,
     allow_search_metadata: PropTypes.bool,
-    search_inside_checked: PropTypes.bool,
-    search_metadata_checked: PropTypes.bool,
-    handleSearchInsideChange: PropTypes.func,
-    handleSearchMetadataChange: PropTypes.func,
-    onChange: PropTypes.func,
-    search_field_value: PropTypes.string
+    _update_match_lists: PropTypes.func
 };
 
 class SelectorTableCell extends React.Component {

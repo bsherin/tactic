@@ -6,6 +6,7 @@ import {CombinedMetadata} from "./react_mdata_fields.js";
 import {HorizontalPanes} from "./resizing_layouts.js";
 import {Toolbar} from "./react_toolbar.js";
 import {SearchForm, SelectorTable} from "./library_widgets.js";
+import {TagButtonList, get_all_parent_tags} from "./tag_buttons_react.js";
 
 const MARGIN_SIZE = 17;
 
@@ -133,11 +134,9 @@ class LibraryPane extends React.Component {
             mounted: false,
             multi_select: false,
             list_of_selected: [],
-            left_width: this.props.usable_width / 2 - 25,
+            left_width: this.props.usable_width / 2 - 100,
             match_list: [],
-            search_field_value: "",
-            search_inside_checked: false,
-            search_metadata_checked: false
+            tag_list: []
         };
         doBinding(this);
     }
@@ -164,8 +163,14 @@ class LibraryPane extends React.Component {
         let self = this;
         this.setState({"mounted": true});
         postAjax(`resource_list_with_metadata/${this.props.res_type}`, {}, function(data) {
-            self.setState({"data_list": data.data_list});
-            self._sortOnField("updated_for_sort", "descending")
+            self.setState({"data_list": data.data_list}, () => {
+                self._update_match_lists("", false, false);
+                self._sortOnField("updated_for_sort", "descending");
+                $.getJSON(`${$SCRIPT_ROOT}/request_update_tag_list/${self.props.res_type}`, function (data) {
+                    self.setState({"tag_list": data.tag_list})
+                })
+            });
+
             }
         )
     }
@@ -315,54 +320,55 @@ class LibraryPane extends React.Component {
             })
         }
 
-
     }
 
-    update_match_lists() {
-        if (this.state.search_inside_checked) {
-                this.doSearchInside(this.state.search_metadata_checked)
+    _handleMatchListUpdate(match_list) {
+        this.setState({"match_list": match_list})
+    }
+
+    _filter_func(resource_dict, search_field_value) {
+            return resource_dict.name.toLowerCase().search(search_field_value) != -1
+    }
+
+    match_all() {
+        let new_match_list = this.state.data_list.map((rec) => rec.name);
+        this.setState({"match_list": new_match_list})
+    }
+
+    _update_match_lists(search_field_value, search_inside, search_metadata) {
+        if (search_field_value == "") {
+            this.match_all()
+        }
+        else if (search_inside) {
+                this.doSearchInside(search_field_value, search_metadata)
             }
-        else if (this.state.search_metadata_checked){
-            this.doSearchMetadata()
+        else if (search_metadata){
+            this.doSearchMetadata(search_field_value)
         }
         else {
-            this.setState({"match_list": []})
+            let new_match_list = [];
+            for (let rec of this.state.data_list) {
+                if (this._filter_func(rec, search_field_value)) {
+                    new_match_list.push(rec.name)
+                }
+            }
+            this.setState({"match_list": new_match_list})
         }
     }
 
-    _handleSearchFieldChange(event) {
-        this.setState({"search_field_value": event.target.value}, this.update_match_lists);
-
-    }
-
-    _handleClearSearch() {
-        this.setState({"search_field_value": ""}, this.update_match_lists)
-    }
-
-    doSearchMetadata() {
+    doSearchMetadata(search_field_value) {
         let self = this;
-        let search_info ={"search_text": this.state.search_field_value};
+        let search_info ={"search_text": search_field_value};
         postAjaxPromise(this.props.search_metadata_view, search_info)
             .then((data) => {
                 var match_list = data.match_list;
-                self.setState({
-                    "match_list": match_list,
-                    "search_metadata_checked": true
-                })
+                self.setState({"match_list": match_list})
             })
             .catch(doFlash);
     }
 
-    _handleSearchMetadataChange(event) {
-        let search_info ={"search_text": this.state.search_field_value};
-        let self = this;
-        this.setState({"search_metadata_checked": event.target.checked},
-            this.update_match_lists
-        )
-    }
-
-    doSearchInside(search_metadata_also) {
-        let search_info ={"search_text": this.state.search_field_value};
+    doSearchInside(search_field_value, search_metadata_also) {
+        let search_info ={"search_text": search_field_value};
         let self = this;
         postAjaxPromise(this.props.search_inside_view, search_info)
             .then((data) => {
@@ -371,34 +377,46 @@ class LibraryPane extends React.Component {
                     postAjaxPromise(self.props.search_metadata_view, search_info)
                         .then((data) => {
                             match_list = match_list.concat(data.match_list);
-                            self.setState({"match_list": match_list,
-                                "search_inside_checked": true,
-                                "search_metadata_checked": true})
-                            })
+                            self.props._handleMatchListUpdate(match_list);
+                            self.setState({"match_list": match_list})
+                        })
+                            // self.setState({
+                            //     "search_inside_checked": true,
+                            //     "search_metadata_checked": true})
+                            // })
                         .catch(doFlash);
                 }
                 else {
-                    self.setState({
-                        "match_list": match_list,
-                        "search_inside_checked": true,
-                        "search_metadata_checked": false
-                    })
+                    self.setState({"match_list": match_list})
                 }
             })
             .catch(doFlash);
     }
 
-    _handleSearchInsideChange(event) {
-        this.setState({"search_inside_checked": event.target.checked},
-            this.update_match_lists)
-    }
-
-    _filter_func(resource_dict) {
-        return resource_dict.name.toLowerCase().search(this.state.search_field_value) != -1
-    }
-
     _filter_on_match_list(resource_dict) {
         return this.state.match_list.includes(resource_dict.name)
+    }
+
+    tagMatch(search_tag, item_tags) {
+        let tags_to_match = item_tags.concat(get_all_parent_tags(item_tags));
+        return tags_to_match.includes(search_tag)
+    }
+
+    _handleSearchFromTag(search_tag) {
+        if (search_tag == "all") {
+            this.match_all();
+        }
+        else {
+            let new_match_list = [];
+            for (let rec of this.state.data_list) {
+                let rtags = rec.tags.toLowerCase().split(" ");
+                if (this.tagMatch(search_tag, rtags)) {
+                    new_match_list.push(rec.name)
+                }
+            }
+            this.setState({"match_list": new_match_list})
+        }
+
     }
 
     render() {
@@ -421,36 +439,25 @@ class LibraryPane extends React.Component {
             "overflowY": "scroll",
             "lineHeight": 1,
             "whiteSpace": "nowrap",
-            "width": this.state.left_width,
+            "width": this.state.left_width - 150,
             "overflowX": "hidden"
         };
-        let filtered_data_list;
-        if (this.state.filter_view_value == "") {
-            filtered_data_list = this.state.data_list
-        }
-        else if (this.state.search_metadata_checked || this.state.search_inside_checked) {
-            filtered_data_list = this.state.data_list.filter(this._filter_on_match_list)
-        }
-        else {
-            filtered_data_list = this.state.data_list.filter(this._filter_func)
-        }
+
+        let filtered_data_list = this.state.data_list.filter(this._filter_on_match_list);
 
         let left_pane = (
             <React.Fragment>
                 <div className="d-flex flex-row" style={{"maxHeight": "100%"}}>
                     <div className="d-flex justify-content-around" style={{"width": 150}}>
-                        tags
+                        <TagButtonList res_type={this.props.res_type}
+                                       tag_list={this.state.tag_list}
+                                       handleSearchFromTag={this._handleSearchFromTag}/>
                     </div>
                     <div className="d-flex flex-column">
                         <Toolbar button_groups={this.props.button_groups}/>
-                        <SearchForm res_type={this.props.res_type}
-                                    handleClear={this._handleClearSearch}
-                                    allow_search_inside={this.props.allow_search_inside}
+                        <SearchForm allow_search_inside={this.props.allow_search_inside}
                                     allow_search_metadata={this.props.allow_search_metadata}
-                                    onChange={this._handleSearchFieldChange}
-                                    handleSearchInsideChange={this._handleSearchInsideChange}
-                                    handleSearchMetadataChange={this._handleSearchMetadataChange}
-                                    search_field_value={this.state.search_field_value}
+                                    _update_match_lists={this._update_match_lists}
                         />
                         <div style={th_style}>
                             <SelectorTable data_list={filtered_data_list}

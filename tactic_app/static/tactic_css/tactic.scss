@@ -400,30 +400,6 @@ a[role="tab"] {
     border: 0 !important;
     font-size: 13px !important;
 
-    .tag-icon-tag.fal, .tag-icon-folder.fal {
-        display: inline-block !important;
-    }
-    .tag-icon-tag.fas, .tag-icon-folder.fas {
-        display: none !important;
-    }
-}
-
-.tag-button.expanded {
-    .fa-caret-down {
-        display: inline-block !important;
-    }
-    .fa-caret-right {
-        display: none !important;
-    }
-}
-
-.tag-button.shrunk {
-    .fa-caret-down {
-        display: none !important;
-    }
-    .fa-caret-right {
-        display: inline-block !important;
-    }
 }
 
 
