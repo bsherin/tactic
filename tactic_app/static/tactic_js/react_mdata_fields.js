@@ -12,17 +12,17 @@ class TagsField extends React.Component {
         this.tags_field_ref = React.createRef();
         this.tag_containing_div = React.createRef();
         this.last_tags_list = [];
-        this.handleMyChange = this.handleMyChange.bind(this);
         this.setting_tags = false;
         this.state = { has_focus: false };
         this.all_tags = [];
+        doBinding(this);
     }
 
     get_tags_field() {
         return $(this.tags_field_ref.current);
     }
 
-    handleMyChange(field, editor, tags) {
+    _handleMyChange(field, editor, tags) {
         if (!this.setting_tags) {
             this.props.handleChange(field, editor, tags);
         }
@@ -125,9 +125,7 @@ class NotesField extends React.Component {
             "md_height": 500,
             "show_markdown": this.hasOnlyWhitespace ? false : this.props.show_markdown_initial
         };
-        this.hideMarkdown = this.hideMarkdown.bind(this);
-        this.showMarkdown = this.showMarkdown.bind(this);
-        this.handleMyBlur = this.handleMyBlur.bind(this);
+        doBinding(this);
         this.notes_ref = React.createRef();
         this.md_ref = React.createRef();
         this.converter = new showdown.Converter();
@@ -152,7 +150,7 @@ class NotesField extends React.Component {
             this.awaiting_focus = false;
         } else if (!this.state.show_markdown && this.notes_ref.current != document.activeElement) {
             // If we are here it means the change was initiated externally
-            this.showMarkdown();
+            this._showMarkdown();
         }
     }
 
@@ -160,19 +158,19 @@ class NotesField extends React.Component {
         this.getNotesField().focus();
     }
 
-    hideMarkdown() {
+    _hideMarkdown() {
         this.awaiting_focus = true; // We can't set focus until the input is visible
         this.setState({ "show_markdown": false });
     }
 
-    handleMyBlur() {
-        this.showMarkdown();
+    _handleMyBlur() {
+        this._showMarkdown();
         if (this.props.handleBlur != null) {
             this.props.handleBlur();
         }
     }
 
-    showMarkdown() {
+    _showMarkdown() {
         if (!this.hasOnlyWhitespace) {
             this.setState({ "show_markdown": true });
         }
@@ -202,14 +200,14 @@ class NotesField extends React.Component {
                 rows: "10",
                 placeholder: "notes",
                 style: notes_style,
-                onBlur: this.handleMyBlur,
+                onBlur: this._handleMyBlur,
                 onChange: this.props.handleChange,
                 readOnly: this.context.readOnly,
                 value: this.props.notes
             }),
             React.createElement("div", { ref: this.md_ref,
                 style: md_style,
-                onClick: this.hideMarkdown,
+                onClick: this._hideMarkdown,
                 className: "notes-field-markdown-output",
                 dangerouslySetInnerHTML: converted_dict })
         );
@@ -233,20 +231,18 @@ class CombinedMetadata extends React.Component {
 
     constructor(props) {
         super(props);
-        this.handleTagsChange = this.handleTagsChange.bind(this);
-        this.handleCategoryChange = this.handleCategoryChange.bind(this);
-        this.handleNotesChange = this.handleNotesChange.bind(this);
+        doBinding(this);
     }
 
-    handleNotesChange(event) {
+    _handleNotesChange(event) {
         this.props.handleChange({ "notes": event.target.value });
     }
 
-    handleTagsChange(field, editor, tags) {
+    _handleTagsChange(field, editor, tags) {
         this.props.handleChange({ "tags": tags });
     }
 
-    handleCategoryChange(event) {
+    _handleCategoryChange(event) {
         this.props.handleChange({ "category": event.target.value });
     }
 
@@ -268,7 +264,7 @@ class CombinedMetadata extends React.Component {
                     "Tags"
                 ),
                 React.createElement(TagsField, { tags: this.props.tags,
-                    handleChange: this.handleTagsChange,
+                    handleChange: this._handleTagsChange,
                     res_type: this.props.res_type })
             ),
             this.props.category != null && React.createElement(
@@ -280,7 +276,7 @@ class CombinedMetadata extends React.Component {
                     "Category"
                 ),
                 React.createElement(Rbs.Form.Control, { as: "input",
-                    onChange: this.handleCategoryChange,
+                    onChange: this._handleCategoryChange,
                     value: this.props.category })
             ),
             React.createElement(
@@ -292,7 +288,7 @@ class CombinedMetadata extends React.Component {
                     "Notes"
                 ),
                 React.createElement(NotesField, { notes: this.props.notes,
-                    handleChange: this.handleNotesChange,
+                    handleChange: this._handleNotesChange,
                     show_markdown_initial: true,
                     handleBlur: this.props.handleNotesBlur
                 })

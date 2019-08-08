@@ -240,20 +240,6 @@ a[role="tab"] {
   text-align: left;
   border: 0 !important;
   font-size: 13px !important; }
-  .tag-button .tag-icon-tag.fal, .tag-button .tag-icon-folder.fal {
-    display: inline-block !important; }
-  .tag-button .tag-icon-tag.fas, .tag-button .tag-icon-folder.fas {
-    display: none !important; }
-
-.tag-button.expanded .fa-caret-down {
-  display: inline-block !important; }
-.tag-button.expanded .fa-caret-right {
-  display: none !important; }
-
-.tag-button.shrunk .fa-caret-down {
-  display: none !important; }
-.tag-button.shrunk .fa-caret-right {
-  display: inline-block !important; }
 
 .tag-button.active, .tag-button:focus {
   font-weight: 900 !important;
