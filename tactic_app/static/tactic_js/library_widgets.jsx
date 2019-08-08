@@ -95,14 +95,13 @@ class SelectorTableCell extends React.Component {
 class SelectorTableRow extends React.Component {
     constructor(props) {
         super(props);
-        this.handleClick = this.handleClick.bind(this)
+        doBinding(this)
     }
 
-    handleClick(event){
+    _handleClick(event){
         this.props.handleRowClick(this.props.data_dict, event.shiftKey);
         event.preventDefault()
     }
-
 
     render() {
 
@@ -114,7 +113,8 @@ class SelectorTableRow extends React.Component {
 
         let cname = this.props.active ? 'selector-button active' : 'selector-button';
         return (
-            <tr className={cname} id={this.props.row_index} onClick={this.handleClick}>
+            <tr className={cname} id={this.props.row_index} onClick={this._handleClick}
+            >
                 {cells}
             </tr>
         )
@@ -132,14 +132,14 @@ SelectorTableRow.propTypes = {
 class SelectorHeaderCell extends React.Component {
     constructor(props) {
         super(props);
-        this.handleMyClick = this.handleMyClick.bind(this);
+        doBinding(this);
         this.state = {
             "next_sort": this.props.first_sort,
             "sorting": false,
         }
     }
 
-    handleMyClick() {
+    _handleMyClick() {
         this.props.handleHeaderCellClick(this.props.sort_field, this.state.next_sort);
         let next_sort = this.state.next_sort == "ascending" ? "descending" : "ascending";
         this.setState({"next_sort": next_sort, "sorting": true})
@@ -149,14 +149,14 @@ class SelectorHeaderCell extends React.Component {
         if (this.state.sorting) {
             let icon = this.state.next_sort == "ascending" ? "sort-down" : "sort-up";
             return (
-                <th onClick={this.handleMyClick}>
+                <th onClick={this._handleMyClick}>
                     {this.props.name}
                     <span className={`fas fa-${icon}`}></span>
                 </th>
             )
         }
         return (
-            <th onClick={this.handleMyClick}>
+            <th onClick={this._handleMyClick}>
                 {this.props.name}
             </th>
         )
@@ -199,12 +199,19 @@ SelectorTableHeader.propTypes = {
 class SelectorTable extends React.Component {
     constructor(props) {
         super(props);
+        doBinding(this);
         this.tbody_ref = React.createRef();
     }
 
     componentDidMount() {
     }
 
+    _handleKeyDown(event) {
+        if (["ArrowDown", "ArrowUp"].includes(event.key)) {
+            this.props.handleArrowKeyPress(event.key);
+            event.preventDefault()
+        }
+    }
 
     render () {
         let colnames = Object.keys(this.props.columns);
@@ -218,7 +225,9 @@ class SelectorTable extends React.Component {
             />
         );
         return (
-            <table className="tile-table table sortable table-striped table-bordered table-sm">
+            <table tabIndex="0"
+                   onKeyDown={this._handleKeyDown}
+                   className="tile-table table sortable table-striped table-bordered table-sm">
                 <SelectorTableHeader columns={this.props.columns}
                                      handleHeaderCellClick={this.props.handleHeaderCellClick}
                 />
@@ -237,7 +246,8 @@ SelectorTable.propTypes = {
     selected_resource_names: PropTypes.array,
     handleHeaderCellClick: PropTypes.func,
     content_editable: PropTypes.bool,
-    handleRowClick: PropTypes.func
+    handleRowClick: PropTypes.func,
+    handleArrowKeyPress: PropTypes.func
 };
 
 SelectorTable.defaultProps = {
