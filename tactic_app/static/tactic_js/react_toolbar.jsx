@@ -76,9 +76,9 @@ class Toolbar extends React.Component {
             group_counter += 1
         }
         return (
-            <React.Fragment>
+            <Rbs.ButtonToolbar>
                 {items}
-            </React.Fragment>
+            </Rbs.ButtonToolbar>
         )
     }
 }

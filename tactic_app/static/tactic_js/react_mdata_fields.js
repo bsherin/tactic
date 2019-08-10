@@ -250,48 +250,62 @@ class CombinedMetadata extends React.Component {
         return React.createElement(
             "div",
             { className: "combined-metadata", style: this.props.outer_style },
-            React.createElement(
-                Rbs.Form.Label,
+            this.props.name != null && React.createElement(
+                "h3",
                 null,
-                "Created: " + this.props.created
+                this.props.name
             ),
             React.createElement(
-                Rbs.Form.Group,
+                Rbs.Form,
                 null,
                 React.createElement(
-                    Rbs.Form.Label,
+                    "div",
                     null,
-                    "Tags"
+                    "Created: " + this.props.created
                 ),
-                React.createElement(TagsField, { tags: this.props.tags,
-                    handleChange: this._handleTagsChange,
-                    res_type: this.props.res_type })
-            ),
-            this.props.category != null && React.createElement(
-                Rbs.Form.Group,
-                null,
+                this.props.updated != null && React.createElement(
+                    "div",
+                    null,
+                    "Updated: " + this.props.updated
+                ),
                 React.createElement(
-                    Rbs.Form.Label,
+                    Rbs.Form.Group,
                     null,
-                    "Category"
+                    React.createElement(
+                        Rbs.Form.Label,
+                        null,
+                        "Tags"
+                    ),
+                    React.createElement(TagsField, { tags: this.props.tags,
+                        handleChange: this._handleTagsChange,
+                        res_type: this.props.res_type })
                 ),
-                React.createElement(Rbs.Form.Control, { as: "input",
-                    onChange: this._handleCategoryChange,
-                    value: this.props.category })
-            ),
-            React.createElement(
-                Rbs.Form.Group,
-                null,
+                this.props.category != null && React.createElement(
+                    Rbs.Form.Group,
+                    null,
+                    React.createElement(
+                        Rbs.Form.Label,
+                        null,
+                        "Category"
+                    ),
+                    React.createElement(Rbs.Form.Control, { as: "input",
+                        onChange: this._handleCategoryChange,
+                        value: this.props.category })
+                ),
                 React.createElement(
-                    Rbs.Form.Label,
+                    Rbs.Form.Group,
                     null,
-                    "Notes"
-                ),
-                React.createElement(NotesField, { notes: this.props.notes,
-                    handleChange: this._handleNotesChange,
-                    show_markdown_initial: true,
-                    handleBlur: this.props.handleNotesBlur
-                })
+                    React.createElement(
+                        Rbs.Form.Label,
+                        null,
+                        "Notes"
+                    ),
+                    React.createElement(NotesField, { notes: this.props.notes,
+                        handleChange: this._handleNotesChange,
+                        show_markdown_initial: true,
+                        handleBlur: this.props.handleNotesBlur
+                    })
+                )
             )
         );
     }
@@ -300,7 +314,9 @@ class CombinedMetadata extends React.Component {
 CombinedMetadata.propTypes = {
     outer_style: PropTypes.object,
     res_type: PropTypes.string,
+    name: PropTypes.string,
     created: PropTypes.string,
+    updated: PropTypes.string,
     tags: PropTypes.array,
     notes: PropTypes.string,
     category: PropTypes.string,
@@ -311,5 +327,7 @@ CombinedMetadata.propTypes = {
 CombinedMetadata.defaultProps = {
     outer_style: { "marginLeft": 20 },
     handleNotesBlur: null,
-    category: null
+    category: null,
+    name: null,
+    updated: null
 };

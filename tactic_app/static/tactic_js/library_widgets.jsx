@@ -1,8 +1,12 @@
 
+
+import {Toolbar} from "./react_toolbar.js";
+
 export {SearchForm}
 export {SelectorTable}
 
 var Rbs = window.ReactBootstrap;
+
 
 class SearchForm extends React.Component {
 
@@ -44,9 +48,15 @@ class SearchForm extends React.Component {
             this.state.search_metadata_checked)
     }
 
+    _handleSubmit(event) {
+        event.preventDefault()
+    }
+
     render() {
         return (
-            <Rbs.Form inline={true}>
+            <Rbs.Form inline={true}
+                      onSubmit={this._handleSubmit}
+            >
                 <Rbs.Form.Control as="input"
                                   placeholder="Search"
                                   value={this.state.search_field_value}
@@ -135,23 +145,23 @@ class SelectorHeaderCell extends React.Component {
         doBinding(this);
         this.state = {
             "next_sort": this.props.first_sort,
-            "sorting": false,
         }
     }
 
     _handleMyClick() {
         this.props.handleHeaderCellClick(this.props.sort_field, this.state.next_sort);
+        this.props.handleSetSortColumn(this.props.name);
         let next_sort = this.state.next_sort == "ascending" ? "descending" : "ascending";
         this.setState({"next_sort": next_sort, "sorting": true})
     }
 
     render() {
-        if (this.state.sorting) {
+        if (this.props.sorting_column == this.props.name) {
             let icon = this.state.next_sort == "ascending" ? "sort-down" : "sort-up";
             return (
                 <th onClick={this._handleMyClick}>
                     {this.props.name}
-                    <span className={`fas fa-${icon}`}></span>
+                    <span className={`fas fa-${icon}`} style={{marginLeft: 5}}></span>
                 </th>
             )
         }
@@ -165,20 +175,39 @@ class SelectorHeaderCell extends React.Component {
 
 SelectorHeaderCell.propTypes = {
     name: PropTypes.string,
+    sorting_column: PropTypes.string,
+    handleSetSortColumn: PropTypes.func,
     handleHeaderCellClick: PropTypes.func,
     sort_field: PropTypes.string,
     first_sort: PropTypes.string
 };
 
 class SelectorTableHeader extends React.Component {
+    constructor(props) {
+        super(props);
+        doBinding(this);
+        this.state = {
+            sorting_column: null
+        }
+    }
+
+    _handleSort(name) {
+        this.setState({"sorting_column": name})
+    }
+
+    _setSortColumn(name) {
+        this.setState({"sorting_column": name})
+    }
     render() {
         let colnames = Object.keys(this.props.columns);
         let cells = colnames.map((col, index) =>
             <SelectorHeaderCell key={index}
                                 name={col}
+                                sorting_column={this.state.sorting_column}
                                 sort_field={this.props.columns[col]["sort_field"]}
                                 first_sort={this.props.columns[col]["first_sort"]}
                                 handleHeaderCellClick={this.props.handleHeaderCellClick}
+                                handleSetSortColumn={this._setSortColumn}
             />
         );
         return (

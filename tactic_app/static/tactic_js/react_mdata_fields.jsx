@@ -256,29 +256,37 @@ class CombinedMetadata extends React.Component {
     render () {
         return (
             <div className="combined-metadata" style={this.props.outer_style}>
-                <Rbs.Form.Label>{"Created: " + this.props.created}</Rbs.Form.Label>
-                <Rbs.Form.Group>
-                    <Rbs.Form.Label>Tags</Rbs.Form.Label>
-                    <TagsField tags={this.props.tags}
-                               handleChange={this._handleTagsChange}
-                               res_type={this.props.res_type}/>
-                </Rbs.Form.Group>
-                {this.props.category != null &&
-                    <Rbs.Form.Group>
-                        <Rbs.Form.Label>Category</Rbs.Form.Label>
-                        <Rbs.Form.Control as="input"
-                                          onChange={this._handleCategoryChange}
-                                          value={this.props.category} />
-                    </Rbs.Form.Group>
+                {this.props.name != null &&
+                    <h3>{this.props.name}</h3>
                 }
-                <Rbs.Form.Group>
-                    <Rbs.Form.Label>Notes</Rbs.Form.Label>
-                    <NotesField notes={this.props.notes}
-                                handleChange={this._handleNotesChange}
-                                show_markdown_initial={true}
-                                handleBlur={this.props.handleNotesBlur}
-                    />
-                </Rbs.Form.Group>
+                <Rbs.Form>
+                    <div>{"Created: " + this.props.created}</div>
+                    {this.props.updated != null &&
+                        <div>{"Updated: " + this.props.updated}</div>
+                    }
+                    <Rbs.Form.Group>
+                        <Rbs.Form.Label>Tags</Rbs.Form.Label>
+                        <TagsField tags={this.props.tags}
+                                   handleChange={this._handleTagsChange}
+                                   res_type={this.props.res_type}/>
+                    </Rbs.Form.Group>
+                    {this.props.category != null &&
+                        <Rbs.Form.Group>
+                            <Rbs.Form.Label>Category</Rbs.Form.Label>
+                            <Rbs.Form.Control as="input"
+                                              onChange={this._handleCategoryChange}
+                                              value={this.props.category} />
+                        </Rbs.Form.Group>
+                    }
+                    <Rbs.Form.Group>
+                        <Rbs.Form.Label>Notes</Rbs.Form.Label>
+                        <NotesField notes={this.props.notes}
+                                    handleChange={this._handleNotesChange}
+                                    show_markdown_initial={true}
+                                    handleBlur={this.props.handleNotesBlur}
+                        />
+                    </Rbs.Form.Group>
+                </Rbs.Form>
             </div>
         )
     }
@@ -287,7 +295,9 @@ class CombinedMetadata extends React.Component {
 CombinedMetadata.propTypes = {
     outer_style: PropTypes.object,
     res_type: PropTypes.string,
+    name: PropTypes.string,
     created: PropTypes.string,
+    updated: PropTypes.string,
     tags: PropTypes.array,
     notes: PropTypes.string,
     category: PropTypes.string,
@@ -298,5 +308,7 @@ CombinedMetadata.propTypes = {
 CombinedMetadata.defaultProps = {
     outer_style: {"marginLeft": 20},
     handleNotesBlur: null,
-    category: null
+    category: null,
+    name: null,
+    updated: null
 };

@@ -76,7 +76,7 @@ class Toolbar extends React.Component {
             group_counter += 1;
         }
         return React.createElement(
-            React.Fragment,
+            Rbs.ButtonToolbar,
             null,
             items
         );
