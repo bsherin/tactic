@@ -1,4 +1,5 @@
-import {showModalReact} from "./modal_react";
+import {showModalReact} from "./modal_react.js";
+import {Toolbar} from "./react_toolbar.js"
 
 
 var Rbs = window.ReactBootstrap;
@@ -52,77 +53,147 @@ class LibraryHomeApp extends React.Component {
                                         <span className="um-nav-text">collections</span>
                                     </Rbs.Nav.Link>
                                 </Rbs.Nav.Item>
-                                <Rbs.Nav.Item>
-                                    <Rbs.Nav.Link eventKey="projects-pane">
-                                        <span className="fas fa-project-diagram um-nav-icon"></span>
-                                        <span className="um-nav-text">projects</span>
-                                    </Rbs.Nav.Link>
-                                </Rbs.Nav.Item>
-                                <Rbs.Nav.Item>
-                                    <Rbs.Nav.Link eventKey="tiles-pane">
-                                        <span className="far fa-window um-nav-icon"></span>
-                                        <span className="um-nav-text">tiles</span>
-                                    </Rbs.Nav.Link>
-                                </Rbs.Nav.Item>
-                                <Rbs.Nav.Item>
-                                    <Rbs.Nav.Link eventKey="lists-pane">
-                                        <span className="far fa-list-alt um-nav-icon"></span>
-                                        <span className="um-nav-text">lists</span>
-                                    </Rbs.Nav.Link>
-                                </Rbs.Nav.Item>
-                                <Rbs.Nav.Item>
-                                    <Rbs.Nav.Link eventKey="code-pane">
-                                        <span className="far fa-file-code um-nav-icon"></span>
-                                        <span className="um-nav-text">code</span>
-                                    </Rbs.Nav.Link>
-                                </Rbs.Nav.Item>
+                                {/*<Rbs.Nav.Item>*/}
+                                {/*    <Rbs.Nav.Link eventKey="projects-pane">*/}
+                                {/*        <span className="fas fa-project-diagram um-nav-icon"></span>*/}
+                                {/*        <span className="um-nav-text">projects</span>*/}
+                                {/*    </Rbs.Nav.Link>*/}
+                                {/*</Rbs.Nav.Item>*/}
+                                {/*<Rbs.Nav.Item>*/}
+                                {/*    <Rbs.Nav.Link eventKey="tiles-pane">*/}
+                                {/*        <span className="far fa-window um-nav-icon"></span>*/}
+                                {/*        <span className="um-nav-text">tiles</span>*/}
+                                {/*    </Rbs.Nav.Link>*/}
+                                {/*</Rbs.Nav.Item>*/}
+                                {/*<Rbs.Nav.Item>*/}
+                                {/*    <Rbs.Nav.Link eventKey="lists-pane">*/}
+                                {/*        <span className="far fa-list-alt um-nav-icon"></span>*/}
+                                {/*        <span className="um-nav-text">lists</span>*/}
+                                {/*    </Rbs.Nav.Link>*/}
+                                {/*</Rbs.Nav.Item>*/}
+                                {/*<Rbs.Nav.Item>*/}
+                                {/*    <Rbs.Nav.Link eventKey="code-pane">*/}
+                                {/*        <span className="far fa-file-code um-nav-icon"></span>*/}
+                                {/*        <span className="um-nav-text">code</span>*/}
+                                {/*    </Rbs.Nav.Link>*/}
+                                {/*</Rbs.Nav.Item>*/}
                               </Rbs.Nav>
                         </div>
                         <div className="d-flex flex-column">
                             <Rbs.Tab.Content>
                                 <Rbs.Tab.Pane eventKey="collections-pane">
-                                    <CollectionPane usable_height={this.state.usable_height}
-                                                    usable_width={this.state.usable_width}/>
+                                    <LibraryPane usable_height={this.state.usable_height}
+                                                 usable_width={this.state.usable_width}
+                                                 res_type="collection"
+                                                 allow_search_inside={false}
+                                                 allow_search_metadata={false}
+                                                 view_view="/main/"
+                                                 ToolbarClass={CollectionToolbar}
+
+                                />
                                 </Rbs.Tab.Pane>
-                                <Rbs.Tab.Pane eventKey="projects-pane">
-                                    <ProjectPane usable_height={this.state.usable_height}
-                                                    usable_width={this.state.usable_width}/>
-                                </Rbs.Tab.Pane>
-                                <Rbs.Tab.Pane eventKey="tiles-pane">
-                                    <TilePane usable_height={this.state.usable_height}
-                                                    usable_width={this.state.usable_width}/>
-                                </Rbs.Tab.Pane>
-                                <Rbs.Tab.Pane eventKey="lists-pane">
-                                    <ListPane usable_height={this.state.usable_height}
-                                                    usable_width={this.state.usable_width}/>
-                                </Rbs.Tab.Pane>
-                                <Rbs.Tab.Pane eventKey="code-pane">
-                                    <CodePane usable_height={this.state.usable_height}
-                                                    usable_width={this.state.usable_width}/>
-                                </Rbs.Tab.Pane>
+                                {/*<Rbs.Tab.Pane eventKey="projects-pane">*/}
+                                {/*    <ProjectPane usable_height={this.state.usable_height}*/}
+                                {/*                    usable_width={this.state.usable_width}/>*/}
+                                {/*</Rbs.Tab.Pane>*/}
+                                {/*<Rbs.Tab.Pane eventKey="tiles-pane">*/}
+                                {/*    <TilePane usable_height={this.state.usable_height}*/}
+                                {/*                    usable_width={this.state.usable_width}/>*/}
+                                {/*</Rbs.Tab.Pane>*/}
+                                {/*<Rbs.Tab.Pane eventKey="lists-pane">*/}
+                                {/*    <ListPane usable_height={this.state.usable_height}*/}
+                                {/*                    usable_width={this.state.usable_width}/>*/}
+                                {/*</Rbs.Tab.Pane>*/}
+                                {/*<Rbs.Tab.Pane eventKey="code-pane">*/}
+                                {/*    <CodePane usable_height={this.state.usable_height}*/}
+                                {/*                    usable_width={this.state.usable_width}/>*/}
+                                {/*</Rbs.Tab.Pane>*/}
                             </Rbs.Tab.Content>
                         </div>
                     </div>
                 </Rbs.Tab.Container>
             </React.Fragment>
-
         )
-
     }
 }
 
-function doBinding(obj) {
-    const proto = Object.getPrototypeOf(obj);
-    for (const key of Object.getOwnPropertyNames(proto)) {
-        if (key.startsWith("_")) {
-            obj[key] = obj[key].bind(obj);
+class LibraryToolbar extends React.Component {
+
+    prepare_button_groups() {
+        let new_bgs = [];
+        let new_group;
+        let new_button;
+        for (let group of this.props.button_groups) {
+            new_group = [];
+            for (let button of group) {
+                if (!this.props.multi_select || button[3]) {
+                    new_button = {name_text: button[0],
+                        click_handler: button[1],
+                        icon_name: button[2],
+                        multi_select: button[3]};
+                    new_group.push(new_button)
+                }
+            }
+            if (new_group.length != 0) {
+                new_bgs.push(new_group)
+            }
+
         }
+        return new_bgs
+    }
+
+    render() {
+       return <Toolbar button_groups={this.prepare_button_groups()}/>
     }
 }
 
+LibraryToolbar.propTypes = {
+    button_groups: PropTypes.array,
+    multi_select: PropTypes.bool,
+};
+
+function CollectionToolbarFunc (selected_resource, multi_select, view_func, duplicate_func) {
+    return (<CollectionToolbar selected_resource={selected_resource}
+                               multi_select={multi_select}
+                               view_func={view_func}
+                               duplicate_func={duplicate_func}
+                               />)
+}
+
+class CollectionToolbar extends React.Component {
+
+    constructor(props) {
+        super(props);
+        doBinding(this);
+    }
+
+    get button_groups() {
+        return [
+            [["open", this.props.view_func, "book-open", false]],
+            [["duplicate", this.props.duplicate_func, "copy", false],
+             ["rename",  this._rename_func, "edit", false],
+             ["combine", this._combineCollections, "plus-square", true]],
+            [["download", this._downloadCollection, "cloud-download", false],
+             ["share", this._send_repository_func, "share", false]],
+            [["delete", this._delete_func, "trash", true]],
+            [["refresh", this._refresh_func, "sync-alt", false]]
+        ];
+     }
+
+     render () {
+        return <LibraryToolbar button_groups={this.button_groups} multi_select={this.props.multi_select} />
+     }
+}
+
+CollectionToolbar.propTypes = {
+    view_func: PropTypes.func,
+    duplicate_func: PropTypes.func,
+    selected_resource: PropTypes.object,
+    muti_select: PropTypes.bool
+};
 
 
-class CollectionPane extends React.Component {
+class OldCollectionPane extends React.Component {
 
     constructor(props) {
         super(props);
@@ -203,7 +274,7 @@ class CollectionPane extends React.Component {
     }
 }
 
-CollectionPane.propTypes = {
+OldCollectionPane.propTypes = {
     usable_height: PropTypes.number,
     usable_width: PropTypes.number
 };
