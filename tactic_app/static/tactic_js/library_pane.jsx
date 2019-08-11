@@ -1,8 +1,8 @@
 import {get_all_parent_tags, TagButtonList} from "./tag_buttons_react.js";
 import {CombinedMetadata} from "./react_mdata_fields.js";
-import {Toolbar} from "./react_toolbar.js";
 import {SearchForm, SelectorTable} from "./library_widgets.js";
 import {HorizontalPanes} from "./resizing_layouts.js";
+import {showModalReact} from "./modal_react.js";
 
 export {LibraryPane}
 
@@ -16,7 +16,10 @@ class LibraryPane extends React.Component {
             mounted: false,
             left_width: this.props.usable_width / 2 - 100,
             match_list: [],
-            tag_list: []
+            tag_list: [],
+            selected_resource: {"name": "", "tags": "", "notes": "", "updated": "", "created": ""},
+            multi_select: false,
+            list_of_selected: []
         };
         doBinding(this);
     }
@@ -80,11 +83,11 @@ class LibraryPane extends React.Component {
 
     _saveFromSelectedResource() {
         const result_dict = {"res_type": this.props.res_type,
-            "res_name": this.props.list_of_selected[0],
-            "tags": this.props.selected_resource.tags,
-            "notes": this.props.selected_resource.notes};
-        let saved_selected_resource = Object.assign({}, this.props.selected_resource);
-        let saved_list_of_selected = [...this.props.list_of_selected];
+            "res_name": this.state.list_of_selected[0],
+            "tags": this.state.selected_resource.tags,
+            "notes": this.state.selected_resource.notes};
+        let saved_selected_resource = Object.assign({}, this.state.selected_resource);
+        let saved_list_of_selected = [...this.state.list_of_selected];
 
         let self = this;
         postAjaxPromise("save_metadata", result_dict)
@@ -99,8 +102,8 @@ class LibraryPane extends React.Component {
 
     overwriteCommonTags() {
         const result_dict = {"res_type": this.props.res_type,
-                            "res_names": this.props.list_of_selected,
-                             "tags": this.props.selected_resource.tags,};
+                            "res_names": this.state.list_of_selected,
+                             "tags": this.state.selected_resource.tags,};
         const self = this;
         postAjaxPromise("overwrite_common_tags", result_dict)
             .then(function(data) {
@@ -117,11 +120,11 @@ class LibraryPane extends React.Component {
 
     _handleMetadataChange(changed_state_elements) {
         if (!this.props.multi_select) {
-            let revised_selected_resource = Object.assign({}, this.props.selected_resource);
+            let revised_selected_resource = Object.assign({}, this.state.selected_resource);
             revised_selected_resource = Object.assign(revised_selected_resource, changed_state_elements);
             if (Object.keys(changed_state_elements).includes("tags")) {
                 revised_selected_resource["tags"] = revised_selected_resource["tags"].join(" ");
-                this.props.update_selected({selected_resource: revised_selected_resource},
+                this.setState({selected_resource: revised_selected_resource},
                     this._saveFromSelectedResource)
             }
             else {
@@ -129,10 +132,10 @@ class LibraryPane extends React.Component {
             }
         }
         else {
-            let revised_selected_resource = Object.assign({}, this.props.selected_resource);
+            let revised_selected_resource = Object.assign({}, this.state.selected_resource);
             revised_selected_resource = Object.assign(revised_selected_resource, changed_state_elements);
             revised_selected_resource["tags"] = revised_selected_resource["tags"].join(" ");
-            this.props.update_selected({selected_resource: revised_selected_resource},
+            this.setState({selected_resource: revised_selected_resource},
                     this.overwriteCommonTags);
         }
     }
@@ -156,7 +159,7 @@ class LibraryPane extends React.Component {
         }
         let new_data_list = [...this.state.data_list];
         new_data_list.sort(compare_func);
-        this.props.update_selected({
+        this.setState({
             selected_resource: new_data_list[0],
             list_of_selected: [new_data_list[0].name],
             multi_select: false}
@@ -169,35 +172,35 @@ class LibraryPane extends React.Component {
     }
 
     _handleRowClick(row_dict, shift_key_down=false) {
-        if (!this.props.multi_select &&
-            (this.props.selected_resource.notes != this.get_data_list_entry(this.props.selected_resource.name).notes)) {
+        if (!this.state.multi_select &&
+            (this.state.selected_resource.notes != this.get_data_list_entry(this.state.selected_resource.name).notes)) {
             this._saveFromSelectedResource()
         }
-        if (shift_key_down && (row_dict.name != this.props.selected_resource.name)) {
+        if (shift_key_down && (row_dict.name != this.state.selected_resource.name)) {
             let common_tags = [];
             let new_tag_list = row_dict.tags.split(" ");
-            let old_tag_list = this.props.selected_resource.tags.split(" ");
+            let old_tag_list = this.state.selected_resource.tags.split(" ");
             for (let tag of new_tag_list) {
                 if (old_tag_list.includes(tag)) {
                     common_tags.push(tag)
                 }
             }
             let multi_select_list;
-            if (this.props.multi_select) {
-                multi_select_list = [...this.props.list_of_selected, row_dict.name];
+            if (this.state.multi_select) {
+                multi_select_list = [...this.state.list_of_selected, row_dict.name];
             }
             else {
-                multi_select_list = [this.props.selected_resource.name, row_dict.name]
+                multi_select_list = [this.state.selected_resource.name, row_dict.name]
             }
 
             let new_selected_resource = {name: "__multiple__", tags: common_tags.join(" "), notes: ""};
-            this.props.update_selected({multi_select: true,
+            this.setState({multi_select: true,
                 selected_resource: new_selected_resource,
                 list_of_selected: multi_select_list,
             })
         }
         else {
-            this.props.update_selected({
+            this.setState({
                 selected_resource: row_dict,
                 multi_select: false,
                 list_of_selected: [row_dict.name]
@@ -304,9 +307,9 @@ class LibraryPane extends React.Component {
     }
 
     _handleArrowKeyPress(key) {
-        if (this.props.multi_select) return;
+        if (this.state.multi_select) return;
         let anames = this.all_names;
-        let current_index = anames.indexOf(this.props.selected_resource.name);
+        let current_index = anames.indexOf(this.state.selected_resource.name);
         let new_index;
         let new_selected_res;
         if (key == "ArrowDown") {
@@ -323,32 +326,38 @@ class LibraryPane extends React.Component {
                 if (new_index < 0) return
             }
         }
-        this.props.update_selected({"selected_resource": this.state.data_list[new_index],
+        this.setState({"selected_resource": this.state.data_list[new_index],
             "list_of_selected": [anames[new_index]]
         })
     }
 
-    prepare_button_groups() {
-        let new_bgs = [];
-        let new_group;
-        let new_button;
-        for (let group of this.props.button_groups) {
-            new_group = [];
-            for (let button of group) {
-                if (!this.props.multi_select || button[3]) {
-                    new_button = {name_text: button[0],
-                        click_handler: button[1],
-                        icon_name: button[2],
-                        multi_select: button[3]};
-                    new_group.push(new_button)
-                }
-            }
-            if (new_group.length != 0) {
-                new_bgs.push(new_group)
-            }
-
+    _view_func() {
+        if (!this.state.multi_select) {
+            window.open($SCRIPT_ROOT + this.props.view_view + this.state.selected_resource.name)
         }
-        return new_bgs
+    }
+
+    _duplicate_func () {
+        let res_type = this.props.res_type;
+        let res_name = this.state.selected_resource.name;
+        $.getJSON($SCRIPT_ROOT + "get_resource_names/" + the_type, function(data) {
+            showModalReact(`Duplicate ${res_type}`, "New Name",
+                DuplicateResource, res_name, data.resource_name)
+            }
+        );
+        function DuplicateResource(new_name) {
+            const result_dict = {
+                "new_res_name": new_name,
+                "res_to_copy": res_name
+            };
+            postAjaxPromise("/duplicate_collection", result_dict)
+                .then((data) => {
+                    manager.insert_new_row(data.new_row, 0);
+                    manager.select_first_row();
+                    resource_managers["all_module"].insert_new_row(data.new_all_row, 0)
+                })
+                .catch(doFlash)
+        }
     }
 
     render() {
@@ -357,15 +366,15 @@ class LibraryPane extends React.Component {
         let new_button_groups;
 
         let right_pane = (
-                <CombinedMetadata tags={this.props.selected_resource.tags.split(" ")}
-                                  name={this.props.selected_resource.name}
-                                  created={this.props.selected_resource.created}
-                                  updated={this.props.selected_resource.updated}
-                                  notes={this.props.selected_resource.notes}
+                <CombinedMetadata tags={this.state.selected_resource.tags.split(" ")}
+                                  name={this.state.selected_resource.name}
+                                  created={this.state.selected_resource.created}
+                                  updated={this.state.selected_resource.updated}
+                                  notes={this.state.selected_resource.notes}
                                   handleChange={this._handleMetadataChange}
                                   res_type={this.props.res_type}
                                   outer_style={{"marginLeft": 20, "marginTop": 120}}
-                                  handleNotesBlur={this.props.multi_select ? null : this._saveFromSelectedResource}
+                                  handleNotesBlur={this.state.multi_select ? null : this._saveFromSelectedResource}
                 />
         );
         let th_style= {
@@ -380,6 +389,7 @@ class LibraryPane extends React.Component {
         };
 
         let filtered_data_list = this.state.data_list.filter(this._filter_on_match_list);
+        let ToolbarClass = this.props.ToolbarClass;
 
         let left_pane = (
             <React.Fragment>
@@ -390,7 +400,11 @@ class LibraryPane extends React.Component {
                                        handleSearchFromTag={this._handleSearchFromTag}/>
                     </div>
                     <div className="d-flex flex-column">
-                        <Toolbar button_groups={this.prepare_button_groups()}/>
+                        <ToolbarClass selected_resource={this.state.selected_resource}
+                                      multi_select={this.state.multi_select}
+                                      view_func={this._view_func}
+                                      duplicate_func={this._duplicate_func}
+                                      />
                         <SearchForm allow_search_inside={this.props.allow_search_inside}
                                     allow_search_metadata={this.props.allow_search_metadata}
                                     _update_match_lists={this._update_match_lists}
@@ -398,7 +412,7 @@ class LibraryPane extends React.Component {
                         <div style={th_style}>
                             <SelectorTable data_list={filtered_data_list}
                                            handleHeaderCellClick={this._sortOnField}
-                                           selected_resource_names={this.props.list_of_selected}
+                                           selected_resource_names={this.state.list_of_selected}
                                            handleRowClick={this._handleRowClick}
                                            handleArrowKeyPress={this._handleArrowKeyPress}
                             />
@@ -426,13 +440,10 @@ LibraryPane.propTypes = {
     usable_height: PropTypes.number,
     usable_width: PropTypes.number,
     res_type: PropTypes.string,
-    button_groups: PropTypes.array,
     allow_search_inside: PropTypes.bool,
     allow_search_metadata: PropTypes.bool,
     search_inside_view: PropTypes.string,
     search_metadata_view: PropTypes.string,
-    selected_resource: PropTypes.object,
-    list_of_selected: PropTypes.array,
-    multi_select: PropTypes.bool,
-    update_selected: PropTypes.func
+    view_view: PropTypes.string,
+    ToolbarClass: PropTypes.func
 };
