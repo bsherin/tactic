@@ -13,6 +13,7 @@ from tactic_app.communication_utils import make_jsonizable_and_compress, read_pr
 from tactic_app.exception_mixin import generic_exception_handler
 from tactic_app.docker_functions import ContainerCreateError
 
+from tactic_app.resource_manager import ResourceManager
 from list_manager import ListManager, RepositoryListManager
 from collection_manager import CollectionManager, RepositoryCollectionManager
 from project_manager import ProjectManager, RepositoryProjectManager
@@ -125,7 +126,16 @@ def library():
         return render_template('admin_interface.html', use_ssl=str(use_ssl), version_string=tstring)
     else:
 
-        return render_template('library/library_home_react.html', use_ssl=str(use_ssl), version_string=tstring)
+        return render_template('library/library_home_react.html', use_ssl=str(use_ssl), version_string=tstring,
+                               module_source='tactic_js/library_home_react.js')
+
+
+@app.route('/repository')
+@login_required
+def repository():
+    return render_template('library/library_home_react.html', use_ssl=str(use_ssl), version_string=tstring,
+                           module_source='tactic_js/repository_home_react.js'
+                           )
 
 
 @socketio.on('connect', namespace='/library')
@@ -215,6 +225,12 @@ def request_update_repository_selector_list(res_type):
 @login_required
 def get_resource_data_list(res_type):
     return jsonify({"data_list": managers[res_type][0].get_resource_data_list()})
+
+
+@app.route('/repository_resource_list_with_metadata/<res_type>', methods=['GET', 'POST'])
+@login_required
+def get_repository_resource_data_list(res_type):
+    return jsonify({"data_list": managers[res_type][1].get_resource_data_list()})
 
 
 # Metadata views

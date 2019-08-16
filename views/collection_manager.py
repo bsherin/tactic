@@ -320,11 +320,12 @@ class CollectionManager(LibraryResourceManager):
         except Exception as ex:
             return self.get_exception_for_ajax(ex, "Error creating collection")
 
-        table_row = self.create_new_row(collection_name, collection_mdata)
-        all_table_row = self.all_manager.create_new_all_row(collection_name, collection_mdata, "collection")
+        # table_row = self.create_new_row(collection_name, collection_mdata)
+        new_row = self.build_res_dict(collection_name, collection_mdata, user_obj)
+        # all_table_row = self.all_manager.create_new_all_row(collection_name, collection_mdata, "collection")
         if len(file_decoding_errors.keys()) == 0:
             file_decoding_errors = None
-        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row,
+        return jsonify({"success": True, "new_row": new_row,
                         "message": "Collection successfully loaded", "alert_type": "alert-success",
                         "file_decoding_errors": file_decoding_errors})
 
@@ -355,11 +356,12 @@ class CollectionManager(LibraryResourceManager):
         except Exception as ex:
             return self.get_exception_for_ajax(ex, "Error creating collection")
 
-        table_row = self.create_new_row(collection_name, collection_mdata)
-        all_table_row = self.all_manager.create_new_all_row(collection_name, collection_mdata, "collection")
+        # table_row = self.create_new_row(collection_name, collection_mdata)
+        new_row = self.build_res_dict(collection_name, collection_mdata, user_obj)
+        # all_table_row = self.all_manager.create_new_all_row(collection_name, collection_mdata, "collection")
         if len(file_decoding_errors.keys()) == 0:
             file_decoding_errors = None
-        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row,
+        return jsonify({"success": True, "new_row": new_row,
                         "alert_type": "alert-success",
                         "file_decoding_errors": file_decoding_errors})
 
@@ -393,8 +395,9 @@ class CollectionManager(LibraryResourceManager):
                     user_obj.append_document_to_collection(new_name, dname, doc, coll_mdata["type"],
                                                            hl_dict[dname], dm_dict[dname])
             user_obj.update_collection_time(new_name)
-            self.update_selector_list(new_name)
-            return jsonify({"message": "Collections successfull combined", "alert_type": "alert-success"})
+            metadata = user_obj.get_collection_metadata(new_name)
+            new_row = self.build_res_dict(new_name, metadata, user_obj)
+            return jsonify({"success": True, "new_row": new_row})
 
         except Exception as ex:
             return self.get_exception_for_ajax(ex, "Error combining collections")
@@ -417,9 +420,10 @@ class CollectionManager(LibraryResourceManager):
             return jsonify(result)
 
         metadata = user_obj.get_collection_metadata(new_res_name)
-        table_row = self.create_new_row(new_res_name, metadata)
-        all_table_row = self.all_manager.create_new_all_row(new_res_name, metadata, "collection")
-        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
+        new_row = self.build_res_dict(new_res_name, metadata, user_obj)
+        # table_row = self.create_new_row(new_res_name, metadata)
+        # all_table_row = self.all_manager.create_new_all_row(new_res_name, metadata, "collection")
+        return jsonify({"success": True, "new_row": new_row})
 
 
 class RepositoryCollectionManager(CollectionManager):

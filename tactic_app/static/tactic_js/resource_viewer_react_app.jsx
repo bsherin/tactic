@@ -31,7 +31,7 @@ class ResourceViewerSocket extends TacticSocket {
 }
 
 function copyToLibrary(res_type, resource_name) {
-    $.getJSON($SCRIPT_ROOT + `get_getresource_names/${res_type}`, function(data) {
+    $.getJSON($SCRIPT_ROOT + `get_resource_names/${res_type}`, function(data) {
         showModal(`Import ${res_type}`, `New ${res_type} Name`, ImportResource, resource_name, data["resource_names"])
         }
     );

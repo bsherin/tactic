@@ -23,10 +23,12 @@
     <script src="{{url_for('static', filename='js/jquery.tag-editor.min.js')}}"></script>
     <script src="{{url_for('static', filename='js/showdown.js')}}"></script>
     <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
-    <script src="{{url_for('static', filename='js/react-draggable.js')}}"></script>
-    <script type="module" src="{{url_for('static', filename='tactic_js/library_home_react.js', v=version_string)}}"></script>
+    <script type="module" src="{{url_for('static', filename=module_source, v=version_string)}}"></script>
     <script>
-        let user_id = "{{current_user.get_id()}}";
-        let use_ssl = "{{use_ssl}}"=="True";
+        window.user_id = "{{current_user.get_id()}}";
+        window.use_ssl = "{{use_ssl}}"=="True";
+
+        window.library_id = guid();
+        window.page_id = window.library_id;  // This is used to sign out
     </script>
 {% endblock %}

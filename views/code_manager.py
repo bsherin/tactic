@@ -138,9 +138,8 @@ class CodeManager(LibraryResourceManager):
         metadata = copy.copy(old_code_dict["metadata"])
         new_code_dict = {"code_name": new_code_name, "the_code": old_code_dict["the_code"], "metadata": metadata}
         db[user_obj.code_collection_name].insert_one(new_code_dict)
-        table_row = self.create_new_row(new_code_name, metadata)
-        all_table_row = self.all_manager.create_new_all_row(new_code_name, metadata, "code")
-        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
+        new_row = self.build_res_dict(new_code_name, metadata, user_obj)
+        return jsonify({"success": True, "new_row": new_row})
 
     def create_code(self):
         user_obj = current_user
@@ -157,9 +156,8 @@ class CodeManager(LibraryResourceManager):
         metadata["classes"] = []
         data_dict = {"code_name": new_code_name, "the_code": template, "metadata": metadata}
         db[current_user.code_collection_name].insert_one(data_dict)
-        table_row = self.create_new_row(new_code_name, metadata)
-        all_table_row = self.all_manager.create_new_all_row(new_code_name, metadata, "code")
-        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
+        new_row = self.build_res_dict(new_code_name, metadata, user_obj)
+        return jsonify({"success": True, "new_row": new_row})
 
     def delete_code(self):
         try:

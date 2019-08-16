@@ -168,9 +168,10 @@ class ProjectManager(LibraryResourceManager):
         pdict = make_jsonizable_and_compress(project_dict)
         new_save_dict["file_id"] = fs.put(pdict)
         db[user_obj.project_collection_name].insert_one(new_save_dict)
-        table_row = self.create_new_row(new_project_name, mdata)
-        all_table_row = self.all_manager.create_new_all_row(new_project_name, mdata, "project")
-        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
+
+        new_row = self.build_res_dict(new_project_name, mdata, user_obj)
+        # all_table_row = self.all_manager.create_new_all_row(new_project_name, mdata, "project")
+        return jsonify({"success": True, "new_row": new_row})
 
     def rename_me(self, old_name):
         try:
