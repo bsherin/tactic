@@ -233,6 +233,28 @@ table.sortable thead {
 
 /* user manage and  resource viewers*/
 
+.table-row-enter {
+  opacity: 0;
+}
+
+.table-row-enter-active {
+  opacity: 1;
+  transition: opacity 500ms;
+}
+
+.table-row-appear-active {
+  opacity: 1;
+  transition: opacity 500ms;
+}
+
+.table-row-exit {
+  opacity: 1;
+}
+.table-row-exit-active {
+  opacity: 0;
+  transition: opacity 500ms;
+}
+
 .repository-title {
     color: $repository-title-color;
 }
@@ -276,7 +298,7 @@ a[role="tab"] {
 }
 
 
-.left-vertical-nav.repo {
+#repository_container .left-vertical-nav {
     .nav-link.active {
         background-color: $repository-distinctive-color !important;
         color: #212529;
@@ -321,11 +343,11 @@ a[role="tab"] {
     }
 }
 
-.resource-module .dropdown-toggle.toolbar-button::after {
+#library-home-root .dropdown-toggle.toolbar-button::after {
     display: none;
 }
 
-.resource-module .dropdown-toggle.toolbar-button .button-text::after {
+#library-home-root .dropdown-toggle.toolbar-button .button-text::after {
     display: inline-block;
     width: 0;
     height: 0;
@@ -409,13 +431,6 @@ a[role="tab"] {
     background-color: white !important;
     border-width: 0 !important;
     box-shadow: none !important;
-    .tag-icon-tag.fal, .tag-icon-folder.fal {
-        display: none !important;
-    }
-    .tag-icon-tag.fas, .tag-icon-folder.fas {
-        display: inline-block !important;
-    }
-
 }
 
 .tag-button:hover {
@@ -483,7 +498,7 @@ a[role="tab"] {
     color: white;
 }
 
-.repo .selector-button.active td {
+#repository_container .selector-button.active td {
     background-color: $repository-distinctive-color!important;
     color: #212529;
 }

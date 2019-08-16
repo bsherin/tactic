@@ -1,11 +1,11 @@
 
 
-import {Toolbar} from "./react_toolbar.js";
-
 export {SearchForm}
 export {SelectorTable}
 
 var Rbs = window.ReactBootstrap;
+
+var Rtg = window.ReactTransitionGroup;
 
 
 class SearchForm extends React.Component {
@@ -13,39 +13,23 @@ class SearchForm extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this);
-        this.state = {
-            search_field_value: "",
-            search_inside_checked: false,
-            search_metadata_checked: false
-        }
-    }
-
-    componentDidMount() {
-        this._do_update()
     }
 
     _handleSearchFieldChange(event) {
-        this.setState({"search_field_value": event.target.value}, this._do_update);
-
+        this.props.update_search_state({"search_field_value": event.target.value});
     }
 
     _handleClearSearch() {
-        this.setState({"search_field_value": ""}, this._do_update);
+        this.props.update_search_state({"search_field_value": ""});
     }
 
     _handleSearchMetadataChange(event) {
-        this.setState({"search_metadata_checked": event.target.checked}, this._do_update);
+        this.props.update_search_state({"search_metadata_checked": event.target.checked});
     }
 
     _handleSearchInsideChange(event) {
-        this.setState({"search_inside_checked": event.target.checked}, this._do_update);
+        this.props.update_search_state({"search_inside_checked": event.target.checked});
 
-    }
-
-    _do_update() {
-        this.props._update_match_lists(this.state.search_field_value,
-            this.state.search_inside_checked,
-            this.state.search_metadata_checked)
     }
 
     _handleSubmit(event) {
@@ -55,24 +39,33 @@ class SearchForm extends React.Component {
     render() {
         return (
             <Rbs.Form inline={true}
+                      className="my-2"
                       onSubmit={this._handleSubmit}
             >
                 <Rbs.Form.Control as="input"
                                   placeholder="Search"
-                                  value={this.state.search_field_value}
-                                  onChange={this._handleSearchFieldChange}/>
-                <Rbs.Button variant="outline-secondary" type="button" onClick={this._handleClearSearch}>
+                                  value={this.props.search_field_value}
+                                  onChange={this._handleSearchFieldChange}
+                                  size="sm"
+                                  className="mr-2"
+                                  style={{"width": 265}}
+                />
+                <Rbs.Button variant="outline-secondary" type="button" size="sm" onClick={this._handleClearSearch}>
                         clear
                 </Rbs.Button>
                 {this.props.allow_search_inside &&
                     <Rbs.Form.Check inline label="search inside"
-                                    checked={this.state.search_inside_checked}
+                                    size="sm"
+                                    className="ml-3 form-control-sm"
+                                    checked={this.props.search_inside_checked}
                                     onChange={this._handleSearchInsideChange}
                     />
                 }
                 {this.props.allow_search_metadata &&
                     <Rbs.Form.Check inline label="search metadata"
-                                    checked={this.state.search_metadata_checked}
+                                    size="sm"
+                                    className="ml-3 form-control-sm"
+                                    checked={this.props.search_metadata_checked}
                                     onChange={this._handleSearchMetadataChange}
                     />
                 }
@@ -84,7 +77,10 @@ class SearchForm extends React.Component {
 SearchForm.propTypes = {
     allow_search_inside: PropTypes.bool,
     allow_search_metadata: PropTypes.bool,
-    _update_match_lists: PropTypes.func
+    update_search_state: PropTypes.func,
+    search_field_value: PropTypes.string,
+    search_inside_checked: PropTypes.bool,
+    search_metadata_checked: PropTypes.bool
 };
 
 class SelectorTableCell extends React.Component {
@@ -101,16 +97,20 @@ class SelectorTableCell extends React.Component {
     }
 }
 
-
 class SelectorTableRow extends React.Component {
     constructor(props) {
         super(props);
-        doBinding(this)
+        doBinding(this);
+        this.state = {"in": false}
     }
 
     _handleClick(event){
         this.props.handleRowClick(this.props.data_dict, event.shiftKey);
-        event.preventDefault()
+        event.preventDefault();
+    }
+
+    componentDidMount() {
+       this.setState({"in": true})
     }
 
     render() {
@@ -149,8 +149,7 @@ class SelectorHeaderCell extends React.Component {
     }
 
     _handleMyClick() {
-        this.props.handleHeaderCellClick(this.props.sort_field, this.state.next_sort);
-        this.props.handleSetSortColumn(this.props.name);
+        this.props.handleHeaderCellClick(this.props.name, this.props.sort_field, this.state.next_sort);
         let next_sort = this.state.next_sort == "ascending" ? "descending" : "ascending";
         this.setState({"next_sort": next_sort, "sorting": true})
     }
@@ -176,7 +175,6 @@ class SelectorHeaderCell extends React.Component {
 SelectorHeaderCell.propTypes = {
     name: PropTypes.string,
     sorting_column: PropTypes.string,
-    handleSetSortColumn: PropTypes.func,
     handleHeaderCellClick: PropTypes.func,
     sort_field: PropTypes.string,
     first_sort: PropTypes.string
@@ -186,28 +184,17 @@ class SelectorTableHeader extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this);
-        this.state = {
-            sorting_column: null
-        }
     }
 
-    _handleSort(name) {
-        this.setState({"sorting_column": name})
-    }
-
-    _setSortColumn(name) {
-        this.setState({"sorting_column": name})
-    }
     render() {
         let colnames = Object.keys(this.props.columns);
         let cells = colnames.map((col, index) =>
             <SelectorHeaderCell key={index}
                                 name={col}
-                                sorting_column={this.state.sorting_column}
+                                sorting_column={this.props.sorting_column}
                                 sort_field={this.props.columns[col]["sort_field"]}
                                 first_sort={this.props.columns[col]["first_sort"]}
                                 handleHeaderCellClick={this.props.handleHeaderCellClick}
-                                handleSetSortColumn={this._setSortColumn}
             />
         );
         return (
@@ -221,6 +208,7 @@ class SelectorTableHeader extends React.Component {
 }
 
 SelectorTableHeader.propTypes = {
+    sorting_column: PropTypes.string,
     columns: PropTypes.object,
     handleHeaderCellClick: PropTypes.func
 };
@@ -240,29 +228,42 @@ class SelectorTable extends React.Component {
             this.props.handleArrowKeyPress(event.key);
             event.preventDefault()
         }
+        if ((event.key == "Space") && (this.props.handleSpaceBarPress != null)) {
+            this.props.handleSpaceBarPress(event.key);
+            event.preventDefault()
+        }
     }
 
     render () {
         let colnames = Object.keys(this.props.columns);
         let trows = this.props.data_list.map((ddict, index) =>
-            <SelectorTableRow columns={colnames}
-                      data_dict={ddict}
-                      key={ddict[colnames[0]]}
-                      row_index={index}
-                      active={this.props.selected_resource_names.includes(ddict.name)}
-                      handleRowClick={this.props.handleRowClick}
-            />
+            <Rtg.CSSTransition key={ddict[colnames[0]]}
+                               timeout={500}
+                               classNames="table-row"
+            >
+                <SelectorTableRow columns={colnames}
+                          data_dict={ddict}
+                          row_index={index}
+                          active={this.props.selected_resource_names.includes(ddict.name)}
+                          handleRowClick={this.props.handleRowClick}
+                />
+            </Rtg.CSSTransition>
         );
         return (
             <table tabIndex="0"
                    onKeyDown={this._handleKeyDown}
                    className="tile-table table sortable table-striped table-bordered table-sm">
                 <SelectorTableHeader columns={this.props.columns}
+                                     sorting_column={this.props.sorting_column}
                                      handleHeaderCellClick={this.props.handleHeaderCellClick}
                 />
-                <tbody ref={this.tbody_ref}>
+                <Rtg.TransitionGroup component="tbody"
+                                     ref={this.tbody_ref}
+                                     enter={this.props.show_animations}
+                                     exit={this.props.show_animations}
+                >
                     {trows}
-                </tbody>
+                </Rtg.TransitionGroup>
             </table>
         )
     }
@@ -271,12 +272,15 @@ class SelectorTable extends React.Component {
 
 SelectorTable.propTypes = {
     columns: PropTypes.object,
+    sorting_column: PropTypes.string,
     data_list: PropTypes.array,
     selected_resource_names: PropTypes.array,
     handleHeaderCellClick: PropTypes.func,
     content_editable: PropTypes.bool,
     handleRowClick: PropTypes.func,
-    handleArrowKeyPress: PropTypes.func
+    handleArrowKeyPress: PropTypes.func,
+    show_animations: PropTypes.bool,
+    handleSpaceBarPress: PropTypes.func
 };
 
 SelectorTable.defaultProps = {
@@ -284,6 +288,8 @@ SelectorTable.defaultProps = {
              "created": {"sort_field": "created_for_sort", "first_sort": "descending"},
             "updated": {"sort_field": "updated_for_sort", "first_sort": "ascending"},
             "tags": {"sort_field": "tags", "first_sort": "ascending"}},
-    active_row: 0
+    active_row: 0,
+    show_animations: false,
+    handleSpaceBarPress: null
 };
 

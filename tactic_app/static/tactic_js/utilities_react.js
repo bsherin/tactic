@@ -61,12 +61,6 @@ Array.prototype.empty = function () {
     return this.length == 0;
 };
 
-$.get($SCRIPT_ROOT + "/get_modal_template", function (template) {
-    modal_template = $(template).filter('#modal-template').html();
-    confirm_template = $(template).filter('#confirm-template').html();
-    select_modal_template = $(template).filter('#select-modal-template').html();
-});
-
 alertify.set('notifier', 'position', 'top-right');
 
 function startSpinner() {
@@ -105,7 +99,7 @@ function clearStatusMessage() {
 }
 
 function doSignOut(page_id) {
-    window.open($SCRIPT_ROOT + "/logout/" + page_id, "_self");
+    window.open($SCRIPT_ROOT + "/logout/" + window.page_id, "_self");
     return false;
 }
 

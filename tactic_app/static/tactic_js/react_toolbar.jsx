@@ -37,10 +37,95 @@ class ToolbarButton extends React.Component {
 }
 
 ToolbarButton.propTypes = {
-    name: PropTypes.string,
+    icon_name: PropTypes.string,
     click_handler: PropTypes.func,
     button_class: PropTypes.string,
     name_text: PropTypes.string
+};
+
+class PopupButton extends React.Component {
+    constructor(props) {
+        super(props);
+        doBinding(this);
+    }
+
+    render() {
+        let option_items = this.props.option_list.map((opt, index) => (
+            <Rbs.Dropdown.Item key={opt.opt_name} onClick={opt.opt_func}>
+                {opt.opt_name}
+            </Rbs.Dropdown.Item>
+        ));
+
+        return (
+            <Rbs.Dropdown>
+                <Rbs.Dropdown.Toggle id={this.props.name} className={"btn btn-sm toolbar-button " + this.props.button_class}
+                >
+                    <span className={"far button-icon fa-"+ this.props.icon_name}></span>
+                    <span className="button-text">{this.props.name}</span>
+                </Rbs.Dropdown.Toggle>
+                <Rbs.Dropdown.Menu>
+                    {option_items}
+                </Rbs.Dropdown.Menu>
+            </Rbs.Dropdown>
+        )
+    }
+}
+
+PopupButton.propTypes = {
+    button_class: PropTypes.string,
+    name: PropTypes.string,
+    icon_name: PropTypes.string,
+    option_list: PropTypes.array
+};
+
+class FileAdderButton extends React.Component {
+    constructor(props) {
+        super(props);
+        doBinding(this);
+        this.state = {file_list: null}
+    }
+
+    _handleFileChange(event) {
+        this.setState({file_list: event.target.files})
+    }
+    
+    _do_submit() {
+        this.props.click_handler(this.state.file_list)
+    }
+
+     render() {
+        let input_item;
+        if (this.props.multiple) {
+            input_item = <Rbs.Form.Control as="input" type="file" size="sm" style={{"width": 250}}
+                                           onChange={this._handleFileChange}
+                                           className="form-control-sm" multiple />
+        }
+        else {
+            input_item = <Rbs.Form.Control as="input" type="file" size="sm" className="form-control-sm"/>
+        }
+
+         return (
+             <Rbs.Form inline={true}>
+                    <Rbs.Button onClick={this._do_submit}
+                                type="submit"
+                                className={"btn btn-sm add-button toolbar-button " + this.props.button_class}>
+                         <span className={"far button-icon fa-" + this.props.icon_name}/>
+                         <span className="button-text">{this.props.name_text}</span>
+                     </Rbs.Button>
+                     {input_item}
+             </Rbs.Form>
+
+         )
+     }
+
+}
+
+FileAdderButton.propTypes = {
+    click_handler: PropTypes.func,
+    button_class: PropTypes.string,
+    name_text: PropTypes.string,
+    multiple: PropTypes.bool,
+    icon_name: PropTypes.string
 };
 
 
@@ -58,6 +143,17 @@ class Toolbar extends React.Component {
     render() {
         const items = [];
         var group_counter = 0;
+        if ((this.props.popup_buttons != null) && (this.props.popup_buttons.length != 0)) {
+            let popup_items = this.props.popup_buttons.map((button, index) =>
+                <PopupButton name={button.name}
+                             key={button.name}
+                             icon_name={button.icon_name}
+                             option_list={button.option_list}
+                             button_class={this.get_button_class(button)}
+                />
+            );
+            items.push(popup_items)
+        }
         for (let group of this.props.button_groups) {
             let group_items = group.map((button, index) =>
                 <ToolbarButton name={button.name}
@@ -75,8 +171,24 @@ class Toolbar extends React.Component {
             );
             group_counter += 1
         }
+        if ((this.props.file_adders != null) && (this.props.file_adders.length != 0)) {
+            let file_adder_items = this.props.file_adders.map((button, index) =>
+                <FileAdderButton icon_name={button.icon_name}
+                                 click_handler={button.click_handler}
+                                 button_class={this.get_button_class(button)}
+                                 name_text={button.name_text}
+                                 multiple={button.multiple}
+                                 key={index}
+                />
+            );
+            items.push(
+                <Rbs.ButtonGroup className="toolbar-button-group" role="group" key={group_counter}>
+                    {file_adder_items}
+                </Rbs.ButtonGroup>
+            );
+        }
         return (
-            <Rbs.ButtonToolbar>
+            <Rbs.ButtonToolbar className="mb-2">
                 {items}
             </Rbs.ButtonToolbar>
         )
@@ -85,6 +197,13 @@ class Toolbar extends React.Component {
 
 Toolbar.propTypes = {
     button_groups: PropTypes.array,
+    file_adders: PropTypes.array,
+    popup_buttons: PropTypes.array
+};
+
+Toolbar.defaultProps = {
+    file_adders: null,
+    popup_buttons: null
 };
 
 class Namebutton extends React.Component {

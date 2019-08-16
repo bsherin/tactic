@@ -130,6 +130,7 @@ class ListViewerApp extends React.Component {
                                    handleStateChange={this.handleStateChange}
                                    created={this.props.created}
                                    notes={this.state.notes}
+                                   readOnly={window.read_only}
                                    tags={this.state.tags}
                                    saveMe={this.saveMe}
                                    meta_outer={this.props.meta_outer}>

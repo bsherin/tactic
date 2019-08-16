@@ -162,7 +162,7 @@ class TileManager(LibraryResourceManager):
                                include_metadata=True,
                                include_right=True,
                                include_above_main_area=False,
-                               readonly=False,
+                               read_only=False,
                                is_repository=False,
                                use_ssl=use_ssl,
                                javascript_source=javascript_source,
@@ -256,9 +256,10 @@ class TileManager(LibraryResourceManager):
         new_tile_dict = {"tile_module_name": new_tile_name, "tile_module": old_tile_dict["tile_module"],
                          "metadata": metadata}
         db[user_obj.tile_collection_name].insert_one(new_tile_dict)
-        table_row = self.create_new_row(new_tile_name, metadata)
-        all_table_row = self.all_manager.create_new_all_row(new_tile_name, metadata, "tile")
-        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
+        new_row = self.build_res_dict(new_tile_name, metadata, user_obj)
+        # table_row = self.create_new_row(new_tile_name, metadata)
+        # all_table_row = self.all_manager.create_new_all_row(new_tile_name, metadata, "tile")
+        return jsonify({"success": True, "new_row": new_row, "new_all_row": all_table_row})
 
     def search_inside_tiles(self):
         user_obj = current_user
@@ -298,9 +299,8 @@ class TileManager(LibraryResourceManager):
         data_dict = {"tile_module_name": new_tile_name, "tile_module": template, "metadata": metadata,
                      "last_saved": last_saved}
         db[current_user.tile_collection_name].insert_one(data_dict)
-        table_row = self.create_new_row(new_tile_name, metadata)
-        all_table_row = self.all_manager.create_new_all_row(new_tile_name, metadata, "tile")
-        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
+        new_row = self.build_res_dict(new_tile_name, metadata, user_obj)
+        return jsonify({"success": True, "new_row": new_row})
 
     def delete_tile_module(self):
         try:
@@ -349,7 +349,7 @@ class RepositoryTileManager(TileManager):
                                include_metadata=True,
                                include_right=True,
                                include_above_main_area=False,
-                               readonly=True,
+                               read_only=True,
                                is_repository=True,
                                use_ssl=use_ssl,
                                javascript_source=javascript_source,

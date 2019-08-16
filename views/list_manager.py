@@ -157,9 +157,8 @@ class ListManager(LibraryResourceManager):
         metadata = global_tile_manager.create_initial_metadata()
         data_dict = {"list_name": the_file.filename, "the_list": the_list, "metadata": metadata}
         db[user_obj.list_collection_name].insert_one(data_dict)
-        table_row = self.create_new_row(the_file.filename, metadata)
-        all_table_row = self.all_manager.create_new_all_row(the_file.filename, metadata, "list")
-        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
+        new_row = self.build_res_dict(the_file.filename, metadata, user_obj)
+        return jsonify({"success": True, "new_row": new_row})
 
     def delete_list(self):
         try:
@@ -184,9 +183,8 @@ class ListManager(LibraryResourceManager):
         metadata = copy.copy(old_list_dict["metadata"])
         new_list_dict = {"list_name": new_list_name, "the_list": old_list_dict["the_list"], "metadata": metadata}
         db[user_obj.list_collection_name].insert_one(new_list_dict)
-        table_row = self.create_new_row(new_list_name, metadata)
-        all_table_row = self.all_manager.create_new_all_row(new_list_name, metadata, "list")
-        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
+        new_row = self.build_res_dict(new_list_name, metadata, user_obj)
+        return jsonify({"success": True, "new_row": new_row})
 
     def search_inside_lists(self):
         user_obj = current_user

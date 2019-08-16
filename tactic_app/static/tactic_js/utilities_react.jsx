@@ -106,7 +106,7 @@ function clearStatusMessage() {
 }
 
 function doSignOut(page_id) {
-    window.open($SCRIPT_ROOT + "/logout/" + page_id, "_self");
+    window.open($SCRIPT_ROOT + "/logout/" + window.page_id, "_self");
     return (false)
 }
 

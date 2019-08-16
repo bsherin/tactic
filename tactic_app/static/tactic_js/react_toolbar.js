@@ -41,10 +41,107 @@ class ToolbarButton extends React.Component {
 }
 
 ToolbarButton.propTypes = {
-    name: PropTypes.string,
+    icon_name: PropTypes.string,
     click_handler: PropTypes.func,
     button_class: PropTypes.string,
     name_text: PropTypes.string
+};
+
+class PopupButton extends React.Component {
+    constructor(props) {
+        super(props);
+        doBinding(this);
+    }
+
+    render() {
+        let option_items = this.props.option_list.map((opt, index) => React.createElement(
+            Rbs.Dropdown.Item,
+            { key: opt.opt_name, onClick: opt.opt_func },
+            opt.opt_name
+        ));
+
+        return React.createElement(
+            Rbs.Dropdown,
+            null,
+            React.createElement(
+                Rbs.Dropdown.Toggle,
+                { id: this.props.name, className: "btn btn-sm toolbar-button " + this.props.button_class
+                },
+                React.createElement("span", { className: "far button-icon fa-" + this.props.icon_name }),
+                React.createElement(
+                    "span",
+                    { className: "button-text" },
+                    this.props.name
+                )
+            ),
+            React.createElement(
+                Rbs.Dropdown.Menu,
+                null,
+                option_items
+            )
+        );
+    }
+}
+
+PopupButton.propTypes = {
+    button_class: PropTypes.string,
+    name: PropTypes.string,
+    icon_name: PropTypes.string,
+    option_list: PropTypes.array
+};
+
+class FileAdderButton extends React.Component {
+    constructor(props) {
+        super(props);
+        doBinding(this);
+        this.state = { file_list: null };
+    }
+
+    _handleFileChange(event) {
+        this.setState({ file_list: event.target.files });
+    }
+
+    _do_submit() {
+        this.props.click_handler(this.state.file_list);
+    }
+
+    render() {
+        let input_item;
+        if (this.props.multiple) {
+            input_item = React.createElement(Rbs.Form.Control, { as: "input", type: "file", size: "sm", style: { "width": 250 },
+                onChange: this._handleFileChange,
+                className: "form-control-sm", multiple: true });
+        } else {
+            input_item = React.createElement(Rbs.Form.Control, { as: "input", type: "file", size: "sm", className: "form-control-sm" });
+        }
+
+        return React.createElement(
+            Rbs.Form,
+            { inline: true },
+            React.createElement(
+                Rbs.Button,
+                { onClick: this._do_submit,
+                    type: "submit",
+                    className: "btn btn-sm add-button toolbar-button " + this.props.button_class },
+                React.createElement("span", { className: "far button-icon fa-" + this.props.icon_name }),
+                React.createElement(
+                    "span",
+                    { className: "button-text" },
+                    this.props.name_text
+                )
+            ),
+            input_item
+        );
+    }
+
+}
+
+FileAdderButton.propTypes = {
+    click_handler: PropTypes.func,
+    button_class: PropTypes.string,
+    name_text: PropTypes.string,
+    multiple: PropTypes.bool,
+    icon_name: PropTypes.string
 };
 
 class Toolbar extends React.Component {
@@ -60,6 +157,15 @@ class Toolbar extends React.Component {
     render() {
         const items = [];
         var group_counter = 0;
+        if (this.props.popup_buttons != null && this.props.popup_buttons.length != 0) {
+            let popup_items = this.props.popup_buttons.map((button, index) => React.createElement(PopupButton, { name: button.name,
+                key: button.name,
+                icon_name: button.icon_name,
+                option_list: button.option_list,
+                button_class: this.get_button_class(button)
+            }));
+            items.push(popup_items);
+        }
         for (let group of this.props.button_groups) {
             let group_items = group.map((button, index) => React.createElement(ToolbarButton, { name: button.name,
                 icon_name: button.icon_name,
@@ -75,16 +181,37 @@ class Toolbar extends React.Component {
             ));
             group_counter += 1;
         }
+        if (this.props.file_adders != null && this.props.file_adders.length != 0) {
+            let file_adder_items = this.props.file_adders.map((button, index) => React.createElement(FileAdderButton, { icon_name: button.icon_name,
+                click_handler: button.click_handler,
+                button_class: this.get_button_class(button),
+                name_text: button.name_text,
+                multiple: button.multiple,
+                key: index
+            }));
+            items.push(React.createElement(
+                Rbs.ButtonGroup,
+                { className: "toolbar-button-group", role: "group", key: group_counter },
+                file_adder_items
+            ));
+        }
         return React.createElement(
             Rbs.ButtonToolbar,
-            null,
+            { className: "mb-2" },
             items
         );
     }
 }
 
 Toolbar.propTypes = {
-    button_groups: PropTypes.array
+    button_groups: PropTypes.array,
+    file_adders: PropTypes.array,
+    popup_buttons: PropTypes.array
+};
+
+Toolbar.defaultProps = {
+    file_adders: null,
+    popup_buttons: null
 };
 
 class Namebutton extends React.Component {

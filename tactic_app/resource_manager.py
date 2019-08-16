@@ -100,39 +100,54 @@ class ResourceManager(ExceptionMixin):
         result = self.build_data_list(res_list_with_metadata)
         return result
 
+    @staticmethod
+    def build_res_dict(name, mdata, user_obj=None):
+
+        if user_obj is None:
+            user_obj = current_user
+        if mdata is None:
+            datestring = ""
+            tagstring = ""
+            updatestring = ""
+            datestring_for_sort = ""
+            updatestring_for_sort = ""
+            notes = ""
+        else:
+            if "datetime" in mdata:
+                datestring, datestring_for_sort = user_obj.get_timestrings(mdata["datetime"])
+            else:
+                datestring = ""
+                datestring_for_sort = ""
+            if "updated" in mdata:
+                updatestring, updatestring_for_sort = user_obj.get_timestrings(mdata["updated"])
+            else:
+                updatestring = datestring
+                updatestring_for_sort = datestring_for_sort
+            tagstring = str(mdata["tags"])
+            notes = mdata["notes"]
+
+        return_data = {"name": name,
+                       "created": datestring,
+                       "created_for_sort": datestring_for_sort,
+                       "updated": updatestring,
+                       "updated_for_sort": updatestring_for_sort,
+                       "tags": tagstring,
+                       "notes": notes}
+        skip_fields = ["name", "notes", "datetime", "tags", "updated", "_id"];
+        if mdata is not None:
+            for field, val in mdata.items():
+                if field not in skip_fields:
+                    return_data[field] = str(val)
+
+        return return_data
+
     def build_data_list(self, res_list, user_obj=None):
         if user_obj is None:
             user_obj = current_user
         larray = []
         for res_item in res_list:
             mdata = res_item[1]
-            if mdata is None:
-                datestring = ""
-                tagstring = ""
-                updatestring = ""
-                datestring_for_sort = ""
-                updatestring_for_sort = ""
-                notes = ""
-            else:
-                if "datetime" in mdata:
-                    datestring, datestring_for_sort = user_obj.get_timestrings(mdata["datetime"])
-                else:
-                    datestring = ""
-                    datestring_for_sort = ""
-                if "updated" in mdata:
-                    updatestring, updatestring_for_sort = user_obj.get_timestrings(mdata["updated"])
-                else:
-                    updatestring = datestring
-                    updatestring_for_sort = datestring_for_sort
-                tagstring = str(mdata["tags"])
-                notes = mdata["notes"]
-            larray.append({"name": res_item[0],
-                           "created": datestring,
-                           "created_for_sort": datestring_for_sort,
-                           "updated": updatestring,
-                           "updated_for_sort": updatestring_for_sort,
-                           "tags": tagstring,
-                           "notes": notes})
+            larray.append(self.build_res_dict(res_item[0], mdata, user_obj))
         return larray
 
     def request_update_selector_list(self, user_obj=None):

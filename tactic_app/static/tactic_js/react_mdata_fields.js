@@ -41,7 +41,7 @@ class TagsField extends React.Component {
                     position: { collision: 'flip' }, // automatic menu position up/down
                     source: self.all_tags
                 },
-                onChange: self.handleMyChange,
+                onChange: self._handleMyChange,
                 placeholder: "Tags..." });
         }).catch(doFlash);
     }
@@ -247,6 +247,22 @@ class CombinedMetadata extends React.Component {
     }
 
     render() {
+        let additional_items;
+        if (this.props.additional_metadata != null) {
+            additional_items = [];
+            for (let field in this.props.additional_metadata) {
+                additional_items.push(React.createElement(
+                    "div",
+                    { key: field },
+                    React.createElement(
+                        "span",
+                        { className: "text-primary" },
+                        field + ": "
+                    ),
+                    this.props.additional_metadata[field]
+                ));
+            }
+        }
         return React.createElement(
             "div",
             { className: "combined-metadata", style: this.props.outer_style },
@@ -259,22 +275,16 @@ class CombinedMetadata extends React.Component {
                 Rbs.Form,
                 null,
                 React.createElement(
-                    "div",
-                    null,
-                    "Created: " + this.props.created
-                ),
-                this.props.updated != null && React.createElement(
-                    "div",
-                    null,
-                    "Updated: " + this.props.updated
-                ),
-                React.createElement(
                     Rbs.Form.Group,
                     null,
                     React.createElement(
                         Rbs.Form.Label,
                         null,
-                        "Tags"
+                        React.createElement(
+                            "span",
+                            { className: "text-primary" },
+                            "Tags"
+                        )
                     ),
                     React.createElement(TagsField, { tags: this.props.tags,
                         handleChange: this._handleTagsChange,
@@ -286,7 +296,11 @@ class CombinedMetadata extends React.Component {
                     React.createElement(
                         Rbs.Form.Label,
                         null,
-                        "Category"
+                        React.createElement(
+                            "span",
+                            { className: "text-primary" },
+                            "Category"
+                        )
                     ),
                     React.createElement(Rbs.Form.Control, { as: "input",
                         onChange: this._handleCategoryChange,
@@ -298,14 +312,39 @@ class CombinedMetadata extends React.Component {
                     React.createElement(
                         Rbs.Form.Label,
                         null,
-                        "Notes"
+                        React.createElement(
+                            "span",
+                            { className: "text-primary" },
+                            "Notes"
+                        )
                     ),
                     React.createElement(NotesField, { notes: this.props.notes,
                         handleChange: this._handleNotesChange,
                         show_markdown_initial: true,
                         handleBlur: this.props.handleNotesBlur
                     })
-                )
+                ),
+                React.createElement(
+                    "div",
+                    null,
+                    React.createElement(
+                        "span",
+                        { className: "text-primary" },
+                        "Created: "
+                    ),
+                    this.props.created
+                ),
+                this.props.updated != null && React.createElement(
+                    "div",
+                    null,
+                    React.createElement(
+                        "span",
+                        { className: "text-primary" },
+                        "Updated: "
+                    ),
+                    this.props.updated
+                ),
+                this.props.additional_metadata != null && additional_items
             )
         );
     }
@@ -321,7 +360,8 @@ CombinedMetadata.propTypes = {
     notes: PropTypes.string,
     category: PropTypes.string,
     handleChange: PropTypes.func,
-    handleNotesBlur: PropTypes.func
+    handleNotesBlur: PropTypes.func,
+    additional_metadata: PropTypes.object
 };
 
 CombinedMetadata.defaultProps = {
@@ -329,5 +369,6 @@ CombinedMetadata.defaultProps = {
     handleNotesBlur: null,
     category: null,
     name: null,
-    updated: null
+    updated: null,
+    additional_metadata: null
 };

@@ -127,6 +127,24 @@ table.sortable thead {
 
 /* login */
 /* user manage and  resource viewers*/
+.table-row-enter {
+  opacity: 0; }
+
+.table-row-enter-active {
+  opacity: 1;
+  transition: opacity 500ms; }
+
+.table-row-appear-active {
+  opacity: 1;
+  transition: opacity 500ms; }
+
+.table-row-exit {
+  opacity: 1; }
+
+.table-row-exit-active {
+  opacity: 0;
+  transition: opacity 500ms; }
+
 .repository-title {
   color: #4EA818; }
 
@@ -150,10 +168,10 @@ a[role="tab"] {
   color: #fff;
   background-color: #9B79CC; }
 
-.left-vertical-nav.repo .nav-link.active {
+#repository_container .left-vertical-nav .nav-link.active {
   background-color: #ffc107 !important;
   color: #212529; }
-.left-vertical-nav.repo .nav-link:hover {
+#repository_container .left-vertical-nav .nav-link:hover {
   background-color: rgba(255, 193, 7, 0.33); }
 
 .um-nav-icon {
@@ -180,10 +198,10 @@ a[role="tab"] {
     border: white;
     padding-bottom: 2px !important; }
 
-.resource-module .dropdown-toggle.toolbar-button::after {
+#library-home-root .dropdown-toggle.toolbar-button::after {
   display: none; }
 
-.resource-module .dropdown-toggle.toolbar-button .button-text::after {
+#library-home-root .dropdown-toggle.toolbar-button .button-text::after {
   display: inline-block;
   width: 0;
   height: 0;
@@ -247,10 +265,6 @@ a[role="tab"] {
   background-color: white !important;
   border-width: 0 !important;
   box-shadow: none !important; }
-  .tag-button.active .tag-icon-tag.fal, .tag-button.active .tag-icon-folder.fal, .tag-button:focus .tag-icon-tag.fal, .tag-button:focus .tag-icon-folder.fal {
-    display: none !important; }
-  .tag-button.active .tag-icon-tag.fas, .tag-button.active .tag-icon-folder.fas, .tag-button:focus .tag-icon-tag.fas, .tag-button:focus .tag-icon-folder.fas {
-    display: inline-block !important; }
 
 .tag-button:hover {
   font-weight: bolder !important;
@@ -306,7 +320,7 @@ a[role="tab"] {
   background-color: #ada2be !important;
   color: white; }
 
-.repo .selector-button.active td {
+#repository_container .selector-button.active td {
   background-color: #ffc107 !important;
   color: #212529; }
 

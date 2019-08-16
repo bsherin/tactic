@@ -1,6 +1,8 @@
 import {showModalReact} from "./modal_react.js";
 import {Toolbar} from "./react_toolbar.js"
+import {TacticSocket} from "./tactic_socket.js"
 
+import {render_navbar} from "./base_module.js";
 
 var Rbs = window.ReactBootstrap;
 
@@ -8,9 +10,49 @@ import {LibraryPane} from "./library_pane.js"
 
 const MARGIN_SIZE = 17;
 
+let tsocket;
+
 function _library_home_main () {
+    render_navbar();
+    tsocket = new LibraryTacticSocket("library", 5000);
     let domContainer = document.querySelector('#library-home-root');
     ReactDOM.render(<LibraryHomeApp/>, domContainer)
+}
+
+class LibraryTacticSocket extends TacticSocket {
+
+    initialize_socket_stuff() {
+
+        this.socket.emit('join', {"user_id":  window.user_id, "library_id":  window.library_id});
+
+        this.socket.on("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
+
+        // this.socket.on('update-selector-list', (data) => {
+        //     const manager = resource_managers[data.module_id];
+        //     manager.fill_content(data.html);
+        //     manager.select_resource_button(data.select);
+        //     manager.tag_button_list.refresh_from_selectors();
+        // });
+        //
+        // this.socket.on('update-tag-list', (data) => {
+        //     resource_managers[data.module_id].tag_button_list.refresh_given_taglist(data.tag_list)
+        // });
+
+        this.socket.on('handle-callback', handleCallback);
+        this.socket.on('stop-spinner', stopSpinner);
+        this.socket.on('start-spinner', startSpinner);
+        this.socket.on('show-status-msg', statusMessage);
+        this.socket.on("clear-status-msg", clearStatusMessage);
+        // this.socket.on('update-loaded-tile-list', (data) => {
+        //     resource_managers["tile_module"].get_aux_right_dom().html(data.html)
+        // });
+        this.socket.on('close-user-windows', (data) => {
+            if (!(data["originator"] == window.library_id)) {
+                window.close()
+            }
+        });
+        this.socket.on('doflash', doFlash);
+    }
 }
 
 
@@ -40,44 +82,24 @@ class LibraryHomeApp extends React.Component {
     }
 
     render () {
+        let nav_items = [["collections", "file-alt"], ["projects", "project-diagram"],
+            ["tiles", "window"], ["lists", "list-alt"], ["code", "file-code"]].map((data)=>(
+            <Rbs.Nav.Item>
+                <Rbs.Nav.Link eventKey={data[0] + "-pane"}>
+                    <span className={"far um-nav-icon fa-" + data[1]}></span>
+                    <span className="um-nav-text">{data[0]}</span>
+                </Rbs.Nav.Link>
+            </Rbs.Nav.Item>
+        ));
         return (
             <React.Fragment>
                 <Rbs.Tab.Container id="the_container" defaultActiveKey="collections-pane">
                     <div className="d-flex flex-row">
                         <div className="d-flex flex-column justify-content-between left-vertical-nav"
-                             style={{"marginTop": 25}}>
+                             style={{"marginTop": 100}}>
                             <Rbs.Nav variant="pills" className="flex-column">
-                                <Rbs.Nav.Item>
-                                    <Rbs.Nav.Link eventKey="collections-pane">
-                                        <span className="far fa-file-alt um-nav-icon"></span>
-                                        <span className="um-nav-text">collections</span>
-                                    </Rbs.Nav.Link>
-                                </Rbs.Nav.Item>
-                                {/*<Rbs.Nav.Item>*/}
-                                {/*    <Rbs.Nav.Link eventKey="projects-pane">*/}
-                                {/*        <span className="fas fa-project-diagram um-nav-icon"></span>*/}
-                                {/*        <span className="um-nav-text">projects</span>*/}
-                                {/*    </Rbs.Nav.Link>*/}
-                                {/*</Rbs.Nav.Item>*/}
-                                {/*<Rbs.Nav.Item>*/}
-                                {/*    <Rbs.Nav.Link eventKey="tiles-pane">*/}
-                                {/*        <span className="far fa-window um-nav-icon"></span>*/}
-                                {/*        <span className="um-nav-text">tiles</span>*/}
-                                {/*    </Rbs.Nav.Link>*/}
-                                {/*</Rbs.Nav.Item>*/}
-                                {/*<Rbs.Nav.Item>*/}
-                                {/*    <Rbs.Nav.Link eventKey="lists-pane">*/}
-                                {/*        <span className="far fa-list-alt um-nav-icon"></span>*/}
-                                {/*        <span className="um-nav-text">lists</span>*/}
-                                {/*    </Rbs.Nav.Link>*/}
-                                {/*</Rbs.Nav.Item>*/}
-                                {/*<Rbs.Nav.Item>*/}
-                                {/*    <Rbs.Nav.Link eventKey="code-pane">*/}
-                                {/*        <span className="far fa-file-code um-nav-icon"></span>*/}
-                                {/*        <span className="um-nav-text">code</span>*/}
-                                {/*    </Rbs.Nav.Link>*/}
-                                {/*</Rbs.Nav.Item>*/}
-                              </Rbs.Nav>
+                                {nav_items}
+                            </Rbs.Nav>
                         </div>
                         <div className="d-flex flex-column">
                             <Rbs.Tab.Content>
@@ -87,27 +109,52 @@ class LibraryHomeApp extends React.Component {
                                                  res_type="collection"
                                                  allow_search_inside={false}
                                                  allow_search_metadata={false}
-                                                 view_view="/main/"
                                                  ToolbarClass={CollectionToolbar}
-
                                 />
                                 </Rbs.Tab.Pane>
-                                {/*<Rbs.Tab.Pane eventKey="projects-pane">*/}
-                                {/*    <ProjectPane usable_height={this.state.usable_height}*/}
-                                {/*                    usable_width={this.state.usable_width}/>*/}
-                                {/*</Rbs.Tab.Pane>*/}
-                                {/*<Rbs.Tab.Pane eventKey="tiles-pane">*/}
-                                {/*    <TilePane usable_height={this.state.usable_height}*/}
-                                {/*                    usable_width={this.state.usable_width}/>*/}
-                                {/*</Rbs.Tab.Pane>*/}
-                                {/*<Rbs.Tab.Pane eventKey="lists-pane">*/}
-                                {/*    <ListPane usable_height={this.state.usable_height}*/}
-                                {/*                    usable_width={this.state.usable_width}/>*/}
-                                {/*</Rbs.Tab.Pane>*/}
-                                {/*<Rbs.Tab.Pane eventKey="code-pane">*/}
-                                {/*    <CodePane usable_height={this.state.usable_height}*/}
-                                {/*                    usable_width={this.state.usable_width}/>*/}
-                                {/*</Rbs.Tab.Pane>*/}
+                                <Rbs.Tab.Pane eventKey="projects-pane">
+                                    <LibraryPane usable_height={this.state.usable_height}
+                                                 usable_width={this.state.usable_width}
+                                                 res_type="project"
+                                                 allow_search_inside={false}
+                                                 allow_search_metadata={true}
+                                                 search_metadata_view = "search_project_metadata"
+                                                 ToolbarClass={ProjectToolbar}
+                                    />
+                                </Rbs.Tab.Pane>
+                                <Rbs.Tab.Pane eventKey="tiles-pane">
+                                    <LibraryPane usable_height={this.state.usable_height}
+                                                 usable_width={this.state.usable_width}
+                                                 res_type="tile"
+                                                 allow_search_inside={true}
+                                                 allow_search_metadata={true}
+                                                 search_inside_view="search_inside_tiles"
+                                                 search_metadata_view = "search_tile_metadata"
+                                                 ToolbarClass={TileToolbar}
+                                    />
+                                </Rbs.Tab.Pane>
+                                <Rbs.Tab.Pane eventKey="lists-pane">
+                                    <LibraryPane usable_height={this.state.usable_height}
+                                                 usable_width={this.state.usable_width}
+                                                 res_type="list"
+                                                 allow_search_inside={true}
+                                                 allow_search_metadata={true}
+                                                 search_inside_view="search_inside_lists"
+                                                 search_metadata_view = "search_list_metadata"
+                                                 ToolbarClass={ListToolbar}
+                                    />
+                                </Rbs.Tab.Pane>
+                                <Rbs.Tab.Pane eventKey="code-pane">
+                                    <LibraryPane usable_height={this.state.usable_height}
+                                                 usable_width={this.state.usable_width}
+                                                 res_type="code"
+                                                 allow_search_inside={true}
+                                                 allow_search_metadata={true}
+                                                 search_inside_view="search_inside_code"
+                                                 search_metadata_view = "search_code_metadata"
+                                                 ToolbarClass={CodeToolbar}
+                                    />
+                                </Rbs.Tab.Pane>
                             </Rbs.Tab.Content>
                         </div>
                     </div>
@@ -142,23 +189,70 @@ class LibraryToolbar extends React.Component {
         return new_bgs
     }
 
+    prepare_file_adders() {
+        if ((this.props.file_adders == null) || (this.props.file_adders.length == 0)) return [];
+        let file_adders = [];
+        for (let button of this.props.file_adders) {
+            let new_button = {name_text: button[0],
+                click_handler: button[1],
+                icon_name: button[2],
+                multiple: button[3]};
+            file_adders.push(new_button)
+        }
+        return file_adders
+    }
+
+    prepare_popup_buttons() {
+         if ((this.props.popup_buttons == null) || (this.props.popup_buttons.length == 0)) return [];
+         let popup_buttons = [];
+         for (let button of this.props.popup_buttons) {
+             let new_button = {name: button[0],
+                icon_name: button[1]
+             };
+             let opt_list = [];
+             for (let opt of button[2]) {
+                 opt_list.push({opt_name: opt[0], opt_func: opt[1]})
+             }
+             new_button["option_list"] = opt_list;
+             popup_buttons.push(new_button);
+         }
+         return popup_buttons
+    }
+
     render() {
-       return <Toolbar button_groups={this.prepare_button_groups()}/>
+        let popup_buttons = this.prepare_popup_buttons();
+       return <Toolbar button_groups={this.prepare_button_groups()}
+                       file_adders={this.prepare_file_adders()}
+                       popup_buttons={popup_buttons}
+       />
     }
 }
 
 LibraryToolbar.propTypes = {
     button_groups: PropTypes.array,
+    file_adders: PropTypes.array,
+    popup_buttons: PropTypes.array,
     multi_select: PropTypes.bool,
 };
 
-function CollectionToolbarFunc (selected_resource, multi_select, view_func, duplicate_func) {
-    return (<CollectionToolbar selected_resource={selected_resource}
-                               multi_select={multi_select}
-                               view_func={view_func}
-                               duplicate_func={duplicate_func}
-                               />)
-}
+LibraryToolbar.defaultProps = {
+    file_adders: null,
+    popup_buttons: null
+};
+
+let specializedToolbarPropTypes = {
+    view_func: PropTypes.func,
+    duplicate_func: PropTypes.func,
+    delete_func: PropTypes.func,
+    rename_func: PropTypes.func,
+    refresh_func: PropTypes.func,
+    send_repository_func: PropTypes.func,
+    selected_resource: PropTypes.object,
+    list_of_selected: PropTypes.array,
+    muti_select: PropTypes.bool,
+    add_new_row: PropTypes.func,
+    animation_phase: PropTypes.func
+};
 
 class CollectionToolbar extends React.Component {
 
@@ -167,339 +261,422 @@ class CollectionToolbar extends React.Component {
         doBinding(this);
     }
 
+    _collection_duplicate() {
+        this.props.duplicate_func("/duplicate_collection")
+    }
+
+    _collection_delete() {
+        this.props.delete_func("/delete_collection")
+    }
+
+    _collection_view() {
+        this.props.view_func("/main/")
+    }
+
+    _combineCollections () {
+        var res_names;
+        let self = this;
+        if (!this.props.multi_select) {
+            showModalReact("Name of collection to combine with " + this.props.selected_resource.name, "collection Name", function (other_name) {
+                startSpinner();
+                const target = `${$SCRIPT_ROOT}/combine_collections/${res_names[0]}/${other_name}`;
+                $.post(target, doFlashStopSpinner);
+            })
+        }
+        else {
+            $.getJSON(`${$SCRIPT_ROOT}get_resource_names/collection`, function (data) {
+                showModalReact("Combine Collections", "Name for combined collection", CreateCombinedCollection, "NewCollection", data["resource_names"])
+            });
+        }
+
+        function CreateCombinedCollection(new_name) {
+            postAjaxPromise("combine_to_new_collection",
+                {"original_collections": self.props.list_of_selected, "new_name": new_name})
+                .then((data) => {
+                    self.props.animation_phase(() => {self.props.add_new_row(data.new_row)})
+                })
+                .catch(doFlash)
+        }
+    }
+
+    _downloadCollection () {
+        let res_name = this.props.selected_resource.name;
+        showModalReact("Download Collection as Excel Notebook", "New File Name", function (new_name) {
+            window.open(`${$SCRIPT_ROOT}/download_collection/` + res_name  + "/" + new_name)
+        }, res_name + ".xlsx")
+    };
+
+    _import_collection(file_list) {
+        let the_data = new FormData();
+        for (let f of file_list) {
+            the_data.append('file', f);
+        }
+
+        let self = this;
+        let checkboxes = [{"checkname": "import_as_freeform", "checktext": "Import as freeform"}];
+        $.getJSON(`${$SCRIPT_ROOT}get_resource_names/collection`, function (data) {
+                showModalReact("Import collection", "New collection Name",
+                    CreateNewCollection, "NewCollection", data["resource_names"], checkboxes)
+            }
+        );
+        function CreateNewCollection(new_name, check_results) {
+            startSpinner();
+            let url_base;
+            if (check_results["import_as_freeform"]) {
+                url_base = "import_as_freeform"
+            }
+            else {
+                url_base = "import_as_table"
+            }
+
+            postAjaxUploadPromise(`${url_base}/${new_name}/${window.library_id}`, the_data)
+                .then((data) => {
+                        clearStatusMessage();
+                        self.props.animation_phase(() => {self.props.add_new_row(data.new_row)});
+                        stopSpinner();
+                })
+                .catch(doFlash);
+        }
+    }
+
+
     get button_groups() {
         return [
-            [["open", this.props.view_func, "book-open", false]],
-            [["duplicate", this.props.duplicate_func, "copy", false],
-             ["rename",  this._rename_func, "edit", false],
+            [["open", this._collection_view, "book-open", false]],
+            [["duplicate", this._collection_duplicate, "copy", false],
+             ["rename",  this.props.rename_func, "edit", false],
              ["combine", this._combineCollections, "plus-square", true]],
             [["download", this._downloadCollection, "cloud-download", false],
-             ["share", this._send_repository_func, "share", false]],
-            [["delete", this._delete_func, "trash", true]],
-            [["refresh", this._refresh_func, "sync-alt", false]]
+             ["share", this.props.send_repository_func, "share", false]],
+            [["delete", this._collection_delete, "trash", true]],
+            [["refresh", this.props.refresh_func, "sync-alt", false]]
+        ];
+     }
+
+     get file_adders() {
+         return[
+             ["import", this._import_collection, "cloud-upload", true]
+         ]
+     }
+
+     render () {
+        return <LibraryToolbar button_groups={this.button_groups}
+                               file_adders={this.file_adders}
+                               multi_select={this.props.multi_select} />
+     }
+}
+
+CollectionToolbar.propTypes = specializedToolbarPropTypes;
+
+
+class ProjectToolbar extends React.Component {
+    constructor(props) {
+        super(props);
+        doBinding(this);
+    }
+
+    _project_view() {
+        this.props.view_func("/main_project/")
+    }
+
+    _project_duplicate() {
+        this.props.duplicate_func('/duplicate_project')
+    }
+
+    new_notebook () {
+        window.open(`${$SCRIPT_ROOT}/new_notebook`)
+    }
+
+    _downloadJupyter () {
+        let res_name = this.props.selected_resource.name;
+        showModalReact("Download Notebook as Jupyter Notebook", "New File Name", function (new_name) {
+            window.open(`${$SCRIPT_ROOT}/download_jupyter/` + res_name + "/" + new_name)
+        }, res_name + ".ipynb")
+    };
+
+    _project_delete() {
+        this.props.delete_func("/delete_project")
+    }
+
+    get button_groups() {
+        return [
+            [["notebook", this.new_notebook,"book", false],
+                ["open", this._project_view, "book-open", false]],
+            [["duplicate", this._project_duplicate, "copy", false],
+             ["rename", this.props.rename_func, "edit", false]],
+            [["toJupyter", this._downloadJupyter, "cloud-download", false],
+             ["share", this.props.send_repository_func, "share", false]],
+            [["delete", this._project_delete, "trash", true]],
+            [["refresh", this.props.refresh_func, "sync-alt", false]]
         ];
      }
 
      render () {
         return <LibraryToolbar button_groups={this.button_groups} multi_select={this.props.multi_select} />
      }
+
 }
 
-CollectionToolbar.propTypes = {
-    view_func: PropTypes.func,
-    duplicate_func: PropTypes.func,
-    selected_resource: PropTypes.object,
-    muti_select: PropTypes.bool
-};
+ProjectToolbar.propTypes = specializedToolbarPropTypes;
 
-
-class OldCollectionPane extends React.Component {
-
+class TileToolbar extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this);
-        this.state = {
-            selected_resource: {"name": "", "tags": "", "notes": "", "updated": "", "created": ""},
-            multi_select: false,
-            list_of_selected: []
-        }
     }
 
-    _update_selected(state_update, callback=null) {
-        let new_state = Object.assign(this.state, state_update);
-        if (callback==null) {
-            this.setState(new_state);
+    _tile_view() {
+        this.props.view_func("/view_module/")
+    }
+
+    _creator_view() {
+        this.props.view_func("/view_in_creator/")
+    }
+
+    _tile_duplicate() {
+        this.props.duplicate_func('/create_duplicate_tile')
+    }
+
+    _compare_tiles() {
+        let res_names = this.props.list_of_selected;
+        if (res_names.length == 0) return;
+        if (res_names.length == 1) {
+            window.open(`${$SCRIPT_ROOT}/show_tile_differ/${res_names[0]}`)
+        }
+        else if (res_names.length == 2){
+            window.open(`${$SCRIPT_ROOT}/show_tile_differ/both_names/${res_names[0]}/${res_names[1]}`)
         }
         else {
-            this.setState(new_state, callback)
+            doFlash({"alert-type": "alert-warning",
+                "message": "Select only one or two tiles before launching compare"})
         }
+
+    }
+    
+    _load_tile() {
+        postWithCallbackNoMain("host", "load_tile_module_task",
+            {"tile_module_name": this.props.list_of_selected[0], "user_id": window.user_id}, doFlash)
+    }
+    
+    _unload_all_tiles() {
+        $.getJSON(`${$SCRIPT_ROOT}/unload_all_tiles`, doFlash)
+    }
+    
+    _tile_delete() {
+        this.props.delete_func("/delete_tile_module")
     }
 
-    _view_func() {
-        if (!this.state.multi_select) {
-            window.open($SCRIPT_ROOT + "/main/" + String(this.state.selected_resource.name))
-        }
-    }
-
-    _duplicate_func () {
-        let res_type = this.props.res_type;
-        let res_name = this.state.selected_resource.name;
-        $.getJSON($SCRIPT_ROOT + "get_resource_names/" + the_type, function(data) {
-            showModalReact(`Duplicate ${res_type}`, "New Name",
-                DuplicateResource, res_name, data.resource_name)
+    _new_tile (template_name) {
+        $.getJSON($SCRIPT_ROOT + "get_resource_names/tile", function (data) {
+                showModalReact("New Tile", "New Tile Name", CreateNewTileModule, "NewTileModule", data["resource_names"])
             }
         );
-        function DuplicateResource(new_name) {
+        let self = this;
+        function CreateNewTileModule(new_name) {
             const result_dict = {
+                "template_name": template_name,
                 "new_res_name": new_name,
-                "res_to_copy": res_name
+                "last_saved": "viewer"
             };
-            postAjaxPromise("/duplicate_collection", result_dict)
+            postAjaxPromise("/create_tile_module", result_dict)
                 .then((data) => {
-                    manager.insert_new_row(data.new_row, 0);
-                    manager.select_first_row();
-                    resource_managers["all_module"].insert_new_row(data.new_all_row, 0)
+                    self.props.animation_phase(() => {self.props.add_new_row(data.new_row)});
+                    window.open($SCRIPT_ROOT + "/view_module/" + String(new_name))
+                })
+                .catch(doFlash)
+            }
+    }
+
+    _new_in_creator (template_name) {
+        $.getJSON(`${$SCRIPT_ROOT}/get_resource_names/tile`, function (data) {
+                showModalReact("New Tile", "New Tile Name", CreateNewTileModule, "NewTileModule", data["resource_names"])
+            }
+        );
+        let self = this;
+        function CreateNewTileModule(new_name) {
+            const result_dict = {
+                "template_name": template_name,
+                "new_res_name": new_name,
+                "last_saved": "creator"
+            };
+            postAjaxPromise("/create_tile_module", result_dict)
+                .then((data) => {
+                    self.props.animation_phase(() => {self.props.add_new_row(data.new_row)});
+                    window.open($SCRIPT_ROOT + "/view_in_creator/" + String(new_name))
+                })
+                .catch(doFlash)
+            }
+    }
+
+    get popup_buttons() {
+        return [
+            ["new", "plus-circle", [
+                ["BasicTileTemplate", ()=>{this._new_tile("BasicTileTemplate")}],
+                ["ExpandedTileTemplate", ()=>{this._new_tile("ExpandedTileTemplate")}],
+                ["MatplotlibTileTemplate", ()=>{this._new_tile("MatplotlibTileTemplate")}]]
+            ],
+            ["creator", "plus-circle", [
+                ["StandardTile", ()=>{this._new_in_creator("BasicTileTemplate")}],
+                ["MatplotlibTile", ()=>{this._new_in_creator("MatplotlibTileTemplate")}],
+                ["D3Tile", ()=>{this._new_in_creator("D3TileTemplate")}]]
+            ]
+        ]
+
+    }
+
+    get button_groups() {
+        return [
+            [["edit", this._tile_view, "pencil", false],
+                ["creator", this._creator_view, "pencil-alt", false],
+                ["compare", this._compare_tiles, "code-branch", true],
+                ["load", this._load_tile, "arrow-from-bottom", false],
+                ["unload", this._unload_all_tiles, "ban", false]],
+            [["duplicate", this._tile_duplicate, "copy", false],
+             ["rename", this.props.rename_func, "edit", false]],
+            [["share", this.props.send_repository_func, "share", false]],
+            [["delete", this._tile_delete, "trash", true]],
+            [["refresh", this.props.refresh_func, "sync-alt", false]]
+        ];
+     }
+
+     render () {
+        return <LibraryToolbar button_groups={this.button_groups}
+                               popup_buttons={this.popup_buttons}
+                               multi_select={this.props.multi_select} />
+     }
+
+}
+
+TileToolbar.propTypes = specializedToolbarPropTypes;
+
+class ListToolbar extends React.Component {
+    constructor(props) {
+        super(props);
+        doBinding(this);
+    }
+
+    _list_view() {
+        this.props.view_func("/view_list/")
+    }
+
+    _list_duplicate() {
+        this.props.duplicate_func('/create_duplicate_list')
+    }
+
+    _list_delete() {
+        this.props.delete_func("/delete_list")
+    }
+
+    _add_list (file_list) {
+        let the_data = new FormData();
+        for (let f of file_list) {
+            the_data.append('file', f);
+        }
+        let self = this;
+        postAjaxUploadPromise("add_list", the_data)
+            .then((data) => {
+                    self.props.animation_phase(() => {self.props.add_new_row(data.new_row)})
+            })
+            .catch(doFlash);
+    }
+
+    get button_groups() {
+        return [
+            [["edit", this._list_view, "pencil", false]],
+            [["duplicate", this._list_duplicate, "copy", false],
+             ["rename", this.props.rename_func, "edit", false]],
+            [["share", this.props.send_repository_func, "share", false]],
+            [["delete", this._list_delete, "trash", true]],
+            [["refresh", this.props.refresh_func, "sync-alt", false]]
+        ];
+     }
+
+
+     get file_adders() {
+         return[
+             ["import", this._add_list, "cloud-upload", true]
+         ]
+     }
+
+     render () {
+        return <LibraryToolbar button_groups={this.button_groups}
+                               popup_buttons={this.popup_buttons}
+                               multi_select={this.props.multi_select} />
+     }
+
+}
+
+ListToolbar.propTypes = specializedToolbarPropTypes;
+
+
+class CodeToolbar extends React.Component {
+    constructor(props) {
+        super(props);
+        doBinding(this);
+    }
+
+    _code_view() {
+        this.props.view_func("/view_code/")
+    }
+
+    _new_code (template_name) {
+        $.getJSON(`${$SCRIPT_ROOT}/get_resource_names/code`, function (data) {
+                showModalReact("New Code Resource", "New Code Resource Name", CreateNewCodeResource, "NewCodeResource", data["resource_names"])
+            }
+        );
+        let self = this;
+
+        function CreateNewCodeResource(new_name) {
+            const result_dict = {
+                "template_name": template_name,
+                "new_res_name": new_name
+            };
+            postAjaxPromise("/create_code", result_dict)
+                .then((data) => {
+                    self.props.animation_phase(() => {self.props.add_new_row(data.new_row)});
+                    window.open($SCRIPT_ROOT + "/view_code/" + String(new_name))
                 })
                 .catch(doFlash)
         }
     }
 
-     get button_groups() {
+    _code_duplicate() {
+        this.props.duplicate_func('/create_duplicate_code')
+    }
+
+    _code_delete() {
+        this.props.delete_func("/delete_code")
+    }
+
+
+    get popup_buttons() {
         return [
-            [["open", this.view_func, "book-open", false]],
-            [["duplicate", this._duplicate_func, "copy", false],
-             ["rename",  this._rename_func, "edit", false],
-             ["combine", this._combineCollections, "plus-square", true]],
-            [["download", this._downloadCollection, "cloud-download", false],
-             ["share", this._send_repository_func, "share", false]],
-            [["delete", this._delete_func, "trash", true]],
-            [["refresh", this._refresh_func, "sync-alt", false]]
+            ["new", "plus-circle", [
+                ["BasicCodeTemplate", ()=>{this._new_code("BasicCodeTemplate")}]]
+            ]
+        ]
+    }
+
+    get button_groups() {
+        return [
+            [["edit", this._code_view, "pencil", false]],
+            [["duplicate", this._code_duplicate, "copy", false],
+             ["rename", this.props.rename_func, "edit", false]],
+            [["share", this.props.send_repository_func, "share", false]],
+            [["delete", this._code_delete, "trash", true]],
+            [["refresh", this.props.refresh_func, "sync-alt", false]]
         ];
      }
 
-    render() {
-        return (
-            <LibraryPane usable_height={this.props.usable_height}
-                         usable_width={this.props.usable_width}
-                         res_type="collection"
-                         button_groups={this.button_groups}
-                         allow_search_inside={false}
-                         allow_search_metadata={false}
-                         selected_resource={this.state.selected_resource}
-                         list_of_selected={this.state.list_of_selected}
-                         multi_select={this.state.multi_select}
-                         update_selected={this._update_selected}
-            />
-        )
-    }
+     render () {
+        return <LibraryToolbar button_groups={this.button_groups}
+                               popup_buttons={this.popup_buttons}
+                               multi_select={this.props.multi_select} />
+     }
+
 }
 
-OldCollectionPane.propTypes = {
-    usable_height: PropTypes.number,
-    usable_width: PropTypes.number
-};
+CodeToolbar.propTypes = specializedToolbarPropTypes;
 
-class ProjectPane extends React.Component {
-
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        this.state = {
-            selected_resource: {"name": "", "tags": "", "notes": "", "updated": "", "created": ""},
-            multi_select: false,
-            list_of_selected: []
-        }
-    }
-
-    _update_selected(state_update, callback=null) {
-        let new_state = Object.assign(this.state, state_update);
-        if (callback==null) {
-            this.setState(new_state);
-        }
-        else {
-            this.setState(new_state, callback)
-        }
-    }
-
-    _view_func() {
-
-    }
-
-    get button_groups() {
-        return [
-            [["open", this._view_func, "book-open", false]]
-            ];
-    }
-
-    render() {
-        return (
-            <LibraryPane usable_height={this.props.usable_height}
-                         usable_width={this.props.usable_width}
-                         res_type="project"
-                         button_groups={this.button_groups}
-                         allow_search_inside={false}
-                         allow_search_metadata={true}
-                         search_metadata_view="search_project_metadata"
-                         selected_resource={this.state.selected_resource}
-                         list_of_selected={this.state.list_of_selected}
-                         multi_select={this.state.multi_select}
-                         update_selected={this._update_selected}
-            />
-        )
-    }
-}
-
-ProjectPane.propTypes = {
-    usable_height: PropTypes.number,
-    usable_width: PropTypes.number
-};
-
-class TilePane extends React.Component {
-
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        this.state = {
-            selected_resource: {"name": "", "tags": "", "notes": "", "updated": "", "created": ""},
-            multi_select: false,
-            list_of_selected: []
-        }
-    }
-
-    _update_selected(state_update, callback=null) {
-        let new_state = Object.assign(this.state, state_update);
-        if (callback==null) {
-            this.setState(new_state);
-        }
-        else {
-            this.setState(new_state, callback)
-        }
-    }
-
-    _view_func() {
-
-    }
-
-    get button_groups() {
-        return [
-            [["open", this._view_func, "book-open", false]]
-            ];
-    }
-
-    render() {
-        return (
-            <LibraryPane usable_height={this.props.usable_height}
-                         usable_width={this.props.usable_width}
-                         res_type="tile"
-                         button_groups={this.button_groups}
-                         allow_search_inside={true}
-                         allow_search_metadata={true}
-                         search_inside_view="search_inside_tiles"
-                         search_metadata_view="search_tile_metadata"
-                         selected_resource={this.state.selected_resource}
-                         list_of_selected={this.state.list_of_selected}
-                         multi_select={this.state.multi_select}
-                         update_selected={this._update_selected}
-            />
-        )
-    }
-}
-
-TilePane.propTypes = {
-    usable_height: PropTypes.number,
-    usable_width: PropTypes.number
-};
-
-class ListPane extends React.Component {
-
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        this.state = {
-            selected_resource: {"name": "", "tags": "", "notes": "", "updated": "", "created": ""},
-            multi_select: false,
-            list_of_selected: []
-        }
-    }
-
-    _update_selected(state_update, callback=null) {
-        let new_state = Object.assign(this.state, state_update);
-        if (callback==null) {
-            this.setState(new_state);
-        }
-        else {
-            this.setState(new_state, callback)
-        }
-    }
-
-    view_func() {
-
-    }
-
-    get button_groups() {
-        return [
-            [["open", this._view_func, "book-open", false]]
-            ];
-    }
-
-    render() {
-        return (
-            <LibraryPane usable_height={this.props.usable_height}
-                         usable_width={this.props.usable_width}
-                         res_type="list"
-                         button_groups={this.button_groups}
-                         allow_search_inside={true}
-                         allow_search_metadata={true}
-                         search_inside_view="search_inside_lists"
-                         search_metadata_view="search_list_metadata"
-                         selected_resource={this.state.selected_resource}
-                         list_of_selected={this.state.list_of_selected}
-                         multi_select={this.state.multi_select}
-                         update_selected={this._update_selected}
-            />
-        )
-    }
-}
-
-ListPane.propTypes = {
-    usable_height: PropTypes.number,
-    usable_width: PropTypes.number
-};
-
-class CodePane extends React.Component {
-
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        this.state = {
-            selected_resource: {"name": "", "tags": "", "notes": "", "updated": "", "created": ""},
-            multi_select: false,
-            list_of_selected: []
-        }
-    }
-
-    _update_selected(state_update, callback=null) {
-        let new_state = Object.assign(this.state, state_update);
-        if (callback==null) {
-            this.setState(new_state);
-        }
-        else {
-            this.setState(new_state, callback)
-        }
-    }
-
-    view_func() {
-
-    }
-
-    get button_groups() {
-        return [
-                [["open", this._view_func, "book-open", false]]
-            ];
-    }
-
-    render() {
-        return (
-            <LibraryPane usable_height={this.props.usable_height}
-                         usable_width={this.props.usable_width}
-                         res_type="code"
-                         button_groups={this.button_groups}
-                         allow_search_inside={true}
-                         allow_search_metadata={true}
-                         search_inside_view="search_inside_code"
-                         search_metadata_view="search_code_metadata"
-                         selected_resource={this.state.selected_resource}
-                         list_of_selected={this.state.list_of_selected}
-                         multi_select={this.state.multi_select}
-                         update_selected={this._update_selected}
-            />
-        )
-    }
-}
-
-CodePane.propTypes = {
-    usable_height: PropTypes.number,
-    usable_width: PropTypes.number
-};
 
 _library_home_main();

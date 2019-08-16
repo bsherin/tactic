@@ -43,8 +43,9 @@ class TagButton extends React.Component {
         }
     }
 
-    _handleExpanderClick() {
-        this.props._handleExpanderToggle(this.props.the_tag, !this.props.am_expanded)
+    _handleExpanderClick(event) {
+        this.props._handleExpanderToggle(this.props.the_tag, !this.props.am_expanded);
+        event.stopPropagation()
     }
 
     get tag_base() {
@@ -206,6 +207,13 @@ class TagButtonList extends React.Component {
             }
         }
         return visible_tags
+    }
+
+    _handleContextClick(e, data, target) {
+        console.log("hello");
+        let x = e;
+        let y = data;
+        let z = target;
     }
 
     render() {
