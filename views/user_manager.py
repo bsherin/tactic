@@ -158,6 +158,20 @@ class UserManager(ResourceManager):
 
         return jsonify({"success": True})
 
+    def get_resource_data_list(self, user_obj=None):
+        user_list = get_all_users()
+        result = []
+        larray = ["_id", "username", "full_name", "last_login", "email"]
+        for user in user_list:
+            urow = {}
+            for field in larray:
+                if field in user:
+                    urow[field] = str(user[field])
+                else:
+                    urow[field] = ""
+            result.append(urow)
+        return result
+
     # noinspection PyMethodOverriding
     def build_resource_array(self, user_obj=None):
         user_list = get_all_users()

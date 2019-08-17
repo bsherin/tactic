@@ -39,7 +39,8 @@ class TagButton extends React.Component {
         super(props);
         doBinding(this);
         this.state = {
-            am_root : !has_slash(props.the_tag)
+            am_root : !has_slash(props.the_tag),
+            drag_hover: false
         }
     }
 
@@ -69,6 +70,29 @@ class TagButton extends React.Component {
         }
     }
 
+    _handleDrop(e, index, targetName) {
+        this.setState({"drag_hover": false});
+        let res_name = get_datum(e, "resourcename");
+        if (res_name != "") {
+            this.props.handleAddTag(res_name, this.props.the_tag);
+        }
+    }
+
+    _handleDragOver(e) {
+        e.preventDefault();
+        this.setState({"drag_hover": true});
+
+    }
+
+    _handleDragLeave(e) {
+        e.preventDefault();
+        this.setState({"drag_hover": false});
+    }
+
+    _handleDragStart(e) {
+        set_datum(e, "tagname", this.props.the_tag);
+    }
+
     render () {
         let indent_amount = 12;
         let mleft = indent_amount * this.tag_depth(this.props.the_tag);
@@ -76,6 +100,8 @@ class TagButton extends React.Component {
         let hcclass;
         let prefix;
         let icon_element;
+        let active_folder_icon_element = <span className="tag-icon-folder fas fa-folder"></span>;
+        let inactive_folder_icon_element = <span className="tag-icon-folder fal fa-folder"></span>;
         if (this.props.have_children) {
             hcclass = "has_children shrunk";
             pf_style = {marginLeft: mleft};
@@ -84,19 +110,19 @@ class TagButton extends React.Component {
                                onClick={this._handleExpanderClick}
                                style={pf_style}/>;
                 if (this.props.am_active) {
-                    icon_element = <span className="tag-icon-folder fas fa-folder"></span>
+                    icon_element = active_folder_icon_element
                 } else {
-                    icon_element = <span className="tag-icon-folder fal fa-folder"></span>
+                    icon_element = inactive_folder_icon_element
                 }
             } else {
                 prefix = <span className="tag-expander fal fa-caret-right"
                                onClick={this._handleExpanderClick}
                                style={pf_style}/>;
                 if (this.props.am_active) {
-                    icon_element = <span className="tag-icon-folder fas fa-folder"></span>
+                    icon_element = active_folder_icon_element
                 }
                 else {
-                    icon_element = <span className="tag-icon-folder fal fa-folder"></span>
+                    icon_element = inactive_folder_icon_element
                 }
             }
         }
@@ -124,10 +150,18 @@ class TagButton extends React.Component {
         if (this.props.am_active) {
             hcclass = hcclass + " active"
         }
+        if (this.state.drag_hover) {
+            hcclass = hcclass + " draghover"
+        }
         if (this.state.am_root) {
             return (
                 <Rbs.Button className={`btn btn-outline-secondary tag-button root-tag ${hcclass}`}
                             onClick={this._handleSetActive}
+                            draggable={this.props.the_tag != "all"}
+                            onDragStart={this._handleDragStart}
+                            onDragOver={this._handleDragOver}
+                            onDragLeave={this._handleDragLeave}
+                            onDrop={this._handleDrop}
                 >
                     {prefix}
                     {icon_element}
@@ -138,6 +172,10 @@ class TagButton extends React.Component {
         else {
             return (
                 <Rbs.Button className={`btn btn-outline-secondary tag-button ${hcclass}`}
+                            draggable={true}
+                            onDragStart={this._handleDragStart}
+                            onDragOver={this._handleDragOver}
+                            onDragLeave={this._handleDragLeave}
                             onClick={this._handleSetActive}
                 >
                     {prefix}
@@ -156,7 +194,8 @@ TagButton.propTypes = {
     am_expanded: PropTypes.bool,
     am_active: PropTypes.bool,
     _handleExpanderToggle: PropTypes.func,
-    _handleSetActive: PropTypes.func
+    _handleSetActive: PropTypes.func,
+    handleAddTag: PropTypes.func
 };
 
 class TagButtonList extends React.Component {
@@ -248,6 +287,7 @@ class TagButtonList extends React.Component {
                                          am_active={tag == this.state.active_tag}
                                          _handleExpanderToggle={this._handleExpanderToggle}
                                          _handleSetActive={this._handleSetActive}
+                                         handleAddTag={this.props.handleAddTag}
                 />;
                 tag_buttons.push(new_tag)
             }
@@ -264,5 +304,6 @@ class TagButtonList extends React.Component {
 TagButtonList.propTypes = {
     res_type: PropTypes.string,
     tag_list: PropTypes.array,
-    handleSearchFromTag: PropTypes.func
+    handleSearchFromTag: PropTypes.func,
+    handleAddTag: PropTypes.func
 };

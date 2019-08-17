@@ -7,6 +7,7 @@ import {render_navbar} from "./base_module.js";
 var Rbs = window.ReactBootstrap;
 
 import {LibraryPane} from "./library_pane.js"
+import {LoadedTileList} from "./library_widgets.js";
 
 const MARGIN_SIZE = 17;
 
@@ -43,9 +44,6 @@ class LibraryTacticSocket extends TacticSocket {
         this.socket.on('start-spinner', startSpinner);
         this.socket.on('show-status-msg', statusMessage);
         this.socket.on("clear-status-msg", clearStatusMessage);
-        // this.socket.on('update-loaded-tile-list', (data) => {
-        //     resource_managers["tile_module"].get_aux_right_dom().html(data.html)
-        // });
         this.socket.on('close-user-windows', (data) => {
             if (!(data["originator"] == window.library_id)) {
                 window.close()
@@ -84,13 +82,14 @@ class LibraryHomeApp extends React.Component {
     render () {
         let nav_items = [["collections", "file-alt"], ["projects", "project-diagram"],
             ["tiles", "window"], ["lists", "list-alt"], ["code", "file-code"]].map((data)=>(
-            <Rbs.Nav.Item>
+            <Rbs.Nav.Item key={data[0]}>
                 <Rbs.Nav.Link eventKey={data[0] + "-pane"}>
                     <span className={"far um-nav-icon fa-" + data[1]}></span>
                     <span className="um-nav-text">{data[0]}</span>
                 </Rbs.Nav.Link>
             </Rbs.Nav.Item>
         ));
+        let tile_widget = <LoadedTileList tsocket={tsocket}/>
         return (
             <React.Fragment>
                 <Rbs.Tab.Container id="the_container" defaultActiveKey="collections-pane">
@@ -103,16 +102,17 @@ class LibraryHomeApp extends React.Component {
                         </div>
                         <div className="d-flex flex-column">
                             <Rbs.Tab.Content>
-                                <Rbs.Tab.Pane eventKey="collections-pane">
+                                <Rbs.Tab.Pane eventKey="collections-pane" onEnter={this._update_window_dimensions}>
                                     <LibraryPane usable_height={this.state.usable_height}
                                                  usable_width={this.state.usable_width}
                                                  res_type="collection"
                                                  allow_search_inside={false}
                                                  allow_search_metadata={false}
                                                  ToolbarClass={CollectionToolbar}
+                                                 tsocket={tsocket}
                                 />
                                 </Rbs.Tab.Pane>
-                                <Rbs.Tab.Pane eventKey="projects-pane">
+                                <Rbs.Tab.Pane eventKey="projects-pane" onEnter={this._update_window_dimensions}>
                                     <LibraryPane usable_height={this.state.usable_height}
                                                  usable_width={this.state.usable_width}
                                                  res_type="project"
@@ -120,9 +120,10 @@ class LibraryHomeApp extends React.Component {
                                                  allow_search_metadata={true}
                                                  search_metadata_view = "search_project_metadata"
                                                  ToolbarClass={ProjectToolbar}
+                                                 tsocket={tsocket}
                                     />
                                 </Rbs.Tab.Pane>
-                                <Rbs.Tab.Pane eventKey="tiles-pane">
+                                <Rbs.Tab.Pane eventKey="tiles-pane" onEnter={this._update_window_dimensions}>
                                     <LibraryPane usable_height={this.state.usable_height}
                                                  usable_width={this.state.usable_width}
                                                  res_type="tile"
@@ -131,9 +132,11 @@ class LibraryHomeApp extends React.Component {
                                                  search_inside_view="search_inside_tiles"
                                                  search_metadata_view = "search_tile_metadata"
                                                  ToolbarClass={TileToolbar}
+                                                 tsocket={tsocket}
+                                                 aux_pane={tile_widget}
                                     />
                                 </Rbs.Tab.Pane>
-                                <Rbs.Tab.Pane eventKey="lists-pane">
+                                <Rbs.Tab.Pane eventKey="lists-pane" onEnter={this._update_window_dimensions}>
                                     <LibraryPane usable_height={this.state.usable_height}
                                                  usable_width={this.state.usable_width}
                                                  res_type="list"
@@ -142,9 +145,10 @@ class LibraryHomeApp extends React.Component {
                                                  search_inside_view="search_inside_lists"
                                                  search_metadata_view = "search_list_metadata"
                                                  ToolbarClass={ListToolbar}
+                                                 tsocket={tsocket}
                                     />
                                 </Rbs.Tab.Pane>
-                                <Rbs.Tab.Pane eventKey="code-pane">
+                                <Rbs.Tab.Pane eventKey="code-pane" onEnter={this._update_window_dimensions}>
                                     <LibraryPane usable_height={this.state.usable_height}
                                                  usable_width={this.state.usable_width}
                                                  res_type="code"
@@ -153,6 +157,7 @@ class LibraryHomeApp extends React.Component {
                                                  search_inside_view="search_inside_code"
                                                  search_metadata_view = "search_code_metadata"
                                                  ToolbarClass={CodeToolbar}
+                                                 tsocket={tsocket}
                                     />
                                 </Rbs.Tab.Pane>
                             </Rbs.Tab.Content>
@@ -306,6 +311,23 @@ class CollectionToolbar extends React.Component {
         }, res_name + ".xlsx")
     };
 
+    displayImportResults(data) {
+        let title = "Collection Created";
+        let message = "";
+        let number_of_errors;
+        if (data.file_decoding_errors == null) {
+            message = "No decoding errors were encounters"
+        }
+        else {
+            message = "<b>Decoding errors were enountered</b>";
+            for (let filename in data.file_decoding_errors) {
+                number_of_errors = String(data.file_decoding_errors[filename].length);
+                message = message + `<br>${filename}: ${number_of_errors} errors`;
+            }
+        }
+        alertify.alert(title, message).set({'pinnable': false, 'modal':false})
+    }
+
     _import_collection(file_list) {
         let the_data = new FormData();
         for (let f of file_list) {
@@ -332,13 +354,13 @@ class CollectionToolbar extends React.Component {
             postAjaxUploadPromise(`${url_base}/${new_name}/${window.library_id}`, the_data)
                 .then((data) => {
                         clearStatusMessage();
+                        self.displayImportResults(data);
                         self.props.animation_phase(() => {self.props.add_new_row(data.new_row)});
                         stopSpinner();
                 })
                 .catch(doFlash);
         }
     }
-
 
     get button_groups() {
         return [

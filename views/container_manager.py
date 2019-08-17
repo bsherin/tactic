@@ -52,6 +52,13 @@ class ContainerManager(ResourceManager):
                                              library_id, timeout=None)
                         cont.remove(force=True)
                     continue
+                if cont.attrs["Image"] == tactic_image_ids["module_viewer_image"]:
+                    the_id = container_id(cont)
+                    if not the_id == global_tile_manager.test_tile_container_id:
+                        self.show_um_message("removing module viewer container " + cont.attrs["Name"],
+                                             library_id, timeout=None)
+                        cont.remove(force=True)
+                    continue
                 # if cont.attrs["Image"] == cont.attrs["ImageID"]:
                 #     self.show_um_message("removing image container " + cont["Id"], library_id)
                 #     cli.remove_container(cont["Id"], force=True)
@@ -103,6 +110,41 @@ class ContainerManager(ResourceManager):
     def refresh_container_table(self):
         self.update_selector_list()
         return jsonify({"success": True})
+
+    def get_resource_data_list(self, user_obj=None):
+        tactic_image_names = ["tactic_tile_image", "tactic_main_image", "tactic_megaplex_image",
+                              "module_viewer_image"]
+        image_id_names = {}
+        for iname in tactic_image_names:
+            image_id_names[cli.images.get(iname).id] = iname
+
+        result = []
+
+        all_containers = cli.containers.list(all=True)
+        for cont in all_containers:
+            owner_id = container_owner(cont)
+            if owner_id == "host":
+                owner_name = "host"
+            elif owner_id == "system":
+                owner_name = "system"
+            else:
+                owner_name = load_user(owner_id).username
+            image_id = cont.attrs["Image"]
+            if image_id in image_id_names:
+                image_name = image_id_names[image_id]
+            else:
+                image_name = image_id
+
+            new_row = {"Id": container_id(cont),
+                       "Other_name": container_other_name(cont),
+                       "Name": cont.attrs["Name"],
+                       "Image": image_name,
+                       "Owner": owner_name,
+                       "Status": cont.status,
+                       "Created": cont.attrs["Created"]
+                       }
+            result.append(new_row)
+        return result
 
     # noinspection PyMethodOverriding
     def build_resource_array(self):

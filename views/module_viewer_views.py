@@ -120,7 +120,8 @@ def update_module():
                                                          {'$set': {"tile_module": module_code, "metadata": mdata,
                                                                    "last_saved": last_saved}})
         create_recent_checkpoint(module_name)
-        tile_manager.update_selector_list()
+        new_res_dict = tile_manager.build_res_dict(module_name, mdata)
+        tile_manager.update_selector_row(new_res_dict)
         tile_manager.send_tile_source_changed_message({'user_id': current_user.get_id(), 'tile_type': module_name})
         return jsonify({"success": True, "message": "Module Successfully Saved",
                         "alert_type": "alert-success"})

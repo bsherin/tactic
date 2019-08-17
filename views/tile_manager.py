@@ -44,6 +44,8 @@ class TileManager(LibraryResourceManager):
                          login_required(self.add_tile_module), methods=['get', "post"])
         app.add_url_rule('/delete_tile_module', "delete_tile_module",
                          login_required(self.delete_tile_module), methods=['post'])
+        app.add_url_rule('/get_loaded_tile_lists', "get_loaded_tile_lists",
+                         login_required(self.get_loaded_tile_lists), methods=['get', 'post'])
         app.add_url_rule('/create_tile_module', "create_tile_module",
                          login_required(self.create_tile_module), methods=['get', 'post'])
         app.add_url_rule('/request_update_loaded_tile_list', "request_update_loaded_tile_list",
@@ -60,7 +62,6 @@ class TileManager(LibraryResourceManager):
             new_name = request.json["new_name"]
             db[current_user.tile_collection_name].update_one({"tile_module_name": old_name},
                                                              {'$set': {"tile_module_name": new_name}})
-            # self.update_selector_list()
             return jsonify({"success": True, "message": "Module Successfully Saved", "alert_type": "alert-success"})
         except Exception as ex:
             return self.get_exception_for_ajax(ex, "Error renaming collection")
@@ -218,7 +219,7 @@ class TileManager(LibraryResourceManager):
     def unload_all_tiles(self):
         try:
             global_tile_manager.unload_user_tiles(current_user.username)
-            socketio.emit('update-loaded-tile-list', {"html": self.render_loaded_tile_list()},
+            socketio.emit('update-loaded-tile-list', {"tile_load_dict": self.loaded_tile_lists(current_user)},
                           namespace='/library', room=current_user.get_id())
             socketio.emit('update-menus', {}, namespace='/main', room=current_user.get_id())
             return jsonify({"message": "Tiles successfully unloaded", "alert_type": "alert-success"})
@@ -313,6 +314,18 @@ class TileManager(LibraryResourceManager):
 
         except Exception as ex:
             return self.get_exception_for_ajax(ex, "Error deleting tiles")
+
+    def loaded_tile_lists(self, user_obj=None):
+        if user_obj is None:
+            user_obj = current_user
+        uname = user_obj.username
+        result = {"nondefault_tiles": global_tile_manager.get_nondefault_tiles_list(uname),
+                  "default_tiles": global_tile_manager.get_default_tiles(uname),
+                  "failed_loads": global_tile_manager.get_failed_loads_list(uname)}
+        return result
+
+    def get_loaded_tile_lists(self, user_obj=None):
+        return jsonify({"success": True, "tile_load_dict": self.loaded_tile_lists(user_obj)})
 
     def render_loaded_tile_list(self, user_obj=None):
         if user_obj is None:

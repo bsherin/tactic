@@ -68,6 +68,7 @@ def copy_between_accounts(source_user, dest_user, res_type, new_res_name, res_na
                 db[new_collection_name].insert_one(doc)
             db[new_collection_name].update_one({"name": "__metadata__"},
                                                {'$set': {"datetime": datetime.datetime.utcnow()}})
+            metadata = db[new_collection_name].find_one({"name": "__metadata__"})
         else:
             name_field = name_keys[res_type]
             collection_name = source_user.resource_collection_name(res_type)
@@ -95,9 +96,12 @@ def copy_between_accounts(source_user, dest_user, res_type, new_res_name, res_na
                 new_res_dict["file_id"] = fs.put(doc_text)
             new_collection_name = dest_user.resource_collection_name(res_type)
             db[new_collection_name].insert_one(new_res_dict)
-        return jsonify({"success": True, "message": "Resource Successfully Copied", "alert_type": "alert-success"})
+            metadata = new_res_dict["metadata"]
+        overall_res = [metadata, jsonify({"success": True, "message": "Resource Successfully Copied", "alert_type": "alert-success"})]
+        return overall_res
     except Exception as ex:
-        return generic_exception_handler.get_exception_for_ajax(ex, "Error copying resource")
+        overall_res = [None, generic_exception_handler.get_exception_for_ajax(ex, "Error copying resource")]
+        return overall_res
 
 
 def get_manager_for_type(res_type, is_repository=False):
@@ -123,7 +127,8 @@ def stop_spinner(user_id=None):
 @login_required
 def library():
     if current_user.get_id() == admin_user.get_id():
-        return render_template('admin_interface.html', use_ssl=str(use_ssl), version_string=tstring)
+        return render_template("library/library_home_react.html", use_ssl=str(use_ssl), version_string=tstring,
+                               module_source="tactic_js/admin_home_react.js")
     else:
 
         return render_template('library/library_home_react.html', use_ssl=str(use_ssl), version_string=tstring,
@@ -178,9 +183,11 @@ def copy_from_repository():
     res_type = request.json["res_type"]
     new_res_name = request.json['new_res_name']
     res_name = request.json['res_name']
-    result = copy_between_accounts(repository_user, current_user, res_type, new_res_name, res_name)
-    manager = get_manager_for_type(res_type)
-    manager.update_selector_list(select=new_res_name)
+    metadata, result = copy_between_accounts(repository_user, current_user, res_type, new_res_name, res_name)
+    if metadata is not None:
+        manager = get_manager_for_type(res_type)
+        new_row = manager.build_res_dict(new_res_name, metadata)
+        manager.update_selector_row(new_row)
     return result
 
 
@@ -191,9 +198,7 @@ def send_to_repository():
     res_type = request.json['res_type']
     new_res_name = request.json['new_res_name']
     res_name = request.json['res_name']
-    result = copy_between_accounts(current_user, repository_user, res_type, new_res_name, res_name)
-    manager = get_manager_for_type(res_type, is_repository=True)
-    manager.update_selector_list(select=new_res_name)
+    metadata, result = copy_between_accounts(current_user, repository_user, res_type, new_res_name, res_name)
     return result
 
 
@@ -231,7 +236,6 @@ def get_resource_data_list(res_type):
 @login_required
 def get_repository_resource_data_list(res_type):
     return jsonify({"data_list": managers[res_type][1].get_resource_data_list()})
-
 
 # Metadata views
 @app.route('/grab_metadata', methods=['POST'])

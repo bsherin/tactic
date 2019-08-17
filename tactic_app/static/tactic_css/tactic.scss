@@ -276,6 +276,13 @@ table.sortable thead {
     }
 }
 
+#loaded_tile_widget {
+    .card-text {
+        margin-bottom: 0;
+        font-size: 12px
+    }
+}
+
 a[role="tab"] {
     font-size: $resource-manager-tab-font-size
 }

@@ -17,6 +17,16 @@ container_manager = ContainerManager("container")
 user_manager = UserManager("user")
 
 
+@app.route('/admin_list_with_metadata/<res_type>', methods=['GET', 'POST'])
+@login_required
+def admin_list_with_metadata(res_type):
+    if res_type == "container":
+        manager = container_manager
+    else:
+        manager = user_manager
+    return jsonify({"data_list": manager.get_resource_data_list()})
+
+
 @app.route('/request_update_admin_selector_list/<res_type>', methods=['GET'])
 @login_required
 def request_update_admin_selector_list(res_type):
@@ -32,6 +42,7 @@ def request_update_admin_selector_list(res_type):
 @login_required
 def admin_interface():
     if current_user.get_id() == admin_user.get_id():
-        return render_template("admin_interface.html", use_ssl=str(use_ssl), version_string=tstring)
+        return render_template("library/library_home_react.html", use_ssl=str(use_ssl), version_string=tstring,
+                               module_source="tactic_js/admin_home_react.js")
     else:
         return "not authorized"
