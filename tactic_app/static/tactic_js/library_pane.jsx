@@ -30,6 +30,10 @@ class LibraryPane extends React.Component {
             show_animations: false
         };
         doBinding(this);
+        if (props.tsocket != null) {
+            props.tsocket.socket.on(`update-${props.res_type}-selector-row`, this._handleRowUpdate);
+        }
+
     }
 
     get_height_minus_top_offset (element_ref) {
@@ -69,6 +73,28 @@ class LibraryPane extends React.Component {
 
             }
         )
+    }
+
+    _handleRowUpdate(res_dict) {
+        let res_name = res_dict.name;
+        let ind = this.get_data_list_index(res_name);
+        if (ind == -1) {
+            this._animation_phase(() => {this._add_new_row(res_dict)})
+        }
+        else {
+            let new_data_list = [...this.state.data_list];
+            let the_row = new_data_list[ind];
+            for (let field in res_dict) {
+                the_row[field] = res_dict[field];
+            }
+            if (res_name == this.state.selected_resource.name) {
+                this.setState({"selected_resource": the_row})
+            }
+            this.setState({ "data_list": new_data_list }, () => {
+                this._update_match_lists();
+                this.update_tag_list();
+            });
+        }
     }
 
     set_in_data_list(names, new_val_dict, data_list) {
@@ -149,7 +175,7 @@ class LibraryPane extends React.Component {
     }
 
     _handleMetadataChange(changed_state_elements) {
-        if (!this.props.multi_select) {
+        if (!this.state.multi_select) {
             let revised_selected_resource = Object.assign({}, this.state.selected_resource);
             revised_selected_resource = Object.assign(revised_selected_resource, changed_state_elements);
             if (Object.keys(changed_state_elements).includes("tags")) {
@@ -170,6 +196,43 @@ class LibraryPane extends React.Component {
         }
     }
 
+    addOneTag(res_name, the_tag) {
+        let dl_entry = this.get_data_list_entry(res_name);
+        if (dl_entry.tags.split(' ').includes(the_tag)) return;
+        let new_tags = dl_entry.tags + " " + the_tag;
+        new_tags = new_tags.trim();
+        let result_dict = {"res_type": this.props.res_type,
+            "res_name": res_name,
+            "tags": new_tags,
+            "notes": dl_entry.notes};
+
+        let self = this;
+        postAjaxPromise("save_metadata", result_dict)
+            .then(function () {
+                self._handleRowUpdate({"name": res_name, "tags": new_tags})
+                })
+            .catch(doFlash)
+    }
+
+    _handleAddTag(res_name, the_tag) {
+        if (this.state.list_of_selected.includes(res_name) && this.state.multi_select) {
+            for (let the_name of this.state.list_of_selected) {
+                this.addOneTag(the_name, the_tag)
+            }
+            let selected_tags = this.state.selected_resource.tags;
+            if (!selected_tags.includes(the_tag)) {
+                selected_tags = selected_tags + " " + the_tag;
+                selected_tags = selected_tags.trim();
+                let new_selected_resource = this.state.selected_resource;
+                new_selected_resource["tags"] = selected_tags;
+                this.setState({"selected_resource": new_selected_resource})
+            }
+        }
+        else {
+            this.addOneTag(res_name, the_tag)
+        }
+
+    }
 
     _handleSplitResize(left_width, right_width, width_fraction) {
         this.setState({"left_width": left_width - 50})
@@ -269,6 +332,7 @@ class LibraryPane extends React.Component {
     }
 
     _sort_data_list() {
+        if (this.state.data_list.length == 0) return;
         if (this.state.sorting_field == null) return this.state.data_list;
         let sort_field = this.state.sorting_field;
         let direction = this.state.sorting_direction;
@@ -554,6 +618,7 @@ class LibraryPane extends React.Component {
         }
 
         let right_pane = (
+            <React.Fragment>
                 <CombinedMetadata tags={this.state.selected_resource.tags.split(" ")}
                                   name={this.state.selected_resource.name}
                                   created={this.state.selected_resource.created}
@@ -565,6 +630,8 @@ class LibraryPane extends React.Component {
                                   handleNotesBlur={this.state.multi_select ? null : this._saveFromSelectedResource}
                                   additional_metadata={additional_metadata}
                 />
+                {(this.props.aux_pane != null) && this.props.aux_pane}
+            </React.Fragment>
         );
         let th_style= {
             "display": "inline-block",
@@ -586,7 +653,9 @@ class LibraryPane extends React.Component {
                     <div className="d-flex justify-content-around" style={{"width": 150}}>
                         <TagButtonList res_type={this.props.res_type}
                                        tag_list={this.state.tag_list}
-                                       handleSearchFromTag={this._handleSearchFromTag}/>
+                                       handleSearchFromTag={this._handleSearchFromTag}
+                                       handleAddTag={this._handleAddTag}
+                        />
                     </div>
                     <div className="d-flex flex-column">
                         <ToolbarClass selected_resource={this.state.selected_resource}
@@ -615,6 +684,7 @@ class LibraryPane extends React.Component {
                                            selected_resource_names={this.state.list_of_selected}
                                            handleRowClick={this._handleRowClick}
                                            handleArrowKeyPress={this._handleArrowKeyPress}
+                                           handleAddTag={this._handleAddTag}
                                            show_animations={this.state.show_animations}
                             />
                         </div>
@@ -646,9 +716,13 @@ LibraryPane.propTypes = {
     search_inside_view: PropTypes.string,
     search_metadata_view: PropTypes.string,
     ToolbarClass: PropTypes.func,
-    is_repository: PropTypes.bool
+    is_repository: PropTypes.bool,
+    tsocket: PropTypes.object,
+    aux_pane: PropTypes.object
 };
 
 LibraryPane.defaultProps = {
-    is_repository: false
+    is_repository: false,
+    tsocket: null,
+    aux_pane: null
 };

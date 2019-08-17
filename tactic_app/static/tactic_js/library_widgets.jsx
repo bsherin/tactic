@@ -2,6 +2,7 @@
 
 export {SearchForm}
 export {SelectorTable}
+export {LoadedTileList}
 
 var Rbs = window.ReactBootstrap;
 
@@ -101,7 +102,8 @@ class SelectorTableRow extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this);
-        this.state = {"in": false}
+        this.state = {in: false,
+            drag_hover: false}
     }
 
     _handleClick(event){
@@ -113,8 +115,30 @@ class SelectorTableRow extends React.Component {
        this.setState({"in": true})
     }
 
-    render() {
+    _handleDragStart(e) {
+        set_datum(e, "resourcename", this.props.data_dict[this.props.identifier_field]);
+    }
 
+     _handleDragOver(e) {
+        e.preventDefault();
+        this.setState({"drag_hover": true});
+
+    }
+
+    _handleDragLeave(e) {
+        e.preventDefault();
+        this.setState({"drag_hover": false});
+    }
+
+    _handleDrop(e, index, targetName) {
+        this.setState({"drag_hover": false});
+        let tagname = get_datum(e, "tagname");
+        if (tagname != "") {
+            this.props.handleAddTag(this.props.data_dict[this.props.identifier_field], tagname);
+        }
+    }
+
+    render() {
         let cells = this.props.columns.map((col, index) =>
             <SelectorTableCell key={index}>
                 {this.props.data_dict[col]}
@@ -122,8 +146,18 @@ class SelectorTableRow extends React.Component {
         );
 
         let cname = this.props.active ? 'selector-button active' : 'selector-button';
+        if (this.state.drag_hover) {
+            cname = cname + " draghover"
+        }
         return (
-            <tr className={cname} id={this.props.row_index} onClick={this._handleClick}
+            <tr className={cname}
+                draggable={this.props.draggable}
+                id={this.props.row_index}
+                onClick={this._handleClick}
+                onDragStart={this._handleDragStart}
+                onDrop={this._handleDrop}
+                onDragOver={this._handleDragOver}
+                onDragLeave={this._handleDragLeave}
             >
                 {cells}
             </tr>
@@ -137,6 +171,9 @@ SelectorTableRow.propTypes = {
     data_dict: PropTypes.object,
     active: PropTypes.bool,
     handleRowClick: PropTypes.func,
+    draggable: PropTypes.bool,
+    identifier_field: PropTypes.string,
+    handleAddTag: PropTypes.func
 };
 
 class SelectorHeaderCell extends React.Component {
@@ -242,10 +279,13 @@ class SelectorTable extends React.Component {
                                classNames="table-row"
             >
                 <SelectorTableRow columns={colnames}
-                          data_dict={ddict}
-                          row_index={index}
-                          active={this.props.selected_resource_names.includes(ddict.name)}
-                          handleRowClick={this.props.handleRowClick}
+                                  data_dict={ddict}
+                                  row_index={index}
+                                  active={this.props.selected_resource_names.includes(ddict[this.props.identifier_field])}
+                                  handleRowClick={this.props.handleRowClick}
+                                  draggable={this.props.draggable}
+                                  identifier_field={this.props.identifier_field}
+                                  handleAddTag={this.props.handleAddTag}
                 />
             </Rtg.CSSTransition>
         );
@@ -280,7 +320,10 @@ SelectorTable.propTypes = {
     handleRowClick: PropTypes.func,
     handleArrowKeyPress: PropTypes.func,
     show_animations: PropTypes.bool,
-    handleSpaceBarPress: PropTypes.func
+    handleSpaceBarPress: PropTypes.func,
+    identifier_field: PropTypes.string,
+    draggable: PropTypes.bool,
+    handleAddTag: PropTypes.func
 };
 
 SelectorTable.defaultProps = {
@@ -288,8 +331,84 @@ SelectorTable.defaultProps = {
              "created": {"sort_field": "created_for_sort", "first_sort": "descending"},
             "updated": {"sort_field": "updated_for_sort", "first_sort": "ascending"},
             "tags": {"sort_field": "tags", "first_sort": "ascending"}},
+    identifier_field: "name",
     active_row: 0,
     show_animations: false,
-    handleSpaceBarPress: null
+    handleSpaceBarPress: null,
+    draggable: true
+};
+
+class LoadedTileList extends React.Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {default_list: [],
+                failed_list: [],
+                other_list: []
+
+        }
+    }
+
+    set_state_from_dict(tldict) {
+        this.setState({
+            default_list: tldict.default_tiles,
+            failed_list: tldict.failed_loads,
+            other_list: tldict.nondefault_tiles
+        })
+    }
+
+    componentDidMount() {
+        let self = this;
+        this.props.tsocket.socket.on('update-loaded-tile-list', (data)=>self.set_state_from_dict(data.tile_load_dict));
+        postAjax("get_loaded_tile_lists", {}, function(data) {
+            let tldict = data.tile_load_dict;
+            self.set_state_from_dict(tldict)
+        })
+    }
+
+    render () {
+        let default_items = this.state.default_list.map((tile_name) => (
+            <Rbs.Card.Text key={tile_name}>
+                {tile_name}
+            </Rbs.Card.Text>
+        ));
+        let failed_items = this.state.failed_list.map((tile_name) => (
+            <Rbs.Card.Text key={tile_name}>
+                <a style={{color: "red"}}>
+                    {tile_name + "(failed)"}
+                </a>
+            </Rbs.Card.Text>
+        ));
+        let other_loads = this.state.other_list.map((tile_name) => (
+            <Rbs.Card.Text key={tile_name}>
+                {tile_name}
+            </Rbs.Card.Text>
+        ));
+        return (
+            <Rbs.CardGroup id="loaded_tile_widget" className="mt-3 ml-3">
+                <Rbs.Card>
+                    <Rbs.Card.Header className="pt-1 pb-1">
+                        Loaded Default
+                    </Rbs.Card.Header>
+                    <Rbs.Card.Body className="pt-3 pb-3">
+                        {default_items}
+                        {failed_items}
+                    </Rbs.Card.Body>
+                </Rbs.Card>
+                <Rbs.Card>
+                    <Rbs.Card.Header className="pt-1 pb-1">
+                        Loaded Other
+                    </Rbs.Card.Header>
+                    <Rbs.Card.Body className="pt-3 pb-3">
+                        {other_loads}
+                    </Rbs.Card.Body>
+                </Rbs.Card>
+            </Rbs.CardGroup>
+        )
+    }
+}
+
+LoadedTileList.propTypes = {
+    tsocket: PropTypes.object
 };
 

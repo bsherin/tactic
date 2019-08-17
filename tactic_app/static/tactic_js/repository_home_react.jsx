@@ -43,9 +43,6 @@ class LibraryTacticSocket extends TacticSocket {
         this.socket.on('start-spinner', startSpinner);
         this.socket.on('show-status-msg', statusMessage);
         this.socket.on("clear-status-msg", clearStatusMessage);
-        // this.socket.on('update-loaded-tile-list', (data) => {
-        //     resource_managers["tile_module"].get_aux_right_dom().html(data.html)
-        // });
         this.socket.on('close-user-windows', (data) => {
             if (!(data["originator"] == window.library_id)) {
                 window.close()
@@ -84,7 +81,7 @@ class RepositoryHomeApp extends React.Component {
     render () {
         let nav_items = [["collections", "file-alt"], ["projects", "project-diagram"],
             ["tiles", "window"], ["lists", "list-alt"], ["code", "file-code"]].map((data)=>(
-            <Rbs.Nav.Item>
+            <Rbs.Nav.Item key={data[0]}>
                 <Rbs.Nav.Link eventKey={data[0] + "-pane"}>
                     <span className={"far um-nav-icon fa-" + data[1]}></span>
                     <span className="um-nav-text">{data[0]}</span>

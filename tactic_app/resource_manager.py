@@ -37,6 +37,11 @@ class ResourceManager(ExceptionMixin):
     def add_rules(self):
         print "not implemented"
 
+    def update_selector_row(self, res_dict):
+        user_obj = current_user
+        socketio.emit("update-{}-selector-row".format(self.res_type), res_dict,
+                      namespace='/library', room=user_obj.get_id())
+
     def update_selector_list(self, select=None, user_obj=None):
         if user_obj is None:
             user_obj = current_user
@@ -133,7 +138,7 @@ class ResourceManager(ExceptionMixin):
                        "updated_for_sort": updatestring_for_sort,
                        "tags": tagstring,
                        "notes": notes}
-        skip_fields = ["name", "notes", "datetime", "tags", "updated", "_id"];
+        skip_fields = ["name", "notes", "datetime", "tags", "updated", "_id"]
         if mdata is not None:
             for field, val in mdata.items():
                 if field not in skip_fields:

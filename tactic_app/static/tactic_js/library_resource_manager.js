@@ -29,7 +29,6 @@ class SelectorDragManager extends DragManager {
             this.set_datum(event, "multi_select", "false");
             this.set_datum(event, "resourcename", res_name);
         }
-
     }
 
     handle_drop(event) {

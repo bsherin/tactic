@@ -80,15 +80,19 @@ class HostWorker(QWorker):
             self.submit_response(task_packet, self.get_short_exception_dict(ex, "Error saving code resource"))
             return
 
+    def emit_loaded_tile_update(self, user_obj=None):
+        if user_obj is None:
+            user_obj = current_user
+        socketio.emit('update-loaded-tile-list', {"tile_load_dict": tile_manager.loaded_tile_lists(user_obj)},
+                      namespace='/library', room=user_obj.get_id())
+
     @task_worthy_manual_submit
     def load_tile_module_task(self, data, task_packet):
         def loaded_source(res_dict):
             if not res_dict["success"]:
                 if "show_failed_loads" in data and data["show_failed_loads"]:
                     global_tile_manager.add_failed_load(tile_module_name, user_obj.username)
-                    socketio.emit('update-loaded-tile-list',
-                                  {"html": tile_manager.render_loaded_tile_list(user_obj)},
-                                  namespace='/library', room=user_obj.get_id())
+                    self.emit_loaded_tile_update(user_obj)
                 if "main_id" not in task_packet:
                     task_packet["room"] = user_id
                     task_packet["namespace"] = "/library"
@@ -110,9 +114,7 @@ class HostWorker(QWorker):
                                                      tile_module,
                                                      tile_module_name,
                                                      is_default)
-
-            socketio.emit('update-loaded-tile-list', {"html": tile_manager.render_loaded_tile_list(user_obj)},
-                          namespace='/library', room=user_obj.get_id())
+            self.emit_loaded_tile_update(user_obj)
             socketio.emit('update-menus', {}, namespace='/main', room=user_obj.get_id())
             if "main_id" not in task_packet:
                 task_packet["room"] = user_id

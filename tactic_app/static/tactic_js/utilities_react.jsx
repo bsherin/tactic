@@ -26,6 +26,15 @@ function updateObject(o1, o2) {
 
 function doNothing() {}
 
+
+function set_datum(e, type, dat) {
+    e.dataTransfer.setData(type, dat);
+}
+
+function get_datum(e, type) {
+    return e.dataTransfer.getData(type);
+}
+
 String.prototype.format = function() {
   let str = this;
   for (let i = 0; i < arguments.length; i++) {

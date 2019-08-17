@@ -26,6 +26,14 @@ function updateObject(o1, o2) {
 
 function doNothing() {}
 
+function set_datum(e, type, dat) {
+    e.dataTransfer.setData(type, dat);
+}
+
+function get_datum(e, type) {
+    return e.dataTransfer.getData(type);
+}
+
 String.prototype.format = function () {
     let str = this;
     for (let i = 0; i < arguments.length; i++) {
@@ -60,6 +68,12 @@ function objectKeys(obj) {
 Array.prototype.empty = function () {
     return this.length == 0;
 };
+
+$.get($SCRIPT_ROOT + "/get_modal_template", function (template) {
+    modal_template = $(template).filter('#modal-template').html();
+    confirm_template = $(template).filter('#confirm-template').html();
+    select_modal_template = $(template).filter('#select-modal-template').html();
+});
 
 alertify.set('notifier', 'position', 'top-right');
 
