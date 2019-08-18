@@ -233,68 +233,6 @@ class ModuleViewerWorker(QWorker):
         print("I'm killed")
         return {"success": True}
 
-    def build_html_table_from_data_list(self, data_list, res_type, title=None):
-        the_html = "<table class='tile-table table sortable table-striped table-bordered table-sm'>"
-        if title is not None:
-            the_html += "<caption>{0}</caption>".format(title)
-        the_html += "<thead><tr>"
-        for c in data_list[0]:
-            the_html += "<th>{0}</th>".format(c)
-        the_html += "</tr><tbody>"
-        for r in data_list[1:]:
-            the_html += "<tr class='selector-button' value='{1}' >".format(res_type, r[0])
-            for c in r:
-                if isinstance(c, list):
-                    the_html += "<td sorttable_customkey='{0}'>{1}</td>".format(c[1], c[0])
-                else:
-                    the_html += "<td>{0}</td>".format(c)
-            the_html += "</tr>"
-
-        the_html += "</tbody></table>"
-        return the_html
-
-    @task_worthy
-    def get_option_table(self, data_dict):
-        option_dict = data_dict["option_dict"]
-        if len(option_dict) == 0:
-            result = "No options defined."
-        else:
-            res_array = self.build_option_resource_array(option_dict)
-            res_array[0] = res_array[0] + [""]
-            for i in range(len(res_array))[1:]:
-                res_array[i] = res_array[i] + ['<span class="ui-icon ui-icon-arrowthick-2-n-s"></span>']
-            result = self.build_html_table_from_data_list(res_array, "option")
-        return {"success": True, "html": result}
-
-    def build_option_resource_array(self, option_dict):
-        fields = ["name", "type", "default", "special_list", "tags"]
-        larray = [["Name", "Type", "Default", "Special List", "Tags"]]
-        for opt in option_dict:
-            for f in fields:
-                if f not in opt:
-                    opt[f] = ""
-            larray.append([str(opt[f]) for f in fields])
-        return larray
-
-    @task_worthy
-    def get_export_table(self, data_dict):
-        export_list = data_dict["export_list"]
-        if len(export_list) == 0:
-            result = "No exports defined."
-        else:
-            res_array = self.build_export_resource_array(export_list)
-            res_array[0] = res_array[0] + [""]
-            for i in range(len(res_array))[1:]:
-                res_array[i] = res_array[i] + ['<span class="ui-icon ui-icon-arrowthick-2-n-s"></span>']
-            result = self.build_html_table_from_data_list(res_array, "export")
-        return {"success": True, "html": result}
-
-    def build_export_resource_array(self, export_list):
-        larray = [["Name", "Tags"]]
-        for exp in export_list:
-            larray.append([exp["name"], exp["tags"]])
-        return larray
-
 
 if __name__ == "__main__":
     print("entering main")

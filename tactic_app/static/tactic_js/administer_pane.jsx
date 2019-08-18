@@ -54,9 +54,6 @@ class AdminPane extends React.Component {
         this.setState({"mounted": true});
         let path;
         path = "admin_list_with_metadata";
-        if (this.props.is_repository) {
-            path = "repository_resource_list_with_metadata"
-        }
         postAjax(`${path}/${this.props.res_type}`, {}, function(data) {
             self.setState({"data_list": data.data_list}, () => {
                 self._update_match_lists();

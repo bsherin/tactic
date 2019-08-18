@@ -25,10 +25,17 @@ class ToolbarButton extends React.Component {
     }
 
     render() {
+        let butclass;
+        if (this.props.small_size) {
+            butclass = "btn btn-sm action-button toolbar-button-sm " + this.props.button_class
+        }
+        else {
+            butclass = "btn btn-sm action-button toolbar-button " + this.props.button_class
+        }
 
         return (
             <Rbs.Button onClick={this.props.click_handler}
-                    className={"btn btn-sm action-button toolbar-button " + this.props.button_class}>
+                        className={butclass}>
                 <span className={"far button-icon fa-" + this.props.icon_name}/>
                 <span className="button-text">{this.props.name_text}</span>
             </Rbs.Button>
@@ -40,7 +47,12 @@ ToolbarButton.propTypes = {
     icon_name: PropTypes.string,
     click_handler: PropTypes.func,
     button_class: PropTypes.string,
-    name_text: PropTypes.string
+    name_text: PropTypes.string,
+    small_size: PropTypes.bool
+};
+
+ToolbarButton.defaultProps = {
+    small_size: true
 };
 
 class PopupButton extends React.Component {
@@ -50,6 +62,13 @@ class PopupButton extends React.Component {
     }
 
     render() {
+        let butclass;
+        if (this.props.small_size) {
+            butclass = "btn btn-sm action-button toolbar-button-sm " + this.props.button_class
+        }
+        else {
+            butclass = "btn btn-sm action-button toolbar-button " + this.props.button_class
+        }
         let option_items = this.props.option_list.map((opt, index) => (
             <Rbs.Dropdown.Item key={opt.opt_name} onClick={opt.opt_func}>
                 {opt.opt_name}
@@ -58,7 +77,7 @@ class PopupButton extends React.Component {
 
         return (
             <Rbs.Dropdown>
-                <Rbs.Dropdown.Toggle id={this.props.name} className={"btn btn-sm toolbar-button " + this.props.button_class}
+                <Rbs.Dropdown.Toggle id={this.props.name} className={butclass}
                 >
                     <span className={"far button-icon fa-"+ this.props.icon_name}></span>
                     <span className="button-text">{this.props.name}</span>
@@ -75,7 +94,12 @@ PopupButton.propTypes = {
     button_class: PropTypes.string,
     name: PropTypes.string,
     icon_name: PropTypes.string,
-    option_list: PropTypes.array
+    option_list: PropTypes.array,
+    small_size: PropTypes.bool
+};
+
+PopupButton.defaultProps = {
+    small_size: true
 };
 
 class FileAdderButton extends React.Component {
@@ -94,6 +118,13 @@ class FileAdderButton extends React.Component {
     }
 
      render() {
+        let butclass;
+        if (this.props.small_size) {
+            butclass = "btn btn-sm action-button toolbar-button-sm " + this.props.button_class
+        }
+        else {
+            butclass = "btn btn-sm action-button toolbar-button " + this.props.button_class
+        }
         let input_item;
         if (this.props.multiple) {
             input_item = <Rbs.Form.Control as="input" type="file" size="sm" style={{"width": 250}}
@@ -108,7 +139,7 @@ class FileAdderButton extends React.Component {
              <Rbs.Form inline={true}>
                     <Rbs.Button onClick={this._do_submit}
                                 type="submit"
-                                className={"btn btn-sm add-button toolbar-button " + this.props.button_class}>
+                                className={butclass}>
                          <span className={"far button-icon fa-" + this.props.icon_name}/>
                          <span className="button-text">{this.props.name_text}</span>
                      </Rbs.Button>
@@ -125,7 +156,12 @@ FileAdderButton.propTypes = {
     button_class: PropTypes.string,
     name_text: PropTypes.string,
     multiple: PropTypes.bool,
-    icon_name: PropTypes.string
+    icon_name: PropTypes.string,
+    small_size: PropTypes.bool
+};
+
+FileAdderButton.defaultProps = {
+    small_size: true
 };
 
 
@@ -145,12 +181,13 @@ class Toolbar extends React.Component {
         var group_counter = 0;
         if ((this.props.popup_buttons != null) && (this.props.popup_buttons.length != 0)) {
             let popup_items = this.props.popup_buttons.map((button, index) =>
-                <PopupButton name={button.name}
-                             key={button.name}
-                             icon_name={button.icon_name}
-                             option_list={button.option_list}
-                             button_class={this.get_button_class(button)}
-                />
+                <Rbs.ButtonGroup className="toolbar-button-group" role="group" key={"popup_group" + String(index)}>
+                    <PopupButton name={button.name}
+                                 key={button.name}
+                                 icon_name={button.icon_name}
+                                 option_list={button.option_list}
+                                 button_class={this.get_button_class(button)}/>
+                 </Rbs.ButtonGroup>
             );
             items.push(popup_items)
         }

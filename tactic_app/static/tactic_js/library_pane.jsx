@@ -33,7 +33,6 @@ class LibraryPane extends React.Component {
         if (props.tsocket != null) {
             props.tsocket.socket.on(`update-${props.res_type}-selector-row`, this._handleRowUpdate);
         }
-
     }
 
     get_height_minus_top_offset (element_ref) {
@@ -97,6 +96,22 @@ class LibraryPane extends React.Component {
         }
     }
 
+    delete_row(name) {
+        let ind = this.get_data_list_index(name);
+        let new_data_list = [...this.state.data_list];
+        new_data_list.splice(ind, 1);
+        this.setState({data_list: new_data_list}, this.update_tag_list);
+    }
+
+    get_data_list_entry(name) {
+        for (let it of this.state.data_list) {
+            if (it.name == name) {
+                return it
+            }
+        }
+        return null
+    }
+
     set_in_data_list(names, new_val_dict, data_list) {
         let new_data_list = [];
 
@@ -113,22 +128,6 @@ class LibraryPane extends React.Component {
 
     get_data_list_index(name) {
         return this.state.data_list.findIndex((rec) => (rec.name == name))
-    }
-
-    delete_row(name) {
-        let ind = this.get_data_list_index(name);
-        let new_data_list = [...this.state.data_list];
-        new_data_list.splice(ind, 1);
-        this.setState({data_list: new_data_list}, this.update_tag_list);
-    }
-
-    get_data_list_entry(name) {
-        for (let it of this.state.data_list) {
-            if (it.name == name) {
-                return it
-            }
-        }
-        return null
     }
 
     _saveFromSelectedResource() {
@@ -238,6 +237,40 @@ class LibraryPane extends React.Component {
         this.setState({"left_width": left_width - 50})
     }
 
+    _doTagDelete(tag) {
+        const result_dict = {"res_type": this.props.res_type, "tag": tag};
+        let self = this;
+        postAjaxPromise("delete_tag", result_dict)
+            .then(function(data) {
+                self._refresh_func()
+            })
+            .catch(doFlash)
+    }
+
+    get view_views() {
+        return {collection: "/main/",
+            project: "/main_project/",
+            tile: "/last_saved_view/",
+            list: "/view_list/",
+            code: "/view_code/"
+        }
+    }
+
+      _doTagRename(tag_changes) {
+        const result_dict = {"res_type": this.props.res_type, "tag_changes": tag_changes};
+        let self = this;
+        postAjaxPromise("rename_tag", result_dict)
+            .then(function (data) {
+                self._refresh_func()
+            })
+            .catch(doFlash)
+    }
+
+    _handleRowDoubleClick(row_dict) {
+        let view_view = this.view_views[this.props.res_type];
+        window.open($SCRIPT_ROOT + view_view + row_dict.name)
+    }
+
     _handleRowClick(row_dict, shift_key_down=false) {
         if (!this.state.multi_select &&
             this.state.selected_resource.name != "" &&
@@ -294,7 +327,6 @@ class LibraryPane extends React.Component {
     _update_search_state(new_state) {
         this.setState(new_state, this._update_match_lists)
     }
-
 
     update_tag_list() {
         let tag_list = [];
@@ -459,9 +491,9 @@ class LibraryPane extends React.Component {
         })
     }
 
-    _view_func(view_view) {
+    _view_func() {
         if (!this.state.multi_select) {
-            window.open($SCRIPT_ROOT + view_view + this.state.selected_resource.name)
+            window.open($SCRIPT_ROOT + this.view_views[this.props.res_type] + this.state.selected_resource.name)
         }
     }
 
@@ -655,6 +687,8 @@ class LibraryPane extends React.Component {
                                        tag_list={this.state.tag_list}
                                        handleSearchFromTag={this._handleSearchFromTag}
                                        handleAddTag={this._handleAddTag}
+                                       doTagDelete={this._doTagDelete}
+                                       doTagRename={this._doTagRename}
                         />
                     </div>
                     <div className="d-flex flex-column">
@@ -683,6 +717,7 @@ class LibraryPane extends React.Component {
                                            handleHeaderCellClick={this._set_sort_state}
                                            selected_resource_names={this.state.list_of_selected}
                                            handleRowClick={this._handleRowClick}
+                                           handleRowDoubleClick={this._handleRowDoubleClick}
                                            handleArrowKeyPress={this._handleArrowKeyPress}
                                            handleAddTag={this._handleAddTag}
                                            show_animations={this.state.show_animations}

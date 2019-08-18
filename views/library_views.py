@@ -19,7 +19,6 @@ from collection_manager import CollectionManager, RepositoryCollectionManager
 from project_manager import ProjectManager, RepositoryProjectManager
 from tile_manager import TileManager, RepositoryTileManager
 from code_manager import CodeManager, RepositoryCodeManager
-from all_manager import AllManager, RepositoryAllManager
 from tactic_app.users import User
 
 
@@ -28,18 +27,16 @@ repository_user = User.get_user_by_username("repository")
 admin_user = User.get_user_by_username("admin")
 
 
-all_manager = AllManager("all")
-repository_all_manager = RepositoryAllManager("all")
-code_manager = CodeManager("code", all_manager)
-repository_code_manager = RepositoryCodeManager("code", repository_all_manager)
-tile_manager = TileManager("tile", all_manager)
-repository_tile_manager = RepositoryTileManager("tile", repository_all_manager)
-project_manager = ProjectManager("project", all_manager)
-repository_project_manager = RepositoryProjectManager("project", repository_all_manager)
-collection_manager = CollectionManager("collection", all_manager)
-repository_collection_manager = RepositoryCollectionManager("collection", repository_all_manager)
-list_manager = ListManager("list", all_manager)
-repository_list_manager = RepositoryListManager("list", repository_all_manager)
+code_manager = CodeManager("code")
+repository_code_manager = RepositoryCodeManager("code")
+tile_manager = TileManager("tile")
+repository_tile_manager = RepositoryTileManager("tile")
+project_manager = ProjectManager("project")
+repository_project_manager = RepositoryProjectManager("project")
+collection_manager = CollectionManager("collection")
+repository_collection_manager = RepositoryCollectionManager("collection")
+list_manager = ListManager("list")
+repository_list_manager = RepositoryListManager("list")
 
 
 managers = {
@@ -48,7 +45,6 @@ managers = {
     "project": [project_manager, repository_project_manager],
     "tile": [tile_manager, repository_tile_manager],
     "code": [code_manager, repository_code_manager],
-    "all": [all_manager, repository_all_manager]
 }
 
 
@@ -128,18 +124,18 @@ def stop_spinner(user_id=None):
 def library():
     if current_user.get_id() == admin_user.get_id():
         return render_template("library/library_home_react.html", use_ssl=str(use_ssl), version_string=tstring,
-                               module_source="tactic_js/admin_home_react.js")
+                               page_title="tactic admin", module_source="tactic_js/admin_home_react.js")
     else:
 
         return render_template('library/library_home_react.html', use_ssl=str(use_ssl), version_string=tstring,
-                               module_source='tactic_js/library_home_react.js')
+                               page_title="tactic resources", module_source='tactic_js/library_home_react.js')
 
 
 @app.route('/repository')
 @login_required
 def repository():
     return render_template('library/library_home_react.html', use_ssl=str(use_ssl), version_string=tstring,
-                           module_source='tactic_js/repository_home_react.js'
+                           page_title="tactic repository", module_source='tactic_js/repository_home_react.js'
                            )
 
 
@@ -202,30 +198,6 @@ def send_to_repository():
     return result
 
 
-@app.route('/request_update_selector_list/<res_type>', methods=['GET'])
-@login_required
-def request_update_selector_list(res_type):
-    return jsonify({"html": managers[res_type][0].request_update_selector_list()})
-
-
-@app.route('/request_update_tag_list/<res_type>', methods=['GET'])
-@login_required
-def request_update_tag_list(res_type):
-    return jsonify({"tag_list": managers[res_type][0].request_update_tag_list()})
-
-
-@app.route('/request_update_repository_tag_list/<res_type>', methods=['GET'])
-@login_required
-def request_update_repositorytag_list(res_type):
-    return jsonify({"tag_list": managers[res_type][1].request_update_tag_list()})
-
-
-@app.route('/request_update_repository_selector_list/<res_type>', methods=['GET'])
-@login_required
-def request_update_repository_selector_list(res_type):
-    return jsonify({"html": managers[res_type][1].request_update_selector_list()})
-
-
 @app.route('/resource_list_with_metadata/<res_type>', methods=['GET', 'POST'])
 @login_required
 def get_resource_data_list(res_type):
@@ -286,10 +258,8 @@ def add_tags():
             updated_tags[res_name] = new_tags_string
             manager.save_metadata(res_name, new_tags_string, mdata["notes"])
         res_tags = manager.get_tag_list()
-        _all_manager = get_manager_for_type("all")
-        all_tags = _all_manager.get_tag_list()
 
-        return jsonify({"success": True, "res_tags": res_tags, "all_tags": all_tags, "updated_tags": updated_tags,
+        return jsonify({"success": True, "res_tags": res_tags, "updated_tags": updated_tags,
                         "message": "Saved metadata", "alert_type": "alert-success"})
     except Exception as ex:
         return generic_exception_handler.get_exception_for_ajax(ex, "Error adding tags")
@@ -317,10 +287,8 @@ def overwrite_common_tags():
             updated_tags[res_name] = new_tags_string
             manager.save_metadata(res_name, new_tags_string, mdata["notes"])
         res_tags = manager.get_tag_list()
-        _all_manager = get_manager_for_type("all")
-        all_tags = _all_manager.get_tag_list()
 
-        return jsonify({"success": True, "res_tags": res_tags, "all_tags": all_tags, "updated_tags": updated_tags,
+        return jsonify({"success": True, "res_tags": res_tags, "updated_tags": updated_tags,
                         "message": "Saved metadata", "alert_type": "alert-success"})
     except Exception as ex:
         return generic_exception_handler.get_exception_for_ajax(ex, "Error saving metadata")
@@ -434,10 +402,8 @@ def save_metadata():
         manager = get_manager_for_type(res_type)
         manager.save_metadata(res_name, tags, notes)
         res_tags = manager.get_tag_list()
-        _all_manager = get_manager_for_type("all")
-        all_tags = _all_manager.get_tag_list()
 
-        return jsonify({"success": True, "res_tags": res_tags, "all_tags": all_tags,
+        return jsonify({"success": True, "res_tags": res_tags,
                         "message": "Saved metadata", "alert_type": "alert-success"})
     except Exception as ex:
         return generic_exception_handler.get_exception_for_ajax(ex, "Error saving metadata")
@@ -450,9 +416,7 @@ def delete_tag():
         tag = request.json["tag"]
         manager = get_manager_for_type(res_type)
         manager.delete_tag(tag)
-        res_tags = manager.get_tag_list()
-        all_tags = all_manager.get_tag_list()
-        return jsonify({"success": True, "res_tags": res_tags, "all_tags": all_tags,
+        return jsonify({"success": True,
                         "message": "Deleted tag", "alert_type": "alert-success"})
     except Exception as ex:
         return generic_exception_handler.get_exception_for_ajax(ex, "Error deleting a tag")
@@ -466,34 +430,10 @@ def rename_tag():
         manager = get_manager_for_type(res_type)
         manager.rename_tag(tag_changes)
         res_tags = manager.get_tag_list()
-        all_tags = all_manager.get_tag_list()
-        return jsonify({"success": True, "res_tags": res_tags, "all_tags": all_tags,
-                        "message": "Deleted tag", "alert_type": "alert-success"})
+        return jsonify({"success": True, "res_tags": res_tags,
+                        "message": "renamed tag tag", "alert_type": "alert-success"})
     except Exception as ex:
         return generic_exception_handler.get_exception_for_ajax(ex, "Error renaming a tag")
-
-
-@app.route('/search_resource', methods=['POST'])
-@login_required
-def search_resource():
-    txt = request.json["text"]
-    res_type = request.json["res_type"]
-    search_type = request.json["search_type"]
-    search_location = request.json["location"]
-    if search_location == "repository":
-        user_obj = repository_user
-        manager = get_manager_for_type(res_type, is_repository=True)
-    else:
-        user_obj = current_user
-        manager = get_manager_for_type(res_type)
-    if search_type == "search":
-        the_list = user_obj.get_resource_names(res_type, search_filter=txt)
-    else:
-        the_list = user_obj.get_resource_names(res_type, tag_filter=txt)
-
-    res_array = manager.build_resource_array(the_list)
-    result = manager.build_html_table_from_data_list(res_array)
-    return jsonify({"html": result})
 
 
 @app.route('/rename_resource/<res_type>/<old_name>', methods=['post'])
@@ -506,12 +446,6 @@ def rename_resource(res_type, old_name):
 @app.route('/get_modal_template', methods=['get'])
 def get_modal_template():
     return send_file("templates/modal_text_request_template.html")
-
-
-@app.route('/get_resource_module_template', methods=['get'])
-@login_required
-def get_resource_module_template():
-    return send_file("templates/resource_module_template.html")
 
 
 @app.errorhandler(ContainerCreateError)

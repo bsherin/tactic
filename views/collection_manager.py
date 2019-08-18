@@ -320,9 +320,7 @@ class CollectionManager(LibraryResourceManager):
         except Exception as ex:
             return self.get_exception_for_ajax(ex, "Error creating collection")
 
-        # table_row = self.create_new_row(collection_name, collection_mdata)
         new_row = self.build_res_dict(collection_name, collection_mdata, user_obj)
-        # all_table_row = self.all_manager.create_new_all_row(collection_name, collection_mdata, "collection")
         if len(file_decoding_errors.keys()) == 0:
             file_decoding_errors = None
         return jsonify({"success": True, "new_row": new_row,
@@ -356,9 +354,7 @@ class CollectionManager(LibraryResourceManager):
         except Exception as ex:
             return self.get_exception_for_ajax(ex, "Error creating collection")
 
-        # table_row = self.create_new_row(collection_name, collection_mdata)
         new_row = self.build_res_dict(collection_name, collection_mdata, user_obj)
-        # all_table_row = self.all_manager.create_new_all_row(collection_name, collection_mdata, "collection")
         if len(file_decoding_errors.keys()) == 0:
             file_decoding_errors = None
         return jsonify({"success": True, "new_row": new_row,
@@ -421,8 +417,6 @@ class CollectionManager(LibraryResourceManager):
 
         metadata = user_obj.get_collection_metadata(new_res_name)
         new_row = self.build_res_dict(new_res_name, metadata, user_obj)
-        # table_row = self.create_new_row(new_res_name, metadata)
-        # all_table_row = self.all_manager.create_new_all_row(new_res_name, metadata, "collection")
         return jsonify({"success": True, "new_row": new_row})
 
 

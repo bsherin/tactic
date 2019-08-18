@@ -179,11 +179,13 @@ class NotesField extends React.Component {
     render() {
         let really_show_markdown = this.hasOnlyWhitespace ? false : this.state.show_markdown;
         let notes_style = {
-            "display": really_show_markdown ? "none" : "block"
+            "display": really_show_markdown ? "none" : "block",
+            fontSize: 14
         };
         let md_style = {
             "display": really_show_markdown ? "block" : "none",
-            "maxHeight": this.state.md_height
+            "maxHeight": this.state.md_height,
+            "fontSize": 14
         };
         var converted_markdown;
         if (really_show_markdown) {
@@ -247,13 +249,14 @@ class CombinedMetadata extends React.Component {
     }
 
     render() {
+        let addition_field_style = { fontSize: 14 };
         let additional_items;
         if (this.props.additional_metadata != null) {
             additional_items = [];
             for (let field in this.props.additional_metadata) {
                 additional_items.push(React.createElement(
                     "div",
-                    { key: field },
+                    { style: addition_field_style, key: field },
                     React.createElement(
                         "span",
                         { className: "text-primary" },
@@ -267,7 +270,7 @@ class CombinedMetadata extends React.Component {
             "div",
             { className: "combined-metadata", style: this.props.outer_style },
             this.props.name != null && React.createElement(
-                "h3",
+                "h4",
                 null,
                 this.props.name
             ),
@@ -326,7 +329,7 @@ class CombinedMetadata extends React.Component {
                 ),
                 React.createElement(
                     "div",
-                    null,
+                    { style: addition_field_style },
                     React.createElement(
                         "span",
                         { className: "text-primary" },
@@ -336,7 +339,7 @@ class CombinedMetadata extends React.Component {
                 ),
                 this.props.updated != null && React.createElement(
                     "div",
-                    null,
+                    { style: addition_field_style },
                     React.createElement(
                         "span",
                         { className: "text-primary" },

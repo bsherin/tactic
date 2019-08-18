@@ -60,7 +60,6 @@ class TagsField extends React.Component {
         }
     }
 
-
     // The stuff with has_focus is necessary to get the tag editor to behave differently
     // when the tags are changed by direct editing or because the user has clicked on
     // a row in the table. Otherwise the tag editor does ugly things, positioning the curoor
@@ -185,11 +184,13 @@ class NotesField extends React.Component {
     render() {
         let really_show_markdown =  this.hasOnlyWhitespace ? false : this.state.show_markdown;
         let notes_style = {
-            "display": really_show_markdown ? "none" : "block"
+            "display": really_show_markdown ? "none" : "block",
+            fontSize: 14
         };
         let md_style = {
             "display": really_show_markdown ? "block": "none",
-            "maxHeight": this.state.md_height
+            "maxHeight": this.state.md_height,
+            "fontSize": 14
         };
         var converted_markdown;
         if (really_show_markdown) {
@@ -254,12 +255,13 @@ class CombinedMetadata extends React.Component {
     }
 
     render () {
+        let addition_field_style = {fontSize: 14};
         let additional_items;
         if (this.props.additional_metadata != null) {
             additional_items = [];
             for (let field in this.props.additional_metadata) {
                 additional_items.push(
-                    <div key={field}><span className="text-primary">{field + ": "}</span>
+                    <div style={addition_field_style} key={field}><span className="text-primary">{field + ": "}</span>
                         {this.props.additional_metadata[field]}
                     </div>
                 )
@@ -268,7 +270,7 @@ class CombinedMetadata extends React.Component {
         return (
             <div className="combined-metadata" style={this.props.outer_style}>
                 {this.props.name != null &&
-                    <h3>{this.props.name}</h3>
+                    <h4>{this.props.name}</h4>
                 }
                 <Rbs.Form>
 
@@ -294,11 +296,11 @@ class CombinedMetadata extends React.Component {
                                     handleBlur={this.props.handleNotesBlur}
                         />
                     </Rbs.Form.Group>
-                    <div><span className="text-primary">Created: </span>
+                    <div style={addition_field_style}><span className="text-primary">Created: </span>
                         {this.props.created}
                     </div>
                     {this.props.updated != null &&
-                    <div><span className="text-primary">Updated: </span>
+                    <div style={addition_field_style}><span className="text-primary">Updated: </span>
                         {this.props.updated}
                     </div>
                     }
