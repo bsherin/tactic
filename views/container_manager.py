@@ -146,39 +146,4 @@ class ContainerManager(ResourceManager):
             result.append(new_row)
         return result
 
-    # noinspection PyMethodOverriding
-    def build_resource_array(self):
-        tactic_image_names = ["tactic_tile_image", "tactic_main_image", "tactic_megaplex_image", "module_viewer_image"]
-        image_id_names = {}
-        for iname in tactic_image_names:
-            image_id_names[cli.images.get(iname).id] = iname
 
-        larray = [["Id", "Other_name", "Name", "Image", "Owner", "Status", "Created"]]
-        all_containers = cli.containers.list(all=True)
-        for cont in all_containers:
-            owner_id = container_owner(cont)
-            if owner_id == "host":
-                owner_name = "host"
-            elif owner_id == "system":
-                owner_name = "system"
-            else:
-                owner_name = load_user(owner_id).username
-            image_id = cont.attrs["Image"]
-            if image_id in image_id_names:
-                image_name = image_id_names[image_id]
-            else:
-                image_name = image_id
-
-            # mem_usage = container_memory_usage(cont)
-            # if mem_usage is None:
-            #     musage = ""
-            # else:
-            #     musage = str(round(container_memory_usage(cont), 2)) + "MiB"
-            larray.append([container_id(cont), container_other_name(cont), cont.attrs["Name"], image_name,
-                           owner_name, cont.status, cont.attrs["Created"]])
-        return larray
-
-    def request_update_selector_list(self, user_obj=None):
-        res_array = self.build_resource_array()
-        result = self.build_html_table_from_data_list(res_array)
-        return result

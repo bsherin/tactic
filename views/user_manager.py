@@ -172,21 +172,3 @@ class UserManager(ResourceManager):
             result.append(urow)
         return result
 
-    # noinspection PyMethodOverriding
-    def build_resource_array(self, user_obj=None):
-        user_list = get_all_users()
-        larray = [["_id", "username", "full_name", "last_login", "email"]]
-        for user in user_list:
-            urow = []
-            for field in larray[0]:
-                if field in user:
-                    urow.append(str(user[field]))
-                else:
-                    urow.append("")
-            larray.append(urow)
-        return larray
-
-    def request_update_selector_list(self, user_obj=None):
-        res_array = self.build_resource_array()
-        result = self.build_html_table_from_data_list(res_array)
-        return result

@@ -1,4 +1,6 @@
 
+import {showConfirmDialogReact, showModalReact} from "./modal_react.js";
+
 export {TagButtonList, get_all_parent_tags}
 
 var Rbs = window.ReactBootstrap;
@@ -31,6 +33,10 @@ function get_parent_tags(the_tag) {
         ptags.push(parent_tag);
         return ptags
     }
+}
+
+function tag_to_list(the_tag) {
+    return the_tag.split("/")
 }
 
 class TagButton extends React.Component {
@@ -91,6 +97,28 @@ class TagButton extends React.Component {
 
     _handleDragStart(e) {
         set_datum(e, "tagname", this.props.the_tag);
+    }
+
+    _rename_tag(e) {
+        e.stopPropagation();
+        let self = this;
+        let tag_base = this.tag_base;
+        showModalReact(`Rename tag ${tag_base}`, `New name for this tag`, RenameTag, tag_base);
+
+        function RenameTag(new_tag_base) {
+            self.props.renameTagPrep(self.props.the_tag, new_tag_base)
+        }
+
+    }
+
+    _delete_tag(e) {
+        e.stopPropagation();
+        const confirm_text = `Are you sure that you want to delete the tag ${this.props.the_tag} for this resource type?`;
+        let self = this;
+        showConfirmDialogReact(`Delete tag`, confirm_text, "do nothing", "delete", function () {
+            self.props.doTagDelete(self.props.the_tag)
+        })
+
     }
 
     render () {
@@ -156,7 +184,7 @@ class TagButton extends React.Component {
         if (this.state.am_root) {
             return (
                 <Rbs.Button className={`btn btn-outline-secondary tag-button root-tag ${hcclass}`}
-                            onClick={this._handleSetActive}
+                            onClick={this.props.edit_tags ? this._rename_tag : this._handleSetActive}
                             draggable={this.props.the_tag != "all"}
                             onDragStart={this._handleDragStart}
                             onDragOver={this._handleDragOver}
@@ -166,6 +194,8 @@ class TagButton extends React.Component {
                     {prefix}
                     {icon_element}
                     {this.tag_base}
+                    {this.props.edit_tags && <span onClick={this._delete_tag}
+                                                   className="tag-button-delete delete-visible"/>}
                 </Rbs.Button>
             );
         }
@@ -176,12 +206,13 @@ class TagButton extends React.Component {
                             onDragStart={this._handleDragStart}
                             onDragOver={this._handleDragOver}
                             onDragLeave={this._handleDragLeave}
-                            onClick={this._handleSetActive}
+                            onClick={this.props.edit_tags ? this._rename_tag : this._handleSetActive}
                 >
                     {prefix}
                     {icon_element}
                     {this.tag_base}
-                    <span className="tag-button-delete"/>
+                    {this.props.edit_tags && <span onClick={this._delete_tag}
+                                                   className="tag-button-delete delete-visible"/>}
                 </Rbs.Button>
             );
         }
@@ -195,7 +226,9 @@ TagButton.propTypes = {
     am_active: PropTypes.bool,
     _handleExpanderToggle: PropTypes.func,
     _handleSetActive: PropTypes.func,
-    handleAddTag: PropTypes.func
+    renameTagPrep: PropTypes.func,
+    handleAddTag: PropTypes.func,
+    edit_tags: PropTypes.bool
 };
 
 class TagButtonList extends React.Component {
@@ -205,7 +238,8 @@ class TagButtonList extends React.Component {
         doBinding(this);
         this.state = {
             expanded_tags: [],
-            active_tag: "all"
+            active_tag: "all",
+            edit_tags: false
         }
     }
 
@@ -255,6 +289,25 @@ class TagButtonList extends React.Component {
         let z = target;
     }
 
+    _edit_tags(e) {
+        this.setState({"edit_tags": !this.state.edit_tags});
+        e.preventDefault()
+    }
+
+    _renameTagPrep(old_tag, new_tag_base) {
+        let old_tag_list = tag_to_list(old_tag);
+        let ot_length = old_tag_list.length;
+        let tag_changes = [];
+        for (let atag of this.props.tag_list) {
+            let atag_list = tag_to_list(atag);
+            if (arraysMatch(atag_list.slice(0, ot_length), old_tag_list)) {
+                atag_list[ot_length - 1] = new_tag_base;
+                tag_changes.push([atag, atag_list.join("/")])
+            }
+        }
+        this.props.doTagRename(tag_changes)
+    }
+
     render() {
         let parent_tags = get_all_parent_tags(this.props.tag_list);
         let tag_list = [...this.props.tag_list];
@@ -265,7 +318,6 @@ class TagButtonList extends React.Component {
         let tag_buttons = [];
         let bg_style = {
             justifyContent: "start",
-            marginTop: 85,
             display: "inline-block",
             overflowY: "scroll",
         };
@@ -276,6 +328,7 @@ class TagButtonList extends React.Component {
                                  am_active={"all" == this.state.active_tag}
                                  _handleExpanderToggle={this._handleExpanderToggle}
                                  _handleSetActive={this._handleSetActive}
+                                 edit_tags={false}
                 />;
         tag_buttons.push(all_tag);
         for (let tag of tag_list) {
@@ -288,14 +341,27 @@ class TagButtonList extends React.Component {
                                          _handleExpanderToggle={this._handleExpanderToggle}
                                          _handleSetActive={this._handleSetActive}
                                          handleAddTag={this.props.handleAddTag}
+                                         edit_tags={this.state.edit_tags}
+                                         doTagDelete={this.props.doTagDelete}
+                                         renameTagPrep={this._renameTagPrep}
+
                 />;
                 tag_buttons.push(new_tag)
             }
         }
+        let eb_class = this.state.edit_tags ? "btn-danger" : "btn-outline-secondary"
         return (
-            <Rbs.ButtonGroup style={bg_style} vertical size="sm">
-                {tag_buttons}
-            </Rbs.ButtonGroup>
+
+            <div style={{marginTop: 85}}>
+                <Rbs.Button className={`btn ${eb_class} ml-2 edit-tags-button`}
+                            onClick={this._edit_tags}
+                >
+                    edit tags
+                </Rbs.Button>
+                <Rbs.ButtonGroup style={bg_style} vertical size="sm">
+                    {tag_buttons}
+                </Rbs.ButtonGroup>
+            </div>
         )
     }
 
@@ -305,5 +371,7 @@ TagButtonList.propTypes = {
     res_type: PropTypes.string,
     tag_list: PropTypes.array,
     handleSearchFromTag: PropTypes.func,
+    doTagDelete: PropTypes.func,
+    doTagRename: PropTypes.func,
     handleAddTag: PropTypes.func
 };

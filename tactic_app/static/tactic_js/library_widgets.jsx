@@ -102,6 +102,7 @@ class SelectorTableRow extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this);
+        this.clickTimeout = null;
         this.state = {in: false,
             drag_hover: false}
     }
@@ -109,6 +110,22 @@ class SelectorTableRow extends React.Component {
     _handleClick(event){
         this.props.handleRowClick(this.props.data_dict, event.shiftKey);
         event.preventDefault();
+    }
+
+    _handleClicks(event) {
+        let self = this;
+        event.persist();
+        if (this.clickTimeout !== null) {
+            this.props.handleRowDoubleClick(this.props.data_dict);
+            clearTimeout(this.clickTimeout);
+            this.clickTimeout = null
+        }
+        else {
+            this.clickTimeout = setTimeout(()=>{
+                self._handleClick(event);
+                clearTimeout(this.clickTimeout);
+                this.clickTimeout = null}, 300)
+        }
     }
 
     componentDidMount() {
@@ -153,7 +170,7 @@ class SelectorTableRow extends React.Component {
             <tr className={cname}
                 draggable={this.props.draggable}
                 id={this.props.row_index}
-                onClick={this._handleClick}
+                onClick={this._handleClicks}
                 onDragStart={this._handleDragStart}
                 onDrop={this._handleDrop}
                 onDragOver={this._handleDragOver}
@@ -173,7 +190,8 @@ SelectorTableRow.propTypes = {
     handleRowClick: PropTypes.func,
     draggable: PropTypes.bool,
     identifier_field: PropTypes.string,
-    handleAddTag: PropTypes.func
+    handleAddTag: PropTypes.func,
+    handleRowDoubleClick: PropTypes.func
 };
 
 class SelectorHeaderCell extends React.Component {
@@ -283,6 +301,7 @@ class SelectorTable extends React.Component {
                                   row_index={index}
                                   active={this.props.selected_resource_names.includes(ddict[this.props.identifier_field])}
                                   handleRowClick={this.props.handleRowClick}
+                                  handleRowDoubleClick={this.props.handleRowDoubleClick}
                                   draggable={this.props.draggable}
                                   identifier_field={this.props.identifier_field}
                                   handleAddTag={this.props.handleAddTag}
@@ -318,6 +337,7 @@ SelectorTable.propTypes = {
     handleHeaderCellClick: PropTypes.func,
     content_editable: PropTypes.bool,
     handleRowClick: PropTypes.func,
+    handleRowDoubleClick: PropTypes.func,
     handleArrowKeyPress: PropTypes.func,
     show_animations: PropTypes.bool,
     handleSpaceBarPress: PropTypes.func,

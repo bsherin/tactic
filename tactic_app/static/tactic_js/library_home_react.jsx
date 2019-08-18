@@ -89,7 +89,7 @@ class LibraryHomeApp extends React.Component {
                 </Rbs.Nav.Link>
             </Rbs.Nav.Item>
         ));
-        let tile_widget = <LoadedTileList tsocket={tsocket}/>
+        let tile_widget = <LoadedTileList tsocket={tsocket}/>;
         return (
             <React.Fragment>
                 <Rbs.Tab.Container id="the_container" defaultActiveKey="collections-pane">
@@ -274,10 +274,6 @@ class CollectionToolbar extends React.Component {
         this.props.delete_func("/delete_collection")
     }
 
-    _collection_view() {
-        this.props.view_func("/main/")
-    }
-
     _combineCollections () {
         var res_names;
         let self = this;
@@ -364,7 +360,7 @@ class CollectionToolbar extends React.Component {
 
     get button_groups() {
         return [
-            [["open", this._collection_view, "book-open", false]],
+            [["open", this.props.view_func, "book-open", false]],
             [["duplicate", this._collection_duplicate, "copy", false],
              ["rename",  this.props.rename_func, "edit", false],
              ["combine", this._combineCollections, "plus-square", true]],
@@ -397,10 +393,6 @@ class ProjectToolbar extends React.Component {
         doBinding(this);
     }
 
-    _project_view() {
-        this.props.view_func("/main_project/")
-    }
-
     _project_duplicate() {
         this.props.duplicate_func('/duplicate_project')
     }
@@ -416,6 +408,29 @@ class ProjectToolbar extends React.Component {
         }, res_name + ".ipynb")
     };
 
+   _import_jupyter (file_list) {
+        let the_data = new FormData();
+        for (let f of file_list) {
+            the_data.append('file', f);
+        }
+        $.getJSON(`${$SCRIPT_ROOT}get_resource_names/project`, function (data) {
+                showModalReact("Import collection", "New Jupyter Name", CreateNewJupyter, "NewJupyterNotebook", data["resource_names"], [])
+            }
+        );
+        function CreateNewJupyter(new_name, check_results) {
+            startSpinner();
+            postAjaxUploadPromise(`import_as_jupyter/${new_name}/${library_id}`, the_data)
+                .then((data) => {
+                        clearStatusMessage();
+                        self.props.animation_phase(() => {self.props.add_new_row(data.new_row)});
+                        stopSpinner();
+                })
+                .catch(doFlash);
+        }
+        event.preventDefault();
+    };
+
+
     _project_delete() {
         this.props.delete_func("/delete_project")
     }
@@ -423,7 +438,7 @@ class ProjectToolbar extends React.Component {
     get button_groups() {
         return [
             [["notebook", this.new_notebook,"book", false],
-                ["open", this._project_view, "book-open", false]],
+                ["open", this.props.view_func, "book-open", false]],
             [["duplicate", this._project_duplicate, "copy", false],
              ["rename", this.props.rename_func, "edit", false]],
             [["toJupyter", this._downloadJupyter, "cloud-download", false],
@@ -431,6 +446,12 @@ class ProjectToolbar extends React.Component {
             [["delete", this._project_delete, "trash", true]],
             [["refresh", this.props.refresh_func, "sync-alt", false]]
         ];
+     }
+
+    get file_adders() {
+         return[
+             ["import", this._import_jupyter, "cloud-upload", true]
+         ]
      }
 
      render () {
@@ -577,10 +598,6 @@ class ListToolbar extends React.Component {
         doBinding(this);
     }
 
-    _list_view() {
-        this.props.view_func("/view_list/")
-    }
-
     _list_duplicate() {
         this.props.duplicate_func('/create_duplicate_list')
     }
@@ -604,7 +621,7 @@ class ListToolbar extends React.Component {
 
     get button_groups() {
         return [
-            [["edit", this._list_view, "pencil", false]],
+            [["edit", this.props.view_func, "pencil", false]],
             [["duplicate", this._list_duplicate, "copy", false],
              ["rename", this.props.rename_func, "edit", false]],
             [["share", this.props.send_repository_func, "share", false]],
@@ -635,10 +652,6 @@ class CodeToolbar extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this);
-    }
-
-    _code_view() {
-        this.props.view_func("/view_code/")
     }
 
     _new_code (template_name) {
@@ -681,7 +694,7 @@ class CodeToolbar extends React.Component {
 
     get button_groups() {
         return [
-            [["edit", this._code_view, "pencil", false]],
+            [["edit", this.props.view_func, "pencil", false]],
             [["duplicate", this._code_duplicate, "copy", false],
              ["rename", this.props.rename_func, "edit", false]],
             [["share", this.props.send_repository_func, "share", false]],

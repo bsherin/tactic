@@ -48,8 +48,6 @@ class TileManager(LibraryResourceManager):
                          login_required(self.get_loaded_tile_lists), methods=['get', 'post'])
         app.add_url_rule('/create_tile_module', "create_tile_module",
                          login_required(self.create_tile_module), methods=['get', 'post'])
-        app.add_url_rule('/request_update_loaded_tile_list', "request_update_loaded_tile_list",
-                         login_required(self.request_update_loaded_tile_list), methods=['get', 'post'])
         app.add_url_rule('/create_duplicate_tile', "create_duplicate_tile",
                          login_required(self.create_duplicate_tile), methods=['get', 'post'])
         app.add_url_rule('/search_inside_tiles', "search_inside_tiles",
@@ -241,9 +239,8 @@ class TileManager(LibraryResourceManager):
         metadata["type"] = tp.type
         data_dict = {"tile_module_name": f.filename, "tile_module": the_module, "metadata": metadata}
         db[user_obj.tile_collection_name].insert_one(data_dict)
-        table_row = self.create_new_row(f.filename, metadata)
-        all_table_row = self.all_manager.create_new_all_row(f.filename, metadata, "tile")
-        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
+        new_row = self.build_res_dict(f.filename, metadata, user_obj)
+        return jsonify({"success": True, "new_row": new_row})
 
     def create_duplicate_tile(self):
         user_obj = current_user
@@ -258,9 +255,8 @@ class TileManager(LibraryResourceManager):
                          "metadata": metadata}
         db[user_obj.tile_collection_name].insert_one(new_tile_dict)
         new_row = self.build_res_dict(new_tile_name, metadata, user_obj)
-        # table_row = self.create_new_row(new_tile_name, metadata)
-        # all_table_row = self.all_manager.create_new_all_row(new_tile_name, metadata, "tile")
-        return jsonify({"success": True, "new_row": new_row, "new_all_row": all_table_row})
+
+        return jsonify({"success": True, "new_row": new_row})
 
     def search_inside_tiles(self):
         user_obj = current_user
@@ -326,23 +322,6 @@ class TileManager(LibraryResourceManager):
 
     def get_loaded_tile_lists(self, user_obj=None):
         return jsonify({"success": True, "tile_load_dict": self.loaded_tile_lists(user_obj)})
-
-    def render_loaded_tile_list(self, user_obj=None):
-        if user_obj is None:
-            user_obj = current_user
-        uname = user_obj.username
-        nondefault_tiles = global_tile_manager.get_nondefault_tiles_list(uname)
-        default_tiles = global_tile_manager.get_default_tiles(uname)
-        failed_loads = global_tile_manager.get_failed_loads_list(uname)
-        with app.test_request_context():
-            result = render_template("library/loaded_tile_list.html",
-                                     default_tiles_list=default_tiles,
-                                     nondefault_tiles_list=nondefault_tiles,
-                                     failed_tile_name_list=failed_loads)
-        return result
-
-    def request_update_loaded_tile_list(self):
-        return self.render_loaded_tile_list()
 
 
 class RepositoryTileManager(TileManager):
