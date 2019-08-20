@@ -261,7 +261,7 @@ class CollectionManager(LibraryResourceManager):
                 user_obj.append_document_to_collection(base_collection_name, dname, doc, coll_mdata["type"],
                                                        hl_dict[dname], dm_dict[dname])
             user_obj.update_collection_time(base_collection_name)
-            self.update_selector_list(base_collection_name)
+            self.update_selector_row(self.build_res_dict(base_collection_name, coll_mdata))
             return jsonify({"message": "Collections successfull combined", "alert_type": "alert-success"})
         except Exception as ex:
             return self.get_exception_for_ajax(ex, "Error combining collection")

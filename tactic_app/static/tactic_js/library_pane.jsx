@@ -1,7 +1,7 @@
 import {get_all_parent_tags, TagButtonList} from "./tag_buttons_react.js";
 import {CombinedMetadata} from "./react_mdata_fields.js";
 import {SearchForm, SelectorTable} from "./library_widgets.js";
-import {HorizontalPanes} from "./resizing_layouts.js";
+import {HorizontalPanes, VerticalPanes} from "./resizing_layouts.js";
 import {showModalReact, showConfirmDialogReact} from "./modal_react.js";
 
 export {LibraryPane}
@@ -15,6 +15,7 @@ class LibraryPane extends React.Component {
             data_list: [],
             mounted: false,
             left_width: this.props.usable_width / 2 - 100,
+            top_pane_height: this.props.usable_height / 2 - 50,
             match_list: [],
             tag_list: [],
             sorting_column: null,
@@ -32,6 +33,7 @@ class LibraryPane extends React.Component {
         doBinding(this);
         if (props.tsocket != null) {
             props.tsocket.socket.on(`update-${props.res_type}-selector-row`, this._handleRowUpdate);
+            props.tsocket.socket.on(`refresh-${props.res_type}-selector`, this._refresh_func);
         }
     }
 
@@ -347,7 +349,7 @@ class LibraryPane extends React.Component {
             this.match_all()
         }
         else if (this.state.search_inside_checked) {
-            this.doSearchInside(this.state.search_field_value, this.state.search_metadata)
+            this.doSearchInside(this.state.search_field_value, this.state.search_metadata_checked)
         }
         else if (this.state.search_metadata_checked){
             this.doSearchMetadata(this.state.search_field_value)
@@ -393,8 +395,7 @@ class LibraryPane extends React.Component {
             list_of_selected: [new_data_list[0].name],
             multi_select: false}
         );
-
-    this.setState({data_list: new_data_list})
+        this.setState({data_list: new_data_list})
     }
 
     _set_sort_state(column_name, sort_field, direction,) {
@@ -491,9 +492,12 @@ class LibraryPane extends React.Component {
         })
     }
 
-    _view_func() {
+    _view_func(e, the_view=null) {
+        if (the_view == null) {
+            the_view = this.view_views[this.props.res_type]
+        }
         if (!this.state.multi_select) {
-            window.open($SCRIPT_ROOT + this.view_views[this.props.res_type] + this.state.selected_resource.name)
+            window.open($SCRIPT_ROOT + the_view + this.state.selected_resource.name)
         }
     }
 
@@ -633,6 +637,11 @@ class LibraryPane extends React.Component {
         this.componentDidMount()
     }
 
+    _handleTopRightPaneResize (top_height, bottom_height, top_fraction) {
+        this.setState({"top_pane_height": top_height
+        })
+    }
+
     render() {
         let available_width = this.get_width_minus_left_offset(this.top_ref);
         let available_height = this.get_height_minus_top_offset(this.top_ref);
@@ -649,8 +658,8 @@ class LibraryPane extends React.Component {
             additional_metadata = null
         }
 
-        let right_pane = (
-            <React.Fragment>
+        let right_pane;
+        let mdata_element = (
                 <CombinedMetadata tags={this.state.selected_resource.tags.split(" ")}
                                   name={this.state.selected_resource.name}
                                   created={this.state.selected_resource.created}
@@ -662,9 +671,23 @@ class LibraryPane extends React.Component {
                                   handleNotesBlur={this.state.multi_select ? null : this._saveFromSelectedResource}
                                   additional_metadata={additional_metadata}
                 />
-                {(this.props.aux_pane != null) && this.props.aux_pane}
-            </React.Fragment>
-        );
+         );
+
+        if (this.props.aux_pane == null) {
+            right_pane = mdata_element;
+        }
+        else {
+            right_pane = (
+                <VerticalPanes available_height={available_height}
+                               available_width={available_width - this.state.left_width - 25}
+                               top_pane={mdata_element}
+                               bottom_pane={this.props.aux_pane}
+                               handleSplitUpdate={this._handleTopRightPaneResize}
+                >
+                </VerticalPanes>
+
+            )
+        }
         let th_style= {
             "display": "inline-block",
             "verticalAlign": "top",
@@ -711,7 +734,7 @@ class LibraryPane extends React.Component {
                                     search_inside_checked={this.state.search_inside_checked}
                                     search_metadata_checked={this.state.search_metadata_checked}
                         />
-                        <div style={th_style}>
+                        <div style={th_style} id={`${this.props.res_type}-table`}>
                             <SelectorTable data_list={filtered_data_list}
                                            sorting_column={this.state.sorting_column}
                                            handleHeaderCellClick={this._set_sort_state}

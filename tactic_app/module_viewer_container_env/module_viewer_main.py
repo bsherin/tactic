@@ -152,7 +152,7 @@ class ModuleViewerWorker(QWorker):
                                                           {'$set': {"tile_module": module_code, "metadata": mdata,
                                                                     "last_saved": "creator"}})
             self.create_recent_checkpoint(module_name)
-            self.post_task("host", "update_tile_selector_list", {'user_id': self.user_id})
+            # self.post_task("host", "update_tile_selector_list", {'user_id': self.user_id})
             self.post_task("host", "send_tile_source_changed_message", {'user_id': self.user_id,
                                                                         'tile_type': self.module_name})
             return {"success": True, "message": "Module Successfully Saved",

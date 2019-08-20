@@ -282,13 +282,6 @@ class TagButtonList extends React.Component {
         return visible_tags
     }
 
-    _handleContextClick(e, data, target) {
-        console.log("hello");
-        let x = e;
-        let y = data;
-        let z = target;
-    }
-
     _edit_tags(e) {
         this.setState({"edit_tags": !this.state.edit_tags});
         e.preventDefault()
@@ -349,7 +342,7 @@ class TagButtonList extends React.Component {
                 tag_buttons.push(new_tag)
             }
         }
-        let eb_class = this.state.edit_tags ? "btn-danger" : "btn-outline-secondary"
+        let eb_class = this.state.edit_tags ? "btn-danger" : "btn-outline-secondary";
         return (
 
             <div style={{marginTop: 85}}>

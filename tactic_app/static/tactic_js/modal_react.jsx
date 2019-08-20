@@ -91,7 +91,7 @@ class ModalDialog extends React.Component {
                   <Rbs.Modal.Title>{this.props.title}</Rbs.Modal.Title>
                 </Rbs.Modal.Header>
                 <Rbs.Modal.Body>
-                    <Rbs.Form.Group>
+                    <Rbs.Form.Group onSubmit={this._submitHandler}>
                         <Rbs.Form.Label>{this.props.field_title}</Rbs.Form.Label>
                         <Rbs.Form>
                             <Rbs.Form.Control type="text" onChange={this._changeHandler} value={this.state.current_value}>

@@ -68,7 +68,7 @@ class HostWorker(QWorker):
 
                 db[user_obj.code_collection_name].update_one({"code_name": code_name},
                                                              {'$set': {"the_code": the_code, "metadata": mdata}})
-                code_manager.update_selector_list(user_obj=user_obj)
+                self.update_selector_row(self.build_res_dict(code_name, mdata))
                 result = {"success": True, "message": "Module Successfully Saved", "alert_type": "alert-success"}
                 self.submit_response(local_task_packet, result)
                 return
@@ -311,19 +311,19 @@ class HostWorker(QWorker):
             self.post_task("host", "load_tile_module_task", data, did_load)
         return
 
-    @task_worthy
-    def update_tile_selector_list(self, data):
-        user_id = data["user_id"]
-        user_obj = load_user(user_id)
-        tile_manager.update_selector_list(user_obj=user_obj)
-        return {"success": True}
-
-    @task_worthy
-    def update_project_selector_list(self, data):
-        user_id = data["user_id"]
-        user_obj = load_user(user_id)
-        project_manager.update_selector_list(user_obj=user_obj)
-        return {"success": True}
+    # @task_worthy
+    # def update_tile_selector_list(self, data):
+    #     user_id = data["user_id"]
+    #     user_obj = load_user(user_id)
+    #     tile_manager.update_selector_list(user_obj=user_obj)
+    #     return {"success": True}
+    #
+    # @task_worthy
+    # def update_project_selector_list(self, data):
+    #     user_id = data["user_id"]
+    #     user_obj = load_user(user_id)
+    #     project_manager.update_selector_list(user_obj=user_obj)
+    #     return {"success": True}
 
     @task_worthy
     def get_tile_code(self, data_dict):
@@ -452,7 +452,6 @@ class HostWorker(QWorker):
 
     @task_worthy
     def flash_to_main(self, data):
-        # data = {"message": message, "alert_type": alert_type, "main_id": main_id}
         socketio.emit("doFlash", data, namespace='/main', room=data["main_id"])
         return {"success": True}
 

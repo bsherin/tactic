@@ -123,7 +123,8 @@ class FileAdderButton extends React.Component {
         this.setState({ file_list: event.target.files });
     }
 
-    _do_submit() {
+    _do_submit(e) {
+        e.preventDefault();
         this.props.click_handler(this.state.file_list);
     }
 
@@ -134,23 +135,16 @@ class FileAdderButton extends React.Component {
         } else {
             butclass = "btn btn-sm action-button toolbar-button " + this.props.button_class;
         }
-        let input_item;
-        if (this.props.multiple) {
-            input_item = React.createElement(Rbs.Form.Control, { as: "input", type: "file", size: "sm", style: { "width": 250 },
-                onChange: this._handleFileChange,
-                className: "form-control-sm", multiple: true });
-        } else {
-            input_item = React.createElement(Rbs.Form.Control, { as: "input", type: "file", size: "sm", className: "form-control-sm" });
-        }
-
+        let input_item = React.createElement(Rbs.Form.Control, { as: "input", type: "file", size: "sm", style: { width: 250, fontSize: 12 },
+            onChange: this._handleFileChange,
+            className: "form-control-sm " + this.props.button_class,
+            multiple: this.props.multiple });
         return React.createElement(
             Rbs.Form,
             { inline: true },
             React.createElement(
                 Rbs.Button,
-                { onClick: this._do_submit,
-                    type: "submit",
-                    className: butclass },
+                { onClick: this._do_submit, type: "submit", className: butclass },
                 React.createElement("span", { className: "far button-icon fa-" + this.props.icon_name }),
                 React.createElement(
                     "span",
@@ -174,7 +168,8 @@ FileAdderButton.propTypes = {
 };
 
 FileAdderButton.defaultProps = {
-    small_size: true
+    small_size: true,
+    multiple: false
 };
 
 class Toolbar extends React.Component {

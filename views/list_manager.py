@@ -70,7 +70,8 @@ class ListManager(LibraryResourceManager):
 
             db[current_user.list_collection_name].update_one({"list_name": list_name},
                                                              {'$set': {"the_list": new_list, "metadata": mdata}})
-            self.update_selector_list()
+
+            self.update_selector_row(self.build_res_dict(list_name, mdata))
             return jsonify({"success": True, "message": "List Successfully Saved", "alert_type": "alert-success"})
         except Exception as ex:
             return self.get_exception_for_ajax(ex, "Error saving list")

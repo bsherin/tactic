@@ -5,7 +5,10 @@
 import {ResourceViewerSocket, ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app.js";
 import {ViewerContext} from "./resource_viewer_context.js";
 
+import {render_navbar} from "./base_module.js";
+
 function list_viewer_main ()  {
+    render_navbar();
     let get_url = window.is_repository ? "repository_get_list" : "get_list";
     let get_mdata_url = window.is_repository ? "grab_repository_metadata" : "grab_metadata";
 

@@ -98,7 +98,7 @@ class ModalDialog extends React.Component {
                 null,
                 React.createElement(
                     Rbs.Form.Group,
-                    null,
+                    { onSubmit: this._submitHandler },
                     React.createElement(
                         Rbs.Form.Label,
                         null,

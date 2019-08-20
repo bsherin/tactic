@@ -6,6 +6,7 @@ import {ReactCodemirror} from "./react-codemirror.js";
 import {CombinedMetadata} from "./react_mdata_fields.js";
 import {OptionModule, ExportModule} from "./creator_modules_react.js";
 import {HorizontalPanes, VerticalPanes} from "./resizing_layouts.js";
+import {render_navbar} from "./base_module.js";
 
 var Rbs = window.ReactBootstrap;
 
@@ -39,6 +40,7 @@ class CreatorViewerSocket extends TacticSocket {
 }
 
 function tile_creator_main() {
+    render_navbar();
     startSpinner();
     statusMessageText("loading " + window.module_name);
     var tsocket = new CreatorViewerSocket("main", 5000);

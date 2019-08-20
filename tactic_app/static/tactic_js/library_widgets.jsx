@@ -54,20 +54,20 @@ class SearchForm extends React.Component {
                 <Rbs.Button variant="outline-secondary" type="button" size="sm" onClick={this._handleClearSearch}>
                         clear
                 </Rbs.Button>
-                {this.props.allow_search_inside &&
-                    <Rbs.Form.Check inline label="search inside"
-                                    size="sm"
-                                    className="ml-3 form-control-sm"
-                                    checked={this.props.search_inside_checked}
-                                    onChange={this._handleSearchInsideChange}
-                    />
-                }
                 {this.props.allow_search_metadata &&
                     <Rbs.Form.Check inline label="search metadata"
                                     size="sm"
                                     className="ml-3 form-control-sm"
                                     checked={this.props.search_metadata_checked}
                                     onChange={this._handleSearchMetadataChange}
+                    />
+                }
+                {this.props.allow_search_inside &&
+                    <Rbs.Form.Check inline label="search inside"
+                                    size="sm"
+                                    className="ml-0 form-control-sm"
+                                    checked={this.props.search_inside_checked}
+                                    onChange={this._handleSearchInsideChange}
                     />
                 }
             </Rbs.Form>
@@ -191,7 +191,7 @@ SelectorTableRow.propTypes = {
     draggable: PropTypes.bool,
     identifier_field: PropTypes.string,
     handleAddTag: PropTypes.func,
-    handleRowDoubleClick: PropTypes.func
+    handleRowDoubleClick: PropTypes.func,
 };
 
 class SelectorHeaderCell extends React.Component {
