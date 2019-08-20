@@ -27,8 +27,8 @@ class AdminPane extends React.Component {
         doBinding(this);
         if (props.tsocket != null) {
             props.tsocket.socket.on(`update-${props.res_type}-selector-row`, this._handleRowUpdate);
+            props.tsocket.socket.on(`refresh-${props.res_type}-selector`, this._refresh_func);
         }
-
     }
 
     get_height_minus_top_offset (element_ref) {

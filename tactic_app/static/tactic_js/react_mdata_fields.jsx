@@ -260,9 +260,17 @@ class CombinedMetadata extends React.Component {
         if (this.props.additional_metadata != null) {
             additional_items = [];
             for (let field in this.props.additional_metadata) {
+                let md = this.props.additional_metadata[field];
+                if (Array.isArray(md)) {
+                    md = md.join(", ")
+                }
+                else if (field == "collection_name") {
+                    let sresult = /\.\w*$/.exec(md);
+                    if (sresult != null)  md = sresult[0].slice(1)
+                }
                 additional_items.push(
                     <div style={addition_field_style} key={field}><span className="text-primary">{field + ": "}</span>
-                        {this.props.additional_metadata[field]}
+                        {md}
                     </div>
                 )
             }

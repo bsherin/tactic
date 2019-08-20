@@ -5,8 +5,10 @@
 import {ResourceViewerSocket, ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app.js";
 import {ReactCodemirror} from "./react-codemirror.js";
 import {ViewerContext} from "./resource_viewer_context.js";
+import {render_navbar} from "./base_module.js";
 
 function code_viewer_main ()  {
+    render_navbar();
     let get_url = window.is_repository ? "repository_get_code_code" : "get_code_code";
     let get_mdata_url = window.is_repository ? "grab_repository_metadata" : "grab_metadata";
 

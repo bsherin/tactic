@@ -42,6 +42,11 @@ class ResourceManager(ExceptionMixin):
         socketio.emit("update-{}-selector-row".format(self.res_type), res_dict,
                       namespace='/library', room=user_obj.get_id())
 
+    def refresh_selector_list(self):
+        user_obj = current_user
+        socketio.emit("refresh-{}-selector".format(self.res_type), {},
+                      namespace='/library', room=user_obj.get_id())
+
     def get_resource_list(self):
         if self.is_repository:
             user_obj = repository_user
@@ -107,7 +112,7 @@ class ResourceManager(ExceptionMixin):
         if mdata is not None:
             for field, val in mdata.items():
                 if field not in skip_fields:
-                    return_data[field] = str(val)
+                    return_data[field] = val
 
         return return_data
 

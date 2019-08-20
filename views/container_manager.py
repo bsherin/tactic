@@ -26,8 +26,6 @@ class ContainerManager(ResourceManager):
                          login_required(self.kill_container), methods=['get'])
         app.add_url_rule('/container_logs/<cont_id>', "container_logs",
                          login_required(self.container_logs), methods=['get'])
-        app.add_url_rule('/refresh_container_table', "refresh_container_table",
-                         login_required(self.refresh_container_table), methods=['get'])
 
     def clear_user_containers(self, library_id):
         tactic_image_names = ["tactic_tile_image", "tactic_main_image", "module_viewer_image"]
@@ -66,7 +64,7 @@ class ContainerManager(ResourceManager):
             return generic_exception_handler.get_traceback_exception_for_ajax(ex, "Error clearing user containers")
 
         self.clear_um_message(library_id)
-        self.update_selector_list()
+        self.refresh_selector_list()
         return jsonify({"success": True, "message": "User Containers Cleared", "alert_type": "alert-success"})
 
     def reset_server(self, library_id):
@@ -85,7 +83,7 @@ class ContainerManager(ResourceManager):
             return generic_exception_handler.get_traceback_exception_for_ajax(ex, "Error resetting server")
 
         self.clear_um_message(library_id)
-        self.update_selector_list()
+        self.refresh_selector_list()
         return jsonify({"success": True, "message": "Server successefully reset", "alert_type": "alert-success"})
 
     def kill_container(self, cont_id):
@@ -95,7 +93,7 @@ class ContainerManager(ResourceManager):
             destroy_container(cont_id)
         except Exception as ex:
             return generic_exception_handler.get_traceback_exception_for_ajax(ex, "Error killing container")
-        self.update_selector_list()
+        self.refresh_selector_list()
         return jsonify({"success": True, "message": "Container Destroeyd", "alert_type": "alert-success"})
 
     def container_logs(self, cont_id):
@@ -106,10 +104,6 @@ class ContainerManager(ResourceManager):
         except Exception as ex:
             return generic_exception_handler.get_traceback_exception_for_ajax(ex, "Error getting container logs")
         return jsonify({"success": True, "message": "Got Logs", "log_text": log_text, "alert_type": "alert-success"})
-
-    def refresh_container_table(self):
-        self.update_selector_list()
-        return jsonify({"success": True})
 
     def get_resource_data_list(self, user_obj=None):
         tactic_image_names = ["tactic_tile_image", "tactic_main_image", "tactic_megaplex_image",

@@ -20,6 +20,7 @@ function _library_home_main () {
     ReactDOM.render(<LibraryHomeApp/>, domContainer)
 }
 
+
 class LibraryTacticSocket extends TacticSocket {
 
     initialize_socket_stuff() {
@@ -27,17 +28,6 @@ class LibraryTacticSocket extends TacticSocket {
         this.socket.emit('join', {"user_id":  window.user_id, "library_id":  window.library_id});
 
         this.socket.on("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
-
-        // this.socket.on('update-selector-list', (data) => {
-        //     const manager = resource_managers[data.module_id];
-        //     manager.fill_content(data.html);
-        //     manager.select_resource_button(data.select);
-        //     manager.tag_button_list.refresh_from_selectors();
-        // });
-        //
-        // this.socket.on('update-tag-list', (data) => {
-        //     resource_managers[data.module_id].tag_button_list.refresh_given_taglist(data.tag_list)
-        // });
 
         this.socket.on('handle-callback', handleCallback);
         this.socket.on('stop-spinner', stopSpinner);
@@ -427,7 +417,6 @@ class ProjectToolbar extends React.Component {
                 })
                 .catch(doFlash);
         }
-        event.preventDefault();
     };
 
 
@@ -450,12 +439,14 @@ class ProjectToolbar extends React.Component {
 
     get file_adders() {
          return[
-             ["import", this._import_jupyter, "cloud-upload", true]
+             ["import", this._import_jupyter, "cloud-upload", false]
          ]
      }
 
      render () {
-        return <LibraryToolbar button_groups={this.button_groups} multi_select={this.props.multi_select} />
+        return <LibraryToolbar button_groups={this.button_groups}
+                               file_adders={this.file_adders}
+                               multi_select={this.props.multi_select} />
      }
 
 }
@@ -468,12 +459,12 @@ class TileToolbar extends React.Component {
         doBinding(this);
     }
 
-    _tile_view() {
-        this.props.view_func("/view_module/")
+    _tile_view(e) {
+        this.props.view_func(e, "/view_module/")
     }
 
-    _creator_view() {
-        this.props.view_func("/view_in_creator/")
+    _creator_view(e) {
+        this.props.view_func(e, "/view_in_creator/")
     }
 
     _tile_duplicate() {
@@ -493,7 +484,6 @@ class TileToolbar extends React.Component {
             doFlash({"alert-type": "alert-warning",
                 "message": "Select only one or two tiles before launching compare"})
         }
-
     }
     
     _load_tile() {
@@ -564,7 +554,6 @@ class TileToolbar extends React.Component {
                 ["D3Tile", ()=>{this._new_in_creator("D3TileTemplate")}]]
             ]
         ]
-
     }
 
     get button_groups() {
@@ -587,7 +576,6 @@ class TileToolbar extends React.Component {
                                popup_buttons={this.popup_buttons}
                                multi_select={this.props.multi_select} />
      }
-
 }
 
 TileToolbar.propTypes = specializedToolbarPropTypes;

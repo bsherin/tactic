@@ -46,7 +46,6 @@ class MergeViewerApp extends React.Component {
 
     }
 
-
     componentDidMount() {
         window.addEventListener("resize", this.resize_to_window);
         this.setState({"mounted": true});
@@ -95,7 +94,7 @@ class MergeViewerApp extends React.Component {
                         <span className="align-self-end">Current</span>
                         <SelectList handleChange={this.props.handleSelectChange}
                                     option_list={this.props.option_list}
-                                    value={this.props.select_val}
+                                    the_value={this.props.select_val}
                         />
                     </div>
                     <ReactCodemirrorMergeView handleEditChange={this.props.handleEditChange}

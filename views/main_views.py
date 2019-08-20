@@ -110,7 +110,7 @@ def export_data():
             socketio.emit("doFlash", {"alert_type": "alert-success", "message": "Data successfully exported"},
                           namespace='/main', room=data_dict["main_id"])
         user_obj = load_user(data_dict["user_id"])
-        collection_manager.update_selector_list(user_obj=user_obj)
+        # collection_manager.update_selector_list(user_obj=user_obj)
         return
     data_dict = request.json
     export_name = data_dict['export_name']
