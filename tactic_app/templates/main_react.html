@@ -1,0 +1,52 @@
+{% extends "base_react.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block head %}
+{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{{url_for('static', filename='css/jquery-ui.min.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/loader.css', v=version_string)}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/table.css', v=version_string)}}">
+{% endblock %}
+
+{% block page_content %}
+    <div id="modal-area">
+    </div>
+    <div id="main-root">
+
+    </div>
+    <canvas id="measure-canvas" style="display:none"></canvas>
+{% endblock %}
+{% block scripts %}
+    <script src="{{url_for('static', filename='js/jquery.isonscreen.js')}}"></script>
+    <script src="{{url_for('static', filename='js/d3.js')}}"></script>
+    <script src="{{url_for('static', filename='js/jquery.caret.min.js')}}"></script>
+    <script src="{{url_for('static', filename='js/jquery.tag-editor.min.js')}}"></script>
+    <script src="{{url_for('static', filename='js/showdown.js')}}"></script>
+    <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
+    <script type="module" src="{{url_for('static', filename=module_source, v=version_string)}}"></script>
+    <script>
+        window.user_id = "{{current_user.get_id()}}";
+        window.use_ssl = "{{use_ssl}}"=="True";
+        window.short_collection_name = "{{short_collection_name}}";
+        window._collection_name = "{{collection_name}}";
+        window._project_name = "{{project_name}}";
+        window.base_figure_url = "{{base_figure_url}}";
+        window.main_id = "{{main_id}}";
+        window.main_port = "{{main_port}}";
+        window.temp_data_id = "{{temp_data_id}}";
+        window.page_id = main_id;
+        window.user_id = "{{current_user.get_id()}}";
+        window.doc_names = {{ doc_names | safe }};
+        window.is_notebook = false;
+        window.is_project = _project_name != "";
+        window.is_freeform = "{{is_freeform}}"=="True";
+        window.use_ssl = "{{use_ssl}}"=="True";
+        window.new_tile_info = "{{new_tile_info | safe}}";
+        window.onunload = function (e) {
+            postAsyncFalse("host", "remove_mainwindow_task", {"main_id": window.main_id})
+        }
+    </script>
+{% endblock %}

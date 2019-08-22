@@ -51,6 +51,9 @@ class SelectList extends React.Component {
     }
     render() {
         let sstyle = {"marginBottom": 5, "width": "auto"};
+        if (this.props.height != null) {
+            sstyle["height"] = this.props.height
+        }
         let option_items = this.props.option_list.map((opt, index) =>
                 <option key={index}>
                     {opt}
@@ -70,8 +73,13 @@ class SelectList extends React.Component {
 
 SelectList.propTypes = {
     option_list: PropTypes.array,
-    handleChange: PropTypes.func,
-    the_value: PropTypes.string
+    onChange: PropTypes.func,
+    the_value: PropTypes.string,
+    height: PropTypes.number
+};
+
+SelectList.defaultProps = {
+    height: null
 };
 
 
@@ -262,7 +270,7 @@ class OrderableTable extends React.Component {
         );
         return (
             <table className="tile-table table sortable table-striped table-bordered table-sm">
-                <TableHeader columns={this.props.columns}/>
+                <TableHeader columns={this.props.column}/>
                 <tbody ref={this.tbody_ref}>
                     {trows}
                 </tbody>

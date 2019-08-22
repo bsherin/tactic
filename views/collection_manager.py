@@ -101,7 +101,7 @@ class CollectionManager(LibraryResourceManager):
 
         doc_names = user_obj.get_collection_docnames(short_collection_name)
 
-        return render_template("main.html",
+        return render_template("main_react.html",
                                collection_name=cname,
                                window_title=short_collection_name,
                                project_name='',
@@ -117,7 +117,8 @@ class CollectionManager(LibraryResourceManager):
                                is_freeform=(doc_type == 'freeform'),
                                short_collection_name=short_collection_name,
                                uses_codemirror="True",
-                               version_string=tstring)
+                               version_string=tstring,
+                               module_source="tactic_js/main_app.js")
 
     def rename_me(self, old_name):
         try:
