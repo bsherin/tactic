@@ -101,7 +101,7 @@ class MergeViewerApp extends React.Component {
                         { className: "align-self-end" },
                         "Current"
                     ),
-                    React.createElement(SelectList, { handleChange: this.props.handleSelectChange,
+                    React.createElement(SelectList, { onChange: this.props.handleSelectChange,
                         option_list: this.props.option_list,
                         the_value: this.props.select_val
                     })

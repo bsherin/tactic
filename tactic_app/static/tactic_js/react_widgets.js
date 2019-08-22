@@ -57,6 +57,9 @@ class SelectList extends React.Component {
     }
     render() {
         let sstyle = { "marginBottom": 5, "width": "auto" };
+        if (this.props.height != null) {
+            sstyle["height"] = this.props.height;
+        }
         let option_items = this.props.option_list.map((opt, index) => React.createElement(
             "option",
             { key: index },
@@ -76,8 +79,13 @@ class SelectList extends React.Component {
 
 SelectList.propTypes = {
     option_list: PropTypes.array,
-    handleChange: PropTypes.func,
-    the_value: PropTypes.string
+    onChange: PropTypes.func,
+    the_value: PropTypes.string,
+    height: PropTypes.number
+};
+
+SelectList.defaultProps = {
+    height: null
 };
 
 class SelectListNoRbs extends React.Component {
@@ -270,7 +278,7 @@ class OrderableTable extends React.Component {
         return React.createElement(
             "table",
             { className: "tile-table table sortable table-striped table-bordered table-sm" },
-            React.createElement(TableHeader, { columns: this.props.columns }),
+            React.createElement(TableHeader, { columns: this.props.column }),
             React.createElement(
                 "tbody",
                 { ref: this.tbody_ref },

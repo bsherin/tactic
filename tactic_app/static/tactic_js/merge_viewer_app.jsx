@@ -92,7 +92,7 @@ class MergeViewerApp extends React.Component {
                 <div id="left-div" ref={this.left_div_ref} style={left_div_style}>
                     <div id="above-main" ref={this.above_main_ref} className="d-flex flex-row justify-content-between">
                         <span className="align-self-end">Current</span>
-                        <SelectList handleChange={this.props.handleSelectChange}
+                        <SelectList onChange={this.props.handleSelectChange}
                                     option_list={this.props.option_list}
                                     the_value={this.props.select_val}
                         />

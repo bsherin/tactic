@@ -110,7 +110,7 @@ class VerticalPanes extends React.Component {
         this.old_bottom_height = 0;
         this.old_top_height = 0;
         this.state = this.state = {
-            "current_height_fraction": .5,
+            "current_height_fraction": this.props.initial_height_fraction,
             "mounted": false
         };
     }
@@ -191,11 +191,13 @@ VerticalPanes.propTypes = {
     available_height: PropTypes.number,
     top_pane: PropTypes.object,
     bottom_pane: PropTypes.object,
-    handleSplitUpdate: PropTypes.func
+    handleSplitUpdate: PropTypes.func,
+    initial_height_fraction: PropTypes.number
 };
 
 VerticalPanes.defaultProps = {
-    handleSplitUpdate: null
+    handleSplitUpdate: null,
+    initial_height_fraction: .5
 };
 
 
