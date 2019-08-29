@@ -1031,7 +1031,7 @@ class APISupportTasksMixin:
     def FilterTable(self, data):
         txt = data["text_to_find"]
         self.display_matching_rows_applying_filter(lambda r: self.txt_in_dict(txt, r))
-        self.highlight_table_text(txt)
+        # self.highlight_table_text(txt)
         return None
 
     @task_worthy
@@ -1312,7 +1312,7 @@ class DataSupportTasksMixin:
 
     @task_worthy
     def grab_data(self, data):
-        print("entering grab_datat")
+        print("entering grab_data with fixed message")
         doc_name = data["doc_name"]
         if self.doc_type == "table":
             return {"doc_name": doc_name,
@@ -1389,10 +1389,23 @@ class DataSupportTasksMixin:
         return {"doc_name": doc_name,
                 "data_rows": self.doc_dict[doc_name].displayed_data_rows,
                 "background_colors": self.doc_dict[doc_name].displayed_background_colors,
+                "table_spec": self.doc_dict[doc_name].table_spec.compile_save_dict(),
                 "header_list": self.doc_dict[doc_name].table_spec.header_list,
                 "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
                 "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
                 "step_size": step_amount}
+
+    @task_worthy
+    def UpdateTableSpec(self, data):
+        doc = self.doc_dict[data["doc_name"]]
+        if "column_widths" in data:
+            doc.table_spec.column_widths = data["column_widths"]
+        if "hidden_columns_list" in data:
+            doc.table_spec.hidden_columns_list = data["hidden_columns_list"]
+        if "column_names" in data:
+            doc.table_spec.header_list = data["column_names"]
+            self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id": None})
+        return None
 
     @task_worthy
     def UpdateHeaderListOrder(self, data):
@@ -1424,7 +1437,7 @@ class DataSupportTasksMixin:
 
     @task_worthy
     def UpdateColumnWidths(self, data):
-        doc = self.doc_dict[data["doc_name"]]
+        doc = self.doc_dict[data["doc_to_update"]]
         doc.table_spec.column_widths = data["column_widths"]
         # doc.table_spec.table_width = data["table_width"]
         return None

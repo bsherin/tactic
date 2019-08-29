@@ -1,6 +1,6 @@
 
 
-export {render_navbar}
+export {render_navbar, TacticNavbar}
 
 var Rbs = window.ReactBootstrap;
 
@@ -50,14 +50,19 @@ class TacticNavbar extends React.Component {
             </Rbs.Nav.Item>
         );
 
-
+        let nav_class = this.props.menus == null ? "justify-content-end" : "justify-content-between";
         return (
             <Rbs.Navbar bg="light" expand="lg" variant="light">
                 <Rbs.Navbar.Brand href="/">
                     <img className="mr-2" src={window.tactic_img_url} alt="" width="32 " height="32"/>
                      Tactic
                 </Rbs.Navbar.Brand>
-                <Rbs.Navbar.Collapse id="collapse-area" className="justify-content-end">
+                <Rbs.Navbar.Collapse id="collapse-area" className={nav_class}>
+                    {this.props.menus != null &&
+                        <Rbs.Nav id="menu-area">
+                            {this.props.menus}
+                        </Rbs.Nav>
+                    }
                     <Rbs.Nav >
                         <Rbs.Nav.Link href="http://tactic.readthedocs.io/en/latest/index.html">
                             Docs
@@ -71,10 +76,15 @@ class TacticNavbar extends React.Component {
     }
 }
 
-TacticNavbar.propTypes={
+TacticNavbar.propTypes = {
     is_authenticated: PropTypes.bool,
     img_url: PropTypes.string,
-    user_name: PropTypes.string
+    user_name: PropTypes.string,
+    menus: PropTypes.object
+};
+
+TacticNavbar.defaultProps = {
+    menus: null
 };
 
 function render_navbar () {

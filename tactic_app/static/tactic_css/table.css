@@ -45,6 +45,8 @@
   border-right: 1px solid #ddd;
   border-left: none;
   border-top: none; }
+  #table-area mark {
+    background-color: #cebde6; }
   #table-area thead {
     display: block;
     border-bottom: 1px solid #ddd; }
