@@ -114,7 +114,9 @@ table.sortable thead {
 #menu-area .dropdown-toggle {
   padding-right: 6px;
   padding-left: 6px;
-  color: black; }
+  color: black;
+  border: none;
+  background-color: transparent; }
 
 #mybrand {
   font-size: 20px !important; }

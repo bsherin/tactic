@@ -1,7 +1,64 @@
 
-export { LabeledSelectList, LabeledFormField, SelectList, OrderableTable };
+export { LabeledSelectList, LabeledFormField, SelectList, OrderableTable, DragThing };
 
 var Rbs = window.ReactBootstrap;
+
+class DragThing extends React.Component {
+    constructor(props) {
+        super(props);
+        doBinding(this);
+        this.state = {
+            xpos: 0,
+            ypos: 0,
+            initial_x: null,
+            initial_y: null,
+            active: false
+        };
+    }
+
+    _dragStart(e) {
+        this.setState({
+            initial_x: e.clientX,
+            initial_y: e.clientY,
+            active: true
+        });
+    }
+
+    _drag(e) {
+        if (this.state.active) {
+            let currentX = e.clientX - this.state.initial_x;
+            let currentY = e.clientY - this.state.initial_y;
+            // this.props.handleDrag(xpos, ypos);
+            this.setState({
+                xpos: currentX,
+                ypos: currentY
+            });
+        }
+    }
+
+    _dragEnd(e) {
+        this.setState({ active: false,
+            xpos: 0,
+            ypos: 0
+        });
+    }
+
+    render() {
+        let style = { fontSize: 25 };
+        if (this.state.active) {
+            style.transform = "translate3d(" + this.state.xpos + "px, " + this.state.ypos + "px, 0)";
+        }
+        return React.createElement("span", { style: style,
+            onMouseDown: this._dragStart,
+            onMouseMove: this._drag,
+            onMouseUp: this._dragEnd,
+            className: "fal fa-caret-right" });
+    }
+}
+
+DragThing.propTypes = {
+    handleDrag: PropTypes.func
+};
 
 class LabeledFormField extends React.Component {
 
@@ -60,6 +117,13 @@ class SelectList extends React.Component {
         if (this.props.height != null) {
             sstyle["height"] = this.props.height;
         }
+        if (this.props.maxWidth != null) {
+            sstyle["maxWidth"] = this.props.maxWidth;
+        }
+        if (this.props.fontSize != null) {
+            sstyle["fontSize"] = this.props.fontSize;
+        }
+
         let option_items = this.props.option_list.map((opt, index) => React.createElement(
             "option",
             { key: index },
@@ -81,11 +145,15 @@ SelectList.propTypes = {
     option_list: PropTypes.array,
     onChange: PropTypes.func,
     the_value: PropTypes.string,
-    height: PropTypes.number
+    height: PropTypes.number,
+    maxWidth: PropTypes.number,
+    fontSize: PropTypes.number
 };
 
 SelectList.defaultProps = {
-    height: null
+    height: null,
+    maxWidth: null,
+    fontSize: null
 };
 
 class SelectListNoRbs extends React.Component {

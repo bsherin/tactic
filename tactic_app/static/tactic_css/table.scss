@@ -100,6 +100,10 @@ $selected-column-background: #e0e0e0;
     border-left: none;
     border-top: none;
 
+    mark {
+        background-color: #cebde6
+    }
+
     thead {
         display: block;
         border-bottom: $table-border-style;
