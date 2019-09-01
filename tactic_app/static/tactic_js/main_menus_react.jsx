@@ -1,5 +1,5 @@
 
-export {ProjectMenu, ColumnMenu}
+export {ProjectMenu, ColumnMenu, MenuComponent}
 
 var Rbs = window.ReactBootstrap;
 

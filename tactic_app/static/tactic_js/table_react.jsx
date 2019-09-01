@@ -137,7 +137,13 @@ class BodyCell extends React.Component {
             className= ""
         }
         let the_text = this.props.value;
-        if (this.props.search_text != null) {
+        if ((this.props.alt_search_text != null) && (this.props.alt_search_text != "")) {
+            const regex = new RegExp(this.props.alt_search_text, "gi");
+            the_text = String(the_text).replace(regex, function (matched) {
+                    return "<mark>" + matched + "</mark>";
+                })
+        }
+        else if ((this.props.search_text != null) && (this.props.search_text != "")) {
             const regex = new RegExp(this.props.search_text, "gi");
             the_text = String(the_text).replace(regex, function (matched) {
                     return "<mark>" + matched + "</mark>";
@@ -161,7 +167,8 @@ BodyCell.propTypes = {
     width: PropTypes.number,
     visible: PropTypes.bool,
     selected_column: PropTypes.string,
-    search_text: PropTypes.string
+    search_text: PropTypes.string,
+    alt_search_text: PropTypes.string
 };
 
 class SpinnerRow extends React.Component {
@@ -258,6 +265,7 @@ class BodyRow extends React.Component {
                               row_number={this.props.row_number}
                               selected_column={this.props.selected_column}
                               search_text={this.props.search_text}
+                              alt_search_text={this.props.alt_search_text}
                     />
                 )
             );
@@ -277,9 +285,10 @@ BodyRow.propTypes = {
     column_widths: PropTypes.array,
     hidden_columns_list: PropTypes.array,
     selected_column: PropTypes.string,
-    selected_row: PropTypes.string,
+    selected_row: PropTypes.number,
     setSelectedRow: PropTypes.func,
-    search_text: PropTypes.string
+    search_text: PropTypes.string,
+    alt_search_text: PropTypes.string
 };
 
 class TableBody extends React.Component {
@@ -326,6 +335,7 @@ class TableBody extends React.Component {
                      selected_row={this.props.selected_row}
                      setSelectedRow={this.props.setSelectedRow}
                      search_text={this.props.search_text}
+                     alt_search_text={this.props.alt_search_text}
             />
             ));
         rows.push(new_rows);
@@ -355,9 +365,10 @@ TableBody.propTypes = {
     scroll_top: PropTypes.number,
     handleScroll: PropTypes.func,
     selected_column: PropTypes.string,
-    selected_row: PropTypes.string,
+    selected_row: PropTypes.number,
     setSelectedRow: PropTypes.func,
-    search_text: PropTypes.string
+    search_text: PropTypes.string,
+    alt_search_text:PropTypes.string
 };
 
 function SmallSpinner () {
@@ -372,46 +383,30 @@ class MainTableCardHeader extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this);
-        this.state = {
-            search_field_value: null
-        }
     }
 
     _handleSearchFieldChange(event) {
-        this.setState({search_field_value: event.target.value}, this._handleFind)
+        this.props.handleSearchFieldChange(event.target.value)
     }
 
     _handleFilter() {
         // this.props.handleFilter(this.state.search_field_value);
         let self = this;
-        const data_dict = {"text_to_find": this.state.search_field_value};
+        const data_dict = {"text_to_find": this.props.search_text};
         this.props.broadcast_event_to_server("UnfilterTable", data_dict, function () {
-            if (self.state.search_field_value !== "") {
+            if (self.props.search_text !== "") {
                 self.props.broadcast_event_to_server("FilterTable", data_dict);
             }
         });
-
     }
 
-    _handleFind() {
-        if (this.state.search_field_value == "") {
-            this.props.handleFind(null)
-        }
-        else if (this.state.search_field_value != null) {
-            this.props.handleFind(this.state.search_field_value)
-        }
-    }
     _handleUnFilter() {
-        let self = this;
-        this.setState({search_field_value: ""}, ()=>{
-            self._handleFind();
-            self.props.broadcast_event_to_server("UnfilterTable", {});
-        })
+        this.props.handleSearchFieldChange(null);
+        this.props.broadcast_event_to_server("UnfilterTable", {});
     }
 
     _handleSubmit(e) {
         e.preventDefault();
-        this._handleFind()
     }
 
     render () {
@@ -419,7 +414,7 @@ class MainTableCardHeader extends React.Component {
             <Rbs.Card.Header className="d-flex pl-2 pt-2 justify-content-between align-baseline">
                 <div className="d-flex">
                     <div className="main-heading-element">
-                        <Rbs.Button onClick={this.props.handleTableShrink}
+                        <Rbs.Button onClick={this.props.toggleShrink}
                                     variant="outline-secondary"
                                     className="notclose">
                             <span className="far fa-minus-circle"></span>
@@ -449,7 +444,7 @@ class MainTableCardHeader extends React.Component {
                                   style={{flexFlow: "unset"}}>
                             <Rbs.Form.Control as="input"
                                               placeholder="Search"
-                                              value={!this.state.search_field_value ? "" : this.state.search_field_value}
+                                              value={!this.props.search_text ? "" : this.props.search_text}
                                               onChange={this._handleSearchFieldChange}
                                               size="sm"
                                               className="mr-2"/>
@@ -472,8 +467,9 @@ class MainTableCardHeader extends React.Component {
 }
 
 MainTableCardHeader.propTypes = {
-    handleTableShrink: PropTypes.func,
-    handleFind: PropTypes.func,
+    toggleShrink: PropTypes.func,
+    handleSearchFieldChange: PropTypes.func,
+    search_text: PropTypes.string,
     handleFilter: PropTypes.func,
     short_collection_name: PropTypes.string,
     handleChangeDoc: PropTypes.func,
@@ -495,7 +491,6 @@ class MainTableCard extends React.Component {
         this.state = {
             mounted: false,
             selected_row: null,
-            search_text: null
         };
         doBinding(this);
     }
@@ -563,14 +558,6 @@ class MainTableCard extends React.Component {
         return this.props.table_spec.column_widths.reduce(reducer) + EXTRA_TABLE_AREA_SPACE;
     }
 
-    _setSelectedRow(row_number) {
-        this.setState({selected_row: row_number})
-    }
-
-    _handleFind(search_text) {
-        this.setState({search_text: search_text})
-    }
-
     render () {
         let table_style = {display: "block", tableLayout: "fixed"};
         if (this.props.table_spec.column_widths != null) {
@@ -578,14 +565,15 @@ class MainTableCard extends React.Component {
         }
         return (
             <Rbs.Card id="main-panel" ref={this.card_ref}>
-                <MainTableCardHeader handleTableShink={this.props.handleTableShrink}
+                <MainTableCardHeader toggleShrink={this.props.toggleShrink}
                                      handleFilter={this.props.handleFilter}
                                      handleUnFilter={this.props.handleUnFilter}
                                      short_collection_name={this.props.short_collection_name}
                                      handleChangeDoc={this.props.handleChangeDoc}
                                      doc_names={this.props.doc_names}
                                      show_table_spinner={this.props.show_table_spinner}
-                                     handleFind={this._handleFind}
+                                     handleSearchFieldChange={this.props.handleSearchFieldChange}
+                                     search_text={this.props.search_text}
                                      broadcast_event_to_server={this.props.broadcast_event_to_server}
                 />
                 <Rbs.Card.Body  id="table-wrapper">
@@ -610,9 +598,10 @@ class MainTableCard extends React.Component {
                                    is_last_chunk={this.props.is_last_chunk}
                                    is_first_chunk={this.props.is_first_chunk}
                                    selected_column={this.props.selected_column}
-                                   selected_row={this.state.selected_row}
-                                   setSelectedRow={this._setSelectedRow}
-                                   search_text={this.state.search_text}
+                                   selected_row={this.props.selected_row}
+                                   setSelectedRow={this.props.setSelectedRow}
+                                   search_text={this.props.search_text}
+                                   alt_search_text={this.props.alt_search_text}
                         />
                     </table>
 
@@ -624,9 +613,12 @@ class MainTableCard extends React.Component {
 
 MainTableCard.propTypes = {
     updateTableSpec: PropTypes.func,
-    handleTableShrink: PropTypes.func,
+    toggleShrink: PropTypes.func,
     handleFilter: PropTypes.func,
     handleUnFilter: PropTypes.func,
+    handleSearchFieldChange: PropTypes.func,
+    search_text: PropTypes.string,
+    alt_search_text: PropTypes.string,
     handleFirstInView: PropTypes.func,
     handleLastInView: PropTypes.func,
     short_collection_name: PropTypes.string,
@@ -640,6 +632,8 @@ MainTableCard.propTypes = {
     handleScroll: PropTypes.func,
     selected_column: PropTypes.string,
     setSelectedColumn: PropTypes.func,
+    selected_row: PropTypes.number,
+    setSelectedRow: PropTypes.func,
     moveColumn: PropTypes.func,
     broadcast_event_to_server: PropTypes.func
 };

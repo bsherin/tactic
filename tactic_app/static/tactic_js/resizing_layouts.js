@@ -41,15 +41,32 @@ class HorizontalPanes extends React.Component {
     }
 
     get left_width() {
-        return this.props.available_width * this.state.current_width_fraction;
+        if (this.props.controlled) {
+            return this.props.available_width * this.props.initial_width_fraction;
+        }
+        else {
+            return this.props.available_width * this.state.current_width_fraction;
+        }
     }
 
     get right_width() {
-        return (1 - this.state.current_width_fraction) * this.props.available_width;
+        if (this.props.controlled) {
+            return (1 - this.props.initial_width_fraction) * this.props.available_width;
+
+        }
+        else {
+            return (1 - this.state.current_width_fraction) * this.props.available_width;
+        }
+
     }
 
     update_width_fraction(new_width_fraction) {
-        this.setState({ "current_width_fraction": new_width_fraction });
+        if (this.props.controlled) {
+            this.props.handleFractionChange(new_width_fraction)
+        }
+        else {
+            this.setState({ "current_width_fraction": new_width_fraction });
+        }
     }
 
     get width_has_changed() {
@@ -91,6 +108,8 @@ class HorizontalPanes extends React.Component {
 }
 
 HorizontalPanes.propTypes = {
+    controlled: PropTypes.bool,
+    handleFractionChange: PropTypes.func,
     available_width: PropTypes.number,
     available_height: PropTypes.number,
     left_pane: PropTypes.object,
@@ -101,7 +120,9 @@ HorizontalPanes.propTypes = {
 
 HorizontalPanes.defaultProps = {
     handleSplitUpdate: null,
-    initial_width_fraction: .5
+    initial_width_fraction: .5,
+    controlled: false,
+    handleFractionChange: null
 };
 
 class VerticalPanes extends React.Component {

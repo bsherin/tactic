@@ -122,12 +122,12 @@ class ModalDialog extends React.Component {
                 ),
                 React.createElement(
                     Rbs.Button,
-                    { varian: "secondary", onClick: this._cancelHandler },
+                    { variant: "secondary", onClick: this._cancelHandler },
                     "Cancel"
                 ),
                 React.createElement(
                     Rbs.Button,
-                    { varian: "primary", onClick: this._submitHandler },
+                    { variant: "primary", onClick: this._submitHandler },
                     "Submit"
                 )
             )

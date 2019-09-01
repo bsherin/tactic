@@ -352,22 +352,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         return error_string
 
     def highlight_table_text(self, txt):
-        if self.doc_type == "table":
-            row_index = 0
-            dinfo = self.doc_dict[self.visible_doc_name]
-            for the_row in dinfo.displayed_data_rows:
-                for cheader in dinfo.table_spec.header_list:
-                    cdata = the_row[cheader]
-                    if cdata is None:
-                        continue
-                    if str(txt).lower() in str(cdata).lower():
-                        self.mworker.emit_table_message("highlightTxtInDocument",
-                                                        {"row_index": row_index,
-                                                         "column_header": cheader,
-                                                         "text_to_find": txt})
-                row_index += 1
-        else:
-            self.mworker.emit_table_message("highlightTxtInDocument", {"text_to_find": txt})
+        self.mworker.emit_table_message("highlightTxtInDocument", {"text_to_find": txt})
 
     def move_one_figure(self, tid, figid):
         data = {"figure_name": figid}
