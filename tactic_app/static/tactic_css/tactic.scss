@@ -742,7 +742,7 @@ a[role="tab"] {
         overflow-x: hidden;
         line-height: 100%;
     }
-    #spin-place {
+    .spin-place {
         margin: 0 7px 0 0;
         display: inline-flex;
     }
@@ -1317,7 +1317,7 @@ margin-left: 20px
 
 button.notclose {
     -webkit-appearance: none;
-    padding: 1px;
+    padding: 3px;
     cursor: pointer;
     background: transparent;
     opacity: $button-notclose-opacity;

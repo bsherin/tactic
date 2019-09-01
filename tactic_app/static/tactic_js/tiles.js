@@ -141,7 +141,7 @@ class TileObject {
 
         data["tile_id"] = this.tile_id;
         dirty = true;
-        broadcast_event_to_server("UpdateOptions", data)
+        broadcast_event_to_server("∂", data)
     }
 
     get_current_html() {

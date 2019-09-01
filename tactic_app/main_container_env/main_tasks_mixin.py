@@ -531,19 +531,19 @@ class TileCreationTasksMixin:
             exports = instantiate_result["exports"]
             self.update_pipe_dict(exports, tile_container_id, tile_name)
 
-            def got_form_html(response):
-                print("got form html, time is {}".format(self.microdsecs(self.tstart)))
+            def got_form_data(response):
+                print("got form data, time is {}".format(self.microdsecs(self.tstart)))
                 self.tstart = datetime.datetime.now()
-                form_html = response["form_html"]
-                self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task",
-                                       {"tile_id": tile_container_id})
+                form_data = response["form_data"]
+                # self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task",
+                #                        {"tile_id": tile_container_id})
                 self.tile_sort_list.append(tile_container_id)
                 self.current_tile_id += 1
-                response_data = {"success": True, "html": form_html, "tile_id": tile_container_id}
+                response_data = {"success": True, "form_data": form_data, "tile_id": tile_container_id}
                 self.mworker.submit_response(local_task_packet, response_data)
 
             form_info = self.compile_form_info(tile_container_id)
-            self.mworker.post_task(tile_container_id, "_create_form_html", form_info, got_form_html)
+            self.mworker.post_task(tile_container_id, "_create_form_data", form_info, got_form_data)
 
         self.mworker.post_task(tile_container_id, "load_source_and_instantiate", data_dict, instantiated_result)
         return

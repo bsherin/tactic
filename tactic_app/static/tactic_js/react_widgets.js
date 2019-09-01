@@ -346,7 +346,7 @@ class OrderableTable extends React.Component {
         return React.createElement(
             "table",
             { className: "tile-table table sortable table-striped table-bordered table-sm" },
-            React.createElement(TableHeader, { columns: this.props.column }),
+            React.createElement(TableHeader, { columns: this.props.columns }),
             React.createElement(
                 "tbody",
                 { ref: this.tbody_ref },

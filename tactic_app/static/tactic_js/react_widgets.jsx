@@ -340,7 +340,7 @@ class OrderableTable extends React.Component {
         );
         return (
             <table className="tile-table table sortable table-striped table-bordered table-sm">
-                <TableHeader columns={this.props.column}/>
+                <TableHeader columns={this.props.columns}/>
                 <tbody ref={this.tbody_ref}>
                     {trows}
                 </tbody>

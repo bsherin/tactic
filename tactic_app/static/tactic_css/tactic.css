@@ -484,7 +484,7 @@ a[role="tab"] {
   .tile-panel-heading .tile-name-div {
     overflow-x: hidden;
     line-height: 100%; }
-  .tile-panel-heading #spin-place {
+  .tile-panel-heading .spin-place {
     margin: 0 7px 0 0;
     display: inline-flex; }
 
@@ -885,7 +885,7 @@ html, body {
 
 button.notclose {
   -webkit-appearance: none;
-  padding: 1px;
+  padding: 3px;
   cursor: pointer;
   background: transparent;
   opacity: 0.9;

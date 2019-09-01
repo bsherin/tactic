@@ -104,8 +104,8 @@ class ModalDialog extends React.Component {
                     <Rbs.Form.Text className="text-muted">
                         {this.state.warning_text}
                     </Rbs.Form.Text>
-                    <Rbs.Button varian="secondary" onClick={this._cancelHandler}>Cancel</Rbs.Button>
-                    <Rbs.Button varian="primary" onClick={this._submitHandler}>Submit</Rbs.Button>
+                    <Rbs.Button variant="secondary" onClick={this._cancelHandler}>Cancel</Rbs.Button>
+                    <Rbs.Button variant="primary" onClick={this._submitHandler}>Submit</Rbs.Button>
                 </Rbs.Modal.Footer>
             </Rbs.Modal>
         )

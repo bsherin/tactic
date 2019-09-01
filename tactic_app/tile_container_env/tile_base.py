@@ -110,6 +110,10 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                      "tile_log_height", "tile_log_width",
                      "full_tile_height", "is_shrunk", "configured"]
 
+    _selector_types = ["column_select", "tokenizer_select", "weight_function_select",
+                      "cluster_metric", "tile_select", "document_select", "list_select", "collection_select",
+                      "function_select", "class_select", "palette_select", "custom_list"]
+
     def __init__(self, main_id_ignored=None, tile_id_ignored=None, tile_name=None):
         self._sleepperiod = .0001
         self.save_attrs = ["current_html", "tile_type", "tile_name", "doc_type", "configured",
@@ -164,18 +168,18 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
     def TileSizeChange(self, data):
         self.width = data["width"]  # this might not be used for anything
         self.height = data["height"]  # this might not be used for anything
-        self.full_tile_width = data["full_tile_width"]
-        self.full_tile_height = data["full_tile_height"]
-        self.header_height = data["header_height"]
-        self.front_height = data["front_height"]
-        self.front_width = data["front_width"]
-        self.back_height = data["back_height"]
-        self.back_width = data["back_width"]
-        self.tile_log_height = data["tile_log_height"]
-        self.tile_log_width = data["tile_log_width"]
-        self.tda_height = data["tda_height"]
-        self.tda_width = data["tda_width"]
-        self._margin = data["margin"]
+        # self.full_tile_width = data["full_tile_width"]
+        # self.full_tile_height = data["full_tile_height"]
+        # self.header_height = data["header_height"]
+        # self.front_height = data["front_height"]
+        # self.front_width = data["front_width"]
+        # self.back_height = data["back_height"]
+        # self.back_width = data["back_width"]
+        # self.tile_log_height = data["tile_log_height"]
+        # self.tile_log_width = data["tile_log_width"]
+        # self.tda_height = data["tda_height"]
+        # self.tda_width = data["tda_width"]
+        # self._margin = data["margin"]
         if self.configured:
             if isinstance(self, MplFigure):
                 self._resize_mpl_tile()
@@ -264,27 +268,27 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
 
     @_task_worthy
     def TileWordClick(self, data):
-        self.handle_tile_word_click(data["clicked_text"], data["doc_name"], data["active_row_id"])
+        self.handle_tile_word_click(data["clicked_text"], data["doc_name"], doc["active_row_id"])
         return None
 
     @_task_worthy
     def TileRowClick(self, data):
-        self.handle_tile_row_click(data["clicked_row"], data["doc_name"], data["active_row_id"])
+        self.handle_tile_row_click(data["clicked_row"], data["doc_name"], doc["active_row_id"])
         return None
 
     @_task_worthy
     def TileSVGClick(self, data):
-        self.handle_tile_svg_click(data["gid"], data["dataset"], data["doc_name"], data["active_row_id"])
+        self.handle_tile_svg_click(data["gid"], data["dataset"], data["doc_name"], doc["active_row_id"])
         return None
 
     @_task_worthy
     def TileCellClick(self, data):
-        self.handle_tile_cell_click(data["clicked_cell"], data["doc_name"], data["active_row_id"])
+        self.handle_tile_cell_click(data["clicked_cell"], data["doc_name"], doc["active_row_id"])
         return None
 
     @_task_worthy
     def TileElementClick(self, data):
-        self.handle_tile_element_click(data["dataset"], data["doc_name"], data["active_row_id"])
+        self.handle_tile_element_click(data["dataset"], data["doc_name"], doc["active_row_id"])
         return None
 
     @_task_worthy
@@ -346,6 +350,92 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         encoded_val = make_python_object_jsonizable(res)
         self._restore_stdout()
         return {"encoded_val": encoded_val}
+
+    @_task_worthy
+    def _create_form_data(self, data):
+        self._pipe_dict = data["pipe_dict"]
+        try:
+            form_data = []
+            for option in self.options:
+                form_item = {}
+                print("got option " + str(option))
+                att_name = option["name"]
+                form_item["name"] = att_name
+                form_item["type"] = option["type"]
+                if "tags" in option:
+                    option_tags = option["tags"].split()
+                else:
+                    option_tags = []
+                if not hasattr(self, att_name):
+                    setattr(self, att_name, None)
+                self.save_attrs.append(att_name)
+                starting_value = getattr(self, att_name)
+                form_item["starting_value"] = starting_value
+                if option["type"] == "column_select":
+                    form_item["option_list"] = data["current_header_list"]
+                elif option["type"] == "tokenizer_select":  # for backward compatibility
+                    form_item["option_list"] = self._get_sorted_match_list(["tokenizer"], data["function_names"])
+                elif option["type"] == "weight_function_select":  # for backward compatibility
+                    form_item["option_list"] = self._get_sorted_match_list(["weight_function"], data["function_names"])
+                elif option["type"] == "cluster_metric":  # for backward comptibility
+                    form_item["option_list"] = self._get_sorted_match_list(["cluster_metric"], data["function_names"])
+                elif option["type"] == "pipe_select":
+                    form_item["starting_value"] = self._find_best_pipe_match(starting_value, att_name, option_tags)
+                    form_item["pipe_dict"] = {}
+                    for tile_id, tile_entry in self._pipe_dict.items():
+                        if tile_id == self._tworker.my_id:
+                            continue
+                        first_full_name = list(tile_entry)[0]
+                        first_short_name = list(tile_entry.values())[0]["export_name"]
+                        tile_name = re.sub("_" + first_short_name, "", first_full_name)
+                        form_item["pipe_dict"][tile_name] = []
+
+                        for full_export_name, edict in tile_entry.items():
+                            if self._check_for_tag_match(option_tags, edict["export_tags"].split()):
+                                form_item["pipe_dict"][tile_name].append([full_export_name, edict["export_name"]])
+
+                elif option["type"] == "tile_select":
+                    form_item["option_list"] = data["other_tile_names"]
+                elif option["type"] == "document_select":
+                    form_item["option_list"] = data["doc_names"]
+                elif option["type"] == "list_select":
+                    form_item["option_list"] = self._get_sorted_match_list(option_tags, data["list_names"])
+                elif option["type"] == "collection_select":
+                    form_item["option_list"] = self._get_sorted_match_list(option_tags, data["collection_names"])
+                elif option["type"] == "function_select":
+                    form_item["option_list"] = self._get_sorted_match_list(option_tags, data["function_names"])
+                elif option["type"] == "class_select":
+                    form_item["option_list"] = self._get_sorted_match_list(option_tags, data["class_names"])
+                elif option["type"] == "palette_select":
+                    form_item["option_list"] = color_palette_names.sort()
+                elif option["type"] == "custom_list":
+                    form_item["option_list"] = option["special_list"]
+                elif option["type"] == "int":
+                    if starting_value is None:
+                        starting_value = 0
+                    form_item["starting_value"] = str(starting_value)
+                if form_item["starting_value"] is None:
+                    if option["type"] in self._selector_types:
+                        form_item["starting_value"] = form_item["option_list"][0]
+                    else:
+                        form_item["starting_value"] = ""
+
+                form_data.append(form_item)
+
+            fixed_attrs = []
+            for attr in self.save_attrs:  # legacy to deal with tiles that have self.save_attrs += exports
+                if isinstance(attr, dict):
+                    fixed_attrs.append(attr["name"])
+                else:
+                    fixed_attrs.append(attr)
+            self.save_attrs = list(set(fixed_attrs))
+            return {"form_data": form_data}
+        except Exception as ex:
+            special_string = ("error creating form for  " + self.__class__.__name__ + " tile: " + self._tworker.my_id)
+            error_string = self.get_traceback_message(ex, special_string)
+            self._tworker.debug_log(error_string)
+            # self.display_message(error_string, True)
+            return error_string
 
     # Info needed here: list_names, current_header_list, pipe_dict, doc_names
     @_task_worthy
@@ -893,18 +983,18 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
     def handle_textarea_change(self, value):
         return
 
-    def handle_tile_row_click(self, clicked_row, doc_name, active_row_id):
+    def handle_tile_row_click(self, clicked_row, doc_name, active_row_id=None):
         return
 
-    def handle_tile_svg_click(self, gid, dataset, doc_name, active_row_id):
+    def handle_tile_svg_click(self, gid, dataset, doc_name, active_row_id=None):
         return
 
-    def handle_tile_cell_click(self, clicked_text, doc_name, active_row_id):
+    def handle_tile_cell_click(self, clicked_text, doc_name, active_row_id=None):
         self.clear_table_highlighting()
         self.highlight_matching_text(clicked_text)
         return
 
-    def handle_tile_element_click(self, dataset, doc_name, active_row_id):
+    def handle_tile_element_click(self, dataset, doc_name, active_row_id=None):
         return
 
     def handle_log_tile(self):
@@ -912,7 +1002,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         self.log_it(self.current_html, summary=summary)
         return
 
-    def handle_tile_word_click(self, clicked_word, doc_name, active_row_id):
+    def handle_tile_word_click(self, clicked_word, doc_name, active_row_id=None):
         self.distribute_event("DehighlightTable", {})
         self.distribute_event("SearchTable", {"text_to_find": clicked_word})
         return
