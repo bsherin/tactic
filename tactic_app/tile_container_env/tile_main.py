@@ -267,13 +267,13 @@ class TileWorker(QWorker):
                         del reload_dict[attr]
             for (attr, val) in reload_dict.items():
                 setattr(self.tile_instance, attr, val)
-            form_html = self.tile_instance._create_form_html(reload_dict["form_info"])["form_html"]
+            form_data = self.tile_instance._create_form_data(reload_dict["form_info"])["form_data"]
             self.tile_instance.my_address = reload_dict["tile_address"]
             document_object.Collection.__fully_initialize__()
             print("leaving reinstantiate_tile_class")
             if not self.tile_instance.exports:
                 self.tile_instance.exports = []
-            return {"success": True, "form_html": form_html,
+            return {"success": True, "form_data": form_data,
                     "exports": self.tile_instance.exports,
                     "options_changed": options_changed}
         except Exception as ex:

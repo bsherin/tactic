@@ -19,7 +19,8 @@ class ReactCodemirror extends React.Component {
             autoCloseBrackets: true,
             indentUnit: 4,
             mode: this.props.mode,
-            readOnly: this.props.readOnly
+            readOnly: this.props.readOnly,
+            extraKeys: this.props.extraKeys
         });
         if (first_line_number != 1) {
             cmobject.setOption("firstLineNumber", first_line_number)
@@ -44,7 +45,10 @@ class ReactCodemirror extends React.Component {
     componentDidMount() {
         this.cmobject = this.createCMArea(this.code_container_ref.current, this.props.first_line_number);
         this.cmobject.setValue(this.props.code_content);
-        this.create_keymap()
+        this.create_keymap();
+        if (this.props.setCMObject != null) {
+            this.props.setCMObject(this.cmobject)
+        }
     }
 
     componentDidUpdate() {
@@ -146,6 +150,8 @@ ReactCodemirror.propTypes = {
     saveMe: PropTypes.func,
     readOnly: PropTypes.bool,
     first_line_number: PropTypes.number,
+    extraKeys: PropTypes.object,
+    setCMObject: PropTypes.func,
     code_container_height: PropTypes.oneOfType([
         PropTypes.string,
         PropTypes.number])
@@ -155,6 +161,7 @@ ReactCodemirror.defaultProps = {
     first_line_number: 1,
     code_container_height: "100%",
     mode: "python",
-    readOnly: false
-
+    readOnly: false,
+    extraKeys: {},
+    setCMObject: null
 };

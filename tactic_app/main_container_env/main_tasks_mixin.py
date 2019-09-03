@@ -535,8 +535,8 @@ class TileCreationTasksMixin:
                 print("got form data, time is {}".format(self.microdsecs(self.tstart)))
                 self.tstart = datetime.datetime.now()
                 form_data = response["form_data"]
-                # self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task",
-                #                        {"tile_id": tile_container_id})
+                self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task",
+                                       {"tile_id": tile_container_id})
                 self.tile_sort_list.append(tile_container_id)
                 self.current_tile_id += 1
                 response_data = {"success": True, "form_data": form_data, "tile_id": tile_container_id}
@@ -672,7 +672,7 @@ class TileCreationTasksMixin:
                             form_info["pipe_dict"] = self._pipe_dict
                             self.rebuild_other_tile_forms(tile_id, form_info)
                             self.mworker.emit_export_viewer_message("update_exports_popup", {})
-                            final_result = {"success": True, "html": reinst_result["form_html"],
+                            final_result = {"success": True, "form_data": reinst_result["form_data"],
                                             "options_changed": reinst_result["options_changed"]}
                             self.mworker.submit_response(local_task_packet, final_result)
                         else:
@@ -1159,6 +1159,10 @@ class APISupportTasksMixin:
 class ExportsTasksMixin:
 
     @task_worthy
+    def get_full_pipe_dict(self, data):
+        return {"success": True, "pipe_dict": self._pipe_dict}
+
+    @task_worthy
     def get_exports_list_html(self, data):
         the_html = ""
         export_list = []
@@ -1243,9 +1247,9 @@ class ConsoleTasksMixin:
         return self.mworker.print_code_area_to_console(unique_id, force_open=True)
 
     @task_worthy
-    def create_blank_text_area(self, data):
+    def create_console_text_item(self, data):
         unique_id = str(uuid.uuid4())
-        return self.mworker.print_text_area_to_console(unique_id, force_open=True)
+        return self.mworker.print_text_area_to_console(unique_id, data["the_text"], force_open=True)
 
     @task_worthy
     def got_console_result(self, data):

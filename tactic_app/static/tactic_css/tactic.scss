@@ -735,6 +735,8 @@ a[role="tab"] {
 /* Tile related */
 
 .tile-panel-heading {
+    position: relative;
+    z-index: 2;
     display: flex;
     justify-content: space-between;
 
@@ -1062,10 +1064,6 @@ align-items: baseline
             display: block
         }
 
-        .log-panel-summary {
-            display: none
-        }
-
         .log-code-output {
             display: block
         }
@@ -1133,10 +1131,6 @@ align-items: baseline
 
         .card-header {
             border-right: 0;
-        }
-
-        .log-panel-body {
-            display: none
         }
 
         .log-panel-summary {
@@ -1214,6 +1208,7 @@ html,body {
 
 #tile-div {
     padding: 5px;
+    overflow-y: scroll
 }
 
 #tile-area {
@@ -1271,6 +1266,7 @@ html,body {
     padding: 20px;
     margin: 0;
     overflow: auto;
+    position: absolute;
 }
 
 .front {
@@ -1278,6 +1274,7 @@ html,body {
     margin: 0;
     display: flex;
     flex-direction: column;
+    position: absolute;
 }
 
 .tile-log {
@@ -1291,6 +1288,7 @@ html,body {
     padding: 0;
     display: flex;
     flex-direction: column;
+    overflow: hidden
 }
 
 .tile-body img {
@@ -1323,6 +1321,10 @@ button.notclose {
     opacity: $button-notclose-opacity;
     border: 0;
     display: inline-flex;
+}
+
+#exports-panel button.notclose {
+    padding: 1px
 }
 
 button.notclose:hover {

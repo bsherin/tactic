@@ -429,23 +429,34 @@ class HostWorker(QWorker):
         from tactic_app import app, socketio
         user_id = data["user_id"]
         user_obj = load_user(user_id)
-        with app.test_request_context():
-            user_tstring = user_obj.get_timestrings(datetime.datetime.utcnow())[0]
-            if data["is_error"]:
-                if "summary" in data:
-                    summary_text = data["summary"]
-                else:
-                    summary_text = "<b>error</b> " + user_tstring
-                data["message"] = render_template("error_log_item.html", log_item=data["message"],
-                                                  summary_text=summary_text)
+        user_tstring = user_obj.get_timestrings(datetime.datetime.utcnow())[0]
+        console_text = data["message"]
+        unique_id = str(uuid.uuid4())
+        if data["is_error"]:
+            if "summary" in data:
+                summary_text = data["summary"]
             else:
-                if "summary" in data:
-                    summary_text = data["summary"]
-                else:
-                    summary_text = "<b>log_it item</b> " + user_tstring
-                data["message"] = render_template("log_item.html", log_item=data["message"],
-                                                  summary_text=summary_text)
+                summary_text = "<b>error</b> " + user_tstring
+                data["message"] = {"unique_id": unique_id,
+                                   "type": "fixed",
+                                   "is_error": True,
+                                   "am_shrunk": False,
+                                   "summary_text": summary_text,
+                                   "console_text": console_text,
+                                   "show_markdown": False}
+        else:
+            if "summary" in data:
+                summary_text = data["summary"]
+            else:
+                summary_text = "<b>log_it item</b> " + user_tstring
 
+        data["message"] = {"unique_id": unique_id,
+                           "type": "fixed",
+                           "is_error": data["is_error"],
+                           "am_shrunk": False,
+                           "summary_text": summary_text,
+                           "console_text": console_text,
+                           "show_markdown": False}
         data["console_message"] = "consoleLog"
         self.emit_console_message(data)
         return {"success": True}
@@ -490,11 +501,14 @@ class HostWorker(QWorker):
         user_id = data["user_id"]
         user_obj = load_user(user_id)
         user_tstring = user_obj.get_timestrings(datetime.datetime.utcnow())[0]
-        summary_text = "<b>text item </b> " + user_tstring
-        with app.test_request_context():
-            data["message"] = render_template("text_log_item.html", unique_id=data["unique_id"],
-                                              summary_text=summary_text)
-
+        unique_id = str(uuid.uuid4())
+        summary_text = "text item " + user_tstring
+        data["message"] = {"unique_id": unique_id,
+                           "type": "text",
+                           "am_shrunk": False,
+                           "summary_text": summary_text,
+                           "console_text": data["console_text"],
+                           "show_markdown": False}
         data["console_message"] = "consoleLog"
         self.emit_console_message(data)
         return {"success": True}
@@ -505,10 +519,16 @@ class HostWorker(QWorker):
         user_id = data["user_id"]
         user_obj = load_user(user_id)
         user_tstring = user_obj.get_timestrings(datetime.datetime.utcnow())[0]
+        unique_id = str(uuid.uuid4())
         summary_text = "<b>code item </b> " + user_tstring
-        with app.test_request_context():
-            data["message"] = render_template("code_log_item.html", unique_id=data["unique_id"],
-                                              summary_text=summary_text)
+        data["message"] = {"unique_id": unique_id,
+                           "type": "code",
+                           "am_shrunk": False,
+                           "show_spinner": False,
+                           "summary_text": summary_text,
+                           "console_text": data["console_text"],
+                           "output_text": "",
+                           "execution_count": 0}
 
         data["console_message"] = "consoleLog"
         self.emit_console_message(data)

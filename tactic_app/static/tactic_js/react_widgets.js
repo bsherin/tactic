@@ -1,7 +1,42 @@
 
-export { LabeledSelectList, LabeledFormField, SelectList, OrderableTable, DragThing };
+export { LabeledSelectList, LabeledFormField, SelectList, OrderableTable, DragThing, GlyphButton };
 
 var Rbs = window.ReactBootstrap;
+
+class GlyphButton extends React.Component {
+
+    render() {
+        return React.createElement(
+            "button",
+            { type: "button",
+                style: this.props.style,
+                className: this.props.butclass,
+                onMouseDown: e => {
+                    e.preventDefault();
+                },
+                onClick: this.props.handleClick },
+            React.createElement("span", { className: this.props.icon_class }),
+            this.props.extra_glyph_text && React.createElement(
+                "span",
+                { className: "extra-glyph-text" },
+                this.props.extra_glyph_text
+            )
+        );
+    }
+}
+
+GlyphButton.propTypes = {
+    butclass: PropTypes.string,
+    icon_class: PropTypes.string,
+    extra_glyph_text: PropTypes.string,
+    style: PropTypes.object,
+    handleClick: PropTypes.func
+};
+
+GlyphButton.defaultProps = {
+    style: {},
+    extra_glyph_text: null
+};
 
 class DragThing extends React.Component {
     constructor(props) {
