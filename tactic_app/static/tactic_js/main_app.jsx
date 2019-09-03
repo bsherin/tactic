@@ -5,6 +5,8 @@ import {TacticSocket} from "./tactic_socket.js"
 import {HorizontalPanes, VerticalPanes} from "./resizing_layouts.js";
 import {ProjectMenu, ColumnMenu, MenuComponent} from "./main_menus_react.js";
 import {TileComponent} from "./tile_react.js";
+import {ConsoleComponent} from "./console_react.js";
+import {ExportsViewer} from "./export_viewer_react.js";
 import {showModalReact} from "./modal_react.js";
 
 const MARGIN_SIZE = 17;
@@ -12,6 +14,8 @@ const BOTTOM_MARGIN = 35;
 
 let tsocket;
 let ppi;
+
+let dirty = false;
 
 function _main_main() {
     //render_navbar();
@@ -80,7 +84,7 @@ class MainApp extends React.Component {
             mounted: false,
             usable_width: window.innerWidth - 2 * MARGIN_SIZE - 30,
             usable_height: window.innerHeight - BOTTOM_MARGIN,
-            height_fraction: .95,
+            height_fraction: .85,
             show_table_spinner: false,
             data_rows: props.initial_data_rows,
             is_first_chunk: props.initial_is_first_chunk,
@@ -93,25 +97,24 @@ class MainApp extends React.Component {
             search_text: "",
             alt_search_text: null,
             table_is_shrunk: false,
+            console_width_fraction: .5,
+            console_items: [],
+            console_is_shrunk: true,
+            console_is_zoomed: false,
+            console_item_with_focus: null,
+            show_console_error_log: false,
+            console_error_log_text: "",
+            show_exports_pane: false,
             horizontal_fraction: .65,
+            tile_sorter_exists: false,
+            pipe_dict: {},
+            pipe_dict_updated: false,
             table_spec: {column_names: this.props.initial_column_names,
                 column_widths: this.props.initial_column_widths,
                 hidden_columns_list: this.props.initial_hidden_columns_list,
                 current_doc_name: props.doc_names[0]
             },
-            tile_dict: {}
         }
-    }
-
-    // Every item in tile_list is a list of this form
-    _createTileEntry(tile_name, tile_id, form_data) {
-        let new_tile_entry = {
-            tile_name: tile_name,
-            tile_id: tile_id,
-            form_data: form_data,
-            show_form: false,
-            show_spinner: false,
-            front_content: ""};
     }
 
     componentDidMount() {
@@ -126,16 +129,74 @@ class MainApp extends React.Component {
         });
         stopSpinner();
         tsocket.socket.on("tile-message", this._handleTileMessage);
+        tsocket.socket.on("console-message", this._handleConsoleMessage);
+        tsocket.socket.on("export-viewer-message", this._handleExportViewerMessage);
         tsocket.socket.on("update-menus", function () {
             postWithCallback("host", "get_tile_types", {"user_id": window.user_id}, function (data) {
                 self.setState({tile_types: data.tile_types});
             });
-        })
+        });
+        tsocket.socket.on('tile-source-change', function (data) {
+            self._markSourceChange(data.tile_type)
+        });
+        this.createTileSorter();
+        this._updateExportsList()
     }
-    
-    _handleSearchFieldChange(search_text) {
-        this.setState({search_text: search_text});
-        this.setState({alt_search_text: null})
+
+    componentDidUpdate() {
+        if (!this.state.tile_sorter_exists) {
+            this.createTileSorter()
+        }
+    }
+
+    // Every item in tile_list is a list of this form
+    _createTileEntry(tile_name, tile_type, tile_id, form_data) {
+        return {
+            tile_name: tile_name,
+            tile_type: tile_type,
+            tile_id: tile_id,
+            form_data: form_data,
+            show_form: false,
+            show_spinner: false,
+            source_changed: false,
+            front_content: ""}
+    }
+
+    _resortTiles(new_sort_list) {
+        let new_tile_list = [];
+        for (let tid of new_sort_list) {
+            let new_entry = this.get_tile_entry(tid);
+            new_tile_list.push(new_entry)
+        }
+        this.setState({tile_list: new_tile_list})
+    }
+
+    createTileSorter() {
+        let self = this;
+        $(this.tile_div_ref.current).sortable({
+            handle: '.card-header',
+            tolerance: 'pointer',
+            revert: 'invalid',
+            forceHelperSize: true,
+            stop: function() {
+                const new_sort_list = $(self.tile_div_ref.current).sortable("toArray");
+                self._resortTiles(new_sort_list);
+            }
+        });
+        this.setState({tile_sorter_exists: true});
+    }
+
+    _markSourceChange(tile_type) {
+        let new_tile_list = [...this.state.tile_list];
+        let change_list = [];
+        for (let entry of new_tile_list) {
+            if (entry.tile_type == tile_type) {
+                change_list.push(entry.tile_id)
+            }
+        }
+        for (let tid of change_list) {
+            this._setTileValue(tid, "source_changed", true)
+        }
     }
 
     get_tile_entry(tile_id) {
@@ -149,56 +210,167 @@ class MainApp extends React.Component {
         this.setState({tile_list: new_tile_list})
     }
 
-    _toggleTileBack(tile_id) {
-        let entry = this.get_tile_entry(tile_id);
-        entry.show_form = !entry.show_form;
-        this.replace_tile_entry(tile_id, entry)
+    tileIndex(tile_id) {
+        let counter = 0;
+        for (let entry of this.state.tile_list) {
+            if (entry.tile_id == tile_id) {
+                return counter
+            }
+            ++counter;
+        }
+        return -1
     }
 
-    setTileValue(tile_id, field, value) {
+    _closeTile(tile_id) {
+        let tindex = this.tileIndex(tile_id);
+        let new_tile_list = [...this.state.tile_list];
+        new_tile_list.splice(tindex, 1);
+        this.setState({tile_list: new_tile_list});
+        const data_dict = {
+            main_id: window.main_id,
+            tile_id: tile_id
+        };
+        postWithCallback(window.main_id, "RemoveTile", data_dict);
+    }
+
+    _setTileValue(tile_id, field, value) {
         let entry = this.get_tile_entry(tile_id);
         entry[field] = value;
         this.replace_tile_entry(tile_id, entry)
     }
 
-    _updateOptionValue(tile_id, option_name, value) {
-        let entry = this.get_tile_entry(tile_id);
-        let options = [...entry.form_data];
-        for (let opt of options) {
-            if (opt.name == option_name) {
-                opt.starting_value = value;
-                break
-            }
-        }
-        this.setTileValue(tile_id, "form_data", options)
-    }
-
-    _startSpinner(tile_id, data) {
-        this.setTileValue(tile_id, "show_spinner", true)
-    }
-
-    _stopSpinner(tile_id, data) {
-        this.setTileValue(tile_id, "show_spinner", false)
-    }
-
-    _hideOptions (tile_id, data) {
-        this.setTileValue(tile_id, "show_form", false)
-    }
-    
-    _displayTileContent (tile_id, data) {
-        this.setTileValue(tile_id, "front_content", data.html)
-    }
 
     _handleTileMessage(data) {
         let self = this;
         let handlerDict = {
-            hideOptions: self._hideOptions,
-            startSpinner: self._startSpinner,
-            stopSpinner: self._stopSpinner,
-            displayTileContent: self._displayTileContent
+            hideOptions: (tile_id, data)=>self._setTileValue(tile_id, "show_form", false),
+            startSpinner: (tile_id, data)=>self._setTileValue(tile_id, "show_spinner", true),
+            stopSpinner: (tile_id, data)=>self._setTileValue(tile_id, "show_spinner", false),
+            displayTileContent: (tile_id, data)=>self._setTileValue(tile_id, "front_content", data.html),
+            displayFormContent: (tile_id, data)=>self._setTileValue(tile_id, "form_data", data.form_data)
         };
         let tile_id = data.tile_id;
         handlerDict[data.tile_message](tile_id, data)
+    }
+
+    _setConsoleItemValue(unique_id, field, value) {
+        let entry = this.get_console_item_entry(unique_id);
+        entry[field] = value;
+        this.replace_console_item_entry(unique_id, entry)
+    }
+
+    replace_console_item_entry(unique_id, new_entry) {
+        let new_console_items = [...this.state.console_items];
+        let cindex = this.consoleItemIndex(unique_id);
+        new_console_items.splice(cindex, 1, new_entry);
+        this.setState({console_items: new_console_items})
+    }
+
+    get_console_item_entry(unique_id) {
+        return Object.assign({}, this.state.console_items[this.consoleItemIndex(unique_id)])
+    }
+
+    consoleItemIndex(unique_id) {
+        let counter = 0;
+        for (let entry of this.state.console_items) {
+            if (entry.unique_id == unique_id) {
+                return counter
+            }
+            ++counter;
+        }
+        return -1
+    }
+
+    _resortConsoleItems(new_sort_list) {
+        let new_console_items = [];
+        for (let uid of new_sort_list) {
+            let new_entry = this.get_console_item_entry(uid);
+            new_console_items.push(new_entry)
+        }
+        this.setState({console_items: new_console_items})
+    }
+    
+    _goToNextCell(unique_id) {
+        let next_index = this.consoleItemIndex(unique_id) + 1;
+        if (next_index == this.state.console_items.length) return;
+        let next_id = this.state.console_items[next_index].unique_id;
+        this._setConsoleItemValue(next_id, "set_focus", true)
+    }
+
+    _closeConsoleItem(unique_id) {
+        let cindex = this.consoleItemIndex(unique_id);
+        let new_console_items = [...this.state.console_items];
+        new_console_items.splice(cindex, 1);
+        this.setState({console_items: new_console_items});
+    }
+
+    _addConsoleEntry(new_entry, force_open=true, set_focus=false) {
+        new_entry.set_focus = set_focus;
+        let insert_index;
+        if (this.state.console_item_with_focus == null) {
+            insert_index = this.state.console_items.length
+        }
+        else {
+            insert_index = this.consoleItemIndex(this.state.console_item_with_focus) + 1
+        }
+        let new_console_items = [... this.state.console_items];
+        new_console_items.splice(insert_index, 0, new_entry);
+        let new_state = {console_items: new_console_items};
+        if (force_open) {
+            new_state.console_is_shrunk = false
+        }
+
+        this.setState(new_state)
+    }
+
+    _setMainStateValue(field_name, value, callback=null) {
+        let new_state = {};
+        new_state[field_name] = value;
+        this.setState(new_state, callback);
+    }
+
+    _stopConsoleSpinner(data) {
+        let new_entry = this.get_console_item_entry(data.console_id);
+        new_entry.show_spinner = false;
+        new_entry.execution_count = data.execution_count;
+        this.replace_console_item_entry(data.console_id, new_entry)
+    }
+
+    _appendConsoleItemOutput(data) {
+        let current = this.get_console_item_entry(data.console_id).output_text;
+        if (current != "") {
+            current += "<br>"
+        }
+        this._setConsoleItemValue(data.console_id, "output_text", current + data.message)
+    }
+
+    _handleConsoleMessage(data) {
+        let self = this;
+        let handlerDict = {
+            consoleLog: (data)=>self._addConsoleEntry(data.message, data.force_open),
+            stopConsoleSpinner: this._stopConsoleSpinner,
+            consoleCodePrint: this._appendConsoleItemOutput
+        };
+        handlerDict[data.console_message](data)
+    }
+
+    _updateExportsList() {
+        let self = this;
+        postWithCallback(window.main_id, "get_full_pipe_dict", {}, function (data) {
+            self.setState({pipe_dict: data.pipe_dict, pipe_dict_updated: true})
+        })
+    }
+
+    _toggleExports() {
+        this.setState({show_exports_pane: !this.state.show_exports_pane})
+    }
+
+    _handleExportViewerMessage(data) {
+        let self = this;
+        let handlerDict = {
+            update_exports_popup: ()=>self._updateExportsList()
+        };
+        handlerDict[data.export_viewer_message](data)
     }
 
      _handleTableMessage(data) {
@@ -209,6 +381,11 @@ class MainApp extends React.Component {
             highlightTxtInDocument: (data)=>self._setAltSearchText(data.text_to_find)
         };
         handlerDict[data.table_message](data)
+    }
+
+    _handleSearchFieldChange(search_text) {
+        this.setState({search_text: search_text});
+        this.setState({alt_search_text: null})
     }
 
     _setAltSearchText(the_text) {
@@ -345,7 +522,8 @@ class MainApp extends React.Component {
 
     get_hp_height () {
         if (this.state.mounted) {
-            return (this.state.usable_height - this.tile_div_ref.current.getBoundingClientRect().top) * this.state.height_fraction - 30;
+            let top_fraction = this.state.console_is_shrunk ? 1 : this.state.height_fraction;
+            return (this.state.usable_height - this.tile_div_ref.current.getBoundingClientRect().top) * top_fraction - 30;
         }
         else {
             return this.state.usable_height - 100
@@ -395,13 +573,14 @@ class MainApp extends React.Component {
             data_dict["parent"] = window.main_id;
             postWithCallback(window.main_id, "create_tile", data_dict, function (create_data) {
                 if (create_data.success) {
-                    let new_tile_entry = {tile_name: tile_name,
-                        tile_id: create_data.tile_id,
-                        form_data: create_data.form_data,
-                        front_content: ""};
+                    let new_tile_entry = self._createTileEntry(tile_name,
+                        menu_id,
+                        create_data.tile_id,
+                        create_data.form_data);
                     let new_tile_list = [...self.state.tile_list];
                     new_tile_list.push(new_tile_entry);
                     self.setState({"tile_list": new_tile_list});
+                    self._updateExportsList();
                     clearStatusMessage();
                     stopSpinner()
                 }
@@ -425,52 +604,24 @@ class MainApp extends React.Component {
         return menu_items
     }
 
-    _handleSubmitOptions(tile_id) {
-        this._hideOptions(tile_id, {});
-        this._startSpinner(tile_id, {});
-        let form_data = this.get_tile_entry(tile_id).form_data;
-        let data = {};
-        for (let opt of form_data) {
-            data[opt.name] = opt.starting_value
-        }
-        data.tile_id = tile_id;
-        this._broadcast_event_to_server("UpdateOptions", data)
-    }
-
-    tileIndex(tile_id) {
-        let counter = 0;
-        for (let entry of this.state.tile_list) {
-            if (entry.tile_id == tile_id) {
-                return counter
-            }
-            ++counter;
-        }
-        return -1
-    }
-
-    _closeTile(tile_id) {
-        let tindex = this.tileIndex(tile_id);
-        let new_tile_list = [...this.state.tile_list];
-        new_tile_list.splice(tindex, 1);
-        this.setState({tile_list: new_tile_list});
-        const data_dict = {
-            main_id: window.main_id,
-            tile_id: tile_id
-        };
-        postWithCallback(window.main_id, "RemoveTile", data_dict);
-    }
-
     _toggleTableShrink () {
-        this.setState({table_is_shrunk: !this.state.table_is_shrunk})
+        this.setState({table_is_shrunk: !this.state.table_is_shrunk,
+            tile_sorter_exists: false
+        })
     }
 
     _handleHorizontalFractionChange(new_fraction) {
         this.setState({horizontal_fraction: new_fraction})
     }
 
+    _handleConsoleFractionChange(new_fraction) {
+        this.setState({console_width_fraction: new_fraction})
+    }
+
     render () {
-        let hp_height = this.get_hp_height();
         let vp_height = this.get_vp_height();
+        let hp_height = this.get_hp_height();
+
         let menus = (
             <React.Fragment>
                 <ProjectMenu/>
@@ -480,6 +631,8 @@ class MainApp extends React.Component {
                 {this.create_tile_menus()}
             </React.Fragment>
         );
+        let console_header_height = 35;
+        let table_available_height = this.state.console_is_shrunk ? hp_height - console_header_height : hp_height;
         let table_pane =  (
             <React.Fragment>
                 <div ref={this.table_container_ref}>
@@ -495,7 +648,7 @@ class MainApp extends React.Component {
                         doc_names={this.props.doc_names}
                         data_rows={this.state.data_rows}
                         show_table_spinner={this.state.show_table_spinner}
-                        available_height={hp_height}
+                        available_height={table_available_height}
                         table_spec={this.state.table_spec}
                         scroll_top={this.state.scroll_top}
                         handleScroll={this._handleScroll}
@@ -515,32 +668,59 @@ class MainApp extends React.Component {
             </React.Fragment>
         );
         let tile_pane = (
-                <div className="tile-div" ref={this.tile_div_ref}>
+                <div id="tile-div" style={{height: hp_height}} ref={this.tile_div_ref}>
                     {this.state.tile_list.length > 0 &&
                         this.state.tile_list.map((entry) => (
                             <TileComponent tile_name={entry.tile_name}
                                            key={entry.tile_name}
                                            tile_id={entry.tile_id}
+                                           source_changed={entry.source_changed}
                                            form_data={entry.form_data}
                                            front_content={entry.front_content}
                                            show_log={entry.show_log}
                                            show_form={entry.show_form}
                                            show_spinner={entry.show_spinner}
-                                           handleSubmit={this._handleSubmitOptions}
                                            handleClose={this._closeTile}
-                                           toggleBack={this._toggleTileBack}
-                                           updateOptionValue={this._updateOptionValue}
+                                           setTileValue={this._setTileValue}
                                            current_doc_name={this.state.table_spec.current_doc_name}
                                            selected_row={this.state.selected_row}
-                                           table_is_shrunk={this.state.table_is_shrunk}
-                            />
+                                           broadcast_event={this._broadcast_event_to_server}
+                                           table_is_shrunk={this.state.table_is_shrunk}/>
                             )
                         )
                     }
                 </div>
         );
+        let exports_pane;
+        if (this.state.show_exports_pane) {
+            exports_pane = <ExportsViewer pipe_dict={this.state.pipe_dict}
+                                          pipe_dict_updated={this.props.pipe_dict_updated}
+                                          available_height={vp_height - hp_height}/>
+        }
+        else {
+            exports_pane = <div></div>
+        }
+        let console_pane = <ConsoleComponent console_items={this.state.console_items}
+                                             error_log_text={this.state.console_error_log_text}
+                                             am_shrunk={this.state.console_is_shrunk}
+                                             am_zoomed={this.state.console_is_zoomed}
+                                             show_error_log={this.state.show_console_error_log}
+                                             available_height={vp_height - hp_height}
+                                             setConsoleItemValue={this._setConsoleItemValue}
+                                             setMainStateValue={this._setMainStateValue}
+                                             handleItemDelete={this._closeConsoleItem}
+                                             goToNextCell={this._goToNextCell}
+                                             resortConsoleItems={this._resortConsoleItems}
+                                             toggleExports={this._toggleExports}/>;
         let bottom_pane = (
-            <div>Consoles and exports here</div>
+            <HorizontalPanes left_pane={console_pane}
+                             right_pane={exports_pane}
+                             available_height={vp_height - hp_height}
+                             available_width={this.state.usable_width}
+                             initial_width_fraction={this.state.console_width_fraction}
+                             controlled={true}
+                             handleFractionChange={this._handleConsoleFractionChange}
+                />
         );
         let top_pane;
         if (this.state.table_is_shrunk) {
@@ -550,19 +730,28 @@ class MainApp extends React.Component {
                         <span className="fas fa-window-maximize"></span>
                     </button>
                     {tile_pane}
+                    {this.state.console_is_shrunk &&
+                        bottom_pane
+                    }
                 </React.Fragment>
             )
         }
         else {
             top_pane = (
-                <HorizontalPanes left_pane={table_pane}
-                                 right_pane={tile_pane}
-                                 available_height={hp_height}
-                                 available_width={this.state.usable_width}
-                                 initial_width_fraction={this.state.horizontal_fraction}
-                                 controlled={true}
-                                 handleFractionChange={this._handleHorizontalFractionChange}
-                />
+                <React.Fragment>
+                    <HorizontalPanes left_pane={table_pane}
+                         right_pane={tile_pane}
+                         available_height={hp_height}
+                         available_width={this.state.usable_width}
+                         initial_width_fraction={this.state.horizontal_fraction}
+                         controlled={true}
+                         handleFractionChange={this._handleHorizontalFractionChange}
+                    />
+                    {this.state.console_is_shrunk &&
+                        bottom_pane
+                    }
+                </React.Fragment>
+
             );
         }
         return (
@@ -571,13 +760,19 @@ class MainApp extends React.Component {
                               user_name={window.username}
                               menus={menus}
                 />
-                <VerticalPanes top_pane={top_pane}
+                {this.state.console_is_shrunk &&
+                    top_pane
+                }
+                {!this.state.console_is_shrunk &&
+                    <VerticalPanes top_pane={top_pane}
                                bottom_pane={bottom_pane}
                                available_width={this.state.usable_width}
                                available_height={vp_height}
-                               initial_height_fraction={.9}
+                               initial_height_fraction={this.state.height_fraction}
                                handleSplitUpdate={this._handleVerticalSplitUpdate}
-                />
+                    />
+                }
+
             </React.Fragment>
         )
     }
@@ -602,18 +797,6 @@ class MainTacticSocket extends TacticSocket {
         this.socket.emit('join-main', {"room": main_id}, function() {
             _after_main_joined();
         });
-        // this.socket.on('tile-message', function (data) {
-        //     tile_dict[data.tile_id][data.tile_message](data)
-        // });
-        // this.socket.on('table-message', function (data) {
-        //     tableObject[data.table_message](data)
-        // });
-        // this.socket.on('console-message', function (data) {
-        //     consoleObject[data.console_message](data)
-        // });
-        // this.socket.on('export-viewer-message', function(data) {
-        //     exportViewerObject[data.export_viewer_message](data)
-        // });
         this.socket.on('handle-callback', handleCallback);
         this.socket.on('close-user-windows', function(data){
                     postAsyncFalse("host", "remove_mainwindow_task", {"main_id": main_id});

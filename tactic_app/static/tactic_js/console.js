@@ -392,7 +392,6 @@ class ConsoleObjectClass {
         output_el.html("");
     }
 
-
     check_for_element(elstring, callback) {
         const rec = function () {
             setTimeout(function () {

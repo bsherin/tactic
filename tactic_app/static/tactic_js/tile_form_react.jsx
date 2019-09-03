@@ -12,10 +12,6 @@ class TileForm extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this);
-        // this.state = {};
-        // for (let opt of this.props.options) {
-        //     this.state[opt.name] = opt.starting_value;
-        // }
         this.selector_types = ["column_select", "tokenizer_select", "weight_function_select",
             "cluster_metric", "tile_select", "document_select", "list_select", "collection_select",
             "function_select", "class_select", "palette_select", "custom_list"
@@ -23,10 +19,7 @@ class TileForm extends React.Component {
     }
 
     _updateValue(att_name, new_value) {
-        let new_state = Object.assign({}, this.state);
-        new_state[att_name] = new_value;
-        // this.setState(new_state)
-        this.props.updateValue(this.props.tile_id, att_name, new_value)
+        this.props.updateValue(att_name, new_value)
     }
 
     _submitOptions() {
