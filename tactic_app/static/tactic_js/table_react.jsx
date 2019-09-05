@@ -1,7 +1,7 @@
 
 import {SelectList} from "./react_widgets.js";
 
-export {MainTableCard}
+export {MainTableCard, compute_added_column_width}
 
 var Rbs = window.ReactBootstrap;
 
@@ -119,6 +119,21 @@ TableHeader.propTypes = {
 
 };
 
+class ColoredWord extends React.Component {
+
+    render() {
+        let style = {backgroundColor: this.props.the_color};
+        return (
+            <span style={style}>{this.props.the_word}</span>
+        )
+    }
+}
+
+ColoredWord.propTypes = {
+    the_color: PropTypes.string,
+    the_word: PropTypes.string,
+};
+
 class BodyCell extends React.Component {
 
     render () {
@@ -137,24 +152,45 @@ class BodyCell extends React.Component {
             className= ""
         }
         let the_text = this.props.value;
-        if ((this.props.alt_search_text != null) && (this.props.alt_search_text != "")) {
-            const regex = new RegExp(this.props.alt_search_text, "gi");
-            the_text = String(the_text).replace(regex, function (matched) {
-                    return "<mark>" + matched + "</mark>";
-                })
+        if (this.props.text_color_dict) {
+            let color_dict = this.props.text_color_dict.color_dict;
+            let token_text = this.props.text_color_dict.token_text;
+            let revised_text = [];
+            let index = 0;
+            for (let w of token_text) {
+                if (color_dict.hasOwnProperty(w)) {
+                    revised_text.push(<ColoredWord key={index} the_color={color_dict[w]} the_word={w}/>)
+                }
+                else {
+                    revised_text.push(w + " ")
+                }
+                index += 1;
+            }
+            the_text = revised_text;
+            return (
+                <td style={style} className={className}>{the_text}</td>
+            )
         }
-        else if ((this.props.search_text != null) && (this.props.search_text != "")) {
-            const regex = new RegExp(this.props.search_text, "gi");
-            the_text = String(the_text).replace(regex, function (matched) {
-                    return "<mark>" + matched + "</mark>";
-                })
+        else {
+            if ((this.props.alt_search_text != null) && (this.props.alt_search_text != "")) {
+                    const regex = new RegExp(this.props.alt_search_text, "gi");
+                    the_text = String(the_text).replace(regex, function (matched) {
+                            return "<mark>" + matched + "</mark>";
+                        })
+            }
+            else if ((this.props.search_text != null) && (this.props.search_text != "")) {
+                const regex = new RegExp(this.props.search_text, "gi");
+                the_text = String(the_text).replace(regex, function (matched) {
+                        return "<mark>" + matched + "</mark>";
+                    })
+            }
+            let converted_dict = {__html: the_text};
+            return (
+                <td style={style} className={className}
+                    contentEditable={this.props.editable}
+                    dangerouslySetInnerHTML={converted_dict}></td>
+            )
         }
-        let converted_dict = {__html: the_text};
-        return (
-            <td style={style} className={className}
-                contentEditable={this.props.editable}
-                dangerouslySetInnerHTML={converted_dict}></td>
-        )
     }
 }
 
@@ -162,6 +198,7 @@ BodyCell.propTypes = {
     value: PropTypes.oneOfType([
         PropTypes.string,
         PropTypes.number]),
+    text_color_dict: PropTypes.object,
     column_name: PropTypes.string,
     row_number: PropTypes.number,
     width: PropTypes.number,
@@ -239,12 +276,23 @@ class BodyRow extends React.Component {
          }
     }
 
+    _text_to_color(colname) {
+         if (this.props.text_color_dict && this.props.text_color_dict.hasOwnProperty(colname)) {
+             return this.props.text_color_dict[colname]
+         }
+         else {
+             return null
+         }
+
+    }
+
     render () {
         let cells;
         if (this.props.column_widths == null) {
             cells = this.props.column_names.map((colname) => (
                     <BodyCell value={this.props.row_dict[colname]}
                               key={colname}
+                              text_color_dict={this._text_to_color(colname)}
                               column_name={colname}
                               width={null}
                               visible={!this.props.hidden_columns_list.includes(colname)}
@@ -259,6 +307,7 @@ class BodyRow extends React.Component {
             cells = this.props.column_names.map((colname, index) => (
                     <BodyCell value={this.props.row_dict[colname]}
                               key={colname}
+                              text_color_dict={this._text_to_color(colname)}
                               column_name={colname}
                               width={this.props.column_widths[index]}
                               visible={!this.props.hidden_columns_list.includes(colname)}
@@ -279,7 +328,9 @@ class BodyRow extends React.Component {
 
 BodyRow.propTypes = {
     index: PropTypes.number,
+    row_id: PropTypes.number,
     column_names: PropTypes.array,
+    text_color_dict: PropTypes.object,
     row_dict: PropTypes.object,
     row_number: PropTypes.number,
     column_widths: PropTypes.array,
@@ -304,6 +355,14 @@ class TableBody extends React.Component {
     componentDidUpdate() {
         this.props.my_ref.current.scrollTop = this.props.scroll_top;
     }
+    
+    _row_to_color(row_id) {
+        if (this.props.cells_to_color_text.hasOwnProperty(row_id)) {
+            return this.props.cells_to_color_text[row_id]
+
+        }
+        return null
+    }
 
     render () {
         let style = {display: "block",
@@ -326,7 +385,9 @@ class TableBody extends React.Component {
         let new_rows =  this.props.data_rows.map((row_dict, index) => (
             <BodyRow column_names={this.props.column_names}
                      row_dict={row_dict}
+                     text_color_dict={this._row_to_color(row_dict.__id__)}
                      row_number={index}
+                     row_id={row_dict.__id__}
                      key={index}
                      column_widths={this.props.column_widths}
                      hidden_columns_list={this.props.hidden_columns_list}
@@ -356,6 +417,7 @@ class TableBody extends React.Component {
 
 TableBody.propTypes = {
     data_rows: PropTypes.array,
+    cells_to_color_text: PropTypes.object,
     column_names: PropTypes.array,
     height: PropTypes.number,
     column_widths: PropTypes.array,
@@ -396,13 +458,18 @@ class MainTableCardHeader extends React.Component {
         this.props.broadcast_event_to_server("UnfilterTable", data_dict, function () {
             if (self.props.search_text !== "") {
                 self.props.broadcast_event_to_server("FilterTable", data_dict);
+                self.props.setMainStateValue("table_is_filtered", true)
             }
         });
     }
 
     _handleUnFilter() {
         this.props.handleSearchFieldChange(null);
-        this.props.broadcast_event_to_server("UnfilterTable", {});
+        if (this.props.table_is_filtered) {
+            this.props.broadcast_event_to_server("UnfilterTable", {});
+            this.props.setMainStateValue("table_is_filtered", false)
+        }
+
     }
 
     _handleSubmit(e) {
@@ -468,6 +535,8 @@ class MainTableCardHeader extends React.Component {
 
 MainTableCardHeader.propTypes = {
     toggleShrink: PropTypes.func,
+    table_is_filtered: PropTypes.bool,
+    setMainStateValue: PropTypes.func,
     handleSearchFieldChange: PropTypes.func,
     search_text: PropTypes.string,
     handleFilter: PropTypes.func,
@@ -574,6 +643,8 @@ class MainTableCard extends React.Component {
                                      show_table_spinner={this.props.show_table_spinner}
                                      handleSearchFieldChange={this.props.handleSearchFieldChange}
                                      search_text={this.props.search_text}
+                                     setMainStateValue={this.props.setMainStateValue}
+                                     table_is_filtered={this.props.table_is_filtered}
                                      broadcast_event_to_server={this.props.broadcast_event_to_server}
                 />
                 <Rbs.Card.Body  id="table-wrapper">
@@ -587,6 +658,7 @@ class MainTableCard extends React.Component {
                         />
                         <TableBody my_ref={this.tbody_ref}
                                    data_rows={this.props.data_rows}
+                                   cells_to_color_text={this.props.cells_to_color_text}
                                    column_names={this.props.table_spec.column_names}
                                    column_widths={this.props.table_spec.column_widths}
                                    hidden_columns_list={this.props.table_spec.hidden_columns_list}
@@ -626,6 +698,7 @@ MainTableCard.propTypes = {
     doc_names: PropTypes.array,
     table_spec: PropTypes.object,
     data_rows: PropTypes.array,
+    cells_to_color_text: PropTypes.object,
     show_table_spinner: PropTypes.bool,
     available_height: PropTypes.number,
     scroll_top: PropTypes.number,
@@ -635,8 +708,21 @@ MainTableCard.propTypes = {
     selected_row: PropTypes.number,
     setSelectedRow: PropTypes.func,
     moveColumn: PropTypes.func,
+    setMainStateValue: PropTypes.func,
+    table_is_filtered: PropTypes.bool,
     broadcast_event_to_server: PropTypes.func
 };
+
+function compute_added_column_width(header_text) {
+    const max_field_width = MAX_INITIAL_CELL_WIDTH;
+    let header_cell = $($("#table-wrapper th")[0]);
+    let header_font = header_cell.css("font");
+    let canvas_element = document.getElementById("measure-canvas");
+    let ctx = canvas_element.getContext("2d");
+    let added_header_width = parseInt(header_cell.css("padding-right")) + parseInt(header_cell.css("padding-left")) + 2;
+    ctx.font = header_font;
+    return ctx.measureText(header_text).width + added_header_width;
+}
 
 function compute_initial_column_widths(header_list) {
     const ncols = header_list.length;

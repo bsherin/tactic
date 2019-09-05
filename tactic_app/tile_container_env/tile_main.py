@@ -204,9 +204,9 @@ class TileWorker(QWorker):
             tile_env.Tile = self.tile_instance
             print("created class instance")
             self.handler_instances["tilebase"] = self.tile_instance
-            if "tile_log_width" not in data:
-                data["tile_log_width"] = data["back_width"]
-                data["tile_log_height"] = data["back_height"]
+            # if "tile_log_width" not in data:
+            #     data["tile_log_width"] = data["back_width"]
+            #     data["tile_log_height"] = data["back_height"]
             self.tile_instance.recreate_from_save(data)
             print("returning from tile_instance.recreate_from_save")
             if self.tile_instance.current_html is not None:

@@ -112,29 +112,23 @@ class ProjectManager(LibraryResourceManager):
                      "user_id": user_id,
                      "use_ssl": str(use_ssl),
                      "main_id": main_id,
-                     "main_port": main_container_info.port(main_id),
                      "temp_data_id": "",
-                     "use_codemirror": True,
                      "collection_name": "",
                      "doc_names": [],
-                     "console_html": "",
                      "short_collection_name": "",
-                     "project_collection_name": user_obj.project_collection_name,
-                     "list_collection_name": user_obj.list_collection_name,
-                     "code_collection_name": user_obj.code_collection_name,
-                     "tile_collection_name": user_obj.tile_collection_name,
                      "is_table": (doc_type == "table"),
                      "is_notebook": (doc_type == 'notebook' or doc_type == 'jupyter'),
                      "is_freeform": (doc_type == 'freeform'),
                      "is_jupyter":  (doc_type == 'jupyter'),
                      "base_figure_url": url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
                      "uses_codemirror": "True",
-                     "version_string": tstring
-                     }
+                     "version_string": tstring}
         if doc_type in ['notebook', 'jupyter']:
-            template_name = "main_notebook.html"
+            template_name = "main_notebook_react.html"
+            data_dict["module_source"] = "tactic_js/notebook_app.js"
         else:
-            template_name = "main.html"
+            template_name = "main_react.html"
+            data_dict["module_source"] = "tactic_js/main_app.js"
 
         return render_template(template_name, **data_dict)
 

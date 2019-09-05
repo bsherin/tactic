@@ -100,10 +100,8 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
     def __init__(self, main_id_ignored=None, tile_id_ignored=None, tile_name=None):
         self._sleepperiod = .0001
         self.save_attrs = ["current_html", "tile_type", "tile_name", "doc_type", "configured",
-                           "header_height", "front_height", "front_width", "back_height", "back_width",
-                           "tile_log_height", "tile_log_width",
-                           "tda_width", "tda_height", "width", "height", "user_id", "base_figure_url",
-                           "full_tile_width", "full_tile_height", "is_shrunk", "img_dict", "is_d3"]
+                           "width", "height", "user_id", "base_figure_url",
+                           "img_dict", "is_d3"]
         # These define the state of a tile and should be saved
 
         self.tile_type = self.__class__.__name__
@@ -390,7 +388,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                 elif option["type"] == "class_select":
                     form_item["option_list"] = self._get_sorted_match_list(option_tags, data["class_names"])
                 elif option["type"] == "palette_select":
-                    form_item["option_list"] = color_palette_names.sort()
+                    form_item["option_list"] = color_palette_names
                 elif option["type"] == "custom_list":
                     form_item["option_list"] = option["special_list"]
                 elif option["type"] == "int":

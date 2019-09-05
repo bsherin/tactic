@@ -20,7 +20,6 @@
     <canvas id="measure-canvas" style="display:none"></canvas>
 {% endblock %}
 {% block scripts %}
-    <script src="{{url_for('static', filename='js/jquery.isonscreen.js')}}"></script>
     <script src="{{url_for('static', filename='js/d3.js')}}"></script>
     <script src="{{url_for('static', filename='js/content_editable_bundle.js')}}"></script>
     <script src="{{url_for('static', filename='js/jquery.caret.min.js')}}"></script>
@@ -31,21 +30,17 @@
     <script>
         window.user_id = "{{current_user.get_id()}}";
         window.use_ssl = "{{use_ssl}}"=="True";
-        window.short_collection_name = "{{short_collection_name}}";
-        window._collection_name = "{{collection_name}}";
         window._project_name = "{{project_name}}";
         window.base_figure_url = "{{base_figure_url}}";
         window.main_id = "{{main_id}}";
-        window.main_port = "{{main_port}}";
         window.temp_data_id = "{{temp_data_id}}";
         window.page_id = main_id;
         window.user_id = "{{current_user.get_id()}}";
-        window.doc_names = {{ doc_names | safe }};
-        window.is_notebook = false;
+        window.is_notebook = true;
+        window.is_jupyter = "{{is_jupyter}}" == "True";
         window.is_project = window._project_name != "";
-        window.is_freeform = "{{is_freeform}}"=="True";
-        window.use_ssl = "{{use_ssl}}"=="True";
-        window.new_tile_info = "{{new_tile_info | safe}}";
+        window.is_freeform = false;
+        window.is_totally_new = !window.is_jupyter && !window.is_project && (window.temp_data_id == "");
         window.onunload = function (e) {
             postAsyncFalse("host", "remove_mainwindow_task", {"main_id": window.main_id})
         }

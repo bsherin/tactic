@@ -395,7 +395,7 @@ class CreatorApp extends React.Component {
             let mode = this.props.is_mpl ? "python" : "javascript";
             let code_content = this.props.is_mpl ? this.state.draw_plot_code : this.state.jscript_code;
             let first_line_number = this.props.is_mpl ? this.state.draw_plot_line_number : 1;
-            let title_label = this.props.is_mpl ? "draw_plot" : "d3javascript";
+            let title_label = this.props.is_mpl ? "draw_plot" : "(selector, w, h, arg_dict) =>";
             tc_item = React.createElement(
                 "div",
                 { key: "dpcode", style: ch_style, className: "d-flex flex-column align-items-baseline code-holder" },

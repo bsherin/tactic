@@ -1,6 +1,5 @@
 
 
-import {SelectList} from "./react_widgets.js";
 import {ReactCodemirror} from "./react-codemirror.js";
 
 export {TileForm}
@@ -59,11 +58,11 @@ class TileForm extends React.Component {
                                                   updateValue={this._updateValue}
                 />)
             }
-            else if (option["type"] == "text") {
-                option_items.push(<TextAreaOption att_name={att_name}
-                                                  key={att_name}
-                                                  value={option.starting_value}
-                                                  updateValue={this._updateValue}
+            else if ((option["type"] == "text") || (option["type"] == "int")) {
+                option_items.push(<TextOption att_name={att_name}
+                                              key={att_name}
+                                              value={option.starting_value}
+                                              updateValue={this._updateValue}
                 />)
             }
         }
@@ -194,7 +193,7 @@ class TextAreaOption extends React.Component {
                 <Rbs.Form.Label>
                     {this.props.att_name}
                 </Rbs.Form.Label>
-                <Form.Control onChange={this._updateMe}
+                <Rbs.Form.Control onChange={this._updateMe}
                               as="textarea" size="sm" value={this.props.value}/>
             </Rbs.Form.Group>
         )

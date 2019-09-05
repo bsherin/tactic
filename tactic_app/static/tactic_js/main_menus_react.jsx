@@ -48,8 +48,8 @@ class ProjectMenu extends React.Component {
 
     get option_dict () {
         return {
-            "saveAs": this._saveProjectAs,
-            "save": this._save_project,
+            "saveAs": this.props.saveProjectAs,
+            "save": this.props.saveProject,
             "export as jupyter notebook": this._exportAsJupyter,
             "open console as notebook": this._consoleToNotebook,
             "export table as collection": this._exportDataTable,
@@ -66,6 +66,11 @@ class ProjectMenu extends React.Component {
     }
 }
 
+ProjectMenu.propTypes = {
+    saveProjectAs: PropTypes.func,
+    saveProject: PropTypes.func
+};
+
 class ColumnMenu extends React.Component {
     constructor(props) {
         super(props);
@@ -76,8 +81,11 @@ class ColumnMenu extends React.Component {
         return {
             "shift-left": this.props.shiftColumnLeft,
             "shift-right": this.props.shiftColumnRight,
-            "hide": this._hideColumn,
-            "hide in all docs": this._hideInAll
+            "hide": this.props.hideColumn,
+            "hide in all docs": this.props.hideInAll,
+            "unhide": this.props.unhideAllColumns,
+            "add-column": this.props.addColumn,
+            "add-column-in-all-doc": this.props.addColumnInAll
         }
     }
 
@@ -92,4 +100,9 @@ class ColumnMenu extends React.Component {
 ColumnMenu.propTypes = {
     shiftColumnLeft: PropTypes.func,
     shiftColumnRight: PropTypes.func,
+    hideColumn: PropTypes.func,
+    hideInAll: PropTypes.func,
+    unhideAllColumns: PropTypes.func,
+    addColumn: PropTypes.func,
+    addColumnInAll: PropTypes.func
 };
