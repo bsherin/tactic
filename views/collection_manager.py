@@ -60,16 +60,17 @@ class CollectionManager(LibraryResourceManager):
     def new_notebook(self):
         user_obj = current_user
         main_id = main_container_info.create_main_container("new_notebook", user_obj.get_id(), user_obj.username)
-        return render_template("main_notebook.html",
+        return render_template("main_notebook_react.html",
                                window_title="new notebook",
                                project_name='',
                                base_figure_url=url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
                                main_id=main_id,
                                temp_data_id="",
                                use_ssl=str(use_ssl),
-                               console_html="",
                                uses_codemirror="True",
-                               version_string=tstring)
+                               is_jupyter="False",
+                               version_string=tstring,
+                               module_source="tactic_js/notebook_app.js")
 
     def open_notebook(self, unique_id):
         the_data = read_temp_data(db, unique_id)

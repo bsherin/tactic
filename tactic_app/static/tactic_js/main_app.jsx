@@ -1,6 +1,6 @@
 
 import {TacticNavbar} from "./base_module.js";
-import {MainTableCard} from "./table_react.js";
+import {MainTableCard, compute_added_column_width} from "./table_react.js";
 import {TacticSocket} from "./tactic_socket.js"
 import {HorizontalPanes, VerticalPanes} from "./resizing_layouts.js";
 import {ProjectMenu, ColumnMenu, MenuComponent} from "./main_menus_react.js";
@@ -15,19 +15,16 @@ const BOTTOM_MARGIN = 35;
 let tsocket;
 let ppi;
 
-let dirty = false;
-
 function _main_main() {
     //render_navbar();
     console.log("entering start_post_load");
-    let dirty = false;
     ppi = get_ppi();
     tsocket = new MainTacticSocket("main", 5000);
     tsocket.socket.on('finish-post-load', _finish_post_load)
 }
 
 function _after_main_joined() {
-    if (is_project) {
+    if (window.is_project) {
         let data_dict = {
             "project_name": window._project_name,
             "doc_type": "table",
@@ -39,40 +36,62 @@ function _after_main_joined() {
         };
         postWithCallback(main_id, "initialize_project_mainwindow", data_dict)
     }
-
-    let data_dict = {
-        "collection_name": window._collection_name,
-        "doc_type": "table",
-        "base_figure_url": window.base_figure_url,
-        "use_ssl": window.use_ssl,
-        "user_id": window.user_id,
-        "ppi": ppi
-    };
-    postWithCallback(main_id, "initialize_mainwindow", data_dict)
+    else {
+        let data_dict = {
+            "collection_name": window._collection_name,
+            "doc_type": "table",
+            "base_figure_url": window.base_figure_url,
+            "use_ssl": window.use_ssl,
+            "user_id": window.user_id,
+            "ppi": ppi
+        };
+        postWithCallback(main_id, "initialize_mainwindow", data_dict)
+    }
 }
 
 function _finish_post_load(data) {
+    var interface_state;
     if (window.is_project) {
         window._collection_name = data.collection_name;
         window.doc_names = data.doc_names;
-        window.short_collection_name(data.short_collection_name);
-
+        window.short_collection_name = data.short_collection_name;
+        interface_state = data.interface_state
     }
     postWithCallback(window.main_id, "grab_data", {"doc_name":window.doc_names[0]}, function (data) {
             let domContainer = document.querySelector('#main-root');
-            ReactDOM.render(<MainApp short_collection_name={window.short_collection_name}
-                                     initial_column_names={data.table_spec.header_list}
-                                     initial_data_rows={data.data_rows}
-                                     initial_is_first_chunk={data.is_first_chunk}
-                                     initial_is_last_chunk={data.is_last_chunk}
-                                     initial_column_widths={data.table_spec.column_widths}
-                                     initial_hidden_columns_list={data.table_spec.hidden_columns_list}
-                                     console_html={data.console_html}
-                                     doc_names={window.doc_names}/>,
+            if (window.is_project) {
+                ReactDOM.render(<MainApp is_project={true}
+                                         interface_state={interface_state}
+                                         short_collection_name={window.short_collection_name}
+                                         initial_column_names={data.table_spec.header_list}
+                                         initial_data_rows={data.data_rows}
+                                         initial_is_first_chunk={data.is_first_chunk}
+                                         initial_is_last_chunk={data.is_last_chunk}
+                                         initial_column_widths={data.table_spec.column_widths}
+                                         initial_hidden_columns_list={data.table_spec.hidden_columns_list}
+                                         console_html={data.console_html}
+                                         doc_names={window.doc_names}/>,
                 domContainer)
+            }
+            else {
+                ReactDOM.render(<MainApp is_project={false}
+                                         interface_state={null}
+                                         short_collection_name={window.short_collection_name}
+                                         initial_column_names={data.table_spec.header_list}
+                                         initial_data_rows={data.data_rows}
+                                         initial_is_first_chunk={data.is_first_chunk}
+                                         initial_is_last_chunk={data.is_last_chunk}
+                                         initial_column_widths={data.table_spec.column_widths}
+                                         initial_hidden_columns_list={data.table_spec.hidden_columns_list}
+                                         console_html={data.console_html}
+                                         doc_names={window.doc_names}/>,
+                domContainer)
+            }
     });
 }
 
+const save_attrs = ["height_fraction", "tile_list", "table_is_shrunk", "console_width_fraction", "console_items",
+    'console_is_shrunk', 'console_is_zoomed', "show_exports_pane", "horizontal_fraction", "pipe_dict"];
 
 class MainApp extends React.Component {
     constructor (props) {
@@ -87,6 +106,7 @@ class MainApp extends React.Component {
             height_fraction: .85,
             show_table_spinner: false,
             data_rows: props.initial_data_rows,
+            cells_to_color_text: {},
             is_first_chunk: props.initial_is_first_chunk,
             is_last_chunk: props.initial_is_last_chunk,
             scroll_top: 0,
@@ -95,6 +115,7 @@ class MainApp extends React.Component {
             tile_types: {},
             tile_list: [],
             search_text: "",
+            table_is_filtered: false,
             alt_search_text: null,
             table_is_shrunk: false,
             console_width_fraction: .5,
@@ -106,7 +127,6 @@ class MainApp extends React.Component {
             console_error_log_text: "",
             show_exports_pane: false,
             horizontal_fraction: .65,
-            tile_sorter_exists: false,
             pipe_dict: {},
             pipe_dict_updated: false,
             table_spec: {column_names: this.props.initial_column_names,
@@ -114,12 +134,23 @@ class MainApp extends React.Component {
                 hidden_columns_list: this.props.initial_hidden_columns_list,
                 current_doc_name: props.doc_names[0]
             },
+        };
+        if (this.props.is_project) {
+            for (let attr of save_attrs) {
+                this.state[attr] = this.props.interface_state[attr]
+            }
         }
     }
 
     componentDidMount() {
         this.setState({"mounted": true});
         window.addEventListener("resize", this._update_window_dimensions);
+        if (window.is_project) {
+            document.title = window._project_name
+        }
+        else {
+            document.title = this.props.short_collection_name
+        }
         let self = this;
         tsocket.socket.on('table-message', function (data) {
             self._handleTableMessage(data)
@@ -143,8 +174,12 @@ class MainApp extends React.Component {
         this._updateExportsList()
     }
 
+    get tile_sorter_exists() {
+        return $("#tile-div").hasClass("ui-sortable")
+    }
+
     componentDidUpdate() {
-        if (!this.state.tile_sorter_exists) {
+        if (!this.tile_sorter_exists) {
             this.createTileSorter()
         }
     }
@@ -156,9 +191,16 @@ class MainApp extends React.Component {
             tile_type: tile_type,
             tile_id: tile_id,
             form_data: form_data,
+            tile_height: 345,
+            tile_width: 410,
             show_form: false,
             show_spinner: false,
             source_changed: false,
+            javascript_code: null,
+            javascript_arg_dict: null,
+            show_log: false,
+            log_content: "",
+            shrunk: false,
             front_content: ""}
     }
 
@@ -200,14 +242,16 @@ class MainApp extends React.Component {
     }
 
     get_tile_entry(tile_id) {
+        let tindex = this.tileIndex(tile_id);
+        if (tindex == -1) return null;
         return Object.assign({}, this.state.tile_list[this.tileIndex(tile_id)])
     }
 
-    replace_tile_entry(tile_id, new_entry) {
+    replace_tile_entry(tile_id, new_entry, callback=null) {
         let new_tile_list = [...this.state.tile_list];
         let tindex = this.tileIndex(tile_id);
         new_tile_list.splice(tindex, 1, new_entry);
-        this.setState({tile_list: new_tile_list})
+        this.setState({tile_list: new_tile_list}, callback)
     }
 
     tileIndex(tile_id) {
@@ -233,12 +277,31 @@ class MainApp extends React.Component {
         postWithCallback(window.main_id, "RemoveTile", data_dict);
     }
 
-    _setTileValue(tile_id, field, value) {
+    _setTileValue(tile_id, field, value, callback=null) {
         let entry = this.get_tile_entry(tile_id);
         entry[field] = value;
-        this.replace_tile_entry(tile_id, entry)
+        this.replace_tile_entry(tile_id, entry, callback)
     }
 
+    _setTileState(tile_id, new_state, callback) {
+        let entry = this.get_tile_entry(tile_id);
+        for (let field in new_state) {
+            entry[field] = new_state[field]
+        }
+        this.replace_tile_entry(tile_id, entry, callback)
+    }
+
+    _displayTileContentWithJavascript(tile_id, data) {
+        this._setTileState(tile_id, {front_content: data.html,
+            javascript_code: data.javascript_code,
+            javascript_arg_dict: data.arg_dict})
+    }
+
+    _displayTileContent(tile_id, data) {
+        this._setTileState(tile_id, {front_content: data.html,
+            javascript_code: null,
+            javascript_arg_dict: null})
+    }
 
     _handleTileMessage(data) {
         let self = this;
@@ -246,8 +309,9 @@ class MainApp extends React.Component {
             hideOptions: (tile_id, data)=>self._setTileValue(tile_id, "show_form", false),
             startSpinner: (tile_id, data)=>self._setTileValue(tile_id, "show_spinner", true),
             stopSpinner: (tile_id, data)=>self._setTileValue(tile_id, "show_spinner", false),
-            displayTileContent: (tile_id, data)=>self._setTileValue(tile_id, "front_content", data.html),
-            displayFormContent: (tile_id, data)=>self._setTileValue(tile_id, "form_data", data.form_data)
+            displayTileContent: self._displayTileContent,
+            displayFormContent: (tile_id, data)=>self._setTileValue(tile_id, "form_data", data.form_data),
+            displayTileContentWithJavascript: self._displayTileContentWithJavascript
         };
         let tile_id = data.tile_id;
         handlerDict[data.tile_message](tile_id, data)
@@ -373,19 +437,46 @@ class MainApp extends React.Component {
         handlerDict[data.export_viewer_message](data)
     }
 
+    _setCellContent(row_index, column_header, new_content) {
+        let new_data_rows = [...this.state.data_rows];
+        let the_row = Object.assign({}, new_data_rows[row_index]);
+        the_row[column_header] = new_content;
+        new_data_rows.splice(row_index, 1, the_row);
+        this.setState({data_rows: new_data_rows})
+        
+    }
+
+    _colorTextInCell(row_id, column_header, token_text, color_dict) {
+        let ccd = Object.assign({}, this.state.cells_to_color_text);
+        let entry;
+        if (ccd.hasOwnProperty(row_id)) {
+            entry = Object.assicn({}, ccd.row_id)
+        }
+        else {
+            entry = {}
+        }
+        entry[column_header] = {token_text:token_text, color_dict: color_dict};
+        ccd[row_id] = entry;
+        this.setState({cells_to_color_text: ccd})
+    }
+
      _handleTableMessage(data) {
         let self = this;
         let handlerDict = {
             refill_table: self._refill_table,
             dehighlightAllText: (data)=>self._handleSearchFieldChange(null),
-            highlightTxtInDocument: (data)=>self._setAltSearchText(data.text_to_find)
+            highlightTxtInDocument: (data)=>self._setAltSearchText(data.text_to_find),
+            setCellContent: (data)=>self._setCellContent(data.row, data.column_header, data.new_content),
+            colorTxtInCell: (data)=>self._colorTextInCell(data.row_id, data.column_header, data.token_text, data.color_dict)
         };
         handlerDict[data.table_message](data)
     }
 
     _handleSearchFieldChange(search_text) {
-        this.setState({search_text: search_text});
-        this.setState({alt_search_text: null})
+        this.setState({search_text: search_text, alt_search_text: null});
+        if (search_text == null) {
+            this.setState({cells_to_color_text: {}})
+        }
     }
 
     _setAltSearchText(the_text) {
@@ -451,7 +542,41 @@ class MainApp extends React.Component {
         cwidths.splice(end_index, 0, width_to_move);
         this._updateTableSpec({column_names: colnames, column_widths: cwidths}, true)
     }
-    
+
+    _hideColumn() {
+        let hc_list = [...this.state.table_spec.hidden_columns_list];
+        hc_list.push(this.state.selected_column);
+        this._updateTableSpec({hidden_columns_list: hc_list}, true)
+    }
+
+    _hideColumnInAll() {
+        let hc_list = [...this.state.table_spec.hidden_columns_list];
+        hc_list.push(this.state.selected_column);
+        this._updateTableSpec({hidden_columns_list: hc_list}, false);
+        const data_dict = {"column_name": this.state.selected_column};
+        this._broadcast_event_to_server("HideColumnInAllDocs", data_dict)
+    }
+
+    _unhideAllColumns() {
+        this._updateTableSpec({hidden_columns_list: ["__filename__"]}, true)
+
+    }
+
+    _addColumn(add_in_all=false) {
+        let self = this;
+        let title = add_in_all ? "Create Column All Documents" : "Create Column This Document";
+        showModalReact(title, "New Column Name", function (new_name) {
+            let cwidth = compute_added_column_width(new_name);
+            self._updateTableSpec({column_names: [...self.state.table_spec.column_names, new_name],
+                column_widths: [...self.state.table_spec.column_widths, cwidth]}, false);
+            const data_dict = {"column_name": new_name,
+                                "doc_name": self.state.current_doc_name,
+                                "column_width": cwidth,
+                                "all_docs": add_in_all};
+            self._broadcast_event_to_server("CreateColumn", data_dict);
+        })
+    }
+
     _setStateFromDataObject(data, doc_name, func=null) {
         this.setState({
             data_rows: data.data_rows,
@@ -618,15 +743,109 @@ class MainApp extends React.Component {
         this.setState({console_width_fraction: new_fraction})
     }
 
+    _saveProject () {
+        // let console_node = cleanse_bokeh(document.getElementById("console"));
+        let self = this;
+        const result_dict = {
+            "main_id": window.main_id,
+        };
+        let interface_state = {};
+        for (let attr of save_attrs) {
+            interface_state[attr] = this.state[attr]
+        }
+
+        result_dict.interface_state = interface_state;
+
+        //tableObject.startTableSpinner();
+        startSpinner();
+        postWithCallback(window.main_id, "update_project", result_dict, updateSuccess);
+        function updateSuccess(data) {
+            if (data.success) {
+                self.setState({"show_table_spinner": false});
+                clearStatusMessage();
+                data.alert_type = "alert-success";
+                data.timeout = 2000;
+                doFlashStopSpinner(data)
+            }
+            else {
+                self.setState({"show_table_spinner": false});
+                clearStatusMessage();
+                data.alert_type = "alert-warning";
+                doFlashStopSpinner(data)
+            }
+        }
+    }
+
+    _saveProjectAs() {
+        startSpinner();
+        let self = this;
+        postWithCallback("host", "get_project_names", {"user_id": window.user_id}, function (data) {
+            let checkboxes;
+            showModalReact("Save Project As", "New Project Name", CreateNewProject,
+                      "NewProject", data["project_names"])
+        });
+
+        function CreateNewProject (new_name) {
+            //let console_node = cleanse_bokeh(document.getElementById("console"));
+            const result_dict = {
+                "project_name": new_name,
+                "main_id": window.main_id,
+                "doc_type": "table",
+                "purgetiles": true
+            };
+
+            let interface_state = {};
+            for (let attr of save_attrs) {
+                interface_state[attr] = self.state[attr]
+            }
+
+            result_dict.interface_state = interface_state;
+            result_dict["purgetiles"] = true;
+            postWithCallback(window.main_id, "save_new_project", result_dict, save_as_success);
+
+            function save_as_success(data_object) {
+                if (data_object["success"]) {
+                    let is_jupyter = false;
+                    window.is_project = true;
+                    window._project_name = new_name;
+                    document.title = new_name;
+                    clearStatusMessage();
+
+                    data_object.alert_type = "alert-success";
+                    data_object.timeout = 2000;
+                    data_object["message"] = data_object["message"];
+                    postWithCallback("host", "refresh_project_selector_list", {'user_id': window.user_id});
+                    doFlashStopSpinner(data_object);
+                }
+                else {
+                    //tableObject.stopTableSpinner();
+                    clearStatusMessage();
+                    data_object["message"] = data_object["message"];
+                    data_object["alert-type"] = "alert-warning";
+                    doFlashStopSpinner(data_object)
+                }
+            }
+    }
+
+    }
+
     render () {
         let vp_height = this.get_vp_height();
         let hp_height = this.get_hp_height();
 
         let menus = (
             <React.Fragment>
-                <ProjectMenu/>
+                <ProjectMenu saveProjectAs={this._saveProjectAs}
+                             saveProject={window.is_project? this._saveProject : null}
+                />
                 <ColumnMenu shiftColumnLeft={this.state.selected_column == null ? null : this._shift_column_left}
                             shiftColumnRight={this.state.selected_column == null ? null : this._shift_column_right}
+                            hideColumn={this.state.selected_column == null ? null : this._hideColumn}
+                            hideInAll={this.state.selected_column == null ? null : this._hideColumnInAll}
+                            unhideAllColumns={this._unhideAllColumns}
+                            addColumn={this._addColumn}
+                            addColumnInAll={()=>this._addColumn(true)}
+
                 />
                 {this.create_tile_menus()}
             </React.Fragment>
@@ -647,6 +866,7 @@ class MainApp extends React.Component {
                         handleChangeDoc={this._handleChangeDoc}
                         doc_names={this.props.doc_names}
                         data_rows={this.state.data_rows}
+                        cells_to_color_text={this.state.cells_to_color_text}
                         show_table_spinner={this.state.show_table_spinner}
                         available_height={table_available_height}
                         table_spec={this.state.table_spec}
@@ -662,6 +882,8 @@ class MainApp extends React.Component {
                         selected_row={this.state.selected_row}
                         setSelectedRow={this._setSelectedRow}
                         moveColumn={this._moveColumn}
+                        setMainStateValue={this._setMainStateValue}
+                        table_is_filtered={this.state.table_is_filtered}
                         broadcast_event_to_server={this._broadcast_event_to_server}
                     />
                 </div>
@@ -680,8 +902,15 @@ class MainApp extends React.Component {
                                            show_log={entry.show_log}
                                            show_form={entry.show_form}
                                            show_spinner={entry.show_spinner}
+                                           shrunk={entry.shrunk}
+                                           log_content={entry.log_content}
+                                           tile_width={entry.tile_width}
+                                           tile_height={entry.tile_height}
+                                           javascript_code={entry.javascript_code}
+                                           javascript_arg_dict={entry.javascript_arg_dict}
                                            handleClose={this._closeTile}
                                            setTileValue={this._setTileValue}
+                                           setTileState={this._setTileState}
                                            current_doc_name={this.state.table_spec.current_doc_name}
                                            selected_row={this.state.selected_row}
                                            broadcast_event={this._broadcast_event_to_server}
@@ -779,6 +1008,8 @@ class MainApp extends React.Component {
 }
 
 MainApp.propTypes = {
+    is_project: PropTypes.bool,
+    interface_state: PropTypes.object,
     short_collection_name: PropTypes.string,
     initial_column_names: PropTypes.array,
     initial_data_rows: PropTypes.array,

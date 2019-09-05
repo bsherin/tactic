@@ -36,7 +36,7 @@ class LogItem extends React.Component {
         // let header_class = this.props.is_error ? "bg-warning error-panel-heading" : "";
         // let bg = this.props.is_error ? "warning" : "light";
         return (
-            <Rbs.Card className={panel_style} bg={bg} id={this.props.unique_id}>
+            <Rbs.Card className={panel_style} id={this.props.unique_id}>
                 <Rbs.Card.Header>
                     <div className="button-div shrink-expand-div">
                         {!this.props.am_shrunk &&
@@ -716,6 +716,7 @@ ConsoleComponent.propTypes = {
     error_log_text: PropTypes.string,
     am_shrunk: PropTypes.bool,
     am_zoomed: PropTypes.bool,
+    am_notebook: PropTypes.bool,
     show_error_log: PropTypes.bool,
     available_height: PropTypes.number,
     setConsoleItemValue: PropTypes.func,
@@ -724,4 +725,8 @@ ConsoleComponent.propTypes = {
     goToNextCell: PropTypes.func,
     resortConsoleItems: PropTypes.func,
     toggleExports: PropTypes.func
+};
+
+ConsoleComponent.defaultProps = {
+    am_notebook: false
 };

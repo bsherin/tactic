@@ -42,10 +42,10 @@ true_host_nltk_data_dir = os.environ.get("TRUE_HOST_NLTK_DATA_DIR")
 # noinspection PyPep8Naming,PyUnusedLocal,PyTypeChecker
 class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationTasksMixin, APISupportTasksMixin,
                  ExportsTasksMixin, ConsoleTasksMixin, DataSupportTasksMixin, ExceptionMixin):
-    save_attrs = ["short_collection_name", "collection_name", "current_tile_id", "tile_sort_list", "left_fraction",
-                  "is_shrunk", "doc_dict", "project_name", "loaded_modules", "user_id",
-                  "console_html", "console_cm_code", "doc_type", "purgetiles"]
-    notebook_save_attrs = ["project_name", "user_id", "console_html", "console_cm_code", "doc_type"]
+    save_attrs = ["short_collection_name", "collection_name", "tile_sort_list",
+                  "doc_dict", "project_name", "loaded_modules", "user_id",
+                  "doc_type", "purgetiles"]
+    notebook_save_attrs = ["project_name", "user_id", "doc_type"]
     update_events = ["CellChange", "FreeformTextChange", "CreateColumn", "SearchTable", "SaveTableSpec", "MainClose",
                      "DehighlightTable", "SetCellContent", "RemoveTile", "ColorTextInCell",
                      "FilterTable", "UnfilterTable", "TextSelect", "UpdateSortList", "UpdateLeftFraction",
@@ -95,7 +95,6 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
 
         if ("project_name" not in data_dict) or (data_dict["doc_type"] == "jupyter"):
             self.doc_type = data_dict["doc_type"]
-            self.current_tile_id = 0
             self.tile_instances = []
             self.tile_sort_list = []
             self.left_fraction = INITIAL_LEFT_FRACTION
@@ -189,26 +188,104 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                                                                                 other_name=data["other_name"],
                                                                                 env_vars=environ,
                                                                                 volume_dict=tile_volume_dict,
-                                                                                publish_all_ports=True)
+                                                                                publish_all_ports=True,
+                                                                                special_unique_id=data["tile_id"])
             tile_address = docker_functions.get_address(container_id, "bridge")
         except docker_functions.ContainerCreateError as ex:
             print("Error creating tile container")
             return self.get_short_exception_dict(ex, "Error creating empty tile container")
         return {"success": True, "tile_id": tile_container_id, "tile_address": tile_address}
 
+    def is_legacy_save(self, mdata):
+        return "save_style" not in mdata or mdata["save_style"] != "b64save_react"
+
+    def convert_legacy_console(self, project_dict):
+        from bs4 import BeautifulSoup
+        import uuid
+        soup = BeautifulSoup(project_dict["console_html"], "html.parser")
+        console_cm_code = project_dict["console_cm_code"]
+        entries = []
+        for item in soup.select(".card.log-panel"):
+            try:
+                summary_text = item.select(".log-panel-summary")[0].text.strip()
+                am_shrunk = "log-panel-invisible" in item["class"]
+                new_entry = {"summary_text": summary_text,
+                             "am_shrunk": am_shrunk}
+                if "text-log-item" in item["class"]:
+                    new_entry["console_text"] = item.select(".console-text")[0].text.strip()
+                    new_entry["unique_id"] = item["id"]
+                    new_entry["type"] = "text"
+                elif "fixed-log-panel" in item["class"]:
+                    new_entry["console_text"] = item.select(".log-panel-body")[0].text.strip()
+                    new_entry["type"] = "fixed"
+                    new_entry["is_error"] = False
+                    new_entry["unique_id"] = str(uuid.uuid4())
+                else:
+                    new_entry["unique_id"] = item.select(".console-code")[0]["id"]
+                    new_entry["output_text"] = str(item.select(".log-code-output")[0])
+                    new_entry["type"] = "code"
+                    new_entry["console_text"] = console_cm_code[new_entry["unique_id"]]
+                    new_entry["execution_count"] = 0
+                entries.append(new_entry)
+            except Exception as ex:
+                print("error converting one console cell")
+        return entries
+
+    def convert_legacy_save(self, project_dict):
+        try:
+            the_tile_list = []
+            for tile_id in project_dict["tile_sort_list"]:
+                tile_save_dict = project_dict["tile_instances"][tile_id]
+                new_entry = {
+                    "tile_name": tile_save_dict["tile_name"],
+                    "tile_type": tile_save_dict["tile_type"],
+                    "tile_id": tile_id,
+                    "form_data": [],
+                    "tile_height": tile_save_dict["full_tile_height"],
+                    "tile_width": tile_save_dict["full_tile_width"],
+                    "show_form": False,
+                    "show_spinner": False,
+                    "javascript_code": None,
+                    "javascript_arg_dict": None,
+                    "shrunk": False,
+                    "log_content": "",
+                    "show_log": False,
+                    "source_changed": False,
+                    "front_content": tile_save_dict["current_html"]
+                }
+                the_tile_list.append(new_entry)
+            interface_state = {
+                'height_fraction': .85,
+                'tile_list': the_tile_list,
+                'table_is_shrunk': project_dict["is_shrunk"],
+                'console_width_fraction': .85,
+                'console_items': [],
+                'console_is_shrunk': True,
+                'console_is_zoomed': False,
+                'show_exports_pane': False,
+                'horizontal_fraction': project_dict["left_fraction"]
+            }
+            interface_state["console_items"] = self.convert_legacy_console(project_dict)
+            return interface_state
+        except Exception as ex:
+            print("got an error converting a legacy save")
+            return False
+
     def recreate_from_save(self, project_name, unique_id=None):
+        print("entering recreate_from_save in main")
         if unique_id is None:
             save_dict = self.db[self.project_collection_name].find_one({"project_name": project_name})
+
             self.mdata = save_dict["metadata"]
             try:
                 project_dict = read_project_dict(self.fs, self.mdata, save_dict["file_id"])
+                print("got the project_dict")
+                project_dict["metadata"] = save_dict["metadata"]
             except Exception as ex:
                 error_string = self.handle_exception(ex, "<pre>Error loading project dict</pre>", print_to_console=True)
                 print(error_string)
                 return_data = {"success": False, "message": error_string}
-                return error_string, {}, False
-
-            project_dict["metadata"] = save_dict["metadata"]
+                return error_string, {}, "", False
         else:
             save_dict = read_temp_data(self.db, unique_id)
             project_dict = read_project_dict(self.fs, {"save_style": "b64save"}, save_dict["file_id"])
@@ -217,6 +294,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         error_messages = []
         if "doc_type" not in project_dict:  # legacy this is for backward compatibility
             project_dict["doc_type"] = "table"
+        print("looping over project_dict items")
         for (attr, attr_val) in project_dict.items():
             if str(attr) != "tile_instances" and str(attr) != "pseudo_tile_instance":
                 try:
@@ -254,14 +332,26 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
 
         if self.doc_type != "notebook":
             tile_info_dict = {}
+            print("looping over tile_instances")
             for old_tile_id, tile_save_dict in project_dict["tile_instances"].items():
                 tile_info_dict[old_tile_id] = tile_save_dict["tile_type"]
             self.project_dict = project_dict
             # self.doc_dict = self._build_doc_dict()
             self.visible_doc_name = list(self.doc_dict)[0]  # This is necessary for recreating the tiles
-            return tile_info_dict, project_dict["loaded_modules"], True
+            if self.is_legacy_save(self.mdata):
+                print("got a legacy save")
+                interface_state = self.convert_legacy_save(project_dict)
+                if not interface_state:
+                    return {}, {}, {}, False
+                else:
+                    project_dict["interface_state"] = interface_state
+            return tile_info_dict, project_dict["loaded_modules"], project_dict["interface_state"], True
         else:
-            return True
+            if self.is_legacy_save(self.mdata):
+                project_dict["interface_state"] = {
+                    "console_items": self.convert_legacy_console(project_dict)
+                }
+            return project_dict["interface_state"], True
 
     def get_used_tile_types(self):
         result = []
@@ -412,7 +502,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         print("entering create_pseudo_tile")
 
         data = self.create_tile_container({"user_id": self.user_id, "parent": self.mworker.my_id,
-                                           "other_name": "pseudo_tile", "ppi": self.ppi})
+                                           "other_name": "pseudo_tile", "ppi": self.ppi, "tile_id": None})
 
         if not data["success"]:
             raise Exception("Error creating empty tile container")

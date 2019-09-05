@@ -318,12 +318,12 @@ class HostWorker(QWorker):
     #     tile_manager.update_selector_list(user_obj=user_obj)
     #     return {"success": True}
     #
-    # @task_worthy
-    # def update_project_selector_list(self, data):
-    #     user_id = data["user_id"]
-    #     user_obj = load_user(user_id)
-    #     project_manager.update_selector_list(user_obj=user_obj)
-    #     return {"success": True}
+    @task_worthy
+    def refresh_project_selector_list(self, data):
+        user_id = data["user_id"]
+        user_obj = load_user(user_id)
+        project_manager.refresh_selector_list(user_obj=user_obj)
+        return {"success": True}
 
     @task_worthy
     def get_tile_code(self, data_dict):

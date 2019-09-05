@@ -270,6 +270,11 @@ class LibraryPane extends React.Component {
 
     _handleRowDoubleClick(row_dict) {
         let view_view = this.view_views[this.props.res_type];
+        this.setState({
+                selected_resource: row_dict,
+                multi_select: false,
+                list_of_selected: [row_dict.name]
+        });
         window.open($SCRIPT_ROOT + view_view + row_dict.name)
     }
 

@@ -33,10 +33,6 @@ class TileComponent extends React.Component {
         this.body_ref = React.createRef();
         this.tda_ref = React.createRef();
         this.state = {
-            shrunk: false,
-            show_log: false,
-            tile_height: 345,
-            tile_width: 410,
             header_height: 34
         };
         doBinding(this);
@@ -46,22 +42,53 @@ class TileComponent extends React.Component {
     // need to know the size of the display area.
     broadcastTileSize() {
         postWithCallback(this.props.tile_id, "TileSizeChange",
-            {width: this.state.tile_width - TILE_DISPLAY_AREA_MARGIN * 2,
-             height: this.state.tile_height - this.state.header_height - TILE_DISPLAY_AREA_MARGIN * 2})
+            {width: this.tdaWidth, height: this.tdaHeight})
     }
 
     _resizeTileArea(event, ui) {
         let hheight = $(this.body_ref.current).position().top;
         this.setState({
-            tile_height: ui.size.height,
-            tile_width: ui.size.width,
             header_height: hheight
-        })
+        });
+        let new_state = {tile_height: ui.size.height,
+            tile_width: ui.size.width};
+
+        this.props.setTileState(this.props.tile_id, new_state)
+    }
+
+    executeEmbeddedScripts() {
+        let scripts = $("#" + this.props.tile_id + " .tile-display-area script").toArray();
+        for (let script of scripts) {
+            try {
+                window.eval(script.text)
+            }
+            catch (e) {
+
+            }
+        }
+    }
+
+    get tdaWidth() {
+        return this.props.tile_width - TILE_DISPLAY_AREA_MARGIN * 2
+    }
+
+    get tdaHeight() {
+         return this.props.tile_height - this.state.header_height - TILE_DISPLAY_AREA_MARGIN * 2
+    }
+
+    _executeJavascript(){
+        try{
+            let selector = "[id='" + this.props.tile_id + "'] .jscript-target";
+            eval(this.props.javascript_code)(selector, this.tdaWidth, this.tdaHeight, this.props.javascript_arg_dict)
+        }
+        catch(err) {
+            doFlash({"alert-type": "alert-warning", "message": "Error evaluating javascript: " + err.message})
+        }
     }
 
     componentDidMount() {
         let self = this;
-        this.broadcastTileSize();
+        this.broadcastTileSize(this.props.tile_width, this.props.tile_height);
         this.listen_for_clicks();
         $(this.my_ref.current).resizable({
             handles: "se",
@@ -70,28 +97,34 @@ class TileComponent extends React.Component {
                 self.broadcastTileSize();
             }
         });
+        this.executeEmbeddedScripts();
+        if (this.props.javascript_code) {
+            this._executeJavascript()
+        }
+    }
+
+    componentDidUpdate() {
+        this.executeEmbeddedScripts();
+        if (this.props.javascript_code) {
+            this._executeJavascript()
+        }
     }
 
     _toggleTileLog() {
-        if (this.state.show_log) {
-            this.setState({show_log: false});
-            this._setTileBack(false);
+        if (this.props.show_log) {
+            this.props.setTileState(this.props.tile_id, {show_log: false, show_form: false});
             return
         }
+
         const self = this;
         postWithCallback("host", "get_container_log", {"container_id": this.props.tile_id}, function (res) {
+            self.props.setTileState(self.props.tile_id, {show_log: true, show_form: false, log_content: res.log_text});
             self._setTileBack(false);
-            self.setState({
-                log_content: res.log_text,
-                show_log: true,
-            })
         })
     }
 
     _toggleShrunk() {
-        this.setState({
-            shrunk: !this.state.shrunk
-        })
+        this.props.setTileValue(this.props.tile_id, "shrunk", !this.props.shrunk);
     }
 
     _closeTile() {
@@ -119,8 +152,7 @@ class TileComponent extends React.Component {
     }
 
     _toggleBack() {
-        this.setState({show_log: false});
-        this._setTileBack(!this.props.show_form);
+        this.props.setTileState(this.props.tile_id, {show_log: false, show_form: !this.props.show_form});
     }
 
     _setTileBack(show_form) {
@@ -257,19 +289,19 @@ class TileComponent extends React.Component {
 
     compute_styles() {
         let the_margin = 15;
-        let tile_height = this.state.shrunk ? this.state.header_height : this.state.tile_height;
+        let tile_height = this.props.shrunk ? this.state.header_height : this.props.tile_height;
         this.front_style = {
-            width: this.state.tile_width,
+            width: this.props.tile_width,
             height: tile_height - this.state.header_height,
         };
         this.tda_style = {
-            width: this.state.tile_width - TILE_DISPLAY_AREA_MARGIN * 2,
+            width: this.props.tile_width - TILE_DISPLAY_AREA_MARGIN * 2,
             height: tile_height - this.state.header_height - TILE_DISPLAY_AREA_MARGIN * 2
         };
         this.back_style = Object.assign({}, this.front_style);
         this.tile_log_style = Object.assign({}, this.front_style);
-        this.panel_body_style = {"width": this.state.tile_width};
-        this.main_style = {width: this.state.tile_width,
+        this.panel_body_style = {"width": this.props.tile_width};
+        this.main_style = {width: this.props.tile_width,
                 height: tile_height
             };
         this.front_style.transition = `top ${ANI_DURATION}ms ease-in-out`;
@@ -296,8 +328,30 @@ class TileComponent extends React.Component {
         }
     }
 
+    logText(the_text) {
+        let self = this;
+        postWithCallback("host", "print_to_console",
+            {"message": the_text, is_error: false, "user_id": window.user_id, "main_id": window.main_id}, function (data) {
+            if (!data.success) {
+                doFlash(data)
+            }
+        });
+    }
+
+    _logMe() {
+        this.logText(this.props.front_content)
+    }
+
+    _logParams () {
+        const data_dict = {};
+        data_dict["main_id"] = window.main_id;
+        data_dict["tile_id"] = this.props.tile_id;
+        data_dict["tile_name"] = this.props.tile_name;
+        postWithCallback(this.props.tile_id, "LogParams", data_dict)
+    }
+
     render () {
-        let show_front = (!this.props.show_form) && (!this.state.show_log);
+        let show_front = (!this.props.show_form) && (!this.props.show_log);
         let front_dict = {__html: this.props.front_content};
         this.compute_styles();
         let tile_class = this.props.table_is_shrunk ? "tile-panel tile-panel-float" : "tile-panel";
@@ -308,12 +362,12 @@ class TileComponent extends React.Component {
             <Rbs.Card bg="light" ref={this.my_ref} style={this.main_style} className={tile_class} id={this.props.tile_id}>
                 <Rbs.Card.Header className="tile-panel-heading" >
                     <div className="left-glyphs">
-                        {this.state.shrunk &&
+                        {this.props.shrunk &&
                             <GlyphButton butclass="notclose header-but triangle-right"
                                          icon_class="far fa-chevron-circle-right"
                                          handleClick={this._toggleShrunk} />}
 
-                        {!this.state.shrunk &&
+                        {!this.props.shrunk &&
                             <GlyphButton butclass="notclose header-but triangle-bottom"
                                          icon_class="far fa-chevron-circle-down"
                                          handleClick={this._toggleShrunk} />}
@@ -344,7 +398,7 @@ class TileComponent extends React.Component {
                                      icon_class="far fa-trash-alt"/>
                     </div>
                 </Rbs.Card.Header>
-                {!this.state.shrunk &&
+                {!this.props.shrunk &&
                     <Rbs.Card.Body ref={this.body_ref} style={this.panel_body_style} className="tile-body">
                         <Rtg.Transition in={this.props.show_form} timeout={ANI_DURATION}>
                             {state => (
@@ -356,11 +410,11 @@ class TileComponent extends React.Component {
                                 </div>
                             )}
                         </Rtg.Transition>
-                        <Rtg.Transition in={this.state.show_log} timeout={ANI_DURATION}>
+                        <Rtg.Transition in={this.props.show_log} timeout={ANI_DURATION}>
                             {state => (
                                 <div className="tile-log" style={composeObjs(this.tile_log_style, this.transitionFadeStyles[state])}>
                                     <div className="tile-log-area">
-                                        <pre style={{fontSize: 12}}>{this.state.log_content}</pre>
+                                        <pre style={{fontSize: 12}}>{this.props.log_content}</pre>
                                     </div>
                                 </div>
                             )}
@@ -368,7 +422,7 @@ class TileComponent extends React.Component {
                         <Rtg.Transition in={show_front} timeout={ANI_DURATION}>
                             {state => (
                             <div className="front" style={composeObjs(this.front_style, this.transitionStylesAltDown[state])}>
-                                <div className="tile-display-area" ref={this.tda_ref} dangerouslySetInnerHTML={front_dict}></div>
+                                <div className="tile-display-area" style={this.state.tda_style} ref={this.tda_ref} dangerouslySetInnerHTML={front_dict}></div>
                             </div>
                             )}
                         </Rtg.Transition>
@@ -379,17 +433,28 @@ class TileComponent extends React.Component {
     }
 }
 
-TileComponent.propTypeps = {
+TileComponent.propTypes = {
     tile_name: PropTypes.string,
     tile_id: PropTypes.string,
-    form_data: PropTypes.object,
+    form_data: PropTypes.array,
     front_content: PropTypes.string,
+    javascript_code: PropTypes.string,
+    javascript_arg_dict: PropTypes.object,
     source_changed: PropTypes.bool,
+    tile_width: PropTypes.number,
+    tile_height: PropTypes.number,
     show_form: PropTypes.bool,
     show_spinner: PropTypes.bool,
+    shrunk: PropTypes.bool,
+    show_log: PropTypes.bool,
     current_doc_name: PropTypes.string,
     setTileValue: PropTypes.func,
+    setTileState: PropTypes.func,
     broadcast_event: PropTypes.func,
     handleReload: PropTypes.string,
     handleClose: PropTypes.func,
+};
+
+TileComponent.defaultProps = {
+    javascript_code: null
 };

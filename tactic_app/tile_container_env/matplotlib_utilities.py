@@ -63,6 +63,7 @@ color_palette_names.append("tableau20blind")
 
 register_cmap(cmap=ListedColormap(standard, name="standard"))
 color_palette_names = sorted(color_palette_names)
+color_palette_names.sort()
 color_palette_names = ["standard"] + color_palette_names
 
 PPI = int(os.environ["PPI"])
