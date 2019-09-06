@@ -52,6 +52,9 @@ class ReactCodemirror extends React.Component {
     }
 
     componentDidUpdate() {
+        if (this.props.sync_to_prop) {
+            this.cmobject.setValue(this.props.code_content)
+        }
         if (this.props.first_line_number != 1) {
             this.cmobject.setOption("firstLineNumber", this.props.first_line_number);
         }
@@ -146,6 +149,7 @@ class ReactCodemirror extends React.Component {
 ReactCodemirror.propTypes = {
     handleChange: PropTypes.func,
     code_content: PropTypes.string,
+    sync_to_prop: PropTypes.bool,
     mode: PropTypes.string,
     saveMe: PropTypes.func,
     readOnly: PropTypes.bool,
@@ -160,6 +164,7 @@ ReactCodemirror.propTypes = {
 ReactCodemirror.defaultProps = {
     first_line_number: 1,
     code_container_height: "100%",
+    sync_to_prop: false,
     mode: "python",
     readOnly: false,
     extraKeys: {},

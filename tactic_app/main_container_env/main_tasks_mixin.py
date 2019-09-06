@@ -1320,8 +1320,6 @@ class DataSupportTasksMixin:
                     "max_table_size": self.doc_dict[doc_name].max_table_size}
         else:
             return {"doc_name": doc_name,
-                    "is_shrunk": self.is_shrunk,
-                    "left_fraction": self.left_fraction,
                     "data_text": self.doc_dict[doc_name].data_text}
 
     @task_worthy
@@ -1343,7 +1341,6 @@ class DataSupportTasksMixin:
             return {"doc_name": doc_name,
                     "is_shrunk": self.is_shrunk,
                     "tile_ids": self.tile_sort_list,
-                    "left_fraction": self.left_fraction,
                     "data_text": self.doc_dict[doc_name].data_text,
                     "table_spec": self.doc_dict[doc_name].table_spec.compile_save_dict(),
                     "tile_save_results": self.tile_save_results}
