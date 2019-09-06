@@ -27,6 +27,9 @@
     <script src="{{url_for('static', filename='js/jquery.tag-editor.min.js')}}"></script>
     <script src="{{url_for('static', filename='js/showdown.js')}}"></script>
     <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
+    {% if is_freeform %}
+        <script src="{{url_for('static', filename='js/codemirror/simple.js')}}"></script>
+    {% endif %}
     <script type="module" src="{{url_for('static', filename=module_source, v=version_string)}}"></script>
     <script>
         window.user_id = "{{current_user.get_id()}}";
@@ -44,6 +47,12 @@
         window.is_notebook = false;
         window.is_project = window._project_name != "";
         window.is_freeform = "{{is_freeform}}"=="True";
+        if (window.is_freeform) {
+            window.doc_type = "freeform"
+        }
+        else {
+            window.doc_type = "table"
+        }
         window.use_ssl = "{{use_ssl}}"=="True";
         window.new_tile_info = "{{new_tile_info | safe}}";
         window.onunload = function (e) {

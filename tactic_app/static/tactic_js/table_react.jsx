@@ -1,7 +1,9 @@
 
 import {SelectList} from "./react_widgets.js";
+import {ReactCodemirror} from "./react-codemirror.js";
 
-export {MainTableCard, compute_added_column_width}
+export {MainTableCard, MainTableCardHeader, TableBody, FreeformBody, TableHeader, compute_added_column_width}
+
 
 var Rbs = window.ReactBootstrap;
 
@@ -72,6 +74,14 @@ HeaderCell.propTypes = {
 
 
 class TableHeader extends React.Component {
+    constructor(props) {
+        super(props);
+        doBinding(this)
+    }
+
+    _setSelectedColumn(column_name) {
+        this.props.setMainStateValue("selected_column", column_name)
+    }
 
     render () {
         let header_cells;
@@ -83,7 +93,7 @@ class TableHeader extends React.Component {
                             width={null}
                             moveColumn={this.props.moveColumn}
                             selected_column={this.props.selected_column}
-                            setSelectedColumn={this.props.setSelectedColumnm}
+                            setSelectedColumn={this._setSelectedColumn}
                     />
                 )
             );
@@ -114,7 +124,7 @@ TableHeader.propTypes = {
     column_widths: PropTypes.array,
     hidden_columns_list: PropTypes.array,
     selected_column: PropTypes.string,
-    setSelectedColumn: PropTypes.func,
+    setMainStateValue: PropTypes.func,
     moveColumn: PropTypes.func
 
 };
@@ -352,8 +362,44 @@ class TableBody extends React.Component {
         this.props.handleScroll(this.props.my_ref.current.scrollTop)
     }
 
+    componentDidMount() {
+        this.setState({mounted: true});
+        this.computeColumnWidths();
+        let self = this;
+        $(".can-resize").resizable({
+                handles: "e",
+                resize: handle_resize,
+                stop: handle_stop_resize
+            });
+
+        function handle_resize(event, ui) {
+            let cwidths = self.props.table_spec.column_widths;
+            cwidths[ui.element[0].cellIndex] = ui.size.width;
+            self.props.updateTableSpec({column_widths: cwidths}, false)
+        }
+
+        function handle_stop_resize()  {
+            self.broadcast_column_widths(self.props.table_spec.current_doc_name,
+                self.props.table_spec.column_widths)
+        }
+    }
+
+
+    computeColumnWidths() {
+        let cwidths = compute_initial_column_widths(this.props.table_spec.column_names);
+        this.props.updateTableSpec({column_widths: cwidths}, true)
+    }
+
+    broadcast_column_widths(docname, cwidths) {
+        this.props.broadcast_event_to_server("UpdateColumnWidths", {"doc_to_update": docname,
+            "column_widths": cwidths}, null)
+    }
+
     componentDidUpdate() {
         this.props.my_ref.current.scrollTop = this.props.scroll_top;
+        if (this.props.table_spec.column_widths == null) {
+            this.computeColumnWidths()
+        }
     }
     
     _row_to_color(row_id) {
@@ -362,6 +408,10 @@ class TableBody extends React.Component {
 
         }
         return null
+    }
+
+    _setSelectedRow(row_number) {
+        this.props.setMainStateValue("selected_row", row_number)
     }
 
     render () {
@@ -394,7 +444,7 @@ class TableBody extends React.Component {
                      index={index}
                      selected_column={this.props.selected_column}
                      selected_row={this.props.selected_row}
-                     setSelectedRow={this.props.setSelectedRow}
+                     setSelectedRow={this._setSelectedRow}
                      search_text={this.props.search_text}
                      alt_search_text={this.props.alt_search_text}
             />
@@ -416,22 +466,106 @@ class TableBody extends React.Component {
 }
 
 TableBody.propTypes = {
+    my_ref: PropTypes.object,
     data_rows: PropTypes.array,
     cells_to_color_text: PropTypes.object,
     column_names: PropTypes.array,
     height: PropTypes.number,
     column_widths: PropTypes.array,
     hidden_columns_list: PropTypes.array,
-    handleFirstInView: PropTypes.func,
-    handleLastInView: PropTypes.func,
     scroll_top: PropTypes.number,
-    handleScroll: PropTypes.func,
     selected_column: PropTypes.string,
     selected_row: PropTypes.number,
-    setSelectedRow: PropTypes.func,
     search_text: PropTypes.string,
-    alt_search_text:PropTypes.string
+    alt_search_text:PropTypes.string,
+    setMainStateValue: PropTypes.func,
+    handleFirstInView: PropTypes.func,
+    handleLastInView: PropTypes.func,
 };
+
+class FreeformBody extends React.Component{
+    constructor(props) {
+        super(props);
+        this.cmobject = null;
+        this.overlay = null;
+        doBinding(this);
+    }
+
+
+    _setCMObject(cmobject) {
+        this.cmobject = cmobject
+    }
+
+    _clearSearch() {
+        if (this.cmobject && this.overlay) {
+            this.cmobject.removeOverlay(this.overlay);
+            this.overlay = null
+        }
+    }
+
+    _doSearch(){
+        if (this.props.alt_search_text && (this.props.alt_search_text != "") && this.cmobject) {
+            this.overlay = this.mySearchOverlay(this.props.alt_search_text, true);
+            this.cmobject.addOverlay(this.overlay)
+        }
+        else if (this.props.search_text && (this.props.search_text != "") && this.cmobject) {
+            this.overlay = this.mySearchOverlay(this.props.search_text, true);
+            this.cmobject.addOverlay(this.overlay)
+        }
+    }
+
+    mySearchOverlay(query, caseInsensitive) {
+        if (typeof query == "string")
+          { // noinspection RegExpRedundantEscape
+              query = new RegExp(query.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"), caseInsensitive ? "gi" : "g");
+          }
+        else if (!query.global)
+          query = new RegExp(query.source, query.ignoreCase ? "gi" : "g");
+
+        return {token: function(stream) {
+          query.lastIndex = stream.pos;
+          const match = query.exec(stream.string);
+          if (match && match.index == stream.pos) {
+            stream.pos += match[0].length || 1;
+            return "searching"; // I believe this causes the style .cm-searching to be applied
+          } else if (match) {
+            stream.pos = match.index;
+          } else {
+            stream.skipToEnd();
+          }
+        }};
+      }
+
+    _handleChange() {
+
+    }
+
+    render() {
+        this._clearSearch();
+        this._doSearch();
+        return (
+            <div ref={this.props.my_ref}>
+                <ReactCodemirror handleChange={this._handleChange}
+                                 code_content={this.props.data_text}
+                                 sync_to_prop={true}
+                                 mode="Plain Text"
+                                 code_container_height={this.props.code_container_height}
+                                 setCMObject={this._setCMObject}
+                                 readOnly={true}/>
+            </div>
+        )
+    }
+
+}
+
+FreeformBody.propTypes = {
+    my_ref: PropTypes.object,
+    data_text: PropTypes.string,
+    code_container_height: PropTypes.number,
+    search_text: PropTypes.string,
+    alt_search_text: PropTypes.string
+};
+
 
 function SmallSpinner () {
     return (
@@ -515,10 +649,12 @@ class MainTableCardHeader extends React.Component {
                                               onChange={this._handleSearchFieldChange}
                                               size="sm"
                                               className="mr-2"/>
-                            <Rbs.Button variant="outline-secondary" className="my-2 mr-1" type="button" size="sm"
+                            {this.props.show_filter_button &&
+                                <Rbs.Button variant="outline-secondary" className="my-2 mr-1" type="button" size="sm"
                                         onClick={this._handleFilter}>
-                                Filter
-                            </Rbs.Button>
+                                    Filter
+                                </Rbs.Button>
+                            }
                             <Rbs.Button variant="outline-secondary" className="my-2 mr-1" type="button" size="sm"
                                         onClick={this._handleUnFilter}>
                                 Clear
@@ -544,6 +680,7 @@ MainTableCardHeader.propTypes = {
     handleChangeDoc: PropTypes.func,
     doc_names: PropTypes.array,
     show_table_spinner: PropTypes.bool,
+    show_filter_button: PropTypes.bool,
     broadcast_event_to_server: PropTypes.func
 
 };
@@ -555,8 +692,6 @@ class MainTableCard extends React.Component {
 
     constructor(props) {
         super(props);
-        this.card_ref = React.createRef();
-        this.tbody_ref = React.createRef();
         this.state = {
             mounted: false,
             selected_row: null,
@@ -566,117 +701,14 @@ class MainTableCard extends React.Component {
 
     componentDidMount() {
         this.setState({mounted: true});
-        this.computeColumnWidths();
-        let self = this;
-        $(".can-resize").resizable({
-                handles: "e",
-                resize: handle_resize,
-                stop: handle_stop_resize
-            });
-
-        function handle_resize(event, ui) {
-            // dirty = true;
-
-            let cwidths = self.props.table_spec.column_widths;
-            cwidths[ui.element[0].cellIndex] = ui.size.width;
-            self.props.updateTableSpec({column_widths: cwidths}, false)
-        }
-
-        function handle_stop_resize()  {
-            self.broadcast_column_widths(self.props.table_spec.current_doc_name,
-                self.props.table_spec.column_widths)
-        }
-    }
-
-    componentDidUpdate() {
-        if (this.props.table_spec.column_widths == null) {
-            this.computeColumnWidths()
-        }
-    }
-
-    computeColumnWidths() {
-        let cwidths = compute_initial_column_widths(this.props.table_spec.column_names);
-        this.props.updateTableSpec({column_widths: cwidths}, true)
-    }
-
-    broadcast_column_widths(docname, cwidths) {
-        this.props.broadcast_event_to_server("UpdateColumnWidths", {"doc_to_update": docname,
-            "column_widths": cwidths}, null)
-    }
-
-    _getBodyHeight() {
-        if (!this.state.mounted) {
-            return this.props.available_height - 50;
-        }
-        else {
-            let top_offset = this.tbody_ref.current.getBoundingClientRect().top - this.card_ref.current.getBoundingClientRect().top;
-            return this.props.available_height - top_offset
-        }
-    }
-
-    compute_table_width() {
-        let self = this;
-        function reducer(accumulator, current_value, index) {
-            if (self.props.table_spec.hidden_columns_list.includes(self.props.table_spec.column_names[index])) {
-                return accumulator
-            }
-            else{
-                return accumulator + current_value
-            }
-        }
-        return this.props.table_spec.column_widths.reduce(reducer) + EXTRA_TABLE_AREA_SPACE;
     }
 
     render () {
-        let table_style = {display: "block", tableLayout: "fixed"};
-        if (this.props.table_spec.column_widths != null) {
-            table_style["width"] = this.compute_table_width();
-        }
         return (
-            <Rbs.Card id="main-panel" ref={this.card_ref}>
-                <MainTableCardHeader toggleShrink={this.props.toggleShrink}
-                                     handleFilter={this.props.handleFilter}
-                                     handleUnFilter={this.props.handleUnFilter}
-                                     short_collection_name={this.props.short_collection_name}
-                                     handleChangeDoc={this.props.handleChangeDoc}
-                                     doc_names={this.props.doc_names}
-                                     show_table_spinner={this.props.show_table_spinner}
-                                     handleSearchFieldChange={this.props.handleSearchFieldChange}
-                                     search_text={this.props.search_text}
-                                     setMainStateValue={this.props.setMainStateValue}
-                                     table_is_filtered={this.props.table_is_filtered}
-                                     broadcast_event_to_server={this.props.broadcast_event_to_server}
-                />
+            <Rbs.Card id="main-panel">
+                {this.props.card_header}
                 <Rbs.Card.Body  id="table-wrapper">
-                    <table id="table-area" style={table_style}>
-                        <TableHeader column_names={this.props.table_spec.column_names}
-                                     column_widths={this.props.table_spec.column_widths}
-                                     hidden_columns_list={this.props.table_spec.hidden_columns_list}
-                                     selected_column={this.props.selected_column}
-                                     setSelectedColumn={this.props.setSelectedColumn}
-                                     moveColumn={this.props.moveColumn}
-                        />
-                        <TableBody my_ref={this.tbody_ref}
-                                   data_rows={this.props.data_rows}
-                                   cells_to_color_text={this.props.cells_to_color_text}
-                                   column_names={this.props.table_spec.column_names}
-                                   column_widths={this.props.table_spec.column_widths}
-                                   hidden_columns_list={this.props.table_spec.hidden_columns_list}
-                                   height={this._getBodyHeight()}
-                                   handleFirstInView={this.props.handleFirstInView}
-                                   handleLastInView={this.props.handleLastInView}
-                                   scroll_top={this.props.scroll_top}
-                                   handleScroll={this.props.handleScroll}
-                                   is_last_chunk={this.props.is_last_chunk}
-                                   is_first_chunk={this.props.is_first_chunk}
-                                   selected_column={this.props.selected_column}
-                                   selected_row={this.props.selected_row}
-                                   setSelectedRow={this.props.setSelectedRow}
-                                   search_text={this.props.search_text}
-                                   alt_search_text={this.props.alt_search_text}
-                        />
-                    </table>
-
+                    {this.props.card_body}
                 </Rbs.Card.Body>
             </Rbs.Card>
         )
@@ -684,32 +716,10 @@ class MainTableCard extends React.Component {
 }
 
 MainTableCard.propTypes = {
+    card_body: PropTypes.object,
+    card_header: PropTypes.object,
     updateTableSpec: PropTypes.func,
-    toggleShrink: PropTypes.func,
-    handleFilter: PropTypes.func,
-    handleUnFilter: PropTypes.func,
-    handleSearchFieldChange: PropTypes.func,
-    search_text: PropTypes.string,
-    alt_search_text: PropTypes.string,
-    handleFirstInView: PropTypes.func,
-    handleLastInView: PropTypes.func,
-    short_collection_name: PropTypes.string,
-    handleChangeDoc: PropTypes.func,
-    doc_names: PropTypes.array,
     table_spec: PropTypes.object,
-    data_rows: PropTypes.array,
-    cells_to_color_text: PropTypes.object,
-    show_table_spinner: PropTypes.bool,
-    available_height: PropTypes.number,
-    scroll_top: PropTypes.number,
-    handleScroll: PropTypes.func,
-    selected_column: PropTypes.string,
-    setSelectedColumn: PropTypes.func,
-    selected_row: PropTypes.number,
-    setSelectedRow: PropTypes.func,
-    moveColumn: PropTypes.func,
-    setMainStateValue: PropTypes.func,
-    table_is_filtered: PropTypes.bool,
     broadcast_event_to_server: PropTypes.func
 };
 

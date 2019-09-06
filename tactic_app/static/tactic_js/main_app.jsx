@@ -1,6 +1,6 @@
 
 import {TacticNavbar} from "./base_module.js";
-import {MainTableCard, compute_added_column_width} from "./table_react.js";
+import {MainTableCard, MainTableCardHeader, FreeformBody, TableHeader, TableBody, compute_added_column_width} from "./table_react.js";
 import {TacticSocket} from "./tactic_socket.js"
 import {HorizontalPanes, VerticalPanes} from "./resizing_layouts.js";
 import {ProjectMenu, ColumnMenu, MenuComponent} from "./main_menus_react.js";
@@ -11,6 +11,8 @@ import {showModalReact} from "./modal_react.js";
 
 const MARGIN_SIZE = 17;
 const BOTTOM_MARGIN = 35;
+
+const EXTRA_TABLE_AREA_SPACE = 500;
 
 let tsocket;
 let ppi;
@@ -27,7 +29,7 @@ function _after_main_joined() {
     if (window.is_project) {
         let data_dict = {
             "project_name": window._project_name,
-            "doc_type": "table",
+            "doc_type": window.doc_type,
             "library_id": window.main_id,
             "base_figure_url": window.base_figure_url,
             "use_ssl": window.use_ssl,
@@ -39,7 +41,7 @@ function _after_main_joined() {
     else {
         let data_dict = {
             "collection_name": window._collection_name,
-            "doc_type": "table",
+            "doc_type": window.doc_type,
             "base_figure_url": window.base_figure_url,
             "use_ssl": window.use_ssl,
             "user_id": window.user_id,
@@ -59,39 +61,60 @@ function _finish_post_load(data) {
     }
     postWithCallback(window.main_id, "grab_data", {"doc_name":window.doc_names[0]}, function (data) {
             let domContainer = document.querySelector('#main-root');
-            if (window.is_project) {
-                ReactDOM.render(<MainApp is_project={true}
-                                         interface_state={interface_state}
-                                         short_collection_name={window.short_collection_name}
-                                         initial_column_names={data.table_spec.header_list}
-                                         initial_data_rows={data.data_rows}
-                                         initial_is_first_chunk={data.is_first_chunk}
-                                         initial_is_last_chunk={data.is_last_chunk}
-                                         initial_column_widths={data.table_spec.column_widths}
-                                         initial_hidden_columns_list={data.table_spec.hidden_columns_list}
-                                         console_html={data.console_html}
-                                         doc_names={window.doc_names}/>,
-                domContainer)
+            if (window.is_freeform) {
+                if (window.is_project) {
+                    ReactDOM.render(<MainApp is_project={true}
+                                             interface_state={interface_state}
+                                             short_collection_name={window.short_collection_name}
+                                             initial_data_text={data.data_text}
+                                             doc_names={window.doc_names}/>,
+                    domContainer)
+
+                }
+                else {
+                    ReactDOM.render(<MainApp is_project={false}
+                                             interface_state={null}
+                                             short_collection_name={window.short_collection_name}
+                                             initial_data_text={data.data_text}
+                                             doc_names={window.doc_names}/>,
+                    domContainer)
+                }
             }
             else {
-                ReactDOM.render(<MainApp is_project={false}
-                                         interface_state={null}
-                                         short_collection_name={window.short_collection_name}
-                                         initial_column_names={data.table_spec.header_list}
-                                         initial_data_rows={data.data_rows}
-                                         initial_is_first_chunk={data.is_first_chunk}
-                                         initial_is_last_chunk={data.is_last_chunk}
-                                         initial_column_widths={data.table_spec.column_widths}
-                                         initial_hidden_columns_list={data.table_spec.hidden_columns_list}
-                                         console_html={data.console_html}
-                                         doc_names={window.doc_names}/>,
-                domContainer)
+                if (window.is_project) {
+                    ReactDOM.render(<MainApp is_project={true}
+                                             interface_state={interface_state}
+                                             short_collection_name={window.short_collection_name}
+                                             initial_column_names={data.table_spec.header_list}
+                                             initial_data_rows={data.data_rows}
+                                             initial_is_first_chunk={data.is_first_chunk}
+                                             initial_is_last_chunk={data.is_last_chunk}
+                                             initial_column_widths={data.table_spec.column_widths}
+                                             initial_hidden_columns_list={data.table_spec.hidden_columns_list}
+                                             doc_names={window.doc_names}/>,
+                    domContainer)
+                }
+                else {
+                    ReactDOM.render(<MainApp is_project={false}
+                                             interface_state={null}
+                                             short_collection_name={window.short_collection_name}
+                                             initial_column_names={data.table_spec.header_list}
+                                             initial_data_rows={data.data_rows}
+                                             initial_is_first_chunk={data.is_first_chunk}
+                                             initial_is_last_chunk={data.is_last_chunk}
+                                             initial_column_widths={data.table_spec.column_widths}
+                                             initial_hidden_columns_list={data.table_spec.hidden_columns_list}
+                                             doc_names={window.doc_names}/>,
+                    domContainer)
+                }
             }
+
     });
 }
 
 const save_attrs = ["height_fraction", "tile_list", "table_is_shrunk", "console_width_fraction", "console_items",
     'console_is_shrunk', 'console_is_zoomed', "show_exports_pane", "horizontal_fraction", "pipe_dict"];
+
 
 class MainApp extends React.Component {
     constructor (props) {
@@ -99,42 +122,59 @@ class MainApp extends React.Component {
         doBinding(this);
         this.table_container_ref = React.createRef();
         this.tile_div_ref = React.createRef();
-        this.state = {
-            mounted: false,
-            usable_width: window.innerWidth - 2 * MARGIN_SIZE - 30,
-            usable_height: window.innerHeight - BOTTOM_MARGIN,
-            height_fraction: .85,
-            show_table_spinner: false,
-            data_rows: props.initial_data_rows,
-            cells_to_color_text: {},
-            is_first_chunk: props.initial_is_first_chunk,
-            is_last_chunk: props.initial_is_last_chunk,
-            scroll_top: 0,
-            selected_column: null,
-            selected_row: null,
-            tile_types: {},
-            tile_list: [],
-            search_text: "",
-            table_is_filtered: false,
-            alt_search_text: null,
-            table_is_shrunk: false,
-            console_width_fraction: .5,
-            console_items: [],
-            console_is_shrunk: true,
-            console_is_zoomed: false,
-            console_item_with_focus: null,
-            show_console_error_log: false,
-            console_error_log_text: "",
-            show_exports_pane: false,
-            horizontal_fraction: .65,
-            pipe_dict: {},
-            pipe_dict_updated: false,
-            table_spec: {column_names: this.props.initial_column_names,
-                column_widths: this.props.initial_column_widths,
-                hidden_columns_list: this.props.initial_hidden_columns_list,
-                current_doc_name: props.doc_names[0]
-            },
+        this.tbody_ref = React.createRef();
+        let base_state = {
+                mounted: false,
+                usable_width: window.innerWidth - 2 * MARGIN_SIZE - 30,
+                usable_height: window.innerHeight - BOTTOM_MARGIN,
+                height_fraction: .85,
+                tile_types: {},
+                tile_list: [],
+                search_text: "",
+                alt_search_text: null,
+                table_is_shrunk: false,
+                console_width_fraction: .5,
+                console_items: [],
+                console_is_shrunk: true,
+                console_is_zoomed: false,
+                console_item_with_focus: null,
+                show_console_error_log: false,
+                console_error_log_text: "",
+                show_exports_pane: false,
+                horizontal_fraction: .65,
+                pipe_dict: {},
+                pipe_dict_updated: false,
+
         };
+        let additions;
+        if (window.is_freeform) {
+            additions = {
+                data_text: props.initial_data_text,
+                table_spec: {
+                    current_doc_name: props.doc_names[0]
+                }
+            }
+        }
+        else {
+            additions = {
+                show_table_spinner: false,
+                data_rows: props.initial_data_rows,
+                cells_to_color_text: {},
+                is_first_chunk: props.initial_is_first_chunk,
+                is_last_chunk: props.initial_is_last_chunk,
+                scroll_top: 0,
+                selected_column: null,
+                selected_row: null,
+                table_is_filtered: false,
+                table_spec: {column_names: this.props.initial_column_names,
+                    column_widths: this.props.initial_column_widths,
+                    hidden_columns_list: this.props.initial_hidden_columns_list,
+                    current_doc_name: props.doc_names[0]
+                },
+            };
+        }
+        this.state= Object.assign(base_state, additions);
+
         if (this.props.is_project) {
             for (let attr of save_attrs) {
                 this.state[attr] = this.props.interface_state[attr]
@@ -437,63 +477,15 @@ class MainApp extends React.Component {
         handlerDict[data.export_viewer_message](data)
     }
 
-    _setCellContent(row_index, column_header, new_content) {
-        let new_data_rows = [...this.state.data_rows];
-        let the_row = Object.assign({}, new_data_rows[row_index]);
-        the_row[column_header] = new_content;
-        new_data_rows.splice(row_index, 1, the_row);
-        this.setState({data_rows: new_data_rows})
-        
-    }
-
-    _colorTextInCell(row_id, column_header, token_text, color_dict) {
-        let ccd = Object.assign({}, this.state.cells_to_color_text);
-        let entry;
-        if (ccd.hasOwnProperty(row_id)) {
-            entry = Object.assicn({}, ccd.row_id)
-        }
-        else {
-            entry = {}
-        }
-        entry[column_header] = {token_text:token_text, color_dict: color_dict};
-        ccd[row_id] = entry;
-        this.setState({cells_to_color_text: ccd})
-    }
-
-     _handleTableMessage(data) {
-        let self = this;
-        let handlerDict = {
-            refill_table: self._refill_table,
-            dehighlightAllText: (data)=>self._handleSearchFieldChange(null),
-            highlightTxtInDocument: (data)=>self._setAltSearchText(data.text_to_find),
-            setCellContent: (data)=>self._setCellContent(data.row, data.column_header, data.new_content),
-            colorTxtInCell: (data)=>self._colorTextInCell(data.row_id, data.column_header, data.token_text, data.color_dict)
-        };
-        handlerDict[data.table_message](data)
-    }
-
     _handleSearchFieldChange(search_text) {
         this.setState({search_text: search_text, alt_search_text: null});
-        if (search_text == null) {
+        if ((search_text == null) && (!window.is_freeform)) {
             this.setState({cells_to_color_text: {}})
         }
     }
 
     _setAltSearchText(the_text) {
         this.setState({alt_search_text: the_text})
-    }
-
-    _refill_table(data_object) {
-        let new_table_spec = Object.assign({}, this.state.table_spec);
-        new_table_spec.current_doc_name = data_object.doc_name;
-
-        this.setState({
-            data_rows: data_object.data_rows,
-            is_first_chunk: data_object.is_first_chunk,
-            is_last_chunk: data_object.is_last_chunk,
-            table_spec: new_table_spec,
-            scroll_top: 0
-        })
     }
 
     set_visible_doc(doc_name, func) {
@@ -506,132 +498,20 @@ class MainApp extends React.Component {
         }
     }
 
-    _setSelectedColumn(col_name) {
-        this.setState({selected_column: col_name})
-    }
-
-
-    _setSelectedRow(row_number) {
-        this.setState({selected_row: row_number})
-    }
-
-
-    _shift_column_left() {
-        let cnum = this.state.table_spec.column_names.indexOf(this.state.selected_column);
-        if (cnum == 0) return;
-        let target_col = this.state.table_spec.column_names[cnum - 1];
-        this._moveColumn(this.state.selected_column, target_col);
-    }
-
-    _shift_column_right() {
-        let cnum = this.state.table_spec.column_names.indexOf(this.state.selected_column);
-        if (cnum == (this.state.table_spec.column_names.length - 1)) return;
-        let target_col = this.state.table_spec.column_names[cnum + 2];
-        this._moveColumn(this.state.selected_column, target_col);
-    }
-
-    _moveColumn(tag_to_move, place_to_move) {
-        let colnames = [...this.state.table_spec.column_names];
-        let start_index = colnames.indexOf(tag_to_move);
-        colnames.splice(start_index, 1);
-        let end_index = colnames.indexOf(place_to_move);
-        colnames.splice(end_index, 0, tag_to_move);
-        let cwidths = [...this.state.table_spec.column_widths];
-        let width_to_move = cwidths[start_index];
-        cwidths.splice(start_index, 1);
-        cwidths.splice(end_index, 0, width_to_move);
-        this._updateTableSpec({column_names: colnames, column_widths: cwidths}, true)
-    }
-
-    _hideColumn() {
-        let hc_list = [...this.state.table_spec.hidden_columns_list];
-        hc_list.push(this.state.selected_column);
-        this._updateTableSpec({hidden_columns_list: hc_list}, true)
-    }
-
-    _hideColumnInAll() {
-        let hc_list = [...this.state.table_spec.hidden_columns_list];
-        hc_list.push(this.state.selected_column);
-        this._updateTableSpec({hidden_columns_list: hc_list}, false);
-        const data_dict = {"column_name": this.state.selected_column};
-        this._broadcast_event_to_server("HideColumnInAllDocs", data_dict)
-    }
-
-    _unhideAllColumns() {
-        this._updateTableSpec({hidden_columns_list: ["__filename__"]}, true)
-
-    }
-
-    _addColumn(add_in_all=false) {
-        let self = this;
-        let title = add_in_all ? "Create Column All Documents" : "Create Column This Document";
-        showModalReact(title, "New Column Name", function (new_name) {
-            let cwidth = compute_added_column_width(new_name);
-            self._updateTableSpec({column_names: [...self.state.table_spec.column_names, new_name],
-                column_widths: [...self.state.table_spec.column_widths, cwidth]}, false);
-            const data_dict = {"column_name": new_name,
-                                "doc_name": self.state.current_doc_name,
-                                "column_width": cwidth,
-                                "all_docs": add_in_all};
-            self._broadcast_event_to_server("CreateColumn", data_dict);
-        })
-    }
-
-    _setStateFromDataObject(data, doc_name, func=null) {
-        this.setState({
-            data_rows: data.data_rows,
-            is_first_chunk: data.is_first_chunk,
-            is_last_chunk: data.is_last_chunk,
-            table_spec: {column_names: data.table_spec.header_list,
-                column_widths: data.table_spec.column_widths,
-                hidden_columns_list: data.table_spec.hidden_columns_list,
-                current_doc_name: doc_name
-            }
-        }, func);
-    }
-
     _handleChangeDoc(new_doc_name) {
         let self = this;
-        postWithCallback(window.main_id, "grab_data", {"doc_name":new_doc_name}, function (data) {
+        postWithCallback(window.main_id, "grab_data", {"doc_name": new_doc_name}, function (data) {
             stopSpinner();
             clearStatusMessage();
-            self._setStateFromDataObject(data, new_doc_name);
+            if (window.is_freeform) {
+                let new_table_spec = {"current_doc_name": new_doc_name};
+                self.setState({"data_text": data.data_text, "table_spec": new_table_spec})
+            }
+            else {
+                self._setStateFromDataObject(data, new_doc_name);
+            }
             self.set_visible_doc(new_doc_name);
         })
-    }
-
-    _handleScroll(new_top) {
-        this.setState({scroll_top: new_top})
-    }
-
-    _handleLastInView(last_row_index, old_top_edge_pos) {
-        if (this.state.is_last_chunk) return;
-        let self = this;
-        let nrows = this.state.data_rows.length;
-        postWithCallback(window.main_id, "grab_next_chunk", {"doc_name": this.state.table_spec.current_doc_name}, function (data) {
-            let top_edge_pos = $("#table-area tbody tr:last").position().top;
-            self._setStateFromDataObject(data, self.state.table_spec.current_doc_name, function () {
-                const old_last_row = $('#table-area tbody tr')[nrows - data.step_size + 1];
-                const rowpos = $(old_last_row).position();
-                self.setState({"scroll_top": rowpos.top - top_edge_pos + $("#table-area tbody")[0].scrollTop})
-            });
-            stopSpinner();
-        });
-    }
-
-    _handleFirstInView() {
-        if (this.state.is_first_chunk) return;
-        let self = this;
-        postWithCallback(window.main_id, "grab_previous_chunk", {"doc_name": this.state.table_spec.current_doc_name}, function (data) {
-            let top_edge_pos = $("#table-area tbody tr:first").position().top;
-            self._setStateFromDataObject(data, self.state.table_spec.current_doc_name, function () {
-                const old_last_row = $('#table-area tbody tr')[data.step_size - 1];
-                const rowpos = $(old_last_row).position();
-                self.setState({"scroll_top": rowpos.top - top_edge_pos + $("#table-area tbody")[0].scrollTop})
-            });
-            stopSpinner()
-        })
-
     }
 
      _update_window_dimensions() {
@@ -825,9 +705,190 @@ class MainApp extends React.Component {
                     doFlashStopSpinner(data_object)
                 }
             }
+        }
     }
 
+    // Table doctype-only methods start here
+
+    _getTableBodyHeight(table_available_height) {
+        if (!this.state.mounted || !this.tbody_ref.current) {
+            return table_available_height- 50;
+        }
+        else {
+            let top_offset = this.tbody_ref.current.getBoundingClientRect().top - this.table_container_ref.current.getBoundingClientRect().top;
+            return table_available_height - top_offset
+        }
     }
+
+    compute_table_width() {
+        let self = this;
+        function reducer(accumulator, current_value, index) {
+            if (self.state.table_spec.hidden_columns_list.includes(self.state.table_spec.column_names[index])) {
+                return accumulator
+            }
+            else{
+                return accumulator + current_value
+            }
+        }
+        return this.state.table_spec.column_widths.reduce(reducer) + EXTRA_TABLE_AREA_SPACE;
+    }
+
+     _handleTableMessage(data) {
+        let self = this;
+        let handlerDict = {
+            refill_table: self._refill_table,
+            dehighlightAllText: (data)=>self._handleSearchFieldChange(null),
+            highlightTxtInDocument: (data)=>self._setAltSearchText(data.text_to_find),
+            setCellContent: (data)=>self._setCellContent(data.row, data.column_header, data.new_content),
+            colorTxtInCell: (data)=>self._colorTextInCell(data.row_id, data.column_header, data.token_text, data.color_dict)
+        };
+        handlerDict[data.table_message](data)
+    }
+
+    _setCellContent(row_index, column_header, new_content) {
+        let new_data_rows = [...this.state.data_rows];
+        let the_row = Object.assign({}, new_data_rows[row_index]);
+        the_row[column_header] = new_content;
+        new_data_rows.splice(row_index, 1, the_row);
+        this.setState({data_rows: new_data_rows})
+
+    }
+
+    _colorTextInCell(row_id, column_header, token_text, color_dict) {
+        let ccd = Object.assign({}, this.state.cells_to_color_text);
+        let entry;
+        if (ccd.hasOwnProperty(row_id)) {
+            entry = Object.assicn({}, ccd.row_id)
+        }
+        else {
+            entry = {}
+        }
+        entry[column_header] = {token_text:token_text, color_dict: color_dict};
+        ccd[row_id] = entry;
+        this.setState({cells_to_color_text: ccd})
+    }
+
+    _refill_table(data_object) {
+        let new_table_spec = Object.assign({}, this.state.table_spec);
+        new_table_spec.current_doc_name = data_object.doc_name;
+
+        this.setState({
+            data_rows: data_object.data_rows,
+            is_first_chunk: data_object.is_first_chunk,
+            is_last_chunk: data_object.is_last_chunk,
+            table_spec: new_table_spec,
+            scroll_top: 0
+        })
+    }
+
+    _shift_column_left() {
+        let cnum = this.state.table_spec.column_names.indexOf(this.state.selected_column);
+        if (cnum == 0) return;
+        let target_col = this.state.table_spec.column_names[cnum - 1];
+        this._moveColumn(this.state.selected_column, target_col);
+    }
+
+    _shift_column_right() {
+        let cnum = this.state.table_spec.column_names.indexOf(this.state.selected_column);
+        if (cnum == (this.state.table_spec.column_names.length - 1)) return;
+        let target_col = this.state.table_spec.column_names[cnum + 2];
+        this._moveColumn(this.state.selected_column, target_col);
+    }
+
+    _moveColumn(tag_to_move, place_to_move) {
+        let colnames = [...this.state.table_spec.column_names];
+        let start_index = colnames.indexOf(tag_to_move);
+        colnames.splice(start_index, 1);
+        let end_index = colnames.indexOf(place_to_move);
+        colnames.splice(end_index, 0, tag_to_move);
+        let cwidths = [...this.state.table_spec.column_widths];
+        let width_to_move = cwidths[start_index];
+        cwidths.splice(start_index, 1);
+        cwidths.splice(end_index, 0, width_to_move);
+        this._updateTableSpec({column_names: colnames, column_widths: cwidths}, true)
+    }
+
+    _hideColumn() {
+        let hc_list = [...this.state.table_spec.hidden_columns_list];
+        hc_list.push(this.state.selected_column);
+        this._updateTableSpec({hidden_columns_list: hc_list}, true)
+    }
+
+    _hideColumnInAll() {
+        let hc_list = [...this.state.table_spec.hidden_columns_list];
+        hc_list.push(this.state.selected_column);
+        this._updateTableSpec({hidden_columns_list: hc_list}, false);
+        const data_dict = {"column_name": this.state.selected_column};
+        this._broadcast_event_to_server("HideColumnInAllDocs", data_dict)
+    }
+
+    _unhideAllColumns() {
+        this._updateTableSpec({hidden_columns_list: ["__filename__"]}, true)
+
+    }
+
+    _addColumn(add_in_all=false) {
+        let self = this;
+        let title = add_in_all ? "Create Column All Documents" : "Create Column This Document";
+        showModalReact(title, "New Column Name", function (new_name) {
+            let cwidth = compute_added_column_width(new_name);
+            self._updateTableSpec({column_names: [...self.state.table_spec.column_names, new_name],
+                column_widths: [...self.state.table_spec.column_widths, cwidth]}, false);
+            const data_dict = {"column_name": new_name,
+                                "doc_name": self.state.current_doc_name,
+                                "column_width": cwidth,
+                                "all_docs": add_in_all};
+            self._broadcast_event_to_server("CreateColumn", data_dict);
+        })
+    }
+
+    _setStateFromDataObject(data, doc_name, func=null) {
+        this.setState({
+            data_rows: data.data_rows,
+            is_first_chunk: data.is_first_chunk,
+            is_last_chunk: data.is_last_chunk,
+            table_spec: {column_names: data.table_spec.header_list,
+                column_widths: data.table_spec.column_widths,
+                hidden_columns_list: data.table_spec.hidden_columns_list,
+                current_doc_name: doc_name
+            }
+        }, func);
+    }
+
+    _handleScroll(new_top) {
+        this.setState({scroll_top: new_top})
+    }
+
+    _handleLastInView(last_row_index, old_top_edge_pos) {
+        if (this.state.is_last_chunk) return;
+        let self = this;
+        let nrows = this.state.data_rows.length;
+        postWithCallback(window.main_id, "grab_next_chunk", {"doc_name": this.state.table_spec.current_doc_name}, function (data) {
+            let top_edge_pos = $("#table-area tbody tr:last").position().top;
+            self._setStateFromDataObject(data, self.state.table_spec.current_doc_name, function () {
+                const old_last_row = $('#table-area tbody tr')[nrows - data.step_size + 1];
+                const rowpos = $(old_last_row).position();
+                self.setState({"scroll_top": rowpos.top - top_edge_pos + $("#table-area tbody")[0].scrollTop})
+            });
+            stopSpinner();
+        });
+    }
+
+    _handleFirstInView() {
+        if (this.state.is_first_chunk) return;
+        let self = this;
+        postWithCallback(window.main_id, "grab_previous_chunk", {"doc_name": this.state.table_spec.current_doc_name}, function (data) {
+            let top_edge_pos = $("#table-area tbody tr:first").position().top;
+            self._setStateFromDataObject(data, self.state.table_spec.current_doc_name, function () {
+                const old_last_row = $('#table-area tbody tr')[data.step_size - 1];
+                const rowpos = $(old_last_row).position();
+                self.setState({"scroll_top": rowpos.top - top_edge_pos + $("#table-area tbody")[0].scrollTop})
+            });
+            stopSpinner()
+        })
+
+    }
+
 
     render () {
         let vp_height = this.get_vp_height();
@@ -852,39 +913,76 @@ class MainApp extends React.Component {
         );
         let console_header_height = 35;
         let table_available_height = this.state.console_is_shrunk ? hp_height - console_header_height : hp_height;
+        let table_style = {display: "block", tableLayout: "fixed"};
+        if (this.state.table_spec.column_widths != null) {
+            table_style["width"] = this.compute_table_width();
+        }
+        let card_header = (
+            <MainTableCardHeader toggleShrink={this._toggleTableShrink}
+                                 short_collection_name={this.props.short_collection_name}
+                                 handleChangeDoc={this._handleChangeDoc}
+                                 doc_names={this.props.doc_names}
+                                 show_table_spinner={this.state.show_table_spinner}
+                                 handleSearchFieldChange={this._handleSearchFieldChange}
+                                 search_text={this.state.search_text}
+                                 setMainStateValue={this._setMainStateValue}
+                                 table_is_filtered={this.state.table_is_filtered}
+                                 show_filter_button={!window.is_freeform}
+                                 broadcast_event_to_server={this._broadcast_event_to_server}
+            />
+        );
+        let card_body;
+        if (window.is_freeform) {
+            card_body = <FreeformBody my_ref={this.tbody_ref}
+                                      data_text={this.state.data_text}
+                                      code_container_height={this._getTableBodyHeight(table_available_height)}
+                                      search_text={this.state.search_text}
+                                      alt_search_text={this.state.alt_search_text}
+            />
+        } else {
+            card_body = (
+                <table id="table-area" style={table_style}>
+                    <TableHeader column_names={this.state.table_spec.column_names}
+                                 column_widths={this.state.table_spec.column_widths}
+                                 hidden_columns_list={this.state.table_spec.hidden_columns_list}
+                                 selected_column={this.state.selected_column}
+                                 setMainStateValue={this._setMainStateValue}
+                                 moveColumn={this._moveColumn}
+                    />
+                    <TableBody my_ref={this.tbody_ref}
+                               updateTableSpec={this._updateTableSpec}
+                               table_spec={this.state.table_spec}
+                               broadcast_event_to_server={this._broadcast_event_to_server}
+                               data_rows={this.state.data_rows}
+                               cells_to_color_text={this.state.cells_to_color_text}
+                               column_names={this.state.table_spec.column_names}
+                               column_widths={this.state.table_spec.column_widths}
+                               hidden_columns_list={this.state.table_spec.hidden_columns_list}
+                               height={this._getTableBodyHeight(table_available_height)}
+                               scroll_top={this.state.scroll_top}
+                               is_last_chunk={this.state.is_last_chunk}
+                               is_first_chunk={this.state.is_first_chunk}
+                               selected_column={this.state.selected_column}
+                               selected_row={this.state.selected_row}
+                               search_text={this.state.search_text}
+                               alt_search_text={this.state.alt_search_text}
+                               setMainStateValue={this._setMainStateValue}
+                               handleFirstInView={this._handleFirstInView}
+                               handleLastInView={this._handleLastInView}
+                    />
+                </table>
+            );
+        }
+
         let table_pane =  (
             <React.Fragment>
                 <div ref={this.table_container_ref}>
                     <MainTableCard
-                        toggleShrink={this._toggleTableShrink}
-                        handleSearchFieldChange={this._handleSearchFieldChange}
-                        search_text={this.state.search_text}
-                        alt_search_text={this.state.alt_search_text}
-                        handleFilter={this._handleFilter}
-                        handleUnFilter={this._handleUnfilter}
-                        short_collection_name={this.props.short_collection_name}
-                        handleChangeDoc={this._handleChangeDoc}
-                        doc_names={this.props.doc_names}
-                        data_rows={this.state.data_rows}
-                        cells_to_color_text={this.state.cells_to_color_text}
-                        show_table_spinner={this.state.show_table_spinner}
-                        available_height={table_available_height}
+                        card_body={card_body}
+                        card_header={card_header}
                         table_spec={this.state.table_spec}
-                        scroll_top={this.state.scroll_top}
-                        handleScroll={this._handleScroll}
-                        updateTableSpec={this._updateTableSpec}
-                        handleFirstInView={this._handleFirstInView}
-                        handleLastInView={this._handleLastInView}
-                        is_last_chunk={this.state.is_last_chunk}
-                        is_first_chunk={this.state.is_first_chunk}
-                        selected_column={this.state.selected_column}
-                        setSelectedColumn={this._setSelectedColumn}
-                        selected_row={this.state.selected_row}
-                        setSelectedRow={this._setSelectedRow}
-                        moveColumn={this._moveColumn}
-                        setMainStateValue={this._setMainStateValue}
-                        table_is_filtered={this.state.table_is_filtered}
                         broadcast_event_to_server={this._broadcast_event_to_server}
+                        updateTableSpec={this._updateTableSpec}
                     />
                 </div>
             </React.Fragment>
