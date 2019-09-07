@@ -51,17 +51,13 @@ function _after_main_joined() {
 
 function _finish_post_load(data) {
     var interface_state;
-    if (window.is_project) {
-        window._collection_name = data.collection_name;
-        window.doc_names = data.doc_names;
-        window.short_collection_name = data.short_collection_name;
+    if (window.is_project || window.opening_from_temp_id) {
         interface_state = data.interface_state
     }
-
     let domContainer = document.querySelector('#main-root');
-    if (window.is_project) {
+    if (window.is_project || window.opening_from_temp_id) {
         ReactDOM.render(<NotebookApp is_project={true}
-                                 interface_state={interface_state}
+                                     interface_state={interface_state}
                                  />,
             domContainer)
         }
@@ -99,9 +95,9 @@ class NotebookApp extends React.Component {
     componentDidMount() {
         this.setState({"mounted": true});
         window.addEventListener("resize", this._update_window_dimensions);
+        document.title = window.is_project ? window._project_name : this.props.short_collection_name;
         stopSpinner();
         tsocket.socket.on("console-message", this._handleConsoleMessage);
-
     }
 
     _setConsoleItemValue(unique_id, field, value) {
@@ -212,7 +208,6 @@ class NotebookApp extends React.Component {
         });
     }
 
-
     _broadcast_event_to_server(event_name, data_dict, callback) {
         data_dict.main_id = window.main_id;
         data_dict.event_name = event_name;
@@ -283,23 +278,15 @@ class NotebookApp extends React.Component {
 
             function save_as_success(data_object) {
                 if (data_object["success"]) {
-                    //tableObject.stopTableSpinner();
                     let is_jupyter = false;
                     clearStatusMessage();
-                    // menus["Project"].enable_menu_item("save");
-                    // if (DOC_TYPE != "notebook") {
-                    //     tableObject.project_name = data_object["project_name"];
-                    // }
-                    //tableObject.set_table_title()
-                    // $("#project-name").html(tableObject.project_name);
-                    // $("title").html(data_object["project_name"]);
+                    window.is_project = true;
+                    window._project_name = new_name;
+                    document.title = new_name;
+                    clearStatusMessage();
                     data_object.alert_type = "alert-success";
                     data_object.timeout = 2000;
-                    window._project_name = data_object.project_name;  // When menus recreated, it checks _project_name
-                    // dirty = false;
-                    data_object["message"] = data_object["message"];
-
-                    postWithCallback("host", "update_project_selector_list", {'user_id': window.user_id});
+                    postWithCallback("host", "refresh_project_selector_list", {'user_id': window.user_id});
                     doFlashStopSpinner(data_object);
                 }
                 else {
@@ -313,12 +300,23 @@ class NotebookApp extends React.Component {
         }
     }
 
+    get interface_state() {
+        let interface_state = {};
+        for (let attr of save_attrs) {
+            interface_state[attr] = this.state[attr]
+        }
+        return interface_state
+    }
+
     render () {
 
         let menus = (
             <React.Fragment>
-                <ProjectMenu saveProjectAs={this._saveProjectAs}
-                             saveProject={this._saveProject}
+                <ProjectMenu console_items={this.state.console_items}
+                             interface_state={this.interface_state}
+                             changeCollection={null}
+                             disabled_items={window.is_project ? [] : ["Save"]}
+                             hidden_items={["Open Console as Notebook", "Export Table as Collection", "change collection"]}
                 />
             </React.Fragment>
         );

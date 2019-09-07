@@ -7,12 +7,18 @@ import {ProjectMenu, ColumnMenu, MenuComponent} from "./main_menus_react.js";
 import {TileComponent} from "./tile_react.js";
 import {ConsoleComponent} from "./console_react.js";
 import {ExportsViewer} from "./export_viewer_react.js";
-import {showModalReact} from "./modal_react.js";
+import {showModalReact, showSelectDialog} from "./modal_react.js";
 
 const MARGIN_SIZE = 17;
 const BOTTOM_MARGIN = 35;
 
 const EXTRA_TABLE_AREA_SPACE = 500;
+
+
+const HEARTBEAT_INTERVAL = 10000; //milliseconds
+var heartbeat_timer = setInterval( function(){
+   postAjax("register_heartbeat", {"main_id": window.main_id}, function () {});
+}, HEARTBEAT_INTERVAL );
 
 let tsocket;
 let ppi;
@@ -65,18 +71,16 @@ function _finish_post_load(data) {
                 if (window.is_project) {
                     ReactDOM.render(<MainApp is_project={true}
                                              interface_state={interface_state}
-                                             short_collection_name={window.short_collection_name}
                                              initial_data_text={data.data_text}
-                                             doc_names={window.doc_names}/>,
+                                             initial_doc_names={window.doc_names}/>,
                     domContainer)
 
                 }
                 else {
                     ReactDOM.render(<MainApp is_project={false}
                                              interface_state={null}
-                                             short_collection_name={window.short_collection_name}
                                              initial_data_text={data.data_text}
-                                             doc_names={window.doc_names}/>,
+                                             initial_doc_names={window.doc_names}/>,
                     domContainer)
                 }
             }
@@ -84,27 +88,25 @@ function _finish_post_load(data) {
                 if (window.is_project) {
                     ReactDOM.render(<MainApp is_project={true}
                                              interface_state={interface_state}
-                                             short_collection_name={window.short_collection_name}
                                              initial_column_names={data.table_spec.header_list}
                                              initial_data_rows={data.data_rows}
                                              initial_is_first_chunk={data.is_first_chunk}
                                              initial_is_last_chunk={data.is_last_chunk}
                                              initial_column_widths={data.table_spec.column_widths}
                                              initial_hidden_columns_list={data.table_spec.hidden_columns_list}
-                                             doc_names={window.doc_names}/>,
+                                             initial_doc_names={window.doc_names}/>,
                     domContainer)
                 }
                 else {
                     ReactDOM.render(<MainApp is_project={false}
                                              interface_state={null}
-                                             short_collection_name={window.short_collection_name}
                                              initial_column_names={data.table_spec.header_list}
                                              initial_data_rows={data.data_rows}
                                              initial_is_first_chunk={data.is_first_chunk}
                                              initial_is_last_chunk={data.is_last_chunk}
                                              initial_column_widths={data.table_spec.column_widths}
                                              initial_hidden_columns_list={data.table_spec.hidden_columns_list}
-                                             doc_names={window.doc_names}/>,
+                                             initial_doc_names={window.doc_names}/>,
                     domContainer)
                 }
             }
@@ -125,6 +127,8 @@ class MainApp extends React.Component {
         this.tbody_ref = React.createRef();
         let base_state = {
                 mounted: false,
+                doc_names: props.initial_doc_names,
+                short_collection_name: window.short_collection_name,
                 usable_width: window.innerWidth - 2 * MARGIN_SIZE - 30,
                 usable_height: window.innerHeight - BOTTOM_MARGIN,
                 height_fraction: .85,
@@ -151,7 +155,7 @@ class MainApp extends React.Component {
             additions = {
                 data_text: props.initial_data_text,
                 table_spec: {
-                    current_doc_name: props.doc_names[0]
+                    current_doc_name: props.initial_doc_names[0]
                 }
             }
         }
@@ -162,6 +166,7 @@ class MainApp extends React.Component {
                 cells_to_color_text: {},
                 is_first_chunk: props.initial_is_first_chunk,
                 is_last_chunk: props.initial_is_last_chunk,
+                force_row_to_top: null,
                 scroll_top: 0,
                 selected_column: null,
                 selected_row: null,
@@ -169,7 +174,7 @@ class MainApp extends React.Component {
                 table_spec: {column_names: this.props.initial_column_names,
                     column_widths: this.props.initial_column_widths,
                     hidden_columns_list: this.props.initial_hidden_columns_list,
-                    current_doc_name: props.doc_names[0]
+                    current_doc_name: props.initial_doc_names[0]
                 },
             };
         }
@@ -185,12 +190,7 @@ class MainApp extends React.Component {
     componentDidMount() {
         this.setState({"mounted": true});
         window.addEventListener("resize", this._update_window_dimensions);
-        if (window.is_project) {
-            document.title = window._project_name
-        }
-        else {
-            document.title = this.props.short_collection_name
-        }
+        document.title = window.is_project ? window._project_name : this.state.short_collection_name;
         let self = this;
         tsocket.socket.on('table-message', function (data) {
             self._handleTableMessage(data)
@@ -198,7 +198,7 @@ class MainApp extends React.Component {
         postWithCallback("host", "get_tile_types", {"user_id": window.user_id}, function (data) {
             self.setState({tile_types: data.tile_types});
         });
-        stopSpinner();
+
         tsocket.socket.on("tile-message", this._handleTileMessage);
         tsocket.socket.on("console-message", this._handleConsoleMessage);
         tsocket.socket.on("export-viewer-message", this._handleExportViewerMessage);
@@ -210,8 +210,18 @@ class MainApp extends React.Component {
         tsocket.socket.on('tile-source-change', function (data) {
             self._markSourceChange(data.tile_type)
         });
+        tsocket.socket.on('change-doc', function(data){
+            let row_id = data.hasOwnProperty("row_id") ? data.row_id : null;
+            if (self.state.table_is_shrunk) {
+                self.setState({table_is_shrunk: false})
+            }
+            self._handleChangeDoc(data.doc_name, row_id)
+        });
         this.createTileSorter();
-        this._updateExportsList()
+        this._updateExportsList();
+        if (!window.is_project) {
+            stopSpinner();
+        }
     }
 
     get tile_sorter_exists() {
@@ -498,9 +508,25 @@ class MainApp extends React.Component {
         }
     }
 
-    _handleChangeDoc(new_doc_name) {
+    _forceRowToTop(offset_top) {
+        let scroll_top = offset_top - $('#table-area tbody tr')[0].offsetTop;
+        this.setState({scroll_top: scroll_top, force_row_to_top: null})
+    }
+    
+    _scrollRowToTop(row_index) {
+        try {
+            let top_of_top_row = $($('#table-area tbody tr')[0]).position().top;
+            let top_of_given_row = $($('#table-area tbody tr')[row_index]).position().top;
+            this.setState({scroll_top: top_of_given_row - top_of_top_row})
+        }
+        catch (e) {
+            console.log("got an error trying to go to a row")
+        }
+    }
+    _handleChangeDoc(new_doc_name, row_id=null) {
         let self = this;
-        postWithCallback(window.main_id, "grab_data", {"doc_name": new_doc_name}, function (data) {
+        if ((row_id == null) || window.is_freeform) {
+            postWithCallback(window.main_id, "grab_data", {"doc_name": new_doc_name}, function (data) {
             stopSpinner();
             clearStatusMessage();
             if (window.is_freeform) {
@@ -508,10 +534,22 @@ class MainApp extends React.Component {
                 self.setState({"data_text": data.data_text, "table_spec": new_table_spec})
             }
             else {
-                self._setStateFromDataObject(data, new_doc_name);
+                self._setStateFromDataObject(data, new_doc_name, ()=>{
+                    self.setState({scroll_top: 0})
+                });
             }
             self.set_visible_doc(new_doc_name);
-        })
+          })
+        }
+        else {
+            const data_dict = {"doc_name": new_doc_name, "row_id": row_id};
+            postWithCallback(main_id, "grab_chunk_with_row", data_dict, function (data) {
+                let row_index = data.actual_row;
+                self._setStateFromDataObject(data, new_doc_name, ()=>{
+                    self.setState({force_row_to_top: row_index})
+                })
+            });
+        }
     }
 
      _update_window_dimensions() {
@@ -623,91 +661,6 @@ class MainApp extends React.Component {
         this.setState({console_width_fraction: new_fraction})
     }
 
-    _saveProject () {
-        // let console_node = cleanse_bokeh(document.getElementById("console"));
-        let self = this;
-        const result_dict = {
-            "main_id": window.main_id,
-        };
-        let interface_state = {};
-        for (let attr of save_attrs) {
-            interface_state[attr] = this.state[attr]
-        }
-
-        result_dict.interface_state = interface_state;
-
-        //tableObject.startTableSpinner();
-        startSpinner();
-        postWithCallback(window.main_id, "update_project", result_dict, updateSuccess);
-        function updateSuccess(data) {
-            if (data.success) {
-                self.setState({"show_table_spinner": false});
-                clearStatusMessage();
-                data.alert_type = "alert-success";
-                data.timeout = 2000;
-                doFlashStopSpinner(data)
-            }
-            else {
-                self.setState({"show_table_spinner": false});
-                clearStatusMessage();
-                data.alert_type = "alert-warning";
-                doFlashStopSpinner(data)
-            }
-        }
-    }
-
-    _saveProjectAs() {
-        startSpinner();
-        let self = this;
-        postWithCallback("host", "get_project_names", {"user_id": window.user_id}, function (data) {
-            let checkboxes;
-            showModalReact("Save Project As", "New Project Name", CreateNewProject,
-                      "NewProject", data["project_names"])
-        });
-
-        function CreateNewProject (new_name) {
-            //let console_node = cleanse_bokeh(document.getElementById("console"));
-            const result_dict = {
-                "project_name": new_name,
-                "main_id": window.main_id,
-                "doc_type": "table",
-                "purgetiles": true
-            };
-
-            let interface_state = {};
-            for (let attr of save_attrs) {
-                interface_state[attr] = self.state[attr]
-            }
-
-            result_dict.interface_state = interface_state;
-            result_dict["purgetiles"] = true;
-            postWithCallback(window.main_id, "save_new_project", result_dict, save_as_success);
-
-            function save_as_success(data_object) {
-                if (data_object["success"]) {
-                    let is_jupyter = false;
-                    window.is_project = true;
-                    window._project_name = new_name;
-                    document.title = new_name;
-                    clearStatusMessage();
-
-                    data_object.alert_type = "alert-success";
-                    data_object.timeout = 2000;
-                    data_object["message"] = data_object["message"];
-                    postWithCallback("host", "refresh_project_selector_list", {'user_id': window.user_id});
-                    doFlashStopSpinner(data_object);
-                }
-                else {
-                    //tableObject.stopTableSpinner();
-                    clearStatusMessage();
-                    data_object["message"] = data_object["message"];
-                    data_object["alert-type"] = "alert-warning";
-                    doFlashStopSpinner(data_object)
-                }
-            }
-        }
-    }
-
     // Table doctype-only methods start here
 
     _getTableBodyHeight(table_available_height) {
@@ -733,6 +686,12 @@ class MainApp extends React.Component {
         return this.state.table_spec.column_widths.reduce(reducer) + EXTRA_TABLE_AREA_SPACE;
     }
 
+    _setFreeformDoc(doc_name, new_content) {
+        if (doc_name == this.state.table_spec.current_doc_name) {
+            this.setState({data_text: new_content})
+        }
+    }
+
      _handleTableMessage(data) {
         let self = this;
         let handlerDict = {
@@ -740,7 +699,8 @@ class MainApp extends React.Component {
             dehighlightAllText: (data)=>self._handleSearchFieldChange(null),
             highlightTxtInDocument: (data)=>self._setAltSearchText(data.text_to_find),
             setCellContent: (data)=>self._setCellContent(data.row, data.column_header, data.new_content),
-            colorTxtInCell: (data)=>self._colorTextInCell(data.row_id, data.column_header, data.token_text, data.color_dict)
+            colorTxtInCell: (data)=>self._colorTextInCell(data.row_id, data.column_header, data.token_text, data.color_dict),
+            setFreeformContent: (data)=>self._setFreeformDoc(data.doc_name, data.new_content)
         };
         handlerDict[data.table_message](data)
     }
@@ -779,20 +739,6 @@ class MainApp extends React.Component {
             table_spec: new_table_spec,
             scroll_top: 0
         })
-    }
-
-    _shift_column_left() {
-        let cnum = this.state.table_spec.column_names.indexOf(this.state.selected_column);
-        if (cnum == 0) return;
-        let target_col = this.state.table_spec.column_names[cnum - 1];
-        this._moveColumn(this.state.selected_column, target_col);
-    }
-
-    _shift_column_right() {
-        let cnum = this.state.table_spec.column_names.indexOf(this.state.selected_column);
-        if (cnum == (this.state.table_spec.column_names.length - 1)) return;
-        let target_col = this.state.table_spec.column_names[cnum + 2];
-        this._moveColumn(this.state.selected_column, target_col);
     }
 
     _moveColumn(tag_to_move, place_to_move) {
@@ -889,6 +835,48 @@ class MainApp extends React.Component {
 
     }
 
+    _changeCollection() {
+        startSpinner();
+        let self = this;
+        postWithCallback("host", "get_collection_names",{"user_id": user_id}, function (data) {
+            let collection_names = data["collection_names"];
+            let option_names = [];
+            for (var collection of collection_names) {
+                option_names.push(collection)
+            }
+            showSelectDialog("Select New Collection", "New Collection", "Cancel",
+                "Submit", changeTheCollection, option_names)
+        });
+        function changeTheCollection(new_collection_name) {
+            const result_dict = {
+                    "new_collection_name": new_collection_name,
+                    "main_id": window.main_id
+                };
+
+            postWithCallback(window.main_id, "change_collection", result_dict, changeCollectionResult);
+            function changeCollectionResult(data_object) {
+                if (data_object.success) {
+                    window._collection_name = data_object.collection_name;
+                    self.setState({doc_names: data_object.doc_names,
+                        short_collection_name: data_object.short_collection_name
+                    }, self._handleChangeDoc(data_object.doc_names[0]));
+                    stopSpinner();
+                }
+                else {
+                    clearStatusMessage();
+                    doFlashStopSpinner(data_object)
+                }
+            }
+        }
+    }
+
+    get interface_state() {
+        let interface_state = {};
+        for (let attr of save_attrs) {
+            interface_state[attr] = this.state[attr]
+        }
+        return interface_state
+    }
 
     render () {
         let vp_height = this.get_vp_height();
@@ -896,17 +884,20 @@ class MainApp extends React.Component {
 
         let menus = (
             <React.Fragment>
-                <ProjectMenu saveProjectAs={this._saveProjectAs}
-                             saveProject={window.is_project? this._saveProject : null}
+                <ProjectMenu console_items={this.state.console_items}
+                             interface_state={this.interface_state}
+                             changeCollection={this._changeCollection}
+                             disabled_items={window.is_project ? [] : ["Save"]}
+                             hidden_items={["Export as Jupyter Notebook"]}
                 />
-                <ColumnMenu shiftColumnLeft={this.state.selected_column == null ? null : this._shift_column_left}
-                            shiftColumnRight={this.state.selected_column == null ? null : this._shift_column_right}
-                            hideColumn={this.state.selected_column == null ? null : this._hideColumn}
-                            hideInAll={this.state.selected_column == null ? null : this._hideColumnInAll}
+                <ColumnMenu moveColumn={this._moveColumn}
+                            table_spec={this.state.table_spec}
+                            disable_all={this.state.selected_column == null}
+                            hideColumn={this._hideColumn}
+                            hideInAll={this._hideColumnInAll}
                             unhideAllColumns={this._unhideAllColumns}
                             addColumn={this._addColumn}
                             addColumnInAll={()=>this._addColumn(true)}
-
                 />
                 {this.create_tile_menus()}
             </React.Fragment>
@@ -919,9 +910,10 @@ class MainApp extends React.Component {
         }
         let card_header = (
             <MainTableCardHeader toggleShrink={this._toggleTableShrink}
-                                 short_collection_name={this.props.short_collection_name}
+                                 short_collection_name={this.state.short_collection_name}
                                  handleChangeDoc={this._handleChangeDoc}
-                                 doc_names={this.props.doc_names}
+                                 doc_names={this.state.doc_names}
+                                 current_doc_name={this.state.table_spec.current_doc_name}
                                  show_table_spinner={this.state.show_table_spinner}
                                  handleSearchFieldChange={this._handleSearchFieldChange}
                                  search_text={this.state.search_text}
@@ -954,6 +946,8 @@ class MainApp extends React.Component {
                                table_spec={this.state.table_spec}
                                broadcast_event_to_server={this._broadcast_event_to_server}
                                data_rows={this.state.data_rows}
+                               force_row_to_top={this.state.force_row_to_top}
+                               forceRowToTop={this._forceRowToTop}
                                cells_to_color_text={this.state.cells_to_color_text}
                                column_names={this.state.table_spec.column_names}
                                column_widths={this.state.table_spec.column_widths}
@@ -1109,6 +1103,7 @@ MainApp.propTypes = {
     is_project: PropTypes.bool,
     interface_state: PropTypes.object,
     short_collection_name: PropTypes.string,
+    initial_doc_names: PropTypes.array,
     initial_column_names: PropTypes.array,
     initial_data_rows: PropTypes.array,
     initial_is_first_chunk: PropTypes.bool,
@@ -1155,28 +1150,6 @@ class MainTacticSocket extends TacticSocket {
 
         this.socket.on("stop-status-spinner", function (){
            stopSpinner()
-        });
-
-        // this.socket.on('update-menus', function() {
-        //     if (done_loading){
-        //         postWithCallback("host", "get_tile_types", {"user_id": user_id}, function (data) {
-        //             clear_all_menus();
-        //             build_and_render_menu_objects(data.tile_types);
-        //             })
-        //         }
-        //     });
-        this.socket.on('change-doc', function(data){
-            $("#doc-selector").val(data.doc_name);
-            if (table_is_shrunk) {
-                tableObject.expandTable()
-            }
-            if (data.hasOwnProperty("row_id")) {
-                change_doc($("#doc-selector")[0], data.row_id)
-            }
-            else {
-                change_doc($("#doc-selector")[0], null)
-            }
-
         });
     }
 }

@@ -237,13 +237,6 @@ class LoadSaveTasksMixin:
 
             if self.pseudo_tile_id is None:
                 self.create_pseudo_tile()
-            #
-            # matches = re.findall(r"/figure_source/(.*?)/([0-9A-Fa-f-]*)", self.console_html)
-            # if len(matches) > 0:
-            #     for match in matches:  # really they should all be the same, but loop over just in case
-            #         self.console_html = re.sub(match[0], self.pseudo_tile_id, self.console_html)
-
-            # self.update_legacy_console_html()
 
             self.clear_main_status_message()
             print("about to emit finished to client")
@@ -397,7 +390,8 @@ class LoadSaveTasksMixin:
                 revised_source_list = [r + "\n" for r in source_list[:-1]] + [source_list[-1]]
                 cell["source"] = revised_source_list
                 cell["metadata"] = {}
-                cell["execution_count"] = 0
+                if cell["cell_type"] == "code":
+                    cell["execution_count"] = 0
             metadata = {}
             metadata["kernelspec"] = {"display_name": "Python 3", "language": "python", "name": "python3"}
             full_dict = {"metadata": metadata,
@@ -427,12 +421,11 @@ class LoadSaveTasksMixin:
 
     @task_worthy
     def console_to_notebook(self, data_dict):
-        self.console_html = data_dict["console_html"]
-        self.console_cm_code = data_dict["console_cm_code"]
         self.show_main_status_message("compiling save dictionary")
 
         def got_save_dict(console_dict):
             console_dict["doc_type"] = "notebook"
+            console_dict["interface_state"] = {"console_items": data_dict["console_items"]}
             cdict = make_jsonizable_and_compress(console_dict)
             save_dict = {}
             save_dict["file_id"] = self.fs.put(cdict)
@@ -1351,8 +1344,6 @@ class DataSupportTasksMixin:
         row_id = data_dict["row_id"]
         self.doc_dict[doc_name].move_to_row(row_id)
         return {"doc_name": doc_name,
-                "left_fraction": self.left_fraction,
-                "is_shrunk": self.is_shrunk,
                 "data_rows": self.doc_dict[doc_name].displayed_data_rows,
                 "background_colors": self.doc_dict[doc_name].displayed_background_colors,
                 "table_spec": self.doc_dict[doc_name].table_spec.compile_save_dict(),

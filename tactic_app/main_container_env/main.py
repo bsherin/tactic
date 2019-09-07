@@ -288,7 +288,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                 return error_string, {}, "", False
         else:
             save_dict = read_temp_data(self.db, unique_id)
-            project_dict = read_project_dict(self.fs, {"save_style": "b64save"}, save_dict["file_id"])
+            project_dict = read_project_dict(self.fs, {"save_style": "b64save_react"}, save_dict["file_id"])
             delete_temp_data(self.db, unique_id, fs=self.fs)
 
         error_messages = []
@@ -347,7 +347,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                     project_dict["interface_state"] = interface_state
             return tile_info_dict, project_dict["loaded_modules"], project_dict["interface_state"], True
         else:
-            if self.is_legacy_save(self.mdata):
+            if unique_id is None and self.is_legacy_save(self.mdata):
                 project_dict["interface_state"] = {
                     "console_items": self.convert_legacy_console(project_dict)
                 }
