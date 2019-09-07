@@ -161,7 +161,7 @@ class SelectList extends React.Component {
             <Rbs.Form.Control as="select"
                               style={sstyle}
                               onChange={this.handleChange}
-                              value={this.props.the_value}
+                              value={this.props.value}
             >
                 {option_items}
             </Rbs.Form.Control>
@@ -172,7 +172,7 @@ class SelectList extends React.Component {
 SelectList.propTypes = {
     option_list: PropTypes.array,
     onChange: PropTypes.func,
-    the_value: PropTypes.string,
+    value: PropTypes.string,
     height: PropTypes.number,
     maxWidth: PropTypes.number,
     fontSize: PropTypes.number,

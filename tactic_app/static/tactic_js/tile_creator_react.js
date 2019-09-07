@@ -15,7 +15,7 @@ const MARGIN_SIZE = 17;
 
 const HEARTBEAT_INTERVAL = 10000; //milliseconds
 var heartbeat_timer = setInterval(function () {
-    postAjax("register_heartbeat", { "main_id": main_id }, function () {});
+    postAjax("register_heartbeat", { "main_id": window.main_id }, function () {});
 }, HEARTBEAT_INTERVAL);
 
 class CreatorViewerSocket extends TacticSocket {

@@ -1,5 +1,5 @@
 
-export { showModalReact, showConfirmDialogReact };
+export { showModalReact, showConfirmDialogReact, showSelectDialog };
 
 var Rbs = window.ReactBootstrap;
 
@@ -169,6 +169,118 @@ function showModalReact(modal_title, field_title, submit_function, default_value
         default_value: default_value,
         checkboxes: checkboxes,
         existing_names: existing_names }), domContainer);
+}
+
+class SelectDialog extends React.Component {
+
+    constructor(props) {
+        super(props);
+        doBinding(this);
+        this.state = {
+            show: false,
+            value: null
+        };
+    }
+
+    componentDidMount() {
+        this.setState({ "show": true, "value": this.props.option_list[0] });
+    }
+
+    _handleChange(event) {
+        this.setState({ "value": event.target.value });
+    }
+
+    _submitHandler(event) {
+        this.setState({ "show": false });
+        this.props.handleSubmit(this.state.value);
+        this.props.handleClose();
+    }
+
+    _cancelHandler() {
+        this.setState({ "show": false });
+        this.props.handleClose();
+    }
+
+    render() {
+        return React.createElement(
+            Rbs.Modal,
+            { show: this.state.show },
+            React.createElement(
+                Rbs.Modal.Header,
+                { closeButton: true },
+                React.createElement(
+                    Rbs.Modal.Title,
+                    null,
+                    this.props.title
+                )
+            ),
+            React.createElement(
+                Rbs.Modal.Body,
+                null,
+                React.createElement(
+                    Rbs.Form.Group,
+                    null,
+                    React.createElement(
+                        Rbs.Form.Label,
+                        null,
+                        "Select Label"
+                    ),
+                    React.createElement(
+                        Rbs.Form.Control,
+                        { as: "select",
+                            onChange: this._handleChange,
+                            value: this.state.value
+                        },
+                        this.props.option_list.map((option_name, index) => React.createElement(
+                            "option",
+                            { key: index },
+                            option_name
+                        ))
+                    )
+                )
+            ),
+            React.createElement(
+                Rbs.Modal.Footer,
+                null,
+                React.createElement(
+                    Rbs.Button,
+                    { variant: "secondary", onClick: this._cancelHandler },
+                    "Cancel"
+                ),
+                React.createElement(
+                    Rbs.Button,
+                    { variant: "primary", onClick: this._submitHandler },
+                    "Submit"
+                )
+            )
+        );
+    }
+}
+
+SelectDialog.propTypes = {
+    handleSubmit: PropTypes.func,
+    handleClose: PropTypes.func,
+    title: PropTypes.string,
+    select_label: PropTypes.string,
+    option_list: PropTypes.array,
+    submit_text: PropTypes.string,
+    cancel_text: PropTypes.string
+};
+
+function showSelectDialog(title, select_label, cancel_text, submit_text, submit_function, option_list) {
+
+    let domContainer = document.querySelector('#modal-area');
+
+    function handle_close() {
+        ReactDOM.unmountComponentAtNode(domContainer);
+    }
+    ReactDOM.render(React.createElement(SelectDialog, { handleSubmit: submit_function,
+        handleClose: handle_close,
+        title: title,
+        select_label: select_label,
+        submit_text: submit_text,
+        option_list: option_list,
+        cancel_text: cancel_text }), domContainer);
 }
 
 class ConfirmDialog extends React.Component {

@@ -19,20 +19,21 @@ class ReactCodemirror extends React.Component {
             autoCloseBrackets: true,
             indentUnit: 4,
             mode: this.props.mode,
-            readOnly: this.props.readOnly,
-            extraKeys: this.props.extraKeys
+            readOnly: this.props.readOnly
         });
         if (first_line_number != 1) {
             cmobject.setOption("firstLineNumber", first_line_number);
         }
 
-        cmobject.setOption("extraKeys", {
+        let all_extra_keys = Object.assign(this.props.extraKeys, {
             Tab: function (cm) {
                 let spaces = new Array(5).join(" ");
                 cm.replaceSelection(spaces);
             },
             "Ctrl-Space": "autocomplete"
         });
+
+        cmobject.setOption("extraKeys", all_extra_keys);
         cmobject.setSize(null, "100%");
         cmobject.on("change", this.handleChange);
         return cmobject;

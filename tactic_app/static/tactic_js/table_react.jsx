@@ -106,7 +106,7 @@ class TableHeader extends React.Component {
                             width={this.props.column_widths[index]}
                             moveColumn={this.props.moveColumn}
                             selected_column={this.props.selected_column}
-                            setSelectedColumn={this.props.setSelectedColumn}/>
+                            setSelectedColumn={this._setSelectedColumn}/>
                 )
             );
         }
@@ -274,6 +274,7 @@ SpinnerRow.propTypes = {
 class BodyRow extends React.Component {
      constructor(props) {
         super(props);
+        this.tr_ref = React.createRef();
         doBinding(this)
     }
 
@@ -283,6 +284,19 @@ class BodyRow extends React.Component {
          }
          else {
              this.props.setSelectedRow(this.props.row_number)
+         }
+    }
+
+    componentDidMount() {
+         if (this.props.force_me_to_top) {
+             this.props.forceToTop(this.tr_ref.current.offsetTop)
+         }
+    }
+
+
+    componentDidUpdate() {
+         if (this.props.force_me_to_top) {
+             this.props.forceToTop(this.tr_ref.current.offsetTop)
          }
     }
 
@@ -331,7 +345,7 @@ class BodyRow extends React.Component {
         }
         let className = this.props.selected_row == this.props.row_number ? "selected-row" : "";
         return (
-            <tr className={className} onClick={this._handleClick}>{cells}</tr>
+            <tr ref={this.tr_ref} className={className} onClick={this._handleClick}>{cells}</tr>
         )
     }
 }
@@ -340,6 +354,8 @@ BodyRow.propTypes = {
     index: PropTypes.number,
     row_id: PropTypes.number,
     column_names: PropTypes.array,
+    force_me_to_top: PropTypes.bool,
+    forceToTop: PropTypes.func,
     text_color_dict: PropTypes.object,
     row_dict: PropTypes.object,
     row_number: PropTypes.number,
@@ -359,7 +375,7 @@ class TableBody extends React.Component {
     }
 
     _handleScroll() {
-        this.props.handleScroll(this.props.my_ref.current.scrollTop)
+        this.props.setMainStateValue("scroll_top", this.props.my_ref.current.scrollTop)
     }
 
     componentDidMount() {
@@ -439,6 +455,8 @@ class TableBody extends React.Component {
                      row_number={index}
                      row_id={row_dict.__id__}
                      key={index}
+                     force_me_to_top={index == this.props.force_row_to_top}
+                     forceToTop={this.props.forceRowToTop}
                      column_widths={this.props.column_widths}
                      hidden_columns_list={this.props.hidden_columns_list}
                      index={index}
@@ -470,6 +488,8 @@ TableBody.propTypes = {
     data_rows: PropTypes.array,
     cells_to_color_text: PropTypes.object,
     column_names: PropTypes.array,
+    force_row_to_top: PropTypes.number,
+    forceRowToTop: PropTypes.func,
     height: PropTypes.number,
     column_widths: PropTypes.array,
     hidden_columns_list: PropTypes.array,
@@ -627,7 +647,7 @@ class MainTableCardHeader extends React.Component {
                                 <Rbs.Form.Label className="mx-2">{this.props.short_collection_name}</Rbs.Form.Label>
                                 <SelectList option_list={this.props.doc_names}
                                             onChange={this.props.handleChangeDoc}
-                                            value={this.props.doc_names[0]}
+                                            value={this.props.current_doc_name}
                                             height={30}
                                             maxWidth={200}
                                             fontSize={14}
@@ -677,6 +697,7 @@ MainTableCardHeader.propTypes = {
     search_text: PropTypes.string,
     handleFilter: PropTypes.func,
     short_collection_name: PropTypes.string,
+    current_doc_name: PropTypes.string,
     handleChangeDoc: PropTypes.func,
     doc_names: PropTypes.array,
     show_table_spinner: PropTypes.bool,
