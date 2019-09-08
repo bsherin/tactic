@@ -41,32 +41,15 @@ class HorizontalPanes extends React.Component {
     }
 
     get left_width() {
-        if (this.props.controlled) {
-            return this.props.available_width * this.props.initial_width_fraction;
-        }
-        else {
-            return this.props.available_width * this.state.current_width_fraction;
-        }
+        return this.props.available_width * this.state.current_width_fraction;
     }
 
     get right_width() {
-        if (this.props.controlled) {
-            return (1 - this.props.initial_width_fraction) * this.props.available_width;
-
-        }
-        else {
-            return (1 - this.state.current_width_fraction) * this.props.available_width;
-        }
-
+        return (1 - this.state.current_width_fraction) * this.props.available_width;
     }
 
     update_width_fraction(new_width_fraction) {
-        if (this.props.controlled) {
-            this.props.handleFractionChange(new_width_fraction)
-        }
-        else {
-            this.setState({ "current_width_fraction": new_width_fraction });
-        }
+        this.setState({ "current_width_fraction": new_width_fraction });
     }
 
     get width_has_changed() {
@@ -90,6 +73,7 @@ class HorizontalPanes extends React.Component {
             "width": this.right_width,
             "height": this.props.available_height
         };
+        let dstyle = this.props.hide_me ? { display: "none" } : {};
         return React.createElement(
             "div",
             { className: "d-flex flex-row" },
@@ -108,8 +92,6 @@ class HorizontalPanes extends React.Component {
 }
 
 HorizontalPanes.propTypes = {
-    controlled: PropTypes.bool,
-    handleFractionChange: PropTypes.func,
     available_width: PropTypes.number,
     available_height: PropTypes.number,
     left_pane: PropTypes.object,
@@ -121,8 +103,7 @@ HorizontalPanes.propTypes = {
 HorizontalPanes.defaultProps = {
     handleSplitUpdate: null,
     initial_width_fraction: .5,
-    controlled: false,
-    handleFractionChange: null
+    hide_me: false
 };
 
 class VerticalPanes extends React.Component {
@@ -190,6 +171,9 @@ class VerticalPanes extends React.Component {
             borderBottom: "0.5px solid rgb(238, 238, 238)",
             overflowY: "scroll"
         };
+        if (this.props.hide_top) {
+            top_div_style.display = "none";
+        }
         let bottom_div_style = {
             "width": this.props.available_width,
             "height": this.bottom_height,
@@ -216,6 +200,7 @@ VerticalPanes.propTypes = {
     available_width: PropTypes.number,
     available_height: PropTypes.number,
     top_pane: PropTypes.object,
+    hide_top: PropTypes.bool,
     bottom_pane: PropTypes.object,
     handleSplitUpdate: PropTypes.func,
     initial_height_fraction: PropTypes.number
@@ -223,5 +208,6 @@ VerticalPanes.propTypes = {
 
 VerticalPanes.defaultProps = {
     handleSplitUpdate: null,
-    initial_height_fraction: .5
+    initial_height_fraction: .5,
+    hide_top: false
 };

@@ -62,7 +62,6 @@ class HorizontalPanes extends React.Component {
             this.old_right_width = this.right_width;
             this.props.handleSplitUpdate(this.left_width, this.right_width, this.state.current_width_fraction)
         }
-
     }
 
     render () {
@@ -74,6 +73,7 @@ class HorizontalPanes extends React.Component {
             "width": this.right_width,
             "height": this.props.available_height
         };
+        let dstyle = this.props.hide_me ? {display: "none"} : {};
         return (
             <div className="d-flex flex-row">
                 <div ref={this.left_pane_ref} style={left_div_style} className="res-viewer-resizer">
@@ -93,12 +93,13 @@ HorizontalPanes.propTypes = {
     left_pane: PropTypes.object,
     right_pane: PropTypes.object,
     handleSplitUpdate: PropTypes.func,
-    initial_width_fraction: PropTypes.number
+    initial_width_fraction: PropTypes.number,
 };
 
 HorizontalPanes.defaultProps = {
     handleSplitUpdate: null,
-    initial_width_fraction: .5
+    initial_width_fraction: .5,
+    hide_me: false
 };
 
 
@@ -168,6 +169,9 @@ class VerticalPanes extends React.Component {
             borderBottom: "0.5px solid rgb(238, 238, 238)",
             overflowY: "scroll"
         };
+        if (this.props.hide_top) {
+            top_div_style.display = "none";
+        }
         let bottom_div_style = {
             "width": this.props.available_width,
             "height": this.bottom_height,
@@ -190,6 +194,7 @@ VerticalPanes.propTypes = {
     available_width: PropTypes.number,
     available_height: PropTypes.number,
     top_pane: PropTypes.object,
+    hide_top: PropTypes.bool,
     bottom_pane: PropTypes.object,
     handleSplitUpdate: PropTypes.func,
     initial_height_fraction: PropTypes.number
@@ -197,7 +202,8 @@ VerticalPanes.propTypes = {
 
 VerticalPanes.defaultProps = {
     handleSplitUpdate: null,
-    initial_height_fraction: .5
+    initial_height_fraction: .5,
+    hide_top: false
 };
 
 

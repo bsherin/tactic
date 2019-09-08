@@ -15,6 +15,14 @@ class LogItem extends React.Component {
         doBinding(this);
     }
 
+    componentDidMount() {
+        this.executeEmbeddedScripts()
+    }
+
+    componentDidUpdate() {
+        this.executeEmbeddedScripts()
+    }
+
     _toggleShrink() {
         this.props.setConsoleItemValue(this.props.unique_id, "am_shrunk", !this.props.am_shrunk);
     }
@@ -25,6 +33,18 @@ class LogItem extends React.Component {
 
     _handleSummaryTextChange(event) {
         this.props.setConsoleItemValue(this.props.unique_id, "summary_text", event.target.value)
+    }
+
+     executeEmbeddedScripts() {
+        let scripts = $("#" + this.props.unique_id + " .log-panel-body script").toArray();
+        for (let script of scripts) {
+            try {
+                window.eval(script.text)
+            }
+            catch (e) {
+
+            }
+        }
     }
 
     render () {
@@ -105,15 +125,29 @@ class ConsoleCodeItem extends React.Component {
             this.cmobject.on("focus", ()=>{self.props.setFocus(this.props.unique_id)});
             this.cmobject.on("blur", ()=>{self.props.setFocus(null)})
         }
+        this.executeEmbeddedScripts()
     }
 
     componentDidUpdate() {
+        this.executeEmbeddedScripts();
          if (this.props.set_focus) {
             if (this.cmobject != null) {
                 this.cmobject.focus();
                 this.cmobject.setCursor({line: 0, ch: 0})
             }
             this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false)
+        }
+    }
+
+    executeEmbeddedScripts() {
+        let scripts = $("#" + this.props.unique_id + " .log-code-output script").toArray();
+        for (let script of scripts) {
+            try {
+                window.eval(script.text)
+            }
+            catch (e) {
+
+            }
         }
     }
     
@@ -562,11 +596,11 @@ class ConsoleComponent extends React.Component {
     }
 
     _expandConsole () {
-        this.props.setMainStateValue("console_is_shrunk", false)
+        this.props.setConsoleFieldValue("console_is_shrunk", false)
     }
 
     _shrinkConsole () {
-        this.props.setMainStateValue("console_is_shrunk", true)
+        this.props.setConsoleFieldValue("console_is_shrunk", true)
     }
 
     _bodyHeight() {
@@ -686,7 +720,7 @@ class ConsoleComponent extends React.Component {
                                          handleClick={this._zoomConsole}
                                          icon_class="far fa-expand-alt"/>
                         }
-                        {this.props.am_zoome &&
+                        {this.props.am_zoomed &&
                             <GlyphButton butclass="notclose bottom-heading-element"
                                          handleClick={this._unzoomConsole}
                                          icon_class="far fa-compress-alt"/>

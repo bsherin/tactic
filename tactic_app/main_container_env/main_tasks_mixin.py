@@ -125,6 +125,33 @@ class LoadSaveTasksMixin:
                 self.mworker.submit_response(task_packet, result)
         return
 
+    def convert_jupyter_cells(self, jupyter_cell_list):
+        message = ""
+        converted_cells = []
+        for cell_dict in jupyter_cell_list:
+            unique_id = str(uuid.uuid4())
+            if cell_dict["cell_type"] == "code":
+                cell_dict = {
+                    "unique_id": unique_id,
+                    "type": "code",
+                    "show_spinner": False,
+                    "summary_text": "code item",
+                    "console_text": "".join(cell_dict["source"]),
+                    "output_text": "",
+                    "execution_count": 0
+                }
+            elif cell_dict["cell_type"] == "markdown":
+                cell_dict = {
+                    "unique_id": unique_id,
+                    "type": "text",
+                    "show_spinner": False,
+                    "summary_text": "text items",
+                    "console_text": "".join(cell_dict["source"]),
+                    "show_markdown": False
+                }
+            converted_cells.append(cell_dict)
+        return converted_cells
+
     @task_worthy
     def do_full_jupyter_recreation(self, data_dict):
         tile_containers = {}
@@ -137,13 +164,14 @@ class LoadSaveTasksMixin:
             project_dict = read_project_dict(self.fs, self.mdata, save_dict["file_id"])
             jupyter_text = project_dict["jupyter_text"]
             jupyter_dict = json.loads(jupyter_text)
-            self.jupyter_cells = jupyter_dict["cells"]
+            converted_cells = self.convert_jupyter_cells(jupyter_dict["cells"])
+            interface_state = {"console_items": converted_cells}
             self.clear_main_status_message()
             self.mworker.ask_host("emit_to_client", {"message": "finish-post-load",
                                                      "collection_name": "",
                                                      "short_collection_name": "",
-                                                     "doc_names": [],
-                                                     "console_html": ""})
+                                                     "interface_state": interface_state,
+                                                     "doc_names": []})
 
         except Exception as ex:
             error_string = self.get_traceback_message(ex)
@@ -157,6 +185,8 @@ class LoadSaveTasksMixin:
         def track_loaded_modules(tlmdata):
             def track_recreated_tiles(trcdata):
                 if trcdata["old_tile_id"] in tiles_to_recreate:
+                    self.mworker.ask_host("emit_to_client", {"message": "tile-finished-loading",
+                                                             "tile_id": trcdata["old_tile_id"]})
                     tiles_to_recreate.remove(trcdata["old_tile_id"])
                 if not tiles_to_recreate:
                     self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {})
@@ -1314,29 +1344,6 @@ class DataSupportTasksMixin:
         else:
             return {"doc_name": doc_name,
                     "data_text": self.doc_dict[doc_name].data_text}
-
-    @task_worthy
-    def grab_project_data(self, data_dict):
-        doc_name = data_dict["doc_name"]
-        if self.doc_type == "table":
-            return {"doc_name": doc_name,
-                    "is_shrunk": self.is_shrunk,
-                    "tile_ids": self.tile_sort_list,
-                    "left_fraction": self.left_fraction,
-                    "data_rows": self.doc_dict[doc_name].displayed_data_rows,
-                    "background_colors": self.doc_dict[doc_name].displayed_background_colors,
-                    "table_spec": self.doc_dict[doc_name].table_spec.compile_save_dict(),
-                    "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
-                    "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
-                    "max_table_size": self.doc_dict[doc_name].max_table_size,
-                    "tile_save_results": self.tile_save_results}
-        else:
-            return {"doc_name": doc_name,
-                    "is_shrunk": self.is_shrunk,
-                    "tile_ids": self.tile_sort_list,
-                    "data_text": self.doc_dict[doc_name].data_text,
-                    "table_spec": self.doc_dict[doc_name].table_spec.compile_save_dict(),
-                    "tile_save_results": self.tile_save_results}
 
     @task_worthy
     def grab_chunk_with_row(self, data_dict):

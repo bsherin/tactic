@@ -1,9 +1,9 @@
 
 import {TacticNavbar} from "./base_module.js";
-import {TacticSocket} from "./tactic_socket.js"
 import {ProjectMenu} from "./main_menus_react.js";
 import {ConsoleComponent} from "./console_react.js";
-import {showModalReact} from "./modal_react.js";
+import {withConsole} from "./with_console_hoc.js";
+import {TacticSocket} from "./tactic_socket.js";
 
 const MARGIN_SIZE = 17;
 const BOTTOM_MARGIN = 35;
@@ -18,6 +18,9 @@ function _main_main() {
     console.log("entering _notebook_main");
     ppi = get_ppi();
     tsocket = new MainTacticSocket("main", 5000);
+    tsocket.socket.emit('join-main', {"room": main_id}, function() {
+            _after_main_joined();
+        });
     tsocket.socket.on('finish-post-load', _finish_post_load)
 }
 
@@ -55,21 +58,23 @@ function _finish_post_load(data) {
         interface_state = data.interface_state
     }
     let domContainer = document.querySelector('#main-root');
+    let MainComp = withConsole(NotebookApp, tsocket);
     if (window.is_project || window.opening_from_temp_id) {
-        ReactDOM.render(<NotebookApp is_project={true}
-                                     interface_state={interface_state}
+        ReactDOM.render(<MainComp is_project={true}
+                                  interface_state={interface_state}
                                  />,
             domContainer)
         }
         else {
-            ReactDOM.render(<NotebookApp is_project={false}
-                                     interface_state={null}
+            ReactDOM.render(<MainComp is_project={false}
+                                      interface_state={null}
                                      />,
             domContainer)
         }
 }
 
-const save_attrs = ["console_items"];
+const save_attrs = [];
+const save_prop_attrs = ["console_items", "console_is_shrunk"];
 
 class NotebookApp extends React.Component {
     constructor (props) {
@@ -79,8 +84,6 @@ class NotebookApp extends React.Component {
             mounted: false,
             usable_width: window.innerWidth - 2 * MARGIN_SIZE - 30,
             usable_height: window.innerHeight - BOTTOM_MARGIN,
-            console_items: [],
-            console_item_with_focus: null,
             show_console_error_log: false,
             console_error_log_text: "",
 
@@ -97,108 +100,12 @@ class NotebookApp extends React.Component {
         window.addEventListener("resize", this._update_window_dimensions);
         document.title = window.is_project ? window._project_name : this.props.short_collection_name;
         stopSpinner();
-        tsocket.socket.on("console-message", this._handleConsoleMessage);
-    }
-
-    _setConsoleItemValue(unique_id, field, value) {
-        let entry = this.get_console_item_entry(unique_id);
-        entry[field] = value;
-        this.replace_console_item_entry(unique_id, entry)
-    }
-
-    replace_console_item_entry(unique_id, new_entry) {
-        let new_console_items = [...this.state.console_items];
-        let cindex = this.consoleItemIndex(unique_id);
-        new_console_items.splice(cindex, 1, new_entry);
-        this.setState({console_items: new_console_items})
-    }
-
-    get_console_item_entry(unique_id) {
-        return Object.assign({}, this.state.console_items[this.consoleItemIndex(unique_id)])
-    }
-
-    consoleItemIndex(unique_id) {
-        let counter = 0;
-        for (let entry of this.state.console_items) {
-            if (entry.unique_id == unique_id) {
-                return counter
-            }
-            ++counter;
-        }
-        return -1
-    }
-
-    _resortConsoleItems(new_sort_list) {
-        let new_console_items = [];
-        for (let uid of new_sort_list) {
-            let new_entry = this.get_console_item_entry(uid);
-            new_console_items.push(new_entry)
-        }
-        this.setState({console_items: new_console_items})
-    }
-    
-    _goToNextCell(unique_id) {
-        let next_index = this.consoleItemIndex(unique_id) + 1;
-        if (next_index == this.state.console_items.length) return;
-        let next_id = this.state.console_items[next_index].unique_id;
-        this._setConsoleItemValue(next_id, "set_focus", true)
-    }
-
-    _closeConsoleItem(unique_id) {
-        let cindex = this.consoleItemIndex(unique_id);
-        let new_console_items = [...this.state.console_items];
-        new_console_items.splice(cindex, 1);
-        this.setState({console_items: new_console_items});
-    }
-
-    _addConsoleEntry(new_entry, force_open=true, set_focus=false) {
-        new_entry.set_focus = set_focus;
-        let insert_index;
-        if (this.state.console_item_with_focus == null) {
-            insert_index = this.state.console_items.length
-        }
-        else {
-            insert_index = this.consoleItemIndex(this.state.console_item_with_focus) + 1
-        }
-        let new_console_items = [... this.state.console_items];
-        new_console_items.splice(insert_index, 0, new_entry);
-        let new_state = {console_items: new_console_items};
-        if (force_open) {
-            new_state.console_is_shrunk = false
-        }
-
-        this.setState(new_state)
     }
 
     _setMainStateValue(field_name, value, callback=null) {
         let new_state = {};
         new_state[field_name] = value;
         this.setState(new_state, callback);
-    }
-
-    _stopConsoleSpinner(data) {
-        let new_entry = this.get_console_item_entry(data.console_id);
-        new_entry.show_spinner = false;
-        new_entry.execution_count = data.execution_count;
-        this.replace_console_item_entry(data.console_id, new_entry)
-    }
-
-    _appendConsoleItemOutput(data) {
-        let current = this.get_console_item_entry(data.console_id).output_text;
-        if (current != "") {
-            current += "<br>"
-        }
-        this._setConsoleItemValue(data.console_id, "output_text", current + data.message)
-    }
-
-    _handleConsoleMessage(data) {
-        let self = this;
-        let handlerDict = {
-            consoleLog: (data)=>self._addConsoleEntry(data.message, data.force_open),
-            stopConsoleSpinner: this._stopConsoleSpinner,
-            consoleCodePrint: this._appendConsoleItemOutput
-        };
-        handlerDict[data.console_message](data)
     }
 
      _update_window_dimensions() {
@@ -214,96 +121,13 @@ class NotebookApp extends React.Component {
         postWithCallback(main_id, "distribute_events_stub", data_dict, callback)
     }
 
-    _saveProject () {
-        // let console_node = cleanse_bokeh(document.getElementById("console"));
-        let self = this;
-        const result_dict = {
-            "main_id": window.main_id,
-        };
-        let interface_state = {};
-        for (let attr of save_attrs) {
-            interface_state[attr] = this.state[attr]
-        }
-
-        result_dict.interface_state = interface_state;
-
-        //tableObject.startTableSpinner();
-        startSpinner();
-        postWithCallback(window.main_id, "update_project", result_dict, updateSuccess);
-        function updateSuccess(data) {
-            if (data.success) {
-                self.setState({"show_table_spinner": false});
-                clearStatusMessage();
-                data.alert_type = "alert-success";
-                dirty = false;
-                data.timeout = 2000;
-                doFlashStopSpinner(data)
-            }
-            else {
-                self.setState({"show_table_spinner": false});
-                clearStatusMessage();
-                data.alert_type = "alert-warning";
-                dirty = false;
-                doFlashStopSpinner(data)
-            }
-        }
-    }
-
-    _saveProjectAs() {
-        startSpinner();
-        let self = this;
-        postWithCallback("host", "get_project_names", {"user_id": window.user_id}, function (data) {
-            let checkboxes;
-            showModalReact("Save Notebook As", "New Notebook Name", CreateNewProject,
-                      "NewNotebook", data["project_names"])
-        });
-
-        function CreateNewProject (new_name) {
-            //let console_node = cleanse_bokeh(document.getElementById("console"));
-            const result_dict = {
-                "project_name": new_name,
-                "main_id": window.main_id,
-                "doc_type": "notebook",
-                "purgetiles": true
-            };
-            let interface_state = {};
-            for (let attr of save_attrs) {
-                interface_state[attr] = self.state[attr]
-            }
-
-            result_dict.interface_state = interface_state;
-
-            // tableObject.startTableSpinner();
-            postWithCallback(main_id, "save_new_notebook_project", result_dict, save_as_success);
-
-            function save_as_success(data_object) {
-                if (data_object["success"]) {
-                    let is_jupyter = false;
-                    clearStatusMessage();
-                    window.is_project = true;
-                    window._project_name = new_name;
-                    document.title = new_name;
-                    clearStatusMessage();
-                    data_object.alert_type = "alert-success";
-                    data_object.timeout = 2000;
-                    postWithCallback("host", "refresh_project_selector_list", {'user_id': window.user_id});
-                    doFlashStopSpinner(data_object);
-                }
-                else {
-                    //tableObject.stopTableSpinner();
-                    clearStatusMessage();
-                    data_object["message"] = data_object["message"];
-                    data_object["alert-type"] = "alert-warning";
-                    doFlashStopSpinner(data_object)
-                }
-            }
-        }
-    }
-
     get interface_state() {
         let interface_state = {};
         for (let attr of save_attrs) {
             interface_state[attr] = this.state[attr]
+        }
+        for (let attr of save_prop_attrs) {
+            interface_state[attr] = this.props[attr]
         }
         return interface_state
     }
@@ -326,35 +150,41 @@ class NotebookApp extends React.Component {
                               user_name={window.username}
                               menus={menus}
                 />
-                <ConsoleComponent console_items={this.state.console_items}
+                <ConsoleComponent console_items={this.props.console_items}
                                   error_log_text={this.state.console_error_log_text}
                                   am_shrunk={false}
                                   am_zoomed={false}
                                   am_notebook={true}
                                   show_error_log={this.state.show_console_error_log}
                                   available_height={this.state.usable_height}
-                                  setConsoleItemValue={this._setConsoleItemValue}
+                                  setConsoleItemValue={this.props.setConsoleItemValue}
+                                  setConsoleFieldValue={this.props.setConsoleFieldValue}
                                   setMainStateValue={this._setMainStateValue}
-                                  handleItemDelete={this._closeConsoleItem}
-                                  goToNextCell={this._goToNextCell}
-                                  resortConsoleItems={this._resortConsoleItems}/>
+                                  handleItemDelete={this.props.handleConsoleItemDelete}
+                                  goToNextCell={this.props.goToNextConsoleCell}
+                                  resortConsoleItems={this.props.resortConsoleItems}/>
             </React.Fragment>
         )
     }
 }
 
 NotebookApp.propTypes = {
+    console_items: PropTypes.array,
+    console_is_shrunk: PropTypes.bool, // not used
     is_project: PropTypes.bool,
-    interface_state: PropTypes.object
+    interface_state: PropTypes.object,
+    setConsoleItemValue: PropTypes.func,
+    setConsoleFieldValue: PropTypes.func,
+    setConsoleState: PropTypes.func,
+    goToNextConsoleCell: PropTypes.func,
+    handleConsoleItemDelete: PropTypes.func,
+    resortConsoleItems: PropTypes.func,
 };
 
 class MainTacticSocket extends TacticSocket {
 
     initialize_socket_stuff() {
         this.socket.emit('join', {"room": user_id});
-        this.socket.emit('join-main', {"room": main_id}, function() {
-            _after_main_joined();
-        });
         this.socket.on('handle-callback', handleCallback);
         this.socket.on('close-user-windows', function(data){
                     postAsyncFalse("host", "remove_mainwindow_task", {"main_id": main_id});
@@ -369,6 +199,9 @@ class MainTacticSocket extends TacticSocket {
             window.open($SCRIPT_ROOT + "/load_temp_page/" + data["the_id"])
         });
 
+        this.socket.on("notebook-open", function(data) {
+            window.open($SCRIPT_ROOT + "/open_notebook/" + data["the_id"])
+        });
         this.socket.on("doFlash", function(data) {
             doFlash(data)
         });
@@ -384,5 +217,4 @@ class MainTacticSocket extends TacticSocket {
         });
     }
 }
-
 _main_main();

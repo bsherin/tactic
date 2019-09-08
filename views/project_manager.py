@@ -59,6 +59,7 @@ class ProjectManager(LibraryResourceManager):
                          as_attachment=True)
 
     def import_as_jupyter(self, jupyter_name, library_id):
+        user_obj = current_user
         file_list = request.files.getlist("file")
         the_file = file_list[0]
         filename, file_extension = os.path.splitext(the_file.filename)
@@ -74,7 +75,7 @@ class ProjectManager(LibraryResourceManager):
             file_decoding_errors[filename] = decoding_problems
         mdata = global_tile_manager.create_initial_metadata()
         mdata["type"] = "jupyter"
-        mdata["save_style"] = "b64save"
+        mdata["save_style"] = "b64save_react"
 
         save_dict = {"metadata": mdata,
                      "project_name": jupyter_name}
