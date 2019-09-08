@@ -8,6 +8,9 @@ import {TileComponent} from "./tile_react.js";
 import {ConsoleComponent} from "./console_react.js";
 import {ExportsViewer} from "./export_viewer_react.js";
 import {showModalReact, showSelectDialog} from "./modal_react.js";
+import {withConsole} from "./with_console_hoc.js";
+
+export {MainTacticSocket}
 
 const MARGIN_SIZE = 17;
 const BOTTOM_MARGIN = 35;
@@ -28,6 +31,9 @@ function _main_main() {
     console.log("entering start_post_load");
     ppi = get_ppi();
     tsocket = new MainTacticSocket("main", 5000);
+    tsocket.socket.emit('join-main', {"room": main_id}, function() {
+            _after_main_joined();
+        });
     tsocket.socket.on('finish-post-load', _finish_post_load)
 }
 
@@ -67,9 +73,10 @@ function _finish_post_load(data) {
     }
     postWithCallback(window.main_id, "grab_data", {"doc_name":window.doc_names[0]}, function (data) {
             let domContainer = document.querySelector('#main-root');
+            let MainComp = withConsole(MainApp, tsocket);
             if (window.is_freeform) {
                 if (window.is_project) {
-                    ReactDOM.render(<MainApp is_project={true}
+                    ReactDOM.render(<MainComp is_project={true}
                                              interface_state={interface_state}
                                              initial_data_text={data.data_text}
                                              initial_doc_names={window.doc_names}/>,
@@ -77,7 +84,7 @@ function _finish_post_load(data) {
 
                 }
                 else {
-                    ReactDOM.render(<MainApp is_project={false}
+                    ReactDOM.render(<MainComp is_project={false}
                                              interface_state={null}
                                              initial_data_text={data.data_text}
                                              initial_doc_names={window.doc_names}/>,
@@ -86,7 +93,7 @@ function _finish_post_load(data) {
             }
             else {
                 if (window.is_project) {
-                    ReactDOM.render(<MainApp is_project={true}
+                    ReactDOM.render(<MainComp is_project={true}
                                              interface_state={interface_state}
                                              initial_column_names={data.table_spec.header_list}
                                              initial_data_rows={data.data_rows}
@@ -98,7 +105,8 @@ function _finish_post_load(data) {
                     domContainer)
                 }
                 else {
-                    ReactDOM.render(<MainApp is_project={false}
+
+                    ReactDOM.render(<MainComp is_project={false}
                                              interface_state={null}
                                              initial_column_names={data.table_spec.header_list}
                                              initial_data_rows={data.data_rows}
@@ -107,16 +115,16 @@ function _finish_post_load(data) {
                                              initial_column_widths={data.table_spec.column_widths}
                                              initial_hidden_columns_list={data.table_spec.hidden_columns_list}
                                              initial_doc_names={window.doc_names}/>,
-                    domContainer)
+                        domContainer)
                 }
             }
 
     });
 }
 
-const save_attrs = ["height_fraction", "tile_list", "table_is_shrunk", "console_width_fraction", "console_items",
-    'console_is_shrunk', 'console_is_zoomed', "show_exports_pane", "horizontal_fraction", "pipe_dict"];
+const save_attrs = ["height_fraction", "tile_list", "table_is_shrunk", "console_width_fraction", 'console_is_zoomed', "show_exports_pane", "horizontal_fraction", "pipe_dict"];
 
+const save_prop_attrs = ["console_items", "console_is_shrunk"];
 
 class MainApp extends React.Component {
     constructor (props) {
@@ -138,10 +146,7 @@ class MainApp extends React.Component {
                 alt_search_text: null,
                 table_is_shrunk: false,
                 console_width_fraction: .5,
-                console_items: [],
-                console_is_shrunk: true,
                 console_is_zoomed: false,
-                console_item_with_focus: null,
                 show_console_error_log: false,
                 console_error_log_text: "",
                 show_exports_pane: false,
@@ -184,7 +189,14 @@ class MainApp extends React.Component {
             for (let attr of save_attrs) {
                 this.state[attr] = this.props.interface_state[attr]
             }
+            for (let entry of this.state.tile_list) {
+                entry.finished_loading = false
+            }
         }
+    }
+
+    _handleTileFinishedLoading(data) {
+        this._setTileValue(data.tile_id, "finished_loading", true)
     }
 
     componentDidMount() {
@@ -200,7 +212,7 @@ class MainApp extends React.Component {
         });
 
         tsocket.socket.on("tile-message", this._handleTileMessage);
-        tsocket.socket.on("console-message", this._handleConsoleMessage);
+        tsocket.socket.on("tile-finished-loading", this._handleTileFinishedLoading);
         tsocket.socket.on("export-viewer-message", this._handleExportViewerMessage);
         tsocket.socket.on("update-menus", function () {
             postWithCallback("host", "get_tile_types", {"user_id": window.user_id}, function (data) {
@@ -229,7 +241,7 @@ class MainApp extends React.Component {
     }
 
     componentDidUpdate() {
-        if (!this.tile_sorter_exists) {
+        if (!this.state.console_is_zoomed && !this.tile_sorter_exists) {
             this.createTileSorter()
         }
     }
@@ -251,6 +263,7 @@ class MainApp extends React.Component {
             show_log: false,
             log_content: "",
             shrunk: false,
+            finished_loading: true,
             front_content: ""}
     }
 
@@ -333,7 +346,7 @@ class MainApp extends React.Component {
         this.replace_tile_entry(tile_id, entry, callback)
     }
 
-    _setTileState(tile_id, new_state, callback) {
+    _setTileState(tile_id, new_state, callback=null) {
         let entry = this.get_tile_entry(tile_id);
         for (let field in new_state) {
             entry[field] = new_state[field]
@@ -367,105 +380,11 @@ class MainApp extends React.Component {
         handlerDict[data.tile_message](tile_id, data)
     }
 
-    _setConsoleItemValue(unique_id, field, value) {
-        let entry = this.get_console_item_entry(unique_id);
-        entry[field] = value;
-        this.replace_console_item_entry(unique_id, entry)
-    }
-
-    replace_console_item_entry(unique_id, new_entry) {
-        let new_console_items = [...this.state.console_items];
-        let cindex = this.consoleItemIndex(unique_id);
-        new_console_items.splice(cindex, 1, new_entry);
-        this.setState({console_items: new_console_items})
-    }
-
-    get_console_item_entry(unique_id) {
-        return Object.assign({}, this.state.console_items[this.consoleItemIndex(unique_id)])
-    }
-
-    consoleItemIndex(unique_id) {
-        let counter = 0;
-        for (let entry of this.state.console_items) {
-            if (entry.unique_id == unique_id) {
-                return counter
-            }
-            ++counter;
-        }
-        return -1
-    }
-
-    _resortConsoleItems(new_sort_list) {
-        let new_console_items = [];
-        for (let uid of new_sort_list) {
-            let new_entry = this.get_console_item_entry(uid);
-            new_console_items.push(new_entry)
-        }
-        this.setState({console_items: new_console_items})
-    }
-    
-    _goToNextCell(unique_id) {
-        let next_index = this.consoleItemIndex(unique_id) + 1;
-        if (next_index == this.state.console_items.length) return;
-        let next_id = this.state.console_items[next_index].unique_id;
-        this._setConsoleItemValue(next_id, "set_focus", true)
-    }
-
-    _closeConsoleItem(unique_id) {
-        let cindex = this.consoleItemIndex(unique_id);
-        let new_console_items = [...this.state.console_items];
-        new_console_items.splice(cindex, 1);
-        this.setState({console_items: new_console_items});
-    }
-
-    _addConsoleEntry(new_entry, force_open=true, set_focus=false) {
-        new_entry.set_focus = set_focus;
-        let insert_index;
-        if (this.state.console_item_with_focus == null) {
-            insert_index = this.state.console_items.length
-        }
-        else {
-            insert_index = this.consoleItemIndex(this.state.console_item_with_focus) + 1
-        }
-        let new_console_items = [... this.state.console_items];
-        new_console_items.splice(insert_index, 0, new_entry);
-        let new_state = {console_items: new_console_items};
-        if (force_open) {
-            new_state.console_is_shrunk = false
-        }
-
-        this.setState(new_state)
-    }
 
     _setMainStateValue(field_name, value, callback=null) {
         let new_state = {};
         new_state[field_name] = value;
         this.setState(new_state, callback);
-    }
-
-    _stopConsoleSpinner(data) {
-        let new_entry = this.get_console_item_entry(data.console_id);
-        new_entry.show_spinner = false;
-        new_entry.execution_count = data.execution_count;
-        this.replace_console_item_entry(data.console_id, new_entry)
-    }
-
-    _appendConsoleItemOutput(data) {
-        let current = this.get_console_item_entry(data.console_id).output_text;
-        if (current != "") {
-            current += "<br>"
-        }
-        this._setConsoleItemValue(data.console_id, "output_text", current + data.message)
-    }
-
-    _handleConsoleMessage(data) {
-        let self = this;
-        let handlerDict = {
-            consoleLog: (data)=>self._addConsoleEntry(data.message, data.force_open),
-            stopConsoleSpinner: this._stopConsoleSpinner,
-            consoleCodePrint: this._appendConsoleItemOutput
-        };
-        handlerDict[data.console_message](data)
     }
 
     _updateExportsList() {
@@ -564,8 +483,8 @@ class MainApp extends React.Component {
     }
 
     get_hp_height () {
-        if (this.state.mounted) {
-            let top_fraction = this.state.console_is_shrunk ? 1 : this.state.height_fraction;
+        if (this.state.mounted && this.tile_div_ref.current) {
+            let top_fraction = this.props.console_is_shrunk ? 1 : this.state.height_fraction;
             return (this.state.usable_height - this.tile_div_ref.current.getBoundingClientRect().top) * top_fraction - 30;
         }
         else {
@@ -574,7 +493,7 @@ class MainApp extends React.Component {
     }
 
     get_vp_height () {
-        if (this.state.mounted) {
+        if (this.state.mounted && this.tile_div_ref.current) {
             return this.state.usable_height - this.tile_div_ref.current.getBoundingClientRect().top;
         }
         else {
@@ -875,16 +794,28 @@ class MainApp extends React.Component {
         for (let attr of save_attrs) {
             interface_state[attr] = this.state[attr]
         }
+        for (let attr of save_prop_attrs) {
+            interface_state[attr] = this.props[attr]
+        }
         return interface_state
     }
 
     render () {
-        let vp_height = this.get_vp_height();
-        let hp_height = this.get_hp_height();
+        let vp_height;
+        let hp_height;
+        let console_available_height;
+        if (this.state.console_is_zoomed) {
+            console_available_height = this.state.usable_height - 50
+        }
+        else {
+            vp_height = this.get_vp_height();
+            hp_height = this.get_hp_height();
+            console_available_height = vp_height - hp_height
+        }
 
         let menus = (
             <React.Fragment>
-                <ProjectMenu console_items={this.state.console_items}
+                <ProjectMenu console_items={this.props.console_items}
                              interface_state={this.interface_state}
                              changeCollection={this._changeCollection}
                              disabled_items={window.is_project ? [] : ["Save"]}
@@ -903,7 +834,7 @@ class MainApp extends React.Component {
             </React.Fragment>
         );
         let console_header_height = 35;
-        let table_available_height = this.state.console_is_shrunk ? hp_height - console_header_height : hp_height;
+        let table_available_height = this.props.console_is_shrunk ? hp_height - console_header_height : hp_height;
         let table_style = {display: "block", tableLayout: "fixed"};
         if (this.state.table_spec.column_widths != null) {
             table_style["width"] = this.compute_table_width();
@@ -988,6 +919,7 @@ class MainApp extends React.Component {
                             <TileComponent tile_name={entry.tile_name}
                                            key={entry.tile_name}
                                            tile_id={entry.tile_id}
+                                           finished_loading={entry.finished_loading}
                                            source_changed={entry.source_changed}
                                            form_data={entry.form_data}
                                            front_content={entry.front_content}
@@ -1016,27 +948,28 @@ class MainApp extends React.Component {
         if (this.state.show_exports_pane) {
             exports_pane = <ExportsViewer pipe_dict={this.state.pipe_dict}
                                           pipe_dict_updated={this.props.pipe_dict_updated}
-                                          available_height={vp_height - hp_height}/>
+                                          available_height={console_available_height}/>
         }
         else {
             exports_pane = <div></div>
         }
-        let console_pane = <ConsoleComponent console_items={this.state.console_items}
+        let console_pane = <ConsoleComponent console_items={this.props.console_items}
                                              error_log_text={this.state.console_error_log_text}
-                                             am_shrunk={this.state.console_is_shrunk}
+                                             am_shrunk={this.props.console_is_shrunk}
                                              am_zoomed={this.state.console_is_zoomed}
                                              show_error_log={this.state.show_console_error_log}
                                              available_height={vp_height - hp_height}
-                                             setConsoleItemValue={this._setConsoleItemValue}
+                                             setConsoleItemValue={this.props.setConsoleItemValue}
+                                             setConsoleFieldValue={this.props.setConsoleFieldValue}
                                              setMainStateValue={this._setMainStateValue}
-                                             handleItemDelete={this._closeConsoleItem}
-                                             goToNextCell={this._goToNextCell}
-                                             resortConsoleItems={this._resortConsoleItems}
+                                             handleItemDelete={this.props.handleConsoleItemDelete}
+                                             goToNextCell={this.props.goToNextConsoleCell}
+                                             resortConsoleItems={this.props.resortConsoleItems}
                                              toggleExports={this._toggleExports}/>;
         let bottom_pane = (
             <HorizontalPanes left_pane={console_pane}
                              right_pane={exports_pane}
-                             available_height={vp_height - hp_height}
+                             available_height={console_available_height}
                              available_width={this.state.usable_width}
                              initial_width_fraction={this.state.console_width_fraction}
                              controlled={true}
@@ -1051,7 +984,7 @@ class MainApp extends React.Component {
                         <span className="fas fa-window-maximize"></span>
                     </button>
                     {tile_pane}
-                    {this.state.console_is_shrunk &&
+                    {this.props.console_is_shrunk &&
                         bottom_pane
                     }
                 </React.Fragment>
@@ -1068,7 +1001,7 @@ class MainApp extends React.Component {
                          controlled={true}
                          handleFractionChange={this._handleHorizontalFractionChange}
                     />
-                    {this.state.console_is_shrunk &&
+                    {this.props.console_is_shrunk &&
                         bottom_pane
                     }
                 </React.Fragment>
@@ -1081,10 +1014,13 @@ class MainApp extends React.Component {
                               user_name={window.username}
                               menus={menus}
                 />
-                {this.state.console_is_shrunk &&
+                {this.state.console_is_zoomed &&
+                    bottom_pane
+                }
+                {!this.state.console_is_zoomed && this.props.console_is_shrunk &&
                     top_pane
                 }
-                {!this.state.console_is_shrunk &&
+                {!this.state.console_is_zoomed && !this.props.console_is_shrunk &&
                     <VerticalPanes top_pane={top_pane}
                                bottom_pane={bottom_pane}
                                available_width={this.state.usable_width}
@@ -1100,6 +1036,13 @@ class MainApp extends React.Component {
 }
 
 MainApp.propTypes = {
+    console_items: PropTypes.array,
+    console_is_shrunk: PropTypes.bool,
+    setConsoleFieldValue: PropTypes.func,
+    setConsoleState: PropTypes.func,
+    goToNextConsoleCell: PropTypes.func,
+    handleConsoleItemDelete: PropTypes.func,
+    resortConsoleItems: PropTypes.func,
     is_project: PropTypes.bool,
     interface_state: PropTypes.object,
     short_collection_name: PropTypes.string,
@@ -1118,9 +1061,6 @@ class MainTacticSocket extends TacticSocket {
 
     initialize_socket_stuff() {
         this.socket.emit('join', {"room": user_id});
-        this.socket.emit('join-main', {"room": main_id}, function() {
-            _after_main_joined();
-        });
         this.socket.on('handle-callback', handleCallback);
         this.socket.on('close-user-windows', function(data){
                     postAsyncFalse("host", "remove_mainwindow_task", {"main_id": main_id});

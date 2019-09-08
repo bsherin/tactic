@@ -322,6 +322,7 @@ class CreatorApp extends React.Component {
 
     componentDidMount() {
         this.setState({"mounted": true});
+        document.title = this.state.tile_name;
         this.update_window_dimensions();
         window.addEventListener("resize", this.update_window_dimensions);
         stopSpinner();

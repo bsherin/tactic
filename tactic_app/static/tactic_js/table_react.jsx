@@ -599,6 +599,18 @@ class MainTableCardHeader extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this);
+        this.heading_left_ref = React.createRef();
+        this.heading_right_ref = React.createRef();
+        this.state = {hide_right_element: false}
+    }
+
+    componentDidUpdate() {
+        let le_rect = this.heading_left_ref.current.getBoundingClientRect();
+        let re_rect = this.heading_right_ref.current.getBoundingClientRect();
+        let hide_right = re_rect.x < (le_rect.x + le_rect.width + 10);
+        if (hide_right != this.state.hide_right_element) {
+            this.setState({hide_right_element: hide_right})
+        }
     }
 
     _handleSearchFieldChange(event) {
@@ -631,9 +643,10 @@ class MainTableCardHeader extends React.Component {
     }
 
     render () {
+        let heading_right_opacity = this.state.hide_right_element ? 0 : 100;
         return (
             <Rbs.Card.Header className="d-flex pl-2 pt-2 justify-content-between align-baseline">
-                <div className="d-flex">
+                <div id="heading-left" ref={this.heading_left_ref} className="d-flex">
                     <div className="main-heading-element">
                         <Rbs.Button onClick={this.props.toggleShrink}
                                     variant="outline-secondary"
@@ -657,7 +670,7 @@ class MainTableCardHeader extends React.Component {
                     </div>
 
                 </div>
-                <div className="d-flex">
+                <div id="heading-right" ref={this.heading_right_ref} style={{opacity: heading_right_opacity}} className="d-flex">
                     {this.props.show_table_spinner && <SmallSpinner/>}
                     <div className="main-heading-element d-flex">
                         <Rbs.Form inline={true}
@@ -680,9 +693,7 @@ class MainTableCardHeader extends React.Component {
                                 Clear
                             </Rbs.Button>
                         </Rbs.Form>
-
                     </div>
-
                 </div>
             </Rbs.Card.Header>
         )

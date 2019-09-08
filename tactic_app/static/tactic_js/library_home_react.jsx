@@ -404,8 +404,9 @@ class ProjectToolbar extends React.Component {
         for (let f of file_list) {
             the_data.append('file', f);
         }
+        let self = this;
         $.getJSON(`${$SCRIPT_ROOT}get_resource_names/project`, function (data) {
-                showModalReact("Import collection", "New Jupyter Name", CreateNewJupyter, "NewJupyterNotebook", data["resource_names"], [])
+                showModalReact("Import jupyter", "New Jupyter Name", CreateNewJupyter, "NewJupyterNotebook", data["resource_names"], [])
             }
         );
         function CreateNewJupyter(new_name, check_results) {

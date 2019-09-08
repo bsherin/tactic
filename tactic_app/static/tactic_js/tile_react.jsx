@@ -32,8 +32,12 @@ class TileComponent extends React.Component {
         this.my_ref = React.createRef();
         this.body_ref = React.createRef();
         this.tda_ref = React.createRef();
+        this.left_glyphs_ref = React.createRef();
+        this.right_glyphs_ref = React.createRef();
         this.state = {
-            header_height: 34
+            header_height: 34,
+            max_name_width: 1000,
+            mounted: false
         };
         doBinding(this);
     }
@@ -88,6 +92,7 @@ class TileComponent extends React.Component {
 
     componentDidMount() {
         let self = this;
+        this.setState({mounted: true});
         this.broadcastTileSize(this.props.tile_width, this.props.tile_height);
         this.listen_for_clicks();
         $(this.my_ref.current).resizable({
@@ -271,14 +276,14 @@ class TileComponent extends React.Component {
              for (let i = 0; i < the_form.length; i += 1) {
                 form_data[the_form[i]["name"]] = the_form[i]["value"]
              }
-             data["form_data"] = form_data;
-             postWithCallback(self.props.tile_id, "TileFormSubmit", data);
+             data_dict["form_data"] = form_data;
+             postWithCallback(self.props.tile_id, "TileFormSubmit", data_dict);
              return false
          });
          $(this.my_ref.current).on("change", '.front select', function (e) {
              let data_dict = self._standard_click_data();
-             data.select_value = e.target.value;
-             postWithCallback(self.props.tile_id, "SelectChange", data)
+             data_dict.select_value = e.target.value;
+             postWithCallback(self.props.tile_id, "SelectChange", data_dict)
          });
          $(this.my_ref.current).on('change', '.front textarea', function(e) {
              let data_dict = self._standard_click_data();
@@ -298,12 +303,25 @@ class TileComponent extends React.Component {
             width: this.props.tile_width - TILE_DISPLAY_AREA_MARGIN * 2,
             height: tile_height - this.state.header_height - TILE_DISPLAY_AREA_MARGIN * 2
         };
+        if (this.state.mounted) {
+            let lg_rect = this.left_glyphs_ref.current.getBoundingClientRect();
+            let rg_rect = this.right_glyphs_ref.current.getBoundingClientRect();
+            let lg_width = rg_rect.x - lg_rect.x - 10;
+            this.lg_style = {width: lg_width, overflowX: "hidden"};
+        }
+        else {
+            this.lg_style = {};
+        }
+
         this.back_style = Object.assign({}, this.front_style);
         this.tile_log_style = Object.assign({}, this.front_style);
         this.panel_body_style = {"width": this.props.tile_width};
         this.main_style = {width: this.props.tile_width,
                 height: tile_height
             };
+        if (!this.props.finished_loading) {
+            this.main_style.opacity = .5
+        }
         this.front_style.transition = `top ${ANI_DURATION}ms ease-in-out`;
         this.back_style.transition = `top ${ANI_DURATION}ms ease-in-out`;
         this.transitionStylesAltUp = {
@@ -361,7 +379,7 @@ class TileComponent extends React.Component {
         return (
             <Rbs.Card bg="light" ref={this.my_ref} style={this.main_style} className={tile_class} id={this.props.tile_id}>
                 <Rbs.Card.Header className="tile-panel-heading" >
-                    <div className="left-glyphs">
+                    <div className="left-glyphs" ref={this.left_glyphs_ref} style={this.lg_style}>
                         {this.props.shrunk &&
                             <GlyphButton butclass="notclose header-but triangle-right"
                                          icon_class="far fa-chevron-circle-right"
@@ -376,7 +394,7 @@ class TileComponent extends React.Component {
                                      icon_class="far fa-cog"/>
                         <span className="tile-name-div">{this.props.tile_name}</span>
                     </div>
-                    <div className="right-glyphs">
+                    <div className="right-glyphs" ref={this.right_glyphs_ref}>
                         {this.props.show_spinner &&
                             <span className="spin-place">
                                 <span className="loader-small"/>

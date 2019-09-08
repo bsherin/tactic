@@ -17,9 +17,11 @@ sys.stdout = sys.stderr
 
 print(os.environ)
 MAX_QUEUE_LENGTH = 5000
-CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
-STEP_SIZE = int(os.environ.get("STEP_SIZE"))
+# CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
+# STEP_SIZE = int(os.environ.get("STEP_SIZE"))
 
+CHUNK_SIZE = 100
+STEP_SIZE = 50
 
 if "DEBUG_MAIN_CONTAINER" in os.environ:
     DEBUG_MAIN_CONTAINER = os.environ.get("DEBUG_MAIN_CONTAINER")
