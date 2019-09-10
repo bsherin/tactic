@@ -4,16 +4,17 @@ import {MainTableCard, MainTableCardHeader, FreeformBody, TableHeader, TableBody
 import {TacticSocket} from "./tactic_socket.js"
 import {HorizontalPanes, VerticalPanes} from "./resizing_layouts.js";
 import {ProjectMenu, ColumnMenu, MenuComponent} from "./main_menus_react.js";
-import {TileComponent} from "./tile_react.js";
+import {TileContainer} from "./tile_react.js";
 import {ExportsViewer} from "./export_viewer_react.js";
 import {showModalReact, showSelectDialog} from "./modal_react.js";
-import {withConsole, console_attrs} from "./with_console_hoc.js";
-import {SortableComponent} from "./sortable_container.js";
+import {ConsoleComponent} from "./console_component.js";
 
 export {MainTacticSocket}
 
-const EXTRA_TABLE_AREA_SPACE = 500;
 
+const MARGIN_SIZE = 17;
+const BOTTOM_MARGIN = 35;
+const EXTRA_TABLE_AREA_SPACE = 500;
 
 const HEARTBEAT_INTERVAL = 10000; //milliseconds
 var heartbeat_timer = setInterval( function(){
@@ -70,10 +71,9 @@ function _finish_post_load(data) {
     }
     postWithCallback(window.main_id, "grab_data", {"doc_name":window.doc_names[0]}, function (data) {
             let domContainer = document.querySelector('#main-root');
-            let MainComp = withConsole(MainApp, tsocket);
             if (window.is_freeform) {
                 if (window.is_project) {
-                    ReactDOM.render(<MainComp is_project={true}
+                    ReactDOM.render(<MainApp is_project={true}
                                              interface_state={interface_state}
                                              initial_data_text={data.data_text}
                                              initial_doc_names={window.doc_names}/>,
@@ -81,7 +81,7 @@ function _finish_post_load(data) {
 
                 }
                 else {
-                    ReactDOM.render(<MainComp is_project={false}
+                    ReactDOM.render(<MainApp is_project={false}
                                              interface_state={null}
                                              initial_data_text={data.data_text}
                                              initial_doc_names={window.doc_names}/>,
@@ -90,7 +90,7 @@ function _finish_post_load(data) {
             }
             else {
                 if (window.is_project) {
-                    ReactDOM.render(<MainComp is_project={true}
+                    ReactDOM.render(<MainApp is_project={true}
                                              interface_state={interface_state}
                                              initial_column_names={data.table_spec.header_list}
                                              initial_data_rows={data.data_rows}
@@ -103,7 +103,7 @@ function _finish_post_load(data) {
                 }
                 else {
 
-                    ReactDOM.render(<MainComp is_project={false}
+                    ReactDOM.render(<MainApp is_project={false}
                                              interface_state={null}
                                              initial_column_names={data.table_spec.header_list}
                                              initial_data_rows={data.data_rows}
@@ -119,29 +119,34 @@ function _finish_post_load(data) {
     });
 }
 
-const save_attrs = ["tile_list", "table_is_shrunk", "console_width_fraction", "horizontal_fraction", "pipe_dict"];
+const save_attrs = ["tile_list", "table_is_shrunk", "console_width_fraction", "horizontal_fraction", "pipe_dict",
+"console_items", "console_is_shrunk", "height_fraction", "show_exports_pane", 'console_is_zoomed'];
 
 class MainApp extends React.Component {
     constructor (props) {
         super(props);
         doBinding(this);
         this.table_container_ref = React.createRef();
-        // this.tile_div_ref = React.createRef();
+        this.tile_div_ref = React.createRef();
         this.tbody_ref = React.createRef();
         let base_state = {
                 mounted: false,
                 doc_names: props.initial_doc_names,
                 short_collection_name: window.short_collection_name,
+                console_items: [],
+                console_is_shrunk: true,
+                show_exports_pane: false,
+                console_is_zoomed: false,
                 tile_types: {},
                 tile_list: [],
                 search_text: "",
+                usable_width: window.innerWidth - 2 * MARGIN_SIZE - 30,
+                usable_height: window.innerHeight - BOTTOM_MARGIN,
+                height_fraction: .85,
                 alt_search_text: null,
                 table_is_shrunk: false,
                 console_width_fraction: .5,
                 horizontal_fraction: .65,
-                pipe_dict: {},
-                pipe_dict_updated: false,
-
         };
         let additions;
         if (window.is_freeform) {
@@ -171,6 +176,9 @@ class MainApp extends React.Component {
                 },
             };
         }
+        if (window.is_notebook) {
+            this.state.console_is_shrunk = false
+        }
         this.state= Object.assign(base_state, additions);
 
         if (this.props.is_project) {
@@ -181,14 +189,19 @@ class MainApp extends React.Component {
                 entry.finished_loading = false
             }
         }
+        this.updateExportsList = null;
     }
 
-    _handleTileFinishedLoading(data) {
-        this._setTileValue(data.tile_id, "finished_loading", true)
+    _update_window_dimensions() {
+        this.setState({
+            "usable_width": window.innerWidth - 2 * MARGIN_SIZE - 30,
+            "usable_height": window.innerHeight - BOTTOM_MARGIN
+        });
     }
 
     componentDidMount() {
         this.setState({"mounted": true});
+        window.addEventListener("resize", this._update_window_dimensions);
         document.title = window.is_project ? window._project_name : this.state.short_collection_name;
         let self = this;
         tsocket.socket.on('table-message', function (data) {
@@ -198,17 +211,12 @@ class MainApp extends React.Component {
             self.setState({tile_types: data.tile_types});
         });
 
-        tsocket.socket.on("tile-message", this._handleTileMessage);
-        tsocket.socket.on("tile-finished-loading", this._handleTileFinishedLoading);
-        tsocket.socket.on("export-viewer-message", this._handleExportViewerMessage);
         tsocket.socket.on("update-menus", function () {
             postWithCallback("host", "get_tile_types", {"user_id": window.user_id}, function (data) {
                 self.setState({tile_types: data.tile_types});
             });
         });
-        tsocket.socket.on('tile-source-change', function (data) {
-            self._markSourceChange(data.tile_type)
-        });
+
         tsocket.socket.on('change-doc', function(data){
             let row_id = data.hasOwnProperty("row_id") ? data.row_id : null;
             if (self.state.table_is_shrunk) {
@@ -216,8 +224,6 @@ class MainApp extends React.Component {
             }
             self._handleChangeDoc(data.doc_name, row_id)
         });
-        // this.createTileSorter();
-        this._updateExportsList();
         if (!window.is_project) {
             stopSpinner();
         }
@@ -244,124 +250,10 @@ class MainApp extends React.Component {
             front_content: ""}
     }
 
-    _resortTiles(new_sort_list) {
-        let new_tile_list = [];
-        for (let tid of new_sort_list) {
-            let new_entry = this.get_tile_entry(tid);
-            new_tile_list.push(new_entry)
-        }
-        this.setState({tile_list: new_tile_list})
-    }
-
-    _markSourceChange(tile_type) {
-        let new_tile_list = [...this.state.tile_list];
-        let change_list = [];
-        for (let entry of new_tile_list) {
-            if (entry.tile_type == tile_type) {
-                change_list.push(entry.tile_id)
-            }
-        }
-        for (let tid of change_list) {
-            this._setTileValue(tid, "source_changed", true)
-        }
-    }
-
-    get_tile_entry(tile_id) {
-        let tindex = this.tileIndex(tile_id);
-        if (tindex == -1) return null;
-        return Object.assign({}, this.state.tile_list[this.tileIndex(tile_id)])
-    }
-
-    replace_tile_entry(tile_id, new_entry, callback=null) {
-        let new_tile_list = [...this.state.tile_list];
-        let tindex = this.tileIndex(tile_id);
-        new_tile_list.splice(tindex, 1, new_entry);
-        this.setState({tile_list: new_tile_list}, callback)
-    }
-
-    tileIndex(tile_id) {
-        let counter = 0;
-        for (let entry of this.state.tile_list) {
-            if (entry.tile_id == tile_id) {
-                return counter
-            }
-            ++counter;
-        }
-        return -1
-    }
-
-    _closeTile(tile_id) {
-        let tindex = this.tileIndex(tile_id);
-        let new_tile_list = [...this.state.tile_list];
-        new_tile_list.splice(tindex, 1);
-        this.setState({tile_list: new_tile_list});
-        const data_dict = {
-            main_id: window.main_id,
-            tile_id: tile_id
-        };
-        postWithCallback(window.main_id, "RemoveTile", data_dict);
-    }
-
-    _setTileValue(tile_id, field, value, callback=null) {
-        let entry = this.get_tile_entry(tile_id);
-        entry[field] = value;
-        this.replace_tile_entry(tile_id, entry, callback)
-    }
-
-    _setTileState(tile_id, new_state, callback=null) {
-        let entry = this.get_tile_entry(tile_id);
-        for (let field in new_state) {
-            entry[field] = new_state[field]
-        }
-        this.replace_tile_entry(tile_id, entry, callback)
-    }
-
-    _displayTileContentWithJavascript(tile_id, data) {
-        this._setTileState(tile_id, {front_content: data.html,
-            javascript_code: data.javascript_code,
-            javascript_arg_dict: data.arg_dict})
-    }
-
-    _displayTileContent(tile_id, data) {
-        this._setTileState(tile_id, {front_content: data.html,
-            javascript_code: null,
-            javascript_arg_dict: null})
-    }
-
-    _handleTileMessage(data) {
-        let self = this;
-        let handlerDict = {
-            hideOptions: (tile_id, data)=>self._setTileValue(tile_id, "show_form", false),
-            startSpinner: (tile_id, data)=>self._setTileValue(tile_id, "show_spinner", true),
-            stopSpinner: (tile_id, data)=>self._setTileValue(tile_id, "show_spinner", false),
-            displayTileContent: self._displayTileContent,
-            displayFormContent: (tile_id, data)=>self._setTileValue(tile_id, "form_data", data.form_data),
-            displayTileContentWithJavascript: self._displayTileContentWithJavascript
-        };
-        let tile_id = data.tile_id;
-        handlerDict[data.tile_message](tile_id, data)
-    }
-
-
     _setMainStateValue(field_name, value, callback=null) {
         let new_state = {};
         new_state[field_name] = value;
         this.setState(new_state, callback);
-    }
-
-    _updateExportsList() {
-        let self = this;
-        postWithCallback(window.main_id, "get_full_pipe_dict", {}, function (data) {
-            self.setState({pipe_dict: data.pipe_dict, pipe_dict_updated: true})
-        })
-    }
-
-    _handleExportViewerMessage(data) {
-        let self = this;
-        let handlerDict = {
-            update_exports_popup: ()=>self._updateExportsList()
-        };
-        handlerDict[data.export_viewer_message](data)
     }
 
     _handleSearchFieldChange(search_text) {
@@ -430,7 +322,7 @@ class MainApp extends React.Component {
     }
 
     _handleVerticalSplitUpdate(top_height, bottom_height, top_fraction) {
-        this.props.setConsoleFieldValue("height_fraction", top_fraction)
+        this.setState({height_fraction: top_fraction})
     }
 
     _updateTableSpec(spec_update, broadcast=false) {
@@ -474,7 +366,7 @@ class MainApp extends React.Component {
                     let new_tile_list = [...self.state.tile_list];
                     new_tile_list.push(new_tile_entry);
                     self.setState({"tile_list": new_tile_list});
-                    self._updateExportsList();
+                    if (self.updateExportsList) self.updateExportsList();
                     clearStatusMessage();
                     stopSpinner()
                 }
@@ -683,7 +575,6 @@ class MainApp extends React.Component {
             });
             stopSpinner()
         })
-
     }
 
     _changeCollection() {
@@ -727,17 +618,42 @@ class MainApp extends React.Component {
         for (let attr of save_attrs) {
             interface_state[attr] = this.state[attr]
         }
-        for (let attr of console_attrs) {
-            interface_state[attr] = this.props[attr]
-        }
         return interface_state
     }
 
-    render () {
+    get_hp_height () {
+        if (this.state.mounted && this.tile_div_ref.current) {
+            let top_fraction = this.state.console_is_shrunk ? 1 : this.state.height_fraction;
+            return (this.state.usable_height - this.tile_div_ref.current.getBoundingClientRect().top) * top_fraction - 30;
+        }
+        else {
+            return this.state.usable_height - 100
+        }
+    }
 
+    get_vp_height () {
+        if (this.state.mounted && this.tile_div_ref.current) {
+            return this.state.usable_height - this.tile_div_ref.current.getBoundingClientRect().top;
+        }
+        else {
+            return this.state.usable_height - 50
+        }
+    }
+
+    render () {
+        let vp_height;
+        let hp_height;
+        let console_available_height;
+        if (this.state.console_is_zoomed || window.is_notebook) {
+            console_available_height = this.state.usable_height - 50
+        } else {
+            vp_height = this.get_vp_height();
+            hp_height = this.get_hp_height();
+            console_available_height = vp_height - hp_height
+        }
         let menus = (
             <React.Fragment>
-                <ProjectMenu console_items={this.props.console_items}
+                <ProjectMenu console_items={this.state.console_items}
                              interface_state={this.interface_state}
                              changeCollection={this._changeCollection}
                              disabled_items={window.is_project ? [] : ["Save"]}
@@ -756,7 +672,7 @@ class MainApp extends React.Component {
             </React.Fragment>
         );
         let console_header_height = 35;
-        let table_available_height = this.props.console_is_shrunk ? this.props.hp_height - console_header_height : this.props.hp_height;
+        let table_available_height = this.state.console_is_shrunk ? hp_height - console_header_height : hp_height;
         let table_style = {display: "block", tableLayout: "fixed"};
         if (this.state.table_spec.column_widths != null) {
             table_style["width"] = this.compute_table_width();
@@ -835,40 +751,44 @@ class MainApp extends React.Component {
             </React.Fragment>
         );
         let tile_pane = (
-            <SortableComponent id="tile-div"
-                               style={{height: this.props.hp_height}}
-                               container_ref={this.props.tile_div_ref}
-                               ElementComponent={TileComponent}
-                               key_field_name="tile_name"
-                               item_list={this.state.tile_list}
-                               handle=".tile-name-div"
-                               resortFunction={this._resortTiles}
-                               handleClose={this._closeTile}
-                               setTileValue={this._setTileValue}
-                               setTileState={this._setTileState}
-                               current_doc_name={this.state.table_spec.current_doc_name}
-                               selected_row={this.state.selected_row}
-                               broadcast_event={this._broadcast_event_to_server}
-                               table_is_shrunk={this.state.table_is_shrunk}
-
+            <TileContainer height={hp_height}
+                           tile_div_ref={this.tile_div_ref}
+                           tile_list={this.state.tile_list}
+                           current_doc_name={this.state.table_spec.current_doc_name}
+                           selected_row={this.state.selected_row}
+                           broadcast_event={this._broadcast_event_to_server}
+                           setMainStateValue={this._setMainStateValue}
+                           tsocket={tsocket}
             />
         );
 
         let exports_pane;
-        if (this.props.show_exports_pane) {
-            exports_pane = <ExportsViewer pipe_dict={this.state.pipe_dict}
-                                          pipe_dict_updated={this.props.pipe_dict_updated}
-                                          available_height={this.props.console_available_height}/>
+        if (this.state.show_exports_pane) {
+            exports_pane = <ExportsViewer setUpdate={(ufunc)=>this.updateExportsList = ufunc}
+                                          available_height={console_available_height}
+                                          tsocket={tsocket}
+            />
         }
         else {
             exports_pane = <div></div>
         }
 
+        let console_pane = (
+            <ConsoleComponent console_items={this.state.console_items}
+                              console_is_shrunk={this.state.console_is_shrunk}
+                              console_is_zoomed={this.state.console_is_zoomed}
+                              show_exports_pane={this.state.console_is_zoomed}
+                              setMainStateValue={this._setMainStateValue}
+                              console_available_height={console_available_height}
+                              tsocket={tsocket}
+                              />
+        );
+
         let bottom_pane = (
-            <HorizontalPanes left_pane={this.props.console_component}
+            <HorizontalPanes left_pane={console_pane}
                              right_pane={exports_pane}
-                             available_height={this.props.console_available_height}
-                             available_width={this.props.usable_width}
+                             available_height={console_available_height}
+                             available_width={this.state.usable_width}
                              initial_width_fraction={this.state.console_width_fraction}
                              controlled={true}
                              handleFractionChange={this._handleConsoleFractionChange}
@@ -882,7 +802,7 @@ class MainApp extends React.Component {
                         <span className="fas fa-window-maximize"></span>
                     </button>
                     {tile_pane}
-                    {this.props.console_is_shrunk &&
+                    {this.state.console_is_shrunk &&
                         bottom_pane
                     }
                 </React.Fragment>
@@ -893,13 +813,13 @@ class MainApp extends React.Component {
                 <React.Fragment>
                     <HorizontalPanes left_pane={table_pane}
                          right_pane={tile_pane}
-                         available_height={this.props.hp_height}
-                         available_width={this.props.usable_width}
+                         available_height={hp_height}
+                         available_width={this.state.usable_width}
                          initial_width_fraction={this.state.horizontal_fraction}
                          controlled={true}
                          handleFractionChange={this._handleHorizontalFractionChange}
                     />
-                    {this.props.console_is_shrunk &&
+                    {this.state.console_is_shrunk &&
                         bottom_pane
                     }
                 </React.Fragment>
@@ -912,18 +832,18 @@ class MainApp extends React.Component {
                               user_name={window.username}
                               menus={menus}
                 />
-                {this.props.console_is_zoomed &&
+                {this.state.console_is_zoomed &&
                     bottom_pane
                 }
-                {!this.props.console_is_zoomed && this.props.console_is_shrunk &&
+                {!this.state.console_is_zoomed && this.state.console_is_shrunk &&
                     top_pane
                 }
-                {!this.props.console_is_zoomed && !this.props.console_is_shrunk &&
+                {!this.state.console_is_zoomed && !this.state.console_is_shrunk &&
                     <VerticalPanes top_pane={top_pane}
                                bottom_pane={bottom_pane}
-                               available_width={this.props.usable_width}
-                               available_height={this.props.vp_height}
-                               initial_height_fraction={this.props.height_fraction}
+                               available_width={this.state.usable_width}
+                               available_height={vp_height}
+                               initial_height_fraction={this.state.height_fraction}
                                handleSplitUpdate={this._handleVerticalSplitUpdate}
                     />
                 }
@@ -934,22 +854,7 @@ class MainApp extends React.Component {
 }
 
 MainApp.propTypes = {
-    console_component: PropTypes.object,
-    console_items: PropTypes.array,
-    console_is_shrunk: PropTypes.bool,
-    console_is_zoomed: PropTypes.bool,
-    show_exports_pane: PropTypes.bool,
-    console_available_height: PropTypes.number,
-    height_fraction: PropTypes.number,
-    usable_height: PropTypes.number,
-    usable_width: PropTypes.number,
-    setConsoleFieldValue: PropTypes.func,
-    tile_div_ref: PropTypes.object,
-    hp_height: PropTypes.number,
-    vp_height: PropTypes.number,
-    is_project: PropTypes.bool,
     interface_state: PropTypes.object,
-    short_collection_name: PropTypes.string,
     initial_doc_names: PropTypes.array,
     initial_column_names: PropTypes.array,
     initial_data_rows: PropTypes.array,
@@ -957,7 +862,6 @@ MainApp.propTypes = {
     initial_is_last_chunk: PropTypes.bool,
     initial_column_widths: PropTypes.array,
     initial_hidden_columns_list: PropTypes.array,
-    console_html: PropTypes.string,
     doc_names: PropTypes.array,
 };
 

@@ -3,6 +3,7 @@ import {TacticNavbar} from "./base_module.js";
 import {ProjectMenu} from "./main_menus_react.js";
 import {withConsole, console_attrs} from "./with_console_hoc.js";
 import {TacticSocket} from "./tactic_socket.js";
+import {ConsoleComponent} from "./console_component.js";
 
 const MARGIN_SIZE = 17;
 const BOTTOM_MARGIN = 35;
@@ -57,22 +58,21 @@ function _finish_post_load(data) {
         interface_state = data.interface_state
     }
     let domContainer = document.querySelector('#main-root');
-    let MainComp = withConsole(NotebookApp, tsocket);
     if (window.is_project || window.opening_from_temp_id) {
-        ReactDOM.render(<MainComp is_project={true}
+        ReactDOM.render(<NotebookApp is_project={true}
                                   interface_state={interface_state}
                                  />,
             domContainer)
         }
         else {
-            ReactDOM.render(<MainComp is_project={false}
+            ReactDOM.render(<NotebookApp is_project={false}
                                       interface_state={null}
                                      />,
             domContainer)
         }
 }
 
-const save_attrs = [];
+const save_attrs = ["console_items"];
 
 class NotebookApp extends React.Component {
     constructor (props) {
@@ -80,7 +80,9 @@ class NotebookApp extends React.Component {
         doBinding(this);
         this.state = {
             mounted: false,
-
+            console_items: [],
+            usable_width: window.innerWidth - 2 * MARGIN_SIZE - 30,
+            usable_height: window.innerHeight - BOTTOM_MARGIN,
         };
         if (this.props.is_project) {
             for (let attr of save_attrs) {
@@ -91,8 +93,16 @@ class NotebookApp extends React.Component {
 
     componentDidMount() {
         this.setState({"mounted": true});
+        window.addEventListener("resize", this._update_window_dimensions);
         document.title = window.is_project ? window._project_name : "New Notebook";
         stopSpinner();
+    }
+
+    _update_window_dimensions() {
+        this.setState({
+            "usable_width": window.innerWidth - 2 * MARGIN_SIZE - 30,
+            "usable_height": window.innerHeight - BOTTOM_MARGIN
+        });
     }
 
     _setMainStateValue(field_name, value, callback=null) {
@@ -111,9 +121,6 @@ class NotebookApp extends React.Component {
         let interface_state = {};
         for (let attr of save_attrs) {
             interface_state[attr] = this.state[attr]
-        }
-        for (let attr of console_attrs) {
-            interface_state[attr] = this.props[attr]
         }
         return interface_state
     }
@@ -135,7 +142,14 @@ class NotebookApp extends React.Component {
                               user_name={window.username}
                               menus={menus}
                 />
-                {this.props.console_component}
+                <ConsoleComponent console_items={this.state.console_items}
+                              console_is_shrunk={false}
+                              console_is_zoomed={true}
+                              show_exports_pane={false}
+                              setMainStateValue={this._setMainStateValue}
+                              console_available_height={this.state.usable_height - 50}
+                              tsocket={tsocket}
+                              />
             </React.Fragment>
         )
     }
