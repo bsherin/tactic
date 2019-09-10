@@ -5,15 +5,12 @@ import {TacticSocket} from "./tactic_socket.js"
 import {HorizontalPanes, VerticalPanes} from "./resizing_layouts.js";
 import {ProjectMenu, ColumnMenu, MenuComponent} from "./main_menus_react.js";
 import {TileComponent} from "./tile_react.js";
-import {ConsoleComponent} from "./console_react.js";
 import {ExportsViewer} from "./export_viewer_react.js";
 import {showModalReact, showSelectDialog} from "./modal_react.js";
-import {withConsole} from "./with_console_hoc.js";
+import {withConsole, console_attrs} from "./with_console_hoc.js";
+import {SortableComponent} from "./sortable_container.js";
 
 export {MainTacticSocket}
-
-const MARGIN_SIZE = 17;
-const BOTTOM_MARGIN = 35;
 
 const EXTRA_TABLE_AREA_SPACE = 500;
 
@@ -122,34 +119,25 @@ function _finish_post_load(data) {
     });
 }
 
-const save_attrs = ["height_fraction", "tile_list", "table_is_shrunk", "console_width_fraction", 'console_is_zoomed', "show_exports_pane", "horizontal_fraction", "pipe_dict"];
-
-const save_prop_attrs = ["console_items", "console_is_shrunk"];
+const save_attrs = ["tile_list", "table_is_shrunk", "console_width_fraction", "horizontal_fraction", "pipe_dict"];
 
 class MainApp extends React.Component {
     constructor (props) {
         super(props);
         doBinding(this);
         this.table_container_ref = React.createRef();
-        this.tile_div_ref = React.createRef();
+        // this.tile_div_ref = React.createRef();
         this.tbody_ref = React.createRef();
         let base_state = {
                 mounted: false,
                 doc_names: props.initial_doc_names,
                 short_collection_name: window.short_collection_name,
-                usable_width: window.innerWidth - 2 * MARGIN_SIZE - 30,
-                usable_height: window.innerHeight - BOTTOM_MARGIN,
-                height_fraction: .85,
                 tile_types: {},
                 tile_list: [],
                 search_text: "",
                 alt_search_text: null,
                 table_is_shrunk: false,
                 console_width_fraction: .5,
-                console_is_zoomed: false,
-                show_console_error_log: false,
-                console_error_log_text: "",
-                show_exports_pane: false,
                 horizontal_fraction: .65,
                 pipe_dict: {},
                 pipe_dict_updated: false,
@@ -201,7 +189,6 @@ class MainApp extends React.Component {
 
     componentDidMount() {
         this.setState({"mounted": true});
-        window.addEventListener("resize", this._update_window_dimensions);
         document.title = window.is_project ? window._project_name : this.state.short_collection_name;
         let self = this;
         tsocket.socket.on('table-message', function (data) {
@@ -229,20 +216,10 @@ class MainApp extends React.Component {
             }
             self._handleChangeDoc(data.doc_name, row_id)
         });
-        this.createTileSorter();
+        // this.createTileSorter();
         this._updateExportsList();
         if (!window.is_project) {
             stopSpinner();
-        }
-    }
-
-    get tile_sorter_exists() {
-        return $("#tile-div").hasClass("ui-sortable")
-    }
-
-    componentDidUpdate() {
-        if (!this.state.console_is_zoomed && !this.tile_sorter_exists) {
-            this.createTileSorter()
         }
     }
 
@@ -274,21 +251,6 @@ class MainApp extends React.Component {
             new_tile_list.push(new_entry)
         }
         this.setState({tile_list: new_tile_list})
-    }
-
-    createTileSorter() {
-        let self = this;
-        $(this.tile_div_ref.current).sortable({
-            handle: '.card-header',
-            tolerance: 'pointer',
-            revert: 'invalid',
-            forceHelperSize: true,
-            stop: function() {
-                const new_sort_list = $(self.tile_div_ref.current).sortable("toArray");
-                self._resortTiles(new_sort_list);
-            }
-        });
-        this.setState({tile_sorter_exists: true});
     }
 
     _markSourceChange(tile_type) {
@@ -394,10 +356,6 @@ class MainApp extends React.Component {
         })
     }
 
-    _toggleExports() {
-        this.setState({show_exports_pane: !this.state.show_exports_pane})
-    }
-
     _handleExportViewerMessage(data) {
         let self = this;
         let handlerDict = {
@@ -446,19 +404,19 @@ class MainApp extends React.Component {
         let self = this;
         if ((row_id == null) || window.is_freeform) {
             postWithCallback(window.main_id, "grab_data", {"doc_name": new_doc_name}, function (data) {
-            stopSpinner();
-            clearStatusMessage();
-            if (window.is_freeform) {
-                let new_table_spec = {"current_doc_name": new_doc_name};
-                self.setState({"data_text": data.data_text, "table_spec": new_table_spec})
-            }
-            else {
-                self._setStateFromDataObject(data, new_doc_name, ()=>{
-                    self.setState({scroll_top: 0})
-                });
-            }
-            self.set_visible_doc(new_doc_name);
-          })
+                stopSpinner();
+                clearStatusMessage();
+                if (window.is_freeform) {
+                    let new_table_spec = {"current_doc_name": new_doc_name};
+                    self.setState({"data_text": data.data_text, "table_spec": new_table_spec})
+                }
+                else {
+                    self._setStateFromDataObject(data, new_doc_name, ()=>{
+                        self.setState({scroll_top: 0})
+                    });
+                }
+                self.set_visible_doc(new_doc_name);
+              })
         }
         else {
             const data_dict = {"doc_name": new_doc_name, "row_id": row_id};
@@ -471,34 +429,8 @@ class MainApp extends React.Component {
         }
     }
 
-     _update_window_dimensions() {
-        this.setState({
-            "usable_width": window.innerWidth - 2 * MARGIN_SIZE - 30,
-            "usable_height": window.innerHeight - BOTTOM_MARGIN
-        });
-    }
-
     _handleVerticalSplitUpdate(top_height, bottom_height, top_fraction) {
-        this.setState({height_fraction: top_fraction})
-    }
-
-    get_hp_height () {
-        if (this.state.mounted && this.tile_div_ref.current) {
-            let top_fraction = this.props.console_is_shrunk ? 1 : this.state.height_fraction;
-            return (this.state.usable_height - this.tile_div_ref.current.getBoundingClientRect().top) * top_fraction - 30;
-        }
-        else {
-            return this.state.usable_height - 100
-        }
-    }
-
-    get_vp_height () {
-        if (this.state.mounted && this.tile_div_ref.current) {
-            return this.state.usable_height - this.tile_div_ref.current.getBoundingClientRect().top;
-        }
-        else {
-            return this.state.usable_height - 50
-        }
+        this.props.setConsoleFieldValue("height_fraction", top_fraction)
     }
 
     _updateTableSpec(spec_update, broadcast=false) {
@@ -775,6 +707,7 @@ class MainApp extends React.Component {
             postWithCallback(window.main_id, "change_collection", result_dict, changeCollectionResult);
             function changeCollectionResult(data_object) {
                 if (data_object.success) {
+                    if (!window.is_project) document.title = new_collection_name;
                     window._collection_name = data_object.collection_name;
                     self.setState({doc_names: data_object.doc_names,
                         short_collection_name: data_object.short_collection_name
@@ -794,24 +727,13 @@ class MainApp extends React.Component {
         for (let attr of save_attrs) {
             interface_state[attr] = this.state[attr]
         }
-        for (let attr of save_prop_attrs) {
+        for (let attr of console_attrs) {
             interface_state[attr] = this.props[attr]
         }
         return interface_state
     }
 
     render () {
-        let vp_height;
-        let hp_height;
-        let console_available_height;
-        if (this.state.console_is_zoomed) {
-            console_available_height = this.state.usable_height - 50
-        }
-        else {
-            vp_height = this.get_vp_height();
-            hp_height = this.get_hp_height();
-            console_available_height = vp_height - hp_height
-        }
 
         let menus = (
             <React.Fragment>
@@ -834,7 +756,7 @@ class MainApp extends React.Component {
             </React.Fragment>
         );
         let console_header_height = 35;
-        let table_available_height = this.props.console_is_shrunk ? hp_height - console_header_height : hp_height;
+        let table_available_height = this.props.console_is_shrunk ? this.props.hp_height - console_header_height : this.props.hp_height;
         let table_style = {display: "block", tableLayout: "fixed"};
         if (this.state.table_spec.column_widths != null) {
             table_style["width"] = this.compute_table_width();
@@ -913,64 +835,40 @@ class MainApp extends React.Component {
             </React.Fragment>
         );
         let tile_pane = (
-                <div id="tile-div" style={{height: hp_height}} ref={this.tile_div_ref}>
-                    {this.state.tile_list.length > 0 &&
-                        this.state.tile_list.map((entry) => (
-                            <TileComponent tile_name={entry.tile_name}
-                                           key={entry.tile_name}
-                                           tile_id={entry.tile_id}
-                                           finished_loading={entry.finished_loading}
-                                           source_changed={entry.source_changed}
-                                           form_data={entry.form_data}
-                                           front_content={entry.front_content}
-                                           show_log={entry.show_log}
-                                           show_form={entry.show_form}
-                                           show_spinner={entry.show_spinner}
-                                           shrunk={entry.shrunk}
-                                           log_content={entry.log_content}
-                                           tile_width={entry.tile_width}
-                                           tile_height={entry.tile_height}
-                                           javascript_code={entry.javascript_code}
-                                           javascript_arg_dict={entry.javascript_arg_dict}
-                                           handleClose={this._closeTile}
-                                           setTileValue={this._setTileValue}
-                                           setTileState={this._setTileState}
-                                           current_doc_name={this.state.table_spec.current_doc_name}
-                                           selected_row={this.state.selected_row}
-                                           broadcast_event={this._broadcast_event_to_server}
-                                           table_is_shrunk={this.state.table_is_shrunk}/>
-                            )
-                        )
-                    }
-                </div>
+            <SortableComponent id="tile-div"
+                               style={{height: this.props.hp_height}}
+                               container_ref={this.props.tile_div_ref}
+                               ElementComponent={TileComponent}
+                               key_field_name="tile_name"
+                               item_list={this.state.tile_list}
+                               handle=".tile-name-div"
+                               resortFunction={this._resortTiles}
+                               handleClose={this._closeTile}
+                               setTileValue={this._setTileValue}
+                               setTileState={this._setTileState}
+                               current_doc_name={this.state.table_spec.current_doc_name}
+                               selected_row={this.state.selected_row}
+                               broadcast_event={this._broadcast_event_to_server}
+                               table_is_shrunk={this.state.table_is_shrunk}
+
+            />
         );
+
         let exports_pane;
-        if (this.state.show_exports_pane) {
+        if (this.props.show_exports_pane) {
             exports_pane = <ExportsViewer pipe_dict={this.state.pipe_dict}
                                           pipe_dict_updated={this.props.pipe_dict_updated}
-                                          available_height={console_available_height}/>
+                                          available_height={this.props.console_available_height}/>
         }
         else {
             exports_pane = <div></div>
         }
-        let console_pane = <ConsoleComponent console_items={this.props.console_items}
-                                             error_log_text={this.state.console_error_log_text}
-                                             am_shrunk={this.props.console_is_shrunk}
-                                             am_zoomed={this.state.console_is_zoomed}
-                                             show_error_log={this.state.show_console_error_log}
-                                             available_height={vp_height - hp_height}
-                                             setConsoleItemValue={this.props.setConsoleItemValue}
-                                             setConsoleFieldValue={this.props.setConsoleFieldValue}
-                                             setMainStateValue={this._setMainStateValue}
-                                             handleItemDelete={this.props.handleConsoleItemDelete}
-                                             goToNextCell={this.props.goToNextConsoleCell}
-                                             resortConsoleItems={this.props.resortConsoleItems}
-                                             toggleExports={this._toggleExports}/>;
+
         let bottom_pane = (
-            <HorizontalPanes left_pane={console_pane}
+            <HorizontalPanes left_pane={this.props.console_component}
                              right_pane={exports_pane}
-                             available_height={console_available_height}
-                             available_width={this.state.usable_width}
+                             available_height={this.props.console_available_height}
+                             available_width={this.props.usable_width}
                              initial_width_fraction={this.state.console_width_fraction}
                              controlled={true}
                              handleFractionChange={this._handleConsoleFractionChange}
@@ -995,8 +893,8 @@ class MainApp extends React.Component {
                 <React.Fragment>
                     <HorizontalPanes left_pane={table_pane}
                          right_pane={tile_pane}
-                         available_height={hp_height}
-                         available_width={this.state.usable_width}
+                         available_height={this.props.hp_height}
+                         available_width={this.props.usable_width}
                          initial_width_fraction={this.state.horizontal_fraction}
                          controlled={true}
                          handleFractionChange={this._handleHorizontalFractionChange}
@@ -1014,18 +912,18 @@ class MainApp extends React.Component {
                               user_name={window.username}
                               menus={menus}
                 />
-                {this.state.console_is_zoomed &&
+                {this.props.console_is_zoomed &&
                     bottom_pane
                 }
-                {!this.state.console_is_zoomed && this.props.console_is_shrunk &&
+                {!this.props.console_is_zoomed && this.props.console_is_shrunk &&
                     top_pane
                 }
-                {!this.state.console_is_zoomed && !this.props.console_is_shrunk &&
+                {!this.props.console_is_zoomed && !this.props.console_is_shrunk &&
                     <VerticalPanes top_pane={top_pane}
                                bottom_pane={bottom_pane}
-                               available_width={this.state.usable_width}
-                               available_height={vp_height}
-                               initial_height_fraction={this.state.height_fraction}
+                               available_width={this.props.usable_width}
+                               available_height={this.props.vp_height}
+                               initial_height_fraction={this.props.height_fraction}
                                handleSplitUpdate={this._handleVerticalSplitUpdate}
                     />
                 }
@@ -1036,13 +934,19 @@ class MainApp extends React.Component {
 }
 
 MainApp.propTypes = {
+    console_component: PropTypes.object,
     console_items: PropTypes.array,
     console_is_shrunk: PropTypes.bool,
+    console_is_zoomed: PropTypes.bool,
+    show_exports_pane: PropTypes.bool,
+    console_available_height: PropTypes.number,
+    height_fraction: PropTypes.number,
+    usable_height: PropTypes.number,
+    usable_width: PropTypes.number,
     setConsoleFieldValue: PropTypes.func,
-    setConsoleState: PropTypes.func,
-    goToNextConsoleCell: PropTypes.func,
-    handleConsoleItemDelete: PropTypes.func,
-    resortConsoleItems: PropTypes.func,
+    tile_div_ref: PropTypes.object,
+    hp_height: PropTypes.number,
+    vp_height: PropTypes.number,
     is_project: PropTypes.bool,
     interface_state: PropTypes.object,
     short_collection_name: PropTypes.string,

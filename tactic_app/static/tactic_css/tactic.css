@@ -479,13 +479,13 @@ a[role="tab"] {
   white-space: nowrap;
   overflow: hidden;
   color: #31708f !important;
-  cursor: move;
   padding: 5px 7px;
   background-color: #d9edf7 !important;
   border-bottom: 0; }
   .tile-panel-heading .tile-name-div {
     overflow-x: hidden;
-    line-height: 100%; }
+    line-height: 100%;
+    cursor: move; }
   .tile-panel-heading .spin-place {
     margin: 0 7px 0 0;
     display: inline-flex; }
@@ -659,7 +659,7 @@ td.cell-clickable:active {
 
 .console-code {
   width: 100%;
-  padding-right: 20px !important; }
+  padding-right: 10px !important; }
 
 .execution-counter {
   padding-right: 20px;
@@ -715,7 +715,8 @@ td.cell-clickable:active {
   .log-panel.log-panel-visible {
     max-height: 9999px; }
     .log-panel.log-panel-visible .log-panel-body {
-      display: block; }
+      display: inline-flex;
+      justify-content: space-between; }
     .log-panel.log-panel-visible .log-code-output {
       display: block; }
     .log-panel.log-panel-visible.fixed-log-panel {

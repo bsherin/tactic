@@ -7,14 +7,24 @@ let select_modal_template;
 let confirm_template;
 let tooltips;
 
-function doBinding(obj) {
+function doBinding(obj, seq="_") {
     const proto = Object.getPrototypeOf(obj);
     for (const key of Object.getOwnPropertyNames(proto)) {
-        if (key.startsWith("_")) {
+        if (key.startsWith(seq)) {
             obj[key] = obj[key].bind(obj);
         }
     }
 }
+
+const arrayMoveMutate = (array, from, to) => {
+	array.splice(to < 0 ? array.length + to : to, 0, array.splice(from, 1)[0]);
+};
+
+const arrayMove = (array, from, to) => {
+	array = array.slice();
+	arrayMoveMutate(array, from, to);
+	return array;
+};
 
 function updateObject(o1, o2) {
     for (let prop in o2) {

@@ -743,6 +743,7 @@ a[role="tab"] {
     .tile-name-div {
         overflow-x: hidden;
         line-height: 100%;
+        cursor: move;
     }
     .spin-place {
         margin: 0 7px 0 0;
@@ -752,7 +753,6 @@ a[role="tab"] {
     white-space: nowrap;
     overflow: hidden;
     color: $tile-header-foreground-color !important;
-    cursor: move;
     padding: 5px 7px;
     background-color: $tile-header-background-color !important;
     border-bottom: 0
@@ -973,7 +973,7 @@ align-items: baseline
 
 .console-code {
     width: 100%;
-    padding-right: 20px !important;
+    padding-right: 10px !important;
 }
 
 .execution-counter {
@@ -1061,7 +1061,8 @@ align-items: baseline
         max-height: 9999px;
 
         .log-panel-body {
-            display: block
+            display: inline-flex;
+            justify-content: space-between;
         }
 
         .log-code-output {

@@ -87,7 +87,7 @@ class LibraryHomeApp extends React.Component {
                     <div className="d-flex flex-row">
                         <div className="d-flex flex-column justify-content-between left-vertical-nav"
                              style={{"marginTop": 100}}>
-                            <Rbs.Nav variant="pills" className="flex-column">
+                            <Rbs.Nav variant="pills" className="flex-column mr-2">
                                 {nav_items}
                             </Rbs.Nav>
                         </div>
