@@ -317,6 +317,8 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                         setattr(self, attr, attr_val)
                 except TypeError:
                     setattr(self, attr, attr_val)
+                except Exception as ex:
+                    print(self.extract_short_error_message(ex, "error with attr " + str(attr)))
 
         if self.doc_type == "notebook":
             save_attrs = self.notebook_save_attrs

@@ -224,14 +224,6 @@ class LoadSaveTasksMixin:
 
         self.show_main_status_message("Recreating the console")
 
-        # self.update_legacy_console_html()
-        # matches = re.findall(r"/figure_source/(.*?)/([0-9A-Fa-f-]*)", self.console_html)
-        # if len(matches) > 0:
-        #     if self.pseudo_tile_id is None:  # This really shouldn't be necessary
-        #         self.create_pseudo_tile()
-        #     for match in matches:  # really they should all be the same, but loop over just in case
-        #         self.console_html = re.sub(match[0], self.pseudo_tile_id, self.console_html)
-
         self.mworker.ask_host("emit_to_client", {"message": "finish-post-load",
                                                  "collection_name": self.collection_name,
                                                  "short_collection_name": self.short_collection_name,
@@ -1176,7 +1168,17 @@ class ExportsTasksMixin:
 
     @task_worthy
     def get_full_pipe_dict(self, data):
-        return {"success": True, "pipe_dict": self._pipe_dict}
+        converted_pipe_dict = {}
+        for tile_id, tile_entry in self._pipe_dict.items():
+            first_full_name = list(tile_entry)[0]
+            first_short_name = list(tile_entry.values())[0]["export_name"]
+            tile_name = re.sub("_" + first_short_name, "", first_full_name)
+            converted_pipe_dict[tile_name] = []
+
+            for full_export_name, edict in tile_entry.items():
+                converted_pipe_dict[tile_name].append([full_export_name, edict["export_name"]])
+
+        return {"success": True, "pipe_dict": converted_pipe_dict}
 
     @task_worthy
     def get_exports_list_html(self, data):

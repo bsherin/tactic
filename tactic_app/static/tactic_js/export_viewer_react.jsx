@@ -22,11 +22,12 @@ class ExportListSelect extends React.Component {
         let groups = [];
         for (let group in this.props.pipe_dict) {
             let group_items = [];
-            for (let fullname in this.props.pipe_dict[group]) {
-                let short_name = this.props.pipe_dict[group][fullname].export_name;
-                this.export_index[fullname] = short_name;
+            for (let entry of this.props.pipe_dict[group]) {
+                let fullname = entry[0];
+                let shortname = entry[1];
+                this.export_index[fullname] = shortname;
                 group_items.push(<option key={fullname} value={fullname}>
-                    {short_name}
+                    {shortname}
                 </option>)
             }
             groups.push(

@@ -1,8 +1,7 @@
 
 import {TacticNavbar} from "./base_module.js";
 import {ProjectMenu} from "./main_menus_react.js";
-import {ConsoleComponent} from "./console_react.js";
-import {withConsole} from "./with_console_hoc.js";
+import {withConsole, console_attrs} from "./with_console_hoc.js";
 import {TacticSocket} from "./tactic_socket.js";
 
 const MARGIN_SIZE = 17;
@@ -74,7 +73,6 @@ function _finish_post_load(data) {
 }
 
 const save_attrs = [];
-const save_prop_attrs = ["console_items", "console_is_shrunk"];
 
 class NotebookApp extends React.Component {
     constructor (props) {
@@ -82,10 +80,6 @@ class NotebookApp extends React.Component {
         doBinding(this);
         this.state = {
             mounted: false,
-            usable_width: window.innerWidth - 2 * MARGIN_SIZE - 30,
-            usable_height: window.innerHeight - BOTTOM_MARGIN,
-            show_console_error_log: false,
-            console_error_log_text: "",
 
         };
         if (this.props.is_project) {
@@ -97,8 +91,7 @@ class NotebookApp extends React.Component {
 
     componentDidMount() {
         this.setState({"mounted": true});
-        window.addEventListener("resize", this._update_window_dimensions);
-        document.title = window.is_project ? window._project_name : this.props.short_collection_name;
+        document.title = window.is_project ? window._project_name : "New Notebook";
         stopSpinner();
     }
 
@@ -106,13 +99,6 @@ class NotebookApp extends React.Component {
         let new_state = {};
         new_state[field_name] = value;
         this.setState(new_state, callback);
-    }
-
-     _update_window_dimensions() {
-        this.setState({
-            "usable_width": window.innerWidth - 2 * MARGIN_SIZE - 30,
-            "usable_height": window.innerHeight - BOTTOM_MARGIN
-        });
     }
 
     _broadcast_event_to_server(event_name, data_dict, callback) {
@@ -126,14 +112,13 @@ class NotebookApp extends React.Component {
         for (let attr of save_attrs) {
             interface_state[attr] = this.state[attr]
         }
-        for (let attr of save_prop_attrs) {
+        for (let attr of console_attrs) {
             interface_state[attr] = this.props[attr]
         }
         return interface_state
     }
 
     render () {
-
         let menus = (
             <React.Fragment>
                 <ProjectMenu console_items={this.state.console_items}
@@ -150,19 +135,7 @@ class NotebookApp extends React.Component {
                               user_name={window.username}
                               menus={menus}
                 />
-                <ConsoleComponent console_items={this.props.console_items}
-                                  error_log_text={this.state.console_error_log_text}
-                                  am_shrunk={false}
-                                  am_zoomed={false}
-                                  am_notebook={true}
-                                  show_error_log={this.state.show_console_error_log}
-                                  available_height={this.state.usable_height}
-                                  setConsoleItemValue={this.props.setConsoleItemValue}
-                                  setConsoleFieldValue={this.props.setConsoleFieldValue}
-                                  setMainStateValue={this._setMainStateValue}
-                                  handleItemDelete={this.props.handleConsoleItemDelete}
-                                  goToNextCell={this.props.goToNextConsoleCell}
-                                  resortConsoleItems={this.props.resortConsoleItems}/>
+                {this.props.console_component}
             </React.Fragment>
         )
     }
@@ -170,15 +143,9 @@ class NotebookApp extends React.Component {
 
 NotebookApp.propTypes = {
     console_items: PropTypes.array,
-    console_is_shrunk: PropTypes.bool, // not used
+    console_component: PropTypes.object,
     is_project: PropTypes.bool,
     interface_state: PropTypes.object,
-    setConsoleItemValue: PropTypes.func,
-    setConsoleFieldValue: PropTypes.func,
-    setConsoleState: PropTypes.func,
-    goToNextConsoleCell: PropTypes.func,
-    handleConsoleItemDelete: PropTypes.func,
-    resortConsoleItems: PropTypes.func,
 };
 
 class MainTacticSocket extends TacticSocket {
