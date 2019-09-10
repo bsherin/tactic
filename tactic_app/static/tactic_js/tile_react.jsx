@@ -1,11 +1,13 @@
 
+import {SortableComponent} from "./sortable_container.js";
+
 var Rbs = window.ReactBootstrap;
 var Rtg = window.ReactTransitionGroup;
 
 import {TileForm} from "./tile_form_react.js";
 import {GlyphButton} from "./react_widgets.js";
 
-export {TileComponent}
+export {TileContainer}
 
 const using_touch = "ontouchend" in document;
 
@@ -25,6 +27,162 @@ const ANI_DURATION = 300;
 function composeObjs(base_style, new_style) {
     return Object.assign(Object.assign({}, base_style), new_style)
 }
+
+class TileContainer extends React.Component {
+    constructor(props) {
+        super(props);
+        doBinding(this)
+
+    }
+
+    _handleTileFinishedLoading(data) {
+        this._setTileValue(data.tile_id, "finished_loading", true)
+    }
+
+    componentDidMount() {
+        let self = this;
+        this.setState({"mounted": true});
+        this.props.tsocket.socket.off("tile-message");
+        this.props.tsocket.socket.on("tile-message", this._handleTileMessage);
+        this.props.tsocket.socket.off("tile-finished-loading");
+        this.props.tsocket.socket.on("tile-finished-loading", this._handleTileFinishedLoading);
+        this.props.tsocket.socket.off("tile-source-change");
+        this.props.tsocket.socket.on('tile-source-change', function (data) {
+            self._markSourceChange(data.tile_type)
+        });
+
+    }
+     _resortTiles(new_sort_list) {
+        let new_tile_list = [];
+        for (let tid of new_sort_list) {
+            let new_entry = this.get_tile_entry(tid);
+            new_tile_list.push(new_entry)
+        }
+        this.props.setMainStateValue("tile_list", new_tile_list)
+    }
+
+    _markSourceChange(tile_type) {
+        let new_tile_list = [...this.props.tile_list];
+        let change_list = [];
+        for (let entry of new_tile_list) {
+            if (entry.tile_type == tile_type) {
+                change_list.push(entry.tile_id)
+            }
+        }
+        for (let tid of change_list) {
+            this._setTileValue(tid, "source_changed", true)
+        }
+    }
+
+    get_tile_entry(tile_id) {
+        let tindex = this.tileIndex(tile_id);
+        if (tindex == -1) return null;
+        return Object.assign({}, this.props.tile_list[this.tileIndex(tile_id)])
+    }
+
+    replace_tile_entry(tile_id, new_entry, callback=null) {
+        let new_tile_list = [...this.props.tile_list];
+        let tindex = this.tileIndex(tile_id);
+        new_tile_list.splice(tindex, 1, new_entry);
+        this.props.setMainStateValue("tile_list", new_tile_list, callback)
+    }
+
+    tileIndex(tile_id) {
+        let counter = 0;
+        for (let entry of this.props.tile_list) {
+            if (entry.tile_id == tile_id) {
+                return counter
+            }
+            ++counter;
+        }
+        return -1
+    }
+
+    _closeTile(tile_id) {
+        let tindex = this.tileIndex(tile_id);
+        let new_tile_list = [...this.props.tile_list];
+        new_tile_list.splice(tindex, 1);
+        this.props.setMainStateValue("tile_list", new_tile_list);
+        const data_dict = {
+            main_id: window.main_id,
+            tile_id: tile_id
+        };
+        postWithCallback(window.main_id, "RemoveTile", data_dict);
+    }
+
+    _setTileValue(tile_id, field, value, callback=null) {
+        let entry = this.get_tile_entry(tile_id);
+        entry[field] = value;
+        this.replace_tile_entry(tile_id, entry, callback)
+    }
+
+    _setTileState(tile_id, new_state, callback=null) {
+        let entry = this.get_tile_entry(tile_id);
+        for (let field in new_state) {
+            entry[field] = new_state[field]
+        }
+        this.replace_tile_entry(tile_id, entry, callback)
+    }
+
+    _displayTileContentWithJavascript(tile_id, data) {
+        this._setTileState(tile_id, {front_content: data.html,
+            javascript_code: data.javascript_code,
+            javascript_arg_dict: data.arg_dict})
+    }
+
+    _displayTileContent(tile_id, data) {
+        this._setTileState(tile_id, {front_content: data.html,
+            javascript_code: null,
+            javascript_arg_dict: null})
+    }
+
+    _handleTileMessage(data) {
+        let self = this;
+        let handlerDict = {
+            hideOptions: (tile_id, data)=>self._setTileValue(tile_id, "show_form", false),
+            startSpinner: (tile_id, data)=>self._setTileValue(tile_id, "show_spinner", true),
+            stopSpinner: (tile_id, data)=>self._setTileValue(tile_id, "show_spinner", false),
+            displayTileContent: self._displayTileContent,
+            displayFormContent: (tile_id, data)=>self._setTileValue(tile_id, "form_data", data.form_data),
+            displayTileContentWithJavascript: self._displayTileContentWithJavascript
+        };
+        let tile_id = data.tile_id;
+        handlerDict[data.tile_message](tile_id, data)
+    }
+
+    render() {
+        return (
+            <SortableComponent id="tile-div"
+                               style={{height: this.props.height}}
+                               container_ref={this.props.tile_div_ref}
+                               ElementComponent={TileComponent}
+                               key_field_name="tile_name"
+                               item_list={this.props.tile_list}
+                               handle=".tile-name-div"
+                               resortFunction={this._resortTiles}
+                               handleClose={this._closeTile}
+                               setTileValue={this._setTileValue}
+                               setTileState={this._setTileState}
+                               current_doc_name={this.props.current_doc_name}
+                               selected_row={this.props.selected_row}
+                               broadcast_event={this.props.broadcast_event}
+
+            />
+        )
+    }
+
+}
+
+TileContainer.propTypes = {
+    setMainStateValue: PropTypes.func,
+    tile_list: PropTypes.array,
+    tile_div_ref: PropTypes.object,
+    current_doc_name: PropTypes.string,
+    height: PropTypes.number,
+    broadcast_event: PropTypes.func,
+    selected_row: PropTypes.number,
+    tsocket: PropTypes.object
+};
 
 class TileComponent extends React.Component {
     constructor(props) {

@@ -72,15 +72,38 @@ class ExportsViewer extends React.Component {
             selected_export_short_name: null,
             show_spinner: false,
             exports_body_value: "",
-            type: null
+            type: null,
+            pipe_dict: {},
         }
+    }
+
+    componentDidMount(){
+        this.props.setUpdate(this._updateExportsList);
+        this.props.tsocket.socket.off("export-viewer-message");
+        this.props.tsocket.socket.on("export-viewer-message", this._handleExportViewerMessage);
+        this._updateExportsList()
+    }
+
+    _handleExportViewerMessage(data) {
+        let self = this;
+        let handlerDict = {
+            update_exports_popup: ()=>self._updateExportsList()
+        };
+        handlerDict[data.export_viewer_message](data)
+    }
+
+    _updateExportsList() {
+        let self = this;
+        postWithCallback(window.main_id, "get_full_pipe_dict", {}, function (data) {
+            self.setState({pipe_dict: data.pipe_dict, pipe_dict_updated: true})
+        })
     }
 
     _refresh() {
         this._handleExportListChange(this.state.selected_export, this.state.selected_export_short_name, true)
     }
 
-    _eval() {
+    _eval(e = null) {
         this._startSpinner();
         let send_data = {"export_name": this.state.selected_export, "tail": this.state.tail_value};
         if (this.state.key_list) {
@@ -89,7 +112,8 @@ class ExportsViewer extends React.Component {
         let self = this;
         postWithCallback(main_id, "evaluate_export", send_data, function (data) {
             self.setState({exports_body_value: data.the_html, show_spinner: false})
-        })
+        });
+        if (e) e.preventDefault();
     }
 
     _startSpinner() {
@@ -170,7 +194,7 @@ class ExportsViewer extends React.Component {
                              className='notclose bottom-heading-element bottom-heading-element-button'> Eval
                      </button>
                      <Rbs.Form inline={true} onSubmit={this._eval}>
-                        <ExportListSelect pipe_dict={this.props.pipe_dict}
+                        <ExportListSelect pipe_dict={this.state.pipe_dict}
                                           value={this.state.selected_export}
                                           handleChange={this._handleExportListChange}/>
                          {this.state.key_list && <SelectList option_list={this.state.key_list}
@@ -182,6 +206,7 @@ class ExportsViewer extends React.Component {
                          <Rbs.Form.Control as="input" size="sm"
                                            className="bottom-heading-element"
                                            onChange={this._handleTailChange}
+                                           onSubmit={this._eval}
                                            value={this.state.tail_value}
                          />
                      </Rbs.Form>
@@ -199,7 +224,7 @@ class ExportsViewer extends React.Component {
 }
 
 ExportsViewer.propTypes = {
-    pipe_dict: PropTypes.object,
-    pipe_dict_updated: PropTypes.bool,
     available_height: PropTypes.number,
+    setUpdate: PropTypes.func,
+    tsocket:PropTypes.object
 };
