@@ -13,6 +13,8 @@ from tactic_app.resource_manager import ResourceManager, LibraryResourceManager
 from tactic_app.users import User
 from tactic_app.docker_functions import create_container
 
+from tactic_app.js_source_management import js_source_dict, _develop
+
 global_tile_manager = tactic_app.global_tile_manager
 repository_user = User.get_user_by_username("repository")
 
@@ -155,7 +157,7 @@ class TileManager(LibraryResourceManager):
 
     def view_module(self, module_name):
         self.clear_old_recent_history(module_name)
-        javascript_source = url_for('static', filename='tactic_js/module_viewer_react.js')
+        javascript_source = url_for('static', filename=js_source_dict["module_viewer_react"])
         return render_template("library/resource_viewer_react.html",
                                resource_name=module_name,
                                include_metadata=True,
@@ -164,6 +166,7 @@ class TileManager(LibraryResourceManager):
                                read_only=False,
                                is_repository=False,
                                use_ssl=use_ssl,
+                               develop=str(_develop),
                                javascript_source=javascript_source,
                                uses_codemirror="True",
                                version_string=tstring)
@@ -204,10 +207,11 @@ class TileManager(LibraryResourceManager):
             if len(new_list) > 0:
                 revised_api_dlist.append({"cat_name": cat, "cat_list": new_list})
         the_content = self.initialize_module_viewer_container(module_name)
-        javascript_source = url_for('static', filename='tactic_js/tile_creator_react.js')
+        javascript_source = url_for('static', filename=js_source_dict["tile_creator_react"])
         return render_template("library/tile_creator_react.html",
                                module_name=module_name,
                                use_ssl=use_ssl,
+                               develop=str(_develop),
                                uses_codemirror="True",
                                tstring=tstring,
                                module_viewer_id=the_content["module_viewer_id"],
@@ -335,7 +339,7 @@ class RepositoryTileManager(TileManager):
                          login_required(self.repository_get_module_code), methods=['get', 'post'])
 
     def repository_view_module(self, module_name):
-        javascript_source = url_for('static', filename='tactic_js/module_viewer_react.js')
+        javascript_source = url_for('static', filename=js_source_dict["module_viewer_react"])
         return render_template("library/resource_viewer_react.html",
                                resource_name=module_name,
                                include_metadata=True,
@@ -344,6 +348,7 @@ class RepositoryTileManager(TileManager):
                                read_only=True,
                                is_repository=True,
                                use_ssl=use_ssl,
+                               develop=str(_develop),
                                javascript_source=javascript_source,
                                uses_codemirror="True",
                                version_string=tstring)

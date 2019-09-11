@@ -21,6 +21,8 @@ from tile_manager import TileManager, RepositoryTileManager
 from code_manager import CodeManager, RepositoryCodeManager
 from tactic_app.users import User
 
+from tactic_app.js_source_management import js_source_dict, _develop
+
 
 global_tile_manager = tactic_app.global_tile_manager
 repository_user = User.get_user_by_username("repository")
@@ -123,19 +125,31 @@ def stop_spinner(user_id=None):
 @login_required
 def library():
     if current_user.get_id() == admin_user.get_id():
-        return render_template("library/library_home_react.html", use_ssl=str(use_ssl), version_string=tstring,
-                               page_title="tactic admin", module_source="tactic_js/admin_home_react.js")
+        return render_template("library/library_home_react.html",
+                               use_ssl=str(use_ssl),
+                               version_string=tstring,
+                               develop=str(_develop),
+                               page_title="tactic admin",
+                               module_source=js_source_dict["admin_home_react"])
     else:
 
-        return render_template('library/library_home_react.html', use_ssl=str(use_ssl), version_string=tstring,
-                               page_title="tactic resources", module_source='tactic_js/library_home_react.js')
+        return render_template('library/library_home_react.html',
+                               develop=str(_develop),
+                               use_ssl=str(use_ssl),
+                               version_string=tstring,
+                               page_title="tactic resources",
+                               module_source=js_source_dict["library_home_react"])
 
 
 @app.route('/repository')
 @login_required
 def repository():
-    return render_template('library/library_home_react.html', use_ssl=str(use_ssl), version_string=tstring,
-                           page_title="tactic repository", module_source='tactic_js/repository_home_react.js'
+    return render_template('library/library_home_react.html',
+                           use_ssl=str(use_ssl),
+                           version_string=tstring,
+                           develop=str(_develop),
+                           page_title="tactic repository",
+                           module_source=js_source_dict["repository_home_react"]
                            )
 
 
@@ -361,20 +375,6 @@ def grab_repository_metadata():
             return jsonify({"success": True, "res_name": res_name, "datestring": datestring, "tags": mdata["tags"], "notes": mdata["notes"]})
     except Exception as ex:
         return generic_exception_handler.get_exception_for_ajax(ex, "Error getting repository metadata")
-
-
-@app.route('/convert_markdown', methods=['POST'])
-@login_required
-def convert_markdown():
-    try:
-        the_text = request.json["the_text"]
-        the_text = re.sub("<br>", "\n", the_text)
-        the_text = re.sub("&gt;", ">", the_text)
-        the_text = re.sub("&nbsp;", " ", the_text)
-        converted_markdown = markdown.markdown(the_text)
-        return jsonify({"success": True, "converted_markdown": converted_markdown})
-    except Exception as ex:
-        return generic_exception_handler.get_exception_for_ajax(ex, "Error converting markdown")
 
 
 @app.route('/get_tag_list', methods=['POST'])

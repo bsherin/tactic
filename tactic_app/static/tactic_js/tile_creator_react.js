@@ -59,7 +59,9 @@ function got_parsed_data(data_object) {
     let domContainer = document.querySelector('#creator-root');
     let parsed_data = data_object.the_content;
     let result_dict = { "res_type": "tile", "res_name": window.module_name, "is_repository": false };
+
     postAjaxPromise("grab_metadata", result_dict).then(function (data) {
+        let split_tags = data.tags == "" ? [] : data.tags.split(" ");
         ReactDOM.render(React.createElement(CreatorApp, { tile_name: window.module_name,
             is_mpl: parsed_data.is_mpl,
             is_d3: parsed_data.is_d3,
@@ -71,7 +73,7 @@ function got_parsed_data(data_object) {
             extra_functions: parsed_data.extra_functions,
             draw_plot_code: parsed_data.draw_plot_code,
             jscript_code: parsed_data.jscript_code,
-            tags: data.tags.split(" "),
+            tags: split_tags,
             notes: data.notes,
             option_list: parsed_data.option_dict,
             export_list: parsed_data.export_list,

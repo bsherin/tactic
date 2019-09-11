@@ -16,6 +16,8 @@ global_tile_manager = tactic_app.global_tile_manager
 container_manager = ContainerManager("container")
 user_manager = UserManager("user")
 
+from tactic_app.js_source_management import js_source_dict, _develop
+
 
 @app.route('/admin_list_with_metadata/<res_type>', methods=['GET', 'POST'])
 @login_required
@@ -31,7 +33,11 @@ def admin_list_with_metadata(res_type):
 @login_required
 def admin_interface():
     if current_user.get_id() == admin_user.get_id():
-        return render_template("library/library_home_react.html", use_ssl=str(use_ssl), version_string=tstring,
-                               page_title="tactic admin", module_source="tactic_js/admin_home_react.js")
+        return render_template("library/library_home_react.html",
+                               use_ssl=str(use_ssl),
+                               develop=str(_develop),
+                               version_string=tstring,
+                               page_title="tactic admin",
+                               module_source=js_source_dict["admin_home_react"])
     else:
         return "not authorized"

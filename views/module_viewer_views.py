@@ -14,6 +14,8 @@ import datetime
 tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 indent_unit = "    "
 
+from tactic_app.js_source_management import _develop
+
 
 @app.route('/checkpoint_module', methods=['post'])
 @login_required
@@ -68,6 +70,7 @@ def show_history_viewer(module_name):
     return render_template("library/resource_viewer_react.html",
                            resource_name=module_name,
                            use_ssl=use_ssl,
+                           develop=str(_develop),
                            javascript_source=javascript_source,
                            uses_codemirror="True",
                            version_string=tstring)
@@ -90,6 +93,7 @@ def show_tile_differ(module_name, second_module_name):
                            resource_name=module_name,
                            second_resource_name=second_module_name,
                            use_ssl=use_ssl,
+                           develop=str(_develop),
                            javascript_source=javascript_source,
                            uses_codemirror="True",
                            version_string=tstring)

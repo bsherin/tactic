@@ -534,20 +534,21 @@ class TileComponent extends React.Component {
         if (this.props.source_changed) {
             tile_class = tile_class + " tile-source-changed"
         }
+        let butclass = "notclose header-but";
         return (
             <Rbs.Card bg="light" ref={this.my_ref} style={this.main_style} className={tile_class} id={this.props.tile_id}>
                 <Rbs.Card.Header className="tile-panel-heading" >
                     <div className="left-glyphs" ref={this.left_glyphs_ref} style={this.lg_style}>
                         {this.props.shrunk &&
-                            <GlyphButton butclass="notclose header-but triangle-right"
+                            <GlyphButton butclass={butclass + " triangle-right"}
                                          icon_class="far fa-chevron-circle-right"
                                          handleClick={this._toggleShrunk} />}
 
                         {!this.props.shrunk &&
-                            <GlyphButton butclass="notclose header-but triangle-bottom"
+                            <GlyphButton butclass={butclass + " triangle-bottom"}
                                          icon_class="far fa-chevron-circle-down"
                                          handleClick={this._toggleShrunk} />}
-                        <GlyphButton butclass="notclose header-but"
+                        <GlyphButton butclass={butclass}
                                      handleClick={this._toggleBack}
                                      icon_class="far fa-cog"/>
                         <span className="tile-name-div">{this.props.tile_name}</span>
@@ -557,19 +558,19 @@ class TileComponent extends React.Component {
                             <span className="spin-place">
                                 <span className="loader-small"/>
                             </span>}
-                        <GlyphButton butclass="notclose header-but"
+                        <GlyphButton butclass={butclass}
                                      handleClick={this._toggleTileLog}
                                      icon_class="far fa-exclamation-triangle"/>
-                        <GlyphButton butclass="notclose header-but"
+                        <GlyphButton butclass={butclass}
                                      handleClick={this._logMe}
                                      icon_class="far fa-download"/>
-                        <GlyphButton butclass="notclose header-but"
+                        <GlyphButton butclass={butclass}
                                      handleClick={this._logParams}
                                      icon_class="far fa-list-ul"/>
-                        <GlyphButton butclass="notclose header-but"
+                        <GlyphButton butclass={butclass}
                                      handleClick={this._reloadTile}
                                      icon_class="far fa-redo-alt"/>
-                        <GlyphButton butclass="notclose header-but"
+                        <GlyphButton butclass={butclass}
                                      handleClick={this._closeTile}
                                      icon_class="far fa-trash-alt"/>
                     </div>

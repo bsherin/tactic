@@ -3,7 +3,6 @@ import datetime
 import re
 import uuid
 import copy
-import markdown
 import json
 from qworker import task_worthy_methods, task_worthy_manual_submit_methods
 from communication_utils import make_python_object_jsonizable, debinarize_python_object, store_temp_data
@@ -609,20 +608,8 @@ class TileCreationTasksMixin:
             exports = recreate_response["exports"]
             self.update_pipe_dict(exports, new_id[0], tile_name)
             self.mworker.emit_export_viewer_message("update_exports_popup", {})
-
-            # form_info = self.compile_form_info(new_id[0])
-            # self.mworker.post_task(new_id[0], "render_tile", form_info,
-            #                        rendered_tile, expiration=60, error_handler=handle_response_error)
-            # recreate_response["tile_html"] = rt_response["tile_html"]
-            # self.tile_id_dict[tile_name] = new_id[0]
             self.tile_save_results[new_id[0]] = recreate_response
-            # self.tile_sort_list[self.tile_sort_list.index(old_tile_id)] = new_id[0]
             self.tile_instances.append(new_id[0])
-            # self.mworker.ask_host("emit_to_client", {"message": "recreate-saved-tile",
-            #                                          "tile_id": new_id[0],
-            #                                          "tile_type": tile_save_dict["tile_type"],
-            #                                          "tile_saved_results": recreate_response,
-            #                                          "tile_sort_list": self.tile_sort_list})
             self.mworker.submit_response(task_packet, {"old_tile_id": old_tile_id})
             return
 
@@ -1295,15 +1282,6 @@ class ConsoleTasksMixin:
         print("posting exec_console_code to the pseudo_tile")
         self.mworker.post_task(self.pseudo_tile_id, "exec_console_code", data, self.got_console_result)
         return {"success": True}
-
-    @task_worthy
-    def convert_markdown(self, data):
-        the_text = data["the_text"]
-        the_text = re.sub("<br>", "\n", the_text)
-        the_text = re.sub("&gt;", ">", the_text)
-        the_text = re.sub("&nbsp;", " ", the_text)
-        converted_markdown = markdown.markdown(the_text)
-        return {"success": True, "converted_markdown": converted_markdown}
 
     @task_worthy
     def clear_console_namespace(self, data):

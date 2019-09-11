@@ -1,7 +1,6 @@
 
 import {TacticNavbar} from "./base_module.js";
 import {ProjectMenu} from "./main_menus_react.js";
-import {withConsole, console_attrs} from "./with_console_hoc.js";
 import {TacticSocket} from "./tactic_socket.js";
 import {ConsoleComponent} from "./console_component.js";
 
@@ -149,6 +148,7 @@ class NotebookApp extends React.Component {
                               setMainStateValue={this._setMainStateValue}
                               console_available_height={this.state.usable_height - 50}
                               tsocket={tsocket}
+                                  style={{marginLeft: 25, marginRight: 25}}
                               />
             </React.Fragment>
         )

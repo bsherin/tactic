@@ -19,6 +19,7 @@ import tactic_app
 import datetime
 tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 
+from tactic_app.js_source_management import _develop
 
 # The main window should join a room associated with the user
 @socketio.on('connect', namespace='/main')

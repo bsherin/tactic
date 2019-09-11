@@ -10,12 +10,20 @@ class ExportListSelect extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this);
+        this.select_ref = React.createRef();
         this.export_index = {}
     }
 
     _updateMe(event) {
         let fullname = event.target.value;
         this.props.handleChange(fullname, this.export_index[fullname])
+    }
+
+    componentDidUpdate() {
+        let currently_selected = $(this.select_ref.current).val();
+        if (currently_selected && (currently_selected != this.props.value)) {
+            this.props.handleChange(currently_selected, this.export_index[currently_selected])
+        }
     }
 
     create_groups() {
@@ -42,6 +50,7 @@ class ExportListSelect extends React.Component {
     render() {
         return (
             <select className="form-control form-control-sm"
+                    ref={this.select_ref}
                     onChange={this._updateMe}
                     value={this.props.value}>
                 {this.create_groups()}
@@ -157,7 +166,6 @@ class ExportsViewer extends React.Component {
         }
     }
 
-
     _sendToConsole() {
         const tail = this.state.tail_value;
         let full_export_name = this.state.selected_export;
@@ -178,22 +186,22 @@ class ExportsViewer extends React.Component {
 
     render () {
         let exports_body_dict = {__html: this.state.exports_body_value};
-
+        let butclass = "notclose bottom-heading-element bottom-heading-element-button";
         return (
              <Rbs.Card bg="light" id="exports-panel">
                  <Rbs.Card.Header id="exports-heading"
                                  className="align-items-center">
-                     <GlyphButton butclass="notclose bottom-heading-element bottom-heading-element-button"
+                     <GlyphButton butclass={butclass}
                                   handleClick={this._sendToConsole}
                                   icon_class="far fa-arrow-to-left"/>
-                     <GlyphButton butclass="notclose bottom-heading-element bottom-heading-element-button"
+                     <GlyphButton butclass={butclass}
                                   handleClick={this._refresh}
                                   icon_class="far fa-redo"/>
                      <button type='button' id="exports-show-button"
                              onClick={this._eval}
-                             className='notclose bottom-heading-element bottom-heading-element-button'> Eval
+                             className={butclass}> Eval
                      </button>
-                     <Rbs.Form inline={true} onSubmit={this._eval}>
+                     <Rbs.Form inline={true} onSubmit={this._eval} className="flex-nowrap">
                         <ExportListSelect pipe_dict={this.state.pipe_dict}
                                           value={this.state.selected_export}
                                           handleChange={this._handleExportListChange}/>

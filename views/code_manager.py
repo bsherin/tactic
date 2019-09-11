@@ -15,6 +15,8 @@ from tactic_app.users import User
 repository_user = User.get_user_by_username("repository")
 global_tile_manager = tactic_app.global_tile_manager
 
+from tactic_app.js_source_management import js_source_dict, _develop
+
 import datetime
 tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 
@@ -109,7 +111,7 @@ class CodeManager(LibraryResourceManager):
         return
 
     def view_code(self, code_name):
-        javascript_source = url_for('static', filename='tactic_js/code_viewer_react.js')
+        javascript_source = url_for('static', filename=js_source_dict["code_viewer_react"])
         return render_template("library/resource_viewer_react.html",
                                resource_name=code_name,
                                include_metadata=True,
@@ -118,6 +120,7 @@ class CodeManager(LibraryResourceManager):
                                read_only=False,
                                is_repository=False,
                                use_ssl=use_ssl,
+                               develop=str(_develop),
                                javascript_source=javascript_source,
                                uses_codemirror="True",
                                version_string=tstring)
@@ -205,7 +208,7 @@ class RepositoryCodeManager(CodeManager):
                          login_required(self.repository_get_code_code), methods=['get', 'post'])
 
     def repository_view_code(self, code_name):
-        javascript_source = url_for('static', filename='tactic_js/code_viewer_react.js')
+        javascript_source = url_for('static', filename=js_source_dict["code_viewer_react"])
         return render_template("library/resource_viewer_react.html",
                                resource_name=code_name,
                                include_metadata=True,
@@ -213,6 +216,7 @@ class RepositoryCodeManager(CodeManager):
                                include_above_main_area=False,
                                read_only=True,
                                use_ssl=use_ssl,
+                               develop=str(_develop),
                                is_repository=True,
                                javascript_source=javascript_source,
                                uses_codemirror="True",
