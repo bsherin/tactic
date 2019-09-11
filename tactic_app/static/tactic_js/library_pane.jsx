@@ -664,8 +664,9 @@ class LibraryPane extends React.Component {
         }
 
         let right_pane;
+        let split_tags = this.state.selected_resource.tags == "" ? [] : this.state.selected_resource.tags.split(" ");
         let mdata_element = (
-                <CombinedMetadata tags={this.state.selected_resource.tags.split(" ")}
+                <CombinedMetadata tags={split_tags}
                                   name={this.state.selected_resource.name}
                                   created={this.state.selected_resource.created}
                                   updated={this.state.selected_resource.updated}

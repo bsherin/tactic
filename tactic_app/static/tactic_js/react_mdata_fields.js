@@ -5,6 +5,66 @@ import { ViewerContext } from "./resource_viewer_context.js";
 
 var Rbs = window.ReactBootstrap;
 
+var ReactTags = react_tag_autocomplete;
+
+class NativeTags extends React.Component {
+    constructor(props) {
+        super(props);
+        doBinding(this);
+
+        this.state = {
+            suggestions: []
+        };
+    }
+
+    componentDidMount() {
+        let self = this;
+        let data_dict = { "res_type": this.props.res_type, "is_repository": false };
+        postAjaxPromise("get_tag_list", data_dict).then(function (data) {
+            let all_tags = self._fillOutTags(data.tag_list);
+            self.setState({ "suggestions": all_tags });
+        });
+    }
+
+    _fillOutTags(tlist) {
+        return tlist.map((tag, index) => {
+            return { id: index, name: tag };
+        });
+    }
+
+    _extractTags(dlist) {
+        return dlist.map(tdict => tdict.name);
+    }
+
+    _handleDelete(i) {
+        let new_tlist = [...this.props.tags];
+        new_tlist.splice(i, 1);
+        this.props.handleChange(new_tlist);
+    }
+
+    _handleAddition(tag) {
+        let new_tlist = [...this.props.tags];
+        new_tlist.push(tag.name);
+        this.props.handleChange(new_tlist);
+    }
+
+    render() {
+        let full_tags = this._fillOutTags(this.props.tags);
+        return React.createElement(ReactTags, {
+            tags: full_tags,
+            allowNew: true,
+            suggestions: this.state.suggestions,
+            handleDelete: this._handleDelete,
+            handleAddition: this._handleAddition });
+    }
+}
+
+NativeTags.proptypes = {
+    tags: PropTypes.array,
+    handleChange: PropTypes.func,
+    res_type: PropTypes.string
+};
+
 class TagsField extends React.Component {
 
     constructor(props) {
@@ -244,6 +304,10 @@ class CombinedMetadata extends React.Component {
         this.props.handleChange({ "tags": tags });
     }
 
+    _handleTagsChangeNative(tags) {
+        this.props.handleChange({ "tags": tags });
+    }
+
     _handleCategoryChange(event) {
         this.props.handleChange({ "category": event.target.value });
     }
@@ -296,8 +360,8 @@ class CombinedMetadata extends React.Component {
                             "Tags"
                         )
                     ),
-                    React.createElement(TagsField, { tags: this.props.tags,
-                        handleChange: this._handleTagsChange,
+                    React.createElement(NativeTags, { tags: this.props.tags,
+                        handleChange: this._handleTagsChangeNative,
                         res_type: this.props.res_type })
                 ),
                 this.props.category != null && React.createElement(

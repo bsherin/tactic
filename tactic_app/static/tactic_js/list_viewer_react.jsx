@@ -1,7 +1,6 @@
 /**
  * Created by bls910
  */
-
 import {ResourceViewerSocket, ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app.js";
 import {ViewerContext} from "./resource_viewer_context.js";
 
@@ -20,10 +19,11 @@ function list_viewer_main ()  {
             let domContainer = document.querySelector('#root');
             postAjaxPromise(get_mdata_url, result_dict)
 			        .then(function (data) {
+			            let split_tags = data.tags == "" ? [] : data.tags.split(" ");
                         ReactDOM.render(<ListViewerApp resource_name={window.resource_name}
                                                        the_content={the_content}
                                                        created={data.datestring}
-                                                       tags={data.tags.split(" ")}
+                                                       tags={split_tags}
                                                        notes={data.notes}
                                                        readOnly={window.read_only}
                                                        is_repository={window.is_repository}

@@ -253,7 +253,685 @@ checkPropTypes.resetWarningCache = function() {
 module.exports = checkPropTypes;
 
 }).call(this,require('_process'))
-},{"./lib/ReactPropTypesSecret":4,"_process":18}],4:[function(require,module,exports){
+},{"./lib/ReactPropTypesSecret":7,"_process":25}],4:[function(require,module,exports){
+/**
+ * Copyright (c) 2013-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+'use strict';
+
+var ReactPropTypesSecret = require('./lib/ReactPropTypesSecret');
+
+function emptyFunction() {}
+function emptyFunctionWithReset() {}
+emptyFunctionWithReset.resetWarningCache = emptyFunction;
+
+module.exports = function() {
+  function shim(props, propName, componentName, location, propFullName, secret) {
+    if (secret === ReactPropTypesSecret) {
+      // It is still safe when called from React.
+      return;
+    }
+    var err = new Error(
+      'Calling PropTypes validators directly is not supported by the `prop-types` package. ' +
+      'Use PropTypes.checkPropTypes() to call them. ' +
+      'Read more at http://fb.me/use-check-prop-types'
+    );
+    err.name = 'Invariant Violation';
+    throw err;
+  };
+  shim.isRequired = shim;
+  function getShim() {
+    return shim;
+  };
+  // Important!
+  // Keep this list in sync with production version in `./factoryWithTypeCheckers.js`.
+  var ReactPropTypes = {
+    array: shim,
+    bool: shim,
+    func: shim,
+    number: shim,
+    object: shim,
+    string: shim,
+    symbol: shim,
+
+    any: shim,
+    arrayOf: getShim,
+    element: shim,
+    elementType: shim,
+    instanceOf: getShim,
+    node: shim,
+    objectOf: getShim,
+    oneOf: getShim,
+    oneOfType: getShim,
+    shape: getShim,
+    exact: getShim,
+
+    checkPropTypes: emptyFunctionWithReset,
+    resetWarningCache: emptyFunction
+  };
+
+  ReactPropTypes.PropTypes = ReactPropTypes;
+
+  return ReactPropTypes;
+};
+
+},{"./lib/ReactPropTypesSecret":7}],5:[function(require,module,exports){
+(function (process){
+/**
+ * Copyright (c) 2013-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+'use strict';
+
+var ReactIs = require('react-is');
+var assign = require('object-assign');
+
+var ReactPropTypesSecret = require('./lib/ReactPropTypesSecret');
+var checkPropTypes = require('./checkPropTypes');
+
+var has = Function.call.bind(Object.prototype.hasOwnProperty);
+var printWarning = function() {};
+
+if (process.env.NODE_ENV !== 'production') {
+  printWarning = function(text) {
+    var message = 'Warning: ' + text;
+    if (typeof console !== 'undefined') {
+      console.error(message);
+    }
+    try {
+      // --- Welcome to debugging React ---
+      // This error was thrown as a convenience so that you can use this stack
+      // to find the callsite that caused this warning to fire.
+      throw new Error(message);
+    } catch (x) {}
+  };
+}
+
+function emptyFunctionThatReturnsNull() {
+  return null;
+}
+
+module.exports = function(isValidElement, throwOnDirectAccess) {
+  /* global Symbol */
+  var ITERATOR_SYMBOL = typeof Symbol === 'function' && Symbol.iterator;
+  var FAUX_ITERATOR_SYMBOL = '@@iterator'; // Before Symbol spec.
+
+  /**
+   * Returns the iterator method function contained on the iterable object.
+   *
+   * Be sure to invoke the function with the iterable as context:
+   *
+   *     var iteratorFn = getIteratorFn(myIterable);
+   *     if (iteratorFn) {
+   *       var iterator = iteratorFn.call(myIterable);
+   *       ...
+   *     }
+   *
+   * @param {?object} maybeIterable
+   * @return {?function}
+   */
+  function getIteratorFn(maybeIterable) {
+    var iteratorFn = maybeIterable && (ITERATOR_SYMBOL && maybeIterable[ITERATOR_SYMBOL] || maybeIterable[FAUX_ITERATOR_SYMBOL]);
+    if (typeof iteratorFn === 'function') {
+      return iteratorFn;
+    }
+  }
+
+  /**
+   * Collection of methods that allow declaration and validation of props that are
+   * supplied to React components. Example usage:
+   *
+   *   var Props = require('ReactPropTypes');
+   *   var MyArticle = React.createClass({
+   *     propTypes: {
+   *       // An optional string prop named "description".
+   *       description: Props.string,
+   *
+   *       // A required enum prop named "category".
+   *       category: Props.oneOf(['News','Photos']).isRequired,
+   *
+   *       // A prop named "dialog" that requires an instance of Dialog.
+   *       dialog: Props.instanceOf(Dialog).isRequired
+   *     },
+   *     render: function() { ... }
+   *   });
+   *
+   * A more formal specification of how these methods are used:
+   *
+   *   type := array|bool|func|object|number|string|oneOf([...])|instanceOf(...)
+   *   decl := ReactPropTypes.{type}(.isRequired)?
+   *
+   * Each and every declaration produces a function with the same signature. This
+   * allows the creation of custom validation functions. For example:
+   *
+   *  var MyLink = React.createClass({
+   *    propTypes: {
+   *      // An optional string or URI prop named "href".
+   *      href: function(props, propName, componentName) {
+   *        var propValue = props[propName];
+   *        if (propValue != null && typeof propValue !== 'string' &&
+   *            !(propValue instanceof URI)) {
+   *          return new Error(
+   *            'Expected a string or an URI for ' + propName + ' in ' +
+   *            componentName
+   *          );
+   *        }
+   *      }
+   *    },
+   *    render: function() {...}
+   *  });
+   *
+   * @internal
+   */
+
+  var ANONYMOUS = '<<anonymous>>';
+
+  // Important!
+  // Keep this list in sync with production version in `./factoryWithThrowingShims.js`.
+  var ReactPropTypes = {
+    array: createPrimitiveTypeChecker('array'),
+    bool: createPrimitiveTypeChecker('boolean'),
+    func: createPrimitiveTypeChecker('function'),
+    number: createPrimitiveTypeChecker('number'),
+    object: createPrimitiveTypeChecker('object'),
+    string: createPrimitiveTypeChecker('string'),
+    symbol: createPrimitiveTypeChecker('symbol'),
+
+    any: createAnyTypeChecker(),
+    arrayOf: createArrayOfTypeChecker,
+    element: createElementTypeChecker(),
+    elementType: createElementTypeTypeChecker(),
+    instanceOf: createInstanceTypeChecker,
+    node: createNodeChecker(),
+    objectOf: createObjectOfTypeChecker,
+    oneOf: createEnumTypeChecker,
+    oneOfType: createUnionTypeChecker,
+    shape: createShapeTypeChecker,
+    exact: createStrictShapeTypeChecker,
+  };
+
+  /**
+   * inlined Object.is polyfill to avoid requiring consumers ship their own
+   * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/is
+   */
+  /*eslint-disable no-self-compare*/
+  function is(x, y) {
+    // SameValue algorithm
+    if (x === y) {
+      // Steps 1-5, 7-10
+      // Steps 6.b-6.e: +0 != -0
+      return x !== 0 || 1 / x === 1 / y;
+    } else {
+      // Step 6.a: NaN == NaN
+      return x !== x && y !== y;
+    }
+  }
+  /*eslint-enable no-self-compare*/
+
+  /**
+   * We use an Error-like object for backward compatibility as people may call
+   * PropTypes directly and inspect their output. However, we don't use real
+   * Errors anymore. We don't inspect their stack anyway, and creating them
+   * is prohibitively expensive if they are created too often, such as what
+   * happens in oneOfType() for any type before the one that matched.
+   */
+  function PropTypeError(message) {
+    this.message = message;
+    this.stack = '';
+  }
+  // Make `instanceof Error` still work for returned errors.
+  PropTypeError.prototype = Error.prototype;
+
+  function createChainableTypeChecker(validate) {
+    if (process.env.NODE_ENV !== 'production') {
+      var manualPropTypeCallCache = {};
+      var manualPropTypeWarningCount = 0;
+    }
+    function checkType(isRequired, props, propName, componentName, location, propFullName, secret) {
+      componentName = componentName || ANONYMOUS;
+      propFullName = propFullName || propName;
+
+      if (secret !== ReactPropTypesSecret) {
+        if (throwOnDirectAccess) {
+          // New behavior only for users of `prop-types` package
+          var err = new Error(
+            'Calling PropTypes validators directly is not supported by the `prop-types` package. ' +
+            'Use `PropTypes.checkPropTypes()` to call them. ' +
+            'Read more at http://fb.me/use-check-prop-types'
+          );
+          err.name = 'Invariant Violation';
+          throw err;
+        } else if (process.env.NODE_ENV !== 'production' && typeof console !== 'undefined') {
+          // Old behavior for people using React.PropTypes
+          var cacheKey = componentName + ':' + propName;
+          if (
+            !manualPropTypeCallCache[cacheKey] &&
+            // Avoid spamming the console because they are often not actionable except for lib authors
+            manualPropTypeWarningCount < 3
+          ) {
+            printWarning(
+              'You are manually calling a React.PropTypes validation ' +
+              'function for the `' + propFullName + '` prop on `' + componentName  + '`. This is deprecated ' +
+              'and will throw in the standalone `prop-types` package. ' +
+              'You may be seeing this warning due to a third-party PropTypes ' +
+              'library. See https://fb.me/react-warning-dont-call-proptypes ' + 'for details.'
+            );
+            manualPropTypeCallCache[cacheKey] = true;
+            manualPropTypeWarningCount++;
+          }
+        }
+      }
+      if (props[propName] == null) {
+        if (isRequired) {
+          if (props[propName] === null) {
+            return new PropTypeError('The ' + location + ' `' + propFullName + '` is marked as required ' + ('in `' + componentName + '`, but its value is `null`.'));
+          }
+          return new PropTypeError('The ' + location + ' `' + propFullName + '` is marked as required in ' + ('`' + componentName + '`, but its value is `undefined`.'));
+        }
+        return null;
+      } else {
+        return validate(props, propName, componentName, location, propFullName);
+      }
+    }
+
+    var chainedCheckType = checkType.bind(null, false);
+    chainedCheckType.isRequired = checkType.bind(null, true);
+
+    return chainedCheckType;
+  }
+
+  function createPrimitiveTypeChecker(expectedType) {
+    function validate(props, propName, componentName, location, propFullName, secret) {
+      var propValue = props[propName];
+      var propType = getPropType(propValue);
+      if (propType !== expectedType) {
+        // `propValue` being instance of, say, date/regexp, pass the 'object'
+        // check, but we can offer a more precise error message here rather than
+        // 'of type `object`'.
+        var preciseType = getPreciseType(propValue);
+
+        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type ' + ('`' + preciseType + '` supplied to `' + componentName + '`, expected ') + ('`' + expectedType + '`.'));
+      }
+      return null;
+    }
+    return createChainableTypeChecker(validate);
+  }
+
+  function createAnyTypeChecker() {
+    return createChainableTypeChecker(emptyFunctionThatReturnsNull);
+  }
+
+  function createArrayOfTypeChecker(typeChecker) {
+    function validate(props, propName, componentName, location, propFullName) {
+      if (typeof typeChecker !== 'function') {
+        return new PropTypeError('Property `' + propFullName + '` of component `' + componentName + '` has invalid PropType notation inside arrayOf.');
+      }
+      var propValue = props[propName];
+      if (!Array.isArray(propValue)) {
+        var propType = getPropType(propValue);
+        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type ' + ('`' + propType + '` supplied to `' + componentName + '`, expected an array.'));
+      }
+      for (var i = 0; i < propValue.length; i++) {
+        var error = typeChecker(propValue, i, componentName, location, propFullName + '[' + i + ']', ReactPropTypesSecret);
+        if (error instanceof Error) {
+          return error;
+        }
+      }
+      return null;
+    }
+    return createChainableTypeChecker(validate);
+  }
+
+  function createElementTypeChecker() {
+    function validate(props, propName, componentName, location, propFullName) {
+      var propValue = props[propName];
+      if (!isValidElement(propValue)) {
+        var propType = getPropType(propValue);
+        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type ' + ('`' + propType + '` supplied to `' + componentName + '`, expected a single ReactElement.'));
+      }
+      return null;
+    }
+    return createChainableTypeChecker(validate);
+  }
+
+  function createElementTypeTypeChecker() {
+    function validate(props, propName, componentName, location, propFullName) {
+      var propValue = props[propName];
+      if (!ReactIs.isValidElementType(propValue)) {
+        var propType = getPropType(propValue);
+        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type ' + ('`' + propType + '` supplied to `' + componentName + '`, expected a single ReactElement type.'));
+      }
+      return null;
+    }
+    return createChainableTypeChecker(validate);
+  }
+
+  function createInstanceTypeChecker(expectedClass) {
+    function validate(props, propName, componentName, location, propFullName) {
+      if (!(props[propName] instanceof expectedClass)) {
+        var expectedClassName = expectedClass.name || ANONYMOUS;
+        var actualClassName = getClassName(props[propName]);
+        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type ' + ('`' + actualClassName + '` supplied to `' + componentName + '`, expected ') + ('instance of `' + expectedClassName + '`.'));
+      }
+      return null;
+    }
+    return createChainableTypeChecker(validate);
+  }
+
+  function createEnumTypeChecker(expectedValues) {
+    if (!Array.isArray(expectedValues)) {
+      if (process.env.NODE_ENV !== 'production') {
+        if (arguments.length > 1) {
+          printWarning(
+            `Invalid arguments supplied to oneOf, expected an array, got ${arguments.length} arguments. ` +
+            `A common mistake is to write oneOf(x, y, z) instead of oneOf([x, y, z]).`
+          );
+        } else {
+          printWarning('Invalid argument supplied to oneOf, expected an array.');
+        }
+      }
+      return emptyFunctionThatReturnsNull;
+    }
+
+    function validate(props, propName, componentName, location, propFullName) {
+      var propValue = props[propName];
+      for (var i = 0; i < expectedValues.length; i++) {
+        if (is(propValue, expectedValues[i])) {
+          return null;
+        }
+      }
+
+      var valuesString = JSON.stringify(expectedValues, function replacer(key, value) {
+        if (getPropType(value) === 'symbol') {
+          return String(value);
+        }
+        return value;
+      });
+      return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of value `' + String(propValue) + '` ' + ('supplied to `' + componentName + '`, expected one of ' + valuesString + '.'));
+    }
+    return createChainableTypeChecker(validate);
+  }
+
+  function createObjectOfTypeChecker(typeChecker) {
+    function validate(props, propName, componentName, location, propFullName) {
+      if (typeof typeChecker !== 'function') {
+        return new PropTypeError('Property `' + propFullName + '` of component `' + componentName + '` has invalid PropType notation inside objectOf.');
+      }
+      var propValue = props[propName];
+      var propType = getPropType(propValue);
+      if (propType !== 'object') {
+        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type ' + ('`' + propType + '` supplied to `' + componentName + '`, expected an object.'));
+      }
+      for (var key in propValue) {
+        if (has(propValue, key)) {
+          var error = typeChecker(propValue, key, componentName, location, propFullName + '.' + key, ReactPropTypesSecret);
+          if (error instanceof Error) {
+            return error;
+          }
+        }
+      }
+      return null;
+    }
+    return createChainableTypeChecker(validate);
+  }
+
+  function createUnionTypeChecker(arrayOfTypeCheckers) {
+    if (!Array.isArray(arrayOfTypeCheckers)) {
+      process.env.NODE_ENV !== 'production' ? printWarning('Invalid argument supplied to oneOfType, expected an instance of array.') : void 0;
+      return emptyFunctionThatReturnsNull;
+    }
+
+    for (var i = 0; i < arrayOfTypeCheckers.length; i++) {
+      var checker = arrayOfTypeCheckers[i];
+      if (typeof checker !== 'function') {
+        printWarning(
+          'Invalid argument supplied to oneOfType. Expected an array of check functions, but ' +
+          'received ' + getPostfixForTypeWarning(checker) + ' at index ' + i + '.'
+        );
+        return emptyFunctionThatReturnsNull;
+      }
+    }
+
+    function validate(props, propName, componentName, location, propFullName) {
+      for (var i = 0; i < arrayOfTypeCheckers.length; i++) {
+        var checker = arrayOfTypeCheckers[i];
+        if (checker(props, propName, componentName, location, propFullName, ReactPropTypesSecret) == null) {
+          return null;
+        }
+      }
+
+      return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` supplied to ' + ('`' + componentName + '`.'));
+    }
+    return createChainableTypeChecker(validate);
+  }
+
+  function createNodeChecker() {
+    function validate(props, propName, componentName, location, propFullName) {
+      if (!isNode(props[propName])) {
+        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` supplied to ' + ('`' + componentName + '`, expected a ReactNode.'));
+      }
+      return null;
+    }
+    return createChainableTypeChecker(validate);
+  }
+
+  function createShapeTypeChecker(shapeTypes) {
+    function validate(props, propName, componentName, location, propFullName) {
+      var propValue = props[propName];
+      var propType = getPropType(propValue);
+      if (propType !== 'object') {
+        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type `' + propType + '` ' + ('supplied to `' + componentName + '`, expected `object`.'));
+      }
+      for (var key in shapeTypes) {
+        var checker = shapeTypes[key];
+        if (!checker) {
+          continue;
+        }
+        var error = checker(propValue, key, componentName, location, propFullName + '.' + key, ReactPropTypesSecret);
+        if (error) {
+          return error;
+        }
+      }
+      return null;
+    }
+    return createChainableTypeChecker(validate);
+  }
+
+  function createStrictShapeTypeChecker(shapeTypes) {
+    function validate(props, propName, componentName, location, propFullName) {
+      var propValue = props[propName];
+      var propType = getPropType(propValue);
+      if (propType !== 'object') {
+        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type `' + propType + '` ' + ('supplied to `' + componentName + '`, expected `object`.'));
+      }
+      // We need to check all keys in case some are required but missing from
+      // props.
+      var allKeys = assign({}, props[propName], shapeTypes);
+      for (var key in allKeys) {
+        var checker = shapeTypes[key];
+        if (!checker) {
+          return new PropTypeError(
+            'Invalid ' + location + ' `' + propFullName + '` key `' + key + '` supplied to `' + componentName + '`.' +
+            '\nBad object: ' + JSON.stringify(props[propName], null, '  ') +
+            '\nValid keys: ' +  JSON.stringify(Object.keys(shapeTypes), null, '  ')
+          );
+        }
+        var error = checker(propValue, key, componentName, location, propFullName + '.' + key, ReactPropTypesSecret);
+        if (error) {
+          return error;
+        }
+      }
+      return null;
+    }
+
+    return createChainableTypeChecker(validate);
+  }
+
+  function isNode(propValue) {
+    switch (typeof propValue) {
+      case 'number':
+      case 'string':
+      case 'undefined':
+        return true;
+      case 'boolean':
+        return !propValue;
+      case 'object':
+        if (Array.isArray(propValue)) {
+          return propValue.every(isNode);
+        }
+        if (propValue === null || isValidElement(propValue)) {
+          return true;
+        }
+
+        var iteratorFn = getIteratorFn(propValue);
+        if (iteratorFn) {
+          var iterator = iteratorFn.call(propValue);
+          var step;
+          if (iteratorFn !== propValue.entries) {
+            while (!(step = iterator.next()).done) {
+              if (!isNode(step.value)) {
+                return false;
+              }
+            }
+          } else {
+            // Iterator will provide entry [k,v] tuples rather than values.
+            while (!(step = iterator.next()).done) {
+              var entry = step.value;
+              if (entry) {
+                if (!isNode(entry[1])) {
+                  return false;
+                }
+              }
+            }
+          }
+        } else {
+          return false;
+        }
+
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  function isSymbol(propType, propValue) {
+    // Native Symbol.
+    if (propType === 'symbol') {
+      return true;
+    }
+
+    // 19.4.3.5 Symbol.prototype[@@toStringTag] === 'Symbol'
+    if (propValue['@@toStringTag'] === 'Symbol') {
+      return true;
+    }
+
+    // Fallback for non-spec compliant Symbols which are polyfilled.
+    if (typeof Symbol === 'function' && propValue instanceof Symbol) {
+      return true;
+    }
+
+    return false;
+  }
+
+  // Equivalent of `typeof` but with special handling for array and regexp.
+  function getPropType(propValue) {
+    var propType = typeof propValue;
+    if (Array.isArray(propValue)) {
+      return 'array';
+    }
+    if (propValue instanceof RegExp) {
+      // Old webkits (at least until Android 4.0) return 'function' rather than
+      // 'object' for typeof a RegExp. We'll normalize this here so that /bla/
+      // passes PropTypes.object.
+      return 'object';
+    }
+    if (isSymbol(propType, propValue)) {
+      return 'symbol';
+    }
+    return propType;
+  }
+
+  // This handles more types than `getPropType`. Only used for error messages.
+  // See `createPrimitiveTypeChecker`.
+  function getPreciseType(propValue) {
+    if (typeof propValue === 'undefined' || propValue === null) {
+      return '' + propValue;
+    }
+    var propType = getPropType(propValue);
+    if (propType === 'object') {
+      if (propValue instanceof Date) {
+        return 'date';
+      } else if (propValue instanceof RegExp) {
+        return 'regexp';
+      }
+    }
+    return propType;
+  }
+
+  // Returns a string that is postfixed to a warning about an invalid type.
+  // For example, "undefined" or "of type array"
+  function getPostfixForTypeWarning(value) {
+    var type = getPreciseType(value);
+    switch (type) {
+      case 'array':
+      case 'object':
+        return 'an ' + type;
+      case 'boolean':
+      case 'date':
+      case 'regexp':
+        return 'a ' + type;
+      default:
+        return type;
+    }
+  }
+
+  // Returns class name of the object, if any.
+  function getClassName(propValue) {
+    if (!propValue.constructor || !propValue.constructor.name) {
+      return ANONYMOUS;
+    }
+    return propValue.constructor.name;
+  }
+
+  ReactPropTypes.checkPropTypes = checkPropTypes;
+  ReactPropTypes.resetWarningCache = checkPropTypes.resetWarningCache;
+  ReactPropTypes.PropTypes = ReactPropTypes;
+
+  return ReactPropTypes;
+};
+
+}).call(this,require('_process'))
+},{"./checkPropTypes":3,"./lib/ReactPropTypesSecret":7,"_process":25,"object-assign":2,"react-is":16}],6:[function(require,module,exports){
+(function (process){
+/**
+ * Copyright (c) 2013-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+if (process.env.NODE_ENV !== 'production') {
+  var ReactIs = require('react-is');
+
+  // By explicitly using `prop-types` you are opting into new development behavior.
+  // http://fb.me/prop-types-in-prod
+  var throwOnDirectAccess = true;
+  module.exports = require('./factoryWithTypeCheckers')(ReactIs.isElement, throwOnDirectAccess);
+} else {
+  // By explicitly using `prop-types` you are opting into new production behavior.
+  // http://fb.me/prop-types-in-prod
+  module.exports = require('./factoryWithThrowingShims')();
+}
+
+}).call(this,require('_process'))
+},{"./factoryWithThrowingShims":4,"./factoryWithTypeCheckers":5,"_process":25,"react-is":16}],7:[function(require,module,exports){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  *
@@ -267,7 +945,7 @@ var ReactPropTypesSecret = 'SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED';
 
 module.exports = ReactPropTypesSecret;
 
-},{}],5:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -433,75 +1111,11 @@ var ContentEditable = /** @class */ (function (_super) {
 }(React.Component));
 exports.default = ContentEditable;
 
-},{"fast-deep-equal":1,"prop-types":9,"react":16}],6:[function(require,module,exports){
+},{"fast-deep-equal":1,"prop-types":12,"react":23}],9:[function(require,module,exports){
 arguments[4][3][0].apply(exports,arguments)
-},{"./lib/ReactPropTypesSecret":10,"_process":18,"dup":3}],7:[function(require,module,exports){
-/**
- * Copyright (c) 2013-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
-'use strict';
-
-var ReactPropTypesSecret = require('./lib/ReactPropTypesSecret');
-
-function emptyFunction() {}
-function emptyFunctionWithReset() {}
-emptyFunctionWithReset.resetWarningCache = emptyFunction;
-
-module.exports = function() {
-  function shim(props, propName, componentName, location, propFullName, secret) {
-    if (secret === ReactPropTypesSecret) {
-      // It is still safe when called from React.
-      return;
-    }
-    var err = new Error(
-      'Calling PropTypes validators directly is not supported by the `prop-types` package. ' +
-      'Use PropTypes.checkPropTypes() to call them. ' +
-      'Read more at http://fb.me/use-check-prop-types'
-    );
-    err.name = 'Invariant Violation';
-    throw err;
-  };
-  shim.isRequired = shim;
-  function getShim() {
-    return shim;
-  };
-  // Important!
-  // Keep this list in sync with production version in `./factoryWithTypeCheckers.js`.
-  var ReactPropTypes = {
-    array: shim,
-    bool: shim,
-    func: shim,
-    number: shim,
-    object: shim,
-    string: shim,
-    symbol: shim,
-
-    any: shim,
-    arrayOf: getShim,
-    element: shim,
-    elementType: shim,
-    instanceOf: getShim,
-    node: shim,
-    objectOf: getShim,
-    oneOf: getShim,
-    oneOfType: getShim,
-    shape: getShim,
-    exact: getShim,
-
-    checkPropTypes: emptyFunctionWithReset,
-    resetWarningCache: emptyFunction
-  };
-
-  ReactPropTypes.PropTypes = ReactPropTypes;
-
-  return ReactPropTypes;
-};
-
-},{"./lib/ReactPropTypesSecret":10}],8:[function(require,module,exports){
+},{"./lib/ReactPropTypesSecret":13,"_process":25,"dup":3}],10:[function(require,module,exports){
+arguments[4][4][0].apply(exports,arguments)
+},{"./lib/ReactPropTypesSecret":13,"dup":4}],11:[function(require,module,exports){
 (function (process){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
@@ -1096,32 +1710,11 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
 };
 
 }).call(this,require('_process'))
-},{"./checkPropTypes":6,"./lib/ReactPropTypesSecret":10,"_process":18,"object-assign":2,"react-is":13}],9:[function(require,module,exports){
-(function (process){
-/**
- * Copyright (c) 2013-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
-if (process.env.NODE_ENV !== 'production') {
-  var ReactIs = require('react-is');
-
-  // By explicitly using `prop-types` you are opting into new development behavior.
-  // http://fb.me/prop-types-in-prod
-  var throwOnDirectAccess = true;
-  module.exports = require('./factoryWithTypeCheckers')(ReactIs.isElement, throwOnDirectAccess);
-} else {
-  // By explicitly using `prop-types` you are opting into new production behavior.
-  // http://fb.me/prop-types-in-prod
-  module.exports = require('./factoryWithThrowingShims')();
-}
-
-}).call(this,require('_process'))
-},{"./factoryWithThrowingShims":7,"./factoryWithTypeCheckers":8,"_process":18,"react-is":13}],10:[function(require,module,exports){
-arguments[4][4][0].apply(exports,arguments)
-},{"dup":4}],11:[function(require,module,exports){
+},{"./checkPropTypes":9,"./lib/ReactPropTypesSecret":13,"_process":25,"object-assign":2,"react-is":16}],12:[function(require,module,exports){
+arguments[4][6][0].apply(exports,arguments)
+},{"./factoryWithThrowingShims":10,"./factoryWithTypeCheckers":11,"_process":25,"dup":6,"react-is":16}],13:[function(require,module,exports){
+arguments[4][7][0].apply(exports,arguments)
+},{"dup":7}],14:[function(require,module,exports){
 (function (process){
 /** @license React v16.8.6
  * react-is.development.js
@@ -1352,7 +1945,7 @@ exports.isSuspense = isSuspense;
 }
 
 }).call(this,require('_process'))
-},{"_process":18}],12:[function(require,module,exports){
+},{"_process":25}],15:[function(require,module,exports){
 /** @license React v16.8.6
  * react-is.production.min.js
  *
@@ -1369,7 +1962,7 @@ exports.Fragment=e;exports.Lazy=r;exports.Memo=q;exports.Portal=d;exports.Profil
 exports.isContextProvider=function(a){return t(a)===h};exports.isElement=function(a){return"object"===typeof a&&null!==a&&a.$$typeof===c};exports.isForwardRef=function(a){return t(a)===n};exports.isFragment=function(a){return t(a)===e};exports.isLazy=function(a){return t(a)===r};exports.isMemo=function(a){return t(a)===q};exports.isPortal=function(a){return t(a)===d};exports.isProfiler=function(a){return t(a)===g};exports.isStrictMode=function(a){return t(a)===f};
 exports.isSuspense=function(a){return t(a)===p};
 
-},{}],13:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -1380,9 +1973,480 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 }).call(this,require('_process'))
-},{"./cjs/react-is.development.js":11,"./cjs/react-is.production.min.js":12,"_process":18}],14:[function(require,module,exports){
+},{"./cjs/react-is.development.js":14,"./cjs/react-is.production.min.js":15,"_process":25}],17:[function(require,module,exports){
+'use strict'
+
+var React = require('react')
+
+var SIZER_STYLES = {
+  position: 'absolute',
+  width: 0,
+  height: 0,
+  visibility: 'hidden',
+  overflow: 'scroll',
+  whiteSpace: 'pre'
+}
+
+var STYLE_PROPS = [
+  'fontSize',
+  'fontFamily',
+  'fontWeight',
+  'fontStyle',
+  'letterSpacing'
+]
+
+var Input = (function (superclass) {
+  function Input (props) {
+    superclass.call(this, props)
+    this.state = { inputWidth: null }
+  }
+
+  if ( superclass ) Input.__proto__ = superclass;
+  Input.prototype = Object.create( superclass && superclass.prototype );
+  Input.prototype.constructor = Input;
+
+  Input.prototype.componentDidMount = function componentDidMount () {
+    if (this.props.autoresize) {
+      this.copyInputStyles()
+      this.updateInputWidth()
+    }
+
+    if (this.props.autofocus) {
+      this.input.focus()
+    }
+  };
+
+  Input.prototype.componentDidUpdate = function componentDidUpdate () {
+    this.updateInputWidth()
+  };
+
+  Input.prototype.copyInputStyles = function copyInputStyles () {
+    var this$1 = this;
+
+    var inputStyle = window.getComputedStyle(this.input)
+
+    STYLE_PROPS.forEach(function (prop) {
+      this$1.sizer.style[prop] = inputStyle[prop]
+    })
+  };
+
+  Input.prototype.updateInputWidth = function updateInputWidth () {
+    var inputWidth
+
+    if (this.props.autoresize) {
+      // scrollWidth is designed to be fast not accurate.
+      // +2 is completely arbitrary but does the job.
+      inputWidth = Math.ceil(this.sizer.scrollWidth) + 2
+    }
+
+    if (inputWidth !== this.state.inputWidth) {
+      this.setState({ inputWidth: inputWidth })
+    }
+  };
+
+  Input.prototype.render = function render () {
+    var this$1 = this;
+
+    var ref = this.props;
+    var inputAttributes = ref.inputAttributes;
+    var inputEventHandlers = ref.inputEventHandlers;
+    var query = ref.query;
+    var placeholder = ref.placeholder;
+    var expandable = ref.expandable;
+    var listboxId = ref.listboxId;
+    var selectedIndex = ref.selectedIndex;
+
+    return (
+      React.createElement( 'div', { className: this.props.classNames.searchInput },
+        React.createElement( 'input', Object.assign({},
+          inputAttributes, inputEventHandlers, { ref: function (c) { this$1.input = c }, value: query, placeholder: placeholder, role: 'combobox', 'aria-autocomplete': 'list', 'aria-label': placeholder, 'aria-owns': listboxId, 'aria-activedescendant': selectedIndex > -1 ? (listboxId + "-" + selectedIndex) : null, 'aria-expanded': expandable, style: { width: this.state.inputWidth } })),
+        React.createElement( 'div', { ref: function (c) { this$1.sizer = c }, style: SIZER_STYLES }, query || placeholder)
+      )
+    )
+  };
+
+  return Input;
+}(React.Component));
+
+module.exports = Input
+
+},{"react":23}],18:[function(require,module,exports){
+'use strict'
+
+var React = require('react')
+var PropTypes = require('prop-types')
+var Tag = require('./Tag')
+var Input = require('./Input')
+var Suggestions = require('./Suggestions')
+
+var KEYS = {
+  ENTER: 13,
+  TAB: 9,
+  BACKSPACE: 8,
+  UP_ARROW: 38,
+  DOWN_ARROW: 40
+}
+
+var CLASS_NAMES = {
+  root: 'react-tags',
+  rootFocused: 'is-focused',
+  selected: 'react-tags__selected',
+  selectedTag: 'react-tags__selected-tag',
+  selectedTagName: 'react-tags__selected-tag-name',
+  search: 'react-tags__search',
+  searchInput: 'react-tags__search-input',
+  suggestions: 'react-tags__suggestions',
+  suggestionActive: 'is-active',
+  suggestionDisabled: 'is-disabled'
+}
+
+var ReactTags = (function (superclass) {
+  function ReactTags (props) {
+    superclass.call(this, props)
+
+    this.state = {
+      query: '',
+      focused: false,
+      expandable: false,
+      selectedIndex: -1,
+      classNames: Object.assign({}, CLASS_NAMES, this.props.classNames)
+    }
+
+    this.inputEventHandlers = {
+      // Provide a no-op function to the input component to avoid warnings
+      // <https://github.com/i-like-robots/react-tags/issues/135>
+      // <https://github.com/facebook/react/issues/13835>
+      onChange: function () {},
+      onBlur: this.handleBlur.bind(this),
+      onFocus: this.handleFocus.bind(this),
+      onInput: this.handleInput.bind(this),
+      onKeyDown: this.handleKeyDown.bind(this)
+    }
+  }
+
+  if ( superclass ) ReactTags.__proto__ = superclass;
+  ReactTags.prototype = Object.create( superclass && superclass.prototype );
+  ReactTags.prototype.constructor = ReactTags;
+
+  ReactTags.prototype.componentWillReceiveProps = function componentWillReceiveProps (newProps) {
+    this.setState({
+      classNames: Object.assign({}, CLASS_NAMES, newProps.classNames)
+    })
+  };
+
+  ReactTags.prototype.handleInput = function handleInput (e) {
+    var query = e.target.value
+
+    if (this.props.handleInputChange) {
+      this.props.handleInputChange(query)
+    }
+
+    this.setState({ query: query })
+  };
+
+  ReactTags.prototype.handleKeyDown = function handleKeyDown (e) {
+    var ref = this.state;
+    var query = ref.query;
+    var selectedIndex = ref.selectedIndex;
+    var ref$1 = this.props;
+    var delimiters = ref$1.delimiters;
+    var delimiterChars = ref$1.delimiterChars;
+
+    // when one of the terminating keys is pressed, add current query to the tags.
+    if (delimiters.indexOf(e.keyCode) > -1 || delimiterChars.indexOf(e.key) > -1) {
+      if (query || selectedIndex > -1) {
+        e.preventDefault()
+      }
+
+      this.handleDelimiter()
+    }
+
+    // when backspace key is pressed and query is blank, delete the last tag
+    if (e.keyCode === KEYS.BACKSPACE && query.length === 0 && this.props.allowBackspace) {
+      this.deleteTag(this.props.tags.length - 1)
+    }
+
+    if (e.keyCode === KEYS.UP_ARROW) {
+      e.preventDefault()
+
+      // if last item, cycle to the bottom
+      if (selectedIndex <= 0) {
+        this.setState({ selectedIndex: this.suggestions.state.options.length - 1 })
+      } else {
+        this.setState({ selectedIndex: selectedIndex - 1 })
+      }
+    }
+
+    if (e.keyCode === KEYS.DOWN_ARROW) {
+      e.preventDefault()
+
+      this.setState({ selectedIndex: (selectedIndex + 1) % this.suggestions.state.options.length })
+    }
+  };
+
+  ReactTags.prototype.handleDelimiter = function handleDelimiter () {
+    var ref = this.state;
+    var query = ref.query;
+    var selectedIndex = ref.selectedIndex;
+
+    if (query.length >= this.props.minQueryLength) {
+      // Check if the user typed in an existing suggestion.
+      var match = this.suggestions.state.options.findIndex(function (suggestion) {
+        return suggestion.name.search(new RegExp(("^" + query + "$"), 'i')) === 0
+      })
+
+      var index = selectedIndex === -1 ? match : selectedIndex
+
+      if (index > -1) {
+        this.addTag(this.suggestions.state.options[index])
+      } else if (this.props.allowNew) {
+        this.addTag({ name: query })
+      }
+    }
+  };
+
+  ReactTags.prototype.handleClick = function handleClick (e) {
+    if (document.activeElement !== e.target) {
+      this.input.input.focus()
+    }
+  };
+
+  ReactTags.prototype.handleBlur = function handleBlur () {
+    this.setState({ focused: false, selectedIndex: -1 })
+
+    if (this.props.handleBlur) {
+      this.props.handleBlur()
+    }
+
+    if (this.props.addOnBlur) {
+      this.handleDelimiter()
+    }
+  };
+
+  ReactTags.prototype.handleFocus = function handleFocus () {
+    this.setState({ focused: true })
+
+    if (this.props.handleFocus) {
+      this.props.handleFocus()
+    }
+  };
+
+  ReactTags.prototype.addTag = function addTag (tag) {
+    if (tag.disabled) {
+      return
+    }
+
+    if (typeof this.props.handleValidate === 'function' && !this.props.handleValidate(tag)) {
+      return
+    }
+
+    this.props.handleAddition(tag)
+
+    // reset the state
+    this.setState({
+      query: '',
+      selectedIndex: -1
+    })
+  };
+
+  ReactTags.prototype.deleteTag = function deleteTag (i) {
+    this.props.handleDelete(i)
+
+    if (this.props.clearInputOnDelete && this.state.query !== '') {
+      this.setState({ query: '' })
+    }
+  };
+
+  ReactTags.prototype.render = function render () {
+    var this$1 = this;
+
+    var listboxId = 'ReactTags-listbox'
+
+    var TagComponent = this.props.tagComponent || Tag
+
+    var tags = this.props.tags.map(function (tag, i) { return (
+      React.createElement( TagComponent, {
+        key: i, tag: tag, classNames: this$1.state.classNames, onDelete: this$1.deleteTag.bind(this$1, i) })
+    ); })
+
+    var expandable = this.state.focused && this.state.query.length >= this.props.minQueryLength
+    var classNames = [this.state.classNames.root]
+
+    this.state.focused && classNames.push(this.state.classNames.rootFocused)
+
+    return (
+      React.createElement( 'div', { className: classNames.join(' '), onClick: this.handleClick.bind(this) },
+        React.createElement( 'div', { className: this.state.classNames.selected, 'aria-live': 'polite', 'aria-relevant': 'additions removals' },
+          tags
+        ),
+        React.createElement( 'div', { className: this.state.classNames.search },
+          React.createElement( Input, Object.assign({}, this.state, { inputAttributes: this.props.inputAttributes, inputEventHandlers: this.inputEventHandlers, ref: function (c) { this$1.input = c }, listboxId: listboxId, autofocus: this.props.autofocus, autoresize: this.props.autoresize, expandable: expandable, placeholder: this.props.placeholder })),
+          React.createElement( Suggestions, Object.assign({}, this.state, { ref: function (c) { this$1.suggestions = c }, listboxId: listboxId, expandable: expandable, suggestions: this.props.suggestions, suggestionsFilter: this.props.suggestionsFilter, addTag: this.addTag.bind(this), maxSuggestionsLength: this.props.maxSuggestionsLength }))
+        )
+      )
+    )
+  };
+
+  return ReactTags;
+}(React.Component));
+
+ReactTags.defaultProps = {
+  tags: [],
+  placeholder: 'Add new tag',
+  suggestions: [],
+  suggestionsFilter: null,
+  autofocus: true,
+  autoresize: true,
+  delimiters: [KEYS.TAB, KEYS.ENTER],
+  delimiterChars: [],
+  minQueryLength: 2,
+  maxSuggestionsLength: 6,
+  allowNew: false,
+  allowBackspace: true,
+  tagComponent: null,
+  inputAttributes: {},
+  addOnBlur: false,
+  clearInputOnDelete: true
+}
+
+ReactTags.propTypes = {
+  tags: PropTypes.arrayOf(PropTypes.object),
+  placeholder: PropTypes.string,
+  suggestions: PropTypes.arrayOf(PropTypes.object),
+  suggestionsFilter: PropTypes.func,
+  autofocus: PropTypes.bool,
+  autoresize: PropTypes.bool,
+  delimiters: PropTypes.arrayOf(PropTypes.number),
+  delimiterChars: PropTypes.arrayOf(PropTypes.string),
+  handleDelete: PropTypes.func.isRequired,
+  handleAddition: PropTypes.func.isRequired,
+  handleInputChange: PropTypes.func,
+  handleFocus: PropTypes.func,
+  handleBlur: PropTypes.func,
+  handleValidate: PropTypes.func,
+  minQueryLength: PropTypes.number,
+  maxSuggestionsLength: PropTypes.number,
+  classNames: PropTypes.object,
+  allowNew: PropTypes.bool,
+  allowBackspace: PropTypes.bool,
+  tagComponent: PropTypes.oneOfType([
+    PropTypes.func,
+    PropTypes.element
+  ]),
+  inputAttributes: PropTypes.object,
+  addOnBlur: PropTypes.bool,
+  clearInputOnDelete: PropTypes.bool
+}
+
+module.exports = ReactTags
+
+},{"./Input":17,"./Suggestions":19,"./Tag":20,"prop-types":6,"react":23}],19:[function(require,module,exports){
+'use strict'
+
+var React = require('react')
+
+function escapeForRegExp (query) {
+  return query.replace(/[-\\^$*+?.()|[\]{}]/g, '\\$&')
+}
+
+function markIt (input, query) {
+  if (query) {
+    var regex = RegExp(escapeForRegExp(query), 'gi')
+    input = input.replace(regex, '<mark>$&</mark>')
+  }
+
+  return {
+    __html: input
+  }
+}
+
+function filterSuggestions (query, suggestions, length, suggestionsFilter) {
+  if (!suggestionsFilter) {
+    var regex = new RegExp(("(?:^|\\s)" + (escapeForRegExp(query))), 'i')
+    suggestionsFilter = function (item) { return regex.test(item.name); }
+  }
+
+  return suggestions.filter(function (item) { return suggestionsFilter(item, query); }).slice(0, length)
+}
+
+var Suggestions = (function (superclass) {
+  function Suggestions (props) {
+    superclass.call(this, props)
+
+    this.state = {
+      options: filterSuggestions(this.props.query, this.props.suggestions, this.props.maxSuggestionsLength, this.props.suggestionsFilter)
+    }
+  }
+
+  if ( superclass ) Suggestions.__proto__ = superclass;
+  Suggestions.prototype = Object.create( superclass && superclass.prototype );
+  Suggestions.prototype.constructor = Suggestions;
+
+  Suggestions.prototype.componentWillReceiveProps = function componentWillReceiveProps (newProps) {
+    this.setState({
+      options: filterSuggestions(newProps.query, newProps.suggestions, newProps.maxSuggestionsLength, newProps.suggestionsFilter)
+    })
+  };
+
+  Suggestions.prototype.handleMouseDown = function handleMouseDown (item, e) {
+    // focus is shifted on mouse down but calling preventDefault prevents this
+    e.preventDefault()
+    this.props.addTag(item)
+  };
+
+  Suggestions.prototype.render = function render () {
+    var this$1 = this;
+
+    if (!this.props.expandable || !this.state.options.length) {
+      return null
+    }
+
+    var options = this.state.options.map(function (item, i) {
+      var key = (this$1.props.listboxId) + "-" + i
+      var classNames = []
+
+      if (this$1.props.selectedIndex === i) {
+        classNames.push(this$1.props.classNames.suggestionActive)
+      }
+
+      if (item.disabled) {
+        classNames.push(this$1.props.classNames.suggestionDisabled)
+      }
+
+      return (
+        React.createElement( 'li', {
+          id: key, key: key, role: 'option', className: classNames.join(' '), 'aria-disabled': item.disabled === true, onMouseDown: this$1.handleMouseDown.bind(this$1, item) },
+          React.createElement( 'span', { dangerouslySetInnerHTML: markIt(item.name, this$1.props.query) })
+        )
+      )
+    })
+
+    return (
+      React.createElement( 'div', { className: this.props.classNames.suggestions },
+        React.createElement( 'ul', { role: 'listbox', id: this.props.listboxId }, options)
+      )
+    )
+  };
+
+  return Suggestions;
+}(React.Component));
+
+module.exports = Suggestions
+
+},{"react":23}],20:[function(require,module,exports){
+'use strict'
+
+var React = require('react')
+
+module.exports = function (props) { return (
+  React.createElement( 'button', { type: 'button', className: props.classNames.selectedTag, title: 'Click to remove tag', onClick: props.onDelete },
+    React.createElement( 'span', { className: props.classNames.selectedTagName }, props.tag.name)
+  )
+); }
+
+},{"react":23}],21:[function(require,module,exports){
 (function (process){
-/** @license React v16.8.6
+/** @license React v16.9.0
  * react.development.js
  *
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -1404,7 +2468,7 @@ var checkPropTypes = require('prop-types/checkPropTypes');
 
 // TODO: this is special because it gets imported during build.
 
-var ReactVersion = '16.8.6';
+var ReactVersion = '16.9.0';
 
 // The Symbol used to tag the ReactElement-like types. If there is no native Symbol
 // nor polyfill, then a plain number is used for performance.
@@ -1417,12 +2481,17 @@ var REACT_STRICT_MODE_TYPE = hasSymbol ? Symbol.for('react.strict_mode') : 0xeac
 var REACT_PROFILER_TYPE = hasSymbol ? Symbol.for('react.profiler') : 0xead2;
 var REACT_PROVIDER_TYPE = hasSymbol ? Symbol.for('react.provider') : 0xeacd;
 var REACT_CONTEXT_TYPE = hasSymbol ? Symbol.for('react.context') : 0xeace;
+// TODO: We don't use AsyncMode or ConcurrentMode anymore. They were temporary
+// (unstable) APIs that have been removed. Can we remove the symbols?
 
 var REACT_CONCURRENT_MODE_TYPE = hasSymbol ? Symbol.for('react.concurrent_mode') : 0xeacf;
 var REACT_FORWARD_REF_TYPE = hasSymbol ? Symbol.for('react.forward_ref') : 0xead0;
 var REACT_SUSPENSE_TYPE = hasSymbol ? Symbol.for('react.suspense') : 0xead1;
+var REACT_SUSPENSE_LIST_TYPE = hasSymbol ? Symbol.for('react.suspense_list') : 0xead8;
 var REACT_MEMO_TYPE = hasSymbol ? Symbol.for('react.memo') : 0xead3;
 var REACT_LAZY_TYPE = hasSymbol ? Symbol.for('react.lazy') : 0xead4;
+var REACT_FUNDAMENTAL_TYPE = hasSymbol ? Symbol.for('react.fundamental') : 0xead5;
+var REACT_RESPONDER_TYPE = hasSymbol ? Symbol.for('react.responder') : 0xead6;
 
 var MAYBE_ITERATOR_SYMBOL = typeof Symbol === 'function' && Symbol.iterator;
 var FAUX_ITERATOR_SYMBOL = '@@iterator';
@@ -1438,6 +2507,19 @@ function getIteratorFn(maybeIterable) {
   return null;
 }
 
+// Do not require this module directly! Use normal `invariant` calls with
+// template literal strings. The messages will be converted to ReactError during
+// build, and in production they will be minified.
+
+// Do not require this module directly! Use normal `invariant` calls with
+// template literal strings. The messages will be converted to ReactError during
+// build, and in production they will be minified.
+
+function ReactError(error) {
+  error.name = 'Invariant Violation';
+  return error;
+}
+
 /**
  * Use invariant() to assert state which your program assumes to be true.
  *
@@ -1448,40 +2530,6 @@ function getIteratorFn(maybeIterable) {
  * The invariant message will be stripped in production, but the invariant
  * will remain to ensure logic does not differ in production.
  */
-
-var validateFormat = function () {};
-
-{
-  validateFormat = function (format) {
-    if (format === undefined) {
-      throw new Error('invariant requires an error message argument');
-    }
-  };
-}
-
-function invariant(condition, format, a, b, c, d, e, f) {
-  validateFormat(format);
-
-  if (!condition) {
-    var error = void 0;
-    if (format === undefined) {
-      error = new Error('Minified exception occurred; use the non-minified dev environment ' + 'for the full error message and additional helpful warnings.');
-    } else {
-      var args = [a, b, c, d, e, f];
-      var argIndex = 0;
-      error = new Error(format.replace(/%s/g, function () {
-        return args[argIndex++];
-      }));
-      error.name = 'Invariant Violation';
-    }
-
-    error.framesToPop = 1; // we don't care about invariant's own frame
-    throw error;
-  }
-}
-
-// Relying on the `invariant()` implementation lets us
-// preserve the format and params in the www builds.
 
 /**
  * Forked from fbjs/warning:
@@ -1715,7 +2763,13 @@ Component.prototype.isReactComponent = {};
  * @protected
  */
 Component.prototype.setState = function (partialState, callback) {
-  !(typeof partialState === 'object' || typeof partialState === 'function' || partialState == null) ? invariant(false, 'setState(...): takes an object of state variables to update or a function which returns an object of state variables.') : void 0;
+  (function () {
+    if (!(typeof partialState === 'object' || typeof partialState === 'function' || partialState == null)) {
+      {
+        throw ReactError(Error('setState(...): takes an object of state variables to update or a function which returns an object of state variables.'));
+      }
+    }
+  })();
   this.updater.enqueueSetState(this, partialState, callback, 'setState');
 };
 
@@ -1805,6 +2859,14 @@ var ReactCurrentDispatcher = {
 };
 
 /**
+ * Keeps track of the current batch's configuration such as how long an update
+ * should suspend for if it needs to.
+ */
+var ReactCurrentBatchConfig = {
+  suspense: null
+};
+
+/**
  * Keeps track of the current owner.
  *
  * The current owner is the component who should own any components that are
@@ -1875,8 +2937,6 @@ function getComponentName(type) {
     return type;
   }
   switch (type) {
-    case REACT_CONCURRENT_MODE_TYPE:
-      return 'ConcurrentMode';
     case REACT_FRAGMENT_TYPE:
       return 'Fragment';
     case REACT_PORTAL_TYPE:
@@ -1887,6 +2947,8 @@ function getComponentName(type) {
       return 'StrictMode';
     case REACT_SUSPENSE_TYPE:
       return 'Suspense';
+    case REACT_SUSPENSE_LIST_TYPE:
+      return 'SuspenseList';
   }
   if (typeof type === 'object') {
     switch (type.$$typeof) {
@@ -1905,6 +2967,7 @@ function getComponentName(type) {
           if (resolvedThenable) {
             return getComponentName(resolvedThenable);
           }
+          break;
         }
     }
   }
@@ -1945,9 +3008,19 @@ function setCurrentlyValidatingElement(element) {
   };
 }
 
+/**
+ * Used by act() to track whether you're inside an act() scope.
+ */
+
+var IsSomeRendererActing = {
+  current: false
+};
+
 var ReactSharedInternals = {
   ReactCurrentDispatcher: ReactCurrentDispatcher,
+  ReactCurrentBatchConfig: ReactCurrentBatchConfig,
   ReactCurrentOwner: ReactCurrentOwner,
+  IsSomeRendererActing: IsSomeRendererActing,
   // Used by renderers to avoid bundling object-assign twice in UMD bundles:
   assign: _assign
 };
@@ -2061,8 +3134,10 @@ function defineRefPropWarningGetter(props, displayName) {
  * if something is a React Element.
  *
  * @param {*} type
+ * @param {*} props
  * @param {*} key
  * @param {string|object} ref
+ * @param {*} owner
  * @param {*} self A *temporary* helper to detect places where `this` is
  * different from the `owner` when React.createElement is called, so that we
  * can warn. We want to get rid of owner and replace string `ref`s with arrow
@@ -2070,8 +3145,6 @@ function defineRefPropWarningGetter(props, displayName) {
  * change in behavior.
  * @param {*} source An annotation object (added by a transpiler or otherwise)
  * indicating filename, line number, and/or other information.
- * @param {*} owner
- * @param {*} props
  * @internal
  */
 var ReactElement = function (type, key, ref, self, source, owner, props) {
@@ -2129,6 +3202,73 @@ var ReactElement = function (type, key, ref, self, source, owner, props) {
 
   return element;
 };
+
+/**
+ * https://github.com/reactjs/rfcs/pull/107
+ * @param {*} type
+ * @param {object} props
+ * @param {string} key
+ */
+
+
+/**
+ * https://github.com/reactjs/rfcs/pull/107
+ * @param {*} type
+ * @param {object} props
+ * @param {string} key
+ */
+function jsxDEV(type, config, maybeKey, source, self) {
+  var propName = void 0;
+
+  // Reserved names are extracted
+  var props = {};
+
+  var key = null;
+  var ref = null;
+
+  if (hasValidRef(config)) {
+    ref = config.ref;
+  }
+
+  if (hasValidKey(config)) {
+    key = '' + config.key;
+  }
+
+  // Remaining properties are added to a new props object
+  for (propName in config) {
+    if (hasOwnProperty.call(config, propName) && !RESERVED_PROPS.hasOwnProperty(propName)) {
+      props[propName] = config[propName];
+    }
+  }
+
+  // intentionally not checking if key was set above
+  // this key is higher priority as it's static
+  if (maybeKey !== undefined) {
+    key = '' + maybeKey;
+  }
+
+  // Resolve default props
+  if (type && type.defaultProps) {
+    var defaultProps = type.defaultProps;
+    for (propName in defaultProps) {
+      if (props[propName] === undefined) {
+        props[propName] = defaultProps[propName];
+      }
+    }
+  }
+
+  if (key || ref) {
+    var displayName = typeof type === 'function' ? type.displayName || type.name || 'Unknown' : type;
+    if (key) {
+      defineKeyPropWarningGetter(props, displayName);
+    }
+    if (ref) {
+      defineRefPropWarningGetter(props, displayName);
+    }
+  }
+
+  return ReactElement(type, key, ref, self, source, ReactCurrentOwner.current, props);
+}
 
 /**
  * Create and return a new ReactElement of the given type.
@@ -2221,7 +3361,13 @@ function cloneAndReplaceKey(oldElement, newKey) {
  * See https://reactjs.org/docs/react-api.html#cloneelement
  */
 function cloneElement(element, config, children) {
-  !!(element === null || element === undefined) ? invariant(false, 'React.cloneElement(...): The argument must be a React element, but you passed %s.', element) : void 0;
+  (function () {
+    if (!!(element === null || element === undefined)) {
+      {
+        throw ReactError(Error('React.cloneElement(...): The argument must be a React element, but you passed ' + element + '.'));
+      }
+    }
+  })();
 
   var propName = void 0;
 
@@ -2441,7 +3587,13 @@ function traverseAllChildrenImpl(children, nameSoFar, callback, traverseContext)
         addendum = ' If you meant to render a collection of children, use an array ' + 'instead.' + ReactDebugCurrentFrame.getStackAddendum();
       }
       var childrenString = '' + children;
-      invariant(false, 'Objects are not valid as a React child (found: %s).%s', childrenString === '[object Object]' ? 'object with keys {' + Object.keys(children).join(', ') + '}' : childrenString, addendum);
+      (function () {
+        {
+          {
+            throw ReactError(Error('Objects are not valid as a React child (found: ' + (childrenString === '[object Object]' ? 'object with keys {' + Object.keys(children).join(', ') + '}' : childrenString) + ').' + addendum));
+          }
+        }
+      })();
     }
   }
 
@@ -2617,7 +3769,13 @@ function toArray(children) {
  * structure.
  */
 function onlyChild(children) {
-  !isValidElement(children) ? invariant(false, 'React.Children.only expected to receive a single React element child.') : void 0;
+  (function () {
+    if (!isValidElement(children)) {
+      {
+        throw ReactError(Error('React.Children.only expected to receive a single React element child.'));
+      }
+    }
+  })();
   return children;
 }
 
@@ -2799,7 +3957,7 @@ function forwardRef(render) {
 function isValidElementType(type) {
   return typeof type === 'string' || typeof type === 'function' ||
   // Note: its typeof might be other than 'symbol' or 'number' if it's a polyfill.
-  type === REACT_FRAGMENT_TYPE || type === REACT_CONCURRENT_MODE_TYPE || type === REACT_PROFILER_TYPE || type === REACT_STRICT_MODE_TYPE || type === REACT_SUSPENSE_TYPE || typeof type === 'object' && type !== null && (type.$$typeof === REACT_LAZY_TYPE || type.$$typeof === REACT_MEMO_TYPE || type.$$typeof === REACT_PROVIDER_TYPE || type.$$typeof === REACT_CONTEXT_TYPE || type.$$typeof === REACT_FORWARD_REF_TYPE);
+  type === REACT_FRAGMENT_TYPE || type === REACT_CONCURRENT_MODE_TYPE || type === REACT_PROFILER_TYPE || type === REACT_STRICT_MODE_TYPE || type === REACT_SUSPENSE_TYPE || type === REACT_SUSPENSE_LIST_TYPE || typeof type === 'object' && type !== null && (type.$$typeof === REACT_LAZY_TYPE || type.$$typeof === REACT_MEMO_TYPE || type.$$typeof === REACT_PROVIDER_TYPE || type.$$typeof === REACT_CONTEXT_TYPE || type.$$typeof === REACT_FORWARD_REF_TYPE || type.$$typeof === REACT_FUNDAMENTAL_TYPE || type.$$typeof === REACT_RESPONDER_TYPE);
 }
 
 function memo(type, compare) {
@@ -2817,7 +3975,13 @@ function memo(type, compare) {
 
 function resolveDispatcher() {
   var dispatcher = ReactCurrentDispatcher.current;
-  !(dispatcher !== null) ? invariant(false, 'Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:\n1. You might have mismatching versions of React and the renderer (such as React DOM)\n2. You might be breaking the Rules of Hooks\n3. You might have more than one copy of React in the same app\nSee https://fb.me/react-invalid-hook-call for tips about how to debug and fix this problem.') : void 0;
+  (function () {
+    if (!(dispatcher !== null)) {
+      {
+        throw ReactError(Error('Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:\n1. You might have mismatching versions of React and the renderer (such as React DOM)\n2. You might be breaking the Rules of Hooks\n3. You might have more than one copy of React in the same app\nSee https://fb.me/react-invalid-hook-call for tips about how to debug and fix this problem.'));
+      }
+    }
+  })();
   return dispatcher;
 }
 
@@ -2888,6 +4052,30 @@ function useDebugValue(value, formatterFn) {
   }
 }
 
+var emptyObject$1 = {};
+
+function useResponder(responder, listenerProps) {
+  var dispatcher = resolveDispatcher();
+  {
+    if (responder == null || responder.$$typeof !== REACT_RESPONDER_TYPE) {
+      warning$1(false, 'useResponder: invalid first argument. Expected an event responder, but instead got %s', responder);
+      return;
+    }
+  }
+  return dispatcher.useResponder(responder, listenerProps || emptyObject$1);
+}
+
+// Within the scope of the callback, mark all updates as being allowed to suspend.
+function withSuspenseConfig(scope, config) {
+  var previousConfig = ReactCurrentBatchConfig.suspense;
+  ReactCurrentBatchConfig.suspense = config === undefined ? null : config;
+  try {
+    scope();
+  } finally {
+    ReactCurrentBatchConfig.suspense = previousConfig;
+  }
+}
+
 /**
  * ReactElementValidator provides a wrapper around a element factory
  * which validates the props passed to the element. This is intended to be
@@ -2911,12 +4099,18 @@ function getDeclarationErrorAddendum() {
   return '';
 }
 
-function getSourceInfoErrorAddendum(elementProps) {
-  if (elementProps !== null && elementProps !== undefined && elementProps.__source !== undefined) {
-    var source = elementProps.__source;
+function getSourceInfoErrorAddendum(source) {
+  if (source !== undefined) {
     var fileName = source.fileName.replace(/^.*[\\\/]/, '');
     var lineNumber = source.lineNumber;
     return '\n\nCheck your code at ' + fileName + ':' + lineNumber + '.';
+  }
+  return '';
+}
+
+function getSourceInfoErrorAddendumForProps(elementProps) {
+  if (elementProps !== null && elementProps !== undefined) {
+    return getSourceInfoErrorAddendum(elementProps.__source);
   }
   return '';
 }
@@ -3081,6 +4275,90 @@ function validateFragmentProps(fragment) {
   setCurrentlyValidatingElement(null);
 }
 
+function jsxWithValidation(type, props, key, isStaticChildren, source, self) {
+  var validType = isValidElementType(type);
+
+  // We warn in this case but don't throw. We expect the element creation to
+  // succeed and there will likely be errors in render.
+  if (!validType) {
+    var info = '';
+    if (type === undefined || typeof type === 'object' && type !== null && Object.keys(type).length === 0) {
+      info += ' You likely forgot to export your component from the file ' + "it's defined in, or you might have mixed up default and named imports.";
+    }
+
+    var sourceInfo = getSourceInfoErrorAddendum(source);
+    if (sourceInfo) {
+      info += sourceInfo;
+    } else {
+      info += getDeclarationErrorAddendum();
+    }
+
+    var typeString = void 0;
+    if (type === null) {
+      typeString = 'null';
+    } else if (Array.isArray(type)) {
+      typeString = 'array';
+    } else if (type !== undefined && type.$$typeof === REACT_ELEMENT_TYPE) {
+      typeString = '<' + (getComponentName(type.type) || 'Unknown') + ' />';
+      info = ' Did you accidentally export a JSX literal instead of a component?';
+    } else {
+      typeString = typeof type;
+    }
+
+    warning$1(false, 'React.jsx: type is invalid -- expected a string (for ' + 'built-in components) or a class/function (for composite ' + 'components) but got: %s.%s', typeString, info);
+  }
+
+  var element = jsxDEV(type, props, key, source, self);
+
+  // The result can be nullish if a mock or a custom function is used.
+  // TODO: Drop this when these are no longer allowed as the type argument.
+  if (element == null) {
+    return element;
+  }
+
+  // Skip key warning if the type isn't valid since our key validation logic
+  // doesn't expect a non-string/function type and can throw confusing errors.
+  // We don't want exception behavior to differ between dev and prod.
+  // (Rendering will throw with a helpful message and as soon as the type is
+  // fixed, the key warnings will appear.)
+  if (validType) {
+    var children = props.children;
+    if (children !== undefined) {
+      if (isStaticChildren) {
+        for (var i = 0; i < children.length; i++) {
+          validateChildKeys(children[i], type);
+        }
+      } else {
+        validateChildKeys(children, type);
+      }
+    }
+  }
+
+  if (props.key !== undefined) {
+    warning$1(false, 'React.jsx: Spreading a key to JSX is a deprecated pattern. ' + 'Explicitly pass a key after spreading props in your JSX call. ' + 'E.g. <ComponentName {...props} key={key} />');
+  }
+
+  if (type === REACT_FRAGMENT_TYPE) {
+    validateFragmentProps(element);
+  } else {
+    validatePropTypes(element);
+  }
+
+  return element;
+}
+
+// These two functions exist to still get child warnings in dev
+// even with the prod transform. This means that jsxDEV is purely
+// opt-in behavior for better messages but that we won't stop
+// giving you warnings if you use production apis.
+function jsxWithValidationStatic(type, props, key) {
+  return jsxWithValidation(type, props, key, true);
+}
+
+function jsxWithValidationDynamic(type, props, key) {
+  return jsxWithValidation(type, props, key, false);
+}
+
 function createElementWithValidation(type, props, children) {
   var validType = isValidElementType(type);
 
@@ -3092,7 +4370,7 @@ function createElementWithValidation(type, props, children) {
       info += ' You likely forgot to export your component from the file ' + "it's defined in, or you might have mixed up default and named imports.";
     }
 
-    var sourceInfo = getSourceInfoErrorAddendum(props);
+    var sourceInfo = getSourceInfoErrorAddendumForProps(props);
     if (sourceInfo) {
       info += sourceInfo;
     } else {
@@ -3171,6 +4449,73 @@ function cloneElementWithValidation(element, props, children) {
   return newElement;
 }
 
+var hasBadMapPolyfill = void 0;
+
+{
+  hasBadMapPolyfill = false;
+  try {
+    var frozenObject = Object.freeze({});
+    var testMap = new Map([[frozenObject, null]]);
+    var testSet = new Set([frozenObject]);
+    // This is necessary for Rollup to not consider these unused.
+    // https://github.com/rollup/rollup/issues/1771
+    // TODO: we can remove these if Rollup fixes the bug.
+    testMap.set(0, 0);
+    testSet.add(0);
+  } catch (e) {
+    // TODO: Consider warning about bad polyfills
+    hasBadMapPolyfill = true;
+  }
+}
+
+function createFundamentalComponent(impl) {
+  // We use responder as a Map key later on. When we have a bad
+  // polyfill, then we can't use it as a key as the polyfill tries
+  // to add a property to the object.
+  if (true && !hasBadMapPolyfill) {
+    Object.freeze(impl);
+  }
+  var fundamantalComponent = {
+    $$typeof: REACT_FUNDAMENTAL_TYPE,
+    impl: impl
+  };
+  {
+    Object.freeze(fundamantalComponent);
+  }
+  return fundamantalComponent;
+}
+
+function createEventResponder(displayName, responderConfig) {
+  var getInitialState = responderConfig.getInitialState,
+      onEvent = responderConfig.onEvent,
+      onMount = responderConfig.onMount,
+      onUnmount = responderConfig.onUnmount,
+      onOwnershipChange = responderConfig.onOwnershipChange,
+      onRootEvent = responderConfig.onRootEvent,
+      rootEventTypes = responderConfig.rootEventTypes,
+      targetEventTypes = responderConfig.targetEventTypes;
+
+  var eventResponder = {
+    $$typeof: REACT_RESPONDER_TYPE,
+    displayName: displayName,
+    getInitialState: getInitialState || null,
+    onEvent: onEvent || null,
+    onMount: onMount || null,
+    onOwnershipChange: onOwnershipChange || null,
+    onRootEvent: onRootEvent || null,
+    onUnmount: onUnmount || null,
+    rootEventTypes: rootEventTypes || null,
+    targetEventTypes: targetEventTypes || null
+  };
+  // We use responder as a Map key later on. When we have a bad
+  // polyfill, then we can't use it as a key as the polyfill tries
+  // to add a property to the object.
+  if (true && !hasBadMapPolyfill) {
+    Object.freeze(eventResponder);
+  }
+  return eventResponder;
+}
+
 // Helps identify side effects in begin-phase lifecycle hooks and setState reducers:
 
 
@@ -3202,13 +4547,55 @@ function cloneElementWithValidation(element, props, children) {
 // Only used in www builds.
 
 
+// Disable javascript: URL strings in href for XSS protection.
+
+
 // React Fire: prevent the value and checked attributes from syncing
 // with their related DOM properties
 
 
 // These APIs will no longer be "unstable" in the upcoming 16.7 release,
 // Control this behavior with a flag to support 16.6 minor releases in the meanwhile.
-var enableStableConcurrentModeAPIs = false;
+
+
+
+
+// See https://github.com/react-native-community/discussions-and-proposals/issues/72 for more information
+// This is a flag so we can fix warnings in RN core before turning it on
+
+
+// Experimental React Flare event system and event components support.
+var enableFlareAPI = false;
+
+// Experimental Host Component support.
+var enableFundamentalAPI = false;
+
+// New API for JSX transforms to target - https://github.com/reactjs/rfcs/pull/107
+var enableJSXTransformAPI = false;
+
+// We will enforce mocking scheduler with scheduler/unstable_mock at some point. (v17?)
+// Till then, we warn about the missing mock, but still fallback to a sync mode compatible version
+
+// Temporary flag to revert the fix in #15650
+
+
+// For tests, we flush suspense fallbacks in an act scope;
+// *except* in some of our own tests, where we test incremental loading states.
+
+
+// Changes priority of some events like mousemove to user-blocking priority,
+// but without making them discrete. The flag exists in case it causes
+// starvation problems.
+
+
+// Add a callback property to suspense to notify which promises are currently
+// in the update queue. This allows reporting and tracing of what is causing
+// the user to see a loading state.
+
+
+// Part of the simplification of React.createElement so we can eventually move
+// from React.createElement to React.jsx
+// https://github.com/reactjs/rfcs/blob/createlement-rfc/text/0000-create-element-changes.md
 
 var React = {
   Children: {
@@ -3240,8 +4627,10 @@ var React = {
   useState: useState,
 
   Fragment: REACT_FRAGMENT_TYPE,
+  Profiler: REACT_PROFILER_TYPE,
   StrictMode: REACT_STRICT_MODE_TYPE,
   Suspense: REACT_SUSPENSE_TYPE,
+  unstable_SuspenseList: REACT_SUSPENSE_LIST_TYPE,
 
   createElement: createElementWithValidation,
   cloneElement: cloneElementWithValidation,
@@ -3250,22 +4639,31 @@ var React = {
 
   version: ReactVersion,
 
-  unstable_ConcurrentMode: REACT_CONCURRENT_MODE_TYPE,
-  unstable_Profiler: REACT_PROFILER_TYPE,
+  unstable_withSuspenseConfig: withSuspenseConfig,
 
   __SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED: ReactSharedInternals
 };
+
+if (enableFlareAPI) {
+  React.unstable_useResponder = useResponder;
+  React.unstable_createResponder = createEventResponder;
+}
+
+if (enableFundamentalAPI) {
+  React.unstable_createFundamental = createFundamentalComponent;
+}
 
 // Note: some APIs are added with feature flags.
 // Make sure that stable builds for open source
 // don't modify the React object to avoid deopts.
 // Also let's not expose their names in stable builds.
 
-if (enableStableConcurrentModeAPIs) {
-  React.ConcurrentMode = REACT_CONCURRENT_MODE_TYPE;
-  React.Profiler = REACT_PROFILER_TYPE;
-  React.unstable_ConcurrentMode = undefined;
-  React.unstable_Profiler = undefined;
+if (enableJSXTransformAPI) {
+  {
+    React.jsxDEV = jsxWithValidation;
+    React.jsx = jsxWithValidationDynamic;
+    React.jsxs = jsxWithValidationStatic;
+  }
 }
 
 
@@ -3285,8 +4683,8 @@ module.exports = react;
 }
 
 }).call(this,require('_process'))
-},{"_process":18,"object-assign":2,"prop-types/checkPropTypes":3}],15:[function(require,module,exports){
-/** @license React v16.8.6
+},{"_process":25,"object-assign":2,"prop-types/checkPropTypes":3}],22:[function(require,module,exports){
+/** @license React v16.9.0
  * react.production.min.js
  *
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -3295,24 +4693,24 @@ module.exports = react;
  * LICENSE file in the root directory of this source tree.
  */
 
-'use strict';var k=require("object-assign"),n="function"===typeof Symbol&&Symbol.for,p=n?Symbol.for("react.element"):60103,q=n?Symbol.for("react.portal"):60106,r=n?Symbol.for("react.fragment"):60107,t=n?Symbol.for("react.strict_mode"):60108,u=n?Symbol.for("react.profiler"):60114,v=n?Symbol.for("react.provider"):60109,w=n?Symbol.for("react.context"):60110,x=n?Symbol.for("react.concurrent_mode"):60111,y=n?Symbol.for("react.forward_ref"):60112,z=n?Symbol.for("react.suspense"):60113,aa=n?Symbol.for("react.memo"):
-60115,ba=n?Symbol.for("react.lazy"):60116,A="function"===typeof Symbol&&Symbol.iterator;function ca(a,b,d,c,e,g,h,f){if(!a){a=void 0;if(void 0===b)a=Error("Minified exception occurred; use the non-minified dev environment for the full error message and additional helpful warnings.");else{var l=[d,c,e,g,h,f],m=0;a=Error(b.replace(/%s/g,function(){return l[m++]}));a.name="Invariant Violation"}a.framesToPop=1;throw a;}}
-function B(a){for(var b=arguments.length-1,d="https://reactjs.org/docs/error-decoder.html?invariant="+a,c=0;c<b;c++)d+="&args[]="+encodeURIComponent(arguments[c+1]);ca(!1,"Minified React error #"+a+"; visit %s for the full message or use the non-minified dev environment for full errors and additional helpful warnings. ",d)}var C={isMounted:function(){return!1},enqueueForceUpdate:function(){},enqueueReplaceState:function(){},enqueueSetState:function(){}},D={};
-function E(a,b,d){this.props=a;this.context=b;this.refs=D;this.updater=d||C}E.prototype.isReactComponent={};E.prototype.setState=function(a,b){"object"!==typeof a&&"function"!==typeof a&&null!=a?B("85"):void 0;this.updater.enqueueSetState(this,a,b,"setState")};E.prototype.forceUpdate=function(a){this.updater.enqueueForceUpdate(this,a,"forceUpdate")};function F(){}F.prototype=E.prototype;function G(a,b,d){this.props=a;this.context=b;this.refs=D;this.updater=d||C}var H=G.prototype=new F;
-H.constructor=G;k(H,E.prototype);H.isPureReactComponent=!0;var I={current:null},J={current:null},K=Object.prototype.hasOwnProperty,L={key:!0,ref:!0,__self:!0,__source:!0};
-function M(a,b,d){var c=void 0,e={},g=null,h=null;if(null!=b)for(c in void 0!==b.ref&&(h=b.ref),void 0!==b.key&&(g=""+b.key),b)K.call(b,c)&&!L.hasOwnProperty(c)&&(e[c]=b[c]);var f=arguments.length-2;if(1===f)e.children=d;else if(1<f){for(var l=Array(f),m=0;m<f;m++)l[m]=arguments[m+2];e.children=l}if(a&&a.defaultProps)for(c in f=a.defaultProps,f)void 0===e[c]&&(e[c]=f[c]);return{$$typeof:p,type:a,key:g,ref:h,props:e,_owner:J.current}}
+'use strict';var h=require("object-assign"),n="function"===typeof Symbol&&Symbol.for,p=n?Symbol.for("react.element"):60103,q=n?Symbol.for("react.portal"):60106,r=n?Symbol.for("react.fragment"):60107,t=n?Symbol.for("react.strict_mode"):60108,u=n?Symbol.for("react.profiler"):60114,v=n?Symbol.for("react.provider"):60109,w=n?Symbol.for("react.context"):60110,x=n?Symbol.for("react.forward_ref"):60112,y=n?Symbol.for("react.suspense"):60113,aa=n?Symbol.for("react.suspense_list"):60120,ba=n?Symbol.for("react.memo"):
+60115,ca=n?Symbol.for("react.lazy"):60116;n&&Symbol.for("react.fundamental");n&&Symbol.for("react.responder");var z="function"===typeof Symbol&&Symbol.iterator;
+function A(a){for(var b=a.message,d="https://reactjs.org/docs/error-decoder.html?invariant="+b,c=1;c<arguments.length;c++)d+="&args[]="+encodeURIComponent(arguments[c]);a.message="Minified React error #"+b+"; visit "+d+" for the full message or use the non-minified dev environment for full errors and additional helpful warnings. ";return a}var B={isMounted:function(){return!1},enqueueForceUpdate:function(){},enqueueReplaceState:function(){},enqueueSetState:function(){}},C={};
+function D(a,b,d){this.props=a;this.context=b;this.refs=C;this.updater=d||B}D.prototype.isReactComponent={};D.prototype.setState=function(a,b){if("object"!==typeof a&&"function"!==typeof a&&null!=a)throw A(Error(85));this.updater.enqueueSetState(this,a,b,"setState")};D.prototype.forceUpdate=function(a){this.updater.enqueueForceUpdate(this,a,"forceUpdate")};function E(){}E.prototype=D.prototype;function F(a,b,d){this.props=a;this.context=b;this.refs=C;this.updater=d||B}var G=F.prototype=new E;
+G.constructor=F;h(G,D.prototype);G.isPureReactComponent=!0;var H={current:null},I={suspense:null},J={current:null},K=Object.prototype.hasOwnProperty,L={key:!0,ref:!0,__self:!0,__source:!0};
+function M(a,b,d){var c=void 0,e={},g=null,k=null;if(null!=b)for(c in void 0!==b.ref&&(k=b.ref),void 0!==b.key&&(g=""+b.key),b)K.call(b,c)&&!L.hasOwnProperty(c)&&(e[c]=b[c]);var f=arguments.length-2;if(1===f)e.children=d;else if(1<f){for(var l=Array(f),m=0;m<f;m++)l[m]=arguments[m+2];e.children=l}if(a&&a.defaultProps)for(c in f=a.defaultProps,f)void 0===e[c]&&(e[c]=f[c]);return{$$typeof:p,type:a,key:g,ref:k,props:e,_owner:J.current}}
 function da(a,b){return{$$typeof:p,type:a.type,key:b,ref:a.ref,props:a.props,_owner:a._owner}}function N(a){return"object"===typeof a&&null!==a&&a.$$typeof===p}function escape(a){var b={"=":"=0",":":"=2"};return"$"+(""+a).replace(/[=:]/g,function(a){return b[a]})}var O=/\/+/g,P=[];function Q(a,b,d,c){if(P.length){var e=P.pop();e.result=a;e.keyPrefix=b;e.func=d;e.context=c;e.count=0;return e}return{result:a,keyPrefix:b,func:d,context:c,count:0}}
 function R(a){a.result=null;a.keyPrefix=null;a.func=null;a.context=null;a.count=0;10>P.length&&P.push(a)}
-function S(a,b,d,c){var e=typeof a;if("undefined"===e||"boolean"===e)a=null;var g=!1;if(null===a)g=!0;else switch(e){case "string":case "number":g=!0;break;case "object":switch(a.$$typeof){case p:case q:g=!0}}if(g)return d(c,a,""===b?"."+T(a,0):b),1;g=0;b=""===b?".":b+":";if(Array.isArray(a))for(var h=0;h<a.length;h++){e=a[h];var f=b+T(e,h);g+=S(e,f,d,c)}else if(null===a||"object"!==typeof a?f=null:(f=A&&a[A]||a["@@iterator"],f="function"===typeof f?f:null),"function"===typeof f)for(a=f.call(a),h=
-0;!(e=a.next()).done;)e=e.value,f=b+T(e,h++),g+=S(e,f,d,c);else"object"===e&&(d=""+a,B("31","[object Object]"===d?"object with keys {"+Object.keys(a).join(", ")+"}":d,""));return g}function U(a,b,d){return null==a?0:S(a,"",b,d)}function T(a,b){return"object"===typeof a&&null!==a&&null!=a.key?escape(a.key):b.toString(36)}function ea(a,b){a.func.call(a.context,b,a.count++)}
-function fa(a,b,d){var c=a.result,e=a.keyPrefix;a=a.func.call(a.context,b,a.count++);Array.isArray(a)?V(a,c,d,function(a){return a}):null!=a&&(N(a)&&(a=da(a,e+(!a.key||b&&b.key===a.key?"":(""+a.key).replace(O,"$&/")+"/")+d)),c.push(a))}function V(a,b,d,c,e){var g="";null!=d&&(g=(""+d).replace(O,"$&/")+"/");b=Q(b,g,c,e);U(a,fa,b);R(b)}function W(){var a=I.current;null===a?B("321"):void 0;return a}
-var X={Children:{map:function(a,b,d){if(null==a)return a;var c=[];V(a,c,null,b,d);return c},forEach:function(a,b,d){if(null==a)return a;b=Q(null,null,b,d);U(a,ea,b);R(b)},count:function(a){return U(a,function(){return null},null)},toArray:function(a){var b=[];V(a,b,null,function(a){return a});return b},only:function(a){N(a)?void 0:B("143");return a}},createRef:function(){return{current:null}},Component:E,PureComponent:G,createContext:function(a,b){void 0===b&&(b=null);a={$$typeof:w,_calculateChangedBits:b,
-_currentValue:a,_currentValue2:a,_threadCount:0,Provider:null,Consumer:null};a.Provider={$$typeof:v,_context:a};return a.Consumer=a},forwardRef:function(a){return{$$typeof:y,render:a}},lazy:function(a){return{$$typeof:ba,_ctor:a,_status:-1,_result:null}},memo:function(a,b){return{$$typeof:aa,type:a,compare:void 0===b?null:b}},useCallback:function(a,b){return W().useCallback(a,b)},useContext:function(a,b){return W().useContext(a,b)},useEffect:function(a,b){return W().useEffect(a,b)},useImperativeHandle:function(a,
-b,d){return W().useImperativeHandle(a,b,d)},useDebugValue:function(){},useLayoutEffect:function(a,b){return W().useLayoutEffect(a,b)},useMemo:function(a,b){return W().useMemo(a,b)},useReducer:function(a,b,d){return W().useReducer(a,b,d)},useRef:function(a){return W().useRef(a)},useState:function(a){return W().useState(a)},Fragment:r,StrictMode:t,Suspense:z,createElement:M,cloneElement:function(a,b,d){null===a||void 0===a?B("267",a):void 0;var c=void 0,e=k({},a.props),g=a.key,h=a.ref,f=a._owner;if(null!=
-b){void 0!==b.ref&&(h=b.ref,f=J.current);void 0!==b.key&&(g=""+b.key);var l=void 0;a.type&&a.type.defaultProps&&(l=a.type.defaultProps);for(c in b)K.call(b,c)&&!L.hasOwnProperty(c)&&(e[c]=void 0===b[c]&&void 0!==l?l[c]:b[c])}c=arguments.length-2;if(1===c)e.children=d;else if(1<c){l=Array(c);for(var m=0;m<c;m++)l[m]=arguments[m+2];e.children=l}return{$$typeof:p,type:a.type,key:g,ref:h,props:e,_owner:f}},createFactory:function(a){var b=M.bind(null,a);b.type=a;return b},isValidElement:N,version:"16.8.6",
-unstable_ConcurrentMode:x,unstable_Profiler:u,__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED:{ReactCurrentDispatcher:I,ReactCurrentOwner:J,assign:k}},Y={default:X},Z=Y&&X||Y;module.exports=Z.default||Z;
+function S(a,b,d,c){var e=typeof a;if("undefined"===e||"boolean"===e)a=null;var g=!1;if(null===a)g=!0;else switch(e){case "string":case "number":g=!0;break;case "object":switch(a.$$typeof){case p:case q:g=!0}}if(g)return d(c,a,""===b?"."+T(a,0):b),1;g=0;b=""===b?".":b+":";if(Array.isArray(a))for(var k=0;k<a.length;k++){e=a[k];var f=b+T(e,k);g+=S(e,f,d,c)}else if(null===a||"object"!==typeof a?f=null:(f=z&&a[z]||a["@@iterator"],f="function"===typeof f?f:null),"function"===typeof f)for(a=f.call(a),k=
+0;!(e=a.next()).done;)e=e.value,f=b+T(e,k++),g+=S(e,f,d,c);else if("object"===e)throw d=""+a,A(Error(31),"[object Object]"===d?"object with keys {"+Object.keys(a).join(", ")+"}":d,"");return g}function U(a,b,d){return null==a?0:S(a,"",b,d)}function T(a,b){return"object"===typeof a&&null!==a&&null!=a.key?escape(a.key):b.toString(36)}function ea(a,b){a.func.call(a.context,b,a.count++)}
+function fa(a,b,d){var c=a.result,e=a.keyPrefix;a=a.func.call(a.context,b,a.count++);Array.isArray(a)?V(a,c,d,function(a){return a}):null!=a&&(N(a)&&(a=da(a,e+(!a.key||b&&b.key===a.key?"":(""+a.key).replace(O,"$&/")+"/")+d)),c.push(a))}function V(a,b,d,c,e){var g="";null!=d&&(g=(""+d).replace(O,"$&/")+"/");b=Q(b,g,c,e);U(a,fa,b);R(b)}function W(){var a=H.current;if(null===a)throw A(Error(321));return a}
+var X={Children:{map:function(a,b,d){if(null==a)return a;var c=[];V(a,c,null,b,d);return c},forEach:function(a,b,d){if(null==a)return a;b=Q(null,null,b,d);U(a,ea,b);R(b)},count:function(a){return U(a,function(){return null},null)},toArray:function(a){var b=[];V(a,b,null,function(a){return a});return b},only:function(a){if(!N(a))throw A(Error(143));return a}},createRef:function(){return{current:null}},Component:D,PureComponent:F,createContext:function(a,b){void 0===b&&(b=null);a={$$typeof:w,_calculateChangedBits:b,
+_currentValue:a,_currentValue2:a,_threadCount:0,Provider:null,Consumer:null};a.Provider={$$typeof:v,_context:a};return a.Consumer=a},forwardRef:function(a){return{$$typeof:x,render:a}},lazy:function(a){return{$$typeof:ca,_ctor:a,_status:-1,_result:null}},memo:function(a,b){return{$$typeof:ba,type:a,compare:void 0===b?null:b}},useCallback:function(a,b){return W().useCallback(a,b)},useContext:function(a,b){return W().useContext(a,b)},useEffect:function(a,b){return W().useEffect(a,b)},useImperativeHandle:function(a,
+b,d){return W().useImperativeHandle(a,b,d)},useDebugValue:function(){},useLayoutEffect:function(a,b){return W().useLayoutEffect(a,b)},useMemo:function(a,b){return W().useMemo(a,b)},useReducer:function(a,b,d){return W().useReducer(a,b,d)},useRef:function(a){return W().useRef(a)},useState:function(a){return W().useState(a)},Fragment:r,Profiler:u,StrictMode:t,Suspense:y,unstable_SuspenseList:aa,createElement:M,cloneElement:function(a,b,d){if(null===a||void 0===a)throw A(Error(267),a);var c=void 0,e=
+h({},a.props),g=a.key,k=a.ref,f=a._owner;if(null!=b){void 0!==b.ref&&(k=b.ref,f=J.current);void 0!==b.key&&(g=""+b.key);var l=void 0;a.type&&a.type.defaultProps&&(l=a.type.defaultProps);for(c in b)K.call(b,c)&&!L.hasOwnProperty(c)&&(e[c]=void 0===b[c]&&void 0!==l?l[c]:b[c])}c=arguments.length-2;if(1===c)e.children=d;else if(1<c){l=Array(c);for(var m=0;m<c;m++)l[m]=arguments[m+2];e.children=l}return{$$typeof:p,type:a.type,key:g,ref:k,props:e,_owner:f}},createFactory:function(a){var b=M.bind(null,a);
+b.type=a;return b},isValidElement:N,version:"16.9.0",unstable_withSuspenseConfig:function(a,b){var d=I.suspense;I.suspense=void 0===b?null:b;try{a()}finally{I.suspense=d}},__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED:{ReactCurrentDispatcher:H,ReactCurrentBatchConfig:I,ReactCurrentOwner:J,IsSomeRendererActing:{current:!1},assign:h}},Y={default:X},Z=Y&&X||Y;module.exports=Z.default||Z;
 
-},{"object-assign":2}],16:[function(require,module,exports){
+},{"object-assign":2}],23:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -3323,9 +4721,10 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 }).call(this,require('_process'))
-},{"./cjs/react.development.js":14,"./cjs/react.production.min.js":15,"_process":18}],17:[function(require,module,exports){
+},{"./cjs/react.development.js":21,"./cjs/react.production.min.js":22,"_process":25}],24:[function(require,module,exports){
 react_contenteditable = require("react-contenteditable");
-},{"react-contenteditable":5}],18:[function(require,module,exports){
+react_tag_autocomplete = require("react-tag-autocomplete")
+},{"react-contenteditable":8,"react-tag-autocomplete":18}],25:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -3511,4 +4910,4 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}]},{},[17]);
+},{}]},{},[24]);

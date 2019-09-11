@@ -30,7 +30,7 @@ class ResourceViewerSocket extends TacticSocket {
 
 function copyToLibrary(res_type, resource_name) {
     $.getJSON($SCRIPT_ROOT + `get_resource_names/${res_type}`, function (data) {
-        showModalReact(`Import ${res_type}`, `New ${res_type} Name`, ImportResource, resource_name, data["resource_names"]);
+        showModal(`Import ${res_type}`, `New ${res_type} Name`, ImportResource, resource_name, data["resource_names"]);
     });
     function ImportResource(new_name) {
         const result_dict = {

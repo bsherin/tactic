@@ -7,7 +7,7 @@
 
 {% block styles %}
     <link rel="stylesheet" href="{{url_for('static', filename='css/jquery-ui.min.css')}}">
-    <link rel="stylesheet" href="{{url_for('static', filename='css/jquery.tag-editor.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/react_tags_styles.css')}}">
     <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/loader.css', v=version_string)}}">
 {% endblock %}
 
@@ -19,10 +19,9 @@
     </div>
 {% endblock %}
 {% block scripts %}
-    <script src="{{url_for('static', filename='js/jquery.caret.min.js')}}"></script>
-    <script src="{{url_for('static', filename='js/jquery.tag-editor.min.js')}}"></script>
     <script src="{{url_for('static', filename='js/showdown.js')}}"></script>
     <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
+    <script src="{{url_for('static', filename='js/react_tools.js')}}"></script>
     <script type="module" src="{{url_for('static', filename=module_source, v=version_string)}}"></script>
     <script>
         window.user_id = "{{current_user.get_id()}}";

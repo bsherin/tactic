@@ -16,6 +16,8 @@ repository_user = User.get_user_by_username("repository")
 import datetime
 tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 
+from tactic_app.js_source_management import js_source_dict, _develop
+
 
 # noinspection PyMethodMayBeStatic
 class ListManager(LibraryResourceManager):
@@ -41,7 +43,7 @@ class ListManager(LibraryResourceManager):
                          login_required(self.search_list_metadata), methods=['get', 'post'])
 
     def view_list(self, list_name):
-        javascript_source = url_for('static', filename='tactic_js/list_viewer_react.js')
+        javascript_source = url_for('static', filename=js_source_dict["list_viewer_react"])
         return render_template("library/resource_viewer_react.html",
                                resource_name=list_name,
                                include_metadata=True,
@@ -49,6 +51,7 @@ class ListManager(LibraryResourceManager):
                                include_right=True,
                                read_only=False,
                                use_ssl=use_ssl,
+                               develop=str(_develop),
                                is_repository=False,
                                javascript_source=javascript_source,
                                version_string=tstring)
@@ -228,6 +231,7 @@ class RepositoryListManager(ListManager):
                                include_right=True,
                                read_only=True,
                                use_ssl=use_ssl,
+                               develop=str(_develop),
                                is_repository=True,
                                javascript_source=javascript_source,
                                version_string=tstring)

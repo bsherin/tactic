@@ -19,6 +19,7 @@ check_for_dead_time = 30  # How often, in seconds, to ask the megaplex to check 
 no_heartbeat_time = 3600  # If a mainwindow does send a heartbeat after this amount of time, remove mainwindow.
 global_tile_manager = tactic_app.global_tile_manager
 
+from tactic_app.js_source_management import _develop
 
 class HostWorker(QWorker):
     def __init__(self):

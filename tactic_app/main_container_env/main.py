@@ -51,8 +51,6 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                      "FilterTable", "UnfilterTable", "TextSelect", "UpdateSortList", "UpdateLeftFraction",
                      "UpdateTableShrinkState", "UpdateHeaderListOrder", "HideColumnInAllDocs", "UpdateColumnWidths",
                      "UpdateTableSpec"]
-    select_option_val_template = '<option value="{0}">{1}</option>'
-    select_option_val_selected_template = '<option value="{0}" selected>{1}</option>'
 
     # noinspection PyUnresolvedReferences
     def __init__(self, mworker, data_dict):
@@ -148,28 +146,6 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
     def stop_main_status_spinner(self):
         data = {"main_id": self.mworker.my_id}
         self.mworker.post_task("host", "stop_main_status_spinner", data)
-
-    # legacy
-    def update_legacy_console_html(self):
-        self.console_html = re.sub("panel panel-default log-panel ", "card log-panel ", self.console_html)
-        self.console_html = re.sub("panel log-panel panel-default ", "card log-panel ", self.console_html)
-        self.console_html = re.sub("panel-heading", "card-header", self.console_html)
-        self.console_html = re.sub(r'<svg class=\"svg-inline--fa[\s\S]*?/svg>', "", self.console_html)
-        self.console_html = re.sub(r'<!-- <span class="fa', '<span class="fa', self.console_html)
-        self.console_html = re.sub(r'span> -->', 'span>', self.console_html)
-
-        replacements = {"trash": "trash-alt",
-                        "triangle-bottom": "chevron-circle-down",
-                        "triangle-right": "chevron-circle-right",
-                        "step-forward": "step-forward",
-                        "erase": "eraser",
-                        "text-size": "font"}
-
-        for old, new in replacements.items():
-            self.console_html = re.sub('style=\"font-size:13px\" class=\"glyphicon glyphicon-{}\"'.format(old),
-                                       r'class="fas fa-{}"'.format(new),
-                                       self.console_html)
-        return
 
     def dmsg(self, tname, msg):
         print("rot: {} {}".format(tname, msg))

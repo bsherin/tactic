@@ -17,6 +17,8 @@ from tactic_app.file_handling import read_csv_file_to_list, read_tsv_file_to_lis
 from tactic_app.file_handling import read_freeform_file, read_excel_file
 from tactic_app.users import load_user
 
+from tactic_app.js_source_management import js_source_dict, _develop
+
 from tactic_app.resource_manager import ResourceManager, LibraryResourceManager
 global_tile_manager = tactic_app.global_tile_manager
 repository_user = User.get_user_by_username("repository")
@@ -67,10 +69,11 @@ class CollectionManager(LibraryResourceManager):
                                main_id=main_id,
                                temp_data_id="",
                                use_ssl=str(use_ssl),
+                               develop=str(_develop),
                                uses_codemirror="True",
                                is_jupyter="False",
                                version_string=tstring,
-                               module_source="tactic_js/notebook_app.js")
+                               module_source=js_source_dict["notebook_app"])
 
     def open_notebook(self, unique_id):
         the_data = read_temp_data(db, unique_id)
@@ -82,11 +85,12 @@ class CollectionManager(LibraryResourceManager):
                                base_figure_url=url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
                                main_id=main_id,
                                temp_data_id=unique_id,
+                               develop=str(_develop),
                                use_ssl=str(use_ssl),
                                is_jupyter="False",
                                uses_codemirror="True",
                                version_string=tstring,
-                               module_source="tactic_js/notebook_app.js")
+                               module_source=js_source_dict["notebook_app"])
 
     def main(self, collection_name):
         user_obj = current_user
@@ -119,8 +123,9 @@ class CollectionManager(LibraryResourceManager):
                                is_freeform=(doc_type == 'freeform'),
                                short_collection_name=short_collection_name,
                                uses_codemirror="True",
+                               develop=str(_develop),
                                version_string=tstring,
-                               module_source="tactic_js/main_app.js")
+                               module_source=js_source_dict["main_app"])
 
     def rename_me(self, old_name):
         try:
