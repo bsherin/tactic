@@ -17,9 +17,11 @@ sys.stdout = sys.stderr
 
 print(os.environ)
 MAX_QUEUE_LENGTH = 5000
-CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
-STEP_SIZE = int(os.environ.get("STEP_SIZE"))
+# CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
+# STEP_SIZE = int(os.environ.get("STEP_SIZE"))
 
+CHUNK_SIZE = 100
+STEP_SIZE = 50
 
 if "DEBUG_MAIN_CONTAINER" in os.environ:
     DEBUG_MAIN_CONTAINER = os.environ.get("DEBUG_MAIN_CONTAINER")
@@ -141,10 +143,13 @@ def create_container(image_name, container_name=None, network_mode="bridge",
                      env_vars=None, port_bindings=None, wait_retries=50,
                      other_name="none", volume_dict=None, username=None,
                      detach=True, register_container=True, publish_all_ports=False,
-                     main_address=None, true_host_persist_dir=None, true_host_nltk_data_dir=None):
+                     main_address=None, true_host_persist_dir=None, true_host_nltk_data_dir=None, special_unique_id=None):
     if env_vars is None:
         env_vars = {}
-    unique_id = str(uuid.uuid4())
+    if special_unique_id is not None:
+        unique_id = special_unique_id
+    else:
+        unique_id = str(uuid.uuid4())
     environ = {"MAX_QUEUE_LENGTH": MAX_QUEUE_LENGTH,
                "RETRIES": RETRIES,
                "CHUNK_SIZE": CHUNK_SIZE,

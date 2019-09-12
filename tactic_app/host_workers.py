@@ -8,7 +8,7 @@ from docker_functions import create_container, destroy_container, destroy_child_
 from docker_functions import get_log, ContainerCreateError, container_exec, restart_container, get_address
 from tactic_app import app, socketio, use_ssl, db
 from views.library_views import tile_manager, project_manager, collection_manager, list_manager
-from views.library_views import code_manager, all_manager
+from views.library_views import code_manager
 import tactic_app
 import uuid
 import sys
@@ -19,6 +19,7 @@ check_for_dead_time = 30  # How often, in seconds, to ask the megaplex to check 
 no_heartbeat_time = 3600  # If a mainwindow does send a heartbeat after this amount of time, remove mainwindow.
 global_tile_manager = tactic_app.global_tile_manager
 
+from tactic_app.js_source_management import _develop
 
 class HostWorker(QWorker):
     def __init__(self):
@@ -68,7 +69,7 @@ class HostWorker(QWorker):
 
                 db[user_obj.code_collection_name].update_one({"code_name": code_name},
                                                              {'$set': {"the_code": the_code, "metadata": mdata}})
-                code_manager.update_selector_list(user_obj=user_obj)
+                self.update_selector_row(self.build_res_dict(code_name, mdata))
                 result = {"success": True, "message": "Module Successfully Saved", "alert_type": "alert-success"}
                 self.submit_response(local_task_packet, result)
                 return
@@ -80,15 +81,19 @@ class HostWorker(QWorker):
             self.submit_response(task_packet, self.get_short_exception_dict(ex, "Error saving code resource"))
             return
 
+    def emit_loaded_tile_update(self, user_obj=None):
+        if user_obj is None:
+            user_obj = current_user
+        socketio.emit('update-loaded-tile-list', {"tile_load_dict": tile_manager.loaded_tile_lists(user_obj)},
+                      namespace='/library', room=user_obj.get_id())
+
     @task_worthy_manual_submit
     def load_tile_module_task(self, data, task_packet):
         def loaded_source(res_dict):
             if not res_dict["success"]:
                 if "show_failed_loads" in data and data["show_failed_loads"]:
                     global_tile_manager.add_failed_load(tile_module_name, user_obj.username)
-                    socketio.emit('update-loaded-tile-list',
-                                  {"html": tile_manager.render_loaded_tile_list(user_obj)},
-                                  namespace='/library', room=user_obj.get_id())
+                    self.emit_loaded_tile_update(user_obj)
                 if "main_id" not in task_packet:
                     task_packet["room"] = user_id
                     task_packet["namespace"] = "/library"
@@ -110,9 +115,7 @@ class HostWorker(QWorker):
                                                      tile_module,
                                                      tile_module_name,
                                                      is_default)
-
-            socketio.emit('update-loaded-tile-list', {"html": tile_manager.render_loaded_tile_list(user_obj)},
-                          namespace='/library', room=user_obj.get_id())
+            self.emit_loaded_tile_update(user_obj)
             socketio.emit('update-menus', {}, namespace='/main', room=user_obj.get_id())
             if "main_id" not in task_packet:
                 task_packet["room"] = user_id
@@ -178,19 +181,8 @@ class HostWorker(QWorker):
 
     @task_worthy
     def update_collection_selector_list(self, data):
-        collection_manager.update_selector_list(user_obj=load_user(data["user_id"]))
-
-    @task_worthy
-    def update_code_selector_list(self, data):
-        code_manager.update_selector_list(user_obj=load_user(data["user_id"]))
-
-    @task_worthy
-    def update_all_selector_list(self, data):
-        all_manager.update_selector_list(user_obj=load_user(data["user_id"]))
-
-    @task_worthy
-    def update_list_selector_list(self, data):
-        list_manager.update_selector_list(user_obj=load_user(data["user_id"]))
+        return
+        # collection_manager.update_selector_list(user_obj=load_user(data["user_id"]))
 
     @task_worthy
     def destroy_a_users_containers(self, data):
@@ -320,18 +312,18 @@ class HostWorker(QWorker):
             self.post_task("host", "load_tile_module_task", data, did_load)
         return
 
+    # @task_worthy
+    # def update_tile_selector_list(self, data):
+    #     user_id = data["user_id"]
+    #     user_obj = load_user(user_id)
+    #     tile_manager.update_selector_list(user_obj=user_obj)
+    #     return {"success": True}
+    #
     @task_worthy
-    def update_tile_selector_list(self, data):
+    def refresh_project_selector_list(self, data):
         user_id = data["user_id"]
         user_obj = load_user(user_id)
-        tile_manager.update_selector_list(user_obj=user_obj)
-        return {"success": True}
-
-    @task_worthy
-    def update_project_selector_list(self, data):
-        user_id = data["user_id"]
-        user_obj = load_user(user_id)
-        project_manager.update_selector_list(user_obj=user_obj)
+        project_manager.refresh_selector_list(user_obj=user_obj)
         return {"success": True}
 
     @task_worthy
@@ -438,61 +430,42 @@ class HostWorker(QWorker):
         from tactic_app import app, socketio
         user_id = data["user_id"]
         user_obj = load_user(user_id)
-        with app.test_request_context():
-            user_tstring = user_obj.get_timestrings(datetime.datetime.utcnow())[0]
-            if data["is_error"]:
-                if "summary" in data:
-                    summary_text = data["summary"]
-                else:
-                    summary_text = "<b>error</b> " + user_tstring
-                data["message"] = render_template("error_log_item.html", log_item=data["message"],
-                                                  summary_text=summary_text)
+        user_tstring = user_obj.get_timestrings(datetime.datetime.utcnow())[0]
+        console_text = data["message"]
+        unique_id = str(uuid.uuid4())
+        if data["is_error"]:
+            if "summary" in data:
+                summary_text = data["summary"]
             else:
-                if "summary" in data:
-                    summary_text = data["summary"]
-                else:
-                    summary_text = "<b>log_it item</b> " + user_tstring
-                data["message"] = render_template("log_item.html", log_item=data["message"],
-                                                  summary_text=summary_text)
+                summary_text = "<b>error</b> " + user_tstring
+                data["message"] = {"unique_id": unique_id,
+                                   "type": "fixed",
+                                   "is_error": True,
+                                   "am_shrunk": False,
+                                   "summary_text": summary_text,
+                                   "console_text": console_text,
+                                   "show_markdown": False}
+        else:
+            if "summary" in data:
+                summary_text = data["summary"]
+            else:
+                summary_text = "<b>log_it item</b> " + user_tstring
 
+        data["message"] = {"unique_id": unique_id,
+                           "type": "fixed",
+                           "is_error": data["is_error"],
+                           "am_shrunk": False,
+                           "summary_text": summary_text,
+                           "console_text": console_text,
+                           "show_markdown": False}
         data["console_message"] = "consoleLog"
         self.emit_console_message(data)
         return {"success": True}
 
     @task_worthy
     def flash_to_main(self, data):
-        # data = {"message": message, "alert_type": alert_type, "main_id": main_id}
         socketio.emit("doFlash", data, namespace='/main', room=data["main_id"])
         return {"success": True}
-
-    @task_worthy
-    def print_cells_to_console(self, data):
-        from tactic_app import socketio
-        user_id = data["user_id"]
-        user_obj = load_user(user_id)
-        user_tstring = user_obj.get_timestrings(datetime.datetime.utcnow())[0]
-        summary_text = "<b>text item </b> " + user_tstring
-        message = ""
-        new_cell_data = []
-        for cell_dict in data["cells"]:
-            unique_id = str(uuid.uuid4())
-            cell_dict["unique_id"] = unique_id
-            if cell_dict["cell_type"] == "code":
-                with app.test_request_context():
-                    message += render_template("code_log_item.html", unique_id=unique_id,
-                                               summary_text=summary_text)
-
-                    new_cell_data.append(copy.deepcopy(cell_dict))
-            elif cell_dict["cell_type"] == "markdown":
-                with app.test_request_context():
-                    message += render_template("text_log_item.html", unique_id=unique_id,
-                                               summary_text=summary_text)
-                    new_cell_data.append(copy.deepcopy(cell_dict))
-
-        data["console_message"] = "consoleLog"
-        data["message"] = message
-        self.emit_console_message(data)
-        return {"success": True, "cells": new_cell_data}
 
     @task_worthy
     def print_text_area_to_console(self, data):
@@ -500,11 +473,14 @@ class HostWorker(QWorker):
         user_id = data["user_id"]
         user_obj = load_user(user_id)
         user_tstring = user_obj.get_timestrings(datetime.datetime.utcnow())[0]
-        summary_text = "<b>text item </b> " + user_tstring
-        with app.test_request_context():
-            data["message"] = render_template("text_log_item.html", unique_id=data["unique_id"],
-                                              summary_text=summary_text)
-
+        unique_id = str(uuid.uuid4())
+        summary_text = "text item " + user_tstring
+        data["message"] = {"unique_id": unique_id,
+                           "type": "text",
+                           "am_shrunk": False,
+                           "summary_text": summary_text,
+                           "console_text": data["console_text"],
+                           "show_markdown": False}
         data["console_message"] = "consoleLog"
         self.emit_console_message(data)
         return {"success": True}
@@ -515,10 +491,16 @@ class HostWorker(QWorker):
         user_id = data["user_id"]
         user_obj = load_user(user_id)
         user_tstring = user_obj.get_timestrings(datetime.datetime.utcnow())[0]
+        unique_id = str(uuid.uuid4())
         summary_text = "<b>code item </b> " + user_tstring
-        with app.test_request_context():
-            data["message"] = render_template("code_log_item.html", unique_id=data["unique_id"],
-                                              summary_text=summary_text)
+        data["message"] = {"unique_id": unique_id,
+                           "type": "code",
+                           "am_shrunk": False,
+                           "show_spinner": False,
+                           "summary_text": summary_text,
+                           "console_text": data["console_text"],
+                           "output_text": "",
+                           "execution_count": 0}
 
         data["console_message"] = "consoleLog"
         self.emit_console_message(data)

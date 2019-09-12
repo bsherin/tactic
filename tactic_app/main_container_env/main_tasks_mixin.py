@@ -3,7 +3,6 @@ import datetime
 import re
 import uuid
 import copy
-import markdown
 import json
 from qworker import task_worthy_methods, task_worthy_manual_submit_methods
 from communication_utils import make_python_object_jsonizable, debinarize_python_object, store_temp_data
@@ -125,6 +124,33 @@ class LoadSaveTasksMixin:
                 self.mworker.submit_response(task_packet, result)
         return
 
+    def convert_jupyter_cells(self, jupyter_cell_list):
+        message = ""
+        converted_cells = []
+        for cell_dict in jupyter_cell_list:
+            unique_id = str(uuid.uuid4())
+            if cell_dict["cell_type"] == "code":
+                cell_dict = {
+                    "unique_id": unique_id,
+                    "type": "code",
+                    "show_spinner": False,
+                    "summary_text": "code item",
+                    "console_text": "".join(cell_dict["source"]),
+                    "output_text": "",
+                    "execution_count": 0
+                }
+            elif cell_dict["cell_type"] == "markdown":
+                cell_dict = {
+                    "unique_id": unique_id,
+                    "type": "text",
+                    "show_spinner": False,
+                    "summary_text": "text items",
+                    "console_text": "".join(cell_dict["source"]),
+                    "show_markdown": False
+                }
+            converted_cells.append(cell_dict)
+        return converted_cells
+
     @task_worthy
     def do_full_jupyter_recreation(self, data_dict):
         tile_containers = {}
@@ -137,13 +163,14 @@ class LoadSaveTasksMixin:
             project_dict = read_project_dict(self.fs, self.mdata, save_dict["file_id"])
             jupyter_text = project_dict["jupyter_text"]
             jupyter_dict = json.loads(jupyter_text)
-            self.jupyter_cells = jupyter_dict["cells"]
+            converted_cells = self.convert_jupyter_cells(jupyter_dict["cells"])
+            interface_state = {"console_items": converted_cells}
             self.clear_main_status_message()
             self.mworker.ask_host("emit_to_client", {"message": "finish-post-load",
                                                      "collection_name": "",
                                                      "short_collection_name": "",
-                                                     "doc_names": [],
-                                                     "console_html": ""})
+                                                     "interface_state": interface_state,
+                                                     "doc_names": []})
 
         except Exception as ex:
             error_string = self.get_traceback_message(ex)
@@ -157,6 +184,8 @@ class LoadSaveTasksMixin:
         def track_loaded_modules(tlmdata):
             def track_recreated_tiles(trcdata):
                 if trcdata["old_tile_id"] in tiles_to_recreate:
+                    self.mworker.ask_host("emit_to_client", {"message": "tile-finished-loading",
+                                                             "tile_id": trcdata["old_tile_id"]})
                     tiles_to_recreate.remove(trcdata["old_tile_id"])
                 if not tiles_to_recreate:
                     self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {})
@@ -186,7 +215,7 @@ class LoadSaveTasksMixin:
         print("Entering do_full_recreation")
         self.show_main_status_message("Entering do_full_recreation")
         self.tile_instances = []
-        tile_info_dict, loaded_modules, success = self.recreate_from_save(data_dict["project_name"])
+        tile_info_dict, loaded_modules, interface_state, success = self.recreate_from_save(data_dict["project_name"])
         if not success:
             self.show_main_status_message("Error trying to recreate the project from save")
             self.show_error_window(tile_info_dict)
@@ -194,19 +223,11 @@ class LoadSaveTasksMixin:
 
         self.show_main_status_message("Recreating the console")
 
-        self.update_legacy_console_html()
-        matches = re.findall(r"/figure_source/(.*?)/([0-9A-Fa-f-]*)", self.console_html)
-        if len(matches) > 0:
-            if self.pseudo_tile_id is None:  # This really shouldn't be necessary
-                self.create_pseudo_tile()
-            for match in matches:  # really they should all be the same, but loop over just in case
-                self.console_html = re.sub(match[0], self.pseudo_tile_id, self.console_html)
-
         self.mworker.ask_host("emit_to_client", {"message": "finish-post-load",
                                                  "collection_name": self.collection_name,
                                                  "short_collection_name": self.short_collection_name,
                                                  "doc_names": self.doc_names,
-                                                 "console_html": self.console_html})
+                                                 "interface_state": interface_state})
 
         self.show_main_status_message("Making modules available")
         modules_to_load = copy.copy(loaded_modules)
@@ -226,9 +247,10 @@ class LoadSaveTasksMixin:
             print("Entering do_full_notebook_recreation")
             self.show_main_status_message("Entering do_full_notebook_recreation")
             if "unique_id" in data_dict:
-                success = self.recreate_from_save("", data_dict["unique_id"])
+                interface_state, success = self.recreate_from_save("", data_dict["unique_id"])
             else:
-                success = self.recreate_from_save(data_dict["project_name"])
+                interface_state, success = self.recreate_from_save(data_dict["project_name"])
+            print("returned from recreate_from_save")
             if not success:
                 self.show_main_status_message("Error trying to recreate the project from save")
                 self.show_error_window(tile_info_dict)
@@ -237,20 +259,13 @@ class LoadSaveTasksMixin:
             if self.pseudo_tile_id is None:
                 self.create_pseudo_tile()
 
-            matches = re.findall(r"/figure_source/(.*?)/([0-9A-Fa-f-]*)", self.console_html)
-            if len(matches) > 0:
-                for match in matches:  # really they should all be the same, but loop over just in case
-                    self.console_html = re.sub(match[0], self.pseudo_tile_id, self.console_html)
-
-            self.update_legacy_console_html()
-
             self.clear_main_status_message()
+            print("about to emit finished to client")
             self.mworker.ask_host("emit_to_client", {"message": "finish-post-load",
                                                      "collection_name": "",
                                                      "short_collection_name": "",
-                                                     "doc_names": [],
-                                                     "console_html": self.console_html})
-
+                                                     "interface_state": interface_state,
+                                                     "doc_names": []})
         except Exception as ex:
             error_string = self.get_traceback_message(ex)
             self.show_error_window(error_string)
@@ -267,7 +282,8 @@ class LoadSaveTasksMixin:
             self.mdata["type"] = self.doc_type
             self.mdata["collection_name"] = self.collection_name
             self.mdata["loaded_tiles"] = project_dict["used_tile_types"]
-            self.mdata["save_style"] = "b64save"
+            self.mdata["save_style"] = "b64save_react"
+            project_dict["interface_state"] = data_dict["interface_state"]
             if self.purgetiles:
                 project_dict["loaded_modules"] = project_dict["used_modules"]
             save_dict = {"metadata": self.mdata,
@@ -287,9 +303,6 @@ class LoadSaveTasksMixin:
         try:
             self.project_name = data_dict["project_name"]
             self.purgetiles = data_dict["purgetiles"]
-            self.console_html = data_dict["console_html"]
-            self.console_cm_code = data_dict["console_cm_code"]
-
             self.show_main_status_message("Getting loaded modules")
             self.loaded_modules = self.get_loaded_user_modules()
             self.show_main_status_message("compiling save dictionary")
@@ -310,7 +323,8 @@ class LoadSaveTasksMixin:
             self.mdata["type"] = "notebook"
             self.mdata["collection_name"] = ""
             self.mdata["loaded_tiles"] = []
-            self.mdata["save_style"] = "b64save"
+            self.mdata["save_style"] = "b64save_react"
+            project_dict["interface_state"] = data_dict["interface_state"]
             save_dict = {"metadata": self.mdata,
                          "project_name": project_dict["project_name"]}
             self.show_main_status_message("Pickle, convert, compress")
@@ -329,8 +343,6 @@ class LoadSaveTasksMixin:
         try:
             self.project_name = data_dict["project_name"]
             self.purgetiles = True
-            self.console_html = data_dict["console_html"]
-            self.console_cm_code = data_dict["console_cm_code"]
 
             self.show_main_status_message("compiling save dictionary")
             self.doc_type = "notebook"  # This is necessary in case we're saving a juypyter notebook
@@ -352,7 +364,8 @@ class LoadSaveTasksMixin:
             print("got save dict in update_project")
             pname = project_dict["project_name"]
             self.mdata["updated"] = datetime.datetime.utcnow()
-            self.mdata["save_style"] = "b64save"
+            self.mdata["save_style"] = "b64save_react"
+            project_dict["interface_state"] = data_dict["interface_state"]
             if not self.doc_type == "notebook":
                 self.mdata["collection_name"] = self.collection_name
                 self.mdata["loaded_tiles"] = project_dict["used_tile_types"]
@@ -376,8 +389,6 @@ class LoadSaveTasksMixin:
             self.mworker.submit_response(task_packet, return_data)
 
         try:
-            self.console_html = data_dict["console_html"]
-            self.console_cm_code = data_dict["console_cm_code"]
             self.show_main_status_message("Getting loaded modules")
             self.loaded_modules = self.get_loaded_user_modules()
             self.show_main_status_message("compiling save dictionary")
@@ -400,7 +411,8 @@ class LoadSaveTasksMixin:
                 revised_source_list = [r + "\n" for r in source_list[:-1]] + [source_list[-1]]
                 cell["source"] = revised_source_list
                 cell["metadata"] = {}
-                cell["execution_count"] = 0
+                if cell["cell_type"] == "code":
+                    cell["execution_count"] = 0
             metadata = {}
             metadata["kernelspec"] = {"display_name": "Python 3", "language": "python", "name": "python3"}
             full_dict = {"metadata": metadata,
@@ -430,12 +442,11 @@ class LoadSaveTasksMixin:
 
     @task_worthy
     def console_to_notebook(self, data_dict):
-        self.console_html = data_dict["console_html"]
-        self.console_cm_code = data_dict["console_cm_code"]
         self.show_main_status_message("compiling save dictionary")
 
         def got_save_dict(console_dict):
             console_dict["doc_type"] = "notebook"
+            console_dict["interface_state"] = {"console_items": data_dict["console_items"]}
             cdict = make_jsonizable_and_compress(console_dict)
             save_dict = {}
             save_dict["file_id"] = self.fs.put(cdict)
@@ -504,7 +515,8 @@ class TileCreationTasksMixin:
         self.tstart = datetime.datetime.now()
 
         create_container_dict = self.create_tile_container({"user_id": self.user_id, "parent": self.mworker.my_id,
-                                                            "other_name": tile_name, "ppi": self.ppi})
+                                                            "other_name": tile_name, "ppi": self.ppi,
+                                                            "tile_id": None})
 
         if not create_container_dict["success"]:
             raise Exception("Error creating empty tile container")
@@ -531,19 +543,18 @@ class TileCreationTasksMixin:
             exports = instantiate_result["exports"]
             self.update_pipe_dict(exports, tile_container_id, tile_name)
 
-            def got_form_html(response):
-                print("got form html, time is {}".format(self.microdsecs(self.tstart)))
+            def got_form_data(response):
+                print("got form data, time is {}".format(self.microdsecs(self.tstart)))
                 self.tstart = datetime.datetime.now()
-                form_html = response["form_html"]
+                form_data = response["form_data"]
                 self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task",
                                        {"tile_id": tile_container_id})
                 self.tile_sort_list.append(tile_container_id)
-                self.current_tile_id += 1
-                response_data = {"success": True, "html": form_html, "tile_id": tile_container_id}
+                response_data = {"success": True, "form_data": form_data, "tile_id": tile_container_id}
                 self.mworker.submit_response(local_task_packet, response_data)
 
             form_info = self.compile_form_info(tile_container_id)
-            self.mworker.post_task(tile_container_id, "_create_form_html", form_info, got_form_html)
+            self.mworker.post_task(tile_container_id, "_create_form_data", form_info, got_form_data)
 
         self.mworker.post_task(tile_container_id, "load_source_and_instantiate", data_dict, instantiated_result)
         return
@@ -579,7 +590,7 @@ class TileCreationTasksMixin:
         tile_code = self.get_tile_code(tile_save_dict["tile_type"])
 
         gtc_response = self.create_tile_container({"user_id": self.user_id, "parent": self.mworker.my_id,
-                                                   "other_name": tile_name, "ppi": self.ppi})
+                                                   "other_name": tile_name, "ppi": self.ppi, "tile_id": old_tile_id})
         if not gtc_response["success"]:
             self.mworker.print_to_console(gtc_response["message"], True, True, summary="Project recreation tphrc")
             self.mworker.submit_response(task_packet, {"old_tile_id": old_tile_id})
@@ -597,24 +608,10 @@ class TileCreationTasksMixin:
             exports = recreate_response["exports"]
             self.update_pipe_dict(exports, new_id[0], tile_name)
             self.mworker.emit_export_viewer_message("update_exports_popup", {})
-
-            def rendered_tile(rt_response):
-                recreate_response["tile_html"] = rt_response["tile_html"]
-                self.tile_id_dict[tile_name] = new_id[0]
-                self.tile_save_results[new_id[0]] = recreate_response
-                self.tile_sort_list[self.tile_sort_list.index(old_tile_id)] = new_id[0]
-                self.tile_instances.append(new_id[0])
-                self.mworker.ask_host("emit_to_client", {"message": "recreate-saved-tile",
-                                                         "tile_id": new_id[0],
-                                                         "tile_type": tile_save_dict["tile_type"],
-                                                         "tile_saved_results": recreate_response,
-                                                         "tile_sort_list": self.tile_sort_list})
-                self.mworker.submit_response(task_packet, {"old_tile_id": old_tile_id})
-                return
-
-            form_info = self.compile_form_info(new_id[0])
-            self.mworker.post_task(new_id[0], "render_tile", form_info,
-                                   rendered_tile, expiration=60, error_handler=handle_response_error)
+            self.tile_save_results[new_id[0]] = recreate_response
+            self.tile_instances.append(new_id[0])
+            self.mworker.submit_response(task_packet, {"old_tile_id": old_tile_id})
+            return
 
         self.mworker.post_task(new_id[0], "load_source_and_recreate", lsdata, recreate_done,
                                expiration=60, error_handler=handle_response_error)
@@ -672,7 +669,7 @@ class TileCreationTasksMixin:
                             form_info["pipe_dict"] = self._pipe_dict
                             self.rebuild_other_tile_forms(tile_id, form_info)
                             self.mworker.emit_export_viewer_message("update_exports_popup", {})
-                            final_result = {"success": True, "html": reinst_result["form_html"],
+                            final_result = {"success": True, "form_data": reinst_result["form_data"],
                                             "options_changed": reinst_result["options_changed"]}
                             self.mworker.submit_response(local_task_packet, final_result)
                         else:
@@ -1031,7 +1028,7 @@ class APISupportTasksMixin:
     def FilterTable(self, data):
         txt = data["text_to_find"]
         self.display_matching_rows_applying_filter(lambda r: self.txt_in_dict(txt, r))
-        self.highlight_table_text(txt)
+        # self.highlight_table_text(txt)
         return None
 
     @task_worthy
@@ -1049,9 +1046,7 @@ class APISupportTasksMixin:
 
     @task_worthy
     def ColorTextInCell(self, data):
-        data["row_index"] = self.get_actual_row(data)
-        if data["row_index"] is not None:
-            self.mworker.emit_table_message("colorTxtInCell", data)
+        self.mworker.emit_table_message("colorTxtInCell", data)
         return None
 
     @task_worthy
@@ -1159,6 +1154,20 @@ class APISupportTasksMixin:
 class ExportsTasksMixin:
 
     @task_worthy
+    def get_full_pipe_dict(self, data):
+        converted_pipe_dict = {}
+        for tile_id, tile_entry in self._pipe_dict.items():
+            first_full_name = list(tile_entry)[0]
+            first_short_name = list(tile_entry.values())[0]["export_name"]
+            tile_name = re.sub("_" + first_short_name, "", first_full_name)
+            converted_pipe_dict[tile_name] = []
+
+            for full_export_name, edict in tile_entry.items():
+                converted_pipe_dict[tile_name].append([full_export_name, edict["export_name"]])
+
+        return {"success": True, "pipe_dict": converted_pipe_dict}
+
+    @task_worthy
     def get_exports_list_html(self, data):
         the_html = ""
         export_list = []
@@ -1243,9 +1252,9 @@ class ConsoleTasksMixin:
         return self.mworker.print_code_area_to_console(unique_id, force_open=True)
 
     @task_worthy
-    def create_blank_text_area(self, data):
+    def create_console_text_item(self, data):
         unique_id = str(uuid.uuid4())
-        return self.mworker.print_text_area_to_console(unique_id, force_open=True)
+        return self.mworker.print_text_area_to_console(unique_id, data["the_text"], force_open=True)
 
     @task_worthy
     def got_console_result(self, data):
@@ -1273,15 +1282,6 @@ class ConsoleTasksMixin:
         print("posting exec_console_code to the pseudo_tile")
         self.mworker.post_task(self.pseudo_tile_id, "exec_console_code", data, self.got_console_result)
         return {"success": True}
-
-    @task_worthy
-    def convert_markdown(self, data):
-        the_text = data["the_text"]
-        the_text = re.sub("<br>", "\n", the_text)
-        the_text = re.sub("&gt;", ">", the_text)
-        the_text = re.sub("&nbsp;", " ", the_text)
-        converted_markdown = markdown.markdown(the_text)
-        return {"success": True, "converted_markdown": converted_markdown}
 
     @task_worthy
     def clear_console_namespace(self, data):
@@ -1312,47 +1312,18 @@ class DataSupportTasksMixin:
 
     @task_worthy
     def grab_data(self, data):
-        print("entering grab_datat")
+        print("entering grab_data with fixed message")
         doc_name = data["doc_name"]
         if self.doc_type == "table":
             return {"doc_name": doc_name,
-                    "is_shrunk": self.is_shrunk,
-                    "left_fraction": self.left_fraction,
                     "data_rows": self.doc_dict[doc_name].displayed_data_rows,
-                    "background_colors": self.doc_dict[doc_name].displayed_background_colors,
                     "table_spec": self.doc_dict[doc_name].table_spec.compile_save_dict(),
                     "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
                     "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
                     "max_table_size": self.doc_dict[doc_name].max_table_size}
         else:
             return {"doc_name": doc_name,
-                    "is_shrunk": self.is_shrunk,
-                    "left_fraction": self.left_fraction,
                     "data_text": self.doc_dict[doc_name].data_text}
-
-    @task_worthy
-    def grab_project_data(self, data_dict):
-        doc_name = data_dict["doc_name"]
-        if self.doc_type == "table":
-            return {"doc_name": doc_name,
-                    "is_shrunk": self.is_shrunk,
-                    "tile_ids": self.tile_sort_list,
-                    "left_fraction": self.left_fraction,
-                    "data_rows": self.doc_dict[doc_name].displayed_data_rows,
-                    "background_colors": self.doc_dict[doc_name].displayed_background_colors,
-                    "table_spec": self.doc_dict[doc_name].table_spec.compile_save_dict(),
-                    "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
-                    "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
-                    "max_table_size": self.doc_dict[doc_name].max_table_size,
-                    "tile_save_results": self.tile_save_results}
-        else:
-            return {"doc_name": doc_name,
-                    "is_shrunk": self.is_shrunk,
-                    "tile_ids": self.tile_sort_list,
-                    "left_fraction": self.left_fraction,
-                    "data_text": self.doc_dict[doc_name].data_text,
-                    "table_spec": self.doc_dict[doc_name].table_spec.compile_save_dict(),
-                    "tile_save_results": self.tile_save_results}
 
     @task_worthy
     def grab_chunk_with_row(self, data_dict):
@@ -1360,8 +1331,6 @@ class DataSupportTasksMixin:
         row_id = data_dict["row_id"]
         self.doc_dict[doc_name].move_to_row(row_id)
         return {"doc_name": doc_name,
-                "left_fraction": self.left_fraction,
-                "is_shrunk": self.is_shrunk,
                 "data_rows": self.doc_dict[doc_name].displayed_data_rows,
                 "background_colors": self.doc_dict[doc_name].displayed_background_colors,
                 "table_spec": self.doc_dict[doc_name].table_spec.compile_save_dict(),
@@ -1389,10 +1358,23 @@ class DataSupportTasksMixin:
         return {"doc_name": doc_name,
                 "data_rows": self.doc_dict[doc_name].displayed_data_rows,
                 "background_colors": self.doc_dict[doc_name].displayed_background_colors,
+                "table_spec": self.doc_dict[doc_name].table_spec.compile_save_dict(),
                 "header_list": self.doc_dict[doc_name].table_spec.header_list,
                 "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
                 "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
                 "step_size": step_amount}
+
+    @task_worthy
+    def UpdateTableSpec(self, data):
+        doc = self.doc_dict[data["doc_name"]]
+        if "column_widths" in data:
+            doc.table_spec.column_widths = data["column_widths"]
+        if "hidden_columns_list" in data:
+            doc.table_spec.hidden_columns_list = data["hidden_columns_list"]
+        if "column_names" in data:
+            doc.table_spec.header_list = data["column_names"]
+            self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id": None})
+        return None
 
     @task_worthy
     def UpdateHeaderListOrder(self, data):
@@ -1424,7 +1406,7 @@ class DataSupportTasksMixin:
 
     @task_worthy
     def UpdateColumnWidths(self, data):
-        doc = self.doc_dict[data["doc_name"]]
+        doc = self.doc_dict[data["doc_to_update"]]
         doc.table_spec.column_widths = data["column_widths"]
         # doc.table_spec.table_width = data["table_width"]
         return None

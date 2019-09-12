@@ -1,0 +1,1 @@
+react_contenteditable = require("react-contenteditable");

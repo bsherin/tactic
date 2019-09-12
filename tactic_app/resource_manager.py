@@ -37,31 +37,16 @@ class ResourceManager(ExceptionMixin):
     def add_rules(self):
         print "not implemented"
 
-    def update_selector_list(self, select=None, user_obj=None):
+    def update_selector_row(self, res_dict):
+        user_obj = current_user
+        socketio.emit("update-{}-selector-row".format(self.res_type), res_dict,
+                      namespace='/library', room=user_obj.get_id())
+
+    def refresh_selector_list(self, user_obj=None):
         if user_obj is None:
             user_obj = current_user
-
-        if self.is_repository:
-            socketio.emit('update-selector-list',
-                          {"html": self.request_update_selector_list(user_obj=repository_user),
-                           "select": None,
-                           "module_id": self.module_id,
-                           "res_type": self.res_type},
-                          namespace='/library', room=user_obj.get_id())
-        elif select is None:
-            socketio.emit('update-selector-list',
-                          {"html": self.request_update_selector_list(user_obj=user_obj),
-                           "select": None,
-                           "module_id": self.module_id,
-                           "res_type": self.res_type},
-                          namespace='/library', room=user_obj.get_id())
-        else:
-            socketio.emit('update-selector-list',
-                          {"html": self.request_update_selector_list(user_obj=user_obj),
-                           "select": select,
-                           "module_id": self.module_id,
-                           "res_type": self.res_type},
-                          namespace='/library', room=user_obj.get_id())
+        socketio.emit("refresh-{}-selector".format(self.res_type), {},
+                      namespace='/library', room=user_obj.get_id())
 
     def get_resource_list(self):
         if self.is_repository:
@@ -87,19 +72,59 @@ class ResourceManager(ExceptionMixin):
                 result += str(mdata["tags"].lower()).split()
         return sorted(list(set(result)))
 
-    def request_update_tag_list(self, user_obj=None):
-        return self.get_tag_list(user_obj)
-
-    def create_button_list(self, the_list):
-        the_html = render_template("library/button_list_template.html",
-                                   button_list=the_list, res_type=self.res_type)
-        return the_html
-
-    def request_update_selector_list(self, user_obj=None):
+    def get_resource_data_list(self, user_obj=None):
         res_list_with_metadata = self.get_resource_list_with_metadata(user_obj)
-        res_array = self.build_resource_array(res_list_with_metadata, user_obj)
-        result = self.build_html_table_from_data_list(res_array)
+        result = self.build_data_list(res_list_with_metadata)
         return result
+
+    @staticmethod
+    def build_res_dict(name, mdata, user_obj=None):
+        if user_obj is None:
+            user_obj = current_user
+        if mdata is None:
+            datestring = ""
+            tagstring = ""
+            updatestring = ""
+            datestring_for_sort = ""
+            updatestring_for_sort = ""
+            notes = ""
+        else:
+            if "datetime" in mdata:
+                datestring, datestring_for_sort = user_obj.get_timestrings(mdata["datetime"])
+            else:
+                datestring = ""
+                datestring_for_sort = ""
+            if "updated" in mdata:
+                updatestring, updatestring_for_sort = user_obj.get_timestrings(mdata["updated"])
+            else:
+                updatestring = datestring
+                updatestring_for_sort = datestring_for_sort
+            tagstring = str(mdata["tags"])
+            notes = mdata["notes"]
+
+        return_data = {"name": name,
+                       "created": datestring,
+                       "created_for_sort": datestring_for_sort,
+                       "updated": updatestring,
+                       "updated_for_sort": updatestring_for_sort,
+                       "tags": tagstring,
+                       "notes": notes}
+        skip_fields = ["name", "notes", "datetime", "tags", "updated", "_id"]
+        if mdata is not None:
+            for field, val in mdata.items():
+                if field not in skip_fields:
+                    return_data[field] = val
+
+        return return_data
+
+    def build_data_list(self, res_list, user_obj=None):
+        if user_obj is None:
+            user_obj = current_user
+        larray = []
+        for res_item in res_list:
+            mdata = res_item[1]
+            larray.append(self.build_res_dict(res_item[0], mdata, user_obj))
+        return larray
 
     def show_um_message(self, message, library_id, timeout=3):
         data = {"message": message, "timeout": timeout}
@@ -109,106 +134,9 @@ class ResourceManager(ExceptionMixin):
     def clear_um_message(self, library_id):
         socketio.emit('clear-status-msg', {}, namespace='/library', room=library_id)
 
-    def build_html_table_from_data_list(self, data_list, title=None):
-        the_html = "<table class='tile-table table sortable table-striped table-bordered table-sm'>"
-        if title is not None:
-            the_html += "<caption>{0}</caption>".format(title)
-        the_html += "<thead><tr>"
-        for c in data_list[0]:
-            the_html += "<th>{0}</th>".format(c)
-        the_html += "</tr><tbody>"
-        for r in data_list[1:]:
-            the_html += "<tr class='selector-button' value='{1}' >".format(self.res_type, r[0])
-            for c in r:
-                if isinstance(c, list):
-                    if len(c) == 3:
-                        the_html += "<td sorttable_customkey='{0}' align='{2}'>{1}</td>".format(c[1], c[0], c[2])
-                    else:
-                        the_html += "<td sorttable_customkey='{0}'>{1}</td>".format(c[1], c[0])
-                else:
-                    the_html += "<td>{0}</td>".format(c)
-            the_html += "</tr>"
-
-        the_html += "</tbody></table>"
-        return the_html
-
-    def build_one_table_row(self, row_data):
-        the_html = "<tr class='selector-button' value='{1}' style='display:none' >".format(self.res_type, row_data[0])
-        for c in row_data:
-            if isinstance(c, list):
-                if len(c) == 3:
-                    the_html += "<td sorttable_customkey='{0}' align='{2}'>{1}</td>".format(c[1], c[0], c[2])
-                else:
-                    the_html += "<td sorttable_customkey='{0}'>{1}</td>".format(c[1], c[0])
-            else:
-                the_html += "<td>{0}</td>".format(c)
-        the_html += "</tr>"
-        return the_html
-
-    def build_resource_array(self, res_list, user_obj=None):
-        if user_obj is None:
-            user_obj = current_user
-        larray = [["Name", "Created", "Updated", "Tags"]]
-        for res_item in res_list:
-            mdata = res_item[1]
-            if mdata is None:
-                datestring = ""
-                tagstring = ""
-                updatestring = ""
-                datestring_for_sort = ""
-                updatestring_for_sort = ""
-            else:
-                if "datetime" in mdata:
-                    datestring, datestring_for_sort = user_obj.get_timestrings(mdata["datetime"])
-                else:
-                    datestring = ""
-                    datestring_for_sort = ""
-                if "updated" in mdata:
-                    updatestring, updatestring_for_sort = user_obj.get_timestrings(mdata["updated"])
-                else:
-                    updatestring = datestring
-                    updatestring_for_sort = datestring_for_sort
-                tagstring = str(mdata["tags"])
-            larray.append([res_item[0], [datestring, datestring_for_sort],
-                           [updatestring, updatestring_for_sort], tagstring])
-        return larray
-
-    def create_new_row(self, res_name, metadata):
-        new_item = [res_name, metadata]
-        res_array = self.build_resource_array([new_item])
-        table_row = self.build_one_table_row(res_array[1])
-        return table_row
-
 
 class LibraryResourceManager(ResourceManager):
 
-    def __init__(self, res_type, all_manager):
+    def __init__(self, res_type):
         ResourceManager.__init__(self, res_type)
-        self.all_manager = all_manager
 
-    def update_selector_list(self, select=None, user_obj=None):
-        if user_obj is None:
-            user_obj = current_user
-
-        if self.is_repository:
-            socketio.emit('update-selector-list',
-                          {"html": self.request_update_selector_list(user_obj=repository_user),
-                           "select": None,
-                           "module_id": self.module_id,
-                           "res_type": self.res_type},
-                          namespace='/library', room=user_obj.get_id())
-        elif select is None:
-            socketio.emit('update-selector-list',
-                          {"html": self.request_update_selector_list(user_obj=user_obj),
-                           "select": None,
-                           "module_id": self.module_id,
-                           "res_type": self.res_type},
-                          namespace='/library', room=user_obj.get_id())
-        else:
-            socketio.emit('update-selector-list',
-                          {"html": self.request_update_selector_list(user_obj=user_obj),
-                           "select": select,
-                           "module_id": self.module_id,
-                           "res_type": self.res_type},
-                          namespace='/library', room=user_obj.get_id())
-        self.all_manager.update_selector_list(select, user_obj)

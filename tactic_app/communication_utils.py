@@ -82,7 +82,7 @@ def delete_temp_data(db, unique_id, fs=None):
 def read_project_dict(fs, mdata, file_id):
     project_dict = None
     if "save_style" in mdata:
-        if mdata["save_style"] == "b64save":
+        if mdata["save_style"] == "b64save" or mdata["save_style"] == "b64save_react":
             binarized_python_object = zlib.decompress(fs.get(file_id).read())
             project_dict = debinarize_python_object(binarized_python_object)
     else:  # legacy

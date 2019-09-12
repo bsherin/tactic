@@ -19,6 +19,7 @@ import tactic_app
 import datetime
 tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 
+from tactic_app.js_source_management import _develop
 
 # The main window should join a room associated with the user
 @socketio.on('connect', namespace='/main')
@@ -110,7 +111,7 @@ def export_data():
             socketio.emit("doFlash", {"alert_type": "alert-success", "message": "Data successfully exported"},
                           namespace='/main', room=data_dict["main_id"])
         user_obj = load_user(data_dict["user_id"])
-        collection_manager.update_selector_list(user_obj=user_obj)
+        # collection_manager.update_selector_list(user_obj=user_obj)
         return
     data_dict = request.json
     export_name = data_dict['export_name']

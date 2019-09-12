@@ -14,6 +14,8 @@ import datetime
 tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 indent_unit = "    "
 
+from tactic_app.js_source_management import _develop
+
 
 @app.route('/checkpoint_module', methods=['post'])
 @login_required
@@ -64,19 +66,14 @@ def checkpoint_to_recent():
 @app.route('/show_history_viewer/<module_name>', methods=['get', 'post'])
 @login_required
 def show_history_viewer(module_name):
-    button_groups = [[{"name": "save_button", "button_class": "btn-outline-secondary", "name_text": "Save", "icon_name": "save"}]]
-    javascript_source = url_for('static', filename='tactic_js/history_viewer.js')
-    return render_template("library/resource_viewer.html",
+    javascript_source = url_for('static', filename='tactic_js/history_viewer_react.js')
+    return render_template("library/resource_viewer_react.html",
                            resource_name=module_name,
-                           include_metadata=False,
-                           include_above_main_area=True,
-                           include_right=False,
-                           readonly=False,
-                           is_repository=False,
                            use_ssl=use_ssl,
+                           develop=str(_develop),
                            javascript_source=javascript_source,
                            uses_codemirror="True",
-                           button_groups=button_groups, version_string=tstring)
+                           version_string=tstring)
 
 
 @app.route('/get_api_dict', methods=['GET', 'POST'])
@@ -91,20 +88,15 @@ def get_api_dict():
 @app.route('/show_tile_differ/both_names/<module_name>/<second_module_name>')
 @login_required
 def show_tile_differ(module_name, second_module_name):
-    button_groups = [[{"name": "save_button", "button_class": "btn-outline-secondary", "name_text": "Save", "icon_name": "save"}]]
-    javascript_source = url_for('static', filename='tactic_js/tile_differ.js')
-    return render_template("library/resource_viewer.html",
+    javascript_source = url_for('static', filename='tactic_js/tile_differ_react.js')
+    return render_template("library/resource_viewer_react.html",
                            resource_name=module_name,
                            second_resource_name=second_module_name,
-                           include_metadata=False,
-                           include_above_main_area=True,
-                           include_right=False,
-                           readonly=False,
-                           is_repository=False,
                            use_ssl=use_ssl,
+                           develop=str(_develop),
                            javascript_source=javascript_source,
                            uses_codemirror="True",
-                           button_groups=button_groups, version_string=tstring)
+                           version_string=tstring)
 
 
 @app.route('/update_module', methods=['post'])
@@ -121,8 +113,10 @@ def update_module():
             mdata = doc["metadata"]
         else:
             mdata = {}
-        mdata["tags"] = data_dict["tags"]
-        mdata["notes"] = data_dict["notes"]
+        if "tags" in data_dict:
+            mdata["tags"] = data_dict["tags"]
+        if "notes" in data_dict:
+            mdata["notes"] = data_dict["notes"]
         mdata["updated"] = datetime.datetime.utcnow()
         mdata["last_viewer"] = last_saved
         mdata["type"] = ""
@@ -130,7 +124,8 @@ def update_module():
                                                          {'$set': {"tile_module": module_code, "metadata": mdata,
                                                                    "last_saved": last_saved}})
         create_recent_checkpoint(module_name)
-        tile_manager.update_selector_list()
+        new_res_dict = tile_manager.build_res_dict(module_name, mdata)
+        tile_manager.update_selector_row(new_res_dict)
         tile_manager.send_tile_source_changed_message({'user_id': current_user.get_id(), 'tile_type': module_name})
         return jsonify({"success": True, "message": "Module Successfully Saved",
                         "alert_type": "alert-success"})

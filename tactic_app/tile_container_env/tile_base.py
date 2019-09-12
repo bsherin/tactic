@@ -89,34 +89,19 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                OtherAPIMIxin, RefreshingMixin, ExceptionMixin):
     category = "basic"
     exports = []
-    _input_start_template = '<div class="form-group form-group-sm""><label>{0}</label>'
-    _basic_input_template = ('<input type="{1}" class="form-control form-control-sm" id="{0}" value="{2}"></input>'
-                             '</div>')
-    _textarea_template = ('<textarea type="{1}" class="form-control form-control-sm" id="{0}" value="{2}">'
-                          '{2}</textarea></div>')
-    _codearea_template = ('<textarea type="{1}" class="form-control form-control-sm codearea" id="{0}" value="{2}">{2}'
-                          '</textarea></div>')
-    _select_base_template = '<select class="form-control form-control-sm" id="{0}">'
-    _select_option_template = '<option value="{0}">{0}</option>'
-    _select_option_val_template = '<option value="{0}">{1}</option>'
-    _select_option_selected_template = '<option value="{0}" selected>{0}</option>'
-    _select_option_val_selected_template = '<option value="{0}" selected>{1}</option>'
-    _boolean_template = ('<div class="form-group form-check"><label class="form-check-label" style="font-weight: 700">'
-                         '<input type="checkbox" class="form-check-input" id="{0}" value="{0}" {1}>{0}</label>'
-                         '</div>')
+
     _reload_attrs = ["tile_name", "tile_type", "base_figure_url", "user_id", "doc_type",
-                     "header_height", "front_height", "front_width", "back_height",
-                     "back_width", "tda_width", "tda_height", "width", "height", "full_tile_width",
-                     "tile_log_height", "tile_log_width",
-                     "full_tile_height", "is_shrunk", "configured"]
+                     "width", "height", "configured"]
+
+    _selector_types = ["column_select", "tokenizer_select", "weight_function_select",
+                       "cluster_metric", "tile_select", "document_select", "list_select", "collection_select",
+                       "function_select", "class_select", "palette_select", "custom_list"]
 
     def __init__(self, main_id_ignored=None, tile_id_ignored=None, tile_name=None):
         self._sleepperiod = .0001
         self.save_attrs = ["current_html", "tile_type", "tile_name", "doc_type", "configured",
-                           "header_height", "front_height", "front_width", "back_height", "back_width",
-                           "tile_log_height", "tile_log_width",
-                           "tda_width", "tda_height", "width", "height", "user_id", "base_figure_url",
-                           "full_tile_width", "full_tile_height", "is_shrunk", "img_dict", "is_d3"]
+                           "width", "height", "user_id", "base_figure_url",
+                           "img_dict", "is_d3"]
         # These define the state of a tile and should be saved
 
         self.tile_type = self.__class__.__name__
@@ -164,18 +149,18 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
     def TileSizeChange(self, data):
         self.width = data["width"]  # this might not be used for anything
         self.height = data["height"]  # this might not be used for anything
-        self.full_tile_width = data["full_tile_width"]
-        self.full_tile_height = data["full_tile_height"]
-        self.header_height = data["header_height"]
-        self.front_height = data["front_height"]
-        self.front_width = data["front_width"]
-        self.back_height = data["back_height"]
-        self.back_width = data["back_width"]
-        self.tile_log_height = data["tile_log_height"]
-        self.tile_log_width = data["tile_log_width"]
-        self.tda_height = data["tda_height"]
-        self.tda_width = data["tda_width"]
-        self._margin = data["margin"]
+        # self.full_tile_width = data["full_tile_width"]
+        # self.full_tile_height = data["full_tile_height"]
+        # self.header_height = data["header_height"]
+        # self.front_height = data["front_height"]
+        # self.front_width = data["front_width"]
+        # self.back_height = data["back_height"]
+        # self.back_width = data["back_width"]
+        # self.tile_log_height = data["tile_log_height"]
+        # self.tile_log_width = data["tile_log_width"]
+        # self.tda_height = data["tda_height"]
+        # self.tda_width = data["tda_width"]
+        # self._margin = data["margin"]
         if self.configured:
             if isinstance(self, MplFigure):
                 self._resize_mpl_tile()
@@ -330,8 +315,8 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
 
     @_task_worthy
     def RebuildTileForms(self, data):
-        form_html = self._create_form_html(data)["form_html"]
-        self._tworker.emit_tile_message("displayFormContent", {"html": form_html})
+        form_data = self._create_form_data(data)["form_data"]
+        self._tworker.emit_tile_message("displayFormContent", {"form_data": form_data})
         return None
 
     @_task_worthy
@@ -347,15 +332,17 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         self._restore_stdout()
         return {"encoded_val": encoded_val}
 
-    # Info needed here: list_names, current_header_list, pipe_dict, doc_names
     @_task_worthy
-    def _create_form_html(self, data):
+    def _create_form_data(self, data):
         self._pipe_dict = data["pipe_dict"]
         try:
-            form_html = ""
+            form_data = []
             for option in self.options:
+                form_item = {}
                 print("got option " + str(option))
                 att_name = option["name"]
+                form_item["name"] = att_name
+                form_item["type"] = option["type"]
                 if "tags" in option:
                     option_tags = option["tags"].split()
                 else:
@@ -364,124 +351,58 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                     setattr(self, att_name, None)
                 self.save_attrs.append(att_name)
                 starting_value = getattr(self, att_name)
+                form_item["starting_value"] = starting_value
                 if option["type"] == "column_select":
-                    the_template = self._input_start_template + self._select_base_template
-                    form_html += the_template.format(att_name)
-                    header_list = data["current_header_list"]
-                    form_html += self._create_select_list_html(header_list, starting_value, att_name)
-                    form_html += '</select></div>'
+                    form_item["option_list"] = data["current_header_list"]
                 elif option["type"] == "tokenizer_select":  # for backward compatibility
-                    the_template = self._input_start_template + self._select_base_template
-                    form_html += the_template.format(att_name)
-                    fnames = self._get_sorted_match_list(["tokenizer"], data["function_names"])
-                    form_html += self._create_select_list_html(fnames, starting_value, att_name)
-                    form_html += '</select></div>'
+                    form_item["option_list"] = self._get_sorted_match_list(["tokenizer"], data["function_names"])
                 elif option["type"] == "weight_function_select":  # for backward compatibility
-                    the_template = self._input_start_template + self._select_base_template
-                    form_html += the_template.format(att_name)
-                    fnames = self._get_sorted_match_list(["weight_function"], data["function_names"])
-                    form_html += self._create_select_list_html(fnames, starting_value, att_name)
-                    form_html += '</select></div>'
+                    form_item["option_list"] = self._get_sorted_match_list(["weight_function"], data["function_names"])
                 elif option["type"] == "cluster_metric":  # for backward comptibility
-                    the_template = self._input_start_template + self._select_base_template
-                    form_html += the_template.format(att_name)
-                    cmetricnames = self._get_sorted_match_list(["cluster_metric"], data["function_names"])
-                    form_html += self._create_select_list_html(cmetricnames, starting_value, att_name)
-                    form_html += '</select></div>'
+                    form_item["option_list"] = self._get_sorted_match_list(["cluster_metric"], data["function_names"])
                 elif option["type"] == "pipe_select":
-                    the_template = self._input_start_template + self._select_base_template
-                    form_html += the_template.format(att_name)
-                    best_pipe_match = self._find_best_pipe_match(starting_value, att_name, option_tags)
+                    form_item["starting_value"] = self._find_best_pipe_match(starting_value, att_name, option_tags)
+                    form_item["pipe_dict"] = {}
                     for tile_id, tile_entry in self._pipe_dict.items():
                         if tile_id == self._tworker.my_id:
                             continue
                         first_full_name = list(tile_entry)[0]
                         first_short_name = list(tile_entry.values())[0]["export_name"]
                         tile_name = re.sub("_" + first_short_name, "", first_full_name)
-                        group_created = False
-                        group_html = "<optgroup label={}>".format(tile_name)
-                        group_len = 0
+                        form_item["pipe_dict"][tile_name] = []
+
                         for full_export_name, edict in tile_entry.items():
                             if self._check_for_tag_match(option_tags, edict["export_tags"].split()):
-                                group_len += 1
-                                if full_export_name == best_pipe_match:
-                                    group_html += self._select_option_val_selected_template.format(full_export_name,
-                                                                                                   edict["export_name"])
-                                else:
-                                    group_html += self._select_option_val_template.format(full_export_name,
-                                                                                          edict["export_name"])
-                        if group_len > 0:
-                            group_html += "</optgroup>"
-                            form_html += group_html
-                    form_html += '</select></div>'
+                                form_item["pipe_dict"][tile_name].append([full_export_name, edict["export_name"]])
+
                 elif option["type"] == "tile_select":
-                    the_template = self._input_start_template + self._select_base_template
-                    form_html += the_template.format(att_name)
-                    tile_name_list = data["other_tile_names"]
-                    tile_name_list.sort()
-                    form_html += self._create_select_list_html(tile_name_list, starting_value, att_name)
-                    form_html += '</select></div>'
+                    form_item["option_list"] = data["other_tile_names"]
                 elif option["type"] == "document_select":
-                    the_template = self._input_start_template + self._select_base_template
-                    form_html += the_template.format(att_name)
-                    form_html += self._create_select_list_html(data["doc_names"], starting_value, att_name)
-                    form_html += '</select></div>'
+                    form_item["option_list"] = data["doc_names"]
                 elif option["type"] == "list_select":
-                    the_template = self._input_start_template + self._select_base_template
-                    form_html += the_template.format(att_name)
-                    choice_list = self._get_sorted_match_list(option_tags, data["list_names"])
-                    form_html += self._create_select_list_html(choice_list, starting_value, att_name)
-                    form_html += '</select></div>'
+                    form_item["option_list"] = self._get_sorted_match_list(option_tags, data["list_names"])
                 elif option["type"] == "collection_select":
-                    the_template = self._input_start_template + self._select_base_template
-                    form_html += the_template.format(att_name)
-                    choice_list = self._get_sorted_match_list(option_tags, data["collection_names"])
-                    form_html += self._create_select_list_html(choice_list, starting_value, att_name)
-                    form_html += '</select></div>'
+                    form_item["option_list"] = self._get_sorted_match_list(option_tags, data["collection_names"])
                 elif option["type"] == "function_select":
-                    the_template = self._input_start_template + self._select_base_template
-                    form_html += the_template.format(att_name)
-                    choice_list = self._get_sorted_match_list(option_tags, data["function_names"])
-                    form_html += self._create_select_list_html(choice_list, starting_value, att_name)
-                    form_html += '</select></div>'
+                    form_item["option_list"] = self._get_sorted_match_list(option_tags, data["function_names"])
                 elif option["type"] == "class_select":
-                    the_template = self._input_start_template + self._select_base_template
-                    form_html += the_template.format(att_name)
-                    choice_list = self._get_sorted_match_list(option_tags, data["class_names"])
-                    form_html += self._create_select_list_html(choice_list, starting_value, att_name)
-                    form_html += '</select></div>'
+                    form_item["option_list"] = self._get_sorted_match_list(option_tags, data["class_names"])
                 elif option["type"] == "palette_select":
-                    the_template = self._input_start_template + self._select_base_template
-                    form_html += the_template.format(att_name)
-                    color_palette_names.sort()
-                    form_html += self._create_select_list_html(color_palette_names, starting_value, att_name)
-                    form_html += '</select></div>'
+                    form_item["option_list"] = color_palette_names
                 elif option["type"] == "custom_list":
-                    the_template = self._input_start_template + self._select_base_template
-                    form_html += the_template.format(att_name)
-                    form_html += self._create_select_list_html(option["special_list"], starting_value, att_name)
-                    form_html += '</select></div>'
-                elif option["type"] == "textarea":
-                    the_template = self._input_start_template + self._textarea_template
-                    form_html += the_template.format(att_name, option["type"], starting_value)
-                elif option["type"] == "codearea":
-                    the_template = self._input_start_template + self._codearea_template
-                    form_html += the_template.format(att_name, option["type"], starting_value)
-                elif option["type"] == "text":
-                    the_template = self._input_start_template + self._basic_input_template
-                    form_html += the_template.format(att_name, option["type"], starting_value)
+                    form_item["option_list"] = option["special_list"]
                 elif option["type"] == "int":
-                    the_template = self._input_start_template + self._basic_input_template
-                    form_html += the_template.format(att_name, option["type"], str(starting_value))
-                elif option["type"] == "boolean":
-                    the_template = self._boolean_template
-                    if starting_value:
-                        val = "checked"
+                    if starting_value is None:
+                        starting_value = 0
+                    form_item["starting_value"] = str(starting_value)
+                if form_item["starting_value"] is None:
+                    if option["type"] in self._selector_types:
+                        form_item["starting_value"] = form_item["option_list"][0]
                     else:
-                        val = " '"
-                    form_html += the_template.format(att_name, val)
-                else:
-                    print("Unknown option type specified")
+                        form_item["starting_value"] = ""
+
+                form_data.append(form_item)
+
             fixed_attrs = []
             for attr in self.save_attrs:  # legacy to deal with tiles that have self.save_attrs += exports
                 if isinstance(attr, dict):
@@ -489,7 +410,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                 else:
                     fixed_attrs.append(attr)
             self.save_attrs = list(set(fixed_attrs))
-            return {"form_html": form_html}
+            return {"form_data": form_data}
         except Exception as ex:
             special_string = ("error creating form for  " + self.__class__.__name__ + " tile: " + self._tworker.my_id)
             error_string = self.get_traceback_message(ex, special_string)
@@ -765,10 +686,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
             keys_html = ""
             klist = list(avar.keys())
             klist.sort()
-            for kname in klist:
-                keys_html += "<option>{}</option>\n".format(kname)
             result["key_list"] = klist
-            result["keys_html"] = keys_html
         elif type(avar) is list:
             result["type"] = "list"
             result["info_string"] = "List with {} elements".format(str(len(avar)))
@@ -893,18 +811,18 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
     def handle_textarea_change(self, value):
         return
 
-    def handle_tile_row_click(self, clicked_row, doc_name, active_row_id):
+    def handle_tile_row_click(self, clicked_row, doc_name, active_row_id=None):
         return
 
-    def handle_tile_svg_click(self, gid, dataset, doc_name, active_row_id):
+    def handle_tile_svg_click(self, gid, dataset, doc_name, active_row_id=None):
         return
 
-    def handle_tile_cell_click(self, clicked_text, doc_name, active_row_id):
+    def handle_tile_cell_click(self, clicked_text, doc_name, active_row_id=None):
         self.clear_table_highlighting()
         self.highlight_matching_text(clicked_text)
         return
 
-    def handle_tile_element_click(self, dataset, doc_name, active_row_id):
+    def handle_tile_element_click(self, dataset, doc_name, active_row_id=None):
         return
 
     def handle_log_tile(self):
@@ -912,7 +830,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         self.log_it(self.current_html, summary=summary)
         return
 
-    def handle_tile_word_click(self, clicked_word, doc_name, active_row_id):
+    def handle_tile_word_click(self, clicked_word, doc_name, active_row_id=None):
         self.distribute_event("DehighlightTable", {})
         self.distribute_event("SearchTable", {"text_to_find": clicked_word})
         return

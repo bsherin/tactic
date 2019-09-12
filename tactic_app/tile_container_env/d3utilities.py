@@ -25,32 +25,42 @@ class D3Tile(TileBase):
     def _initialize_client_side(self, styles):
         the_html = "<div id={}><div class='d3plot'></div>".format(self._unique_div_id)
         the_html += "<style>{0}</style>".format(styles)
-        self._tworker.emit_tile_message("displayTileContent", {"html": the_html})
-        data = {}
-        data["tile_id"] = self._tworker.my_id
-        data["tile_message"] = "set_d3_javascript"
-        data["javascript_code"] = self.jscript
-        self._tworker.ask_host('emit_tile_message', data)
+        self._tworker.emit_tile_message("displayTileContentWithJavascript", {html: the_html, javascript_code: self.jscript})
+        # data = {}
+        # data["tile_id"] = self._tworker.my_id
+        # data["tile_message"] = "set_d3_javascript"
+        # data["javascript_code"] = self.jscript
+        # self._tworker.ask_host('emit_tile_message', data)
         return
 
-    def _execute_d3(self, arg_dict):
+    def _set_d3(self, arg_dict):
+        print("in _set_d3")
+        # if "styles" in arg_dict:
+        #     styles = arg_dict["styles"]
+        # else:
+        #     styles = ""
+        # the_html = "<div id={}><div class='d3plot'></div>".format(self._unique_div_id)
+        # the_html += "<style>{0}</style>".format(styles)
+        # self._initialize_client_side(styles)
+        ddict = {}
+        ddict["arg_dict"] = arg_dict
+        ddict["tile_id"] = self._tworker.my_id
+        ddict["javascript_code"] = "(selector, w, h, arg_dict) => {" + self.jscript + "}"
+        the_html = "<div class='jscript-target'></div>"
         if "styles" in arg_dict:
             styles = arg_dict["styles"]
         else:
             styles = ""
-        self._initialize_client_side(styles)
-        ddict = {}
-        ddict["arg_dict"] = arg_dict
-        ddict["tile_id"] = self._tworker.my_id
-        ddict["tile_message"] = "execute_d3_func"
-        ddict["selector"] = "#" + self._unique_div_id
+        the_html += "<style>{0}</style>".format(styles)
+        ddict["html"] = the_html
+        ddict["tile_message"] = "displayTileContentWithJavascript"
         self._saved_arg_dict = arg_dict
         self._tworker.ask_host('emit_tile_message', ddict)
         return
 
-    def handle_size_change(self):
-        self._execute_d3(self._saved_arg_dict)
-        return
+    # def handle_size_change(self):
+    #     self._execute_d3(self._saved_arg_dict)
+    #     return
 
     def refresh_tile_now(self, arg_dict=None):
         if arg_dict is None:
@@ -64,9 +74,9 @@ class D3Tile(TileBase):
         self._do_the_refresh(arg_dict=self._current_arg_dict)
 
     def _do_the_refresh(self, arg_dict=None):
-        print ("entering do the refresh")
+        print ("entering do the refresh in a D3Tile")
         try:
-            if arg_dict == None:
+            if arg_dict is None:
                 if not self.configured:
                     new_html = "Tile not configured"
                     arg_dict = {}
@@ -76,7 +86,7 @@ class D3Tile(TileBase):
                     arg_dict = self.render_content()
             self.current_html = ""
             self._current_arg_dict = arg_dict
-            self._execute_d3(arg_dict)
+            self._set_d3(arg_dict)
         except Exception as ex:
             print(self._handle_exception(ex))
         return

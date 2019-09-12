@@ -26,8 +26,6 @@ class ContainerManager(ResourceManager):
                          login_required(self.kill_container), methods=['get'])
         app.add_url_rule('/container_logs/<cont_id>', "container_logs",
                          login_required(self.container_logs), methods=['get'])
-        app.add_url_rule('/refresh_container_table', "refresh_container_table",
-                         login_required(self.refresh_container_table), methods=['get'])
 
     def clear_user_containers(self, library_id):
         tactic_image_names = ["tactic_tile_image", "tactic_main_image", "module_viewer_image"]
@@ -52,6 +50,13 @@ class ContainerManager(ResourceManager):
                                              library_id, timeout=None)
                         cont.remove(force=True)
                     continue
+                if cont.attrs["Image"] == tactic_image_ids["module_viewer_image"]:
+                    the_id = container_id(cont)
+                    if not the_id == global_tile_manager.test_tile_container_id:
+                        self.show_um_message("removing module viewer container " + cont.attrs["Name"],
+                                             library_id, timeout=None)
+                        cont.remove(force=True)
+                    continue
                 # if cont.attrs["Image"] == cont.attrs["ImageID"]:
                 #     self.show_um_message("removing image container " + cont["Id"], library_id)
                 #     cli.remove_container(cont["Id"], force=True)
@@ -59,7 +64,7 @@ class ContainerManager(ResourceManager):
             return generic_exception_handler.get_traceback_exception_for_ajax(ex, "Error clearing user containers")
 
         self.clear_um_message(library_id)
-        self.update_selector_list()
+        self.refresh_selector_list()
         return jsonify({"success": True, "message": "User Containers Cleared", "alert_type": "alert-success"})
 
     def reset_server(self, library_id):
@@ -78,7 +83,7 @@ class ContainerManager(ResourceManager):
             return generic_exception_handler.get_traceback_exception_for_ajax(ex, "Error resetting server")
 
         self.clear_um_message(library_id)
-        self.update_selector_list()
+        self.refresh_selector_list()
         return jsonify({"success": True, "message": "Server successefully reset", "alert_type": "alert-success"})
 
     def kill_container(self, cont_id):
@@ -88,7 +93,7 @@ class ContainerManager(ResourceManager):
             destroy_container(cont_id)
         except Exception as ex:
             return generic_exception_handler.get_traceback_exception_for_ajax(ex, "Error killing container")
-        self.update_selector_list()
+        self.refresh_selector_list()
         return jsonify({"success": True, "message": "Container Destroeyd", "alert_type": "alert-success"})
 
     def container_logs(self, cont_id):
@@ -100,18 +105,15 @@ class ContainerManager(ResourceManager):
             return generic_exception_handler.get_traceback_exception_for_ajax(ex, "Error getting container logs")
         return jsonify({"success": True, "message": "Got Logs", "log_text": log_text, "alert_type": "alert-success"})
 
-    def refresh_container_table(self):
-        self.update_selector_list()
-        return jsonify({"success": True})
-
-    # noinspection PyMethodOverriding
-    def build_resource_array(self):
-        tactic_image_names = ["tactic_tile_image", "tactic_main_image", "tactic_megaplex_image", "module_viewer_image"]
+    def get_resource_data_list(self, user_obj=None):
+        tactic_image_names = ["tactic_tile_image", "tactic_main_image", "tactic_megaplex_image",
+                              "module_viewer_image"]
         image_id_names = {}
         for iname in tactic_image_names:
             image_id_names[cli.images.get(iname).id] = iname
 
-        larray = [["Id", "Other_name", "Name", "Image", "Owner", "Status", "Created"]]
+        result = []
+
         all_containers = cli.containers.list(all=True)
         for cont in all_containers:
             owner_id = container_owner(cont)
@@ -127,16 +129,15 @@ class ContainerManager(ResourceManager):
             else:
                 image_name = image_id
 
-            # mem_usage = container_memory_usage(cont)
-            # if mem_usage is None:
-            #     musage = ""
-            # else:
-            #     musage = str(round(container_memory_usage(cont), 2)) + "MiB"
-            larray.append([container_id(cont), container_other_name(cont), cont.attrs["Name"], image_name,
-                           owner_name, cont.status, cont.attrs["Created"]])
-        return larray
-
-    def request_update_selector_list(self, user_obj=None):
-        res_array = self.build_resource_array()
-        result = self.build_html_table_from_data_list(res_array)
+            new_row = {"Id": container_id(cont),
+                       "Other_name": container_other_name(cont),
+                       "Name": cont.attrs["Name"],
+                       "Image": image_name,
+                       "Owner": owner_name,
+                       "Status": cont.status,
+                       "Created": cont.attrs["Created"]
+                       }
+            result.append(new_row)
         return result
+
+
