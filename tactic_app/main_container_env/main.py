@@ -537,6 +537,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
             other_tile_names = list(self.tile_id_dict.keys())
         else:
             other_tile_names = self.get_other_tile_names(tile_id)
+        print("got other_tile_names = " + str(other_tile_names))
         form_info = {"current_header_list": self.current_header_list,
                      "pipe_dict": self._pipe_dict,
                      "doc_names": self.doc_names,
