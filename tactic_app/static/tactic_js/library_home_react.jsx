@@ -4,6 +4,8 @@ import {TacticSocket} from "./tactic_socket.js"
 
 import {render_navbar} from "./base_module.js";
 
+import {handleCallback, postAjaxPromise, postAjaxUploadPromise, postWithCallbackNoMain} from "./communication_react.js"
+
 var Rbs = window.ReactBootstrap;
 
 import {LibraryPane} from "./library_pane.js"

@@ -2,11 +2,6 @@
  * Created by bls910 on 6/12/15.
  */
 
-let modal_template;
-let select_modal_template;
-let confirm_template;
-let tooltips;
-
 function doBinding(obj, seq="_") {
     const proto = Object.getPrototypeOf(obj);
     for (const key of Object.getOwnPropertyNames(proto)) {
@@ -47,7 +42,7 @@ function arraysMatch (arr1, arr2) {
 	// Otherwise, return true
 	return true;
 
-};
+}
 
 function doNothing() {}
 
@@ -94,12 +89,6 @@ function objectKeys(obj) {
 Array.prototype.empty = function () {
   return this.length == 0;
 };
-
-$.get($SCRIPT_ROOT + "/get_modal_template", function(template){
-    modal_template = $(template).filter('#modal-template').html();
-    confirm_template = $(template).filter('#confirm-template').html();
-    select_modal_template = $(template).filter('#select-modal-template').html();
-});
 
 alertify.set('notifier','position', 'top-right');
 

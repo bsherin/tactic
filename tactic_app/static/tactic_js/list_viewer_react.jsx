@@ -3,6 +3,7 @@
  */
 import {ResourceViewerSocket, ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app.js";
 import {ViewerContext} from "./resource_viewer_context.js";
+import {postAjax, postAjaxPromise} from "./communication_react.js"
 
 import {render_navbar} from "./base_module.js";
 

@@ -6,6 +6,7 @@ import {ResourceViewerSocket, ResourceViewerApp, copyToLibrary, sendToRepository
 import {ReactCodemirror} from "./react-codemirror.js";
 import {ViewerContext} from "./resource_viewer_context.js";
 import {render_navbar} from "./base_module.js";
+import {postAjax, postAjaxPromise, postWithCallback} from "./communication_react.js"
 
 
 function module_viewer_main ()  {

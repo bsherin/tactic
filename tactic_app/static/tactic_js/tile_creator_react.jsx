@@ -7,6 +7,7 @@ import {CombinedMetadata} from "./react_mdata_fields.js";
 import {OptionModule, ExportModule} from "./creator_modules_react.js";
 import {HorizontalPanes, VerticalPanes} from "./resizing_layouts.js";
 import {render_navbar} from "./base_module.js";
+import {handleCallback, postAjax, postAjaxPromise, postWithCallback} from "./communication_react.js"
 
 var Rbs = window.ReactBootstrap;
 

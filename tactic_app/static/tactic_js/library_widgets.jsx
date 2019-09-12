@@ -1,4 +1,5 @@
 
+import {postAjax} from "./communication_react.js"
 
 export {SearchForm}
 export {SelectorTable}

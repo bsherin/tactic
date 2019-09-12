@@ -1,5 +1,6 @@
 
 export {ReactCodemirror}
+import {postAjax} from "./communication_react.js"
 
 class ReactCodemirror extends React.Component {
 

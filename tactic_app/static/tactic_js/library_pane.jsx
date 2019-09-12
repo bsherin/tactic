@@ -3,6 +3,7 @@ import {CombinedMetadata} from "./react_mdata_fields.js";
 import {SearchForm, SelectorTable} from "./library_widgets.js";
 import {HorizontalPanes, VerticalPanes} from "./resizing_layouts.js";
 import {showModalReact, showConfirmDialogReact} from "./modal_react.js";
+import {postAjax, postAjaxPromise} from "./communication_react.js"
 
 export {LibraryPane}
 

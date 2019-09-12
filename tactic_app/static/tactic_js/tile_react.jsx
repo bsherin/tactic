@@ -1,5 +1,6 @@
 
 import {SortableComponent} from "./sortable_container.js";
+import {postWithCallback} from "./communication_react.js"
 
 var Rbs = window.ReactBootstrap;
 var Rtg = window.ReactTransitionGroup;

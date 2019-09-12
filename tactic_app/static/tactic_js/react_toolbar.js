@@ -3,6 +3,8 @@
 export { Toolbar, ToolbarButton, Namebutton, ResourceviewerToolbar };
 import { showModalReact } from "./modal_react.js";
 
+import { postAjax } from "./communication_react.js";
+
 const default_button_class = "btn-outline-secondary";
 
 var Rbs = window.ReactBootstrap;

@@ -4,6 +4,8 @@ import {ProjectMenu} from "./main_menus_react.js";
 import {TacticSocket} from "./tactic_socket.js";
 import {ConsoleComponent} from "./console_component.js";
 
+import {handleCallback, postWithCallback, postAsyncFalse} from "./communication_react.js"
+
 const MARGIN_SIZE = 17;
 const BOTTOM_MARGIN = 35;
 
