@@ -187,6 +187,8 @@ class LoadSaveTasksMixin:
                     self.mworker.ask_host("emit_to_client", {"message": "tile-finished-loading",
                                                              "tile_id": trcdata["old_tile_id"]})
                     tiles_to_recreate.remove(trcdata["old_tile_id"])
+                    tsdict = self.project_dict["tile_instances"][trcdata["old_tile_id"]]
+                    self.tile_id_dict[tsdict["tile_name"]] = trcdata["old_tile_id"]
                 if not tiles_to_recreate:
                     self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {})
                     self.clear_main_status_message()

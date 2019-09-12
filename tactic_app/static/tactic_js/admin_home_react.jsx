@@ -5,6 +5,8 @@ import {showConfirmDialogReact} from "./modal_react.js";
 
 import {render_navbar} from "./base_module.js";
 
+import {handleCallback}  from "./communication_react.js"
+
 var Rbs = window.ReactBootstrap;
 
 import {AdminPane} from "./administer_pane.js"
