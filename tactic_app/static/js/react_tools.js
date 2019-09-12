@@ -253,685 +253,7 @@ checkPropTypes.resetWarningCache = function() {
 module.exports = checkPropTypes;
 
 }).call(this,require('_process'))
-},{"./lib/ReactPropTypesSecret":7,"_process":25}],4:[function(require,module,exports){
-/**
- * Copyright (c) 2013-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
-'use strict';
-
-var ReactPropTypesSecret = require('./lib/ReactPropTypesSecret');
-
-function emptyFunction() {}
-function emptyFunctionWithReset() {}
-emptyFunctionWithReset.resetWarningCache = emptyFunction;
-
-module.exports = function() {
-  function shim(props, propName, componentName, location, propFullName, secret) {
-    if (secret === ReactPropTypesSecret) {
-      // It is still safe when called from React.
-      return;
-    }
-    var err = new Error(
-      'Calling PropTypes validators directly is not supported by the `prop-types` package. ' +
-      'Use PropTypes.checkPropTypes() to call them. ' +
-      'Read more at http://fb.me/use-check-prop-types'
-    );
-    err.name = 'Invariant Violation';
-    throw err;
-  };
-  shim.isRequired = shim;
-  function getShim() {
-    return shim;
-  };
-  // Important!
-  // Keep this list in sync with production version in `./factoryWithTypeCheckers.js`.
-  var ReactPropTypes = {
-    array: shim,
-    bool: shim,
-    func: shim,
-    number: shim,
-    object: shim,
-    string: shim,
-    symbol: shim,
-
-    any: shim,
-    arrayOf: getShim,
-    element: shim,
-    elementType: shim,
-    instanceOf: getShim,
-    node: shim,
-    objectOf: getShim,
-    oneOf: getShim,
-    oneOfType: getShim,
-    shape: getShim,
-    exact: getShim,
-
-    checkPropTypes: emptyFunctionWithReset,
-    resetWarningCache: emptyFunction
-  };
-
-  ReactPropTypes.PropTypes = ReactPropTypes;
-
-  return ReactPropTypes;
-};
-
-},{"./lib/ReactPropTypesSecret":7}],5:[function(require,module,exports){
-(function (process){
-/**
- * Copyright (c) 2013-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
-'use strict';
-
-var ReactIs = require('react-is');
-var assign = require('object-assign');
-
-var ReactPropTypesSecret = require('./lib/ReactPropTypesSecret');
-var checkPropTypes = require('./checkPropTypes');
-
-var has = Function.call.bind(Object.prototype.hasOwnProperty);
-var printWarning = function() {};
-
-if (process.env.NODE_ENV !== 'production') {
-  printWarning = function(text) {
-    var message = 'Warning: ' + text;
-    if (typeof console !== 'undefined') {
-      console.error(message);
-    }
-    try {
-      // --- Welcome to debugging React ---
-      // This error was thrown as a convenience so that you can use this stack
-      // to find the callsite that caused this warning to fire.
-      throw new Error(message);
-    } catch (x) {}
-  };
-}
-
-function emptyFunctionThatReturnsNull() {
-  return null;
-}
-
-module.exports = function(isValidElement, throwOnDirectAccess) {
-  /* global Symbol */
-  var ITERATOR_SYMBOL = typeof Symbol === 'function' && Symbol.iterator;
-  var FAUX_ITERATOR_SYMBOL = '@@iterator'; // Before Symbol spec.
-
-  /**
-   * Returns the iterator method function contained on the iterable object.
-   *
-   * Be sure to invoke the function with the iterable as context:
-   *
-   *     var iteratorFn = getIteratorFn(myIterable);
-   *     if (iteratorFn) {
-   *       var iterator = iteratorFn.call(myIterable);
-   *       ...
-   *     }
-   *
-   * @param {?object} maybeIterable
-   * @return {?function}
-   */
-  function getIteratorFn(maybeIterable) {
-    var iteratorFn = maybeIterable && (ITERATOR_SYMBOL && maybeIterable[ITERATOR_SYMBOL] || maybeIterable[FAUX_ITERATOR_SYMBOL]);
-    if (typeof iteratorFn === 'function') {
-      return iteratorFn;
-    }
-  }
-
-  /**
-   * Collection of methods that allow declaration and validation of props that are
-   * supplied to React components. Example usage:
-   *
-   *   var Props = require('ReactPropTypes');
-   *   var MyArticle = React.createClass({
-   *     propTypes: {
-   *       // An optional string prop named "description".
-   *       description: Props.string,
-   *
-   *       // A required enum prop named "category".
-   *       category: Props.oneOf(['News','Photos']).isRequired,
-   *
-   *       // A prop named "dialog" that requires an instance of Dialog.
-   *       dialog: Props.instanceOf(Dialog).isRequired
-   *     },
-   *     render: function() { ... }
-   *   });
-   *
-   * A more formal specification of how these methods are used:
-   *
-   *   type := array|bool|func|object|number|string|oneOf([...])|instanceOf(...)
-   *   decl := ReactPropTypes.{type}(.isRequired)?
-   *
-   * Each and every declaration produces a function with the same signature. This
-   * allows the creation of custom validation functions. For example:
-   *
-   *  var MyLink = React.createClass({
-   *    propTypes: {
-   *      // An optional string or URI prop named "href".
-   *      href: function(props, propName, componentName) {
-   *        var propValue = props[propName];
-   *        if (propValue != null && typeof propValue !== 'string' &&
-   *            !(propValue instanceof URI)) {
-   *          return new Error(
-   *            'Expected a string or an URI for ' + propName + ' in ' +
-   *            componentName
-   *          );
-   *        }
-   *      }
-   *    },
-   *    render: function() {...}
-   *  });
-   *
-   * @internal
-   */
-
-  var ANONYMOUS = '<<anonymous>>';
-
-  // Important!
-  // Keep this list in sync with production version in `./factoryWithThrowingShims.js`.
-  var ReactPropTypes = {
-    array: createPrimitiveTypeChecker('array'),
-    bool: createPrimitiveTypeChecker('boolean'),
-    func: createPrimitiveTypeChecker('function'),
-    number: createPrimitiveTypeChecker('number'),
-    object: createPrimitiveTypeChecker('object'),
-    string: createPrimitiveTypeChecker('string'),
-    symbol: createPrimitiveTypeChecker('symbol'),
-
-    any: createAnyTypeChecker(),
-    arrayOf: createArrayOfTypeChecker,
-    element: createElementTypeChecker(),
-    elementType: createElementTypeTypeChecker(),
-    instanceOf: createInstanceTypeChecker,
-    node: createNodeChecker(),
-    objectOf: createObjectOfTypeChecker,
-    oneOf: createEnumTypeChecker,
-    oneOfType: createUnionTypeChecker,
-    shape: createShapeTypeChecker,
-    exact: createStrictShapeTypeChecker,
-  };
-
-  /**
-   * inlined Object.is polyfill to avoid requiring consumers ship their own
-   * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/is
-   */
-  /*eslint-disable no-self-compare*/
-  function is(x, y) {
-    // SameValue algorithm
-    if (x === y) {
-      // Steps 1-5, 7-10
-      // Steps 6.b-6.e: +0 != -0
-      return x !== 0 || 1 / x === 1 / y;
-    } else {
-      // Step 6.a: NaN == NaN
-      return x !== x && y !== y;
-    }
-  }
-  /*eslint-enable no-self-compare*/
-
-  /**
-   * We use an Error-like object for backward compatibility as people may call
-   * PropTypes directly and inspect their output. However, we don't use real
-   * Errors anymore. We don't inspect their stack anyway, and creating them
-   * is prohibitively expensive if they are created too often, such as what
-   * happens in oneOfType() for any type before the one that matched.
-   */
-  function PropTypeError(message) {
-    this.message = message;
-    this.stack = '';
-  }
-  // Make `instanceof Error` still work for returned errors.
-  PropTypeError.prototype = Error.prototype;
-
-  function createChainableTypeChecker(validate) {
-    if (process.env.NODE_ENV !== 'production') {
-      var manualPropTypeCallCache = {};
-      var manualPropTypeWarningCount = 0;
-    }
-    function checkType(isRequired, props, propName, componentName, location, propFullName, secret) {
-      componentName = componentName || ANONYMOUS;
-      propFullName = propFullName || propName;
-
-      if (secret !== ReactPropTypesSecret) {
-        if (throwOnDirectAccess) {
-          // New behavior only for users of `prop-types` package
-          var err = new Error(
-            'Calling PropTypes validators directly is not supported by the `prop-types` package. ' +
-            'Use `PropTypes.checkPropTypes()` to call them. ' +
-            'Read more at http://fb.me/use-check-prop-types'
-          );
-          err.name = 'Invariant Violation';
-          throw err;
-        } else if (process.env.NODE_ENV !== 'production' && typeof console !== 'undefined') {
-          // Old behavior for people using React.PropTypes
-          var cacheKey = componentName + ':' + propName;
-          if (
-            !manualPropTypeCallCache[cacheKey] &&
-            // Avoid spamming the console because they are often not actionable except for lib authors
-            manualPropTypeWarningCount < 3
-          ) {
-            printWarning(
-              'You are manually calling a React.PropTypes validation ' +
-              'function for the `' + propFullName + '` prop on `' + componentName  + '`. This is deprecated ' +
-              'and will throw in the standalone `prop-types` package. ' +
-              'You may be seeing this warning due to a third-party PropTypes ' +
-              'library. See https://fb.me/react-warning-dont-call-proptypes ' + 'for details.'
-            );
-            manualPropTypeCallCache[cacheKey] = true;
-            manualPropTypeWarningCount++;
-          }
-        }
-      }
-      if (props[propName] == null) {
-        if (isRequired) {
-          if (props[propName] === null) {
-            return new PropTypeError('The ' + location + ' `' + propFullName + '` is marked as required ' + ('in `' + componentName + '`, but its value is `null`.'));
-          }
-          return new PropTypeError('The ' + location + ' `' + propFullName + '` is marked as required in ' + ('`' + componentName + '`, but its value is `undefined`.'));
-        }
-        return null;
-      } else {
-        return validate(props, propName, componentName, location, propFullName);
-      }
-    }
-
-    var chainedCheckType = checkType.bind(null, false);
-    chainedCheckType.isRequired = checkType.bind(null, true);
-
-    return chainedCheckType;
-  }
-
-  function createPrimitiveTypeChecker(expectedType) {
-    function validate(props, propName, componentName, location, propFullName, secret) {
-      var propValue = props[propName];
-      var propType = getPropType(propValue);
-      if (propType !== expectedType) {
-        // `propValue` being instance of, say, date/regexp, pass the 'object'
-        // check, but we can offer a more precise error message here rather than
-        // 'of type `object`'.
-        var preciseType = getPreciseType(propValue);
-
-        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type ' + ('`' + preciseType + '` supplied to `' + componentName + '`, expected ') + ('`' + expectedType + '`.'));
-      }
-      return null;
-    }
-    return createChainableTypeChecker(validate);
-  }
-
-  function createAnyTypeChecker() {
-    return createChainableTypeChecker(emptyFunctionThatReturnsNull);
-  }
-
-  function createArrayOfTypeChecker(typeChecker) {
-    function validate(props, propName, componentName, location, propFullName) {
-      if (typeof typeChecker !== 'function') {
-        return new PropTypeError('Property `' + propFullName + '` of component `' + componentName + '` has invalid PropType notation inside arrayOf.');
-      }
-      var propValue = props[propName];
-      if (!Array.isArray(propValue)) {
-        var propType = getPropType(propValue);
-        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type ' + ('`' + propType + '` supplied to `' + componentName + '`, expected an array.'));
-      }
-      for (var i = 0; i < propValue.length; i++) {
-        var error = typeChecker(propValue, i, componentName, location, propFullName + '[' + i + ']', ReactPropTypesSecret);
-        if (error instanceof Error) {
-          return error;
-        }
-      }
-      return null;
-    }
-    return createChainableTypeChecker(validate);
-  }
-
-  function createElementTypeChecker() {
-    function validate(props, propName, componentName, location, propFullName) {
-      var propValue = props[propName];
-      if (!isValidElement(propValue)) {
-        var propType = getPropType(propValue);
-        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type ' + ('`' + propType + '` supplied to `' + componentName + '`, expected a single ReactElement.'));
-      }
-      return null;
-    }
-    return createChainableTypeChecker(validate);
-  }
-
-  function createElementTypeTypeChecker() {
-    function validate(props, propName, componentName, location, propFullName) {
-      var propValue = props[propName];
-      if (!ReactIs.isValidElementType(propValue)) {
-        var propType = getPropType(propValue);
-        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type ' + ('`' + propType + '` supplied to `' + componentName + '`, expected a single ReactElement type.'));
-      }
-      return null;
-    }
-    return createChainableTypeChecker(validate);
-  }
-
-  function createInstanceTypeChecker(expectedClass) {
-    function validate(props, propName, componentName, location, propFullName) {
-      if (!(props[propName] instanceof expectedClass)) {
-        var expectedClassName = expectedClass.name || ANONYMOUS;
-        var actualClassName = getClassName(props[propName]);
-        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type ' + ('`' + actualClassName + '` supplied to `' + componentName + '`, expected ') + ('instance of `' + expectedClassName + '`.'));
-      }
-      return null;
-    }
-    return createChainableTypeChecker(validate);
-  }
-
-  function createEnumTypeChecker(expectedValues) {
-    if (!Array.isArray(expectedValues)) {
-      if (process.env.NODE_ENV !== 'production') {
-        if (arguments.length > 1) {
-          printWarning(
-            `Invalid arguments supplied to oneOf, expected an array, got ${arguments.length} arguments. ` +
-            `A common mistake is to write oneOf(x, y, z) instead of oneOf([x, y, z]).`
-          );
-        } else {
-          printWarning('Invalid argument supplied to oneOf, expected an array.');
-        }
-      }
-      return emptyFunctionThatReturnsNull;
-    }
-
-    function validate(props, propName, componentName, location, propFullName) {
-      var propValue = props[propName];
-      for (var i = 0; i < expectedValues.length; i++) {
-        if (is(propValue, expectedValues[i])) {
-          return null;
-        }
-      }
-
-      var valuesString = JSON.stringify(expectedValues, function replacer(key, value) {
-        if (getPropType(value) === 'symbol') {
-          return String(value);
-        }
-        return value;
-      });
-      return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of value `' + String(propValue) + '` ' + ('supplied to `' + componentName + '`, expected one of ' + valuesString + '.'));
-    }
-    return createChainableTypeChecker(validate);
-  }
-
-  function createObjectOfTypeChecker(typeChecker) {
-    function validate(props, propName, componentName, location, propFullName) {
-      if (typeof typeChecker !== 'function') {
-        return new PropTypeError('Property `' + propFullName + '` of component `' + componentName + '` has invalid PropType notation inside objectOf.');
-      }
-      var propValue = props[propName];
-      var propType = getPropType(propValue);
-      if (propType !== 'object') {
-        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type ' + ('`' + propType + '` supplied to `' + componentName + '`, expected an object.'));
-      }
-      for (var key in propValue) {
-        if (has(propValue, key)) {
-          var error = typeChecker(propValue, key, componentName, location, propFullName + '.' + key, ReactPropTypesSecret);
-          if (error instanceof Error) {
-            return error;
-          }
-        }
-      }
-      return null;
-    }
-    return createChainableTypeChecker(validate);
-  }
-
-  function createUnionTypeChecker(arrayOfTypeCheckers) {
-    if (!Array.isArray(arrayOfTypeCheckers)) {
-      process.env.NODE_ENV !== 'production' ? printWarning('Invalid argument supplied to oneOfType, expected an instance of array.') : void 0;
-      return emptyFunctionThatReturnsNull;
-    }
-
-    for (var i = 0; i < arrayOfTypeCheckers.length; i++) {
-      var checker = arrayOfTypeCheckers[i];
-      if (typeof checker !== 'function') {
-        printWarning(
-          'Invalid argument supplied to oneOfType. Expected an array of check functions, but ' +
-          'received ' + getPostfixForTypeWarning(checker) + ' at index ' + i + '.'
-        );
-        return emptyFunctionThatReturnsNull;
-      }
-    }
-
-    function validate(props, propName, componentName, location, propFullName) {
-      for (var i = 0; i < arrayOfTypeCheckers.length; i++) {
-        var checker = arrayOfTypeCheckers[i];
-        if (checker(props, propName, componentName, location, propFullName, ReactPropTypesSecret) == null) {
-          return null;
-        }
-      }
-
-      return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` supplied to ' + ('`' + componentName + '`.'));
-    }
-    return createChainableTypeChecker(validate);
-  }
-
-  function createNodeChecker() {
-    function validate(props, propName, componentName, location, propFullName) {
-      if (!isNode(props[propName])) {
-        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` supplied to ' + ('`' + componentName + '`, expected a ReactNode.'));
-      }
-      return null;
-    }
-    return createChainableTypeChecker(validate);
-  }
-
-  function createShapeTypeChecker(shapeTypes) {
-    function validate(props, propName, componentName, location, propFullName) {
-      var propValue = props[propName];
-      var propType = getPropType(propValue);
-      if (propType !== 'object') {
-        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type `' + propType + '` ' + ('supplied to `' + componentName + '`, expected `object`.'));
-      }
-      for (var key in shapeTypes) {
-        var checker = shapeTypes[key];
-        if (!checker) {
-          continue;
-        }
-        var error = checker(propValue, key, componentName, location, propFullName + '.' + key, ReactPropTypesSecret);
-        if (error) {
-          return error;
-        }
-      }
-      return null;
-    }
-    return createChainableTypeChecker(validate);
-  }
-
-  function createStrictShapeTypeChecker(shapeTypes) {
-    function validate(props, propName, componentName, location, propFullName) {
-      var propValue = props[propName];
-      var propType = getPropType(propValue);
-      if (propType !== 'object') {
-        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type `' + propType + '` ' + ('supplied to `' + componentName + '`, expected `object`.'));
-      }
-      // We need to check all keys in case some are required but missing from
-      // props.
-      var allKeys = assign({}, props[propName], shapeTypes);
-      for (var key in allKeys) {
-        var checker = shapeTypes[key];
-        if (!checker) {
-          return new PropTypeError(
-            'Invalid ' + location + ' `' + propFullName + '` key `' + key + '` supplied to `' + componentName + '`.' +
-            '\nBad object: ' + JSON.stringify(props[propName], null, '  ') +
-            '\nValid keys: ' +  JSON.stringify(Object.keys(shapeTypes), null, '  ')
-          );
-        }
-        var error = checker(propValue, key, componentName, location, propFullName + '.' + key, ReactPropTypesSecret);
-        if (error) {
-          return error;
-        }
-      }
-      return null;
-    }
-
-    return createChainableTypeChecker(validate);
-  }
-
-  function isNode(propValue) {
-    switch (typeof propValue) {
-      case 'number':
-      case 'string':
-      case 'undefined':
-        return true;
-      case 'boolean':
-        return !propValue;
-      case 'object':
-        if (Array.isArray(propValue)) {
-          return propValue.every(isNode);
-        }
-        if (propValue === null || isValidElement(propValue)) {
-          return true;
-        }
-
-        var iteratorFn = getIteratorFn(propValue);
-        if (iteratorFn) {
-          var iterator = iteratorFn.call(propValue);
-          var step;
-          if (iteratorFn !== propValue.entries) {
-            while (!(step = iterator.next()).done) {
-              if (!isNode(step.value)) {
-                return false;
-              }
-            }
-          } else {
-            // Iterator will provide entry [k,v] tuples rather than values.
-            while (!(step = iterator.next()).done) {
-              var entry = step.value;
-              if (entry) {
-                if (!isNode(entry[1])) {
-                  return false;
-                }
-              }
-            }
-          }
-        } else {
-          return false;
-        }
-
-        return true;
-      default:
-        return false;
-    }
-  }
-
-  function isSymbol(propType, propValue) {
-    // Native Symbol.
-    if (propType === 'symbol') {
-      return true;
-    }
-
-    // 19.4.3.5 Symbol.prototype[@@toStringTag] === 'Symbol'
-    if (propValue['@@toStringTag'] === 'Symbol') {
-      return true;
-    }
-
-    // Fallback for non-spec compliant Symbols which are polyfilled.
-    if (typeof Symbol === 'function' && propValue instanceof Symbol) {
-      return true;
-    }
-
-    return false;
-  }
-
-  // Equivalent of `typeof` but with special handling for array and regexp.
-  function getPropType(propValue) {
-    var propType = typeof propValue;
-    if (Array.isArray(propValue)) {
-      return 'array';
-    }
-    if (propValue instanceof RegExp) {
-      // Old webkits (at least until Android 4.0) return 'function' rather than
-      // 'object' for typeof a RegExp. We'll normalize this here so that /bla/
-      // passes PropTypes.object.
-      return 'object';
-    }
-    if (isSymbol(propType, propValue)) {
-      return 'symbol';
-    }
-    return propType;
-  }
-
-  // This handles more types than `getPropType`. Only used for error messages.
-  // See `createPrimitiveTypeChecker`.
-  function getPreciseType(propValue) {
-    if (typeof propValue === 'undefined' || propValue === null) {
-      return '' + propValue;
-    }
-    var propType = getPropType(propValue);
-    if (propType === 'object') {
-      if (propValue instanceof Date) {
-        return 'date';
-      } else if (propValue instanceof RegExp) {
-        return 'regexp';
-      }
-    }
-    return propType;
-  }
-
-  // Returns a string that is postfixed to a warning about an invalid type.
-  // For example, "undefined" or "of type array"
-  function getPostfixForTypeWarning(value) {
-    var type = getPreciseType(value);
-    switch (type) {
-      case 'array':
-      case 'object':
-        return 'an ' + type;
-      case 'boolean':
-      case 'date':
-      case 'regexp':
-        return 'a ' + type;
-      default:
-        return type;
-    }
-  }
-
-  // Returns class name of the object, if any.
-  function getClassName(propValue) {
-    if (!propValue.constructor || !propValue.constructor.name) {
-      return ANONYMOUS;
-    }
-    return propValue.constructor.name;
-  }
-
-  ReactPropTypes.checkPropTypes = checkPropTypes;
-  ReactPropTypes.resetWarningCache = checkPropTypes.resetWarningCache;
-  ReactPropTypes.PropTypes = ReactPropTypes;
-
-  return ReactPropTypes;
-};
-
-}).call(this,require('_process'))
-},{"./checkPropTypes":3,"./lib/ReactPropTypesSecret":7,"_process":25,"object-assign":2,"react-is":16}],6:[function(require,module,exports){
-(function (process){
-/**
- * Copyright (c) 2013-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
-if (process.env.NODE_ENV !== 'production') {
-  var ReactIs = require('react-is');
-
-  // By explicitly using `prop-types` you are opting into new development behavior.
-  // http://fb.me/prop-types-in-prod
-  var throwOnDirectAccess = true;
-  module.exports = require('./factoryWithTypeCheckers')(ReactIs.isElement, throwOnDirectAccess);
-} else {
-  // By explicitly using `prop-types` you are opting into new production behavior.
-  // http://fb.me/prop-types-in-prod
-  module.exports = require('./factoryWithThrowingShims')();
-}
-
-}).call(this,require('_process'))
-},{"./factoryWithThrowingShims":4,"./factoryWithTypeCheckers":5,"_process":25,"react-is":16}],7:[function(require,module,exports){
+},{"./lib/ReactPropTypesSecret":4,"_process":18}],4:[function(require,module,exports){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  *
@@ -945,7 +267,7 @@ var ReactPropTypesSecret = 'SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED';
 
 module.exports = ReactPropTypesSecret;
 
-},{}],8:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1111,11 +433,75 @@ var ContentEditable = /** @class */ (function (_super) {
 }(React.Component));
 exports.default = ContentEditable;
 
-},{"fast-deep-equal":1,"prop-types":12,"react":23}],9:[function(require,module,exports){
+},{"fast-deep-equal":1,"prop-types":9,"react":16}],6:[function(require,module,exports){
 arguments[4][3][0].apply(exports,arguments)
-},{"./lib/ReactPropTypesSecret":13,"_process":25,"dup":3}],10:[function(require,module,exports){
-arguments[4][4][0].apply(exports,arguments)
-},{"./lib/ReactPropTypesSecret":13,"dup":4}],11:[function(require,module,exports){
+},{"./lib/ReactPropTypesSecret":10,"_process":18,"dup":3}],7:[function(require,module,exports){
+/**
+ * Copyright (c) 2013-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+'use strict';
+
+var ReactPropTypesSecret = require('./lib/ReactPropTypesSecret');
+
+function emptyFunction() {}
+function emptyFunctionWithReset() {}
+emptyFunctionWithReset.resetWarningCache = emptyFunction;
+
+module.exports = function() {
+  function shim(props, propName, componentName, location, propFullName, secret) {
+    if (secret === ReactPropTypesSecret) {
+      // It is still safe when called from React.
+      return;
+    }
+    var err = new Error(
+      'Calling PropTypes validators directly is not supported by the `prop-types` package. ' +
+      'Use PropTypes.checkPropTypes() to call them. ' +
+      'Read more at http://fb.me/use-check-prop-types'
+    );
+    err.name = 'Invariant Violation';
+    throw err;
+  };
+  shim.isRequired = shim;
+  function getShim() {
+    return shim;
+  };
+  // Important!
+  // Keep this list in sync with production version in `./factoryWithTypeCheckers.js`.
+  var ReactPropTypes = {
+    array: shim,
+    bool: shim,
+    func: shim,
+    number: shim,
+    object: shim,
+    string: shim,
+    symbol: shim,
+
+    any: shim,
+    arrayOf: getShim,
+    element: shim,
+    elementType: shim,
+    instanceOf: getShim,
+    node: shim,
+    objectOf: getShim,
+    oneOf: getShim,
+    oneOfType: getShim,
+    shape: getShim,
+    exact: getShim,
+
+    checkPropTypes: emptyFunctionWithReset,
+    resetWarningCache: emptyFunction
+  };
+
+  ReactPropTypes.PropTypes = ReactPropTypes;
+
+  return ReactPropTypes;
+};
+
+},{"./lib/ReactPropTypesSecret":10}],8:[function(require,module,exports){
 (function (process){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
@@ -1710,11 +1096,32 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
 };
 
 }).call(this,require('_process'))
-},{"./checkPropTypes":9,"./lib/ReactPropTypesSecret":13,"_process":25,"object-assign":2,"react-is":16}],12:[function(require,module,exports){
-arguments[4][6][0].apply(exports,arguments)
-},{"./factoryWithThrowingShims":10,"./factoryWithTypeCheckers":11,"_process":25,"dup":6,"react-is":16}],13:[function(require,module,exports){
-arguments[4][7][0].apply(exports,arguments)
-},{"dup":7}],14:[function(require,module,exports){
+},{"./checkPropTypes":6,"./lib/ReactPropTypesSecret":10,"_process":18,"object-assign":2,"react-is":13}],9:[function(require,module,exports){
+(function (process){
+/**
+ * Copyright (c) 2013-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+if (process.env.NODE_ENV !== 'production') {
+  var ReactIs = require('react-is');
+
+  // By explicitly using `prop-types` you are opting into new development behavior.
+  // http://fb.me/prop-types-in-prod
+  var throwOnDirectAccess = true;
+  module.exports = require('./factoryWithTypeCheckers')(ReactIs.isElement, throwOnDirectAccess);
+} else {
+  // By explicitly using `prop-types` you are opting into new production behavior.
+  // http://fb.me/prop-types-in-prod
+  module.exports = require('./factoryWithThrowingShims')();
+}
+
+}).call(this,require('_process'))
+},{"./factoryWithThrowingShims":7,"./factoryWithTypeCheckers":8,"_process":18,"react-is":13}],10:[function(require,module,exports){
+arguments[4][4][0].apply(exports,arguments)
+},{"dup":4}],11:[function(require,module,exports){
 (function (process){
 /** @license React v16.8.6
  * react-is.development.js
@@ -1945,7 +1352,7 @@ exports.isSuspense = isSuspense;
 }
 
 }).call(this,require('_process'))
-},{"_process":25}],15:[function(require,module,exports){
+},{"_process":18}],12:[function(require,module,exports){
 /** @license React v16.8.6
  * react-is.production.min.js
  *
@@ -1962,7 +1369,7 @@ exports.Fragment=e;exports.Lazy=r;exports.Memo=q;exports.Portal=d;exports.Profil
 exports.isContextProvider=function(a){return t(a)===h};exports.isElement=function(a){return"object"===typeof a&&null!==a&&a.$$typeof===c};exports.isForwardRef=function(a){return t(a)===n};exports.isFragment=function(a){return t(a)===e};exports.isLazy=function(a){return t(a)===r};exports.isMemo=function(a){return t(a)===q};exports.isPortal=function(a){return t(a)===d};exports.isProfiler=function(a){return t(a)===g};exports.isStrictMode=function(a){return t(a)===f};
 exports.isSuspense=function(a){return t(a)===p};
 
-},{}],16:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -1973,478 +1380,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 }).call(this,require('_process'))
-},{"./cjs/react-is.development.js":14,"./cjs/react-is.production.min.js":15,"_process":25}],17:[function(require,module,exports){
-'use strict'
-
-var React = require('react')
-
-var SIZER_STYLES = {
-  position: 'absolute',
-  width: 0,
-  height: 0,
-  visibility: 'hidden',
-  overflow: 'scroll',
-  whiteSpace: 'pre'
-}
-
-var STYLE_PROPS = [
-  'fontSize',
-  'fontFamily',
-  'fontWeight',
-  'fontStyle',
-  'letterSpacing'
-]
-
-var Input = (function (superclass) {
-  function Input (props) {
-    superclass.call(this, props)
-    this.state = { inputWidth: null }
-  }
-
-  if ( superclass ) Input.__proto__ = superclass;
-  Input.prototype = Object.create( superclass && superclass.prototype );
-  Input.prototype.constructor = Input;
-
-  Input.prototype.componentDidMount = function componentDidMount () {
-    if (this.props.autoresize) {
-      this.copyInputStyles()
-      this.updateInputWidth()
-    }
-
-    if (this.props.autofocus) {
-      this.input.focus()
-    }
-  };
-
-  Input.prototype.componentDidUpdate = function componentDidUpdate () {
-    this.updateInputWidth()
-  };
-
-  Input.prototype.copyInputStyles = function copyInputStyles () {
-    var this$1 = this;
-
-    var inputStyle = window.getComputedStyle(this.input)
-
-    STYLE_PROPS.forEach(function (prop) {
-      this$1.sizer.style[prop] = inputStyle[prop]
-    })
-  };
-
-  Input.prototype.updateInputWidth = function updateInputWidth () {
-    var inputWidth
-
-    if (this.props.autoresize) {
-      // scrollWidth is designed to be fast not accurate.
-      // +2 is completely arbitrary but does the job.
-      inputWidth = Math.ceil(this.sizer.scrollWidth) + 2
-    }
-
-    if (inputWidth !== this.state.inputWidth) {
-      this.setState({ inputWidth: inputWidth })
-    }
-  };
-
-  Input.prototype.render = function render () {
-    var this$1 = this;
-
-    var ref = this.props;
-    var inputAttributes = ref.inputAttributes;
-    var inputEventHandlers = ref.inputEventHandlers;
-    var query = ref.query;
-    var placeholder = ref.placeholder;
-    var expandable = ref.expandable;
-    var listboxId = ref.listboxId;
-    var selectedIndex = ref.selectedIndex;
-
-    return (
-      React.createElement( 'div', { className: this.props.classNames.searchInput },
-        React.createElement( 'input', Object.assign({},
-          inputAttributes, inputEventHandlers, { ref: function (c) { this$1.input = c }, value: query, placeholder: placeholder, role: 'combobox', 'aria-autocomplete': 'list', 'aria-label': placeholder, 'aria-owns': listboxId, 'aria-activedescendant': selectedIndex > -1 ? (listboxId + "-" + selectedIndex) : null, 'aria-expanded': expandable, style: { width: this.state.inputWidth } })),
-        React.createElement( 'div', { ref: function (c) { this$1.sizer = c }, style: SIZER_STYLES }, query || placeholder)
-      )
-    )
-  };
-
-  return Input;
-}(React.Component));
-
-module.exports = Input
-
-},{"react":23}],18:[function(require,module,exports){
-'use strict'
-
-var React = require('react')
-var PropTypes = require('prop-types')
-var Tag = require('./Tag')
-var Input = require('./Input')
-var Suggestions = require('./Suggestions')
-
-var KEYS = {
-  ENTER: 13,
-  TAB: 9,
-  BACKSPACE: 8,
-  UP_ARROW: 38,
-  DOWN_ARROW: 40
-}
-
-var CLASS_NAMES = {
-  root: 'react-tags',
-  rootFocused: 'is-focused',
-  selected: 'react-tags__selected',
-  selectedTag: 'react-tags__selected-tag',
-  selectedTagName: 'react-tags__selected-tag-name',
-  search: 'react-tags__search',
-  searchInput: 'react-tags__search-input',
-  suggestions: 'react-tags__suggestions',
-  suggestionActive: 'is-active',
-  suggestionDisabled: 'is-disabled'
-}
-
-var ReactTags = (function (superclass) {
-  function ReactTags (props) {
-    superclass.call(this, props)
-
-    this.state = {
-      query: '',
-      focused: false,
-      expandable: false,
-      selectedIndex: -1,
-      classNames: Object.assign({}, CLASS_NAMES, this.props.classNames)
-    }
-
-    this.inputEventHandlers = {
-      // Provide a no-op function to the input component to avoid warnings
-      // <https://github.com/i-like-robots/react-tags/issues/135>
-      // <https://github.com/facebook/react/issues/13835>
-      onChange: function () {},
-      onBlur: this.handleBlur.bind(this),
-      onFocus: this.handleFocus.bind(this),
-      onInput: this.handleInput.bind(this),
-      onKeyDown: this.handleKeyDown.bind(this)
-    }
-  }
-
-  if ( superclass ) ReactTags.__proto__ = superclass;
-  ReactTags.prototype = Object.create( superclass && superclass.prototype );
-  ReactTags.prototype.constructor = ReactTags;
-
-  ReactTags.prototype.componentWillReceiveProps = function componentWillReceiveProps (newProps) {
-    this.setState({
-      classNames: Object.assign({}, CLASS_NAMES, newProps.classNames)
-    })
-  };
-
-  ReactTags.prototype.handleInput = function handleInput (e) {
-    var query = e.target.value
-
-    if (this.props.handleInputChange) {
-      this.props.handleInputChange(query)
-    }
-
-    this.setState({ query: query })
-  };
-
-  ReactTags.prototype.handleKeyDown = function handleKeyDown (e) {
-    var ref = this.state;
-    var query = ref.query;
-    var selectedIndex = ref.selectedIndex;
-    var ref$1 = this.props;
-    var delimiters = ref$1.delimiters;
-    var delimiterChars = ref$1.delimiterChars;
-
-    // when one of the terminating keys is pressed, add current query to the tags.
-    if (delimiters.indexOf(e.keyCode) > -1 || delimiterChars.indexOf(e.key) > -1) {
-      if (query || selectedIndex > -1) {
-        e.preventDefault()
-      }
-
-      this.handleDelimiter()
-    }
-
-    // when backspace key is pressed and query is blank, delete the last tag
-    if (e.keyCode === KEYS.BACKSPACE && query.length === 0 && this.props.allowBackspace) {
-      this.deleteTag(this.props.tags.length - 1)
-    }
-
-    if (e.keyCode === KEYS.UP_ARROW) {
-      e.preventDefault()
-
-      // if last item, cycle to the bottom
-      if (selectedIndex <= 0) {
-        this.setState({ selectedIndex: this.suggestions.state.options.length - 1 })
-      } else {
-        this.setState({ selectedIndex: selectedIndex - 1 })
-      }
-    }
-
-    if (e.keyCode === KEYS.DOWN_ARROW) {
-      e.preventDefault()
-
-      this.setState({ selectedIndex: (selectedIndex + 1) % this.suggestions.state.options.length })
-    }
-  };
-
-  ReactTags.prototype.handleDelimiter = function handleDelimiter () {
-    var ref = this.state;
-    var query = ref.query;
-    var selectedIndex = ref.selectedIndex;
-
-    if (query.length >= this.props.minQueryLength) {
-      // Check if the user typed in an existing suggestion.
-      var match = this.suggestions.state.options.findIndex(function (suggestion) {
-        return suggestion.name.search(new RegExp(("^" + query + "$"), 'i')) === 0
-      })
-
-      var index = selectedIndex === -1 ? match : selectedIndex
-
-      if (index > -1) {
-        this.addTag(this.suggestions.state.options[index])
-      } else if (this.props.allowNew) {
-        this.addTag({ name: query })
-      }
-    }
-  };
-
-  ReactTags.prototype.handleClick = function handleClick (e) {
-    if (document.activeElement !== e.target) {
-      this.input.input.focus()
-    }
-  };
-
-  ReactTags.prototype.handleBlur = function handleBlur () {
-    this.setState({ focused: false, selectedIndex: -1 })
-
-    if (this.props.handleBlur) {
-      this.props.handleBlur()
-    }
-
-    if (this.props.addOnBlur) {
-      this.handleDelimiter()
-    }
-  };
-
-  ReactTags.prototype.handleFocus = function handleFocus () {
-    this.setState({ focused: true })
-
-    if (this.props.handleFocus) {
-      this.props.handleFocus()
-    }
-  };
-
-  ReactTags.prototype.addTag = function addTag (tag) {
-    if (tag.disabled) {
-      return
-    }
-
-    if (typeof this.props.handleValidate === 'function' && !this.props.handleValidate(tag)) {
-      return
-    }
-
-    this.props.handleAddition(tag)
-
-    // reset the state
-    this.setState({
-      query: '',
-      selectedIndex: -1
-    })
-  };
-
-  ReactTags.prototype.deleteTag = function deleteTag (i) {
-    this.props.handleDelete(i)
-
-    if (this.props.clearInputOnDelete && this.state.query !== '') {
-      this.setState({ query: '' })
-    }
-  };
-
-  ReactTags.prototype.render = function render () {
-    var this$1 = this;
-
-    var listboxId = 'ReactTags-listbox'
-
-    var TagComponent = this.props.tagComponent || Tag
-
-    var tags = this.props.tags.map(function (tag, i) { return (
-      React.createElement( TagComponent, {
-        key: i, tag: tag, classNames: this$1.state.classNames, onDelete: this$1.deleteTag.bind(this$1, i) })
-    ); })
-
-    var expandable = this.state.focused && this.state.query.length >= this.props.minQueryLength
-    var classNames = [this.state.classNames.root]
-
-    this.state.focused && classNames.push(this.state.classNames.rootFocused)
-
-    return (
-      React.createElement( 'div', { className: classNames.join(' '), onClick: this.handleClick.bind(this) },
-        React.createElement( 'div', { className: this.state.classNames.selected, 'aria-live': 'polite', 'aria-relevant': 'additions removals' },
-          tags
-        ),
-        React.createElement( 'div', { className: this.state.classNames.search },
-          React.createElement( Input, Object.assign({}, this.state, { inputAttributes: this.props.inputAttributes, inputEventHandlers: this.inputEventHandlers, ref: function (c) { this$1.input = c }, listboxId: listboxId, autofocus: this.props.autofocus, autoresize: this.props.autoresize, expandable: expandable, placeholder: this.props.placeholder })),
-          React.createElement( Suggestions, Object.assign({}, this.state, { ref: function (c) { this$1.suggestions = c }, listboxId: listboxId, expandable: expandable, suggestions: this.props.suggestions, suggestionsFilter: this.props.suggestionsFilter, addTag: this.addTag.bind(this), maxSuggestionsLength: this.props.maxSuggestionsLength }))
-        )
-      )
-    )
-  };
-
-  return ReactTags;
-}(React.Component));
-
-ReactTags.defaultProps = {
-  tags: [],
-  placeholder: 'Add new tag',
-  suggestions: [],
-  suggestionsFilter: null,
-  autofocus: true,
-  autoresize: true,
-  delimiters: [KEYS.TAB, KEYS.ENTER],
-  delimiterChars: [],
-  minQueryLength: 2,
-  maxSuggestionsLength: 6,
-  allowNew: false,
-  allowBackspace: true,
-  tagComponent: null,
-  inputAttributes: {},
-  addOnBlur: false,
-  clearInputOnDelete: true
-}
-
-ReactTags.propTypes = {
-  tags: PropTypes.arrayOf(PropTypes.object),
-  placeholder: PropTypes.string,
-  suggestions: PropTypes.arrayOf(PropTypes.object),
-  suggestionsFilter: PropTypes.func,
-  autofocus: PropTypes.bool,
-  autoresize: PropTypes.bool,
-  delimiters: PropTypes.arrayOf(PropTypes.number),
-  delimiterChars: PropTypes.arrayOf(PropTypes.string),
-  handleDelete: PropTypes.func.isRequired,
-  handleAddition: PropTypes.func.isRequired,
-  handleInputChange: PropTypes.func,
-  handleFocus: PropTypes.func,
-  handleBlur: PropTypes.func,
-  handleValidate: PropTypes.func,
-  minQueryLength: PropTypes.number,
-  maxSuggestionsLength: PropTypes.number,
-  classNames: PropTypes.object,
-  allowNew: PropTypes.bool,
-  allowBackspace: PropTypes.bool,
-  tagComponent: PropTypes.oneOfType([
-    PropTypes.func,
-    PropTypes.element
-  ]),
-  inputAttributes: PropTypes.object,
-  addOnBlur: PropTypes.bool,
-  clearInputOnDelete: PropTypes.bool
-}
-
-module.exports = ReactTags
-
-},{"./Input":17,"./Suggestions":19,"./Tag":20,"prop-types":6,"react":23}],19:[function(require,module,exports){
-'use strict'
-
-var React = require('react')
-
-function escapeForRegExp (query) {
-  return query.replace(/[-\\^$*+?.()|[\]{}]/g, '\\$&')
-}
-
-function markIt (input, query) {
-  if (query) {
-    var regex = RegExp(escapeForRegExp(query), 'gi')
-    input = input.replace(regex, '<mark>$&</mark>')
-  }
-
-  return {
-    __html: input
-  }
-}
-
-function filterSuggestions (query, suggestions, length, suggestionsFilter) {
-  if (!suggestionsFilter) {
-    var regex = new RegExp(("(?:^|\\s)" + (escapeForRegExp(query))), 'i')
-    suggestionsFilter = function (item) { return regex.test(item.name); }
-  }
-
-  return suggestions.filter(function (item) { return suggestionsFilter(item, query); }).slice(0, length)
-}
-
-var Suggestions = (function (superclass) {
-  function Suggestions (props) {
-    superclass.call(this, props)
-
-    this.state = {
-      options: filterSuggestions(this.props.query, this.props.suggestions, this.props.maxSuggestionsLength, this.props.suggestionsFilter)
-    }
-  }
-
-  if ( superclass ) Suggestions.__proto__ = superclass;
-  Suggestions.prototype = Object.create( superclass && superclass.prototype );
-  Suggestions.prototype.constructor = Suggestions;
-
-  Suggestions.prototype.componentWillReceiveProps = function componentWillReceiveProps (newProps) {
-    this.setState({
-      options: filterSuggestions(newProps.query, newProps.suggestions, newProps.maxSuggestionsLength, newProps.suggestionsFilter)
-    })
-  };
-
-  Suggestions.prototype.handleMouseDown = function handleMouseDown (item, e) {
-    // focus is shifted on mouse down but calling preventDefault prevents this
-    e.preventDefault()
-    this.props.addTag(item)
-  };
-
-  Suggestions.prototype.render = function render () {
-    var this$1 = this;
-
-    if (!this.props.expandable || !this.state.options.length) {
-      return null
-    }
-
-    var options = this.state.options.map(function (item, i) {
-      var key = (this$1.props.listboxId) + "-" + i
-      var classNames = []
-
-      if (this$1.props.selectedIndex === i) {
-        classNames.push(this$1.props.classNames.suggestionActive)
-      }
-
-      if (item.disabled) {
-        classNames.push(this$1.props.classNames.suggestionDisabled)
-      }
-
-      return (
-        React.createElement( 'li', {
-          id: key, key: key, role: 'option', className: classNames.join(' '), 'aria-disabled': item.disabled === true, onMouseDown: this$1.handleMouseDown.bind(this$1, item) },
-          React.createElement( 'span', { dangerouslySetInnerHTML: markIt(item.name, this$1.props.query) })
-        )
-      )
-    })
-
-    return (
-      React.createElement( 'div', { className: this.props.classNames.suggestions },
-        React.createElement( 'ul', { role: 'listbox', id: this.props.listboxId }, options)
-      )
-    )
-  };
-
-  return Suggestions;
-}(React.Component));
-
-module.exports = Suggestions
-
-},{"react":23}],20:[function(require,module,exports){
-'use strict'
-
-var React = require('react')
-
-module.exports = function (props) { return (
-  React.createElement( 'button', { type: 'button', className: props.classNames.selectedTag, title: 'Click to remove tag', onClick: props.onDelete },
-    React.createElement( 'span', { className: props.classNames.selectedTagName }, props.tag.name)
-  )
-); }
-
-},{"react":23}],21:[function(require,module,exports){
+},{"./cjs/react-is.development.js":11,"./cjs/react-is.production.min.js":12,"_process":18}],14:[function(require,module,exports){
 (function (process){
 /** @license React v16.9.0
  * react.development.js
@@ -4683,7 +3619,7 @@ module.exports = react;
 }
 
 }).call(this,require('_process'))
-},{"_process":25,"object-assign":2,"prop-types/checkPropTypes":3}],22:[function(require,module,exports){
+},{"_process":18,"object-assign":2,"prop-types/checkPropTypes":3}],15:[function(require,module,exports){
 /** @license React v16.9.0
  * react.production.min.js
  *
@@ -4710,7 +3646,7 @@ b,d){return W().useImperativeHandle(a,b,d)},useDebugValue:function(){},useLayout
 h({},a.props),g=a.key,k=a.ref,f=a._owner;if(null!=b){void 0!==b.ref&&(k=b.ref,f=J.current);void 0!==b.key&&(g=""+b.key);var l=void 0;a.type&&a.type.defaultProps&&(l=a.type.defaultProps);for(c in b)K.call(b,c)&&!L.hasOwnProperty(c)&&(e[c]=void 0===b[c]&&void 0!==l?l[c]:b[c])}c=arguments.length-2;if(1===c)e.children=d;else if(1<c){l=Array(c);for(var m=0;m<c;m++)l[m]=arguments[m+2];e.children=l}return{$$typeof:p,type:a.type,key:g,ref:k,props:e,_owner:f}},createFactory:function(a){var b=M.bind(null,a);
 b.type=a;return b},isValidElement:N,version:"16.9.0",unstable_withSuspenseConfig:function(a,b){var d=I.suspense;I.suspense=void 0===b?null:b;try{a()}finally{I.suspense=d}},__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED:{ReactCurrentDispatcher:H,ReactCurrentBatchConfig:I,ReactCurrentOwner:J,IsSomeRendererActing:{current:!1},assign:h}},Y={default:X},Z=Y&&X||Y;module.exports=Z.default||Z;
 
-},{"object-assign":2}],23:[function(require,module,exports){
+},{"object-assign":2}],16:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -4721,10 +3657,9 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 }).call(this,require('_process'))
-},{"./cjs/react.development.js":21,"./cjs/react.production.min.js":22,"_process":25}],24:[function(require,module,exports){
+},{"./cjs/react.development.js":14,"./cjs/react.production.min.js":15,"_process":18}],17:[function(require,module,exports){
 react_contenteditable = require("react-contenteditable");
-react_tag_autocomplete = require("react-tag-autocomplete")
-},{"react-contenteditable":8,"react-tag-autocomplete":18}],25:[function(require,module,exports){
+},{"react-contenteditable":5}],18:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -4910,4 +3845,4 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}]},{},[24]);
+},{}]},{},[17]);

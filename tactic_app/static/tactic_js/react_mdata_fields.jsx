@@ -6,7 +6,7 @@ import {postAjaxPromise} from "./communication_react.js"
 
 var Rbs = window.ReactBootstrap;
 
-import {ReactTags} from "./lib/ReactTags.js";
+import {ReactTags} from "./lib/react-tags/ReactTags.js";
 
 // var ReactTags = react_tag_autocomplete;
 
