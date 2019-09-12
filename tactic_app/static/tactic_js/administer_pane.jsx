@@ -2,6 +2,8 @@
 import {SearchForm, SelectorTable} from "./library_widgets.js";
 import {HorizontalPanes} from "./resizing_layouts.js";
 
+import {postAjax} from "./communication_react.js";
+
 export {AdminPane}
 
 class AdminPane extends React.Component {
