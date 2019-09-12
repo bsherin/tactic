@@ -1,6 +1,11 @@
+
+export {handleCallback, postAjax, postAjaxPromise, postAjaxUploadPromise, postWithCallback,
+    postWithCallbackAsyncFalse, postWithCallbackNoMain, postAjaxUpload, postAsyncFalse}
+
+
 let callbacks = {};
 
-megaplex_port = "8085";
+let megaplex_port = "8085";
 
 function handleCallback (task_packet) {
     let task_id = task_packet.callback_id;

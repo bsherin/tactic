@@ -1,5 +1,5 @@
 import {showModalReact} from "./modal_react.js";
-
+import {postWithCallback} from "./communication_react.js"
 export {ProjectMenu, ColumnMenu, MenuComponent}
 
 var Rbs = window.ReactBootstrap;

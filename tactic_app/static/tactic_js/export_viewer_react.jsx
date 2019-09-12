@@ -1,6 +1,7 @@
 
 import {GlyphButton} from "./react_widgets.js";
 import {SelectList} from "./react_widgets.js";
+import {postWithCallback} from "./communication_react.js"
 
 export {ExportsViewer}
 
@@ -224,8 +225,10 @@ class ExportsViewer extends React.Component {
                      }
 
                  </Rbs.Card.Header>
-                 <Rbs.Card.Body style={{overflowY: "scroll", height: this._bodyHeight(), backgroundColor: "white"}}
+                 {!this.props.console_is_shrunk &&
+                     <Rbs.Card.Body style={{overflowY: "scroll", height: this._bodyHeight(), backgroundColor: "white"}}
                                 dangerouslySetInnerHTML={exports_body_dict}/>
+                 }
              </Rbs.Card>
         )
     }
@@ -233,6 +236,7 @@ class ExportsViewer extends React.Component {
 
 ExportsViewer.propTypes = {
     available_height: PropTypes.number,
+    console_is_shrunk: PropTypes.bool,
     setUpdate: PropTypes.func,
     tsocket:PropTypes.object
 };

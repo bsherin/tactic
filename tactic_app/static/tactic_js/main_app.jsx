@@ -8,6 +8,7 @@ import {TileContainer} from "./tile_react.js";
 import {ExportsViewer} from "./export_viewer_react.js";
 import {showModalReact, showSelectDialog} from "./modal_react.js";
 import {ConsoleComponent} from "./console_component.js";
+import {handleCallback, postAjax, postWithCallback, postAsyncFalse} from "./communication_react.js"
 
 export {MainTacticSocket}
 
@@ -396,11 +397,11 @@ class MainApp extends React.Component {
         })
     }
 
-    _handleHorizontalFractionChange(new_fraction) {
+    _handleHorizontalFractionChange(left_width, right_width, new_fraction) {
         this.setState({horizontal_fraction: new_fraction})
     }
 
-    _handleConsoleFractionChange(new_fraction) {
+    _handleConsoleFractionChange(left_width, right_width, new_fraction) {
         this.setState({console_width_fraction: new_fraction})
     }
 
@@ -766,6 +767,7 @@ class MainApp extends React.Component {
         if (this.state.show_exports_pane) {
             exports_pane = <ExportsViewer setUpdate={(ufunc)=>this.updateExportsList = ufunc}
                                           available_height={console_available_height}
+                                          console_is_shrunk={this.state.console_is_shrunk}
                                           tsocket={tsocket}
             />
         }
@@ -777,7 +779,7 @@ class MainApp extends React.Component {
             <ConsoleComponent console_items={this.state.console_items}
                               console_is_shrunk={this.state.console_is_shrunk}
                               console_is_zoomed={this.state.console_is_zoomed}
-                              show_exports_pane={this.state.console_is_zoomed}
+                              show_exports_pane={this.state.show_exports_pane}
                               setMainStateValue={this._setMainStateValue}
                               console_available_height={console_available_height}
                               tsocket={tsocket}
@@ -791,7 +793,7 @@ class MainApp extends React.Component {
                              available_width={this.state.usable_width}
                              initial_width_fraction={this.state.console_width_fraction}
                              controlled={true}
-                             handleFractionChange={this._handleConsoleFractionChange}
+                             handleSplitUpdate={this._handleConsoleFractionChange}
                 />
         );
         let top_pane;
@@ -817,7 +819,7 @@ class MainApp extends React.Component {
                          available_width={this.state.usable_width}
                          initial_width_fraction={this.state.horizontal_fraction}
                          controlled={true}
-                         handleFractionChange={this._handleHorizontalFractionChange}
+                         handleSplitUpdate={this._handleHorizontalFractionChange}
                     />
                     {this.state.console_is_shrunk &&
                         bottom_pane

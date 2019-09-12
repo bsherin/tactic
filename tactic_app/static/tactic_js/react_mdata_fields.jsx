@@ -2,10 +2,13 @@
 export {TagsField, NotesField, CombinedMetadata}
 
 import {ViewerContext} from "./resource_viewer_context.js";
+import {postAjaxPromise} from "./communication_react.js"
 
 var Rbs = window.ReactBootstrap;
 
-var ReactTags = react_tag_autocomplete;
+import {ReactTags} from "./lib/ReactTags.js";
+
+// var ReactTags = react_tag_autocomplete;
 
 class NativeTags extends React.Component {
     constructor (props) {
@@ -297,8 +300,6 @@ NotesField.propTypes = {
 NotesField.defaultProops = {
     handleBlur: null
 };
-
-
 
 
 class CombinedMetadata extends React.Component {

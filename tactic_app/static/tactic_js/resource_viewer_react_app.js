@@ -5,6 +5,7 @@ import { CombinedMetadata } from "./react_mdata_fields.js";
 import { showModalReact } from "./modal_react.js";
 import { TacticSocket } from "./tactic_socket.js";
 import { HorizontalPanes } from "./resizing_layouts.js";
+import { handleCallback, postAjax } from "./communication_react.js";
 
 export { ResourceViewerApp, ResourceViewerSocket, copyToLibrary, sendToRepository };
 

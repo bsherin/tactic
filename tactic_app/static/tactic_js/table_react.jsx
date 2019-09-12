@@ -4,7 +4,6 @@ import {ReactCodemirror} from "./react-codemirror.js";
 
 export {MainTableCard, MainTableCardHeader, TableBody, FreeformBody, TableHeader, compute_added_column_width}
 
-
 var Rbs = window.ReactBootstrap;
 
 class HeaderCell extends React.Component {
