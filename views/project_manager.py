@@ -16,6 +16,8 @@ global_tile_manager = tactic_app.global_tile_manager
 repository_user = User.get_user_by_username("repository")
 from tactic_app.file_handling import read_freeform_file
 
+from tactic_app.js_source_management import js_source_dict, _develop
+
 import datetime
 tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 
@@ -59,6 +61,7 @@ class ProjectManager(LibraryResourceManager):
                          as_attachment=True)
 
     def import_as_jupyter(self, jupyter_name, library_id):
+        user_obj = current_user
         file_list = request.files.getlist("file")
         the_file = file_list[0]
         filename, file_extension = os.path.splitext(the_file.filename)
@@ -74,7 +77,7 @@ class ProjectManager(LibraryResourceManager):
             file_decoding_errors[filename] = decoding_problems
         mdata = global_tile_manager.create_initial_metadata()
         mdata["type"] = "jupyter"
-        mdata["save_style"] = "b64save"
+        mdata["save_style"] = "b64save_react"
 
         save_dict = {"metadata": mdata,
                      "project_name": jupyter_name}
@@ -85,11 +88,10 @@ class ProjectManager(LibraryResourceManager):
         save_dict["file_id"] = fs.put(pdict)
         db[current_user.project_collection_name].insert_one(save_dict)
 
-        table_row = self.create_new_row(jupyter_name, mdata)
-        all_table_row = self.all_manager.create_new_all_row(jupyter_name, mdata, "project")
+        new_row = self.build_res_dict(jupyter_name, mdata, user_obj)
         if len(file_decoding_errors.keys()) == 0:
             file_decoding_errors = None
-        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row,
+        return jsonify({"success": True, "new_row": new_row,
                         "alert_type": "alert-success",
                         "file_decoding_errors": file_decoding_errors})
 
@@ -112,30 +114,25 @@ class ProjectManager(LibraryResourceManager):
                      "window_title": project_name,
                      "user_id": user_id,
                      "use_ssl": str(use_ssl),
+                     "develop": str(_develop),
                      "main_id": main_id,
-                     "main_port": main_container_info.port(main_id),
                      "temp_data_id": "",
-                     "use_codemirror": True,
                      "collection_name": "",
                      "doc_names": [],
-                     "console_html": "",
                      "short_collection_name": "",
-                     "project_collection_name": user_obj.project_collection_name,
-                     "list_collection_name": user_obj.list_collection_name,
-                     "code_collection_name": user_obj.code_collection_name,
-                     "tile_collection_name": user_obj.tile_collection_name,
                      "is_table": (doc_type == "table"),
                      "is_notebook": (doc_type == 'notebook' or doc_type == 'jupyter'),
                      "is_freeform": (doc_type == 'freeform'),
                      "is_jupyter":  (doc_type == 'jupyter'),
                      "base_figure_url": url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
                      "uses_codemirror": "True",
-                     "version_string": tstring
-                     }
+                     "version_string": tstring}
         if doc_type in ['notebook', 'jupyter']:
-            template_name = "main_notebook.html"
+            template_name = "main_notebook_react.html"
+            data_dict["module_source"] = js_source_dict["notebook_app"]
         else:
-            template_name = "main.html"
+            template_name = "main_react.html"
+            data_dict["module_source"] = js_source_dict["main_app"]
 
         return render_template(template_name, **data_dict)
 
@@ -168,9 +165,9 @@ class ProjectManager(LibraryResourceManager):
         pdict = make_jsonizable_and_compress(project_dict)
         new_save_dict["file_id"] = fs.put(pdict)
         db[user_obj.project_collection_name].insert_one(new_save_dict)
-        table_row = self.create_new_row(new_project_name, mdata)
-        all_table_row = self.all_manager.create_new_all_row(new_project_name, mdata, "project")
-        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
+
+        new_row = self.build_res_dict(new_project_name, mdata, user_obj)
+        return jsonify({"success": True, "new_row": new_row})
 
     def rename_me(self, old_name):
         try:

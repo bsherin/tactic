@@ -19,20 +19,12 @@ else:
 
 class UserManager(ResourceManager):
     def add_rules(self):
-        app.add_url_rule('/refresh_user_table', "refresh_user_table",
-                         login_required(self.refresh_user_table), methods=['get'])
         app.add_url_rule('/delete_user/<userid>', "delete_user",
                          login_required(self.delete_user), methods=['get', "post"])
         app.add_url_rule('/update_user_starter_tiles/<userid>', "update_user_starter_tiles",
                          login_required(self.update_user_starter_tiles), methods=['get', "post"])
         app.add_url_rule('/update_all_collections', "update_all_collections",
                          login_required(self.update_all_collections), methods=['get'])
-
-    def refresh_user_table(self):
-        if not (current_user.username == "admin"):
-            return jsonify({"success": False, "message": "not authorized", "alert_type": "alert-warning"})
-        self.update_selector_list()
-        return jsonify({"success": True})
 
     def update_all_collections(self):
         if not (current_user.username == "admin"):
@@ -96,7 +88,7 @@ class UserManager(ResourceManager):
         if not (current_user.username == "admin"):
             return jsonify({"success": False, "message": "not authorized", "alert_type": "alert-warning"})
         result = remove_user(userid)
-        self.update_selector_list()
+        self.refresh_selector_list()
         return jsonify(result)
 
     def update_user_starter_tiles(self, userid):
@@ -158,21 +150,17 @@ class UserManager(ResourceManager):
 
         return jsonify({"success": True})
 
-    # noinspection PyMethodOverriding
-    def build_resource_array(self, user_obj=None):
+    def get_resource_data_list(self, user_obj=None):
         user_list = get_all_users()
-        larray = [["_id", "username", "full_name", "last_login", "email"]]
+        result = []
+        larray = ["_id", "username", "full_name", "last_login", "email"]
         for user in user_list:
-            urow = []
-            for field in larray[0]:
+            urow = {}
+            for field in larray:
                 if field in user:
-                    urow.append(str(user[field]))
+                    urow[field] = str(user[field])
                 else:
-                    urow.append("")
-            larray.append(urow)
-        return larray
-
-    def request_update_selector_list(self, user_obj=None):
-        res_array = self.build_resource_array()
-        result = self.build_html_table_from_data_list(res_array)
+                    urow[field] = ""
+            result.append(urow)
         return result
+

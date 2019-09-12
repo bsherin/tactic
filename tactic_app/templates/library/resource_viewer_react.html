@@ -1,0 +1,37 @@
+{% extends "base_react.html" %}
+
+{% block title %}{{resource_name}}{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{{url_for('static', filename='css/jquery-ui.min.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/react_tags_styles.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/loader.css', version_string=tstring)}}">
+{% endblock %}
+
+{% block page_content %}
+    <div id="modal-area">
+    </div>
+    <div class="container-fluid" id="root">
+    </div>
+
+{%  endblock %}
+
+{% block scripts %}
+
+    <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
+    <script src="{{url_for('static', filename='js/showdown.js')}}"></script>
+    <script src="{{url_for('static', filename='js/react_tools.js')}}"></script>
+    <script type="module" src="{{javascript_source}}"></script>
+    <script>
+        window.user_id = "{{current_user.get_id()}}";
+        window.resource_name = "{{resource_name}}";
+        window.second_resource_name = "{{second_resource_name}}";
+        window.is_repository = "{{is_repository}}" == "True";
+        window.include_right = "{{include_right}}" == "True";
+        window.use_ssl = "{{use_ssl}}"=="True";
+        window.resource_viewer_id = guid();
+        window.main_id = resource_viewer_id;
+        window.read_only = "{{read_only}}" == "True";
+
+    </script>
+{% endblock %}

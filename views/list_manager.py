@@ -16,17 +16,16 @@ repository_user = User.get_user_by_username("repository")
 import datetime
 tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 
+from tactic_app.js_source_management import js_source_dict, _develop
+
 
 # noinspection PyMethodMayBeStatic
 class ListManager(LibraryResourceManager):
     collection_list = "list_names"
     collection_list_with_metadata = "list_names_with_metadata"
     collection_name = "list_collection_name"
+
     name_field = "list_name"
-    button_groups = [[{"name": "save_button", "button_class": "btn-outline-secondary", "name_text": "Save", "icon_name": "save"},
-                      {"name": "save_as_button", "button_class": "btn-outline-secondary", "name_text": "Save as...", "icon_name": "save"},
-                      {"name": "share_button", "button_class": "btn-outline-secondary", "name_text": "Share", "icon_name": "share"}
-                      ]]
 
     def add_rules(self):
         app.add_url_rule('/view_list/<list_name>', "view_list", login_required(self.view_list), methods=['get'])
@@ -44,17 +43,18 @@ class ListManager(LibraryResourceManager):
                          login_required(self.search_list_metadata), methods=['get', 'post'])
 
     def view_list(self, list_name):
-        javascript_source = url_for('static', filename='tactic_js/list_viewer.js')
-        return render_template("library/resource_viewer.html",
+        javascript_source = url_for('static', filename=js_source_dict["list_viewer_react"])
+        return render_template("library/resource_viewer_react.html",
                                resource_name=list_name,
                                include_metadata=True,
                                include_above_main_area=False,
                                include_right=True,
-                               readonly=False,
+                               read_only=False,
                                use_ssl=use_ssl,
+                               develop=str(_develop),
                                is_repository=False,
                                javascript_source=javascript_source,
-                               button_groups=self.button_groups, version_string=tstring)
+                               version_string=tstring)
 
     def update_list(self):  # This is called from the list viewer
         try:
@@ -73,7 +73,8 @@ class ListManager(LibraryResourceManager):
 
             db[current_user.list_collection_name].update_one({"list_name": list_name},
                                                              {'$set': {"the_list": new_list, "metadata": mdata}})
-            self.update_selector_list()
+
+            self.update_selector_row(self.build_res_dict(list_name, mdata))
             return jsonify({"success": True, "message": "List Successfully Saved", "alert_type": "alert-success"})
         except Exception as ex:
             return self.get_exception_for_ajax(ex, "Error saving list")
@@ -160,9 +161,8 @@ class ListManager(LibraryResourceManager):
         metadata = global_tile_manager.create_initial_metadata()
         data_dict = {"list_name": the_file.filename, "the_list": the_list, "metadata": metadata}
         db[user_obj.list_collection_name].insert_one(data_dict)
-        table_row = self.create_new_row(the_file.filename, metadata)
-        all_table_row = self.all_manager.create_new_all_row(the_file.filename, metadata, "list")
-        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
+        new_row = self.build_res_dict(the_file.filename, metadata, user_obj)
+        return jsonify({"success": True, "new_row": new_row})
 
     def delete_list(self):
         try:
@@ -187,9 +187,8 @@ class ListManager(LibraryResourceManager):
         metadata = copy.copy(old_list_dict["metadata"])
         new_list_dict = {"list_name": new_list_name, "the_list": old_list_dict["the_list"], "metadata": metadata}
         db[user_obj.list_collection_name].insert_one(new_list_dict)
-        table_row = self.create_new_row(new_list_name, metadata)
-        all_table_row = self.all_manager.create_new_all_row(new_list_name, metadata, "list")
-        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
+        new_row = self.build_res_dict(new_list_name, metadata, user_obj)
+        return jsonify({"success": True, "new_row": new_row})
 
     def search_inside_lists(self):
         user_obj = current_user
@@ -216,8 +215,6 @@ class ListManager(LibraryResourceManager):
 class RepositoryListManager(ListManager):
     rep_string = "repository-"
     is_repository = True
-    button_groups = [[{"name": "copy_button", "button_class": "btn-outline-secondary", "name_text": "Copy", "icon_name": "share"}
-                      ]]
 
     def add_rules(self):
         app.add_url_rule('/repository_view_list/<list_name>', "repository_view_list",
@@ -226,17 +223,18 @@ class RepositoryListManager(ListManager):
                          login_required(self.repository_get_list), methods=['get', 'post'])
 
     def repository_view_list(self, list_name):
-        javascript_source = url_for('static', filename='tactic_js/list_viewer.js')
-        return render_template("library/resource_viewer.html",
+        javascript_source = url_for('static', filename='tactic_js/list_viewer_react.js')
+        return render_template("library/resource_viewer_react.html",
                                resource_name=list_name,
                                include_metadata=True,
                                include_above_main_area=False,
                                include_right=True,
-                               readonly=True,
+                               read_only=True,
                                use_ssl=use_ssl,
+                               develop=str(_develop),
                                is_repository=True,
                                javascript_source=javascript_source,
-                               button_groups=self.button_groups, version_string=tstring)
+                               version_string=tstring)
 
     def repository_get_list(self, list_name):
         the_list = repository_user.get_list(list_name)

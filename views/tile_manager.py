@@ -13,6 +13,8 @@ from tactic_app.resource_manager import ResourceManager, LibraryResourceManager
 from tactic_app.users import User
 from tactic_app.docker_functions import create_container
 
+from tactic_app.js_source_management import js_source_dict, _develop
+
 global_tile_manager = tactic_app.global_tile_manager
 repository_user = User.get_user_by_username("repository")
 
@@ -26,21 +28,6 @@ class TileManager(LibraryResourceManager):
     collection_list_with_metadata = "tile_module_names_with_metadata"
     collection_name = "tile_collection_name"
     name_field = "tile_module_name"
-    button_groups = [[{"name": "save_button", "button_class": "btn-outline-secondary",
-                       "name_text": "Save", "icon_name": "save"},
-                      {"name": "checkpoint_button", "button_class": "btn-outline-secondary",
-                       "name_text": "Mark", "icon_name": "map-marker-alt"},
-                      {"name": "save_as_button", "button_class": "btn-outline-secondary",
-                       "name_text": "Save as...", "icon_name": "save"},
-                      {"name": "load_button", "button_class": "btn-outline-secondary",
-                       "name_text": "Load", "icon_name": "arrow-from-bottom"},
-                      {"name": "share_button", "button_class": "btn-outline-secondary",
-                       "name_text": "Share", "icon_name": "share"}],
-                     [{"name": "history_button", "button_class": "btn-outline-secondary",
-                       "name_text": "History", "icon_name": "history"},
-                      {"name": "differ_button", "button_class": "btn-outline-secondary",
-                       "name_text": "Compare", "icon_name": "code-branch"}
-                      ]]
 
     def add_rules(self):
         app.add_url_rule('/view_module/<module_name>', "view_module",
@@ -59,10 +46,10 @@ class TileManager(LibraryResourceManager):
                          login_required(self.add_tile_module), methods=['get', "post"])
         app.add_url_rule('/delete_tile_module', "delete_tile_module",
                          login_required(self.delete_tile_module), methods=['post'])
+        app.add_url_rule('/get_loaded_tile_lists', "get_loaded_tile_lists",
+                         login_required(self.get_loaded_tile_lists), methods=['get', 'post'])
         app.add_url_rule('/create_tile_module', "create_tile_module",
                          login_required(self.create_tile_module), methods=['get', 'post'])
-        app.add_url_rule('/request_update_loaded_tile_list', "request_update_loaded_tile_list",
-                         login_required(self.request_update_loaded_tile_list), methods=['get', 'post'])
         app.add_url_rule('/create_duplicate_tile', "create_duplicate_tile",
                          login_required(self.create_duplicate_tile), methods=['get', 'post'])
         app.add_url_rule('/search_inside_tiles', "search_inside_tiles",
@@ -75,7 +62,6 @@ class TileManager(LibraryResourceManager):
             new_name = request.json["new_name"]
             db[current_user.tile_collection_name].update_one({"tile_module_name": old_name},
                                                              {'$set': {"tile_module_name": new_name}})
-            # self.update_selector_list()
             return jsonify({"success": True, "message": "Module Successfully Saved", "alert_type": "alert-success"})
         except Exception as ex:
             return self.get_exception_for_ajax(ex, "Error renaming collection")
@@ -148,7 +134,7 @@ class TileManager(LibraryResourceManager):
         yesterday = datetime.datetime.utcnow() - datetime.timedelta(days=1)
         yesterday_date = yesterday.date()
         # We want to keep every element of the recent history from yesterday or today
-        # Plus we want to keep the last entry from each date taht appears.
+        # Plus we want to keep the last entry from each date that appears.
         for cp in tile_dict["recent_history"]:
             cp_date = cp["updated"].date()
             if cp_date > yesterday_date:  # If it's more recent than yesterday, keep it.
@@ -171,18 +157,19 @@ class TileManager(LibraryResourceManager):
 
     def view_module(self, module_name):
         self.clear_old_recent_history(module_name)
-        javascript_source = url_for('static', filename='tactic_js/module_viewer.js')
-        return render_template("library/resource_viewer.html",
+        javascript_source = url_for('static', filename=js_source_dict["module_viewer_react"])
+        return render_template("library/resource_viewer_react.html",
                                resource_name=module_name,
                                include_metadata=True,
                                include_right=True,
                                include_above_main_area=False,
-                               readonly=False,
+                               read_only=False,
                                is_repository=False,
                                use_ssl=use_ssl,
+                               develop=str(_develop),
                                javascript_source=javascript_source,
                                uses_codemirror="True",
-                               button_groups=self.button_groups, version_string=tstring)
+                               version_string=tstring)
 
     def get_module_code(self, module_name):
         user_obj = current_user
@@ -211,21 +198,6 @@ class TileManager(LibraryResourceManager):
 
     def view_in_creator(self, module_name):
         self.clear_old_recent_history(module_name)
-        option_types = [{"name": "text"},
-                        {"name": "int"},
-                        {"name": "boolean"},
-                        {"name": "textarea"},
-                        {"name": "codearea"},
-                        {"name": "column_select"},
-                        {"name": "document_select"},
-                        {"name": "list_select"},
-                        {"name": "collection_select"},
-                        {"name": "palette_select"},
-                        {"name": "pipe_select"},
-                        {"name": "custom_list"},
-                        {"name": "function_select"},
-                        {"name": "class_select"},
-                        {"name": "tile_select"}]
         revised_api_dlist = []
         for cat in ordered_api_categories:
             the_list = api_dict_by_category[cat]
@@ -235,21 +207,21 @@ class TileManager(LibraryResourceManager):
             if len(new_list) > 0:
                 revised_api_dlist.append({"cat_name": cat, "cat_list": new_list})
         the_content = self.initialize_module_viewer_container(module_name)
-        return render_template("library/tile_creator.html",
+        javascript_source = url_for('static', filename=js_source_dict["tile_creator_react"])
+        return render_template("library/tile_creator_react.html",
                                module_name=module_name,
-                               read_only_string="",
                                use_ssl=use_ssl,
-                               option_types=option_types,
-                               api_dlist=revised_api_dlist,
+                               develop=str(_develop),
                                uses_codemirror="True",
-                               version_string=tstring,
+                               tstring=tstring,
                                module_viewer_id=the_content["module_viewer_id"],
+                               javascript_source=javascript_source,
                                tile_collection_name=the_content["tile_collection_name"])
 
     def unload_all_tiles(self):
         try:
             global_tile_manager.unload_user_tiles(current_user.username)
-            socketio.emit('update-loaded-tile-list', {"html": self.render_loaded_tile_list()},
+            socketio.emit('update-loaded-tile-list', {"tile_load_dict": self.loaded_tile_lists(current_user)},
                           namespace='/library', room=current_user.get_id())
             socketio.emit('update-menus', {}, namespace='/main', room=current_user.get_id())
             return jsonify({"message": "Tiles successfully unloaded", "alert_type": "alert-success"})
@@ -271,9 +243,8 @@ class TileManager(LibraryResourceManager):
         metadata["type"] = tp.type
         data_dict = {"tile_module_name": f.filename, "tile_module": the_module, "metadata": metadata}
         db[user_obj.tile_collection_name].insert_one(data_dict)
-        table_row = self.create_new_row(f.filename, metadata)
-        all_table_row = self.all_manager.create_new_all_row(f.filename, metadata, "tile")
-        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
+        new_row = self.build_res_dict(f.filename, metadata, user_obj)
+        return jsonify({"success": True, "new_row": new_row})
 
     def create_duplicate_tile(self):
         user_obj = current_user
@@ -287,9 +258,9 @@ class TileManager(LibraryResourceManager):
         new_tile_dict = {"tile_module_name": new_tile_name, "tile_module": old_tile_dict["tile_module"],
                          "metadata": metadata}
         db[user_obj.tile_collection_name].insert_one(new_tile_dict)
-        table_row = self.create_new_row(new_tile_name, metadata)
-        all_table_row = self.all_manager.create_new_all_row(new_tile_name, metadata, "tile")
-        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
+        new_row = self.build_res_dict(new_tile_name, metadata, user_obj)
+
+        return jsonify({"success": True, "new_row": new_row})
 
     def search_inside_tiles(self):
         user_obj = current_user
@@ -329,9 +300,8 @@ class TileManager(LibraryResourceManager):
         data_dict = {"tile_module_name": new_tile_name, "tile_module": template, "metadata": metadata,
                      "last_saved": last_saved}
         db[current_user.tile_collection_name].insert_one(data_dict)
-        table_row = self.create_new_row(new_tile_name, metadata)
-        all_table_row = self.all_manager.create_new_all_row(new_tile_name, metadata, "tile")
-        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
+        new_row = self.build_res_dict(new_tile_name, metadata, user_obj)
+        return jsonify({"success": True, "new_row": new_row})
 
     def delete_tile_module(self):
         try:
@@ -345,30 +315,22 @@ class TileManager(LibraryResourceManager):
         except Exception as ex:
             return self.get_exception_for_ajax(ex, "Error deleting tiles")
 
-    def render_loaded_tile_list(self, user_obj=None):
+    def loaded_tile_lists(self, user_obj=None):
         if user_obj is None:
             user_obj = current_user
         uname = user_obj.username
-        nondefault_tiles = global_tile_manager.get_nondefault_tiles_list(uname)
-        default_tiles = global_tile_manager.get_default_tiles(uname)
-        failed_loads = global_tile_manager.get_failed_loads_list(uname)
-        with app.test_request_context():
-            result = render_template("library/loaded_tile_list.html",
-                                     default_tiles_list=default_tiles,
-                                     nondefault_tiles_list=nondefault_tiles,
-                                     failed_tile_name_list=failed_loads)
+        result = {"nondefault_tiles": global_tile_manager.get_nondefault_tiles_list(uname),
+                  "default_tiles": global_tile_manager.get_default_tiles(uname),
+                  "failed_loads": global_tile_manager.get_failed_loads_list(uname)}
         return result
 
-    def request_update_loaded_tile_list(self):
-        return self.render_loaded_tile_list()
+    def get_loaded_tile_lists(self, user_obj=None):
+        return jsonify({"success": True, "tile_load_dict": self.loaded_tile_lists(user_obj)})
 
 
 class RepositoryTileManager(TileManager):
     rep_string = "repository-"
     is_repository = True
-    button_groups = [[{"name": "copy_button", "button_class": "btn-outline-secondary",
-                       "name_text": "Copy", "icon_name": "share"}
-                      ]]
 
     def add_rules(self):
         app.add_url_rule('/repository_view_module/<module_name>', "repository_view_module",
@@ -377,18 +339,18 @@ class RepositoryTileManager(TileManager):
                          login_required(self.repository_get_module_code), methods=['get', 'post'])
 
     def repository_view_module(self, module_name):
-        javascript_source = url_for('static', filename='tactic_js/module_viewer.js')
-        return render_template("library/resource_viewer.html",
+        javascript_source = url_for('static', filename=js_source_dict["module_viewer_react"])
+        return render_template("library/resource_viewer_react.html",
                                resource_name=module_name,
                                include_metadata=True,
                                include_right=True,
                                include_above_main_area=False,
-                               readonly=True,
+                               read_only=True,
                                is_repository=True,
                                use_ssl=use_ssl,
+                               develop=str(_develop),
                                javascript_source=javascript_source,
                                uses_codemirror="True",
-                               button_groups=self.button_groups,
                                version_string=tstring)
 
     def repository_get_module_code(self, module_name):

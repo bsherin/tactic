@@ -15,6 +15,7 @@
       </option>
       <option name="outputFromStdout" value="false" />
       <option name="program" value="/usr/local/bin/scss" />
+      <option name="runOnExternalChanges" value="true" />
       <option name="scopeName" value="tactic_css_scope" />
       <option name="trackOnlyRoot" value="true" />
       <option name="workingDir" value="$FileDir$" />
@@ -40,6 +41,7 @@
       </option>
       <option name="outputFromStdout" value="true" />
       <option name="program" value="/bin/less" />
+      <option name="runOnExternalChanges" value="true" />
       <option name="scopeName" value="Project Files" />
       <option name="trackOnlyRoot" value="false" />
       <option name="workingDir" value="$FileDir$" />
@@ -59,9 +61,50 @@
       </option>
       <option name="outputFromStdout" value="false" />
       <option name="program" value="$PROJECT_DIR$/tactic_app/node_modules/babel-cli/bin/babel.js" />
+      <option name="runOnExternalChanges" value="true" />
       <option name="scopeName" value="tactic_js6_scope" />
       <option name="trackOnlyRoot" value="false" />
       <option name="workingDir" value="$ContentRoot$" />
+      <envs />
+    </TaskOptions>
+    <TaskOptions isEnabled="false">
+      <option name="arguments" value="$FilePathRelativeToProjectRoot$ --out-dir . --source-maps --presets react-app/prod" />
+      <option name="checkSyntaxErrors" value="true" />
+      <option name="description" />
+      <option name="exitCodeBehavior" value="ERROR" />
+      <option name="fileExtension" value="jsx" />
+      <option name="immediateSync" value="true" />
+      <option name="name" value="Babel" />
+      <option name="output" value="dist/$FileDirRelativeToProjectRoot$/$FileNameWithoutExtension$.js:dist/$FileDirRelativeToProjectRoot$/$FileNameWithoutExtension$.js.map" />
+      <option name="outputFilters">
+        <array />
+      </option>
+      <option name="outputFromStdout" value="false" />
+      <option name="program" value="$ProjectFileDir$/node_modules/.bin/babel" />
+      <option name="runOnExternalChanges" value="true" />
+      <option name="scopeName" value="tactic_jsx" />
+      <option name="trackOnlyRoot" value="false" />
+      <option name="workingDir" value="$ContentRoot$" />
+      <envs />
+    </TaskOptions>
+    <TaskOptions isEnabled="true">
+      <option name="arguments" value="babel $FilePathRelativeToProjectRoot$ --out-dir . --presets react" />
+      <option name="checkSyntaxErrors" value="true" />
+      <option name="description" />
+      <option name="exitCodeBehavior" value="ERROR" />
+      <option name="fileExtension" value="jsx" />
+      <option name="immediateSync" value="true" />
+      <option name="name" value="jsx_watcher" />
+      <option name="output" value="$FileNameWithoutExtension$.js" />
+      <option name="outputFilters">
+        <array />
+      </option>
+      <option name="outputFromStdout" value="false" />
+      <option name="program" value="/usr/local/bin/npx" />
+      <option name="runOnExternalChanges" value="true" />
+      <option name="scopeName" value="tactic_jsx" />
+      <option name="trackOnlyRoot" value="false" />
+      <option name="workingDir" value="$PROJECT_DIR$" />
       <envs />
     </TaskOptions>
   </component>

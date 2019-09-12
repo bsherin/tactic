@@ -17,6 +17,8 @@ from tactic_app.file_handling import read_csv_file_to_list, read_tsv_file_to_lis
 from tactic_app.file_handling import read_freeform_file, read_excel_file
 from tactic_app.users import load_user
 
+from tactic_app.js_source_management import js_source_dict, _develop
+
 from tactic_app.resource_manager import ResourceManager, LibraryResourceManager
 global_tile_manager = tactic_app.global_tile_manager
 repository_user = User.get_user_by_username("repository")
@@ -60,31 +62,35 @@ class CollectionManager(LibraryResourceManager):
     def new_notebook(self):
         user_obj = current_user
         main_id = main_container_info.create_main_container("new_notebook", user_obj.get_id(), user_obj.username)
-        return render_template("main_notebook.html",
+        return render_template("main_notebook_react.html",
                                window_title="new notebook",
                                project_name='',
                                base_figure_url=url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
                                main_id=main_id,
                                temp_data_id="",
                                use_ssl=str(use_ssl),
-                               console_html="",
+                               develop=str(_develop),
                                uses_codemirror="True",
-                               version_string=tstring)
+                               is_jupyter="False",
+                               version_string=tstring,
+                               module_source=js_source_dict["notebook_app"])
 
     def open_notebook(self, unique_id):
         the_data = read_temp_data(db, unique_id)
         user_obj = load_user(the_data["user_id"])
         main_id = main_container_info.create_main_container("new_notebook", the_data["user_id"], user_obj.username)
-        return render_template("main_notebook.html",
+        return render_template("main_notebook_react.html",
                                window_title="new notebook",
                                project_name='',
                                base_figure_url=url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
                                main_id=main_id,
                                temp_data_id=unique_id,
+                               develop=str(_develop),
                                use_ssl=str(use_ssl),
-                               console_html="",
+                               is_jupyter="False",
                                uses_codemirror="True",
-                               version_string=tstring)
+                               version_string=tstring,
+                               module_source=js_source_dict["notebook_app"])
 
     def main(self, collection_name):
         user_obj = current_user
@@ -101,7 +107,7 @@ class CollectionManager(LibraryResourceManager):
 
         doc_names = user_obj.get_collection_docnames(short_collection_name)
 
-        return render_template("main.html",
+        return render_template("main_react.html",
                                collection_name=cname,
                                window_title=short_collection_name,
                                project_name='',
@@ -117,7 +123,9 @@ class CollectionManager(LibraryResourceManager):
                                is_freeform=(doc_type == 'freeform'),
                                short_collection_name=short_collection_name,
                                uses_codemirror="True",
-                               version_string=tstring)
+                               develop=str(_develop),
+                               version_string=tstring,
+                               module_source=js_source_dict["main_app"])
 
     def rename_me(self, old_name):
         try:
@@ -261,7 +269,7 @@ class CollectionManager(LibraryResourceManager):
                 user_obj.append_document_to_collection(base_collection_name, dname, doc, coll_mdata["type"],
                                                        hl_dict[dname], dm_dict[dname])
             user_obj.update_collection_time(base_collection_name)
-            self.update_selector_list(base_collection_name)
+            self.update_selector_row(self.build_res_dict(base_collection_name, coll_mdata))
             return jsonify({"message": "Collections successfull combined", "alert_type": "alert-success"})
         except Exception as ex:
             return self.get_exception_for_ajax(ex, "Error combining collection")
@@ -320,11 +328,10 @@ class CollectionManager(LibraryResourceManager):
         except Exception as ex:
             return self.get_exception_for_ajax(ex, "Error creating collection")
 
-        table_row = self.create_new_row(collection_name, collection_mdata)
-        all_table_row = self.all_manager.create_new_all_row(collection_name, collection_mdata, "collection")
+        new_row = self.build_res_dict(collection_name, collection_mdata, user_obj)
         if len(file_decoding_errors.keys()) == 0:
             file_decoding_errors = None
-        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row,
+        return jsonify({"success": True, "new_row": new_row,
                         "message": "Collection successfully loaded", "alert_type": "alert-success",
                         "file_decoding_errors": file_decoding_errors})
 
@@ -355,11 +362,10 @@ class CollectionManager(LibraryResourceManager):
         except Exception as ex:
             return self.get_exception_for_ajax(ex, "Error creating collection")
 
-        table_row = self.create_new_row(collection_name, collection_mdata)
-        all_table_row = self.all_manager.create_new_all_row(collection_name, collection_mdata, "collection")
+        new_row = self.build_res_dict(collection_name, collection_mdata, user_obj)
         if len(file_decoding_errors.keys()) == 0:
             file_decoding_errors = None
-        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row,
+        return jsonify({"success": True, "new_row": new_row,
                         "alert_type": "alert-success",
                         "file_decoding_errors": file_decoding_errors})
 
@@ -393,8 +399,9 @@ class CollectionManager(LibraryResourceManager):
                     user_obj.append_document_to_collection(new_name, dname, doc, coll_mdata["type"],
                                                            hl_dict[dname], dm_dict[dname])
             user_obj.update_collection_time(new_name)
-            self.update_selector_list(new_name)
-            return jsonify({"message": "Collections successfull combined", "alert_type": "alert-success"})
+            metadata = user_obj.get_collection_metadata(new_name)
+            new_row = self.build_res_dict(new_name, metadata, user_obj)
+            return jsonify({"success": True, "new_row": new_row})
 
         except Exception as ex:
             return self.get_exception_for_ajax(ex, "Error combining collections")
@@ -417,9 +424,8 @@ class CollectionManager(LibraryResourceManager):
             return jsonify(result)
 
         metadata = user_obj.get_collection_metadata(new_res_name)
-        table_row = self.create_new_row(new_res_name, metadata)
-        all_table_row = self.all_manager.create_new_all_row(new_res_name, metadata, "collection")
-        return jsonify({"success": True, "new_row": table_row, "new_all_row": all_table_row})
+        new_row = self.build_res_dict(new_res_name, metadata, user_obj)
+        return jsonify({"success": True, "new_row": new_row})
 
 
 class RepositoryCollectionManager(CollectionManager):
