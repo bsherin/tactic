@@ -8,6 +8,7 @@ export {LoadedTileList}
 var Rbs = window.ReactBootstrap;
 
 var Rtg = window.ReactTransitionGroup;
+var Bp = blueprint;
 
 
 class SearchForm extends React.Component {
@@ -40,38 +41,37 @@ class SearchForm extends React.Component {
 
     render() {
         return (
-            <Rbs.Form inline={true}
-                      className="my-2"
-                      onSubmit={this._handleSubmit}
-            >
-                <Rbs.Form.Control as="input"
-                                  placeholder="Search"
-                                  value={this.props.search_field_value}
-                                  onChange={this._handleSearchFieldChange}
-                                  size="sm"
-                                  className="mr-2"
-                                  style={{"width": 265}}
-                />
-                <Rbs.Button variant="outline-secondary" type="button" size="sm" onClick={this._handleClearSearch}>
-                        clear
-                </Rbs.Button>
+            <React.Fragment>
+                <div className="d-flex flex-row mb-2 mt-2">
+                    <Bp.InputGroup type="search"
+                                      placeholder="Search"
+                                   leftIcon="search"
+                                      value={this.props.search_field_value}
+                                      onChange={this._handleSearchFieldChange}
+                                      style={{"width": 265}}
+                    />
+                    <Bp.Button onClick={this._handleClearSearch} className="ml-2">
+                            clear
+                    </Bp.Button>
+
                 {this.props.allow_search_metadata &&
-                    <Rbs.Form.Check inline label="search metadata"
-                                    size="sm"
-                                    className="ml-3 form-control-sm"
-                                    checked={this.props.search_metadata_checked}
-                                    onChange={this._handleSearchMetadataChange}
+                    <Bp.Checkbox label="search metadata"
+                                 className="ml-3"
+                              large={false}
+                              checked={this.props.search_metadata_checked}
+                                onChange={this._handleSearchMetadataChange}
                     />
                 }
                 {this.props.allow_search_inside &&
-                    <Rbs.Form.Check inline label="search inside"
-                                    size="sm"
-                                    className="ml-0 form-control-sm"
-                                    checked={this.props.search_inside_checked}
-                                    onChange={this._handleSearchInsideChange}
+                    <Bp.Checkbox label="search inside"
+                                 className="ml-3"
+                              large={false}
+                              checked={this.props.search_inside_checked}
+                              onChange={this._handleSearchInsideChange}
                     />
                 }
-            </Rbs.Form>
+                </div>
+            </React.Fragment>
         )
     }
 }
@@ -154,6 +154,16 @@ class SelectorTableRow extends React.Component {
         if (tagname != "") {
             this.props.handleAddTag(this.props.data_dict[this.props.identifier_field], tagname);
         }
+    }
+
+    renderContextMenu() {
+        // return a single element, or nothing to use default browser behavior
+        return (
+            <Menu>
+                <MenuItem onClick={null} text="Save" />
+                <MenuItem onClick={null} text="Delete" />
+            </Menu>
+        );
     }
 
     render() {
@@ -291,6 +301,22 @@ class SelectorTable extends React.Component {
     }
 
     render () {
+        let tstyle = {overflowY: "scroll",
+            overflowX: "scroll",
+            display: "block",
+            maxHeight: "100%",
+            whiteSpace: "nowrap"
+        };
+        if (this.props.data_list.length == 0) {
+            return (
+                <Bp.HTMLTable tabIndex="-1"
+                          bordered={false}
+                          onKeyDown={this._handleKeyDown}
+                          striped={true}
+                          style={tstyle}
+                          condensed={true}/>
+            )
+        }
         let colnames = Object.keys(this.props.columns);
         let trows = this.props.data_list.map((ddict, index) =>
             <Rtg.CSSTransition key={ddict[colnames[0]]}
@@ -309,10 +335,15 @@ class SelectorTable extends React.Component {
                 />
             </Rtg.CSSTransition>
         );
+
         return (
-            <table tabIndex="0"
-                   onKeyDown={this._handleKeyDown}
-                   className="tile-table table sortable table-striped table-bordered table-sm">
+            <Bp.HTMLTable tabIndex="-1"
+                          bordered={false}
+                          onKeyDown={this._handleKeyDown}
+                          striped={true}
+                          style={tstyle}
+                          condensed={true}>
+
                 <SelectorTableHeader columns={this.props.columns}
                                      sorting_column={this.props.sorting_column}
                                      handleHeaderCellClick={this.props.handleHeaderCellClick}
@@ -324,7 +355,7 @@ class SelectorTable extends React.Component {
                 >
                     {trows}
                 </Rtg.TransitionGroup>
-            </table>
+            </Bp.HTMLTable>
         )
     }
 
@@ -389,42 +420,38 @@ class LoadedTileList extends React.Component {
 
     render () {
         let default_items = this.state.default_list.map((tile_name) => (
-            <Rbs.Card.Text key={tile_name}>
+            <p key={tile_name}>
                 {tile_name}
-            </Rbs.Card.Text>
+            </p>
         ));
         let failed_items = this.state.failed_list.map((tile_name) => (
-            <Rbs.Card.Text key={tile_name}>
+            <p key={tile_name}>
                 <a style={{color: "red"}}>
                     {tile_name + "(failed)"}
                 </a>
-            </Rbs.Card.Text>
+            </p>
         ));
         let other_loads = this.state.other_list.map((tile_name) => (
-            <Rbs.Card.Text key={tile_name}>
+            <p key={tile_name}>
                 {tile_name}
-            </Rbs.Card.Text>
+            </p>
         ));
         return (
-            <Rbs.CardGroup id="loaded_tile_widget" className="mt-3 ml-3">
-                <Rbs.Card>
-                    <Rbs.Card.Header className="pt-1 pb-1">
+            <div id="loaded_tile_widget" className="d-flex flex-row">
+                <Bp.Card>
+                    <h6>
                         Loaded Default
-                    </Rbs.Card.Header>
-                    <Rbs.Card.Body className="pt-3 pb-3">
+                    </h6>
                         {default_items}
                         {failed_items}
-                    </Rbs.Card.Body>
-                </Rbs.Card>
-                <Rbs.Card>
-                    <Rbs.Card.Header className="pt-1 pb-1">
+                </Bp.Card>
+                <Bp.Card style={{marginLeft: 10}}>
+                    <h6>
                         Loaded Other
-                    </Rbs.Card.Header>
-                    <Rbs.Card.Body className="pt-3 pb-3">
+                    </h6>
                         {other_loads}
-                    </Rbs.Card.Body>
-                </Rbs.Card>
-            </Rbs.CardGroup>
+                </Bp.Card>
+            </div>
         )
     }
 }

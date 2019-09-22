@@ -101,12 +101,6 @@ function stopSpinner() {
     $("#spinner").css("display", "none")
 }
 
-function doFlashStopSpinner(data) {
-    stopSpinner();
-    clearStatusMessage();
-    doFlash(data)
-}
-
 function statusMessageText(message, timeout=null) {
     statusMessage({"message": message, "timeout": timeout})
 }
@@ -133,75 +127,6 @@ function doSignOut(page_id) {
     return (false)
 }
 
-function doFlashOnFailure(data) {
-    if (!data.success) {
-        doFlash(data, false)
-    }
-
-}
-
-function doFlashOnSuccess(data) {
-    if (!data.success) {
-        doFlash(data, true)
-    }
-}
-
-function doFlashAlways(data) {
-    doFlash(data)
-}
-
-function doFlash(data) {
-    // Flash a bootstrap-styled warning in status-area
-    // data should be a dict with message and type fields.
-    // type can be alert-success, alert-warning, alert-info, alert-danger
-    let alert_type;
-    let message;
-    let timeout;
-    let msg;
-    let alert_settings = {'pinnable': false, 'modal':false};
-    if (!data.hasOwnProperty("alert_type")){
-        alert_type = "alert-info"
-    }
-    else {
-        alert_type = data.alert_type
-    }
-    if (!data.hasOwnProperty("message")){
-        message = "Unspecified message"
-    }
-    else {
-        message = data.message
-    }
-    if (!data.hasOwnProperty("timeout")) {
-        timeout = 0
-    } else {
-        timeout = data.timeout
-    }
-
-    if (alert_type == "alert-success") {
-        msg = alertify.success(message, timeout);
-
-    } else if(alert_type =="alert-warning") {
-        // msg = alertify.error(message, timeout);
-        if ("title" in data) {
-            msg = alertify.alert(title, `${message}`).set(alert_settings);
-        }
-        else {
-            msg = alertify.alert("Error", `${message}`).set(alert_settings);
-        }
-
-    } else {
-        msg = alertify.message(message, timeout);
-    }
-
-     $('body').one('click', function(){
-         if (alert_type == "alert-warning") {
-             msg.destroy()
-         }
-         else {
-             msg.dismiss();
-         }
-     });
-}
 
 function scrollIntoView(element, container) {
   const containerTop = $(container).scrollTop();

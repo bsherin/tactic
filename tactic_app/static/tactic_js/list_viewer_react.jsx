@@ -4,8 +4,12 @@
 import {ResourceViewerSocket, ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app.js";
 import {ViewerContext} from "./resource_viewer_context.js";
 import {postAjax, postAjaxPromise} from "./communication_react.js"
+import {doFlash} from "./toaster.js"
 
-import {render_navbar} from "./base_module.js";
+import {render_navbar} from "./blueprint_navbar.js";
+import {SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT, BOTTOM_MARGIN, getUsableDimensions} from "./sizing_tools.js";
+
+var Bp = blueprint;
 
 function list_viewer_main ()  {
     render_navbar();
@@ -47,15 +51,16 @@ function list_viewer_main ()  {
 class ListEditor extends React.Component {
 
     render() {
-        let tastyle = {"resize": "horizontal"};
+        let tastyle = {resize: "horizontal", height: "100%"};
         return (
             <div id="listarea-container">
-                <textarea id="listarea"
-                          style={tastyle}
-                          value={this.props.the_content}
-                          onChange={this.props.handleChange}
-                          readOnly={this.context.readOnly}
-                />
+                <Bp.TextArea
+                      cols="50"
+                      style={tastyle}
+                      disabled={this.context.readOnly}
+                      onChange={this.props.handleChange}
+                      value={this.props.the_content}
+            />
             </div>
         )
 
@@ -73,6 +78,8 @@ class ListViewerApp extends React.Component {
 
     constructor(props) {
         super(props);
+        doBinding(this);
+        this.top_ref = React.createRef();
         this.savedContent = props.the_content;
         this.savedTags = props.tags;
         this.savedNotes = props.notes;
@@ -82,15 +89,19 @@ class ListViewerApp extends React.Component {
                 return "Any unsaved changes will be lost."
             }
         };
-
+        let aheight = getUsableDimensions().usable_height;
+        let awidth = getUsableDimensions().usable_width;
         this.state = {
-            "list_content": props.the_content,
-            "notes": props.notes,
-            "tags": props.tags,
+            list_content: props.the_content,
+            notes: props.notes,
+            tags: props.tags,
+            usable_width: awidth,
+            usable_height: aheight,
         };
+    }
 
-        this.handleListChange = this.handleListChange.bind(this);
-        this.handleStateChange = this.handleStateChange.bind(this);
+    componentDidMount() {
+        stopSpinner()
     }
 
     get button_groups() {
@@ -101,8 +112,8 @@ class ListViewerApp extends React.Component {
             ]
         }
         else {
-            bgs = [[{"name_text": "Save", "icon_name": "save", "click_handler": this.saveMe},
-                    {"name_text": "Save as...", "icon_name": "save", "click_handler": this.saveMeAs},
+            bgs = [[{"name_text": "Save", "icon_name": "floppy-disk", "click_handler": this.saveMe},
+                    {"name_text": "Save as...", "icon_name": "floppy-disk", "click_handler": this.saveMeAs},
                     {"name_text": "Share", "icon_name": "share",
                           "click_handler": () => {sendToRepository("list", this.props.resource_name)}}]
             ]
@@ -115,33 +126,52 @@ class ListViewerApp extends React.Component {
         return bgs
     }
 
-    handleStateChange(state_stuff) {
+    _handleStateChange(state_stuff) {
         this.setState(state_stuff)
     }
 
-    handleListChange(event) {
+    _handleListChange(event) {
         this.setState({"list_content": event.target.value});
+    }
+
+    _handleResize(entries) {
+        for (let entry of entries) {
+            if (entry.target.id == "root") {
+                this.setState({usable_width: entry.contentRect.width,
+                    usable_height: entry.contentRect.height - BOTTOM_MARGIN - entry.target.getBoundingClientRect().top
+                });
+                return
+            }
+        }
     }
 
     render() {
 
         let the_context = {"readOnly": this.props.readOnly};
+        let outer_style = {width: this.state.usable_width,
+            height: this.state.usable_height,
+            paddingLeft: SIDE_MARGIN
+        };
         return (
             <ViewerContext.Provider value={the_context}>
-                <ResourceViewerApp res_type="list"
-                                   resource_name={this.props.resource_name}
-                                   button_groups={this.button_groups}
-                                   handleStateChange={this.handleStateChange}
-                                   created={this.props.created}
-                                   notes={this.state.notes}
-                                   readOnly={window.read_only}
-                                   tags={this.state.tags}
-                                   saveMe={this.saveMe}
-                                   meta_outer={this.props.meta_outer}>
-                        <ListEditor the_content={this.state.list_content}
-                                    handleChange={this.handleListChange}
-                        />
-                </ResourceViewerApp>
+                <Bp.ResizeSensor onResize={this._handleResize} observeParents={true}>
+                    <div className="resource-viewer-holder" ref={this.top_ref} style={outer_style}>
+                        <ResourceViewerApp res_type="list"
+                                           resource_name={this.props.resource_name}
+                                           button_groups={this.button_groups}
+                                           handleStateChange={this._handleStateChange}
+                                           created={this.props.created}
+                                           notes={this.state.notes}
+                                           readOnly={window.read_only}
+                                           tags={this.state.tags}
+                                           saveMe={this.saveMe}
+                                           meta_outer={this.props.meta_outer}>
+                                <ListEditor the_content={this.state.list_content}
+                                            handleChange={this._handleListChange}
+                                />
+                        </ResourceViewerApp>
+                    </div>
+                </Bp.ResizeSensor>
             </ViewerContext.Provider>
         )
     }

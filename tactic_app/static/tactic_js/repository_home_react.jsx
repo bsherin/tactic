@@ -1,12 +1,18 @@
 
-import {Toolbar} from "./react_toolbar.js"
+import {Toolbar} from "./blueprint_toolbar.js"
 import {TacticSocket} from "./tactic_socket.js"
 
-import {render_navbar} from "./base_module.js";
+import {render_navbar} from "./blueprint_navbar.js";
 
-var Rbs = window.ReactBootstrap;
+import {handleCallback} from "./communication_react.js"
+
+import {doFlash} from "./toaster.js"
+
+let Bp = blueprint;
 
 import {LibraryPane} from "./library_pane.js"
+import {BOTTOM_MARGIN, getUsableDimensions, SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT} from "./sizing_tools.js";
+import {ViewerContext} from "./resource_viewer_context.js";
 
 const MARGIN_SIZE = 17;
 
@@ -27,17 +33,6 @@ class LibraryTacticSocket extends TacticSocket {
 
         this.socket.on("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
 
-        // this.socket.on('update-selector-list', (data) => {
-        //     const manager = resource_managers[data.module_id];
-        //     manager.fill_content(data.html);
-        //     manager.select_resource_button(data.select);
-        //     manager.tag_button_list.refresh_from_selectors();
-        // });
-        //
-        // this.socket.on('update-tag-list', (data) => {
-        //     resource_managers[data.module_id].tag_button_list.refresh_given_taglist(data.tag_list)
-        // });
-
         this.socket.on('handle-callback', handleCallback);
         this.socket.on('stop-spinner', stopSpinner);
         this.socket.on('start-spinner', startSpinner);
@@ -52,15 +47,41 @@ class LibraryTacticSocket extends TacticSocket {
     }
 }
 
-
+var res_types = ["collection", "project", "tile", "list", "code"];
 class RepositoryHomeApp extends React.Component {
 
     constructor(props) {
         super(props);
+        let aheight = getUsableDimensions().usable_height;
+        let awidth = getUsableDimensions().usable_width - 170;
         this.state = {
-            "usable_width": window.innerWidth - 2 * MARGIN_SIZE - 30,
-            "usable_height": window.innerHeight - 50
+            selected_tab_id: "collections-pane",
+            usable_width: awidth,
+            usable_height: aheight,
+            pane_states: {}
         };
+         for (let res_type of res_types) {
+            this.state.pane_states[res_type] = {
+                left_width_fraction: .65,
+                selected_resource: {"name": "", "tags": "", "notes": "", "updated": "", "created": ""},
+                tag_button_state:{
+                    expanded_tags: [],
+                    active_tag: "all",
+                    tree: []
+                },
+                search_from_field: false,
+                search_from_tag: false,
+                sorting_column: "updated",
+                sorting_field: "updated_for_sort",
+                sorting_direction: "descending",
+                multi_select: false,
+                list_of_selected: [],
+                search_field_value: "",
+                search_inside_checked: false,
+                search_metadata_checked: false,
+            }
+        }
+        this.top_ref = React.createRef();
         doBinding(this);
     }
 
@@ -71,97 +92,117 @@ class RepositoryHomeApp extends React.Component {
         stopSpinner()
     }
 
+    _updatePaneState (res_type, state_update, callback=null) {
+        let old_state = Object.assign({}, this.state.pane_states[res_type]);
+        let new_pane_states = Object.assign({}, this.state.pane_states);
+        new_pane_states[res_type] = Object.assign(old_state, state_update);
+        this.setState({pane_states: new_pane_states}, callback)
+    }
+
     _update_window_dimensions() {
-        this.setState({
-            "usable_width": window.innerWidth - 2 * MARGIN_SIZE - 30,
-            "usable_height": window.innerHeight - 50
-        });
+        let uwidth = window.innerWidth - 2 * SIDE_MARGIN;
+        let uheight = window.innerHeight - BOTTOM_MARGIN;
+        if (this.top_ref && this.top_ref.current) {
+            uheight = uheight - this.top_ref.current.offsetTop;
+        }
+        else {
+            uheight = uheight  -USUAL_TOOLBAR_HEIGHT
+        }
+        this.setState({usable_height: uheight, usable_width: uwidth})
+    }
+
+    _handleTabChange(newTabId, prevTabId, event) {
+        this.setState({selected_tab_id: newTabId}, this._update_window_dimensions)
     }
 
     render () {
-        let nav_items = [["collections", "file-alt"], ["projects", "project-diagram"],
-            ["tiles", "window"], ["lists", "list-alt"], ["code", "file-code"]].map((data)=>(
-            <Rbs.Nav.Item key={data[0]}>
-                <Rbs.Nav.Link eventKey={data[0] + "-pane"}>
-                    <span className={"far um-nav-icon fa-" + data[1]}></span>
-                    <span className="um-nav-text">{data[0]}</span>
-                </Rbs.Nav.Link>
-            </Rbs.Nav.Item>
-        ));
+        let collection_pane = (
+                        <LibraryPane
+                                     res_type="collection"
+                                     allow_search_inside={false}
+                                     allow_search_metadata={false}
+                                     ToolbarClass={RepositoryCollectionToolbar}
+                                     updatePaneState={this._updatePaneState}
+                                     {...this.state.pane_states["collection"]}
+                                     is_repository={true}
+                                     tsocket={tsocket}/>
+        );
+        let projects_pane = (<LibraryPane
+                                     res_type="project"
+                                     allow_search_inside={false}
+                                     allow_search_metadata={true}
+                                     search_metadata_view = "search_project_metadata"
+                                     ToolbarClass={RepositoryProjectToolbar}
+                                     updatePaneState={this._updatePaneState}
+                                     {...this.state.pane_states["project"]}
+                                     is_repository={true}
+                                     tsocket={tsocket}/>
+        );
+        let tiles_pane = (<LibraryPane
+                                     res_type="tile"
+                                     allow_search_inside={true}
+                                     allow_search_metadata={true}
+                                     search_inside_view="search_inside_tiles"
+                                     search_metadata_view = "search_tile_metadata"
+                                     ToolbarClass={RepositoryTileToolbar}
+                                     updatePaneState={this._updatePaneState}
+                                     {...this.state.pane_states["tile"]}
+                                     is_repository={true}
+                                     tsocket={tsocket}/>
+        );
+        let lists_pane = (<LibraryPane
+                                    res_type="list"
+                                     allow_search_inside={true}
+                                     allow_search_metadata={true}
+                                     search_inside_view="search_inside_lists"
+                                     search_metadata_view = "search_list_metadata"
+                                     ToolbarClass={RepositoryListToolbar}
+                                    updatePaneState={this._updatePaneState}
+                                    {...this.state.pane_states["list"]}
+                                    is_repository={true}
+                                     tsocket={tsocket}/>
+        );
+        let code_pane = (<LibraryPane
+                                res_type="code"
+                                allow_search_inside={true}
+                                allow_search_metadata={true}
+                                search_inside_view="search_inside_code"
+                                search_metadata_view = "search_code_metadata"
+                                ToolbarClass={RepositoryCodeToolbar}
+                                updatePaneState={this._updatePaneState}
+                                {...this.state.pane_states["code"]}
+                                is_repository={true}
+                                tsocket={tsocket}/>
+        );
+        let outer_style = {width: this.state.usable_width,
+            height: this.state.usable_height,
+            paddingLeft: SIDE_MARGIN
+        };
         return (
-            <React.Fragment>
-                <Rbs.Tab.Container id="the_container" defaultActiveKey="collections-pane">
-                    <div id="repository_container" className="d-flex flex-row">
-                        <div className="d-flex flex-column justify-content-between left-vertical-nav"
-                             style={{"marginTop": 100}}>
-                            <Rbs.Nav variant="pills" className="flex-column">
-                                {nav_items}
-                            </Rbs.Nav>
-                        </div>
-                        <div className="d-flex flex-column">
-                            <Rbs.Tab.Content>
-                                <Rbs.Tab.Pane eventKey="collections-pane">
-                                    <LibraryPane usable_height={this.state.usable_height}
-                                                 usable_width={this.state.usable_width}
-                                                 res_type="collection"
-                                                 allow_search_inside={false}
-                                                 allow_search_metadata={false}
-                                                 is_repository={true}
-                                                 ToolbarClass={RepositoryCollectionToolbar}
-                                />
-                                </Rbs.Tab.Pane>
-                                <Rbs.Tab.Pane eventKey="projects-pane">
-                                    <LibraryPane usable_height={this.state.usable_height}
-                                                 usable_width={this.state.usable_width}
-                                                 res_type="project"
-                                                 allow_search_inside={false}
-                                                 allow_search_metadata={true}
-                                                 search_metadata_view = "search_project_metadata"
-                                                 is_repository={true}
-                                                 ToolbarClass={RepositoryProjectToolbar}
-                                    />
-                                </Rbs.Tab.Pane>
-                                <Rbs.Tab.Pane eventKey="tiles-pane">
-                                    <LibraryPane usable_height={this.state.usable_height}
-                                                 usable_width={this.state.usable_width}
-                                                 res_type="tile"
-                                                 allow_search_inside={true}
-                                                 allow_search_metadata={true}
-                                                 search_inside_view="search_inside_tiles"
-                                                 search_metadata_view = "search_tile_metadata"
-                                                 is_repository={true}
-                                                 ToolbarClass={RepositoryTileToolbar}
-                                    />
-                                </Rbs.Tab.Pane>
-                                <Rbs.Tab.Pane eventKey="lists-pane">
-                                    <LibraryPane usable_height={this.state.usable_height}
-                                                 usable_width={this.state.usable_width}
-                                                 res_type="list"
-                                                 allow_search_inside={true}
-                                                 allow_search_metadata={true}
-                                                 search_inside_view="search_inside_lists"
-                                                 search_metadata_view = "search_list_metadata"
-                                                 is_repository={true}
-                                                 ToolbarClass={RepositoryListToolbar}
-                                    />
-                                </Rbs.Tab.Pane>
-                                <Rbs.Tab.Pane eventKey="code-pane">
-                                    <LibraryPane usable_height={this.state.usable_height}
-                                                 usable_width={this.state.usable_width}
-                                                 res_type="code"
-                                                 allow_search_inside={true}
-                                                 allow_search_metadata={true}
-                                                 search_inside_view="search_inside_code"
-                                                 search_metadata_view = "search_code_metadata"
-                                                 is_repository={true}
-                                                 ToolbarClass={RepositoryCodeToolbar}
-                                    />
-                                </Rbs.Tab.Pane>
-                            </Rbs.Tab.Content>
-                        </div>
-                    </div>
-                </Rbs.Tab.Container>
-            </React.Fragment>
+            <ViewerContext.Provider value={{readOnly: true}}>
+                <div id="repository_container" className="pane-holder" ref={this.top_ref} style={outer_style}>
+                    <Bp.Tabs id="the_container" style={{marginTop: 100}}
+                             selectedTabId={this.state.selected_tab_id}
+                             renderActiveTabPanelOnly={true}
+                             vertical={true} large={true} onChange={this._handleTabChange}>
+                        <Bp.Tab id="collections-pane" panel={collection_pane}>
+                            <Bp.Icon icon="box"/>  Collections
+                        </Bp.Tab>
+                        <Bp.Tab id="projects-pane" panel={projects_pane}>
+                            <Bp.Icon icon="projects"/>  Projects
+                        </Bp.Tab>
+                        <Bp.Tab id="tiles-pane" panel={tiles_pane}>
+                            <Bp.Icon icon="application"/>  Tiles
+                        </Bp.Tab>
+                        <Bp.Tab id="lists-pane" panel={lists_pane}>
+                            <Bp.Icon icon="numbered-list"/>  Lists
+                        </Bp.Tab>
+                        <Bp.Tab id="code-pane" panel={code_pane}>
+                            <Bp.Icon icon="code"/>  Code
+                        </Bp.Tab>
+                    </Bp.Tabs>
+                </div>
+            </ViewerContext.Provider>
         )
     }
 }
@@ -213,7 +254,7 @@ class LibraryToolbar extends React.Component {
              };
              let opt_list = [];
              for (let opt of button[2]) {
-                 opt_list.push({opt_name: opt[0], opt_func: opt[1]})
+                 opt_list.push({opt_name: opt[0], opt_func: opt[1], opt_icon: opt[2]})
              }
              new_button["option_list"] = opt_list;
              popup_buttons.push(new_button);
@@ -222,9 +263,17 @@ class LibraryToolbar extends React.Component {
     }
 
     render() {
+        let outer_style = {
+                display: "flex",
+                flexDirection: "row",
+                position: "relative",
+                left: 150,
+                marginBottom: 10
+        };
         let popup_buttons = this.prepare_popup_buttons();
        return <Toolbar button_groups={this.prepare_button_groups()}
                        file_adders={this.prepare_file_adders()}
+                       alternate_outer_style={outer_style}
                        popup_buttons={popup_buttons}
        />
     }
@@ -263,7 +312,7 @@ class RepositoryCollectionToolbar extends React.Component {
 
     get button_groups() {
         return [
-            [["copy", this.props.repository_copy_func, "share", false]]
+            [["copy", this.props.repository_copy_func, "import", false]]
         ];
      }
 
@@ -285,7 +334,7 @@ class RepositoryProjectToolbar extends React.Component {
 
     get button_groups() {
         return [
-            [["copy", this.props.repository_copy_func, "share", false]]
+            [["copy", this.props.repository_copy_func, "import", false]]
         ];
      }
 
@@ -303,14 +352,14 @@ class RepositoryTileToolbar extends React.Component {
         doBinding(this);
     }
 
-    _tile_view() {
-        this.props.view_func("/repository_view_module/")
+    _tile_view(e) {
+        this.props.view_func(e, "/repository_view_module/")
     }
 
     get button_groups() {
         return [
-            [["view", this._tile_view, "book-open", false],
-                ["copy", this.props.repository_copy_func, "share", false]]
+            [["view", this._tile_view, "eye-open", false],
+                ["copy", this.props.repository_copy_func, "import", false]]
             ];
      }
 
@@ -329,14 +378,14 @@ class RepositoryListToolbar extends React.Component {
         doBinding(this);
     }
 
-    _list_view() {
-        this.props.view_func("/repository_view_list/")
+    _list_view(e) {
+        this.props.view_func(e, "/repository_view_list/")
     }
 
     get button_groups() {
         return [
-            [["view", this._list_view, "book-open", false],
-                ["copy", this.props.repository_copy_func, "share", false]]
+            [["view", this._list_view, "eye-open", false],
+                ["copy", this.props.repository_copy_func, "import", false]]
         ];
      }
 
@@ -356,15 +405,15 @@ class RepositoryCodeToolbar extends React.Component {
         doBinding(this);
     }
 
-    _code_view() {
-        this.props.view_func("/repository_view_code/")
+    _code_view(e) {
+        this.props.view_func(e, "/repository_view_code/")
     }
 
 
     get button_groups() {
         return [
-            [["view", this._code_view, "book-open", false],
-                ["copy", this.props.repository_copy_func, "share", false]]
+            [["view", this._code_view, "eye-open", false],
+                ["copy", this.props.repository_copy_func, "import", false]]
         ];
      }
 

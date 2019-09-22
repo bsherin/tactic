@@ -18,6 +18,8 @@ from wtforms.validators import ValidationError
 from tactic_app import ANYONE_CAN_REGISTER
 import tactic_app
 
+from tactic_app.js_source_management import _develop
+
 admin_user = User.get_user_by_username("admin")
 
 # @app.before_request
@@ -36,7 +38,8 @@ def login():
         if current_user.is_authenticated:
             return redirect(url_for("library"))
         next_view = "/library"
-    return render_template('auth/login.html', after_register="no", message="", alert_type="",
+    return render_template('auth/login_react.html', develop=str(_develop),
+                           after_register="no", message="", alert_type="",
                            next_view=next_view, version_string=tstring)
 
 
@@ -46,7 +49,7 @@ def relogin():
     next_view = request.args.get('next')
     if next_view is None:
         next_view = "/library"
-    return render_template('auth/login.html', after_register="no", message="",
+    return render_template('auth/login_react.html', after_register="no", message="",
                            alert_type="", next_view=next_view, version_string=tstring)
 
 
@@ -56,7 +59,7 @@ login_manager.refresh_view = "relogin"
 @app.route('/login_after_register', methods=['GET', 'POST'])
 def login_after_register():
     print "entering login view"
-    return render_template('auth/login.html', show_message="yes",
+    return render_template('auth/login_react.html', show_message="yes",
                            message="You can now log in.", alert_type="alert-success", version_string=tstring)
 
 
@@ -163,12 +166,17 @@ def attempt_duplicate():
 @app.route('/account_info', methods=['GET', 'POST'])
 @fresh_login_required
 def account_info():
+    return render_template('auth/account_react.html', version_string=tstring)
+
+
+@app.route('/get_account_info', methods=['GET', 'POST'])
+def get_account_info():
     user_data = current_user.user_data_dict
     field_list = []
     for key, val in user_data.items():
         if not key == "username" and not key == "tzoffset":
             field_list.append({"name": key, "val": val})
-    return render_template('auth/account.html', fields=field_list, version_string=tstring)
+    return jsonify({"field_list": field_list})
 
 
 @app.route('/update_account_info', methods=['GET', 'POST'])
@@ -181,7 +189,7 @@ def update_account_info():
 
 @app.errorhandler(CSRFError)
 def csrf_error(reason):
-    return render_template('auth/login.html', show_message="yes", message=reason), 400
+    return render_template('auth/login_react.html', show_message="yes", message=reason), 400
 
 
 class LoginForm(Form):

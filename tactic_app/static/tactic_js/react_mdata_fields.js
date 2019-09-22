@@ -3,6 +3,7 @@ export { TagsField, NotesField, CombinedMetadata };
 
 import { ViewerContext } from "./resource_viewer_context.js";
 import { postAjaxPromise } from "./communication_react.js";
+import { doFlash } from "./toaster.js";
 
 var Rbs = window.ReactBootstrap;
 
@@ -288,7 +289,7 @@ NotesField.propTypes = {
     handleBlur: PropTypes.func
 };
 
-NotesField.defaultProops = {
+NotesField.defaultProps = {
     handleBlur: null
 };
 

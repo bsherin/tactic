@@ -5,6 +5,7 @@ import {ReactCodemirror} from "./react-codemirror.js";
 export {TileForm}
 
 var Rbs = window.ReactBootstrap;
+let Bp = blueprint;
 
 class TileForm extends React.Component {
 
@@ -68,10 +69,10 @@ class TileForm extends React.Component {
         }
         return (
             <React.Fragment>
-                <Rbs.Form className="form-display-area" onSubmit={this._submitOptions}>
+                <form className="form-display-area" onSubmit={this._submitOptions}>
                     {option_items}
-                </Rbs.Form>
-                <Rbs.Button variant="primary" onClick={this._submitOptions}>Submit</Rbs.Button>
+                </form>
+                <Bp.Button text="Submit" intent="primary" onClick={this._submitOptions}/>
             </React.Fragment>
         )
     }
@@ -96,12 +97,9 @@ class TextOption extends React.Component {
     }
     render() {
         return (
-            <Rbs.Form.Group>
-                <Rbs.Form.Label>
-                    {this.props.att_name}
-                </Rbs.Form.Label>
-                <Rbs.Form.Control as="input" size="sm" onChange={this._updateMe} value={this.props.value}/>
-            </Rbs.Form.Group>
+            <Bp.FormGroup label={this.props.att_name}>
+                <Bp.InputGroup type="text" small={false} onChange={this._updateMe} value={this.props.value}/>
+            </Bp.FormGroup>
         )
     }
 }
@@ -126,12 +124,11 @@ class BoolOption extends React.Component {
     }
     render() {
         return (
-            <Rbs.Form.Group>
-                <Rbs.Form.Check label={this.props.att_name}
-                                value={this.props.value}
-                                onChange={this._updateMe}
-                />
-            </Rbs.Form.Group>
+            <Bp.Checkbox label={this.props.att_name}
+                         value={this.props.value}
+                         onChange={this._updateMe}
+                         alignIndicator="right"
+            />
         )
     }
 }
@@ -156,16 +153,13 @@ class CodeAreaOption extends React.Component {
 
     render() {
         return (
-            <Rbs.Form.Group>
-                <Rbs.Form.Label>
-                    {this.props.att_name}
-                </Rbs.Form.Label>
+            <Bp.FormGroup label={this.props.att_name}>
                 <ReactCodemirror handleChange={this._updateMe}
                                  code_content={this.props.value}
                                  saveMe={null}
                                  code_container_height={100}
                 />
-            </Rbs.Form.Group>
+            </Bp.FormGroup>
         )
     }
 }
@@ -189,13 +183,10 @@ class TextAreaOption extends React.Component {
     }
     render() {
         return (
-            <Rbs.Form.Group>
-                <Rbs.Form.Label>
-                    {this.props.att_name}
-                </Rbs.Form.Label>
-                <Rbs.Form.Control onChange={this._updateMe}
-                              as="textarea" size="sm" value={this.props.value}/>
-            </Rbs.Form.Group>
+            <Bp.FormGroup label={this.props.att_name}>
+                <Bp.TextArea onChange={this._updateMe}
+                              small={false} value={this.props.value}/>
+            </Bp.FormGroup>
         )
     }
 }
@@ -225,17 +216,12 @@ class SelectOption extends React.Component {
                 </option>
         );
         return (
-            <Rbs.Form.Group>
-                <Rbs.Form.Label>
-                    {this.props.att_name}
-                </Rbs.Form.Label>
-                <Rbs.Form.Control as="select"
-                                  size="sm"
-                                  onChange={this._updateMe}
-                                  value={this.props.value}>
+            <Bp.FormGroup label={this.props.att_name}>
+                <Bp.HTMLSelect  onChange={this._updateMe}
+                              value={this.props.value}>
                     {option_items}
-                </Rbs.Form.Control>
-            </Rbs.Form.Group>
+                </Bp.HTMLSelect>
+            </Bp.FormGroup>
         )
     }
 }
@@ -275,16 +261,12 @@ class PipeOption extends React.Component {
 
     render() {
         return (
-        <Rbs.Form.Group>
-            <Rbs.Form.Label>
-                {this.props.att_name}
-            </Rbs.Form.Label>
-            <select className="form-control form-control-sm"
-                    onChange={this._updateMe}
-                    value={this.props.value}>
+        <Bp.FormGroup label={this.props.att_name}>
+            <HTMLSelect onChange={this._updateMe}
+                        value={this.props.value}>
                 {this.create_groups()}
-            </select>
-        </Rbs.Form.Group>
+            </HTMLSelect>
+        </Bp.FormGroup>
         )
     }
 }

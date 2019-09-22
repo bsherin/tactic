@@ -8,7 +8,6 @@ class ReactCodemirrorMergeView extends React.Component {
         this.code_container_ref = React.createRef();
         this.handleChange = this.handleChange.bind(this);
         this.mousetrap = new Mousetrap();
-        this.create_api();
     }
 
     createMergeArea(codearea) {

@@ -5,9 +5,13 @@
 import {ResourceViewerSocket, ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app.js";
 import {ReactCodemirror} from "./react-codemirror.js";
 import {ViewerContext} from "./resource_viewer_context.js";
-import {render_navbar} from "./base_module.js";
+import {render_navbar} from "./blueprint_navbar.js";
 import {postAjax, postAjaxPromise, postWithCallback} from "./communication_react.js"
+import {doFlash, doFlashStopSpinner} from "./toaster.js"
 
+import {SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT, BOTTOM_MARGIN, getUsableDimensions} from "./sizing_tools.js";
+
+let Bp = blueprint;
 
 function module_viewer_main ()  {
     render_navbar();
@@ -50,6 +54,8 @@ class ModuleViewerApp extends React.Component {
 
     constructor(props) {
         super(props);
+        doBinding(this);
+        this.top_ref = React.createRef();
         this.savedContent = props.the_content;
         this.savedTags = props.tags;
         this.savedNotes = props.notes;
@@ -60,14 +66,33 @@ class ModuleViewerApp extends React.Component {
             }
         };
 
+        let aheight = getUsableDimensions().usable_height;
+        let awidth = getUsableDimensions().usable_width;
         this.state = {
-            "code_content": props.the_content,
-            "notes": props.notes,
-            "tags": props.tags,
+            code_content: props.the_content,
+            notes: props.notes,
+            tags: props.tags,
+            usable_width: awidth,
+            usable_height: aheight,
         };
+    }
 
-        this.handleStateChange = this.handleStateChange.bind(this);
-        this.handleCodeChange = this.handleCodeChange.bind(this);
+    componentDidMount() {
+        window.addEventListener("resize", this._update_window_dimensions);
+        this._update_window_dimensions();
+        stopSpinner()
+    }
+
+    _update_window_dimensions() {
+        let uwidth = window.innerWidth - 2 * SIDE_MARGIN;
+        let uheight = window.innerHeight - BOTTOM_MARGIN;
+        if (this.top_ref && this.top_ref.current) {
+            uheight = uheight - this.top_ref.current.offsetTop;
+        }
+        else {
+            uheight = uheight - USUAL_TOOLBAR_HEIGHT
+        }
+        this.setState({usable_height: uheight, usable_width: uwidth})
     }
 
     get button_groups() {
@@ -80,14 +105,14 @@ class ModuleViewerApp extends React.Component {
         }
         else {
             bgs = [
-                    [{"name_text": "Save", "icon_name": "save","click_handler": this.saveMe},
-                     {"name_text": "Mark", "icon_name": "map-marker-alt", "click_handler": this.saveAndCheckpoint},
-                     {"name_text": "Save as...", "icon_name": "save", "click_handler": this.saveMeAs},
-                     {"name_text": "Load", "icon_name": "arrow-from-bottom", "click_handler": this.loadModule},
+                    [{"name_text": "Save", "icon_name": "floppy-disk","click_handler": this.saveMe},
+                     {"name_text": "Mark", "icon_name": "map-marker", "click_handler": this.saveAndCheckpoint},
+                     {"name_text": "Save as...", "icon_name": "floppy-disk", "click_handler": this.saveMeAs},
+                     {"name_text": "Load", "icon_name": "upload", "click_handler": this.loadModule},
                      {"name_text": "Share", "icon_name": "share",
                         "click_handler": () => {sendToRepository("tile", this.props.resource_name)}}],
                     [{"name_text": "History", "icon_name": "history", "click_handler": this.showHistoryViewer},
-                     {"name_text": "Compare", "icon_name": "code-branch", "click_handler": this.showTileDiffer}]
+                     {"name_text": "Compare", "icon_name": "git-branch", "click_handler": this.showTileDiffer}]
             ]
         }
 
@@ -99,33 +124,52 @@ class ModuleViewerApp extends React.Component {
         return bgs
     }
 
-    handleCodeChange(new_code) {
+    _handleCodeChange(new_code) {
         this.setState({"code_content": new_code})
     }
 
-    handleStateChange(state_stuff) {
+    _handleStateChange(state_stuff) {
         this.setState(state_stuff)
+    }
+
+     _handleResize(entries) {
+        for (let entry of entries) {
+            if (entry.target.id == "root") {
+                this.setState({usable_width: entry.contentRect.width,
+                    usable_height: entry.contentRect.height - BOTTOM_MARGIN - entry.target.getBoundingClientRect().top
+                });
+                return
+            }
+        }
     }
 
     render() {
         let the_context = {"readOnly": this.props.readOnly};
+        let outer_style = {width: this.state.usable_width,
+            height: this.state.usable_height,
+            paddingLeft: SIDE_MARGIN
+        };
         return (
             <ViewerContext.Provider value={the_context}>
-                <ResourceViewerApp res_type="tile"
-                                   resource_name={this.props.resource_name}
-                                   button_groups={this.button_groups}
-                                   handleStateChange={this.handleStateChange}
-                                   created={this.props.created}
-                                   notes={this.state.notes}
-                                   tags={this.state.tags}
-                                   saveMe={this.saveMe}
-                                   meta_outer={this.props.meta_outer}>
-                    <ReactCodemirror code_content={this.state.code_content}
-                                     handleChange={this.handleCodeChange}
-                                     saveMe={this.saveMe}
-                                     readOnly={this.props.readOnly}
-                      />
-                </ResourceViewerApp>
+                <Bp.ResizeSensor onResize={this._handleResize} observeParents={true}>
+                    <div className="resource-viewer-holder" ref={this.top_ref} style={outer_style}>
+                            <ResourceViewerApp res_type="tile"
+                                               resource_name={this.props.resource_name}
+                                               button_groups={this.button_groups}
+                                               handleStateChange={this._handleStateChange}
+                                               created={this.props.created}
+                                               notes={this.state.notes}
+                                               tags={this.state.tags}
+                                               saveMe={this.saveMe}
+                                               meta_outer={this.props.meta_outer}>
+                                <ReactCodemirror code_content={this.state.code_content}
+                                                 handleChange={this._handleCodeChange}
+                                                 saveMe={this.saveMe}
+                                                 readOnly={this.props.readOnly}
+                                  />
+                            </ResourceViewerApp>
+                        </div>
+                    </Bp.ResizeSensor>
             </ViewerContext.Provider>
         )
     }

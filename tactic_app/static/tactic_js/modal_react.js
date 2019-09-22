@@ -1,7 +1,8 @@
 
-export { showModalReact, showConfirmDialogReact, showSelectDialog };
+export { showModalReact, showConfirmDialogReact, showSelectDialog, showInformDialogReact };
 
 var Rbs = window.ReactBootstrap;
+var Bp = blueprint;
 
 class ModalDialog extends React.Component {
 
@@ -82,53 +83,36 @@ class ModalDialog extends React.Component {
             }
         }
         return React.createElement(
-            Rbs.Modal,
-            { show: this.state.show },
+            Bp.Dialog,
+            { isOpen: this.state.show,
+                title: this.props.title,
+                canEscapeKeyClose: true },
             React.createElement(
-                Rbs.Modal.Header,
-                { closeButton: true },
+                "div",
+                { className: Bp.Classes.DIALOG_BODY },
                 React.createElement(
-                    Rbs.Modal.Title,
-                    null,
-                    this.props.title
-                )
-            ),
-            React.createElement(
-                Rbs.Modal.Body,
-                null,
-                React.createElement(
-                    Rbs.Form.Group,
-                    { onSubmit: this._submitHandler },
-                    React.createElement(
-                        Rbs.Form.Label,
-                        null,
-                        this.props.field_title
-                    ),
-                    React.createElement(
-                        Rbs.Form,
-                        null,
-                        React.createElement(Rbs.Form.Control, { type: "text", onChange: this._changeHandler, value: this.state.current_value })
-                    )
+                    Bp.FormGroup,
+                    { label: this.props.field_title, helperText: this.state.warning_text },
+                    React.createElement(Bp.InputGroup, { onChange: this._changeHandler, value: this.state.current_value })
                 ),
                 checkbox_items.length != 0 && checkbox_items
             ),
             React.createElement(
-                Rbs.Modal.Footer,
-                null,
+                "div",
+                { className: Bp.Classes.DIALOG_FOOTER },
                 React.createElement(
-                    Rbs.Form.Text,
-                    { className: "text-muted" },
-                    this.state.warning_text
-                ),
-                React.createElement(
-                    Rbs.Button,
-                    { variant: "secondary", onClick: this._cancelHandler },
-                    "Cancel"
-                ),
-                React.createElement(
-                    Rbs.Button,
-                    { variant: "primary", onClick: this._submitHandler },
-                    "Submit"
+                    "div",
+                    { className: Bp.Classes.DIALOG_FOOTER_ACTIONS },
+                    React.createElement(
+                        Bp.Button,
+                        { onClick: this._cancelHandler },
+                        "Cancel"
+                    ),
+                    React.createElement(
+                        Bp.Button,
+                        { intent: Bp.Intent.PRIMARY, onClick: this._submitHandler },
+                        "Submit"
+                    )
                 )
             )
         );
@@ -203,54 +187,35 @@ class SelectDialog extends React.Component {
 
     render() {
         return React.createElement(
-            Rbs.Modal,
-            { show: this.state.show },
+            Bp.Dialog,
+            { isOpen: this.state.show,
+                title: this.props.title,
+                canEscapeKeyClose: true },
             React.createElement(
-                Rbs.Modal.Header,
-                { closeButton: true },
+                "div",
+                { className: Bp.Classes.DIALOG_BODY },
                 React.createElement(
-                    Rbs.Modal.Title,
-                    null,
-                    this.props.title
+                    Rbs.FormGroup,
+                    { title: this.props.select_label },
+                    React.createElement(Bp.HTMLSelect, { options: this.props.option_list, onChange: this._handleChange, value: this.state.value })
                 )
             ),
             React.createElement(
-                Rbs.Modal.Body,
-                null,
+                "div",
+                { className: Bp.Classes.DIALOG_FOOTER },
                 React.createElement(
-                    Rbs.Form.Group,
-                    null,
+                    "div",
+                    { className: Bp.Classes.DIALOG_FOOTER_ACTIONS },
                     React.createElement(
-                        Rbs.Form.Label,
-                        null,
-                        "Select Label"
+                        Bp.Button,
+                        { onClick: this._cancelHandler },
+                        "Cancel"
                     ),
                     React.createElement(
-                        Rbs.Form.Control,
-                        { as: "select",
-                            onChange: this._handleChange,
-                            value: this.state.value
-                        },
-                        this.props.option_list.map((option_name, index) => React.createElement(
-                            "option",
-                            { key: index },
-                            option_name
-                        ))
+                        Bp.Button,
+                        { intent: Bp.Intent.PRIMARY, onClick: this._submitHandler },
+                        "Submit"
                     )
-                )
-            ),
-            React.createElement(
-                Rbs.Modal.Footer,
-                null,
-                React.createElement(
-                    Rbs.Button,
-                    { variant: "secondary", onClick: this._cancelHandler },
-                    "Cancel"
-                ),
-                React.createElement(
-                    Rbs.Button,
-                    { variant: "primary", onClick: this._submitHandler },
-                    "Submit"
                 )
             )
         );
@@ -310,20 +275,13 @@ class ConfirmDialog extends React.Component {
 
     render() {
         return React.createElement(
-            Rbs.Modal,
-            { show: this.state.show },
+            Bp.Dialog,
+            { isOpen: this.state.show,
+                title: this.props.title,
+                canEscapeKeyClose: true },
             React.createElement(
-                Rbs.Modal.Header,
-                { closeButton: true },
-                React.createElement(
-                    Rbs.Modal.Title,
-                    null,
-                    this.props.title
-                )
-            ),
-            React.createElement(
-                Rbs.Modal.Body,
-                null,
+                "div",
+                { className: Bp.Classes.DIALOG_BODY },
                 React.createElement(
                     "p",
                     null,
@@ -331,17 +289,21 @@ class ConfirmDialog extends React.Component {
                 )
             ),
             React.createElement(
-                Rbs.Modal.Footer,
-                null,
+                "div",
+                { className: Bp.Classes.DIALOG_FOOTER },
                 React.createElement(
-                    Rbs.Button,
-                    { variant: "secondary", onClick: this._cancelHandler },
-                    "Cancel"
-                ),
-                React.createElement(
-                    Rbs.Button,
-                    { variant: "primary", onClick: this._submitHandler },
-                    "Submit"
+                    "div",
+                    { className: Bp.Classes.DIALOG_FOOTER_ACTIONS },
+                    React.createElement(
+                        Bp.Button,
+                        { onClick: this._cancelHandler },
+                        "Cancel"
+                    ),
+                    React.createElement(
+                        Bp.Button,
+                        { intent: Bp.Intent.PRIMARY, onClick: this._submitHandler },
+                        "Submit"
+                    )
                 )
             )
         );
@@ -370,4 +332,76 @@ function showConfirmDialogReact(title, text_body, cancel_text, submit_text, subm
         text_body: text_body,
         submit_text: submit_text,
         cancel_text: cancel_text }), domContainer);
+}
+
+class InformDialog extends React.Component {
+
+    constructor(props) {
+        super(props);
+        doBinding(this);
+        this.state = {
+            show: false
+        };
+    }
+
+    componentDidMount() {
+        this.setState({ "show": true });
+    }
+
+    _closeHandler() {
+        this.setState({ "show": false });
+        this.props.handleClose();
+    }
+
+    render() {
+        return React.createElement(
+            Bp.Dialog,
+            { isOpen: this.state.show,
+                title: this.props.title,
+                canEscapeKeyClose: true },
+            React.createElement(
+                "div",
+                { className: Bp.Classes.DIALOG_BODY },
+                React.createElement(
+                    "p",
+                    null,
+                    this.props.text_body
+                )
+            ),
+            React.createElement(
+                "div",
+                { className: Bp.Classes.DIALOG_FOOTER },
+                React.createElement(
+                    "div",
+                    { className: Bp.Classes.DIALOG_FOOTER_ACTIONS },
+                    React.createElement(
+                        Bp.Button,
+                        { onClick: this._closeHandler },
+                        "Okay"
+                    )
+                )
+            )
+        );
+    }
+}
+
+InformDialog.propTypes = {
+    handleClose: PropTypes.func,
+    title: PropTypes.string,
+    text_body: PropTypes.string,
+    close_text: PropTypes.string
+};
+
+function showInformDialogReact(title, text_body, close_text = "Okay") {
+
+    let domContainer = document.querySelector('#modal-area');
+
+    function handle_close() {
+        ReactDOM.unmountComponentAtNode(domContainer);
+    }
+    ReactDOM.render(React.createElement(ConfirmDialog, {
+        handleClose: handle_close,
+        title: title,
+        text_body: text_body,
+        close_text: close_text }), domContainer);
 }

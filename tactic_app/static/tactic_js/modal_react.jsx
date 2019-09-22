@@ -1,7 +1,8 @@
 
-export {showModalReact, showConfirmDialogReact, showSelectDialog}
+export {showModalReact, showConfirmDialogReact, showSelectDialog, showInformDialogReact}
 
 var Rbs = window.ReactBootstrap;
+var Bp = blueprint;
 
 class ModalDialog extends React.Component {
 
@@ -86,28 +87,22 @@ class ModalDialog extends React.Component {
             }
         }
         return (
-            <Rbs.Modal show={this.state.show}>
-                <Rbs.Modal.Header closeButton>
-                  <Rbs.Modal.Title>{this.props.title}</Rbs.Modal.Title>
-                </Rbs.Modal.Header>
-                <Rbs.Modal.Body>
-                    <Rbs.Form.Group onSubmit={this._submitHandler}>
-                        <Rbs.Form.Label>{this.props.field_title}</Rbs.Form.Label>
-                        <Rbs.Form>
-                            <Rbs.Form.Control type="text" onChange={this._changeHandler} value={this.state.current_value}>
-                            </Rbs.Form.Control>
-                        </Rbs.Form>
-                    </Rbs.Form.Group>
+            <Bp.Dialog isOpen={this.state.show}
+                       title={this.props.title}
+                       canEscapeKeyClose={true}>
+                <div className={Bp.Classes.DIALOG_BODY}>
+                    <Bp.FormGroup label={this.props.field_title} helperText={this.state.warning_text}>
+                            <Bp.InputGroup onChange={this._changeHandler} value={this.state.current_value}/>
+                    </Bp.FormGroup>
                     {(checkbox_items.length != 0) && checkbox_items}
-                </Rbs.Modal.Body>
-                <Rbs.Modal.Footer>
-                    <Rbs.Form.Text className="text-muted">
-                        {this.state.warning_text}
-                    </Rbs.Form.Text>
-                    <Rbs.Button variant="secondary" onClick={this._cancelHandler}>Cancel</Rbs.Button>
-                    <Rbs.Button variant="primary" onClick={this._submitHandler}>Submit</Rbs.Button>
-                </Rbs.Modal.Footer>
-            </Rbs.Modal>
+                </div>
+                <div className={Bp.Classes.DIALOG_FOOTER}>
+                    <div className={Bp.Classes.DIALOG_FOOTER_ACTIONS}>
+                        <Bp.Button onClick={this._cancelHandler}>Cancel</Bp.Button>
+                        <Bp.Button intent={Bp.Intent.PRIMARY} onClick={this._submitHandler}>Submit</Bp.Button>
+                    </div>
+                </div>
+            </Bp.Dialog>
         )
     }
 }
@@ -181,29 +176,21 @@ class SelectDialog extends React.Component {
 
     render() {
         return (
-            <Rbs.Modal show={this.state.show}>
-                <Rbs.Modal.Header closeButton>
-                  <Rbs.Modal.Title>{this.props.title}</Rbs.Modal.Title>
-                </Rbs.Modal.Header>
-                <Rbs.Modal.Body>
-                   <Rbs.Form.Group >
-                        <Rbs.Form.Label>Select Label</Rbs.Form.Label>
-                        <Rbs.Form.Control as="select"
-                                      onChange={this._handleChange}
-                                      value={this.state.value}
-                        >
-                            {this.props.option_list.map((option_name, index)=> (
-                                <option key={index}>{option_name}</option>
-                                )
-                            )}
-                        </Rbs.Form.Control>
-                   </Rbs.Form.Group>
-                </Rbs.Modal.Body>
-                <Rbs.Modal.Footer>
-                    <Rbs.Button variant="secondary" onClick={this._cancelHandler}>Cancel</Rbs.Button>
-                    <Rbs.Button variant="primary" onClick={this._submitHandler}>Submit</Rbs.Button>
-                </Rbs.Modal.Footer>
-            </Rbs.Modal>
+            <Bp.Dialog isOpen={this.state.show}
+                       title={this.props.title}
+                       canEscapeKeyClose={true}>
+                <div className={Bp.Classes.DIALOG_BODY}>
+                   <Rbs.FormGroup title={this.props.select_label}>
+                       <Bp.HTMLSelect options={this.props.option_list} onChange={this._handleChange} value={this.state.value}/>
+                   </Rbs.FormGroup>
+                </div>
+                <div className={Bp.Classes.DIALOG_FOOTER}>
+                    <div className={Bp.Classes.DIALOG_FOOTER_ACTIONS}>
+                        <Bp.Button onClick={this._cancelHandler}>Cancel</Bp.Button>
+                        <Bp.Button intent={Bp.Intent.PRIMARY} onClick={this._submitHandler}>Submit</Bp.Button>
+                    </div>
+                </div>
+            </Bp.Dialog>
         )
     }
 }
@@ -262,18 +249,19 @@ class ConfirmDialog extends React.Component {
 
     render() {
         return (
-            <Rbs.Modal show={this.state.show}>
-                <Rbs.Modal.Header closeButton>
-                  <Rbs.Modal.Title>{this.props.title}</Rbs.Modal.Title>
-                </Rbs.Modal.Header>
-                <Rbs.Modal.Body>
+            <Bp.Dialog isOpen={this.state.show}
+                       title={this.props.title}
+                       canEscapeKeyClose={true}>
+                <div className={Bp.Classes.DIALOG_BODY}>
                     <p>{this.props.text_body}</p>
-                </Rbs.Modal.Body>
-                <Rbs.Modal.Footer>
-                    <Rbs.Button variant="secondary" onClick={this._cancelHandler}>Cancel</Rbs.Button>
-                    <Rbs.Button variant="primary" onClick={this._submitHandler}>Submit</Rbs.Button>
-                </Rbs.Modal.Footer>
-            </Rbs.Modal>
+                </div>
+                <div className={Bp.Classes.DIALOG_FOOTER}>
+                    <div className={Bp.Classes.DIALOG_FOOTER_ACTIONS}>
+                        <Bp.Button onClick={this._cancelHandler}>Cancel</Bp.Button>
+                        <Bp.Button intent={Bp.Intent.PRIMARY} onClick={this._submitHandler}>Submit</Bp.Button>
+                    </div>
+                </div>
+            </Bp.Dialog>
         )
     }
 }
@@ -301,4 +289,64 @@ function showConfirmDialogReact(title, text_body, cancel_text, submit_text, subm
                                  text_body={text_body}
                                  submit_text={submit_text}
                                  cancel_text={cancel_text}/>, domContainer);
+}
+
+class InformDialog extends React.Component {
+
+    constructor(props) {
+        super(props);
+        doBinding(this);
+        this.state = {
+            show: false,
+        };
+    }
+
+
+    componentDidMount() {
+        this.setState({"show": true})
+    }
+
+    _closeHandler() {
+        this.setState({"show": false});
+        this.props.handleClose()
+    }
+
+    render() {
+        return (
+            <Bp.Dialog isOpen={this.state.show}
+                       title={this.props.title}
+                       canEscapeKeyClose={true}>
+                <div className={Bp.Classes.DIALOG_BODY}>
+                    <p>{this.props.text_body}</p>
+                </div>
+                <div className={Bp.Classes.DIALOG_FOOTER}>
+                    <div className={Bp.Classes.DIALOG_FOOTER_ACTIONS}>
+                        <Bp.Button onClick={this._closeHandler}>Okay</Bp.Button>
+                    </div>
+                </div>
+            </Bp.Dialog>
+        )
+    }
+}
+
+InformDialog.propTypes = {
+    handleClose: PropTypes.func,
+    title: PropTypes.string,
+    text_body: PropTypes.string,
+    close_text: PropTypes.string,
+};
+
+function showInformDialogReact(title, text_body, close_text="Okay") {
+
+    let domContainer = document.querySelector('#modal-area');
+
+    function handle_close () {
+        ReactDOM.unmountComponentAtNode(domContainer)
+
+    }
+    ReactDOM.render(<ConfirmDialog
+                                 handleClose={handle_close}
+                                 title={title}
+                                 text_body={text_body}
+                                 close_text={close_text}/>, domContainer);
 }

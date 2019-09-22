@@ -1,8 +1,12 @@
 import {showModalReact} from "./modal_react.js";
 import {postWithCallback} from "./communication_react.js"
+import {doFlashStopSpinner} from "./toaster.js"
 export {ProjectMenu, ColumnMenu, MenuComponent}
 
-var Rbs = window.ReactBootstrap;
+
+let Rbs = window.ReactBootstrap;
+
+let Bp = blueprint;
 
 class MenuComponent extends React.Component {
     constructor(props) {
@@ -17,24 +21,22 @@ class MenuComponent extends React.Component {
     render () {
         let pruned_list = Object.keys(this.props.option_dict).filter(this._filter_on_match_list);
         let choices = pruned_list.map((opt_name, index) => (
-            <Rbs.Dropdown.Item disabled={this.props.disable_all || this.props.disabled_items.includes(opt_name)}
-                               onClick={this.props.option_dict[opt_name]}
-                               key={opt_name}>
-                {opt_name}
-            </Rbs.Dropdown.Item>
+            <Bp.MenuItem disabled={this.props.disable_all || this.props.disabled_items.includes(opt_name)}
+                         onClick={this.props.option_dict[opt_name]}
+                         key={opt_name}
+                         text={opt_name}
+            >
+            </Bp.MenuItem>
         ));
+        let the_menu = (
+            <Bp.Menu>
+                {choices}
+            </Bp.Menu>
+        );
         return (
-            <Rbs.Dropdown>
-                <Rbs.Dropdown.Toggle id={this.props.menu_name}
-                                     variant="secondary"
-                                     size="sm"
-                >
-                    {this.props.menu_name}
-                </Rbs.Dropdown.Toggle>
-                <Rbs.Dropdown.Menu>
-                    {choices}
-                </Rbs.Dropdown.Menu>
-            </Rbs.Dropdown>
+            <Bp.Popover minimal={true} content={the_menu} position={Bp.PopoverPosition.BOTTOM_LEFT}>
+                    <Bp.Button text={this.props.menu_name} small={true} minimal={true}/>
+            </Bp.Popover>
         )
     }
 }

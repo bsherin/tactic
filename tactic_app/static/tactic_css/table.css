@@ -1,23 +1,11 @@
+/*
+ * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
+ */
 #main-panel {
-  margin: 5px;
-  border: 1px solid #6c757d;
-  font-family: Arial, Helvetica, sans-serif; }
-  #main-panel .card-header {
-    padding-top: 5px;
-    padding-bottom: 5px;
-    background-color: #f5f5f5;
-    color: 333;
-    border-bottom-width: 1px;
-    border-bottom-color: #6c757d; }
-    #main-panel .card-header .main-heading-element {
-      height: 35px; }
-      #main-panel .card-header .main-heading-element .glyphicon {
-        font-size: 15px; }
-      #main-panel .card-header .main-heading-element label[for=doc-selector] {
-        padding-left: 10px;
-        font-weight: 500; }
-  #main-panel .btn-sm {
-    border: 1px solid; }
+  padding: 0; }
+  #main-panel .main-heading {
+    color: #5c7080;
+    background-color: #ebf1f5; }
 
 #doc-selector {
   z-index: 500; }
@@ -67,7 +55,7 @@
     padding: 5px 10px;
     vertical-align: top;
     color: #666;
-    text-shadow: 1px 1px 0px #fff;
+    text-shadow: 1px 1px 0 #fff;
     overflow: hidden;
     white-space: nowrap;
     background-color: #f5f5f5; }

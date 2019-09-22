@@ -1,12 +1,13 @@
 
 import {SortableComponent} from "./sortable_container.js";
 import {postWithCallback} from "./communication_react.js"
+import {doFlash} from "./toaster.js"
 
-var Rbs = window.ReactBootstrap;
-var Rtg = window.ReactTransitionGroup;
+let Rtg = window.ReactTransitionGroup;
+let Bp = blueprint;
 
 import {TileForm} from "./tile_form_react.js";
-import {GlyphButton} from "./react_widgets.js";
+import {GlyphButton} from "./blueprint_react_widgets.js";
 
 export {TileContainer}
 
@@ -254,7 +255,7 @@ class TileComponent extends React.Component {
         this.setState({mounted: true});
         this.broadcastTileSize(this.props.tile_width, this.props.tile_height);
         this.listen_for_clicks();
-        $(this.my_ref.current).resizable({
+        $("#" + this.props.tile_id).resizable({
             handles: "se",
             resize: self._resizeTileArea,
             stop: function () {
@@ -537,47 +538,50 @@ class TileComponent extends React.Component {
         }
         let butclass = "notclose header-but";
         return (
-            <Rbs.Card bg="light" ref={this.my_ref} style={this.main_style} className={tile_class} id={this.props.tile_id}>
-                <Rbs.Card.Header className="tile-panel-heading" >
+            <Bp.Card ref={this.my_ref} style={this.main_style} className={tile_class} id={this.props.tile_id}>
+                <div className="tile-panel-heading" >
                     <div className="left-glyphs" ref={this.left_glyphs_ref} style={this.lg_style}>
+                        <Bp.ButtonGroup>
                         {this.props.shrunk &&
-                            <GlyphButton butclass={butclass + " triangle-right"}
-                                         icon_class="far fa-chevron-circle-right"
+                            <GlyphButton
+                                         icon="chevron-right"
                                          handleClick={this._toggleShrunk} />}
 
                         {!this.props.shrunk &&
-                            <GlyphButton butclass={butclass + " triangle-bottom"}
-                                         icon_class="far fa-chevron-circle-down"
+                            <GlyphButton
+                                         icon="chevron-down"
                                          handleClick={this._toggleShrunk} />}
-                        <GlyphButton butclass={butclass}
+                        <GlyphButton
                                      handleClick={this._toggleBack}
-                                     icon_class="far fa-cog"/>
+                                     icon="cog"/>
                         <span className="tile-name-div">{this.props.tile_name}</span>
+                        </Bp.ButtonGroup>
                     </div>
+
                     <div className="right-glyphs" ref={this.right_glyphs_ref}>
-                        {this.props.show_spinner &&
-                            <span className="spin-place">
-                                <span className="loader-small"/>
-                            </span>}
-                        <GlyphButton butclass={butclass}
+                        <Bp.ButtonGroup>
+                        {this.props.show_spinner && <Bp.Spinner size={17} />}
+
+                        <GlyphButton
                                      handleClick={this._toggleTileLog}
-                                     icon_class="far fa-exclamation-triangle"/>
+                                     icon="console"/>
                         <GlyphButton butclass={butclass}
                                      handleClick={this._logMe}
-                                     icon_class="far fa-download"/>
-                        <GlyphButton butclass={butclass}
+                                     icon="clipboard"/>
+                        <GlyphButton
                                      handleClick={this._logParams}
-                                     icon_class="far fa-list-ul"/>
-                        <GlyphButton butclass={butclass}
+                                     icon="th"/>
+                        <GlyphButton
                                      handleClick={this._reloadTile}
-                                     icon_class="far fa-redo-alt"/>
-                        <GlyphButton butclass={butclass}
+                                     icon="refresh"/>
+                        <GlyphButton
                                      handleClick={this._closeTile}
-                                     icon_class="far fa-trash-alt"/>
+                                     icon="trash"/>
+                        </Bp.ButtonGroup>
                     </div>
-                </Rbs.Card.Header>
+                </div>
                 {!this.props.shrunk &&
-                    <Rbs.Card.Body ref={this.body_ref} style={this.panel_body_style} className="tile-body">
+                    <div ref={this.body_ref} style={this.panel_body_style} className="tile-body">
                         <Rtg.Transition in={this.props.show_form} timeout={ANI_DURATION}>
                             {state => (
                                 <div className="back" style={composeObjs(this.back_style, this.transitionStylesAltUp[state])}>
@@ -604,9 +608,9 @@ class TileComponent extends React.Component {
                             </div>
                             )}
                         </Rtg.Transition>
-                    </Rbs.Card.Body>
+                    </div>
                 }
-            </Rbs.Card>
+            </Bp.Card>
         )
     }
 }
