@@ -3,6 +3,7 @@ import {TacticNavbar} from "./base_module.js";
 import {ProjectMenu} from "./main_menus_react.js";
 import {TacticSocket} from "./tactic_socket.js";
 import {ConsoleComponent} from "./console_component.js";
+import {doFlash} from "./toaster.js"
 
 import {handleCallback, postWithCallback, postAsyncFalse} from "./communication_react.js"
 

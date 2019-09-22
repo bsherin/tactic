@@ -1,10 +1,11 @@
 
-import {SelectList} from "./react_widgets.js";
+import {GlyphButton} from "./blueprint_react_widgets.js";
 import {ReactCodemirror} from "./react-codemirror.js";
 
 export {MainTableCard, MainTableCardHeader, TableBody, FreeformBody, TableHeader, compute_added_column_width}
 
-var Rbs = window.ReactBootstrap;
+let Bp = blueprint;
+
 
 class HeaderCell extends React.Component {
 
@@ -641,60 +642,54 @@ class MainTableCardHeader extends React.Component {
         e.preventDefault();
     }
 
+    _onChangeDoc(event) {
+        this.props.handleChangeDoc(event.target.value)
+    }
+
     render () {
         let heading_right_opacity = this.state.hide_right_element ? 0 : 100;
+        let select_style = {height: 30, maxWidth: 200};
         return (
-            <Rbs.Card.Header className="d-flex pl-2 pt-2 justify-content-between align-baseline">
+            <div className="d-flex pl-2 pt-2 justify-content-between align-baseline main-heading">
                 <div id="heading-left" ref={this.heading_left_ref} className="d-flex">
                     <div className="main-heading-element">
-                        <Rbs.Button onClick={this.props.toggleShrink}
-                                    variant="outline-secondary"
-                                    className="notclose">
-                            <span className="far fa-minus-circle"></span>
-                        </Rbs.Button>
+                        <GlyphButton handleClick={this.props.toggleShrink} icon="minimize"/>
                     </div>
                     <div className="main-heading-element">
-                        <Rbs.Form inline={true}>
-                            <Rbs.Form.Group>
-                                <Rbs.Form.Label className="mx-2">{this.props.short_collection_name}</Rbs.Form.Label>
-                                <SelectList option_list={this.props.doc_names}
-                                            onChange={this.props.handleChangeDoc}
-                                            value={this.props.current_doc_name}
-                                            height={30}
-                                            maxWidth={200}
-                                            fontSize={14}
+                        <form>
+                            <Bp.FormGroup label={this.props.short_collection_name} inline={true}>
+                                <Bp.HTMLSelect options={this.props.doc_names}
+                                                onChange={this._onChangeDoc}
+                                                value={this.props.current_doc_name}
+                                               style={select_style}
                                 />
-                            </Rbs.Form.Group>
-                        </Rbs.Form>
+                            </Bp.FormGroup>
+                        </form>
                     </div>
 
                 </div>
                 <div id="heading-right" ref={this.heading_right_ref} style={{opacity: heading_right_opacity}} className="d-flex">
                     {this.props.show_table_spinner && <SmallSpinner/>}
                     <div className="main-heading-element d-flex">
-                        <Rbs.Form inline={true}
-                                  onSubmit={this._handleSubmit}
-                                  style={{flexFlow: "unset"}}>
-                            <Rbs.Form.Control as="input"
-                                              placeholder="Search"
-                                              value={!this.props.search_text ? "" : this.props.search_text}
-                                              onChange={this._handleSearchFieldChange}
-                                              size="sm"
-                                              className="mr-2"/>
-                            {this.props.show_filter_button &&
-                                <Rbs.Button variant="outline-secondary" className="my-2 mr-1" type="button" size="sm"
-                                        onClick={this._handleFilter}>
-                                    Filter
-                                </Rbs.Button>
-                            }
-                            <Rbs.Button variant="outline-secondary" className="my-2 mr-1" type="button" size="sm"
-                                        onClick={this._handleUnFilter}>
-                                Clear
-                            </Rbs.Button>
-                        </Rbs.Form>
+                        <form onSubmit={this._handleSubmit} className="d-flex flex-row">
+                                <Bp.InputGroup type="search"
+                                               leftIcon="search"
+                                               placeholder="Search"
+                                               value={!this.props.search_text ? "" : this.props.search_text}
+                                               onChange={this._handleSearchFieldChange}
+                                               className="mr-2"/>
+                                {this.props.show_filter_button &&
+                                    <Bp.Button onClick={this._handleFilter}>
+                                        Filter
+                                    </Bp.Button>
+                                }
+                                <Bp.Button onClick={this._handleUnFilter}>
+                                    Clear
+                            </Bp.Button>
+                        </form>
                     </div>
                 </div>
-            </Rbs.Card.Header>
+            </div>
         )
     }
 }
@@ -736,12 +731,12 @@ class MainTableCard extends React.Component {
 
     render () {
         return (
-            <Rbs.Card id="main-panel">
+            <Bp.Card id="main-panel" className="mt-3 ml-3">
                 {this.props.card_header}
-                <Rbs.Card.Body  id="table-wrapper">
+                <div  id="table-wrapper">
                     {this.props.card_body}
-                </Rbs.Card.Body>
-            </Rbs.Card>
+                </div>
+            </Bp.Card>
         )
     }
 }

@@ -3,11 +3,13 @@
  */
 
 import {MergeViewerSocket, MergeViewerApp} from "./merge_viewer_app.js";
-
+import {doFlash} from "./toaster.js"
+import {render_navbar} from "./blueprint_navbar.js";
+import {postAjax, postAjaxPromise} from "./communication_react.js"
 
 function history_viewer_main ()  {
+    render_navbar();
     let get_url = "get_module_code";
-
     var tsocket = new MergeViewerSocket("main", 5000);
     postAjaxPromise(`${get_url}/${window.resource_name}`, {})
         .then(function (data) {
@@ -50,7 +52,8 @@ class HistoryViewerApp extends React.Component {
         this.savedContent = props.edit_content
     }
 
-    handleSelectChange(new_value) {
+    handleSelectChange(event) {
+        let new_value = event.currentTarget.value;
         this.state.history_popup_val = new_value;
         let self = this;
         for (let item of this.state.history_list) {

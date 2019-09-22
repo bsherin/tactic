@@ -1,5 +1,5 @@
 
-import {TacticNavbar} from "./base_module.js";
+import {TacticNavbar} from "./blueprint_navbar.js";
 import {MainTableCard, MainTableCardHeader, FreeformBody, TableHeader, TableBody, compute_added_column_width} from "./table_react.js";
 import {TacticSocket} from "./tactic_socket.js"
 import {HorizontalPanes, VerticalPanes} from "./resizing_layouts.js";
@@ -9,6 +9,10 @@ import {ExportsViewer} from "./export_viewer_react.js";
 import {showModalReact, showSelectDialog} from "./modal_react.js";
 import {ConsoleComponent} from "./console_component.js";
 import {handleCallback, postAjax, postWithCallback, postAsyncFalse} from "./communication_react.js"
+import {doFlash, doFlashStopSpinner} from "./toaster.js"
+import {GlyphButton} from "./blueprint_react_widgets.js";
+
+let Bp = blueprint;
 
 export {MainTacticSocket}
 
@@ -800,9 +804,7 @@ class MainApp extends React.Component {
         if (this.state.table_is_shrunk) {
             top_pane = (
                 <React.Fragment>
-                    <button type='button' className="btn" onClick={this._toggleTableShrink}>
-                        <span className="fas fa-window-maximize"></span>
-                    </button>
+                    <GlyphButton handleClick={this._toggleTableShrink} icon="maximize"/>
                     {tile_pane}
                     {this.state.console_is_shrunk &&
                         bottom_pane

@@ -1,9 +1,13 @@
-import { SelectList } from "./react_widgets.js";
+
 import { ReactCodemirrorMergeView } from "./react-codemirror-mergeview.js";
 import { Toolbar } from "./react_toolbar.js";
 import { TacticSocket } from "./tactic_socket.js";
+import { doFlash } from "./toaster.js";
+import { handleCallback } from "./communication_react.js";
 
 export { MergeViewerApp, MergeViewerSocket };
+
+let Bp = blueprint;
 
 class MergeViewerSocket extends TacticSocket {
     initialize_socket_stuff() {
@@ -40,14 +44,14 @@ class MergeViewerApp extends React.Component {
     }
 
     get button_groups() {
-        let bgs = [[{ "name_text": "Save", "icon_name": "save", "click_handler": this.props.saveHandler }]];
-        return bgs;
+        return [[{ "name_text": "Save", "icon_name": "save", "click_handler": this.props.saveHandler }]];
     }
 
     componentDidMount() {
         window.addEventListener("resize", this.resize_to_window);
         this.setState({ "mounted": true });
-        this.props.handleSelectChange(this.props.select_val);
+        let fake_event = { currentTarget: { value: this.props.select_val } };
+        this.props.handleSelectChange(fake_event);
         this.resize_to_window();
         stopSpinner();
     }
@@ -73,13 +77,16 @@ class MergeViewerApp extends React.Component {
     }
 
     render() {
-        let toolbar_holder_style = { "marginTop": 20 };
+        let toolbar_holder_style = { "marginTop": 20, paddingLeft: 50 };
         let new_ld_height;
         let max_merge_height;
         [new_ld_height, max_merge_height] = this.get_new_heights(40);
         let left_div_style = {
             "width": "100%",
-            "height": new_ld_height
+            "height": new_ld_height,
+            paddingLeft: 25,
+            paddingRight: 25
+
         };
         let current_style = { "bottom": 0 };
         return React.createElement(
@@ -95,16 +102,15 @@ class MergeViewerApp extends React.Component {
                 { id: "left-div", ref: this.left_div_ref, style: left_div_style },
                 React.createElement(
                     "div",
-                    { id: "above-main", ref: this.above_main_ref, className: "d-flex flex-row justify-content-between" },
+                    { id: "above-main", ref: this.above_main_ref, className: "d-flex flex-row justify-content-between mb-2" },
                     React.createElement(
                         "span",
                         { className: "align-self-end" },
                         "Current"
                     ),
-                    React.createElement(SelectList, { onChange: this.props.handleSelectChange,
-                        option_list: this.props.option_list,
-                        the_value: this.props.select_val
-                    })
+                    React.createElement(Bp.HTMLSelect, { options: this.props.option_list,
+                        onChange: this.props.handleSelectChange,
+                        value: this.props.select_val })
                 ),
                 React.createElement(ReactCodemirrorMergeView, { handleEditChange: this.props.handleEditChange,
                     editor_content: this.props.edit_content,

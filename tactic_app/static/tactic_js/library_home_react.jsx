@@ -1,15 +1,19 @@
+
 import {showModalReact} from "./modal_react.js";
-import {Toolbar} from "./react_toolbar.js"
+import {Toolbar} from "./blueprint_toolbar.js"
 import {TacticSocket} from "./tactic_socket.js"
-
-import {render_navbar} from "./base_module.js";
-
+import {render_navbar} from "./blueprint_navbar.js";
 import {handleCallback, postAjaxPromise, postAjaxUploadPromise, postWithCallbackNoMain} from "./communication_react.js"
+import {doFlash} from "./toaster.js"
+import {ViewerContext} from "./resource_viewer_context.js";
 
-var Rbs = window.ReactBootstrap;
+var Bp = blueprint;
 
 import {LibraryPane} from "./library_pane.js"
 import {LoadedTileList} from "./library_widgets.js";
+import {SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT, BOTTOM_MARGIN, getUsableDimensions} from "./sizing_tools.js";
+import {withStatus} from "./toaster.js";
+import {withErrorDrawer} from "./error_drawer.js";
 
 const MARGIN_SIZE = 17;
 
@@ -18,11 +22,10 @@ let tsocket;
 function _library_home_main () {
     render_navbar();
     tsocket = new LibraryTacticSocket("library", 5000);
+    let LibraryHomeAppPlus = withErrorDrawer(withStatus(LibraryHomeApp, tsocket));
     let domContainer = document.querySelector('#library-home-root');
-    ReactDOM.render(<LibraryHomeApp/>, domContainer)
+    ReactDOM.render(<LibraryHomeAppPlus/>, domContainer)
 }
-
-
 
 class LibraryTacticSocket extends TacticSocket {
 
@@ -31,12 +34,7 @@ class LibraryTacticSocket extends TacticSocket {
         this.socket.emit('join', {"user_id":  window.user_id, "library_id":  window.library_id});
 
         this.socket.on("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
-
         this.socket.on('handle-callback', handleCallback);
-        this.socket.on('stop-spinner', stopSpinner);
-        this.socket.on('start-spinner', startSpinner);
-        this.socket.on('show-status-msg', statusMessage);
-        this.socket.on("clear-status-msg", clearStatusMessage);
         this.socket.on('close-user-windows', (data) => {
             if (!(data["originator"] == window.library_id)) {
                 window.close()
@@ -46,15 +44,41 @@ class LibraryTacticSocket extends TacticSocket {
     }
 }
 
-
+var res_types = ["collection", "project", "tile", "list", "code"];
 class LibraryHomeApp extends React.Component {
 
     constructor(props) {
         super(props);
+        let aheight = getUsableDimensions().usable_height;
+        let awidth = getUsableDimensions().usable_width - 170;
         this.state = {
-            "usable_width": window.innerWidth - 2 * MARGIN_SIZE - 30,
-            "usable_height": window.innerHeight - 50
+            selected_tab_id: "collections-pane",
+            usable_width: awidth,
+            usable_height: aheight,
+            pane_states: {},
         };
+        for (let res_type of res_types) {
+            this.state.pane_states[res_type] = {
+                left_width_fraction: .65,
+                selected_resource: {"name": "", "tags": "", "notes": "", "updated": "", "created": ""},
+                tag_button_state:{
+                    expanded_tags: [],
+                    active_tag: "all",
+                    tree: []
+                },
+                search_from_field: false,
+                search_from_tag: false,
+                sorting_column: "updated",
+                sorting_field: "updated_for_sort",
+                sorting_direction: "descending",
+                multi_select: false,
+                list_of_selected: [],
+                search_field_value: "",
+                search_inside_checked: false,
+                search_metadata_checked: false,
+            }
+        }
+        this.top_ref = React.createRef();
         doBinding(this);
     }
 
@@ -62,102 +86,128 @@ class LibraryHomeApp extends React.Component {
         window.addEventListener("resize", this._update_window_dimensions);
         this.setState({"mounted": true});
         this._update_window_dimensions();
-        stopSpinner()
+        this.props.stopSpinner()
+    }
+
+    _updatePaneState (res_type, state_update, callback=null) {
+        let old_state = Object.assign({}, this.state.pane_states[res_type]);
+        let new_pane_states = Object.assign({}, this.state.pane_states);
+        new_pane_states[res_type] = Object.assign(old_state, state_update);
+        this.setState({pane_states: new_pane_states}, callback)
     }
 
     _update_window_dimensions() {
-        this.setState({
-            "usable_width": window.innerWidth - 2 * MARGIN_SIZE - 30,
-            "usable_height": window.innerHeight - 50
-        });
+        let uwidth = window.innerWidth - 2 * SIDE_MARGIN;
+        let uheight = window.innerHeight - BOTTOM_MARGIN;
+        if (this.top_ref && this.top_ref.current) {
+            uheight = uheight - this.top_ref.current.offsetTop;
+        }
+        else {
+            uheight = uheight - USUAL_TOOLBAR_HEIGHT
+        }
+        this.setState({usable_height: uheight, usable_width: uwidth})
+    }
+
+    // This mechanism in _handleTabChange necessary in order to force the pane to change
+    // before updating window dimensions (which seems to be necessary to get
+    // the pane to be appropriately sized when it's shown
+    _handleTabChange(newTabId, prevTabId, event) {
+        this.setState({selected_tab_id: newTabId}, this._update_window_dimensions)
     }
 
     render () {
-        let nav_items = [["collections", "file-alt"], ["projects", "project-diagram"],
-            ["tiles", "window"], ["lists", "list-alt"], ["code", "file-code"]].map((data)=>(
-            <Rbs.Nav.Item key={data[0]}>
-                <Rbs.Nav.Link eventKey={data[0] + "-pane"}>
-                    <span className={"far um-nav-icon fa-" + data[1]}></span>
-                    <span className="um-nav-text">{data[0]}</span>
-                </Rbs.Nav.Link>
-            </Rbs.Nav.Item>
-        ));
         let tile_widget = <LoadedTileList tsocket={tsocket}/>;
+        let collection_pane = (
+                        <LibraryPane {...this.props}
+                                     res_type="collection"
+                                     allow_search_inside={false}
+                                     allow_search_metadata={false}
+                                     ToolbarClass={CollectionToolbar}
+                                     updatePaneState={this._updatePaneState}
+                                     {...this.state.pane_states["collection"]}
+                                     {...this.props.errorDrawerFuncs}
+                                     errorDrawerFuncs={this.props.errorDrawerFuncs}
+                                     tsocket={tsocket}/>
+        );
+        let projects_pane = (<LibraryPane {...this.props}
+                                         res_type="project"
+                                         allow_search_inside={false}
+                                         allow_search_metadata={true}
+                                         search_metadata_view = "search_project_metadata"
+                                         ToolbarClass={ProjectToolbar}
+                                         updatePaneState={this._updatePaneState}
+                                          {...this.props.errorDrawerFuncs}
+                                         {...this.state.pane_states["project"]}
+
+                                         tsocket={tsocket}/>
+        );
+        let tiles_pane = (<LibraryPane {...this.props}
+                                     res_type="tile"
+                                     allow_search_inside={true}
+                                     allow_search_metadata={true}
+                                     search_inside_view="search_inside_tiles"
+                                     search_metadata_view = "search_tile_metadata"
+                                     ToolbarClass={TileToolbar}
+                                     updatePaneState={this._updatePaneState}
+                                       {...this.props.errorDrawerFuncs}
+                                     {...this.state.pane_states["tile"]}
+                                     tsocket={tsocket}
+                                       aux_pane_title="loaded tile list"
+                                     aux_pane={tile_widget}/>
+        );
+        let lists_pane = (<LibraryPane {...this.props}
+                                    res_type="list"
+                                     allow_search_inside={true}
+                                     allow_search_metadata={true}
+                                     search_inside_view="search_inside_lists"
+                                     search_metadata_view = "search_list_metadata"
+                                     ToolbarClass={ListToolbar}
+                                       {...this.props.errorDrawerFuncs}
+                                    updatePaneState={this._updatePaneState}
+                                    {...this.state.pane_states["list"]}
+                                     tsocket={tsocket}/>
+        );
+        let code_pane = (<LibraryPane {...this.props}
+                                res_type="code"
+                                allow_search_inside={true}
+                                allow_search_metadata={true}
+                                search_inside_view="search_inside_code"
+                                search_metadata_view = "search_code_metadata"
+                                ToolbarClass={CodeToolbar}
+                                      {...this.props.errorDrawerFuncs}
+                                updatePaneState={this._updatePaneState}
+                                {...this.state.pane_states["code"]}
+                                tsocket={tsocket}/>
+        );
+        let outer_style = {width: this.state.usable_width,
+            height: this.state.usable_height,
+            paddingLeft: SIDE_MARGIN
+        };
         return (
-            <React.Fragment>
-                <Rbs.Tab.Container id="the_container" defaultActiveKey="collections-pane">
-                    <div className="d-flex flex-row">
-                        <div className="d-flex flex-column justify-content-between left-vertical-nav"
-                             style={{"marginTop": 100}}>
-                            <Rbs.Nav variant="pills" className="flex-column mr-2">
-                                {nav_items}
-                            </Rbs.Nav>
-                        </div>
-                        <div className="d-flex flex-column">
-                            <Rbs.Tab.Content>
-                                <Rbs.Tab.Pane eventKey="collections-pane" onEnter={this._update_window_dimensions}>
-                                    <LibraryPane usable_height={this.state.usable_height}
-                                                 usable_width={this.state.usable_width}
-                                                 res_type="collection"
-                                                 allow_search_inside={false}
-                                                 allow_search_metadata={false}
-                                                 ToolbarClass={CollectionToolbar}
-                                                 tsocket={tsocket}
-                                />
-                                </Rbs.Tab.Pane>
-                                <Rbs.Tab.Pane eventKey="projects-pane" onEnter={this._update_window_dimensions}>
-                                    <LibraryPane usable_height={this.state.usable_height}
-                                                 usable_width={this.state.usable_width}
-                                                 res_type="project"
-                                                 allow_search_inside={false}
-                                                 allow_search_metadata={true}
-                                                 search_metadata_view = "search_project_metadata"
-                                                 ToolbarClass={ProjectToolbar}
-                                                 tsocket={tsocket}
-                                    />
-                                </Rbs.Tab.Pane>
-                                <Rbs.Tab.Pane eventKey="tiles-pane" onEnter={this._update_window_dimensions}>
-                                    <LibraryPane usable_height={this.state.usable_height}
-                                                 usable_width={this.state.usable_width}
-                                                 res_type="tile"
-                                                 allow_search_inside={true}
-                                                 allow_search_metadata={true}
-                                                 search_inside_view="search_inside_tiles"
-                                                 search_metadata_view = "search_tile_metadata"
-                                                 ToolbarClass={TileToolbar}
-                                                 tsocket={tsocket}
-                                                 aux_pane={tile_widget}
-                                    />
-                                </Rbs.Tab.Pane>
-                                <Rbs.Tab.Pane eventKey="lists-pane" onEnter={this._update_window_dimensions}>
-                                    <LibraryPane usable_height={this.state.usable_height}
-                                                 usable_width={this.state.usable_width}
-                                                 res_type="list"
-                                                 allow_search_inside={true}
-                                                 allow_search_metadata={true}
-                                                 search_inside_view="search_inside_lists"
-                                                 search_metadata_view = "search_list_metadata"
-                                                 ToolbarClass={ListToolbar}
-                                                 tsocket={tsocket}
-                                    />
-                                </Rbs.Tab.Pane>
-                                <Rbs.Tab.Pane eventKey="code-pane" onEnter={this._update_window_dimensions}>
-                                    <LibraryPane usable_height={this.state.usable_height}
-                                                 usable_width={this.state.usable_width}
-                                                 res_type="code"
-                                                 allow_search_inside={true}
-                                                 allow_search_metadata={true}
-                                                 search_inside_view="search_inside_code"
-                                                 search_metadata_view = "search_code_metadata"
-                                                 ToolbarClass={CodeToolbar}
-                                                 tsocket={tsocket}
-                                    />
-                                </Rbs.Tab.Pane>
-                            </Rbs.Tab.Content>
-                        </div>
-                    </div>
-                </Rbs.Tab.Container>
-            </React.Fragment>
+            <ViewerContext.Provider value={{readOnly: false}}>
+                <div className="pane-holder" ref={this.top_ref} style={outer_style}>
+                    <Bp.Tabs id="the_container" style={{marginTop: 100}}
+                             selectedTabId={this.state.selected_tab_id}
+                             renderActiveTabPanelOnly={true}
+                             vertical={true} large={true} onChange={this._handleTabChange}>
+                        <Bp.Tab id="collections-pane" panel={collection_pane}>
+                            <Bp.Icon icon="box"/>  Collections
+                        </Bp.Tab>
+                        <Bp.Tab id="projects-pane" panel={projects_pane}>
+                            <Bp.Icon icon="projects"/>  Projects
+                        </Bp.Tab>
+                        <Bp.Tab id="tiles-pane" panel={tiles_pane}>
+                            <Bp.Icon icon="application"/>  Tiles
+                        </Bp.Tab>
+                        <Bp.Tab id="lists-pane" panel={lists_pane}>
+                            <Bp.Icon icon="numbered-list"/>  Lists
+                        </Bp.Tab>
+                        <Bp.Tab id="code-pane" panel={code_pane}>
+                            <Bp.Icon icon="code"/>  Code
+                        </Bp.Tab>
+                    </Bp.Tabs>
+                </div>
+            </ViewerContext.Provider>
         )
     }
 }
@@ -209,7 +259,7 @@ class LibraryToolbar extends React.Component {
              };
              let opt_list = [];
              for (let opt of button[2]) {
-                 opt_list.push({opt_name: opt[0], opt_func: opt[1]})
+                 opt_list.push({opt_name: opt[0], opt_func: opt[1], opt_icon: opt[2]})
              }
              new_button["option_list"] = opt_list;
              popup_buttons.push(new_button);
@@ -218,9 +268,18 @@ class LibraryToolbar extends React.Component {
     }
 
     render() {
+        let outer_style = {
+                display: "flex",
+                flexDirection: "row",
+                position: "relative",
+                left: 150,
+                marginBottom: 10
+        };
+
         let popup_buttons = this.prepare_popup_buttons();
        return <Toolbar button_groups={this.prepare_button_groups()}
                        file_adders={this.prepare_file_adders()}
+                       alternate_outer_style={outer_style}
                        popup_buttons={popup_buttons}
        />
     }
@@ -272,9 +331,17 @@ class CollectionToolbar extends React.Component {
         let self = this;
         if (!this.props.multi_select) {
             showModalReact("Name of collection to combine with " + this.props.selected_resource.name, "collection Name", function (other_name) {
-                startSpinner();
+                self.props.startSpinner();
                 const target = `${$SCRIPT_ROOT}/combine_collections/${res_names[0]}/${other_name}`;
-                $.post(target, doFlashStopSpinner);
+                $.post(target, (data)=>{
+                    self.props.stopSpinner();
+                    if (!data.success) {
+                        self.props.addErrorDrawerEntry({title: "Error combining collections", content: data.message})
+                    }
+                    {
+                        doFlash(data);
+                    }
+                });
             })
         }
         else {
@@ -289,7 +356,7 @@ class CollectionToolbar extends React.Component {
                 .then((data) => {
                     self.props.animation_phase(() => {self.props.add_new_row(data.new_row)})
                 })
-                .catch(doFlash)
+                .catch((data)=>{self.props.addErrorDrawerEntry({title: "Error combining collections", content: data.message})})
         }
     }
 
@@ -305,7 +372,9 @@ class CollectionToolbar extends React.Component {
         let message = "";
         let number_of_errors;
         if (data.file_decoding_errors == null) {
-            message = "No decoding errors were encounters"
+            data.message = "No decoding errors were encounters";
+            data.alert_type = "Success";
+            doFlash(data);
         }
         else {
             message = "<b>Decoding errors were enountered</b>";
@@ -313,8 +382,8 @@ class CollectionToolbar extends React.Component {
                 number_of_errors = String(data.file_decoding_errors[filename].length);
                 message = message + `<br>${filename}: ${number_of_errors} errors`;
             }
+            this.props.addErrorDrawerEntry({title: title, content: message});
         }
-        alertify.alert(title, message).set({'pinnable': false, 'modal':false})
     }
 
     _import_collection(file_list) {
@@ -331,7 +400,7 @@ class CollectionToolbar extends React.Component {
             }
         );
         function CreateNewCollection(new_name, check_results) {
-            startSpinner();
+            self.props.startSpinner();
             let url_base;
             if (check_results["import_as_freeform"]) {
                 url_base = "import_as_freeform"
@@ -339,28 +408,27 @@ class CollectionToolbar extends React.Component {
             else {
                 url_base = "import_as_table"
             }
-
             postAjaxUploadPromise(`${url_base}/${new_name}/${window.library_id}`, the_data)
                 .then((data) => {
-                        clearStatusMessage();
+                        self.props.clearStatusMessage();
                         self.displayImportResults(data);
                         self.props.animation_phase(() => {self.props.add_new_row(data.new_row)});
-                        stopSpinner();
+                        self.props.stopSpinner();
                 })
-                .catch(doFlash);
+                .catch((data)=>{self.props.addErrorDrawerEntry({title: "Error importing documents", content: data.message})});
         }
     }
 
     get button_groups() {
         return [
-            [["open", this.props.view_func, "book-open", false]],
-            [["duplicate", this._collection_duplicate, "copy", false],
+            [["open", this.props.view_func, "document-open", false]],
+            [["duplicate", this._collection_duplicate, "duplicate", false],
              ["rename",  this.props.rename_func, "edit", false],
-             ["combine", this._combineCollections, "plus-square", true]],
+             ["combine", this._combineCollections, "merge-columns", true]],
             [["download", this._downloadCollection, "cloud-download", false],
              ["share", this.props.send_repository_func, "share", false]],
             [["delete", this._collection_delete, "trash", true]],
-            [["refresh", this.props.refresh_func, "sync-alt", false]]
+            [["refresh", this.props.refresh_func, "refresh", false]]
         ];
      }
 
@@ -412,14 +480,14 @@ class ProjectToolbar extends React.Component {
             }
         );
         function CreateNewJupyter(new_name, check_results) {
-            startSpinner();
+            self.props.startSpinner();
             postAjaxUploadPromise(`import_as_jupyter/${new_name}/${library_id}`, the_data)
                 .then((data) => {
-                        clearStatusMessage();
+                        self.props.clearStatusMessage();
                         self.props.animation_phase(() => {self.props.add_new_row(data.new_row)});
-                        stopSpinner();
+                        self.props.stopSpinner();
                 })
-                .catch(doFlash);
+                .catch((data)=>{self.props.addErrorDrawerEntry({title: "Error importing jupyter notebook", content: data.message})});
         }
     };
 
@@ -431,13 +499,13 @@ class ProjectToolbar extends React.Component {
     get button_groups() {
         return [
             [["notebook", this.new_notebook,"book", false],
-                ["open", this.props.view_func, "book-open", false]],
-            [["duplicate", this._project_duplicate, "copy", false],
+                ["open", this.props.view_func, "document-open", false]],
+            [["duplicate", this._project_duplicate, "duplicate", false],
              ["rename", this.props.rename_func, "edit", false]],
             [["toJupyter", this._downloadJupyter, "cloud-download", false],
              ["share", this.props.send_repository_func, "share", false]],
             [["delete", this._project_delete, "trash", true]],
-            [["refresh", this.props.refresh_func, "sync-alt", false]]
+            [["refresh", this.props.refresh_func, "refresh", false]]
         ];
      }
 
@@ -491,8 +559,17 @@ class TileToolbar extends React.Component {
     }
     
     _load_tile() {
+        let self = this;
         postWithCallbackNoMain("host", "load_tile_module_task",
-            {"tile_module_name": this.props.list_of_selected[0], "user_id": window.user_id}, doFlash)
+            {"tile_module_name": this.props.list_of_selected[0], "user_id": window.user_id},
+            (data)=>{
+            if (!data.success) {
+                self.props.addErrorDrawerEntry({title: "Error loading tile", content: data.message})
+            }
+            else {
+                doFlash(data)
+            }
+        })
     }
     
     _unload_all_tiles() {
@@ -520,7 +597,7 @@ class TileToolbar extends React.Component {
                     self.props.animation_phase(() => {self.props.add_new_row(data.new_row)});
                     window.open($SCRIPT_ROOT + "/view_module/" + String(new_name))
                 })
-                .catch(doFlash)
+                .catch((data)=>{self.props.addErrorDrawerEntry({title: "Error creating new tile", content: data.message})})
             }
     }
 
@@ -541,37 +618,38 @@ class TileToolbar extends React.Component {
                     self.props.animation_phase(() => {self.props.add_new_row(data.new_row)});
                     window.open($SCRIPT_ROOT + "/view_in_creator/" + String(new_name))
                 })
-                .catch(doFlash)
+                .catch((data)=>{self.props.addErrorDrawerEntry({title: "Error creating new tile", content: data.message})})
             }
     }
 
     get popup_buttons() {
         return [
-            ["new", "plus-circle", [
-                ["BasicTileTemplate", ()=>{this._new_tile("BasicTileTemplate")}],
-                ["ExpandedTileTemplate", ()=>{this._new_tile("ExpandedTileTemplate")}],
-                ["MatplotlibTileTemplate", ()=>{this._new_tile("MatplotlibTileTemplate")}]]
+            ["new", "new-text-box", [
+                ["BasicTileTemplate", ()=>{this._new_tile("BasicTileTemplate")}, "code"],
+                ["ExpandedTileTemplate", ()=>{this._new_tile("ExpandedTileTemplate")}, "code"],
+                ["MatplotlibTileTemplate", ()=>{this._new_tile("MatplotlibTileTemplate")}, "timeline-line-chart"]]
             ],
-            ["creator", "plus-circle", [
-                ["StandardTile", ()=>{this._new_in_creator("BasicTileTemplate")}],
-                ["MatplotlibTile", ()=>{this._new_in_creator("MatplotlibTileTemplate")}],
-                ["D3Tile", ()=>{this._new_in_creator("D3TileTemplate")}]]
+            ["creator", "new-text-box", [
+                ["StandardTile", ()=>{this._new_in_creator("BasicTileTemplate")}, "code"],
+                ["MatplotlibTile", ()=>{this._new_in_creator("MatplotlibTileTemplate")}, "timeline-line-chart"],
+                ["D3Tile", ()=>{this._new_in_creator("D3TileTemplate")}, "timeline-area-chart"]]
             ]
         ]
     }
 
     get button_groups() {
         return [
-            [["edit", this._tile_view, "pencil", false],
-                ["creator", this._creator_view, "pencil-alt", false],
-                ["compare", this._compare_tiles, "code-branch", true],
-                ["load", this._load_tile, "arrow-from-bottom", false],
-                ["unload", this._unload_all_tiles, "ban", false]],
-            [["duplicate", this._tile_duplicate, "copy", false],
+            [["edit", this._tile_view, "edit", false],
+                ["creator", this._creator_view, "annotation", false],
+                ["compare", this._compare_tiles, "comparison", true],
+                ["load", this._load_tile, "upload", false],
+                ["unload", this._unload_all_tiles, "clean", false]],
+            [["duplicate", this._tile_duplicate, "duplicate", false],
              ["rename", this.props.rename_func, "edit", false]],
             [["share", this.props.send_repository_func, "share", false]],
             [["delete", this._tile_delete, "trash", true]],
-            [["refresh", this.props.refresh_func, "sync-alt", false]]
+            [["refresh", this.props.refresh_func, "refresh", false]],
+            [["Error Drawer", this.props.toggleErrorDrawer, "console", false]]
         ];
      }
 
@@ -608,17 +686,17 @@ class ListToolbar extends React.Component {
             .then((data) => {
                     self.props.animation_phase(() => {self.props.add_new_row(data.new_row)})
             })
-            .catch(doFlash);
+            .catch((data)=>{self.props.addErrorDrawerEntry({title: "Error creating new list", content: data.message})});
     }
 
     get button_groups() {
         return [
-            [["edit", this.props.view_func, "pencil", false]],
-            [["duplicate", this._list_duplicate, "copy", false],
+            [["edit", this.props.view_func, "document-open", false]],
+            [["duplicate", this._list_duplicate, "duplicate", false],
              ["rename", this.props.rename_func, "edit", false]],
             [["share", this.props.send_repository_func, "share", false]],
             [["delete", this._list_delete, "trash", true]],
-            [["refresh", this.props.refresh_func, "sync-alt", false]]
+            [["refresh", this.props.refresh_func, "refresh", false]]
         ];
      }
 
@@ -663,7 +741,7 @@ class CodeToolbar extends React.Component {
                     self.props.animation_phase(() => {self.props.add_new_row(data.new_row)});
                     window.open($SCRIPT_ROOT + "/view_code/" + String(new_name))
                 })
-                .catch(doFlash)
+                .catch((data)=>{self.props.addErrorDrawerEntry({title: "Error creating new code resource", content: data.message})})
         }
     }
 
@@ -678,20 +756,20 @@ class CodeToolbar extends React.Component {
 
     get popup_buttons() {
         return [
-            ["new", "plus-circle", [
-                ["BasicCodeTemplate", ()=>{this._new_code("BasicCodeTemplate")}]]
+            ["new", "new-text-box", [
+                ["BasicCodeTemplate", ()=>{this._new_code("BasicCodeTemplate")}, "code"]]
             ]
         ]
     }
 
     get button_groups() {
         return [
-            [["edit", this.props.view_func, "pencil", false]],
-            [["duplicate", this._code_duplicate, "copy", false],
+            [["edit", this.props.view_func, "document-open", false]],
+            [["duplicate", this._code_duplicate, "duplicate", false],
              ["rename", this.props.rename_func, "edit", false]],
             [["share", this.props.send_repository_func, "share", false]],
             [["delete", this._code_delete, "trash", true]],
-            [["refresh", this.props.refresh_func, "sync-alt", false]]
+            [["refresh", this.props.refresh_func, "refresh", false]]
         ];
      }
 

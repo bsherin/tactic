@@ -4,6 +4,7 @@ import {ReactCodemirror} from "./react-codemirror.js";
 import {SortableComponent} from "./sortable_container.js";
 import {KeyTrap} from "./key_trap.js";
 import {postWithCallback} from "./communication_react.js"
+import {doFlash} from "./toaster.js"
 
 export {ConsoleComponent}
 
