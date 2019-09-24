@@ -1,6 +1,7 @@
 
 import {TacticNavbar} from "./blueprint_navbar.js";
 import {MainTableCard, MainTableCardHeader, FreeformBody, TableHeader, TableBody, compute_added_column_width} from "./table_react.js";
+import {BlueprintTable} from "./blueprint_table.js";
 import {TacticSocket} from "./tactic_socket.js"
 import {HorizontalPanes, VerticalPanes} from "./resizing_layouts.js";
 import {ProjectMenu, ColumnMenu, MenuComponent} from "./main_menus_react.js";
@@ -10,9 +11,9 @@ import {showModalReact, showSelectDialog} from "./modal_react.js";
 import {ConsoleComponent} from "./console_component.js";
 import {handleCallback, postAjax, postWithCallback, postAsyncFalse} from "./communication_react.js"
 import {doFlash, doFlashStopSpinner} from "./toaster.js"
-import {GlyphButton} from "./blueprint_react_widgets.js";
 
 let Bp = blueprint;
+let Bpt = bptable;
 
 export {MainTacticSocket}
 
@@ -74,54 +75,56 @@ function _finish_post_load(data) {
         window.short_collection_name = data.short_collection_name;
         interface_state = data.interface_state
     }
-    postWithCallback(window.main_id, "grab_data", {"doc_name":window.doc_names[0]}, function (data) {
+    if (window.is_freeform) {
+        postWithCallback(window.main_id, "grab_data", {"doc_name":window.doc_names[0]}, function (data) {
             let domContainer = document.querySelector('#main-root');
-            if (window.is_freeform) {
-                if (window.is_project) {
-                    ReactDOM.render(<MainApp is_project={true}
-                                             interface_state={interface_state}
-                                             initial_data_text={data.data_text}
-                                             initial_doc_names={window.doc_names}/>,
-                    domContainer)
+            if (window.is_project) {
+                ReactDOM.render(<MainApp is_project={true}
+                                         interface_state={interface_state}
+                                         initial_data_text={data.data_text}
+                                         initial_doc_names={window.doc_names}/>,
+                domContainer)
 
-                }
-                else {
-                    ReactDOM.render(<MainApp is_project={false}
-                                             interface_state={null}
-                                             initial_data_text={data.data_text}
-                                             initial_doc_names={window.doc_names}/>,
-                    domContainer)
-                }
             }
             else {
-                if (window.is_project) {
-                    ReactDOM.render(<MainApp is_project={true}
-                                             interface_state={interface_state}
-                                             initial_column_names={data.table_spec.header_list}
-                                             initial_data_rows={data.data_rows}
-                                             initial_is_first_chunk={data.is_first_chunk}
-                                             initial_is_last_chunk={data.is_last_chunk}
-                                             initial_column_widths={data.table_spec.column_widths}
-                                             initial_hidden_columns_list={data.table_spec.hidden_columns_list}
-                                             initial_doc_names={window.doc_names}/>,
-                    domContainer)
-                }
-                else {
-
-                    ReactDOM.render(<MainApp is_project={false}
-                                             interface_state={null}
-                                             initial_column_names={data.table_spec.header_list}
-                                             initial_data_rows={data.data_rows}
-                                             initial_is_first_chunk={data.is_first_chunk}
-                                             initial_is_last_chunk={data.is_last_chunk}
-                                             initial_column_widths={data.table_spec.column_widths}
-                                             initial_hidden_columns_list={data.table_spec.hidden_columns_list}
-                                             initial_doc_names={window.doc_names}/>,
-                        domContainer)
-                }
+                ReactDOM.render(<MainApp is_project={false}
+                                         interface_state={null}
+                                         initial_data_text={data.data_text}
+                                         initial_doc_names={window.doc_names}/>,
+                domContainer)
             }
+        });
+    }
+    else {
+        postWithCallback(window.main_id, "grab_chunk_by_row_index", {"doc_name":window.doc_names[0], "row_index": 0},
+            function (data) {
+            let domContainer = document.querySelector('#main-root');
+            if (window.is_project) {
+                ReactDOM.render(<MainApp is_project={true}
+                                         interface_state={interface_state}
+                                         total_rows={data.total_rows}
+                                         initial_column_names={data.table_spec.header_list}
+                                         initial_data_row_dict={data.data_row_dict}
+                                         initial_column_widths={data.table_spec.column_widths}
+                                         initial_hidden_columns_list={data.table_spec.hidden_columns_list}
+                                         initial_doc_names={window.doc_names}/>,
+                domContainer)
+            }
+            else {
 
-    });
+                ReactDOM.render(<MainApp is_project={false}
+                                         interface_state={null}
+                                         total_rows={data.total_rows}
+                                         initial_column_names={data.table_spec.header_list}
+                                         initial_data_row_dict={data.data_row_dict}
+                                         initial_column_widths={data.table_spec.column_widths}
+                                         initial_hidden_columns_list={data.table_spec.hidden_columns_list}
+                                         initial_doc_names={window.doc_names}/>,
+                    domContainer)
+            }
+        });
+    }
+
 }
 
 const save_attrs = ["tile_list", "table_is_shrunk", "console_width_fraction", "horizontal_fraction", "pipe_dict",
@@ -139,6 +142,7 @@ class MainApp extends React.Component {
                 doc_names: props.initial_doc_names,
                 short_collection_name: window.short_collection_name,
                 console_items: [],
+                awaiting_data: false,
                 console_is_shrunk: true,
                 show_exports_pane: false,
                 console_is_zoomed: false,
@@ -165,10 +169,9 @@ class MainApp extends React.Component {
         else {
             additions = {
                 show_table_spinner: false,
-                data_rows: props.initial_data_rows,
+                data_row_dict: props.initial_data_row_dict,
+                total_rows: props.total_rows,
                 cells_to_color_text: {},
-                is_first_chunk: props.initial_is_first_chunk,
-                is_last_chunk: props.initial_is_last_chunk,
                 force_row_to_top: null,
                 scroll_top: 0,
                 selected_column: null,
@@ -297,9 +300,9 @@ class MainApp extends React.Component {
             console.log("got an error trying to go to a row")
         }
     }
-    _handleChangeDoc(new_doc_name, row_id=null) {
+    _handleChangeDoc(new_doc_name, row_index=0) {
         let self = this;
-        if ((row_id == null) || window.is_freeform) {
+        if (window.is_freeform) {
             postWithCallback(window.main_id, "grab_data", {"doc_name": new_doc_name}, function (data) {
                 stopSpinner();
                 clearStatusMessage();
@@ -316,8 +319,8 @@ class MainApp extends React.Component {
               })
         }
         else {
-            const data_dict = {"doc_name": new_doc_name, "row_id": row_id};
-            postWithCallback(main_id, "grab_chunk_with_row", data_dict, function (data) {
+            const data_dict = {"doc_name": new_doc_name, "row_index": row_index};
+            postWithCallback(main_id, "grab_chunk_by_row_index", data_dict, function (data) {
                 let row_index = data.actual_row;
                 self._setStateFromDataObject(data, new_doc_name, ()=>{
                     self.setState({force_row_to_top: row_index})
@@ -454,11 +457,11 @@ class MainApp extends React.Component {
     }
 
     _setCellContent(row_index, column_header, new_content) {
-        let new_data_rows = [...this.state.data_rows];
-        let the_row = Object.assign({}, new_data_rows[row_index]);
+        let new_data_row_dict = Object.assign({}, this.state.data_row_dict);
+        let the_row = Object.assign({}, new_data_row_dict[row_index]);
         the_row[column_header] = new_content;
-        new_data_rows.splice(row_index, 1, the_row);
-        this.setState({data_rows: new_data_rows})
+        new_data_row_dict[row_index] = the_row;
+        this.setState({data_row_dict: new_data_row_dict})
 
     }
 
@@ -481,9 +484,7 @@ class MainApp extends React.Component {
         new_table_spec.current_doc_name = data_object.doc_name;
 
         this.setState({
-            data_rows: data_object.data_rows,
-            is_first_chunk: data_object.is_first_chunk,
-            is_last_chunk: data_object.is_last_chunk,
+            data_row_dict: data_object.data_row_dict,
             table_spec: new_table_spec,
             scroll_top: 0
         })
@@ -538,9 +539,8 @@ class MainApp extends React.Component {
 
     _setStateFromDataObject(data, doc_name, func=null) {
         this.setState({
-            data_rows: data.data_rows,
-            is_first_chunk: data.is_first_chunk,
-            is_last_chunk: data.is_last_chunk,
+            data_row_dict: data.data_row_dict,
+            total_rows: data.total_rows,
             table_spec: {column_names: data.table_spec.header_list,
                 column_widths: data.table_spec.column_widths,
                 hidden_columns_list: data.table_spec.hidden_columns_list,
@@ -553,34 +553,58 @@ class MainApp extends React.Component {
         this.setState({scroll_top: new_top})
     }
 
-    _handleLastInView(last_row_index, old_top_edge_pos) {
-        if (this.state.is_last_chunk) return;
-        let self = this;
-        let nrows = this.state.data_rows.length;
-        postWithCallback(window.main_id, "grab_next_chunk", {"doc_name": this.state.table_spec.current_doc_name}, function (data) {
-            let top_edge_pos = $("#table-area tbody tr:last").position().top;
-            self._setStateFromDataObject(data, self.state.table_spec.current_doc_name, function () {
-                const old_last_row = $('#table-area tbody tr')[nrows - data.step_size + 1];
-                const rowpos = $(old_last_row).position();
-                self.setState({"scroll_top": rowpos.top - top_edge_pos + $("#table-area tbody")[0].scrollTop})
-            });
-            stopSpinner();
-        });
+    _initiateDataGrab(row_index) {
+        this.setState({awaiting_data: true}, () => {this._grabNewChunkWithRow(row_index)})
     }
 
-    _handleFirstInView() {
-        if (this.state.is_first_chunk) return;
+    _grabNewChunkWithRow(row_index) {
         let self = this;
-        postWithCallback(window.main_id, "grab_previous_chunk", {"doc_name": this.state.table_spec.current_doc_name}, function (data) {
-            let top_edge_pos = $("#table-area tbody tr:first").position().top;
-            self._setStateFromDataObject(data, self.state.table_spec.current_doc_name, function () {
-                const old_last_row = $('#table-area tbody tr')[data.step_size - 1];
-                const rowpos = $(old_last_row).position();
-                self.setState({"scroll_top": rowpos.top - top_edge_pos + $("#table-area tbody")[0].scrollTop})
-            });
-            stopSpinner()
+        postWithCallback(window.main_id, "grab_chunk_by_row_index",
+            {doc_name: this.state.table_spec.current_doc_name, row_index: row_index}, function (data) {
+            let new_data_row_dict = Object.assign(self.state.data_row_dict, data.data_row_dict);
+            self.setState({data_row_dict: new_data_row_dict, awaiting_data: false})
         })
     }
+
+    // _grabNextChunk() {
+    //     let nrows = this.state.data_rows.length;
+    //     if (nrows == this.state.total_rows) return;
+    //     let self = this;
+    //     postWithCallback(window.main_id, "grab_next_chunk", {"doc_name": this.state.table_spec.current_doc_name}, function (data) {
+    //         let new_data_rows = self.state.data_rows.concat(data.data_rows);
+    //         self.setState({data_rows: new_data_rows, awaiting_data: false})
+    //     })
+    // }
+
+    // _handleLastInView(last_row_index, old_top_edge_pos) {
+    //     if (this.state.is_last_chunk) return;
+    //     let self = this;
+    //     let nrows = this.state.data_rows.length;
+    //     postWithCallback(window.main_id, "grab_next_chunk", {"doc_name": this.state.table_spec.current_doc_name}, function (data) {
+    //         let new_data_rows = this.state.data_rows.concat(data.data_rows);
+    //         let top_edge_pos = $("#table-area tbody tr:last").position().top;
+    //         self._setStateFromDataObject(data, self.state.table_spec.current_doc_name, function () {
+    //             const old_last_row = $('#table-area tbody tr')[nrows - data.step_size + 1];
+    //             const rowpos = $(old_last_row).position();
+    //             self.setState({"scroll_top": rowpos.top - top_edge_pos + $("#table-area tbody")[0].scrollTop})
+    //         });
+    //         stopSpinner();
+    //     });
+    // }
+    //
+    // _handleFirstInView() {
+    //     if (this.state.is_first_chunk) return;
+    //     let self = this;
+    //     postWithCallback(window.main_id, "grab_previous_chunk", {"doc_name": this.state.table_spec.current_doc_name}, function (data) {
+    //         let top_edge_pos = $("#table-area tbody tr:first").position().top;
+    //         self._setStateFromDataObject(data, self.state.table_spec.current_doc_name, function () {
+    //             const old_last_row = $('#table-area tbody tr')[data.step_size - 1];
+    //             const rowpos = $(old_last_row).position();
+    //             self.setState({"scroll_top": rowpos.top - top_edge_pos + $("#table-area tbody")[0].scrollTop})
+    //         });
+    //         stopSpinner()
+    //     })
+    // }
 
     _changeCollection() {
         startSpinner();
@@ -707,40 +731,57 @@ class MainApp extends React.Component {
             />
         } else {
             card_body = (
-                <table id="table-area" style={table_style}>
-                    <TableHeader column_names={this.state.table_spec.column_names}
-                                 column_widths={this.state.table_spec.column_widths}
-                                 hidden_columns_list={this.state.table_spec.hidden_columns_list}
-                                 selected_column={this.state.selected_column}
-                                 setMainStateValue={this._setMainStateValue}
-                                 moveColumn={this._moveColumn}
-                    />
-                    <TableBody my_ref={this.tbody_ref}
-                               updateTableSpec={this._updateTableSpec}
-                               table_spec={this.state.table_spec}
-                               broadcast_event_to_server={this._broadcast_event_to_server}
-                               data_rows={this.state.data_rows}
-                               force_row_to_top={this.state.force_row_to_top}
-                               forceRowToTop={this._forceRowToTop}
-                               cells_to_color_text={this.state.cells_to_color_text}
-                               column_names={this.state.table_spec.column_names}
-                               column_widths={this.state.table_spec.column_widths}
-                               hidden_columns_list={this.state.table_spec.hidden_columns_list}
-                               height={this._getTableBodyHeight(table_available_height)}
-                               scroll_top={this.state.scroll_top}
-                               is_last_chunk={this.state.is_last_chunk}
-                               is_first_chunk={this.state.is_first_chunk}
-                               selected_column={this.state.selected_column}
-                               selected_row={this.state.selected_row}
-                               search_text={this.state.search_text}
-                               alt_search_text={this.state.alt_search_text}
-                               setMainStateValue={this._setMainStateValue}
-                               handleFirstInView={this._handleFirstInView}
-                               handleLastInView={this._handleLastInView}
-                    />
-                </table>
-            );
+                <BlueprintTable my_ref={this.tbody_ref}
+                                awaiting_data={this.state.awaiting_data}
+                                initiateDataGrab={this._initiateDataGrab}
+                                height={this._getTableBodyHeight(table_available_height)}
+                                column_names={this.state.table_spec.column_names}
+                                column_widths={this.state.table_spec.column_widths}
+                                hidden_columns_list={this.state.table_spec.hidden_columns_list}
+                                updateTableSpec={this._updateTableSpec}
+                                selected_column={this.state.selected_column}
+                                selected_row={this.state.selected_row}
+                                search_text={this.state.search_text}
+                                alt_search_text={this.state.alt_search_text}
+                                total_rows={this.state.total_rows}
+                                data_row_dict={this.state.data_row_dict}/>
+            )
+
         }
+        // card_body_old = (
+        //         <table id="table-area" style={table_style}>
+        //             <TableHeader column_names={this.state.table_spec.column_names}
+        //                          column_widths={this.state.table_spec.column_widths}
+        //                          hidden_columns_list={this.state.table_spec.hidden_columns_list}
+        //                          selected_column={this.state.selected_column}
+        //                          setMainStateValue={this._setMainStateValue}
+        //                          moveColumn={this._moveColumn}
+        //             />
+        //             <TableBody my_ref={this.tbody_ref}
+        //                        updateTableSpec={this._updateTableSpec}
+        //                        table_spec={this.state.table_spec}
+        //                        broadcast_event_to_server={this._broadcast_event_to_server}
+        //                        data_rows={this.state.data_rows}
+        //                        force_row_to_top={this.state.force_row_to_top}
+        //                        forceRowToTop={this._forceRowToTop}
+        //                        cells_to_color_text={this.state.cells_to_color_text}
+        //                        column_names={this.state.table_spec.column_names}
+        //                        column_widths={this.state.table_spec.column_widths}
+        //                        hidden_columns_list={this.state.table_spec.hidden_columns_list}
+        //                        height={this._getTableBodyHeight(table_available_height)}
+        //                        scroll_top={this.state.scroll_top}
+        //                        is_last_chunk={this.state.is_last_chunk}
+        //                        is_first_chunk={this.state.is_first_chunk}
+        //                        selected_column={this.state.selected_column}
+        //                        selected_row={this.state.selected_row}
+        //                        search_text={this.state.search_text}
+        //                        alt_search_text={this.state.alt_search_text}
+        //                        setMainStateValue={this._setMainStateValue}
+        //                        handleFirstInView={this._handleFirstInView}
+        //                        handleLastInView={this._handleLastInView}
+        //             />
+        //         </table>
+        //     );
 
         let table_pane =  (
             <React.Fragment>
@@ -804,7 +845,13 @@ class MainApp extends React.Component {
         if (this.state.table_is_shrunk) {
             top_pane = (
                 <React.Fragment>
-                    <GlyphButton handleClick={this._toggleTableShrink} icon="maximize"/>
+                    <Bp.Button type="button"
+                      minimal={false}
+                      small={false}
+                      style={{margin: 16}}
+                      onMouseDown={(e)=>{e.preventDefault()}}
+                      onClick={this._toggleTableShrink}
+                      icon="maximize"/>
                     {tile_pane}
                     {this.state.console_is_shrunk &&
                         bottom_pane
@@ -861,7 +908,7 @@ MainApp.propTypes = {
     interface_state: PropTypes.object,
     initial_doc_names: PropTypes.array,
     initial_column_names: PropTypes.array,
-    initial_data_rows: PropTypes.array,
+    initial_data_row_dict: PropTypes.object,
     initial_is_first_chunk: PropTypes.bool,
     initial_is_last_chunk: PropTypes.bool,
     initial_column_widths: PropTypes.array,

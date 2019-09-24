@@ -243,7 +243,7 @@ var AbstractComponent = /** @class */ (function (_super) {
 }(React.Component));
 exports.AbstractComponent = AbstractComponent;
 
-},{"./utils":24,"react":170,"tslib":113}],11:[function(require,module,exports){
+},{"./utils":24,"react":223,"tslib":113}],11:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2015 Palantir Technologies, Inc. All rights reserved.
@@ -325,7 +325,7 @@ var AbstractPureComponent = /** @class */ (function (_super) {
 }(React.PureComponent));
 exports.AbstractPureComponent = AbstractPureComponent;
 
-},{"./utils":24,"react":170,"tslib":113}],12:[function(require,module,exports){
+},{"./utils":24,"react":223,"tslib":113}],12:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2018 Palantir Technologies, Inc. All rights reserved.
@@ -662,7 +662,7 @@ function positionClass(position) {
 exports.positionClass = positionClass;
 
 }).call(this,require('_process'))
-},{"./alignment":12,"./elevation":16,"./intent":19,"./position":22,"_process":180}],15:[function(require,module,exports){
+},{"./alignment":12,"./elevation":16,"./intent":19,"./position":22,"_process":233}],15:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
@@ -1420,7 +1420,7 @@ function _throttleHelper(onAnimationFrameRequested, onBeforeIsRunningCheck, onAf
 }
 
 }).call(this,require('_process'))
-},{"./errors":17,"./utils/compareUtils":25,"./utils/safeInvokeMember":27,"_process":180,"react":170,"tslib":113}],25:[function(require,module,exports){
+},{"./errors":17,"./utils/compareUtils":25,"./utils/safeInvokeMember":27,"_process":233,"react":223,"tslib":113}],25:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
@@ -1785,7 +1785,7 @@ var Alert = /** @class */ (function (_super) {
 }(common_1.AbstractPureComponent));
 exports.Alert = Alert;
 
-},{"../../common":18,"../../common/errors":17,"../../common/utils":24,"../button/buttons":35,"../dialog/dialog":42,"../icon/icon":65,"classnames":132,"react":170,"tslib":113}],31:[function(require,module,exports){
+},{"../../common":18,"../../common/errors":17,"../../common/utils":24,"../button/buttons":35,"../dialog/dialog":42,"../icon/icon":65,"classnames":185,"react":223,"tslib":113}],31:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
@@ -1823,7 +1823,7 @@ exports.Breadcrumb = function (breadcrumbProps) {
         breadcrumbProps.children));
 };
 
-},{"../../common/classes":14,"classnames":132,"react":170,"tslib":113}],32:[function(require,module,exports){
+},{"../../common/classes":14,"classnames":185,"react":223,"tslib":113}],32:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2018 Palantir Technologies, Inc. All rights reserved.
@@ -1904,7 +1904,7 @@ var Breadcrumbs = /** @class */ (function (_super) {
 }(React.PureComponent));
 exports.Breadcrumbs = Breadcrumbs;
 
-},{"../../common/boundary":13,"../../common/classes":14,"../../common/position":22,"../menu/menu":67,"../menu/menuItem":69,"../overflow-list/overflowList":75,"../popover/popover":79,"./breadcrumb":31,"classnames":132,"react":170,"tslib":113}],33:[function(require,module,exports){
+},{"../../common/boundary":13,"../../common/classes":14,"../../common/position":22,"../menu/menu":67,"../menu/menuItem":69,"../overflow-list/overflowList":75,"../popover/popover":79,"./breadcrumb":31,"classnames":185,"react":223,"tslib":113}],33:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
@@ -2006,7 +2006,7 @@ var AbstractButton = /** @class */ (function (_super) {
 }(React.PureComponent));
 exports.AbstractButton = AbstractButton;
 
-},{"../../common/classes":14,"../../common/keys":21,"../../common/utils":24,"../icon/icon":65,"../spinner/spinner":93,"classnames":132,"react":170,"tslib":113}],34:[function(require,module,exports){
+},{"../../common/classes":14,"../../common/keys":21,"../../common/utils":24,"../icon/icon":65,"../spinner/spinner":93,"classnames":185,"react":223,"tslib":113}],34:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
@@ -2052,7 +2052,7 @@ var ButtonGroup = /** @class */ (function (_super) {
 }(React.PureComponent));
 exports.ButtonGroup = ButtonGroup;
 
-},{"../../common/classes":14,"../../common/props":23,"classnames":132,"react":170,"tslib":113}],35:[function(require,module,exports){
+},{"../../common/classes":14,"../../common/props":23,"classnames":185,"react":223,"tslib":113}],35:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
@@ -2103,7 +2103,7 @@ var AnchorButton = /** @class */ (function (_super) {
 }(abstractButton_1.AbstractButton));
 exports.AnchorButton = AnchorButton;
 
-},{"../../common/props":23,"./abstractButton":33,"react":170,"tslib":113}],36:[function(require,module,exports){
+},{"../../common/props":23,"./abstractButton":33,"react":223,"tslib":113}],36:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
@@ -2170,7 +2170,7 @@ var Callout = /** @class */ (function (_super) {
 }(React.PureComponent));
 exports.Callout = Callout;
 
-},{"../../common":18,"../../index":105,"../html/html":64,"classnames":132,"react":170,"tslib":113}],37:[function(require,module,exports){
+},{"../../common":18,"../../index":105,"../html/html":64,"classnames":185,"react":223,"tslib":113}],37:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
@@ -2214,7 +2214,7 @@ var Card = /** @class */ (function (_super) {
 }(React.PureComponent));
 exports.Card = Card;
 
-},{"../../common/classes":14,"../../common/elevation":16,"../../common/props":23,"classnames":132,"react":170,"tslib":113}],38:[function(require,module,exports){
+},{"../../common/classes":14,"../../common/elevation":16,"../../common/props":23,"classnames":185,"react":223,"tslib":113}],38:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2015 Palantir Technologies, Inc. All rights reserved.
@@ -2389,7 +2389,7 @@ var Collapse = /** @class */ (function (_super) {
 }(abstractPureComponent_1.AbstractPureComponent));
 exports.Collapse = Collapse;
 
-},{"../../common/abstractPureComponent":11,"../../common/classes":14,"../../common/props":23,"classnames":132,"react":170,"tslib":113}],39:[function(require,module,exports){
+},{"../../common/abstractPureComponent":11,"../../common/classes":14,"../../common/props":23,"classnames":185,"react":223,"tslib":113}],39:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2015 Palantir Technologies, Inc. All rights reserved.
@@ -2479,7 +2479,7 @@ var CollapsibleList = /** @class */ (function (_super) {
 }(React.Component));
 exports.CollapsibleList = CollapsibleList;
 
-},{"../../common/boundary":13,"../../common/classes":14,"../../common/errors":17,"../../common/position":22,"../../common/props":23,"../../common/utils":24,"../menu/menu":67,"../menu/menuItem":69,"../popover/popover":79,"classnames":132,"react":170,"tslib":113}],40:[function(require,module,exports){
+},{"../../common/boundary":13,"../../common/classes":14,"../../common/errors":17,"../../common/position":22,"../../common/props":23,"../../common/utils":24,"../menu/menu":67,"../menu/menuItem":69,"../popover/popover":79,"classnames":185,"react":223,"tslib":113}],40:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
@@ -2607,7 +2607,7 @@ function remove() {
     }
 }
 
-},{"../../common/abstractPureComponent":11,"../../common/classes":14,"../../common/position":22,"../../common/utils":24,"../popover/popover":79,"classnames":132,"react":170,"react-dom":156,"tslib":113}],41:[function(require,module,exports){
+},{"../../common/abstractPureComponent":11,"../../common/classes":14,"../../common/position":22,"../../common/utils":24,"../popover/popover":79,"classnames":185,"react":223,"react-dom":209,"tslib":113}],41:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
@@ -2678,7 +2678,7 @@ function ContextMenuTarget(WrappedComponent) {
 }
 exports.ContextMenuTarget = ContextMenuTarget;
 
-},{"../../common/errors":17,"../../common/utils":24,"../../common/utils/isDarkTheme":26,"./contextMenu":40,"react":170,"react-dom":156,"tslib":113}],42:[function(require,module,exports){
+},{"../../common/errors":17,"../../common/utils":24,"../../common/utils/isDarkTheme":26,"./contextMenu":40,"react":223,"react-dom":209,"tslib":113}],42:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2015 Palantir Technologies, Inc. All rights reserved.
@@ -2758,7 +2758,7 @@ var Dialog = /** @class */ (function (_super) {
 }(abstractPureComponent_1.AbstractPureComponent));
 exports.Dialog = Dialog;
 
-},{"../../common/abstractPureComponent":11,"../../common/classes":14,"../../common/errors":17,"../../common/props":23,"../button/buttons":35,"../html/html":64,"../icon/icon":65,"../overlay/overlay":76,"classnames":132,"react":170,"tslib":113}],43:[function(require,module,exports){
+},{"../../common/abstractPureComponent":11,"../../common/classes":14,"../../common/errors":17,"../../common/props":23,"../button/buttons":35,"../html/html":64,"../icon/icon":65,"../overlay/overlay":76,"classnames":185,"react":223,"tslib":113}],43:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
@@ -2798,7 +2798,7 @@ var Divider = /** @class */ (function (_super) {
 }(React.PureComponent));
 exports.Divider = Divider;
 
-},{"../../common/classes":14,"../../common/props":23,"classnames":132,"react":170,"tslib":113}],44:[function(require,module,exports){
+},{"../../common/classes":14,"../../common/props":23,"classnames":185,"react":223,"tslib":113}],44:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2018 Palantir Technologies, Inc. All rights reserved.
@@ -2902,7 +2902,7 @@ var Drawer = /** @class */ (function (_super) {
 }(abstractPureComponent_1.AbstractPureComponent));
 exports.Drawer = Drawer;
 
-},{"../../common/abstractPureComponent":11,"../../common/classes":14,"../../common/errors":17,"../../common/position":22,"../../common/props":23,"../button/buttons":35,"../html/html":64,"../icon/icon":65,"../overlay/overlay":76,"classnames":132,"react":170,"tslib":113}],45:[function(require,module,exports){
+},{"../../common/abstractPureComponent":11,"../../common/classes":14,"../../common/errors":17,"../../common/position":22,"../../common/props":23,"../button/buttons":35,"../html/html":64,"../icon/icon":65,"../overlay/overlay":76,"classnames":185,"react":223,"tslib":113}],45:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
@@ -3197,7 +3197,7 @@ function inputSupportsSelection(input) {
     }
 }
 
-},{"../../common/abstractPureComponent":11,"../../common/classes":14,"../../common/keys":21,"../../common/props":23,"../../common/utils":24,"../../compatibility":29,"classnames":132,"react":170,"tslib":113}],46:[function(require,module,exports){
+},{"../../common/abstractPureComponent":11,"../../common/classes":14,"../../common/keys":21,"../../common/props":23,"../../common/utils":24,"../../compatibility":29,"classnames":185,"react":223,"tslib":113}],46:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
@@ -3241,7 +3241,7 @@ var ControlGroup = /** @class */ (function (_super) {
 }(React.PureComponent));
 exports.ControlGroup = ControlGroup;
 
-},{"../../common/classes":14,"../../common/props":23,"classnames":132,"react":170,"tslib":113}],47:[function(require,module,exports){
+},{"../../common/classes":14,"../../common/props":23,"classnames":185,"react":223,"tslib":113}],47:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
@@ -3364,7 +3364,7 @@ var Checkbox = /** @class */ (function (_super) {
 }(React.PureComponent));
 exports.Checkbox = Checkbox;
 
-},{"../../common/classes":14,"../../common/props":23,"../../common/utils":24,"classnames":132,"react":170,"tslib":113}],48:[function(require,module,exports){
+},{"../../common/classes":14,"../../common/props":23,"../../common/utils":24,"classnames":185,"react":223,"tslib":113}],48:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
@@ -3430,7 +3430,7 @@ var FileInput = /** @class */ (function (_super) {
 }(React.PureComponent));
 exports.FileInput = FileInput;
 
-},{"../../common":18,"../../common/classes":14,"../../common/props":23,"classnames":132,"react":170,"tslib":113}],49:[function(require,module,exports){
+},{"../../common":18,"../../common/classes":14,"../../common/props":23,"classnames":185,"react":223,"tslib":113}],49:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
@@ -3482,7 +3482,7 @@ var FormGroup = /** @class */ (function (_super) {
 }(React.PureComponent));
 exports.FormGroup = FormGroup;
 
-},{"../../common/classes":14,"../../common/props":23,"classnames":132,"react":170,"tslib":113}],50:[function(require,module,exports){
+},{"../../common/classes":14,"../../common/props":23,"classnames":185,"react":223,"tslib":113}],50:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
@@ -3565,7 +3565,7 @@ var InputGroup = /** @class */ (function (_super) {
 }(React.PureComponent));
 exports.InputGroup = InputGroup;
 
-},{"../../common/classes":14,"../../common/props":23,"../icon/icon":65,"classnames":132,"react":170,"tslib":113}],51:[function(require,module,exports){
+},{"../../common/classes":14,"../../common/props":23,"../icon/icon":65,"classnames":185,"react":223,"tslib":113}],51:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
@@ -3886,7 +3886,7 @@ var NumericInput = /** @class */ (function (_super) {
 }(common_1.AbstractPureComponent));
 exports.NumericInput = NumericInput;
 
-},{"../../common":18,"../../common/errors":17,"../button/buttonGroup":34,"../button/buttons":35,"./controlGroup":46,"./inputGroup":50,"./numericInputUtils":52,"classnames":132,"react":170,"tslib":113}],52:[function(require,module,exports){
+},{"../../common":18,"../../common/errors":17,"../button/buttonGroup":34,"../button/buttons":35,"./controlGroup":46,"./inputGroup":50,"./numericInputUtils":52,"classnames":185,"react":223,"tslib":113}],52:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2018 Palantir Technologies, Inc. All rights reserved.
@@ -4066,7 +4066,7 @@ var RadioGroup = /** @class */ (function (_super) {
 }(abstractPureComponent_1.AbstractPureComponent));
 exports.RadioGroup = RadioGroup;
 
-},{"../../common/abstractPureComponent":11,"../../common/classes":14,"../../common/errors":17,"../../common/props":23,"../../common/utils":24,"./controls":47,"react":170,"tslib":113}],54:[function(require,module,exports){
+},{"../../common/abstractPureComponent":11,"../../common/classes":14,"../../common/errors":17,"../../common/props":23,"../../common/utils":24,"./controls":47,"react":223,"tslib":113}],54:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
@@ -4144,7 +4144,7 @@ var TextArea = /** @class */ (function (_super) {
 }(React.PureComponent));
 exports.TextArea = TextArea;
 
-},{"../../common/classes":14,"../../common/props":23,"classnames":132,"react":170,"tslib":113}],55:[function(require,module,exports){
+},{"../../common/classes":14,"../../common/props":23,"classnames":185,"react":223,"tslib":113}],55:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
@@ -4196,7 +4196,7 @@ var Hotkey = /** @class */ (function (_super) {
 }(common_1.AbstractPureComponent));
 exports.Hotkey = Hotkey;
 
-},{"../../common":18,"./keyCombo":61,"classnames":132,"react":170,"tslib":113}],56:[function(require,module,exports){
+},{"../../common":18,"./keyCombo":61,"classnames":185,"react":223,"tslib":113}],56:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
@@ -4557,7 +4557,7 @@ var Hotkeys = /** @class */ (function (_super) {
 }(common_1.AbstractPureComponent));
 exports.Hotkeys = Hotkeys;
 
-},{"../../common":18,"../../common/errors":17,"../../common/utils":24,"../html/html":64,"./hotkey":55,"./hotkeyParser":56,"./hotkeysDialog":58,"./hotkeysTarget":60,"./keyCombo":61,"classnames":132,"react":170,"tslib":113}],58:[function(require,module,exports){
+},{"../../common":18,"../../common/errors":17,"../../common/utils":24,"../html/html":64,"./hotkey":55,"./hotkeyParser":56,"./hotkeysDialog":58,"./hotkeysTarget":60,"./keyCombo":61,"classnames":185,"react":223,"tslib":113}],58:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
@@ -4700,7 +4700,7 @@ function hideHotkeysDialogAfterDelay() {
 }
 exports.hideHotkeysDialogAfterDelay = hideHotkeysDialogAfterDelay;
 
-},{"../../common":18,"../../components":66,"./hotkey":55,"./hotkeys":57,"classnames":132,"react":170,"react-dom":156,"tslib":113}],59:[function(require,module,exports){
+},{"../../common":18,"../../components":66,"./hotkey":55,"./hotkeys":57,"classnames":185,"react":223,"react-dom":209,"tslib":113}],59:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
@@ -4826,7 +4826,7 @@ var HotkeysEvents = /** @class */ (function () {
 }());
 exports.HotkeysEvents = HotkeysEvents;
 
-},{"../../common/utils":24,"./hotkey":55,"./hotkeyParser":56,"./hotkeysDialog":58,"react":170}],60:[function(require,module,exports){
+},{"../../common/utils":24,"./hotkey":55,"./hotkeyParser":56,"./hotkeysDialog":58,"react":223}],60:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
@@ -4925,7 +4925,7 @@ function HotkeysTarget(WrappedComponent) {
 }
 exports.HotkeysTarget = HotkeysTarget;
 
-},{"../../common/errors":17,"../../common/utils":24,"./hotkeysEvents":59,"react":170,"tslib":113}],61:[function(require,module,exports){
+},{"../../common/errors":17,"../../common/utils":24,"./hotkeysEvents":59,"react":223,"tslib":113}],61:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
@@ -4992,7 +4992,7 @@ var KeyCombo = /** @class */ (function (_super) {
 }(React.Component));
 exports.KeyCombo = KeyCombo;
 
-},{"../../common":18,"../icon/icon":65,"./hotkeyParser":56,"classnames":132,"react":170,"tslib":113}],62:[function(require,module,exports){
+},{"../../common":18,"../icon/icon":65,"./hotkeyParser":56,"classnames":185,"react":223,"tslib":113}],62:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2018 Palantir Technologies, Inc. All rights reserved.
@@ -5045,7 +5045,7 @@ var HTMLSelect = /** @class */ (function (_super) {
 }(React.PureComponent));
 exports.HTMLSelect = HTMLSelect;
 
-},{"../../common/classes":14,"../icon/icon":65,"classnames":132,"react":170,"tslib":113}],63:[function(require,module,exports){
+},{"../../common/classes":14,"../icon/icon":65,"classnames":185,"react":223,"tslib":113}],63:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2018 Palantir Technologies, Inc. All rights reserved.
@@ -5091,7 +5091,7 @@ var HTMLTable = /** @class */ (function (_super) {
 }(React.PureComponent));
 exports.HTMLTable = HTMLTable;
 
-},{"../../common/classes":14,"classnames":132,"react":170,"tslib":113}],64:[function(require,module,exports){
+},{"../../common/classes":14,"classnames":185,"react":223,"tslib":113}],64:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2018 Palantir Technologies, Inc. All rights reserved.
@@ -5136,7 +5136,7 @@ exports.Label = htmlElement("label", classes_1.LABEL);
 exports.OL = htmlElement("ol", classes_1.LIST);
 exports.UL = htmlElement("ul", classes_1.LIST);
 
-},{"../../common/classes":14,"classnames":132,"react":170,"tslib":113}],65:[function(require,module,exports){
+},{"../../common/classes":14,"classnames":185,"react":223,"tslib":113}],65:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
@@ -5199,7 +5199,7 @@ var Icon = /** @class */ (function (_super) {
 }(React.PureComponent));
 exports.Icon = Icon;
 
-},{"../../common":18,"@blueprintjs/icons":117,"classnames":132,"react":170,"tslib":113}],66:[function(require,module,exports){
+},{"../../common":18,"@blueprintjs/icons":117,"classnames":185,"react":223,"tslib":113}],66:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
@@ -5285,7 +5285,7 @@ tslib_1.__exportStar(require("./tooltip/tooltip"), exports);
 tslib_1.__exportStar(require("./tree/tree"), exports);
 tslib_1.__exportStar(require("./tree/treeNode"), exports);
 
-},{"./alert/alert":30,"./breadcrumbs/breadcrumb":31,"./breadcrumbs/breadcrumbs":32,"./button/buttonGroup":34,"./button/buttons":35,"./callout/callout":36,"./card/card":37,"./collapse/collapse":38,"./collapsible-list/collapsibleList":39,"./context-menu/contextMenu":40,"./context-menu/contextMenuTarget":41,"./dialog/dialog":42,"./divider/divider":43,"./drawer/drawer":44,"./editable-text/editableText":45,"./forms/controlGroup":46,"./forms/controls":47,"./forms/fileInput":48,"./forms/formGroup":49,"./forms/inputGroup":50,"./forms/numericInput":51,"./forms/radioGroup":53,"./forms/textArea":54,"./hotkeys/hotkeys":57,"./html-select/htmlSelect":62,"./html-table/htmlTable":63,"./html/html":64,"./icon/icon":65,"./menu/menu":67,"./menu/menuDivider":68,"./menu/menuItem":69,"./navbar/navbar":70,"./navbar/navbarDivider":71,"./navbar/navbarGroup":72,"./navbar/navbarHeading":73,"./non-ideal-state/nonIdealState":74,"./overflow-list/overflowList":75,"./overlay/overlay":76,"./panel-stack/panelStack":77,"./popover/popover":79,"./popover/popoverSharedProps":82,"./portal/portal":84,"./progress-bar/progressBar":85,"./resize-sensor/resizeSensor":86,"./slider/handleProps":88,"./slider/multiSlider":89,"./slider/rangeSlider":90,"./slider/slider":91,"./spinner/spinner":93,"./tabs/tab":94,"./tabs/tabs":96,"./tag-input/tagInput":97,"./tag/tag":98,"./text/text":99,"./toast/toast":100,"./toast/toaster":101,"./tooltip/tooltip":102,"./tree/tree":103,"./tree/treeNode":104,"dom4":136,"tslib":113}],67:[function(require,module,exports){
+},{"./alert/alert":30,"./breadcrumbs/breadcrumb":31,"./breadcrumbs/breadcrumbs":32,"./button/buttonGroup":34,"./button/buttons":35,"./callout/callout":36,"./card/card":37,"./collapse/collapse":38,"./collapsible-list/collapsibleList":39,"./context-menu/contextMenu":40,"./context-menu/contextMenuTarget":41,"./dialog/dialog":42,"./divider/divider":43,"./drawer/drawer":44,"./editable-text/editableText":45,"./forms/controlGroup":46,"./forms/controls":47,"./forms/fileInput":48,"./forms/formGroup":49,"./forms/inputGroup":50,"./forms/numericInput":51,"./forms/radioGroup":53,"./forms/textArea":54,"./hotkeys/hotkeys":57,"./html-select/htmlSelect":62,"./html-table/htmlTable":63,"./html/html":64,"./icon/icon":65,"./menu/menu":67,"./menu/menuDivider":68,"./menu/menuItem":69,"./navbar/navbar":70,"./navbar/navbarDivider":71,"./navbar/navbarGroup":72,"./navbar/navbarHeading":73,"./non-ideal-state/nonIdealState":74,"./overflow-list/overflowList":75,"./overlay/overlay":76,"./panel-stack/panelStack":77,"./popover/popover":79,"./popover/popoverSharedProps":82,"./portal/portal":84,"./progress-bar/progressBar":85,"./resize-sensor/resizeSensor":86,"./slider/handleProps":88,"./slider/multiSlider":89,"./slider/rangeSlider":90,"./slider/slider":91,"./spinner/spinner":93,"./tabs/tab":94,"./tabs/tabs":96,"./tag-input/tagInput":97,"./tag/tag":98,"./text/text":99,"./toast/toast":100,"./toast/toaster":101,"./tooltip/tooltip":102,"./tree/tree":103,"./tree/treeNode":104,"dom4":189,"tslib":113}],67:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2015 Palantir Technologies, Inc. All rights reserved.
@@ -5328,7 +5328,7 @@ var Menu = /** @class */ (function (_super) {
 }(React.Component));
 exports.Menu = Menu;
 
-},{"../../common/classes":14,"../../common/props":23,"./menuDivider":68,"./menuItem":69,"classnames":132,"react":170,"tslib":113}],68:[function(require,module,exports){
+},{"../../common/classes":14,"../../common/props":23,"./menuDivider":68,"./menuItem":69,"classnames":185,"react":223,"tslib":113}],68:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2015 Palantir Technologies, Inc. All rights reserved.
@@ -5374,7 +5374,7 @@ var MenuDivider = /** @class */ (function (_super) {
 }(React.Component));
 exports.MenuDivider = MenuDivider;
 
-},{"../../common/classes":14,"../../common/props":23,"../html/html":64,"classnames":132,"react":170,"tslib":113}],69:[function(require,module,exports){
+},{"../../common/classes":14,"../../common/props":23,"../html/html":64,"classnames":185,"react":223,"tslib":113}],69:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2015 Palantir Technologies, Inc. All rights reserved.
@@ -5467,7 +5467,7 @@ var DISABLED_PROPS = {
     tabIndex: -1,
 };
 
-},{"../../common/classes":14,"../../common/position":22,"../../common/props":23,"../icon/icon":65,"../popover/popover":79,"../text/text":99,"./menu":67,"classnames":132,"react":170,"tslib":113}],70:[function(require,module,exports){
+},{"../../common/classes":14,"../../common/position":22,"../../common/props":23,"../icon/icon":65,"../popover/popover":79,"../text/text":99,"./menu":67,"classnames":185,"react":223,"tslib":113}],70:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
@@ -5514,7 +5514,7 @@ var Navbar = /** @class */ (function (_super) {
 }(React.PureComponent));
 exports.Navbar = Navbar;
 
-},{"../../common/classes":14,"../../common/props":23,"./navbarDivider":71,"./navbarGroup":72,"./navbarHeading":73,"classnames":132,"react":170,"tslib":113}],71:[function(require,module,exports){
+},{"../../common/classes":14,"../../common/props":23,"./navbarDivider":71,"./navbarGroup":72,"./navbarHeading":73,"classnames":185,"react":223,"tslib":113}],71:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
@@ -5553,7 +5553,7 @@ var NavbarDivider = /** @class */ (function (_super) {
 }(React.PureComponent));
 exports.NavbarDivider = NavbarDivider;
 
-},{"../../common/classes":14,"../../common/props":23,"classnames":132,"react":170,"tslib":113}],72:[function(require,module,exports){
+},{"../../common/classes":14,"../../common/props":23,"classnames":185,"react":223,"tslib":113}],72:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
@@ -5597,7 +5597,7 @@ var NavbarGroup = /** @class */ (function (_super) {
 }(React.PureComponent));
 exports.NavbarGroup = NavbarGroup;
 
-},{"../../common/alignment":12,"../../common/classes":14,"../../common/props":23,"classnames":132,"react":170,"tslib":113}],73:[function(require,module,exports){
+},{"../../common/alignment":12,"../../common/classes":14,"../../common/props":23,"classnames":185,"react":223,"tslib":113}],73:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
@@ -5636,7 +5636,7 @@ var NavbarHeading = /** @class */ (function (_super) {
 }(React.PureComponent));
 exports.NavbarHeading = NavbarHeading;
 
-},{"../../common/classes":14,"../../common/props":23,"classnames":132,"react":170,"tslib":113}],74:[function(require,module,exports){
+},{"../../common/classes":14,"../../common/props":23,"classnames":185,"react":223,"tslib":113}],74:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
@@ -5691,7 +5691,7 @@ var NonIdealState = /** @class */ (function (_super) {
 }(React.PureComponent));
 exports.NonIdealState = NonIdealState;
 
-},{"../../common/classes":14,"../../common/props":23,"../../common/utils":24,"../html/html":64,"../icon/icon":65,"classnames":132,"react":170,"tslib":113}],75:[function(require,module,exports){
+},{"../../common/classes":14,"../../common/props":23,"../../common/utils":24,"../html/html":64,"../icon/icon":65,"classnames":185,"react":223,"tslib":113}],75:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2018 Palantir Technologies, Inc. All rights reserved.
@@ -5863,7 +5863,7 @@ var OverflowList = /** @class */ (function (_super) {
 }(React.Component));
 exports.OverflowList = OverflowList;
 
-},{"../../common/boundary":13,"../../common/classes":14,"../../common/errors":17,"../../common/props":23,"../../common/utils":24,"../resize-sensor/resizeSensor":86,"classnames":132,"react":170,"tslib":113}],76:[function(require,module,exports){
+},{"../../common/boundary":13,"../../common/classes":14,"../../common/errors":17,"../../common/props":23,"../../common/utils":24,"../resize-sensor/resizeSensor":86,"classnames":185,"react":223,"tslib":113}],76:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2015 Palantir Technologies, Inc. All rights reserved.
@@ -6099,7 +6099,7 @@ var Overlay = /** @class */ (function (_super) {
 }(React.PureComponent));
 exports.Overlay = Overlay;
 
-},{"../../common/classes":14,"../../common/keys":21,"../../common/props":23,"../../common/utils":24,"../portal/portal":84,"classnames":132,"react":170,"react-dom":156,"react-transition-group":110,"tslib":113}],77:[function(require,module,exports){
+},{"../../common/classes":14,"../../common/keys":21,"../../common/props":23,"../../common/utils":24,"../portal/portal":84,"classnames":185,"react":223,"react-dom":209,"react-transition-group":110,"tslib":113}],77:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2018 Palantir Technologies, Inc. All rights reserved.
@@ -6194,7 +6194,7 @@ var PanelStack = /** @class */ (function (_super) {
 }(abstractPureComponent_1.AbstractPureComponent));
 exports.PanelStack = PanelStack;
 
-},{"../../common/abstractPureComponent":11,"../../common/classes":14,"../../common/errors":17,"../../common/utils":24,"./panelView":78,"classnames":132,"react":170,"react-transition-group":110,"tslib":113}],78:[function(require,module,exports){
+},{"../../common/abstractPureComponent":11,"../../common/classes":14,"../../common/errors":17,"../../common/utils":24,"./panelView":78,"classnames":185,"react":223,"react-transition-group":110,"tslib":113}],78:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2018 Palantir Technologies, Inc. All rights reserved.
@@ -6251,7 +6251,7 @@ var PanelView = /** @class */ (function (_super) {
 }(React.PureComponent));
 exports.PanelView = PanelView;
 
-},{"../../common":18,"../button/buttons":35,"../text/text":99,"react":170,"tslib":113}],79:[function(require,module,exports){
+},{"../../common":18,"../button/buttons":35,"../text/text":99,"react":223,"tslib":113}],79:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
@@ -6654,7 +6654,7 @@ var Popover = /** @class */ (function (_super) {
 }(abstractPureComponent_1.AbstractPureComponent));
 exports.Popover = Popover;
 
-},{"../../common/abstractPureComponent":11,"../../common/classes":14,"../../common/errors":17,"../../common/props":23,"../../common/utils":24,"../overlay/overlay":76,"../resize-sensor/resizeSensor":86,"../tooltip/tooltip":102,"./popoverArrow":80,"./popoverMigrationUtils":81,"./popperUtils":83,"classnames":132,"react":170,"react-popper":164,"tslib":113}],80:[function(require,module,exports){
+},{"../../common/abstractPureComponent":11,"../../common/classes":14,"../../common/errors":17,"../../common/props":23,"../../common/utils":24,"../overlay/overlay":76,"../resize-sensor/resizeSensor":86,"../tooltip/tooltip":102,"./popoverArrow":80,"./popoverMigrationUtils":81,"./popperUtils":83,"classnames":185,"react":223,"react-popper":217,"tslib":113}],80:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
@@ -6709,7 +6709,7 @@ exports.PopoverArrow = function (_a) {
 };
 exports.PopoverArrow.displayName = props_1.DISPLAYNAME_PREFIX + ".PopoverArrow";
 
-},{"../../common/classes":14,"../../common/props":23,"./popperUtils":83,"react":170,"tslib":113}],81:[function(require,module,exports){
+},{"../../common/classes":14,"../../common/props":23,"./popperUtils":83,"react":223,"tslib":113}],81:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
@@ -7018,7 +7018,7 @@ function maybeAddClass(classList, className) {
     }
 }
 
-},{"../../common/classes":14,"../../common/errors":17,"../../common/props":23,"../../common/utils":24,"react":170,"react-dom":156,"tslib":113}],85:[function(require,module,exports){
+},{"../../common/classes":14,"../../common/errors":17,"../../common/props":23,"../../common/utils":24,"react":223,"react-dom":209,"tslib":113}],85:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
@@ -7061,7 +7061,7 @@ var ProgressBar = /** @class */ (function (_super) {
 }(React.PureComponent));
 exports.ProgressBar = ProgressBar;
 
-},{"../../common/classes":14,"../../common/props":23,"../../common/utils":24,"classnames":132,"react":170,"tslib":113}],86:[function(require,module,exports){
+},{"../../common/classes":14,"../../common/props":23,"../../common/utils":24,"classnames":185,"react":223,"tslib":113}],86:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2018 Palantir Technologies, Inc. All rights reserved.
@@ -7156,7 +7156,7 @@ var ResizeSensor = /** @class */ (function (_super) {
 }(React.PureComponent));
 exports.ResizeSensor = ResizeSensor;
 
-},{"../../common/props":23,"../../common/utils":24,"react":170,"react-dom":156,"resize-observer-polyfill":171,"tslib":113}],87:[function(require,module,exports){
+},{"../../common/props":23,"../../common/utils":24,"react":223,"react-dom":209,"resize-observer-polyfill":224,"tslib":113}],87:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
@@ -7358,7 +7358,7 @@ var Handle = /** @class */ (function (_super) {
 }(abstractPureComponent_1.AbstractPureComponent));
 exports.Handle = Handle;
 
-},{"../../common/abstractPureComponent":11,"../../common/classes":14,"../../common/keys":21,"../../common/props":23,"../../common/utils":24,"./sliderUtils":92,"classnames":132,"react":170,"tslib":113}],88:[function(require,module,exports){
+},{"../../common/abstractPureComponent":11,"../../common/classes":14,"../../common/keys":21,"../../common/props":23,"../../common/utils":24,"./sliderUtils":92,"classnames":185,"react":223,"tslib":113}],88:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2018 Palantir Technologies, Inc. All rights reserved.
@@ -7705,7 +7705,7 @@ function getSortedHandleProps(_a, predicate) {
     return handles;
 }
 
-},{"../../common":18,"../../common/abstractPureComponent":11,"../../common/errors":17,"../../common/props":23,"../../common/utils":24,"./handle":87,"./handleProps":88,"./sliderUtils":92,"classnames":132,"react":170,"tslib":113}],90:[function(require,module,exports){
+},{"../../common":18,"../../common/abstractPureComponent":11,"../../common/errors":17,"../../common/props":23,"../../common/utils":24,"./handle":87,"./handleProps":88,"./sliderUtils":92,"classnames":185,"react":223,"tslib":113}],90:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
@@ -7758,7 +7758,7 @@ var RangeSlider = /** @class */ (function (_super) {
 }(abstractPureComponent_1.AbstractPureComponent));
 exports.RangeSlider = RangeSlider;
 
-},{"../../common/abstractPureComponent":11,"../../common/errors":17,"../../common/intent":19,"../../common/props":23,"./multiSlider":89,"react":170,"tslib":113}],91:[function(require,module,exports){
+},{"../../common/abstractPureComponent":11,"../../common/errors":17,"../../common/intent":19,"../../common/props":23,"./multiSlider":89,"react":223,"tslib":113}],91:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
@@ -7799,7 +7799,7 @@ var Slider = /** @class */ (function (_super) {
 }(abstractPureComponent_1.AbstractPureComponent));
 exports.Slider = Slider;
 
-},{"../../common/abstractPureComponent":11,"../../common/intent":19,"../../common/props":23,"./multiSlider":89,"react":170,"tslib":113}],92:[function(require,module,exports){
+},{"../../common/abstractPureComponent":11,"../../common/intent":19,"../../common/props":23,"./multiSlider":89,"react":223,"tslib":113}],92:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2018 Palantir Technologies, Inc. All rights reserved.
@@ -7955,7 +7955,7 @@ var Spinner = /** @class */ (function (_super) {
 }(abstractPureComponent_1.AbstractPureComponent));
 exports.Spinner = Spinner;
 
-},{"../../common/abstractPureComponent":11,"../../common/classes":14,"../../common/errors":17,"../../common/props":23,"../../common/utils":24,"classnames":132,"react":170,"tslib":113}],94:[function(require,module,exports){
+},{"../../common/abstractPureComponent":11,"../../common/classes":14,"../../common/errors":17,"../../common/props":23,"../../common/utils":24,"classnames":185,"react":223,"tslib":113}],94:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2015 Palantir Technologies, Inc. All rights reserved.
@@ -7998,7 +7998,7 @@ var Tab = /** @class */ (function (_super) {
 }(React.PureComponent));
 exports.Tab = Tab;
 
-},{"../../common/classes":14,"../../common/props":23,"classnames":132,"react":170,"tslib":113}],95:[function(require,module,exports){
+},{"../../common/classes":14,"../../common/props":23,"classnames":185,"react":223,"tslib":113}],95:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2015 Palantir Technologies, Inc. All rights reserved.
@@ -8047,7 +8047,7 @@ function generateTabTitleId(parentId, tabId) {
 }
 exports.generateTabTitleId = generateTabTitleId;
 
-},{"../../common/classes":14,"../../common/props":23,"classnames":132,"react":170,"tslib":113}],96:[function(require,module,exports){
+},{"../../common/classes":14,"../../common/props":23,"classnames":185,"react":223,"tslib":113}],96:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2015 Palantir Technologies, Inc. All rights reserved.
@@ -8261,7 +8261,7 @@ function isTabElement(child) {
     return Utils.isElementOfType(child, tab_1.Tab);
 }
 
-},{"../../common/abstractPureComponent":11,"../../common/classes":14,"../../common/keys":21,"../../common/props":23,"../../common/utils":24,"./tab":94,"./tabTitle":95,"classnames":132,"react":170,"tslib":113}],97:[function(require,module,exports){
+},{"../../common/abstractPureComponent":11,"../../common/classes":14,"../../common/keys":21,"../../common/props":23,"../../common/utils":24,"./tab":94,"./tabTitle":95,"classnames":185,"react":223,"tslib":113}],97:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
@@ -8502,7 +8502,7 @@ var TagInput = /** @class */ (function (_super) {
 }(abstractPureComponent_1.AbstractPureComponent));
 exports.TagInput = TagInput;
 
-},{"../../common/abstractPureComponent":11,"../../common/classes":14,"../../common/keys":21,"../../common/props":23,"../../common/utils":24,"../icon/icon":65,"../tag/tag":98,"classnames":132,"react":170,"tslib":113}],98:[function(require,module,exports){
+},{"../../common/abstractPureComponent":11,"../../common/classes":14,"../../common/keys":21,"../../common/props":23,"../../common/utils":24,"../icon/icon":65,"../tag/tag":98,"classnames":185,"react":223,"tslib":113}],98:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
@@ -8562,7 +8562,7 @@ var Tag = /** @class */ (function (_super) {
 }(React.PureComponent));
 exports.Tag = Tag;
 
-},{"../../common":18,"../../common/utils":24,"../icon/icon":65,"../text/text":99,"classnames":132,"react":170,"tslib":113}],99:[function(require,module,exports){
+},{"../../common":18,"../../common/utils":24,"../icon/icon":65,"../text/text":99,"classnames":185,"react":223,"tslib":113}],99:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
@@ -8630,7 +8630,7 @@ var Text = /** @class */ (function (_super) {
 }(React.PureComponent));
 exports.Text = Text;
 
-},{"../../common/classes":14,"../../common/props":23,"classnames":132,"react":170,"tslib":113}],100:[function(require,module,exports){
+},{"../../common/classes":14,"../../common/props":23,"classnames":185,"react":223,"tslib":113}],100:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
@@ -8723,7 +8723,7 @@ var Toast = /** @class */ (function (_super) {
 }(abstractPureComponent_1.AbstractPureComponent));
 exports.Toast = Toast;
 
-},{"../../common/abstractPureComponent":11,"../../common/classes":14,"../../common/props":23,"../../common/utils":24,"../button/buttonGroup":34,"../button/buttons":35,"../icon/icon":65,"classnames":132,"react":170,"tslib":113}],101:[function(require,module,exports){
+},{"../../common/abstractPureComponent":11,"../../common/classes":14,"../../common/props":23,"../../common/utils":24,"../button/buttonGroup":34,"../button/buttons":35,"../icon/icon":65,"classnames":185,"react":223,"tslib":113}],101:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
@@ -8861,7 +8861,7 @@ var Toaster = /** @class */ (function (_super) {
 }(abstractPureComponent_1.AbstractPureComponent));
 exports.Toaster = Toaster;
 
-},{"../../common/abstractPureComponent":11,"../../common/classes":14,"../../common/errors":17,"../../common/keys":21,"../../common/position":22,"../../common/props":23,"../../common/utils":24,"../overlay/overlay":76,"./toast":100,"classnames":132,"react":170,"react-dom":156,"tslib":113}],102:[function(require,module,exports){
+},{"../../common/abstractPureComponent":11,"../../common/classes":14,"../../common/errors":17,"../../common/keys":21,"../../common/position":22,"../../common/props":23,"../../common/utils":24,"../overlay/overlay":76,"./toast":100,"classnames":185,"react":223,"react-dom":209,"tslib":113}],102:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2015 Palantir Technologies, Inc. All rights reserved.
@@ -8913,7 +8913,7 @@ var Tooltip = /** @class */ (function (_super) {
 }(React.PureComponent));
 exports.Tooltip = Tooltip;
 
-},{"../../common/classes":14,"../../common/props":23,"../popover/popover":79,"classnames":132,"react":170,"tslib":113}],103:[function(require,module,exports){
+},{"../../common/classes":14,"../../common/props":23,"../popover/popover":79,"classnames":185,"react":223,"tslib":113}],103:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2015 Palantir Technologies, Inc. All rights reserved.
@@ -9020,7 +9020,7 @@ var Tree = /** @class */ (function (_super) {
 }(React.Component));
 exports.Tree = Tree;
 
-},{"../../common/classes":14,"../../common/props":23,"../../common/utils":24,"./treeNode":104,"classnames":132,"react":170,"tslib":113}],104:[function(require,module,exports){
+},{"../../common/classes":14,"../../common/props":23,"../../common/utils":24,"./treeNode":104,"classnames":185,"react":223,"tslib":113}],104:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2015 Palantir Technologies, Inc. All rights reserved.
@@ -9126,7 +9126,7 @@ var TreeNode = /** @class */ (function (_super) {
 }(React.Component));
 exports.TreeNode = TreeNode;
 
-},{"../../common/classes":14,"../../common/props":23,"../../common/utils":24,"../collapse/collapse":38,"../icon/icon":65,"classnames":132,"react":170,"tslib":113}],105:[function(require,module,exports){
+},{"../../common/classes":14,"../../common/props":23,"../../common/utils":24,"../collapse/collapse":38,"../icon/icon":65,"classnames":185,"react":223,"tslib":113}],105:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2015 Palantir Technologies, Inc. All rights reserved.
@@ -9516,7 +9516,7 @@ var _default = CSSTransition;
 exports.default = _default;
 module.exports = exports["default"];
 }).call(this,require('_process'))
-},{"./Transition":108,"./utils/PropTypes":112,"_process":180,"dom-helpers/class/addClass":133,"dom-helpers/class/removeClass":135,"prop-types":146,"react":170}],107:[function(require,module,exports){
+},{"./Transition":108,"./utils/PropTypes":112,"_process":233,"dom-helpers/class/addClass":186,"dom-helpers/class/removeClass":188,"prop-types":199,"react":223}],107:[function(require,module,exports){
 (function (process){
 "use strict";
 
@@ -9669,7 +9669,7 @@ var _default = ReplaceTransition;
 exports.default = _default;
 module.exports = exports["default"];
 }).call(this,require('_process'))
-},{"./TransitionGroup":109,"_process":180,"prop-types":146,"react":170,"react-dom":156}],108:[function(require,module,exports){
+},{"./TransitionGroup":109,"_process":233,"prop-types":199,"react":223,"react-dom":209}],108:[function(require,module,exports){
 (function (process){
 "use strict";
 
@@ -10281,7 +10281,7 @@ var _default = (0, _reactLifecyclesCompat.polyfill)(Transition);
 
 exports.default = _default;
 }).call(this,require('_process'))
-},{"./utils/PropTypes":112,"_process":180,"prop-types":146,"react":170,"react-dom":156,"react-lifecycles-compat":160}],109:[function(require,module,exports){
+},{"./utils/PropTypes":112,"_process":233,"prop-types":199,"react":223,"react-dom":209,"react-lifecycles-compat":213}],109:[function(require,module,exports){
 (function (process){
 "use strict";
 
@@ -10492,7 +10492,7 @@ var _default = (0, _reactLifecyclesCompat.polyfill)(TransitionGroup);
 exports.default = _default;
 module.exports = exports["default"];
 }).call(this,require('_process'))
-},{"./utils/ChildMapping":111,"_process":180,"prop-types":146,"react":170,"react-lifecycles-compat":160}],110:[function(require,module,exports){
+},{"./utils/ChildMapping":111,"_process":233,"prop-types":199,"react":223,"react-lifecycles-compat":213}],110:[function(require,module,exports){
 "use strict";
 
 var _CSSTransition = _interopRequireDefault(require("./CSSTransition"));
@@ -10662,7 +10662,7 @@ function getNextChildMapping(nextProps, prevChildMapping, onExited) {
   });
   return children;
 }
-},{"react":170}],112:[function(require,module,exports){
+},{"react":223}],112:[function(require,module,exports){
 (function (process){
 "use strict";
 
@@ -10693,7 +10693,7 @@ var classNamesShape = process.env.NODE_ENV !== 'production' ? _propTypes.default
 })]) : null;
 exports.classNamesShape = classNamesShape;
 }).call(this,require('_process'))
-},{"_process":180,"prop-types":146}],113:[function(require,module,exports){
+},{"_process":233,"prop-types":199}],113:[function(require,module,exports){
 (function (global){
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation. All rights reserved.
@@ -13163,7 +13163,7 @@ var Omnibar = /** @class */ (function (_super) {
 }(React.PureComponent));
 exports.Omnibar = Omnibar;
 
-},{"../../common":120,"../query-list/queryList":126,"@blueprintjs/core":105,"classnames":132,"react":170,"tslib":131}],126:[function(require,module,exports){
+},{"../../common":120,"../query-list/queryList":126,"@blueprintjs/core":105,"classnames":185,"react":223,"tslib":131}],126:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
@@ -13589,7 +13589,7 @@ function getFirstEnabledItem(items, itemDisabled, direction, startIndex) {
 }
 exports.getFirstEnabledItem = getFirstEnabledItem;
 
-},{"../../common":120,"@blueprintjs/core":105,"react":170,"tslib":131}],127:[function(require,module,exports){
+},{"../../common":120,"@blueprintjs/core":105,"react":223,"tslib":131}],127:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
@@ -13715,7 +13715,7 @@ var MultiSelect = /** @class */ (function (_super) {
 }(React.PureComponent));
 exports.MultiSelect = MultiSelect;
 
-},{"../../common":120,"../query-list/queryList":126,"@blueprintjs/core":105,"classnames":132,"react":170,"tslib":131}],128:[function(require,module,exports){
+},{"../../common":120,"../query-list/queryList":126,"@blueprintjs/core":105,"classnames":185,"react":223,"tslib":131}],128:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
@@ -13837,7 +13837,7 @@ var Select = /** @class */ (function (_super) {
 }(React.PureComponent));
 exports.Select = Select;
 
-},{"../../common":120,"../query-list/queryList":126,"@blueprintjs/core":105,"classnames":132,"react":170,"tslib":131}],129:[function(require,module,exports){
+},{"../../common":120,"../query-list/queryList":126,"@blueprintjs/core":105,"classnames":185,"react":223,"tslib":131}],129:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
@@ -14041,7 +14041,7 @@ var Suggest = /** @class */ (function (_super) {
 }(React.PureComponent));
 exports.Suggest = Suggest;
 
-},{"../../common":120,"../query-list/queryList":126,"@blueprintjs/core":105,"classnames":132,"react":170,"tslib":131}],130:[function(require,module,exports){
+},{"../../common":120,"../query-list/queryList":126,"@blueprintjs/core":105,"classnames":185,"react":223,"tslib":131}],130:[function(require,module,exports){
 "use strict";
 /*
  * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
@@ -14066,6 +14066,7533 @@ tslib_1.__exportStar(require("./components"), exports);
 },{"./common":120,"./components":124,"tslib":131}],131:[function(require,module,exports){
 arguments[4][113][0].apply(exports,arguments)
 },{"dup":113}],132:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
+var classnames_1 = tslib_1.__importDefault(require("classnames"));
+var React = tslib_1.__importStar(require("react"));
+var Classes = tslib_1.__importStar(require("../common/classes"));
+var core_1 = require("@blueprintjs/core");
+var loadableContent_1 = require("../common/loadableContent");
+var jsonFormat_1 = require("./formats/jsonFormat");
+var truncatedFormat_1 = require("./formats/truncatedFormat");
+exports.emptyCellRenderer = function () { return React.createElement(Cell, null); };
+var Cell = /** @class */ (function (_super) {
+    tslib_1.__extends(Cell, _super);
+    function Cell() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    Cell.prototype.shouldComponentUpdate = function (nextProps) {
+        // deeply compare "style," because a new but identical object might have been provided.
+        return (!core_1.Utils.shallowCompareKeys(this.props, nextProps, { exclude: ["style"] }) ||
+            !core_1.Utils.deepCompareKeys(this.props.style, nextProps.style));
+    };
+    Cell.prototype.render = function () {
+        var _a, _b;
+        var _c = this.props, cellRef = _c.cellRef, tabIndex = _c.tabIndex, onKeyDown = _c.onKeyDown, onKeyUp = _c.onKeyUp, onKeyPress = _c.onKeyPress, style = _c.style, intent = _c.intent, interactive = _c.interactive, loading = _c.loading, tooltip = _c.tooltip, truncated = _c.truncated, className = _c.className, wrapText = _c.wrapText;
+        var classes = classnames_1.default(Classes.TABLE_CELL, core_1.Classes.intentClass(intent), (_a = {},
+            _a[Classes.TABLE_CELL_INTERACTIVE] = interactive,
+            _a[core_1.Classes.LOADING] = loading,
+            _a[Classes.TABLE_TRUNCATED_CELL] = truncated,
+            _a), className);
+        var textClasses = classnames_1.default((_b = {},
+            _b[Classes.TABLE_TRUNCATED_TEXT] = truncated,
+            _b[Classes.TABLE_NO_WRAP_TEXT] = !wrapText,
+            _b));
+        // add width and height to the children, for use in shouldComponentUpdate in truncatedFormat
+        // note: these aren't actually used by truncated format, just in shouldComponentUpdate
+        var modifiedChildren = React.Children.map(this.props.children, function (child) {
+            if ((style != null && React.isValidElement(child)) ||
+                (core_1.Utils.isElementOfType(child, truncatedFormat_1.TruncatedFormat) || core_1.Utils.isElementOfType(child, jsonFormat_1.JSONFormat))) {
+                return React.cloneElement(child, {
+                    parentCellHeight: parseInt(style.height.toString(), 10),
+                    parentCellWidth: parseInt(style.width.toString(), 10),
+                });
+            }
+            return child;
+        });
+        var content = React.createElement("div", { className: textClasses }, modifiedChildren);
+        return (React.createElement("div", tslib_1.__assign({ className: classes, title: tooltip, ref: cellRef }, { style: style, tabIndex: tabIndex, onKeyDown: onKeyDown, onKeyUp: onKeyUp, onKeyPress: onKeyPress }),
+            React.createElement(loadableContent_1.LoadableContent, { loading: loading, variableLength: true }, content)));
+    };
+    Cell.displayName = core_1.DISPLAYNAME_PREFIX + ".Cell";
+    Cell.defaultProps = {
+        truncated: true,
+        wrapText: false,
+    };
+    return Cell;
+}(React.Component));
+exports.Cell = Cell;
+
+},{"../common/classes":138,"../common/loadableContent":151,"./formats/jsonFormat":134,"./formats/truncatedFormat":135,"@blueprintjs/core":105,"classnames":185,"react":223,"tslib":184}],133:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
+var classnames_1 = tslib_1.__importDefault(require("classnames"));
+var React = tslib_1.__importStar(require("react"));
+var core_1 = require("@blueprintjs/core");
+var Classes = tslib_1.__importStar(require("../common/classes"));
+var draggable_1 = require("../interactions/draggable");
+var cell_1 = require("./cell");
+var EditableCell = /** @class */ (function (_super) {
+    tslib_1.__extends(EditableCell, _super);
+    function EditableCell(props, context) {
+        var _this = _super.call(this, props, context) || this;
+        _this.refHandlers = {
+            cell: function (ref) {
+                _this.cellRef = ref;
+            },
+        };
+        _this.handleKeyPress = function () {
+            if (_this.state.isEditing || !_this.props.isFocused) {
+                return;
+            }
+            // setting dirty value to empty string because apparently the text field will pick up the key and write it in there
+            _this.setState({ isEditing: true, dirtyValue: "", savedValue: _this.state.savedValue });
+        };
+        _this.handleEdit = function () {
+            _this.setState({ isEditing: true, dirtyValue: _this.state.savedValue });
+        };
+        _this.handleCancel = function (value) {
+            // don't strictly need to clear the dirtyValue, but it's better hygiene
+            _this.setState({ isEditing: false, dirtyValue: undefined });
+            _this.invokeCallback(_this.props.onCancel, value);
+        };
+        _this.handleChange = function (value) {
+            _this.setState({ dirtyValue: value });
+            _this.invokeCallback(_this.props.onChange, value);
+        };
+        _this.handleConfirm = function (value) {
+            _this.setState({ isEditing: false, savedValue: value, dirtyValue: undefined });
+            _this.invokeCallback(_this.props.onConfirm, value);
+        };
+        _this.handleCellActivate = function (_event) {
+            return true;
+        };
+        _this.handleCellDoubleClick = function (_event) {
+            _this.handleEdit();
+        };
+        _this.state = {
+            isEditing: false,
+            savedValue: props.value,
+        };
+        return _this;
+    }
+    EditableCell.prototype.componentDidMount = function () {
+        this.checkShouldFocus();
+    };
+    EditableCell.prototype.componentDidUpdate = function () {
+        this.checkShouldFocus();
+    };
+    EditableCell.prototype.shouldComponentUpdate = function (nextProps, nextState) {
+        return (!core_1.Utils.shallowCompareKeys(this.props, nextProps, { exclude: ["style"] }) ||
+            !core_1.Utils.shallowCompareKeys(this.state, nextState) ||
+            !core_1.Utils.deepCompareKeys(this.props, nextProps, ["style"]));
+    };
+    EditableCell.prototype.componentWillReceiveProps = function (nextProps) {
+        var value = nextProps.value;
+        if (value != null) {
+            this.setState({ savedValue: value, dirtyValue: value });
+        }
+    };
+    EditableCell.prototype.render = function () {
+        var _a;
+        var _b = this.props, onCancel = _b.onCancel, onChange = _b.onChange, onConfirm = _b.onConfirm, truncated = _b.truncated, wrapText = _b.wrapText, editableTextProps = _b.editableTextProps, spreadableProps = tslib_1.__rest(_b, ["onCancel", "onChange", "onConfirm", "truncated", "wrapText", "editableTextProps"]);
+        var _c = this.state, isEditing = _c.isEditing, dirtyValue = _c.dirtyValue, savedValue = _c.savedValue;
+        var interactive = spreadableProps.interactive || isEditing;
+        var cellContents = null;
+        if (isEditing) {
+            var className = editableTextProps ? editableTextProps.className : null;
+            cellContents = (React.createElement(core_1.EditableText, tslib_1.__assign({}, editableTextProps, { isEditing: true, className: classnames_1.default(Classes.TABLE_EDITABLE_TEXT, Classes.TABLE_EDITABLE_NAME, className), intent: spreadableProps.intent, minWidth: null, onCancel: this.handleCancel, onChange: this.handleChange, onConfirm: this.handleConfirm, onEdit: this.handleEdit, placeholder: "", selectAllOnFocus: false, value: dirtyValue })));
+        }
+        else {
+            var textClasses = classnames_1.default(Classes.TABLE_EDITABLE_TEXT, (_a = {},
+                _a[Classes.TABLE_TRUNCATED_TEXT] = truncated,
+                _a[Classes.TABLE_NO_WRAP_TEXT] = !wrapText,
+                _a));
+            cellContents = React.createElement("div", { className: textClasses }, savedValue);
+        }
+        return (React.createElement(cell_1.Cell, tslib_1.__assign({}, spreadableProps, { wrapText: wrapText, truncated: false, interactive: interactive, cellRef: this.refHandlers.cell, onKeyPress: this.handleKeyPress }),
+            React.createElement(draggable_1.Draggable, { onActivate: this.handleCellActivate, onDoubleClick: this.handleCellDoubleClick, preventDefault: false, stopPropagation: interactive }, cellContents)));
+    };
+    EditableCell.prototype.renderHotkeys = function () {
+        var tabIndex = this.props.tabIndex;
+        return (React.createElement(core_1.Hotkeys, { tabIndex: tabIndex },
+            React.createElement(core_1.Hotkey, { key: "edit-cell", label: "Edit the currently focused cell", group: "Table", combo: "f2", onKeyDown: this.handleEdit })));
+    };
+    EditableCell.prototype.checkShouldFocus = function () {
+        if (this.props.isFocused && !this.state.isEditing) {
+            // don't focus if we're editing -- we'll lose the fact that we're editing
+            this.cellRef.focus();
+        }
+    };
+    EditableCell.prototype.invokeCallback = function (callback, value) {
+        // pass through the row and column indices if they were provided as props by the consumer
+        var _a = this.props, rowIndex = _a.rowIndex, columnIndex = _a.columnIndex;
+        core_1.Utils.safeInvoke(callback, value, rowIndex, columnIndex);
+    };
+    EditableCell.displayName = core_1.DISPLAYNAME_PREFIX + ".EditableCell";
+    EditableCell.defaultProps = {
+        truncated: true,
+        wrapText: false,
+    };
+    EditableCell = tslib_1.__decorate([
+        core_1.HotkeysTarget
+    ], EditableCell);
+    return EditableCell;
+}(React.Component));
+exports.EditableCell = EditableCell;
+
+},{"../common/classes":138,"../interactions/draggable":165,"./cell":132,"@blueprintjs/core":105,"classnames":185,"react":223,"tslib":184}],134:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
+var core_1 = require("@blueprintjs/core");
+var classnames_1 = tslib_1.__importDefault(require("classnames"));
+var React = tslib_1.__importStar(require("react"));
+var Classes = tslib_1.__importStar(require("../../common/classes"));
+var truncatedFormat_1 = require("./truncatedFormat");
+var JSONFormat = /** @class */ (function (_super) {
+    tslib_1.__extends(JSONFormat, _super);
+    function JSONFormat() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    JSONFormat.prototype.render = function () {
+        var _a;
+        var _b = this.props, children = _b.children, omitQuotesOnStrings = _b.omitQuotesOnStrings, stringify = _b.stringify;
+        var showPopover = this.props.showPopover;
+        // always hide popover if value is nully
+        var isNully = children == null;
+        if (isNully) {
+            showPopover = truncatedFormat_1.TruncatedPopoverMode.NEVER;
+        }
+        var className = classnames_1.default(this.props.className, (_a = {},
+            _a[Classes.TABLE_NULL] = isNully,
+            _a));
+        var displayValue = "";
+        if (omitQuotesOnStrings && typeof children === "string") {
+            displayValue = children;
+        }
+        else {
+            displayValue = stringify(children);
+        }
+        return (React.createElement(truncatedFormat_1.TruncatedFormat, tslib_1.__assign({}, this.props, { className: className, showPopover: showPopover }), displayValue));
+    };
+    JSONFormat.displayName = core_1.DISPLAYNAME_PREFIX + ".JSONFormat";
+    JSONFormat.defaultProps = {
+        omitQuotesOnStrings: true,
+        stringify: function (obj) { return JSON.stringify(obj, null, 2); },
+    };
+    return JSONFormat;
+}(React.Component));
+exports.JSONFormat = JSONFormat;
+
+},{"../../common/classes":138,"./truncatedFormat":135,"@blueprintjs/core":105,"classnames":185,"react":223,"tslib":184}],135:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
+var core_1 = require("@blueprintjs/core");
+var classnames_1 = tslib_1.__importDefault(require("classnames"));
+var React = tslib_1.__importStar(require("react"));
+var Classes = tslib_1.__importStar(require("../../common/classes"));
+var utils_1 = require("../../common/utils");
+var locator_1 = require("../../locator");
+// amount in pixels that the content div width changes when truncated vs when
+// not truncated. Note: could be modified by styles
+// Note 2: this doesn't come from the width of the popover element, but the "right" style
+// on the div, which comes from styles
+var CONTENT_DIV_WIDTH_DELTA = 25;
+var TruncatedPopoverMode;
+(function (TruncatedPopoverMode) {
+    TruncatedPopoverMode["ALWAYS"] = "always";
+    TruncatedPopoverMode["NEVER"] = "never";
+    TruncatedPopoverMode["WHEN_TRUNCATED"] = "when-truncated";
+    TruncatedPopoverMode["WHEN_TRUNCATED_APPROX"] = "when-truncated-approx";
+})(TruncatedPopoverMode = exports.TruncatedPopoverMode || (exports.TruncatedPopoverMode = {}));
+var TruncatedFormat = /** @class */ (function (_super) {
+    tslib_1.__extends(TruncatedFormat, _super);
+    function TruncatedFormat() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.state = {
+            isPopoverOpen: false,
+            isTruncated: false,
+        };
+        _this.handleContentDivRef = function (ref) { return (_this.contentDiv = ref); };
+        _this.handlePopoverOpen = function () {
+            _this.setState({ isPopoverOpen: true });
+        };
+        _this.handlePopoverClose = function () {
+            _this.setState({ isPopoverOpen: false });
+        };
+        return _this;
+    }
+    TruncatedFormat.prototype.componentDidMount = function () {
+        this.setTruncationState();
+    };
+    TruncatedFormat.prototype.componentDidUpdate = function () {
+        this.setTruncationState();
+    };
+    TruncatedFormat.prototype.render = function () {
+        var _a = this.props, children = _a.children, detectTruncation = _a.detectTruncation, truncateLength = _a.truncateLength, truncationSuffix = _a.truncationSuffix;
+        var content = "" + children;
+        var cellContent = content;
+        if (!detectTruncation && truncateLength > 0 && cellContent.length > truncateLength) {
+            cellContent = cellContent.substring(0, truncateLength) + truncationSuffix;
+        }
+        if (this.shouldShowPopover(content)) {
+            var className = classnames_1.default(this.props.className, Classes.TABLE_TRUNCATED_FORMAT);
+            return (React.createElement("div", { className: className },
+                React.createElement("div", { className: Classes.TABLE_TRUNCATED_VALUE, ref: this.handleContentDivRef }, cellContent),
+                this.renderPopover()));
+        }
+        else {
+            var className = classnames_1.default(this.props.className, Classes.TABLE_TRUNCATED_FORMAT_TEXT);
+            return (React.createElement("div", { className: className, ref: this.handleContentDivRef }, cellContent));
+        }
+    };
+    TruncatedFormat.prototype.renderPopover = function () {
+        var _a = this.props, children = _a.children, preformatted = _a.preformatted;
+        // `<Popover>` will always check the content's position on update
+        // regardless if it is open or not. This negatively affects perf due to
+        // layout thrashing. So instead we manage the popover state ourselves
+        // and mimic its popover target
+        if (this.state.isPopoverOpen) {
+            var popoverClasses = classnames_1.default(Classes.TABLE_TRUNCATED_POPOVER, preformatted ? Classes.TABLE_POPOVER_WHITESPACE_PRE : Classes.TABLE_POPOVER_WHITESPACE_NORMAL);
+            var popoverContent = React.createElement("div", { className: popoverClasses }, children);
+            return (React.createElement(core_1.Popover, { className: Classes.TABLE_TRUNCATED_POPOVER_TARGET, modifiers: { preventOverflow: { boundariesElement: "window" } }, content: popoverContent, position: core_1.Position.BOTTOM, isOpen: true, onClose: this.handlePopoverClose },
+                React.createElement(core_1.Icon, { icon: "more" })));
+        }
+        else {
+            // NOTE: This structure matches what `<Popover>` does internally. If
+            // `<Popover>` changes, this must be updated.
+            return (React.createElement("span", { className: Classes.TABLE_TRUNCATED_POPOVER_TARGET, onClick: this.handlePopoverOpen },
+                React.createElement(core_1.Icon, { icon: "more" })));
+        }
+    };
+    TruncatedFormat.prototype.shouldShowPopover = function (content) {
+        var _a = this.props, detectTruncation = _a.detectTruncation, measureByApproxOptions = _a.measureByApproxOptions, showPopover = _a.showPopover, truncateLength = _a.truncateLength;
+        switch (showPopover) {
+            case TruncatedPopoverMode.ALWAYS:
+                return true;
+            case TruncatedPopoverMode.NEVER:
+                return false;
+            case TruncatedPopoverMode.WHEN_TRUNCATED:
+                return detectTruncation
+                    ? this.state.isTruncated
+                    : truncateLength > 0 && content.length > truncateLength;
+            case TruncatedPopoverMode.WHEN_TRUNCATED_APPROX:
+                if (!detectTruncation) {
+                    return truncateLength > 0 && content.length > truncateLength;
+                }
+                if (this.props.parentCellHeight == null || this.props.parentCellWidth == null) {
+                    return false;
+                }
+                var approximateCharWidth = measureByApproxOptions.approximateCharWidth, approximateLineHeight = measureByApproxOptions.approximateLineHeight, cellHorizontalPadding = measureByApproxOptions.cellHorizontalPadding, numBufferLines = measureByApproxOptions.numBufferLines;
+                var cellWidth = this.props.parentCellWidth;
+                var approxCellHeight = utils_1.Utils.getApproxCellHeight(content, cellWidth, approximateCharWidth, approximateLineHeight, cellHorizontalPadding, numBufferLines);
+                var shouldTruncate = approxCellHeight > this.props.parentCellHeight;
+                return shouldTruncate;
+            default:
+                return false;
+        }
+    };
+    TruncatedFormat.prototype.setTruncationState = function () {
+        if (!this.props.detectTruncation || this.props.showPopover !== TruncatedPopoverMode.WHEN_TRUNCATED) {
+            return;
+        }
+        if (this.contentDiv === undefined) {
+            this.setState({ isTruncated: false });
+            return;
+        }
+        var isTruncated = this.state.isTruncated;
+        // take all measurements at once to avoid excessive DOM reflows.
+        var _a = this.contentDiv, containerHeight = _a.clientHeight, containerWidth = _a.clientWidth, actualContentHeight = _a.scrollHeight, contentWidth = _a.scrollWidth;
+        // if the content is truncated, then a popover handle will be present as a
+        // sibling of the content. we don't want to consider that handle when
+        // calculating the width of the actual content, so subtract it.
+        var actualContentWidth = isTruncated ? contentWidth - CONTENT_DIV_WIDTH_DELTA : contentWidth;
+        // we of course truncate the content if it doesn't fit in the container. but we
+        // also aggressively truncate if they're the same size with truncation enabled;
+        // this addresses browser-crashing stack-overflow bugs at various zoom levels.
+        // (see: https://github.com/palantir/blueprint/pull/1519)
+        var shouldTruncate = (isTruncated && actualContentWidth === containerWidth) ||
+            actualContentWidth > containerWidth ||
+            actualContentHeight > containerHeight;
+        this.setState({ isTruncated: shouldTruncate });
+    };
+    TruncatedFormat.displayName = core_1.DISPLAYNAME_PREFIX + ".TruncatedFormat";
+    TruncatedFormat.defaultProps = {
+        detectTruncation: false,
+        measureByApproxOptions: {
+            approximateCharWidth: 8,
+            approximateLineHeight: 18,
+            cellHorizontalPadding: 2 * locator_1.Locator.CELL_HORIZONTAL_PADDING,
+            numBufferLines: 0,
+        },
+        preformatted: false,
+        showPopover: TruncatedPopoverMode.WHEN_TRUNCATED,
+        truncateLength: 2000,
+        truncationSuffix: "...",
+    };
+    return TruncatedFormat;
+}(React.PureComponent));
+exports.TruncatedFormat = TruncatedFormat;
+
+},{"../../common/classes":138,"../../common/utils":155,"../../locator":176,"@blueprintjs/core":105,"classnames":185,"react":223,"tslib":184}],136:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
+var core_1 = require("@blueprintjs/core");
+var React = tslib_1.__importStar(require("react"));
+var cell_1 = require("./cell/cell");
+var Column = /** @class */ (function (_super) {
+    tslib_1.__extends(Column, _super);
+    function Column() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    Column.displayName = core_1.DISPLAYNAME_PREFIX + ".Column";
+    Column.defaultProps = {
+        cellRenderer: cell_1.emptyCellRenderer,
+    };
+    return Column;
+}(React.PureComponent));
+exports.Column = Column;
+
+},{"./cell/cell":132,"@blueprintjs/core":105,"react":223,"tslib":184}],137:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var core_1 = require("@blueprintjs/core");
+var requestIdleCallback_1 = require("./requestIdleCallback");
+/**
+ * This class helps batch updates to large lists.
+ *
+ * For example, if your React component has many children, updating them all at
+ * once may cause jank when reconciling the DOM. This class helps you update
+ * only a few children per frame.
+ *
+ * A typical usage would be:
+ *
+ * ```tsx
+ * public renderChildren = (allChildrenKeys: string[]) => {
+ *
+ *     batcher.startNewBatch();
+ *
+ *     allChildrenKeys.forEach((prop1: string, index: number) => {
+ *         batcher.addArgsToBatch(prop1, "prop2", index);
+ *     });
+ *
+ *     batcher.removeOldAddNew((prop1: string, prop2: string, other: number) => {
+ *         return <Child prop1={prop1} prop2={prop2} other={other} />;
+ *     });
+ *
+ *     if (!batcher.isDone()) {
+ *         batcher.idleCallback(this.forceUpdate());
+ *     }
+ *
+ *     const currentChildren = batcher.getList();
+ *     return currentChildren;
+ * }
+ *
+ * ```
+ */
+var Batcher = /** @class */ (function () {
+    function Batcher() {
+        var _this = this;
+        this.currentObjects = {};
+        this.oldObjects = {};
+        this.batchArgs = {};
+        this.done = true;
+        this.handleIdleCallback = function () {
+            var callback = _this.callback;
+            delete _this.callback;
+            core_1.Utils.safeInvoke(callback);
+        };
+        this.mapCurrentObjectKey = function (key) {
+            return _this.currentObjects[key];
+        };
+    }
+    /**
+     * Resets the "batch" and "current" sets. This essentially clears the cache
+     * and prevents accidental re-use of "current" objects.
+     */
+    Batcher.prototype.reset = function () {
+        this.batchArgs = {};
+        this.oldObjects = this.currentObjects;
+        this.currentObjects = {};
+    };
+    /**
+     * Starts a new "batch" argument set
+     */
+    Batcher.prototype.startNewBatch = function () {
+        this.batchArgs = {};
+    };
+    /**
+     * Stores the variadic arguments to be later batched together.
+     *
+     * The arguments must be simple stringifyable objects.
+     */
+    Batcher.prototype.addArgsToBatch = function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        this.batchArgs[this.getKey(args)] = args;
+    };
+    /**
+     * Compares the set of "batch" arguments to the "current" set. Creates any
+     * new objects using the callback as a factory. Removes old objects.
+     *
+     * Arguments that are in the "current" set but were not part of the last
+     * "batch" set are considered candidates for removal. Similarly, Arguments
+     * that are part of the "batch" set but not the "current" set are candidates
+     * for addition.
+     *
+     * The number of objects added and removed may be limited with the
+     * `...Limit` parameters.
+     *
+     * Finally, the batcher determines if the batching is complete if the
+     * "current" arguments match the "batch" arguments.
+     */
+    Batcher.prototype.removeOldAddNew = function (callback, addNewLimit, removeOldLimit, updateLimit) {
+        var _this = this;
+        if (addNewLimit === void 0) { addNewLimit = Batcher.DEFAULT_ADD_LIMIT; }
+        if (removeOldLimit === void 0) { removeOldLimit = Batcher.DEFAULT_REMOVE_LIMIT; }
+        if (updateLimit === void 0) { updateLimit = Batcher.DEFAULT_UPDATE_LIMIT; }
+        // remove old
+        var keysToRemove = this.setKeysDifference(this.currentObjects, this.batchArgs, removeOldLimit);
+        keysToRemove.forEach(function (key) { return delete _this.currentObjects[key]; });
+        // remove ALL old objects not in batch
+        var keysToRemoveOld = this.setKeysDifference(this.oldObjects, this.batchArgs, -1);
+        keysToRemoveOld.forEach(function (key) { return delete _this.oldObjects[key]; });
+        // copy ALL old objects into current objects if not defined
+        var keysToShallowCopy = Object.keys(this.oldObjects);
+        keysToShallowCopy.forEach(function (key) {
+            if (_this.currentObjects[key] == null) {
+                _this.currentObjects[key] = _this.oldObjects[key];
+            }
+        });
+        // update old objects with factory
+        var keysToUpdate = this.setKeysIntersection(this.oldObjects, this.currentObjects, updateLimit);
+        keysToUpdate.forEach(function (key) {
+            delete _this.oldObjects[key];
+            _this.currentObjects[key] = callback.apply(undefined, _this.batchArgs[key]);
+        });
+        // add new objects with factory
+        var keysToAdd = this.setKeysDifference(this.batchArgs, this.currentObjects, addNewLimit);
+        keysToAdd.forEach(function (key) { return (_this.currentObjects[key] = callback.apply(undefined, _this.batchArgs[key])); });
+        // set `done` to true if sets match exactly after add/remove and there
+        // are no "old objects" remaining
+        this.done =
+            this.setHasSameKeys(this.batchArgs, this.currentObjects) && Object.keys(this.oldObjects).length === 0;
+    };
+    /**
+     * Returns true if the "current" set matches the "batch" set.
+     */
+    Batcher.prototype.isDone = function () {
+        return this.done;
+    };
+    /**
+     * Returns all the objects in the "current" set.
+     */
+    Batcher.prototype.getList = function () {
+        return Object.keys(this.currentObjects).map(this.mapCurrentObjectKey);
+    };
+    /**
+     * Registers a callback to be invoked on the next idle frame. If a callback
+     * has already been registered, we do not register a new one.
+     */
+    Batcher.prototype.idleCallback = function (callback) {
+        if (!this.callback) {
+            this.callback = callback;
+            requestIdleCallback_1.requestIdleCallback(this.handleIdleCallback);
+        }
+    };
+    Batcher.prototype.cancelOutstandingCallback = function () {
+        delete this.callback;
+    };
+    /**
+     * Forcibly overwrites the current list of batched objects. Not recommended
+     * for normal usage.
+     */
+    Batcher.prototype.setList = function (objectsArgs, objects) {
+        var _this = this;
+        this.reset();
+        objectsArgs.forEach(function (args, i) {
+            _this.addArgsToBatch.apply(_this, args);
+            _this.currentObjects[_this.getKey(args)] = objects[i];
+        });
+        this.done = true;
+    };
+    Batcher.prototype.getKey = function (args) {
+        return args.join(Batcher.ARG_DELIMITER);
+    };
+    Batcher.prototype.setKeysDifference = function (a, b, limit) {
+        return this.setKeysOperation(a, b, "difference", limit);
+    };
+    Batcher.prototype.setKeysIntersection = function (a, b, limit) {
+        return this.setKeysOperation(a, b, "intersect", limit);
+    };
+    /**
+     * Compares the keys of A from B -- and performs an "intersection" or
+     * "difference" operation on the keys.
+     *
+     * Note that the order of operands A and B matters for the "difference"
+     * operation.
+     *
+     * Returns an array of at most `limit` keys.
+     */
+    Batcher.prototype.setKeysOperation = function (a, b, operation, limit) {
+        var result = [];
+        var aKeys = Object.keys(a);
+        for (var i = 0; i < aKeys.length && (limit < 0 || result.length < limit); i++) {
+            var key = aKeys[i];
+            if ((operation === "difference" && a[key] && !b[key]) || (operation === "intersect" && a[key] && b[key])) {
+                result.push(key);
+            }
+        }
+        return result;
+    };
+    /**
+     * Returns true of objects `a` and `b` have exactly the same keys.
+     */
+    Batcher.prototype.setHasSameKeys = function (a, b) {
+        var aKeys = Object.keys(a);
+        var bKeys = Object.keys(b);
+        if (aKeys.length !== bKeys.length) {
+            return false;
+        }
+        for (var _i = 0, aKeys_1 = aKeys; _i < aKeys_1.length; _i++) {
+            var aKey = aKeys_1[_i];
+            if (b[aKey] === undefined) {
+                return false;
+            }
+        }
+        return true;
+    };
+    Batcher.DEFAULT_ADD_LIMIT = 20;
+    Batcher.DEFAULT_UPDATE_LIMIT = 20;
+    Batcher.DEFAULT_REMOVE_LIMIT = 20;
+    Batcher.ARG_DELIMITER = "|";
+    return Batcher;
+}());
+exports.Batcher = Batcher;
+
+},{"./requestIdleCallback":154,"@blueprintjs/core":105}],138:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var core_1 = require("@blueprintjs/core");
+var NS = core_1.Classes.getClassNamespace();
+exports.TABLE_BODY = NS + "-table-body";
+exports.TABLE_BODY_CELLS = NS + "-table-body-cells";
+exports.TABLE_BODY_SCROLL_CLIENT = NS + "-table-body-scroll-client";
+exports.TABLE_BODY_VIRTUAL_CLIENT = NS + "-table-body-virtual-client";
+exports.TABLE_BOTTOM_CONTAINER = NS + "-table-bottom-container";
+exports.TABLE_CELL = NS + "-table-cell";
+exports.TABLE_CELL_CLIENT = NS + "-table-cell-client";
+exports.TABLE_CELL_GHOST = NS + "-table-cell-ghost";
+exports.TABLE_CELL_INTERACTIVE = NS + "-table-cell-interactive";
+exports.TABLE_CELL_LEDGER_EVEN = NS + "-table-cell-ledger-even";
+exports.TABLE_CELL_LEDGER_ODD = NS + "-table-cell-ledger-odd";
+exports.TABLE_COLUMN_HEADER_TR = NS + "-table-column-header-tr";
+exports.TABLE_COLUMN_HEADERS = NS + "-table-column-headers";
+exports.TABLE_COLUMN_HEADER_CELL = NS + "-table-column-header-cell";
+exports.TABLE_COLUMN_NAME = NS + "-table-column-name";
+exports.TABLE_COLUMN_NAME_TEXT = NS + "-table-column-name-text";
+exports.TABLE_CONTAINER = NS + "-table-container";
+exports.TABLE_DRAGGING = NS + "-table-dragging";
+exports.TABLE_EDITABLE_NAME = NS + "-table-editable-name";
+exports.TABLE_EDITABLE_TEXT = NS + "-table-editable-text";
+exports.TABLE_FOCUS_REGION = NS + "-table-focus-region";
+exports.TABLE_HAS_INTERACTION_BAR = NS + "-table-has-interaction-bar";
+exports.TABLE_HAS_REORDER_HANDLE = NS + "-table-has-reorder-handle";
+exports.TABLE_HEADER = NS + "-table-header";
+exports.TABLE_HEADER_ACTIVE = NS + "-table-header-active";
+exports.TABLE_HEADER_CONTENT = NS + "-table-header-content";
+exports.TABLE_HEADER_REORDERABLE = NS + "-table-header-reorderable";
+exports.TABLE_HEADER_SELECTED = NS + "-table-header-selected";
+exports.TABLE_HORIZONTAL_CELL_DIVIDER = NS + "-table-horizontal-cell-divider";
+exports.TABLE_HORIZONTAL_GUIDE = NS + "-table-horizontal-guide";
+exports.TABLE_INTERACTION_BAR = NS + "-table-interaction-bar";
+exports.TABLE_LAST_IN_COLUMN = NS + "-table-last-in-column";
+exports.TABLE_LAST_IN_ROW = NS + "-table-last-in-row";
+exports.TABLE_MENU = NS + "-table-menu";
+exports.TABLE_NO_HORIZONTAL_SCROLL = NS + "-table-no-horizontal-scroll";
+exports.TABLE_NO_LAYOUT = NS + "-table-no-layout";
+exports.TABLE_NO_ROWS = NS + "-table-no-rows";
+exports.TABLE_NO_VERTICAL_SCROLL = NS + "-table-no-vertical-scroll";
+exports.TABLE_NO_WRAP_TEXT = NS + "-table-no-wrap-text";
+exports.TABLE_NULL = NS + "-table-null";
+exports.TABLE_OVERLAY = NS + "-table-overlay";
+exports.TABLE_OVERLAY_LAYER = NS + "-table-overlay-layer";
+exports.TABLE_OVERLAY_REORDERING_CURSOR = NS + "-table-reordering-cursor-overlay";
+exports.TABLE_POPOVER_WHITESPACE_NORMAL = NS + "-table-popover-whitespace-normal";
+exports.TABLE_POPOVER_WHITESPACE_PRE = NS + "-table-popover-whitespace-pre";
+exports.TABLE_QUADRANT = NS + "-table-quadrant";
+exports.TABLE_QUADRANT_BODY_CONTAINER = NS + "-table-quadrant-body-container";
+exports.TABLE_QUADRANT_LEFT = NS + "-table-quadrant-left";
+exports.TABLE_QUADRANT_MAIN = NS + "-table-quadrant-main";
+exports.TABLE_QUADRANT_SCROLL_CONTAINER = NS + "-table-quadrant-scroll-container";
+exports.TABLE_QUADRANT_STACK = NS + "-table-quadrant-stack";
+exports.TABLE_QUADRANT_TOP = NS + "-table-quadrant-top";
+exports.TABLE_QUADRANT_TOP_LEFT = NS + "-table-quadrant-top-left";
+exports.TABLE_REGION = NS + "-table-region";
+exports.TABLE_REORDER_HANDLE = NS + "-table-reorder-handle";
+exports.TABLE_REORDER_HANDLE_TARGET = NS + "-table-reorder-handle-target";
+exports.TABLE_REORDERING = NS + "-table-reordering";
+exports.TABLE_RESIZE_GUIDES = NS + "-table-resize-guides";
+exports.TABLE_RESIZE_HANDLE = NS + "-table-resize-handle";
+exports.TABLE_RESIZE_HANDLE_TARGET = NS + "-table-resize-handle-target";
+exports.TABLE_RESIZE_HORIZONTAL = NS + "-table-resize-horizontal";
+exports.TABLE_RESIZE_SENSOR = NS + "-table-resize-sensor";
+exports.TABLE_RESIZE_SENSOR_EXPAND = NS + "-table-resize-sensor-expand";
+exports.TABLE_RESIZE_SENSOR_SHRINK = NS + "-table-resize-sensor-shrink";
+exports.TABLE_RESIZE_VERTICAL = NS + "-table-resize-vertical";
+exports.TABLE_ROUNDED_LAYOUT = NS + "-table-rounded-layout";
+exports.TABLE_ROW_HEADERS = NS + "-table-row-headers";
+exports.TABLE_ROW_HEADERS_CELLS_CONTAINER = NS + "-table-row-headers-cells-container";
+exports.TABLE_ROW_NAME = NS + "-table-row-name";
+exports.TABLE_ROW_NAME_TEXT = NS + "-table-row-name-text";
+exports.TABLE_SELECTION_ENABLED = NS + "-table-selection-enabled";
+exports.TABLE_SELECTION_REGION = NS + "-table-selection-region";
+exports.TABLE_TH_MENU = NS + "-table-th-menu";
+exports.TABLE_TH_MENU_CONTAINER = NS + "-table-th-menu-container";
+exports.TABLE_TH_MENU_CONTAINER_BACKGROUND = NS + "-table-th-menu-container-background";
+exports.TABLE_TH_MENU_OPEN = NS + "-table-th-menu-open";
+exports.TABLE_THEAD = NS + "-table-thead";
+exports.TABLE_TOP_CONTAINER = NS + "-table-top-container";
+exports.TABLE_TRUNCATED_CELL = NS + "-table-truncated-cell";
+exports.TABLE_TRUNCATED_FORMAT = NS + "-table-truncated-format";
+exports.TABLE_TRUNCATED_FORMAT_TEXT = NS + "-table-truncated-format-text";
+exports.TABLE_TRUNCATED_POPOVER = NS + "-table-truncated-popover";
+exports.TABLE_TRUNCATED_POPOVER_TARGET = NS + "-table-truncated-popover-target";
+exports.TABLE_TRUNCATED_TEXT = NS + "-table-truncated-text";
+exports.TABLE_TRUNCATED_VALUE = NS + "-table-truncated-value";
+exports.TABLE_VERTICAL_GUIDE = NS + "-table-vertical-guide";
+/** Common code for row and column index class generator functions, since they're essentially the same. */
+function dimensionIndexClass(classPrefix, index) {
+    if (index == null) {
+        return undefined;
+    }
+    if (typeof index === "number") {
+        return "" + classPrefix + index;
+    }
+    return index.indexOf(classPrefix) === 0 ? index : "" + classPrefix + index;
+}
+/** Return CSS class for table colummn index, whether or not 'pt-table-col-' prefix is included. */
+function columnIndexClass(columnIndex) {
+    return dimensionIndexClass(NS + "-table-col-", columnIndex);
+}
+exports.columnIndexClass = columnIndexClass;
+/** Return CSS class for table row index, whether or not 'pt-table-row-' prefix is included. */
+function rowIndexClass(rowIndex) {
+    return dimensionIndexClass(NS + "-table-row-", rowIndex);
+}
+exports.rowIndexClass = rowIndexClass;
+/** Return CSS class for table colummn cell index, whether or not 'pt-table-cell-col-' prefix is included. */
+function columnCellIndexClass(columnIndex) {
+    return dimensionIndexClass(NS + "-table-cell-col-", columnIndex);
+}
+exports.columnCellIndexClass = columnCellIndexClass;
+/** Return CSS class for table row cell index, whether or not 'pt-table-cell-row-' prefix is included. */
+function rowCellIndexClass(rowIndex) {
+    return dimensionIndexClass(NS + "-table-cell-row-", rowIndex);
+}
+exports.rowCellIndexClass = rowCellIndexClass;
+
+},{"@blueprintjs/core":105}],139:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+/* istanbul ignore next */
+exports.Clipboard = {
+    /**
+     * Overrides the inherited CSS of the element to make sure it is
+     * selectable. This method also makes the element pseudo-invisible.
+     */
+    applySelectableStyles: function (elem) {
+        elem.style.overflow = "hidden";
+        elem.style.height = "0px";
+        elem.style.setProperty("-webkit-user-select", "all");
+        elem.style.setProperty("-moz-user-select", "all");
+        elem.style.setProperty("-ms-user-select", "all");
+        elem.style.setProperty("user-select", "all");
+        return elem;
+    },
+    /**
+     * Copies table cells to the clipboard. The parameter is a row-major
+     * 2-dimensional `Array` of strings and can contain nulls. We assume all
+     * rows are the same length. If not, the cells will still be copied, but
+     * the columns may not align. Returns a boolean indicating whether the
+     * copy succeeded.
+     *
+     * See `Clipboard.copy`
+     */
+    copyCells: function (cells) {
+        var table = document.createElement("table");
+        exports.Clipboard.applySelectableStyles(table);
+        for (var _i = 0, cells_1 = cells; _i < cells_1.length; _i++) {
+            var row = cells_1[_i];
+            var tr = table.appendChild(document.createElement("tr"));
+            for (var _a = 0, row_1 = row; _a < row_1.length; _a++) {
+                var cell = row_1[_a];
+                var td = tr.appendChild(document.createElement("td"));
+                td.textContent = cell;
+            }
+        }
+        var tsv = cells.map(function (row) { return row.join("\t"); }).join("\n");
+        return exports.Clipboard.copyElement(table, tsv);
+    },
+    /**
+     * Copies the text to the clipboard. Returns a boolean
+     * indicating whether the copy succeeded.
+     *
+     * See `Clipboard.copy`
+     */
+    copyString: function (value) {
+        var text = document.createElement("textarea");
+        exports.Clipboard.applySelectableStyles(text);
+        text.value = value;
+        return exports.Clipboard.copyElement(text, value);
+    },
+    /**
+     * Copies the element and its children to the clipboard. Returns a boolean
+     * indicating whether the copy succeeded.
+     *
+     * If a plaintext argument is supplied, we add both the text/html and
+     * text/plain mime types to the clipboard. This preserves the built in
+     * semantics of copying elements to the clipboard while allowing custom
+     * plaintext output for programs that can't cope with HTML data in the
+     * clipboard.
+     *
+     * Verified on Firefox 47, Chrome 51.
+     *
+     * Note: Sometimes the copy does not succeed. Presumably, in order to
+     * prevent memory issues, browsers will limit the total amount of data you
+     * can copy to the clipboard. Based on ad hoc testing, we found an
+     * inconsistent limit at about 300KB or 40,000 cells. Depending on the on
+     * the content of cells, your limits may vary.
+     */
+    copyElement: function (elem, plaintext) {
+        if (!exports.Clipboard.isCopySupported()) {
+            return false;
+        }
+        // must be document.body instead of document.documentElement for firefox
+        document.body.appendChild(elem);
+        try {
+            window.getSelection().selectAllChildren(elem);
+            if (plaintext != null) {
+                // add plaintext fallback
+                // http://stackoverflow.com/questions/23211018/copy-to-clipboard-with-jquery-js-in-chrome
+                elem.addEventListener("copy", function (e) {
+                    e.preventDefault();
+                    var clipboardData = e.clipboardData || window.clipboardData;
+                    if (clipboardData != null) {
+                        clipboardData.setData("text/html", elem.outerHTML);
+                        clipboardData.setData("text/plain", plaintext);
+                    }
+                });
+            }
+            return document.execCommand("copy");
+        }
+        catch (err) {
+            return false;
+        }
+        finally {
+            document.body.removeChild(elem);
+        }
+    },
+    /**
+     * Returns a boolean indicating whether the current browser nominally
+     * supports the `copy` operation using the `execCommand` API.
+     */
+    isCopySupported: function () {
+        return document.queryCommandSupported != null && document.queryCommandSupported("copy");
+    },
+};
+
+},{}],140:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2018 Palantir Technologies, Inc. All rights reserved.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
+var PropTypes = tslib_1.__importStar(require("prop-types"));
+exports.columnInteractionBarContextTypes = {
+    enableColumnInteractionBar: PropTypes.bool,
+};
+
+},{"prop-types":199,"tslib":184}],141:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
+var core_1 = require("@blueprintjs/core");
+var React = tslib_1.__importStar(require("react"));
+/**
+ * Since the ContextMenuTarget uses the `onContextMenu` prop instead
+ * `element.addEventListener`, the prop can be lost. This wrapper helps us
+ * maintain context menu fuctionality when doing fancy React.cloneElement
+ * chains.
+ */
+var ContextMenuTargetWrapper = /** @class */ (function (_super) {
+    tslib_1.__extends(ContextMenuTargetWrapper, _super);
+    function ContextMenuTargetWrapper() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    ContextMenuTargetWrapper.prototype.render = function () {
+        var _a = this.props, className = _a.className, children = _a.children, style = _a.style;
+        return (React.createElement("div", { className: className, style: style }, children));
+    };
+    ContextMenuTargetWrapper.prototype.renderContextMenu = function (e) {
+        return this.props.renderContextMenu(e);
+    };
+    ContextMenuTargetWrapper = tslib_1.__decorate([
+        core_1.ContextMenuTarget
+    ], ContextMenuTargetWrapper);
+    return ContextMenuTargetWrapper;
+}(React.PureComponent));
+exports.ContextMenuTargetWrapper = ContextMenuTargetWrapper;
+
+},{"@blueprintjs/core":105,"react":223,"tslib":184}],142:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var Direction;
+(function (Direction) {
+    Direction["UP"] = "up";
+    Direction["DOWN"] = "down";
+    Direction["LEFT"] = "left";
+    Direction["RIGHT"] = "right";
+})(Direction = exports.Direction || (exports.Direction = {}));
+
+},{}],143:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var ns = "[Blueprint Table]";
+// const deprec = `${ns} DEPRECATION:`;
+exports.QUADRANT_ON_SCROLL_UNNECESSARILY_DEFINED = ns + " <TableQuadrant> onScroll need not be defined for any quadrant aside from the MAIN quadrant.";
+exports.TABLE_EXPAND_FOCUSED_REGION_MULTI_COLUMN_REGION = ns + " <Table> Cannot expand a FULL_COLUMNS selection using a multi-column region.";
+exports.TABLE_EXPAND_FOCUSED_REGION_MULTI_ROW_REGION = ns + " <Table> Cannot expand a FULL_COLUMNS selection using a multi-row region.";
+exports.TABLE_NON_COLUMN_CHILDREN_WARNING = ns + " <Table> Children of Table must be Columns\"";
+exports.TABLE_NUM_FROZEN_COLUMNS_BOUND_WARNING = ns +
+    " <Table> numFrozenColumns must be in less than or equal to the number of columns. Clamping the value for you.";
+exports.TABLE_NUM_FROZEN_COLUMNS_NEGATIVE = ns + " <Table> requires numFrozenColumns to be greater than or equal to 0.";
+exports.TABLE_NUM_FROZEN_ROWS_BOUND_WARNING = ns + " <Table> numFrozenRows must be less than or equal to numRows. Clamping the value for you.";
+exports.TABLE_NUM_FROZEN_ROWS_NEGATIVE = ns + " <Table> requires numFrozenRows to be greater than or equal to 0.";
+exports.TABLE_NUM_ROWS_ROW_HEIGHTS_MISMATCH = ns + " <Table> requires rowHeights.length to equal numRows when both props are provided.";
+exports.TABLE_NUM_ROWS_NEGATIVE = ns + " <Table> requires numRows to be greater than or equal to 0.";
+exports.TABLE_NUM_COLUMNS_COLUMN_WIDTHS_MISMATCH = ns + " <Table> requires columnWidths.length to equal the number of <Column>s if provided.";
+
+},{}],144:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
+var regions_1 = require("../regions");
+var Classes = tslib_1.__importStar(require("./classes"));
+var rect_1 = require("./rect");
+var utils_1 = require("./utils");
+/**
+ * This class manages the sizes of grid cells using arrays of individual row/column sizes.
+ */
+var Grid = /** @class */ (function () {
+    /**
+     * This constructor accumulates the heights and widths in `O(n)`, saving
+     * time in later calculations.
+     *
+     * @param bleed - The number of rows/cols that we expand beyond the
+     *     viewport (on all sides). This helps avoid displaying an empty
+     *     viewport when the user scrolls quickly.
+     */
+    function Grid(rowHeights, columnWidths, bleed, ghostHeight, ghostWidth) {
+        var _this = this;
+        if (bleed === void 0) { bleed = Grid.DEFAULT_BLEED; }
+        if (ghostHeight === void 0) { ghostHeight = Grid.DEFAULT_GHOST_HEIGHT; }
+        if (ghostWidth === void 0) { ghostWidth = Grid.DEFAULT_GHOST_WIDTH; }
+        this.getCumulativeWidthBefore = function (index) {
+            return index === 0 ? 0 : _this.getCumulativeWidthAt(index - 1);
+        };
+        this.getCumulativeWidthAt = function (index) {
+            if (_this.numCols === 0) {
+                return _this.ghostWidth * index;
+            }
+            else if (index >= _this.numCols) {
+                return _this.cumulativeColumnWidths[_this.numCols - 1] + _this.ghostWidth * (index - _this.numCols + 1);
+            }
+            else {
+                return _this.cumulativeColumnWidths[index];
+            }
+        };
+        this.getCumulativeHeightBefore = function (index) {
+            return index === 0 ? 0 : _this.getCumulativeHeightAt(index - 1);
+        };
+        this.getCumulativeHeightAt = function (index) {
+            if (_this.numRows === 0) {
+                return _this.ghostHeight * index;
+            }
+            else if (index >= _this.numRows) {
+                return _this.cumulativeRowHeights[_this.numRows - 1] + _this.ghostHeight * (index - _this.numRows + 1);
+            }
+            else {
+                return _this.cumulativeRowHeights[index];
+            }
+        };
+        this.columnWidths = columnWidths;
+        this.rowHeights = rowHeights;
+        this.cumulativeColumnWidths = utils_1.Utils.accumulate(columnWidths);
+        this.cumulativeRowHeights = utils_1.Utils.accumulate(rowHeights);
+        this.numCols = columnWidths.length;
+        this.numRows = rowHeights.length;
+        this.bleed = bleed;
+        this.ghostHeight = ghostHeight;
+        this.ghostWidth = ghostWidth;
+    }
+    /**
+     * Returns the `Rect` bounds of a cell in scrollpane client space.
+     *
+     * Scrollpane client coordinate space uses the origin of the scrollpane
+     * client (the inside part that you're moving around).
+     *
+     * For example, let's say you're scrolling around a block of 1000 x 1000
+     * cells. Regardless where you've scrolled, the first cell is always at
+     * 0,0 in scrollpane client space. the cell to the right of it is always
+     * at, e.g., 100,0.
+     */
+    Grid.prototype.getCellRect = function (rowIndex, columnIndex) {
+        var height = this.rowHeights[rowIndex];
+        var top = this.cumulativeRowHeights[rowIndex] - height;
+        var width = this.columnWidths[columnIndex];
+        var left = this.cumulativeColumnWidths[columnIndex] - width;
+        return new rect_1.Rect(left, top, width, height);
+    };
+    /**
+     * Returns the `Rect` bounds of a cell in scrollpane client space.
+     *
+     * If the cell is beyond the bounds of the user-defined table cells, it is
+     * considered a "ghost" cell. If a width/height is not defined for that
+     * row/column, we use the default width/height.
+     */
+    Grid.prototype.getGhostCellRect = function (rowIndex, columnIndex) {
+        var left = 0;
+        var top = 0;
+        var width = 0;
+        var height = 0;
+        if (rowIndex >= this.rowHeights.length) {
+            height = this.ghostHeight;
+            top = this.getHeight() + this.ghostHeight * (rowIndex - this.numRows);
+        }
+        else {
+            height = this.rowHeights[rowIndex];
+            top = this.cumulativeRowHeights[rowIndex] - height;
+        }
+        if (columnIndex >= this.columnWidths.length) {
+            width = this.ghostWidth;
+            left = this.getWidth() + this.ghostWidth * (columnIndex - this.numCols);
+        }
+        else {
+            width = this.columnWidths[columnIndex];
+            left = this.cumulativeColumnWidths[columnIndex] - width;
+        }
+        return new rect_1.Rect(left, top, width, height);
+    };
+    /**
+     * Returns the `Rect` with the base coordinate and height of the specified row.
+     */
+    Grid.prototype.getRowRect = function (rowIndex) {
+        var height = this.rowHeights[rowIndex];
+        var top = this.cumulativeRowHeights[rowIndex] - height;
+        return new rect_1.Rect(0, top, this.getWidth(), height);
+    };
+    /**
+     * Returns the `Rect` with the base coordinate and width of the specified column.
+     */
+    Grid.prototype.getColumnRect = function (columnIndex) {
+        var width = this.columnWidths[columnIndex];
+        var left = this.cumulativeColumnWidths[columnIndex] - width;
+        return new rect_1.Rect(left, 0, width, this.getHeight());
+    };
+    /**
+     * Returns the total width of the entire grid
+     */
+    Grid.prototype.getWidth = function () {
+        return this.numCols === 0 ? 0 : this.cumulativeColumnWidths[this.numCols - 1];
+    };
+    /**
+     * Returns the total width of the entire grid
+     */
+    Grid.prototype.getHeight = function () {
+        return this.numRows === 0 ? 0 : this.cumulativeRowHeights[this.numRows - 1];
+    };
+    /**
+     * Returns the `Rect` bounds of entire grid
+     */
+    Grid.prototype.getRect = function () {
+        return new rect_1.Rect(0, 0, this.getWidth(), this.getHeight());
+    };
+    /**
+     * Maps each cell that intersects with the given `Rect` argument. The
+     * indices of iteration are extended in both directions by the integer
+     * `bleed` class property, then are clamped between 0 and the number of
+     * rows/columns.
+     *
+     * Uses a binary search for each of the 4 edges of the bounds, resulting
+     * in a runtime of `O(log(rows) + log(cols))` plus the `O(irows * icols)`
+     * iteration of intersecting cells.
+     */
+    Grid.prototype.mapCellsInRect = function (rect, callback) {
+        var results = [];
+        if (rect == null) {
+            return results;
+        }
+        var _a = this.getRowIndicesInRect(rect), rowIndexStart = _a.rowIndexStart, rowIndexEnd = _a.rowIndexEnd;
+        var _b = this.getColumnIndicesInRect(rect), columnIndexStart = _b.columnIndexStart, columnIndexEnd = _b.columnIndexEnd;
+        for (var rowIndex = rowIndexStart; rowIndex <= rowIndexEnd; rowIndex++) {
+            for (var columnIndex = columnIndexStart; columnIndex <= columnIndexEnd; columnIndex++) {
+                results.push(callback(rowIndex, columnIndex));
+            }
+        }
+        return results;
+    };
+    /**
+     * Maps each row that intersects with the given `Rect` argument.
+     *
+     * See Grid.mapCellsInRect for more details.
+     */
+    Grid.prototype.mapRowsInRect = function (rect, callback) {
+        var results = [];
+        if (rect == null) {
+            return results;
+        }
+        var _a = this.getRowIndicesInRect(rect), rowIndexStart = _a.rowIndexStart, rowIndexEnd = _a.rowIndexEnd;
+        for (var rowIndex = rowIndexStart; rowIndex <= rowIndexEnd; rowIndex++) {
+            results.push(callback(rowIndex));
+        }
+        return results;
+    };
+    /**
+     * Maps each column that intersects with the given `Rect` argument.
+     *
+     * See Grid.mapCellsInRect for more details.
+     */
+    Grid.prototype.mapColumnsInRect = function (rect, callback) {
+        var results = [];
+        if (rect == null) {
+            return results;
+        }
+        var _a = this.getColumnIndicesInRect(rect), columnIndexStart = _a.columnIndexStart, columnIndexEnd = _a.columnIndexEnd;
+        for (var columnIndex = columnIndexStart; columnIndex <= columnIndexEnd; columnIndex++) {
+            results.push(callback(columnIndex));
+        }
+        return results;
+    };
+    /**
+     * Returns the start and end indices of rows that intersect with the given
+     * `Rect` argument.
+     */
+    Grid.prototype.getRowIndicesInRect = function (rect, includeGhostCells, limit) {
+        if (includeGhostCells === void 0) { includeGhostCells = false; }
+        if (limit === void 0) { limit = Grid.DEFAULT_MAX_ROWS; }
+        if (rect == null) {
+            return { rowIndexEnd: 0, rowIndexStart: 0 };
+        }
+        var searchEnd = includeGhostCells ? Math.max(this.numRows, Grid.DEFAULT_MAX_ROWS) : this.numRows;
+        var _a = this.getIndicesInInterval(rect.top, rect.top + rect.height, searchEnd, !includeGhostCells, this.getCumulativeHeightAt), start = _a.start, end = _a.end;
+        var rowIndexEnd = limit > 0 && end - start > limit ? start + limit : end;
+        return {
+            rowIndexEnd: rowIndexEnd,
+            rowIndexStart: start,
+        };
+    };
+    /**
+     * Returns the start and end indices of columns that intersect with the
+     * given `Rect` argument.
+     */
+    Grid.prototype.getColumnIndicesInRect = function (rect, includeGhostCells, limit) {
+        if (includeGhostCells === void 0) { includeGhostCells = false; }
+        if (limit === void 0) { limit = Grid.DEFAULT_MAX_COLUMNS; }
+        if (rect == null) {
+            return { columnIndexEnd: 0, columnIndexStart: 0 };
+        }
+        var searchEnd = includeGhostCells ? Math.max(this.numCols, Grid.DEFAULT_MAX_COLUMNS) : this.numCols;
+        var _a = this.getIndicesInInterval(rect.left, rect.left + rect.width, searchEnd, !includeGhostCells, this.getCumulativeWidthAt), start = _a.start, end = _a.end;
+        var columnIndexEnd = limit > 0 && end - start > limit ? start + limit : end;
+        return {
+            columnIndexEnd: columnIndexEnd,
+            columnIndexStart: start,
+        };
+    };
+    Grid.prototype.isGhostIndex = function (rowIndex, columnIndex) {
+        return rowIndex >= this.numRows || columnIndex >= this.numCols;
+    };
+    Grid.prototype.isGhostColumn = function (columnIndex) {
+        return columnIndex >= this.numCols;
+    };
+    Grid.prototype.getExtremaClasses = function (rowIndex, columnIndex, rowEnd, columnEnd) {
+        if (rowIndex === rowEnd && columnIndex === columnEnd) {
+            return [Classes.TABLE_LAST_IN_COLUMN, Classes.TABLE_LAST_IN_ROW];
+        }
+        if (rowIndex === rowEnd) {
+            return [Classes.TABLE_LAST_IN_COLUMN];
+        }
+        if (columnIndex === columnEnd) {
+            return [Classes.TABLE_LAST_IN_ROW];
+        }
+        return [];
+    };
+    Grid.prototype.getRegionStyle = function (region) {
+        var cardinality = regions_1.Regions.getRegionCardinality(region);
+        switch (cardinality) {
+            case regions_1.RegionCardinality.CELLS: {
+                var _a = region.rows, rowStart = _a[0], rowEnd = _a[1];
+                var _b = region.cols, colStart = _b[0], colEnd = _b[1];
+                // if the region is outside the bounds of the table, don't display it
+                if (this.isGhostIndex(rowStart, colStart) || this.isGhostIndex(rowEnd, colEnd)) {
+                    return { display: "none" };
+                }
+                var cellRect0 = this.getCellRect(rowStart, colStart);
+                var cellRect1 = this.getCellRect(rowEnd, colEnd);
+                var offsetLeft = colStart === 0 ? 0 : 1;
+                var offsetTop = rowStart === 0 ? 0 : 1;
+                var rect = cellRect0.union(cellRect1);
+                rect.height += offsetTop;
+                rect.left -= offsetLeft;
+                rect.width += offsetLeft;
+                rect.top -= offsetTop;
+                return tslib_1.__assign({}, rect.style(), { display: "block" });
+            }
+            case regions_1.RegionCardinality.FULL_COLUMNS: {
+                var _c = region.cols, colStart = _c[0], colEnd = _c[1];
+                // if the region is outside the bounds of the table, don't display it
+                if (this.isGhostIndex(0, colStart) || this.isGhostIndex(0, colEnd)) {
+                    return { display: "none" };
+                }
+                var cellRect0 = this.getCellRect(0, colStart);
+                var cellRect1 = this.getCellRect(0, colEnd);
+                var rect = cellRect0.union(cellRect1);
+                var offsetLeft = colStart === 0 ? 0 : 1;
+                return {
+                    bottom: 0,
+                    display: "block",
+                    left: rect.left - offsetLeft,
+                    top: 0,
+                    width: rect.width + offsetLeft,
+                };
+            }
+            case regions_1.RegionCardinality.FULL_ROWS: {
+                var _d = region.rows, rowStart = _d[0], rowEnd = _d[1];
+                // if the region is outside the bounds of the table, don't display it
+                if (this.isGhostIndex(rowStart, 0) || this.isGhostIndex(rowEnd, 0)) {
+                    return { display: "none" };
+                }
+                var cellRect0 = this.getCellRect(rowStart, 0);
+                var cellRect1 = this.getCellRect(rowEnd, 0);
+                var rect = cellRect0.union(cellRect1);
+                var offsetTop = rowStart === 0 ? 0 : 1;
+                return {
+                    display: "block",
+                    height: rect.height + offsetTop,
+                    left: 0,
+                    right: 0,
+                    top: rect.top - offsetTop,
+                };
+            }
+            case regions_1.RegionCardinality.FULL_TABLE:
+                return {
+                    bottom: 0,
+                    display: "block",
+                    left: 0,
+                    right: 0,
+                    top: 0,
+                };
+            default:
+                return { display: "none" };
+        }
+    };
+    Grid.prototype.getIndicesInInterval = function (min, max, count, useEndBleed, lookup) {
+        var start = utils_1.Utils.binarySearch(min, count - 1, lookup);
+        var end = utils_1.Utils.binarySearch(max, count - 1, lookup);
+        // correct exact pixel alignment
+        if (start >= 0 && min === lookup(start)) {
+            start += 1;
+        }
+        // apply bounded bleeds
+        start = Math.max(0, start - this.bleed);
+        if (useEndBleed) {
+            end = Math.min(count - 1, end + this.bleed);
+        }
+        else {
+            end = Math.min(count - 1, end);
+        }
+        return { start: start, end: end };
+    };
+    Grid.DEFAULT_BLEED = 3;
+    Grid.DEFAULT_MAX_COLUMNS = 50;
+    Grid.DEFAULT_MAX_ROWS = 200;
+    Grid.DEFAULT_GHOST_HEIGHT = 20;
+    Grid.DEFAULT_GHOST_WIDTH = 150;
+    return Grid;
+}());
+exports.Grid = Grid;
+
+},{"../regions":180,"./classes":138,"./rect":152,"./utils":155,"tslib":184}],145:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var clipboard_1 = require("./clipboard");
+exports.Clipboard = clipboard_1.Clipboard;
+var grid_1 = require("./grid");
+exports.Grid = grid_1.Grid;
+var rect_1 = require("./rect");
+exports.Rect = rect_1.Rect;
+var renderMode_1 = require("./renderMode");
+exports.RenderMode = renderMode_1.RenderMode;
+var utils_1 = require("./utils");
+exports.Utils = utils_1.Utils;
+// NOTE: The following are not exported in the public API:
+// - Errors
+// - internal/
+
+},{"./clipboard":139,"./grid":144,"./rect":152,"./renderMode":153,"./utils":155}],146:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var direction_1 = require("../direction");
+function directionToDelta(direction) {
+    switch (direction) {
+        case direction_1.Direction.UP:
+            return { rows: -1, cols: 0 };
+        case direction_1.Direction.DOWN:
+            return { rows: +1, cols: 0 };
+        case direction_1.Direction.LEFT:
+            return { rows: 0, cols: -1 };
+        case direction_1.Direction.RIGHT:
+            return { rows: 0, cols: +1 };
+        default:
+            return undefined;
+    }
+}
+exports.directionToDelta = directionToDelta;
+
+},{"../direction":142}],147:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
+var regions_1 = require("../../regions");
+var Errors = tslib_1.__importStar(require("../errors"));
+/**
+ * Returns the `focusedSelectionIndex` if both the focused cell and that
+ * property are defined, or the last index of `selectedRegions` otherwise. If
+ * `selectedRegions` is empty, the function always returns `undefined`.
+ */
+function getFocusedOrLastSelectedIndex(selectedRegions, focusedCell) {
+    if (selectedRegions.length === 0) {
+        return undefined;
+    }
+    else if (focusedCell != null) {
+        return focusedCell.focusSelectionIndex;
+    }
+    else {
+        return selectedRegions.length - 1;
+    }
+}
+exports.getFocusedOrLastSelectedIndex = getFocusedOrLastSelectedIndex;
+/**
+ * Returns the proper focused cell for the given set of initial conditions.
+ */
+function getInitialFocusedCell(enableFocusedCell, focusedCellFromProps, focusedCellFromState, selectedRegions) {
+    if (!enableFocusedCell) {
+        return undefined;
+    }
+    else if (focusedCellFromProps != null) {
+        // controlled mode
+        return focusedCellFromProps;
+    }
+    else if (focusedCellFromState != null) {
+        // use the current focused cell from state
+        return focusedCellFromState;
+    }
+    else if (selectedRegions.length > 0) {
+        // focus the top-left cell of the last selection
+        var lastIndex = selectedRegions.length - 1;
+        return tslib_1.__assign({}, regions_1.Regions.getFocusCellCoordinatesFromRegion(selectedRegions[lastIndex]), { focusSelectionIndex: lastIndex });
+    }
+    else {
+        // focus the top-left cell of the table
+        return { col: 0, row: 0, focusSelectionIndex: 0 };
+    }
+}
+exports.getInitialFocusedCell = getInitialFocusedCell;
+/**
+ * Returns `true` if the focused cell is located along the top boundary of the
+ * provided region, or `false` otherwise.
+ */
+function isFocusedCellAtRegionTop(region, focusedCell) {
+    return region.rows != null && focusedCell.row === region.rows[0];
+}
+exports.isFocusedCellAtRegionTop = isFocusedCellAtRegionTop;
+/**
+ * Returns `true` if the focused cell is located along the bottom boundary of
+ * the provided region, or `false` otherwise.
+ */
+function isFocusedCellAtRegionBottom(region, focusedCell) {
+    return region.rows != null && focusedCell.row === region.rows[1];
+}
+exports.isFocusedCellAtRegionBottom = isFocusedCellAtRegionBottom;
+/**
+ * Returns `true` if the focused cell is located along the left boundary of the
+ * provided region, or `false` otherwise.
+ */
+function isFocusedCellAtRegionLeft(region, focusedCell) {
+    return region.cols != null && focusedCell.col === region.cols[0];
+}
+exports.isFocusedCellAtRegionLeft = isFocusedCellAtRegionLeft;
+/**
+ * Returns `true` if the focused cell is located along the right boundary of the
+ * provided region, or `false` otherwise.
+ */
+function isFocusedCellAtRegionRight(region, focusedCell) {
+    return region.cols != null && focusedCell.col === region.cols[1];
+}
+exports.isFocusedCellAtRegionRight = isFocusedCellAtRegionRight;
+/**
+ * Returns a new cell-coordinates object that includes a focusSelectionIndex property.
+ * The returned object will have the proper IFocusedCellCoordinates type.
+ */
+function toFullCoordinates(cellCoords, focusSelectionIndex) {
+    if (focusSelectionIndex === void 0) { focusSelectionIndex = 0; }
+    return tslib_1.__assign({}, cellCoords, { focusSelectionIndex: focusSelectionIndex });
+}
+exports.toFullCoordinates = toFullCoordinates;
+/**
+ * Expands an existing region to new region based on the current focused cell.
+ * The focused cell is an invariant and should not move as a result of this
+ * operation. This function is used, for instance, to expand a selected region
+ * on shift+click.
+ */
+function expandFocusedRegion(focusedCell, newRegion) {
+    switch (regions_1.Regions.getRegionCardinality(newRegion)) {
+        case regions_1.RegionCardinality.FULL_COLUMNS: {
+            var _a = getExpandedRegionIndices(focusedCell, newRegion, "col", "cols"), indexStart = _a[0], indexEnd = _a[1];
+            return regions_1.Regions.column(indexStart, indexEnd);
+        }
+        case regions_1.RegionCardinality.FULL_ROWS: {
+            var _b = getExpandedRegionIndices(focusedCell, newRegion, "row", "rows"), indexStart = _b[0], indexEnd = _b[1];
+            return regions_1.Regions.row(indexStart, indexEnd);
+        }
+        case regions_1.RegionCardinality.CELLS:
+            var _c = getExpandedRegionIndices(focusedCell, newRegion, "row", "rows"), rowIndexStart = _c[0], rowIndexEnd = _c[1];
+            var _d = getExpandedRegionIndices(focusedCell, newRegion, "col", "cols"), colIndexStart = _d[0], colIndexEnd = _d[1];
+            return regions_1.Regions.cell(rowIndexStart, colIndexStart, rowIndexEnd, colIndexEnd);
+        default:
+            // i.e. `case RegionCardinality.FULL_TABLE:`
+            return regions_1.Regions.table();
+    }
+}
+exports.expandFocusedRegion = expandFocusedRegion;
+function getExpandedRegionIndices(focusedCell, newRegion, focusedCellDimension, regionDimension) {
+    var sourceIndex = focusedCell[focusedCellDimension];
+    var _a = newRegion[regionDimension], destinationIndex = _a[0], destinationIndexEnd = _a[1];
+    if (destinationIndex !== destinationIndexEnd) {
+        if (regionDimension === "rows") {
+            throw new Error(Errors.TABLE_EXPAND_FOCUSED_REGION_MULTI_ROW_REGION);
+        }
+        else if (regionDimension === "cols") {
+            throw new Error(Errors.TABLE_EXPAND_FOCUSED_REGION_MULTI_COLUMN_REGION);
+        }
+    }
+    return sourceIndex <= destinationIndex ? [sourceIndex, destinationIndex] : [destinationIndex, sourceIndex];
+}
+
+},{"../../regions":180,"../errors":143,"tslib":184}],148:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * Returns `true` if `navigator.platform` matches a known Mac platform, or
+ * `false` otherwise.
+ */
+function isMac(platformOverride) {
+    var platformActual = typeof navigator !== "undefined" ? navigator.platform : undefined;
+    var platform = platformOverride != null ? platformOverride : platformActual;
+    return platform == null ? false : /Mac|iPod|iPhone|iPad/.test(platform);
+}
+exports.isMac = isMac;
+/**
+ * Returns `true` if (1) the platform is Mac and the keypress includes the `cmd`
+ * key, or (2) the platform is non-Mac and the keypress includes the `ctrl` key.
+ */
+exports.isModKeyPressed = function (event, platformOverride) {
+    var isMacPlatform = isMac(platformOverride);
+    return (isMacPlatform && event.metaKey) || (!isMacPlatform && event.ctrlKey);
+};
+
+},{}],149:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var regions_1 = require("../../regions");
+/**
+ * Returns the scroll{Left,Top} offsets of the provided region based on its
+ * cardinality.
+ */
+function getScrollPositionForRegion(region, currScrollLeft, currScrollTop, getLeftOffset, getTopOffset, numFrozenRows, numFrozenColumns) {
+    if (numFrozenRows === void 0) { numFrozenRows = 0; }
+    if (numFrozenColumns === void 0) { numFrozenColumns = 0; }
+    var cardinality = regions_1.Regions.getRegionCardinality(region);
+    var scrollTop = currScrollTop;
+    var scrollLeft = currScrollLeft;
+    // if these were max-frozen-index values, we would have added 1 before passing to the get*Offset
+    // functions, but the counts are already 1-indexed, so we can just pass those.
+    var frozenColumnsCumulativeWidth = getLeftOffset(numFrozenColumns);
+    var frozenRowsCumulativeHeight = getTopOffset(numFrozenRows);
+    switch (cardinality) {
+        case regions_1.RegionCardinality.CELLS: {
+            // scroll to the top-left corner of the block of cells
+            var topOffset = getTopOffset(region.rows[0]);
+            var leftOffset = getLeftOffset(region.cols[0]);
+            scrollTop = getClampedScrollPosition(topOffset, frozenRowsCumulativeHeight);
+            scrollLeft = getClampedScrollPosition(leftOffset, frozenColumnsCumulativeWidth);
+            break;
+        }
+        case regions_1.RegionCardinality.FULL_ROWS: {
+            // scroll to the top of the row block
+            var topOffset = getTopOffset(region.rows[0]);
+            scrollTop = getClampedScrollPosition(topOffset, frozenRowsCumulativeHeight);
+            break;
+        }
+        case regions_1.RegionCardinality.FULL_COLUMNS: {
+            // scroll to the left side of the column block
+            var leftOffset = getLeftOffset(region.cols[0]);
+            scrollLeft = getClampedScrollPosition(leftOffset, frozenColumnsCumulativeWidth);
+            break;
+        }
+        default: {
+            // if it's a FULL_TABLE region, scroll back to the top-left cell of the table
+            scrollTop = 0;
+            scrollLeft = 0;
+            break;
+        }
+    }
+    return { scrollLeft: scrollLeft, scrollTop: scrollTop };
+}
+exports.getScrollPositionForRegion = getScrollPositionForRegion;
+/**
+ * Returns the thickness of the target scroll bar in pixels.
+ * If the target scroll bar is not present, 0 is returned.
+ */
+function measureScrollBarThickness(element, direction) {
+    // offset size includes the scroll bar. client size does not.
+    // the difference gives the thickness of the scroll bar.
+    return direction === "horizontal"
+        ? element.offsetHeight - element.clientHeight
+        : element.offsetWidth - element.clientWidth;
+}
+exports.measureScrollBarThickness = measureScrollBarThickness;
+/**
+ * Adjust the scroll position to align content just beyond the frozen region, if necessary.
+ */
+function getClampedScrollPosition(scrollOffset, frozenRegionCumulativeSize) {
+    // if the new scroll offset falls within the frozen region, clamp it to 0
+    return Math.max(scrollOffset - frozenRegionCumulativeSize, 0);
+}
+
+},{"../../regions":180}],150:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
+var regions_1 = require("../../regions");
+var direction_1 = require("../direction");
+var DirectionUtils = tslib_1.__importStar(require("./directionUtils"));
+var FocusedCellUtils = tslib_1.__importStar(require("./focusedCellUtils"));
+/**
+ * Resizes the provided region by 1 row/column in the specified direction,
+ * returning a new region instance. The region may either expand *or* contract
+ * depending on the presence and location of the focused cell.
+ *
+ * If no focused cell is provided, the region will always be *expanded* in the
+ * specified direction.
+ *
+ * If a focused cell *is* provided, the behavior will change depending on where
+ * the focused cell is within the region:
+ *
+ *   1. If along a top/bottom boundary while resizing UP/DOWN, the resize will
+ *      expand from or shrink to the focused cell (same if along a left/right
+ *      boundary while moving LEFT/RIGHT).
+ *   2. If *not* along a top/bottom boundary while resizing UP/DOWN (or if *not*
+ *      along a left/right boundary while moving LEFT/RIGHT), the region will
+ *      simply expand in the specified direction.
+ *
+ * Other notes:
+ * - A CELLS region can be resized vertically or horizontally.
+ * - A FULL_ROWS region can be resized only vertically.
+ * - A FULL_COLUMNS region can be resized only horizontally.
+ * - A FULL_TABLE region cannot be resized.
+ *
+ * This function does not clamp the indices of the returned region; that is the
+ * responsibility of the caller.
+ */
+function resizeRegion(region, direction, focusedCell) {
+    if (regions_1.Regions.getRegionCardinality(region) === regions_1.RegionCardinality.FULL_TABLE) {
+        // return the same instance to maintain referential integrity and
+        // possibly avoid unnecessary update lifecycles.
+        return region;
+    }
+    var nextRegion = regions_1.Regions.copy(region);
+    var affectedRowIndex = 0;
+    var affectedColumnIndex = 0;
+    if (focusedCell != null) {
+        var isAtTop = FocusedCellUtils.isFocusedCellAtRegionTop(nextRegion, focusedCell);
+        var isAtBottom = FocusedCellUtils.isFocusedCellAtRegionBottom(nextRegion, focusedCell);
+        var isAtLeft = FocusedCellUtils.isFocusedCellAtRegionLeft(nextRegion, focusedCell);
+        var isAtRight = FocusedCellUtils.isFocusedCellAtRegionRight(nextRegion, focusedCell);
+        // the focused cell is found along the top and bottom boundary
+        // simultaneously when the region is 1 row tall. check for this and
+        // similar special cases.
+        if (direction === direction_1.Direction.UP) {
+            affectedRowIndex = isAtTop && !isAtBottom ? 1 : 0;
+        }
+        else if (direction === direction_1.Direction.DOWN) {
+            affectedRowIndex = isAtBottom && !isAtTop ? 0 : 1;
+        }
+        else if (direction === direction_1.Direction.LEFT) {
+            affectedColumnIndex = isAtLeft && !isAtRight ? 1 : 0;
+        }
+        else {
+            // i.e. `Direction.RIGHT:`
+            affectedColumnIndex = isAtRight && !isAtLeft ? 0 : 1;
+        }
+    }
+    else {
+        // when there is no focused cell, expand in the specified direction.
+        affectedRowIndex = direction === direction_1.Direction.DOWN ? 1 : 0;
+        affectedColumnIndex = direction === direction_1.Direction.RIGHT ? 1 : 0;
+    }
+    var delta = DirectionUtils.directionToDelta(direction);
+    if (nextRegion.rows != null) {
+        nextRegion.rows[affectedRowIndex] += delta.rows;
+    }
+    if (nextRegion.cols != null) {
+        nextRegion.cols[affectedColumnIndex] += delta.cols;
+    }
+    // the new coordinates might be out of bounds. the caller is responsible for
+    // sanitizing the result.
+    return nextRegion;
+}
+exports.resizeRegion = resizeRegion;
+
+},{"../../regions":180,"../direction":142,"./directionUtils":146,"./focusedCellUtils":147,"tslib":184}],151:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
+var React = tslib_1.__importStar(require("react"));
+var core_1 = require("@blueprintjs/core");
+// This class expects a single, non-string child.
+var LoadableContent = /** @class */ (function (_super) {
+    tslib_1.__extends(LoadableContent, _super);
+    function LoadableContent(props) {
+        var _this = _super.call(this, props) || this;
+        _this.style = _this.calculateStyle(props.variableLength);
+        return _this;
+    }
+    LoadableContent.prototype.componentWillReceiveProps = function (nextProps) {
+        if ((!this.props.loading && nextProps.loading) || this.props.variableLength !== nextProps.variableLength) {
+            this.style = this.calculateStyle(nextProps.variableLength);
+        }
+    };
+    LoadableContent.prototype.render = function () {
+        if (this.props.loading) {
+            return React.createElement("div", { className: core_1.Classes.SKELETON, style: this.style });
+        }
+        return React.Children.only(this.props.children);
+    };
+    LoadableContent.prototype.calculateStyle = function (variableLength) {
+        var skeletonLength = variableLength ? 75 - Math.floor(Math.random() * 11) * 5 : 100;
+        return { width: skeletonLength + "%" };
+    };
+    return LoadableContent;
+}(React.PureComponent));
+exports.LoadableContent = LoadableContent;
+
+},{"@blueprintjs/core":105,"react":223,"tslib":184}],152:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+// HACKHACK: workaround for https://github.com/palantir/tslint/issues/1768
+// tslint:disable adjacent-overload-signatures
+/**
+ * A simple object for storing the client bounds of HTMLElements. Since
+ * ClientRects are immutable, this object enables editing and some simple
+ * manipulation methods.
+ */
+var Rect = /** @class */ (function () {
+    function Rect(left, top, width, height) {
+        this.left = left;
+        this.top = top;
+        this.width = width;
+        this.height = height;
+    }
+    /**
+     * Returns the smallest Rect that entirely contains the supplied rects
+     */
+    Rect.union = function (anyRect0, anyRect1) {
+        var rect0 = Rect.wrap(anyRect0);
+        var rect1 = Rect.wrap(anyRect1);
+        var top = Math.min(rect0.top, rect1.top);
+        var left = Math.min(rect0.left, rect1.left);
+        var bottom = Math.max(rect0.top + rect0.height, rect1.top + rect1.height);
+        var right = Math.max(rect0.left + rect0.width, rect1.left + rect1.width);
+        var height = bottom - top;
+        var width = right - left;
+        return new Rect(left, top, width, height);
+    };
+    /**
+     * Returns a new Rect that subtracts the origin of the second argument
+     * from the first.
+     */
+    Rect.subtractOrigin = function (anyRect0, anyRect1) {
+        var rect0 = Rect.wrap(anyRect0);
+        var rect1 = Rect.wrap(anyRect1);
+        return new Rect(rect0.left - rect1.left, rect0.top - rect1.top, rect0.width, rect0.height);
+    };
+    /**
+     * Returns the CSS properties representing the absolute positioning of
+     * this Rect.
+     */
+    Rect.style = function (rect) {
+        return {
+            height: rect.height + "px",
+            left: rect.left + "px",
+            position: "absolute",
+            top: rect.top + "px",
+            width: rect.width + "px",
+        };
+    };
+    /**
+     * Given a ClientRect or Rect object, returns a Rect object.
+     */
+    Rect.wrap = function (rect) {
+        if (rect instanceof Rect) {
+            return rect;
+        }
+        else {
+            return new Rect(rect.left, rect.top, rect.width, rect.height);
+        }
+    };
+    Rect.prototype.subtractOrigin = function (anyRect) {
+        return Rect.subtractOrigin(this, anyRect);
+    };
+    Rect.prototype.union = function (anyRect) {
+        return Rect.union(this, anyRect);
+    };
+    Rect.prototype.style = function () {
+        return Rect.style(this);
+    };
+    Rect.prototype.sizeStyle = function () {
+        return {
+            height: this.height + "px",
+            width: this.width + "px",
+        };
+    };
+    Rect.prototype.containsX = function (clientX) {
+        return clientX >= this.left && clientX <= this.left + this.width;
+    };
+    Rect.prototype.containsY = function (clientY) {
+        return clientY >= this.top && clientY <= this.top + this.height;
+    };
+    Rect.prototype.equals = function (rect) {
+        return (rect != null &&
+            this.left === rect.left &&
+            this.top === rect.top &&
+            this.width === rect.width &&
+            this.height === rect.height);
+    };
+    Rect.ORIGIN = new Rect(0, 0, 0, 0);
+    return Rect;
+}());
+exports.Rect = Rect;
+
+},{}],153:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var RenderMode;
+(function (RenderMode) {
+    /**
+     * Renders cells in batches across multiple animation frames. This improves
+     * performance by spreading out work to keep a high FPS and avoid blocking
+     * the UI, but it also introduces a noticeable scan-line rendering artifact
+     * as successive batches of cells finish rendering.
+     */
+    RenderMode["BATCH"] = "batch";
+    /**
+     * Renders all cells synchronously on initial mount, then renders cells in
+     * batches on successive updates (e.g. during scrolling). This helps to
+     * remove visual rendering artifacts when the table is first rendered,
+     * wihout slowing scrolling performance to a crawl.
+     */
+    RenderMode["BATCH_ON_UPDATE"] = "batch-on-update";
+    /**
+     * Disables the batch-rendering behavior, rendering all cells synchronously
+     * at once. This may result in degraded performance on large tables and/or
+     * on tables with complex cells.
+     */
+    RenderMode["NONE"] = "none";
+})(RenderMode = exports.RenderMode || (exports.RenderMode = {}));
+
+},{}],154:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * Event name for `postMessage`
+ */
+var MESSAGE_EVENT_DATA = "blueprint-table-post-message";
+/**
+ * Object that holds state for managing idle callbacks
+ */
+var IDLE_STATE = {
+    callbacks: [],
+    triggered: false,
+};
+var handleIdle = function (event) {
+    if (event.source !== window || event.data !== MESSAGE_EVENT_DATA) {
+        return;
+    }
+    IDLE_STATE.triggered = false;
+    var callback = null;
+    if (IDLE_STATE.callbacks.length > 0) {
+        callback = IDLE_STATE.callbacks.shift();
+    }
+    if (IDLE_STATE.callbacks.length > 0) {
+        triggerIdleFrame();
+    }
+    // finally, invoke the callback. exceptions will be propagated
+    if (callback) {
+        callback();
+    }
+};
+// check for window since we might be in a headless server environment
+if (typeof window !== "undefined") {
+    if (window.addEventListener != null) {
+        window.addEventListener("message", handleIdle, false);
+    }
+}
+var triggerIdleFrame = function () {
+    if (IDLE_STATE.triggered) {
+        return;
+    }
+    IDLE_STATE.triggered = true;
+    /**
+     * This is the magic that will wait for the browser to be "idle" before
+     * invoking the callback.
+     *
+     * First, we use nested calls to `requestAnimationFrame` which will cause
+     * the inner callback to be invoked on the NEXT FRAME.
+     *
+     * Then, we call to `postMessage` to invoke the `handleIdle` method only
+     * once the current stack frame is empty.
+     *
+     * With this approach, the idle callback will be invoked at most once per
+     * frame and only after the stack frame is empty.
+     */
+    requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+            postMessage(MESSAGE_EVENT_DATA, "*");
+        });
+    });
+};
+/**
+ * Invokes the provided callback on the next available frame after the stack
+ * frame is empty.
+ *
+ * At most one callback per frame is invoked, and the callback may be delayed
+ * multiple frames until the page is idle.
+ *
+ * TODO: return a token from this method that allows you to cancel the callback
+ * (otherwise the callback list may increase without bound).
+ */
+exports.requestIdleCallback = function (callback) {
+    IDLE_STATE.callbacks.push(callback);
+    triggerIdleFrame();
+};
+
+},{}],155:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var CLASSNAME_EXCLUDED_FROM_TEXT_MEASUREMENT = "bp-table-text-no-measure";
+/**
+ * Since Firefox doesn't provide a computed "font" property, we manually
+ * construct it using the ordered properties that can be specifed in CSS.
+ */
+var CSS_FONT_PROPERTIES = ["font-style", "font-variant", "font-weight", "font-size", "font-family"];
+// table is nearly deprecated, let's not block on code coverage
+/* istanbul ignore next */
+exports.Utils = {
+    /**
+     * Invokes the callback `n` times, collecting the results in an array, which
+     * is the return value. Similar to _.times
+     */
+    times: function (n, callback) {
+        if (n < 0) {
+            throw new Error("[Blueprint] times() cannot be called with negative numbers.");
+        }
+        var result = Array(n);
+        for (var index = 0; index < n; index++) {
+            result[index] = callback(index);
+        }
+        return result;
+    },
+    /**
+     * Takes an array of numbers, returns an array of numbers of the same length in which each
+     * value is the sum of current and previous values in the input array.
+     *
+     * Example input:  [10, 20, 50]
+     *         output: [10, 30, 80]
+     */
+    accumulate: function (numbers) {
+        var result = [];
+        var sum = 0;
+        for (var _i = 0, numbers_1 = numbers; _i < numbers_1.length; _i++) {
+            var num = numbers_1[_i];
+            sum += num;
+            result.push(sum);
+        }
+        return result;
+    },
+    /**
+     * Returns traditional spreadsheet-style column names
+     * e.g. (A, B, ..., Z, AA, AB, ..., ZZ, AAA, AAB, ...).
+     *
+     * Note that this isn't technically mathematically equivalent to base 26 since
+     * there is no zero element.
+     */
+    toBase26Alpha: function (num) {
+        var str = "";
+        while (true) {
+            var letter = num % 26;
+            str = String.fromCharCode(65 + letter) + str;
+            num = num - letter;
+            if (num <= 0) {
+                return str;
+            }
+            num = num / 26 - 1;
+        }
+    },
+    /**
+     * Returns traditional spreadsheet-style cell names
+     * e.g. (A1, B2, ..., Z44, AA1) with rows 1-indexed.
+     */
+    toBase26CellName: function (rowIndex, columnIndex) {
+        return "" + exports.Utils.toBase26Alpha(columnIndex) + (rowIndex + 1);
+    },
+    /**
+     * Performs the binary search algorithm to find the index of the `value`
+     * parameter in a sorted list of numbers. If `value` is not in the list, the
+     * index where `value` can be inserted to maintain the sort is returned.
+     *
+     * Unlike a typical binary search implementation, we use a `lookup`
+     * callback to access the sorted list of numbers instead of an array. This
+     * avoids additional storage overhead.
+     *
+     * We use this to, for example, find the index of a row/col given its client
+     * coordinate.
+     *
+     * Adapted from lodash https://github.com/lodash/lodash/blob/4.11.2/lodash.js#L3579
+     *
+     * @param value - the query value
+     * @param high - the length of the sorted list of numbers
+     * @param lookup - returns the number from the list at the supplied index
+     */
+    binarySearch: function (value, high, lookup) {
+        var low = 0;
+        while (low < high) {
+            var mid = Math.floor((low + high) / 2.0);
+            var computed = lookup(mid);
+            if (computed < value) {
+                low = mid + 1;
+            }
+            else {
+                high = mid;
+            }
+        }
+        return high;
+    },
+    /**
+     * Returns a copy of the array that will have a length of the supplied parameter.
+     * If the array is too long, it will be truncated. If it is too short, it will be
+     * filled with the suppleid `fillValue` argument.
+     *
+     * @param array - the `Array` to copy and adjust
+     * @param length - the target length of the array
+     * @param fillValue - the value to add to the array if it is too short
+     */
+    arrayOfLength: function (array, length, fillValue) {
+        if (array.length > length) {
+            return array.slice(0, length);
+        }
+        array = array.slice();
+        while (array.length < length) {
+            array.push(fillValue);
+        }
+        return array;
+    },
+    /**
+     * Takes in one full array of values and one sparse array of the same
+     * length and type. Returns a copy of the `defaults` array, where each
+     * value is replaced with the corresponding non-null value at the same
+     * index in `sparseOverrides`.
+     *
+     * @param defaults - the full array of default values
+     * @param sparseOverrides - the sparse array of override values
+     */
+    assignSparseValues: function (defaults, sparseOverrides) {
+        if (sparseOverrides == null || defaults.length !== sparseOverrides.length) {
+            return defaults;
+        }
+        defaults = defaults.slice();
+        for (var i = 0; i < defaults.length; i++) {
+            var override = sparseOverrides[i];
+            if (override != null) {
+                defaults[i] = override;
+            }
+        }
+        return defaults;
+    },
+    /**
+     * Measures the bounds of supplied element's textContent.
+     * We use the computed font from the supplied element and a non-DOM canvas
+     * context to measure the text.
+     */
+    measureElementTextContent: function (element) {
+        var context = document.createElement("canvas").getContext("2d");
+        var style = getComputedStyle(element, null);
+        context.font = CSS_FONT_PROPERTIES.map(function (prop) { return style.getPropertyValue(prop); }).join(" ");
+        return measureTextContentWithExclusions(context, element);
+    },
+    /**
+     * Given a number, returns a value that is clamped within a
+     * minimum/maximum bounded range. The minimum and maximum are optional. If
+     * either is missing, that extrema limit is not applied.
+     *
+     * Assumes max >= min.
+     */
+    clamp: function (value, min, max) {
+        if (min != null && value < min) {
+            value = min;
+        }
+        if (max != null && value > max) {
+            value = max;
+        }
+        return value;
+    },
+    /**
+     * When reordering a contiguous block of rows or columns to a new index, we show a preview guide
+     * at the absolute index in the original ordering but emit the new index in the reordered list.
+     * This function converts an absolute "guide" index to a relative "reordered" index.
+     *
+     * Example: Say we want to move the first three columns two spots to the right. While we drag, a
+     * vertical guide is shown to preview where we'll be dropping the columns. (In the following
+     * ASCII art, `*` denotes a selected column, `·` denotes a cell border, and `|` denotes a
+     * vertical guide).
+     *
+     *     Before mousedown:
+     *     · 0 · 1 · 2 · 3 · 4 · 5 ·
+     *       *   *   *
+     *
+     *     During mousemove two spots to the right:
+     *     · 0 · 1 · 2 · 3 · 4 | 5 ·
+     *       *   *   *
+     *
+     *     After mouseup:
+     *     · 3 · 4 · 0 · 1 · 2 · 5 ·
+     *               *   *   *
+     *
+     * Note that moving the three columns beyond index 4 effectively moves them two spots rightward.
+     *
+     * In this case, the inputs to this function would be:
+     *     - oldIndex: 0 (the left-most index of the selected column range in the original ordering)
+     *     - newIndex: 5 (the index on whose left boundary the guide appears in the original ordering)
+     *     - length: 3 (the number of columns to move)
+     *
+     * The return value will then be 2, the left-most index of the columns in the new ordering.
+     */
+    guideIndexToReorderedIndex: function (oldIndex, newIndex, length) {
+        if (newIndex < oldIndex) {
+            return newIndex;
+        }
+        else if (oldIndex <= newIndex && newIndex < oldIndex + length) {
+            return oldIndex;
+        }
+        else {
+            return Math.max(0, newIndex - length);
+        }
+    },
+    /**
+     * When reordering a contiguous block of rows or columns to a new index, we show a preview guide
+     * at the absolute index in the original ordering but emit the new index in the reordered list.
+     * This function converts a relative "reordered"" index to an absolute "guide" index.
+     *
+     * For the scenario in the example above, the inputs to this function would be:
+     *     - oldIndex: 0 (the left-most index of the selected column range in the original ordering)
+     *     - newIndex: 2 (the left-most index of the selected column range in the new ordering)
+     *     - length: 3 (the number of columns to move)
+     *
+     * The return value will then be 5, the index on whose left boundary the guide should appear in
+     * the original ordering.
+     */
+    reorderedIndexToGuideIndex: function (oldIndex, newIndex, length) {
+        return newIndex <= oldIndex ? newIndex : newIndex + length;
+    },
+    /**
+     * Returns a copy of the provided array with the `length` contiguous elements starting at the
+     * `from` index reordered to start at the `to` index.
+     *
+     * For example, given the array [A,B,C,D,E,F], reordering the 3 contiguous elements starting at
+     * index 1 (B, C, and D) to start at index 2 would yield [A,E,B,C,D,F].
+     */
+    reorderArray: function (array, from, to, length) {
+        if (length === void 0) { length = 1; }
+        if (length === 0 || length === array.length || from === to) {
+            // return an unchanged copy
+            return array.slice();
+        }
+        if (length < 0 || length > array.length || from + length > array.length) {
+            return undefined;
+        }
+        var before = array.slice(0, from);
+        var within = array.slice(from, from + length);
+        var after = array.slice(from + length);
+        var result = [];
+        var i = 0;
+        var b = 0;
+        var w = 0;
+        var a = 0;
+        while (i < to) {
+            if (b < before.length) {
+                result.push(before[b]);
+                b += 1;
+            }
+            else {
+                result.push(after[a]);
+                a += 1;
+            }
+            i += 1;
+        }
+        while (w < length) {
+            result.push(within[w]);
+            w += 1;
+            i += 1;
+        }
+        while (i < array.length) {
+            if (b < before.length) {
+                result.push(before[b]);
+                b += 1;
+            }
+            else {
+                result.push(after[a]);
+                a += 1;
+            }
+            i += 1;
+        }
+        return result;
+    },
+    /**
+     * Returns true if the mouse event was triggered by the left mouse button.
+     */
+    isLeftClick: function (event) {
+        return event.button === 0;
+    },
+    getApproxCellHeight: function (cellText, columnWidth, approxCharWidth, approxLineHeight, horizontalPadding, numBufferLines) {
+        var numCharsInCell = cellText == null ? 0 : cellText.length;
+        var actualCellWidth = columnWidth;
+        var availableCellWidth = actualCellWidth - horizontalPadding;
+        var approxCharsPerLine = availableCellWidth / approxCharWidth;
+        var approxNumLinesDesired = Math.ceil(numCharsInCell / approxCharsPerLine) + numBufferLines;
+        var approxCellHeight = approxNumLinesDesired * approxLineHeight;
+        return approxCellHeight;
+    },
+};
+// table is nearly deprecated, let's not block on code coverage
+/* istanbul ignore next */
+/**
+ * Wrapper around Canvas measureText which applies some extra logic to optionally
+ * exclude an element's text from the computation.
+ */
+function measureTextContentWithExclusions(context, element) {
+    // We only expect one or zero excluded elements in this subtree
+    // We don't have a need for more than one, so we avoid that complexity altogether.
+    var elementToExclude = element.querySelector("." + CLASSNAME_EXCLUDED_FROM_TEXT_MEASUREMENT);
+    var removedElementParent;
+    var removedElementNextSibling;
+    if (elementToExclude != null) {
+        removedElementParent = elementToExclude.parentElement;
+        removedElementNextSibling = elementToExclude.nextSibling;
+        removedElementParent.removeChild(elementToExclude);
+    }
+    var metrics = context.measureText(element.textContent);
+    if (elementToExclude != null) {
+        removedElementParent.insertBefore(elementToExclude, removedElementNextSibling);
+    }
+    return metrics;
+}
+
+},{}],156:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
+var classnames_1 = tslib_1.__importDefault(require("classnames"));
+var React = tslib_1.__importStar(require("react"));
+var Classes = tslib_1.__importStar(require("../common/classes"));
+var index_1 = require("../common/index");
+var resizeHandle_1 = require("../interactions/resizeHandle");
+var regions_1 = require("../regions");
+var columnHeaderCell_1 = require("./columnHeaderCell");
+var header_1 = require("./header");
+var ColumnHeader = /** @class */ (function (_super) {
+    tslib_1.__extends(ColumnHeader, _super);
+    function ColumnHeader() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.wrapCells = function (cells) {
+            var _a = _this.props, columnIndexStart = _a.columnIndexStart, grid = _a.grid;
+            var tableWidth = grid.getRect().width;
+            var scrollLeftCorrection = _this.props.grid.getCumulativeWidthBefore(columnIndexStart);
+            var style = {
+                // only header cells in view will render, but we need to reposition them to stay in view
+                // as we scroll horizontally.
+                transform: "translateX(" + (scrollLeftCorrection || 0) + "px)",
+                // reduce the width to clamp the sliding window as we approach the final headers; otherwise,
+                // we'll have tons of useless whitespace at the end.
+                width: tableWidth - scrollLeftCorrection,
+            };
+            var classes = classnames_1.default(Classes.TABLE_THEAD, Classes.TABLE_COLUMN_HEADER_TR);
+            // add a wrapper set to the full-table width to ensure container styles stretch from the first
+            // cell all the way to the last
+            return (React.createElement("div", { style: { width: tableWidth } },
+                React.createElement("div", { style: style, className: classes, ref: _this.props.measurableElementRef }, cells)));
+        };
+        _this.convertPointToColumn = function (clientXOrY, useMidpoint) {
+            var locator = _this.props.locator;
+            return locator != null ? locator.convertPointToColumn(clientXOrY, useMidpoint) : null;
+        };
+        _this.getCellExtremaClasses = function (index, indexEnd) {
+            return _this.props.grid.getExtremaClasses(0, index, 1, indexEnd);
+        };
+        _this.getColumnWidth = function (index) {
+            return _this.props.grid.getColumnRect(index).width;
+        };
+        _this.getDragCoordinate = function (clientCoords) {
+            return clientCoords[0]; // x-coordinate
+        };
+        _this.getMouseCoordinate = function (event) {
+            return event.clientX;
+        };
+        _this.handleResizeEnd = function (index, size) {
+            _this.props.onResizeGuide(null);
+            _this.props.onColumnWidthChanged(index, size);
+        };
+        _this.handleResizeDoubleClick = function (index) {
+            var _a = _this.props, minColumnWidth = _a.minColumnWidth, maxColumnWidth = _a.maxColumnWidth;
+            var width = _this.props.locator.getWidestVisibleCellInColumn(index);
+            var clampedWidth = index_1.Utils.clamp(width, minColumnWidth, maxColumnWidth);
+            _this.props.onResizeGuide(null);
+            _this.props.onColumnWidthChanged(index, clampedWidth);
+        };
+        _this.handleSizeChanged = function (index, size) {
+            var rect = _this.props.grid.getColumnRect(index);
+            _this.props.onResizeGuide([rect.left + size]);
+        };
+        _this.isCellSelected = function (index) {
+            return regions_1.Regions.hasFullColumn(_this.props.selectedRegions, index);
+        };
+        _this.isGhostIndex = function (index) {
+            return _this.props.grid.isGhostIndex(-1, index);
+        };
+        _this.renderGhostCell = function (index, extremaClasses) {
+            var _a = _this.props, grid = _a.grid, loading = _a.loading;
+            var rect = grid.getGhostCellRect(0, index);
+            var style = {
+                flexBasis: rect.width + "px",
+                width: rect.width + "px",
+            };
+            return (React.createElement(columnHeaderCell_1.ColumnHeaderCell, { className: classnames_1.default(extremaClasses), index: index, key: Classes.columnIndexClass(index), loading: loading, style: style }));
+        };
+        _this.toRegion = function (index1, index2) {
+            return regions_1.Regions.column(index1, index2);
+        };
+        return _this;
+    }
+    ColumnHeader.prototype.render = function () {
+        var _a = this.props, 
+        // from IColumnHeaderProps
+        renderHeaderCell = _a.cellRenderer, onColumnWidthChanged = _a.onColumnWidthChanged, 
+        // from IColumnWidths
+        minSize = _a.minColumnWidth, maxSize = _a.maxColumnWidth, defaultColumnWidth = _a.defaultColumnWidth, 
+        // from IColumnIndices
+        indexStart = _a.columnIndexStart, indexEnd = _a.columnIndexEnd, 
+        // from IHeaderProps
+        spreadableProps = tslib_1.__rest(_a, ["cellRenderer", "onColumnWidthChanged", "minColumnWidth", "maxColumnWidth", "defaultColumnWidth", "columnIndexStart", "columnIndexEnd"]);
+        return (React.createElement(header_1.Header, tslib_1.__assign({ convertPointToIndex: this.convertPointToColumn, fullRegionCardinality: regions_1.RegionCardinality.FULL_COLUMNS, getCellExtremaClasses: this.getCellExtremaClasses, getCellIndexClass: Classes.columnCellIndexClass, getCellSize: this.getColumnWidth, getDragCoordinate: this.getDragCoordinate, getIndexClass: Classes.columnIndexClass, getMouseCoordinate: this.getMouseCoordinate, ghostCellRenderer: this.renderGhostCell, handleResizeDoubleClick: this.handleResizeDoubleClick, handleResizeEnd: this.handleResizeEnd, handleSizeChanged: this.handleSizeChanged, headerCellIsReorderablePropName: "enableColumnReordering", headerCellIsSelectedPropName: "isColumnSelected", headerCellRenderer: renderHeaderCell, indexEnd: indexEnd, indexStart: indexStart, isCellSelected: this.isCellSelected, isGhostIndex: this.isGhostIndex, maxSize: maxSize, minSize: minSize, resizeOrientation: resizeHandle_1.Orientation.VERTICAL, selectedRegions: [], toRegion: this.toRegion, wrapCells: this.wrapCells }, spreadableProps)));
+    };
+    ColumnHeader.defaultProps = {
+        isReorderable: false,
+        isResizable: true,
+        loading: false,
+    };
+    return ColumnHeader;
+}(React.Component));
+exports.ColumnHeader = ColumnHeader;
+
+},{"../common/classes":138,"../common/index":145,"../interactions/resizeHandle":171,"../regions":180,"./columnHeaderCell":157,"./header":159,"classnames":185,"react":223,"tslib":184}],157:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
+var classnames_1 = tslib_1.__importDefault(require("classnames"));
+var React = tslib_1.__importStar(require("react"));
+var core_1 = require("@blueprintjs/core");
+var Classes = tslib_1.__importStar(require("../common/classes"));
+var context_1 = require("../common/context");
+var loadableContent_1 = require("../common/loadableContent");
+var headerCell_1 = require("./headerCell");
+function HorizontalCellDivider() {
+    return React.createElement("div", { className: Classes.TABLE_HORIZONTAL_CELL_DIVIDER });
+}
+exports.HorizontalCellDivider = HorizontalCellDivider;
+var ColumnHeaderCell = /** @class */ (function (_super) {
+    tslib_1.__extends(ColumnHeaderCell, _super);
+    function ColumnHeaderCell() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.state = {
+            isActive: false,
+        };
+        _this.handlePopoverOpened = function () { return _this.setState({ isActive: true }); };
+        _this.handlePopoverClosing = function () { return _this.setState({ isActive: false }); };
+        return _this;
+    }
+    /**
+     * This method determines if a `MouseEvent` was triggered on a target that
+     * should be used as the header click/drag target. This enables users of
+     * this component to render fully interactive components in their header
+     * cells without worry of selection or resize operations from capturing
+     * their mouse events.
+     */
+    ColumnHeaderCell.isHeaderMouseTarget = function (target) {
+        return (target.classList.contains(Classes.TABLE_HEADER) ||
+            target.classList.contains(Classes.TABLE_COLUMN_NAME) ||
+            target.classList.contains(Classes.TABLE_INTERACTION_BAR) ||
+            target.classList.contains(Classes.TABLE_HEADER_CONTENT));
+    };
+    ColumnHeaderCell.prototype.render = function () {
+        var _a;
+        var _b = this.props, 
+        // from IColumnHeaderCellProps
+        enableColumnReordering = _b.enableColumnReordering, isColumnSelected = _b.isColumnSelected, menuIcon = _b.menuIcon, 
+        // from IColumnNameProps
+        name = _b.name, nameRenderer = _b.nameRenderer, 
+        // from IHeaderProps
+        spreadableProps = tslib_1.__rest(_b, ["enableColumnReordering", "isColumnSelected", "menuIcon", "name", "nameRenderer"]);
+        var classes = classnames_1.default(spreadableProps.className, Classes.TABLE_COLUMN_HEADER_CELL, (_a = {},
+            _a[Classes.TABLE_HAS_INTERACTION_BAR] = this.context.enableColumnInteractionBar,
+            _a[Classes.TABLE_HAS_REORDER_HANDLE] = this.props.reorderHandle != null,
+            _a));
+        return (React.createElement(headerCell_1.HeaderCell, tslib_1.__assign({ isReorderable: this.props.enableColumnReordering, isSelected: this.props.isColumnSelected }, spreadableProps, { className: classes }),
+            this.renderName(),
+            this.maybeRenderContent(),
+            this.props.loading ? undefined : this.props.resizeHandle));
+    };
+    ColumnHeaderCell.prototype.renderName = function () {
+        var _a = this.props, index = _a.index, loading = _a.loading, name = _a.name, nameRenderer = _a.nameRenderer, reorderHandle = _a.reorderHandle;
+        var dropdownMenu = this.maybeRenderDropdownMenu();
+        var defaultName = React.createElement("div", { className: Classes.TABLE_TRUNCATED_TEXT }, name);
+        var nameComponent = (React.createElement(loadableContent_1.LoadableContent, { loading: loading, variableLength: true }, nameRenderer == null ? defaultName : nameRenderer(name, index)));
+        if (this.context.enableColumnInteractionBar) {
+            return (React.createElement("div", { className: Classes.TABLE_COLUMN_NAME, title: name },
+                React.createElement("div", { className: Classes.TABLE_INTERACTION_BAR },
+                    reorderHandle,
+                    dropdownMenu),
+                React.createElement(HorizontalCellDivider, null),
+                React.createElement("div", { className: Classes.TABLE_COLUMN_NAME_TEXT }, nameComponent)));
+        }
+        else {
+            return (React.createElement("div", { className: Classes.TABLE_COLUMN_NAME, title: name },
+                reorderHandle,
+                dropdownMenu,
+                React.createElement("div", { className: Classes.TABLE_COLUMN_NAME_TEXT }, nameComponent)));
+        }
+    };
+    ColumnHeaderCell.prototype.maybeRenderContent = function () {
+        if (this.props.children === null) {
+            return undefined;
+        }
+        return React.createElement("div", { className: Classes.TABLE_HEADER_CONTENT }, this.props.children);
+    };
+    ColumnHeaderCell.prototype.maybeRenderDropdownMenu = function () {
+        var _a;
+        var _b = this.props, index = _b.index, menuIcon = _b.menuIcon, menuRenderer = _b.menuRenderer;
+        if (!core_1.Utils.isFunction(menuRenderer)) {
+            return undefined;
+        }
+        var classes = classnames_1.default(Classes.TABLE_TH_MENU_CONTAINER, (_a = {},
+            _a[Classes.TABLE_TH_MENU_OPEN] = this.state.isActive,
+            _a));
+        return (React.createElement("div", { className: classes },
+            React.createElement("div", { className: Classes.TABLE_TH_MENU_CONTAINER_BACKGROUND }),
+            React.createElement(core_1.Popover, { content: menuRenderer(index), position: core_1.Position.BOTTOM, className: Classes.TABLE_TH_MENU, modifiers: { preventOverflow: { boundariesElement: "window" } }, onOpened: this.handlePopoverOpened, onClosing: this.handlePopoverClosing },
+                React.createElement(core_1.Icon, { icon: menuIcon }))));
+    };
+    ColumnHeaderCell.defaultProps = {
+        isActive: false,
+        menuIcon: "chevron-down",
+    };
+    ColumnHeaderCell.contextTypes = context_1.columnInteractionBarContextTypes;
+    return ColumnHeaderCell;
+}(core_1.AbstractPureComponent));
+exports.ColumnHeaderCell = ColumnHeaderCell;
+
+},{"../common/classes":138,"../common/context":140,"../common/loadableContent":151,"./headerCell":160,"@blueprintjs/core":105,"classnames":185,"react":223,"tslib":184}],158:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
+var core_1 = require("@blueprintjs/core");
+var classnames_1 = tslib_1.__importDefault(require("classnames"));
+var React = tslib_1.__importStar(require("react"));
+var Classes = tslib_1.__importStar(require("../common/classes"));
+var EditableName = /** @class */ (function (_super) {
+    tslib_1.__extends(EditableName, _super);
+    function EditableName(props, context) {
+        var _this = _super.call(this, props, context) || this;
+        _this.handleEdit = function () {
+            _this.setState({ isEditing: true, dirtyName: _this.state.savedName });
+        };
+        _this.handleCancel = function (value) {
+            // don't strictly need to clear the dirtyName, but it's better hygiene
+            _this.setState({ isEditing: false, dirtyName: undefined });
+            _this.invokeCallback(_this.props.onCancel, value);
+        };
+        _this.handleChange = function (value) {
+            _this.setState({ dirtyName: value });
+            _this.invokeCallback(_this.props.onChange, value);
+        };
+        _this.handleConfirm = function (value) {
+            _this.setState({ isEditing: false, savedName: value, dirtyName: undefined });
+            _this.invokeCallback(_this.props.onConfirm, value);
+        };
+        _this.state = {
+            dirtyName: props.name,
+            isEditing: false,
+            savedName: props.name,
+        };
+        return _this;
+    }
+    EditableName.prototype.componentWillReceiveProps = function (nextProps) {
+        var name = nextProps.name;
+        if (name !== this.props.name) {
+            this.setState({ savedName: name, dirtyName: name });
+        }
+    };
+    EditableName.prototype.render = function () {
+        var _a = this.props, className = _a.className, intent = _a.intent, name = _a.name;
+        var _b = this.state, isEditing = _b.isEditing, dirtyName = _b.dirtyName, savedName = _b.savedName;
+        return (React.createElement(core_1.EditableText, { className: classnames_1.default(className, Classes.TABLE_EDITABLE_NAME), defaultValue: name, intent: intent, minWidth: null, onCancel: this.handleCancel, onChange: this.handleChange, onConfirm: this.handleConfirm, onEdit: this.handleEdit, placeholder: "", selectAllOnFocus: true, value: isEditing ? dirtyName : savedName }));
+    };
+    EditableName.prototype.invokeCallback = function (callback, value) {
+        var index = this.props.index;
+        core_1.Utils.safeInvoke(callback, value, index);
+    };
+    return EditableName;
+}(React.PureComponent));
+exports.EditableName = EditableName;
+
+},{"../common/classes":138,"@blueprintjs/core":105,"classnames":185,"react":223,"tslib":184}],159:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
+var core_1 = require("@blueprintjs/core");
+var classnames_1 = tslib_1.__importDefault(require("classnames"));
+var React = tslib_1.__importStar(require("react"));
+var Classes = tslib_1.__importStar(require("../common/classes"));
+var dragEvents_1 = require("../interactions/dragEvents");
+var reorderable_1 = require("../interactions/reorderable");
+var resizable_1 = require("../interactions/resizable");
+var selectable_1 = require("../interactions/selectable");
+var regions_1 = require("../regions");
+var SHALLOW_COMPARE_PROP_KEYS_BLACKLIST = ["focusedCell", "selectedRegions"];
+var Header = /** @class */ (function (_super) {
+    tslib_1.__extends(Header, _super);
+    function Header(props, context) {
+        var _this = _super.call(this, props, context) || this;
+        _this.convertEventToIndex = function (event) {
+            var coord = _this.props.getMouseCoordinate(event);
+            return _this.props.convertPointToIndex(coord);
+        };
+        _this.locateClick = function (event) {
+            _this.activationIndex = _this.convertEventToIndex(event);
+            return _this.props.toRegion(_this.activationIndex);
+        };
+        _this.locateDragForSelection = function (_event, coords, returnEndOnly) {
+            if (returnEndOnly === void 0) { returnEndOnly = false; }
+            var coord = _this.props.getDragCoordinate(coords.current);
+            var indexStart = _this.activationIndex;
+            var indexEnd = _this.props.convertPointToIndex(coord);
+            return returnEndOnly ? _this.props.toRegion(indexEnd) : _this.props.toRegion(indexStart, indexEnd);
+        };
+        _this.locateDragForReordering = function (_event, coords) {
+            var coord = _this.props.getDragCoordinate(coords.current);
+            var guideIndex = _this.props.convertPointToIndex(coord, true);
+            return guideIndex < 0 ? undefined : guideIndex;
+        };
+        _this.renderCells = function () {
+            var _a = _this.props, indexStart = _a.indexStart, indexEnd = _a.indexEnd;
+            var cells = [];
+            for (var index = indexStart; index <= indexEnd; index++) {
+                cells.push(_this.renderNewCell(index));
+            }
+            return cells;
+        };
+        _this.renderNewCell = function (index) {
+            var extremaClasses = _this.props.getCellExtremaClasses(index, _this.props.indexEnd);
+            var renderer = _this.props.isGhostIndex(index) ? _this.props.ghostCellRenderer : _this.renderCell;
+            return renderer(index, extremaClasses);
+        };
+        _this.renderCell = function (index, extremaClasses) {
+            var _a, _b;
+            var _c = _this.props, getIndexClass = _c.getIndexClass, selectedRegions = _c.selectedRegions;
+            var cell = _this.props.headerCellRenderer(index);
+            var isLoading = cell.props.loading != null ? cell.props.loading : _this.props.loading;
+            var isSelected = _this.props.isCellSelected(index);
+            var isEntireCellTargetReorderable = _this.isEntireCellTargetReorderable(index);
+            var className = classnames_1.default(extremaClasses, (_a = {},
+                _a[Classes.TABLE_HEADER_REORDERABLE] = isEntireCellTargetReorderable,
+                _a), _this.props.getCellIndexClass(index), cell.props.className);
+            var cellProps = (_b = {
+                    className: className,
+                    index: index
+                },
+                _b[_this.props.headerCellIsSelectedPropName] = isSelected,
+                _b[_this.props.headerCellIsReorderablePropName] = isEntireCellTargetReorderable,
+                _b.loading = isLoading,
+                _b.reorderHandle = _this.maybeRenderReorderHandle(index),
+                _b);
+            var modifiedHandleSizeChanged = function (size) { return _this.props.handleSizeChanged(index, size); };
+            var modifiedHandleResizeEnd = function (size) { return _this.props.handleResizeEnd(index, size); };
+            var modifiedHandleResizeHandleDoubleClick = function () {
+                return core_1.Utils.safeInvoke(_this.props.handleResizeDoubleClick, index);
+            };
+            var baseChildren = (React.createElement(selectable_1.DragSelectable, { enableMultipleSelection: _this.props.enableMultipleSelection, disabled: _this.isDragSelectableDisabled, focusedCell: _this.props.focusedCell, ignoredSelectors: ["." + Classes.TABLE_REORDER_HANDLE_TARGET], key: getIndexClass(index), locateClick: _this.locateClick, locateDrag: _this.locateDragForSelection, onFocusedCell: _this.props.onFocusedCell, onSelection: _this.handleDragSelectableSelection, onSelectionEnd: _this.handleDragSelectableSelectionEnd, selectedRegions: selectedRegions, selectedRegionTransform: _this.props.selectedRegionTransform },
+                React.createElement(resizable_1.Resizable, { isResizable: _this.props.isResizable, maxSize: _this.props.maxSize, minSize: _this.props.minSize, onDoubleClick: modifiedHandleResizeHandleDoubleClick, onLayoutLock: _this.props.onLayoutLock, onResizeEnd: modifiedHandleResizeEnd, onSizeChanged: modifiedHandleSizeChanged, orientation: _this.props.resizeOrientation, size: _this.props.getCellSize(index) }, React.cloneElement(cell, cellProps))));
+            return _this.isReorderHandleEnabled()
+                ? baseChildren // reordering will be handled by interacting with the reorder handle
+                : _this.wrapInDragReorderable(index, baseChildren, _this.isDragReorderableDisabled);
+        };
+        _this.handleDragSelectableSelection = function (selectedRegions) {
+            _this.props.onSelection(selectedRegions);
+            _this.setState({ hasValidSelection: false });
+        };
+        _this.handleDragSelectableSelectionEnd = function () {
+            _this.activationIndex = null; // not strictly required, but good practice
+            _this.setState({ hasValidSelection: true });
+        };
+        _this.isDragSelectableDisabled = function (event) {
+            if (dragEvents_1.DragEvents.isAdditive(event)) {
+                // if the meta/ctrl key was pressed, we want to forcefully ignore
+                // reordering interactions and prioritize drag-selection
+                // interactions (e.g. to make it possible to deselect a row).
+                return false;
+            }
+            var cellIndex = _this.convertEventToIndex(event);
+            return _this.isEntireCellTargetReorderable(cellIndex);
+        };
+        _this.isDragReorderableDisabled = function (event) {
+            var isSelectionEnabled = !_this.isDragSelectableDisabled(event);
+            if (isSelectionEnabled) {
+                // if drag-selection is enabled, we don't want drag-reordering
+                // interactions to compete. otherwise, a mouse-drag might both expand a
+                // selection and reorder the same selection simultaneously - confusing!
+                return true;
+            }
+            var cellIndex = _this.convertEventToIndex(event);
+            return !_this.isEntireCellTargetReorderable(cellIndex);
+        };
+        _this.isEntireCellTargetReorderable = function (index) {
+            var selectedRegions = _this.props.selectedRegions;
+            // although reordering may be generally enabled for this row/column (via props.isReorderable), the
+            // row/column shouldn't actually become reorderable from a user perspective until a few other
+            // conditions are true:
+            return (_this.props.isReorderable &&
+                // the row/column should be the only selection (or it should be part of the only selection),
+                // because reordering multiple disjoint row/column selections is a UX morass with no clear best
+                // behavior.
+                _this.props.isCellSelected(index) &&
+                _this.state.hasValidSelection &&
+                regions_1.Regions.getRegionCardinality(selectedRegions[0]) === _this.props.fullRegionCardinality &&
+                // selected regions can be updated during mousedown+drag and before mouseup; thus, we
+                // add a final check to make sure we don't enable reordering until the selection
+                // interaction is complete. this prevents one click+drag interaction from triggering
+                // both selection and reordering behavior.
+                selectedRegions.length === 1 &&
+                // columns are reordered via a reorder handle, so drag-selection needn't be disabled
+                !_this.isReorderHandleEnabled());
+        };
+        _this.state = { hasValidSelection: _this.isSelectedRegionsControlledAndNonEmpty(props) };
+        return _this;
+    }
+    Header.prototype.componentWillReceiveProps = function (nextProps) {
+        this.setState({ hasValidSelection: this.isSelectedRegionsControlledAndNonEmpty(nextProps) });
+    };
+    Header.prototype.shouldComponentUpdate = function (nextProps, nextState) {
+        return (!core_1.Utils.shallowCompareKeys(this.state, nextState) ||
+            !core_1.Utils.shallowCompareKeys(this.props, nextProps, { exclude: SHALLOW_COMPARE_PROP_KEYS_BLACKLIST }) ||
+            !core_1.Utils.deepCompareKeys(this.props, nextProps, SHALLOW_COMPARE_PROP_KEYS_BLACKLIST));
+    };
+    Header.prototype.render = function () {
+        return this.props.wrapCells(this.renderCells());
+    };
+    Header.prototype.isSelectedRegionsControlledAndNonEmpty = function (props) {
+        if (props === void 0) { props = this.props; }
+        return props.selectedRegions != null && props.selectedRegions.length > 0;
+    };
+    Header.prototype.isReorderHandleEnabled = function () {
+        // the reorder handle can only appear in the column interaction bar
+        return this.isColumnHeader() && this.props.isReorderable;
+    };
+    Header.prototype.maybeRenderReorderHandle = function (index) {
+        return !this.isReorderHandleEnabled()
+            ? undefined
+            : this.wrapInDragReorderable(index, React.createElement("div", { className: Classes.TABLE_REORDER_HANDLE_TARGET },
+                React.createElement("div", { className: Classes.TABLE_REORDER_HANDLE },
+                    React.createElement(core_1.Icon, { icon: "drag-handle-vertical" }))), false);
+    };
+    Header.prototype.isColumnHeader = function () {
+        return this.props.fullRegionCardinality === regions_1.RegionCardinality.FULL_COLUMNS;
+    };
+    Header.prototype.wrapInDragReorderable = function (index, children, disabled) {
+        return (React.createElement(reorderable_1.DragReorderable, { disabled: disabled, key: this.props.getIndexClass(index), locateClick: this.locateClick, locateDrag: this.locateDragForReordering, onReordered: this.props.onReordered, onReordering: this.props.onReordering, onSelection: this.props.onSelection, onFocusedCell: this.props.onFocusedCell, selectedRegions: this.props.selectedRegions, toRegion: this.props.toRegion }, children));
+    };
+    return Header;
+}(React.Component));
+exports.Header = Header;
+
+},{"../common/classes":138,"../interactions/dragEvents":164,"../interactions/reorderable":169,"../interactions/resizable":170,"../interactions/selectable":173,"../regions":180,"@blueprintjs/core":105,"classnames":185,"react":223,"tslib":184}],160:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
+var classnames_1 = tslib_1.__importDefault(require("classnames"));
+var React = tslib_1.__importStar(require("react"));
+var core_1 = require("@blueprintjs/core");
+var Classes = tslib_1.__importStar(require("../common/classes"));
+var HeaderCell = /** @class */ (function (_super) {
+    tslib_1.__extends(HeaderCell, _super);
+    function HeaderCell() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.state = {
+            isActive: false,
+        };
+        return _this;
+    }
+    HeaderCell.prototype.shouldComponentUpdate = function (nextProps) {
+        return (!core_1.Utils.shallowCompareKeys(this.props, nextProps, { exclude: ["style"] }) ||
+            !core_1.Utils.deepCompareKeys(this.props, nextProps, ["style"]));
+    };
+    HeaderCell.prototype.renderContextMenu = function (_event) {
+        var menuRenderer = this.props.menuRenderer;
+        if (core_1.Utils.isFunction(menuRenderer)) {
+            // the preferred way (a consistent function instance that won't cause as many re-renders)
+            return menuRenderer(this.props.index);
+        }
+        else {
+            return undefined;
+        }
+    };
+    HeaderCell.prototype.render = function () {
+        var _a;
+        var classes = classnames_1.default(Classes.TABLE_HEADER, (_a = {},
+            _a[Classes.TABLE_HEADER_ACTIVE] = this.props.isActive || this.state.isActive,
+            _a[Classes.TABLE_HEADER_SELECTED] = this.props.isSelected,
+            _a[core_1.Classes.LOADING] = this.props.loading,
+            _a), this.props.className);
+        return (React.createElement("div", { className: classes, style: this.props.style }, this.props.children));
+    };
+    HeaderCell = tslib_1.__decorate([
+        core_1.ContextMenuTarget
+    ], HeaderCell);
+    return HeaderCell;
+}(React.Component));
+exports.HeaderCell = HeaderCell;
+
+},{"../common/classes":138,"@blueprintjs/core":105,"classnames":185,"react":223,"tslib":184}],161:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
+var classnames_1 = tslib_1.__importDefault(require("classnames"));
+var React = tslib_1.__importStar(require("react"));
+var Classes = tslib_1.__importStar(require("../common/classes"));
+var resizeHandle_1 = require("../interactions/resizeHandle");
+var regions_1 = require("../regions");
+var header_1 = require("./header");
+var rowHeaderCell_1 = require("./rowHeaderCell");
+var RowHeader = /** @class */ (function (_super) {
+    tslib_1.__extends(RowHeader, _super);
+    function RowHeader() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.wrapCells = function (cells) {
+            var _a = _this.props, rowIndexStart = _a.rowIndexStart, grid = _a.grid;
+            var tableHeight = grid.getRect().height;
+            var scrollTopCorrection = _this.props.grid.getCumulativeHeightBefore(rowIndexStart);
+            var style = {
+                // reduce the height to clamp the sliding window as we approach the final headers; otherwise,
+                // we'll have tons of useless whitespace at the end.
+                height: tableHeight - scrollTopCorrection,
+                // only header cells in view will render, but we need to reposition them to stay in view
+                // as we scroll vertically.
+                transform: "translateY(" + (scrollTopCorrection || 0) + "px)",
+            };
+            // add a wrapper set to the full-table height to ensure container styles stretch from the first
+            // cell all the way to the last
+            return (React.createElement("div", { style: { height: tableHeight } },
+                React.createElement("div", { className: Classes.TABLE_ROW_HEADERS_CELLS_CONTAINER, style: style }, cells)));
+        };
+        _this.convertPointToRow = function (clientXOrY, useMidpoint) {
+            var locator = _this.props.locator;
+            return locator != null ? locator.convertPointToRow(clientXOrY, useMidpoint) : null;
+        };
+        _this.getCellExtremaClasses = function (index, indexEnd) {
+            return _this.props.grid.getExtremaClasses(index, 0, indexEnd, 1);
+        };
+        _this.getRowHeight = function (index) {
+            return _this.props.grid.getRowRect(index).height;
+        };
+        _this.getDragCoordinate = function (clientCoords) {
+            return clientCoords[1]; // y-coordinate
+        };
+        _this.getMouseCoordinate = function (event) {
+            return event.clientY;
+        };
+        _this.handleResizeEnd = function (index, size) {
+            _this.props.onResizeGuide(null);
+            _this.props.onRowHeightChanged(index, size);
+        };
+        _this.handleSizeChanged = function (index, size) {
+            var rect = _this.props.grid.getRowRect(index);
+            _this.props.onResizeGuide([rect.top + size]);
+        };
+        _this.isCellSelected = function (index) {
+            return regions_1.Regions.hasFullRow(_this.props.selectedRegions, index);
+        };
+        _this.isGhostIndex = function (index) {
+            return _this.props.grid.isGhostIndex(index, -1);
+        };
+        _this.renderGhostCell = function (index, extremaClasses) {
+            var rect = _this.props.grid.getGhostCellRect(index, 0);
+            return (React.createElement(rowHeaderCell_1.RowHeaderCell, { className: classnames_1.default(extremaClasses), index: index, key: Classes.rowIndexClass(index), loading: _this.props.loading, style: { height: rect.height + "px" } }));
+        };
+        _this.toRegion = function (index1, index2) {
+            // the `this` value is messed up for Regions.row, so we have to have a wrapper function here
+            return regions_1.Regions.row(index1, index2);
+        };
+        return _this;
+    }
+    RowHeader.prototype.render = function () {
+        var _a = this.props, 
+        // from IRowHeaderProps
+        onRowHeightChanged = _a.onRowHeightChanged, renderHeaderCell = _a.rowHeaderCellRenderer, 
+        // from IRowHeights
+        minSize = _a.minRowHeight, maxSize = _a.maxRowHeight, defaultRowHeight = _a.defaultRowHeight, 
+        // from IRowIndices
+        indexStart = _a.rowIndexStart, indexEnd = _a.rowIndexEnd, 
+        // from IHeaderProps
+        spreadableProps = tslib_1.__rest(_a, ["onRowHeightChanged", "rowHeaderCellRenderer", "minRowHeight", "maxRowHeight", "defaultRowHeight", "rowIndexStart", "rowIndexEnd"]);
+        return (React.createElement(header_1.Header, tslib_1.__assign({ convertPointToIndex: this.convertPointToRow, fullRegionCardinality: regions_1.RegionCardinality.FULL_ROWS, getCellExtremaClasses: this.getCellExtremaClasses, getCellIndexClass: Classes.rowCellIndexClass, getCellSize: this.getRowHeight, getDragCoordinate: this.getDragCoordinate, getIndexClass: Classes.rowIndexClass, getMouseCoordinate: this.getMouseCoordinate, ghostCellRenderer: this.renderGhostCell, handleResizeEnd: this.handleResizeEnd, handleSizeChanged: this.handleSizeChanged, headerCellIsReorderablePropName: "enableRowReordering", headerCellIsSelectedPropName: "isRowSelected", headerCellRenderer: renderHeaderCell, indexEnd: indexEnd, indexStart: indexStart, isCellSelected: this.isCellSelected, isGhostIndex: this.isGhostIndex, maxSize: maxSize, minSize: minSize, resizeOrientation: resizeHandle_1.Orientation.HORIZONTAL, selectedRegions: [], toRegion: this.toRegion, wrapCells: this.wrapCells }, spreadableProps)));
+    };
+    RowHeader.defaultProps = {
+        rowHeaderCellRenderer: renderDefaultRowHeader,
+    };
+    return RowHeader;
+}(React.Component));
+exports.RowHeader = RowHeader;
+/**
+ * A default implementation of `IRowHeaderRenderer` that displays 1-indexed
+ * numbers for each row.
+ */
+function renderDefaultRowHeader(rowIndex) {
+    return React.createElement(rowHeaderCell_1.RowHeaderCell, { index: rowIndex, name: "" + (rowIndex + 1) });
+}
+exports.renderDefaultRowHeader = renderDefaultRowHeader;
+
+},{"../common/classes":138,"../interactions/resizeHandle":171,"../regions":180,"./header":159,"./rowHeaderCell":162,"classnames":185,"react":223,"tslib":184}],162:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
+var React = tslib_1.__importStar(require("react"));
+var core_1 = require("@blueprintjs/core");
+var Classes = tslib_1.__importStar(require("../common/classes"));
+var loadableContent_1 = require("../common/loadableContent");
+var headerCell_1 = require("./headerCell");
+var RowHeaderCell = /** @class */ (function (_super) {
+    tslib_1.__extends(RowHeaderCell, _super);
+    function RowHeaderCell() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    RowHeaderCell.prototype.render = function () {
+        var _a = this.props, 
+        // from IRowHeaderCellProps
+        enableRowReordering = _a.enableRowReordering, isRowSelected = _a.isRowSelected, name = _a.name, nameRenderer = _a.nameRenderer, 
+        // from IHeaderProps
+        spreadableProps = tslib_1.__rest(_a, ["enableRowReordering", "isRowSelected", "name", "nameRenderer"]);
+        var defaultName = React.createElement("div", { className: Classes.TABLE_ROW_NAME_TEXT }, name);
+        var nameComponent = (React.createElement(loadableContent_1.LoadableContent, { loading: spreadableProps.loading }, nameRenderer == null ? defaultName : nameRenderer(name, spreadableProps.index)));
+        return (React.createElement(headerCell_1.HeaderCell, tslib_1.__assign({ isReorderable: this.props.enableRowReordering, isSelected: this.props.isRowSelected }, spreadableProps),
+            React.createElement("div", { className: Classes.TABLE_ROW_NAME }, nameComponent),
+            this.props.children,
+            spreadableProps.loading ? undefined : spreadableProps.resizeHandle));
+    };
+    return RowHeaderCell;
+}(core_1.AbstractPureComponent));
+exports.RowHeaderCell = RowHeaderCell;
+
+},{"../common/classes":138,"../common/loadableContent":151,"./headerCell":160,"@blueprintjs/core":105,"react":223,"tslib":184}],163:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var cell_1 = require("./cell/cell");
+exports.Cell = cell_1.Cell;
+var editableCell_1 = require("./cell/editableCell");
+exports.EditableCell = editableCell_1.EditableCell;
+var jsonFormat_1 = require("./cell/formats/jsonFormat");
+exports.JSONFormat = jsonFormat_1.JSONFormat;
+var truncatedFormat_1 = require("./cell/formats/truncatedFormat");
+exports.TruncatedPopoverMode = truncatedFormat_1.TruncatedPopoverMode;
+exports.TruncatedFormat = truncatedFormat_1.TruncatedFormat;
+var column_1 = require("./column");
+exports.Column = column_1.Column;
+var index_1 = require("./common/index");
+exports.Clipboard = index_1.Clipboard;
+exports.Grid = index_1.Grid;
+exports.Rect = index_1.Rect;
+exports.RenderMode = index_1.RenderMode;
+exports.Utils = index_1.Utils;
+var draggable_1 = require("./interactions/draggable");
+exports.Draggable = draggable_1.Draggable;
+var menus_1 = require("./interactions/menus");
+exports.CopyCellsMenuItem = menus_1.CopyCellsMenuItem;
+var resizeHandle_1 = require("./interactions/resizeHandle");
+exports.Orientation = resizeHandle_1.Orientation;
+exports.ResizeHandle = resizeHandle_1.ResizeHandle;
+var selectable_1 = require("./interactions/selectable");
+exports.DragSelectable = selectable_1.DragSelectable;
+var columnHeaderCell_1 = require("./headers/columnHeaderCell");
+exports.ColumnHeaderCell = columnHeaderCell_1.ColumnHeaderCell;
+exports.HorizontalCellDivider = columnHeaderCell_1.HorizontalCellDivider;
+var rowHeaderCell_1 = require("./headers/rowHeaderCell");
+exports.RowHeaderCell = rowHeaderCell_1.RowHeaderCell;
+var editableName_1 = require("./headers/editableName");
+exports.EditableName = editableName_1.EditableName;
+var regions_1 = require("./regions");
+exports.ColumnLoadingOption = regions_1.ColumnLoadingOption;
+exports.RegionCardinality = regions_1.RegionCardinality;
+exports.Regions = regions_1.Regions;
+exports.RowLoadingOption = regions_1.RowLoadingOption;
+exports.SelectionModes = regions_1.SelectionModes;
+exports.TableLoadingOption = regions_1.TableLoadingOption;
+var table_1 = require("./table");
+exports.Table = table_1.Table;
+
+},{"./cell/cell":132,"./cell/editableCell":133,"./cell/formats/jsonFormat":134,"./cell/formats/truncatedFormat":135,"./column":136,"./common/index":145,"./headers/columnHeaderCell":157,"./headers/editableName":158,"./headers/rowHeaderCell":162,"./interactions/draggable":165,"./interactions/menus":167,"./interactions/resizeHandle":171,"./interactions/selectable":173,"./regions":180,"./table":181}],164:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var DragEvents = /** @class */ (function () {
+    function DragEvents() {
+        var _this = this;
+        this.handleMouseDown = function (event) {
+            _this.initCoordinateData(event);
+            if (_this.handler != null && _this.handler.onActivate != null) {
+                var exitCode = _this.handler.onActivate(event);
+                if (exitCode === false) {
+                    return;
+                }
+            }
+            _this.isActivated = true;
+            _this.maybeAlterEventChain(event);
+            // It is possible that the mouseup would not be called after the initial
+            // mousedown (for example if the mouse is moved out of the window). So,
+            // we preemptively detach to avoid duplicate listeners.
+            _this.detachDocumentEventListeners();
+            _this.attachDocumentEventListeners();
+        };
+        this.handleMouseMove = function (event) {
+            _this.maybeAlterEventChain(event);
+            if (_this.isActivated) {
+                _this.isDragging = true;
+            }
+            if (_this.isDragging) {
+                var coords = _this.updateCoordinateData(event);
+                if (_this.handler != null && _this.handler.onDragMove != null) {
+                    _this.handler.onDragMove(event, coords);
+                }
+            }
+        };
+        this.handleMouseUp = function (event) {
+            _this.maybeAlterEventChain(event);
+            if (_this.handler != null) {
+                if (_this.isDragging) {
+                    var coords = _this.updateCoordinateData(event);
+                    if (_this.handler.onDragMove != null) {
+                        _this.handler.onDragMove(event, coords);
+                    }
+                    if (_this.handler.onDragEnd != null) {
+                        _this.handler.onDragEnd(event, coords);
+                    }
+                }
+                else if (_this.isActivated) {
+                    if (_this.handler.onDoubleClick != null) {
+                        if (_this.doubleClickTimeoutToken == null) {
+                            // if this the first click of a possible double-click,
+                            // we delay the firing of the click event by the
+                            // timeout.
+                            _this.doubleClickTimeoutToken = window.setTimeout(function () {
+                                delete _this.doubleClickTimeoutToken;
+                                if (_this.handler.onClick != null) {
+                                    _this.handler.onClick(event);
+                                }
+                            }, DragEvents.DOUBLE_CLICK_TIMEOUT_MSEC);
+                        }
+                        else {
+                            // otherwise, this is the second click in the double-
+                            // click so we cancel the single-click timeout and
+                            // fire the double-click event.
+                            window.clearTimeout(_this.doubleClickTimeoutToken);
+                            delete _this.doubleClickTimeoutToken;
+                            _this.handler.onDoubleClick(event);
+                        }
+                    }
+                    else if (_this.handler.onClick != null) {
+                        _this.handler.onClick(event);
+                    }
+                }
+            }
+            _this.isActivated = false;
+            _this.isDragging = false;
+            _this.detachDocumentEventListeners();
+        };
+    }
+    /**
+     * Returns true if the event includes a modifier key that often adds the result of the drag
+     * event to any existing state. For example, holding CTRL before dragging may select another
+     * region in addition to an existing one, while the absence of a modifier key may clear the
+     * existing selection first.
+     * @param event the mouse event for the drag interaction
+     */
+    DragEvents.isAdditive = function (event) {
+        return event.ctrlKey || event.metaKey;
+    };
+    DragEvents.prototype.attach = function (element, handler) {
+        this.detach();
+        this.handler = handler;
+        this.element = element;
+        if (this.isValidDragHandler(handler)) {
+            this.element.addEventListener("mousedown", this.handleMouseDown);
+        }
+        return this;
+    };
+    DragEvents.prototype.detach = function () {
+        if (this.element != null) {
+            this.element.removeEventListener("mousedown", this.handleMouseDown);
+            this.detachDocumentEventListeners();
+        }
+    };
+    DragEvents.prototype.isValidDragHandler = function (handler) {
+        return (handler != null &&
+            (handler.onActivate != null ||
+                handler.onDragMove != null ||
+                handler.onDragEnd != null ||
+                handler.onClick != null ||
+                handler.onDoubleClick != null));
+    };
+    DragEvents.prototype.attachDocumentEventListeners = function () {
+        document.addEventListener("mousemove", this.handleMouseMove);
+        document.addEventListener("mouseup", this.handleMouseUp);
+    };
+    DragEvents.prototype.detachDocumentEventListeners = function () {
+        document.removeEventListener("mousemove", this.handleMouseMove);
+        document.removeEventListener("mouseup", this.handleMouseUp);
+    };
+    DragEvents.prototype.initCoordinateData = function (event) {
+        this.activationCoordinates = [event.clientX, event.clientY];
+        this.lastCoordinates = this.activationCoordinates;
+    };
+    DragEvents.prototype.updateCoordinateData = function (event) {
+        var currentCoordinates = [event.clientX, event.clientY];
+        var deltaCoordinates = [
+            currentCoordinates[0] - this.lastCoordinates[0],
+            currentCoordinates[1] - this.lastCoordinates[1],
+        ];
+        var offsetCoordinates = [
+            currentCoordinates[0] - this.activationCoordinates[0],
+            currentCoordinates[1] - this.activationCoordinates[1],
+        ];
+        var data = {
+            activation: this.activationCoordinates,
+            current: currentCoordinates,
+            delta: deltaCoordinates,
+            last: this.lastCoordinates,
+            offset: offsetCoordinates,
+        };
+        this.lastCoordinates = [event.clientX, event.clientY];
+        return data;
+    };
+    DragEvents.prototype.maybeAlterEventChain = function (event) {
+        if (this.handler.preventDefault) {
+            event.preventDefault();
+        }
+        if (this.handler.stopPropagation) {
+            event.stopPropagation();
+        }
+    };
+    DragEvents.DOUBLE_CLICK_TIMEOUT_MSEC = 500;
+    return DragEvents;
+}());
+exports.DragEvents = DragEvents;
+
+},{}],165:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
+var core_1 = require("@blueprintjs/core");
+var React = tslib_1.__importStar(require("react"));
+var ReactDOM = tslib_1.__importStar(require("react-dom"));
+var dragEvents_1 = require("./dragEvents");
+var REATTACH_PROPS_KEYS = ["stopPropagation", "preventDefault"];
+/**
+ * This component provides a simple interface for combined drag and/or click
+ * events.
+ *
+ * Since the mouse interactions for drag and click are overloaded, here are
+ * the events that will fire in these cases:
+ *
+ * A Click Interaction
+ * 1. The user presses down on the render element, triggering the onActivate
+ *    callback.
+ * 2. The user releases the mouse button without moving it, triggering the
+ *    onClick callback.
+ *
+ * A Drag Interaction
+ * 1. The user presses down on the render element, triggering the onActivate
+ *    callback.
+ * 2. The user moves the mouse, triggering the onDragMove callback.
+ * 3. The user moves the mouse, triggering the onDragMove callback.
+ * 4. The user moves the mouse, triggering the onDragMove callback.
+ * 5. The user releases the mouse button, triggering a final onDragMove
+ *    callback as well as an onDragEnd callback.
+ *
+ * If `false` is returned from the onActivate callback, no further events
+ * will be fired until the next activation.
+ */
+var Draggable = /** @class */ (function (_super) {
+    tslib_1.__extends(Draggable, _super);
+    function Draggable() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    Draggable.prototype.render = function () {
+        return React.Children.only(this.props.children);
+    };
+    Draggable.prototype.componentDidUpdate = function (prevProps) {
+        var propsWhitelist = { include: REATTACH_PROPS_KEYS };
+        if (this.events && !core_1.Utils.shallowCompareKeys(prevProps, this.props, propsWhitelist)) {
+            this.events.attach(ReactDOM.findDOMNode(this), this.props);
+        }
+    };
+    Draggable.prototype.componentDidMount = function () {
+        this.events = new dragEvents_1.DragEvents();
+        this.events.attach(ReactDOM.findDOMNode(this), this.props);
+    };
+    Draggable.prototype.componentWillUnmount = function () {
+        this.events.detach();
+        delete this.events;
+    };
+    Draggable.defaultProps = {
+        preventDefault: true,
+        stopPropagation: false,
+    };
+    return Draggable;
+}(React.PureComponent));
+exports.Draggable = Draggable;
+
+},{"./dragEvents":164,"@blueprintjs/core":105,"react":223,"react-dom":209,"tslib":184}],166:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
+var core_1 = require("@blueprintjs/core");
+var React = tslib_1.__importStar(require("react"));
+var clipboard_1 = require("../../common/clipboard");
+var regions_1 = require("../../regions");
+var CopyCellsMenuItem = /** @class */ (function (_super) {
+    tslib_1.__extends(CopyCellsMenuItem, _super);
+    function CopyCellsMenuItem() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.handleClick = function () {
+            var _a = _this.props, context = _a.context, getCellData = _a.getCellData, onCopy = _a.onCopy;
+            var cells = context.getUniqueCells();
+            var sparse = regions_1.Regions.sparseMapCells(cells, getCellData);
+            var success = clipboard_1.Clipboard.copyCells(sparse);
+            core_1.Utils.safeInvoke(onCopy, success);
+        };
+        return _this;
+    }
+    CopyCellsMenuItem.prototype.render = function () {
+        var _a = this.props, context = _a.context, getCellData = _a.getCellData, onCopy = _a.onCopy, menuItemProps = tslib_1.__rest(_a, ["context", "getCellData", "onCopy"]);
+        return React.createElement(core_1.MenuItem, tslib_1.__assign({}, menuItemProps, { onClick: this.handleClick }));
+    };
+    return CopyCellsMenuItem;
+}(React.PureComponent));
+exports.CopyCellsMenuItem = CopyCellsMenuItem;
+
+},{"../../common/clipboard":139,"../../regions":180,"@blueprintjs/core":105,"react":223,"tslib":184}],167:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
+tslib_1.__exportStar(require("./copyCellsMenuItem"), exports);
+tslib_1.__exportStar(require("./menuContext"), exports);
+
+},{"./copyCellsMenuItem":166,"./menuContext":168,"tslib":184}],168:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var regions_1 = require("../../regions");
+var MenuContext = /** @class */ (function () {
+    function MenuContext(target, selectedRegions, numRows, numCols) {
+        this.target = target;
+        this.selectedRegions = selectedRegions;
+        this.numRows = numRows;
+        this.numCols = numCols;
+        this.regions = regions_1.Regions.overlapsRegion(selectedRegions, target) ? selectedRegions : [target];
+    }
+    MenuContext.prototype.getTarget = function () {
+        return this.target;
+    };
+    MenuContext.prototype.getSelectedRegions = function () {
+        return this.selectedRegions;
+    };
+    MenuContext.prototype.getRegions = function () {
+        return this.regions;
+    };
+    MenuContext.prototype.getUniqueCells = function () {
+        return regions_1.Regions.enumerateUniqueCells(this.regions, this.numRows, this.numCols);
+    };
+    return MenuContext;
+}());
+exports.MenuContext = MenuContext;
+
+},{"../../regions":180}],169:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
+var core_1 = require("@blueprintjs/core");
+var React = tslib_1.__importStar(require("react"));
+var utils_1 = require("../common/utils");
+var regions_1 = require("../regions");
+var draggable_1 = require("./draggable");
+var DragReorderable = /** @class */ (function (_super) {
+    tslib_1.__extends(DragReorderable, _super);
+    function DragReorderable() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.handleActivate = function (event) {
+            if (_this.shouldIgnoreMouseDown(event)) {
+                return false;
+            }
+            var region = _this.props.locateClick(event);
+            if (!regions_1.Regions.isValid(region)) {
+                return false;
+            }
+            var cardinality = regions_1.Regions.getRegionCardinality(region);
+            var isColumnHeader = cardinality === regions_1.RegionCardinality.FULL_COLUMNS;
+            var isRowHeader = cardinality === regions_1.RegionCardinality.FULL_ROWS;
+            if (!isColumnHeader && !isRowHeader) {
+                return false;
+            }
+            var selectedRegions = _this.props.selectedRegions;
+            var selectedRegionIndex = regions_1.Regions.findContainingRegion(selectedRegions, region);
+            if (selectedRegionIndex >= 0) {
+                var selectedRegion = selectedRegions[selectedRegionIndex];
+                if (regions_1.Regions.getRegionCardinality(selectedRegion) !== cardinality) {
+                    // ignore FULL_TABLE selections
+                    return false;
+                }
+                // cache for easy access later in the lifecycle
+                var selectedInterval = isRowHeader ? selectedRegion.rows : selectedRegion.cols;
+                _this.selectedRegionStartIndex = selectedInterval[0];
+                // add 1 because the selected interval is inclusive, which simple subtraction doesn't
+                // account for (e.g. in a FULL_COLUMNS range from 3 to 6, 6 - 3 = 3, but the selection
+                // actually includes four columns: 3, 4, 5, and 6)
+                _this.selectedRegionLength = selectedInterval[1] - selectedInterval[0] + 1;
+            }
+            else {
+                // select the new region to avoid complex and unintuitive UX w/r/t the existing selection
+                _this.maybeSelectRegion(region);
+                var regionRange = isRowHeader ? region.rows : region.cols;
+                _this.selectedRegionStartIndex = regionRange[0];
+                _this.selectedRegionLength = regionRange[1] - regionRange[0] + 1;
+            }
+            return true;
+        };
+        _this.handleDragMove = function (event, coords) {
+            var oldIndex = _this.selectedRegionStartIndex;
+            var guideIndex = _this.props.locateDrag(event, coords);
+            var length = _this.selectedRegionLength;
+            var reorderedIndex = utils_1.Utils.guideIndexToReorderedIndex(oldIndex, guideIndex, length);
+            _this.props.onReordering(oldIndex, reorderedIndex, length);
+        };
+        _this.handleDragEnd = function (event, coords) {
+            var oldIndex = _this.selectedRegionStartIndex;
+            var guideIndex = _this.props.locateDrag(event, coords);
+            var length = _this.selectedRegionLength;
+            var reorderedIndex = utils_1.Utils.guideIndexToReorderedIndex(oldIndex, guideIndex, length);
+            _this.props.onReordered(oldIndex, reorderedIndex, length);
+            // the newly reordered region becomes the only selection
+            var newRegion = _this.props.toRegion(reorderedIndex, reorderedIndex + length - 1);
+            _this.maybeSelectRegion(newRegion);
+            // resetting is not strictly required, but it's cleaner
+            _this.selectedRegionStartIndex = undefined;
+            _this.selectedRegionLength = undefined;
+        };
+        return _this;
+    }
+    DragReorderable.prototype.render = function () {
+        var draggableProps = this.getDraggableProps();
+        return (React.createElement(draggable_1.Draggable, tslib_1.__assign({}, draggableProps, { preventDefault: false }), this.props.children));
+    };
+    DragReorderable.prototype.getDraggableProps = function () {
+        return this.props.onReordered == null
+            ? {}
+            : {
+                onActivate: this.handleActivate,
+                onDragEnd: this.handleDragEnd,
+                onDragMove: this.handleDragMove,
+            };
+    };
+    DragReorderable.prototype.shouldIgnoreMouseDown = function (event) {
+        var disabled = this.props.disabled;
+        var isDisabled = core_1.Utils.isFunction(disabled) ? core_1.Utils.safeInvoke(disabled, event) : disabled;
+        return !utils_1.Utils.isLeftClick(event) || isDisabled;
+    };
+    DragReorderable.prototype.maybeSelectRegion = function (region) {
+        var nextSelectedRegions = [region];
+        if (!core_1.Utils.deepCompareKeys(nextSelectedRegions, this.props.selectedRegions)) {
+            this.props.onSelection(nextSelectedRegions);
+            // move the focused cell into the newly selected region
+            this.props.onFocusedCell(tslib_1.__assign({}, regions_1.Regions.getFocusCellCoordinatesFromRegion(region), { focusSelectionIndex: 0 }));
+        }
+    };
+    DragReorderable.defaultProps = {
+        selectedRegions: [],
+    };
+    return DragReorderable;
+}(React.PureComponent));
+exports.DragReorderable = DragReorderable;
+
+},{"../common/utils":155,"../regions":180,"./draggable":165,"@blueprintjs/core":105,"react":223,"tslib":184}],170:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
+var React = tslib_1.__importStar(require("react"));
+var index_1 = require("../common/index");
+var resizeHandle_1 = require("./resizeHandle");
+var Resizable = /** @class */ (function (_super) {
+    tslib_1.__extends(Resizable, _super);
+    function Resizable(props, context) {
+        var _this = _super.call(this, props, context) || this;
+        _this.onResizeMove = function (_offset, delta) {
+            _this.offsetSize(delta);
+            if (_this.props.onSizeChanged != null) {
+                _this.props.onSizeChanged(_this.state.size);
+            }
+        };
+        _this.onResizeEnd = function (_offset) {
+            // reset "unclamped" size on end
+            _this.setState({ unclampedSize: _this.state.size });
+            if (_this.props.onResizeEnd != null) {
+                _this.props.onResizeEnd(_this.state.size);
+            }
+        };
+        var size = props.size;
+        _this.state = {
+            size: size,
+            unclampedSize: size,
+        };
+        return _this;
+    }
+    Resizable.prototype.componentWillReceiveProps = function (nextProps) {
+        var size = nextProps.size;
+        this.setState({
+            size: size,
+            unclampedSize: size,
+        });
+    };
+    Resizable.prototype.render = function () {
+        var child = React.Children.only(this.props.children);
+        var style = tslib_1.__assign({}, child.props.style, this.getStyle());
+        if (this.props.isResizable === false) {
+            return React.cloneElement(child, { style: style });
+        }
+        var resizeHandle = this.renderResizeHandle();
+        return React.cloneElement(child, { style: style, resizeHandle: resizeHandle });
+    };
+    Resizable.prototype.renderResizeHandle = function () {
+        var _a = this.props, onLayoutLock = _a.onLayoutLock, onDoubleClick = _a.onDoubleClick, orientation = _a.orientation;
+        return (React.createElement(resizeHandle_1.ResizeHandle, { key: "resize-handle", onDoubleClick: onDoubleClick, onLayoutLock: onLayoutLock, onResizeEnd: this.onResizeEnd, onResizeMove: this.onResizeMove, orientation: orientation }));
+    };
+    /**
+     * Returns the CSS style to apply to the child element given the state's
+     * size value.
+     */
+    Resizable.prototype.getStyle = function () {
+        if (this.props.orientation === resizeHandle_1.Orientation.VERTICAL) {
+            return {
+                flexBasis: this.state.size + "px",
+                minWidth: "0px",
+                width: this.state.size + "px",
+            };
+        }
+        else {
+            return {
+                flexBasis: this.state.size + "px",
+                height: this.state.size + "px",
+                minHeight: "0px",
+            };
+        }
+    };
+    Resizable.prototype.offsetSize = function (offset) {
+        var unclampedSize = this.state.unclampedSize + offset;
+        this.setState({
+            size: index_1.Utils.clamp(unclampedSize, this.props.minSize, this.props.maxSize),
+            unclampedSize: unclampedSize,
+        });
+    };
+    Resizable.defaultProps = {
+        isResizable: true,
+        minSize: 0,
+    };
+    return Resizable;
+}(React.PureComponent));
+exports.Resizable = Resizable;
+
+},{"../common/index":145,"./resizeHandle":171,"react":223,"tslib":184}],171:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
+var classnames_1 = tslib_1.__importDefault(require("classnames"));
+var React = tslib_1.__importStar(require("react"));
+var Classes = tslib_1.__importStar(require("../common/classes"));
+var draggable_1 = require("./draggable");
+var Orientation;
+(function (Orientation) {
+    Orientation[Orientation["HORIZONTAL"] = 1] = "HORIZONTAL";
+    Orientation[Orientation["VERTICAL"] = 0] = "VERTICAL";
+})(Orientation = exports.Orientation || (exports.Orientation = {}));
+var ResizeHandle = /** @class */ (function (_super) {
+    tslib_1.__extends(ResizeHandle, _super);
+    function ResizeHandle() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.state = {
+            isDragging: false,
+        };
+        _this.handleActivate = function (event) {
+            _this.setState({ isDragging: true });
+            _this.props.onLayoutLock(true);
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+            return true;
+        };
+        _this.handleDragMove = function (_event, coords) {
+            var orientationIndex = _this.props.orientation;
+            if (_this.props.onResizeMove != null) {
+                _this.props.onResizeMove(coords.offset[orientationIndex], coords.delta[orientationIndex]);
+            }
+        };
+        _this.handleDragEnd = function (_event, coords) {
+            var orientationIndex = _this.props.orientation;
+            _this.setState({ isDragging: false });
+            _this.props.onLayoutLock(false);
+            if (_this.props.onResizeMove != null) {
+                _this.props.onResizeMove(coords.offset[orientationIndex], coords.delta[orientationIndex]);
+            }
+            if (_this.props.onResizeEnd != null) {
+                _this.props.onResizeEnd(coords.offset[orientationIndex]);
+            }
+        };
+        _this.handleClick = function (_event) {
+            _this.setState({ isDragging: false });
+            _this.props.onLayoutLock(false);
+        };
+        _this.handleDoubleClick = function (_event) {
+            _this.setState({ isDragging: false });
+            _this.props.onLayoutLock(false);
+            if (_this.props.onDoubleClick != null) {
+                _this.props.onDoubleClick();
+            }
+        };
+        return _this;
+    }
+    ResizeHandle.prototype.render = function () {
+        var _a, _b;
+        var _c = this.props, onResizeMove = _c.onResizeMove, onResizeEnd = _c.onResizeEnd, onDoubleClick = _c.onDoubleClick, orientation = _c.orientation;
+        if (onResizeMove == null && onResizeEnd == null && onDoubleClick == null) {
+            return undefined;
+        }
+        var targetClasses = classnames_1.default(Classes.TABLE_RESIZE_HANDLE_TARGET, (_a = {},
+            _a[Classes.TABLE_DRAGGING] = this.state.isDragging,
+            _a[Classes.TABLE_RESIZE_HORIZONTAL] = orientation === Orientation.HORIZONTAL,
+            _a[Classes.TABLE_RESIZE_VERTICAL] = orientation === Orientation.VERTICAL,
+            _a), this.props.className);
+        var handleClasses = classnames_1.default(Classes.TABLE_RESIZE_HANDLE, (_b = {},
+            _b[Classes.TABLE_DRAGGING] = this.state.isDragging,
+            _b));
+        return (React.createElement(draggable_1.Draggable, { onActivate: this.handleActivate, onClick: this.handleClick, onDoubleClick: this.handleDoubleClick, onDragEnd: this.handleDragEnd, onDragMove: this.handleDragMove },
+            React.createElement("div", { className: targetClasses },
+                React.createElement("div", { className: handleClasses }))));
+    };
+    return ResizeHandle;
+}(React.PureComponent));
+exports.ResizeHandle = ResizeHandle;
+
+},{"../common/classes":138,"./draggable":165,"classnames":185,"react":223,"tslib":184}],172:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
+var Classes = tslib_1.__importStar(require("../common/classes"));
+/**
+ * Efficiently detect when an HTMLElement is resized.
+ *
+ * Attaches an invisible "resize-sensor" div to the element. Then it checks
+ * the element's offsetWidth and offsetHeight whenever a scroll event is
+ * triggered on the "resize-sensor" children. These events are further
+ * debounced using requestAnimationFrame.
+ *
+ * Inspired by: https://github.com/marcj/css-element-queries/blob/master/src/ResizeSensor.js
+ */
+var ResizeSensor = /** @class */ (function () {
+    function ResizeSensor() {
+    }
+    ResizeSensor.attach = function (element, callback) {
+        var lifecycle = ResizeSensor.debounce(callback);
+        var resizeSensor = document.createElement("div");
+        resizeSensor.className = Classes.TABLE_RESIZE_SENSOR;
+        resizeSensor.style.cssText = ResizeSensor.RESIZE_SENSOR_STYLE;
+        resizeSensor.innerHTML = ResizeSensor.RESIZE_SENSOR_HTML;
+        element.appendChild(resizeSensor);
+        if (getComputedStyle(element, null).getPropertyValue("position") === "static") {
+            element.style.position = "relative";
+        }
+        var expand = resizeSensor.childNodes[0];
+        var expandChild = expand.childNodes[0];
+        var shrink = resizeSensor.childNodes[1];
+        var reset = function () {
+            expandChild.style.width = "100000px";
+            expandChild.style.height = "100000px";
+            expand.scrollLeft = 100000;
+            expand.scrollTop = 100000;
+            shrink.scrollLeft = 100000;
+            shrink.scrollTop = 100000;
+        };
+        reset();
+        var lastWidth;
+        var lastHeight;
+        var onScroll = function () {
+            var currentWidth = element.offsetWidth;
+            var currentHeight = element.offsetHeight;
+            if (currentWidth !== lastWidth || currentHeight !== lastHeight) {
+                lastWidth = currentWidth;
+                lastHeight = currentHeight;
+                lifecycle.trigger();
+            }
+            reset();
+        };
+        expand.addEventListener("scroll", onScroll);
+        shrink.addEventListener("scroll", onScroll);
+        return function () {
+            element.removeChild(resizeSensor);
+            lifecycle.cancelled = true;
+        };
+    };
+    ResizeSensor.debounce = function (callback) {
+        var scope = {
+            cancelled: false,
+            trigger: function () {
+                if (scope.triggered || scope.cancelled) {
+                    return;
+                }
+                scope.triggered = true;
+                requestAnimationFrame(function () {
+                    scope.triggered = false;
+                    if (!scope.cancelled) {
+                        callback();
+                    }
+                });
+            },
+            triggered: false,
+        };
+        return scope;
+    };
+    ResizeSensor.RESIZE_SENSOR_STYLE = "position: absolute; left: 0; top: 0; right: 0; " +
+        "bottom: 0; overflow: hidden; z-index: -1; visibility: hidden;";
+    ResizeSensor.RESIZE_SENSOR_HTML = "<div class=\"" + Classes.TABLE_RESIZE_SENSOR_EXPAND + "\"\n        style=\"" + ResizeSensor.RESIZE_SENSOR_STYLE + "\"><div style=\"position: absolute; left: 0; top: 0; transition: 0s;\"\n        ></div></div><div class=\"" + Classes.TABLE_RESIZE_SENSOR_SHRINK + "\" style=\"" + ResizeSensor.RESIZE_SENSOR_STYLE + "\"\n        ><div style=\"position: absolute; left: 0; top: 0; transition: 0s; width: 200%; height: 200%;\"></div></div>";
+    return ResizeSensor;
+}());
+exports.ResizeSensor = ResizeSensor;
+
+},{"../common/classes":138,"tslib":184}],173:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
+var core_1 = require("@blueprintjs/core");
+var React = tslib_1.__importStar(require("react"));
+var FocusedCellUtils = tslib_1.__importStar(require("../common/internal/focusedCellUtils"));
+var PlatformUtils = tslib_1.__importStar(require("../common/internal/platformUtils"));
+var utils_1 = require("../common/utils");
+var regions_1 = require("../regions");
+var dragEvents_1 = require("./dragEvents");
+var draggable_1 = require("./draggable");
+var DragSelectable = /** @class */ (function (_super) {
+    tslib_1.__extends(DragSelectable, _super);
+    function DragSelectable() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.didExpandSelectionOnActivate = false;
+        _this.handleActivate = function (event) {
+            var _a = _this.props, locateClick = _a.locateClick, selectedRegions = _a.selectedRegions, selectedRegionTransform = _a.selectedRegionTransform;
+            if (_this.shouldIgnoreMouseDown(event)) {
+                return false;
+            }
+            var region = locateClick(event);
+            if (!regions_1.Regions.isValid(region)) {
+                return false;
+            }
+            if (selectedRegionTransform != null) {
+                region = selectedRegionTransform(region, event);
+            }
+            var foundIndex = regions_1.Regions.findMatchingRegion(selectedRegions, region);
+            var matchesExistingSelection = foundIndex !== -1;
+            if (matchesExistingSelection && dragEvents_1.DragEvents.isAdditive(event)) {
+                _this.handleClearSelectionAtIndex(foundIndex);
+                // if we just deselected a selected region, a subsequent drag-move
+                // could reselect it again and *also* clear other selections. that's
+                // quite unintuitive, so ignore subsequent drag-move's.
+                return false;
+            }
+            // we want to listen to subsequent drag-move's in all following cases,
+            // so this mousedown can be the start of a new selection if desired.
+            if (matchesExistingSelection) {
+                _this.handleClearAllSelectionsNotAtIndex(foundIndex);
+            }
+            else if (_this.shouldExpandSelection(event)) {
+                _this.handleExpandSelection(region);
+            }
+            else if (_this.shouldAddDisjointSelection(event)) {
+                _this.handleAddDisjointSelection(region);
+            }
+            else {
+                _this.handleReplaceSelection(region);
+            }
+            return true;
+        };
+        _this.handleDragMove = function (event, coords) {
+            var _a = _this.props, enableMultipleSelection = _a.enableMultipleSelection, focusedCell = _a.focusedCell, locateClick = _a.locateClick, locateDrag = _a.locateDrag, selectedRegions = _a.selectedRegions, selectedRegionTransform = _a.selectedRegionTransform;
+            var region = enableMultipleSelection
+                ? locateDrag(event, coords, /* returnEndOnly? */ _this.didExpandSelectionOnActivate)
+                : locateClick(event);
+            if (!regions_1.Regions.isValid(region)) {
+                return;
+            }
+            else if (selectedRegionTransform != null) {
+                region = selectedRegionTransform(region, event, coords);
+            }
+            var nextSelectedRegions = _this.didExpandSelectionOnActivate
+                ? _this.expandSelectedRegions(selectedRegions, region, focusedCell)
+                : regions_1.Regions.update(selectedRegions, region);
+            _this.maybeInvokeSelectionCallback(nextSelectedRegions);
+            if (!enableMultipleSelection) {
+                // move the focused cell with the selected region
+                var lastIndex = nextSelectedRegions.length - 1;
+                var mostRecentRegion = nextSelectedRegions[lastIndex];
+                _this.invokeOnFocusCallbackForRegion(mostRecentRegion, lastIndex);
+            }
+        };
+        _this.handleDragEnd = function () {
+            _this.finishInteraction();
+        };
+        _this.handleClick = function () {
+            _this.finishInteraction();
+        };
+        // Boolean checks
+        // ==============
+        _this.shouldExpandSelection = function (event) {
+            var enableMultipleSelection = _this.props.enableMultipleSelection;
+            return enableMultipleSelection && event.shiftKey;
+        };
+        _this.shouldAddDisjointSelection = function (event) {
+            var enableMultipleSelection = _this.props.enableMultipleSelection;
+            return enableMultipleSelection && dragEvents_1.DragEvents.isAdditive(event);
+        };
+        // Update logic
+        // ============
+        _this.handleClearSelectionAtIndex = function (selectedRegionIndex) {
+            var selectedRegions = _this.props.selectedRegions;
+            // remove just the clicked region, leaving other selected regions in place
+            var nextSelectedRegions = selectedRegions.slice();
+            nextSelectedRegions.splice(selectedRegionIndex, 1);
+            _this.maybeInvokeSelectionCallback(nextSelectedRegions);
+            // if there are still any selections, move the focused cell to the
+            // most recent selection. otherwise, don't update it.
+            if (nextSelectedRegions.length > 0) {
+                var lastIndex = nextSelectedRegions.length - 1;
+                _this.invokeOnFocusCallbackForRegion(nextSelectedRegions[lastIndex], lastIndex);
+            }
+        };
+        _this.handleClearAllSelectionsNotAtIndex = function (selectedRegionIndex) {
+            var selectedRegions = _this.props.selectedRegions;
+            var nextSelectedRegion = selectedRegions[selectedRegionIndex];
+            _this.maybeInvokeSelectionCallback([nextSelectedRegion]);
+            _this.invokeOnFocusCallbackForRegion(nextSelectedRegion, 0);
+        };
+        _this.handleExpandSelection = function (region) {
+            var _a = _this.props, focusedCell = _a.focusedCell, selectedRegions = _a.selectedRegions;
+            _this.didExpandSelectionOnActivate = true;
+            // there should be only one selected region after expanding. do not
+            // update the focused cell.
+            var nextSelectedRegions = _this.expandSelectedRegions(selectedRegions, region, focusedCell);
+            _this.maybeInvokeSelectionCallback(nextSelectedRegions);
+            // move the focused cell into the new region if there were no selections before
+            if (selectedRegions == null || selectedRegions.length === 0) {
+                _this.invokeOnFocusCallbackForRegion(region);
+            }
+        };
+        _this.handleAddDisjointSelection = function (region) {
+            var selectedRegions = _this.props.selectedRegions;
+            // add the new region to the existing selections
+            var nextSelectedRegions = regions_1.Regions.add(selectedRegions, region);
+            _this.maybeInvokeSelectionCallback(nextSelectedRegions);
+            // put the focused cell in the new region
+            _this.invokeOnFocusCallbackForRegion(region, nextSelectedRegions.length - 1);
+        };
+        _this.handleReplaceSelection = function (region) {
+            // clear all selections and retain only the new one
+            var nextSelectedRegions = [region];
+            _this.maybeInvokeSelectionCallback(nextSelectedRegions);
+            // move the focused cell into the new selection
+            _this.invokeOnFocusCallbackForRegion(region);
+        };
+        _this.invokeOnFocusCallbackForRegion = function (focusRegion, focusSelectionIndex) {
+            if (focusSelectionIndex === void 0) { focusSelectionIndex = 0; }
+            var onFocusedCell = _this.props.onFocusedCell;
+            var focusedCellCoords = regions_1.Regions.getFocusCellCoordinatesFromRegion(focusRegion);
+            onFocusedCell(FocusedCellUtils.toFullCoordinates(focusedCellCoords, focusSelectionIndex));
+        };
+        // Other
+        // =====
+        _this.finishInteraction = function () {
+            core_1.Utils.safeInvoke(_this.props.onSelectionEnd, _this.props.selectedRegions);
+            _this.didExpandSelectionOnActivate = false;
+            _this.lastEmittedSelectedRegions = null;
+        };
+        return _this;
+    }
+    DragSelectable.prototype.render = function () {
+        var draggableProps = this.getDraggableProps();
+        return (React.createElement(draggable_1.Draggable, tslib_1.__assign({}, draggableProps, { preventDefault: false }), this.props.children));
+    };
+    DragSelectable.prototype.getDraggableProps = function () {
+        return this.props.onSelection == null
+            ? {}
+            : {
+                onActivate: this.handleActivate,
+                onClick: this.handleClick,
+                onDragEnd: this.handleDragEnd,
+                onDragMove: this.handleDragMove,
+            };
+    };
+    DragSelectable.prototype.shouldIgnoreMouseDown = function (event) {
+        var _a = this.props, disabled = _a.disabled, _b = _a.ignoredSelectors, ignoredSelectors = _b === void 0 ? [] : _b;
+        var element = event.target;
+        var isLeftClick = utils_1.Utils.isLeftClick(event);
+        var isContextMenuTrigger = isLeftClick && event.ctrlKey && PlatformUtils.isMac();
+        var isDisabled = core_1.Utils.safeInvokeOrValue(disabled, event);
+        return (!isLeftClick ||
+            isContextMenuTrigger ||
+            isDisabled ||
+            ignoredSelectors.some(function (selector) { return element.closest(selector) != null; }));
+    };
+    // Callbacks
+    // =========
+    DragSelectable.prototype.maybeInvokeSelectionCallback = function (nextSelectedRegions) {
+        var onSelection = this.props.onSelection;
+        // invoke only if the selection changed. this is useful only on
+        // mousemove; there's special handling for mousedown interactions that
+        // target an already-selected region.
+        if (this.lastEmittedSelectedRegions == null ||
+            !core_1.Utils.deepCompareKeys(this.lastEmittedSelectedRegions, nextSelectedRegions)) {
+            onSelection(nextSelectedRegions);
+            this.lastEmittedSelectedRegions = nextSelectedRegions;
+        }
+    };
+    /**
+     * Expands the last-selected region to the new region, and replaces the
+     * last-selected region with the expanded region. If a focused cell is provided,
+     * the focused cell will serve as an anchor for the expansion.
+     */
+    DragSelectable.prototype.expandSelectedRegions = function (regions, region, focusedCell) {
+        if (regions.length === 0) {
+            return [region];
+        }
+        else if (focusedCell != null) {
+            var expandedRegion = FocusedCellUtils.expandFocusedRegion(focusedCell, region);
+            return regions_1.Regions.update(regions, expandedRegion);
+        }
+        else {
+            var expandedRegion = regions_1.Regions.expandRegion(regions[regions.length - 1], region);
+            return regions_1.Regions.update(regions, expandedRegion);
+        }
+    };
+    DragSelectable.defaultProps = {
+        disabled: false,
+        enableMultipleSelection: false,
+        selectedRegions: [],
+    };
+    return DragSelectable;
+}(React.PureComponent));
+exports.DragSelectable = DragSelectable;
+
+},{"../common/internal/focusedCellUtils":147,"../common/internal/platformUtils":148,"../common/utils":155,"../regions":180,"./dragEvents":164,"./draggable":165,"@blueprintjs/core":105,"react":223,"tslib":184}],174:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
+var core_1 = require("@blueprintjs/core");
+var classnames_1 = tslib_1.__importDefault(require("classnames"));
+var React = tslib_1.__importStar(require("react"));
+var Classes = tslib_1.__importStar(require("../common/classes"));
+var GuideLayer = /** @class */ (function (_super) {
+    tslib_1.__extends(GuideLayer, _super);
+    function GuideLayer() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.renderVerticalGuide = function (offset, index) {
+            var _a;
+            var style = {
+                left: offset + "px",
+            };
+            var className = classnames_1.default(Classes.TABLE_OVERLAY, Classes.TABLE_VERTICAL_GUIDE, (_a = {},
+                _a[Classes.TABLE_VERTICAL_GUIDE + "-flush-left"] = offset === 0,
+                _a));
+            return React.createElement("div", { className: className, key: index, style: style });
+        };
+        _this.renderHorizontalGuide = function (offset, index) {
+            var _a;
+            var style = {
+                top: offset + "px",
+            };
+            var className = classnames_1.default(Classes.TABLE_OVERLAY, Classes.TABLE_HORIZONTAL_GUIDE, (_a = {},
+                _a[Classes.TABLE_HORIZONTAL_GUIDE + "-flush-top"] = offset === 0,
+                _a));
+            return React.createElement("div", { className: className, key: index, style: style });
+        };
+        return _this;
+    }
+    GuideLayer.prototype.shouldComponentUpdate = function (nextProps) {
+        if (this.props.className !== nextProps.className) {
+            return true;
+        }
+        // shallow-comparing guide arrays leads to tons of unnecessary re-renders, so we check the
+        // array contents explicitly.
+        return (!core_1.Utils.arraysEqual(this.props.verticalGuides, nextProps.verticalGuides) ||
+            !core_1.Utils.arraysEqual(this.props.horizontalGuides, nextProps.horizontalGuides));
+    };
+    GuideLayer.prototype.render = function () {
+        var _a = this.props, verticalGuides = _a.verticalGuides, horizontalGuides = _a.horizontalGuides, className = _a.className;
+        var verticals = verticalGuides == null ? undefined : verticalGuides.map(this.renderVerticalGuide);
+        var horizontals = horizontalGuides == null ? undefined : horizontalGuides.map(this.renderHorizontalGuide);
+        return (React.createElement("div", { className: classnames_1.default(className, Classes.TABLE_OVERLAY_LAYER) },
+            verticals,
+            horizontals));
+    };
+    return GuideLayer;
+}(React.Component));
+exports.GuideLayer = GuideLayer;
+
+},{"../common/classes":138,"@blueprintjs/core":105,"classnames":185,"react":223,"tslib":184}],175:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
+var core_1 = require("@blueprintjs/core");
+var classnames_1 = tslib_1.__importDefault(require("classnames"));
+var React = tslib_1.__importStar(require("react"));
+var Classes = tslib_1.__importStar(require("../common/classes"));
+var regions_1 = require("../regions");
+// don't include "regions" or "regionStyles" in here, because they can't be shallowly compared
+var UPDATE_PROPS_KEYS = ["className"];
+var RegionLayer = /** @class */ (function (_super) {
+    tslib_1.__extends(RegionLayer, _super);
+    function RegionLayer() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.renderRegion = function (_region, index) {
+            var _a = _this.props, className = _a.className, regionStyles = _a.regionStyles;
+            return (React.createElement("div", { className: classnames_1.default(Classes.TABLE_OVERLAY, Classes.TABLE_REGION, className), key: index, style: regionStyles[index] }));
+        };
+        return _this;
+    }
+    RegionLayer.prototype.shouldComponentUpdate = function (nextProps) {
+        // shallowly comparable props like "className" tend not to change in the default table
+        // implementation, so do that check last with hope that we return earlier and avoid it
+        // altogether.
+        return (!core_1.Utils.arraysEqual(this.props.regions, nextProps.regions, regions_1.Regions.regionsEqual) ||
+            !core_1.Utils.arraysEqual(this.props.regionStyles, nextProps.regionStyles, core_1.Utils.shallowCompareKeys) ||
+            !core_1.Utils.shallowCompareKeys(this.props, nextProps, { include: UPDATE_PROPS_KEYS }));
+    };
+    RegionLayer.prototype.render = function () {
+        return React.createElement("div", { className: Classes.TABLE_OVERLAY_LAYER }, this.renderRegionChildren());
+    };
+    RegionLayer.prototype.renderRegionChildren = function () {
+        var regions = this.props.regions;
+        if (regions == null) {
+            return undefined;
+        }
+        return regions.map(this.renderRegion);
+    };
+    return RegionLayer;
+}(React.Component));
+exports.RegionLayer = RegionLayer;
+
+},{"../common/classes":138,"../regions":180,"@blueprintjs/core":105,"classnames":185,"react":223,"tslib":184}],176:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
+var Classes = tslib_1.__importStar(require("./common/classes"));
+var rect_1 = require("./common/rect");
+var utils_1 = require("./common/utils");
+var Locator = /** @class */ (function () {
+    function Locator(
+    /* The root table element within which a click is deemed valid and relevant. */
+    tableElement, 
+    /* The scrollable element that wraps the cell container. */
+    scrollContainerElement, 
+    /* The element containing all body cells in the grid (excluding headers). */
+    cellContainerElement) {
+        var _this = this;
+        this.tableElement = tableElement;
+        this.scrollContainerElement = scrollContainerElement;
+        this.cellContainerElement = cellContainerElement;
+        this.convertCellIndexToClientX = function (index) {
+            return _this.grid.getCumulativeWidthAt(index);
+        };
+        this.convertCellMidpointToClientX = function (index) {
+            var cellLeft = _this.grid.getCumulativeWidthBefore(index);
+            var cellRight = _this.grid.getCumulativeWidthAt(index);
+            return (cellLeft + cellRight) / 2;
+        };
+        this.convertCellIndexToClientY = function (index) {
+            return _this.grid.getCumulativeHeightAt(index);
+        };
+        this.convertCellMidpointToClientY = function (index) {
+            var cellTop = _this.grid.getCumulativeHeightBefore(index);
+            var cellBottom = _this.grid.getCumulativeHeightAt(index);
+            return (cellTop + cellBottom) / 2;
+        };
+        this.toGridX = function (clientX) {
+            var gridOffsetFromPageLeft = _this.cellContainerElement.getBoundingClientRect().left;
+            var scrollOffsetFromGridLeft = _this.scrollContainerElement.scrollLeft;
+            var cursorOffsetFromGridLeft = clientX - (gridOffsetFromPageLeft + scrollOffsetFromGridLeft);
+            var isCursorWithinFrozenColumns = _this.numFrozenColumns != null &&
+                _this.numFrozenColumns > 0 &&
+                cursorOffsetFromGridLeft <= _this.grid.getCumulativeWidthBefore(_this.numFrozenColumns);
+            // the frozen-column region doesn't scroll, so ignore the scroll distance in that case
+            return isCursorWithinFrozenColumns
+                ? cursorOffsetFromGridLeft
+                : cursorOffsetFromGridLeft + scrollOffsetFromGridLeft;
+        };
+        this.toGridY = function (clientY) {
+            var gridOffsetFromPageTop = _this.cellContainerElement.getBoundingClientRect().top;
+            var scrollOffsetFromGridTop = _this.scrollContainerElement.scrollTop;
+            var cursorOffsetFromGridTop = clientY - (gridOffsetFromPageTop + scrollOffsetFromGridTop);
+            var isCursorWithinFrozenRows = _this.numFrozenRows != null &&
+                _this.numFrozenRows > 0 &&
+                cursorOffsetFromGridTop <= _this.grid.getCumulativeHeightBefore(_this.numFrozenRows);
+            return isCursorWithinFrozenRows ? cursorOffsetFromGridTop : cursorOffsetFromGridTop + scrollOffsetFromGridTop;
+        };
+        this.numFrozenRows = 0;
+        this.numFrozenColumns = 0;
+    }
+    // Setters
+    // =======
+    Locator.prototype.setGrid = function (grid) {
+        this.grid = grid;
+        return this;
+    };
+    Locator.prototype.setNumFrozenRows = function (numFrozenRows) {
+        this.numFrozenRows = numFrozenRows;
+        return this;
+    };
+    Locator.prototype.setNumFrozenColumns = function (numFrozenColumns) {
+        this.numFrozenColumns = numFrozenColumns;
+        return this;
+    };
+    // Getters
+    // =======
+    Locator.prototype.getViewportRect = function () {
+        return new rect_1.Rect(this.scrollContainerElement.scrollLeft, this.scrollContainerElement.scrollTop, this.scrollContainerElement.clientWidth, this.scrollContainerElement.clientHeight);
+    };
+    Locator.prototype.getWidestVisibleCellInColumn = function (columnIndex) {
+        var columnCellSelector = this.getColumnCellSelector(columnIndex);
+        var columnHeaderAndBodyCells = this.tableElement.querySelectorAll(columnCellSelector);
+        var maxWidth = 0;
+        for (var i = 0; i < columnHeaderAndBodyCells.length; i++) {
+            var contentWidth = utils_1.Utils.measureElementTextContent(columnHeaderAndBodyCells.item(i)).width;
+            var cellWidth = Math.ceil(contentWidth) + Locator.CELL_HORIZONTAL_PADDING * 2;
+            if (cellWidth > maxWidth) {
+                maxWidth = cellWidth;
+            }
+        }
+        return maxWidth;
+    };
+    Locator.prototype.getTallestVisibleCellInColumn = function (columnIndex) {
+        // consider only body cells, hence the extra Classes.TABLE_CELL specificity
+        var columnCellSelector = this.getColumnCellSelector(columnIndex);
+        var columnBodyCells = this.tableElement.querySelectorAll(columnCellSelector + "." + Classes.TABLE_CELL);
+        var maxHeight = 0;
+        for (var i = 0; i < columnBodyCells.length; i++) {
+            var cell = columnBodyCells.item(i);
+            var cellValue = cell.querySelector("." + Classes.TABLE_TRUNCATED_VALUE);
+            var cellTruncatedFormatText = cell.querySelector("." + Classes.TABLE_TRUNCATED_FORMAT_TEXT);
+            var cellTruncatedText = cell.querySelector("." + Classes.TABLE_TRUNCATED_TEXT);
+            var height = 0;
+            if (cellValue != null) {
+                height = cellValue.scrollHeight;
+            }
+            else if (cellTruncatedFormatText != null) {
+                height = cellTruncatedFormatText.scrollHeight;
+            }
+            else if (cellTruncatedText != null) {
+                height = cellTruncatedText.scrollHeight;
+            }
+            else {
+                // it's not anything we recognize, just use the current height of the cell
+                height = cell.scrollHeight;
+            }
+            if (height > maxHeight) {
+                maxHeight = height;
+            }
+        }
+        return maxHeight;
+    };
+    // Converters
+    // ==========
+    Locator.prototype.convertPointToColumn = function (clientX, useMidpoint) {
+        var tableRect = this.getTableRect();
+        if (!tableRect.containsX(clientX)) {
+            return -1;
+        }
+        var gridX = this.toGridX(clientX);
+        var limit = useMidpoint ? this.grid.numCols : this.grid.numCols - 1;
+        var lookupFn = useMidpoint ? this.convertCellMidpointToClientX : this.convertCellIndexToClientX;
+        return utils_1.Utils.binarySearch(gridX, limit, lookupFn);
+    };
+    Locator.prototype.convertPointToRow = function (clientY, useMidpoint) {
+        var tableRect = this.getTableRect();
+        if (!tableRect.containsY(clientY)) {
+            return -1;
+        }
+        var gridY = this.toGridY(clientY);
+        var limit = useMidpoint ? this.grid.numRows : this.grid.numRows - 1;
+        var lookupFn = useMidpoint ? this.convertCellMidpointToClientY : this.convertCellIndexToClientY;
+        return utils_1.Utils.binarySearch(gridY, limit, lookupFn);
+    };
+    Locator.prototype.convertPointToCell = function (clientX, clientY) {
+        var gridX = this.toGridX(clientX);
+        var gridY = this.toGridY(clientY);
+        var col = utils_1.Utils.binarySearch(gridX, this.grid.numCols - 1, this.convertCellIndexToClientX);
+        var row = utils_1.Utils.binarySearch(gridY, this.grid.numRows - 1, this.convertCellIndexToClientY);
+        return { col: col, row: row };
+    };
+    // Private helpers
+    // ===============
+    Locator.prototype.getColumnCellSelector = function (columnIndex) {
+        // measure frozen columns in the LEFT quadrant; otherwise, they might
+        // have been scrolled out of view, leading to wonky measurements (#1561)
+        var isFrozenColumnIndex = columnIndex < this.numFrozenColumns;
+        var quadrantClass = isFrozenColumnIndex ? Classes.TABLE_QUADRANT_LEFT : Classes.TABLE_QUADRANT_MAIN;
+        var cellClass = Classes.columnCellIndexClass(columnIndex);
+        return "." + quadrantClass + " ." + cellClass;
+    };
+    Locator.prototype.getTableRect = function () {
+        return rect_1.Rect.wrap(this.tableElement.getBoundingClientRect());
+    };
+    Locator.CELL_HORIZONTAL_PADDING = 10;
+    return Locator;
+}());
+exports.Locator = Locator;
+
+},{"./common/classes":138,"./common/rect":152,"./common/utils":155,"tslib":184}],177:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
+var core_1 = require("@blueprintjs/core");
+var classnames_1 = tslib_1.__importDefault(require("classnames"));
+var React = tslib_1.__importStar(require("react"));
+var Classes = tslib_1.__importStar(require("../common/classes"));
+var Errors = tslib_1.__importStar(require("../common/errors"));
+var QuadrantType;
+(function (QuadrantType) {
+    /**
+     * The main quadrant beneath any frozen rows or columns.
+     */
+    QuadrantType["MAIN"] = "main";
+    /**
+     * The top quadrant, containing column headers and frozen rows.
+     */
+    QuadrantType["TOP"] = "top";
+    /**
+     * The left quadrant, containing row headers and frozen columns.
+     */
+    QuadrantType["LEFT"] = "left";
+    /**
+     * The top-left quadrant, containing the headers and cells common to both
+     * the frozen columns and frozen rows.
+     */
+    QuadrantType["TOP_LEFT"] = "top-left";
+})(QuadrantType = exports.QuadrantType || (exports.QuadrantType = {}));
+var TableQuadrant = /** @class */ (function (_super) {
+    tslib_1.__extends(TableQuadrant, _super);
+    function TableQuadrant() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    TableQuadrant.prototype.render = function () {
+        var _a = this.props, grid = _a.grid, enableRowHeader = _a.enableRowHeader, quadrantType = _a.quadrantType, bodyRenderer = _a.bodyRenderer;
+        var showFrozenRowsOnly = quadrantType === QuadrantType.TOP || quadrantType === QuadrantType.TOP_LEFT;
+        var showFrozenColumnsOnly = quadrantType === QuadrantType.LEFT || quadrantType === QuadrantType.TOP_LEFT;
+        var className = classnames_1.default(Classes.TABLE_QUADRANT, this.getQuadrantCssClass(), this.props.className);
+        var maybeMenu = enableRowHeader && core_1.Utils.safeInvoke(this.props.menuRenderer);
+        var maybeRowHeader = enableRowHeader && core_1.Utils.safeInvoke(this.props.rowHeaderCellRenderer, showFrozenRowsOnly);
+        var maybeColumnHeader = core_1.Utils.safeInvoke(this.props.columnHeaderCellRenderer, showFrozenColumnsOnly);
+        var body = quadrantType != null
+            ? bodyRenderer(quadrantType, showFrozenRowsOnly, showFrozenColumnsOnly)
+            : bodyRenderer();
+        // need to set bottom container size to prevent overlay clipping on scroll
+        var bottomContainerStyle = {
+            height: grid.getHeight(),
+            width: grid.getWidth(),
+        };
+        return (React.createElement("div", { className: className, style: this.props.style, ref: this.props.quadrantRef },
+            React.createElement("div", { className: Classes.TABLE_QUADRANT_SCROLL_CONTAINER, ref: this.props.scrollContainerRef, onScroll: this.props.onScroll, onWheel: this.props.onWheel },
+                React.createElement("div", { className: Classes.TABLE_TOP_CONTAINER },
+                    maybeMenu,
+                    maybeColumnHeader),
+                React.createElement("div", { className: Classes.TABLE_BOTTOM_CONTAINER, style: bottomContainerStyle },
+                    maybeRowHeader,
+                    React.createElement("div", { className: Classes.TABLE_QUADRANT_BODY_CONTAINER, ref: this.props.bodyRef }, body)))));
+    };
+    TableQuadrant.prototype.validateProps = function (nextProps) {
+        var quadrantType = nextProps.quadrantType;
+        if (nextProps.onScroll != null && quadrantType != null && quadrantType !== QuadrantType.MAIN) {
+            console.warn(Errors.QUADRANT_ON_SCROLL_UNNECESSARILY_DEFINED);
+        }
+    };
+    TableQuadrant.prototype.getQuadrantCssClass = function () {
+        switch (this.props.quadrantType) {
+            case QuadrantType.MAIN:
+                return Classes.TABLE_QUADRANT_MAIN;
+            case QuadrantType.TOP:
+                return Classes.TABLE_QUADRANT_TOP;
+            case QuadrantType.LEFT:
+                return Classes.TABLE_QUADRANT_LEFT;
+            case QuadrantType.TOP_LEFT:
+                return Classes.TABLE_QUADRANT_TOP_LEFT;
+            default:
+                return undefined;
+        }
+    };
+    // we want the user to explicitly pass a quadrantType. define defaultProps as a Partial to avoid
+    // declaring that and other required props here.
+    TableQuadrant.defaultProps = {
+        enableRowHeader: true,
+    };
+    return TableQuadrant;
+}(core_1.AbstractComponent));
+exports.TableQuadrant = TableQuadrant;
+
+},{"../common/classes":138,"../common/errors":143,"@blueprintjs/core":105,"classnames":185,"react":223,"tslib":184}],178:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
+var core_1 = require("@blueprintjs/core");
+var React = tslib_1.__importStar(require("react"));
+var Classes = tslib_1.__importStar(require("../common/classes"));
+var ScrollUtils = tslib_1.__importStar(require("../common/internal/scrollUtils"));
+var utils_1 = require("../common/utils");
+var tableQuadrant_1 = require("./tableQuadrant");
+var tableQuadrantStackCache_1 = require("./tableQuadrantStackCache");
+// when there are no column headers, the header and menu element will
+// confusingly collapse to zero height unless we establish this default.
+var DEFAULT_COLUMN_HEADER_HEIGHT = 30;
+// the debounce delay for updating the view on scroll. elements will be resized
+// and rejiggered once scroll has ceased for at least this long, but not before.
+var DEFAULT_VIEW_SYNC_DELAY = 500;
+// if there are no frozen rows or columns, we still want the quadrant to be 1px
+// bigger to reveal the header border. this border leaks into the cell grid to
+// ensure that selection overlay borders (e.g.) will be perfectly flush with it.
+var QUADRANT_MIN_SIZE = 1;
+// a list of props that trigger layout changes. when these props change,
+// quadrant views need to be explicitly resynchronized.
+var SYNC_TRIGGER_PROP_KEYS = [
+    "enableRowHeader",
+    "loadingOptions",
+    "numFrozenColumns",
+    "numFrozenRows",
+    "numColumns",
+    "numRows",
+    "enableColumnInteractionBar",
+];
+var TableQuadrantStack = /** @class */ (function (_super) {
+    tslib_1.__extends(TableQuadrantStack, _super);
+    // Public
+    // ======
+    function TableQuadrantStack(props, context) {
+        var _a, _b;
+        var _this = _super.call(this, props, context) || this;
+        // Instance variables
+        // ==================
+        _this.quadrantRefs = (_a = {},
+            _a[tableQuadrant_1.QuadrantType.MAIN] = {},
+            _a[tableQuadrant_1.QuadrantType.TOP] = {},
+            _a[tableQuadrant_1.QuadrantType.LEFT] = {},
+            _a[tableQuadrant_1.QuadrantType.TOP_LEFT] = {},
+            _a);
+        _this.quadrantRefHandlers = (_b = {},
+            _b[tableQuadrant_1.QuadrantType.MAIN] = _this.generateQuadrantRefHandlers(tableQuadrant_1.QuadrantType.MAIN),
+            _b[tableQuadrant_1.QuadrantType.TOP] = _this.generateQuadrantRefHandlers(tableQuadrant_1.QuadrantType.TOP),
+            _b[tableQuadrant_1.QuadrantType.LEFT] = _this.generateQuadrantRefHandlers(tableQuadrant_1.QuadrantType.LEFT),
+            _b[tableQuadrant_1.QuadrantType.TOP_LEFT] = _this.generateQuadrantRefHandlers(tableQuadrant_1.QuadrantType.TOP_LEFT),
+            _b);
+        // this flag helps us avoid redundant work in the MAIN quadrant's onScroll callback, if the
+        // callback was triggered from a manual scrollTop/scrollLeft update within an onWheel.
+        _this.wasMainQuadrantScrollTriggeredByWheelEvent = false;
+        // Quadrant-specific renderers
+        // ===========================
+        // Menu
+        _this.renderMainQuadrantMenu = function () {
+            return core_1.Utils.safeInvoke(_this.props.menuRenderer, _this.quadrantRefHandlers[tableQuadrant_1.QuadrantType.MAIN].menu);
+        };
+        _this.renderTopQuadrantMenu = function () {
+            return core_1.Utils.safeInvoke(_this.props.menuRenderer, _this.quadrantRefHandlers[tableQuadrant_1.QuadrantType.TOP].menu);
+        };
+        _this.renderLeftQuadrantMenu = function () {
+            return core_1.Utils.safeInvoke(_this.props.menuRenderer, _this.quadrantRefHandlers[tableQuadrant_1.QuadrantType.LEFT].menu);
+        };
+        _this.renderTopLeftQuadrantMenu = function () {
+            return core_1.Utils.safeInvoke(_this.props.menuRenderer, _this.quadrantRefHandlers[tableQuadrant_1.QuadrantType.TOP_LEFT].menu);
+        };
+        // Column header
+        _this.renderMainQuadrantColumnHeader = function (showFrozenColumnsOnly) {
+            var refHandler = _this.quadrantRefHandlers[tableQuadrant_1.QuadrantType.MAIN].columnHeader;
+            var resizeHandler = _this.handleColumnResizeGuideMain;
+            var reorderingHandler = _this.handleColumnsReordering;
+            return core_1.Utils.safeInvoke(_this.props.columnHeaderCellRenderer, refHandler, resizeHandler, reorderingHandler, showFrozenColumnsOnly);
+        };
+        _this.renderTopQuadrantColumnHeader = function (showFrozenColumnsOnly) {
+            var refHandler = _this.quadrantRefHandlers[tableQuadrant_1.QuadrantType.TOP].columnHeader;
+            var resizeHandler = _this.handleColumnResizeGuideTop;
+            var reorderingHandler = _this.handleColumnsReordering;
+            return core_1.Utils.safeInvoke(_this.props.columnHeaderCellRenderer, refHandler, resizeHandler, reorderingHandler, showFrozenColumnsOnly);
+        };
+        _this.renderLeftQuadrantColumnHeader = function (showFrozenColumnsOnly) {
+            var refHandler = _this.quadrantRefHandlers[tableQuadrant_1.QuadrantType.LEFT].columnHeader;
+            var resizeHandler = _this.handleColumnResizeGuideLeft;
+            var reorderingHandler = _this.handleColumnsReordering;
+            return core_1.Utils.safeInvoke(_this.props.columnHeaderCellRenderer, refHandler, resizeHandler, reorderingHandler, showFrozenColumnsOnly);
+        };
+        _this.renderTopLeftQuadrantColumnHeader = function (showFrozenColumnsOnly) {
+            var refHandler = _this.quadrantRefHandlers[tableQuadrant_1.QuadrantType.TOP_LEFT].columnHeader;
+            var resizeHandler = _this.handleColumnResizeGuideTopLeft;
+            var reorderingHandler = _this.handleColumnsReordering;
+            return core_1.Utils.safeInvoke(_this.props.columnHeaderCellRenderer, refHandler, resizeHandler, reorderingHandler, showFrozenColumnsOnly);
+        };
+        // Row header
+        _this.renderMainQuadrantRowHeader = function (showFrozenRowsOnly) {
+            var refHandler = _this.quadrantRefHandlers[tableQuadrant_1.QuadrantType.MAIN].rowHeader;
+            var resizeHandler = _this.handleRowResizeGuideMain;
+            var reorderingHandler = _this.handleRowsReordering;
+            return core_1.Utils.safeInvoke(_this.props.rowHeaderCellRenderer, refHandler, resizeHandler, reorderingHandler, showFrozenRowsOnly);
+        };
+        _this.renderTopQuadrantRowHeader = function (showFrozenRowsOnly) {
+            var refHandler = _this.quadrantRefHandlers[tableQuadrant_1.QuadrantType.TOP].rowHeader;
+            var resizeHandler = _this.handleRowResizeGuideTop;
+            var reorderingHandler = _this.handleRowsReordering;
+            return core_1.Utils.safeInvoke(_this.props.rowHeaderCellRenderer, refHandler, resizeHandler, reorderingHandler, showFrozenRowsOnly);
+        };
+        _this.renderLeftQuadrantRowHeader = function (showFrozenRowsOnly) {
+            var refHandler = _this.quadrantRefHandlers[tableQuadrant_1.QuadrantType.LEFT].rowHeader;
+            var resizeHandler = _this.handleRowResizeGuideLeft;
+            var reorderingHandler = _this.handleRowsReordering;
+            return core_1.Utils.safeInvoke(_this.props.rowHeaderCellRenderer, refHandler, resizeHandler, reorderingHandler, showFrozenRowsOnly);
+        };
+        _this.renderTopLeftQuadrantRowHeader = function (showFrozenRowsOnly) {
+            var refHandler = _this.quadrantRefHandlers[tableQuadrant_1.QuadrantType.TOP_LEFT].rowHeader;
+            var resizeHandler = _this.handleRowResizeGuideTopLeft;
+            var reorderingHandler = _this.handleRowsReordering;
+            return core_1.Utils.safeInvoke(_this.props.rowHeaderCellRenderer, refHandler, resizeHandler, reorderingHandler, showFrozenRowsOnly);
+        };
+        // Event handlers
+        // ==============
+        // Scrolling
+        // ---------
+        _this.handleMainQuadrantScroll = function (event) {
+            if (_this.wasMainQuadrantScrollTriggeredByWheelEvent) {
+                _this.wasMainQuadrantScrollTriggeredByWheelEvent = false;
+                return;
+            }
+            // invoke onScroll - which may read current scroll position - before
+            // forcing a reflow with upcoming .scroll{Top,Left} setters.
+            core_1.Utils.safeInvoke(_this.props.onScroll, event);
+            // batch DOM reads here. note that onScroll events don't include deltas
+            // like onWheel events do, so we have to read from the DOM directly.
+            var mainScrollContainer = _this.quadrantRefs[tableQuadrant_1.QuadrantType.MAIN].scrollContainer;
+            var nextScrollLeft = mainScrollContainer.scrollLeft;
+            var nextScrollTop = mainScrollContainer.scrollTop;
+            // with the "scroll" event, scroll offsets are updated prior to the
+            // event's firing, so no explicit update needed.
+            _this.handleScrollOffsetChange("scrollLeft", nextScrollLeft);
+            _this.handleScrollOffsetChange("scrollTop", nextScrollTop);
+            // sync less important view stuff when scrolling/wheeling stops.
+            _this.syncQuadrantViewsDebounced();
+        };
+        _this.handleWheel = function (event) {
+            // again, let the listener read the current scroll position before we
+            // force a reflow by resizing or repositioning stuff.
+            core_1.Utils.safeInvoke(_this.props.onScroll, event);
+            // this helper performs DOM reads, so do them together before the writes below.
+            var nextScrollLeft = _this.getNextScrollOffset("horizontal", event.deltaX);
+            var nextScrollTop = _this.getNextScrollOffset("vertical", event.deltaY);
+            // update this flag before updating the main quadrant scroll offsets,
+            // since we need this set before onScroll fires.
+            if (nextScrollLeft != null || nextScrollTop != null) {
+                _this.wasMainQuadrantScrollTriggeredByWheelEvent = true;
+            }
+            // manually update the affected quadrant's scroll position to make sure
+            // it stays perfectly in sync with dependent quadrants in each frame.
+            // note: these DOM writes are batched together after the reads above.
+            _this.quadrantRefs[tableQuadrant_1.QuadrantType.MAIN].scrollContainer.scrollLeft = nextScrollLeft;
+            _this.quadrantRefs[tableQuadrant_1.QuadrantType.MAIN].scrollContainer.scrollTop = nextScrollTop;
+            _this.handleScrollOffsetChange("scrollLeft", nextScrollLeft);
+            _this.handleScrollOffsetChange("scrollTop", nextScrollTop);
+            // sync less important view stuff when scrolling/wheeling stops.
+            _this.syncQuadrantViewsDebounced();
+        };
+        _this.getNextScrollOffset = function (direction, delta) {
+            var _a = _this.props, grid = _a.grid, isHorizontalScrollDisabled = _a.isHorizontalScrollDisabled, isVerticalScrollDisabled = _a.isVerticalScrollDisabled;
+            var isHorizontal = direction === "horizontal";
+            var scrollKey = isHorizontal ? "scrollLeft" : "scrollTop";
+            var isScrollDisabled = isHorizontal ? isHorizontalScrollDisabled : isVerticalScrollDisabled;
+            if (isScrollDisabled) {
+                return undefined;
+            }
+            // measure client size on the first event of the current wheel gesture,
+            // then grab cached values on successive events to eliminate DOM reads.
+            // requires clearing the cached values in the debounced view-update at
+            // the end of the wheel event.
+            // ASSUMPTION: the client size won't change during the wheel event.
+            var clientSize = isHorizontal
+                ? _this.cache.getScrollContainerClientWidth()
+                : _this.cache.getScrollContainerClientHeight();
+            if (clientSize == null) {
+                // should trigger only on the first scroll of the wheel gesture.
+                // will save client width and height sizes in the cache.
+                clientSize = _this.updateScrollContainerClientSize(isHorizontal);
+            }
+            // by now, the client width and height will have been saved in cache, so
+            // they can't be nully anymore. also, events can only happen after
+            // mount, so we're guaranteed to have measured the header sizes in
+            // syncQuadrantViews() by now too, as it's invoked on mount.
+            var containerSize = isHorizontal
+                ? _this.cache.getScrollContainerClientWidth() - _this.cache.getRowHeaderWidth()
+                : _this.cache.getScrollContainerClientHeight() - _this.cache.getColumnHeaderHeight();
+            var gridSize = isHorizontal ? grid.getWidth() : grid.getHeight();
+            var maxScrollOffset = Math.max(0, gridSize - containerSize);
+            var currScrollOffset = _this.cache.getScrollOffset(scrollKey);
+            var nextScrollOffset = core_1.Utils.clamp(currScrollOffset + delta, 0, maxScrollOffset);
+            return nextScrollOffset;
+        };
+        // Resizing
+        // --------
+        // Columns
+        _this.handleColumnResizeGuideMain = function (verticalGuides) {
+            _this.invokeColumnResizeHandler(verticalGuides, tableQuadrant_1.QuadrantType.MAIN);
+        };
+        _this.handleColumnResizeGuideTop = function (verticalGuides) {
+            _this.invokeColumnResizeHandler(verticalGuides, tableQuadrant_1.QuadrantType.TOP);
+        };
+        _this.handleColumnResizeGuideLeft = function (verticalGuides) {
+            _this.invokeColumnResizeHandler(verticalGuides, tableQuadrant_1.QuadrantType.LEFT);
+        };
+        _this.handleColumnResizeGuideTopLeft = function (verticalGuides) {
+            _this.invokeColumnResizeHandler(verticalGuides, tableQuadrant_1.QuadrantType.TOP_LEFT);
+        };
+        _this.invokeColumnResizeHandler = function (verticalGuides, quadrantType) {
+            var adjustedGuides = _this.adjustVerticalGuides(verticalGuides, quadrantType);
+            core_1.Utils.safeInvoke(_this.props.handleColumnResizeGuide, adjustedGuides);
+        };
+        // Rows
+        _this.handleRowResizeGuideMain = function (horizontalGuides) {
+            _this.invokeRowResizeHandler(horizontalGuides, tableQuadrant_1.QuadrantType.MAIN);
+        };
+        _this.handleRowResizeGuideTop = function (horizontalGuides) {
+            _this.invokeRowResizeHandler(horizontalGuides, tableQuadrant_1.QuadrantType.TOP);
+        };
+        _this.handleRowResizeGuideLeft = function (horizontalGuides) {
+            _this.invokeRowResizeHandler(horizontalGuides, tableQuadrant_1.QuadrantType.LEFT);
+        };
+        _this.handleRowResizeGuideTopLeft = function (horizontalGuides) {
+            _this.invokeRowResizeHandler(horizontalGuides, tableQuadrant_1.QuadrantType.TOP_LEFT);
+        };
+        _this.invokeRowResizeHandler = function (horizontalGuides, quadrantType) {
+            var adjustedGuides = _this.adjustHorizontalGuides(horizontalGuides, quadrantType);
+            core_1.Utils.safeInvoke(_this.props.handleRowResizeGuide, adjustedGuides);
+        };
+        // Reordering
+        // ----------
+        // Columns
+        _this.handleColumnsReordering = function (oldIndex, newIndex, length) {
+            var guideIndex = utils_1.Utils.reorderedIndexToGuideIndex(oldIndex, newIndex, length);
+            var leftOffset = _this.props.grid.getCumulativeWidthBefore(guideIndex);
+            var quadrantType = guideIndex <= _this.props.numFrozenColumns ? tableQuadrant_1.QuadrantType.TOP_LEFT : tableQuadrant_1.QuadrantType.TOP;
+            var verticalGuides = _this.adjustVerticalGuides([leftOffset], quadrantType);
+            core_1.Utils.safeInvoke(_this.props.handleColumnsReordering, verticalGuides);
+        };
+        // Rows
+        _this.handleRowsReordering = function (oldIndex, newIndex, length) {
+            var guideIndex = utils_1.Utils.reorderedIndexToGuideIndex(oldIndex, newIndex, length);
+            var topOffset = _this.props.grid.getCumulativeHeightBefore(guideIndex);
+            var quadrantType = guideIndex <= _this.props.numFrozenRows ? tableQuadrant_1.QuadrantType.TOP_LEFT : tableQuadrant_1.QuadrantType.LEFT;
+            var horizontalGuides = _this.adjustHorizontalGuides([topOffset], quadrantType);
+            core_1.Utils.safeInvoke(_this.props.handleRowsReordering, horizontalGuides);
+        };
+        // Size syncing
+        // ============
+        _this.syncQuadrantViewsDebounced = function () {
+            var viewSyncDelay = _this.props.viewSyncDelay;
+            if (viewSyncDelay < 0) {
+                // update synchronously
+                _this.syncQuadrantViews();
+            }
+            else {
+                // update asynchronously after a debounced delay
+                clearInterval(_this.debouncedViewSyncInterval);
+                _this.debouncedViewSyncInterval = window.setTimeout(_this.syncQuadrantViews, viewSyncDelay);
+            }
+        };
+        _this.syncQuadrantViews = function () {
+            var mainRefs = _this.quadrantRefs[tableQuadrant_1.QuadrantType.MAIN];
+            var mainScrollContainer = mainRefs.scrollContainer;
+            //
+            // Reads (batched to avoid DOM thrashing)
+            //
+            var rowHeaderWidth = _this.measureDesiredRowHeaderWidth();
+            var columnHeaderHeight = _this.measureDesiredColumnHeaderHeight();
+            var leftQuadrantGridWidth = _this.getSecondaryQuadrantGridSize("width");
+            var topQuadrantGridHeight = _this.getSecondaryQuadrantGridSize("height");
+            var leftQuadrantWidth = rowHeaderWidth + leftQuadrantGridWidth;
+            var topQuadrantHeight = columnHeaderHeight + topQuadrantGridHeight;
+            var rightScrollBarWidth = ScrollUtils.measureScrollBarThickness(mainScrollContainer, "vertical");
+            var bottomScrollBarHeight = ScrollUtils.measureScrollBarThickness(mainScrollContainer, "horizontal");
+            // ensure neither of these measurements confusingly clamps to zero height.
+            var adjustedColumnHeaderHeight = _this.maybeIncreaseToDefaultColumnHeaderHeight(columnHeaderHeight);
+            var adjustedTopQuadrantHeight = _this.maybeIncreaseToDefaultColumnHeaderHeight(topQuadrantHeight);
+            // Update cache: let's read now whatever values we might need later.
+            // prevents unnecessary reflows in the future.
+            _this.cache.setRowHeaderWidth(rowHeaderWidth);
+            _this.cache.setColumnHeaderHeight(columnHeaderHeight);
+            // ...however, we also clear the cached client size, so we can read it
+            // again when a new scroll begins. not safe to assume this won't change.
+            // TODO: maybe use the ResizeSensor?
+            _this.cache.setScrollContainerClientWidth(undefined);
+            _this.cache.setScrollContainerClientHeight(undefined);
+            //
+            // Writes (batched to avoid DOM thrashing)
+            //
+            // Quadrant-size sync'ing: make the quadrants precisely as big as they
+            // need to be to fit their variable-sized headers and/or frozen areas.
+            _this.maybesSetQuadrantRowHeaderSizes(rowHeaderWidth);
+            _this.maybeSetQuadrantMenuElementSizes(rowHeaderWidth, adjustedColumnHeaderHeight);
+            _this.maybeSetQuadrantSizes(leftQuadrantWidth, adjustedTopQuadrantHeight);
+            // Scrollbar clearance: tweak the quadrant bottom/right offsets to
+            // reveal the MAIN-quadrant scrollbars if they're visible.
+            _this.maybeSetQuadrantPositionOffset(tableQuadrant_1.QuadrantType.TOP, "right", rightScrollBarWidth);
+            _this.maybeSetQuadrantPositionOffset(tableQuadrant_1.QuadrantType.LEFT, "bottom", bottomScrollBarHeight);
+            // Scroll syncing: sync the scroll offsets of quadrants that may or may
+            // not have been around prior to this update.
+            _this.maybeSetQuadrantScrollOffset(tableQuadrant_1.QuadrantType.LEFT, "scrollTop");
+            _this.maybeSetQuadrantScrollOffset(tableQuadrant_1.QuadrantType.TOP, "scrollLeft");
+        };
+        _this.maybeSetQuadrantSizes = function (width, height) {
+            _this.maybesSetQuadrantSize(tableQuadrant_1.QuadrantType.LEFT, "width", width);
+            _this.maybesSetQuadrantSize(tableQuadrant_1.QuadrantType.TOP, "height", height);
+            _this.maybesSetQuadrantSize(tableQuadrant_1.QuadrantType.TOP_LEFT, "width", width);
+            _this.maybesSetQuadrantSize(tableQuadrant_1.QuadrantType.TOP_LEFT, "height", height);
+        };
+        _this.maybesSetQuadrantSize = function (quadrantType, dimension, value) {
+            var quadrant = _this.quadrantRefs[quadrantType].quadrant;
+            if (quadrant != null) {
+                quadrant.style[dimension] = value + "px";
+            }
+        };
+        _this.maybeSetQuadrantPositionOffset = function (quadrantType, side, value) {
+            var quadrant = _this.quadrantRefs[quadrantType].quadrant;
+            if (quadrant != null) {
+                quadrant.style[side] = value + "px";
+            }
+        };
+        _this.maybesSetQuadrantRowHeaderSizes = function (width) {
+            _this.maybeSetQuadrantRowHeaderSize(tableQuadrant_1.QuadrantType.MAIN, width);
+            _this.maybeSetQuadrantRowHeaderSize(tableQuadrant_1.QuadrantType.TOP, width);
+            _this.maybeSetQuadrantRowHeaderSize(tableQuadrant_1.QuadrantType.LEFT, width);
+            _this.maybeSetQuadrantRowHeaderSize(tableQuadrant_1.QuadrantType.TOP_LEFT, width);
+        };
+        _this.maybeSetQuadrantRowHeaderSize = function (quadrantType, width) {
+            var rowHeader = _this.quadrantRefs[quadrantType].rowHeader;
+            if (rowHeader != null) {
+                rowHeader.style.width = width + "px";
+            }
+        };
+        _this.maybeSetQuadrantMenuElementSizes = function (width, height) {
+            _this.maybeSetQuadrantMenuElementSize(tableQuadrant_1.QuadrantType.MAIN, width, height);
+            _this.maybeSetQuadrantMenuElementSize(tableQuadrant_1.QuadrantType.TOP, width, height);
+            _this.maybeSetQuadrantMenuElementSize(tableQuadrant_1.QuadrantType.LEFT, width, height);
+            _this.maybeSetQuadrantMenuElementSize(tableQuadrant_1.QuadrantType.TOP_LEFT, width, height);
+        };
+        _this.maybeSetQuadrantMenuElementSize = function (quadrantType, width, height) {
+            var menu = _this.quadrantRefs[quadrantType].menu;
+            if (menu != null) {
+                menu.style.width = width + "px";
+                menu.style.height = height + "px";
+            }
+        };
+        _this.maybeSetQuadrantScrollOffset = function (quadrantType, scrollKey, newOffset) {
+            var scrollContainer = _this.quadrantRefs[quadrantType].scrollContainer;
+            var scrollOffset = newOffset != null ? newOffset : _this.cache.getScrollOffset(scrollKey);
+            if (scrollContainer != null) {
+                scrollContainer[scrollKey] = scrollOffset;
+            }
+        };
+        _this.handleScrollOffsetChange = function (scrollKey, offset) {
+            _this.cache.setScrollOffset(scrollKey, offset);
+            var dependentQuadrantType = scrollKey === "scrollLeft" ? tableQuadrant_1.QuadrantType.TOP : tableQuadrant_1.QuadrantType.LEFT;
+            _this.maybeSetQuadrantScrollOffset(dependentQuadrantType, scrollKey);
+        };
+        // callbacks trigger too frequently unless we throttle scroll and wheel
+        // events. declare these functions on the component instance since
+        // they're stateful.
+        _this.throttledHandleMainQuadrantScroll = core_1.Utils.throttleReactEventCallback(_this.handleMainQuadrantScroll);
+        _this.throttledHandleWheel = core_1.Utils.throttleReactEventCallback(_this.handleWheel);
+        _this.cache = new tableQuadrantStackCache_1.TableQuadrantStackCache();
+        return _this;
+    }
+    /**
+     * Scroll the main quadrant to the specified scroll offset, keeping all other quadrants in sync.
+     */
+    TableQuadrantStack.prototype.scrollToPosition = function (scrollLeft, scrollTop) {
+        var scrollContainer = this.quadrantRefs[tableQuadrant_1.QuadrantType.MAIN].scrollContainer;
+        this.wasMainQuadrantScrollTriggeredByWheelEvent = false;
+        // this will trigger the main quadrant's scroll callback below
+        scrollContainer.scrollLeft = scrollLeft;
+        scrollContainer.scrollTop = scrollTop;
+        this.syncQuadrantViews();
+    };
+    /**
+     * Synchronizes quadrant sizes and scroll offsets based on the current
+     * column, row, and header sizes. Useful for correcting quadrant sizes after
+     * explicitly resizing columns and rows, for instance.
+     *
+     * Invoking this method imperatively is cheaper than providing columnWidths
+     * or rowHeights array props to TableQuadrantStack and forcing it to run
+     * expensive array diffs upon every update.
+     */
+    TableQuadrantStack.prototype.synchronizeQuadrantViews = function () {
+        this.syncQuadrantViews();
+    };
+    TableQuadrantStack.prototype.componentDidMount = function () {
+        this.emitRefs();
+        this.syncQuadrantViews();
+    };
+    TableQuadrantStack.prototype.componentDidUpdate = function (prevProps) {
+        // sync'ing quadrant views triggers expensive reflows, so we only call
+        // it when layout-affecting props change.
+        if (!core_1.Utils.shallowCompareKeys(this.props, prevProps, { include: SYNC_TRIGGER_PROP_KEYS })) {
+            this.emitRefs();
+            this.syncQuadrantViews();
+        }
+    };
+    TableQuadrantStack.prototype.render = function () {
+        var _a = this.props, grid = _a.grid, enableRowHeader = _a.enableRowHeader, bodyRenderer = _a.bodyRenderer, throttleScrolling = _a.throttleScrolling;
+        // use the more generic "scroll" event for the main quadrant to capture
+        // *both* scrollbar interactions and trackpad/mousewheel gestures.
+        var onMainQuadrantScroll = throttleScrolling
+            ? this.throttledHandleMainQuadrantScroll
+            : this.handleMainQuadrantScroll;
+        var onWheel = throttleScrolling ? this.throttledHandleWheel : this.handleWheel;
+        var baseProps = {
+            bodyRenderer: bodyRenderer,
+            enableRowHeader: enableRowHeader,
+            grid: grid,
+            onWheel: onWheel,
+        };
+        var shouldRenderLeftQuadrants = this.shouldRenderLeftQuadrants();
+        var maybeLeftQuadrant = shouldRenderLeftQuadrants ? (React.createElement(tableQuadrant_1.TableQuadrant, tslib_1.__assign({}, baseProps, { quadrantRef: this.quadrantRefHandlers[tableQuadrant_1.QuadrantType.LEFT].quadrant, quadrantType: tableQuadrant_1.QuadrantType.LEFT, columnHeaderCellRenderer: this.renderLeftQuadrantColumnHeader, menuRenderer: this.renderLeftQuadrantMenu, rowHeaderCellRenderer: this.renderLeftQuadrantRowHeader, scrollContainerRef: this.quadrantRefHandlers[tableQuadrant_1.QuadrantType.LEFT].scrollContainer }))) : (undefined);
+        var maybeTopLeftQuadrant = shouldRenderLeftQuadrants ? (React.createElement(tableQuadrant_1.TableQuadrant, tslib_1.__assign({}, baseProps, { quadrantRef: this.quadrantRefHandlers[tableQuadrant_1.QuadrantType.TOP_LEFT].quadrant, quadrantType: tableQuadrant_1.QuadrantType.TOP_LEFT, columnHeaderCellRenderer: this.renderTopLeftQuadrantColumnHeader, menuRenderer: this.renderTopLeftQuadrantMenu, rowHeaderCellRenderer: this.renderTopLeftQuadrantRowHeader, scrollContainerRef: this.quadrantRefHandlers[tableQuadrant_1.QuadrantType.TOP_LEFT].scrollContainer }))) : (undefined);
+        return (React.createElement("div", { className: Classes.TABLE_QUADRANT_STACK },
+            React.createElement(tableQuadrant_1.TableQuadrant, tslib_1.__assign({}, baseProps, { bodyRef: this.props.bodyRef, onScroll: onMainQuadrantScroll, quadrantRef: this.quadrantRefHandlers[tableQuadrant_1.QuadrantType.MAIN].quadrant, quadrantType: tableQuadrant_1.QuadrantType.MAIN, columnHeaderCellRenderer: this.renderMainQuadrantColumnHeader, menuRenderer: this.renderMainQuadrantMenu, rowHeaderCellRenderer: this.renderMainQuadrantRowHeader, scrollContainerRef: this.quadrantRefHandlers[tableQuadrant_1.QuadrantType.MAIN].scrollContainer })),
+            React.createElement(tableQuadrant_1.TableQuadrant, tslib_1.__assign({}, baseProps, { quadrantRef: this.quadrantRefHandlers[tableQuadrant_1.QuadrantType.TOP].quadrant, quadrantType: tableQuadrant_1.QuadrantType.TOP, columnHeaderCellRenderer: this.renderTopQuadrantColumnHeader, menuRenderer: this.renderTopQuadrantMenu, rowHeaderCellRenderer: this.renderTopQuadrantRowHeader, scrollContainerRef: this.quadrantRefHandlers[tableQuadrant_1.QuadrantType.TOP].scrollContainer })),
+            maybeLeftQuadrant,
+            maybeTopLeftQuadrant));
+    };
+    // Ref handlers
+    // ============
+    TableQuadrantStack.prototype.generateQuadrantRefHandlers = function (quadrantType) {
+        var _this = this;
+        var reducer = function (agg, key) {
+            agg[key] = function (ref) { return (_this.quadrantRefs[quadrantType][key] = ref); };
+            return agg;
+        };
+        return ["columnHeader", "menu", "quadrant", "rowHeader", "scrollContainer"].reduce(reducer, {});
+    };
+    // Emitters
+    // ========
+    TableQuadrantStack.prototype.emitRefs = function () {
+        core_1.Utils.safeInvoke(this.props.quadrantRef, this.quadrantRefs[tableQuadrant_1.QuadrantType.MAIN].quadrant);
+        core_1.Utils.safeInvoke(this.props.rowHeaderRef, this.quadrantRefs[tableQuadrant_1.QuadrantType.MAIN].rowHeader);
+        core_1.Utils.safeInvoke(this.props.columnHeaderRef, this.quadrantRefs[tableQuadrant_1.QuadrantType.MAIN].columnHeader);
+        core_1.Utils.safeInvoke(this.props.scrollContainerRef, this.quadrantRefs[tableQuadrant_1.QuadrantType.MAIN].scrollContainer);
+    };
+    // this function is named 'update' instead of 'set', because a 'set'
+    // function typically takes the new value as a parameter. we avoid that to
+    // keep the isHorizontal logic tree contained within this function.
+    TableQuadrantStack.prototype.updateScrollContainerClientSize = function (isHorizontal) {
+        var mainScrollContainer = this.quadrantRefs[tableQuadrant_1.QuadrantType.MAIN].scrollContainer;
+        if (isHorizontal) {
+            this.cache.setScrollContainerClientWidth(mainScrollContainer.clientWidth);
+            return this.cache.getScrollContainerClientWidth();
+        }
+        else {
+            this.cache.setScrollContainerClientHeight(mainScrollContainer.clientHeight);
+            return this.cache.getScrollContainerClientHeight();
+        }
+    };
+    TableQuadrantStack.prototype.maybeIncreaseToDefaultColumnHeaderHeight = function (height) {
+        return height <= QUADRANT_MIN_SIZE ? DEFAULT_COLUMN_HEADER_HEIGHT : height;
+    };
+    // Helpers
+    // =======
+    /**
+     * Returns the width or height of *only the grid* in the secondary quadrants
+     * (TOP, LEFT, TOP_LEFT), based on the number of frozen rows and columns.
+     */
+    TableQuadrantStack.prototype.getSecondaryQuadrantGridSize = function (dimension) {
+        var _a = this.props, grid = _a.grid, numFrozenColumns = _a.numFrozenColumns, numFrozenRows = _a.numFrozenRows;
+        var numFrozen = dimension === "width" ? numFrozenColumns : numFrozenRows;
+        var getterFn = dimension === "width" ? grid.getCumulativeWidthAt : grid.getCumulativeHeightAt;
+        // both getter functions do O(1) lookups.
+        return numFrozen > 0 ? getterFn(numFrozen - 1) : QUADRANT_MIN_SIZE;
+    };
+    /**
+     * Measures the desired width of the row header based on its tallest
+     * contents.
+     */
+    TableQuadrantStack.prototype.measureDesiredRowHeaderWidth = function () {
+        // the MAIN row header serves as the source of truth
+        var mainRowHeader = this.quadrantRefs[tableQuadrant_1.QuadrantType.MAIN].rowHeader;
+        if (mainRowHeader == null) {
+            return 0;
+        }
+        else {
+            // (alas, we must force a reflow to measure the row header's "desired" width)
+            mainRowHeader.style.width = "auto";
+            var desiredRowHeaderWidth = mainRowHeader.clientWidth;
+            return desiredRowHeaderWidth;
+        }
+    };
+    /**
+     * Measures the desired height of the column header based on its tallest
+     * contents.
+     */
+    TableQuadrantStack.prototype.measureDesiredColumnHeaderHeight = function () {
+        // unlike the row headers, the column headers are in a display-flex
+        // layout and are not actually bound by any fixed `height` that we set,
+        // so they'll grow freely to their necessary size. makes measuring easy!
+        var mainColumnHeader = this.quadrantRefs[tableQuadrant_1.QuadrantType.MAIN].columnHeader;
+        return mainColumnHeader == null ? 0 : mainColumnHeader.clientHeight;
+    };
+    TableQuadrantStack.prototype.shouldRenderLeftQuadrants = function (props) {
+        if (props === void 0) { props = this.props; }
+        var enableRowHeader = props.enableRowHeader, numFrozenColumns = props.numFrozenColumns;
+        return enableRowHeader || (numFrozenColumns != null && numFrozenColumns > 0);
+    };
+    // Resizing
+    TableQuadrantStack.prototype.adjustVerticalGuides = function (verticalGuides, quadrantType) {
+        var isFrozenQuadrant = quadrantType === tableQuadrant_1.QuadrantType.LEFT || quadrantType === tableQuadrant_1.QuadrantType.TOP_LEFT;
+        var scrollAmount = isFrozenQuadrant ? 0 : this.cache.getScrollOffset("scrollLeft");
+        var rowHeaderWidth = this.cache.getRowHeaderWidth();
+        var adjustedVerticalGuides = verticalGuides != null
+            ? verticalGuides.map(function (verticalGuide) { return verticalGuide - scrollAmount + rowHeaderWidth; })
+            : verticalGuides;
+        return adjustedVerticalGuides;
+    };
+    TableQuadrantStack.prototype.adjustHorizontalGuides = function (horizontalGuides, quadrantType) {
+        var isFrozenQuadrant = quadrantType === tableQuadrant_1.QuadrantType.TOP || quadrantType === tableQuadrant_1.QuadrantType.TOP_LEFT;
+        var scrollAmount = isFrozenQuadrant ? 0 : this.cache.getScrollOffset("scrollTop");
+        var columnHeaderHeight = this.cache.getColumnHeaderHeight();
+        var adjustedHorizontalGuides = horizontalGuides != null
+            ? horizontalGuides.map(function (horizontalGuide) { return horizontalGuide - scrollAmount + columnHeaderHeight; })
+            : horizontalGuides;
+        return adjustedHorizontalGuides;
+    };
+    // we want the user to explicitly pass a quadrantType. define defaultProps as a Partial to avoid
+    // declaring that and other required props here.
+    TableQuadrantStack.defaultProps = {
+        enableColumnInteractionBar: undefined,
+        enableRowHeader: true,
+        isHorizontalScrollDisabled: false,
+        isVerticalScrollDisabled: false,
+        throttleScrolling: true,
+        viewSyncDelay: DEFAULT_VIEW_SYNC_DELAY,
+    };
+    return TableQuadrantStack;
+}(core_1.AbstractComponent));
+exports.TableQuadrantStack = TableQuadrantStack;
+
+},{"../common/classes":138,"../common/internal/scrollUtils":149,"../common/utils":155,"./tableQuadrant":177,"./tableQuadrantStackCache":179,"@blueprintjs/core":105,"react":223,"tslib":184}],179:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var TableQuadrantStackCache = /** @class */ (function () {
+    function TableQuadrantStackCache() {
+        this.reset();
+    }
+    TableQuadrantStackCache.prototype.reset = function () {
+        this.cachedRowHeaderWidth = 0;
+        this.cachedColumnHeaderHeight = 0;
+        this.cachedScrollLeft = 0;
+        this.cachedScrollTop = 0;
+    };
+    // Getters
+    // =======
+    TableQuadrantStackCache.prototype.getScrollOffset = function (scrollKey) {
+        return scrollKey === "scrollLeft" ? this.cachedScrollLeft : this.cachedScrollTop;
+    };
+    TableQuadrantStackCache.prototype.getRowHeaderWidth = function () {
+        return this.cachedRowHeaderWidth;
+    };
+    TableQuadrantStackCache.prototype.getColumnHeaderHeight = function () {
+        return this.cachedColumnHeaderHeight;
+    };
+    TableQuadrantStackCache.prototype.getScrollContainerClientWidth = function () {
+        return this.cachedScrollContainerClientWidth;
+    };
+    TableQuadrantStackCache.prototype.getScrollContainerClientHeight = function () {
+        return this.cachedScrollContainerClientHeight;
+    };
+    // Setters
+    // =======
+    TableQuadrantStackCache.prototype.setColumnHeaderHeight = function (height) {
+        this.cachedColumnHeaderHeight = height;
+    };
+    TableQuadrantStackCache.prototype.setRowHeaderWidth = function (width) {
+        this.cachedRowHeaderWidth = width;
+    };
+    TableQuadrantStackCache.prototype.setScrollOffset = function (scrollKey, offset) {
+        if (scrollKey === "scrollLeft") {
+            this.cachedScrollLeft = offset;
+        }
+        else {
+            this.cachedScrollTop = offset;
+        }
+    };
+    TableQuadrantStackCache.prototype.setScrollContainerClientWidth = function (clientWidth) {
+        this.cachedScrollContainerClientWidth = clientWidth;
+    };
+    TableQuadrantStackCache.prototype.setScrollContainerClientHeight = function (clientHeight) {
+        this.cachedScrollContainerClientHeight = clientHeight;
+    };
+    return TableQuadrantStackCache;
+}());
+exports.TableQuadrantStackCache = TableQuadrantStackCache;
+
+},{}],180:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
+var Classes = tslib_1.__importStar(require("./common/classes"));
+var utils_1 = require("./common/utils");
+/**
+ * `Region`s contain sets of cells. Additionally, a distinction is drawn, for
+ * example, between all cells within a column and the whole column itself.
+ * The `RegionCardinality` enum represents these distinct types of `Region`s.
+ */
+var RegionCardinality;
+(function (RegionCardinality) {
+    /**
+     * A region that contains a finite rectangular group of table cells
+     */
+    RegionCardinality["CELLS"] = "cells";
+    /**
+     * A region that represents all cells within 1 or more rows.
+     */
+    RegionCardinality["FULL_ROWS"] = "full-rows";
+    /**
+     * A region that represents all cells within 1 or more columns.
+     */
+    RegionCardinality["FULL_COLUMNS"] = "full-columns";
+    /**
+     * A region that represents all cells in the table.
+     */
+    RegionCardinality["FULL_TABLE"] = "full-table";
+})(RegionCardinality = exports.RegionCardinality || (exports.RegionCardinality = {}));
+/**
+ * A convenience object for subsets of `RegionCardinality` that are commonly
+ * used as the `selectionMode` prop of the `<Table>`.
+ */
+exports.SelectionModes = {
+    ALL: [
+        RegionCardinality.FULL_TABLE,
+        RegionCardinality.FULL_COLUMNS,
+        RegionCardinality.FULL_ROWS,
+        RegionCardinality.CELLS,
+    ],
+    COLUMNS_AND_CELLS: [RegionCardinality.FULL_COLUMNS, RegionCardinality.CELLS],
+    COLUMNS_ONLY: [RegionCardinality.FULL_COLUMNS],
+    NONE: [],
+    ROWS_AND_CELLS: [RegionCardinality.FULL_ROWS, RegionCardinality.CELLS],
+    ROWS_ONLY: [RegionCardinality.FULL_ROWS],
+};
+var ColumnLoadingOption;
+(function (ColumnLoadingOption) {
+    ColumnLoadingOption["CELLS"] = "cells";
+    ColumnLoadingOption["HEADER"] = "column-header";
+})(ColumnLoadingOption = exports.ColumnLoadingOption || (exports.ColumnLoadingOption = {}));
+var RowLoadingOption;
+(function (RowLoadingOption) {
+    RowLoadingOption["CELLS"] = "cells";
+    RowLoadingOption["HEADER"] = "row-header";
+})(RowLoadingOption = exports.RowLoadingOption || (exports.RowLoadingOption = {}));
+var TableLoadingOption;
+(function (TableLoadingOption) {
+    TableLoadingOption["CELLS"] = "cells";
+    TableLoadingOption["COLUMN_HEADERS"] = "column-header";
+    TableLoadingOption["ROW_HEADERS"] = "row-header";
+})(TableLoadingOption = exports.TableLoadingOption || (exports.TableLoadingOption = {}));
+var Regions = /** @class */ (function () {
+    function Regions() {
+    }
+    /**
+     * Determines the cardinality of a region. We use null values to indicate
+     * an unbounded interval. Therefore, an example of a region containing the
+     * second and third columns would be:
+     *
+     * ```js
+     * { rows: null, cols: [1, 2] }
+     * ```
+     *
+     * In this case, this method would return `RegionCardinality.FULL_COLUMNS`.
+     *
+     * If both rows and columns are unbounded, then the region covers the
+     * entire table. Therefore, a region like this:
+     *
+     * ```js
+     * { rows: null, cols: null }
+     * ```
+     *
+     * will return `RegionCardinality.FULL_TABLE`.
+     *
+     * An example of a region containing a single cell in the table would be:
+     *
+     * ```js
+     * { rows: [5, 5], cols: [2, 2] }
+     * ```
+     *
+     * In this case, this method would return `RegionCardinality.CELLS`.
+     */
+    Regions.getRegionCardinality = function (region) {
+        if (region.cols != null && region.rows != null) {
+            return RegionCardinality.CELLS;
+        }
+        else if (region.cols != null) {
+            return RegionCardinality.FULL_COLUMNS;
+        }
+        else if (region.rows != null) {
+            return RegionCardinality.FULL_ROWS;
+        }
+        else {
+            return RegionCardinality.FULL_TABLE;
+        }
+    };
+    Regions.getFocusCellCoordinatesFromRegion = function (region) {
+        var regionCardinality = Regions.getRegionCardinality(region);
+        switch (regionCardinality) {
+            case RegionCardinality.FULL_TABLE:
+                return { col: 0, row: 0 };
+            case RegionCardinality.FULL_COLUMNS:
+                return { col: region.cols[0], row: 0 };
+            case RegionCardinality.FULL_ROWS:
+                return { col: 0, row: region.rows[0] };
+            case RegionCardinality.CELLS:
+                return { col: region.cols[0], row: region.rows[0] };
+            default:
+                return null;
+        }
+    };
+    /**
+     * Returns a deep copy of the provided region.
+     */
+    Regions.copy = function (region) {
+        var cardinality = Regions.getRegionCardinality(region);
+        // we need to be careful not to explicitly spell out `rows: undefined`
+        // (e.g.) if the "rows" key is completely absent, otherwise
+        // deep-equality checks will fail.
+        if (cardinality === RegionCardinality.CELLS) {
+            return Regions.cell(region.rows[0], region.cols[0], region.rows[1], region.cols[1]);
+        }
+        else if (cardinality === RegionCardinality.FULL_COLUMNS) {
+            return Regions.column(region.cols[0], region.cols[1]);
+        }
+        else if (cardinality === RegionCardinality.FULL_ROWS) {
+            return Regions.row(region.rows[0], region.rows[1]);
+        }
+        else {
+            return Regions.table();
+        }
+    };
+    /**
+     * Returns a region containing one or more cells.
+     */
+    Regions.cell = function (row, col, row2, col2) {
+        return {
+            cols: this.normalizeInterval(col, col2),
+            rows: this.normalizeInterval(row, row2),
+        };
+    };
+    /**
+     * Returns a region containing one or more full rows.
+     */
+    Regions.row = function (row, row2) {
+        return { rows: this.normalizeInterval(row, row2) };
+    };
+    /**
+     * Returns a region containing one or more full columns.
+     */
+    Regions.column = function (col, col2) {
+        return { cols: this.normalizeInterval(col, col2) };
+    };
+    /**
+     * Returns a region containing the entire table.
+     */
+    Regions.table = function () {
+        return {};
+    };
+    /**
+     * Adds the region to the end of a cloned copy of the supplied region
+     * array.
+     */
+    Regions.add = function (regions, region) {
+        var copy = regions.slice();
+        copy.push(region);
+        return copy;
+    };
+    /**
+     * Replaces the region at the end of a cloned copy of the supplied region
+     * array, or at the specific index if one is provided.
+     */
+    Regions.update = function (regions, region, index) {
+        var copy = regions.slice();
+        if (index != null) {
+            copy.splice(index, 1, region);
+        }
+        else {
+            copy.pop();
+            copy.push(region);
+        }
+        return copy;
+    };
+    /**
+     * Clamps the region's start and end indices between 0 and the provided
+     * maximum values.
+     */
+    Regions.clampRegion = function (region, maxRowIndex, maxColumnIndex) {
+        var nextRegion = Regions.copy(region);
+        if (region.rows != null) {
+            nextRegion.rows[0] = utils_1.Utils.clamp(region.rows[0], 0, maxRowIndex);
+            nextRegion.rows[1] = utils_1.Utils.clamp(region.rows[1], 0, maxRowIndex);
+        }
+        if (region.cols != null) {
+            nextRegion.cols[0] = utils_1.Utils.clamp(region.cols[0], 0, maxColumnIndex);
+            nextRegion.cols[1] = utils_1.Utils.clamp(region.cols[1], 0, maxColumnIndex);
+        }
+        return nextRegion;
+    };
+    /**
+     * Returns true iff the specified region is equal to the last region in
+     * the region list. This allows us to avoid immediate additive re-selection.
+     */
+    Regions.lastRegionIsEqual = function (regions, region) {
+        if (regions == null || regions.length === 0) {
+            return false;
+        }
+        var lastRegion = regions[regions.length - 1];
+        return Regions.regionsEqual(lastRegion, region);
+    };
+    /**
+     * Returns the index of the region that is equal to the supplied
+     * parameter. Returns -1 if no such region is found.
+     */
+    Regions.findMatchingRegion = function (regions, region) {
+        if (regions == null) {
+            return -1;
+        }
+        for (var i = 0; i < regions.length; i++) {
+            if (Regions.regionsEqual(regions[i], region)) {
+                return i;
+            }
+        }
+        return -1;
+    };
+    /**
+     * Returns the index of the region that wholly contains the supplied
+     * parameter. Returns -1 if no such region is found.
+     */
+    Regions.findContainingRegion = function (regions, region) {
+        if (regions == null) {
+            return -1;
+        }
+        for (var i = 0; i < regions.length; i++) {
+            if (Regions.regionContains(regions[i], region)) {
+                return i;
+            }
+        }
+        return -1;
+    };
+    /**
+     * Returns true if the regions contain a region that has FULL_COLUMNS
+     * cardinality and contains the specified column index.
+     */
+    Regions.hasFullColumn = function (regions, col) {
+        if (regions == null) {
+            return false;
+        }
+        for (var _i = 0, regions_1 = regions; _i < regions_1.length; _i++) {
+            var region = regions_1[_i];
+            var cardinality = Regions.getRegionCardinality(region);
+            if (cardinality === RegionCardinality.FULL_TABLE) {
+                return true;
+            }
+            if (cardinality === RegionCardinality.FULL_COLUMNS && Regions.intervalContainsIndex(region.cols, col)) {
+                return true;
+            }
+        }
+        return false;
+    };
+    /**
+     * Returns true if the regions contain a region that has FULL_ROWS
+     * cardinality and contains the specified row index.
+     */
+    Regions.hasFullRow = function (regions, row) {
+        if (regions == null) {
+            return false;
+        }
+        for (var _i = 0, regions_2 = regions; _i < regions_2.length; _i++) {
+            var region = regions_2[_i];
+            var cardinality = Regions.getRegionCardinality(region);
+            if (cardinality === RegionCardinality.FULL_TABLE) {
+                return true;
+            }
+            if (cardinality === RegionCardinality.FULL_ROWS && Regions.intervalContainsIndex(region.rows, row)) {
+                return true;
+            }
+        }
+        return false;
+    };
+    /**
+     * Returns true if the regions contain a region that has FULL_TABLE cardinality
+     */
+    Regions.hasFullTable = function (regions) {
+        if (regions == null) {
+            return false;
+        }
+        for (var _i = 0, regions_3 = regions; _i < regions_3.length; _i++) {
+            var region = regions_3[_i];
+            var cardinality = Regions.getRegionCardinality(region);
+            if (cardinality === RegionCardinality.FULL_TABLE) {
+                return true;
+            }
+        }
+        return false;
+    };
+    /**
+     * Returns true if the regions fully contain the query region.
+     */
+    Regions.containsRegion = function (regions, query) {
+        return Regions.overlapsRegion(regions, query, false);
+    };
+    /**
+     * Returns true if the regions at least partially overlap the query region.
+     */
+    Regions.overlapsRegion = function (regions, query, allowPartialOverlap) {
+        if (allowPartialOverlap === void 0) { allowPartialOverlap = false; }
+        var intervalCompareFn = allowPartialOverlap ? Regions.intervalOverlaps : Regions.intervalContains;
+        if (regions == null || query == null) {
+            return false;
+        }
+        for (var _i = 0, regions_4 = regions; _i < regions_4.length; _i++) {
+            var region = regions_4[_i];
+            var cardinality = Regions.getRegionCardinality(region);
+            switch (cardinality) {
+                case RegionCardinality.FULL_TABLE:
+                    return true;
+                case RegionCardinality.FULL_COLUMNS:
+                    if (intervalCompareFn(region.cols, query.cols)) {
+                        return true;
+                    }
+                    continue;
+                case RegionCardinality.FULL_ROWS:
+                    if (intervalCompareFn(region.rows, query.rows)) {
+                        return true;
+                    }
+                    continue;
+                case RegionCardinality.CELLS:
+                    if (intervalCompareFn(region.cols, query.cols) && intervalCompareFn(region.rows, query.rows)) {
+                        return true;
+                    }
+                    continue;
+                default:
+                    break;
+            }
+        }
+        return false;
+    };
+    Regions.eachUniqueFullColumn = function (regions, iteratee) {
+        if (regions == null || regions.length === 0 || iteratee == null) {
+            return;
+        }
+        var seen = {};
+        regions.forEach(function (region) {
+            if (Regions.getRegionCardinality(region) === RegionCardinality.FULL_COLUMNS) {
+                var _a = region.cols, start = _a[0], end = _a[1];
+                for (var col = start; col <= end; col++) {
+                    if (!seen[col]) {
+                        seen[col] = true;
+                        iteratee(col);
+                    }
+                }
+            }
+        });
+    };
+    Regions.eachUniqueFullRow = function (regions, iteratee) {
+        if (regions == null || regions.length === 0 || iteratee == null) {
+            return;
+        }
+        var seen = {};
+        regions.forEach(function (region) {
+            if (Regions.getRegionCardinality(region) === RegionCardinality.FULL_ROWS) {
+                var _a = region.rows, start = _a[0], end = _a[1];
+                for (var row = start; row <= end; row++) {
+                    if (!seen[row]) {
+                        seen[row] = true;
+                        iteratee(row);
+                    }
+                }
+            }
+        });
+    };
+    /**
+     * Using the supplied array of non-contiguous `IRegion`s, this method
+     * returns an ordered array of every unique cell that exists in those
+     * regions.
+     */
+    Regions.enumerateUniqueCells = function (regions, numRows, numCols) {
+        if (regions == null || regions.length === 0) {
+            return [];
+        }
+        var seen = {};
+        var list = [];
+        for (var _i = 0, regions_5 = regions; _i < regions_5.length; _i++) {
+            var region = regions_5[_i];
+            Regions.eachCellInRegion(region, numRows, numCols, function (row, col) {
+                // add to list if not seen
+                var key = row + "-" + col;
+                if (seen[key] !== true) {
+                    seen[key] = true;
+                    list.push([row, col]);
+                }
+            });
+        }
+        // sort list by rows then columns
+        list.sort(Regions.rowFirstComparator);
+        return list;
+    };
+    /**
+     * Using the supplied region, returns an "equivalent" region of
+     * type CELLS that define the bounds of the given region
+     */
+    Regions.getCellRegionFromRegion = function (region, numRows, numCols) {
+        var regionCardinality = Regions.getRegionCardinality(region);
+        switch (regionCardinality) {
+            case RegionCardinality.FULL_TABLE:
+                return Regions.cell(0, 0, numRows - 1, numCols - 1);
+            case RegionCardinality.FULL_COLUMNS:
+                return Regions.cell(0, region.cols[0], numRows - 1, region.cols[1]);
+            case RegionCardinality.FULL_ROWS:
+                return Regions.cell(region.rows[0], 0, region.rows[1], numCols - 1);
+            case RegionCardinality.CELLS:
+                return Regions.cell(region.rows[0], region.cols[0], region.rows[1], region.cols[1]);
+            default:
+                return null;
+        }
+    };
+    /**
+     * Maps a dense array of cell coordinates to a sparse 2-dimensional array
+     * of cell values.
+     *
+     * We create a new 2-dimensional array representing the smallest single
+     * contiguous `IRegion` that contains all cells in the supplied array. We
+     * invoke the mapper callback only on the cells in the supplied coordinate
+     * array and store the result. Returns the resulting 2-dimensional array.
+     */
+    Regions.sparseMapCells = function (cells, mapper) {
+        var bounds = Regions.getBoundingRegion(cells);
+        if (bounds == null) {
+            return null;
+        }
+        var numRows = bounds.rows[1] + 1 - bounds.rows[0];
+        var numCols = bounds.cols[1] + 1 - bounds.cols[0];
+        var result = utils_1.Utils.times(numRows, function () { return new Array(numCols); });
+        cells.forEach(function (_a) {
+            var row = _a[0], col = _a[1];
+            result[row - bounds.rows[0]][col - bounds.cols[0]] = mapper(row, col);
+        });
+        return result;
+    };
+    /**
+     * Returns the smallest single contiguous `IRegion` that contains all cells in the
+     * supplied array.
+     */
+    Regions.getBoundingRegion = function (cells) {
+        var minRow;
+        var maxRow;
+        var minCol;
+        var maxCol;
+        for (var _i = 0, cells_1 = cells; _i < cells_1.length; _i++) {
+            var _a = cells_1[_i], row = _a[0], col = _a[1];
+            minRow = minRow == null || row < minRow ? row : minRow;
+            maxRow = maxRow == null || row > maxRow ? row : maxRow;
+            minCol = minCol == null || col < minCol ? col : minCol;
+            maxCol = maxCol == null || col > maxCol ? col : maxCol;
+        }
+        if (minRow == null) {
+            return null;
+        }
+        return {
+            cols: [minCol, maxCol],
+            rows: [minRow, maxRow],
+        };
+    };
+    Regions.isValid = function (region) {
+        if (region == null) {
+            return false;
+        }
+        if (region.rows != null && (region.rows[0] < 0 || region.rows[1] < 0)) {
+            return false;
+        }
+        if (region.cols != null && (region.cols[0] < 0 || region.cols[1] < 0)) {
+            return false;
+        }
+        return true;
+    };
+    Regions.isRegionValidForTable = function (region, numRows, numCols) {
+        if (numRows === 0 || numCols === 0) {
+            return false;
+        }
+        else if (region.rows != null && !intervalInRangeInclusive(region.rows, 0, numRows - 1)) {
+            return false;
+        }
+        else if (region.cols != null && !intervalInRangeInclusive(region.cols, 0, numCols - 1)) {
+            return false;
+        }
+        return true;
+    };
+    Regions.joinStyledRegionGroups = function (selectedRegions, otherRegions, focusedCell) {
+        var regionGroups = [];
+        if (otherRegions != null) {
+            regionGroups = regionGroups.concat(otherRegions);
+        }
+        if (selectedRegions != null && selectedRegions.length > 0) {
+            regionGroups.push({
+                className: Classes.TABLE_SELECTION_REGION,
+                regions: selectedRegions,
+            });
+        }
+        if (focusedCell != null) {
+            regionGroups.push({
+                className: Classes.TABLE_FOCUS_REGION,
+                regions: [Regions.cell(focusedCell.row, focusedCell.col)],
+            });
+        }
+        return regionGroups;
+    };
+    Regions.regionsEqual = function (regionA, regionB) {
+        return Regions.intervalsEqual(regionA.rows, regionB.rows) && Regions.intervalsEqual(regionA.cols, regionB.cols);
+    };
+    /**
+     * Expands an old region to the minimal bounding region that also contains
+     * the new region. If the regions have different cardinalities, then the new
+     * region is returned. Useful for expanding a selected region on
+     * shift+click, for instance.
+     */
+    Regions.expandRegion = function (oldRegion, newRegion) {
+        var oldRegionCardinality = Regions.getRegionCardinality(oldRegion);
+        var newRegionCardinality = Regions.getRegionCardinality(newRegion);
+        if (newRegionCardinality !== oldRegionCardinality) {
+            return newRegion;
+        }
+        switch (newRegionCardinality) {
+            case RegionCardinality.FULL_ROWS: {
+                var rowStart = Math.min(oldRegion.rows[0], newRegion.rows[0]);
+                var rowEnd = Math.max(oldRegion.rows[1], newRegion.rows[1]);
+                return Regions.row(rowStart, rowEnd);
+            }
+            case RegionCardinality.FULL_COLUMNS: {
+                var colStart = Math.min(oldRegion.cols[0], newRegion.cols[0]);
+                var colEnd = Math.max(oldRegion.cols[1], newRegion.cols[1]);
+                return Regions.column(colStart, colEnd);
+            }
+            case RegionCardinality.CELLS: {
+                var rowStart = Math.min(oldRegion.rows[0], newRegion.rows[0]);
+                var colStart = Math.min(oldRegion.cols[0], newRegion.cols[0]);
+                var rowEnd = Math.max(oldRegion.rows[1], newRegion.rows[1]);
+                var colEnd = Math.max(oldRegion.cols[1], newRegion.cols[1]);
+                return Regions.cell(rowStart, colStart, rowEnd, colEnd);
+            }
+            default:
+                return Regions.table();
+        }
+    };
+    /**
+     * Iterates over the cells within an `IRegion`, invoking the callback with
+     * each cell's coordinates.
+     */
+    Regions.eachCellInRegion = function (region, numRows, numCols, iteratee) {
+        var cardinality = Regions.getRegionCardinality(region);
+        switch (cardinality) {
+            case RegionCardinality.FULL_TABLE:
+                for (var row = 0; row < numRows; row++) {
+                    for (var col = 0; col < numCols; col++) {
+                        iteratee(row, col);
+                    }
+                }
+                break;
+            case RegionCardinality.FULL_COLUMNS:
+                for (var row = 0; row < numRows; row++) {
+                    for (var col = region.cols[0]; col <= region.cols[1]; col++) {
+                        iteratee(row, col);
+                    }
+                }
+                break;
+            case RegionCardinality.FULL_ROWS:
+                for (var row = region.rows[0]; row <= region.rows[1]; row++) {
+                    for (var col = 0; col < numCols; col++) {
+                        iteratee(row, col);
+                    }
+                }
+                break;
+            case RegionCardinality.CELLS:
+                for (var row = region.rows[0]; row <= region.rows[1]; row++) {
+                    for (var col = region.cols[0]; col <= region.cols[1]; col++) {
+                        iteratee(row, col);
+                    }
+                }
+                break;
+            default:
+                break;
+        }
+    };
+    Regions.regionContains = function (regionA, regionB) {
+        // containsRegion expects an array of regions as the first param
+        return Regions.overlapsRegion([regionA], regionB, false);
+    };
+    Regions.intervalsEqual = function (ivalA, ivalB) {
+        if (ivalA == null) {
+            return ivalB == null;
+        }
+        else if (ivalB == null) {
+            return false;
+        }
+        else {
+            return ivalA[0] === ivalB[0] && ivalA[1] === ivalB[1];
+        }
+    };
+    Regions.intervalContainsIndex = function (interval, index) {
+        if (interval == null) {
+            return false;
+        }
+        return interval[0] <= index && interval[1] >= index;
+    };
+    Regions.intervalContains = function (ivalA, ivalB) {
+        if (ivalA == null || ivalB == null) {
+            return false;
+        }
+        return ivalA[0] <= ivalB[0] && ivalB[1] <= ivalA[1];
+    };
+    Regions.intervalOverlaps = function (ivalA, ivalB) {
+        if (ivalA == null || ivalB == null) {
+            return false;
+        }
+        if (ivalA[1] < ivalB[0] || ivalA[0] > ivalB[1]) {
+            return false;
+        }
+        return true;
+    };
+    Regions.rowFirstComparator = function (a, b) {
+        var rowDiff = a[0] - b[0];
+        return rowDiff === 0 ? a[1] - b[1] : rowDiff;
+    };
+    Regions.numericalComparator = function (a, b) {
+        return a - b;
+    };
+    Regions.normalizeInterval = function (coord, coord2) {
+        if (coord2 == null) {
+            coord2 = coord;
+        }
+        var interval = [coord, coord2];
+        interval.sort(Regions.numericalComparator);
+        return interval;
+    };
+    return Regions;
+}());
+exports.Regions = Regions;
+function intervalInRangeInclusive(interval, minInclusive, maxInclusive) {
+    return (inRangeInclusive(interval[0], minInclusive, maxInclusive) &&
+        inRangeInclusive(interval[1], minInclusive, maxInclusive));
+}
+function inRangeInclusive(value, minInclusive, maxInclusive) {
+    return value >= minInclusive && value <= maxInclusive;
+}
+
+},{"./common/classes":138,"./common/utils":155,"tslib":184}],181:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
+var core_1 = require("@blueprintjs/core");
+var classnames_1 = tslib_1.__importDefault(require("classnames"));
+var React = tslib_1.__importStar(require("react"));
+var column_1 = require("./column");
+var Classes = tslib_1.__importStar(require("./common/classes"));
+var clipboard_1 = require("./common/clipboard");
+var context_1 = require("./common/context");
+var direction_1 = require("./common/direction");
+var Errors = tslib_1.__importStar(require("./common/errors"));
+var grid_1 = require("./common/grid");
+var FocusedCellUtils = tslib_1.__importStar(require("./common/internal/focusedCellUtils"));
+var ScrollUtils = tslib_1.__importStar(require("./common/internal/scrollUtils"));
+var SelectionUtils = tslib_1.__importStar(require("./common/internal/selectionUtils"));
+var rect_1 = require("./common/rect");
+var renderMode_1 = require("./common/renderMode");
+var utils_1 = require("./common/utils");
+var columnHeader_1 = require("./headers/columnHeader");
+var columnHeaderCell_1 = require("./headers/columnHeaderCell");
+var rowHeader_1 = require("./headers/rowHeader");
+var resizeSensor_1 = require("./interactions/resizeSensor");
+var guides_1 = require("./layers/guides");
+var regions_1 = require("./layers/regions");
+var locator_1 = require("./locator");
+var tableQuadrant_1 = require("./quadrants/tableQuadrant");
+var tableQuadrantStack_1 = require("./quadrants/tableQuadrantStack");
+var regions_2 = require("./regions");
+var tableBody_1 = require("./tableBody");
+var Table = /** @class */ (function (_super) {
+    tslib_1.__extends(Table, _super);
+    function Table(props, context) {
+        var _this = _super.call(this, props, context) || this;
+        _this.refHandlers = {
+            cellContainer: function (ref) { return (_this.cellContainerElement = ref); },
+            columnHeader: function (ref) { return (_this.columnHeaderElement = ref); },
+            quadrantStack: function (ref) { return (_this.quadrantStackInstance = ref); },
+            rootTable: function (ref) { return (_this.rootTableElement = ref); },
+            rowHeader: function (ref) { return (_this.rowHeaderElement = ref); },
+            scrollContainer: function (ref) { return (_this.scrollContainerElement = ref); },
+        };
+        // when true, we'll need to imperatively synchronize quadrant views after
+        // the update. this variable lets us avoid expensively diff'ing columnWidths
+        // and rowHeights in <TableQuadrantStack> on each update.
+        _this.didUpdateColumnOrRowSizes = false;
+        // this value is set to `true` when all cells finish mounting for the first
+        // time. it serves as a signal that we can switch to batch rendering.
+        _this.didCompletelyMount = false;
+        // Selection resize
+        // ----------------
+        _this.handleSelectionResizeUp = function (e) { return _this.handleSelectionResize(e, direction_1.Direction.UP); };
+        _this.handleSelectionResizeDown = function (e) { return _this.handleSelectionResize(e, direction_1.Direction.DOWN); };
+        _this.handleSelectionResizeLeft = function (e) { return _this.handleSelectionResize(e, direction_1.Direction.LEFT); };
+        _this.handleSelectionResizeRight = function (e) { return _this.handleSelectionResize(e, direction_1.Direction.RIGHT); };
+        _this.handleSelectionResize = function (e, direction) {
+            e.preventDefault();
+            e.stopPropagation();
+            var _a = _this.state, focusedCell = _a.focusedCell, selectedRegions = _a.selectedRegions;
+            if (selectedRegions.length === 0) {
+                return;
+            }
+            var index = FocusedCellUtils.getFocusedOrLastSelectedIndex(selectedRegions, focusedCell);
+            var region = selectedRegions[index];
+            var nextRegion = SelectionUtils.resizeRegion(region, direction, focusedCell);
+            _this.updateSelectedRegionAtIndex(nextRegion, index);
+        };
+        _this.handleCopy = function (e) {
+            var _a = _this.props, getCellClipboardData = _a.getCellClipboardData, onCopy = _a.onCopy;
+            var selectedRegions = _this.state.selectedRegions;
+            if (getCellClipboardData == null) {
+                return;
+            }
+            // prevent "real" copy from being called
+            e.preventDefault();
+            e.stopPropagation();
+            var cells = regions_2.Regions.enumerateUniqueCells(selectedRegions, _this.grid.numRows, _this.grid.numCols);
+            var sparse = regions_2.Regions.sparseMapCells(cells, getCellClipboardData);
+            if (sparse != null) {
+                var success = clipboard_1.Clipboard.copyCells(sparse);
+                core_1.Utils.safeInvoke(onCopy, success);
+            }
+        };
+        _this.renderMenu = function (refHandler) {
+            var _a;
+            var classes = classnames_1.default(Classes.TABLE_MENU, (_a = {},
+                _a[Classes.TABLE_SELECTION_ENABLED] = _this.isSelectionModeEnabled(regions_2.RegionCardinality.FULL_TABLE),
+                _a));
+            return (React.createElement("div", { className: classes, ref: refHandler, onMouseDown: _this.handleMenuMouseDown }, _this.maybeRenderRegions(_this.styleMenuRegion)));
+        };
+        _this.handleMenuMouseDown = function (e) {
+            // the shift+click interaction expands the region from the focused cell.
+            // thus, if shift is pressed we shouldn't move the focused cell.
+            _this.selectAll(!e.shiftKey);
+        };
+        _this.selectAll = function (shouldUpdateFocusedCell) {
+            var selectionHandler = _this.getEnabledSelectionHandler(regions_2.RegionCardinality.FULL_TABLE);
+            // clicking on upper left hand corner sets selection to "all"
+            // regardless of current selection state (clicking twice does not deselect table)
+            selectionHandler([regions_2.Regions.table()]);
+            if (shouldUpdateFocusedCell) {
+                var newFocusedCellCoordinates = regions_2.Regions.getFocusCellCoordinatesFromRegion(regions_2.Regions.table());
+                _this.handleFocus(FocusedCellUtils.toFullCoordinates(newFocusedCellCoordinates));
+            }
+        };
+        _this.handleSelectAllHotkey = function (e) {
+            // prevent "real" select all from happening as well
+            e.preventDefault();
+            e.stopPropagation();
+            // selecting-all via the keyboard should not move the focused cell.
+            _this.selectAll(false);
+        };
+        _this.columnHeaderCellRenderer = function (columnIndex) {
+            var props = _this.getColumnProps(columnIndex);
+            var id = props.id, loadingOptions = props.loadingOptions, cellRenderer = props.cellRenderer, columnHeaderCellRenderer = props.columnHeaderCellRenderer, spreadableProps = tslib_1.__rest(props, ["id", "loadingOptions", "cellRenderer", "columnHeaderCellRenderer"]);
+            var columnLoading = _this.hasLoadingOption(loadingOptions, regions_2.ColumnLoadingOption.HEADER);
+            if (columnHeaderCellRenderer != null) {
+                var columnHeaderCell = columnHeaderCellRenderer(columnIndex);
+                var columnHeaderCellLoading = columnHeaderCell.props.loading;
+                var columnHeaderCellProps = {
+                    loading: columnHeaderCellLoading != null ? columnHeaderCellLoading : columnLoading,
+                };
+                return React.cloneElement(columnHeaderCell, columnHeaderCellProps);
+            }
+            var baseProps = tslib_1.__assign({ index: columnIndex, loading: columnLoading }, spreadableProps);
+            if (props.name != null) {
+                return React.createElement(columnHeaderCell_1.ColumnHeaderCell, tslib_1.__assign({}, baseProps));
+            }
+            else {
+                return React.createElement(columnHeaderCell_1.ColumnHeaderCell, tslib_1.__assign({}, baseProps, { name: utils_1.Utils.toBase26Alpha(columnIndex) }));
+            }
+        };
+        _this.renderColumnHeader = function (refHandler, resizeHandler, reorderingHandler, showFrozenColumnsOnly) {
+            var _a;
+            if (showFrozenColumnsOnly === void 0) { showFrozenColumnsOnly = false; }
+            var _b = _this.state, focusedCell = _b.focusedCell, selectedRegions = _b.selectedRegions, viewportRect = _b.viewportRect;
+            var _c = _this.props, enableMultipleSelection = _c.enableMultipleSelection, enableGhostCells = _c.enableGhostCells, enableColumnReordering = _c.enableColumnReordering, enableColumnResizing = _c.enableColumnResizing, loadingOptions = _c.loadingOptions, maxColumnWidth = _c.maxColumnWidth, minColumnWidth = _c.minColumnWidth, selectedRegionTransform = _c.selectedRegionTransform;
+            var classes = classnames_1.default(Classes.TABLE_COLUMN_HEADERS, (_a = {},
+                _a[Classes.TABLE_SELECTION_ENABLED] = _this.isSelectionModeEnabled(regions_2.RegionCardinality.FULL_COLUMNS),
+                _a));
+            var columnIndices = _this.grid.getColumnIndicesInRect(viewportRect, enableGhostCells);
+            var columnIndexStart = showFrozenColumnsOnly ? 0 : columnIndices.columnIndexStart;
+            var columnIndexEnd = showFrozenColumnsOnly ? _this.getMaxFrozenColumnIndex() : columnIndices.columnIndexEnd;
+            return (React.createElement("div", { className: classes },
+                React.createElement(columnHeader_1.ColumnHeader, { enableMultipleSelection: enableMultipleSelection, cellRenderer: _this.columnHeaderCellRenderer, focusedCell: focusedCell, grid: _this.grid, isReorderable: enableColumnReordering, isResizable: enableColumnResizing, loading: _this.hasLoadingOption(loadingOptions, regions_2.TableLoadingOption.COLUMN_HEADERS), locator: _this.locator, maxColumnWidth: maxColumnWidth, measurableElementRef: refHandler, minColumnWidth: minColumnWidth, onColumnWidthChanged: _this.handleColumnWidthChanged, onFocusedCell: _this.handleFocus, onLayoutLock: _this.handleLayoutLock, onReordered: _this.handleColumnsReordered, onReordering: reorderingHandler, onResizeGuide: resizeHandler, onSelection: _this.getEnabledSelectionHandler(regions_2.RegionCardinality.FULL_COLUMNS), selectedRegions: selectedRegions, selectedRegionTransform: selectedRegionTransform, columnIndexStart: columnIndexStart, columnIndexEnd: columnIndexEnd }, _this.props.children),
+                _this.maybeRenderRegions(_this.styleColumnHeaderRegion)));
+        };
+        _this.renderRowHeader = function (refHandler, resizeHandler, reorderingHandler, showFrozenRowsOnly) {
+            var _a;
+            if (showFrozenRowsOnly === void 0) { showFrozenRowsOnly = false; }
+            var _b = _this.state, focusedCell = _b.focusedCell, selectedRegions = _b.selectedRegions, viewportRect = _b.viewportRect;
+            var _c = _this.props, enableMultipleSelection = _c.enableMultipleSelection, enableGhostCells = _c.enableGhostCells, enableRowReordering = _c.enableRowReordering, enableRowResizing = _c.enableRowResizing, loadingOptions = _c.loadingOptions, maxRowHeight = _c.maxRowHeight, minRowHeight = _c.minRowHeight, rowHeaderCellRenderer = _c.rowHeaderCellRenderer, selectedRegionTransform = _c.selectedRegionTransform;
+            var classes = classnames_1.default(Classes.TABLE_ROW_HEADERS, (_a = {},
+                _a[Classes.TABLE_SELECTION_ENABLED] = _this.isSelectionModeEnabled(regions_2.RegionCardinality.FULL_ROWS),
+                _a));
+            var rowIndices = _this.grid.getRowIndicesInRect(viewportRect, enableGhostCells);
+            var rowIndexStart = showFrozenRowsOnly ? 0 : rowIndices.rowIndexStart;
+            var rowIndexEnd = showFrozenRowsOnly ? _this.getMaxFrozenRowIndex() : rowIndices.rowIndexEnd;
+            return (React.createElement("div", { className: classes, ref: refHandler },
+                React.createElement(rowHeader_1.RowHeader, { enableMultipleSelection: enableMultipleSelection, focusedCell: focusedCell, grid: _this.grid, locator: _this.locator, isReorderable: enableRowReordering, isResizable: enableRowResizing, loading: _this.hasLoadingOption(loadingOptions, regions_2.TableLoadingOption.ROW_HEADERS), maxRowHeight: maxRowHeight, minRowHeight: minRowHeight, onFocusedCell: _this.handleFocus, onLayoutLock: _this.handleLayoutLock, onResizeGuide: resizeHandler, onReordered: _this.handleRowsReordered, onReordering: reorderingHandler, onRowHeightChanged: _this.handleRowHeightChanged, onSelection: _this.getEnabledSelectionHandler(regions_2.RegionCardinality.FULL_ROWS), rowHeaderCellRenderer: rowHeaderCellRenderer, selectedRegions: selectedRegions, selectedRegionTransform: selectedRegionTransform, rowIndexStart: rowIndexStart, rowIndexEnd: rowIndexEnd }),
+                _this.maybeRenderRegions(_this.styleRowHeaderRegion)));
+        };
+        _this.bodyCellRenderer = function (rowIndex, columnIndex) {
+            var _a = _this.getColumnProps(columnIndex), id = _a.id, loadingOptions = _a.loadingOptions, cellRenderer = _a.cellRenderer, columnHeaderCellRenderer = _a.columnHeaderCellRenderer, name = _a.name, nameRenderer = _a.nameRenderer, restColumnProps = tslib_1.__rest(_a, ["id", "loadingOptions", "cellRenderer", "columnHeaderCellRenderer", "name", "nameRenderer"]);
+            var cell = cellRenderer(rowIndex, columnIndex);
+            var _b = cell.props.loading, loading = _b === void 0 ? _this.hasLoadingOption(loadingOptions, regions_2.ColumnLoadingOption.CELLS) : _b;
+            var cellProps = tslib_1.__assign({}, restColumnProps, { loading: loading });
+            return React.cloneElement(cell, cellProps);
+        };
+        _this.renderBody = function (quadrantType, showFrozenRowsOnly, showFrozenColumnsOnly) {
+            if (showFrozenRowsOnly === void 0) { showFrozenRowsOnly = false; }
+            if (showFrozenColumnsOnly === void 0) { showFrozenColumnsOnly = false; }
+            var _a = _this.state, focusedCell = _a.focusedCell, numFrozenColumns = _a.numFrozenColumnsClamped, numFrozenRows = _a.numFrozenRowsClamped, selectedRegions = _a.selectedRegions, viewportRect = _a.viewportRect;
+            var _b = _this.props, enableMultipleSelection = _b.enableMultipleSelection, enableGhostCells = _b.enableGhostCells, loadingOptions = _b.loadingOptions, bodyContextMenuRenderer = _b.bodyContextMenuRenderer, selectedRegionTransform = _b.selectedRegionTransform;
+            var rowIndices = _this.grid.getRowIndicesInRect(viewportRect, enableGhostCells);
+            var columnIndices = _this.grid.getColumnIndicesInRect(viewportRect, enableGhostCells);
+            // start beyond the frozen area if rendering unrelated quadrants, so we
+            // don't render duplicate cells underneath the frozen ones.
+            var columnIndexStart = showFrozenColumnsOnly ? 0 : columnIndices.columnIndexStart + numFrozenColumns;
+            var rowIndexStart = showFrozenRowsOnly ? 0 : rowIndices.rowIndexStart + numFrozenRows;
+            // if rendering frozen rows/columns, subtract one to convert to
+            // 0-indexing. if the 1-indexed value is 0, this sets the end index
+            // to -1, which avoids rendering absent frozen rows/columns at all.
+            var columnIndexEnd = showFrozenColumnsOnly ? numFrozenColumns - 1 : columnIndices.columnIndexEnd;
+            var rowIndexEnd = showFrozenRowsOnly ? numFrozenRows - 1 : rowIndices.rowIndexEnd;
+            // the main quadrant contains all cells in the table, so listen only to that quadrant
+            var onCompleteRender = quadrantType === tableQuadrant_1.QuadrantType.MAIN ? _this.handleCompleteRender : undefined;
+            return (React.createElement("div", null,
+                React.createElement(tableBody_1.TableBody, { enableMultipleSelection: enableMultipleSelection, cellRenderer: _this.bodyCellRenderer, focusedCell: focusedCell, grid: _this.grid, loading: _this.hasLoadingOption(loadingOptions, regions_2.TableLoadingOption.CELLS), locator: _this.locator, onCompleteRender: onCompleteRender, onFocusedCell: _this.handleFocus, onSelection: _this.getEnabledSelectionHandler(regions_2.RegionCardinality.CELLS), bodyContextMenuRenderer: bodyContextMenuRenderer, renderMode: _this.getNormalizedRenderMode(), selectedRegions: selectedRegions, selectedRegionTransform: selectedRegionTransform, viewportRect: viewportRect, columnIndexStart: columnIndexStart, columnIndexEnd: columnIndexEnd, rowIndexStart: rowIndexStart, rowIndexEnd: rowIndexEnd, numFrozenColumns: showFrozenColumnsOnly ? numFrozenColumns : undefined, numFrozenRows: showFrozenRowsOnly ? numFrozenRows : undefined }),
+                _this.maybeRenderRegions(_this.styleBodyRegion, quadrantType)));
+        };
+        _this.handleCompleteRender = function () {
+            // the first onCompleteRender is triggered before the viewportRect is
+            // defined and the second after the viewportRect has been set. the cells
+            // will only actually render once the viewportRect is defined though, so
+            // we defer invoking onCompleteRender until that check passes.
+            if (_this.state.viewportRect != null) {
+                core_1.Utils.safeInvoke(_this.props.onCompleteRender);
+                _this.didCompletelyMount = true;
+            }
+        };
+        _this.handleFocusMoveLeft = function (e) { return _this.handleFocusMove(e, "left"); };
+        _this.handleFocusMoveLeftInternal = function (e) { return _this.handleFocusMoveInternal(e, "left"); };
+        _this.handleFocusMoveRight = function (e) { return _this.handleFocusMove(e, "right"); };
+        _this.handleFocusMoveRightInternal = function (e) { return _this.handleFocusMoveInternal(e, "right"); };
+        _this.handleFocusMoveUp = function (e) { return _this.handleFocusMove(e, "up"); };
+        _this.handleFocusMoveUpInternal = function (e) { return _this.handleFocusMoveInternal(e, "up"); };
+        _this.handleFocusMoveDown = function (e) { return _this.handleFocusMove(e, "down"); };
+        _this.handleFocusMoveDownInternal = function (e) { return _this.handleFocusMoveInternal(e, "down"); };
+        _this.styleBodyRegion = function (region, quadrantType) {
+            var numFrozenColumns = _this.props.numFrozenColumns;
+            var cardinality = regions_2.Regions.getRegionCardinality(region);
+            var style = _this.grid.getRegionStyle(region);
+            // ensure we're not showing borders at the boundary of the frozen-columns area
+            var canHideRightBorder = (quadrantType === tableQuadrant_1.QuadrantType.TOP_LEFT || quadrantType === tableQuadrant_1.QuadrantType.LEFT) &&
+                numFrozenColumns != null &&
+                numFrozenColumns > 0;
+            var fixedHeight = _this.grid.getHeight();
+            var fixedWidth = _this.grid.getWidth();
+            // include a correction in some cases to hide borders along quadrant boundaries
+            var alignmentCorrection = 1;
+            var alignmentCorrectionString = "-" + alignmentCorrection + "px";
+            switch (cardinality) {
+                case regions_2.RegionCardinality.CELLS:
+                    return style;
+                case regions_2.RegionCardinality.FULL_COLUMNS:
+                    style.top = alignmentCorrectionString;
+                    style.height = fixedHeight + alignmentCorrection;
+                    return style;
+                case regions_2.RegionCardinality.FULL_ROWS:
+                    style.left = alignmentCorrectionString;
+                    style.width = fixedWidth + alignmentCorrection;
+                    if (canHideRightBorder) {
+                        style.right = alignmentCorrectionString;
+                    }
+                    return style;
+                case regions_2.RegionCardinality.FULL_TABLE:
+                    style.left = alignmentCorrectionString;
+                    style.top = alignmentCorrectionString;
+                    style.width = fixedWidth + alignmentCorrection;
+                    style.height = fixedHeight + alignmentCorrection;
+                    if (canHideRightBorder) {
+                        style.right = alignmentCorrectionString;
+                    }
+                    return style;
+                default:
+                    return { display: "none" };
+            }
+        };
+        _this.styleMenuRegion = function (region) {
+            var viewportRect = _this.state.viewportRect;
+            if (viewportRect == null) {
+                return {};
+            }
+            var cardinality = regions_2.Regions.getRegionCardinality(region);
+            var style = _this.grid.getRegionStyle(region);
+            switch (cardinality) {
+                case regions_2.RegionCardinality.FULL_TABLE:
+                    style.right = "0px";
+                    style.bottom = "0px";
+                    style.top = "0px";
+                    style.left = "0px";
+                    style.borderBottom = "none";
+                    style.borderRight = "none";
+                    return style;
+                default:
+                    return { display: "none" };
+            }
+        };
+        _this.styleColumnHeaderRegion = function (region) {
+            var viewportRect = _this.state.viewportRect;
+            if (viewportRect == null) {
+                return {};
+            }
+            var cardinality = regions_2.Regions.getRegionCardinality(region);
+            var style = _this.grid.getRegionStyle(region);
+            switch (cardinality) {
+                case regions_2.RegionCardinality.FULL_TABLE:
+                    style.left = "-1px";
+                    style.borderLeft = "none";
+                    style.bottom = "-1px";
+                    return style;
+                case regions_2.RegionCardinality.FULL_COLUMNS:
+                    style.bottom = "-1px";
+                    return style;
+                default:
+                    return { display: "none" };
+            }
+        };
+        _this.styleRowHeaderRegion = function (region) {
+            var viewportRect = _this.state.viewportRect;
+            if (viewportRect == null) {
+                return {};
+            }
+            var cardinality = regions_2.Regions.getRegionCardinality(region);
+            var style = _this.grid.getRegionStyle(region);
+            switch (cardinality) {
+                case regions_2.RegionCardinality.FULL_TABLE:
+                    style.top = "-1px";
+                    style.borderTop = "none";
+                    style.right = "-1px";
+                    return style;
+                case regions_2.RegionCardinality.FULL_ROWS:
+                    style.right = "-1px";
+                    return style;
+                default:
+                    return { display: "none" };
+            }
+        };
+        _this.handleColumnWidthChanged = function (columnIndex, width) {
+            var selectedRegions = _this.state.selectedRegions;
+            var columnWidths = _this.state.columnWidths.slice();
+            if (regions_2.Regions.hasFullTable(selectedRegions)) {
+                for (var col = 0; col < columnWidths.length; col++) {
+                    columnWidths[col] = width;
+                }
+            }
+            if (regions_2.Regions.hasFullColumn(selectedRegions, columnIndex)) {
+                regions_2.Regions.eachUniqueFullColumn(selectedRegions, function (col) {
+                    columnWidths[col] = width;
+                });
+            }
+            else {
+                columnWidths[columnIndex] = width;
+            }
+            _this.invalidateGrid();
+            _this.didUpdateColumnOrRowSizes = true;
+            _this.setState({ columnWidths: columnWidths });
+            var onColumnWidthChanged = _this.props.onColumnWidthChanged;
+            if (onColumnWidthChanged != null) {
+                onColumnWidthChanged(columnIndex, width);
+            }
+        };
+        _this.handleRowHeightChanged = function (rowIndex, height) {
+            var selectedRegions = _this.state.selectedRegions;
+            var rowHeights = _this.state.rowHeights.slice();
+            if (regions_2.Regions.hasFullTable(selectedRegions)) {
+                for (var row = 0; row < rowHeights.length; row++) {
+                    rowHeights[row] = height;
+                }
+            }
+            if (regions_2.Regions.hasFullRow(selectedRegions, rowIndex)) {
+                regions_2.Regions.eachUniqueFullRow(selectedRegions, function (row) {
+                    rowHeights[row] = height;
+                });
+            }
+            else {
+                rowHeights[rowIndex] = height;
+            }
+            _this.invalidateGrid();
+            _this.didUpdateColumnOrRowSizes = true;
+            _this.setState({ rowHeights: rowHeights });
+            var onRowHeightChanged = _this.props.onRowHeightChanged;
+            if (onRowHeightChanged != null) {
+                onRowHeightChanged(rowIndex, height);
+            }
+        };
+        _this.handleRootScroll = function (_event) {
+            // Bug #211 - Native browser text selection events can cause the root
+            // element to scroll even though it has a overflow:hidden style. The
+            // only viable solution to this is to unscroll the element after the
+            // browser scrolls it.
+            if (_this.rootTableElement != null) {
+                _this.rootTableElement.scrollLeft = 0;
+                _this.rootTableElement.scrollTop = 0;
+            }
+        };
+        _this.handleBodyScroll = function (event) {
+            // Prevent the event from propagating to avoid a resize event on the
+            // resize sensor.
+            event.stopPropagation();
+            if (_this.locator != null && !_this.state.isLayoutLocked) {
+                var viewportRect = _this.locator.getViewportRect();
+                _this.updateViewportRect(viewportRect);
+            }
+        };
+        _this.clearSelection = function (_selectedRegions) {
+            _this.handleSelection([]);
+        };
+        // no good way to call arrow-key keyboard events from tests
+        /* istanbul ignore next */
+        _this.handleFocusMove = function (e, direction) {
+            e.preventDefault();
+            e.stopPropagation();
+            var focusedCell = _this.state.focusedCell;
+            if (focusedCell == null) {
+                // halt early if we have a selectedRegionTransform or something else in play that nixes
+                // the focused cell.
+                return;
+            }
+            var newFocusedCell = { col: focusedCell.col, row: focusedCell.row, focusSelectionIndex: 0 };
+            switch (direction) {
+                case "up":
+                    newFocusedCell.row -= 1;
+                    break;
+                case "down":
+                    newFocusedCell.row += 1;
+                    break;
+                case "left":
+                    newFocusedCell.col -= 1;
+                    break;
+                case "right":
+                    newFocusedCell.col += 1;
+                    break;
+                default:
+                    break;
+            }
+            if (newFocusedCell.row < 0 ||
+                newFocusedCell.row >= _this.grid.numRows ||
+                newFocusedCell.col < 0 ||
+                newFocusedCell.col >= _this.grid.numCols) {
+                return;
+            }
+            // change selection to match new focus cell location
+            var newSelectionRegions = [regions_2.Regions.cell(newFocusedCell.row, newFocusedCell.col)];
+            var selectedRegionTransform = _this.props.selectedRegionTransform;
+            var transformedSelectionRegions = selectedRegionTransform != null
+                ? newSelectionRegions.map(function (region) { return selectedRegionTransform(region, e); })
+                : newSelectionRegions;
+            _this.handleSelection(transformedSelectionRegions);
+            _this.handleFocus(newFocusedCell);
+            // keep the focused cell in view
+            _this.scrollBodyToFocusedCell(newFocusedCell);
+        };
+        // no good way to call arrow-key keyboard events from tests
+        /* istanbul ignore next */
+        _this.handleFocusMoveInternal = function (e, direction) {
+            e.preventDefault();
+            e.stopPropagation();
+            var _a = _this.state, focusedCell = _a.focusedCell, selectedRegions = _a.selectedRegions;
+            if (focusedCell == null) {
+                // halt early if we have a selectedRegionTransform or something else in play that nixes
+                // the focused cell.
+                return;
+            }
+            var newFocusedCell = {
+                col: focusedCell.col,
+                focusSelectionIndex: focusedCell.focusSelectionIndex,
+                row: focusedCell.row,
+            };
+            // if we're not in any particular focus cell region, and one exists, go to the first cell of the first one
+            if (focusedCell.focusSelectionIndex == null && selectedRegions.length > 0) {
+                var focusCellRegion = regions_2.Regions.getCellRegionFromRegion(selectedRegions[0], _this.grid.numRows, _this.grid.numCols);
+                newFocusedCell = {
+                    col: focusCellRegion.cols[0],
+                    focusSelectionIndex: 0,
+                    row: focusCellRegion.rows[0],
+                };
+            }
+            else {
+                if (selectedRegions.length === 0) {
+                    _this.handleFocusMove(e, direction);
+                    return;
+                }
+                var focusCellRegion = regions_2.Regions.getCellRegionFromRegion(selectedRegions[focusedCell.focusSelectionIndex], _this.grid.numRows, _this.grid.numCols);
+                if (focusCellRegion.cols[0] === focusCellRegion.cols[1] &&
+                    focusCellRegion.rows[0] === focusCellRegion.rows[1] &&
+                    selectedRegions.length === 1) {
+                    _this.handleFocusMove(e, direction);
+                    return;
+                }
+                switch (direction) {
+                    case "up":
+                        newFocusedCell = _this.moveFocusCell("row", "col", true, newFocusedCell, focusCellRegion);
+                        break;
+                    case "left":
+                        newFocusedCell = _this.moveFocusCell("col", "row", true, newFocusedCell, focusCellRegion);
+                        break;
+                    case "down":
+                        newFocusedCell = _this.moveFocusCell("row", "col", false, newFocusedCell, focusCellRegion);
+                        break;
+                    case "right":
+                        newFocusedCell = _this.moveFocusCell("col", "row", false, newFocusedCell, focusCellRegion);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            if (newFocusedCell.row < 0 ||
+                newFocusedCell.row >= _this.grid.numRows ||
+                newFocusedCell.col < 0 ||
+                newFocusedCell.col >= _this.grid.numCols) {
+                return;
+            }
+            _this.handleFocus(newFocusedCell);
+            // keep the focused cell in view
+            _this.scrollBodyToFocusedCell(newFocusedCell);
+        };
+        _this.scrollBodyToFocusedCell = function (focusedCell) {
+            var row = focusedCell.row, col = focusedCell.col;
+            var viewportRect = _this.state.viewportRect;
+            // sort keys in normal CSS position order (per the trusty TRBL/"trouble" acronym)
+            // tslint:disable:object-literal-sort-keys
+            var viewportBounds = {
+                top: viewportRect.top,
+                right: viewportRect.left + viewportRect.width,
+                bottom: viewportRect.top + viewportRect.height,
+                left: viewportRect.left,
+            };
+            var focusedCellBounds = {
+                top: _this.grid.getCumulativeHeightBefore(row),
+                right: _this.grid.getCumulativeWidthAt(col),
+                bottom: _this.grid.getCumulativeHeightAt(row),
+                left: _this.grid.getCumulativeWidthBefore(col),
+            };
+            // tslint:enable:object-literal-sort-keys
+            var focusedCellWidth = focusedCellBounds.right - focusedCellBounds.left;
+            var focusedCellHeight = focusedCellBounds.bottom - focusedCellBounds.top;
+            var isFocusedCellWiderThanViewport = focusedCellWidth > viewportRect.width;
+            var isFocusedCellTallerThanViewport = focusedCellHeight > viewportRect.height;
+            var nextScrollTop = viewportRect.top;
+            var nextScrollLeft = viewportRect.left;
+            // keep the top end of an overly tall focused cell in view when moving left and right
+            // (without this OR check, the body seesaws to fit the top end, then the bottom end, etc.)
+            if (focusedCellBounds.top < viewportBounds.top || isFocusedCellTallerThanViewport) {
+                // scroll up (minus one pixel to avoid clipping the focused-cell border)
+                nextScrollTop = Math.max(0, focusedCellBounds.top - 1);
+            }
+            else if (focusedCellBounds.bottom > viewportBounds.bottom) {
+                // scroll down
+                var scrollDelta = focusedCellBounds.bottom - viewportBounds.bottom;
+                nextScrollTop = viewportBounds.top + scrollDelta;
+            }
+            // keep the left end of an overly wide focused cell in view when moving up and down
+            if (focusedCellBounds.left < viewportBounds.left || isFocusedCellWiderThanViewport) {
+                // scroll left (again minus one additional pixel)
+                nextScrollLeft = Math.max(0, focusedCellBounds.left - 1);
+            }
+            else if (focusedCellBounds.right > viewportBounds.right) {
+                // scroll right
+                var scrollDelta = focusedCellBounds.right - viewportBounds.right;
+                nextScrollLeft = viewportBounds.left + scrollDelta;
+            }
+            _this.syncViewportPosition(nextScrollLeft, nextScrollTop);
+        };
+        _this.handleFocus = function (focusedCell) {
+            if (!_this.props.enableFocusedCell) {
+                // don't set focus state if focus is not allowed
+                return;
+            }
+            // only set focused cell state if not specified in props
+            if (_this.props.focusedCell == null) {
+                _this.setState({ focusedCell: focusedCell });
+            }
+            core_1.Utils.safeInvoke(_this.props.onFocusedCell, focusedCell);
+        };
+        _this.handleSelection = function (selectedRegions) {
+            // only set selectedRegions state if not specified in props
+            if (_this.props.selectedRegions == null) {
+                _this.setState({ selectedRegions: selectedRegions });
+            }
+            var onSelection = _this.props.onSelection;
+            if (onSelection != null) {
+                onSelection(selectedRegions);
+            }
+        };
+        _this.handleColumnsReordering = function (verticalGuides) {
+            _this.setState({ isReordering: true, verticalGuides: verticalGuides });
+        };
+        _this.handleColumnsReordered = function (oldIndex, newIndex, length) {
+            _this.setState({ isReordering: false, verticalGuides: undefined });
+            core_1.Utils.safeInvoke(_this.props.onColumnsReordered, oldIndex, newIndex, length);
+        };
+        _this.handleRowsReordering = function (horizontalGuides) {
+            _this.setState({ isReordering: true, horizontalGuides: horizontalGuides });
+        };
+        _this.handleRowsReordered = function (oldIndex, newIndex, length) {
+            _this.setState({ isReordering: false, horizontalGuides: undefined });
+            core_1.Utils.safeInvoke(_this.props.onRowsReordered, oldIndex, newIndex, length);
+        };
+        _this.handleLayoutLock = function (isLayoutLocked) {
+            if (isLayoutLocked === void 0) { isLayoutLocked = false; }
+            _this.setState({ isLayoutLocked: isLayoutLocked });
+        };
+        _this.hasLoadingOption = function (loadingOptions, loadingOption) {
+            if (loadingOptions == null) {
+                return undefined;
+            }
+            return loadingOptions.indexOf(loadingOption) >= 0;
+        };
+        _this.updateViewportRect = function (nextViewportRect) {
+            var viewportRect = _this.state.viewportRect;
+            _this.setState({ viewportRect: nextViewportRect });
+            var didViewportChange = (viewportRect != null && !viewportRect.equals(nextViewportRect)) ||
+                (viewportRect == null && nextViewportRect != null);
+            if (didViewportChange) {
+                _this.invokeOnVisibleCellsChangeCallback(nextViewportRect);
+            }
+        };
+        _this.getMaxFrozenColumnIndex = function () {
+            var numFrozenColumns = _this.state.numFrozenColumnsClamped;
+            return numFrozenColumns != null ? numFrozenColumns - 1 : undefined;
+        };
+        _this.getMaxFrozenRowIndex = function () {
+            var numFrozenRows = _this.state.numFrozenRowsClamped;
+            return numFrozenRows != null ? numFrozenRows - 1 : undefined;
+        };
+        _this.handleColumnResizeGuide = function (verticalGuides) {
+            _this.setState({ verticalGuides: verticalGuides });
+        };
+        _this.handleRowResizeGuide = function (horizontalGuides) {
+            _this.setState({ horizontalGuides: horizontalGuides });
+        };
+        var _a = _this.props, children = _a.children, columnWidths = _a.columnWidths, defaultRowHeight = _a.defaultRowHeight, defaultColumnWidth = _a.defaultColumnWidth, numRows = _a.numRows, rowHeights = _a.rowHeights;
+        _this.childrenArray = React.Children.toArray(children);
+        _this.columnIdToIndex = Table_1.createColumnIdIndex(_this.childrenArray);
+        // Create height/width arrays using the lengths from props and
+        // children, the default values from props, and finally any sparse
+        // arrays passed into props.
+        var newColumnWidths = _this.childrenArray.map(function () { return defaultColumnWidth; });
+        newColumnWidths = utils_1.Utils.assignSparseValues(newColumnWidths, columnWidths);
+        var newRowHeights = utils_1.Utils.times(numRows, function () { return defaultRowHeight; });
+        newRowHeights = utils_1.Utils.assignSparseValues(newRowHeights, rowHeights);
+        var selectedRegions = props.selectedRegions == null ? [] : props.selectedRegions;
+        var focusedCell = FocusedCellUtils.getInitialFocusedCell(props.enableFocusedCell, props.focusedCell, undefined, selectedRegions);
+        _this.state = {
+            columnWidths: newColumnWidths,
+            focusedCell: focusedCell,
+            isLayoutLocked: false,
+            isReordering: false,
+            numFrozenColumnsClamped: clampNumFrozenColumns(props),
+            numFrozenRowsClamped: clampNumFrozenRows(props),
+            rowHeights: newRowHeights,
+            selectedRegions: selectedRegions,
+        };
+        return _this;
+    }
+    Table_1 = Table;
+    Table.createColumnIdIndex = function (children) {
+        var columnIdToIndex = {};
+        for (var i = 0; i < children.length; i++) {
+            var key = children[i].props.id;
+            if (key != null) {
+                columnIdToIndex[String(key)] = i;
+            }
+        }
+        return columnIdToIndex;
+    };
+    // Instance methods
+    // ================
+    /**
+     * __Experimental!__ Resizes all rows in the table to the approximate
+     * maximum height of wrapped cell content in each row. Works best when each
+     * cell contains plain text of a consistent font style (though font style
+     * may vary between cells). Since this function uses approximate
+     * measurements, results may not be perfect.
+     *
+     * Approximation parameters can be configured for the entire table or on a
+     * per-cell basis. Default values are fine-tuned to work well with default
+     * Table font styles.
+     */
+    Table.prototype.resizeRowsByApproximateHeight = function (getCellText, options) {
+        var numRows = this.props.numRows;
+        var columnWidths = this.state.columnWidths;
+        var numColumns = columnWidths.length;
+        var rowHeights = [];
+        for (var rowIndex = 0; rowIndex < numRows; rowIndex++) {
+            var maxCellHeightInRow = 0;
+            // iterate through each cell in the row
+            for (var columnIndex = 0; columnIndex < numColumns; columnIndex++) {
+                // resolve all parameters to raw values
+                var _a = this.resolveResizeRowsByApproximateHeightOptions(options, rowIndex, columnIndex), approxCharWidth = _a.getApproximateCharWidth, approxLineHeight = _a.getApproximateLineHeight, horizontalPadding = _a.getCellHorizontalPadding, numBufferLines = _a.getNumBufferLines;
+                var cellText = getCellText(rowIndex, columnIndex);
+                var approxCellHeight = utils_1.Utils.getApproxCellHeight(cellText, columnWidths[columnIndex], approxCharWidth, approxLineHeight, horizontalPadding, numBufferLines);
+                if (approxCellHeight > maxCellHeightInRow) {
+                    maxCellHeightInRow = approxCellHeight;
+                }
+            }
+            rowHeights.push(maxCellHeightInRow);
+        }
+        this.invalidateGrid();
+        this.didUpdateColumnOrRowSizes = true;
+        this.setState({ rowHeights: rowHeights });
+    };
+    /**
+     * Resize all rows in the table to the height of the tallest visible cell in the specified columns.
+     * If no indices are provided, default to using the tallest visible cell from all columns in view.
+     */
+    Table.prototype.resizeRowsByTallestCell = function (columnIndices) {
+        var _this = this;
+        var tallest = 0;
+        if (columnIndices == null) {
+            // Consider all columns currently in viewport
+            var viewportColumnIndices = this.grid.getColumnIndicesInRect(this.state.viewportRect);
+            for (var col = viewportColumnIndices.columnIndexStart; col <= viewportColumnIndices.columnIndexEnd; col++) {
+                tallest = Math.max(tallest, this.locator.getTallestVisibleCellInColumn(col));
+            }
+        }
+        else {
+            var columnIndicesArray = Array.isArray(columnIndices) ? columnIndices : [columnIndices];
+            var tallestByColumns = columnIndicesArray.map(function (col) { return _this.locator.getTallestVisibleCellInColumn(col); });
+            tallest = Math.max.apply(Math, tallestByColumns);
+        }
+        var rowHeights = Array(this.state.rowHeights.length).fill(tallest);
+        this.invalidateGrid();
+        this.didUpdateColumnOrRowSizes = true;
+        this.setState({ rowHeights: rowHeights });
+    };
+    /**
+     * Scrolls the table to the target region in a fashion appropriate to the target region's
+     * cardinality:
+     *
+     * - CELLS: Scroll the top-left cell in the target region to the top-left corner of the viewport.
+     * - FULL_ROWS: Scroll the top-most row in the target region to the top of the viewport.
+     * - FULL_COLUMNS: Scroll the left-most column in the target region to the left side of the viewport.
+     * - FULL_TABLE: Scroll the top-left cell in the table to the top-left corner of the viewport.
+     *
+     * If there are active frozen rows and/or columns, the target region will be positioned in the
+     * top-left corner of the non-frozen area (unless the target region itself is in the frozen
+     * area).
+     *
+     * If the target region is close to the bottom-right corner of the table, this function will
+     * simply scroll the target region as close to the top-left as possible until the bottom-right
+     * corner is reached.
+     */
+    Table.prototype.scrollToRegion = function (region) {
+        var _a = this.state, numFrozenColumns = _a.numFrozenColumnsClamped, numFrozenRows = _a.numFrozenRowsClamped;
+        var _b = this.state.viewportRect, currScrollLeft = _b.left, currScrollTop = _b.top;
+        var _c = ScrollUtils.getScrollPositionForRegion(region, currScrollLeft, currScrollTop, this.grid.getCumulativeWidthBefore, this.grid.getCumulativeHeightBefore, numFrozenRows, numFrozenColumns), scrollLeft = _c.scrollLeft, scrollTop = _c.scrollTop;
+        var correctedScrollLeft = this.shouldDisableHorizontalScroll() ? 0 : scrollLeft;
+        var correctedScrollTop = this.shouldDisableVerticalScroll() ? 0 : scrollTop;
+        // defer to the quadrant stack to keep all quadrant positions in sync
+        this.quadrantStackInstance.scrollToPosition(correctedScrollLeft, correctedScrollTop);
+    };
+    // React lifecycle
+    // ===============
+    Table.prototype.getChildContext = function () {
+        return {
+            enableColumnInteractionBar: this.props.enableColumnInteractionBar,
+        };
+    };
+    Table.prototype.shouldComponentUpdate = function (nextProps, nextState) {
+        var propKeysBlacklist = { exclude: Table_1.SHALLOW_COMPARE_PROP_KEYS_BLACKLIST };
+        var stateKeysBlacklist = { exclude: Table_1.SHALLOW_COMPARE_STATE_KEYS_BLACKLIST };
+        return (!core_1.Utils.shallowCompareKeys(this.props, nextProps, propKeysBlacklist) ||
+            !core_1.Utils.shallowCompareKeys(this.state, nextState, stateKeysBlacklist) ||
+            !core_1.Utils.deepCompareKeys(this.props, nextProps, Table_1.SHALLOW_COMPARE_PROP_KEYS_BLACKLIST) ||
+            !core_1.Utils.deepCompareKeys(this.state, nextState, Table_1.SHALLOW_COMPARE_STATE_KEYS_BLACKLIST));
+    };
+    Table.prototype.componentWillReceiveProps = function (nextProps) {
+        var _this = this;
+        // calls validateProps
+        _super.prototype.componentWillReceiveProps.call(this, nextProps);
+        var children = nextProps.children, columnWidths = nextProps.columnWidths, defaultColumnWidth = nextProps.defaultColumnWidth, defaultRowHeight = nextProps.defaultRowHeight, enableFocusedCell = nextProps.enableFocusedCell, focusedCell = nextProps.focusedCell, forceRerenderOnSelectionChange = nextProps.forceRerenderOnSelectionChange, numRows = nextProps.numRows, rowHeights = nextProps.rowHeights, selectedRegions = nextProps.selectedRegions, selectionModes = nextProps.selectionModes;
+        var didChildrenChange = this.props.children !== nextProps.children;
+        var newChildArray = didChildrenChange
+            ? React.Children.toArray(children)
+            : this.childrenArray;
+        var numCols = newChildArray.length;
+        var shouldInvalidateGrid = false;
+        var newColumnWidths = this.state.columnWidths;
+        if (defaultColumnWidth !== this.props.defaultColumnWidth ||
+            columnWidths !== this.props.columnWidths ||
+            didChildrenChange) {
+            // Try to maintain widths of columns by looking up the width of the
+            // column that had the same `ID` prop. If none is found, use the
+            // previous width at the same index.
+            var previousColumnWidths = newChildArray.map(function (child, index) {
+                var mappedIndex = _this.columnIdToIndex[child.props.id];
+                return _this.state.columnWidths[mappedIndex != null ? mappedIndex : index];
+            });
+            // Make sure the width/height arrays have the correct length, but keep
+            // as many existing widths/heights as possible. Also, apply the
+            // sparse width/heights from props.
+            newColumnWidths = utils_1.Utils.arrayOfLength(newColumnWidths, numCols, defaultColumnWidth);
+            newColumnWidths = utils_1.Utils.assignSparseValues(newColumnWidths, previousColumnWidths);
+            newColumnWidths = utils_1.Utils.assignSparseValues(newColumnWidths, columnWidths);
+            shouldInvalidateGrid = true;
+        }
+        var newRowHeights = this.state.rowHeights;
+        if (defaultRowHeight !== this.props.defaultRowHeight ||
+            rowHeights !== this.props.rowHeights ||
+            numRows !== this.props.numRows) {
+            newRowHeights = utils_1.Utils.arrayOfLength(newRowHeights, numRows, defaultRowHeight);
+            newRowHeights = utils_1.Utils.assignSparseValues(newRowHeights, rowHeights);
+            shouldInvalidateGrid = true;
+        }
+        if (!core_1.Utils.arraysEqual(newColumnWidths, this.state.columnWidths) ||
+            !core_1.Utils.arraysEqual(newRowHeights, this.state.rowHeights)) {
+            // grid invalidation is required after changing this flag,
+            // which happens at the end of this method.
+            this.didUpdateColumnOrRowSizes = true;
+        }
+        var newSelectedRegions = selectedRegions;
+        if (forceRerenderOnSelectionChange && newSelectedRegions !== this.props.selectedRegions) {
+            shouldInvalidateGrid = true;
+        }
+        if (selectedRegions == null) {
+            // if we're in uncontrolled mode, filter out all selected regions that don't
+            // fit in the current new table dimensions
+            newSelectedRegions = this.state.selectedRegions.filter(function (region) {
+                var regionCardinality = regions_2.Regions.getRegionCardinality(region);
+                return (_this.isSelectionModeEnabled(regionCardinality, selectionModes) &&
+                    regions_2.Regions.isRegionValidForTable(region, numRows, numCols));
+            });
+        }
+        var newFocusedCell = FocusedCellUtils.getInitialFocusedCell(enableFocusedCell, focusedCell, this.state.focusedCell, newSelectedRegions);
+        if (didChildrenChange) {
+            this.childrenArray = newChildArray;
+            this.columnIdToIndex = Table_1.createColumnIdIndex(this.childrenArray);
+        }
+        if (shouldInvalidateGrid) {
+            this.invalidateGrid();
+        }
+        this.setState({
+            columnWidths: newColumnWidths,
+            focusedCell: newFocusedCell,
+            numFrozenColumnsClamped: clampNumFrozenColumns(nextProps),
+            numFrozenRowsClamped: clampNumFrozenRows(nextProps),
+            rowHeights: newRowHeights,
+            selectedRegions: newSelectedRegions,
+        });
+    };
+    Table.prototype.render = function () {
+        var _a;
+        var _b = this.props, children = _b.children, className = _b.className, enableRowHeader = _b.enableRowHeader, loadingOptions = _b.loadingOptions, numRows = _b.numRows, enableColumnInteractionBar = _b.enableColumnInteractionBar;
+        var _c = this.state, horizontalGuides = _c.horizontalGuides, numFrozenColumnsClamped = _c.numFrozenColumnsClamped, numFrozenRowsClamped = _c.numFrozenRowsClamped, verticalGuides = _c.verticalGuides;
+        this.validateGrid();
+        var classes = classnames_1.default(Classes.TABLE_CONTAINER, (_a = {},
+            _a[Classes.TABLE_REORDERING] = this.state.isReordering,
+            _a[Classes.TABLE_NO_VERTICAL_SCROLL] = this.shouldDisableVerticalScroll(),
+            _a[Classes.TABLE_NO_HORIZONTAL_SCROLL] = this.shouldDisableHorizontalScroll(),
+            _a[Classes.TABLE_SELECTION_ENABLED] = this.isSelectionModeEnabled(regions_2.RegionCardinality.CELLS),
+            _a[Classes.TABLE_NO_ROWS] = numRows === 0,
+            _a), className);
+        return (React.createElement("div", { className: classes, ref: this.refHandlers.rootTable, onScroll: this.handleRootScroll },
+            React.createElement(tableQuadrantStack_1.TableQuadrantStack, { bodyRef: this.refHandlers.cellContainer, bodyRenderer: this.renderBody, columnHeaderCellRenderer: this.renderColumnHeader, columnHeaderRef: this.refHandlers.columnHeader, enableColumnInteractionBar: enableColumnInteractionBar, enableRowHeader: enableRowHeader, grid: this.grid, handleColumnResizeGuide: this.handleColumnResizeGuide, handleColumnsReordering: this.handleColumnsReordering, handleRowResizeGuide: this.handleRowResizeGuide, handleRowsReordering: this.handleRowsReordering, isHorizontalScrollDisabled: this.shouldDisableHorizontalScroll(), isVerticalScrollDisabled: this.shouldDisableVerticalScroll(), loadingOptions: loadingOptions, numColumns: React.Children.count(children), numFrozenColumns: numFrozenColumnsClamped, numFrozenRows: numFrozenRowsClamped, numRows: numRows, onScroll: this.handleBodyScroll, ref: this.refHandlers.quadrantStack, menuRenderer: this.renderMenu, rowHeaderCellRenderer: this.renderRowHeader, rowHeaderRef: this.refHandlers.rowHeader, scrollContainerRef: this.refHandlers.scrollContainer }),
+            React.createElement("div", { className: classnames_1.default(Classes.TABLE_OVERLAY_LAYER, Classes.TABLE_OVERLAY_REORDERING_CURSOR) }),
+            React.createElement(guides_1.GuideLayer, { className: Classes.TABLE_RESIZE_GUIDES, verticalGuides: verticalGuides, horizontalGuides: horizontalGuides })));
+    };
+    Table.prototype.renderHotkeys = function () {
+        var hotkeys = [
+            this.maybeRenderCopyHotkey(),
+            this.maybeRenderSelectAllHotkey(),
+            this.maybeRenderFocusHotkeys(),
+            this.maybeRenderSelectionResizeHotkeys(),
+        ];
+        return React.createElement(core_1.Hotkeys, null, hotkeys.filter(function (element) { return element !== undefined; }));
+    };
+    /**
+     * When the component mounts, the HTML Element refs will be available, so
+     * we constructor the Locator, which queries the elements' bounding
+     * ClientRects.
+     */
+    Table.prototype.componentDidMount = function () {
+        var _this = this;
+        this.validateGrid();
+        this.locator = new locator_1.Locator(this.rootTableElement, this.scrollContainerElement, this.cellContainerElement);
+        this.updateLocator();
+        this.updateViewportRect(this.locator.getViewportRect());
+        this.resizeSensorDetach = resizeSensor_1.ResizeSensor.attach(this.rootTableElement, function () {
+            if (!_this.state.isLayoutLocked) {
+                _this.updateViewportRect(_this.locator.getViewportRect());
+            }
+        });
+    };
+    Table.prototype.componentWillUnmount = function () {
+        if (this.resizeSensorDetach != null) {
+            this.resizeSensorDetach();
+            delete this.resizeSensorDetach;
+        }
+        this.didCompletelyMount = false;
+    };
+    Table.prototype.componentDidUpdate = function () {
+        if (this.locator != null) {
+            this.validateGrid();
+            this.updateLocator();
+        }
+        if (this.didUpdateColumnOrRowSizes) {
+            this.quadrantStackInstance.synchronizeQuadrantViews();
+            this.didUpdateColumnOrRowSizes = false;
+        }
+        this.maybeScrollTableIntoView();
+    };
+    Table.prototype.validateProps = function (props) {
+        var children = props.children, columnWidths = props.columnWidths, numFrozenColumns = props.numFrozenColumns, numFrozenRows = props.numFrozenRows, numRows = props.numRows, rowHeights = props.rowHeights;
+        var numColumns = React.Children.count(children);
+        // do cheap error-checking first.
+        if (numRows != null && numRows < 0) {
+            throw new Error(Errors.TABLE_NUM_ROWS_NEGATIVE);
+        }
+        if (numFrozenRows != null && numFrozenRows < 0) {
+            throw new Error(Errors.TABLE_NUM_FROZEN_ROWS_NEGATIVE);
+        }
+        if (numFrozenColumns != null && numFrozenColumns < 0) {
+            throw new Error(Errors.TABLE_NUM_FROZEN_COLUMNS_NEGATIVE);
+        }
+        if (numRows != null && rowHeights != null && rowHeights.length !== numRows) {
+            throw new Error(Errors.TABLE_NUM_ROWS_ROW_HEIGHTS_MISMATCH);
+        }
+        if (numColumns != null && columnWidths != null && columnWidths.length !== numColumns) {
+            throw new Error(Errors.TABLE_NUM_COLUMNS_COLUMN_WIDTHS_MISMATCH);
+        }
+        React.Children.forEach(children, function (child) {
+            if (!core_1.Utils.isElementOfType(child, column_1.Column)) {
+                throw new Error(Errors.TABLE_NON_COLUMN_CHILDREN_WARNING);
+            }
+        });
+        // these are recoverable scenarios, so just print a warning.
+        if (numFrozenRows != null && numRows != null && numFrozenRows > numRows) {
+            console.warn(Errors.TABLE_NUM_FROZEN_ROWS_BOUND_WARNING);
+        }
+        if (numFrozenColumns != null && numFrozenColumns > numColumns) {
+            console.warn(Errors.TABLE_NUM_FROZEN_COLUMNS_BOUND_WARNING);
+        }
+    };
+    // Hotkeys
+    // =======
+    Table.prototype.maybeRenderCopyHotkey = function () {
+        var getCellClipboardData = this.props.getCellClipboardData;
+        if (getCellClipboardData != null) {
+            return (React.createElement(core_1.Hotkey, { key: "copy-hotkey", label: "Copy selected table cells", group: "Table", combo: "mod+c", onKeyDown: this.handleCopy }));
+        }
+        else {
+            return undefined;
+        }
+    };
+    Table.prototype.maybeRenderSelectionResizeHotkeys = function () {
+        var _a = this.props, enableMultipleSelection = _a.enableMultipleSelection, selectionModes = _a.selectionModes;
+        var isSomeSelectionModeEnabled = selectionModes.length > 0;
+        if (enableMultipleSelection && isSomeSelectionModeEnabled) {
+            return [
+                React.createElement(core_1.Hotkey, { key: "resize-selection-up", label: "Resize selection upward", group: "Table", combo: "shift+up", onKeyDown: this.handleSelectionResizeUp }),
+                React.createElement(core_1.Hotkey, { key: "resize-selection-down", label: "Resize selection downward", group: "Table", combo: "shift+down", onKeyDown: this.handleSelectionResizeDown }),
+                React.createElement(core_1.Hotkey, { key: "resize-selection-left", label: "Resize selection leftward", group: "Table", combo: "shift+left", onKeyDown: this.handleSelectionResizeLeft }),
+                React.createElement(core_1.Hotkey, { key: "resize-selection-right", label: "Resize selection rightward", group: "Table", combo: "shift+right", onKeyDown: this.handleSelectionResizeRight }),
+            ];
+        }
+        else {
+            return undefined;
+        }
+    };
+    Table.prototype.maybeRenderFocusHotkeys = function () {
+        var enableFocusedCell = this.props.enableFocusedCell;
+        if (enableFocusedCell != null) {
+            return [
+                React.createElement(core_1.Hotkey, { key: "move left", label: "Move focus cell left", group: "Table", combo: "left", onKeyDown: this.handleFocusMoveLeft }),
+                React.createElement(core_1.Hotkey, { key: "move right", label: "Move focus cell right", group: "Table", combo: "right", onKeyDown: this.handleFocusMoveRight }),
+                React.createElement(core_1.Hotkey, { key: "move up", label: "Move focus cell up", group: "Table", combo: "up", onKeyDown: this.handleFocusMoveUp }),
+                React.createElement(core_1.Hotkey, { key: "move down", label: "Move focus cell down", group: "Table", combo: "down", onKeyDown: this.handleFocusMoveDown }),
+                React.createElement(core_1.Hotkey, { key: "move tab", label: "Move focus cell tab", group: "Table", combo: "tab", onKeyDown: this.handleFocusMoveRightInternal, allowInInput: true }),
+                React.createElement(core_1.Hotkey, { key: "move shift-tab", label: "Move focus cell shift tab", group: "Table", combo: "shift+tab", onKeyDown: this.handleFocusMoveLeftInternal, allowInInput: true }),
+                React.createElement(core_1.Hotkey, { key: "move enter", label: "Move focus cell enter", group: "Table", combo: "enter", onKeyDown: this.handleFocusMoveDownInternal, allowInInput: true }),
+                React.createElement(core_1.Hotkey, { key: "move shift-enter", label: "Move focus cell shift enter", group: "Table", combo: "shift+enter", onKeyDown: this.handleFocusMoveUpInternal, allowInInput: true }),
+            ];
+        }
+        else {
+            return [];
+        }
+    };
+    Table.prototype.maybeRenderSelectAllHotkey = function () {
+        if (this.isSelectionModeEnabled(regions_2.RegionCardinality.FULL_TABLE)) {
+            return (React.createElement(core_1.Hotkey, { key: "select-all-hotkey", label: "Select all", group: "Table", combo: "mod+a", onKeyDown: this.handleSelectAllHotkey }));
+        }
+        else {
+            return undefined;
+        }
+    };
+    /**
+     * Replaces the selected region at the specified array index, with the
+     * region provided.
+     */
+    Table.prototype.updateSelectedRegionAtIndex = function (region, index) {
+        var _a = this.props, children = _a.children, numRows = _a.numRows;
+        var selectedRegions = this.state.selectedRegions;
+        var numColumns = React.Children.count(children);
+        var maxRowIndex = Math.max(0, numRows - 1);
+        var maxColumnIndex = Math.max(0, numColumns - 1);
+        var clampedNextRegion = regions_2.Regions.clampRegion(region, maxRowIndex, maxColumnIndex);
+        var nextSelectedRegions = regions_2.Regions.update(selectedRegions, clampedNextRegion, index);
+        this.handleSelection(nextSelectedRegions);
+    };
+    // Quadrant refs
+    // =============
+    Table.prototype.moveFocusCell = function (primaryAxis, secondaryAxis, isUpOrLeft, newFocusedCell, focusCellRegion) {
+        var selectedRegions = this.state.selectedRegions;
+        var primaryAxisPlural = primaryAxis === "row" ? "rows" : "cols";
+        var secondaryAxisPlural = secondaryAxis === "row" ? "rows" : "cols";
+        var movementDirection = isUpOrLeft ? -1 : +1;
+        var regionIntervalIndex = isUpOrLeft ? 1 : 0;
+        // try moving the cell in the direction along the primary axis
+        newFocusedCell[primaryAxis] += movementDirection;
+        var isPrimaryIndexOutOfBounds = isUpOrLeft
+            ? newFocusedCell[primaryAxis] < focusCellRegion[primaryAxisPlural][0]
+            : newFocusedCell[primaryAxis] > focusCellRegion[primaryAxisPlural][1];
+        if (isPrimaryIndexOutOfBounds) {
+            // if we moved outside the bounds of selection region,
+            // move to the start (or end) of the primary axis, and move one along the secondary
+            newFocusedCell[primaryAxis] = focusCellRegion[primaryAxisPlural][regionIntervalIndex];
+            newFocusedCell[secondaryAxis] += movementDirection;
+            var isSecondaryIndexOutOfBounds = isUpOrLeft
+                ? newFocusedCell[secondaryAxis] < focusCellRegion[secondaryAxisPlural][0]
+                : newFocusedCell[secondaryAxis] > focusCellRegion[secondaryAxisPlural][1];
+            if (isSecondaryIndexOutOfBounds) {
+                // if moving along the secondary also moves us outside
+                // go to the start (or end) of the next (or previous region)
+                // (note that if there's only one region you'll be moving to the opposite corner, which is fine)
+                var newFocusCellSelectionIndex = newFocusedCell.focusSelectionIndex + movementDirection;
+                // newFocusCellSelectionIndex should be one more (or less), unless we need to wrap around
+                if (isUpOrLeft ? newFocusCellSelectionIndex < 0 : newFocusCellSelectionIndex >= selectedRegions.length) {
+                    newFocusCellSelectionIndex = isUpOrLeft ? selectedRegions.length - 1 : 0;
+                }
+                var newFocusCellRegion = regions_2.Regions.getCellRegionFromRegion(selectedRegions[newFocusCellSelectionIndex], this.grid.numRows, this.grid.numCols);
+                newFocusedCell = {
+                    col: newFocusCellRegion.cols[regionIntervalIndex],
+                    focusSelectionIndex: newFocusCellSelectionIndex,
+                    row: newFocusCellRegion.rows[regionIntervalIndex],
+                };
+            }
+        }
+        return newFocusedCell;
+    };
+    Table.prototype.shouldDisableVerticalScroll = function () {
+        var enableGhostCells = this.props.enableGhostCells;
+        var viewportRect = this.state.viewportRect;
+        var rowIndices = this.grid.getRowIndicesInRect(viewportRect, enableGhostCells);
+        var isViewportUnscrolledVertically = viewportRect != null && viewportRect.top === 0;
+        var areRowHeadersLoading = this.hasLoadingOption(this.props.loadingOptions, regions_2.TableLoadingOption.ROW_HEADERS);
+        var areGhostRowsVisible = enableGhostCells && this.grid.isGhostIndex(rowIndices.rowIndexEnd, 0);
+        return areGhostRowsVisible && (isViewportUnscrolledVertically || areRowHeadersLoading);
+    };
+    Table.prototype.shouldDisableHorizontalScroll = function () {
+        var enableGhostCells = this.props.enableGhostCells;
+        var viewportRect = this.state.viewportRect;
+        var columnIndices = this.grid.getColumnIndicesInRect(viewportRect, enableGhostCells);
+        var isViewportUnscrolledHorizontally = viewportRect != null && viewportRect.left === 0;
+        var areGhostColumnsVisible = enableGhostCells && this.grid.isGhostColumn(columnIndices.columnIndexEnd);
+        var areColumnHeadersLoading = this.hasLoadingOption(this.props.loadingOptions, regions_2.TableLoadingOption.COLUMN_HEADERS);
+        return areGhostColumnsVisible && (isViewportUnscrolledHorizontally || areColumnHeadersLoading);
+    };
+    Table.prototype.maybeScrollTableIntoView = function () {
+        var viewportRect = this.state.viewportRect;
+        var tableBottom = this.grid.getCumulativeHeightAt(this.grid.numRows - 1);
+        var tableRight = this.grid.getCumulativeWidthAt(this.grid.numCols - 1);
+        var nextScrollTop = tableBottom < viewportRect.top + viewportRect.height
+            ? // scroll the last row into view
+                Math.max(0, tableBottom - viewportRect.height)
+            : viewportRect.top;
+        var nextScrollLeft = tableRight < viewportRect.left + viewportRect.width
+            ? // scroll the last column into view
+                Math.max(0, tableRight - viewportRect.width)
+            : viewportRect.left;
+        this.syncViewportPosition(nextScrollLeft, nextScrollTop);
+    };
+    Table.prototype.getColumnProps = function (columnIndex) {
+        var column = this.childrenArray[columnIndex];
+        return column.props;
+    };
+    Table.prototype.isGuidesShowing = function () {
+        return this.state.verticalGuides != null || this.state.horizontalGuides != null;
+    };
+    Table.prototype.isSelectionModeEnabled = function (selectionMode, selectionModes) {
+        if (selectionModes === void 0) { selectionModes = this.props.selectionModes; }
+        var _a = this.props, children = _a.children, numRows = _a.numRows;
+        var numColumns = React.Children.count(children);
+        return selectionModes.indexOf(selectionMode) >= 0 && numRows > 0 && numColumns > 0;
+    };
+    Table.prototype.getEnabledSelectionHandler = function (selectionMode) {
+        if (!this.isSelectionModeEnabled(selectionMode)) {
+            // If the selection mode isn't enabled, return a callback that
+            // will clear the selection. For example, if row selection is
+            // disabled, clicking on the row header will clear the table's
+            // selection. If all selection modes are enabled, clicking on the
+            // same region twice will clear the selection.
+            return this.clearSelection;
+        }
+        else {
+            return this.handleSelection;
+        }
+    };
+    Table.prototype.invalidateGrid = function () {
+        this.grid = null;
+    };
+    Table.prototype.validateGrid = function () {
+        if (this.grid == null) {
+            var _a = this.props, defaultRowHeight = _a.defaultRowHeight, defaultColumnWidth = _a.defaultColumnWidth;
+            var _b = this.state, rowHeights = _b.rowHeights, columnWidths = _b.columnWidths;
+            this.grid = new grid_1.Grid(rowHeights, columnWidths, grid_1.Grid.DEFAULT_BLEED, defaultRowHeight, defaultColumnWidth);
+            this.invokeOnVisibleCellsChangeCallback(this.state.viewportRect);
+        }
+    };
+    /**
+     * Renders a `RegionLayer`, applying styles to the regions using the
+     * supplied `IRegionStyler`. `RegionLayer` is a `PureRender` component, so
+     * the `IRegionStyler` should be a new instance on every render if we
+     * intend to redraw the region layer.
+     */
+    Table.prototype.maybeRenderRegions = function (getRegionStyle, quadrantType) {
+        if (this.isGuidesShowing() && !this.state.isReordering) {
+            // we want to show guides *and* the selection styles when reordering rows or columns
+            return undefined;
+        }
+        var regionGroups = regions_2.Regions.joinStyledRegionGroups(this.state.selectedRegions, this.props.styledRegionGroups, this.state.focusedCell);
+        return regionGroups.map(function (regionGroup, index) {
+            var regionStyles = regionGroup.regions.map(function (region) { return getRegionStyle(region, quadrantType); });
+            return (React.createElement(regions_1.RegionLayer, { className: classnames_1.default(regionGroup.className), key: index, regions: regionGroup.regions, regionStyles: regionStyles }));
+        });
+    };
+    Table.prototype.syncViewportPosition = function (nextScrollLeft, nextScrollTop) {
+        var viewportRect = this.state.viewportRect;
+        var didScrollTopChange = nextScrollTop !== viewportRect.top;
+        var didScrollLeftChange = nextScrollLeft !== viewportRect.left;
+        if (didScrollTopChange || didScrollLeftChange) {
+            // we need to modify the scroll container explicitly for the viewport to shift. in so
+            // doing, we add the size of the header elements, which are not technically part of the
+            // "grid" concept (the grid only consists of body cells at present).
+            if (didScrollTopChange) {
+                var topCorrection = this.shouldDisableVerticalScroll() ? 0 : this.columnHeaderElement.clientHeight;
+                this.scrollContainerElement.scrollTop = nextScrollTop + topCorrection;
+            }
+            if (didScrollLeftChange) {
+                var leftCorrection = this.shouldDisableHorizontalScroll() || this.rowHeaderElement == null
+                    ? 0
+                    : this.rowHeaderElement.clientWidth;
+                this.scrollContainerElement.scrollLeft = nextScrollLeft + leftCorrection;
+            }
+            var nextViewportRect = new rect_1.Rect(nextScrollLeft, nextScrollTop, viewportRect.width, viewportRect.height);
+            this.updateViewportRect(nextViewportRect);
+        }
+    };
+    Table.prototype.updateLocator = function () {
+        this.locator
+            .setGrid(this.grid)
+            .setNumFrozenRows(this.state.numFrozenRowsClamped)
+            .setNumFrozenColumns(this.state.numFrozenColumnsClamped);
+    };
+    Table.prototype.invokeOnVisibleCellsChangeCallback = function (viewportRect) {
+        var columnIndices = this.grid.getColumnIndicesInRect(viewportRect);
+        var rowIndices = this.grid.getRowIndicesInRect(viewportRect);
+        core_1.Utils.safeInvoke(this.props.onVisibleCellsChange, rowIndices, columnIndices);
+    };
+    /**
+     * Normalizes RenderMode.BATCH_ON_UPDATE into RenderMode.{BATCH,NONE}. We do
+     * this because there are actually multiple updates required before the
+     * <Table> is considered fully "mounted," and adding that knowledge to child
+     * components would lead to tight coupling. Thus, keep it simple for them.
+     */
+    Table.prototype.getNormalizedRenderMode = function () {
+        var renderMode = this.props.renderMode;
+        var shouldBatchRender = renderMode === renderMode_1.RenderMode.BATCH || (renderMode === renderMode_1.RenderMode.BATCH_ON_UPDATE && this.didCompletelyMount);
+        return shouldBatchRender ? renderMode_1.RenderMode.BATCH : renderMode_1.RenderMode.NONE;
+    };
+    /**
+     * Returns an object with option keys mapped to their resolved values
+     * (falling back to default values as necessary).
+     */
+    Table.prototype.resolveResizeRowsByApproximateHeightOptions = function (options, rowIndex, columnIndex) {
+        var optionKeys = Object.keys(Table_1.resizeRowsByApproximateHeightDefaults);
+        var optionReducer = function (agg, key) {
+            agg[key] =
+                options != null && options[key] != null
+                    ? core_1.Utils.safeInvokeOrValue(options[key], rowIndex, columnIndex)
+                    : Table_1.resizeRowsByApproximateHeightDefaults[key];
+            return agg;
+        };
+        var resolvedOptions = optionKeys.reduce(optionReducer, {});
+        return resolvedOptions;
+    };
+    var Table_1;
+    Table.displayName = core_1.DISPLAYNAME_PREFIX + ".Table";
+    Table.defaultProps = {
+        defaultColumnWidth: 150,
+        defaultRowHeight: 20,
+        enableFocusedCell: false,
+        enableGhostCells: false,
+        enableMultipleSelection: true,
+        enableRowHeader: true,
+        forceRerenderOnSelectionChange: false,
+        loadingOptions: [],
+        minColumnWidth: 50,
+        minRowHeight: 20,
+        numFrozenColumns: 0,
+        numFrozenRows: 0,
+        numRows: 0,
+        renderMode: renderMode_1.RenderMode.BATCH_ON_UPDATE,
+        rowHeaderCellRenderer: rowHeader_1.renderDefaultRowHeader,
+        selectionModes: regions_2.SelectionModes.ALL,
+    };
+    Table.childContextTypes = context_1.columnInteractionBarContextTypes;
+    // these default values for `resizeRowsByApproximateHeight` have been
+    // fine-tuned to work well with default Table font styles.
+    Table.resizeRowsByApproximateHeightDefaults = {
+        getApproximateCharWidth: 8,
+        getApproximateLineHeight: 18,
+        getCellHorizontalPadding: 2 * locator_1.Locator.CELL_HORIZONTAL_PADDING,
+        getNumBufferLines: 1,
+    };
+    Table.SHALLOW_COMPARE_PROP_KEYS_BLACKLIST = [
+        "selectedRegions",
+    ];
+    Table.SHALLOW_COMPARE_STATE_KEYS_BLACKLIST = [
+        "selectedRegions",
+        "viewportRect",
+    ];
+    Table = Table_1 = tslib_1.__decorate([
+        core_1.HotkeysTarget
+    ], Table);
+    return Table;
+}(core_1.AbstractComponent));
+exports.Table = Table;
+function clampNumFrozenColumns(props) {
+    var numFrozenColumns = props.numFrozenColumns;
+    var numColumns = React.Children.count(props.children);
+    return clampPotentiallyNullValue(numFrozenColumns, numColumns);
+}
+function clampNumFrozenRows(props) {
+    var numFrozenRows = props.numFrozenRows, numRows = props.numRows;
+    return clampPotentiallyNullValue(numFrozenRows, numRows);
+}
+// add explicit `| null | undefined`, because the params make more sense in this
+// order, and you can't have an optional param precede a required param.
+function clampPotentiallyNullValue(value, max) {
+    return value == null ? 0 : utils_1.Utils.clamp(value, 0, max);
+}
+
+},{"./column":136,"./common/classes":138,"./common/clipboard":139,"./common/context":140,"./common/direction":142,"./common/errors":143,"./common/grid":144,"./common/internal/focusedCellUtils":147,"./common/internal/scrollUtils":149,"./common/internal/selectionUtils":150,"./common/rect":152,"./common/renderMode":153,"./common/utils":155,"./headers/columnHeader":156,"./headers/columnHeaderCell":157,"./headers/rowHeader":161,"./interactions/resizeSensor":172,"./layers/guides":174,"./layers/regions":175,"./locator":176,"./quadrants/tableQuadrant":177,"./quadrants/tableQuadrantStack":178,"./regions":180,"./tableBody":182,"@blueprintjs/core":105,"classnames":185,"react":223,"tslib":184}],182:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
+var core_1 = require("@blueprintjs/core");
+var classnames_1 = tslib_1.__importDefault(require("classnames"));
+var React = tslib_1.__importStar(require("react"));
+var Classes = tslib_1.__importStar(require("./common/classes"));
+var contextMenuTargetWrapper_1 = require("./common/contextMenuTargetWrapper");
+var renderMode_1 = require("./common/renderMode");
+var menus_1 = require("./interactions/menus");
+var selectable_1 = require("./interactions/selectable");
+var regions_1 = require("./regions");
+var tableBodyCells_1 = require("./tableBodyCells");
+var DEEP_COMPARE_KEYS = ["selectedRegions"];
+var TableBody = /** @class */ (function (_super) {
+    tslib_1.__extends(TableBody, _super);
+    function TableBody() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.renderContextMenu = function (e) {
+            var _a = _this.props, grid = _a.grid, onFocusedCell = _a.onFocusedCell, onSelection = _a.onSelection, bodyContextMenuRenderer = _a.bodyContextMenuRenderer, selectedRegions = _a.selectedRegions;
+            var numRows = grid.numRows, numCols = grid.numCols;
+            if (bodyContextMenuRenderer == null) {
+                return undefined;
+            }
+            var targetRegion = _this.locateClick(e.nativeEvent);
+            var nextSelectedRegions = selectedRegions;
+            // if the event did not happen within a selected region, clear all
+            // selections and select the right-clicked cell.
+            var foundIndex = regions_1.Regions.findContainingRegion(selectedRegions, targetRegion);
+            if (foundIndex < 0) {
+                nextSelectedRegions = [targetRegion];
+                onSelection(nextSelectedRegions);
+                // move the focused cell to the new region.
+                var nextFocusedCell = tslib_1.__assign({}, regions_1.Regions.getFocusCellCoordinatesFromRegion(targetRegion), { focusSelectionIndex: 0 });
+                onFocusedCell(nextFocusedCell);
+            }
+            var menuContext = new menus_1.MenuContext(targetRegion, nextSelectedRegions, numRows, numCols);
+            var contextMenu = bodyContextMenuRenderer(menuContext);
+            return contextMenu == null ? undefined : contextMenu;
+        };
+        // Callbacks
+        // =========
+        _this.handleSelectionEnd = function () {
+            _this.activationCell = null; // not strictly required, but good practice
+        };
+        _this.locateClick = function (event) {
+            _this.activationCell = _this.props.locator.convertPointToCell(event.clientX, event.clientY);
+            return regions_1.Regions.cell(_this.activationCell.row, _this.activationCell.col);
+        };
+        _this.locateDrag = function (_event, coords, returnEndOnly) {
+            if (returnEndOnly === void 0) { returnEndOnly = false; }
+            var start = _this.activationCell;
+            var end = _this.props.locator.convertPointToCell(coords.current[0], coords.current[1]);
+            return returnEndOnly ? regions_1.Regions.cell(end.row, end.col) : regions_1.Regions.cell(start.row, start.col, end.row, end.col);
+        };
+        return _this;
+    }
+    // TODO: Does this method need to be public?
+    // (see: https://github.com/palantir/blueprint/issues/1617)
+    TableBody.cellClassNames = function (rowIndex, columnIndex) {
+        return tableBodyCells_1.cellClassNames(rowIndex, columnIndex);
+    };
+    TableBody.prototype.shouldComponentUpdate = function (nextProps) {
+        return (!core_1.Utils.shallowCompareKeys(this.props, nextProps, { exclude: DEEP_COMPARE_KEYS }) ||
+            !core_1.Utils.deepCompareKeys(this.props, nextProps, DEEP_COMPARE_KEYS));
+    };
+    TableBody.prototype.render = function () {
+        var _a = this.props, grid = _a.grid, numFrozenColumns = _a.numFrozenColumns, numFrozenRows = _a.numFrozenRows;
+        var defaultStyle = grid.getRect().sizeStyle();
+        var style = {
+            height: numFrozenRows != null ? grid.getCumulativeHeightAt(numFrozenRows - 1) : defaultStyle.height,
+            width: numFrozenColumns != null ? grid.getCumulativeWidthAt(numFrozenColumns - 1) : defaultStyle.width,
+        };
+        return (React.createElement(selectable_1.DragSelectable, { enableMultipleSelection: this.props.enableMultipleSelection, focusedCell: this.props.focusedCell, locateClick: this.locateClick, locateDrag: this.locateDrag, onFocusedCell: this.props.onFocusedCell, onSelection: this.props.onSelection, onSelectionEnd: this.handleSelectionEnd, selectedRegions: this.props.selectedRegions, selectedRegionTransform: this.props.selectedRegionTransform },
+            React.createElement(contextMenuTargetWrapper_1.ContextMenuTargetWrapper, { className: classnames_1.default(Classes.TABLE_BODY_VIRTUAL_CLIENT, Classes.TABLE_CELL_CLIENT), renderContextMenu: this.renderContextMenu, style: style },
+                React.createElement(tableBodyCells_1.TableBodyCells, { cellRenderer: this.props.cellRenderer, focusedCell: this.props.focusedCell, grid: grid, loading: this.props.loading, onCompleteRender: this.props.onCompleteRender, renderMode: this.props.renderMode, columnIndexStart: this.props.columnIndexStart, columnIndexEnd: this.props.columnIndexEnd, rowIndexStart: this.props.rowIndexStart, rowIndexEnd: this.props.rowIndexEnd, viewportRect: this.props.viewportRect }))));
+    };
+    TableBody.defaultProps = {
+        loading: false,
+        renderMode: renderMode_1.RenderMode.BATCH,
+    };
+    return TableBody;
+}(React.Component));
+exports.TableBody = TableBody;
+
+},{"./common/classes":138,"./common/contextMenuTargetWrapper":141,"./common/renderMode":153,"./interactions/menus":167,"./interactions/selectable":173,"./regions":180,"./tableBodyCells":183,"@blueprintjs/core":105,"classnames":185,"react":223,"tslib":184}],183:[function(require,module,exports){
+"use strict";
+/*
+ * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
+var core_1 = require("@blueprintjs/core");
+var classnames_1 = tslib_1.__importDefault(require("classnames"));
+var React = tslib_1.__importStar(require("react"));
+var cell_1 = require("./cell/cell");
+var batcher_1 = require("./common/batcher");
+var Classes = tslib_1.__importStar(require("./common/classes"));
+var rect_1 = require("./common/rect");
+var renderMode_1 = require("./common/renderMode");
+var SHALLOW_COMPARE_BLACKLIST = ["viewportRect"];
+/**
+ * We don't want to reset the batcher when this set of keys changes. Any other
+ * changes should reset the batcher's internal cache.
+ */
+var BATCHER_RESET_PROP_KEYS_BLACKLIST = [
+    "columnIndexEnd",
+    "columnIndexStart",
+    "rowIndexEnd",
+    "rowIndexStart",
+];
+var TableBodyCells = /** @class */ (function (_super) {
+    tslib_1.__extends(TableBodyCells, _super);
+    function TableBodyCells() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.batcher = new batcher_1.Batcher();
+        // Cell renderers
+        // ==============
+        _this.renderNewCell = function (rowIndex, columnIndex) {
+            var _a = _this.props, columnIndexEnd = _a.columnIndexEnd, grid = _a.grid, rowIndexEnd = _a.rowIndexEnd;
+            var extremaClasses = grid.getExtremaClasses(rowIndex, columnIndex, rowIndexEnd, columnIndexEnd);
+            var isGhost = grid.isGhostIndex(rowIndex, columnIndex);
+            return _this.renderCell(rowIndex, columnIndex, extremaClasses, isGhost);
+        };
+        _this.renderCell = function (rowIndex, columnIndex, extremaClasses, isGhost) {
+            var _a;
+            var _b = _this.props, cellRenderer = _b.cellRenderer, focusedCell = _b.focusedCell, loading = _b.loading, grid = _b.grid;
+            var baseCell = isGhost ? cell_1.emptyCellRenderer() : cellRenderer(rowIndex, columnIndex);
+            var className = classnames_1.default(cellClassNames(rowIndex, columnIndex), extremaClasses, (_a = {},
+                _a[Classes.TABLE_CELL_GHOST] = isGhost,
+                _a[Classes.TABLE_CELL_LEDGER_ODD] = rowIndex % 2 === 1,
+                _a[Classes.TABLE_CELL_LEDGER_EVEN] = rowIndex % 2 === 0,
+                _a), baseCell.props.className);
+            var key = TableBodyCells.cellReactKey(rowIndex, columnIndex);
+            var rect = isGhost ? grid.getGhostCellRect(rowIndex, columnIndex) : grid.getCellRect(rowIndex, columnIndex);
+            var cellLoading = baseCell.props.loading != null ? baseCell.props.loading : loading;
+            var style = tslib_1.__assign({}, baseCell.props.style, rect_1.Rect.style(rect));
+            var isFocused = focusedCell != null && focusedCell.row === rowIndex && focusedCell.col === columnIndex;
+            return React.cloneElement(baseCell, { className: className, key: key, isFocused: isFocused, loading: cellLoading, style: style });
+        };
+        // Other
+        // =====
+        _this.didViewportRectChange = function (nextViewportRect, currViewportRect) {
+            if (nextViewportRect == null && currViewportRect == null) {
+                return false;
+            }
+            else if (nextViewportRect == null || currViewportRect == null) {
+                return true;
+            }
+            else {
+                return !nextViewportRect.equals(currViewportRect);
+            }
+        };
+        return _this;
+    }
+    TableBodyCells.cellReactKey = function (rowIndex, columnIndex) {
+        return "cell-" + rowIndex + "-" + columnIndex;
+    };
+    TableBodyCells.prototype.componentDidMount = function () {
+        this.maybeInvokeOnCompleteRender();
+    };
+    TableBodyCells.prototype.shouldComponentUpdate = function (nextProps) {
+        return (!core_1.Utils.shallowCompareKeys(nextProps, this.props, { exclude: SHALLOW_COMPARE_BLACKLIST }) ||
+            // "viewportRect" is not a plain object, so we can't just deep
+            // compare; we need custom logic.
+            this.didViewportRectChange(nextProps.viewportRect, this.props.viewportRect));
+    };
+    TableBodyCells.prototype.componentWillUpdate = function (nextProps) {
+        var resetKeysBlacklist = { exclude: BATCHER_RESET_PROP_KEYS_BLACKLIST };
+        var shouldResetBatcher = !core_1.Utils.shallowCompareKeys(this.props, nextProps, resetKeysBlacklist);
+        if (shouldResetBatcher) {
+            this.batcher.reset();
+        }
+    };
+    TableBodyCells.prototype.componentDidUpdate = function () {
+        this.maybeInvokeOnCompleteRender();
+    };
+    TableBodyCells.prototype.componentWillUnmount = function () {
+        this.batcher.cancelOutstandingCallback();
+    };
+    TableBodyCells.prototype.render = function () {
+        var renderMode = this.props.renderMode;
+        var cells = renderMode === renderMode_1.RenderMode.BATCH ? this.renderBatchedCells() : this.renderAllCells();
+        return React.createElement("div", { className: Classes.TABLE_BODY_CELLS }, cells);
+    };
+    // Render modes
+    // ============
+    TableBodyCells.prototype.renderBatchedCells = function () {
+        var _this = this;
+        var _a = this.props, columnIndexEnd = _a.columnIndexEnd, columnIndexStart = _a.columnIndexStart, rowIndexEnd = _a.rowIndexEnd, rowIndexStart = _a.rowIndexStart;
+        // render cells in batches
+        this.batcher.startNewBatch();
+        for (var rowIndex = rowIndexStart; rowIndex <= rowIndexEnd; rowIndex++) {
+            for (var columnIndex = columnIndexStart; columnIndex <= columnIndexEnd; columnIndex++) {
+                this.batcher.addArgsToBatch(rowIndex, columnIndex);
+            }
+        }
+        this.batcher.removeOldAddNew(this.renderNewCell);
+        if (!this.batcher.isDone()) {
+            this.batcher.idleCallback(function () { return _this.forceUpdate(); });
+        }
+        var cells = this.batcher.getList();
+        return cells;
+    };
+    TableBodyCells.prototype.renderAllCells = function () {
+        var _a = this.props, columnIndexEnd = _a.columnIndexEnd, columnIndexStart = _a.columnIndexStart, rowIndexEnd = _a.rowIndexEnd, rowIndexStart = _a.rowIndexStart;
+        var cells = [];
+        var cellsArgs = [];
+        for (var rowIndex = rowIndexStart; rowIndex <= rowIndexEnd; rowIndex++) {
+            for (var columnIndex = columnIndexStart; columnIndex <= columnIndexEnd; columnIndex++) {
+                cells.push(this.renderNewCell(rowIndex, columnIndex));
+                cellsArgs.push([rowIndex, columnIndex]);
+            }
+        }
+        // pretend we did an entire rendering pass using the batcher. that way,
+        // if we switch from `RenderMode.NONE` to `RenderMode.BATCH`, we don't
+        // have to re-paint every cell still in view.
+        this.batcher.setList(cellsArgs, cells);
+        return cells;
+    };
+    // Callbacks
+    // =========
+    TableBodyCells.prototype.maybeInvokeOnCompleteRender = function () {
+        var _a = this.props, onCompleteRender = _a.onCompleteRender, renderMode = _a.renderMode;
+        if (renderMode === renderMode_1.RenderMode.NONE || (renderMode === renderMode_1.RenderMode.BATCH && this.batcher.isDone())) {
+            core_1.Utils.safeInvoke(onCompleteRender);
+        }
+    };
+    TableBodyCells.defaultProps = {
+        renderMode: renderMode_1.RenderMode.BATCH,
+    };
+    return TableBodyCells;
+}(React.Component));
+exports.TableBodyCells = TableBodyCells;
+/**
+ * Returns the array of class names that must be applied to each table
+ * cell so that we can locate any cell based on its coordinate.
+ */
+function cellClassNames(rowIndex, columnIndex) {
+    return [Classes.rowCellIndexClass(rowIndex), Classes.columnCellIndexClass(columnIndex)];
+}
+exports.cellClassNames = cellClassNames;
+
+},{"./cell/cell":132,"./common/batcher":137,"./common/classes":138,"./common/rect":152,"./common/renderMode":153,"@blueprintjs/core":105,"classnames":185,"react":223,"tslib":184}],184:[function(require,module,exports){
+arguments[4][113][0].apply(exports,arguments)
+},{"dup":113}],185:[function(require,module,exports){
 /*!
   Copyright (c) 2017 Jed Watson.
   Licensed under the MIT License (MIT), see
@@ -14119,7 +21646,7 @@ arguments[4][113][0].apply(exports,arguments)
 	}
 }());
 
-},{}],133:[function(require,module,exports){
+},{}],186:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
@@ -14134,7 +21661,7 @@ function addClass(element, className) {
 }
 
 module.exports = exports["default"];
-},{"./hasClass":134,"@babel/runtime/helpers/interopRequireDefault":5}],134:[function(require,module,exports){
+},{"./hasClass":187,"@babel/runtime/helpers/interopRequireDefault":5}],187:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -14145,7 +21672,7 @@ function hasClass(element, className) {
 }
 
 module.exports = exports["default"];
-},{}],135:[function(require,module,exports){
+},{}],188:[function(require,module,exports){
 'use strict';
 
 function replaceClassName(origClass, classToRemove) {
@@ -14155,7 +21682,7 @@ function replaceClassName(origClass, classToRemove) {
 module.exports = function removeClass(element, className) {
   if (element.classList) element.classList.remove(className);else if (typeof element.className === 'string') element.className = replaceClassName(element.className, className);else element.setAttribute('class', replaceClassName(element.className && element.className.baseVal || '', className));
 };
-},{}],136:[function(require,module,exports){
+},{}],189:[function(require,module,exports){
 /*!
 Copyright (C) 2013-2015 by Andrea Giammarchi - @WebReflection
 
@@ -15141,7 +22668,7 @@ THE SOFTWARE.
 
 }(self));
 
-},{}],137:[function(require,module,exports){
+},{}],190:[function(require,module,exports){
 'use strict';
 
 var isArray = Array.isArray;
@@ -15198,7 +22725,7 @@ module.exports = function equal(a, b) {
   return a!==a && b!==b;
 };
 
-},{}],138:[function(require,module,exports){
+},{}],191:[function(require,module,exports){
 "use strict";
 
 /**
@@ -15235,7 +22762,7 @@ emptyFunction.thatReturnsArgument = function (arg) {
 };
 
 module.exports = emptyFunction;
-},{}],139:[function(require,module,exports){
+},{}],192:[function(require,module,exports){
 (function (process){
 /**
  * Copyright (c) 2014-present, Facebook, Inc.
@@ -15300,7 +22827,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 module.exports = warning;
 }).call(this,require('_process'))
-},{"./emptyFunction":138,"_process":180}],140:[function(require,module,exports){
+},{"./emptyFunction":191,"_process":233}],193:[function(require,module,exports){
 (function (global){
 // @flow
 'use strict';
@@ -15312,7 +22839,7 @@ module.exports = function() {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],141:[function(require,module,exports){
+},{}],194:[function(require,module,exports){
 /*
 object-assign
 (c) Sindre Sorhus
@@ -15404,7 +22931,7 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 	return to;
 };
 
-},{}],142:[function(require,module,exports){
+},{}],195:[function(require,module,exports){
 (function (global){
 /**!
  * @fileOverview Kickass library to create and place poppers near their reference elements.
@@ -18020,7 +25547,7 @@ return Popper;
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],143:[function(require,module,exports){
+},{}],196:[function(require,module,exports){
 (function (process){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
@@ -18126,7 +25653,7 @@ checkPropTypes.resetWarningCache = function() {
 module.exports = checkPropTypes;
 
 }).call(this,require('_process'))
-},{"./lib/ReactPropTypesSecret":147,"_process":180}],144:[function(require,module,exports){
+},{"./lib/ReactPropTypesSecret":200,"_process":233}],197:[function(require,module,exports){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  *
@@ -18192,7 +25719,7 @@ module.exports = function() {
   return ReactPropTypes;
 };
 
-},{"./lib/ReactPropTypesSecret":147}],145:[function(require,module,exports){
+},{"./lib/ReactPropTypesSecret":200}],198:[function(require,module,exports){
 (function (process){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
@@ -18787,7 +26314,7 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
 };
 
 }).call(this,require('_process'))
-},{"./checkPropTypes":143,"./lib/ReactPropTypesSecret":147,"_process":180,"object-assign":141,"react-is":159}],146:[function(require,module,exports){
+},{"./checkPropTypes":196,"./lib/ReactPropTypesSecret":200,"_process":233,"object-assign":194,"react-is":212}],199:[function(require,module,exports){
 (function (process){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
@@ -18810,7 +26337,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 }).call(this,require('_process'))
-},{"./factoryWithThrowingShims":144,"./factoryWithTypeCheckers":145,"_process":180,"react-is":159}],147:[function(require,module,exports){
+},{"./factoryWithThrowingShims":197,"./factoryWithTypeCheckers":198,"_process":233,"react-is":212}],200:[function(require,module,exports){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  *
@@ -18824,7 +26351,7 @@ var ReactPropTypesSecret = 'SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED';
 
 module.exports = ReactPropTypesSecret;
 
-},{}],148:[function(require,module,exports){
+},{}],201:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -18990,17 +26517,17 @@ var ContentEditable = /** @class */ (function (_super) {
 }(React.Component));
 exports.default = ContentEditable;
 
-},{"fast-deep-equal":137,"prop-types":152,"react":170}],149:[function(require,module,exports){
-arguments[4][143][0].apply(exports,arguments)
-},{"./lib/ReactPropTypesSecret":153,"_process":180,"dup":143}],150:[function(require,module,exports){
-arguments[4][144][0].apply(exports,arguments)
-},{"./lib/ReactPropTypesSecret":153,"dup":144}],151:[function(require,module,exports){
-arguments[4][145][0].apply(exports,arguments)
-},{"./checkPropTypes":149,"./lib/ReactPropTypesSecret":153,"_process":180,"dup":145,"object-assign":141,"react-is":159}],152:[function(require,module,exports){
-arguments[4][146][0].apply(exports,arguments)
-},{"./factoryWithThrowingShims":150,"./factoryWithTypeCheckers":151,"_process":180,"dup":146,"react-is":159}],153:[function(require,module,exports){
-arguments[4][147][0].apply(exports,arguments)
-},{"dup":147}],154:[function(require,module,exports){
+},{"fast-deep-equal":190,"prop-types":205,"react":223}],202:[function(require,module,exports){
+arguments[4][196][0].apply(exports,arguments)
+},{"./lib/ReactPropTypesSecret":206,"_process":233,"dup":196}],203:[function(require,module,exports){
+arguments[4][197][0].apply(exports,arguments)
+},{"./lib/ReactPropTypesSecret":206,"dup":197}],204:[function(require,module,exports){
+arguments[4][198][0].apply(exports,arguments)
+},{"./checkPropTypes":202,"./lib/ReactPropTypesSecret":206,"_process":233,"dup":198,"object-assign":194,"react-is":212}],205:[function(require,module,exports){
+arguments[4][199][0].apply(exports,arguments)
+},{"./factoryWithThrowingShims":203,"./factoryWithTypeCheckers":204,"_process":233,"dup":199,"react-is":212}],206:[function(require,module,exports){
+arguments[4][200][0].apply(exports,arguments)
+},{"dup":200}],207:[function(require,module,exports){
 (function (process){
 /** @license React v16.8.6
  * react-dom.development.js
@@ -40282,7 +47809,7 @@ module.exports = reactDom;
 }
 
 }).call(this,require('_process'))
-},{"_process":180,"object-assign":141,"prop-types/checkPropTypes":143,"react":170,"scheduler":176,"scheduler/tracing":177}],155:[function(require,module,exports){
+},{"_process":233,"object-assign":194,"prop-types/checkPropTypes":196,"react":223,"scheduler":229,"scheduler/tracing":230}],208:[function(require,module,exports){
 /** @license React v16.8.6
  * react-dom.production.min.js
  *
@@ -40553,7 +48080,7 @@ x("38"):void 0;return Si(a,b,c,!1,d)},unmountComponentAtNode:function(a){Qi(a)?v
 X;X=!0;try{ki(a)}finally{(X=b)||W||Yh(1073741823,!1)}},__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED:{Events:[Ia,Ja,Ka,Ba.injectEventPluginsByName,pa,Qa,function(a){ya(a,Pa)},Eb,Fb,Dd,Da]}};function Ui(a,b){Qi(a)?void 0:x("299","unstable_createRoot");return new Pi(a,!0,null!=b&&!0===b.hydrate)}
 (function(a){var b=a.findFiberByHostInstance;return Te(n({},a,{overrideProps:null,currentDispatcherRef:Tb.ReactCurrentDispatcher,findHostInstanceByFiber:function(a){a=hd(a);return null===a?null:a.stateNode},findFiberByHostInstance:function(a){return b?b(a):null}}))})({findFiberByHostInstance:Ha,bundleType:0,version:"16.8.6",rendererPackageName:"react-dom"});var Wi={default:Vi},Xi=Wi&&Vi||Wi;module.exports=Xi.default||Xi;
 
-},{"object-assign":141,"react":170,"scheduler":176}],156:[function(require,module,exports){
+},{"object-assign":194,"react":223,"scheduler":229}],209:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -40595,7 +48122,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 }).call(this,require('_process'))
-},{"./cjs/react-dom.development.js":154,"./cjs/react-dom.production.min.js":155,"_process":180}],157:[function(require,module,exports){
+},{"./cjs/react-dom.development.js":207,"./cjs/react-dom.production.min.js":208,"_process":233}],210:[function(require,module,exports){
 (function (process){
 /** @license React v16.8.6
  * react-is.development.js
@@ -40826,7 +48353,7 @@ exports.isSuspense = isSuspense;
 }
 
 }).call(this,require('_process'))
-},{"_process":180}],158:[function(require,module,exports){
+},{"_process":233}],211:[function(require,module,exports){
 /** @license React v16.8.6
  * react-is.production.min.js
  *
@@ -40843,7 +48370,7 @@ exports.Fragment=e;exports.Lazy=r;exports.Memo=q;exports.Portal=d;exports.Profil
 exports.isContextProvider=function(a){return t(a)===h};exports.isElement=function(a){return"object"===typeof a&&null!==a&&a.$$typeof===c};exports.isForwardRef=function(a){return t(a)===n};exports.isFragment=function(a){return t(a)===e};exports.isLazy=function(a){return t(a)===r};exports.isMemo=function(a){return t(a)===q};exports.isPortal=function(a){return t(a)===d};exports.isProfiler=function(a){return t(a)===g};exports.isStrictMode=function(a){return t(a)===f};
 exports.isSuspense=function(a){return t(a)===p};
 
-},{}],159:[function(require,module,exports){
+},{}],212:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -40854,7 +48381,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 }).call(this,require('_process'))
-},{"./cjs/react-is.development.js":157,"./cjs/react-is.production.min.js":158,"_process":180}],160:[function(require,module,exports){
+},{"./cjs/react-is.development.js":210,"./cjs/react-is.production.min.js":211,"_process":233}],213:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -41018,7 +48545,7 @@ function polyfill(Component) {
 
 exports.polyfill = polyfill;
 
-},{}],161:[function(require,module,exports){
+},{}],214:[function(require,module,exports){
 "use strict";
 
 var _interopRequireWildcard = require("@babel/runtime/helpers/interopRequireWildcard");
@@ -41092,7 +48619,7 @@ function (_React$Component) {
 }(React.Component);
 
 exports.default = Manager;
-},{"@babel/runtime/helpers/assertThisInitialized":1,"@babel/runtime/helpers/defineProperty":2,"@babel/runtime/helpers/extends":3,"@babel/runtime/helpers/inheritsLoose":4,"@babel/runtime/helpers/interopRequireDefault":5,"@babel/runtime/helpers/interopRequireWildcard":6,"create-react-context":167,"react":170}],162:[function(require,module,exports){
+},{"@babel/runtime/helpers/assertThisInitialized":1,"@babel/runtime/helpers/defineProperty":2,"@babel/runtime/helpers/extends":3,"@babel/runtime/helpers/inheritsLoose":4,"@babel/runtime/helpers/interopRequireDefault":5,"@babel/runtime/helpers/interopRequireWildcard":6,"create-react-context":220,"react":223}],215:[function(require,module,exports){
 "use strict";
 
 var _interopRequireWildcard = require("@babel/runtime/helpers/interopRequireWildcard");
@@ -41293,7 +48820,7 @@ function Popper(_ref) {
     }, props));
   });
 }
-},{"./Manager":161,"./utils":165,"@babel/runtime/helpers/assertThisInitialized":1,"@babel/runtime/helpers/defineProperty":2,"@babel/runtime/helpers/extends":3,"@babel/runtime/helpers/inheritsLoose":4,"@babel/runtime/helpers/interopRequireDefault":5,"@babel/runtime/helpers/interopRequireWildcard":6,"@babel/runtime/helpers/objectWithoutPropertiesLoose":7,"popper.js":142,"react":170}],163:[function(require,module,exports){
+},{"./Manager":214,"./utils":218,"@babel/runtime/helpers/assertThisInitialized":1,"@babel/runtime/helpers/defineProperty":2,"@babel/runtime/helpers/extends":3,"@babel/runtime/helpers/inheritsLoose":4,"@babel/runtime/helpers/interopRequireDefault":5,"@babel/runtime/helpers/interopRequireWildcard":6,"@babel/runtime/helpers/objectWithoutPropertiesLoose":7,"popper.js":195,"react":223}],216:[function(require,module,exports){
 "use strict";
 
 var _interopRequireWildcard = require("@babel/runtime/helpers/interopRequireWildcard");
@@ -41361,7 +48888,7 @@ function Reference(props) {
     }, props));
   });
 }
-},{"./Manager":161,"./utils":165,"@babel/runtime/helpers/assertThisInitialized":1,"@babel/runtime/helpers/defineProperty":2,"@babel/runtime/helpers/extends":3,"@babel/runtime/helpers/inheritsLoose":4,"@babel/runtime/helpers/interopRequireDefault":5,"@babel/runtime/helpers/interopRequireWildcard":6,"react":170,"warning":178}],164:[function(require,module,exports){
+},{"./Manager":214,"./utils":218,"@babel/runtime/helpers/assertThisInitialized":1,"@babel/runtime/helpers/defineProperty":2,"@babel/runtime/helpers/extends":3,"@babel/runtime/helpers/inheritsLoose":4,"@babel/runtime/helpers/interopRequireDefault":5,"@babel/runtime/helpers/interopRequireWildcard":6,"react":223,"warning":231}],217:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
@@ -41401,7 +48928,7 @@ var _Popper = _interopRequireWildcard(require("./Popper"));
 var _Manager = _interopRequireDefault(require("./Manager"));
 
 var _Reference = _interopRequireDefault(require("./Reference"));
-},{"./Manager":161,"./Popper":162,"./Reference":163,"@babel/runtime/helpers/interopRequireDefault":5,"@babel/runtime/helpers/interopRequireWildcard":6}],165:[function(require,module,exports){
+},{"./Manager":214,"./Popper":215,"./Reference":216,"@babel/runtime/helpers/interopRequireDefault":5,"@babel/runtime/helpers/interopRequireWildcard":6}],218:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -41435,7 +48962,7 @@ var safeInvoke = function safeInvoke(fn) {
 };
 
 exports.safeInvoke = safeInvoke;
-},{}],166:[function(require,module,exports){
+},{}],219:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -41634,7 +49161,7 @@ function createReactContext(defaultValue, calculateChangedBits) {
 exports.default = createReactContext;
 module.exports = exports['default'];
 }).call(this,require('_process'))
-},{"_process":180,"fbjs/lib/warning":139,"gud":140,"prop-types":146,"react":170}],167:[function(require,module,exports){
+},{"_process":233,"fbjs/lib/warning":192,"gud":193,"prop-types":199,"react":223}],220:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -41651,7 +49178,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 exports.default = _react2.default.createContext || _implementation2.default;
 module.exports = exports['default'];
-},{"./implementation":166,"react":170}],168:[function(require,module,exports){
+},{"./implementation":219,"react":223}],221:[function(require,module,exports){
 (function (process){
 /** @license React v16.9.0
  * react.development.js
@@ -43890,7 +51417,7 @@ module.exports = react;
 }
 
 }).call(this,require('_process'))
-},{"_process":180,"object-assign":141,"prop-types/checkPropTypes":143}],169:[function(require,module,exports){
+},{"_process":233,"object-assign":194,"prop-types/checkPropTypes":196}],222:[function(require,module,exports){
 /** @license React v16.9.0
  * react.production.min.js
  *
@@ -43917,7 +51444,7 @@ b,d){return W().useImperativeHandle(a,b,d)},useDebugValue:function(){},useLayout
 h({},a.props),g=a.key,k=a.ref,f=a._owner;if(null!=b){void 0!==b.ref&&(k=b.ref,f=J.current);void 0!==b.key&&(g=""+b.key);var l=void 0;a.type&&a.type.defaultProps&&(l=a.type.defaultProps);for(c in b)K.call(b,c)&&!L.hasOwnProperty(c)&&(e[c]=void 0===b[c]&&void 0!==l?l[c]:b[c])}c=arguments.length-2;if(1===c)e.children=d;else if(1<c){l=Array(c);for(var m=0;m<c;m++)l[m]=arguments[m+2];e.children=l}return{$$typeof:p,type:a.type,key:g,ref:k,props:e,_owner:f}},createFactory:function(a){var b=M.bind(null,a);
 b.type=a;return b},isValidElement:N,version:"16.9.0",unstable_withSuspenseConfig:function(a,b){var d=I.suspense;I.suspense=void 0===b?null:b;try{a()}finally{I.suspense=d}},__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED:{ReactCurrentDispatcher:H,ReactCurrentBatchConfig:I,ReactCurrentOwner:J,IsSomeRendererActing:{current:!1},assign:h}},Y={default:X},Z=Y&&X||Y;module.exports=Z.default||Z;
 
-},{"object-assign":141}],170:[function(require,module,exports){
+},{"object-assign":194}],223:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -43928,7 +51455,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 }).call(this,require('_process'))
-},{"./cjs/react.development.js":168,"./cjs/react.production.min.js":169,"_process":180}],171:[function(require,module,exports){
+},{"./cjs/react.development.js":221,"./cjs/react.production.min.js":222,"_process":233}],224:[function(require,module,exports){
 (function (global){
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
@@ -44868,7 +52395,7 @@ if (process.env.NODE_ENV === 'production') {
 })));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],172:[function(require,module,exports){
+},{}],225:[function(require,module,exports){
 (function (process){
 /** @license React v0.13.6
  * scheduler-tracing.development.js
@@ -45295,7 +52822,7 @@ exports.unstable_unsubscribe = unstable_unsubscribe;
 }
 
 }).call(this,require('_process'))
-},{"_process":180}],173:[function(require,module,exports){
+},{"_process":233}],226:[function(require,module,exports){
 /** @license React v0.13.6
  * scheduler-tracing.production.min.js
  *
@@ -45307,7 +52834,7 @@ exports.unstable_unsubscribe = unstable_unsubscribe;
 
 'use strict';Object.defineProperty(exports,"__esModule",{value:!0});var b=0;exports.__interactionsRef=null;exports.__subscriberRef=null;exports.unstable_clear=function(a){return a()};exports.unstable_getCurrent=function(){return null};exports.unstable_getThreadID=function(){return++b};exports.unstable_trace=function(a,d,c){return c()};exports.unstable_wrap=function(a){return a};exports.unstable_subscribe=function(){};exports.unstable_unsubscribe=function(){};
 
-},{}],174:[function(require,module,exports){
+},{}],227:[function(require,module,exports){
 (function (process,global){
 /** @license React v0.13.6
  * scheduler.development.js
@@ -46010,7 +53537,7 @@ exports.unstable_getFirstCallbackNode = unstable_getFirstCallbackNode;
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":180}],175:[function(require,module,exports){
+},{"_process":233}],228:[function(require,module,exports){
 (function (global){
 /** @license React v0.13.6
  * scheduler.production.min.js
@@ -46035,7 +53562,7 @@ b=c.previous;b.next=c.previous=a;a.next=c;a.previous=b}return a};exports.unstabl
 exports.unstable_shouldYield=function(){return!e&&(null!==d&&d.expirationTime<l||w())};exports.unstable_continueExecution=function(){null!==d&&p()};exports.unstable_pauseExecution=function(){};exports.unstable_getFirstCallbackNode=function(){return d};
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],176:[function(require,module,exports){
+},{}],229:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -46046,7 +53573,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 }).call(this,require('_process'))
-},{"./cjs/scheduler.development.js":174,"./cjs/scheduler.production.min.js":175,"_process":180}],177:[function(require,module,exports){
+},{"./cjs/scheduler.development.js":227,"./cjs/scheduler.production.min.js":228,"_process":233}],230:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -46057,7 +53584,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 }).call(this,require('_process'))
-},{"./cjs/scheduler-tracing.development.js":172,"./cjs/scheduler-tracing.production.min.js":173,"_process":180}],178:[function(require,module,exports){
+},{"./cjs/scheduler-tracing.development.js":225,"./cjs/scheduler-tracing.production.min.js":226,"_process":233}],231:[function(require,module,exports){
 (function (process){
 /**
  * Copyright (c) 2014-present, Facebook, Inc.
@@ -46123,11 +53650,12 @@ if (__DEV__) {
 module.exports = warning;
 
 }).call(this,require('_process'))
-},{"_process":180}],179:[function(require,module,exports){
+},{"_process":233}],232:[function(require,module,exports){
 react_contenteditable = require("react-contenteditable");
 blueprint = require("@blueprintjs/core");
 bpselect = require("@blueprintjs/select");
-},{"@blueprintjs/core":105,"@blueprintjs/select":130,"react-contenteditable":148}],180:[function(require,module,exports){
+bptable = require("@blueprintjs/table");
+},{"@blueprintjs/core":105,"@blueprintjs/select":130,"@blueprintjs/table":163,"react-contenteditable":201}],233:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -46313,4 +53841,4 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}]},{},[179]);
+},{}]},{},[232]);

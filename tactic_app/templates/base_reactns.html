@@ -6,6 +6,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap.min.css')}}">
   <link rel="stylesheet" href="{{url_for('static', filename='css/blueprint/blueprint.css')}}">
+  <link rel="stylesheet" href="{{url_for('static', filename='css/blueprint/table.css')}}">
   <link rel="stylesheet" href="{{url_for('static', filename='css/blueprint/blueprint-icons.css')}}">
       <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/tactic.css', v=version_string)}}">
       <link rel="stylesheet" href="{{url_for('static', filename='css/alertify_css/alertify.min.css')}}"/>
@@ -22,7 +23,6 @@
       {%  endif %}
       {% block head %}{% endblock %}
       {% block styles %}{% endblock %}
-5c7080
       <title>{% block title %}Tactic{% endblock %}</title>
   </head>
   <body>

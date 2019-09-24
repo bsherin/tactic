@@ -1,6 +1,7 @@
 
 import datetime
 import re
+import os
 import uuid
 import copy
 import json
@@ -8,6 +9,9 @@ from qworker import task_worthy_methods, task_worthy_manual_submit_methods
 from communication_utils import make_python_object_jsonizable, debinarize_python_object, store_temp_data
 from communication_utils import make_jsonizable_and_compress, read_project_dict
 import docker_functions
+
+CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
+STEP_SIZE = int(os.environ.get("STEP_SIZE"))
 
 
 def task_worthy(m):
@@ -1313,11 +1317,28 @@ class ConsoleTasksMixin:
 class DataSupportTasksMixin:
 
     @task_worthy
+    def grab_chunk_by_row_index(self, data):
+        doc_name = data["doc_name"]
+        row_index = data["row_index"]
+        chunk_number = int(row_index / CHUNK_SIZE)
+        chunk_start = chunk_number * CHUNK_SIZE
+        data_to_send = self.doc_dict[doc_name].sorted_data_rows[chunk_start:chunk_start + CHUNK_SIZE]
+        data_row_dict = {}
+        for n, row in enumerate(data_to_send):
+            data_row_dict[chunk_start + n] = row
+
+        return {"doc_name": doc_name,
+                "total_rows": len(self.doc_dict[doc_name].current_data_rows),
+                "data_row_dict": data_row_dict,
+                "table_spec": self.doc_dict[doc_name].table_spec.compile_save_dict()}
+
+    @task_worthy
     def grab_data(self, data):
         print("entering grab_data with fixed message")
         doc_name = data["doc_name"]
         if self.doc_type == "table":
             return {"doc_name": doc_name,
+                    "total_rows": self.doc_dict[doc_name].metadata["number_of_rows"],
                     "data_rows": self.doc_dict[doc_name].displayed_data_rows,
                     "table_spec": self.doc_dict[doc_name].table_spec.compile_save_dict(),
                     "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
