@@ -10,7 +10,7 @@ class GlyphButton extends React.Component {
     render () {
         return (
            <Bp.Button type="button"
-                      minimal={true}
+                      minimal={this.props.minimal}
                       small={true}
                       style={{paddingLeft: 2, paddingRight:2}}
                       onMouseDown={(e)=>{e.preventDefault()}}
@@ -26,6 +26,7 @@ class GlyphButton extends React.Component {
 
 GlyphButton.propTypes = {
     icon: PropTypes.string,
+    minimal: PropTypes.bool,
     extra_glyph_text: PropTypes.string,
     style: PropTypes.object,
     handleClick: PropTypes.func
@@ -33,7 +34,8 @@ GlyphButton.propTypes = {
 
 GlyphButton.defaultProps = {
     style: {},
-    extra_glyph_text: null
+    extra_glyph_text: null,
+    minimal: true
 };
 
 

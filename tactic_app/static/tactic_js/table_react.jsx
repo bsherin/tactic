@@ -650,34 +650,34 @@ class MainTableCardHeader extends React.Component {
         let heading_right_opacity = this.state.hide_right_element ? 0 : 100;
         let select_style = {height: 30, maxWidth: 200};
         return (
-            <div className="d-flex pl-2 pt-2 justify-content-between align-baseline main-heading">
-                <div id="heading-left" ref={this.heading_left_ref} className="d-flex">
-                    <div className="main-heading-element">
+            <div className="d-flex pl-2 pr-2 justify-content-between align-baseline main-heading" style={{height: 50}}>
+                <div id="heading-left" ref={this.heading_left_ref} className="d-flex flex-column justify-content-around">
+                    <div className="d-flex flex-row">
                         <GlyphButton handleClick={this.props.toggleShrink} icon="minimize"/>
-                    </div>
-                    <div className="main-heading-element">
-                        <form>
-                            <Bp.FormGroup label={this.props.short_collection_name} inline={true}>
-                                <Bp.HTMLSelect options={this.props.doc_names}
-                                                onChange={this._onChangeDoc}
-                                                value={this.props.current_doc_name}
-                                               style={select_style}
-                                />
-                            </Bp.FormGroup>
-                        </form>
+                        <div className="d-flex flex-column justify-content-around">
+                            <form className="d-flex flex-row">
+                                <Bp.FormGroup label={this.props.short_collection_name} inline={true} style={{marginBottom: 0, marginLeft: 5}}>
+                                    <Bp.HTMLSelect options={this.props.doc_names}
+                                                    onChange={this._onChangeDoc}
+                                                    value={this.props.current_doc_name}
+                                                   style={select_style}
+                                    />
+                                </Bp.FormGroup>
+                            </form>
+                        </div>
                     </div>
 
                 </div>
-                <div id="heading-right" ref={this.heading_right_ref} style={{opacity: heading_right_opacity}} className="d-flex">
+                <div id="heading-right" ref={this.heading_right_ref} style={{opacity: heading_right_opacity}} className="d-flex flex-column justify-content-around">
                     {this.props.show_table_spinner && <SmallSpinner/>}
-                    <div className="main-heading-element d-flex">
-                        <form onSubmit={this._handleSubmit} className="d-flex flex-row">
-                                <Bp.InputGroup type="search"
-                                               leftIcon="search"
-                                               placeholder="Search"
-                                               value={!this.props.search_text ? "" : this.props.search_text}
-                                               onChange={this._handleSearchFieldChange}
-                                               className="mr-2"/>
+                    <form onSubmit={this._handleSubmit} className="d-flex flex-row">
+                            <Bp.InputGroup type="search"
+                                           leftIcon="search"
+                                           placeholder="Search"
+                                           value={!this.props.search_text ? "" : this.props.search_text}
+                                           onChange={this._handleSearchFieldChange}
+                                           className="mr-2"/>
+                           <Bp.ButtonGroup>
                                 {this.props.show_filter_button &&
                                     <Bp.Button onClick={this._handleFilter}>
                                         Filter
@@ -685,9 +685,9 @@ class MainTableCardHeader extends React.Component {
                                 }
                                 <Bp.Button onClick={this._handleUnFilter}>
                                     Clear
-                            </Bp.Button>
-                        </form>
-                    </div>
+                                </Bp.Button>
+                           </Bp.ButtonGroup>
+                    </form>
                 </div>
             </div>
         )
