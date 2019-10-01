@@ -1,5 +1,5 @@
 
-import {GlyphButton} from "./react_widgets.js";
+import {GlyphButton} from "./blueprint_react_widgets.js";
 import {ReactCodemirror} from "./react-codemirror.js";
 import {SortableComponent} from "./sortable_container.js";
 import {KeyTrap} from "./key_trap.js";
@@ -8,9 +8,7 @@ import {doFlash} from "./toaster.js"
 
 export {ConsoleComponent}
 
-var ContentEditable = react_contenteditable.default;
-
-var Rbs = window.ReactBootstrap;
+let Bp = blueprint;
 
  class ConsoleComponent extends React.Component {
     constructor(props) {
@@ -29,7 +27,7 @@ var Rbs = window.ReactBootstrap;
     componentDidMount(){
         this.setState({"mounted": true});
         // It is necessary to delete and remake these callbacks
-        // If I dont delete I end up with duplicates
+        // If I dont delete I end up with duplicatesSelectList
         // If I just keep the original one then I end up something with a handler linked
         // to an earlier state
         this.props.tsocket.socket.off("console-message");
@@ -274,76 +272,78 @@ var Rbs = window.ReactBootstrap;
         }
     }
 
-    render() {"unquote('#f7d66b80')"
-        let butclass_short = "notclose bottom-heading-element";
-        let butclass_long = "notclose bottom-heading-element bottom-heading-element-button";
+    render() {
+        let gbstyle={marginLeft: 1};
         return (
-            <Rbs.Card bg="light" id="console-panel" style={this.props.style}>
-                <Rbs.Card.Header id="console-heading" ref={this.header_ref}
-                                 className="d-flex flex-row justify-content-between">
-                    <div id="console-header-left" className="d-flex flex-row  align-items-baseline">
-                        {this.props.console_is_shrunk &&
-                        <GlyphButton butclass={butclass_short}
-                                     handleClick={this._expandConsole}
-                                     style={{paddingRight: 5, paddingTop: 0}}
-                                     icon_class="far fa-chevron-circle-right"/>
-                        }
-                        {!this.props.console_is_shrunk &&
-                        <GlyphButton butclass={butclass_short}
-                                     handleClick={this._shrinkConsole}
-                                     style={{paddingRight: 5, paddingTop: 0}}
-                                     icon_class="far fa-chevron-circle-down"/>
-                        }
-                        <b>Log</b>
-                        <GlyphButton butclass={butclass_long}
-                                     extra_glyph_text="text"
-                                     handleClick={this._addBlankText}
-                                     icon_class="far fa-font"/>
-                        <GlyphButton butclass={butclass_long}
-                                     extra_glyph_text="code"
-                                     handleClick={this._addBlankCode}
-                                     icon_class="far fa-terminal"/>
-                        <GlyphButton butclass={butclass_long}
-                                     handleClick={this._resetConsole}
-                                     extra_glyph_text="reset"
-                                     icon_class="far fa-sync"/>
-                        <GlyphButton butclass={butclass_long}
-                                     extra_glyph_text="clear"
-                                     handleClick={this._clearConsole}
-                                     icon_class="far fa-trash"/>
-                        <GlyphButton butclass={butclass_long}
-                                     extra_glyph_text="log"
-                                     handleClick={this._toggleConsoleLog}
-                                     icon_class="far fa-exclamation-triangle"/>
-                        <GlyphButton butclass={butclass_long}
-                                     extra_glyph_text="main"
-                                     handleClick={this._toggleMainLog}
-                                     icon_class="far fa-exclamation-triangle"/>
+            <Bp.Card id="console-panel" elevation={2} className="ml-3" style={this.props.style}>
+                <div className="d-flex flex-column justify-content-around">
+                    <div id="console-heading"
+                         ref={this.header_ref}
+                         className="d-flex flex-row justify-content-between">
+                        <div id="console-header-left" className="d-flex flex-row">
+                            {this.props.console_is_shrunk &&
+                            <GlyphButton handleClick={this._expandConsole}
+                                         style={{marginLeft: 2}}
+                                         icon="chevron-right"/>
+                            }
+                            {!this.props.console_is_shrunk &&
+                                <GlyphButton handleClick={this._shrinkConsole}
+                                             style={{marginLeft: 2}}
+                                             icon="chevron-down"/>
+                                }
+                            <b style={{alignSelf: "center", marginRight: 5}}>Log</b>
+                            <GlyphButton extra_glyph_text="text"
+                                         style={gbstyle}
+                                         intent="primary"
+                                         handleClick={this._addBlankText}
+                                         icon="new-text-box"/>
+                            <GlyphButton extra_glyph_text="code"
+                                         handleClick={this._addBlankCode}
+                                         intent="primary"
+                                         style={gbstyle}
+                                         icon="code"/>
+                            <GlyphButton handleClick={this._resetConsole}
+                                         style={gbstyle}
+                                         intent="warning"
+                                         extra_glyph_text="reset"
+                                         icon="reset"/>
+                            <GlyphButton extra_glyph_text="clear"
+                                         style={gbstyle}
+                                         handleClick={this._clearConsole}
+                                         intent="danger"
+                                         icon="trash"/>
+                            <GlyphButton extra_glyph_text="log"
+                                         style={gbstyle}
+                                         handleClick={this._toggleConsoleLog}
+                                         icon="console"/>
+                            <GlyphButton extra_glyph_text="main"
+                                         style={gbstyle}
+                                         handleClick={this._toggleMainLog}
+                                         icon="console"/>
+                        </div>
+                        <div id="console-header-right" className="d-flex flex-row">
+                            <Bp.Button onClick={this._toggleExports}
+                                       style={{marginRight: 5}}
+                                       minimal={true}
+                                       small={true}
+                                       text="exports"/>
+                            {!this.props.console_is_zoomed &&
+                                <GlyphButton handleClick={this._zoomConsole}
+                                             icon="maximize"/>
+                                }
+                            {this.props.console_is_zoomed &&
+                                <GlyphButton handleClick={this._unzoomConsole}
+                                             icon="minimize"/>
+                                }
+                        </div>
                     </div>
-                    <div id="console-header-right" className="d-flex flex-row  align-items-baseline">
-                        <button type='button'
-                                className={butclass_short}
-                                onClick={this._toggleExports}
-                                style={{marginRight: 12}}>exports
-                        </button>
-                        {!this.props.console_is_zoomed &&
-                        <GlyphButton butclass={butclass_short}
-                                     handleClick={this._zoomConsole}
-                                     icon_class="far fa-expand-alt"/>
-                        }
-                        {this.props.console_is_zoomed &&
-                        <GlyphButton butclass={butclass_short}
-                                     handleClick={this._unzoomConsole}
-                                     icon_class="far fa-compress-alt"/>
-                        }
-                    </div>
-                </Rbs.Card.Header>
+                </div>
                 {!this.props.console_is_shrunk &&
-                <Rbs.Card.Body id="console"
-                               ref={this.body_ref}
-                               style={{height: this._bodyHeight(), backgroundColor: "white"}}>
+                <div id="console"
+                     ref={this.body_ref}
+                     style={{height: this._bodyHeight(), backgroundColor: "white"}}>
                     {this.state.show_console_error_log &&
-                    <pre>{this.state.error_log_text}</pre>
+                    <pre>{this.state.console_error_log_text}</pre>
                     }
                     {!this.state.show_console_error_log &&
                     <SortableComponent id="console-items-div"
@@ -361,9 +361,9 @@ var Rbs = window.ReactBootstrap;
                                        addNewCodeItem={this._addBlankCode}
                     />
                     }
-                </Rbs.Card.Body>
+                </div>
                 }
-            </Rbs.Card>
+            </Bp.Card>
         );
     }
 }
@@ -422,8 +422,8 @@ class LogItem extends React.Component {
         this.props.handleDelete(this.props.unique_id)
     }
 
-    _handleSummaryTextChange(event) {
-        this.props.setConsoleItemValue(this.props.unique_id, "summary_text", event.target.value)
+    _handleSummaryTextChange(value) {
+        this.props.setConsoleItemValue(this.props.unique_id, "summary_text", value)
     }
 
      executeEmbeddedScripts() {
@@ -440,51 +440,46 @@ class LogItem extends React.Component {
 
     render () {
         let converted_dict = {__html: this.props.console_text};
-        let panel_style = this.props.am_shrunk ? "log-panel log-panel-invisible fixed-log-panel" : "log-panel log-panel-visible fixed-log-panel";
+        let panel_class = this.props.am_shrunk ? "log-panel log-panel-invisible fixed-log-panel" : "log-panel log-panel-visible fixed-log-panel";
         if (this.props.is_error) {
             panel_style += " error-log-panel"
         }
-        let butclass = "notclose";
         return (
-            <Rbs.Card className={panel_style} id={this.props.unique_id} style={{marginBottom: 10}}>
-                <Rbs.Card.Header>
-                    <div className="button-div shrink-expand-div">
+            <div className={panel_class + " d-flex flex-row"} id={this.props.unique_id} style={{marginBottom: 10}}>
+                <div className="button-div shrink-expand-div d-flex flex-row">
+                    <Bp.Icon icon="drag-handle-vertical"
+                             style={{marginLeft: 0, marginRight: 6}}
+                             iconSize={20}
+                             className="console-sorter"/>
                         {!this.props.am_shrunk &&
-                            <GlyphButton butclass={butclass + " shrink-log-button"}
-                                         icon_class="fas fa-chevron-circle-down"
+                            <GlyphButton icon="chevron-down"
                                          handleClick={this._toggleShrink}/>
                         }
                         {this.props.am_shrunk &&
-                            <GlyphButton butclass={butclass + " expand-log-button"}
-                                         icon_class="fas fa-chevron-circle-right"
+                            <GlyphButton icon="chevron-right"
                                          handleClick={this._toggleShrink}/>
                         }
-                    </div>
-                </Rbs.Card.Header>
+                </div>
                 {this.props.am_shrunk &&
-                    <ContentEditable html={this.props.summary_text}
+                    <Bp.EditableText value={this.props.summary_text}
                                      onChange={this._handleSummaryTextChange}
-                                     disabled={false}
-                                     className="log-panel-summary"
-                                     style={{}}
-                                     tagName="div"
-                                     innerRef={this.ce_summary_ref}/>
+                                     className="log-panel-summary"/>
                 }
                 {!this.props.am_shrunk &&
-                    <div className="log-panel-body">
-                        <div style={{marginTop: 10, marginLeft: 35, width: "100%"}} dangerouslySetInnerHTML={converted_dict}/>
-                        <div className="button-div d-inline-flex">
-                             <GlyphButton butclass={butclass + " pl-2"}
-                                 handleClick={this._deleteMe}
-                                 icon_class="fas fa-trash-alt"/>
-                            <span className="fas fa-align-justify console-sorter pl-2"
-                                  style={{paddingTop: 10}}
-                            />
+                    <div className="d-flex flex-column" style={{width: "100%"}}>
+                        <div className="log-panel-body d-flex flex-row">
+                            <div style={{marginTop: 10, marginLeft: 30, padding: 8, width: "100%", border: "1px solid #c7c7c7"}}
+                                 dangerouslySetInnerHTML={converted_dict}/>
+                            <div className="button-div d-flex flex-row">
+                                 <GlyphButton handleClick={this._deleteMe}
+                                              style={{marginLeft: 10, marginRight: 66}}
+                                              intent="danger"
+                                              icon="trash"/>
+                            </div>
                         </div>
                     </div>
-
                 }
-            </Rbs.Card>
+            </div>
         )
     }
 }
@@ -568,8 +563,8 @@ class ConsoleCodeItem extends React.Component {
         this.props.setConsoleItemValue(this.props.unique_id, "console_text", new_code)
     }
 
-    _handleSummaryTextChange(event) {
-        this.props.setConsoleItemValue(this.props.unique_id, "summary_text", event.target.value)
+    _handleSummaryTextChange(value) {
+        this.props.setConsoleItemValue(this.props.unique_id, "summary_text", value)
     }
 
     _toggleShrink() {
@@ -601,73 +596,69 @@ class ConsoleCodeItem extends React.Component {
     render () {
         let panel_style = this.props.am_shrunk ? "log-panel log-panel-invisible" : "log-panel log-panel-visible";
         let output_dict = {__html: this.props.output_text};
-        let butclass = "notclose";
+
         return (
-             <Rbs.Card className={panel_style} id={this.props.unique_id}>
-                <Rbs.Card.Header>
-                    <div className="button-div shrink-expand-div">
+             <div className={panel_style + " d-flex flex-row"} id={this.props.unique_id}>
+                    <div className="button-div shrink-expand-div d-flex flex-row">
+                        <Bp.Icon icon="drag-handle-vertical"
+                                 style={{marginLeft: 0, marginRight: 6}}
+                                 iconSize={20}
+                                 className="console-sorter"/>
                         {!this.props.am_shrunk &&
-                            <GlyphButton butclass={butclass}
-                                         icon_class="fas fa-chevron-circle-down"
+                            <GlyphButton icon="chevron-down"
                                          handleClick={this._toggleShrink}/>
                         }
                         {this.props.am_shrunk &&
-                            <GlyphButton butclass={butclass}
-                                         icon_class="fas fa-chevron-circle-right"
+                            <GlyphButton icon="chevron-right"
                                          handleClick={this._toggleShrink}/>
                         }
                     </div>
-                </Rbs.Card.Header>
                 {this.props.am_shrunk &&
-                    <ContentEditable html={this.props.summary_text}
+                    <Bp.EditableText value={this.props.summary_text}
                                      onChange={this._handleSummaryTextChange}
-                                     disabled={false}
-                                     className="log-panel-summary"
-                                     style={{}}
-                                     tagName="div"
-                                     innerRef={this.ce_summary_ref}/>
+                                     className="log-panel-summary"/>
                 }
                 {!this.props.am_shrunk &&
                     <React.Fragment>
-                            <div className="d-flex flex-row">
-                                <div className="log-panel-body console-code">
-                                    <div className="button-div d-inline-flex pr-1">
-                                         <GlyphButton butclass={butclass}
-                                             handleClick={this._runMe}
-                                             icon_class="fas fa-step-forward"/>
+                            <div className="d-flex flex-column" style={{width: "100%"}}>
+                                <div className="d-flex flex-row">
+                                    <div className="log-panel-body d-flex flex-row console-code">
+                                        <div className="button-div d-flex pr-1">
+                                             <GlyphButton handleClick={this._runMe}
+                                                          intent="success"
+                                                          icon="play"/>
+                                        </div>
+                                        <ReactCodemirror handleChange={this._handleChange}
+                                                         code_content={this.props.console_text}
+                                                         setCMObject={this._setCMObject}
+                                                         extraKeys={this._extraKeys()}
+                                                         saveMe={null}/>
+                                         <div className="button-div d-flex flex-row">
+                                             <GlyphButton handleClick={this._deleteMe}
+                                                          intent="danger"
+                                                          style={{marginLeft: 10, marginRight: 0}}
+                                                          icon="trash"/>
+                                            <GlyphButton handleClick={this._clearOutput}
+                                                         intent="warning"
+                                                         style={{marginLeft: 10, marginRight: 0}}
+                                                         icon="clean"/>
+                                        </div>
                                     </div>
-                                    <ReactCodemirror handleChange={this._handleChange}
-                                                     code_content={this.props.console_text}
-                                                     setCMObject={this._setCMObject}
-                                                     extraKeys={this._extraKeys()}
-                                                     saveMe={null}/>
-                                     <div className="button-div d-inline-flex">
-                                         <GlyphButton butclass={butclass + " pl-2"}
-                                             handleClick={this._deleteMe}
-                                             icon_class="fas fa-trash-alt"/>
-                                        <GlyphButton butclass={butclass + " pl-2"}
-                                                     handleClick={this._clearOutput}
-                                                     icon_class="fas fa-eraser"/>
-                                        <span className="fas fa-align-justify console-sorter pl-2"
-                                              style={{paddingTop: 10}}
-                                        />
-                                    </div>
+                                    {!this.props.show_spinner &&
+                                        <div className='execution-counter'>[{String(this.props.execution_count)}]</div>
+                                    }
+                                    {this.props.show_spinner &&
+                                        <div style={{marginTop: 10, marginRight: 22}}>
+                                            <Bp.Spinner size={13} />
+                                        </div>
+                                    }
                                 </div>
-                                {!this.props.show_spinner &&
-                                    <div className='execution-counter'>[{String(this.props.execution_count)}]</div>
-                                }
-                                {this.props.show_spinner &&
-                                    <div style={{marginTop: 10, paddingRight: 22}}>
-                                        <span className="console-spin-place">
-                                            <span className="loader-console"></span>
-                                        </span>
-                                    </div>
-                                }
+                                < div className='log-code-output' dangerouslySetInnerHTML={output_dict}/>
                             </div>
-                            < div className='log-code-output' dangerouslySetInnerHTML={output_dict}/>
+
                     </React.Fragment>
                 }
-            </Rbs.Card>
+            </div>
         )
     }
 }
@@ -693,7 +684,7 @@ class ConsoleTextItem extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this, "_");
-        this.ce_ref = React.createRef();
+        this.ce_ref = null;
         this.ce_summary_ref = React.createRef();
         this.converter = new showdown.Converter();
     }
@@ -739,8 +730,8 @@ class ConsoleTextItem extends React.Component {
         this.props.setConsoleItemValue(this.props.unique_id, "console_text", event.target.value)
     }
 
-    _handleSummaryTextChange(event) {
-        this.props.setConsoleItemValue(this.props.unique_id, "summary_text", event.target.value)
+    _handleSummaryTextChange(value) {
+        this.props.setConsoleItemValue(this.props.unique_id, "summary_text", value)
     }
 
     _toggleShrink() {
@@ -762,6 +753,10 @@ class ConsoleTextItem extends React.Component {
         this._showMarkdown();
     }
 
+    _notesRefHandler(the_ref) {
+        this.ce_ref = the_ref;
+    }
+
     render () {
         let really_show_markdown =  this.hasOnlyWhitespace ? false : this.props.show_markdown;
         var converted_markdown;
@@ -771,70 +766,66 @@ class ConsoleTextItem extends React.Component {
         let key_bindings = [[["ctrl+enter", "command+enter"], this._gotEnter]];
         let converted_dict = {__html: converted_markdown};
         let panel_class = this.props.am_shrunk ? "log-panel log-panel-invisible text-log-item" : "log-panel log-panel-visible text-log-item";
-        let butclass = "notclose";
+        let gbstyle={marginLeft: 1};
         return (
-            <Rbs.Card className={panel_class} id={this.props.unique_id} style={{marginBottom: 10}}>
-                <Rbs.Card.Header>
-                    <div className="button-div shrink-expand-div">
+            <div className={panel_class + " d-flex flex-row"} id={this.props.unique_id} style={{marginBottom: 10}}>
+                <div className="button-div shrink-expand-div d-flex flex-row">
+                        <Bp.Icon icon="drag-handle-vertical"
+                                 style={{marginLeft: 0, marginRight: 6}}
+                                 iconSize={20}
+                                 className="console-sorter"/>
                         {!this.props.am_shrunk &&
-                            <GlyphButton butclass={butclass}
-                                         icon_class="fas fa-chevron-circle-down"
+                            <GlyphButton icon="chevron-down"
                                          handleClick={this._toggleShrink}/>
                         }
                         {this.props.am_shrunk &&
-                            <GlyphButton butclass={butclass}
-                                         icon_class="fas fa-chevron-circle-right"
+                            <GlyphButton icon="chevron-right"
                                          handleClick={this._toggleShrink}/>
                         }
-                    </div>
-                </Rbs.Card.Header>
+                </div>
                 {this.props.am_shrunk &&
-                    <ContentEditable html={this.props.summary_text}
+                    <Bp.EditableText value={this.props.summary_text}
                                      onChange={this._handleSummaryTextChange}
-                                     disabled={false}
-                                     className="log-panel-summary"
-                                     style={{}}
-                                     tagName="div"
-                                     innerRef={this.ce_summary_ref}/>
+                                     className="log-panel-summary"/>
                 }
                 {!this.props.am_shrunk &&
-                    <div className="log-panel-body text-box"  style={{"display": "inline-flex"}}>
-                            <div className="button-div d-inline-flex pr-1">
-                                <GlyphButton butclass={butclass}
-                                             handleClick={this._showMarkdown}
-                                             icon_class="fas fa-font"/>
-                            </div>
-                        {!really_show_markdown &&
-                            <ContentEditable html={this.props.console_text}
+                    <div className="d-flex flex-column" style={{width: "100%"}}>
+                        <div className="log-panel-body text-box d-flex flex-row">
+                                <div className="button-div d-inline-flex pr-1">
+                                    <GlyphButton handleClick={this._showMarkdown}
+                                                 intent="success"
+                                                 icon="font"/>
+                                </div>
+                            {!really_show_markdown &&
+                                <Bp.TextArea value={this.props.console_text}
                                              onChange={this._handleChange}
                                              onKeyDown={this._handleKeyDown}
+                                             growVertically={true}
                                              onFocus={()=>this.props.setFocus(this.props.unique_id)}
                                              onBlur={()=>this.props.setFocus(null)}
                                              disabled={false}
                                              className="console-text"
                                              style={{}}
-                                             tagName="div"
-                                             innerRef={this.ce_ref}/>
-                        }
-                        {really_show_markdown &&
-                            <div className="text-panel-output"
-                                 onClick={this._hideMarkdown}
-                                 style={{width: "100%"}}
-                                 dangerouslySetInnerHTML={converted_dict}/>
-                        }
+                                             inputRef={this._notesRefHandler}/>
+                            }
+                            {really_show_markdown &&
+                                <div className="text-panel-output"
+                                     onClick={this._hideMarkdown}
+                                     style={{width: "100%", padding: 9}}
+                                     dangerouslySetInnerHTML={converted_dict}/>
+                            }
 
-                        <div className="button-div d-inline-flex">
-                             <GlyphButton butclass={butclass + " pl-2"}
-                                 handleClick={this._deleteMe}
-                                 icon_class="fas fa-trash-alt"/>
-                            <span className="fas fa-align-justify console-sorter pl-2"
-                                  style={{paddingTop: 10}}
-                            />
+                            <div className="button-div d-flex flex-row">
+                                 <GlyphButton handleClick={this._deleteMe}
+                                              intent="danger"
+                                              style={{marginLeft: 10, marginRight: 66}}
+                                              icon="trash"/>
+                            </div>
                         </div>
                     </div>
                 }
-            <KeyTrap target_ref={this.ce_ref} bindings={key_bindings} />
-            </Rbs.Card>
+                <KeyTrap target_ref={this.ce_ref} bindings={key_bindings} />
+            </div>
         )
     }
 }

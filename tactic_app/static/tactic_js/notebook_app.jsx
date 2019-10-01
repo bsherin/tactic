@@ -1,9 +1,10 @@
 
-import {TacticNavbar} from "./base_module.js";
+import {TacticNavbar} from "./blueprint_navbar.js";
 import {ProjectMenu} from "./main_menus_react.js";
 import {TacticSocket} from "./tactic_socket.js";
 import {ConsoleComponent} from "./console_component.js";
 import {doFlash} from "./toaster.js"
+import {withStatus} from "./toaster.js";
 
 import {handleCallback, postWithCallback, postAsyncFalse} from "./communication_react.js"
 
@@ -13,7 +14,9 @@ const BOTTOM_MARGIN = 35;
 let tsocket;
 let ppi;
 
-window.dirty = false;
+window.onunload = function (e) {
+    postAsyncFalse("host", "remove_mainwindow_task", {"main_id": window.main_id})
+};
 
 function _main_main() {
     //render_navbar();
@@ -55,19 +58,20 @@ function _after_main_joined() {
 }
 
 function _finish_post_load(data) {
+    let NotebookAppPlus = withStatus(NotebookApp, tsocket);
     var interface_state;
     if (window.is_project || window.opening_from_temp_id) {
         interface_state = data.interface_state
     }
     let domContainer = document.querySelector('#main-root');
     if (window.is_project || window.opening_from_temp_id) {
-        ReactDOM.render(<NotebookApp is_project={true}
+        ReactDOM.render(<NotebookAppPlus is_project={true}
                                   interface_state={interface_state}
                                  />,
             domContainer)
         }
         else {
-            ReactDOM.render(<NotebookApp is_project={false}
+            ReactDOM.render(<NotebookAppPlus is_project={false}
                                       interface_state={null}
                                      />,
             domContainer)
@@ -83,7 +87,7 @@ class NotebookApp extends React.Component {
         this.state = {
             mounted: false,
             console_items: [],
-            usable_width: window.innerWidth - 2 * MARGIN_SIZE - 30,
+            usable_width: window.innerWidth - 2 * MARGIN_SIZE,
             usable_height: window.innerHeight - BOTTOM_MARGIN,
         };
         if (this.props.is_project) {
@@ -102,7 +106,7 @@ class NotebookApp extends React.Component {
 
     _update_window_dimensions() {
         this.setState({
-            "usable_width": window.innerWidth - 2 * MARGIN_SIZE - 30,
+            "usable_width": window.innerWidth - 2 * MARGIN_SIZE,
             "usable_height": window.innerHeight - BOTTOM_MARGIN
         });
     }
@@ -134,7 +138,7 @@ class NotebookApp extends React.Component {
                              interface_state={this.interface_state}
                              changeCollection={null}
                              disabled_items={window.is_project ? [] : ["Save"]}
-                             hidden_items={["Open Console as Notebook", "Export Table as Collection", "change collection"]}
+                             hidden_items={["Open Console as Notebook", "Export Table as Collection", "Change collection"]}
                 />
             </React.Fragment>
         );
@@ -151,7 +155,7 @@ class NotebookApp extends React.Component {
                               setMainStateValue={this._setMainStateValue}
                               console_available_height={this.state.usable_height - 50}
                               tsocket={tsocket}
-                                  style={{marginLeft: 25, marginRight: 25}}
+                                  style={{marginLeft: 25, marginRight: 25, marginTop: 25}}
                               />
             </React.Fragment>
         )
@@ -188,16 +192,6 @@ class MainTacticSocket extends TacticSocket {
         });
         this.socket.on("doFlash", function(data) {
             doFlash(data)
-        });
-        this.socket.on('show-status-msg', function (data){
-            statusMessage(data)
-        });
-        this.socket.on("clear-status-msg", function (){
-           clearStatusMessage()
-        });
-
-        this.socket.on("stop-status-spinner", function (){
-           stopSpinner()
         });
     }
 }

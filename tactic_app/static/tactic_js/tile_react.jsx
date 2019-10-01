@@ -34,7 +34,6 @@ class TileContainer extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this)
-
     }
 
     _handleTileFinishedLoading(data) {
@@ -47,7 +46,9 @@ class TileContainer extends React.Component {
         this.props.tsocket.socket.off("tile-message");
         this.props.tsocket.socket.on("tile-message", this._handleTileMessage);
         this.props.tsocket.socket.off("tile-finished-loading");
-        this.props.tsocket.socket.on("tile-finished-loading", this._handleTileFinishedLoading);
+        this.props.tsocket.socket.on("tile-finished-loading", (data) => {
+            self._handleTileFinishedLoading(data)
+        });
         this.props.tsocket.socket.off("tile-source-change");
         this.props.tsocket.socket.on('tile-source-change', function (data) {
             self._markSourceChange(data.tile_type)
@@ -165,6 +166,7 @@ class TileContainer extends React.Component {
                                handleClose={this._closeTile}
                                setTileValue={this._setTileValue}
                                setTileState={this._setTileState}
+                               table_is_shrunk={this.props.table_is_shrunk}
                                current_doc_name={this.props.current_doc_name}
                                selected_row={this.props.selected_row}
                                broadcast_event={this.props.broadcast_event}
@@ -177,6 +179,7 @@ class TileContainer extends React.Component {
 
 TileContainer.propTypes = {
     setMainStateValue: PropTypes.func,
+    table_is_shrunk: PropTypes.bool,
     tile_list: PropTypes.array,
     tile_div_ref: PropTypes.object,
     current_doc_name: PropTypes.string,
@@ -380,7 +383,7 @@ class TileComponent extends React.Component {
 
     listen_for_clicks () {
          let self = this;
-         $(this.my_ref.current).on(click_event, '.element-clickable', function(e) {
+         $(this.body_ref.current).on(click_event, '.element-clickable', function(e) {
              let data_dict = self._standard_click_data();
              const dset = e.target.dataset;
              data_dict.dataset = {};
@@ -391,7 +394,7 @@ class TileComponent extends React.Component {
              postWithCallback(self.props.tile_id, "TileElementClick", data_dict);
              e.stopPropagation()
          });
-         $(this.my_ref.current).on(click_event, '.word-clickable', function(e) {
+         $(this.body_ref.current).on(click_event, '.word-clickable', function(e) {
              let data_dict = self._standard_click_data();
              const s = window.getSelection();
              const range = s.getRangeAt(0);
@@ -409,12 +412,12 @@ class TileComponent extends React.Component {
              data_dict.clicked_text = range.toString().trim();
              postWithCallback(self.props.tile_id, "TileWordClick", data_dict)
          });
-         $(this.my_ref.current).on(click_event, '.cell-clickable', function(e) {
+         $(this.body_ref.current).on(click_event, '.cell-clickable', function(e) {
              let data_dict = self._standard_click_data();
              data_dict.clicked_cell = $(this).text();
              postWithCallback(self.props.tile_id, "TileCellClick", data_dict)
          });
-         $(this.my_ref.current).on(click_event, '.row-clickable', function(e) {
+         $(this.body_ref.current).on(click_event, '.row-clickable', function(e) {
              let data_dict = self._standard_click_data();
              const cells = $(this).children();
              const row_vals = [];
@@ -424,12 +427,12 @@ class TileComponent extends React.Component {
              data_dict["clicked_row"] = row_vals;
              postWithCallback(self.props.tile_id, "TileRowClick", data_dict)
          });
-         $(this.my_ref.current).on(click_event, '.front button', function(e) {
+         $(this.body_ref.current).on(click_event, '.front button', function(e) {
              let data_dict = self._standard_click_data();
              data_dict["button_value"] = e.target.value;
              postWithCallback(self.props.tile_id, "TileButtonClick", data_dict)
          });
-         $(this.my_ref.current).on('submit', '.front form', function(e) {
+         $(this.body_ref.current).on('submit', '.front form', function(e) {
              let data_dict = self._standard_click_data();
              const form_data = {};
              let the_form = e.target;
@@ -440,12 +443,12 @@ class TileComponent extends React.Component {
              postWithCallback(self.props.tile_id, "TileFormSubmit", data_dict);
              return false
          });
-         $(this.my_ref.current).on("change", '.front select', function (e) {
+         $(this.body_ref.current).on("change", '.front select', function (e) {
              let data_dict = self._standard_click_data();
              data_dict.select_value = e.target.value;
              postWithCallback(self.props.tile_id, "SelectChange", data_dict)
          });
-         $(this.my_ref.current).on('change', '.front textarea', function(e) {
+         $(this.body_ref.current).on('change', '.front textarea', function(e) {
              let data_dict = self._standard_click_data();
              data_dict["text_value"] = e.target.value;
              postWithCallback(self.props.tile_id, "TileTextAreaChange", data_dict)
@@ -533,13 +536,10 @@ class TileComponent extends React.Component {
         let front_dict = {__html: this.props.front_content};
         this.compute_styles();
         let tile_class = this.props.table_is_shrunk ? "tile-panel tile-panel-float" : "tile-panel";
-        if (this.props.source_changed) {
-            tile_class = tile_class + " tile-source-changed"
-        }
-        let butclass = "notclose header-but";
+        let tph_class = this.props.source_changed ? "tile-panel-heading tile-source-changed" : "tile-panel-heading";
         return (
-            <Bp.Card ref={this.my_ref} style={this.main_style} className={tile_class} id={this.props.tile_id}>
-                <div className="tile-panel-heading" >
+            <Bp.Card ref={this.my_ref} elevation={2} style={this.main_style} className={tile_class} id={this.props.tile_id}>
+                <div className={tph_class} >
                     <div className="left-glyphs" ref={this.left_glyphs_ref} style={this.lg_style}>
                         <Bp.ButtonGroup>
                         {this.props.shrunk &&
@@ -551,7 +551,7 @@ class TileComponent extends React.Component {
                             <GlyphButton
                                          icon="chevron-down"
                                          handleClick={this._toggleShrunk} />}
-                        <GlyphButton
+                        <GlyphButton intent="primary"
                                      handleClick={this._toggleBack}
                                      icon="cog"/>
                         <span className="tile-name-div">{this.props.tile_name}</span>
@@ -562,19 +562,17 @@ class TileComponent extends React.Component {
                         <Bp.ButtonGroup>
                         {this.props.show_spinner && <Bp.Spinner size={17} />}
 
-                        <GlyphButton
-                                     handleClick={this._toggleTileLog}
+                        <GlyphButton handleClick={this._toggleTileLog}
                                      icon="console"/>
-                        <GlyphButton butclass={butclass}
-                                     handleClick={this._logMe}
+                        <GlyphButton handleClick={this._logMe}
                                      icon="clipboard"/>
                         <GlyphButton
                                      handleClick={this._logParams}
                                      icon="th"/>
-                        <GlyphButton
+                        <GlyphButton intent="warning"
                                      handleClick={this._reloadTile}
                                      icon="refresh"/>
-                        <GlyphButton
+                        <GlyphButton intent="danger"
                                      handleClick={this._closeTile}
                                      icon="trash"/>
                         </Bp.ButtonGroup>

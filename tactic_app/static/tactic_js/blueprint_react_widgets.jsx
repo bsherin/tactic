@@ -8,13 +8,15 @@ var Bp = blueprint;
 class GlyphButton extends React.Component {
 
     render () {
+        let style = this.props.style == null ? {paddingLeft: 2, paddingRight:2} : this.props.style;
         return (
            <Bp.Button type="button"
                       minimal={this.props.minimal}
                       small={true}
-                      style={{paddingLeft: 2, paddingRight:2}}
+                      style={style}
                       onMouseDown={(e)=>{e.preventDefault()}}
                       onClick={this.props.handleClick}
+                      intent={this.props.intent}
                       icon={this.props.icon}>
                {this.props.extra_glyph_text &&
                     <span className="extra-glyph-text">{this.props.extra_glyph_text}</span>
@@ -29,13 +31,15 @@ GlyphButton.propTypes = {
     minimal: PropTypes.bool,
     extra_glyph_text: PropTypes.string,
     style: PropTypes.object,
-    handleClick: PropTypes.func
+    handleClick: PropTypes.func,
+    intent: PropTypes.string
 };
 
 GlyphButton.defaultProps = {
-    style: {},
+    style: null,
     extra_glyph_text: null,
-    minimal: true
+    minimal: true,
+    intent: "none"
 };
 
 

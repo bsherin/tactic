@@ -13,17 +13,28 @@ class KeyTrap extends React.Component {
     }
 
     initializeMousetrap() {
-        this.mousetrap = new Mousetrap(this.props.target_ref.current);
-        for (let binding of this.props.bindings) {
-            this.mousetrap.bind(binding[0], binding[1])
+        if (!this.props.target_ref) {
+            this.mousetrap = null
+        }
+        else if (!this.props.target_ref) {
+            this.mousetrap = null;
+        }
+        else {
+            this.mousetrap = new Mousetrap(this.props.target_ref);
+            for (let binding of this.props.bindings) {
+                this.mousetrap.bind(binding[0], binding[1])
+            }
         }
     }
 
     componentDidUpdate() {
-        if (!this.mousetrap && this.props.target_ref.current) {
+        if (!this.props.target_ref) {
+            this.mousetrap = null
+        }
+        else if (!this.mousetrap && this.props.target_ref) {
             this.initializeMousetrap()
         }
-        else if (!this.props.target_ref.current) {
+        else if (!this.props.target_ref) {
             this.mousetrap = null;
         }
     }

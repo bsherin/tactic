@@ -54,10 +54,10 @@ function withErrorDrawer(WrappedComponent, tsocket=null, title=null, position="r
         render() {
             let errorDrawerFuncs = {
                 openErrorDrawer: this._open,
-               closeErrorDrawer: this._close,
-               clearErrorDrawer: this._clearAll,
-               addErrorDrawerEntry: this._addEntry,
-               toggleErrorDrawer: this._toggle
+                closeErrorDrawer: this._close,
+                clearErrorDrawer: this._clearAll,
+                addErrorDrawerEntry: this._addEntry,
+                toggleErrorDrawer: this._toggle
             };
             return (
                 <React.Fragment>

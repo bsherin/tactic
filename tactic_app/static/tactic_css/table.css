@@ -24,6 +24,9 @@
 #table-spin-place {
   margin: 7px; }
 
+#main-root .res-viewer-resizer .ui-resizable-e {
+  z-index: 0 !important; }
+
 #table-wrapper {
   overflow-x: auto;
   margin: 0;
@@ -73,12 +76,6 @@
   #table-area td:focus {
     outline: none;
     border-color: #9ecaed; }
-  #table-area .selected-header {
-    background-color: #f5f5f5; }
-  #table-area .selected-column {
-    background-color: #e0e0e0; }
-  #table-area .selected-row {
-    background-color: #dddddd; }
   #table-area .hidden-row {
     display: none !important; }
   #table-area tbody > tr:last-child {

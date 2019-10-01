@@ -91,12 +91,23 @@ class SelectorTableCell extends React.Component {
     }
 
     render () {
+        let tdstyle;
+        if (this.props.width) {
+            tdstyle = {width: this.props.width};
+        }
+        else {
+            tdstyle = {}
+        }
         return (
-            <td>
+            <td style={tdstyle}>
                 {this.props.children}
             </td>
         )
     }
+}
+
+SelectorTableCell.propTypes = {
+    width: PropTypes.number
 }
 
 class SelectorTableRow extends React.Component {
@@ -167,11 +178,21 @@ class SelectorTableRow extends React.Component {
     }
 
     render() {
-        let cells = this.props.columns.map((col, index) =>
-            <SelectorTableCell key={index}>
-                {this.props.data_dict[col]}
-            </SelectorTableCell>
-        );
+        let cells;
+        if (this.props.column_widths) {
+            cells = this.props.columns.map((col, index) =>
+                <SelectorTableCell key={index} width={this.props.column_widths[index]}>
+                    {this.props.data_dict[col]}
+                </SelectorTableCell>
+            );
+        }
+        else {
+            cells = this.props.columns.map((col, index) =>
+                <SelectorTableCell key={index} width={null}>
+                    {this.props.data_dict[col]}
+                </SelectorTableCell>
+            );
+        }
 
         let cname = this.props.active ? 'selector-button active' : 'selector-button';
         if (this.state.drag_hover) {
@@ -196,6 +217,7 @@ class SelectorTableRow extends React.Component {
 SelectorTableRow.propTypes = {
     columns: PropTypes.array,
     row_index: PropTypes.number,
+    column_widths: PropTypes.array,
     data_dict: PropTypes.object,
     active: PropTypes.bool,
     handleRowClick: PropTypes.func,
@@ -221,17 +243,24 @@ class SelectorHeaderCell extends React.Component {
     }
 
     render() {
+        let thstyle;
+        if (this.props.width) {
+            thstyle = {width: this.props.width}
+        }
+        else {
+            thstyle = {}
+        }
         if (this.props.sorting_column == this.props.name) {
             let icon = this.state.next_sort == "ascending" ? "sort-down" : "sort-up";
             return (
-                <th onClick={this._handleMyClick}>
+                <th onClick={this._handleMyClick} style={thstyle}>
                     {this.props.name}
                     <span className={`fas fa-${icon}`} style={{marginLeft: 5}}></span>
                 </th>
             )
         }
         return (
-            <th onClick={this._handleMyClick}>
+            <th onClick={this._handleMyClick} style={thstyle}>
                 {this.props.name}
             </th>
         )
@@ -241,6 +270,7 @@ class SelectorHeaderCell extends React.Component {
 SelectorHeaderCell.propTypes = {
     name: PropTypes.string,
     sorting_column: PropTypes.string,
+    width: PropTypes.number,
     handleHeaderCellClick: PropTypes.func,
     sort_field: PropTypes.string,
     first_sort: PropTypes.string
@@ -254,28 +284,53 @@ class SelectorTableHeader extends React.Component {
 
     render() {
         let colnames = Object.keys(this.props.columns);
-        let cells = colnames.map((col, index) =>
-            <SelectorHeaderCell key={index}
-                                name={col}
-                                sorting_column={this.props.sorting_column}
-                                sort_field={this.props.columns[col]["sort_field"]}
-                                first_sort={this.props.columns[col]["first_sort"]}
-                                handleHeaderCellClick={this.props.handleHeaderCellClick}
-            />
-        );
-        return (
-            <thead>
-                <tr className='selector-button' key="header">
-                    {cells}
-                </tr>
-            </thead>
-        )
+        let cells;
+        if (this.props.column_widths) {
+            cells = colnames.map((col, index) =>
+                <SelectorHeaderCell key={index}
+                                    name={col}
+                                    width={this.props.column_widths[index]}
+                                    sorting_column={this.props.sorting_column}
+                                    sort_field={this.props.columns[col]["sort_field"]}
+                                    first_sort={this.props.columns[col]["first_sort"]}
+                                    handleHeaderCellClick={this.props.handleHeaderCellClick}
+                />
+            );
+            return (
+                <thead style={{display: "block", width: this.props.total_width}}>
+                    <tr className='selector-button' key="header">
+                        {cells}
+                    </tr>
+                </thead>
+            )
+        }
+        else {
+            cells = colnames.map((col, index) =>
+                <SelectorHeaderCell key={index}
+                                    name={col}
+                                    width={null}
+                                    sorting_column={this.props.sorting_column}
+                                    sort_field={this.props.columns[col]["sort_field"]}
+                                    first_sort={this.props.columns[col]["first_sort"]}
+                                    handleHeaderCellClick={this.props.handleHeaderCellClick}
+                />
+            );
+            return (
+                <thead style={{display: "block"}}>
+                    <tr className='selector-button' key="header">
+                        {cells}
+                    </tr>
+                </thead>
+            )
+        }
     }
 }
 
 SelectorTableHeader.propTypes = {
     sorting_column: PropTypes.string,
+    total_width: PropTypes.number,
     columns: PropTypes.object,
+    column_widths: PropTypes.array,
     handleHeaderCellClick: PropTypes.func
 };
 
@@ -301,8 +356,8 @@ class SelectorTable extends React.Component {
     }
 
     render () {
-        let tstyle = {overflowY: "scroll",
-            overflowX: "scroll",
+        let tstyle = {overflowY: "hidden",
+            overflowX: "hidden",
             display: "block",
             maxHeight: "100%",
             whiteSpace: "nowrap"
@@ -318,6 +373,16 @@ class SelectorTable extends React.Component {
             )
         }
         let colnames = Object.keys(this.props.columns);
+        let total_width;
+        if (this.props.column_widths) {
+            total_width = 0;
+            for (let w of this.props.column_widths) {
+                total_width += w
+            }
+        }
+        else {
+            total_width = null
+        }
         let trows = this.props.data_list.map((ddict, index) =>
             <Rtg.CSSTransition key={ddict[colnames[0]]}
                                timeout={500}
@@ -332,10 +397,18 @@ class SelectorTable extends React.Component {
                                   draggable={this.props.draggable}
                                   identifier_field={this.props.identifier_field}
                                   handleAddTag={this.props.handleAddTag}
+                                  column_widths={this.props.column_widths}
                 />
             </Rtg.CSSTransition>
         );
 
+        let body_style = {display: "block",
+            overflowY: "scroll",
+            overflowX: "hidden",
+            maxHeight: "100%"};
+        if (total_width) {
+            body_style["width"] = total_width;
+        }
         return (
             <Bp.HTMLTable tabIndex="-1"
                           bordered={false}
@@ -347,8 +420,11 @@ class SelectorTable extends React.Component {
                 <SelectorTableHeader columns={this.props.columns}
                                      sorting_column={this.props.sorting_column}
                                      handleHeaderCellClick={this.props.handleHeaderCellClick}
+                                     column_widths={this.props.column_widths}
+                                     total_width={total_width}
                 />
                 <Rtg.TransitionGroup component="tbody"
+                                     style={body_style}
                                      ref={this.tbody_ref}
                                      enter={this.props.show_animations}
                                      exit={this.props.show_animations}
@@ -364,6 +440,7 @@ class SelectorTable extends React.Component {
 SelectorTable.propTypes = {
     columns: PropTypes.object,
     sorting_column: PropTypes.string,
+    column_widths: PropTypes.array,
     data_list: PropTypes.array,
     selected_resource_names: PropTypes.array,
     handleHeaderCellClick: PropTypes.func,

@@ -69,6 +69,14 @@ $selected-column-background: #e0e0e0;
     margin: 7px
 }
 
+#main-root {
+    .res-viewer-resizer {
+        .ui-resizable-e {
+            z-index: 0 !important
+        }
+    }
+}
+
 // Table body
 
 #table-wrapper {
@@ -139,17 +147,17 @@ $selected-column-background: #e0e0e0;
         //box-shadow:0 0 15px #9ecaed;
     }
 
-    .selected-header {
-        background-color: $selected-header-background;
-    }
+    //.selected-header {
+    //    background-color: $selected-header-background;
+    //}
 
-    .selected-column {
-        background-color: $selected-column-background;
-    }
+    //.selected-column {
+    //    background-color: $selected-column-background;
+    //}
 
-    .selected-row {
-        background-color: $selected-row-background;
-    }
+    //.selected-row {
+    //    background-color: $selected-row-background;
+    //}
 
     .hidden-row {
         display: none !important;

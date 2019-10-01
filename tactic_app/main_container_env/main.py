@@ -374,12 +374,10 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         return tdict
 
     def refill_table(self):
-        doc = self.doc_dict[self.visible_doc_name]
         if self.doc_type == "table":
-            data_object = {"data_rows": doc.displayed_data_rows, "doc_name": self.visible_doc_name,
-                           "background_colors": doc.displayed_background_colors,
-                           "is_first_chunk": doc.is_first_chunk, "is_last_chunk": doc.is_last_chunk}
+            data_object = self.grab_chunk(self.visible_doc_name, 0)
         else:
+            doc = self.doc_dict[self.visible_doc_name]
             data_object = {"data_text": doc.data_text, "doc_name": self.visible_doc_name,
                            "background_colors": doc.displayed_background_colors}
         self.mworker.emit_table_message("refill_table", data_object)
@@ -415,8 +413,8 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         error_string = self.get_traceback_message(ex, special_string)
         self.mworker.debug_log(error_string)
         if print_to_console:
-            summary = "An exception of type {}".format(type(ex).__name__)
-            self.mworker.print_to_console(error_string, force_open=True, is_error=True, summary=summary)
+            title = "An exception of type {}".format(type(ex).__name__)
+            self.mworker.send_error_entry(title, error_string)
         return error_string
 
     def highlight_table_text(self, txt):
