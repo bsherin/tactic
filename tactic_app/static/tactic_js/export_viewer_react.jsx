@@ -1,6 +1,5 @@
 
-import {GlyphButton} from "./react_widgets.js";
-import {SelectList} from "./react_widgets.js";
+import {GlyphButton, SelectList} from "./blueprint_react_widgets.js";
 import {postWithCallback} from "./communication_react.js"
 import {doFlash} from "./toaster.js"
 
@@ -8,11 +7,13 @@ export {ExportsViewer}
 
 var Rbs = window.ReactBootstrap;
 
+let Bp = blueprint;
+
 class ExportListSelect extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this);
-        this.select_ref = React.createRef();
+        this.select_ref = null;
         this.export_index = {}
     }
 
@@ -22,9 +23,11 @@ class ExportListSelect extends React.Component {
     }
 
     componentDidUpdate() {
-        let currently_selected = $(this.select_ref.current).val();
-        if (currently_selected && (currently_selected != this.props.value)) {
-            this.props.handleChange(currently_selected, this.export_index[currently_selected])
+        if (this.select_ref) {
+            let currently_selected = this.select_ref.value;
+            if (currently_selected && (currently_selected != this.props.value)) {
+                this.props.handleChange(currently_selected, this.export_index[currently_selected])
+            }
         }
     }
 
@@ -49,14 +52,18 @@ class ExportListSelect extends React.Component {
         return groups
     }
 
+    _handleSelectRef(the_ref) {
+        this.select_ref = the_ref;
+    }
+
     render() {
         return (
-            <select className="form-control form-control-sm"
-                    ref={this.select_ref}
-                    onChange={this._updateMe}
-                    value={this.props.value}>
+            <Bp.HTMLSelect elementRef={this._handleSelectRef}
+                           onChange={this._updateMe}
+                           minimal={true}
+                           value={this.props.value}>
                 {this.create_groups()}
-            </select>
+            </Bp.HTMLSelect>
         )
     }
 }
@@ -160,7 +167,7 @@ class ExportsViewer extends React.Component {
     }
 
     _bodyHeight() {
-        if (this.state.mounted) {
+        if (this.header_ref && this.header_ref.current) {
             return this.props.available_height - $(this.header_ref.current).outerHeight() - 35
         }
         else {
@@ -190,47 +197,58 @@ class ExportsViewer extends React.Component {
         let exports_body_dict = {__html: this.state.exports_body_value};
         let butclass = "notclose bottom-heading-element bottom-heading-element-button";
         return (
-             <Rbs.Card bg="light" id="exports-panel">
-                 <Rbs.Card.Header id="exports-heading"
-                                 className="align-items-center">
-                     <GlyphButton butclass={butclass}
-                                  handleClick={this._sendToConsole}
-                                  icon_class="far fa-arrow-to-left"/>
-                     <GlyphButton butclass={butclass}
-                                  handleClick={this._refresh}
-                                  icon_class="far fa-redo"/>
-                     <button type='button' id="exports-show-button"
-                             onClick={this._eval}
-                             className={butclass}> Eval
-                     </button>
-                     <Rbs.Form inline={true} onSubmit={this._eval} className="flex-nowrap">
-                        <ExportListSelect pipe_dict={this.state.pipe_dict}
-                                          value={this.state.selected_export}
-                                          handleChange={this._handleExportListChange}/>
-                         {this.state.key_list && <SelectList option_list={this.state.key_list}
-                                                               onChange={this._handleKeyListChange}
-                                                               the_value={this.state.key_list_value}
-                                                               fontSize={11}
-                         />
+             <Bp.Card id="exports-panel" elevation={2} className="mr-3">
+                 <div className="d-flex flex-column justify-content-around">
+                     <div id="exports-heading"
+                          ref={this.header_ref}
+                         className="d-flex flex-row justify-content-start">
+                         <GlyphButton handleClick={this._sendToConsole}
+                                      intent="primary"
+                                      style={{marginLeft: 6}}
+                                      icon="direction-left"/>
+                         <GlyphButton handleClick={this._refresh}
+                                      intent="success"
+                                      style={{marginLeft: 0}}
+                                      icon="refresh"/>
+                          <Bp.Button onClick={this._eval}
+                                     intent="success"
+                                       style={{marginRight: 0, marginLeft: 0, padding: 0}}
+                                       minimal={true}
+                                       small={true}
+                                       text="Eval"/>
+                         {(Object.keys(this.state.pipe_dict).length > 0) && (
+                             <form onSubmit={this._eval} className="d-flex flex-row">
+                                 <ExportListSelect pipe_dict={this.state.pipe_dict}
+                                                   value={this.state.selected_export}
+                                                   handleChange={this._handleExportListChange}/>
+                                     {this.state.key_list && <SelectList option_list={this.state.key_list}
+                                                                         onChange={this._handleKeyListChange}
+                                                                         the_value={this.state.key_list_value}
+                                                                         fontSize={11}
+                                     />
+                                    }
+                                 <Bp.InputGroup type="text"
+                                                 small={true}
+                                                 onChange={this._handleTailChange}
+                                                 onSubmit={this._eval}
+                                                 value={this.state.tail_value}
+                                 />
+                             </form>
+                             )
                          }
-                         <Rbs.Form.Control as="input" size="sm"
-                                           className="bottom-heading-element"
-                                           onChange={this._handleTailChange}
-                                           onSubmit={this._eval}
-                                           value={this.state.tail_value}
-                         />
-                     </Rbs.Form>
-                     <span id="exports-info" className="bottom-heading-element ml-2">{this.state.exports_info_value}</span>
-                     {this.state.show_spinner &&
-                        <span id="exports-spin-place"><span className="loader-small"></span></span>
-                     }
+                         <span id="exports-info" className="bottom-heading-element ml-2">{this.state.exports_info_value}</span>
+                         {this.state.show_spinner &&
+                            <Bp.Spinner size={13} />
+                         }
 
-                 </Rbs.Card.Header>
-                 {!this.props.console_is_shrunk &&
-                     <Rbs.Card.Body style={{overflowY: "scroll", height: this._bodyHeight(), backgroundColor: "white"}}
-                                dangerouslySetInnerHTML={exports_body_dict}/>
+
+                     </div>
+                     {!this.props.console_is_shrunk &&
+                         <div style={{overflowY: "scroll", padding: 15, height: this._bodyHeight(), backgroundColor: "white"}}
+                                    dangerouslySetInnerHTML={exports_body_dict}/>
                  }
-             </Rbs.Card>
+                 </div>
+             </Bp.Card>
         )
     }
 }

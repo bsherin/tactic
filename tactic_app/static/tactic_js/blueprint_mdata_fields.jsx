@@ -304,7 +304,7 @@ class CombinedMetadata extends React.Component {
             }
         }
         return (
-            <div className="combined-metadata" style={this.props.outer_style}>
+            <Bp.Card elevation={2} className="combined-metadata" style={this.props.outer_style}>
                 {this.props.name != null &&
                     <h5>{this.props.name}</h5>
                 }
@@ -341,7 +341,7 @@ class CombinedMetadata extends React.Component {
                     {this.props.additional_metadata != null &&
                         additional_items
                     }
-            </div>
+            </Bp.Card>
         )
     }
 }

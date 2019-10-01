@@ -2,7 +2,7 @@
 import {GlyphButton} from "./blueprint_react_widgets.js";
 import {ReactCodemirror} from "./react-codemirror.js";
 
-export {MainTableCard, MainTableCardHeader, TableBody, FreeformBody, TableHeader, compute_added_column_width}
+export {MainTableCard, MainTableCardHeader, TableBody, FreeformBody, TableHeader}
 
 let Bp = blueprint;
 
@@ -127,21 +127,6 @@ TableHeader.propTypes = {
     setMainStateValue: PropTypes.func,
     moveColumn: PropTypes.func
 
-};
-
-class ColoredWord extends React.Component {
-
-    render() {
-        let style = {backgroundColor: this.props.the_color};
-        return (
-            <span style={style}>{this.props.the_word}</span>
-        )
-    }
-}
-
-ColoredWord.propTypes = {
-    the_color: PropTypes.string,
-    the_word: PropTypes.string,
 };
 
 class BodyCell extends React.Component {
@@ -343,7 +328,7 @@ class BodyRow extends React.Component {
                 )
             );
         }
-        let className = this.props.selected_row == this.props.row_number ? "selected-row" : "";
+        let className = this.props.selected_row == this.props.row_dict.__id__ ? "selected-row" : "";
         return (
             <tr ref={this.tr_ref} className={className} onClick={this._handleClick}>{cells}</tr>
         )
@@ -656,20 +641,23 @@ class MainTableCardHeader extends React.Component {
                         <GlyphButton handleClick={this.props.toggleShrink} icon="minimize"/>
                         <div className="d-flex flex-column justify-content-around">
                             <form className="d-flex flex-row">
-                                <Bp.FormGroup label={this.props.short_collection_name} inline={true} style={{marginBottom: 0, marginLeft: 5}}>
+                                <Bp.FormGroup label={this.props.short_collection_name}
+                                              inline={true}
+                                              style={{marginBottom: 0, marginLeft: 5, marginRight: 10}}>
                                     <Bp.HTMLSelect options={this.props.doc_names}
                                                     onChange={this._onChangeDoc}
                                                     value={this.props.current_doc_name}
                                                    style={select_style}
                                     />
                                 </Bp.FormGroup>
+                                {this.props.show_table_spinner &&
+                                    <Bp.Spinner size={15} />}
                             </form>
                         </div>
                     </div>
 
                 </div>
                 <div id="heading-right" ref={this.heading_right_ref} style={{opacity: heading_right_opacity}} className="d-flex flex-column justify-content-around">
-                    {this.props.show_table_spinner && <SmallSpinner/>}
                     <form onSubmit={this._handleSubmit} className="d-flex flex-row">
                             <Bp.InputGroup type="search"
                                            leftIcon="search"
@@ -731,7 +719,7 @@ class MainTableCard extends React.Component {
 
     render () {
         return (
-            <Bp.Card id="main-panel" className="mt-3 ml-3">
+            <Bp.Card id="main-panel" elevation={2} className="mt-3 ml-3">
                 {this.props.card_header}
                 <div  id="table-wrapper">
                     {this.props.card_body}

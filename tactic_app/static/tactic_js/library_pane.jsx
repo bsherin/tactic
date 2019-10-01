@@ -1,7 +1,7 @@
 import {get_all_parent_tags, TagButtonList} from "./tag_buttons_react.js";
 import {CombinedMetadata} from "./blueprint_mdata_fields.js";
 import {SearchForm, SelectorTable} from "./library_widgets.js";
-import {HorizontalPanes, VerticalPanes} from "./resizing_layouts.js";
+import {HorizontalPanes} from "./resizing_layouts.js";
 import {showModalReact, showConfirmDialogReact} from "./modal_react.js";
 import {postAjax, postAjaxPromise} from "./communication_react.js"
 import {getUsableDimensions} from "./sizing_tools.js"
@@ -29,6 +29,7 @@ class LibraryPane extends React.Component {
             tag_list: [],
             show_animations: false,
             auxIsOpen: false,
+            column_widths: null
         };
         doBinding(this);
         if (props.tsocket != null) {
@@ -37,9 +38,32 @@ class LibraryPane extends React.Component {
         }
     }
 
+    getColumnWidths() {
+        let elems = $($("tbody tr")[0]).find("td");
+        if (elems.length == 0) {
+            return null
+        }
+        let result = [];
+        for (let i = 0; i < elems.length; ++i) {
+            result.push(elems[i].offsetWidth)
+        }
+        return result
+    }
+
+    haveColumns() {
+        let elems = $($("tbody tr")[0]).find("td");
+        return elems.length != 0
+    }
+
+    componentDidUpdate () {
+        if (!this.state.column_widths && this.haveColumns()) {
+            this.setState({column_widths: this.getColumnWidths()})
+        }
+    }
+
     componentDidMount() {
         let self = this;
-        this.setState({"mounted": true});
+        this.setState({"mounted": true, column_widths: null});
         let path;
         if (this.props.is_repository) {
             path = "repository_resource_list_with_metadata"
@@ -47,12 +71,14 @@ class LibraryPane extends React.Component {
         else {
             path = "resource_list_with_metadata"
         }
+
         postAjax(`${path}/${this.props.res_type}`, {}, function(data) {
             self.setState({"data_list": data.data_list}, () => {
                 self.update_tag_list();
                 self._update_match_lists();
                 // I need the next line to force a resize update
-                self._set_sort_state(self.props.sorting_column, self.props.sorting_field, self.props.sorting_direction)
+                self._set_sort_state(self.props.sorting_column, self.props.sorting_field, self.props.sorting_direction);
+                self.setState({column_widths: self.getColumnWidths()})
             });
 
             }
@@ -208,8 +234,14 @@ class LibraryPane extends React.Component {
         let new_pane_state = {tag_button_state: new_tb_state};
         let callback;
         if (new_state.hasOwnProperty("active_tag") && (new_state.active_tag != this.props.tag_button_state.active_tag)) {
-            new_pane_state.search_from_tag = true;
-            new_pane_state.search_from_field = false;
+            if (new_state.active_tag == "all") {
+                new_pane_state.search_from_tag = false;
+                new_pane_state.search_from_field = false;
+            }
+            else {
+                new_pane_state.search_from_tag = true;
+                new_pane_state.search_from_field = false;
+            }
             callback = this._update_match_lists;
         }
         else {
@@ -697,7 +729,7 @@ class LibraryPane extends React.Component {
                                   notes={this.props.selected_resource.notes}
                                   handleChange={this._handleMetadataChange}
                                   res_type={this.props.res_type}
-                                  outer_style={{marginLeft: 20, marginTop: 90, overflow: "scroll", paddingLeft: 5}}
+                                  outer_style={{marginLeft: 20, marginTop: 90, overflow: "scroll", padding: 15}}
                                   handleNotesBlur={this.props.multi_select ? null : this._saveFromSelectedResource}
                                   additional_metadata={additional_metadata}
                 />
@@ -779,6 +811,7 @@ class LibraryPane extends React.Component {
                                        handleAddTag={this._handleAddTag}
                                        show_animations={this.state.show_animations}
                                        apply_dimensions_to_div={true}
+                                       column_widths={this.state.column_widths}
                                     />
                         </div>
                     </div>

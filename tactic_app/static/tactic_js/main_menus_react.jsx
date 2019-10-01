@@ -1,7 +1,7 @@
 import {showModalReact} from "./modal_react.js";
 import {postWithCallback} from "./communication_react.js"
 import {doFlashStopSpinner} from "./toaster.js"
-export {ProjectMenu, ColumnMenu, MenuComponent}
+export {ProjectMenu, ColumnMenu, ViewMenu, MenuComponent}
 
 
 let Rbs = window.ReactBootstrap;
@@ -20,14 +20,19 @@ class MenuComponent extends React.Component {
 
     render () {
         let pruned_list = Object.keys(this.props.option_dict).filter(this._filter_on_match_list);
-        let choices = pruned_list.map((opt_name, index) => (
-            <Bp.MenuItem disabled={this.props.disable_all || this.props.disabled_items.includes(opt_name)}
-                         onClick={this.props.option_dict[opt_name]}
-                         key={opt_name}
-                         text={opt_name}
-            >
-            </Bp.MenuItem>
-        ));
+        let choices = pruned_list.map((opt_name, index) => {
+            let icon = this.props.icon_dict.hasOwnProperty(opt_name) ? this.props.icon_dict[opt_name] : null;
+            return (
+                <Bp.MenuItem disabled={this.props.disable_all || this.props.disabled_items.includes(opt_name)}
+                             onClick={this.props.option_dict[opt_name]}
+                             icon={icon}
+                             key={opt_name}
+                             text={opt_name}
+                >
+                </Bp.MenuItem>
+            )
+            }
+        );
         let the_menu = (
             <Bp.Menu>
                 {choices}
@@ -44,6 +49,7 @@ class MenuComponent extends React.Component {
 MenuComponent.propTypes = {
     menu_name: PropTypes.string,
     option_dict: PropTypes.object,
+    icon_dict: PropTypes.object,
     disabled_items: PropTypes.array,
     disable_all: PropTypes.bool,
     hidden_items: PropTypes.array,
@@ -52,7 +58,8 @@ MenuComponent.propTypes = {
 MenuComponent.defaultProps = {
     disabled_items: [],
     disable_all: false,
-    hidden_items: []
+    hidden_items: [],
+    icon_dict: {}
 };
 
 class ProjectMenu extends React.Component {
@@ -207,7 +214,18 @@ class ProjectMenu extends React.Component {
             "Export as Jupyter Notebook": this._exportAsJupyter,
             "Open Console as Notebook": this._consoleToNotebook,
             "Export Table as Collection": this._exportDataTable,
-            "change collection": this.props.changeCollection
+            "Change collection": this.props.changeCollection
+        }
+    }
+
+    get icon_dict() {
+        return {
+            "Save As...": "floppy-disk",
+            "Save": "floppy-disk",
+            "Export as Jupyter Notebook": "export",
+            "Open Console as Notebook": "console",
+            "Export Table as Collection": "export",
+            "Change collection": "exchange"
         }
     }
 
@@ -215,6 +233,7 @@ class ProjectMenu extends React.Component {
         return (
             <MenuComponent menu_name="Project"
                            option_dict={this.option_dict}
+                           icon_dict={this.icon_dict}
                            disabled_items={this.props.disabled_items}
                            disable_all={false}
                            hidden_items={this.props.hidden_items}
@@ -238,6 +257,75 @@ class ColumnMenu extends React.Component {
     }
 
     _shift_column_left() {
+        let cnum = this.props.filtered_column_names.indexOf(this.props.selected_column);
+        if (cnum == 0) return;
+        let target_col = this.props.filtered_column_names[cnum - 1];
+        this.props.moveColumn(this.props.selected_column, target_col);
+    }
+
+    _shift_column_right() {
+        let cnum = this.props.table_spec.column_names.indexOf(this.props.selected_column);
+        if (cnum == (this.props.table_spec.column_names.length - 1)) return;
+        let target_col = this.props.table_spec.column_names[cnum + 2];
+        this.props.moveColumn(this.props.selected_column, target_col);
+    }
+
+
+    get option_dict () {
+        return {
+            "Shift Left": this._shift_column_left,
+            "Shift Right": this._shift_column_right,
+            "Hide": this.props.hideColumn,
+            "Hide in All Docs": this.props.hideInAll,
+            "Unhide All": this.props.unhideAllColumns,
+            "Add Column": () => this.props.addColumn(false),
+            "Add Column In All Docs": () => this.props.addColumn(true)
+        }
+    }
+
+    get icon_dict () {
+        return {
+            "Shift Left": "direction-left",
+            "Shift Right": "direction-right",
+            "Hide": "eye-off",
+            "Hide in All Docs": "eye-off",
+            "Unhide All": "eye-on",
+            "Add Column": "add-column-right",
+            "Add Column In All Docs": "add-column-right"
+        }
+    }
+
+
+    render () {
+        return (
+            <MenuComponent menu_name="Column"
+                           option_dict={this.option_dict}
+                           icon_dict={this.icon_dict}
+                           disabled_items={this.props.disabled_items}
+                           hidden_items={[]}
+            />
+        )
+    }
+}
+ColumnMenu.propTypes = {
+    moveColumn: PropTypes.func,
+    table_spec: PropTypes.object,
+    filtered_column_names: PropTypes.array,
+    selected_column: PropTypes.string,
+    hideColumn: PropTypes.func,
+    hideInAll: PropTypes.func,
+    unhideAllColumns: PropTypes.func,
+    addColumn: PropTypes.func,
+    disabled_items: PropTypes.array,
+};
+
+class ViewMenu extends React.Component {
+    constructor(props) {
+        super(props);
+        doBinding(this)
+    }
+
+    _shift_column_left() {
         let cnum = this.props.table_spec.column_names.indexOf(this.props.selected_column);
         if (cnum == 0) return;
         let target_col = this.props.table_spec.column_names[cnum - 1];
@@ -253,21 +341,26 @@ class ColumnMenu extends React.Component {
 
 
     get option_dict () {
-        return {
-            "Shift Left": this._shift_column_left,
-            "Shift Right": this._shift_column_right,
-            "Hide": this.props.hideColumn,
-            "Hide in All Docs": this.props.hideInAll,
-            "Unhide All": this.props.unhideAllColumns,
-            "Add Column": this.props.addColumn,
-            "Add Column In All Docs": this.props.addColumnInAll
-        }
+        let opt_name = this.props.table_is_shrunk ? "Maximize Table" : "Minimize Table";
+        let result = {};
+        result[opt_name] = this.props.toggleTableShrink;
+        result["Show Error Drawer"] = this.props.openErrorDrawer;
+        return result
+    }
+
+    get icon_dict () {
+        let opt_name = this.props.table_is_shrunk ? "Maximize Table" : "Minimize Table";
+        let result = {};
+        result[opt_name] = this.props.table_is_shrunk ? "maximize" : "minimize";
+        result["Show Error Drawer"] = "panel-stats";
+        return result
     }
 
     render () {
         return (
-            <MenuComponent menu_name="Column"
+            <MenuComponent menu_name="View"
                            option_dict={this.option_dict}
+                           icon_dict={this.icon_dict}
                            disabled_items={[]}
                            disable_all={this.props.disable_all}
                            hidden_items={[]}
@@ -275,14 +368,8 @@ class ColumnMenu extends React.Component {
         )
     }
 }
-ColumnMenu.propTypes = {
-    moveColumn: PropTypes.func,
-    table_spec: PropTypes.object,
-    selected_column: PropTypes.string,
-    hideColumn: PropTypes.func,
-    hideInAll: PropTypes.func,
-    unhideAllColumns: PropTypes.func,
-    addColumn: PropTypes.func,
-    addColumnInAll: PropTypes.func,
-    disable_all: PropTypes.bool,
+ViewMenu.propTypes = {
+    table_is_shrunk: PropTypes.bool,
+    toggleTableShrink: PropTypes.func,
+    openErrorDrawer: PropTypes.func
 };

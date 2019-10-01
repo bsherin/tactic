@@ -190,7 +190,7 @@ table.sortable thead {
 
     .selector-button:hover td {
         color: #106ba3 !important;
-        font-weight: 900
+        //font-weight: 900
     }
 
     .dropdown-toggle.toolbar-button::after {
@@ -712,6 +712,7 @@ a[role="tab"] {
         display: flex;
         justify-content: space-between;
         height: 34px;
+        border-bottom: 1px solid #10161a26;
 
         .tile-name-div {
             overflow-x: hidden;
@@ -720,17 +721,16 @@ a[role="tab"] {
             align-self: center;
             color: #5c7080; //
         }
-        .spin-place {
-            margin: 0 7px 0 0;
-            display: inline-flex;
-        }
-        font-weight: 600;
+        font-weight: 400;
         white-space: nowrap;
         overflow: hidden;
         //color: $tile-header-foreground-color !important;
         padding: 5px 3px 4px 3px;
-        background-color: $light-gray4 !important;
-        border-bottom: 0
+        background-color: #f6f8fa !important;
+
+        &.tile-source-changed {
+            background-color: $orange5 !important
+        }
     }
 
     .tile-source-changed {
@@ -871,45 +871,40 @@ a[role="tab"] {
     #console-panel {
         margin-left: 5px;
         margin-right: 0;
-        border: $console-panel-border-style !important;
+        padding: 0 !important;
     }
 
     #console-heading {
         display: flex;
         justify-content: space-between;
-        font-size: $console-header-font-size;
-        padding: 2px 15px 2px 10px;
-        color: $console-header-foreground-color !important;
-        background-color: $console-header-background-color !important;
-        font-family: $console-font-family;
+        padding: 2px 2px 2px 2px;
+        background-color: $light-gray4 !important;
+        border-bottom: 1px solid #10161a26;
+        height: 32px;
+
+        .bp3-icon {
+            margin-right: 3px
+        }
 
         .extra-glyph-text {
-            padding-left: 4px
+            //margin-left: 3px
         }
     }
 
     #exports-heading {
         display: flex;
         justify-content: flex-start;
-        align-items: center;
-        font-size: $console-header-font-size;
-        padding: 2px 15px 2px 10px;
-        color: $console-header-foreground-color !important;
-        background-color: $console-header-background-color !important;
-        font-family: $console-font-family;
+        padding: 2px 2px 2px 2px;
+        background-color: $light-gray4 !important;
+        border-bottom: 1px solid #10161a26;
+        height: 32px;
 
-        button {
-            margin-right:2px;
+        .bp3-icon {
+            margin-right: 3px
         }
     }
 
     #exports-info {
-        font-size: 14px;
-        line-height: 30px;
-    }
-
-    #exports-spin-place {
-        margin-left: 7px;
         font-size: 14px;
         line-height: 30px;
     }
@@ -955,6 +950,8 @@ a[role="tab"] {
         h4 {
             font-size: 1.125rem
         }
+
+        border: 1px solid #c7c7c7
     }
 
     .log-panel {
@@ -978,7 +975,7 @@ a[role="tab"] {
             opacity: 0;
             button {
                 align-self: baseline;
-                padding-top: 10px
+                margin-top: 10px
             }
         }
         .card-header {
@@ -992,6 +989,11 @@ a[role="tab"] {
             border-bottom: none;
             background-color: white;
             transition-delay: 0s;
+        }
+
+        .console-sorter {
+            padding-top: 6px;
+            display: flex;
         }
 
         .CodeMirror {
@@ -1125,22 +1127,31 @@ a[role="tab"] {
     html,body {
         height:100%;
     }
+    .log-panel {
+        .bp3-editable-text:hover::before {
+            outline: none;
+            box-shadow: none;
+        }
+    }
 
     .log-panel-body {
-        padding: 3px 35px;
+        padding: 0;
         color: $log-panel-font-color !important;
+
+        .bp3-input:focus {
+            outline: none;
+            box-shadow: none;
+        }
     }
 
     .log-panel-summary {
-        padding: 10px 45px;
-        color: $log-panel-font-color !important;
+        padding: 10px 35px;
+        //color: $log-panel-font-color !important;
+        font-weight: 700
     }
 
     .log-code-output {
-        padding-left: 85px;
-        padding-right: 45px;
-        //padding-top: 10px;
-        padding-bottom: 10px;
+        padding: 10px 45px 10px 85px;
     }
 
     /*main window*/
@@ -1188,10 +1199,14 @@ a[role="tab"] {
         overflow: hidden;
         height: 265px;
         margin: 7px;
-        padding: 0px !important;
+        padding: 0 !important;
         //border: $tile-panel-border-style !important;
         background-color: $tile-panel-background-color !important;
         //color: $tile-panel-foreground-color !important;
+
+        .ui-resizable-handle {
+            z-index: 10 !important
+        }
     }
 
     .tile-panel.tile-source-changed {
@@ -1274,8 +1289,10 @@ a[role="tab"] {
         display: inline-flex;
     }
 
-    #exports-panel button.notclose {
-        padding: 1px
+    #exports-panel {
+        margin-left: 5px;
+        margin-right: 0;
+        padding: 0 !important;
     }
 
     button.notclose:hover {

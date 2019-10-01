@@ -262,10 +262,10 @@ class PipeOption extends React.Component {
     render() {
         return (
         <Bp.FormGroup label={this.props.att_name}>
-            <HTMLSelect onChange={this._updateMe}
+            <Bp.HTMLSelect onChange={this._updateMe}
                         value={this.props.value}>
                 {this.create_groups()}
-            </HTMLSelect>
+            </Bp.HTMLSelect>
         </Bp.FormGroup>
         )
     }

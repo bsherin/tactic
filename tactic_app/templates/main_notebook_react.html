@@ -40,8 +40,5 @@
         window.is_freeform = false;
         window.opening_from_temp_id = window.temp_data_id != "";
         window.is_totally_new = !window.is_jupyter && !window.is_project && (window.temp_data_id == "");
-        window.onunload = function (e) {
-            postAsyncFalse("host", "remove_mainwindow_task", {"main_id": window.main_id})
-        }
     </script>
 {% endblock %}

@@ -124,10 +124,10 @@ class Status extends React.Component {
         return (
             <div className="d-flex flex-row" style={{position: "absolute", bottom: 10, marginLeft: 10}}>
                 {this.props.show_spinner &&
-                    <Bp.Spinner size={25} />}
+                    <Bp.Spinner size={20} />}
                 {this.props.status_message &&
                     <div className="d-flex flex-column justify-content-around" style={{marginLeft: 10}}>
-                        <div id="status-msg-area" className="bp3-text-large">{this.props.status_message}</div>
+                        <div id="status-msg-area" className="bp3-ui-text">{this.props.status_message}</div>
                     </div>
                 }
             </div>

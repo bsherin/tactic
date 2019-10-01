@@ -83,6 +83,12 @@ class TileWorker(QWorker):
         self.ask_host("emit_tile_message", data)
         return
 
+    def send_error_entry(self, title, content):
+        self.ask_host("emit_to_client", {"message": "add-error-drawer-entry",
+                                         "title": title,
+                                         "content": content})
+        return {"success": True}
+
     def handle_exception(self, ex, special_string=None):
         error_string = self.get_traceback_message(ex)
         summary = "Exception of type {}".format(type(ex).__name__)
