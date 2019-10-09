@@ -121,18 +121,6 @@ class docInfo(DocInfoAbstract):
             self.table_spec = TableSpec(name, header_list, None, None, None)
         self.data_rows = copy.deepcopy(data_rows)  # All the data rows in the doc
         self.current_data_rows = self.data_rows  # The current filtered set of data rows
-
-        self.start_of_current_chunk = None
-
-        self.is_first_chunk = None
-        self.infinite_scroll_required = None
-        self.is_last_chunk = None
-
-        self.configure_for_current_data()
-        if len(self.data_rows.keys()) > CHUNK_SIZE:
-            self.max_table_size = CHUNK_SIZE
-        else:
-            self.max_table_size = len(self.data_rows.keys())
         self.metadata["number_of_rows"] = len(data_rows.keys())
         return
 
@@ -140,15 +128,6 @@ class docInfo(DocInfoAbstract):
         if not str(row) in self.table_spec.cell_backgrounds:
             self.table_spec.cell_backgrounds[str(row)] = {}
         self.table_spec.cell_backgrounds[str(row)][column_header] = color
-
-    @property
-    def displayed_background_colors(self):
-        result = {}
-        sorted_int_keys = sorted([int(key) for key in self.current_data_rows.keys()])
-        for i, r in enumerate(sorted_int_keys[self.start_of_current_chunk:(self.start_of_current_chunk + CHUNK_SIZE)]):
-            if str(r) in self.table_spec.cell_backgrounds:
-                result[i] = self.table_spec.cell_backgrounds[str(r)]
-        return result
 
     @property
     def number_of_rows(self):
@@ -159,22 +138,6 @@ class docInfo(DocInfoAbstract):
 
     def get_rows(self, start, stop):
         return self.all_sorted_data_rows[start:stop]
-
-    def configure_for_current_data(self):
-        self.start_of_current_chunk = 0
-        self.is_first_chunk = True
-        if len(self.current_data_rows.keys()) <= CHUNK_SIZE:
-            self.infinite_scroll_required = False
-            self.is_last_chunk = True
-        else:
-            self.infinite_scroll_required = True
-            self.is_last_chunk = False
-
-    def get_actual_row(self, row_id):
-        for i, the_row in enumerate(self.displayed_data_rows):
-            if str(row_id) == str(the_row["__id__"]):
-                return i
-        return None
 
     def get_id_from_actual_row(self, actual_row):
         return self.sorted_data_rows[actual_row]["__id__"]
@@ -198,49 +161,6 @@ class docInfo(DocInfoAbstract):
         for r in sorted_int_keys:
             result.append(self.data_rows[str(r)])
         return result
-
-    @property
-    def displayed_data_rows(self):
-        if not self.infinite_scroll_required:
-            return self.sorted_data_rows
-        result = []
-        sorted_int_keys = sorted([int(key) for key in self.current_data_rows.keys()])
-        for r in sorted_int_keys[self.start_of_current_chunk:(self.start_of_current_chunk + CHUNK_SIZE)]:
-            result.append(self.current_data_rows[str(r)])
-        return result
-
-    def advance_to_next_chunk(self):
-        if self.is_last_chunk:
-            return
-        old_start = self.start_of_current_chunk
-        self.start_of_current_chunk += STEP_SIZE
-        self.is_first_chunk = False
-        if (self.start_of_current_chunk + CHUNK_SIZE) >= len(self.current_data_rows):
-            self.start_of_current_chunk = len(self.current_data_rows) - CHUNK_SIZE
-            self.is_last_chunk = True
-        return self.start_of_current_chunk - old_start
-
-    def row_is_visible(self, row_id):
-        sorted_int_keys = sorted([int(key) for key in self.current_data_rows.keys()])
-        displayed_int_keys = sorted_int_keys[self.start_of_current_chunk:(self.start_of_current_chunk + STEP_SIZE)]
-        return int(row_id) in displayed_int_keys
-
-    def move_to_row(self, row_id):
-        self.current_data_rows = self.data_rows  # Undo any filtering
-        self.configure_for_current_data()
-        while not self.is_last_chunk and not(self.row_is_visible(row_id)):
-            self.advance_to_next_chunk()
-
-    def go_to_previous_chunk(self):
-        if self.is_first_chunk:
-            return None
-        old_start = self.start_of_current_chunk
-        self.start_of_current_chunk -= STEP_SIZE
-        self.is_last_chunk = False
-        if self.start_of_current_chunk <= 0:
-            self.start_of_current_chunk = 0
-            self.is_first_chunk = True
-        return old_start - self.start_of_current_chunk
 
     @property
     def data_rows_int_keys(self):

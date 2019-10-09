@@ -1,5 +1,4 @@
-
-import {SearchForm, SelectorTable} from "./library_widgets.js";
+import {SearchForm, BpSelectorTable} from "./library_widgets.js";
 import {HorizontalPanes} from "./resizing_layouts.js";
 
 import {postAjax} from "./communication_react.js";
@@ -7,7 +6,8 @@ import {getUsableDimensions} from "./sizing_tools.js";
 
 export {AdminPane}
 
-var Bp = blueprint;
+let Bp = blueprint;
+let Bpt = bptable;
 
 class AdminPane extends React.Component {
 
@@ -24,13 +24,31 @@ class AdminPane extends React.Component {
             available_width: awidth,
             top_pane_height: aheight / 2 - 50,
             match_list: [],
-            show_animations: false
         };
         doBinding(this);
         if (props.tsocket != null) {
             props.tsocket.socket.on(`update-${props.res_type}-selector-row`, this._handleRowUpdate);
             props.tsocket.socket.on(`refresh-${props.res_type}-selector`, this._refresh_func);
         }
+    }
+
+     _onTableSelection(regions) {
+        if (regions.length == 0) return;  // Without this get an error when clicking on a body cell
+        let selected_rows = [];
+        let revised_regions = [];
+        for (let region of regions) {
+            if (region.hasOwnProperty("rows")) {
+                let first_row = region["rows"][0];
+                revised_regions.push(Bpt.Regions.row(first_row));
+                let last_row = region["rows"][1];
+                for (let i=first_row; i<=last_row; ++i) {
+                    selected_rows.push(this.state.data_list[i]);
+                    revised_regions.push(Bpt.Regions.row(i));
+                }
+            }
+        }
+        this._handleRowSelection(selected_rows);
+        this._updatePaneState({selectedRegions: revised_regions});
     }
 
     get_height_minus_top_offset (element_ref) {
@@ -138,6 +156,15 @@ class AdminPane extends React.Component {
             list_of_selected: [row_dict[this.props.id_field]]
         })
 
+    }
+
+    _handleRowSelection(selected_rows) {
+         let row_dict = selected_rows[0];
+        this._updatePaneState({
+            selected_resource: row_dict,
+            multi_select: false,
+            list_of_selected: [row_dict.name]
+        })
     }
 
     _filter_func(resource_dict, search_field_value) {
@@ -308,22 +335,20 @@ class AdminPane extends React.Component {
         let left_pane = (
             <React.Fragment>
                 <div className="d-flex flex-row" style={{"maxHeight": "100%"}}>
-                    <div ref={this.table_ref} className="d-flex flex-column" style={{width: table_width}}>
+                    <div ref={this.table_ref}
+                         className="d-flex flex-column"
+                         style={{width: table_width, padding: 15, marginTop: 10, backgroundColor: "white"}}>
                         <SearchForm allow_search_inside={false}
                                     allow_search_metadata={false}
                                     update_search_state={this._update_search_state}
                                     search_field_value={this.props.search_field_value}
                         />
-                        <SelectorTable data_list={filtered_data_list}
-                                       sorting_column={this.props.sorting_column}
-                                       handleHeaderCellClick={this._set_sort_state}
-                                       selected_resource_names={this.props.list_of_selected}
-                                       handleRowClick={this._handleRowClick}
-                                       handleArrowKeyPress={this._handleArrowKeyPress}
-                                       show_animations={this.state.show_animations}
-                                       columns={column_specs}
-                                       identifier_field={this.props.id_field}
-                                       apply_dimensions_to_div={true}
+                        <BpSelectorTable data_list={filtered_data_list}
+                                          sortColumn={this._set_sort_state}
+                                          selectedRegions={this.props.selectedRegions}
+                                          onSelection={this._onTableSelection}
+                                          columns={column_specs}
+                                          identifier_field={this.props.id_field}
 
                         />
                     </div>

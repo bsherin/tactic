@@ -130,13 +130,27 @@ class BlueprintTable extends React.Component {
                     const regex = new RegExp(this.props.alt_search_text, "gi");
                     the_text = String(the_text).replace(regex, function (matched) {
                             return "<mark>" + matched + "</mark>";
-                        })
+                        });
+                let converted_dict = {__html: the_text};
+                return (<Bpt.Cell key={column_name}
+                              truncated={true}
+                              wrapText={true}>
+                        <div dangerouslySetInnerHTML={converted_dict}></div>
+                        </Bpt.Cell>
+                )
             }
             if ((self.props.search_text != null) && (self.props.search_text != "")) {
                 const regex = new RegExp(self.props.search_text, "gi");
                 the_text = String(the_text).replace(regex, function (matched) {
                         return "<mark>" + matched + "</mark>";
-                    })
+                    });
+                let converted_dict = {__html: the_text};
+                return (<Bpt.Cell key={column_name}
+                              truncated={true}
+                              wrapText={true}>
+                            <div dangerouslySetInnerHTML={converted_dict}></div>
+                        </Bpt.Cell>
+                )
             }
             // Wrapping the contents of the cell in React.Fragment prevent React from
             // generating a warning for reasons that are mysterious

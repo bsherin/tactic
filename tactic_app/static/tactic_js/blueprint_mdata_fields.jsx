@@ -4,8 +4,6 @@ export {NotesField, CombinedMetadata}
 import {ViewerContext} from "./resource_viewer_context.js";
 import {postAjaxPromise} from "./communication_react.js"
 
-var Rbs = window.ReactBootstrap;
-
 var Bp = blueprint;
 var Bps = bpselect;
 
@@ -24,6 +22,7 @@ class SuggestionItem extends React.Component{
             <Bp.MenuItem
                 text={this.props.item}
                 key={this.props.item}
+                active={this.props.modifiers.active}
                 onClick={this._handleClick}
                 shouldDismissPopover={true}
             />
@@ -32,12 +31,13 @@ class SuggestionItem extends React.Component{
 }
 SuggestionItem.propTypes = {
     item: PropTypes.string,
+    modifiers: PropTypes.string,
     handleClick: PropTypes.func
 };
 
 
 function renderSuggestion (item, { modifiers, handleClick}) {
-    return <SuggestionItem item={item} handleClick={handleClick}/>
+    return <SuggestionItem item={item} modifiers={modifiers} handleClick={handleClick}/>
 }
 
 const renderCreateNewTag = (query, active, handleClick) => {
@@ -304,7 +304,7 @@ class CombinedMetadata extends React.Component {
             }
         }
         return (
-            <Bp.Card elevation={2} className="combined-metadata" style={this.props.outer_style}>
+            <Bp.Card elevation={this.props.elevation} className="combined-metadata" style={this.props.outer_style}>
                 {this.props.name != null &&
                     <h5>{this.props.name}</h5>
                 }
@@ -318,9 +318,8 @@ class CombinedMetadata extends React.Component {
                     </Bp.FormGroup>
                     {this.props.category != null &&
                         <Bp.FormGroup label="Category">
-                            <Rbs.Form.Control as="input"
-                                              onChange={this._handleCategoryChange}
-                                              value={this.props.category} />
+                            <Bp.InputGroup  onChange={this._handleCategoryChange}
+                                            value={this.props.category} />
                         </Bp.FormGroup>
                     }
                     <Bp.FormGroup label="Notes">
@@ -331,11 +330,11 @@ class CombinedMetadata extends React.Component {
                         />
                     </Bp.FormGroup>
                     <Bp.FormGroup label="Created " inline={true}>
-                        <Bp.InputGroup disabled={true} style={{color:"#394B59"}}value={this.props.created}/>
+                        <Bp.InputGroup disabled={true} style={{color:"#394B59"}} value={this.props.created}/>
                     </Bp.FormGroup>
                     {this.props.updated != null &&
                         <Bp.FormGroup label="Updated: " inline={true}>
-                            <Bp.InputGroup disabled={true} style={{color:"#394B59"}}value={this.props.updated}/>
+                            <Bp.InputGroup disabled={true} style={{color:"#394B59"}} value={this.props.updated}/>
                         </Bp.FormGroup>
                     }
                     {this.props.additional_metadata != null &&
@@ -348,6 +347,7 @@ class CombinedMetadata extends React.Component {
 
 CombinedMetadata.propTypes = {
     outer_style: PropTypes.object,
+    elevation: PropTypes.number,
     res_type: PropTypes.string,
     name: PropTypes.string,
     created: PropTypes.string,
@@ -361,7 +361,9 @@ CombinedMetadata.propTypes = {
 };
 
 CombinedMetadata.defaultProps = {
-    outer_style: {"marginLeft": 20},
+    outer_style: {marginLeft: 20, overflow: "scroll",
+            padding: 15, backgroundColor: "#f5f8fa"},
+    elevation: 0,
     handleNotesBlur: null,
     category: null,
     name: null,

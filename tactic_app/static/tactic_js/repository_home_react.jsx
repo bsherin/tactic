@@ -19,7 +19,7 @@ const MARGIN_SIZE = 17;
 let tsocket;
 
 function _repository_home_main () {
-    render_navbar();
+    render_navbar("repository");
     tsocket = new LibraryTacticSocket("library", 5000);
     let domContainer = document.querySelector('#library-home-root');
     ReactDOM.render(<RepositoryHomeApp/>, domContainer)
@@ -304,10 +304,6 @@ class RepositoryCollectionToolbar extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this);
-    }
-
-    _collection_view() {
-        this.props.view_func("/main/")
     }
 
     get button_groups() {

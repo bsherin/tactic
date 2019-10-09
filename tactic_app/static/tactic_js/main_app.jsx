@@ -83,7 +83,7 @@ function _finish_post_load(data) {
         interface_state = data.interface_state
     }
     if (window.is_freeform) {
-        postWithCallback(window.main_id, "grab_data", {"doc_name":window.doc_names[0]}, function (data) {
+        postWithCallback(window.main_id, "grab_freeform_data", {"doc_name":window.doc_names[0]}, function (data) {
             let domContainer = document.querySelector('#main-root');
             if (window.is_project) {
                 ReactDOM.render(<MainAppPlus is_project={true}
@@ -296,7 +296,7 @@ class MainApp extends React.Component {
         let self = this;
         this.setState({show_table_spinner: true});
         if (window.is_freeform) {
-            postWithCallback(window.main_id, "grab_data", {"doc_name": new_doc_name}, function (data) {
+            postWithCallback(window.main_id, "grab_freefrom_data", {"doc_name": new_doc_name}, function (data) {
                 self.props.stopSpinner();
                 self.props.clearStatusMessage();
                 let new_table_spec = {"current_doc_name": new_doc_name};
@@ -665,7 +665,7 @@ class MainApp extends React.Component {
                           toggleTableShrink={this._toggleTableShrink}
                           openErrorDrawer={this.props.openErrorDrawer}
                 />
-                <Bp.Divider/>
+                <Bp.NavbarDivider/>
                 {this.create_tile_menus()}
             </React.Fragment>
         );
@@ -791,7 +791,7 @@ class MainApp extends React.Component {
                     <Bp.Button type="button"
                       minimal={false}
                       small={false}
-                      style={{margin: 16}}
+                      style={{margin: 4}}
                       onMouseDown={(e)=>{e.preventDefault()}}
                       onClick={this._toggleTableShrink}
                       icon="maximize"/>
@@ -852,8 +852,6 @@ MainApp.propTypes = {
     initial_doc_names: PropTypes.array,
     initial_column_names: PropTypes.array,
     initial_data_row_dict: PropTypes.object,
-    initial_is_first_chunk: PropTypes.bool,
-    initial_is_last_chunk: PropTypes.bool,
     initial_column_widths: PropTypes.array,
     initial_hidden_columns_list: PropTypes.array,
     doc_names: PropTypes.array,

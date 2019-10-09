@@ -1,9 +1,8 @@
 
-export {LabeledSelectList, LabeledFormField, SelectList, OrderableTable, DragThing, GlyphButton}
+export {LabeledSelectList, LabeledFormField, SelectList, OrderableTable, BpOrderableTable, DragThing, GlyphButton}
 
-var Rbs = window.ReactBootstrap;
-
-var Bp = blueprint;
+let Bp = blueprint;
+let Bpt = bptable;
 
 class GlyphButton extends React.Component {
 
@@ -161,13 +160,13 @@ class SelectList extends React.Component {
                 </option>
         );
         return (
-            <Rbs.Form.Control as="select"
-                              style={sstyle}
-                              onChange={this.handleChange}
-                              value={this.props.value}
+            <Bp.HTMLSelect style={sstyle}
+                          onChange={this.handleChange}
+                           minimal={this.props.minimal}
+                          value={this.props.value}
             >
                 {option_items}
-            </Rbs.Form.Control>
+            </Bp.HTMLSelect>
         )
     }
 }
@@ -175,6 +174,7 @@ class SelectList extends React.Component {
 SelectList.propTypes = {
     option_list: PropTypes.array,
     onChange: PropTypes.func,
+    minimal: PropTypes.bool,
     value: PropTypes.string,
     height: PropTypes.number,
     maxWidth: PropTypes.number,
@@ -184,7 +184,8 @@ SelectList.propTypes = {
 SelectList.defaultProps = {
     height: null,
     maxWidth: null,
-    fontSize: null
+    fontSize: null,
+    minimal: false
 };
 
 
@@ -328,6 +329,95 @@ class TableHeader extends React.Component {
 
 TableHeader.propTypes = {
     columns: PropTypes.array,
+};
+
+class BpOrderableTable extends React.Component {
+    constructor(props) {
+        super(props);
+        doBinding(this);
+    }
+
+    _onRowsReordered(oldIndex, newIndex) {
+        let new_data_list = [...this.props.data_array];
+        let the_item = new_data_list[oldIndex];
+        new_data_list.splice(oldIndex, 1);
+        new_data_list.splice(newIndex, 0, the_item);
+        this.props.handleChange(new_data_list)
+    }
+
+    _onConfirmCellEdit(value, rowIndex, columnIndex) {
+        let new_data_list = [...this.props.data_array];
+        new_data_list[rowIndex][this.props.columns[columnIndex]] = value;
+        this.props.handleChange(new_data_list)
+    }
+
+    _onSelection(regions) {
+        if (regions.length == 0) return;  // Without this get an error when clicking on a body cell
+        if (regions[0].hasOwnProperty("rows")) {
+            this.props.handleActiveRowChange(regions[0]["rows"][0])
+        }
+    }
+
+    _cellRendererCreator(column_name) {
+        let self = this;
+        return (rowIndex) => {
+            let the_text;
+            if (Object.keys(self.props.data_array[rowIndex]).includes(column_name)) {
+                the_text = self.props.data_array[rowIndex][column_name];
+            }
+            else {
+                the_text = ""
+            }
+            return (<Bpt.EditableCell key={column_name}
+                                      truncated={true}
+                                      rowIndex={rowIndex}
+                                      columnIndex={this.props.columns.indexOf(column_name)}
+                                      wrapText={true}
+                                      onConfirm={self._onConfirmCellEdit}
+                                      value={the_text}/>
+            )
+        };
+    }
+
+    _rowHeaderCellRenderer(rowIndex) {
+        return (<Bpt.RowHeaderCell key={rowIndex}
+                                   name={rowIndex}/>)
+    }
+
+    render() {
+        let self = this;
+        let columns = this.props.columns.map((column_name)=> {
+            const cellRenderer = self._cellRendererCreator(column_name);
+            return <Bpt.Column cellRenderer={cellRenderer}
+                               enableColumnReordering={false}
+                               key={column_name}
+                               name={column_name}/>
+        });
+        return (
+            <Bpt.Table  enableFocusedCell={true}
+                       numRows={this.props.data_array.length}
+                       enableColumnReordering={false}
+                       selectionModes={[Bpt.RegionCardinality.FULL_COLUMNS, Bpt.RegionCardinality.FULL_ROWS]}
+                       enableRowReordering={true}
+                       onRowsReordered={this._onRowsReordered}
+                       onSelection={this._onSelection}
+                       enableMultipleSelection={false}
+                       >
+                        {columns}
+                </Bpt.Table>
+        )
+    }
+}
+
+BpOrderableTable.propTypes = {
+    columns: PropTypes.array,
+    data_array: PropTypes.array,
+    handleActiveRowChange: PropTypes.func,
+    handleChange: PropTypes.func,
+};
+
+BpOrderableTable.defaultProps = {
+    content_editable: false
 };
 
 

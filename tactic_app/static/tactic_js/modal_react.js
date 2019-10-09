@@ -1,7 +1,6 @@
 
 export { showModalReact, showConfirmDialogReact, showSelectDialog, showInformDialogReact };
 
-var Rbs = window.ReactBootstrap;
 var Bp = blueprint;
 
 class ModalDialog extends React.Component {
@@ -73,7 +72,7 @@ class ModalDialog extends React.Component {
         let checkbox_items = [];
         if (this.props.checkboxes != null && this.props.checkboxes.length != 0) {
             for (let checkbox of this.props.checkboxes) {
-                let new_item = React.createElement(Rbs.Form.Check, { type: "checkbox",
+                let new_item = React.createElement(Bp.Checkbox, { checked: this.state.checkbox_states[checkbox.checkname],
                     label: checkbox.checktext,
                     id: checkbox.checkname,
                     key: checkbox.checkname,
@@ -86,6 +85,7 @@ class ModalDialog extends React.Component {
             Bp.Dialog,
             { isOpen: this.state.show,
                 title: this.props.title,
+                onClose: this._cancelHandler,
                 canEscapeKeyClose: true },
             React.createElement(
                 "div",
@@ -190,12 +190,13 @@ class SelectDialog extends React.Component {
             Bp.Dialog,
             { isOpen: this.state.show,
                 title: this.props.title,
+                onClose: this._cancelHandler,
                 canEscapeKeyClose: true },
             React.createElement(
                 "div",
                 { className: Bp.Classes.DIALOG_BODY },
                 React.createElement(
-                    Rbs.FormGroup,
+                    Bp.FormGroup,
                     { title: this.props.select_label },
                     React.createElement(Bp.HTMLSelect, { options: this.props.option_list, onChange: this._handleChange, value: this.state.value })
                 )
@@ -278,6 +279,7 @@ class ConfirmDialog extends React.Component {
             Bp.Dialog,
             { isOpen: this.state.show,
                 title: this.props.title,
+                onClose: this._cancelHandler,
                 canEscapeKeyClose: true },
             React.createElement(
                 "div",
@@ -310,7 +312,7 @@ class ConfirmDialog extends React.Component {
     }
 }
 
-confirmDialog.propTypes = {
+ConfirmDialog.propTypes = {
     handleSubmit: PropTypes.func,
     handleClose: PropTypes.func,
     title: PropTypes.string,
@@ -358,6 +360,7 @@ class InformDialog extends React.Component {
             Bp.Dialog,
             { isOpen: this.state.show,
                 title: this.props.title,
+                onClose: this._closeHandler,
                 canEscapeKeyClose: true },
             React.createElement(
                 "div",

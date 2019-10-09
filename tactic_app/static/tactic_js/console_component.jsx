@@ -83,6 +83,7 @@ let Bp = blueprint;
             else {
                 let new_entry = Object.assign({}, entry);
                 new_entry.output_text = "";
+                new_entry.execution_count = 0;
                 new_console_items.push(new_entry)
             }
         }
@@ -544,6 +545,7 @@ class ConsoleCodeItem extends React.Component {
     _runMe(go_to_next = false) {
         this._startMySpinner();
         let self = this;
+        this._clearOutput();
         postWithCallback(main_id, "exec_console_code", {"the_code": this.props.console_text, "console_id": this.props.unique_id}, function () {
             if (go_to_next) {
                 self.props.goToNextCell(self.props.unique_id)
@@ -794,7 +796,7 @@ class ConsoleTextItem extends React.Component {
                                 <div className="button-div d-inline-flex pr-1">
                                     <GlyphButton handleClick={this._showMarkdown}
                                                  intent="success"
-                                                 icon="font"/>
+                                                 icon="paragraph"/>
                                 </div>
                             {!really_show_markdown &&
                                 <Bp.TextArea value={this.props.console_text}

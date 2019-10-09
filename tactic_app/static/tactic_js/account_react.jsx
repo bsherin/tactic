@@ -5,7 +5,7 @@ import {postAjax} from "./communication_react.js";;
 let Bp = blueprint;
 
 function _account_main() {
-    render_navbar();
+    render_navbar("account");
     if (window._show_message) doFlash(window._message);
     let domContainer = document.querySelector('#root');
     ReactDOM.render(<AccountApp/>, domContainer)

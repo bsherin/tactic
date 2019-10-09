@@ -1053,7 +1053,6 @@ class APISupportTasksMixin:
     def UnfilterTable(self, data):
         for doc in self.doc_dict.values():
             doc.current_data_rows = doc.data_rows
-            doc.configure_for_current_data()
         self.refill_table()
         return None
 
@@ -1131,7 +1130,6 @@ class APISupportTasksMixin:
             for (key, val) in doc.data_rows.items():
                 if int(key) in result:
                     doc.current_data_rows[key] = val
-            doc.configure_for_current_data()
             self.refill_table()
         else:
             for docname, doc in self.doc_dict.items():
@@ -1139,7 +1137,6 @@ class APISupportTasksMixin:
                 for (key, val) in doc.data_rows.items():
                     if int(key) in result[docname]:
                         doc.current_data_rows[key] = val
-                doc.configure_for_current_data()
             self.refill_table()
         return
 
@@ -1341,59 +1338,11 @@ class DataSupportTasksMixin:
         return self.grab_chunk(data["doc_name"], data["row_index"])
 
     @task_worthy
-    def grab_data(self, data):
-        print("entering grab_data with fixed message")
+    def grab_freeform_data(self, data):
+        print("entering grab_freeformdata with fixed message")
         doc_name = data["doc_name"]
-        if self.doc_type == "table":
-            return {"doc_name": doc_name,
-                    "total_rows": self.doc_dict[doc_name].metadata["number_of_rows"],
-                    "data_rows": self.doc_dict[doc_name].displayed_data_rows,
-                    "table_spec": self.doc_dict[doc_name].table_spec.compile_save_dict(),
-                    "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
-                    "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
-                    "max_table_size": self.doc_dict[doc_name].max_table_size}
-        else:
-            return {"doc_name": doc_name,
-                    "data_text": self.doc_dict[doc_name].data_text}
-
-    @task_worthy
-    def grab_chunk_with_row(self, data_dict):
-        doc_name = data_dict["doc_name"]
-        row_id = data_dict["row_id"]
-        self.doc_dict[doc_name].move_to_row(row_id)
         return {"doc_name": doc_name,
-                "data_rows": self.doc_dict[doc_name].displayed_data_rows,
-                "background_colors": self.doc_dict[doc_name].displayed_background_colors,
-                "table_spec": self.doc_dict[doc_name].table_spec.compile_save_dict(),
-                "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
-                "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
-                "max_table_size": self.doc_dict[doc_name].max_table_size,
-                "actual_row": self.doc_dict[doc_name].get_actual_row(row_id)}
-
-    @task_worthy
-    def grab_next_chunk(self, data_dict):
-        doc_name = data_dict["doc_name"]
-        step_amount = self.doc_dict[doc_name].advance_to_next_chunk()
-        return {"doc_name": doc_name,
-                "data_rows": self.doc_dict[doc_name].displayed_data_rows,
-                "background_colors": self.doc_dict[doc_name].displayed_background_colors,
-                "table_spec": self.doc_dict[doc_name].table_spec.compile_save_dict(),
-                "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
-                "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
-                "step_size": step_amount}
-
-    @task_worthy
-    def grab_previous_chunk(self, data_dict):
-        doc_name = data_dict["doc_name"]
-        step_amount = self.doc_dict[doc_name].go_to_previous_chunk()
-        return {"doc_name": doc_name,
-                "data_rows": self.doc_dict[doc_name].displayed_data_rows,
-                "background_colors": self.doc_dict[doc_name].displayed_background_colors,
-                "table_spec": self.doc_dict[doc_name].table_spec.compile_save_dict(),
-                "header_list": self.doc_dict[doc_name].table_spec.header_list,
-                "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
-                "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
-                "step_size": step_amount}
+                "data_text": self.doc_dict[doc_name].data_text}
 
     @task_worthy
     def UpdateTableSpec(self, data):

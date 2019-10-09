@@ -3,9 +3,6 @@ import {postWithCallback} from "./communication_react.js"
 import {doFlashStopSpinner} from "./toaster.js"
 export {ProjectMenu, ColumnMenu, ViewMenu, MenuComponent}
 
-
-let Rbs = window.ReactBootstrap;
-
 let Bp = blueprint;
 
 class MenuComponent extends React.Component {

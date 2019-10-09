@@ -1,15 +1,17 @@
 import {get_all_parent_tags, TagButtonList} from "./tag_buttons_react.js";
 import {CombinedMetadata} from "./blueprint_mdata_fields.js";
-import {SearchForm, SelectorTable} from "./library_widgets.js";
+import {SearchForm, BpSelectorTable, LibraryOmnibar} from "./library_widgets.js";
 import {HorizontalPanes} from "./resizing_layouts.js";
 import {showModalReact, showConfirmDialogReact} from "./modal_react.js";
 import {postAjax, postAjaxPromise} from "./communication_react.js"
 import {getUsableDimensions} from "./sizing_tools.js"
 import {doFlash} from "./toaster.js"
+import {KeyTrap} from "./key_trap.js";
 
 export {LibraryPane}
 
-var Bp = blueprint;
+let Bp = blueprint;
+let Bpt = bptable;
 
 class LibraryPane extends React.Component {
 
@@ -27,43 +29,42 @@ class LibraryPane extends React.Component {
             top_pane_height: aheight / 2 - 50,
             match_list: [],
             tag_list: [],
-            show_animations: false,
             auxIsOpen: false,
-            column_widths: null
+            showOmnibar: false,
         };
         doBinding(this);
-        if (props.tsocket != null) {
+        if ((props.tsocket != null) && (!this.props.is_repository)) {
             props.tsocket.socket.on(`update-${props.res_type}-selector-row`, this._handleRowUpdate);
             props.tsocket.socket.on(`refresh-${props.res_type}-selector`, this._refresh_func);
         }
     }
 
-    getColumnWidths() {
-        let elems = $($("tbody tr")[0]).find("td");
-        if (elems.length == 0) {
-            return null
+    _onTableSelection(regions, current_data_list) {
+        if (regions.length == 0) return;  // Without this get an error when clicking on a body cell
+        let selected_rows = [];
+        let selected_row_indices = [];
+        let revised_regions = [];
+        for (let region of regions) {
+            if (region.hasOwnProperty("rows")) {
+                let first_row = region["rows"][0];
+                revised_regions.push(Bpt.Regions.row(first_row));
+                let last_row = region["rows"][1];
+                for (let i=first_row; i<=last_row; ++i) {
+                    if (!selected_row_indices.includes(i)) {
+                        selected_row_indices.push(i);
+                        selected_rows.push(current_data_list[i]);
+                        revised_regions.push(Bpt.Regions.row(i));
+                    }
+                }
+            }
         }
-        let result = [];
-        for (let i = 0; i < elems.length; ++i) {
-            result.push(elems[i].offsetWidth)
-        }
-        return result
-    }
-
-    haveColumns() {
-        let elems = $($("tbody tr")[0]).find("td");
-        return elems.length != 0
-    }
-
-    componentDidUpdate () {
-        if (!this.state.column_widths && this.haveColumns()) {
-            this.setState({column_widths: this.getColumnWidths()})
-        }
+        this._handleRowSelection(selected_rows);
+        this._updatePaneState({selectedRegions: revised_regions});
     }
 
     componentDidMount() {
         let self = this;
-        this.setState({"mounted": true, column_widths: null});
+        this.setState({"mounted": true});
         let path;
         if (this.props.is_repository) {
             path = "repository_resource_list_with_metadata"
@@ -78,7 +79,6 @@ class LibraryPane extends React.Component {
                 self._update_match_lists();
                 // I need the next line to force a resize update
                 self._set_sort_state(self.props.sorting_column, self.props.sorting_field, self.props.sorting_direction);
-                self.setState({column_widths: self.getColumnWidths()})
             });
 
             }
@@ -111,6 +111,10 @@ class LibraryPane extends React.Component {
         let ind = this.get_data_list_index(name);
         let new_data_list = [...this.state.data_list];
         new_data_list.splice(ind, 1);
+        if (this.props.list_of_selected.includes(name)) {
+            this._updatePaneState({list_of_selected: [], multi_select: false,
+                selected_resource: {"name": "", "tags": "", "notes": "", "updated": "", "created": ""}});
+        }
         this.setState({data_list: new_data_list}, this.update_tag_list);
     }
 
@@ -163,7 +167,7 @@ class LibraryPane extends React.Component {
         .catch(doFlash)
     }
 
-    overwriteCommonTags() {
+    _overwriteCommonTags() {
         const result_dict = {"res_type": this.props.res_type,
                             "res_names": this.props.list_of_selected,
                              "tags": this.props.selected_resource.tags,};
@@ -201,8 +205,8 @@ class LibraryPane extends React.Component {
             let revised_selected_resource = Object.assign({}, this.props.selected_resource);
             revised_selected_resource = Object.assign(revised_selected_resource, changed_state_elements);
             revised_selected_resource["tags"] = revised_selected_resource["tags"].join(" ");
-            this.this._updatePaneState({selected_resource: revised_selected_resource},
-                    this.overwriteCommonTags);
+            this._updatePaneState({selected_resource: revised_selected_resource},
+                    this._overwriteCommonTags);
         }
     }
 
@@ -285,11 +289,23 @@ class LibraryPane extends React.Component {
     }
 
     get view_views() {
-        return {collection: "/main/",
-            project: "/main_project/",
-            tile: "/last_saved_view/",
-            list: "/view_list/",
-            code: "/view_code/"
+        if (this.props.is_repository) {
+            return {
+                collection: null,
+                project: null,
+                tile: "/repository_view_module/",
+                list: "/repository_view_list/",
+                code: "/repository_view_code/"
+            }
+        }
+        else {
+            return {
+                collection: "/main/",
+                project: "/main_project/",
+                tile: "/last_saved_view/",
+                list: "/view_list/",
+                code: "/view_code/"
+            }
         }
     }
 
@@ -305,6 +321,7 @@ class LibraryPane extends React.Component {
 
     _handleRowDoubleClick(row_dict) {
         let view_view = this.view_views[this.props.res_type];
+        if (view_view == null) return;
         this._updatePaneState({
                 selected_resource: row_dict,
                 multi_select: false,
@@ -313,44 +330,42 @@ class LibraryPane extends React.Component {
         window.open($SCRIPT_ROOT + view_view + row_dict.name)
     }
 
-    _handleRowClick(row_dict, shift_key_down=false) {
+    _handleRowSelection(selected_rows) {
         if (!this.props.multi_select &&
             this.props.selected_resource.name != "" &&
             (this.props.selected_resource.notes != this.get_data_list_entry(this.props.selected_resource.name).notes)) {
             this._saveFromSelectedResource()
         }
-        if (shift_key_down && (row_dict.name != this.props.selected_resource.name)) {
-            window.getSelection().removeAllRanges();  // Without this intervening text is highlighted.
-            let common_tags = [];
-            let new_tag_list = row_dict.tags.split(" ");
-            let old_tag_list = this.props.selected_resource.tags.split(" ");
-            for (let tag of new_tag_list) {
-                if (old_tag_list.includes(tag)) {
-                    common_tags.push(tag)
+        if (selected_rows.length > 1) {
+            let common_tags = selected_rows[0].tags.split(" ");
+            let other_rows = selected_rows.slice(1, selected_rows.length);
+            for (let row_dict of other_rows) {
+                let new_common_tags = [];
+                let new_tag_list = row_dict.tags.split(" ");
+                for (let tag of new_tag_list) {
+                    if (common_tags.includes(tag)) {
+                        new_common_tags.push(tag)
+                    }
+                     common_tags = new_common_tags
                 }
             }
-            let multi_select_list;
-            if (this.props.multi_select) {
-                multi_select_list = [...this.props.list_of_selected, row_dict.name];
-            }
-            else {
-                multi_select_list = [this.props.selected_resource.name, row_dict.name];
-            }
 
+            let multi_select_list = selected_rows.map((row_dict)=>row_dict.name);
             let new_selected_resource = {name: "__multiple__", tags: common_tags.join(" "), notes: ""};
             this._updatePaneState({multi_select: true,
                 selected_resource: new_selected_resource,
                 list_of_selected: multi_select_list
             })
         }
-        else {
+
+         else {
+            let row_dict = selected_rows[0];
             this._updatePaneState({
                 selected_resource: row_dict,
                 multi_select: false,
                 list_of_selected: [row_dict.name]
             })
         }
-
     }
 
     _filter_func(resource_dict, search_field_value) {
@@ -512,6 +527,11 @@ class LibraryPane extends React.Component {
         }
     }
 
+    get_match_list_index(name) {
+        let filtered_data_list = this.state.data_list.filter(this._filter_on_match_list);
+        return filtered_data_list.findIndex((rec) => (rec.name == name))
+    }
+
     _handleArrowKeyPress(key) {
         if (this.props.multi_select) return;
         let anames = this.all_names;
@@ -532,8 +552,11 @@ class LibraryPane extends React.Component {
                 if (new_index < 0) return
             }
         }
-        this._updatePaneState({"selected_resource": this.state.data_list[new_index],
-            "list_of_selected": [anames[new_index]]
+
+        let new_regions = [Bpt.Regions.row(this.get_match_list_index(anames[new_index]))];
+        this._updatePaneState({selected_resource: this.state.data_list[new_index],
+            list_of_selected: [anames[new_index]],
+            selectedRegions: new_regions
         })
     }
 
@@ -596,9 +619,7 @@ class LibraryPane extends React.Component {
             postAjaxPromise(delete_view, {"resource_names": res_names})
                 .then(() => {
                     for (let i = 0; i < res_names.length; ++i) {
-                        self._animation_phase(() => {
-                                self.delete_row(res_names[i]);
-                            })
+                        self.delete_row(res_names[i]);
                     }
                     self._refresh_for_new_data_list()
                 })
@@ -658,9 +679,9 @@ class LibraryPane extends React.Component {
         return res_name
     }
 
-    send_repository_func () {
+    _send_repository_func () {
         let res_type = this.props.res_type;
-
+        let res_name = this.props.selected_resource.name;
         $.getJSON($SCRIPT_ROOT + "get_repository_resource_names/" + res_type, function(data) {
             showModalReact(`Share ${res_type}`, `New ${res_type} Name`, ShareResource, res_name, data["resource_names"])
             }
@@ -703,6 +724,20 @@ class LibraryPane extends React.Component {
         this.setState({auxIsOpen: !this.state.auxIsOpen})
     }
 
+    _showOmnibar() {
+        this.setState({showOmnibar: true})
+    }
+
+    _omnibarSelect(item) {
+        let the_view = this.view_views[this.props.res_type];
+        window.open($SCRIPT_ROOT + the_view + item.name);
+        this._closeOmnibar()
+    }
+
+    _closeOmnibar() {
+        this.setState({showOmnibar: false})
+    }
+
     render() {
         // let available_width = this.get_width_minus_left_offset(this.top_ref);
         // let available_height = this.get_height_minus_top_offset(this.top_ref);
@@ -721,15 +756,18 @@ class LibraryPane extends React.Component {
 
         let right_pane;
         let split_tags = this.props.selected_resource.tags == "" ? [] : this.props.selected_resource.tags.split(" ");
+        let outer_style = {marginLeft: 20, marginTop: 90, overflow: "scroll",
+            padding: 15, backgroundColor: "#f5f8fa"};
         let mdata_element = (
                 <CombinedMetadata tags={split_tags}
+                                  elevation={0}
                                   name={this.props.selected_resource.name}
                                   created={this.props.selected_resource.created}
                                   updated={this.props.selected_resource.updated}
                                   notes={this.props.selected_resource.notes}
                                   handleChange={this._handleMetadataChange}
                                   res_type={this.props.res_type}
-                                  outer_style={{marginLeft: 20, marginTop: 90, overflow: "scroll", padding: 15}}
+                                  outer_style={outer_style}
                                   handleNotesBlur={this.props.multi_select ? null : this._saveFromSelectedResource}
                                   additional_metadata={additional_metadata}
                 />
@@ -743,7 +781,7 @@ class LibraryPane extends React.Component {
             right_pane = (
                 <React.Fragment>
                     {mdata_element}
-                    <div  className="d-flex flex-row justify-content-around">
+                    <div  className="d-flex flex-row justify-content-around" style={{marginTop: 20}}>
                         <Bp.Button fill={false}
                                    small={true}
                                    minimal={false}
@@ -778,7 +816,11 @@ class LibraryPane extends React.Component {
             table_width = left_width - 150
         }
 
-
+        let key_bindings = [
+            [["up"], ()=>this._handleArrowKeyPress("ArrowUp")],
+            [["down"], ()=>this._handleArrowKeyPress("ArrowDown")],
+            [["ctrl+space"], this._showOmnibar]
+        ];
         let left_pane = (
             <React.Fragment>
                 <div className="d-flex flex-row" style={{"maxHeight": "100%"}}>
@@ -792,7 +834,9 @@ class LibraryPane extends React.Component {
                                        doTagRename={this._doTagRename}
                         />
                     </div>
-                    <div ref={this.table_ref} className="d-flex flex-column" style={{width: table_width}}>
+                    <div ref={this.table_ref}
+                         className="d-flex flex-column"
+                         style={{width: table_width, padding: 5, backgroundColor: "white"}}>
                         <SearchForm allow_search_inside={this.props.allow_search_inside}
                                     allow_search_metadata={this.props.allow_search_metadata}
                                     update_search_state={this._update_search_state}
@@ -801,17 +845,12 @@ class LibraryPane extends React.Component {
                                     search_metadata_checked={this.props.search_metadata_checked}
                         />
                         {/*<div style={th_style} id={`${this.props.res_type}-table`}>*/}
-                        <SelectorTable data_list={filtered_data_list}
-                                       sorting_column={this.props.sorting_column}
-                                       handleHeaderCellClick={this._set_sort_state}
-                                       selected_resource_names={this.props.list_of_selected}
-                                       handleRowClick={this._handleRowClick}
-                                       handleRowDoubleClick={this._handleRowDoubleClick}
-                                       handleArrowKeyPress={this._handleArrowKeyPress}
-                                       handleAddTag={this._handleAddTag}
-                                       show_animations={this.state.show_animations}
-                                       apply_dimensions_to_div={true}
-                                       column_widths={this.state.column_widths}
+                        <BpSelectorTable data_list={filtered_data_list}
+                                        sortColumn={this._set_sort_state}
+                                        selectedRegions={this.props.selectedRegions}
+                                        onSelection={this._onTableSelection}
+                                        handleRowDoubleClick={this._handleRowDoubleClick}
+                                        handleAddTag={this._handleAddTag}
                                     />
                         </div>
                     </div>
@@ -824,6 +863,7 @@ class LibraryPane extends React.Component {
                                   multi_select={this.props.multi_select}
                                   list_of_selected={this.props.list_of_selected}
                                   view_func={this._view_func}
+                                  send_repository_func={this._send_repository_func}
                                   repository_copy_func={this._repository_copy_func}
                                   duplicate_func={this._duplicate_func}
                                   refresh_func={this._refresh_func}
@@ -844,6 +884,11 @@ class LibraryPane extends React.Component {
                              initial_width_fraction={.65}
                              handleSplitUpdate={this._handleSplitResize}
                         />
+                    <KeyTrap global={true} bindings={key_bindings} />
+                    <LibraryOmnibar items={this.state.data_list}
+                                    onItemSelect={this._omnibarSelect}
+                                    handleClose={this._closeOmnibar}
+                                    showOmnibar={this.state.showOmnibar}/>
                 </div>
             </Bp.ResizeSensor>
         )

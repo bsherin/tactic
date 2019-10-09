@@ -2,7 +2,6 @@
 
 export {render_navbar, TacticNavbar}
 
-var Rbs = window.ReactBootstrap;
 var Bp = blueprint;
 
 let library_url = $SCRIPT_ROOT + '/library';
@@ -15,25 +14,29 @@ class TacticNavbar extends React.Component {
             doSignOut(window.page_id)
     }
 
+    getIntent(butname) {
+        return this.props.selected == butname ? "primary" : null
+    }
+
     render () {
 
         let authenticated_items = (
             <React.Fragment>
-                <Bp.Button icon="home" minimal={true} text="My Resources" onClick={()=>{
+                <Bp.Button icon="home" minimal={true} text="My Resources" intent={this.getIntent("library")} onClick={()=>{
                         window.open(library_url)
                     }}/>
-                <Bp.Button icon="database" minimal={true} text="Repository" onClick={()=>{
+                <Bp.Button icon="database" minimal={true} text="Repository" intent={this.getIntent("repository")} onClick={()=>{
                         window.open(repository_url)
                     }}/>
-                <Bp.Button icon="settings" minimal={true} text={this.props.user_name} onClick={()=>{
+                <Bp.Button icon="settings" minimal={true} text={this.props.user_name} intent={this.getIntent("account")} onClick={()=>{
                         window.open(account_url)
                     }}/>
-                <Bp.Button icon="log-out" minimal={true} text="Logout" onClick={this.handle_signout}/>
+                <Bp.Button icon="log-out" minimal={true} text="Logout" intent={this.getIntent("logout")} onClick={this.handle_signout}/>
             </React.Fragment>
         );
 
         let not_authenticated_items = (
-            <Bp.Button icon="log-in" minimal={true} text="Login" onClick={()=>{
+            <Bp.Button icon="log-in" minimal={true} text="Login" intent={this.getIntent("login")}onClick={()=>{
                         window.open(login_url)
                     }}/>
         );
@@ -46,13 +49,14 @@ class TacticNavbar extends React.Component {
                     <img className="mr-2" src={window.tactic_img_url} alt="" width="32 " height="32"/>
                      Tactic
                 </Bp.Navbar.Heading>
-
-                    {this.props.menus != null &&
-                        <Rbs.Nav id="menu-area">
+                    {this.props.menus != null && (
+                        <React.Fragment>
                             {this.props.menus}
-                        </Rbs.Nav>
-                    }
+                        </React.Fragment>)}
+
                 </Bp.Navbar.Group>
+
+
                 <Bp.Navbar.Group align={Bp.Alignment.RIGHT}>
                 <Bp.NavbarDivider />
                     <Bp.Button icon="manual" minimal={true} text="docs" onClick={()=>{
@@ -70,15 +74,18 @@ TacticNavbar.propTypes = {
     is_authenticated: PropTypes.bool,
     img_url: PropTypes.string,
     user_name: PropTypes.string,
-    menus: PropTypes.object
+    menus: PropTypes.object,
+    selected: PropTypes.string
 };
 
 TacticNavbar.defaultProps = {
-    menus: null
+    menus: null,
+    selected: null
 };
 
-function render_navbar () {
+function render_navbar (selected=null) {
     let domContainer = document.querySelector('#navbar-root');
     ReactDOM.render(<TacticNavbar is_authenticated={window.is_authenticated}
+                                  selected={selected}
                                   user_name={window.username}/>, domContainer)
 }

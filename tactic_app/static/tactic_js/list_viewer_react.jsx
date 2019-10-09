@@ -7,7 +7,7 @@ import {postAjax, postAjaxPromise} from "./communication_react.js"
 import {doFlash} from "./toaster.js"
 
 import {render_navbar} from "./blueprint_navbar.js";
-import {SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT, BOTTOM_MARGIN, getUsableDimensions} from "./sizing_tools.js";
+import {SIDE_MARGIN, BOTTOM_MARGIN, getUsableDimensions} from "./sizing_tools.js";
 
 var Bp = blueprint;
 
@@ -113,7 +113,7 @@ class ListViewerApp extends React.Component {
         }
         else {
             bgs = [[{"name_text": "Save", "icon_name": "floppy-disk", "click_handler": this.saveMe},
-                    {"name_text": "Save as...", "icon_name": "floppy-disk", "click_handler": this.saveMeAs},
+                    {"name_text": "SaveAs", "icon_name": "floppy-disk", "click_handler": this.saveMeAs},
                     {"name_text": "Share", "icon_name": "share",
                           "click_handler": () => {sendToRepository("list", this.props.resource_name)}}]
             ]
