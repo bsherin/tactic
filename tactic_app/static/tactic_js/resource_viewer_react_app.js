@@ -1,5 +1,4 @@
 
-
 import { ResourceviewerToolbar } from "./blueprint_toolbar.js";
 import { CombinedMetadata } from "./blueprint_mdata_fields.js";
 import { showModalReact } from "./modal_react.js";
@@ -116,7 +115,8 @@ class ResourceViewerApp extends React.Component {
         );
         //let available_height = this.get_new_hp_height(this.hp_ref);
         let right_pane = React.createElement(CombinedMetadata, { tags: this.props.tags,
-            outer_style: { marginTop: 100, marginLeft: 20, paddingLeft: 5 },
+            outer_style: { marginTop: 100, marginLeft: 20, overflow: "scroll", padding: 15,
+                backgroundColor: "#f5f8fa", marginRight: 20 },
             created: this.props.created,
             notes: this.props.notes,
             handleChange: this.props.handleStateChange,

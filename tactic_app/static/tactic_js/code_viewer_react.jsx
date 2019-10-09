@@ -104,7 +104,7 @@ class CodeViewerApp extends React.Component {
         }
         else {
             bgs = [[{"name_text": "Save", "icon_name": "floppy-disk", "click_handler": this.saveMe},
-                    {"name_text": "Save as...", "icon_name": "floppy-disk", "click_handler": this.saveMeAs},
+                    {"name_text": "SaveAs", "icon_name": "floppy-disk", "click_handler": this.saveMeAs},
                     {"name_text": "Share", "icon_name": "share",
                           "click_handler": () => {sendToRepository("code", this.props.resource_name)}}]
             ]

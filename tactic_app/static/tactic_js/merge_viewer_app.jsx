@@ -1,6 +1,6 @@
 
 import {ReactCodemirrorMergeView} from "./react-codemirror-mergeview.js";
-import {Toolbar} from "./react_toolbar.js";
+import {Toolbar} from "./blueprint_toolbar.js";
 import {TacticSocket} from "./tactic_socket.js";
 import {doFlash} from "./toaster.js";
 import {handleCallback} from "./communication_react.js"
@@ -45,7 +45,7 @@ class MergeViewerApp extends React.Component {
     }
 
     get button_groups() {
-        return [[{"name_text": "Save", "icon_name": "save", "click_handler": this.props.saveHandler}]];
+        return [[{"name_text": "Save", "icon_name": "floppy-disk", "click_handler": this.props.saveHandler}]];
 
     }
 

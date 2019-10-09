@@ -210,7 +210,7 @@ class TagButtonList extends React.Component {
         tag_list.sort();
         let tree = this._buildTree(tag_list);
         return (
-            <div style={{marginTop: 85, overflowY: "scroll", minWidth: 165}} className="tactic-tag-button-list">
+            <div style={{marginTop: 65, overflowY: "scroll", minWidth: 165}} className="tactic-tag-button-list">
                 <Bp.Tree contents={tree}
                          onNodeContextMenu={this._showContextMenu}
                          onNodeClick={this._handleNodeClick}

@@ -1,48 +1,49 @@
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-import {Toolbar} from "./blueprint_toolbar.js"
-import {TacticSocket} from "./tactic_socket.js"
-import {showConfirmDialogReact} from "./modal_react.js";
-import {doFlash, doFlashStopSpinner} from "./toaster.js"
-import {render_navbar} from "./blueprint_navbar.js";
+import { Toolbar } from "./blueprint_toolbar.js";
+import { TacticSocket } from "./tactic_socket.js";
+import { showConfirmDialogReact } from "./modal_react.js";
+import { doFlash, doFlashStopSpinner } from "./toaster.js";
+import { render_navbar } from "./blueprint_navbar.js";
 
-import {handleCallback}  from "./communication_react.js"
-import {withStatus} from "./toaster.js";
+import { handleCallback } from "./communication_react.js";
+import { withStatus } from "./toaster.js";
 
 let Bp = blueprint;
 let Bpt = bptable;
 
-import {AdminPane} from "./administer_pane.js"
-import {SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT, BOTTOM_MARGIN, getUsableDimensions} from "./sizing_tools.js";
-import {ViewerContext} from "./resource_viewer_context.js";
+import { AdminPane } from "./administer_pane.js";
+import { SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT, BOTTOM_MARGIN, getUsableDimensions } from "./sizing_tools.js";
+import { ViewerContext } from "./resource_viewer_context.js";
 
 const MARGIN_SIZE = 17;
 
 let tsocket;
 
-function _administer_home_main () {
+function _administer_home_main() {
     render_navbar("library");
     tsocket = new LibraryTacticSocket("library", 5000);
     let AdministerHomeAppPlus = withStatus(AdministerHomeApp, tsocket);
     let domContainer = document.querySelector('#library-home-root');
-    ReactDOM.render(<AdministerHomeAppPlus/>, domContainer)
+    ReactDOM.render(React.createElement(AdministerHomeAppPlus, null), domContainer);
 }
 
 class LibraryTacticSocket extends TacticSocket {
 
     initialize_socket_stuff() {
 
-        this.socket.emit('join', {"user_id":  window.user_id, "library_id":  window.library_id});
+        this.socket.emit('join', { "user_id": window.user_id, "library_id": window.library_id });
 
-        this.socket.on("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
+        this.socket.on("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
 
         this.socket.on('handle-callback', handleCallback);
         this.socket.on('stop-spinner', stopSpinner);
         this.socket.on('start-spinner', startSpinner);
         this.socket.on('show-status-msg', statusMessage);
         this.socket.on("clear-status-msg", clearStatusMessage);
-        this.socket.on('close-user-windows', (data) => {
+        this.socket.on('close-user-windows', data => {
             if (!(data["originator"] == window.library_id)) {
-                window.close()
+                window.close();
             }
         });
         this.socket.on('doflash', doFlash);
@@ -56,7 +57,7 @@ var col_names = {
     user: ["_id", "username", "full_name", "last_login", "email"]
 };
 
-function NamesToDict (acc, item) {
+function NamesToDict(acc, item) {
     acc[item] = "";
     return acc;
 }
@@ -94,25 +95,24 @@ class AdministerHomeApp extends React.Component {
                 search_inside_checked: false,
                 search_metadata_checked: false,
                 selectedRegions: [Bpt.Regions.row(0)]
-            }
+            };
         }
-        this.state.pane_states.container.selected_resource =
-        this.top_ref = React.createRef();
+        this.state.pane_states.container.selected_resource = this.top_ref = React.createRef();
         doBinding(this);
     }
 
     componentDidMount() {
         window.addEventListener("resize", this._update_window_dimensions);
-        this.setState({"mounted": true});
+        this.setState({ "mounted": true });
         this._update_window_dimensions();
-        stopSpinner()
+        stopSpinner();
     }
 
-    _updatePaneState (res_type, state_update, callback=null) {
+    _updatePaneState(res_type, state_update, callback = null) {
         let old_state = Object.assign({}, this.state.pane_states[res_type]);
         let new_pane_states = Object.assign({}, this.state.pane_states);
         new_pane_states[res_type] = Object.assign(old_state, state_update);
-        this.setState({pane_states: new_pane_states}, callback)
+        this.setState({ pane_states: new_pane_states }, callback);
     }
 
     _update_window_dimensions() {
@@ -120,65 +120,70 @@ class AdministerHomeApp extends React.Component {
         let uheight = window.innerHeight - BOTTOM_MARGIN;
         if (this.top_ref && this.top_ref.current) {
             uheight = uheight - this.top_ref.current.offsetTop;
+        } else {
+            uheight = uheight - USUAL_TOOLBAR_HEIGHT;
         }
-        else {
-            uheight = uheight - USUAL_TOOLBAR_HEIGHT
-        }
-        this.setState({usable_height: uheight, usable_width: uwidth})
+        this.setState({ usable_height: uheight, usable_width: uwidth });
     }
 
     _handleTabChange(newTabId, prevTabId, event) {
-        this.setState({selected_tab_id: newTabId}, this._update_window_dimensions)
+        this.setState({ selected_tab_id: newTabId }, this._update_window_dimensions);
     }
 
-    render () {
-        let container_pane = (
-            <AdminPane res_type="container"
-                       allow_search_inside={false}
-                       allow_search_metadata={false}
-                       ToolbarClass={ContainerToolbar}
-                       updatePaneState={this._updatePaneState}
-                       {...this.state.pane_states["container"]}
-                       tsocket={tsocket}
-                       colnames={col_names.container}
-                       id_field="Id"
+    render() {
+        let container_pane = React.createElement(AdminPane, _extends({ res_type: "container",
+            allow_search_inside: false,
+            allow_search_metadata: false,
+            ToolbarClass: ContainerToolbar,
+            updatePaneState: this._updatePaneState
+        }, this.state.pane_states["container"], {
+            tsocket: tsocket,
+            colnames: col_names.container,
+            id_field: "Id"
 
-            />
-        );
-        let user_pane = (
-            <AdminPane res_type="user"
-                       allow_search_inside={false}
-                       allow_search_metadata={false}
-                       ToolbarClass={UserToolbar}
-                       updatePaneState={this._updatePaneState}
-                       {...this.state.pane_states["user"]}
-                       tsocket={tsocket}
-                       colnames={col_names.user}
-                       id_field="_id"
+        }));
+        let user_pane = React.createElement(AdminPane, _extends({ res_type: "user",
+            allow_search_inside: false,
+            allow_search_metadata: false,
+            ToolbarClass: UserToolbar,
+            updatePaneState: this._updatePaneState
+        }, this.state.pane_states["user"], {
+            tsocket: tsocket,
+            colnames: col_names.user,
+            id_field: "_id"
 
-            />
-        );
-        let outer_style = {width: this.state.usable_width,
+        }));
+        let outer_style = { width: this.state.usable_width,
             height: this.state.usable_height,
             paddingLeft: SIDE_MARGIN
         };
-        return (
-            <ViewerContext.Provider value={{readOnly: false}}>
-                <div className="pane-holder" ref={this.top_ref} style={outer_style}>
-                    <Bp.Tabs id="the_container" style={{marginTop: 100}}
-                             selectedTabId={this.state.selected_tab_id}
-                             renderActiveTabPanelOnly={true}
-                             vertical={true} large={true} onChange={this._handleTabChange}>
-                        <Bp.Tab id="containers-pane" panel={container_pane}>
-                            <Bp.Icon icon="box"/>  Containers
-                        </Bp.Tab>
-                        <Bp.Tab id="users-pane" panel={user_pane}>
-                            <Bp.Icon icon="user"/>  Users
-                        </Bp.Tab>
-                    </Bp.Tabs>
-                </div>
-            </ViewerContext.Provider>
-        )
+        return React.createElement(
+            ViewerContext.Provider,
+            { value: { readOnly: false } },
+            React.createElement(
+                "div",
+                { className: "pane-holder", ref: this.top_ref, style: outer_style },
+                React.createElement(
+                    Bp.Tabs,
+                    { id: "the_container", style: { marginTop: 100 },
+                        selectedTabId: this.state.selected_tab_id,
+                        renderActiveTabPanelOnly: true,
+                        vertical: true, large: true, onChange: this._handleTabChange },
+                    React.createElement(
+                        Bp.Tab,
+                        { id: "containers-pane", panel: container_pane },
+                        React.createElement(Bp.Icon, { icon: "box" }),
+                        "  Containers"
+                    ),
+                    React.createElement(
+                        Bp.Tab,
+                        { id: "users-pane", panel: user_pane },
+                        React.createElement(Bp.Icon, { icon: "user" }),
+                        "  Users"
+                    )
+                )
+            )
+        );
     }
 }
 
@@ -192,41 +197,39 @@ class AdminToolbar extends React.Component {
             new_group = [];
             for (let button of group) {
                 if (!this.props.multi_select || button[3]) {
-                    new_button = {name_text: button[0],
+                    new_button = { name_text: button[0],
                         click_handler: button[1],
                         icon_name: button[2],
-                        multi_select: button[3]};
-                    new_group.push(new_button)
+                        multi_select: button[3] };
+                    new_group.push(new_button);
                 }
             }
             if (new_group.length != 0) {
-                new_bgs.push(new_group)
+                new_bgs.push(new_group);
             }
-
         }
-        return new_bgs
+        return new_bgs;
     }
 
     render() {
         let outer_style = {
-                display: "flex",
-                flexDirection: "row",
-                position: "relative",
-                left: 175,
-                marginBottom: 10
+            display: "flex",
+            flexDirection: "row",
+            position: "relative",
+            left: 175,
+            marginBottom: 10
         };
-       return <Toolbar button_groups={this.prepare_button_groups()}
-                       file_adders={null}
-                       alternate_outer_style={outer_style}
-                       popup_buttons={null}
-       />
+        return React.createElement(Toolbar, { button_groups: this.prepare_button_groups(),
+            file_adders: null,
+            alternate_outer_style: outer_style,
+            popup_buttons: null
+        });
     }
 }
 
 AdminToolbar.propTypes = {
-    button_groups: PropTypes.array,
+    button_groups: PropTypes.array
 };
-
 
 class ContainerToolbar extends React.Component {
 
@@ -235,57 +238,46 @@ class ContainerToolbar extends React.Component {
         doBinding(this);
     }
 
-
-    _container_logs () {
+    _container_logs() {
         let cont_id = this.props.selected_resource.Id;
         let self = this;
         $.getJSON($SCRIPT_ROOT + '/container_logs/' + cont_id, function (data) {
-            self.props.setConsoleText(data.log_text)
+            self.props.setConsoleText(data.log_text);
         });
     }
 
-    _clear_user_func (event) {
+    _clear_user_func(event) {
         startSpinner();
         $.getJSON($SCRIPT_ROOT + '/clear_user_containers/' + window.library_id, doFlashStopSpinner);
     }
 
-    reset_server_func (event) {
+    reset_server_func(event) {
         startSpinner();
         $.getJSON($SCRIPT_ROOT + '/reset_server/' + library_id, doFlashStopSpinner);
     }
 
-    _destroy_container () {
+    _destroy_container() {
         startSpinner();
         let cont_id = this.props.selected_resource.Id;
         let self = this;
-        $.getJSON($SCRIPT_ROOT + '/kill_container/' + cont_id, (data) => {
-                doFlashStopSpinner(data);
-                if (data.success) {
-                    self.props.animation_phase(() => {
-                        self.props.delete_row(cont_id);
-                    })
-                }
+        $.getJSON($SCRIPT_ROOT + '/kill_container/' + cont_id, data => {
+            doFlashStopSpinner(data);
+            if (data.success) {
+                self.props.animation_phase(() => {
+                    self.props.delete_row(cont_id);
+                });
             }
-        );
+        });
         stopSpinner();
-
     }
 
     get button_groups() {
-        return [
-            [["reset", this.reset_server_func, "reset", false],
-                ["killall", this._clear_user_func, "clean", false],
-                ["killone", this._destroy_container, "delete", false]
-            ],
-            [["log", this._container_logs, "console", false],
-            ["refresh", this.props.refresh_func, "refresh", false]]
+        return [[["reset", this.reset_server_func, "reset", false], ["killall", this._clear_user_func, "clean", false], ["killone", this._destroy_container, "delete", false]], [["log", this._container_logs, "console", false], ["refresh", this.props.refresh_func, "refresh", false]]];
+    }
 
-        ];
-     }
-
-     render () {
-        return <AdminToolbar button_groups={this.button_groups}/>
-     }
+    render() {
+        return React.createElement(AdminToolbar, { button_groups: this.button_groups });
+    }
 }
 
 ContainerToolbar.propTypes = {
@@ -305,7 +297,7 @@ class UserToolbar extends React.Component {
         doBinding(this);
     }
 
-    _delete_user () {
+    _delete_user() {
         let user_id = this.props.selected_resource._id;
         const confirm_text = "Are you sure that you want to delete user " + String(user_id) + "?";
         showConfirmDialogReact("Delete User", confirm_text, "do nothing", "delete", function () {
@@ -313,7 +305,7 @@ class UserToolbar extends React.Component {
         });
     }
 
-    _update_user_starters (event) {
+    _update_user_starters(event) {
         let user_id = this.props.selected_resource._id;
         const confirm_text = "Are you sure that you want to update starter tiles for user " + String(user_id) + "?";
         showConfirmDialogReact("Update User", confirm_text, "do nothing", "update", function () {
@@ -321,8 +313,7 @@ class UserToolbar extends React.Component {
         });
     }
 
-
-    _migrate_user (event) {
+    _migrate_user(event) {
         let user_id = this.props.selected_resource._id;
         const confirm_text = "Are you sure that you want to migrate user " + String(user_id) + "?";
         showConfirmDialogReact("Migrate User", confirm_text, "do nothing", "migrate", function () {
@@ -330,32 +321,25 @@ class UserToolbar extends React.Component {
         });
     }
 
-    _create_user (event) {
+    _create_user(event) {
         window.open($SCRIPT_ROOT + '/register');
     }
 
-    _duplicate_user (event) {
+    _duplicate_user(event) {
         window.open($SCRIPT_ROOT + '/user_duplicate');
     }
 
-    _update_all_collections (event) {
+    _update_all_collections(event) {
         window.open($SCRIPT_ROOT + '/update_all_collections');
     }
 
     get button_groups() {
-        return [
-            [["create", this._create_user, "new-object", false],
-                ["duplicate", this._duplicate_user, "duplicate", false],
-                ["delete", this._delete_user, "delete", false],
-                ["update", this._update_user_starters, "automatic-updates", false],
-                ["refresh", this.props.refresh_func, "refresh", false]
-            ]
-        ];
-     }
+        return [[["create", this._create_user, "new-object", false], ["duplicate", this._duplicate_user, "duplicate", false], ["delete", this._delete_user, "delete", false], ["update", this._update_user_starters, "automatic-updates", false], ["refresh", this.props.refresh_func, "refresh", false]]];
+    }
 
-     render () {
-        return <AdminToolbar button_groups={this.button_groups}/>
-     }
+    render() {
+        return React.createElement(AdminToolbar, { button_groups: this.button_groups });
+    }
 }
 
 UserToolbar.propTypes = {

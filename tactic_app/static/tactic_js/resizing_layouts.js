@@ -182,7 +182,7 @@ class VerticalPanes extends React.Component {
         let top_div_style = {
             "width": this.props.available_width,
             "height": this.top_height,
-            borderBottom: "0.5px solid rgb(238, 238, 238)",
+            // borderBottom: "0.5px solid rgb(238, 238, 238)",
             overflowY: "scroll"
         };
         if (this.props.hide_top) {

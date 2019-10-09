@@ -112,6 +112,7 @@ class CreatorApp extends React.Component {
         let aheight = getUsableDimensions().usable_height;
         let awidth = getUsableDimensions().usable_width;
         let bheight = getUsableDimensions().body_height;
+        this.options_ref = React.createRef();
         this.left_div_ref = React.createRef();
         this.right_div_ref = React.createRef();
         this.tc_span_ref = React.createRef();
@@ -122,6 +123,12 @@ class CreatorApp extends React.Component {
         this.draw_plot_bounding_ref = React.createRef();
         this.state = {
             tile_name: this.props.tile_name,
+            foregrounded_panes: {
+                "metadata": true,
+                "options": false,
+                "exports": false,
+                "methods": false
+            },
             render_content_code: this.props.render_content_code,
             draw_plot_code: this.props.draw_plot_code,
             jscript_code: this.props.jscript_code,
@@ -155,7 +162,6 @@ class CreatorApp extends React.Component {
         this.handleOptionsChange = this.handleOptionsChange.bind(this);
         this.handleExportsChange = this.handleExportsChange.bind(this);
         this.handleMethodsChange = this.handleMethodsChange.bind(this);
-        this.handleTabSelect = this.handleTabSelect.bind(this);
         this.handleLeftPaneResize = this.handleLeftPaneResize.bind(this);
         this.handleTopPaneResize = this.handleTopPaneResize.bind(this)
     }
@@ -180,13 +186,13 @@ class CreatorApp extends React.Component {
         let bgs = [
                     [{"name_text": "Save", "icon_name": "floppy-disk","click_handler": this.saveMe},
                      {"name_text": "Mark", "icon_name": "map-marker", "click_handler": this.saveAndCheckpoint},
-                     {"name_text": "Save as...", "icon_name": "floppy-disk", "click_handler": this.saveModuleAs},
+                     {"name_text": "SaveAs", "icon_name": "floppy-disk", "click_handler": this.saveModuleAs},
                      {"name_text": "Load", "icon_name": "upload", "click_handler": this.loadModule},
                      {"name_text": "Share", "icon_name": "share",
                         "click_handler": () => {sendToRepository("tile", this.props.tile_name)}}],
                     [{"name_text": "History", "icon_name": "history", "click_handler": this.showHistoryViewer},
                      {"name_text": "Compare", "icon_name": "comparison", "click_handler": this.showTileDiffer}],
-                    [{"name_text": "Error Drawer", "icon_name": "console", "click_handler": this.props.toggleErrorDrawer}]
+                    [{"name_text": "Drawer", "icon_name": "console", "click_handler": this.props.toggleErrorDrawer}]
             ];
 
         for (let bg of bgs) {
@@ -354,9 +360,11 @@ class CreatorApp extends React.Component {
         this.props.stopSpinner();
     }
     
-    handleTabSelect() {
-        this.setState({"methodsTabRefreshRequired": false});
-        // This is needed or the methods tab will be blank
+    _handleTabSelect(newTabId) {
+        if (this.state.foregrounded_panes[newTabId]) return;
+        let new_fg = Object.assign({}, this.state.foregrounded_panes);
+        new_fg[newTabId] = true;
+        this.setState({foregrounded_panes: new_fg}, this.update_window_dimensions)
     }
 
     _handleNotesAppend(new_text) {
@@ -379,12 +387,16 @@ class CreatorApp extends React.Component {
         this.setState({"extra_functions": new_methods})
     }
 
-    get_height_minus_top_offset (element_ref) {
+    get_height_minus_top_offset (element_ref, min_offset = 0, default_offset = 50) {
         if (this.state.mounted) {  // This will be true after the initial render
-            return this.state.body_height - $(element_ref.current).offset().top
+            let offset = $(element_ref.current).offset().top;
+            if (offset < min_offset) {
+                offset = min_offset
+            }
+            return this.state.body_height - min_offset
         }
         else {
-            return this.state.body_height - 50
+            return this.state.body_height - default_offset
         }
     }
 
@@ -540,18 +552,21 @@ class CreatorApp extends React.Component {
                                                   handleChange={this.handleStateChange}
                                                 />);
         let option_panel = (
-            <OptionModule data_list={this.state.option_list}
-                                              handleChange={this.handleOptionsChange}
-                                              handleNotesAppend={this._handleNotesAppend}
+            <OptionModule options_ref={this.options_ref}
+                          data_list={this.state.option_list}
+                          foregrounded={this.state.foregrounded_panes["options"]}
+                          handleChange={this.handleOptionsChange}
+                          handleNotesAppend={this._handleNotesAppend}
                                 />
         );
         let export_panel = (
             <ExportModule data_list={this.state.export_list}
-                                              handleChange={this.handleExportsChange}
-                                              handleNotesAppend={this._handleNotesAppend}
+                          foregrounded={this.state.foregrounded_panes["exports"]}
+                          handleChange={this.handleExportsChange}
+                          handleNotesAppend={this._handleNotesAppend}
                                 />
         );
-        let methods_height = this.get_height_minus_top_offset(this.methods_ref);
+        let methods_height = this.get_height_minus_top_offset(this.methods_ref, 128, 128);
         let methods_panel = (
             <ReactCodemirror handleChange={this.handleMethodsChange}
                              code_content={this.state.extra_functions}
@@ -566,7 +581,8 @@ class CreatorApp extends React.Component {
         let right_pane = (
                 <React.Fragment>
                     <div id="creator-resources" className="d-block mt-2 ml-2">
-                        <Bp.Tabs id="resource_tabs" large={true} onChange={this.handleTabSelect}>
+                        <Bp.Tabs id="resource_tabs"
+                                 large={true} onChange={this._handleTabSelect}>
                             <Bp.Tab id="metadata" title="metadata" panel={mdata_panel}/>
                             <Bp.Tab id="options" title="options" panel={option_panel}/>
                             <Bp.Tab id="exports" title="exports" panel={export_panel}/>

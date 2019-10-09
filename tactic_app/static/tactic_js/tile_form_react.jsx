@@ -4,7 +4,6 @@ import {ReactCodemirror} from "./react-codemirror.js";
 
 export {TileForm}
 
-var Rbs = window.ReactBootstrap;
 let Bp = blueprint;
 
 class TileForm extends React.Component {

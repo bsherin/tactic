@@ -12,15 +12,27 @@ class KeyTrap extends React.Component {
         this.initializeMousetrap()
     }
 
+    componentWillUnmount() {
+        this.mousetrap.reset();
+        this.mousetrap = null
+    }
+
     initializeMousetrap() {
-        if (!this.props.target_ref) {
+        if (this.mousetrap) {
+            this.mousetrap.reset();
+        }
+        if (!this.props.target_ref && !this.props.global) {
             this.mousetrap = null
         }
-        else if (!this.props.target_ref) {
-            this.mousetrap = null;
-        }
         else {
-            this.mousetrap = new Mousetrap(this.props.target_ref);
+
+            if (this.props.global) {
+                this.mousetrap = new Mousetrap();
+            }
+            else {
+                this.mousetrap = new Mousetrap(this.props.target_ref);
+            }
+
             for (let binding of this.props.bindings) {
                 this.mousetrap.bind(binding[0], binding[1])
             }
@@ -28,14 +40,8 @@ class KeyTrap extends React.Component {
     }
 
     componentDidUpdate() {
-        if (!this.props.target_ref) {
-            this.mousetrap = null
-        }
-        else if (!this.mousetrap && this.props.target_ref) {
+        if (!this.mousetrap) {
             this.initializeMousetrap()
-        }
-        else if (!this.props.target_ref) {
-            this.mousetrap = null;
         }
     }
 
@@ -48,5 +54,10 @@ class KeyTrap extends React.Component {
 
 KeyTrap.propTypes = {
     target_ref: PropTypes.object,
-    bindings: PropTypes.array
+    bindings: PropTypes.array,
+    global: PropTypes.bool
+};
+
+KeyTrap.defaultProps = {
+    global: false
 };

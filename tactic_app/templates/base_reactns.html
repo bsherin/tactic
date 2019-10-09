@@ -7,11 +7,9 @@
       <link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap.min.css')}}">
   <link rel="stylesheet" href="{{url_for('static', filename='css/blueprint/blueprint.css')}}">
   <link rel="stylesheet" href="{{url_for('static', filename='css/blueprint/table.css')}}">
+  <link rel="stylesheet" href="{{url_for('static', filename='css/blueprint/blueprint-select.css')}}">
   <link rel="stylesheet" href="{{url_for('static', filename='css/blueprint/blueprint-icons.css')}}">
       <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/tactic.css', v=version_string)}}">
-      <link rel="stylesheet" href="{{url_for('static', filename='css/alertify_css/alertify.min.css')}}"/>
-    <link rel="stylesheet" href="{{url_for('static', filename='css/fontawesome-all.min.css')}}"/>
-     <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/tactic_alertify_theme.css', v=version_string)}}" />
      <link rel="shortcut icon" href="{{url_for('static', filename='tactic_css/favicon.ico', v=version_string)}}" />
     <link rel="apple-touch-icon" href="{{url_for('static', filename='tactic_css/icons/favicon-256.png', v=version_string)}}" />
       {% if uses_codemirror == "True" %}
@@ -40,22 +38,18 @@
     <script src="{{url_for('static', filename='js/jquery.ui.position.js')}}"></script>
     <script src="{{url_for('static', filename='js/jquery.ui.touch-punch.min.js')}}"></script>
     {% if develop == "True" %}
-        <script src="{{url_for('static', filename='js/alertify.js')}}"></script>
         <script src="{{url_for('static', filename='js/react.development.js')}}"></script>
         <script src="{{url_for('static', filename='js/react-dom.development.js')}}"></script>
         <script src="{{url_for('static', filename='js/react-transition-group.js')}}"></script>
         <script src="{{url_for('static', filename='js/prop-types.js')}}"></script>
     {% else %}
-        <script src="{{url_for('static', filename='js/alertify.min.js')}}"></script>
         <script src="{{url_for('static', filename='js/react.production.min.js')}}"></script>
         <script src="{{url_for('static', filename='js/react-dom.production.min.js')}}"></script>
         <script src="{{url_for('static', filename='js/react-transition-group.min.js')}}"></script>
         <script src="{{url_for('static', filename='js/prop-types.min.js')}}"></script>
     {% endif %}
 
-    <script src="{{url_for('static', filename='js/react-bootstrap.min.js')}}"></script>
     <script src="{{url_for('static', filename='tactic_js/utilities_react.js', v=version_string)}}"></script>
-{#    <script src="{{url_for('static', filename='tactic_js/communication_react.js', v=version_string)}}"></script>#}
     {% if uses_codemirror == "True" %}
         <script src="{{url_for('static', filename='js/codemirror.js')}}"></script>
         <script src="{{url_for('static', filename='js/codemirror/search.js')}}"></script>
@@ -73,10 +67,6 @@
     {% endif %}
     <script type="text/javascript">
     //override defaults
-    alertify.defaults.transition = "slide";
-    alertify.defaults.theme.ok = "btn btn-primary";
-    alertify.defaults.theme.cancel = "btn btn-danger";
-    alertify.defaults.theme.input = "form-control";
     </script>
     <script type="text/javascript">
         var csrftoken = "{{ csrf_token() }}";

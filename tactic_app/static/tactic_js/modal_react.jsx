@@ -1,7 +1,6 @@
 
 export {showModalReact, showConfirmDialogReact, showSelectDialog, showInformDialogReact}
 
-var Rbs = window.ReactBootstrap;
 var Bp = blueprint;
 
 class ModalDialog extends React.Component {
@@ -76,7 +75,7 @@ class ModalDialog extends React.Component {
         if ((this.props.checkboxes != null) && (this.props.checkboxes.length != 0)) {
             for (let checkbox of this.props.checkboxes) {
                 let new_item = (
-                    <Rbs.Form.Check type="checkbox"
+                    <Bp.Checkbox checked={this.state.checkbox_states[checkbox.checkname]}
                                     label={checkbox.checktext}
                                     id={checkbox.checkname}
                                     key={checkbox.checkname}
@@ -89,6 +88,7 @@ class ModalDialog extends React.Component {
         return (
             <Bp.Dialog isOpen={this.state.show}
                        title={this.props.title}
+                       onClose={this._cancelHandler}
                        canEscapeKeyClose={true}>
                 <div className={Bp.Classes.DIALOG_BODY}>
                     <Bp.FormGroup label={this.props.field_title} helperText={this.state.warning_text}>
@@ -178,11 +178,12 @@ class SelectDialog extends React.Component {
         return (
             <Bp.Dialog isOpen={this.state.show}
                        title={this.props.title}
+                       onClose={this._cancelHandler}
                        canEscapeKeyClose={true}>
                 <div className={Bp.Classes.DIALOG_BODY}>
-                   <Rbs.FormGroup title={this.props.select_label}>
+                   <Bp.FormGroup title={this.props.select_label}>
                        <Bp.HTMLSelect options={this.props.option_list} onChange={this._handleChange} value={this.state.value}/>
-                   </Rbs.FormGroup>
+                   </Bp.FormGroup>
                 </div>
                 <div className={Bp.Classes.DIALOG_FOOTER}>
                     <div className={Bp.Classes.DIALOG_FOOTER_ACTIONS}>
@@ -251,6 +252,7 @@ class ConfirmDialog extends React.Component {
         return (
             <Bp.Dialog isOpen={this.state.show}
                        title={this.props.title}
+                       onClose={this._cancelHandler}
                        canEscapeKeyClose={true}>
                 <div className={Bp.Classes.DIALOG_BODY}>
                     <p>{this.props.text_body}</p>
@@ -266,7 +268,7 @@ class ConfirmDialog extends React.Component {
     }
 }
 
-confirmDialog.propTypes = {
+ConfirmDialog.propTypes = {
     handleSubmit: PropTypes.func,
     handleClose: PropTypes.func,
     title: PropTypes.string,
@@ -315,6 +317,7 @@ class InformDialog extends React.Component {
         return (
             <Bp.Dialog isOpen={this.state.show}
                        title={this.props.title}
+                       onClose={this._closeHandler}
                        canEscapeKeyClose={true}>
                 <div className={Bp.Classes.DIALOG_BODY}>
                     <p>{this.props.text_body}</p>

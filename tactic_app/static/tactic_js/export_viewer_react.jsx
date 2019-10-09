@@ -5,8 +5,6 @@ import {doFlash} from "./toaster.js"
 
 export {ExportsViewer}
 
-var Rbs = window.ReactBootstrap;
-
 let Bp = blueprint;
 
 class ExportListSelect extends React.Component {
@@ -224,6 +222,7 @@ class ExportsViewer extends React.Component {
                                      {this.state.key_list && <SelectList option_list={this.state.key_list}
                                                                          onChange={this._handleKeyListChange}
                                                                          the_value={this.state.key_list_value}
+                                                                         minimal={true}
                                                                          fontSize={11}
                                      />
                                     }

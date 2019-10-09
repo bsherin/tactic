@@ -2,9 +2,7 @@
 export { OptionModule, ExportModule };
 
 import { Toolbar } from "./blueprint_toolbar.js";
-import { LabeledSelectList, LabeledFormField, OrderableTable } from "./blueprint_react_widgets.js";
-
-var Rbs = window.ReactBootstrap;
+import { LabeledSelectList, LabeledFormField, BpOrderableTable } from "./blueprint_react_widgets.js";
 
 var Bp = blueprint;
 
@@ -110,7 +108,7 @@ class OptionModule extends React.Component {
     }
 
     get button_groups() {
-        let bgs = [[{ "name_text": "delete", "icon_name": "trash", "click_handler": this.delete_option }, { "name_text": "to meta", "icon_name": "properties", "click_handler": this.send_doc_text }]];
+        let bgs = [[{ "name_text": "delete", "icon_name": "trash", "click_handler": this.delete_option }, { "name_text": "toMeta", "icon_name": "properties", "click_handler": this.send_doc_text }]];
         for (let bg of bgs) {
             for (let but of bg) {
                 but.click_handler = but.click_handler.bind(this);
@@ -122,22 +120,22 @@ class OptionModule extends React.Component {
     render() {
         var cols = ["name", "type", "default", "special_list", "tags"];
         let options_pane_style = {
-            "marginTop": 25,
-            "marginLeft": 25,
-            "marginRight": 25
+            "marginTop": 10,
+            "marginLeft": 10,
+            "marginRight": 10
         };
         if (this.state.active_row >= this.props.data_list.length) {
             this.state.active_row = this.props.data_list.length - 1;
         }
         return React.createElement(
-            "div",
-            { id: "options-pane", className: "d-flex flex-column", style: options_pane_style },
+            Bp.Card,
+            { elevation: 1, id: "options-pane", className: "d-flex flex-column", style: options_pane_style },
             React.createElement(
                 "div",
                 { className: "d-flex flex-row mb-2" },
                 React.createElement(Toolbar, { button_groups: this.button_groups })
             ),
-            React.createElement(OrderableTable, { columns: cols,
+            this.props.foregrounded && React.createElement(BpOrderableTable, { columns: cols,
                 data_array: this.props.data_list,
                 active_row: this.state.active_row,
                 handleActiveRowChange: this.handleActiveRowChange,
@@ -152,6 +150,7 @@ class OptionModule extends React.Component {
 
 OptionModule.propTypes = {
     data_list: PropTypes.array,
+    foregrounded: PropTypes.bool,
     handleChange: PropTypes.func,
     handleNotesAppend: PropTypes.func
 };
@@ -236,7 +235,7 @@ class ExportModule extends React.Component {
     }
 
     get button_groups() {
-        let bgs = [[{ "name_text": "delete", "icon_name": "trash", "click_handler": this.delete_export }, { "name_text": "to meta", "icon_name": "properties", "click_handler": this.send_doc_text }]];
+        let bgs = [[{ "name_text": "delete", "icon_name": "trash", "click_handler": this.delete_export }, { "name_text": "toMeta", "icon_name": "properties", "click_handler": this.send_doc_text }]];
         for (let bg of bgs) {
             for (let but of bg) {
                 but.click_handler = but.click_handler.bind(this);
@@ -248,28 +247,27 @@ class ExportModule extends React.Component {
     render() {
         var cols = ["name", "tags"];
         let exports_pane_style = {
-            "marginTop": 25,
-            "marginLeft": 25,
-            "marginRight": 25
+            "marginTop": 10,
+            "marginLeft": 10,
+            "marginRight": 10
         };
         if (this.state.active_row >= this.props.data_list.length) {
             this.state.active_row = this.props.data_list.length - 1;
         }
         return React.createElement(
-            "div",
-            { id: "exports-pane", className: "d-flex flex-column", style: exports_pane_style },
+            Bp.Card,
+            { elevation: 1, id: "exports-pane", className: "d-flex flex-column", style: exports_pane_style },
             React.createElement(
                 "div",
                 { className: "d-flex flex-row mb-2" },
                 React.createElement(Toolbar, { button_groups: this.button_groups })
             ),
-            React.createElement(OrderableTable, { columns: cols,
+            this.props.foregrounded && React.createElement(BpOrderableTable, { columns: cols,
                 data_array: this.props.data_list,
                 active_row: this.state.active_row,
                 handleActiveRowChange: this.handleActiveRowChange,
                 handleChange: this.props.handleChange,
-                content_editable: true
-            }),
+                content_editable: true }),
             React.createElement(ExportModuleForm, { handleCreate: this.handleCreate })
         );
     }
@@ -278,6 +276,7 @@ class ExportModule extends React.Component {
 
 ExportModule.propTypes = {
     data_list: PropTypes.array,
+    foregrounded: PropTypes.bool,
     handleChange: PropTypes.func,
     handleNotesAppend: PropTypes.func
 

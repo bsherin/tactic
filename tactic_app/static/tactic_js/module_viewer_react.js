@@ -98,7 +98,7 @@ class ModuleViewerApp extends React.Component {
                     copyToLibrary("modules", this.props.resource_name);
                 } }]];
         } else {
-            bgs = [[{ "name_text": "Save", "icon_name": "floppy-disk", "click_handler": this.saveMe }, { "name_text": "Mark", "icon_name": "map-marker", "click_handler": this.saveAndCheckpoint }, { "name_text": "Save as...", "icon_name": "floppy-disk", "click_handler": this.saveMeAs }, { "name_text": "Load", "icon_name": "upload", "click_handler": this.loadModule }, { "name_text": "Share", "icon_name": "share",
+            bgs = [[{ "name_text": "Save", "icon_name": "floppy-disk", "click_handler": this.saveMe }, { "name_text": "Mark", "icon_name": "map-marker", "click_handler": this.saveAndCheckpoint }, { "name_text": "SaveAs", "icon_name": "floppy-disk", "click_handler": this.saveMeAs }, { "name_text": "Load", "icon_name": "upload", "click_handler": this.loadModule }, { "name_text": "Share", "icon_name": "share",
                 "click_handler": () => {
                     sendToRepository("tile", this.props.resource_name);
                 } }], [{ "name_text": "History", "icon_name": "history", "click_handler": this.showHistoryViewer }, { "name_text": "Compare", "icon_name": "git-branch", "click_handler": this.showTileDiffer }]];

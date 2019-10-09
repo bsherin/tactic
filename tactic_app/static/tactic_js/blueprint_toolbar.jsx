@@ -7,8 +7,15 @@ import {postAjax} from "./communication_react.js"
 
 const default_button_class = "btn-outline-secondary";
 
-var Rbs = window.ReactBootstrap;
 var Bp = blueprint;
+
+const intent_colors = {
+    danger: "#c23030",
+    warning: "#bf7326",
+    primary: "#106ba3",
+    success: "#0d8050",
+    regular: "#5c7080"
+};
 
 function ResourceviewerToolbar(props) {
     let tstyle = {"marginTop": 20};
@@ -28,17 +35,19 @@ class ToolbarButton extends React.Component {
     }
 
     render() {
-        let style = {flexDirection: "column", fontSize: 9};
+        let style = {flexDirection: "column", fontSize: 8, padding: "5px 8px", width: 42, height: 42};
         return (
             <Bp.Button text={this.props.name_text}
                        icon={this.props.icon_name}
+                       // intent={this.props.intent == "regular" ? "primary" : this.props.intent}
                        style={style}
                        large={true}
+                       minimal={false}
                        onClick={this.props.click_handler}
-                       className="bp-toolbar-button"
-                />
-     )
-  }
+                       className="bp-toolbar-button bp3-elevation-0"
+            />
+        )
+    }
 }
 
 ToolbarButton.propTypes = {
@@ -46,11 +55,13 @@ ToolbarButton.propTypes = {
     click_handler: PropTypes.func,
     button_class: PropTypes.string,
     name_text: PropTypes.string,
-    small_size: PropTypes.bool
+    small_size: PropTypes.bool,
+    intent: PropTypes.string
 };
 
 ToolbarButton.defaultProps = {
-    small_size: true
+    small_size: true,
+    intent: "regular"
 };
 
 class PopupButton extends React.Component {
@@ -115,7 +126,7 @@ class FileAdderButton extends React.Component {
     }
 
      render() {
-         let style = {flexDirection: "column", fontSize: 9, marginRight: 4};
+         let style = {flexDirection: "column", fontSize: 8, marginRight: 4, width: 42, height: 42};
          let file_input_style = {width: 200, fontSize: 12};
          return (
              <React.Fragment>
@@ -171,13 +182,13 @@ class Toolbar extends React.Component {
         var group_counter = 0;
         if ((this.props.popup_buttons != null) && (this.props.popup_buttons.length != 0)) {
             let popup_items = this.props.popup_buttons.map((button, index) =>
-                <Rbs.ButtonGroup className="toolbar-button-group" role="group" key={"popup_group" + String(index)}>
+                <Bp.ButtonGroup className="toolbar-button-group" role="group" key={"popup_group" + String(index)}>
                     <PopupButton name={button.name}
                                  key={button.name}
                                  icon_name={button.icon_name}
                                  option_list={button.option_list}
                                  button_class={this.get_button_class(button)}/>
-                 </Rbs.ButtonGroup>
+                 </Bp.ButtonGroup>
             );
             items.push(popup_items)
         }
@@ -186,6 +197,7 @@ class Toolbar extends React.Component {
                 <ToolbarButton name_text={button.name_text}
                                icon_name={button.icon_name}
                                click_handler={button.click_handler}
+                               intent={button.hasOwnProperty("intent") ? button.intent : "regular"}
                                key={index}/>
             );
             items.push(

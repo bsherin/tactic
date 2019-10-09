@@ -8,21 +8,23 @@ import {doFlash} from "./toaster.js"
 import {ViewerContext} from "./resource_viewer_context.js";
 
 var Bp = blueprint;
+let Bpt = bptable;
 
 import {LibraryPane} from "./library_pane.js"
 import {LoadedTileList} from "./library_widgets.js";
 import {SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT, BOTTOM_MARGIN, getUsableDimensions} from "./sizing_tools.js";
 import {withStatus} from "./toaster.js";
 import {withErrorDrawer} from "./error_drawer.js";
+import {KeyTrap} from "./key_trap.js";
 
 const MARGIN_SIZE = 17;
 
 let tsocket;
 
 function _library_home_main () {
-    render_navbar();
+    render_navbar("library");
     tsocket = new LibraryTacticSocket("library", 5000);
-    let LibraryHomeAppPlus = withErrorDrawer(withStatus(LibraryHomeApp, tsocket));
+    let LibraryHomeAppPlus = withErrorDrawer(withStatus(LibraryHomeApp, tsocket), tsocket);
     let domContainer = document.querySelector('#library-home-root');
     ReactDOM.render(<LibraryHomeAppPlus/>, domContainer)
 }
@@ -45,6 +47,8 @@ class LibraryTacticSocket extends TacticSocket {
 }
 
 var res_types = ["collection", "project", "tile", "list", "code"];
+const tab_panes = ["collections-pane", "projects-pane", "tiles-pane", "lists-pane", "code-pane"];
+
 class LibraryHomeApp extends React.Component {
 
     constructor(props) {
@@ -76,6 +80,7 @@ class LibraryHomeApp extends React.Component {
                 search_field_value: "",
                 search_inside_checked: false,
                 search_metadata_checked: false,
+                selectedRegions: [Bpt.Regions.row(0)]
             }
         }
         this.top_ref = React.createRef();
@@ -113,6 +118,14 @@ class LibraryHomeApp extends React.Component {
     // the pane to be appropriately sized when it's shown
     _handleTabChange(newTabId, prevTabId, event) {
         this.setState({selected_tab_id: newTabId}, this._update_window_dimensions)
+    }
+
+    _goToNextPane() {
+        let tabIndex = tab_panes.indexOf(this.state.selected_tab_id) + 1;
+        if (tabIndex == tab_panes.length) {
+            tabIndex = 0
+        }
+        this.setState({selected_tab_id: tab_panes[tabIndex]})
     }
 
     render () {
@@ -183,6 +196,7 @@ class LibraryHomeApp extends React.Component {
             height: this.state.usable_height,
             paddingLeft: SIDE_MARGIN
         };
+        let key_bindings = [[["tab"], this._goToNextPane]];
         return (
             <ViewerContext.Provider value={{readOnly: false}}>
                 <div className="pane-holder" ref={this.top_ref} style={outer_style}>
@@ -207,6 +221,7 @@ class LibraryHomeApp extends React.Component {
                         </Bp.Tab>
                     </Bp.Tabs>
                 </div>
+                <KeyTrap global={true} bindings={key_bindings} />
             </ViewerContext.Provider>
         )
     }
@@ -226,6 +241,9 @@ class LibraryToolbar extends React.Component {
                         click_handler: button[1],
                         icon_name: button[2],
                         multi_select: button[3]};
+                    if (button.length > 4) {
+                        new_button.intent = button[4]
+                    }
                     new_group.push(new_button)
                 }
             }
@@ -272,7 +290,7 @@ class LibraryToolbar extends React.Component {
                 display: "flex",
                 flexDirection: "row",
                 position: "relative",
-                left: 150,
+                left: 175,
                 marginBottom: 10
         };
 
@@ -421,13 +439,13 @@ class CollectionToolbar extends React.Component {
 
     get button_groups() {
         return [
-            [["open", this.props.view_func, "document-open", false]],
-            [["duplicate", this._collection_duplicate, "duplicate", false],
-             ["rename",  this.props.rename_func, "edit", false],
-             ["combine", this._combineCollections, "merge-columns", true]],
-            [["download", this._downloadCollection, "cloud-download", false],
-             ["share", this.props.send_repository_func, "share", false]],
-            [["delete", this._collection_delete, "trash", true]],
+            [["open", this.props.view_func, "document-open", false, "primary"]],
+            [["duplicate", this._collection_duplicate, "duplicate", false, "success"],
+             ["rename",  this.props.rename_func, "edit", false, "warning"],
+             ["combine", this._combineCollections, "merge-columns", true, "success"]],
+            [["download", this._downloadCollection, "cloud-download", false, "regular"],
+             ["share", this.props.send_repository_func, "share", false, "regular"]],
+            [["delete", this._collection_delete, "trash", true, "danger"]],
             [["refresh", this.props.refresh_func, "refresh", false]]
         ];
      }
@@ -649,7 +667,7 @@ class TileToolbar extends React.Component {
             [["share", this.props.send_repository_func, "share", false]],
             [["delete", this._tile_delete, "trash", true]],
             [["refresh", this.props.refresh_func, "refresh", false]],
-            [["Error Drawer", this.props.toggleErrorDrawer, "console", false]]
+            [["drawer", this.props.toggleErrorDrawer, "console", false]]
         ];
      }
 

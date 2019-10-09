@@ -378,8 +378,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
             data_object = self.grab_chunk(self.visible_doc_name, 0)
         else:
             doc = self.doc_dict[self.visible_doc_name]
-            data_object = {"data_text": doc.data_text, "doc_name": self.visible_doc_name,
-                           "background_colors": doc.displayed_background_colors}
+            data_object = {"data_text": doc.data_text, "doc_name": self.visible_doc_name}
         self.mworker.emit_table_message("refill_table", data_object)
 
     @property
@@ -566,7 +565,6 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
             for (key, val) in doc.data_rows.items():
                 if filter_function(val):
                     doc.current_data_rows[key] = val
-            doc.configure_for_current_data()
             self.refill_table()
         else:
             for docname, doc in self.doc_dict.items():
@@ -574,7 +572,6 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                 for (key, val) in doc.data_rows.items():
                     if filter_function(val):
                         doc.current_data_rows[key] = val
-                doc.configure_for_current_data()
             self.refill_table()
         return
 
@@ -618,10 +615,8 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                 self._set_row_column_data(doc_name, the_id, column_header, new_content)
                 self._change_list.append(the_id)
             if doc_name == self.visible_doc_name:
-                doc = self.doc_dict[doc_name]
-                actual_row = doc.get_actual_row(the_id)
-                if actual_row is not None:
-                    data["row"] = actual_row
+                if the_id in self.doc_dict[doc_name].current_data_rows.keys():
+                    data["row"] = the_id
                     self.mworker.emit_table_message("setCellContent", data)
 
     def _set_cell_background(self, doc_name, the_id, column_header, color):

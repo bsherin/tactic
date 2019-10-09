@@ -1,5 +1,5 @@
 /**
- * Created by bls910 much later
+ * Created by bls910 on 6/12/15.
  */
 
 function doBinding(obj, seq = "_") {
@@ -88,6 +88,37 @@ Array.prototype.empty = function () {
     return this.length == 0;
 };
 
+alertify.set('notifier', 'position', 'top-right');
+
+function startSpinner() {
+    $("#spinner").css("display", "inline-block");
+}
+
+function stopSpinner() {
+    $("#spinner").css("display", "none");
+}
+
+function statusMessageText(message, timeout = null) {
+    statusMessage({ "message": message, "timeout": timeout });
+}
+
+function statusMessage(data) {
+    $("#status-msg-area").text(data.message);
+    $("#status-msg-area").fadeIn();
+    if (data.hasOwnProperty("timeout") && data.timeout != null) {
+        setTimeout(clearStatusMessage, data.timeout * 1000);
+    }
+}
+
+function oldclearStatusMessage() {
+    alertbox.close();
+}
+
+function clearStatusMessage() {
+    $("#status-msg-area").fadeOut();
+    $("#status-msg-area").text("");
+}
+
 function doSignOut(page_id) {
     window.open($SCRIPT_ROOT + "/logout/" + window.page_id, "_self");
     return false;
@@ -162,6 +193,45 @@ function resize_dom_to_bottom(dom, bottom_margin) {
     if (dom.length > 0) {
         const h = window.innerHeight - bottom_margin - dom.offset().top;
         dom.outerHeight(h);
+    }
+}
+
+function confirmDialog(modal_title, modal_text, cancel_text, submit_text, submit_function) {
+    const res = Mustache.to_html(confirm_template, {
+        "modal_title": modal_title,
+        "modal_text": modal_text,
+        "cancel_text": cancel_text,
+        "submit_text": submit_text
+    });
+
+    $("#modal-area").html(res);
+    $("#modal-dialog").modal();
+
+    $("#modal-submit-button").on("click", submit_handler);
+
+    function submit_handler() {
+        $("#modal-dialog").modal("hide");
+        submit_function();
+    }
+}
+
+function showSelectModal(modal_title, field_title, submit_function, options) {
+    const res = Mustache.to_html(select_modal_template, {
+        "modal_title": modal_title,
+        "field_title": field_title,
+        "options": options
+    });
+    $("#modal-area").html(res);
+    $('#modal-dialog').on('shown.bs.modal', function () {
+        $('#modal-text-input-field').focus();
+    });
+    $("#modal-dialog").modal();
+    $("#modal-submit-button").on("click", submit_handler);
+
+    function submit_handler() {
+        const result = $("#modal-select-input-field").val();
+        $("#modal-dialog").modal("hide");
+        submit_function(result);
     }
 }
 
