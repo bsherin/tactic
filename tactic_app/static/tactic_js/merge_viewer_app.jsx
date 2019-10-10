@@ -14,8 +14,6 @@ class MergeViewerSocket extends TacticSocket {
         this.socket.emit('join', {"room": user_id});
         this.socket.emit('join-main', {"room": resource_viewer_id});
         this.socket.on('handle-callback', handleCallback);
-        this.socket.on('stop-spinner', stopSpinner);
-        this.socket.on('start-spinner', startSpinner);
         this.socket.on('close-user-windows', (data) => {
             if (!(data["originator"] == resource_viewer_id)) {
                 window.close()
@@ -55,7 +53,7 @@ class MergeViewerApp extends React.Component {
         let fake_event = {currentTarget: {value: this.props.select_val}};
         this.props.handleSelectChange(fake_event);
         this.resize_to_window();
-        stopSpinner();
+        this.props.stopSpinner();
     }
 
     resize_to_window() {

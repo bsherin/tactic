@@ -6,10 +6,11 @@ import {ResourceViewerSocket, ResourceViewerApp, copyToLibrary, sendToRepository
 import {ReactCodemirror} from "./react-codemirror.js";
 import {ViewerContext} from "./resource_viewer_context.js";
 import {postAjaxPromise, postWithCallback} from "./communication_react.js"
-import {doFlash} from "./toaster.js"
+import {doFlash, withStatus} from "./toaster.js"
 
 import {render_navbar} from "./blueprint_navbar.js";
 import {getUsableDimensions, BOTTOM_MARGIN, SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT} from "./sizing_tools.js";
+import {withErrorDrawer} from "./error_drawer.js";
 
 
 function code_viewer_main ()  {
@@ -22,11 +23,12 @@ function code_viewer_main ()  {
         .then(function (data) {
             var the_content = data.the_content;
             let result_dict = {"res_type": "code", "res_name": window.resource_name, "is_repository": false};
+            let CodeViewerAppPlus = withErrorDrawer(withStatus(CodeViewerApp, tsocket), tsocket);
             let domContainer = document.querySelector('#root');
             postAjaxPromise(get_mdata_url, result_dict)
 			        .then(function (data) {
 			            let split_tags = data.tags == "" ? [] : data.tags.split(" ");
-                        ReactDOM.render(<CodeViewerApp resource_name={window.resource_name}
+                        ReactDOM.render(<CodeViewerAppPlus resource_name={window.resource_name}
                                                        the_content={the_content}
                                                        created={data.datestring}
                                                        tags={split_tags}
@@ -36,7 +38,7 @@ function code_viewer_main ()  {
                                                        meta_outer="#right-div"/>, domContainer);
 			        })
 			        .catch(function () {
-			            ReactDOM.render(<CodeViewerApp resource_name={window.resource_name}
+			            ReactDOM.render(<CodeViewerAppPlus resource_name={window.resource_name}
                                                        the_content={the_content}
                                                        created=""
                                                        tags={[]}
@@ -79,7 +81,7 @@ class CodeViewerApp extends React.Component {
     componentDidMount() {
         window.addEventListener("resize", this._update_window_dimensions);
         this._update_window_dimensions();
-        stopSpinner()
+        this.props.stopSpinner()
     }
 
     _update_window_dimensions() {
@@ -103,8 +105,8 @@ class CodeViewerApp extends React.Component {
             ]
         }
         else {
-            bgs = [[{"name_text": "Save", "icon_name": "floppy-disk", "click_handler": this.saveMe},
-                    {"name_text": "SaveAs", "icon_name": "floppy-disk", "click_handler": this.saveMeAs},
+            bgs = [[{"name_text": "Save", "icon_name": "floppy-disk", "click_handler": this._saveMe},
+                    {"name_text": "SaveAs", "icon_name": "floppy-disk", "click_handler": this._saveMeAs},
                     {"name_text": "Share", "icon_name": "share",
                           "click_handler": () => {sendToRepository("code", this.props.resource_name)}}]
             ]
@@ -136,18 +138,19 @@ class CodeViewerApp extends React.Component {
         return (
             <ViewerContext.Provider value={the_context}>
                 <div className="resource-viewer-holder" ref={this.top_ref} style={outer_style}>
-                    <ResourceViewerApp res_type="code"
+                    <ResourceViewerApp {...this.props.statusFuncs}
+                                       res_type="code"
                                        resource_name={this.props.resource_name}
                                        button_groups={this.button_groups}
                                        handleStateChange={this._handleStateChange}
                                        created={this.props.created}
                                        notes={this.state.notes}
                                        tags={this.state.tags}
-                                       saveMe={this.saveMe}
+                                       saveMe={this._saveMe}
                                        meta_outer={this.props.meta_outer}>
                         <ReactCodemirror code_content={this.state.code_content}
                                          handleChange={this._handleCodeChange}
-                                         saveMe={this.saveMe}
+                                         saveMe={this._saveMe}
                                          readOnly={this.props.readOnly}
                           />
                     </ResourceViewerApp>
@@ -156,7 +159,7 @@ class CodeViewerApp extends React.Component {
         )
     }
 
-    saveMe() {
+    _saveMe() {
         const new_code = this.state.code_content;
         const tagstring = this.state.tags.join(" ");
         const notes = this.state.notes;
@@ -182,7 +185,7 @@ class CodeViewerApp extends React.Component {
         }
     }
 
-    saveMeAs(e) {
+    _saveMeAs(e) {
         doFlash({"message": "not implemented yet", "timeout": 10});
         return false
     }

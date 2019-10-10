@@ -1,6 +1,6 @@
 'use strict';
 
-export {doFlash, doFlashStopSpinner, doFlashAlways, withStatus, Status}
+export {doFlash, doFlashAlways, withStatus, Status}
 
 var Bp = blueprint;
 
@@ -31,13 +31,6 @@ function doFlash(data) {
 }
 
 function doFlashAlways(data) {
-    doFlash(data)
-}
-
-
-function doFlashStopSpinner(data) {
-    stopSpinner();
-    clearStatusMessage();
     doFlash(data)
 }
 
@@ -100,10 +93,22 @@ function withStatus(WrappedComponent, tsocket=null) {
             this.setState(sstate)
         }
 
+        _statusFuncs() {
+            return {
+                startSpinner: this._startSpinner,
+                stopSpinner: this._stopSpinner,
+                clearStatus: this._clearStatus,
+                clearStatusMessage: this._clearStatusMessage,
+                statusMessage: this._statusMessage,
+                setStatus: this._setStatus
+            }
+        }
+
         render() {
             return (
                 <React.Fragment>
                     <WrappedComponent {...this.props}
+                                      statusFuncs={this._statusFuncs()}
                                       startSpinner={this._startSpinner}
                                       stopSpinner={this._stopSpinner}
                                       clearStatus={this._clearStatus}

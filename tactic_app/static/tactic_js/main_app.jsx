@@ -240,7 +240,7 @@ class MainApp extends React.Component {
             self._handleChangeDoc(data.doc_name, row_id)
         });
         if (!window.is_project) {
-            stopSpinner();
+            self.props.stopSpinner();
         }
     }
 
@@ -643,14 +643,16 @@ class MainApp extends React.Component {
         }
         let menus = (
             <React.Fragment>
-                <ProjectMenu console_items={this.state.console_items}
+                <ProjectMenu {...this.props.statusFuncs}
+                             console_items={this.state.console_items}
                              interface_state={this.interface_state}
                              changeCollection={this._changeCollection}
                              disabled_items={window.is_project ? [] : ["Save"]}
                              hidden_items={["Export as Jupyter Notebook"]}
                 />
                 {!window.is_freeform &&
-                    <ColumnMenu moveColumn={this._moveColumn}
+                    <ColumnMenu {...this.props.statusFuncs}
+                                moveColumn={this._moveColumn}
                                 table_spec={this.state.table_spec}
                                 filtered_column_names={this._filteredColumnNames()}
                                 selected_column={this.state.selected_column}
@@ -661,7 +663,8 @@ class MainApp extends React.Component {
                                 addColumn={this._addColumn}
                     />
                 }
-                <ViewMenu table_is_shrunk={this.state.table_is_shrunk}
+                <ViewMenu {...this.props.statusFuncs}
+                          table_is_shrunk={this.state.table_is_shrunk}
                           toggleTableShrink={this._toggleTableShrink}
                           openErrorDrawer={this.props.openErrorDrawer}
                 />

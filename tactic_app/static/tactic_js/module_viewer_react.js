@@ -1,3 +1,5 @@
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 /**
  * Created by bls910
  */
@@ -7,7 +9,9 @@ import { ReactCodemirror } from "./react-codemirror.js";
 import { ViewerContext } from "./resource_viewer_context.js";
 import { render_navbar } from "./blueprint_navbar.js";
 import { postAjax, postAjaxPromise, postWithCallback } from "./communication_react.js";
-import { doFlash, doFlashStopSpinner } from "./toaster.js";
+import { doFlash } from "./toaster.js";
+import { withErrorDrawer } from "./error_drawer.js";
+import { withStatus } from "./toaster.js";
 
 import { SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT, BOTTOM_MARGIN, getUsableDimensions } from "./sizing_tools.js";
 
@@ -22,10 +26,11 @@ function module_viewer_main() {
     postAjaxPromise(`${get_url}/${window.resource_name}`, {}).then(function (data) {
         var the_content = data.the_content;
         let result_dict = { "res_type": "tile", "res_name": window.resource_name, "is_repository": false };
+        let ModuleViewerAppPlus = withErrorDrawer(withStatus(ModuleViewerApp, tsocket), tsocket);
         let domContainer = document.querySelector('#root');
         postAjaxPromise(get_mdata_url, result_dict).then(function (data) {
             let split_tags = data.tags == "" ? [] : data.tags.split(" ");
-            ReactDOM.render(React.createElement(ModuleViewerApp, { resource_name: window.resource_name,
+            ReactDOM.render(React.createElement(ModuleViewerAppPlus, { resource_name: window.resource_name,
                 the_content: the_content,
                 created: data.datestring,
                 tags: split_tags,
@@ -34,7 +39,7 @@ function module_viewer_main() {
                 is_repository: window.is_repository,
                 meta_outer: "#right-div" }), domContainer);
         }).catch(function () {
-            ReactDOM.render(React.createElement(ModuleViewerApp, { resource_name: window.resource_name,
+            ReactDOM.render(React.createElement(ModuleViewerAppPlus, { resource_name: window.resource_name,
                 the_content: the_content,
                 created: "",
                 tags: [],
@@ -76,7 +81,7 @@ class ModuleViewerApp extends React.Component {
     componentDidMount() {
         window.addEventListener("resize", this._update_window_dimensions);
         this._update_window_dimensions();
-        stopSpinner();
+        this.props.stopSpinner();
     }
 
     _update_window_dimensions() {
@@ -98,10 +103,10 @@ class ModuleViewerApp extends React.Component {
                     copyToLibrary("modules", this.props.resource_name);
                 } }]];
         } else {
-            bgs = [[{ "name_text": "Save", "icon_name": "floppy-disk", "click_handler": this.saveMe }, { "name_text": "Mark", "icon_name": "map-marker", "click_handler": this.saveAndCheckpoint }, { "name_text": "SaveAs", "icon_name": "floppy-disk", "click_handler": this.saveMeAs }, { "name_text": "Load", "icon_name": "upload", "click_handler": this.loadModule }, { "name_text": "Share", "icon_name": "share",
+            bgs = [[{ "name_text": "Save", "icon_name": "floppy-disk", "click_handler": this._saveMe }, { "name_text": "Mark", "icon_name": "map-marker", "click_handler": this._saveAndCheckpoint }, { "name_text": "SaveAs", "icon_name": "floppy-disk", "click_handler": this._saveMeAs }, { "name_text": "Load", "icon_name": "upload", "click_handler": this._loadModule }, { "name_text": "Share", "icon_name": "share",
                 "click_handler": () => {
                     sendToRepository("tile", this.props.resource_name);
-                } }], [{ "name_text": "History", "icon_name": "history", "click_handler": this.showHistoryViewer }, { "name_text": "Compare", "icon_name": "git-branch", "click_handler": this.showTileDiffer }]];
+                } }], [{ "name_text": "History", "icon_name": "history", "click_handler": this._showHistoryViewer }, { "name_text": "Compare", "icon_name": "git-branch", "click_handler": this._showTileDiffer }]];
         }
 
         for (let bg of bgs) {
@@ -131,6 +136,11 @@ class ModuleViewerApp extends React.Component {
         }
     }
 
+    _doFlashStopSpinner(data) {
+        this.props.stopSpinner();
+        doFlash(data);
+    }
+
     render() {
         let the_context = { "readOnly": this.props.readOnly };
         let outer_style = { width: this.state.usable_width,
@@ -148,18 +158,19 @@ class ModuleViewerApp extends React.Component {
                     { className: "resource-viewer-holder", ref: this.top_ref, style: outer_style },
                     React.createElement(
                         ResourceViewerApp,
-                        { res_type: "tile",
+                        _extends({}, this.props.statusFuncs, {
+                            res_type: "tile",
                             resource_name: this.props.resource_name,
                             button_groups: this.button_groups,
                             handleStateChange: this._handleStateChange,
                             created: this.props.created,
                             notes: this.state.notes,
                             tags: this.state.tags,
-                            saveMe: this.saveMe,
-                            meta_outer: this.props.meta_outer },
+                            saveMe: this._saveMe,
+                            meta_outer: this.props.meta_outer }),
                         React.createElement(ReactCodemirror, { code_content: this.state.code_content,
                             handleChange: this._handleCodeChange,
-                            saveMe: this.saveMe,
+                            saveMe: this._saveMe,
                             readOnly: this.props.readOnly
                         })
                     )
@@ -168,10 +179,11 @@ class ModuleViewerApp extends React.Component {
         );
     }
 
-    saveMe() {
-        startSpinner();
-        statusMessageText("Saving Module");
-        this.doSavePromise().then(doFlashStopSpinner).catch(doFlashStopSpinner);
+    _saveMe() {
+        this.props.startSpinner();
+        this.props.statusMessage("Saving Module");
+        let self = this;
+        this.doSavePromise().then(self._doFlashStopSpinner).catch(self._doFlashStopSpinner);
         return false;
     }
 
@@ -207,35 +219,35 @@ class ModuleViewerApp extends React.Component {
         });
     }
 
-    saveMeAs(e) {
+    _saveMeAs(e) {
         doFlash({ "message": "not implemented yet", "timeout": 10 });
         return false;
     }
 
-    loadModule() {
+    _loadModule() {
         let self = this;
-        startSpinner();
+        this.props.startSpinner();
         this.doSavePromise().then(function () {
-            statusMessageText("Loading Module");
+            self.props.statusMessage("Loading Module");
             postWithCallback("host", "load_tile_module_task", { "tile_module_name": self.props.resource_name, "user_id": user_id }, load_success);
-        }).catch(doFlashStopSpinner);
+        }).catch(self._doFlashStopSpinner);
 
         function load_success(data) {
             if (data.success) {
                 data.timeout = 2000;
             }
-            doFlashStopSpinner(data);
+            self._doFlashStopSpinner(data);
             return false;
         }
     }
 
-    saveAndCheckpoint() {
-        startSpinner();
+    _saveAndCheckpoint() {
+        this.props.startSpinner();
         let self = this;
         this.doSavePromise().then(function () {
             statusMessage("Checkpointing");
-            self.doCheckpointPromise().then(doFlashStopSpinner).catch(doFlashStopSpinner);
-        }).catch(doFlashStopSpinner);
+            self.doCheckpointPromise().then(self._doFlashStopSpinner).catch(self._doFlashStopSpinner);
+        }).catch(self._doFlashStopSpinner);
         return false;
     }
 
@@ -252,11 +264,11 @@ class ModuleViewerApp extends React.Component {
         });
     }
 
-    showHistoryViewer() {
+    _showHistoryViewer() {
         window.open(`${$SCRIPT_ROOT}/show_history_viewer/${this.props.resource_name}`);
     }
 
-    showTileDiffer() {
+    _showTileDiffer() {
         window.open(`${$SCRIPT_ROOT}/show_tile_differ/${this.props.resource_name}`);
     }
 

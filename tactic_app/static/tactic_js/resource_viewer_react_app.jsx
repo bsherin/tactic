@@ -18,8 +18,6 @@ class ResourceViewerSocket extends TacticSocket {
         this.socket.emit('join', {"room": window.user_id});
         this.socket.emit('join-main', {"room": window.resource_viewer_id});
         this.socket.on('handle-callback', handleCallback);
-        this.socket.on('stop-spinner', stopSpinner);
-        this.socket.on('start-spinner', startSpinner);
         this.socket.on('close-user-windows', (data) => {
             if (!(data["originator"] == window.resource_viewer_id)) {
                 window.close()
@@ -89,7 +87,7 @@ class ResourceViewerApp extends React.Component {
         window.addEventListener("resize", this._update_window_dimensions);
         this.setState({"mounted": true});
         this._update_window_dimensions();
-        stopSpinner()
+        this.props.stopSpinner()
     }
 
     _update_window_dimensions() {

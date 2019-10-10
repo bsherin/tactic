@@ -70,7 +70,7 @@ class HostWorker(QWorker):
 
                 db[user_obj.code_collection_name].update_one({"code_name": code_name},
                                                              {'$set': {"the_code": the_code, "metadata": mdata}})
-                self.update_selector_row(self.build_res_dict(code_name, mdata))
+                # self.update_selector_row(self.build_res_dict(code_name, mdata))
                 result = {"success": True, "message": "Module Successfully Saved", "alert_type": "alert-success"}
                 self.submit_response(local_task_packet, result)
                 return

@@ -13,6 +13,8 @@ let Bp = blueprint;
 import {LibraryPane} from "./library_pane.js"
 import {BOTTOM_MARGIN, getUsableDimensions, SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT} from "./sizing_tools.js";
 import {ViewerContext} from "./resource_viewer_context.js";
+import {withStatus} from "./toaster.js";
+import {withErrorDrawer} from "./error_drawer.js";
 
 const MARGIN_SIZE = 17;
 
@@ -21,6 +23,7 @@ let tsocket;
 function _repository_home_main () {
     render_navbar("repository");
     tsocket = new LibraryTacticSocket("library", 5000);
+     let RepositoryHomeAppPlus = withErrorDrawer(withStatus(RepositoryHomeApp, tsocket), tsocket);
     let domContainer = document.querySelector('#library-home-root');
     ReactDOM.render(<RepositoryHomeApp/>, domContainer)
 }
@@ -34,8 +37,6 @@ class LibraryTacticSocket extends TacticSocket {
         this.socket.on("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
 
         this.socket.on('handle-callback', handleCallback);
-        this.socket.on('stop-spinner', stopSpinner);
-        this.socket.on('start-spinner', startSpinner);
         this.socket.on('show-status-msg', statusMessage);
         this.socket.on("clear-status-msg", clearStatusMessage);
         this.socket.on('close-user-windows', (data) => {
@@ -89,7 +90,7 @@ class RepositoryHomeApp extends React.Component {
         window.addEventListener("resize", this._update_window_dimensions);
         this.setState({"mounted": true});
         this._update_window_dimensions();
-        stopSpinner()
+        this.props.stopSpinner()
     }
 
     _updatePaneState (res_type, state_update, callback=null) {

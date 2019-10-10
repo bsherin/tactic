@@ -6,7 +6,6 @@ let Bp = blueprint;
 
 function _login_main() {
     render_navbar("login");
-    stopSpinner();
     if (window._show_message) doFlash(window._message);
     let domContainer = document.querySelector('#root');
     ReactDOM.render(<LoginAppWithStatus/>, domContainer)
