@@ -2,9 +2,8 @@
 import {Toolbar} from "./blueprint_toolbar.js"
 import {TacticSocket} from "./tactic_socket.js"
 import {showConfirmDialogReact} from "./modal_react.js";
-import {doFlash, doFlashStopSpinner} from "./toaster.js"
+import {doFlash} from "./toaster.js"
 import {render_navbar} from "./blueprint_navbar.js";
-
 import {handleCallback}  from "./communication_react.js"
 import {withStatus} from "./toaster.js";
 
@@ -34,12 +33,7 @@ class LibraryTacticSocket extends TacticSocket {
         this.socket.emit('join', {"user_id":  window.user_id, "library_id":  window.library_id});
 
         this.socket.on("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
-
         this.socket.on('handle-callback', handleCallback);
-        this.socket.on('stop-spinner', stopSpinner);
-        this.socket.on('start-spinner', startSpinner);
-        this.socket.on('show-status-msg', statusMessage);
-        this.socket.on("clear-status-msg", clearStatusMessage);
         this.socket.on('close-user-windows', (data) => {
             if (!(data["originator"] == window.library_id)) {
                 window.close()
@@ -105,7 +99,7 @@ class AdministerHomeApp extends React.Component {
         window.addEventListener("resize", this._update_window_dimensions);
         this.setState({"mounted": true});
         this._update_window_dimensions();
-        stopSpinner()
+        this.props.stopSpinner()
     }
 
     _updatePaneState (res_type, state_update, callback=null) {
@@ -234,6 +228,11 @@ class ContainerToolbar extends React.Component {
         super(props);
         doBinding(this);
     }
+    
+    _doFlashStopSpinner(data) {
+        this.props.stopSpinner();
+        doFlash(data)
+    }
 
 
     _container_logs () {
@@ -245,21 +244,21 @@ class ContainerToolbar extends React.Component {
     }
 
     _clear_user_func (event) {
-        startSpinner();
-        $.getJSON($SCRIPT_ROOT + '/clear_user_containers/' + window.library_id, doFlashStopSpinner);
+        this.props.startSpinner();
+        $.getJSON($SCRIPT_ROOT + '/clear_user_containers/' + window.library_id, this._doFlashStopSpinner);
     }
 
     reset_server_func (event) {
-        startSpinner();
-        $.getJSON($SCRIPT_ROOT + '/reset_server/' + library_id, doFlashStopSpinner);
+        this.props.startSpinner();
+        $.getJSON($SCRIPT_ROOT + '/reset_server/' + library_id, this._doFlashStopSpinner);
     }
 
     _destroy_container () {
-        startSpinner();
+        this.props.startSpinner();
         let cont_id = this.props.selected_resource.Id;
         let self = this;
         $.getJSON($SCRIPT_ROOT + '/kill_container/' + cont_id, (data) => {
-                doFlashStopSpinner(data);
+                self._doFlashStopSpinner(data);
                 if (data.success) {
                     self.props.animation_phase(() => {
                         self.props.delete_row(cont_id);
@@ -267,7 +266,7 @@ class ContainerToolbar extends React.Component {
                 }
             }
         );
-        stopSpinner();
+        this.props.stopSpinner();
 
     }
 

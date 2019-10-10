@@ -101,7 +101,7 @@ class NotebookApp extends React.Component {
         this.setState({"mounted": true});
         window.addEventListener("resize", this._update_window_dimensions);
         document.title = window.is_project ? window._project_name : "New Notebook";
-        stopSpinner();
+        this.props.stopSpinner();
     }
 
     _update_window_dimensions() {
@@ -134,7 +134,8 @@ class NotebookApp extends React.Component {
     render () {
         let menus = (
             <React.Fragment>
-                <ProjectMenu console_items={this.state.console_items}
+                <ProjectMenu {...this.props.statusFuncs}
+                            console_items={this.state.console_items}
                              interface_state={this.interface_state}
                              changeCollection={null}
                              disabled_items={window.is_project ? [] : ["Save"]}
@@ -148,7 +149,8 @@ class NotebookApp extends React.Component {
                               user_name={window.username}
                               menus={menus}
                 />
-                <ConsoleComponent console_items={this.state.console_items}
+                <ConsoleComponent {...this.props.statusFuncs}
+                                  console_items={this.state.console_items}
                               console_is_shrunk={false}
                               console_is_zoomed={true}
                               show_exports_pane={false}

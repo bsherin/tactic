@@ -1,3 +1,5 @@
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 /**
  * Created by bls910
  */
@@ -8,6 +10,8 @@ import { doFlash } from "./toaster.js";
 
 import { render_navbar } from "./blueprint_navbar.js";
 import { SIDE_MARGIN, BOTTOM_MARGIN, getUsableDimensions } from "./sizing_tools.js";
+import { withErrorDrawer } from "./error_drawer.js";
+import { withStatus } from "./toaster.js";
 
 var Bp = blueprint;
 
@@ -20,10 +24,11 @@ function list_viewer_main() {
     postAjaxPromise(`${get_url}/${window.resource_name}`, {}).then(function (data) {
         var the_content = data.the_content;
         let result_dict = { "res_type": "list", "res_name": window.resource_name, "is_repository": false };
+        let ListViewerAppPlus = withErrorDrawer(withStatus(ListViewerApp, tsocket), tsocket);
         let domContainer = document.querySelector('#root');
         postAjaxPromise(get_mdata_url, result_dict).then(function (data) {
             let split_tags = data.tags == "" ? [] : data.tags.split(" ");
-            ReactDOM.render(React.createElement(ListViewerApp, { resource_name: window.resource_name,
+            ReactDOM.render(React.createElement(ListViewerAppPlus, { resource_name: window.resource_name,
                 the_content: the_content,
                 created: data.datestring,
                 tags: split_tags,
@@ -32,7 +37,7 @@ function list_viewer_main() {
                 is_repository: window.is_repository,
                 meta_outer: "#right-div" }), domContainer);
         }).catch(function () {
-            ReactDOM.render(React.createElement(ListViewerApp, { resource_name: window.resource_name,
+            ReactDOM.render(React.createElement(ListViewerAppPlus, { resource_name: window.resource_name,
                 the_content: the_content,
                 created: "",
                 tags: [],
@@ -96,7 +101,7 @@ class ListViewerApp extends React.Component {
     }
 
     componentDidMount() {
-        stopSpinner();
+        this.props.stopSpinner();
     }
 
     get button_groups() {
@@ -107,7 +112,7 @@ class ListViewerApp extends React.Component {
                     copyToLibrary("list", this.props.resource_name);
                 } }]];
         } else {
-            bgs = [[{ "name_text": "Save", "icon_name": "floppy-disk", "click_handler": this.saveMe }, { "name_text": "SaveAs", "icon_name": "floppy-disk", "click_handler": this.saveMeAs }, { "name_text": "Share", "icon_name": "share",
+            bgs = [[{ "name_text": "Save", "icon_name": "floppy-disk", "click_handler": this._saveMe }, { "name_text": "SaveAs", "icon_name": "floppy-disk", "click_handler": this._saveMeAs }, { "name_text": "Share", "icon_name": "share",
                 "click_handler": () => {
                     sendToRepository("list", this.props.resource_name);
                 } }]];
@@ -157,16 +162,17 @@ class ListViewerApp extends React.Component {
                     { className: "resource-viewer-holder", ref: this.top_ref, style: outer_style },
                     React.createElement(
                         ResourceViewerApp,
-                        { res_type: "list",
+                        _extends({}, this.props.statusFuncs, {
                             resource_name: this.props.resource_name,
+                            created: this.props.created,
+                            meta_outer: this.props.meta_outer,
+                            readOnly: window.read_only,
+                            res_type: "list",
                             button_groups: this.button_groups,
                             handleStateChange: this._handleStateChange,
-                            created: this.props.created,
                             notes: this.state.notes,
-                            readOnly: window.read_only,
                             tags: this.state.tags,
-                            saveMe: this.saveMe,
-                            meta_outer: this.props.meta_outer },
+                            saveMe: this._saveMe }),
                         React.createElement(ListEditor, { the_content: this.state.list_content,
                             handleChange: this._handleListChange
                         })
@@ -176,7 +182,7 @@ class ListViewerApp extends React.Component {
         );
     }
 
-    saveMe() {
+    _saveMe() {
         const new_list_as_string = this.state.list_content;
         const tagstring = this.state.tags.join(" ");
         const notes = this.state.notes;
@@ -201,7 +207,7 @@ class ListViewerApp extends React.Component {
         }
     }
 
-    saveMeAs(e) {
+    _saveMeAs(e) {
         doFlash({ "message": "not implemented yet", "timeout": 10 });
         return false;
     }

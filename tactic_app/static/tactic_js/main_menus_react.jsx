@@ -1,6 +1,6 @@
 import {showModalReact} from "./modal_react.js";
 import {postWithCallback} from "./communication_react.js"
-import {doFlashStopSpinner} from "./toaster.js"
+import {doFlash} from "./toaster.js"
 export {ProjectMenu, ColumnMenu, ViewMenu, MenuComponent}
 
 let Bp = blueprint;
@@ -66,7 +66,7 @@ class ProjectMenu extends React.Component {
     }
 
     _saveProjectAs() {
-        startSpinner();
+        this.props.startSpinner();
         let self = this;
         postWithCallback("host", "get_project_names", {"user_id": window.user_id}, function (data) {
             let checkboxes;
@@ -93,17 +93,19 @@ class ProjectMenu extends React.Component {
                     window.is_project = true;
                     window._project_name = new_name;
                     document.title = new_name;
-                    clearStatusMessage();
+                    self.props.clearStatusMessage();
                     data_object.alert_type = "alert-success";
                     data_object.timeout = 2000;
                     postWithCallback("host", "refresh_project_selector_list", {'user_id': window.user_id});
-                    doFlashStopSpinner(data_object);
+                    self.props.stopSpinner();
+                    doFlash(data_object)
                 }
                 else {
-                    clearStatusMessage();
+                    self.props.clearStatusMessage();
                     data_object["message"] = data_object["message"];
                     data_object["alert-type"] = "alert-warning";
-                    doFlashStopSpinner(data_object)
+                    self.props.stopSpinner();
+                    doFlash(data_object)
                 }
             }
         }
@@ -119,10 +121,10 @@ class ProjectMenu extends React.Component {
         result_dict.interface_state = this.props.interface_state;
 
         //tableObject.startTableSpinner();
-        startSpinner();
+        this.props.startSpinner();
         postWithCallback(window.main_id, "update_project", result_dict, updateSuccess);
         function updateSuccess(data) {
-            startSpinner();
+            self.props.startSpinner();
             if (data.success) {
                 data.alert_type = "alert-success";
                 data.timeout = 2000;
@@ -131,13 +133,14 @@ class ProjectMenu extends React.Component {
             else {
                 data.alert_type = "alert-warning";
             }
-            clearStatusMessage();
-            doFlashStopSpinner(data)
+            self.props.clearStatusMessage();
+            self.props.stopSpinner();
+            doFlash(data_object)
         }
     }
 
     _exportAsJupyter() {
-        startSpinner();
+        this.props.startSpinner();
         let self = this;
         postWithCallback("host", "get_project_names", {"user_id": user_id}, function (data) {
             let checkboxes;
@@ -164,7 +167,7 @@ class ProjectMenu extends React.Component {
             postWithCallback(window.main_id, "export_to_jupyter_notebook", result_dict, save_as_success);
 
             function save_as_success(data_object) {
-                clearStatusMessage();
+               self.props.clearStatusMessage();
                 if (data_object.success) {
                     data_object.alert_type = "alert-success";
                     data_object.timeout = 2000;
@@ -172,7 +175,8 @@ class ProjectMenu extends React.Component {
                 else {
                     data_object["alert-type"] = "alert-warning";
                 }
-                doFlashStopSpinner(data_object)
+                self.props.stopSpinner();
+                doFlash(data_object)
             }
         }
     }
