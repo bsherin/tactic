@@ -15,7 +15,7 @@ class AdminPane extends React.Component {
         super(props);
         this.top_ref = React.createRef();
         this.table_ref = React.createRef();
-        let aheight = getUsableDimensions().usable_height;
+        let aheight = getUsableDimensions().usable_height_no_bottom;
         let awidth = getUsableDimensions().usable_width - 170;
         this.state = {
             data_list: [],
@@ -26,6 +26,7 @@ class AdminPane extends React.Component {
             match_list: [],
         };
         doBinding(this);
+        this.toolbarRef = null;
         if (props.tsocket != null) {
             props.tsocket.socket.on(`update-${props.res_type}-selector-row`, this._handleRowUpdate);
             props.tsocket.socket.on(`refresh-${props.res_type}-selector`, this._refresh_func);
@@ -286,6 +287,10 @@ class AdminPane extends React.Component {
 
     }
 
+    _sendToolbarRef(the_ref) {
+        this.toolbarRef = the_ref;
+    }
+
     render() {
         let new_button_groups;
         let left_width = this.state.available_width * this.props.left_width_fraction;
@@ -325,11 +330,21 @@ class AdminPane extends React.Component {
         }
 
         let table_width;
+        let toolbar_left;
         if (this.table_ref && this.table_ref.current) {
-            table_width = left_width - this.table_ref.current.offsetLeft
+            table_width = left_width - this.table_ref.current.offsetLeft;
+            if (this.toolbarRef && this.toolbarRef.current) {
+                let tbwidth = this.toolbarRef.current.getBoundingClientRect().width;
+                toolbar_left = this.table_ref.current.offsetLeft + .5 * table_width - .5 * tbwidth;
+                if (toolbar_left < 0) toolbar_left = 0
+            }
+            else {
+                toolbar_left = 175
+            }
         }
         else {
-            table_width = left_width - 150
+            table_width = left_width - 150;
+            toolbar_left = 175
         }
 
         let left_pane = (
@@ -359,20 +374,28 @@ class AdminPane extends React.Component {
             <Bp.ResizeSensor onResize={this._handleResize} observeParents={true}>
                 <div ref={this.top_ref} className="d-flex flex-column mt-4" >
                     <ToolbarClass selected_resource={this.props.selected_resource}
-                                          list_of_selected={this.props.list_of_selected}
-                                          setConsoleText={this._setConsoleText}
-                                          animation_phase={this._animation_phase}
-                                          delete_row={this._delete_row}
-                                          refresh_func={this._refresh_func}
-                                          />
-                    <HorizontalPanes
-                        left_pane={left_pane}
-                        right_pane={right_pane}
-                        available_width={this.state.available_width}
-                        available_height={this.state.available_height}
-                        initial_width_fraction={.65}
-                        handleSplitUpdate={this._handleSplitResize}
-                    />
+                                  list_of_selected={this.props.list_of_selected}
+                                  setConsoleText={this._setConsoleText}
+                                  animation_phase={this._animation_phase}
+                                  delete_row={this._delete_row}
+                                  refresh_func={this._refresh_func}
+                                  startSpinner={this.props.startSpinner}
+                                  stopSpinner={this.props.stopSpinner}
+                                  clearStatusMessage={this.props.clearStatusMessage}
+                                  left_position={toolbar_left}
+                                  sendRef={this._sendToolbarRef}
+                                  {...this.props.errorDrawerFuncs}
+                                  />
+                      <div style={{width: this.state.available_width, height: this.state.available_height}}>
+                            <HorizontalPanes
+                                left_pane={left_pane}
+                                right_pane={right_pane}
+                                available_width={this.state.available_width}
+                                available_height={this.state.available_height}
+                                initial_width_fraction={.65}
+                                handleSplitUpdate={this._handleSplitResize}
+                            />
+                      </div>
                 </div>
             </Bp.ResizeSensor>
         )

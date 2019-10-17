@@ -25,7 +25,7 @@ function _repository_home_main () {
     tsocket = new LibraryTacticSocket("library", 5000);
      let RepositoryHomeAppPlus = withErrorDrawer(withStatus(RepositoryHomeApp, tsocket), tsocket);
     let domContainer = document.querySelector('#library-home-root');
-    ReactDOM.render(<RepositoryHomeApp/>, domContainer)
+    ReactDOM.render(<RepositoryHomeAppPlus/>, domContainer)
 }
 
 class LibraryTacticSocket extends TacticSocket {
@@ -37,8 +37,6 @@ class LibraryTacticSocket extends TacticSocket {
         this.socket.on("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
 
         this.socket.on('handle-callback', handleCallback);
-        this.socket.on('show-status-msg', statusMessage);
-        this.socket.on("clear-status-msg", clearStatusMessage);
         this.socket.on('close-user-windows', (data) => {
             if (!(data["originator"] == window.library_id)) {
                 window.close()
@@ -53,7 +51,7 @@ class RepositoryHomeApp extends React.Component {
 
     constructor(props) {
         super(props);
-        let aheight = getUsableDimensions().usable_height;
+        let aheight = getUsableDimensions().usable_height_no_bottom;
         let awidth = getUsableDimensions().usable_width - 170;
         this.state = {
             selected_tab_id: "collections-pane",
@@ -102,7 +100,7 @@ class RepositoryHomeApp extends React.Component {
 
     _update_window_dimensions() {
         let uwidth = window.innerWidth - 2 * SIDE_MARGIN;
-        let uheight = window.innerHeight - BOTTOM_MARGIN;
+        let uheight = window.innerHeight;
         if (this.top_ref && this.top_ref.current) {
             uheight = uheight - this.top_ref.current.offsetTop;
         }
@@ -116,6 +114,10 @@ class RepositoryHomeApp extends React.Component {
         this.setState({selected_tab_id: newTabId}, this._update_window_dimensions)
     }
 
+    getIconColor(paneId) {
+        return paneId == this.state.selected_tab_id ? "white" : "#CED9E0"
+    }
+
     render () {
         let collection_pane = (
                         <LibraryPane
@@ -125,6 +127,8 @@ class RepositoryHomeApp extends React.Component {
                                      ToolbarClass={RepositoryCollectionToolbar}
                                      updatePaneState={this._updatePaneState}
                                      {...this.state.pane_states["collection"]}
+                                     {...this.props.errorDrawerFuncs}
+                                     errorDrawerFuncs={this.props.errorDrawerFuncs}
                                      is_repository={true}
                                      tsocket={tsocket}/>
         );
@@ -136,6 +140,8 @@ class RepositoryHomeApp extends React.Component {
                                      ToolbarClass={RepositoryProjectToolbar}
                                      updatePaneState={this._updatePaneState}
                                      {...this.state.pane_states["project"]}
+                                     {...this.props.errorDrawerFuncs}
+                                     errorDrawerFuncs={this.props.errorDrawerFuncs}
                                      is_repository={true}
                                      tsocket={tsocket}/>
         );
@@ -148,6 +154,8 @@ class RepositoryHomeApp extends React.Component {
                                      ToolbarClass={RepositoryTileToolbar}
                                      updatePaneState={this._updatePaneState}
                                      {...this.state.pane_states["tile"]}
+                                     {...this.props.errorDrawerFuncs}
+                                     errorDrawerFuncs={this.props.errorDrawerFuncs}
                                      is_repository={true}
                                      tsocket={tsocket}/>
         );
@@ -160,6 +168,8 @@ class RepositoryHomeApp extends React.Component {
                                      ToolbarClass={RepositoryListToolbar}
                                     updatePaneState={this._updatePaneState}
                                     {...this.state.pane_states["list"]}
+                                    {...this.props.errorDrawerFuncs}
+                                     errorDrawerFuncs={this.props.errorDrawerFuncs}
                                     is_repository={true}
                                      tsocket={tsocket}/>
         );
@@ -172,12 +182,14 @@ class RepositoryHomeApp extends React.Component {
                                 ToolbarClass={RepositoryCodeToolbar}
                                 updatePaneState={this._updatePaneState}
                                 {...this.state.pane_states["code"]}
+                                 {...this.props.errorDrawerFuncs}
+                                     errorDrawerFuncs={this.props.errorDrawerFuncs}
                                 is_repository={true}
                                 tsocket={tsocket}/>
         );
         let outer_style = {width: this.state.usable_width,
             height: this.state.usable_height,
-            paddingLeft: SIDE_MARGIN
+            paddingLeft: 0
         };
         return (
             <ViewerContext.Provider value={{readOnly: true}}>
@@ -187,19 +199,29 @@ class RepositoryHomeApp extends React.Component {
                              renderActiveTabPanelOnly={true}
                              vertical={true} large={true} onChange={this._handleTabChange}>
                         <Bp.Tab id="collections-pane" panel={collection_pane}>
-                            <Bp.Icon icon="box"/>  Collections
+                            <Bp.Tooltip content="Collections" position={Bp.Position.RIGHT}>
+                                <Bp.Icon icon="box" iconSize={20} tabIndex={-1} color={this.getIconColor("collections-pane")}/>
+                            </Bp.Tooltip>
                         </Bp.Tab>
                         <Bp.Tab id="projects-pane" panel={projects_pane}>
-                            <Bp.Icon icon="projects"/>  Projects
+                            <Bp.Tooltip content="Projects" position={Bp.Position.RIGHT}>
+                                <Bp.Icon icon="projects" iconSize={20} tabIndex={-1} color={this.getIconColor("projects-pane")}/>
+                            </Bp.Tooltip>
                         </Bp.Tab>
                         <Bp.Tab id="tiles-pane" panel={tiles_pane}>
-                            <Bp.Icon icon="application"/>  Tiles
+                            <Bp.Tooltip content="Tiles" position={Bp.Position.RIGHT}>
+                                <Bp.Icon icon="application" iconSize={20} tabIndex={-1} color={this.getIconColor("tiles-pane")}/>
+                            </Bp.Tooltip>
                         </Bp.Tab>
                         <Bp.Tab id="lists-pane" panel={lists_pane}>
-                            <Bp.Icon icon="numbered-list"/>  Lists
+                            <Bp.Tooltip content="Lists" position={Bp.Position.RIGHT}>
+                                <Bp.Icon icon="numbered-list" iconSize={20} tabIndex={-1} color={this.getIconColor("lists-pane")}/>
+                            </Bp.Tooltip>
                         </Bp.Tab>
                         <Bp.Tab id="code-pane" panel={code_pane}>
-                            <Bp.Icon icon="code"/>  Code
+                            <Bp.Tooltip content="Code" position={Bp.Position.RIGHT}>
+                                <Bp.Icon icon="code" tabIndex={-1} color={this.getIconColor("code-pane")}/>
+                            </Bp.Tooltip>
                         </Bp.Tab>
                     </Bp.Tabs>
                 </div>
@@ -268,13 +290,14 @@ class LibraryToolbar extends React.Component {
                 display: "flex",
                 flexDirection: "row",
                 position: "relative",
-                left: 150,
+                left: this.props.left_position,
                 marginBottom: 10
         };
         let popup_buttons = this.prepare_popup_buttons();
        return <Toolbar button_groups={this.prepare_button_groups()}
                        file_adders={this.prepare_file_adders()}
                        alternate_outer_style={outer_style}
+                       sendRef={this.props.sendRef}
                        popup_buttons={popup_buttons}
        />
     }
@@ -285,6 +308,8 @@ LibraryToolbar.propTypes = {
     file_adders: PropTypes.array,
     popup_buttons: PropTypes.array,
     multi_select: PropTypes.bool,
+    left_position: PropTypes.number,
+    sendRef: PropTypes.func
 };
 
 LibraryToolbar.defaultProps = {
@@ -315,6 +340,8 @@ class RepositoryCollectionToolbar extends React.Component {
 
      render () {
         return <LibraryToolbar button_groups={this.button_groups}
+                               left_position={this.props.left_position}
+                               sendRef={this.props.sendRef}
                                multi_select={this.props.multi_select} />
      }
 }
@@ -336,7 +363,10 @@ class RepositoryProjectToolbar extends React.Component {
      }
 
      render () {
-        return <LibraryToolbar button_groups={this.button_groups} multi_select={this.props.multi_select} />
+        return <LibraryToolbar button_groups={this.button_groups}
+                               left_position={this.props.left_position}
+                               sendRef={this.props.sendRef}
+                               multi_select={this.props.multi_select} />
      }
 
 }
@@ -362,6 +392,8 @@ class RepositoryTileToolbar extends React.Component {
 
      render () {
         return <LibraryToolbar button_groups={this.button_groups}
+                               left_position={this.props.left_position}
+                               sendRef={this.props.sendRef}
                                multi_select={this.props.multi_select} />
      }
 
@@ -388,6 +420,8 @@ class RepositoryListToolbar extends React.Component {
 
      render () {
         return <LibraryToolbar button_groups={this.button_groups}
+                               left_position={this.props.left_position}
+                               sendRef={this.props.sendRef}
                                multi_select={this.props.multi_select} />
      }
 
@@ -416,6 +450,8 @@ class RepositoryCodeToolbar extends React.Component {
 
      render () {
         return <LibraryToolbar button_groups={this.button_groups}
+                               left_position={this.props.left_position}
+                               sendRef={this.props.sendRef}
                                multi_select={this.props.multi_select} />
      }
 

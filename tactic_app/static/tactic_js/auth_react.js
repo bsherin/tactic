@@ -21,6 +21,11 @@ class LoginApp extends React.Component {
             username_warning_text: "",
             password_warning_text: ""
         };
+        this.input_ref = null;
+    }
+
+    componentDidMount() {
+        $(this.input_ref).focus();
     }
 
     _onUsernameChange(event) {
@@ -57,6 +62,10 @@ class LoginApp extends React.Component {
         } else {
             this.setState({ password_warning_text: "Login failed" });
         }
+    }
+
+    _refHandler(the_ref) {
+        this.input_ref = the_ref;
     }
 
     render() {
@@ -99,7 +108,10 @@ class LoginApp extends React.Component {
                             onChange: this._onUsernameChange,
                             large: true,
                             fill: false,
-                            placeholder: "Username"
+                            placeholder: "Username",
+                            autoCapitalize: "none",
+                            autoCorrect: "off",
+                            inputRef: this._refHandler
                         })
                     ),
                     React.createElement(
@@ -111,7 +123,9 @@ class LoginApp extends React.Component {
                             onChange: this._onPasswordChange,
                             large: true,
                             fill: false,
-                            placeholder: "Password"
+                            placeholder: "Password",
+                            autoCapitalize: "none",
+                            autoCorrect: "off"
                         })
                     ),
                     React.createElement(

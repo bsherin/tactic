@@ -125,6 +125,8 @@ class SearchForm extends React.Component {
                                       value={this.props.search_field_value}
                                       onChange={this._handleSearchFieldChange}
                                       style={{"width": 265}}
+                                    autoCapitalize="none"
+                                       autoCorrect="off"
                     />
                     <Bp.Button onClick={this._handleClearSearch} className="ml-2">
                             clear
@@ -186,7 +188,6 @@ class BpSelectorTable extends React.Component {
         }
     }
 
-
     _cellRendererCreator(column_name) {
         let self = this;
         return (rowIndex) => {
@@ -223,6 +224,8 @@ class BpSelectorTable extends React.Component {
             );
         }
 
+
+
     render() {
         let self = this;
         let column_names = Object.keys(this.props.columns);
@@ -238,6 +241,7 @@ class BpSelectorTable extends React.Component {
         });
         return (
             <Bpt.Table numRows={this.props.data_list.length}
+                       bodyContextMenuRenderer={(mcontext)=>this.props.renderBodyContextMenu(mcontext, this.props.data_list)}
                        enableColumnReordering={false}
                        enableMultipleSelection={true}
                        defaultRowHeight={23}

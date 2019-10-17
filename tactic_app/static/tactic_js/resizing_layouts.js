@@ -72,13 +72,13 @@ class HorizontalPanes extends React.Component {
     render() {
         let left_div_style = {
             width: this.left_width,
-            height: this.props.available_height,
+            height: this.props.available_height - this.props.bottom_margin,
             display: "flex",
             flexDirection: "column"
         };
         let right_div_style = {
             width: this.right_width,
-            height: this.props.available_height,
+            height: this.props.available_height - this.props.bottom_margin,
             display: "flex",
             flexDirection: "column"
         };
@@ -108,7 +108,8 @@ HorizontalPanes.propTypes = {
     right_pane: PropTypes.object,
     handleSplitUpdate: PropTypes.func,
     initial_width_fraction: PropTypes.number,
-    top_ref: PropTypes.object
+    top_ref: PropTypes.object,
+    bottom_margin: PropTypes.number
 };
 
 HorizontalPanes.defaultProps = {
@@ -117,7 +118,8 @@ HorizontalPanes.defaultProps = {
     hide_me: false,
     left_margin: null,
     right_margin: null,
-    top_ref: null
+    top_ref: null,
+    bottom_margin: 0
 };
 
 class VerticalPanes extends React.Component {

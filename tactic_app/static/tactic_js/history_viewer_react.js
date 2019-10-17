@@ -8,8 +8,8 @@ import { MergeViewerSocket, MergeViewerApp } from "./merge_viewer_app.js";
 import { doFlash } from "./toaster.js";
 import { render_navbar } from "./blueprint_navbar.js";
 import { postAjax, postAjaxPromise } from "./communication_react.js";
-import { withErrorDrawer } from "./error_drawer";
-import { withStatus } from "./toaster";
+import { withErrorDrawer } from "./error_drawer.js";
+import { withStatus } from "./toaster.js";
 
 function history_viewer_main() {
     render_navbar();

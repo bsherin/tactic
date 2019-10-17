@@ -160,8 +160,20 @@ table.sortable thead {
     border-right: .4em solid transparent;
     border-bottom: 0;
     border-left: .4em solid transparent; }
+  #library-home-root .bp3-tabs.bp3-vertical > .bp3-tab-list .bp3-tab {
+    padding: 0 12px;
+    margin: 0; }
   #library-home-root .bp3-tab-list {
-    margin-top: 100px; }
+    padding-top: 100px;
+    padding-left: 2px;
+    padding-right: 2px;
+    background-color: #394b59; }
+  #library-home-root .bp3-tab-indicator {
+    background-color: #48aff09e;
+    border-radius: 0;
+    width: 46px; }
+  #library-home-root .bp3-table-column-headers .bp3-table-header {
+    font-weight: 600; }
   #library-home-root .bp3-tab:focus {
     outline: none; }
   #library-home-root .bp3-tabs.bp3-vertical > .bp3-tab-panel {
@@ -213,7 +225,7 @@ a[role="tab"] {
   background-color: #9B79CC; }
 
 #repository_container .bp3-tabs.bp3-vertical > .bp3-tab-list .bp3-tab-indicator-wrapper .bp3-tab-indicator {
-  background-color: #d1f26d; }
+  background-color: #e648f09e; }
 
 .um-nav-icon {
   width: 20px; }

@@ -518,7 +518,6 @@ class TileComponent extends React.Component {
             }
         });
     }
-
     _logMe() {
         this.logText(this.props.front_content)
     }

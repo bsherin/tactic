@@ -497,14 +497,24 @@ class MainApp extends React.Component {
 
     _hideColumn() {
         let hc_list = [...this.state.table_spec.hidden_columns_list];
-        hc_list.push(this.state.selected_column);
-        this._updateTableSpec({hidden_columns_list: hc_list}, true)
+        let fnames = this._filteredColumnNames();
+        let cname = this.state.selected_column;
+        let col_index = fnames.indexOf(cname);
+        let cwidths = [...this.state.table_spec.column_widths];
+        cwidths.splice(col_index, 1);
+        hc_list.push(cname);
+        this._updateTableSpec({hidden_columns_list: hc_list, column_widths: cwidths}, true)
     }
 
     _hideColumnInAll() {
         let hc_list = [...this.state.table_spec.hidden_columns_list];
-        hc_list.push(this.state.selected_column);
-        this._updateTableSpec({hidden_columns_list: hc_list}, false);
+        let fnames = this._filteredColumnNames();
+        let cname = this.state.selected_column;
+        let col_index = fnames.indexOf(cname);
+        let cwidths = [...this.state.table_spec.column_widths];
+        cwidths.splice(col_index, 1);
+        hc_list.push(cname);
+        this._updateTableSpec({hidden_columns_list: hc_list, column_widths: cwidths}, false);
         const data_dict = {"column_name": this.state.selected_column};
         this._broadcast_event_to_server("HideColumnInAllDocs", data_dict)
     }

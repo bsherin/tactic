@@ -13,13 +13,33 @@ export {LibraryPane}
 let Bp = blueprint;
 let Bpt = bptable;
 
+
+class BodyMenu extends React.Component {
+    render() {
+        let disabled = false;
+        let menu_items = this.props.items.map((item)=>(
+            <Bp.MenuItem icon={item.icon} disabled={disabled} onClick={()=>item.onClick(this.props.selected_rows)} text={item.text}/>
+        ));
+        return (
+            <Bp.Menu>
+                {menu_items}
+            </Bp.Menu>
+        )
+    }
+}
+
+BodyMenu.propTypes = {
+    items: PropTypes.array,
+    selected_rows: PropTypes.array
+};
+
 class LibraryPane extends React.Component {
 
     constructor(props) {
         super(props);
         this.top_ref = React.createRef();
         this.table_ref = React.createRef();
-        let aheight = getUsableDimensions().usable_height;
+        let aheight = getUsableDimensions().usable_height_no_bottom;
         let awidth = getUsableDimensions().usable_width - 170;
         this.state = {
             data_list: [],
@@ -33,10 +53,31 @@ class LibraryPane extends React.Component {
             showOmnibar: false,
         };
         doBinding(this);
+        this.toolbarRef = null;
         if ((props.tsocket != null) && (!this.props.is_repository)) {
             props.tsocket.socket.on(`update-${props.res_type}-selector-row`, this._handleRowUpdate);
             props.tsocket.socket.on(`refresh-${props.res_type}-selector`, this._refresh_func);
         }
+    }
+
+    _renderBodyContextMenu(menu_context, current_data_list) {
+        let regions = menu_context.regions;
+        if (regions.length == 0) return;  // Without this get an error when clicking on a body cell
+        let selected_rows = [];
+        for (let region of regions) {
+            if (region.hasOwnProperty("rows")) {
+                let first_row = region["rows"][0];
+                let last_row = region["rows"][1];
+                for (let i=first_row; i<=last_row; ++i) {
+                    if (!selected_row_indices.includes(i)) {
+                        selected_rows.push(current_data_list[i]);
+                    }
+                }
+            }
+        }
+        return (
+            <BodyMenu items={this.props.contextItems} selected_rows={selected_rows}/>
+        )
     }
 
     _onTableSelection(regions, current_data_list) {
@@ -717,7 +758,6 @@ class LibraryPane extends React.Component {
                 return
             }
         }
-
     }
 
     _toggleAuxVisibility() {
@@ -736,6 +776,10 @@ class LibraryPane extends React.Component {
 
     _closeOmnibar() {
         this.setState({showOmnibar: false})
+    }
+
+    _sendToolbarRef(the_ref) {
+        this.toolbarRef = the_ref;
     }
 
     render() {
@@ -757,10 +801,10 @@ class LibraryPane extends React.Component {
         let right_pane;
         let split_tags = this.props.selected_resource.tags == "" ? [] : this.props.selected_resource.tags.split(" ");
         let outer_style = {marginLeft: 20, marginTop: 90, overflow: "scroll",
-            padding: 15, backgroundColor: "#f5f8fa"};
+            padding: 15, backgroundColor: "#137CBD26"};
         let mdata_element = (
                 <CombinedMetadata tags={split_tags}
-                                  elevation={0}
+                                  elevation={2}
                                   name={this.props.selected_resource.name}
                                   created={this.props.selected_resource.created}
                                   updated={this.props.selected_resource.updated}
@@ -809,11 +853,21 @@ class LibraryPane extends React.Component {
         let ToolbarClass = this.props.ToolbarClass;
 
         let table_width;
+        let toolbar_left;
         if (this.table_ref && this.table_ref.current) {
-            table_width = left_width - this.table_ref.current.offsetLeft
+            table_width = left_width - this.table_ref.current.offsetLeft;
+            if (this.toolbarRef && this.toolbarRef.current) {
+                let tbwidth = this.toolbarRef.current.getBoundingClientRect().width;
+                toolbar_left = this.table_ref.current.offsetLeft + .5 * table_width - .5 * tbwidth;
+                if (toolbar_left < 0) toolbar_left = 0
+            }
+            else {
+                toolbar_left = 175
+            }
         }
         else {
-            table_width = left_width - 150
+            table_width = left_width - 150;
+            toolbar_left = 175
         }
 
         let key_bindings = [
@@ -849,6 +903,7 @@ class LibraryPane extends React.Component {
                                         sortColumn={this._set_sort_state}
                                         selectedRegions={this.props.selectedRegions}
                                         onSelection={this._onTableSelection}
+                                         // renderBodyContextMenu={this._renderBodyContextMenu}
                                         handleRowDoubleClick={this._handleRowDoubleClick}
                                         handleAddTag={this._handleAddTag}
                                     />
@@ -869,21 +924,24 @@ class LibraryPane extends React.Component {
                                   refresh_func={this._refresh_func}
                                   delete_func={this._delete_func}
                                   rename_func={this._rename_func}
-                                  animation_phase={this._animation_phase}
                                   add_new_row={this._add_new_row}
                                   startSpinner={this.props.startSpinner}
                                   stopSpinner={this.props.stopSpinner}
                                   clearStatusMessage={this.props.clearStatusMessage}
+                                  left_position={toolbar_left}
+                                  sendRef={this._sendToolbarRef}
                                   {...this.props.errorDrawerFuncs}
                                   />
-                      <HorizontalPanes
-                            available_width={this.state.available_width}
-                            available_height={this.state.available_height}
-                             left_pane={left_pane}
-                             right_pane={right_pane}
-                             initial_width_fraction={.65}
-                             handleSplitUpdate={this._handleSplitResize}
-                        />
+                      <div style={{width: this.state.available_width, height: this.state.available_height}}>
+                          <HorizontalPanes
+                                available_width={this.state.available_width}
+                                available_height={this.state.available_height - 40}
+                                 left_pane={left_pane}
+                                 right_pane={right_pane}
+                                 initial_width_fraction={.75}
+                                 handleSplitUpdate={this._handleSplitResize}
+                            />
+                        </div>
                     <KeyTrap global={true} bindings={key_bindings} />
                     <LibraryOmnibar items={this.state.data_list}
                                     onItemSelect={this._omnibarSelect}
@@ -919,7 +977,8 @@ LibraryPane.propTypes = {
     search_tag: PropTypes.string,
     search_from_field: PropTypes.bool,
     search_from_tag: PropTypes.bool,
-    tag_button_state: PropTypes.object
+    tag_button_state: PropTypes.object,
+    contextItems: PropTypes.array
 
 };
 

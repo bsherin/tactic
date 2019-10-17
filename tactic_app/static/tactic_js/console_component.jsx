@@ -443,7 +443,7 @@ class LogItem extends React.Component {
         let converted_dict = {__html: this.props.console_text};
         let panel_class = this.props.am_shrunk ? "log-panel log-panel-invisible fixed-log-panel" : "log-panel log-panel-visible fixed-log-panel";
         if (this.props.is_error) {
-            panel_style += " error-log-panel"
+            panel_class += " error-log-panel"
         }
         return (
             <div className={panel_class + " d-flex flex-row"} id={this.props.unique_id} style={{marginBottom: 10}}>

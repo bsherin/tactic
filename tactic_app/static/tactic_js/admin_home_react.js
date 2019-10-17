@@ -12,8 +12,9 @@ let Bp = blueprint;
 let Bpt = bptable;
 
 import { AdminPane } from "./administer_pane.js";
-import { SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT, BOTTOM_MARGIN, getUsableDimensions } from "./sizing_tools.js";
+import { SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT, getUsableDimensions } from "./sizing_tools.js";
 import { ViewerContext } from "./resource_viewer_context.js";
+import { withErrorDrawer } from "./error_drawer.js";
 
 const MARGIN_SIZE = 17;
 
@@ -22,7 +23,7 @@ let tsocket;
 function _administer_home_main() {
     render_navbar("library");
     tsocket = new LibraryTacticSocket("library", 5000);
-    let AdministerHomeAppPlus = withStatus(AdministerHomeApp, tsocket);
+    let AdministerHomeAppPlus = withErrorDrawer(withStatus(AdministerHomeApp, tsocket), tsocket);
     let domContainer = document.querySelector('#library-home-root');
     ReactDOM.render(React.createElement(AdministerHomeAppPlus, null), domContainer);
 }
@@ -60,7 +61,7 @@ class AdministerHomeApp extends React.Component {
 
     constructor(props) {
         super(props);
-        let aheight = getUsableDimensions().usable_height;
+        let aheight = getUsableDimensions().usable_height_no_bottom;
         let awidth = getUsableDimensions().usable_width - 170;
         this.state = {
             selected_tab_id: "containers-pane",
@@ -111,7 +112,7 @@ class AdministerHomeApp extends React.Component {
 
     _update_window_dimensions() {
         let uwidth = window.innerWidth - 2 * SIDE_MARGIN;
-        let uheight = window.innerHeight - BOTTOM_MARGIN;
+        let uheight = window.innerHeight;
         if (this.top_ref && this.top_ref.current) {
             uheight = uheight - this.top_ref.current.offsetTop;
         } else {
@@ -124,24 +125,32 @@ class AdministerHomeApp extends React.Component {
         this.setState({ selected_tab_id: newTabId }, this._update_window_dimensions);
     }
 
+    getIconColor(paneId) {
+        return paneId == this.state.selected_tab_id ? "white" : "#CED9E0";
+    }
+
     render() {
-        let container_pane = React.createElement(AdminPane, _extends({ res_type: "container",
+        let container_pane = React.createElement(AdminPane, _extends({}, this.props, {
+            res_type: "container",
             allow_search_inside: false,
             allow_search_metadata: false,
             ToolbarClass: ContainerToolbar,
             updatePaneState: this._updatePaneState
-        }, this.state.pane_states["container"], {
+        }, this.state.pane_states["container"], this.props.errorDrawerFuncs, {
+            errorDrawerFuncs: this.props.errorDrawerFuncs,
             tsocket: tsocket,
             colnames: col_names.container,
             id_field: "Id"
 
         }));
-        let user_pane = React.createElement(AdminPane, _extends({ res_type: "user",
+        let user_pane = React.createElement(AdminPane, _extends({}, this.props, {
+            res_type: "user",
             allow_search_inside: false,
             allow_search_metadata: false,
             ToolbarClass: UserToolbar,
             updatePaneState: this._updatePaneState
-        }, this.state.pane_states["user"], {
+        }, this.state.pane_states["user"], this.props.errorDrawerFuncs, {
+            errorDrawerFuncs: this.props.errorDrawerFuncs,
             tsocket: tsocket,
             colnames: col_names.user,
             id_field: "_id"
@@ -149,7 +158,7 @@ class AdministerHomeApp extends React.Component {
         }));
         let outer_style = { width: this.state.usable_width,
             height: this.state.usable_height,
-            paddingLeft: SIDE_MARGIN
+            paddingLeft: 0
         };
         return React.createElement(
             ViewerContext.Provider,
@@ -166,14 +175,20 @@ class AdministerHomeApp extends React.Component {
                     React.createElement(
                         Bp.Tab,
                         { id: "containers-pane", panel: container_pane },
-                        React.createElement(Bp.Icon, { icon: "box" }),
-                        "  Containers"
+                        React.createElement(
+                            Bp.Tooltip,
+                            { content: "Containers", position: Bp.Position.RIGHT },
+                            React.createElement(Bp.Icon, { icon: "box", iconSize: 20, tabIndex: -1, color: this.getIconColor("collections-pane") })
+                        )
                     ),
                     React.createElement(
                         Bp.Tab,
                         { id: "users-pane", panel: user_pane },
-                        React.createElement(Bp.Icon, { icon: "user" }),
-                        "  Users"
+                        React.createElement(
+                            Bp.Tooltip,
+                            { content: "users", position: Bp.Position.RIGHT },
+                            React.createElement(Bp.Icon, { icon: "user", iconSize: 20, tabIndex: -1, color: this.getIconColor("collections-pane") })
+                        )
                     )
                 )
             )
@@ -210,19 +225,22 @@ class AdminToolbar extends React.Component {
             display: "flex",
             flexDirection: "row",
             position: "relative",
-            left: 175,
+            left: this.props.left_position,
             marginBottom: 10
         };
         return React.createElement(Toolbar, { button_groups: this.prepare_button_groups(),
             file_adders: null,
             alternate_outer_style: outer_style,
+            sendRef: this.props.sendRef,
             popup_buttons: null
         });
     }
 }
 
 AdminToolbar.propTypes = {
-    button_groups: PropTypes.array
+    button_groups: PropTypes.array,
+    left_position: PropTypes.number,
+    sendRef: PropTypes.func
 };
 
 class ContainerToolbar extends React.Component {
@@ -246,36 +264,37 @@ class ContainerToolbar extends React.Component {
     }
 
     _clear_user_func(event) {
-        this.props.startSpinner();
+        this.props.startSpinner(true);
         $.getJSON($SCRIPT_ROOT + '/clear_user_containers/' + window.library_id, this._doFlashStopSpinner);
     }
 
-    reset_server_func(event) {
-        this.props.startSpinner();
+    _reset_server_func(event) {
+        this.props.startSpinner(true);
         $.getJSON($SCRIPT_ROOT + '/reset_server/' + library_id, this._doFlashStopSpinner);
     }
 
     _destroy_container() {
-        this.props.startSpinner();
+        this.props.startSpinner(true);
         let cont_id = this.props.selected_resource.Id;
         let self = this;
         $.getJSON($SCRIPT_ROOT + '/kill_container/' + cont_id, data => {
             self._doFlashStopSpinner(data);
             if (data.success) {
-                self.props.animation_phase(() => {
-                    self.props.delete_row(cont_id);
-                });
+                self.props.delete_row(cont_id);
             }
         });
         this.props.stopSpinner();
     }
 
     get button_groups() {
-        return [[["reset", this.reset_server_func, "reset", false], ["killall", this._clear_user_func, "clean", false], ["killone", this._destroy_container, "delete", false]], [["log", this._container_logs, "console", false], ["refresh", this.props.refresh_func, "refresh", false]]];
+        return [[["reset", this._reset_server_func, "reset", false], ["killall", this._clear_user_func, "clean", false], ["killone", this._destroy_container, "delete", false]], [["log", this._container_logs, "console", false], ["refresh", this.props.refresh_func, "refresh", false]]];
     }
 
     render() {
-        return React.createElement(AdminToolbar, { button_groups: this.button_groups });
+        return React.createElement(AdminToolbar, { button_groups: this.button_groups,
+            left_position: this.props.left_position,
+            sendRef: this.props.sendRef
+        });
     }
 }
 
@@ -325,7 +344,8 @@ class UserToolbar extends React.Component {
     }
 
     _duplicate_user(event) {
-        window.open($SCRIPT_ROOT + '/user_duplicate');
+        let username = this.props.selected_resource.username;
+        window.open($SCRIPT_ROOT + '/user_duplicate/' + username);
     }
 
     _update_all_collections(event) {
@@ -337,7 +357,10 @@ class UserToolbar extends React.Component {
     }
 
     render() {
-        return React.createElement(AdminToolbar, { button_groups: this.button_groups });
+        return React.createElement(AdminToolbar, { button_groups: this.button_groups,
+            left_position: this.props.left_position,
+            sendRef: this.props.sendRef
+        });
     }
 }
 

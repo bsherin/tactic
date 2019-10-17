@@ -67,7 +67,14 @@ class ModalDialog extends React.Component {
 
     _cancelHandler() {
         this.setState({"show": false});
+        if (this.props.handleCancel) {
+            this.props.handleCancel()
+        }
         this.props.handleClose()
+    }
+
+    _refHandler(the_ref) {
+        this.input_ref = the_ref;
     }
 
     render() {
@@ -89,19 +96,24 @@ class ModalDialog extends React.Component {
             <Bp.Dialog isOpen={this.state.show}
                        title={this.props.title}
                        onClose={this._cancelHandler}
+                       onOpened={()=>{$(this.input_ref).focus()}}
                        canEscapeKeyClose={true}>
-                <div className={Bp.Classes.DIALOG_BODY}>
-                    <Bp.FormGroup label={this.props.field_title} helperText={this.state.warning_text}>
-                            <Bp.InputGroup onChange={this._changeHandler} value={this.state.current_value}/>
-                    </Bp.FormGroup>
-                    {(checkbox_items.length != 0) && checkbox_items}
-                </div>
-                <div className={Bp.Classes.DIALOG_FOOTER}>
-                    <div className={Bp.Classes.DIALOG_FOOTER_ACTIONS}>
-                        <Bp.Button onClick={this._cancelHandler}>Cancel</Bp.Button>
-                        <Bp.Button intent={Bp.Intent.PRIMARY} onClick={this._submitHandler}>Submit</Bp.Button>
+                <form onSubmit={this._submitHandler}>
+                    <div className={Bp.Classes.DIALOG_BODY}>
+                        <Bp.FormGroup label={this.props.field_title} helperText={this.state.warning_text}>
+                                <Bp.InputGroup inputRef={this._refHandler}
+                                               onChange={this._changeHandler}
+                                               value={this.state.current_value}/>
+                        </Bp.FormGroup>
+                        {(checkbox_items.length != 0) && checkbox_items}
                     </div>
-                </div>
+                    <div className={Bp.Classes.DIALOG_FOOTER}>
+                        <div className={Bp.Classes.DIALOG_FOOTER_ACTIONS}>
+                            <Bp.Button onClick={this._cancelHandler}>Cancel</Bp.Button>
+                            <Bp.Button intent={Bp.Intent.PRIMARY} onClick={this._submitHandler}>Submit</Bp.Button>
+                        </div>
+                    </div>
+                </form>
             </Bp.Dialog>
         )
     }
@@ -123,8 +135,7 @@ ModalDialog.defaultProps = {
     checkboxes: null
 };
 
-function showModalReact(modal_title, field_title, submit_function, default_value, existing_names, checkboxes=null) {
-
+function showModalReact(modal_title, field_title, submit_function, default_value, existing_names, checkboxes=null, cancel_function=null) {
 
     if (typeof existing_names == "undefined") {
         existing_names = []
@@ -136,6 +147,7 @@ function showModalReact(modal_title, field_title, submit_function, default_value
         ReactDOM.unmountComponentAtNode(domContainer)
     }
     ReactDOM.render(<ModalDialog handleSubmit={submit_function}
+                                 handleCancel={cancel_function}
                                  handleClose={handle_close}
                                  title={modal_title}
                                  field_title={field_title}
@@ -199,6 +211,7 @@ class SelectDialog extends React.Component {
 SelectDialog.propTypes = {
     handleSubmit: PropTypes.func,
     handleClose: PropTypes.func,
+    handleCancel: PropTypes.func,
     title: PropTypes.string,
     select_label: PropTypes.string,
     option_list: PropTypes.array,

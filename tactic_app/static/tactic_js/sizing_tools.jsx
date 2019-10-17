@@ -11,6 +11,7 @@ function getUsableDimensions() {
     return {
         "usable_width": window.innerWidth - 2 * SIDE_MARGIN,
         "usable_height": window.innerHeight - BOTTOM_MARGIN - USUAL_TOOLBAR_HEIGHT,
+        usable_height_no_bottom: window.innerHeight - USUAL_TOOLBAR_HEIGHT,
         body_height: window.innerHeight - BOTTOM_MARGIN
     }
 }

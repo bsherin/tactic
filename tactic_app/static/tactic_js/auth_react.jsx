@@ -20,7 +20,12 @@ class LoginApp extends React.Component {
             password: null,
             username_warning_text: "",
             password_warning_text: "",
-        }
+        };
+        this.input_ref = null
+    }
+
+    componentDidMount() {
+        $(this.input_ref).focus()
     }
 
     _onUsernameChange(event) {
@@ -60,6 +65,10 @@ class LoginApp extends React.Component {
         }
     }
 
+    _refHandler(the_ref) {
+        this.input_ref = the_ref;
+    }
+
     render () {
 
         return (
@@ -86,6 +95,9 @@ class LoginApp extends React.Component {
                                            large={true}
                                            fill={false}
                                            placeholder="Username"
+                                           autoCapitalize="none"
+                                           autoCorrect="off"
+                                           inputRef={this._refHandler}
                                            />
                         </Bp.FormGroup>
                         <Bp.FormGroup className="d-flex flex-row justify-content-around"
@@ -96,6 +108,8 @@ class LoginApp extends React.Component {
                                            large={true}
                                            fill={false}
                                            placeholder="Password"
+                                           autoCapitalize="none"
+                                           autoCorrect="off"
                            />
                         </Bp.FormGroup>
                          <div className="d-flex flex-row justify-content-around">

@@ -1321,7 +1321,7 @@ class ConsoleTasksMixin:
 class DataSupportTasksMixin:
 
     def grab_chunk(self, doc_name, row_index):
-        chunk_number = int(row_index / CHUNK_SIZE)
+        chunk_number = int(int(row_index) / CHUNK_SIZE)
         chunk_start = chunk_number * CHUNK_SIZE
         data_to_send = self.doc_dict[doc_name].sorted_data_rows[chunk_start:chunk_start + CHUNK_SIZE]
         data_row_dict = {}
