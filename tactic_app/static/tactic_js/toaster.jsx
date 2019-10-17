@@ -43,6 +43,7 @@ function withStatus(WrappedComponent, tsocket=null) {
             this.state = {
                 show_spinner: false,
                 status_message: null,
+                dark_spinner: false,
                 spinner_size: this.props.spinner_size ? this.props.spinner_size : 25
             }
         }
@@ -60,8 +61,8 @@ function withStatus(WrappedComponent, tsocket=null) {
             this.setState({show_spinner: false})
         }
 
-        _startSpinner() {
-            this.setState({show_spinner: true})
+        _startSpinner(dark_spinner=false) {
+            this.setState({show_spinner: true, dark_spinner: dark_spinner})
         }
 
         _clearStatusMessage() {
@@ -126,12 +127,13 @@ function withStatus(WrappedComponent, tsocket=null) {
 class Status extends React.Component {
 
     render () {
+        let cname = this.props.dark_spinner ? "bp3-dark" : "";
         return (
-            <div className="d-flex flex-row" style={{position: "absolute", bottom: 10, marginLeft: 10}}>
+            <div className="d-flex flex-row" style={{position: "absolute", bottom: 10, marginLeft: 15}}>
                 {this.props.show_spinner &&
-                    <Bp.Spinner size={20} />}
+                    <Bp.Spinner className="bp3-dark" size={20} />}
                 {this.props.status_message &&
-                    <div className="d-flex flex-column justify-content-around" style={{marginLeft: 10}}>
+                    <div className="d-flex flex-column justify-content-around" style={{positoin: "absolute", marginLeft: 50}}>
                         <div id="status-msg-area" className="bp3-ui-text">{this.props.status_message}</div>
                     </div>
                 }

@@ -127,13 +127,14 @@ class FileAdderButton extends React.Component {
 
      render() {
          let style = {flexDirection: "column", fontSize: 8, marginRight: 4, width: 42, height: 42};
-         let file_input_style = {width: 200, fontSize: 12};
+         let file_input_style = {width: 200, fontSize: 12, marginBottom: 0};
          return (
              <React.Fragment>
+                 <Bp.ControlGroup>
              <Bp.Button text={this.props.name_text}
                        icon={this.props.icon_name}
-                       style={style}
-                       large={true}
+                       // style={style}
+                       large={false}
                        onClick={this._do_submit}
                        className="bp-toolbar-button"
                 />
@@ -143,6 +144,7 @@ class FileAdderButton extends React.Component {
                                hasSelection={this.state.hasSelection}
                                onInputChange={this._handleFileChange}
                                inputProps={{multiple: this.props.multiple}}/>
+                 </Bp.ControlGroup>
 
             </React.Fragment>
 
@@ -167,6 +169,10 @@ FileAdderButton.defaultProps = {
 
 
 class Toolbar extends React.Component {
+    constructor(props) {
+        super(props);
+        this.tb_ref = React.createRef()
+    }
 
     get_button_class(but) {
         if (but.button_class == undefined) {
@@ -174,6 +180,18 @@ class Toolbar extends React.Component {
         }
         else {
             return but.button_class
+        }
+    }
+
+    componentDidMount(){
+        if (this.props.sendRef) {
+            this.props.sendRef(this.tb_ref)
+        }
+    }
+
+    componentDidUpdate(){
+        if (this.props.sendRef) {
+            this.props.sendRef(this.tb_ref)
         }
     }
 
@@ -237,7 +255,7 @@ class Toolbar extends React.Component {
         }
         return (
             <div style={outer_style} >
-                <div >
+                <div ref={this.tb_ref}>
                 {items}
                 </div>
             </div>
@@ -249,13 +267,15 @@ Toolbar.propTypes = {
     button_groups: PropTypes.array,
     file_adders: PropTypes.array,
     popup_buttons: PropTypes.array,
-    alternate_outer_style: PropTypes.object
+    alternate_outer_style: PropTypes.object,
+    inputRef: PropTypes.func,
 };
 
 Toolbar.defaultProps = {
     file_adders: null,
     popup_buttons: null,
-    alternate_outer_style: null
+    alternate_outer_style: null,
+    sendRef: null
 };
 
 class Namebutton extends React.Component {

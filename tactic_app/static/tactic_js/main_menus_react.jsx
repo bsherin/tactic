@@ -18,16 +18,16 @@ class MenuComponent extends React.Component {
     render () {
         let pruned_list = Object.keys(this.props.option_dict).filter(this._filter_on_match_list);
         let choices = pruned_list.map((opt_name, index) => {
-            let icon = this.props.icon_dict.hasOwnProperty(opt_name) ? this.props.icon_dict[opt_name] : null;
-            return (
-                <Bp.MenuItem disabled={this.props.disable_all || this.props.disabled_items.includes(opt_name)}
-                             onClick={this.props.option_dict[opt_name]}
-                             icon={icon}
-                             key={opt_name}
-                             text={opt_name}
-                >
-                </Bp.MenuItem>
-            )
+                let icon = this.props.icon_dict.hasOwnProperty(opt_name) ? this.props.icon_dict[opt_name] : null;
+                return (
+                    <Bp.MenuItem disabled={this.props.disable_all || this.props.disabled_items.includes(opt_name)}
+                                 onClick={this.props.option_dict[opt_name]}
+                                 icon={icon}
+                                 key={opt_name}
+                                 text={opt_name}
+                    >
+                    </Bp.MenuItem>
+                )
             }
         );
         let the_menu = (
@@ -35,11 +35,18 @@ class MenuComponent extends React.Component {
                 {choices}
             </Bp.Menu>
         );
-        return (
-            <Bp.Popover minimal={true} content={the_menu} position={Bp.PopoverPosition.BOTTOM_LEFT}>
+        if (this.props.alt_button) {
+            let AltButton = this.props.alt_button;
+            return (<Bp.Popover minimal={true} content={the_menu} position={Bp.PopoverPosition.BOTTOM_LEFT}>
+                <AltButton/>
+            </Bp.Popover>)
+        } else {
+            return (
+                <Bp.Popover minimal={true} content={the_menu} position={Bp.PopoverPosition.BOTTOM_LEFT}>
                     <Bp.Button text={this.props.menu_name} small={true} minimal={true}/>
-            </Bp.Popover>
-        )
+                </Bp.Popover>
+            )
+        }
     }
 }
 
@@ -50,13 +57,15 @@ MenuComponent.propTypes = {
     disabled_items: PropTypes.array,
     disable_all: PropTypes.bool,
     hidden_items: PropTypes.array,
+    alt_button: PropTypes.func
 };
 
 MenuComponent.defaultProps = {
     disabled_items: [],
     disable_all: false,
     hidden_items: [],
-    icon_dict: {}
+    icon_dict: {},
+    alt_button: null
 };
 
 class ProjectMenu extends React.Component {
@@ -71,9 +80,12 @@ class ProjectMenu extends React.Component {
         postWithCallback("host", "get_project_names", {"user_id": window.user_id}, function (data) {
             let checkboxes;
             showModalReact("Save Project As", "New Project Name", CreateNewProject,
-                      "NewProject", data["project_names"])
+                      "NewProject", data["project_names"], null, doCancel)
         });
 
+        function doCancel() {
+            self.props.stopSpinner()
+        }
         function CreateNewProject (new_name) {
             //let console_node = cleanse_bokeh(document.getElementById("console"));
             const result_dict = {
@@ -84,8 +96,14 @@ class ProjectMenu extends React.Component {
             };
 
             result_dict.interface_state = self.props.interface_state;
-            result_dict["purgetiles"] = true;
-            postWithCallback(window.main_id, "save_new_project", result_dict, save_as_success);
+            if (window.is_notebook) {
+                postWithCallback(window.main_id, "save_new_notebook_project", result_dict, save_as_success);
+            }
+            else {
+                result_dict["purgetiles"] = true;
+                postWithCallback(window.main_id, "save_new_project", result_dict, save_as_success);
+            }
+
 
             function save_as_success(data_object) {
                 if (data_object["success"]) {

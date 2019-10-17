@@ -7,6 +7,14 @@ import {postAjaxPromise} from "./communication_react.js"
 var Bp = blueprint;
 var Bps = bpselect;
 
+let icon_dict = {
+    collection: "database",
+    project: "projects",
+    tile: "application",
+    list: "numbered-list",
+    code: "code"
+};
+
 class SuggestionItem extends React.Component{
     constructor(props) {
         super(props);
@@ -306,7 +314,7 @@ class CombinedMetadata extends React.Component {
         return (
             <Bp.Card elevation={this.props.elevation} className="combined-metadata" style={this.props.outer_style}>
                 {this.props.name != null &&
-                    <h5>{this.props.name}</h5>
+                    <h6 style={{color: "#106ba3"}}><Bp.Icon icon={icon_dict[this.props.res_type]} style={{marginRight: 4}}/>{this.props.name}</h6>
                 }
 
                     <Bp.FormGroup label="Tags">
@@ -357,7 +365,7 @@ CombinedMetadata.propTypes = {
     category: PropTypes.string,
     handleChange: PropTypes.func,
     handleNotesBlur: PropTypes.func,
-    additional_metadata: PropTypes.object
+    additional_metadata: PropTypes.object,
 };
 
 CombinedMetadata.defaultProps = {

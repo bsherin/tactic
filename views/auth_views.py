@@ -18,7 +18,7 @@ from wtforms.validators import ValidationError
 from tactic_app import ANYONE_CAN_REGISTER
 import tactic_app
 
-from tactic_app.js_source_management import _develop
+from tactic_app.js_source_management import js_source_dict, _develop
 
 admin_user = User.get_user_by_username("admin")
 
@@ -110,15 +110,15 @@ def logout(page_id):
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if ANYONE_CAN_REGISTER or (current_user.username == "admin"):
-        return render_template('auth/register.html', version_string=tstring)
+        return render_template('auth/register_react.html', module_source=js_source_dict["register_react"], version_string=tstring)
     else:
         return render_template
 
 
-@app.route('/user_duplicate', methods=['GET', 'POST'])
-def user_duplicate():
+@app.route('/user_duplicate/<old_username>', methods=['GET', 'POST'])
+def user_duplicate(old_username):
     if ANYONE_CAN_REGISTER or (current_user.username == "admin"):
-        return render_template('auth/duplicate_user.html', version_string=tstring)
+        return render_template('auth/duplicate_user_react.html', module_source=js_source_dict["duplicate_user_react"], old_username=old_username, version_string=tstring)
     else:
         return render_template
 
@@ -166,7 +166,7 @@ def attempt_duplicate():
 @app.route('/account_info', methods=['GET', 'POST'])
 @fresh_login_required
 def account_info():
-    return render_template('auth/account_react.html', version_string=tstring)
+    return render_template('account_react.html', module_source=js_source_dict["account_react"], version_string=tstring)
 
 
 @app.route('/get_account_info', methods=['GET', 'POST'])
@@ -192,22 +192,4 @@ def csrf_error(reason):
     return render_template('auth/login_react.html', show_message="yes", message=reason), 400
 
 
-class LoginForm(Form):
-    username = StringField('Username', validators=[Required(), Length(1, 64)])
-    password = PasswordField('Password', validators=[Required()])
-    remember_me = BooleanField('Keep me logged in')
-    submit = SubmitField('Log In')
 
-
-class RegistrationForm(Form):
-    username = StringField('Username',
-                           validators=[Required(), Length(1, 64),
-                                       Regexp('^[A-Za-z][A-Za-z0-9_.]*$', 0,
-                                              'Usernames must have only letters, numbers, dots or underscores')])
-    password = PasswordField('Password', validators=[Required(), EqualTo('password2', message='Passwords must match.')])
-    password2 = PasswordField('Confirm password', validators=[Required()])
-    submit = SubmitField('Register')
-
-    def validate_username(self, field):
-        if User.get_user_by_username(field.data):
-            raise ValidationError('Username already in use.')

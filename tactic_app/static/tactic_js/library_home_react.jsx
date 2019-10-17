@@ -12,7 +12,7 @@ let Bpt = bptable;
 
 import {LibraryPane} from "./library_pane.js"
 import {LoadedTileList} from "./library_widgets.js";
-import {SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT, BOTTOM_MARGIN, getUsableDimensions} from "./sizing_tools.js";
+import {SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT, getUsableDimensions} from "./sizing_tools.js";
 import {withStatus} from "./toaster.js";
 import {withErrorDrawer} from "./error_drawer.js";
 import {KeyTrap} from "./key_trap.js";
@@ -53,7 +53,7 @@ class LibraryHomeApp extends React.Component {
 
     constructor(props) {
         super(props);
-        let aheight = getUsableDimensions().usable_height;
+        let aheight = getUsableDimensions().usable_height_no_bottom;
         let awidth = getUsableDimensions().usable_width - 170;
         this.state = {
             selected_tab_id: "collections-pane",
@@ -103,7 +103,7 @@ class LibraryHomeApp extends React.Component {
 
     _update_window_dimensions() {
         let uwidth = window.innerWidth - 2 * SIDE_MARGIN;
-        let uheight = window.innerHeight - BOTTOM_MARGIN;
+        let uheight = window.innerHeight;
         if (this.top_ref && this.top_ref.current) {
             uheight = uheight - this.top_ref.current.offsetTop;
         }
@@ -126,6 +126,18 @@ class LibraryHomeApp extends React.Component {
             tabIndex = 0
         }
         this.setState({selected_tab_id: tab_panes[tabIndex]})
+    }
+
+    _goToPreviousPane() {
+        let tabIndex = tab_panes.indexOf(this.state.selected_tab_id) - 1;
+        if (tabIndex == -1) {
+            tabIndex = tab_panes.length - 1
+        }
+        this.setState({selected_tab_id: tab_panes[tabIndex]})
+    }
+
+    getIconColor(paneId) {
+        return paneId == this.state.selected_tab_id ? "white" : "#CED9E0"
     }
 
     render () {
@@ -187,16 +199,16 @@ class LibraryHomeApp extends React.Component {
                                 search_inside_view="search_inside_code"
                                 search_metadata_view = "search_code_metadata"
                                 ToolbarClass={CodeToolbar}
-                                      {...this.props.errorDrawerFuncs}
+                               {...this.props.errorDrawerFuncs}
                                 updatePaneState={this._updatePaneState}
                                 {...this.state.pane_states["code"]}
                                 tsocket={tsocket}/>
         );
         let outer_style = {width: this.state.usable_width,
             height: this.state.usable_height,
-            paddingLeft: SIDE_MARGIN
+            paddingLeft: 0
         };
-        let key_bindings = [[["tab"], this._goToNextPane]];
+        let key_bindings = [[["tab"], this._goToNextPane], [["shift+tab"], this._goToPreviousPane]];
         return (
             <ViewerContext.Provider value={{readOnly: false}}>
                 <div className="pane-holder" ref={this.top_ref} style={outer_style}>
@@ -205,19 +217,29 @@ class LibraryHomeApp extends React.Component {
                              renderActiveTabPanelOnly={true}
                              vertical={true} large={true} onChange={this._handleTabChange}>
                         <Bp.Tab id="collections-pane" panel={collection_pane}>
-                            <Bp.Icon icon="box"/>  Collections
+                            <Bp.Tooltip content="Collections" position={Bp.Position.RIGHT}>
+                                <Bp.Icon icon="database" iconSize={20} tabIndex={-1} color={this.getIconColor("collections-pane")}/>
+                            </Bp.Tooltip>
                         </Bp.Tab>
                         <Bp.Tab id="projects-pane" panel={projects_pane}>
-                            <Bp.Icon icon="projects"/>  Projects
+                            <Bp.Tooltip content="Projects" position={Bp.Position.RIGHT}>
+                                <Bp.Icon icon="projects" iconSize={20} tabIndex={-1} color={this.getIconColor("projects-pane")}/>
+                            </Bp.Tooltip>
                         </Bp.Tab>
                         <Bp.Tab id="tiles-pane" panel={tiles_pane}>
-                            <Bp.Icon icon="application"/>  Tiles
+                            <Bp.Tooltip content="Tiles" position={Bp.Position.RIGHT}>
+                                <Bp.Icon icon="application" iconSize={20} tabIndex={-1} color={this.getIconColor("tiles-pane")}/>
+                            </Bp.Tooltip>
                         </Bp.Tab>
                         <Bp.Tab id="lists-pane" panel={lists_pane}>
-                            <Bp.Icon icon="numbered-list"/>  Lists
+                            <Bp.Tooltip content="Lists" position={Bp.Position.RIGHT}>
+                                <Bp.Icon icon="numbered-list" iconSize={20} tabIndex={-1} color={this.getIconColor("lists-pane")}/>
+                            </Bp.Tooltip>
                         </Bp.Tab>
                         <Bp.Tab id="code-pane" panel={code_pane}>
-                            <Bp.Icon icon="code"/>  Code
+                            <Bp.Tooltip content="Code" position={Bp.Position.RIGHT}>
+                                <Bp.Icon icon="code" iconSize={20} tabIndex={-1} color={this.getIconColor("code-pane")}/>
+                            </Bp.Tooltip>
                         </Bp.Tab>
                     </Bp.Tabs>
                 </div>
@@ -290,7 +312,7 @@ class LibraryToolbar extends React.Component {
                 display: "flex",
                 flexDirection: "row",
                 position: "relative",
-                left: 175,
+                left: this.props.left_position,
                 marginBottom: 10
         };
 
@@ -298,6 +320,7 @@ class LibraryToolbar extends React.Component {
        return <Toolbar button_groups={this.prepare_button_groups()}
                        file_adders={this.prepare_file_adders()}
                        alternate_outer_style={outer_style}
+                       sendRef={this.props.sendRef}
                        popup_buttons={popup_buttons}
        />
     }
@@ -308,11 +331,14 @@ LibraryToolbar.propTypes = {
     file_adders: PropTypes.array,
     popup_buttons: PropTypes.array,
     multi_select: PropTypes.bool,
+    left_position: PropTypes.number,
+    sendRef: PropTypes.func
 };
 
 LibraryToolbar.defaultProps = {
     file_adders: null,
-    popup_buttons: null
+    popup_buttons: null,
+    left_position: 175
 };
 
 let specializedToolbarPropTypes = {
@@ -349,7 +375,7 @@ class CollectionToolbar extends React.Component {
         let self = this;
         if (!this.props.multi_select) {
             showModalReact("Name of collection to combine with " + this.props.selected_resource.name, "collection Name", function (other_name) {
-                self.props.startSpinner();
+                self.props.startSpinner(true);
                 const target = `${$SCRIPT_ROOT}/combine_collections/${res_names[0]}/${other_name}`;
                 $.post(target, (data)=>{
                     self.props.stopSpinner();
@@ -372,7 +398,7 @@ class CollectionToolbar extends React.Component {
             postAjaxPromise("combine_to_new_collection",
                 {"original_collections": self.props.list_of_selected, "new_name": new_name})
                 .then((data) => {
-                    self.props.animation_phase(() => {self.props.add_new_row(data.new_row)})
+                    self.props.add_new_row(data.new_row)
                 })
                 .catch((data)=>{self.props.addErrorDrawerEntry({title: "Error combining collections", content: data.message})})
         }
@@ -418,7 +444,7 @@ class CollectionToolbar extends React.Component {
             }
         );
         function CreateNewCollection(new_name, check_results) {
-            self.props.startSpinner();
+            self.props.startSpinner(true);
             let url_base;
             if (check_results["import_as_freeform"]) {
                 url_base = "import_as_freeform"
@@ -430,7 +456,7 @@ class CollectionToolbar extends React.Component {
                 .then((data) => {
                         self.props.clearStatusMessage();
                         self.displayImportResults(data);
-                        self.props.animation_phase(() => {self.props.add_new_row(data.new_row)});
+                        self.props.add_new_row(data.new_row);
                         self.props.stopSpinner();
                 })
                 .catch((data)=>{self.props.addErrorDrawerEntry({title: "Error importing documents", content: data.message})});
@@ -452,13 +478,15 @@ class CollectionToolbar extends React.Component {
 
      get file_adders() {
          return[
-             ["import", this._import_collection, "cloud-upload", true]
+             [null, this._import_collection, "cloud-upload", true]
          ]
      }
 
      render () {
         return <LibraryToolbar button_groups={this.button_groups}
                                file_adders={this.file_adders}
+                               left_position={this.props.left_position}
+                               sendRef={this.props.sendRef}
                                multi_select={this.props.multi_select} />
      }
 }
@@ -498,11 +526,11 @@ class ProjectToolbar extends React.Component {
             }
         );
         function CreateNewJupyter(new_name, check_results) {
-            self.props.startSpinner();
+            self.props.startSpinner(true);
             postAjaxUploadPromise(`import_as_jupyter/${new_name}/${library_id}`, the_data)
                 .then((data) => {
                         self.props.clearStatusMessage();
-                        self.props.animation_phase(() => {self.props.add_new_row(data.new_row)});
+                        self.props.add_new_row(data.new_row);
                         self.props.stopSpinner();
                 })
                 .catch((data)=>{self.props.addErrorDrawerEntry({title: "Error importing jupyter notebook", content: data.message})});
@@ -529,13 +557,15 @@ class ProjectToolbar extends React.Component {
 
     get file_adders() {
          return[
-             ["import", this._import_jupyter, "cloud-upload", false]
+             [null, this._import_jupyter, "cloud-upload", false]
          ]
      }
 
      render () {
         return <LibraryToolbar button_groups={this.button_groups}
                                file_adders={this.file_adders}
+                               left_position={this.props.left_position}
+                               sendRef={this.props.sendRef}
                                multi_select={this.props.multi_select} />
      }
 
@@ -612,7 +642,7 @@ class TileToolbar extends React.Component {
             };
             postAjaxPromise("/create_tile_module", result_dict)
                 .then((data) => {
-                    self.props.animation_phase(() => {self.props.add_new_row(data.new_row)});
+                    self.props.add_new_row(data.new_row);
                     window.open($SCRIPT_ROOT + "/view_module/" + String(new_name))
                 })
                 .catch((data)=>{self.props.addErrorDrawerEntry({title: "Error creating new tile", content: data.message})})
@@ -633,7 +663,7 @@ class TileToolbar extends React.Component {
             };
             postAjaxPromise("/create_tile_module", result_dict)
                 .then((data) => {
-                    self.props.animation_phase(() => {self.props.add_new_row(data.new_row)});
+                    self.props.add_new_row(data.new_row);
                     window.open($SCRIPT_ROOT + "/view_in_creator/" + String(new_name))
                 })
                 .catch((data)=>{self.props.addErrorDrawerEntry({title: "Error creating new tile", content: data.message})})
@@ -674,6 +704,8 @@ class TileToolbar extends React.Component {
      render () {
         return <LibraryToolbar button_groups={this.button_groups}
                                popup_buttons={this.popup_buttons}
+                               left_position={this.props.left_position}
+                               sendRef={this.props.sendRef}
                                multi_select={this.props.multi_select} />
      }
 }
@@ -702,7 +734,7 @@ class ListToolbar extends React.Component {
         let self = this;
         postAjaxUploadPromise("add_list", the_data)
             .then((data) => {
-                    self.props.animation_phase(() => {self.props.add_new_row(data.new_row)})
+                    self.props.add_new_row(data.new_row)
             })
             .catch((data)=>{self.props.addErrorDrawerEntry({title: "Error creating new list", content: data.message})});
     }
@@ -721,13 +753,15 @@ class ListToolbar extends React.Component {
 
      get file_adders() {
          return[
-             ["import", this._add_list, "cloud-upload", true]
+             [null, this._add_list, "cloud-upload", true]
          ]
      }
 
      render () {
         return <LibraryToolbar button_groups={this.button_groups}
                                popup_buttons={this.popup_buttons}
+                               left_position={this.props.left_position}
+                               sendRef={this.props.sendRef}
                                multi_select={this.props.multi_select} />
      }
 
@@ -756,7 +790,7 @@ class CodeToolbar extends React.Component {
             };
             postAjaxPromise("/create_code", result_dict)
                 .then((data) => {
-                    self.props.animation_phase(() => {self.props.add_new_row(data.new_row)});
+                    self.props.add_new_row(data.new_row);
                     window.open($SCRIPT_ROOT + "/view_code/" + String(new_name))
                 })
                 .catch((data)=>{self.props.addErrorDrawerEntry({title: "Error creating new code resource", content: data.message})})
@@ -794,6 +828,8 @@ class CodeToolbar extends React.Component {
      render () {
         return <LibraryToolbar button_groups={this.button_groups}
                                popup_buttons={this.popup_buttons}
+                               left_position={this.props.left_position}
+                               sendRef={this.props.sendRef}
                                multi_select={this.props.multi_select} />
      }
 

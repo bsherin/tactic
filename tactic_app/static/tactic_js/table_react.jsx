@@ -182,6 +182,8 @@ class MainTableCardHeader extends React.Component {
                                            placeholder="Search"
                                            value={!this.props.search_text ? "" : this.props.search_text}
                                            onChange={this._handleSearchFieldChange}
+                                           autoCapitalize="none"
+                                           autoCorrect="off"
                                            className="mr-2"/>
                            <Bp.ButtonGroup>
                                 {this.props.show_filter_button &&

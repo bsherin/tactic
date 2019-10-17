@@ -25,6 +25,7 @@ class BlueprintTable extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this);
+        this.mismatched_column_widths = false;
         this.table_ref = React.createRef();
     }
 
@@ -36,7 +37,7 @@ class BlueprintTable extends React.Component {
 
     componentDidUpdate() {
         // this.props.my_ref.current.scrollTop = this.props.scroll_top;
-        if (this.props.column_widths == null) {
+        if ((this.props.column_widths == null) || (this.mismatched_column_widths)) {
             this.computeColumnWidths()
         }
         this._updateRowHeights();
@@ -44,7 +45,9 @@ class BlueprintTable extends React.Component {
 
     computeColumnWidths() {
         let cwidths = compute_initial_column_widths(this.props.filtered_column_names, this.props.data_row_dict);
+        this.mismatched_column_widths = false;
         this.props.updateTableSpec({column_widths: cwidths}, true)
+
     }
 
     haveRowData(rowIndex) {
@@ -218,7 +221,8 @@ class BlueprintTable extends React.Component {
         });
         let cwidths = this.props.column_widths == null ? null : this.props.column_widths;
         if ((cwidths != null) && (cwidths.length != this.props.filtered_column_names.length)) {
-            cwidths = null
+            cwidths = null;
+            this.mismatched_column_widths = true
         }
         let style = {display: "block",
             overflowY: "auto",

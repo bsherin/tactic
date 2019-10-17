@@ -143,6 +143,7 @@ class CreatorApp extends React.Component {
             category: this.props.category,
             total_height: window.innerHeight,
             usable_width: awidth,
+            old_usable_width: 0,
             usable_height: aheight,
             body_height: bheight,
             top_pane_height: this.props.is_mpl || this.props.is_d3 ? aheight / 2 - 25 : null,
@@ -163,7 +164,7 @@ class CreatorApp extends React.Component {
         this.handleExportsChange = this.handleExportsChange.bind(this);
         this.handleMethodsChange = this.handleMethodsChange.bind(this);
         this.handleLeftPaneResize = this.handleLeftPaneResize.bind(this);
-        this.handleTopPaneResize = this.handleTopPaneResize.bind(this)
+        this.handleTopPaneResize = this.handleTopPaneResize.bind(this);
     }
 
     update_saved_state() {
@@ -393,7 +394,7 @@ class CreatorApp extends React.Component {
             if (offset < min_offset) {
                 offset = min_offset
             }
-            return this.state.body_height - min_offset
+            return this.state.body_height - offset
         }
         else {
             return this.state.body_height - default_offset
@@ -449,7 +450,8 @@ class CreatorApp extends React.Component {
     _handleResize(entries) {
         for (let entry of entries) {
             if (entry.target.id == "creator-root") {
-                this.setState({usable_width: entry.contentRect.width,
+                // Must used window.innerWidth here otherwise we get the wrong value during initial mounting
+                this.setState({usable_width: window.innerWidth - 2 * SIDE_MARGIN,
                     usable_height: entry.contentRect.height - BOTTOM_MARGIN - entry.target.getBoundingClientRect().top,
                     body_height: entry.contentRect.height - BOTTOM_MARGIN
                 });

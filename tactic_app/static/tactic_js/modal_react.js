@@ -65,7 +65,14 @@ class ModalDialog extends React.Component {
 
     _cancelHandler() {
         this.setState({ "show": false });
+        if (this.props.handleCancel) {
+            this.props.handleCancel();
+        }
         this.props.handleClose();
+    }
+
+    _refHandler(the_ref) {
+        this.input_ref = the_ref;
     }
 
     render() {
@@ -86,32 +93,41 @@ class ModalDialog extends React.Component {
             { isOpen: this.state.show,
                 title: this.props.title,
                 onClose: this._cancelHandler,
+                onOpened: () => {
+                    $(this.input_ref).focus();
+                },
                 canEscapeKeyClose: true },
             React.createElement(
-                "div",
-                { className: Bp.Classes.DIALOG_BODY },
-                React.createElement(
-                    Bp.FormGroup,
-                    { label: this.props.field_title, helperText: this.state.warning_text },
-                    React.createElement(Bp.InputGroup, { onChange: this._changeHandler, value: this.state.current_value })
-                ),
-                checkbox_items.length != 0 && checkbox_items
-            ),
-            React.createElement(
-                "div",
-                { className: Bp.Classes.DIALOG_FOOTER },
+                "form",
+                { onSubmit: this._submitHandler },
                 React.createElement(
                     "div",
-                    { className: Bp.Classes.DIALOG_FOOTER_ACTIONS },
+                    { className: Bp.Classes.DIALOG_BODY },
                     React.createElement(
-                        Bp.Button,
-                        { onClick: this._cancelHandler },
-                        "Cancel"
+                        Bp.FormGroup,
+                        { label: this.props.field_title, helperText: this.state.warning_text },
+                        React.createElement(Bp.InputGroup, { inputRef: this._refHandler,
+                            onChange: this._changeHandler,
+                            value: this.state.current_value })
                     ),
+                    checkbox_items.length != 0 && checkbox_items
+                ),
+                React.createElement(
+                    "div",
+                    { className: Bp.Classes.DIALOG_FOOTER },
                     React.createElement(
-                        Bp.Button,
-                        { intent: Bp.Intent.PRIMARY, onClick: this._submitHandler },
-                        "Submit"
+                        "div",
+                        { className: Bp.Classes.DIALOG_FOOTER_ACTIONS },
+                        React.createElement(
+                            Bp.Button,
+                            { onClick: this._cancelHandler },
+                            "Cancel"
+                        ),
+                        React.createElement(
+                            Bp.Button,
+                            { intent: Bp.Intent.PRIMARY, onClick: this._submitHandler },
+                            "Submit"
+                        )
                     )
                 )
             )
@@ -135,7 +151,7 @@ ModalDialog.defaultProps = {
     checkboxes: null
 };
 
-function showModalReact(modal_title, field_title, submit_function, default_value, existing_names, checkboxes = null) {
+function showModalReact(modal_title, field_title, submit_function, default_value, existing_names, checkboxes = null, cancel_function = null) {
 
     if (typeof existing_names == "undefined") {
         existing_names = [];
@@ -147,6 +163,7 @@ function showModalReact(modal_title, field_title, submit_function, default_value
         ReactDOM.unmountComponentAtNode(domContainer);
     }
     ReactDOM.render(React.createElement(ModalDialog, { handleSubmit: submit_function,
+        handleCancel: cancel_function,
         handleClose: handle_close,
         title: modal_title,
         field_title: field_title,
@@ -226,6 +243,7 @@ class SelectDialog extends React.Component {
 SelectDialog.propTypes = {
     handleSubmit: PropTypes.func,
     handleClose: PropTypes.func,
+    handleCancel: PropTypes.func,
     title: PropTypes.string,
     select_label: PropTypes.string,
     option_list: PropTypes.array,
