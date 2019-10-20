@@ -202,10 +202,12 @@ class ExportsViewer extends React.Component {
                          className="d-flex flex-row justify-content-start">
                          <GlyphButton handleClick={this._sendToConsole}
                                       intent="primary"
+                                      tooltip="Send code to the console"
                                       style={{marginLeft: 6}}
                                       icon="direction-left"/>
                          <GlyphButton handleClick={this._refresh}
                                       intent="success"
+                                      tooltip="Refresh the exports menu and info"
                                       style={{marginLeft: 0}}
                                       icon="refresh"/>
                           <Bp.Button onClick={this._eval}

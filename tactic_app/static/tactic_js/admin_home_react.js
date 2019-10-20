@@ -264,17 +264,17 @@ class ContainerToolbar extends React.Component {
     }
 
     _clear_user_func(event) {
-        this.props.startSpinner(true);
+        this.props.startSpinner();
         $.getJSON($SCRIPT_ROOT + '/clear_user_containers/' + window.library_id, this._doFlashStopSpinner);
     }
 
     _reset_server_func(event) {
-        this.props.startSpinner(true);
+        this.props.startSpinner();
         $.getJSON($SCRIPT_ROOT + '/reset_server/' + library_id, this._doFlashStopSpinner);
     }
 
     _destroy_container() {
-        this.props.startSpinner(true);
+        this.props.startSpinner();
         let cont_id = this.props.selected_resource.Id;
         let self = this;
         $.getJSON($SCRIPT_ROOT + '/kill_container/' + cont_id, data => {
@@ -302,7 +302,6 @@ ContainerToolbar.propTypes = {
     selected_resource: PropTypes.object,
     list_of_selected: PropTypes.array,
     setConsoleText: PropTypes.func,
-    animation_phase: PropTypes.func,
     delete_row: PropTypes.func,
     refresh_func: PropTypes.func
 
@@ -368,7 +367,6 @@ UserToolbar.propTypes = {
     selected_resource: PropTypes.object,
     list_of_selected: PropTypes.array,
     setConsoleText: PropTypes.func,
-    animation_phase: PropTypes.func,
     delete_row: PropTypes.func,
     refresh_func: PropTypes.func
 

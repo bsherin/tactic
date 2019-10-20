@@ -1,3 +1,5 @@
+import {KeyTrap} from "./key_trap.js";
+import {withTooltip} from "./blueprint_react_widgets.js";
 
 
 export {Toolbar, ToolbarButton, Namebutton, ResourceviewerToolbar}
@@ -35,34 +37,55 @@ class ToolbarButton extends React.Component {
     }
 
     render() {
-        let style = {flexDirection: "column", fontSize: 8, padding: "5px 8px", width: 42, height: 42};
-        return (
-            <Bp.Button text={this.props.name_text}
-                       icon={this.props.icon_name}
-                       // intent={this.props.intent == "regular" ? "primary" : this.props.intent}
-                       style={style}
-                       large={true}
-                       minimal={false}
-                       onClick={this.props.click_handler}
-                       className="bp-toolbar-button bp3-elevation-0"
-            />
-        )
+        if (this.props.show_text) {
+            let style = {flexDirection: "column", fontSize: 8, padding: "5px 8px", width: 42, height: 42};
+            return (
+                <Bp.Button
+                          text={this.props.name_text}
+                           icon={this.props.icon_name}
+                           // intent={this.props.intent == "regular" ? "primary" : this.props.intent}
+                           style={style}
+                           large={true}
+                           minimal={false}
+                           onClick={()=>this.props.click_handler()}
+                           className="bp-toolbar-button bp3-elevation-0"
+                />
+            )
+        }
+        else {
+            return (
+                <Bp.Button
+                           icon={this.props.icon_name}
+                           // intent={this.props.intent == "regular" ? "primary" : this.props.intent}
+                           large={false}
+                           minimal={false}
+                           onClick={()=>this.props.click_handler()}
+                           className="bp-toolbar-button bp3-elevation-0"
+                />
+            )
+        }
+
+
     }
 }
 
 ToolbarButton.propTypes = {
+    show_text: PropTypes.bool,
     icon_name: PropTypes.string,
     click_handler: PropTypes.func,
     button_class: PropTypes.string,
     name_text: PropTypes.string,
     small_size: PropTypes.bool,
-    intent: PropTypes.string
+    intent: PropTypes.string,
 };
 
 ToolbarButton.defaultProps = {
     small_size: true,
-    intent: "regular"
+    intent: "regular",
+    show_text: false
 };
+
+ToolbarButton = withTooltip(ToolbarButton);
 
 class PopupButton extends React.Component {
     constructor(props) {
@@ -120,23 +143,22 @@ class FileAdderButton extends React.Component {
         this.setState({file_list: file_list, hasSelection: true, the_text: the_text})
     }
     
-    _do_submit(e) {
-        e.preventDefault();
+    _do_submit() {
         this.props.click_handler(this.state.file_list)
     }
 
      render() {
-         let style = {flexDirection: "column", fontSize: 8, marginRight: 4, width: 42, height: 42};
+         // let style = {flexDirection: "column", fontSize: 8, marginRight: 4, width: 42, height: 42};
          let file_input_style = {width: 200, fontSize: 12, marginBottom: 0};
          return (
              <React.Fragment>
                  <Bp.ControlGroup>
-             <Bp.Button text={this.props.name_text}
-                       icon={this.props.icon_name}
-                       // style={style}
-                       large={false}
-                       onClick={this._do_submit}
-                       className="bp-toolbar-button"
+             <ToolbarButton name_text={this.props.name_text}
+                            icon_name={this.props.icon_name}
+                            // style={style}
+                            large={false}
+                            click_handler={this._do_submit}
+                            tooltip={this.props.tooltip}
                 />
                  <Bp.FileInput large={false}
                                text={this.state.the_text}
@@ -159,12 +181,14 @@ FileAdderButton.propTypes = {
     name_text: PropTypes.string,
     multiple: PropTypes.bool,
     icon_name: PropTypes.string,
-    small_size: PropTypes.bool
+    small_size: PropTypes.bool,
+    tooltip: PropTypes.string
 };
 
 FileAdderButton.defaultProps = {
     small_size: true,
-    multiple: false
+    multiple: false,
+    tooltip: null
 };
 
 
@@ -195,6 +219,14 @@ class Toolbar extends React.Component {
         }
     }
 
+    getTooltip(item) {
+        return item.tooltip ? item.tooltip : null
+    }
+
+    getTooltipDelay(item) {
+        return item.tooltipDelay ? item.tooltipDelay : null
+    }
+
     render() {
         const items = [];
         var group_counter = 0;
@@ -214,17 +246,27 @@ class Toolbar extends React.Component {
             let group_items = group.map((button, index) =>
                 <ToolbarButton name_text={button.name_text}
                                icon_name={button.icon_name}
+                               tooltip={this.getTooltip(button)}
+                               tooltipDeleay={this.getTooltipDelay(button)}
                                click_handler={button.click_handler}
                                intent={button.hasOwnProperty("intent") ? button.intent : "regular"}
                                key={index}/>
             );
             items.push(
-                <Bp.ButtonGroup large={true} style={{justifyContent: "center"}} className="toolbar-button-group" role="group" key={group_counter}>
+                <Bp.ButtonGroup large={false} style={{justifyContent: "center"}} className="toolbar-button-group" role="group" key={group_counter}>
                     {group_items}
                 </Bp.ButtonGroup>
             );
             group_counter += 1
         }
+        let key_bindings = [];
+        for (let group of this.props.button_groups) {
+            for (let button of group) {
+                if (button.hasOwnProperty("key_bindings"))
+                    key_bindings.push([button.key_bindings, ()=>button.click_handler()])
+            }
+        }
+
         if ((this.props.file_adders != null) && (this.props.file_adders.length != 0)) {
             let file_adder_items = this.props.file_adders.map((button, index) =>
                 <FileAdderButton icon_name={button.icon_name}
@@ -232,6 +274,8 @@ class Toolbar extends React.Component {
                                  button_class={this.get_button_class(button)}
                                  name_text={button.name_text}
                                  multiple={button.multiple}
+                                 tooltip={this.getTooltip(button)}
+                                 tooltipDeleay={this.getTooltipDelay(button)}
                                  key={index}
                 />
             );
@@ -258,6 +302,7 @@ class Toolbar extends React.Component {
                 <div ref={this.tb_ref}>
                 {items}
                 </div>
+                <KeyTrap global={true} bindings={key_bindings} />
             </div>
         )
     }

@@ -212,7 +212,7 @@ class LibraryHomeApp extends React.Component {
         return (
             <ViewerContext.Provider value={{readOnly: false}}>
                 <div className="pane-holder" ref={this.top_ref} style={outer_style}>
-                    <Bp.Tabs id="the_container" style={{marginTop: 100}}
+                    <Bp.Tabs id="the_container" style={{marginTop: 100, height: "100%"}}
                              selectedTabId={this.state.selected_tab_id}
                              renderActiveTabPanelOnly={true}
                              vertical={true} large={true} onChange={this._handleTabChange}>
@@ -233,7 +233,7 @@ class LibraryHomeApp extends React.Component {
                         </Bp.Tab>
                         <Bp.Tab id="lists-pane" panel={lists_pane}>
                             <Bp.Tooltip content="Lists" position={Bp.Position.RIGHT}>
-                                <Bp.Icon icon="numbered-list" iconSize={20} tabIndex={-1} color={this.getIconColor("lists-pane")}/>
+                                <Bp.Icon icon="list" iconSize={20} tabIndex={-1} color={this.getIconColor("lists-pane")}/>
                             </Bp.Tooltip>
                         </Bp.Tab>
                         <Bp.Tab id="code-pane" panel={code_pane}>
@@ -251,6 +251,12 @@ class LibraryHomeApp extends React.Component {
 
 class LibraryToolbar extends React.Component {
 
+    componentDidMount() {
+        if (this.props.context_menu_items) {
+            this.props.sendContextMenuItems(this.props.context_menu_items)
+        }
+    }
+
     prepare_button_groups() {
         let new_bgs = [];
         let new_group;
@@ -265,6 +271,12 @@ class LibraryToolbar extends React.Component {
                         multi_select: button[3]};
                     if (button.length > 4) {
                         new_button.intent = button[4]
+                    }
+                    if (button.length > 5) {
+                        new_button.key_bindings = button[5]
+                    }
+                    if (button.length > 6) {
+                        new_button.tooltip = button[6]
                     }
                     new_group.push(new_button)
                 }
@@ -285,6 +297,9 @@ class LibraryToolbar extends React.Component {
                 click_handler: button[1],
                 icon_name: button[2],
                 multiple: button[3]};
+            if (button.length > 4) {
+                new_button.tooltip = button[4]
+            }
             file_adders.push(new_button)
         }
         return file_adders
@@ -327,6 +342,7 @@ class LibraryToolbar extends React.Component {
 }
 
 LibraryToolbar.propTypes = {
+    sendContextMenuItems: PropTypes.func,
     button_groups: PropTypes.array,
     file_adders: PropTypes.array,
     popup_buttons: PropTypes.array,
@@ -342,7 +358,9 @@ LibraryToolbar.defaultProps = {
 };
 
 let specializedToolbarPropTypes = {
+    sendContextMenuItems: PropTypes.func,
     view_func: PropTypes.func,
+    view_resource: PropTypes.func,
     duplicate_func: PropTypes.func,
     delete_func: PropTypes.func,
     rename_func: PropTypes.func,
@@ -351,8 +369,7 @@ let specializedToolbarPropTypes = {
     selected_resource: PropTypes.object,
     list_of_selected: PropTypes.array,
     muti_select: PropTypes.bool,
-    add_new_row: PropTypes.func,
-    animation_phase: PropTypes.func
+    add_new_row: PropTypes.func
 };
 
 class CollectionToolbar extends React.Component {
@@ -362,12 +379,12 @@ class CollectionToolbar extends React.Component {
         doBinding(this);
     }
 
-    _collection_duplicate() {
-        this.props.duplicate_func("/duplicate_collection")
+    _collection_duplicate(resource_name=null) {
+        this.props.duplicate_func("/duplicate_collection", resource_name)
     }
 
-    _collection_delete() {
-        this.props.delete_func("/delete_collection")
+    _collection_delete(resource_name=null) {
+        this.props.delete_func("/delete_collection", resource_name)
     }
 
     _combineCollections () {
@@ -404,8 +421,8 @@ class CollectionToolbar extends React.Component {
         }
     }
 
-    _downloadCollection () {
-        let res_name = this.props.selected_resource.name;
+    _downloadCollection (resource_name=null) {
+        let res_name = resource_name ? resource_name : this.props.selected_resource.name;
         showModalReact("Download Collection as Excel Notebook", "New File Name", function (new_name) {
             window.open(`${$SCRIPT_ROOT}/download_collection/` + res_name  + "/" + new_name)
         }, res_name + ".xlsx")
@@ -465,25 +482,39 @@ class CollectionToolbar extends React.Component {
 
     get button_groups() {
         return [
-            [["open", this.props.view_func, "document-open", false, "primary"]],
-            [["duplicate", this._collection_duplicate, "duplicate", false, "success"],
-             ["rename",  this.props.rename_func, "edit", false, "warning"],
-             ["combine", this._combineCollections, "merge-columns", true, "success"]],
-            [["download", this._downloadCollection, "cloud-download", false, "regular"],
-             ["share", this.props.send_repository_func, "share", false, "regular"]],
-            [["delete", this._collection_delete, "trash", true, "danger"]],
-            [["refresh", this.props.refresh_func, "refresh", false]]
+            [["open", this.props.view_func, "document-open", false, "primary", ["space", "return", "ctrl+o"], "View"]],
+            [["duplicate", this._collection_duplicate, "duplicate", false, "success", [], "Duplicate"],
+             ["rename",  this.props.rename_func, "edit", false, "warning", [], "Rename"],
+             ["combine", this._combineCollections, "merge-columns", true, "success", [], "Combine collections"]],
+            [["download", this._downloadCollection, "cloud-download", false, "regular", [], "Download collection"],
+             ["share", this.props.send_repository_func, "share", false, "regular", [], "Share to repository"]],
+            [["delete", this._collection_delete, "trash", true, "danger", [], "Delete"]],
+            [["refresh", this.props.refresh_func, "refresh", false, "regular", [], "Refresh list"]]
         ];
+     }
+
+     get context_menu_items() {
+        return [ {text: "open", icon: "document-open", onClick: this.props.view_resource},
+            {text: "__divider__"},
+            {text: "rename", icon: "edit", onClick: this.props.rename_func},
+            {text: "duplicate", icon: "duplicate", onClick: this._collection_duplicate},
+            {text: "__divider__"},
+            {text: "download", icon: "cloud-download", onClick: this._downloadCollection},
+            {text: "__divider__"},
+            {text: "delete", icon: "trash", onClick: this._collection_delete, intent: "danger"}
+        ]
      }
 
      get file_adders() {
          return[
-             [null, this._import_collection, "cloud-upload", true]
+             [null, this._import_collection, "cloud-upload", true, "Import collection"]
          ]
      }
 
      render () {
-        return <LibraryToolbar button_groups={this.button_groups}
+        return <LibraryToolbar sendContextMenuItems={this.props.sendContextMenuItems}
+                               context_menu_items={this.context_menu_items}
+                              button_groups={this.button_groups}
                                file_adders={this.file_adders}
                                left_position={this.props.left_position}
                                sendRef={this.props.sendRef}
@@ -500,8 +531,8 @@ class ProjectToolbar extends React.Component {
         doBinding(this);
     }
 
-    _project_duplicate() {
-        this.props.duplicate_func('/duplicate_project')
+    _project_duplicate(resource_name=null) {
+        this.props.duplicate_func('/duplicate_project', resource_name)
     }
 
     new_notebook () {
@@ -538,31 +569,43 @@ class ProjectToolbar extends React.Component {
     };
 
 
-    _project_delete() {
-        this.props.delete_func("/delete_project")
+    _project_delete(resource_name=null) {
+        this.props.delete_func("/delete_project", resource_name)
     }
+
+    get context_menu_items() {
+        return [ {text: "open", icon: "document-open", onClick: this.props.view_resource},
+            {text: "__divider__"},
+            {text: "rename", icon: "edit", onClick: this.props.rename_func},
+            {text: "duplicate", icon: "duplicate", onClick: this._project_duplicate},
+            {text: "__divider__"},
+            {text: "delete", icon: "trash", onClick: this._project_delete, intent: "danger"}
+        ]
+     }
 
     get button_groups() {
         return [
-            [["notebook", this.new_notebook,"book", false],
-                ["open", this.props.view_func, "document-open", false]],
-            [["duplicate", this._project_duplicate, "duplicate", false],
-             ["rename", this.props.rename_func, "edit", false]],
-            [["toJupyter", this._downloadJupyter, "cloud-download", false],
-             ["share", this.props.send_repository_func, "share", false]],
-            [["delete", this._project_delete, "trash", true]],
-            [["refresh", this.props.refresh_func, "refresh", false]]
+            [["notebook", this.new_notebook,"book", false, "regular", ["ctrl+n"], "New notebook"],
+                ["open", this.props.view_func, "document-open", false, "regular", ["space", "return", "ctrl+o"], "View"]],
+            [["duplicate", this._project_duplicate, "duplicate", false, "regular", [], "Duplicate"],
+             ["rename", this.props.rename_func, "edit", false, "regular", [], "Rename"]],
+            [["toJupyter", this._downloadJupyter, "cloud-download", false, "regular", [], "Download as Jupyter Notebook"],
+             ["share", this.props.send_repository_func, "share", false, "regular", [], "Share to repository"]],
+            [["delete", this._project_delete, "trash", true, "regular", [], "Delete"]],
+            [["refresh", this.props.refresh_func, "refresh", false, "regular", [], "Refresh list"]]
         ];
      }
 
     get file_adders() {
          return[
-             [null, this._import_jupyter, "cloud-upload", false]
+             [null, this._import_jupyter, "cloud-upload", false, "Import Jupyter notebook"]
          ]
      }
 
      render () {
-        return <LibraryToolbar button_groups={this.button_groups}
+        return <LibraryToolbar sendContextMenuItems={this.props.sendContextMenuItems}
+                               context_menu_items={this.context_menu_items}
+                                button_groups={this.button_groups}
                                file_adders={this.file_adders}
                                left_position={this.props.left_position}
                                sendRef={this.props.sendRef}
@@ -579,16 +622,24 @@ class TileToolbar extends React.Component {
         doBinding(this);
     }
 
-    _tile_view(e) {
-        this.props.view_func(e, "/view_module/")
+    _tile_view() {
+        this.props.view_func("/view_module/")
     }
 
-    _creator_view(e) {
-        this.props.view_func(e, "/view_in_creator/")
+    _view_named_tile(resource_name) {
+        this.props.view_resource(resource_name, "/view_module/")
     }
 
-    _tile_duplicate() {
-        this.props.duplicate_func('/create_duplicate_tile')
+    _creator_view_named_tile(resource_name) {
+        this.props.view_resource(resource_name, "/view_in_creator/")
+    }
+
+    _creator_view() {
+        this.props.view_func("/view_in_creator/")
+    }
+
+    _tile_duplicate(resource_name=null) {
+        this.props.duplicate_func('/create_duplicate_tile', resource_name)
     }
 
     _compare_tiles() {
@@ -606,10 +657,11 @@ class TileToolbar extends React.Component {
         }
     }
     
-    _load_tile() {
+    _load_tile(resource_name=null) {
         let self = this;
+        if (!resource_name) resource_name = this.props.list_of_selected[0];
         postWithCallbackNoMain("host", "load_tile_module_task",
-            {"tile_module_name": this.props.list_of_selected[0], "user_id": window.user_id},
+            {"tile_module_name": resource_name, "user_id": window.user_id},
             (data)=>{
             if (!data.success) {
                 self.props.addErrorDrawerEntry({title: "Error loading tile", content: data.message})
@@ -624,8 +676,8 @@ class TileToolbar extends React.Component {
         $.getJSON(`${$SCRIPT_ROOT}/unload_all_tiles`, doFlash)
     }
     
-    _tile_delete() {
-        this.props.delete_func("/delete_tile_module")
+    _tile_delete(resource_name=null) {
+        this.props.delete_func("/delete_tile_module", resource_name)
     }
 
     _new_tile (template_name) {
@@ -685,24 +737,39 @@ class TileToolbar extends React.Component {
         ]
     }
 
+    get context_menu_items() {
+        return [ {text: "edit", icon: "edit", onClick: this._view_named_tile},
+            {text: "edit in creator", icon: "annotation", onClick: this._creator_view_named_tile},
+            {text: "__divider__"},
+            {text: "load", icon: "upload", onClick: this._load_tile},
+            {text: "__divider__"},
+            {text: "rename", icon: "edit", onClick: this.props.rename_func},
+            {text: "duplicate", icon: "duplicate", onClick: this._tile_duplicate},
+            {text: "__divider__"},
+            {text: "delete", icon: "trash", onClick: this._tile_delete, intent: "danger"}
+        ]
+     }
+
     get button_groups() {
         return [
-            [["edit", this._tile_view, "edit", false],
-                ["creator", this._creator_view, "annotation", false],
-                ["compare", this._compare_tiles, "comparison", true],
-                ["load", this._load_tile, "upload", false],
-                ["unload", this._unload_all_tiles, "clean", false]],
-            [["duplicate", this._tile_duplicate, "duplicate", false],
-             ["rename", this.props.rename_func, "edit", false]],
-            [["share", this.props.send_repository_func, "share", false]],
-            [["delete", this._tile_delete, "trash", true]],
-            [["refresh", this.props.refresh_func, "refresh", false]],
-            [["drawer", this.props.toggleErrorDrawer, "console", false]]
+            [["edit", this._tile_view, "edit", false,"regular", [], "View in tile viewer"],
+             ["creator", this._creator_view, "annotation", false, "regular", ["space", "return", "ctrl+o"], "View in tile creator"],
+                ["compare", this._compare_tiles, "comparison", true, "regular", [], "Compare tiles"],
+                ["load", this._load_tile, "upload", false, "regular", [], "Load tile"],
+                ["unload", this._unload_all_tiles, "clean", false, "regular", [], "Unload all tiles"]],
+            [["duplicate", this._tile_duplicate, "duplicate", false, "regular", [], "Duplicate"],
+             ["rename", this.props.rename_func, "edit", false, "regular", [], "Rename"]],
+            [["share", this.props.send_repository_func, "share", false, "regular", [], "Share to repository"]],
+            [["delete", this._tile_delete, "trash", true, "regular", [], "Delete"]],
+            [["refresh", this.props.refresh_func, "refresh", false, "regular", [], "Refresh"]],
+            [["drawer", this.props.toggleErrorDrawer, "console", false, "regular", [], "Toggle Error Drawer"]]
         ];
      }
 
      render () {
-        return <LibraryToolbar button_groups={this.button_groups}
+        return <LibraryToolbar sendContextMenuItems={this.props.sendContextMenuItems}
+                               context_menu_items={this.context_menu_items}
+                               button_groups={this.button_groups}
                                popup_buttons={this.popup_buttons}
                                left_position={this.props.left_position}
                                sendRef={this.props.sendRef}
@@ -718,12 +785,12 @@ class ListToolbar extends React.Component {
         doBinding(this);
     }
 
-    _list_duplicate() {
-        this.props.duplicate_func('/create_duplicate_list')
+    _list_duplicate(resource_name=null) {
+        this.props.duplicate_func('/create_duplicate_list', resource_name)
     }
 
-    _list_delete() {
-        this.props.delete_func("/delete_list")
+    _list_delete(resource_name=null) {
+        this.props.delete_func("/delete_list", resource_name)
     }
 
     _add_list (file_list) {
@@ -739,26 +806,38 @@ class ListToolbar extends React.Component {
             .catch((data)=>{self.props.addErrorDrawerEntry({title: "Error creating new list", content: data.message})});
     }
 
+     get context_menu_items() {
+        return [ {text: "edit", icon: "document-open", onClick: this.props.view_resource},
+            {text: "__divider__"},
+            {text: "rename", icon: "edit", onClick: this.props.rename_func},
+            {text: "duplicate", icon: "duplicate", onClick: this._list_duplicate},
+            {text: "__divider__"},
+            {text: "delete", icon: "trash", onClick: this._list_delete, intent: "danger"}
+        ]
+     }
+
     get button_groups() {
         return [
-            [["edit", this.props.view_func, "document-open", false]],
-            [["duplicate", this._list_duplicate, "duplicate", false],
-             ["rename", this.props.rename_func, "edit", false]],
-            [["share", this.props.send_repository_func, "share", false]],
-            [["delete", this._list_delete, "trash", true]],
-            [["refresh", this.props.refresh_func, "refresh", false]]
+            [["edit", this.props.view_func, "document-open", false, "regular", ["space", "return", "ctrl+o"], "View"]],
+            [["duplicate", this._list_duplicate, "duplicate", false, "regular", [], "Duplicate"],
+             ["rename", this.props.rename_func, "edit", false, "regular", [], "Rename"]],
+            [["share", this.props.send_repository_func, "share", false, "regular", [], "Share to repository"]],
+            [["delete", this._list_delete, "trash", true, "regular", [], "Delete"]],
+            [["refresh", this.props.refresh_func, "refresh", false, "regular", [], "Refresh list"]]
         ];
      }
 
-
      get file_adders() {
          return[
-             [null, this._add_list, "cloud-upload", true]
+             [null, this._add_list, "cloud-upload", true, "Import list"]
          ]
      }
 
      render () {
-        return <LibraryToolbar button_groups={this.button_groups}
+        return <LibraryToolbar sendContextMenuItems={this.props.sendContextMenuItems}
+                               context_menu_items={this.context_menu_items}
+                               button_groups={this.button_groups}
+                               file_adders={this.file_adders}
                                popup_buttons={this.popup_buttons}
                                left_position={this.props.left_position}
                                sendRef={this.props.sendRef}
@@ -797,12 +876,12 @@ class CodeToolbar extends React.Component {
         }
     }
 
-    _code_duplicate() {
-        this.props.duplicate_func('/create_duplicate_code')
+    _code_duplicate(resource_name=null) {
+        this.props.duplicate_func('/create_duplicate_code', resource_name)
     }
 
-    _code_delete() {
-        this.props.delete_func("/delete_code")
+    _code_delete(resource_name=null) {
+        this.props.delete_func("/delete_code", resource_name)
     }
 
 
@@ -814,19 +893,31 @@ class CodeToolbar extends React.Component {
         ]
     }
 
+     get context_menu_items() {
+        return [ {text: "edit", icon: "document-open", onClick: this.props.view_resource},
+            {text: "__divider__"},
+            {text: "rename", icon: "edit", onClick: this.props.rename_func},
+            {text: "duplicate", icon: "duplicate", onClick: this._code_duplicate},
+            {text: "__divider__"},
+            {text: "delete", icon: "trash", onClick: this._code_delete, intent: "danger"}
+        ]
+     }
+
     get button_groups() {
         return [
-            [["edit", this.props.view_func, "document-open", false]],
-            [["duplicate", this._code_duplicate, "duplicate", false],
-             ["rename", this.props.rename_func, "edit", false]],
-            [["share", this.props.send_repository_func, "share", false]],
-            [["delete", this._code_delete, "trash", true]],
-            [["refresh", this.props.refresh_func, "refresh", false]]
+            [["edit", this.props.view_func, "document-open", false, "regular", ["space", "return", "ctrl+o"], "View"]],
+            [["duplicate", this._code_duplicate, "duplicate", false, "regular", [], "Duplicate"],
+             ["rename", this.props.rename_func, "edit", false, "regular", [], "Rename"]],
+            [["share", this.props.send_repository_func, "share", false, "regular", [], "Share to repository"]],
+            [["delete", this._code_delete, "trash", true, "regular", [], "Delete"]],
+            [["refresh", this.props.refresh_func, "refresh", false, "regular", [], "Refresh list"]]
         ];
      }
 
      render () {
-        return <LibraryToolbar button_groups={this.button_groups}
+        return <LibraryToolbar sendContextMenuItems={this.props.sendContextMenuItems}
+                               context_menu_items={this.context_menu_items}
+                               button_groups={this.button_groups}
                                popup_buttons={this.popup_buttons}
                                left_position={this.props.left_position}
                                sendRef={this.props.sendRef}

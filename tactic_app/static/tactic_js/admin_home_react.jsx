@@ -310,7 +310,6 @@ ContainerToolbar.propTypes = {
     selected_resource: PropTypes.object,
     list_of_selected: PropTypes.array,
     setConsoleText: PropTypes.func,
-    animation_phase: PropTypes.func,
     delete_row: PropTypes.func,
     refresh_func: PropTypes.func
 
@@ -384,7 +383,6 @@ UserToolbar.propTypes = {
     selected_resource: PropTypes.object,
     list_of_selected: PropTypes.array,
     setConsoleText: PropTypes.func,
-    animation_phase: PropTypes.func,
     delete_row: PropTypes.func,
     refresh_func: PropTypes.func
 

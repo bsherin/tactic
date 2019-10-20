@@ -98,12 +98,12 @@ class CodeViewerApp extends React.Component {
             bgs = [[{ "name_text": "Copy", "icon_name": "share",
                 "click_handler": () => {
                     copyToLibrary("code", this.props.resource_name);
-                } }]];
+                }, tooltip: "Copy to library" }]];
         } else {
-            bgs = [[{ "name_text": "Save", "icon_name": "floppy-disk", "click_handler": this._saveMe }, { "name_text": "SaveAs", "icon_name": "floppy-disk", "click_handler": this._saveMeAs }, { "name_text": "Share", "icon_name": "share",
+            bgs = [[{ "name_text": "Save", "icon_name": "saved", "click_handler": this._saveMe, tooltip: "Save" }, { "name_text": "SaveAs", "icon_name": "floppy-disk", "click_handler": this._saveMeAs, tooltip: "Save as" }, { "name_text": "Share", "icon_name": "share",
                 "click_handler": () => {
                     sendToRepository("code", this.props.resource_name);
-                } }]];
+                }, tooltip: "Share to repository" }]];
         }
 
         for (let bg of bgs) {

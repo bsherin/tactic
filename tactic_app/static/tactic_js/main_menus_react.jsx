@@ -240,7 +240,7 @@ class ProjectMenu extends React.Component {
     get icon_dict() {
         return {
             "Save As...": "floppy-disk",
-            "Save": "floppy-disk",
+            "Save": "saved",
             "Export as Jupyter Notebook": "export",
             "Open Console as Notebook": "console",
             "Export Table as Collection": "export",

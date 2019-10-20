@@ -296,28 +296,34 @@ let Bp = blueprint;
                             <GlyphButton extra_glyph_text="text"
                                          style={gbstyle}
                                          intent="primary"
+                                         tooltip="Add new text area"
                                          handleClick={this._addBlankText}
                                          icon="new-text-box"/>
                             <GlyphButton extra_glyph_text="code"
                                          handleClick={this._addBlankCode}
+                                         tooltip="Add new code area"
                                          intent="primary"
                                          style={gbstyle}
                                          icon="code"/>
                             <GlyphButton handleClick={this._resetConsole}
                                          style={gbstyle}
+                                         tooltip="Clear all output and reset namespace"
                                          intent="warning"
                                          extra_glyph_text="reset"
                                          icon="reset"/>
                             <GlyphButton extra_glyph_text="clear"
                                          style={gbstyle}
+                                         tooltip="Totally erase everything"
                                          handleClick={this._clearConsole}
                                          intent="danger"
                                          icon="trash"/>
                             <GlyphButton extra_glyph_text="log"
                                          style={gbstyle}
+                                         tooltip="Show container log for the log"
                                          handleClick={this._toggleConsoleLog}
                                          icon="console"/>
                             <GlyphButton extra_glyph_text="main"
+                                         tooltip="Show container log for the main project container"
                                          style={gbstyle}
                                          handleClick={this._toggleMainLog}
                                          icon="console"/>
@@ -473,6 +479,7 @@ class LogItem extends React.Component {
                                  dangerouslySetInnerHTML={converted_dict}/>
                             <div className="button-div d-flex flex-row">
                                  <GlyphButton handleClick={this._deleteMe}
+                                              tooltip="Delete this item"
                                               style={{marginLeft: 10, marginRight: 66}}
                                               intent="danger"
                                               icon="trash"/>
@@ -628,6 +635,7 @@ class ConsoleCodeItem extends React.Component {
                                         <div className="button-div d-flex pr-1">
                                              <GlyphButton handleClick={this._runMe}
                                                           intent="success"
+                                                          tooltip="Execute this item"
                                                           icon="play"/>
                                         </div>
                                         <ReactCodemirror handleChange={this._handleChange}
@@ -638,10 +646,12 @@ class ConsoleCodeItem extends React.Component {
                                          <div className="button-div d-flex flex-row">
                                              <GlyphButton handleClick={this._deleteMe}
                                                           intent="danger"
+                                                          tooltip="Delete this item"
                                                           style={{marginLeft: 10, marginRight: 0}}
                                                           icon="trash"/>
                                             <GlyphButton handleClick={this._clearOutput}
                                                          intent="warning"
+                                                         tooltip="Clear this item's output"
                                                          style={{marginLeft: 10, marginRight: 0}}
                                                          icon="clean"/>
                                         </div>
@@ -796,6 +806,7 @@ class ConsoleTextItem extends React.Component {
                                 <div className="button-div d-inline-flex pr-1">
                                     <GlyphButton handleClick={this._showMarkdown}
                                                  intent="success"
+                                                 tooltip="Convert to/from markdown"
                                                  icon="paragraph"/>
                                 </div>
                             {!really_show_markdown &&
@@ -820,6 +831,7 @@ class ConsoleTextItem extends React.Component {
                             <div className="button-div d-flex flex-row">
                                  <GlyphButton handleClick={this._deleteMe}
                                               intent="danger"
+                                              tooltip="Delete this item"
                                               style={{marginLeft: 10, marginRight: 66}}
                                               icon="trash"/>
                             </div>

@@ -108,7 +108,7 @@ class OptionModule extends React.Component {
     }
 
     get button_groups() {
-        let bgs = [[{ "name_text": "delete", "icon_name": "trash", "click_handler": this.delete_option }, { "name_text": "toMeta", "icon_name": "properties", "click_handler": this.send_doc_text }]];
+        let bgs = [[{ "name_text": "delete", "icon_name": "trash", "click_handler": this.delete_option, tooltip: "Delete option" }, { "name_text": "toMeta", "icon_name": "properties", "click_handler": this.send_doc_text, tooltip: "Append info to notes field" }]];
         for (let bg of bgs) {
             for (let but of bg) {
                 but.click_handler = but.click_handler.bind(this);
@@ -235,7 +235,7 @@ class ExportModule extends React.Component {
     }
 
     get button_groups() {
-        let bgs = [[{ "name_text": "delete", "icon_name": "trash", "click_handler": this.delete_export }, { "name_text": "toMeta", "icon_name": "properties", "click_handler": this.send_doc_text }]];
+        let bgs = [[{ "name_text": "delete", "icon_name": "trash", "click_handler": this.delete_export, tooltip: "Delete export" }, { "name_text": "toMeta", "icon_name": "properties", "click_handler": this.send_doc_text, tooltip: "Append info to notes field" }]];
         for (let bg of bgs) {
             for (let but of bg) {
                 but.click_handler = but.click_handler.bind(this);

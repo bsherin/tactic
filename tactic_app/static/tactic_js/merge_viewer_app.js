@@ -42,7 +42,7 @@ class MergeViewerApp extends React.Component {
     }
 
     get button_groups() {
-        return [[{ "name_text": "Save", "icon_name": "floppy-disk", "click_handler": this.props.saveHandler }]];
+        return [[{ "name_text": "Save", "icon_name": "saved", "click_handler": this.props.saveHandler }]];
     }
 
     componentDidMount() {

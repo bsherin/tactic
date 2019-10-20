@@ -377,7 +377,6 @@ class TileComponent extends React.Component {
                     self.spin_and_refresh()
                 }
             }
-            self._stopSpinner()
         }
     }
 
@@ -562,17 +561,21 @@ class TileComponent extends React.Component {
                         {this.props.show_spinner && <Bp.Spinner size={17} />}
 
                         <GlyphButton handleClick={this._toggleTileLog}
+                                     tooltip="Show tile container log"
                                      icon="console"/>
                         <GlyphButton handleClick={this._logMe}
+                                     tooltip="Send current display to log"
                                      icon="clipboard"/>
-                        <GlyphButton
-                                     handleClick={this._logParams}
+                        <GlyphButton handleClick={this._logParams}
+                                     tooltip="Send current parameters to log"
                                      icon="th"/>
                         <GlyphButton intent="warning"
                                      handleClick={this._reloadTile}
+                                     tooltip="Reload tile source from library and rerun"
                                      icon="refresh"/>
                         <GlyphButton intent="danger"
                                      handleClick={this._closeTile}
+                                     ttooltip="Remove tile"
                                      icon="trash"/>
                         </Bp.ButtonGroup>
                     </div>

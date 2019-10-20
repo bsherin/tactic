@@ -174,7 +174,7 @@ class CreatorApp extends React.Component {
     }
 
 
-    dirty() {
+dirty() {
         for (let thevar of this.saved_state_vars) {
             if (this.state[thevar] != this.saved_state[thevar]) {
                 return true
@@ -185,15 +185,15 @@ class CreatorApp extends React.Component {
 
     get button_groups() {
         let bgs = [
-                    [{"name_text": "Save", "icon_name": "floppy-disk","click_handler": this._saveMe},
-                     {"name_text": "Mark", "icon_name": "map-marker", "click_handler": this._saveAndCheckpoint},
-                     {"name_text": "SaveAs", "icon_name": "floppy-disk", "click_handler": this._saveModuleAs},
-                     {"name_text": "Load", "icon_name": "upload", "click_handler": this._loadModule},
+                    [{"name_text": "Save", "icon_name": "saved","click_handler": this._saveMe, key_bindings: ['ctrl+s', "command+s"], tooltip: "Save"},
+                     {"name_text": "Mark", "icon_name": "map-marker", "click_handler": this._saveAndCheckpoint, key_bindings: ['ctrl+m'], tooltip: "Save and checkpoint"},
+                     {"name_text": "SaveAs", "icon_name": "floppy-disk", "click_handler": this._saveModuleAs, tooltip: "Save as"},
+                     {"name_text": "Load", "icon_name": "upload", "click_handler": this._loadModule, key_bindings: ['ctrl+l'], tooltip: "Load tile"},
                      {"name_text": "Share", "icon_name": "share",
-                        "click_handler": () => {sendToRepository("tile", this.props.tile_name)}}],
-                    [{"name_text": "History", "icon_name": "history", "click_handler": this._showHistoryViewer},
-                     {"name_text": "Compare", "icon_name": "comparison", "click_handler": this._showTileDiffer}],
-                    [{"name_text": "Drawer", "icon_name": "console", "click_handler": this.props.toggleErrorDrawer}]
+                        "click_handler": () => {sendToRepository("tile", this.props.tile_name)}, tooltip: "Send to repository"}],
+                    [{"name_text": "History", "icon_name": "history", "click_handler": this._showHistoryViewer, tooltip: "Show history viewer"},
+                     {"name_text": "Compare", "icon_name": "comparison", "click_handler": this._showTileDiffer, tooltip: "Compare to another tile"}],
+                    [{"name_text": "Drawer", "icon_name": "console", "click_handler": this.props.toggleErrorDrawer, tooltip: "Toggle error drawer"}]
             ];
 
         for (let bg of bgs) {
@@ -572,7 +572,7 @@ class CreatorApp extends React.Component {
         let methods_panel = (
             <ReactCodemirror handleChange={this.handleMethodsChange}
                              code_content={this.state.extra_functions}
-                             save_me={this._saveAndCheckpoint}
+                             saveMe={this._saveAndCheckpoint}
                              readOnly={false}
                              code_container_ref={this.methods_ref}
                              code_container_height={methods_height}

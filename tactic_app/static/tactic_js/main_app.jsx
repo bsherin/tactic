@@ -296,7 +296,7 @@ class MainApp extends React.Component {
         let self = this;
         this.setState({show_table_spinner: true});
         if (window.is_freeform) {
-            postWithCallback(window.main_id, "grab_freefrom_data", {"doc_name": new_doc_name}, function (data) {
+            postWithCallback(window.main_id, "grab_freeform_data", {"doc_name": new_doc_name}, function (data) {
                 self.props.stopSpinner();
                 self.props.clearStatusMessage();
                 let new_table_spec = {"current_doc_name": new_doc_name};
@@ -311,7 +311,8 @@ class MainApp extends React.Component {
             postWithCallback(main_id, "grab_chunk_by_row_index", data_dict, function (data) {
                 self._setStateFromDataObject(data, new_doc_name, ()=>{
                     self.setState({ show_table_spinner: false});
-                })
+                });
+                self.set_visible_doc(new_doc_name);
             });
         }
     }

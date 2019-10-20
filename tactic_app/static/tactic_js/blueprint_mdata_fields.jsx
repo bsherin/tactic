@@ -11,7 +11,7 @@ let icon_dict = {
     collection: "database",
     project: "projects",
     tile: "application",
-    list: "numbered-list",
+    list: "list",
     code: "code"
 };
 

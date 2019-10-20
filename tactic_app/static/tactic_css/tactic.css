@@ -160,6 +160,8 @@ table.sortable thead {
     border-right: .4em solid transparent;
     border-bottom: 0;
     border-left: .4em solid transparent; }
+  #library-home-root .bp3-tabs.bp3-vertical {
+    height: 100%; }
   #library-home-root .bp3-tabs.bp3-vertical > .bp3-tab-list .bp3-tab {
     padding: 0 12px;
     margin: 0; }
@@ -233,6 +235,14 @@ a[role="tab"] {
 .um-nav-text {
   padding-left: 6px; }
 
+.notes-field-markdown-output {
+  padding: 10px;
+  border-radius: 3px;
+  -webkit-box-shadow: inset 0 0 0 1px rgba(16, 22, 26, 0.2);
+  box-shadow: inset 0 0 0 1px rgba(16, 22, 26, 0.2);
+  background: rgba(255, 255, 255, 0.7);
+  color: #5c7080; }
+
 .resource-module {
   display: flex;
   margin: 10px; }
@@ -242,9 +252,6 @@ a[role="tab"] {
     cursor: pointer; }
   .resource-module .notes-field {
     background-color: #f7f7f7; }
-  .resource-module .notes-field-markdown-output {
-    padding: 10px;
-    overflow: auto; }
   .resource-module .right-div {
     overflow: auto; }
   .resource-module .selector-button td {
