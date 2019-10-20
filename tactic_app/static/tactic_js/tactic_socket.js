@@ -1,4 +1,6 @@
 
+import {doFlash} from "./toaster.js"
+
 export {TacticSocket}
 
 class TacticSocket {

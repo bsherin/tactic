@@ -1,4 +1,4 @@
-{% extends "base_react.html" %}
+{% extends "base_reactns.html" %}
 
 {% block title %}{{ page_title }}{% endblock %}
 
@@ -53,8 +53,6 @@
         }
         window.use_ssl = "{{use_ssl}}"=="True";
         window.new_tile_info = "{{new_tile_info | safe}}";
-        window.onunload = function (e) {
-            postAsyncFalse("host", "remove_mainwindow_task", {"main_id": window.main_id})
-        }
+
     </script>
 {% endblock %}

@@ -207,15 +207,14 @@ class TileManager(LibraryResourceManager):
             if len(new_list) > 0:
                 revised_api_dlist.append({"cat_name": cat, "cat_list": new_list})
         the_content = self.initialize_module_viewer_container(module_name)
-        javascript_source = url_for('static', filename=js_source_dict["tile_creator_react"])
         return render_template("library/tile_creator_react.html",
                                module_name=module_name,
                                use_ssl=use_ssl,
                                develop=str(_develop),
                                uses_codemirror="True",
-                               tstring=tstring,
+                               version_string=tstring,
                                module_viewer_id=the_content["module_viewer_id"],
-                               javascript_source=javascript_source,
+                               module_source=js_source_dict["tile_creator_react"],
                                tile_collection_name=the_content["tile_collection_name"])
 
     def unload_all_tiles(self):

@@ -181,6 +181,12 @@ class MainWorker(QWorker):
         self.ask_host("emit_export_viewer_message", data, callback_func)
         return
 
+    def send_error_entry(self, title, content):
+        self.ask_host("emit_to_client", {"message": "add-error-drawer-entry",
+                                         "title": title,
+                                         "content": content})
+        return {"success": True}
+
     def print_to_console(self, message, force_open=False, is_error=False, summary=None):
 
         self.ask_host("print_to_console", {"message": message,

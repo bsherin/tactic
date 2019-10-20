@@ -21,7 +21,7 @@ class MainTacticSocket extends TacticSocket {
     initialize_socket_stuff() {
         self = this;
         this.socket.emit('join', {"room": user_id});
-        this.socket.emit('join-main', {"room": main_id}, function() {
+        this.socket.emit('join-main', {"room": window.main_id}, function() {
             _after_main_joined();
         });
         this.socket.on('tile-message', function (data) {
@@ -32,8 +32,8 @@ class MainTacticSocket extends TacticSocket {
         });
         this.socket.on('handle-callback', handleCallback);
         this.socket.on('close-user-windows', function(data){
-                    postAsyncFalse("host", "remove_mainwindow_task", {"main_id": main_id});
-                    if (!(data["originator"] == main_id)) {
+                    postAsyncFalse("host", "remove_mainwindow_task", {"main_id": window.main_id});
+                    if (!(data["originator"] == window.main_id)) {
                         window.close()
                     }
                 });
@@ -73,12 +73,12 @@ function _after_main_joined() {
             "base_figure_url": base_figure_url,
             "use_ssl": use_ssl,
             "user_id": user_id,
-            "library_id": main_id,
+            "library_id": window.main_id,
             "ppi": ppi
     };
     if (is_totally_new) {
         console.log("about to intialize");
-        postWithCallback(main_id, "initialize_mainwindow", data_dict)
+        postWithCallback(window.main_id, "initialize_mainwindow", data_dict)
     }
     else  {
         if (is_jupyter) {
@@ -91,7 +91,7 @@ function _after_main_joined() {
         else  {
             data_dict["unique_id"] = temp_data_id;
         }
-        postWithCallback(main_id, "initialize_project_mainwindow", data_dict)
+        postWithCallback(window.main_id, "initialize_project_mainwindow", data_dict)
     }
 }
 
@@ -118,7 +118,7 @@ function create_and_fill_console(console_html) {
 }
 
 function removeMainwindow() {
-    postAsyncFalse("host", "remove_mainwindow_task", {"main_id": main_id})
+    postAsyncFalse("host", "remove_mainwindow_task", {"main_id": window.main_id})
 }
 
 spinner_html = '<span class="loader-small"></span>';

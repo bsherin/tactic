@@ -323,12 +323,12 @@ class CollectionManager(LibraryResourceManager):
                 file_decoding_errors[filename] = decoding_problems
 
         try:
-            user_obj.create_complete_collection(collection_name, new_doc_dict, "table", None,
-                                                header_list_dict, collection_mdata)
+            result = user_obj.create_complete_collection(collection_name, new_doc_dict, "table", None,
+                                                         header_list_dict, collection_mdata)
         except Exception as ex:
             return self.get_exception_for_ajax(ex, "Error creating collection")
 
-        new_row = self.build_res_dict(collection_name, collection_mdata, user_obj)
+        new_row = self.build_res_dict(collection_name, result["metadata"], user_obj)
         if len(file_decoding_errors.keys()) == 0:
             file_decoding_errors = None
         return jsonify({"success": True, "new_row": new_row,
@@ -357,12 +357,12 @@ class CollectionManager(LibraryResourceManager):
                 file_decoding_errors[filename] = decoding_problems
 
         try:
-            user_obj.create_complete_collection(collection_name, new_doc_dict, "freeform", None,
-                                                None, collection_mdata)
+            result = user_obj.create_complete_collection(collection_name, new_doc_dict, "freeform", None,
+                                                         None, collection_mdata)
         except Exception as ex:
             return self.get_exception_for_ajax(ex, "Error creating collection")
 
-        new_row = self.build_res_dict(collection_name, collection_mdata, user_obj)
+        new_row = self.build_res_dict(collection_name, result["metadata"], user_obj)
         if len(file_decoding_errors.keys()) == 0:
             file_decoding_errors = None
         return jsonify({"success": True, "new_row": new_row,

@@ -1,9 +1,8 @@
 
 import {showConfirmDialogReact, showModalReact} from "./modal_react.js";
-
 export {TagButtonList, get_all_parent_tags}
 
-var Rbs = window.ReactBootstrap;
+var Bp = blueprint;
 
 function has_slash(tag_text) {
         return (tag_text.search("/") != -1)
@@ -39,247 +38,25 @@ function tag_to_list(the_tag) {
     return the_tag.split("/")
 }
 
-class TagButton extends React.Component {
 
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        this.state = {
-            am_root : !has_slash(props.the_tag),
-            drag_hover: false
-        }
-    }
-
-    _handleExpanderClick(event) {
-        this.props._handleExpanderToggle(this.props.the_tag, !this.props.am_expanded);
-        event.stopPropagation()
-    }
-
-    get tag_base() {
-        let the_tag = this.props.the_tag;
-        if (!has_slash(the_tag)){
-            return the_tag
-        }
-        else {
-            let re = /\/\w*$/;
-            return re.exec(the_tag)[0].slice(1)
-        }
-    }
-
-    tag_depth(the_tag) {
-        return (the_tag.match(/\//g) || []).length;
-    }
-
-    _handleSetActive() {
-        if (!this.props.am_active) {
-            this.props._handleSetActive(this.props.the_tag)
-        }
-    }
-
-    _handleDrop(e, index, targetName) {
-        this.setState({"drag_hover": false});
-        let res_name = get_datum(e, "resourcename");
-        if (res_name != "") {
-            this.props.handleAddTag(res_name, this.props.the_tag);
-        }
-    }
-
-    _handleDragOver(e) {
-        e.preventDefault();
-        this.setState({"drag_hover": true});
-
-    }
-
-    _handleDragLeave(e) {
-        e.preventDefault();
-        this.setState({"drag_hover": false});
-    }
-
-    _handleDragStart(e) {
-        set_datum(e, "tagname", this.props.the_tag);
-    }
-
-    _rename_tag(e) {
-        e.stopPropagation();
-        let self = this;
-        let tag_base = this.tag_base;
-        showModalReact(`Rename tag ${tag_base}`, `New name for this tag`, RenameTag, tag_base);
-
-        function RenameTag(new_tag_base) {
-            self.props.renameTagPrep(self.props.the_tag, new_tag_base)
-        }
-
-    }
-
-    _delete_tag(e) {
-        e.stopPropagation();
-        const confirm_text = `Are you sure that you want to delete the tag ${this.props.the_tag} for this resource type?`;
-        let self = this;
-        showConfirmDialogReact(`Delete tag`, confirm_text, "do nothing", "delete", function () {
-            self.props.doTagDelete(self.props.the_tag)
-        })
-
-    }
-
-    render () {
-        let indent_amount = 12;
-        let mleft = indent_amount * this.tag_depth(this.props.the_tag);
-        let pf_style;
-        let hcclass;
-        let prefix;
-        let icon_element;
-        let active_folder_icon_element = <span className="tag-icon-folder fas fa-folder"></span>;
-        let inactive_folder_icon_element = <span className="tag-icon-folder fal fa-folder"></span>;
-        if (this.props.have_children) {
-            hcclass = "has_children shrunk";
-            pf_style = {marginLeft: mleft};
-            if (this.props.am_expanded) {
-                prefix = <span className="tag-expander fal fa-caret-down"
-                               onClick={this._handleExpanderClick}
-                               style={pf_style}/>;
-                if (this.props.am_active) {
-                    icon_element = active_folder_icon_element
-                } else {
-                    icon_element = inactive_folder_icon_element
-                }
-            } else {
-                prefix = <span className="tag-expander fal fa-caret-right"
-                               onClick={this._handleExpanderClick}
-                               style={pf_style}/>;
-                if (this.props.am_active) {
-                    icon_element = active_folder_icon_element
-                }
-                else {
-                    icon_element = inactive_folder_icon_element
-                }
-            }
-        }
-        else {
-            hcclass = "no_children";
-            pf_style = {marginLeft: mleft + indent_amount};
-            prefix = <span style={pf_style}></span>;
-            if (this.props.am_active) {
-                if (this.props.the_tag == "all") {
-                    icon_element = <span className="tag-icon-tag fas fa-tags"></span>
-                }
-                else {
-                    icon_element = <span className="tag-icon-tag fas fa-tag"></span>
-                }
-            }
-            else {
-                if (this.props.the_tag == "all") {
-                    icon_element = <span className="tag-icon-tag fal fa-tags"></span>
-                }
-                else {
-                    icon_element = <span className="tag-icon-tag fal fa-tag"></span>
-                }
-            }
-        }
-        if (this.props.am_active) {
-            hcclass = hcclass + " active"
-        }
-        if (this.state.drag_hover) {
-            hcclass = hcclass + " draghover"
-        }
-        if (this.state.am_root) {
-            return (
-                <Rbs.Button className={`btn btn-outline-secondary tag-button root-tag ${hcclass}`}
-                            onClick={this.props.edit_tags ? this._rename_tag : this._handleSetActive}
-                            draggable={this.props.the_tag != "all"}
-                            onDragStart={this._handleDragStart}
-                            onDragOver={this._handleDragOver}
-                            onDragLeave={this._handleDragLeave}
-                            onDrop={this._handleDrop}
-                >
-                    {prefix}
-                    {icon_element}
-                    {this.tag_base}
-                    {this.props.edit_tags && <span onClick={this._delete_tag}
-                                                   className="tag-button-delete delete-visible"/>}
-                </Rbs.Button>
-            );
-        }
-        else {
-            return (
-                <Rbs.Button className={`btn btn-outline-secondary tag-button ${hcclass}`}
-                            draggable={true}
-                            onDragStart={this._handleDragStart}
-                            onDragOver={this._handleDragOver}
-                            onDragLeave={this._handleDragLeave}
-                            onClick={this.props.edit_tags ? this._rename_tag : this._handleSetActive}
-                >
-                    {prefix}
-                    {icon_element}
-                    {this.tag_base}
-                    {this.props.edit_tags && <span onClick={this._delete_tag}
-                                                   className="tag-button-delete delete-visible"/>}
-                </Rbs.Button>
-            );
-        }
+class TagMenu extends React.Component {
+    render() {
+        let disabled = this.props.tagstring == "all";
+        return (
+            <Bp.Menu>
+                <Bp.MenuItem icon="edit" disabled={disabled} onClick={()=>this.props.rename_tag(this.props.tagstring)} text="Rename"/>
+                <Bp.MenuItem icon="trash" disabled={disabled} onClick={()=>this.props.delete_tag(this.props.tagstring)} text="Delete"/>
+            </Bp.Menu>
+        )
     }
 }
-
-TagButton.propTypes = {
-    the_tag: PropTypes.string,
-    have_children: PropTypes.bool,
-    am_expanded: PropTypes.bool,
-    am_active: PropTypes.bool,
-    _handleExpanderToggle: PropTypes.func,
-    _handleSetActive: PropTypes.func,
-    renameTagPrep: PropTypes.func,
-    handleAddTag: PropTypes.func,
-    edit_tags: PropTypes.bool
-};
 
 class TagButtonList extends React.Component {
 
     constructor(props) {
         super(props);
         doBinding(this);
-        this.state = {
-            expanded_tags: [],
-            active_tag: "all",
-            edit_tags: false
-        }
-    }
 
-    _handleExpanderToggle(the_tag, set_to_expanded){
-        if (set_to_expanded) {
-            let ex_tags = [...this.state.expanded_tags];
-            ex_tags.push(the_tag);
-            this.setState({expanded_tags: ex_tags})
-        }
-        else {
-            let ex_tags = [...this.state.expanded_tags];
-            var index = ex_tags.indexOf(the_tag);
-            if (index !== -1) ex_tags.splice(index, 1);
-            this.setState({expanded_tags: ex_tags})
-        }
-    }
-    
-    _handleSetActive(the_tag) {
-        this.setState({active_tag: the_tag}, () => {this.props.handleSearchFromTag(the_tag)})
-
-    }
-
-    subtag_visible(the_tag) {
-        let all_parents = get_parent_tags(the_tag);
-        for (let parent of all_parents) {
-            if (!this.state.expanded_tags.includes(parent)) {
-                return false
-            }
-        }
-        return true
-    }
-
-    compute_visible_tags(tag_list) {
-        let visible_tags = [];
-        for (let tag of tag_list) {
-            if (!has_slash(tag) || this.subtag_visible(tag)) {
-                visible_tags.push(tag)
-            }
-        }
-        return visible_tags
     }
 
     _edit_tags(e) {
@@ -301,59 +78,144 @@ class TagButtonList extends React.Component {
         this.props.doTagRename(tag_changes)
     }
 
+    _newNode(name, prelist) {
+        let full_list = [...prelist];
+        full_list.push(name);
+        let tag_string = full_list.join("/");
+        return {
+            id: tag_string,
+            childNodes: [],
+            label: name,
+            icon: "tag",
+            hasCaret: false,
+            isSelected: tag_string == this.props.active_tag,
+            isExpanded: this.props.expanded_tags.includes(tag_string),
+            nodeData: {tag_string: tag_string}
+        }
+    }
+
+    _nodeChild(node, child_name) {
+        for (let c of node.childNodes) {
+            if (c.label == child_name) {
+                return c
+            }
+        }
+        return null
+    }
+
+    _handleNodeExpand(node) {
+        if (!this.props.expanded_tags.includes(node.nodeData.tag_string)) {
+            let expanded_tags = [...this.props.expanded_tags];
+            expanded_tags.push(node.nodeData.tag_string);
+            this.props.updateTagState({"expanded_tags": expanded_tags})
+        }
+    }
+
+    _handleNodeShrink(node) {
+        if (this.props.expanded_tags.includes(node.nodeData.tag_string)) {
+
+            let expanded_tags = [...this.props.expanded_tags];
+            var index = expanded_tags.indexOf(node.nodeData.tag_string);
+            if (index !== -1) expanded_tags.splice(index, 1);
+            this.props.updateTagState({"expanded_tags": expanded_tags})
+        }
+    }
+
+    _handleNodeClick(node) {
+        this.props.updateTagState({active_tag: node.nodeData.tag_string})
+    }
+
+    addChildren(node, tlist, prelist) {
+        if (tlist.length == 0) return;
+        let new_child = this._newNode(tlist[0], prelist);
+        node.childNodes.push(new_child);
+        node.icon = "folder-close";
+        node.hasCaret = true;
+        let new_tlist = [...tlist];
+        let new_prelist = [...prelist];
+        let first_tag = new_tlist.shift();
+        new_prelist.push(first_tag);
+        this.addChildren(new_child, new_tlist, new_prelist);
+    }
+
+    _digNode(node, tlist, prelist) {
+        if (tlist.length == 0) return;
+        let res = this._nodeChild(node, tlist[0]);
+        if (res == null) {
+            this.addChildren(node, tlist, prelist)
+        }
+        else {
+             let new_tlist = [...tlist];
+            let new_prelist = [...prelist];
+            let first_tag = new_tlist.shift();
+            new_prelist.push(first_tag);
+            tlist.shift();
+            this._digNode(res, new_tlist, new_prelist)
+        }
+    }
+
+    _buildTree(tag_list) {
+        let all_node = this._newNode("all", []);
+        all_node.icon = "clean";
+        let tree = {childNodes: [all_node]};
+        for (let tag of tag_list) {
+            let tlist = tag_to_list(tag);
+            this._digNode(tree, tlist, []);
+        }
+        return tree.childNodes
+    }
+
+    get_tag_base(tagstring) {
+        if (!has_slash(tagstring)){
+            return tagstring
+        }
+        else {
+            let re = /\/\w*$/;
+            return re.exec(tagstring)[0].slice(1)
+        }
+    }
+
+    _rename_tag(tagstring) {
+        let self = this;
+        let tag_base = this.get_tag_base(tagstring);
+        showModalReact(`Rename tag "${tag_base}"`, `New name for this tag`, RenameTag, tag_base);
+
+        function RenameTag(new_tag_base) {
+            self._renameTagPrep(tagstring, new_tag_base)
+        }
+    }
+
+    _delete_tag(tagstring) {
+        const confirm_text = `Are you sure that you want to delete the tag "${tagstring}" for this resource type?`;
+        let self = this;
+        showConfirmDialogReact(`Delete tag "${tagstring}"`, confirm_text, "do nothing", "delete", function () {
+            self.props.doTagDelete(tagstring)
+        })
+
+    }
+
+    _showContextMenu(node, nodepath, e) {
+        e.preventDefault();
+        let tmenu = <TagMenu tagstring={node.nodeData.tag_string}
+                             delete_tag={this._delete_tag}
+                             rename_tag={this._rename_tag}/>;
+        Bp.ContextMenu.show(tmenu, { left: e.clientX, top: e.clientY })
+    }
+
     render() {
         let parent_tags = get_all_parent_tags(this.props.tag_list);
         let tag_list = [...this.props.tag_list];
         tag_list = tag_list.concat(parent_tags);
         tag_list = remove_duplicates(tag_list);
         tag_list.sort();
-        let visible_tags = this.compute_visible_tags(tag_list);
-        let tag_buttons = [];
-        let bg_style = {
-            justifyContent: "start",
-            display: "inline-block",
-            overflowY: "scroll",
-        };
-        let all_tag = <TagButton the_tag="all"
-                                 key="all"
-                                 have_children={false}
-                                 am_expanded={false}
-                                 am_active={"all" == this.state.active_tag}
-                                 _handleExpanderToggle={this._handleExpanderToggle}
-                                 _handleSetActive={this._handleSetActive}
-                                 edit_tags={false}
-                />;
-        tag_buttons.push(all_tag);
-        for (let tag of tag_list) {
-            if (visible_tags.includes(tag)) {
-                let new_tag = <TagButton the_tag={tag}
-                                         key={tag}
-                                         have_children={parent_tags.includes(tag)}
-                                         am_expanded={this.state.expanded_tags.includes(tag)}
-                                         am_active={tag == this.state.active_tag}
-                                         _handleExpanderToggle={this._handleExpanderToggle}
-                                         _handleSetActive={this._handleSetActive}
-                                         handleAddTag={this.props.handleAddTag}
-                                         edit_tags={this.state.edit_tags}
-                                         doTagDelete={this.props.doTagDelete}
-                                         renameTagPrep={this._renameTagPrep}
-
-                />;
-                tag_buttons.push(new_tag)
-            }
-        }
-        let eb_class = this.state.edit_tags ? "btn-danger" : "btn-outline-secondary";
+        let tree = this._buildTree(tag_list);
         return (
-
-            <div style={{marginTop: 85}}>
-                <Rbs.Button className={`btn ${eb_class} ml-2 edit-tags-button`}
-                            onClick={this._edit_tags}
-                >
-                    edit tags
-                </Rbs.Button>
-                <Rbs.ButtonGroup style={bg_style} vertical size="sm">
-                    {tag_buttons}
-                </Rbs.ButtonGroup>
+            <div style={{marginTop: 65, overflowY: "scroll", minWidth: 165}} className="tactic-tag-button-list">
+                <Bp.Tree contents={tree}
+                         onNodeContextMenu={this._showContextMenu}
+                         onNodeClick={this._handleNodeClick}
+                         onNodeCollapse={this._handleNodeShrink}
+                         onNodeExpand={this._handleNodeExpand}/>
             </div>
         )
     }
@@ -363,7 +225,7 @@ class TagButtonList extends React.Component {
 TagButtonList.propTypes = {
     res_type: PropTypes.string,
     tag_list: PropTypes.array,
-    handleSearchFromTag: PropTypes.func,
+    updateTagState: PropTypes.func,
     doTagDelete: PropTypes.func,
     doTagRename: PropTypes.func,
     handleAddTag: PropTypes.func

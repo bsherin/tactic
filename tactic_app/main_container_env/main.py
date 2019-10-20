@@ -374,14 +374,11 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         return tdict
 
     def refill_table(self):
-        doc = self.doc_dict[self.visible_doc_name]
         if self.doc_type == "table":
-            data_object = {"data_rows": doc.displayed_data_rows, "doc_name": self.visible_doc_name,
-                           "background_colors": doc.displayed_background_colors,
-                           "is_first_chunk": doc.is_first_chunk, "is_last_chunk": doc.is_last_chunk}
+            data_object = self.grab_chunk(self.visible_doc_name, 0)
         else:
-            data_object = {"data_text": doc.data_text, "doc_name": self.visible_doc_name,
-                           "background_colors": doc.displayed_background_colors}
+            doc = self.doc_dict[self.visible_doc_name]
+            data_object = {"data_text": doc.data_text, "doc_name": self.visible_doc_name}
         self.mworker.emit_table_message("refill_table", data_object)
 
     @property
@@ -415,8 +412,8 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         error_string = self.get_traceback_message(ex, special_string)
         self.mworker.debug_log(error_string)
         if print_to_console:
-            summary = "An exception of type {}".format(type(ex).__name__)
-            self.mworker.print_to_console(error_string, force_open=True, is_error=True, summary=summary)
+            title = "An exception of type {}".format(type(ex).__name__)
+            self.mworker.send_error_entry(title, error_string)
         return error_string
 
     def highlight_table_text(self, txt):
@@ -568,7 +565,6 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
             for (key, val) in doc.data_rows.items():
                 if filter_function(val):
                     doc.current_data_rows[key] = val
-            doc.configure_for_current_data()
             self.refill_table()
         else:
             for docname, doc in self.doc_dict.items():
@@ -576,7 +572,6 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                 for (key, val) in doc.data_rows.items():
                     if filter_function(val):
                         doc.current_data_rows[key] = val
-                doc.configure_for_current_data()
             self.refill_table()
         return
 
@@ -620,10 +615,8 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                 self._set_row_column_data(doc_name, the_id, column_header, new_content)
                 self._change_list.append(the_id)
             if doc_name == self.visible_doc_name:
-                doc = self.doc_dict[doc_name]
-                actual_row = doc.get_actual_row(the_id)
-                if actual_row is not None:
-                    data["row"] = actual_row
+                if the_id in self.doc_dict[doc_name].current_data_rows.keys():
+                    data["row"] = the_id
                     self.mworker.emit_table_message("setCellContent", data)
 
     def _set_cell_background(self, doc_name, the_id, column_header, color):

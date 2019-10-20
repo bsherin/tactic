@@ -11,7 +11,11 @@ if _develop:
                       "tile_creator_react": 'tactic_js/tile_creator_react.js',
                       "code_viewer_react": 'tactic_js/code_viewer_react.js',
                       "list_viewer_react": 'tactic_js/list_viewer_react.js',
-                      "module_viewer_react": 'tactic_js/module_viewer_react.js'}
+                      "module_viewer_react": 'tactic_js/module_viewer_react.js',
+                      "register_react": './tactic_js/register_react.js',
+                      "duplicate_user_react": './tactic_js/duplicate_user_react.js',
+                      "account_react": './tactic_js/account_react.js'
+                      }
 
 else:
     js_source_dict = {"main_app": 'tactic_js/main_app.bundle.js',
@@ -22,4 +26,8 @@ else:
                       "tile_creator_react": 'tactic_js/tile_creator_react.bundle.js',
                       "code_viewer_react": 'tactic_js/code_viewer_react.bundle.js',
                       "list_viewer_react": 'tactic_js/list_viewer_react.bundle.js',
-                      "module_viewer_react": 'tactic_js/module_viewer_react.bundle.js'}
+                      "module_viewer_react": 'tactic_js/module_viewer_react.bundle.js',
+                      "register_react": './tactic_js/register_react.bundle.js',
+                      "duplicate_user_react": './tactic_js/duplicate_user_react.bundle.js',
+                      "account_react": './tactic_js/account_react.bundle.js'
+                      }

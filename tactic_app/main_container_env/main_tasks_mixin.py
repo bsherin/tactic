@@ -1,6 +1,7 @@
 
 import datetime
 import re
+import os
 import uuid
 import copy
 import json
@@ -8,6 +9,9 @@ from qworker import task_worthy_methods, task_worthy_manual_submit_methods
 from communication_utils import make_python_object_jsonizable, debinarize_python_object, store_temp_data
 from communication_utils import make_jsonizable_and_compress, read_project_dict
 import docker_functions
+
+CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
+STEP_SIZE = int(os.environ.get("STEP_SIZE"))
 
 
 def task_worthy(m):
@@ -182,7 +186,10 @@ class LoadSaveTasksMixin:
     @task_worthy
     def do_full_recreation(self, data_dict):
         def track_loaded_modules(tlmdata):
+            print("entering track_loaded_modules")
+
             def track_recreated_tiles(trcdata):
+                print("tracking created tiles")
                 if trcdata["old_tile_id"] in tiles_to_recreate:
                     self.mworker.ask_host("emit_to_client", {"message": "tile-finished-loading",
                                                              "tile_id": trcdata["old_tile_id"]})
@@ -190,6 +197,7 @@ class LoadSaveTasksMixin:
                     tsdict = self.project_dict["tile_instances"][trcdata["old_tile_id"]]
                     self.tile_id_dict[tsdict["tile_name"]] = trcdata["old_tile_id"]
                 if not tiles_to_recreate:
+                    print("done recreating tiles")
                     self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {})
                     self.clear_main_status_message()
                     self.stop_main_status_spinner()
@@ -199,15 +207,18 @@ class LoadSaveTasksMixin:
                 if tlmdata["module_name"] in modules_to_load:
                     modules_to_load.remove(tlmdata["module_name"])
             if not modules_to_load:
+                print("finished loading modules, ready to recreate tiles")
                 self.show_main_status_message("Recreating tiles")
                 self.tile_save_results = {}
 
                 tiles_to_recreate = list(self.project_dict["tile_instances"].keys())
                 if not tiles_to_recreate:
+                    print("no tiles to recreate")
                     self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {})
                     self.clear_main_status_message()
                     self.stop_main_status_spinner()
                     return
+                print("about to recreate tiles one at a time")
                 for old_tile_id, tile_save_dict in self.project_dict["tile_instances"].items():
                     data_for_tile = {"old_tile_id": old_tile_id,
                                      "tile_save_dict": tile_save_dict}
@@ -585,7 +596,7 @@ class TileCreationTasksMixin:
             else:
                 message = "Got a response error with status {} for event_type {}".format(tphrc["status"],
                                                                                          tphrc["task_type"])
-            self.mworker.print_to_console(message, True, True, summary="Project recreation tphrc")
+            self.mworker.send_error_entry("Project recreation tphrc", message)
             self.mworker.submit_response(task_packet, {"old_tile_id": old_tile_id})
             return
 
@@ -594,7 +605,7 @@ class TileCreationTasksMixin:
         gtc_response = self.create_tile_container({"user_id": self.user_id, "parent": self.mworker.my_id,
                                                    "other_name": tile_name, "ppi": self.ppi, "tile_id": old_tile_id})
         if not gtc_response["success"]:
-            self.mworker.print_to_console(gtc_response["message"], True, True, summary="Project recreation tphrc")
+            self.mworker.send_error_entry("Project recreation tphrc", gtc_response["message"],)
             self.mworker.submit_response(task_packet, {"old_tile_id": old_tile_id})
             return
 
@@ -1042,7 +1053,6 @@ class APISupportTasksMixin:
     def UnfilterTable(self, data):
         for doc in self.doc_dict.values():
             doc.current_data_rows = doc.data_rows
-            doc.configure_for_current_data()
         self.refill_table()
         return None
 
@@ -1120,7 +1130,6 @@ class APISupportTasksMixin:
             for (key, val) in doc.data_rows.items():
                 if int(key) in result:
                     doc.current_data_rows[key] = val
-            doc.configure_for_current_data()
             self.refill_table()
         else:
             for docname, doc in self.doc_dict.items():
@@ -1128,7 +1137,6 @@ class APISupportTasksMixin:
                 for (key, val) in doc.data_rows.items():
                     if int(key) in result[docname]:
                         doc.current_data_rows[key] = val
-                doc.configure_for_current_data()
             self.refill_table()
         return
 
@@ -1312,59 +1320,29 @@ class ConsoleTasksMixin:
 
 class DataSupportTasksMixin:
 
+    def grab_chunk(self, doc_name, row_index):
+        chunk_number = int(int(row_index) / CHUNK_SIZE)
+        chunk_start = chunk_number * CHUNK_SIZE
+        data_to_send = self.doc_dict[doc_name].sorted_data_rows[chunk_start:chunk_start + CHUNK_SIZE]
+        data_row_dict = {}
+        for n, row in enumerate(data_to_send):
+            data_row_dict[chunk_start + n] = row
+
+        return {"doc_name": doc_name,
+                "total_rows": len(self.doc_dict[doc_name].current_data_rows),
+                "data_row_dict": data_row_dict,
+                "table_spec": self.doc_dict[doc_name].table_spec.compile_save_dict()}
+
     @task_worthy
-    def grab_data(self, data):
-        print("entering grab_data with fixed message")
+    def grab_chunk_by_row_index(self, data):
+        return self.grab_chunk(data["doc_name"], data["row_index"])
+
+    @task_worthy
+    def grab_freeform_data(self, data):
+        print("entering grab_freeformdata with fixed message")
         doc_name = data["doc_name"]
-        if self.doc_type == "table":
-            return {"doc_name": doc_name,
-                    "data_rows": self.doc_dict[doc_name].displayed_data_rows,
-                    "table_spec": self.doc_dict[doc_name].table_spec.compile_save_dict(),
-                    "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
-                    "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
-                    "max_table_size": self.doc_dict[doc_name].max_table_size}
-        else:
-            return {"doc_name": doc_name,
-                    "data_text": self.doc_dict[doc_name].data_text}
-
-    @task_worthy
-    def grab_chunk_with_row(self, data_dict):
-        doc_name = data_dict["doc_name"]
-        row_id = data_dict["row_id"]
-        self.doc_dict[doc_name].move_to_row(row_id)
         return {"doc_name": doc_name,
-                "data_rows": self.doc_dict[doc_name].displayed_data_rows,
-                "background_colors": self.doc_dict[doc_name].displayed_background_colors,
-                "table_spec": self.doc_dict[doc_name].table_spec.compile_save_dict(),
-                "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
-                "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
-                "max_table_size": self.doc_dict[doc_name].max_table_size,
-                "actual_row": self.doc_dict[doc_name].get_actual_row(row_id)}
-
-    @task_worthy
-    def grab_next_chunk(self, data_dict):
-        doc_name = data_dict["doc_name"]
-        step_amount = self.doc_dict[doc_name].advance_to_next_chunk()
-        return {"doc_name": doc_name,
-                "data_rows": self.doc_dict[doc_name].displayed_data_rows,
-                "background_colors": self.doc_dict[doc_name].displayed_background_colors,
-                "table_spec": self.doc_dict[doc_name].table_spec.compile_save_dict(),
-                "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
-                "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
-                "step_size": step_amount}
-
-    @task_worthy
-    def grab_previous_chunk(self, data_dict):
-        doc_name = data_dict["doc_name"]
-        step_amount = self.doc_dict[doc_name].go_to_previous_chunk()
-        return {"doc_name": doc_name,
-                "data_rows": self.doc_dict[doc_name].displayed_data_rows,
-                "background_colors": self.doc_dict[doc_name].displayed_background_colors,
-                "table_spec": self.doc_dict[doc_name].table_spec.compile_save_dict(),
-                "header_list": self.doc_dict[doc_name].table_spec.header_list,
-                "is_last_chunk": self.doc_dict[doc_name].is_last_chunk,
-                "is_first_chunk": self.doc_dict[doc_name].is_first_chunk,
-                "step_size": step_amount}
+                "data_text": self.doc_dict[doc_name].data_text}
 
     @task_worthy
     def UpdateTableSpec(self, data):

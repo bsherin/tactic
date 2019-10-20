@@ -1,7 +1,7 @@
 /**
- * alertifyjs 1.11.0 http://alertifyjs.com
+ * alertifyjs 1.11.4 http://alertifyjs.com
  * AlertifyJS is a javascript framework for developing pretty browser dialogs and notifications.
- * Copyright 2017 Mohammad Younes <Mohammad@alertifyjs.com> (http://alertifyjs.com) 
+ * Copyright 2019 Mohammad Younes <Mohammad@alertifyjs.com> (http://alertifyjs.com) 
  * Licensed under GPL 3 <https://opensource.org/licenses/gpl-3.0>*/
 ( function ( window ) {
     'use strict';
@@ -186,16 +186,18 @@
       *
       */
     function destruct(instance, initialize){
-        //delete the dom and it's references.
-        var root = instance.elements.root;
-        root.parentNode.removeChild(root);
-        delete instance.elements;
-        //copy back initial settings.
-        instance.settings = copy(instance.__settings);
-        //re-reference init function.
-        instance.__init = initialize;
-        //delete __internal variable to allow re-initialization.
-        delete instance.__internal;
+        if(instance.elements){
+            //delete the dom and it's references.
+            var root = instance.elements.root;
+            root.parentNode.removeChild(root);
+            delete instance.elements;
+            //copy back initial settings.
+            instance.settings = copy(instance.__settings);
+            //re-reference init function.
+            instance.__init = initialize;
+            //delete __internal variable to allow re-initialization.
+            delete instance.__internal;
+        }
     }
 
     /**
@@ -340,6 +342,8 @@
             usedKeys = [],
             //dummy variable, used to trigger dom reflow.
             reflow = null,
+            //holds body tab index in case it has any.
+            tabindex = false,
             //condition for detecting safari
             isSafari = window.navigator.userAgent.indexOf('Safari') > -1 && window.navigator.userAgent.indexOf('Chrome') < 0,
             //dialog building blocks
@@ -402,14 +406,7 @@
                 if(!instance.__settings){
                     instance.__settings = copy(instance.settings);
                 }
-                //in case the script was included before body.
-                //after first dialog gets initialized, it won't be null anymore!
-                if(null === reflow){
-                    // set tabindex attribute on body element this allows script to give it
-                    // focus after the dialog is closed
-                    document.body.setAttribute( 'tabindex', '0' );
-                }
-
+                
                 //get dialog buttons/focus setup
                 var setup;
                 if(typeof instance.setup === 'function'){
@@ -513,7 +510,8 @@
                 var elements = {};
                 //root node
                 elements.root = document.createElement('div');
-                
+                //prevent FOUC in case of async styles loading.
+                elements.root.style.display = 'none';
                 elements.root.className = classes.base + ' ' + classes.hidden + ' ';
 
                 elements.root.innerHTML = templates.dimmer + templates.modal;
@@ -666,13 +664,13 @@
          *
          */
         function preventBodyShift(add){
-            if(alertify.defaults.preventBodyShift && document.documentElement.scrollHeight > document.documentElement.clientHeight){
-                if(add ){//&& openDialogs[openDialogs.length-1].elements.dialog.clientHeight <= document.documentElement.clientHeight){
+            if(alertify.defaults.preventBodyShift){
+                if(add && document.documentElement.scrollHeight > document.documentElement.clientHeight ){//&& openDialogs[openDialogs.length-1].elements.dialog.clientHeight <= document.documentElement.clientHeight){
                     topScroll = scrollY;
                     top = window.getComputedStyle(document.body).top;
                     addClass(document.body, classes.fixed);
                     document.body.style.top = -scrollY + 'px';
-                } else {
+                } else if(!add) {
                     scrollY = topScroll;
                     document.body.style.top = top;
                     removeClass(document.body, classes.fixed);
@@ -836,9 +834,6 @@
                 break;
             case 'resizable':
                 updateResizable(instance);
-                break;
-            case 'transition':
-                updateTransition(instance,newValue, oldValue);
                 break;
             case 'padding':
                 if(newValue){
@@ -1192,8 +1187,10 @@
             }
         }
 
-        // flag to cancel click event if already handled by end resize event (the mousedown, mousemove, mouseup sequence fires a click event.).
-        var cancelClick = false;
+        
+        var cancelClick = false,// flag to cancel click event if already handled by end resize event (the mousedown, mousemove, mouseup sequence fires a click event.).
+            modalClickHandlerTS=0 // stores last click timestamp to prevent executing the handler twice on double click.
+            ;
 
         /**
          * Helper: closes the modal dialog when clicking the modal
@@ -1204,14 +1201,18 @@
          * @return {undefined}
          */
         function modalClickHandler(event, instance) {
-            var target = event.srcElement || event.target;
-            if (!cancelClick && target === instance.elements.modal && instance.get('closableByDimmer') === true) {
-                triggerClose(instance);
+            if(event.timeStamp - modalClickHandlerTS > 200 && (modalClickHandlerTS = event.timeStamp) && !cancelClick){
+                var target = event.srcElement || event.target;
+                if (instance.get('closableByDimmer') === true && target === instance.elements.modal) {
+                    triggerClose(instance);
+                }
+                cancelClick = false;
+                return false;
             }
-            cancelClick = false;
-            return false;
         }
 
+        // stores last call timestamp to prevent triggering the callback twice.
+        var callbackTS = 0;
         // flag to cancel keyup event if already handled by click event (pressing Enter on a focusted button).
         var cancelKeyup = false;
         /** 
@@ -1223,18 +1224,20 @@
          * @return {undefined}
          */
         function triggerCallback(instance, check) {
-            for (var idx = 0; idx < instance.__internal.buttons.length; idx += 1) {
-                var button = instance.__internal.buttons[idx];
-                if (!button.element.disabled && check(button)) {
-                    var closeEvent = createCloseEvent(idx, button);
-                    if (typeof instance.callback === 'function') {
-                        instance.callback.apply(instance, [closeEvent]);
+            if(Date.now() - callbackTS > 200 && (callbackTS = Date.now())){
+                for (var idx = 0; idx < instance.__internal.buttons.length; idx += 1) {
+                    var button = instance.__internal.buttons[idx];
+                    if (!button.element.disabled && check(button)) {
+                        var closeEvent = createCloseEvent(idx, button);
+                        if (typeof instance.callback === 'function') {
+                            instance.callback.apply(instance, [closeEvent]);
+                        }
+                        //close the dialog only if not canceled.
+                        if (closeEvent.cancel === false) {
+                            instance.close();
+                        }
+                        break;
                     }
-                    //close the dialog only if not canceled.
-                    if (closeEvent.cancel === false) {
-                        instance.close();
-                    }
-                    break;
                 }
             }
         }
@@ -2376,6 +2379,11 @@
                         this.__internal.activeElement = document.activeElement;
                     }
 
+                    // set tabindex attribute on body element this allows script to give it focusable
+                    if(!document.body.hasAttribute('tabindex')) {
+                        document.body.setAttribute( 'tabindex', tabindex = '0');
+                    }
+
                     //allow custom dom manipulation updates before showing the dialog.
                     if(typeof this.prepare === 'function'){
                         this.prepare();
@@ -2406,7 +2414,7 @@
                     }
 
                     updateAbsPositionFix(this);
-
+                    this.elements.root.removeAttribute('style');
                     removeClass(this.elements.root, classes.animationOut);
                     addClass(this.elements.root, classes.animationIn);
 
@@ -2493,6 +2501,10 @@
                     }
 
                 }
+                // last dialog and tab index was set by us, remove it.
+                if(!openDialogs.length && tabindex === '0'){
+                    document.body.removeAttribute('tabindex');
+                }
                 return this;
             },
             /**
@@ -2510,15 +2522,17 @@
              * @return {undefined}
              */
             destroy:function(){
-                if (this.__internal.isOpen ) {
-                    //mark dialog for destruction, this will be called on tranistionOut event.
-                    this.__internal.destroy = function(){
+                if(this.__internal) {
+                    if (this.__internal.isOpen ) {
+                        //mark dialog for destruction, this will be called on tranistionOut event.
+                        this.__internal.destroy = function(){
+                            destruct(this, initialize);
+                        };
+                        //close the dialog to unbind all events.
+                        this.close();
+                    }else if(!this.__internal.destroy){
                         destruct(this, initialize);
-                    };
-                    //close the dialog to unbind all events.
-                    this.close();
-                }else{
-                    destruct(this, initialize);
+                    }
                 }
                 return this;
             },

@@ -132,7 +132,7 @@ class MongoAccess(object):
                 else:
                     doc_mdata = None
                 self.append_document_to_collection(new_name, docname, doc, "freeform", None, doc_mdata)
-        return {"success": True, "message": "Collection created"}
+        return {"success": True, "message": "Collection created", "metadata": mdata}
 
     def append_document_to_collection(self, collection_name, given_docname, doc, doc_type,
                                       header_list=None, document_metadata=None):

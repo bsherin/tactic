@@ -1,10 +1,16 @@
 
 import {MergeViewerSocket, MergeViewerApp} from "./merge_viewer_app.js";
+import {doFlash} from "./toaster.js"
+import {render_navbar} from "./blueprint_navbar.js";
+import {postAjax, postAjaxPromise} from "./communication_react.js"
+import {withErrorDrawer} from "./error_drawer.js";
+import {withStatus} from "./toaster.js";
 
 function tile_differ_main ()  {
+    render_navbar();
     let get_url = "get_module_code";
-
     var tsocket = new MergeViewerSocket("main", 5000);
+    let TileDifferAppPlus = withErrorDrawer(withStatus(TileDifferApp, tsocket), tsocket);
     postAjaxPromise(`${get_url}/${window.resource_name}`, {})
         .then(function (data) {
             var edit_content = data.the_content;
@@ -12,10 +18,10 @@ function tile_differ_main ()  {
                 .then(function (data) {
                     let tile_list = data.tile_names;
                     let domContainer = document.querySelector('#root');
-                    ReactDOM.render(<TileDifferApp resource_name={window.resource_name}
-                                                   tile_list={tile_list}
-                                                   edit_content={edit_content}
-                                                   second_resource_name={window.second_resource_name}
+                    ReactDOM.render(<TileDifferAppPlus resource_name={window.resource_name}
+                                                       tile_list={tile_list}
+                                                       edit_content={edit_content}
+                                                       second_resource_name={window.second_resource_name}
                     />, domContainer);
                 })
                 .catch(doFlash)
@@ -48,7 +54,8 @@ class TileDifferApp extends React.Component {
         this.savedContent = props.edit_content
     }
 
-    handleSelectChange(new_value) {
+    handleSelectChange(event) {
+        let new_value = event.currentTarget.value;
         this.state.tile_popup_val = new_value;
         let self = this;
         postAjaxPromise("get_module_code/" + new_value, {})
@@ -64,7 +71,8 @@ class TileDifferApp extends React.Component {
 
     render() {
         return (
-            <MergeViewerApp resource_name={this.props.resource_name}
+            <MergeViewerApp {...this.props.statusFuncs}
+                            resource_name={this.props.resource_name}
                             option_list={this.state.tile_list}
                             select_val={this.state.tile_popup_val}
                             edit_content={this.state.edit_content}

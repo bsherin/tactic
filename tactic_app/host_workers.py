@@ -21,6 +21,7 @@ global_tile_manager = tactic_app.global_tile_manager
 
 from tactic_app.js_source_management import _develop
 
+
 class HostWorker(QWorker):
     def __init__(self):
         QWorker.__init__(self)
@@ -69,7 +70,7 @@ class HostWorker(QWorker):
 
                 db[user_obj.code_collection_name].update_one({"code_name": code_name},
                                                              {'$set': {"the_code": the_code, "metadata": mdata}})
-                self.update_selector_row(self.build_res_dict(code_name, mdata))
+                # self.update_selector_row(self.build_res_dict(code_name, mdata))
                 result = {"success": True, "message": "Module Successfully Saved", "alert_type": "alert-success"}
                 self.submit_response(local_task_packet, result)
                 return
@@ -165,7 +166,7 @@ class HostWorker(QWorker):
 
     @task_worthy
     def stop_main_status_spinner(self, data):
-        socketio.emit('stop-status-spinner', {}, namespace='/main', room=data["main_id"])
+        socketio.emit('stop-spinner', {}, namespace='/main', room=data["main_id"])
 
     @task_worthy
     def show_um_status_message_task(self, data):
@@ -437,7 +438,7 @@ class HostWorker(QWorker):
             if "summary" in data:
                 summary_text = data["summary"]
             else:
-                summary_text = "<b>error</b> " + user_tstring
+                summary_text = "error " + user_tstring
                 data["message"] = {"unique_id": unique_id,
                                    "type": "fixed",
                                    "is_error": True,
@@ -449,7 +450,7 @@ class HostWorker(QWorker):
             if "summary" in data:
                 summary_text = data["summary"]
             else:
-                summary_text = "<b>log_it item</b> " + user_tstring
+                summary_text = "log_it item " + user_tstring
 
         data["message"] = {"unique_id": unique_id,
                            "type": "fixed",
@@ -492,7 +493,7 @@ class HostWorker(QWorker):
         user_obj = load_user(user_id)
         user_tstring = user_obj.get_timestrings(datetime.datetime.utcnow())[0]
         unique_id = str(uuid.uuid4())
-        summary_text = "<b>code item </b> " + user_tstring
+        summary_text = "code item " + user_tstring
         data["message"] = {"unique_id": unique_id,
                            "type": "code",
                            "am_shrunk": False,

@@ -1,8 +1,9 @@
 import {showModalReact} from "./modal_react.js";
 import {postWithCallback} from "./communication_react.js"
-export {ProjectMenu, ColumnMenu, MenuComponent}
+import {doFlash} from "./toaster.js"
+export {ProjectMenu, ColumnMenu, ViewMenu, MenuComponent}
 
-var Rbs = window.ReactBootstrap;
+let Bp = blueprint;
 
 class MenuComponent extends React.Component {
     constructor(props) {
@@ -16,41 +17,55 @@ class MenuComponent extends React.Component {
 
     render () {
         let pruned_list = Object.keys(this.props.option_dict).filter(this._filter_on_match_list);
-        let choices = pruned_list.map((opt_name, index) => (
-            <Rbs.Dropdown.Item disabled={this.props.disable_all || this.props.disabled_items.includes(opt_name)}
-                               onClick={this.props.option_dict[opt_name]}
-                               key={opt_name}>
-                {opt_name}
-            </Rbs.Dropdown.Item>
-        ));
-        return (
-            <Rbs.Dropdown>
-                <Rbs.Dropdown.Toggle id={this.props.menu_name}
-                                     variant="secondary"
-                                     size="sm"
-                >
-                    {this.props.menu_name}
-                </Rbs.Dropdown.Toggle>
-                <Rbs.Dropdown.Menu>
-                    {choices}
-                </Rbs.Dropdown.Menu>
-            </Rbs.Dropdown>
-        )
+        let choices = pruned_list.map((opt_name, index) => {
+                let icon = this.props.icon_dict.hasOwnProperty(opt_name) ? this.props.icon_dict[opt_name] : null;
+                return (
+                    <Bp.MenuItem disabled={this.props.disable_all || this.props.disabled_items.includes(opt_name)}
+                                 onClick={this.props.option_dict[opt_name]}
+                                 icon={icon}
+                                 key={opt_name}
+                                 text={opt_name}
+                    >
+                    </Bp.MenuItem>
+                )
+            }
+        );
+        let the_menu = (
+            <Bp.Menu>
+                {choices}
+            </Bp.Menu>
+        );
+        if (this.props.alt_button) {
+            let AltButton = this.props.alt_button;
+            return (<Bp.Popover minimal={true} content={the_menu} position={Bp.PopoverPosition.BOTTOM_LEFT}>
+                <AltButton/>
+            </Bp.Popover>)
+        } else {
+            return (
+                <Bp.Popover minimal={true} content={the_menu} position={Bp.PopoverPosition.BOTTOM_LEFT}>
+                    <Bp.Button text={this.props.menu_name} small={true} minimal={true}/>
+                </Bp.Popover>
+            )
+        }
     }
 }
 
 MenuComponent.propTypes = {
     menu_name: PropTypes.string,
     option_dict: PropTypes.object,
+    icon_dict: PropTypes.object,
     disabled_items: PropTypes.array,
     disable_all: PropTypes.bool,
     hidden_items: PropTypes.array,
+    alt_button: PropTypes.func
 };
 
 MenuComponent.defaultProps = {
     disabled_items: [],
     disable_all: false,
-    hidden_items: []
+    hidden_items: [],
+    icon_dict: {},
+    alt_button: null
 };
 
 class ProjectMenu extends React.Component {
@@ -60,14 +75,17 @@ class ProjectMenu extends React.Component {
     }
 
     _saveProjectAs() {
-        startSpinner();
+        this.props.startSpinner();
         let self = this;
         postWithCallback("host", "get_project_names", {"user_id": window.user_id}, function (data) {
             let checkboxes;
             showModalReact("Save Project As", "New Project Name", CreateNewProject,
-                      "NewProject", data["project_names"])
+                      "NewProject", data["project_names"], null, doCancel)
         });
 
+        function doCancel() {
+            self.props.stopSpinner()
+        }
         function CreateNewProject (new_name) {
             //let console_node = cleanse_bokeh(document.getElementById("console"));
             const result_dict = {
@@ -78,8 +96,14 @@ class ProjectMenu extends React.Component {
             };
 
             result_dict.interface_state = self.props.interface_state;
-            result_dict["purgetiles"] = true;
-            postWithCallback(window.main_id, "save_new_project", result_dict, save_as_success);
+            if (window.is_notebook) {
+                postWithCallback(window.main_id, "save_new_notebook_project", result_dict, save_as_success);
+            }
+            else {
+                result_dict["purgetiles"] = true;
+                postWithCallback(window.main_id, "save_new_project", result_dict, save_as_success);
+            }
+
 
             function save_as_success(data_object) {
                 if (data_object["success"]) {
@@ -87,17 +111,19 @@ class ProjectMenu extends React.Component {
                     window.is_project = true;
                     window._project_name = new_name;
                     document.title = new_name;
-                    clearStatusMessage();
+                    self.props.clearStatusMessage();
                     data_object.alert_type = "alert-success";
                     data_object.timeout = 2000;
                     postWithCallback("host", "refresh_project_selector_list", {'user_id': window.user_id});
-                    doFlashStopSpinner(data_object);
+                    self.props.stopSpinner();
+                    doFlash(data_object)
                 }
                 else {
-                    clearStatusMessage();
+                    self.props.clearStatusMessage();
                     data_object["message"] = data_object["message"];
                     data_object["alert-type"] = "alert-warning";
-                    doFlashStopSpinner(data_object)
+                    self.props.stopSpinner();
+                    doFlash(data_object)
                 }
             }
         }
@@ -113,10 +139,10 @@ class ProjectMenu extends React.Component {
         result_dict.interface_state = this.props.interface_state;
 
         //tableObject.startTableSpinner();
-        startSpinner();
+        this.props.startSpinner();
         postWithCallback(window.main_id, "update_project", result_dict, updateSuccess);
         function updateSuccess(data) {
-            startSpinner();
+            self.props.startSpinner();
             if (data.success) {
                 data.alert_type = "alert-success";
                 data.timeout = 2000;
@@ -125,13 +151,14 @@ class ProjectMenu extends React.Component {
             else {
                 data.alert_type = "alert-warning";
             }
-            clearStatusMessage();
-            doFlashStopSpinner(data)
+            self.props.clearStatusMessage();
+            self.props.stopSpinner();
+            doFlash(data_object)
         }
     }
 
     _exportAsJupyter() {
-        startSpinner();
+        this.props.startSpinner();
         let self = this;
         postWithCallback("host", "get_project_names", {"user_id": user_id}, function (data) {
             let checkboxes;
@@ -158,7 +185,7 @@ class ProjectMenu extends React.Component {
             postWithCallback(window.main_id, "export_to_jupyter_notebook", result_dict, save_as_success);
 
             function save_as_success(data_object) {
-                clearStatusMessage();
+               self.props.clearStatusMessage();
                 if (data_object.success) {
                     data_object.alert_type = "alert-success";
                     data_object.timeout = 2000;
@@ -166,7 +193,8 @@ class ProjectMenu extends React.Component {
                 else {
                     data_object["alert-type"] = "alert-warning";
                 }
-                doFlashStopSpinner(data_object)
+                self.props.stopSpinner();
+                doFlash(data_object)
             }
         }
     }
@@ -205,7 +233,18 @@ class ProjectMenu extends React.Component {
             "Export as Jupyter Notebook": this._exportAsJupyter,
             "Open Console as Notebook": this._consoleToNotebook,
             "Export Table as Collection": this._exportDataTable,
-            "change collection": this.props.changeCollection
+            "Change collection": this.props.changeCollection
+        }
+    }
+
+    get icon_dict() {
+        return {
+            "Save As...": "floppy-disk",
+            "Save": "saved",
+            "Export as Jupyter Notebook": "export",
+            "Open Console as Notebook": "console",
+            "Export Table as Collection": "export",
+            "Change collection": "exchange"
         }
     }
 
@@ -213,6 +252,7 @@ class ProjectMenu extends React.Component {
         return (
             <MenuComponent menu_name="Project"
                            option_dict={this.option_dict}
+                           icon_dict={this.icon_dict}
                            disabled_items={this.props.disabled_items}
                            disable_all={false}
                            hidden_items={this.props.hidden_items}
@@ -236,6 +276,75 @@ class ColumnMenu extends React.Component {
     }
 
     _shift_column_left() {
+        let cnum = this.props.filtered_column_names.indexOf(this.props.selected_column);
+        if (cnum == 0) return;
+        let target_col = this.props.filtered_column_names[cnum - 1];
+        this.props.moveColumn(this.props.selected_column, target_col);
+    }
+
+    _shift_column_right() {
+        let cnum = this.props.table_spec.column_names.indexOf(this.props.selected_column);
+        if (cnum == (this.props.table_spec.column_names.length - 1)) return;
+        let target_col = this.props.table_spec.column_names[cnum + 2];
+        this.props.moveColumn(this.props.selected_column, target_col);
+    }
+
+
+    get option_dict () {
+        return {
+            "Shift Left": this._shift_column_left,
+            "Shift Right": this._shift_column_right,
+            "Hide": this.props.hideColumn,
+            "Hide in All Docs": this.props.hideInAll,
+            "Unhide All": this.props.unhideAllColumns,
+            "Add Column": () => this.props.addColumn(false),
+            "Add Column In All Docs": () => this.props.addColumn(true)
+        }
+    }
+
+    get icon_dict () {
+        return {
+            "Shift Left": "direction-left",
+            "Shift Right": "direction-right",
+            "Hide": "eye-off",
+            "Hide in All Docs": "eye-off",
+            "Unhide All": "eye-on",
+            "Add Column": "add-column-right",
+            "Add Column In All Docs": "add-column-right"
+        }
+    }
+
+
+    render () {
+        return (
+            <MenuComponent menu_name="Column"
+                           option_dict={this.option_dict}
+                           icon_dict={this.icon_dict}
+                           disabled_items={this.props.disabled_items}
+                           hidden_items={[]}
+            />
+        )
+    }
+}
+ColumnMenu.propTypes = {
+    moveColumn: PropTypes.func,
+    table_spec: PropTypes.object,
+    filtered_column_names: PropTypes.array,
+    selected_column: PropTypes.string,
+    hideColumn: PropTypes.func,
+    hideInAll: PropTypes.func,
+    unhideAllColumns: PropTypes.func,
+    addColumn: PropTypes.func,
+    disabled_items: PropTypes.array,
+};
+
+class ViewMenu extends React.Component {
+    constructor(props) {
+        super(props);
+        doBinding(this)
+    }
+
+    _shift_column_left() {
         let cnum = this.props.table_spec.column_names.indexOf(this.props.selected_column);
         if (cnum == 0) return;
         let target_col = this.props.table_spec.column_names[cnum - 1];
@@ -251,21 +360,26 @@ class ColumnMenu extends React.Component {
 
 
     get option_dict () {
-        return {
-            "Shift Left": this._shift_column_left,
-            "Shift Right": this._shift_column_right,
-            "Hide": this.props.hideColumn,
-            "Hide in All Docs": this.props.hideInAll,
-            "Unhide All": this.props.unhideAllColumns,
-            "Add Column": this.props.addColumn,
-            "Add Column In All Docs": this.props.addColumnInAll
-        }
+        let opt_name = this.props.table_is_shrunk ? "Maximize Table" : "Minimize Table";
+        let result = {};
+        result[opt_name] = this.props.toggleTableShrink;
+        result["Show Error Drawer"] = this.props.openErrorDrawer;
+        return result
+    }
+
+    get icon_dict () {
+        let opt_name = this.props.table_is_shrunk ? "Maximize Table" : "Minimize Table";
+        let result = {};
+        result[opt_name] = this.props.table_is_shrunk ? "maximize" : "minimize";
+        result["Show Error Drawer"] = "panel-stats";
+        return result
     }
 
     render () {
         return (
-            <MenuComponent menu_name="Column"
+            <MenuComponent menu_name="View"
                            option_dict={this.option_dict}
+                           icon_dict={this.icon_dict}
                            disabled_items={[]}
                            disable_all={this.props.disable_all}
                            hidden_items={[]}
@@ -273,14 +387,8 @@ class ColumnMenu extends React.Component {
         )
     }
 }
-ColumnMenu.propTypes = {
-    moveColumn: PropTypes.func,
-    table_spec: PropTypes.object,
-    selected_column: PropTypes.string,
-    hideColumn: PropTypes.func,
-    hideInAll: PropTypes.func,
-    unhideAllColumns: PropTypes.func,
-    addColumn: PropTypes.func,
-    addColumnInAll: PropTypes.func,
-    disable_all: PropTypes.bool,
+ViewMenu.propTypes = {
+    table_is_shrunk: PropTypes.bool,
+    toggleTableShrink: PropTypes.func,
+    openErrorDrawer: PropTypes.func
 };

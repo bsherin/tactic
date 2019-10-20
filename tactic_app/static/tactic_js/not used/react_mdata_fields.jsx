@@ -3,6 +3,7 @@ export {TagsField, NotesField, CombinedMetadata}
 
 import {ViewerContext} from "./resource_viewer_context.js";
 import {postAjaxPromise} from "./communication_react.js"
+import {doFlash} from "./toaster.js"
 
 var Rbs = window.ReactBootstrap;
 
@@ -186,7 +187,6 @@ TagsField.propTypes = {
     res_type: PropTypes.string
 };
 
-
 class NotesField extends React.Component {
 
     constructor(props) {
@@ -297,7 +297,7 @@ NotesField.propTypes = {
     handleBlur: PropTypes.func
 };
 
-NotesField.defaultProops = {
+NotesField.defaultProps = {
     handleBlur: null
 };
 

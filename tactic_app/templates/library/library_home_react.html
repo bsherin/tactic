@@ -1,4 +1,4 @@
-{% extends "base_react.html" %}
+{% extends "base_reactns.html" %}
 
 {% block title %}{{ page_title }}{% endblock %}
 
@@ -7,16 +7,16 @@
 
 {% block styles %}
     <link rel="stylesheet" href="{{url_for('static', filename='css/jquery-ui.min.css')}}">
-    <link rel="stylesheet" href="{{url_for('static', filename='css/react_tags_styles.css')}}">
     <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/loader.css', v=version_string)}}">
 {% endblock %}
 
 {% block page_content %}
     <div id="modal-area">
     </div>
-    <div id="library-home-root" class="container-fluid d-flex" style="padding-left: 10px">
+    <div id="library-home-root" class="container-fluid d-flex">
 
     </div>
+    <canvas id="measure-canvas" style="display:none"></canvas>
 {% endblock %}
 {% block scripts %}
     <script src="{{url_for('static', filename='js/showdown.js')}}"></script>
