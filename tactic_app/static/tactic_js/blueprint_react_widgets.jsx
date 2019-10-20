@@ -1,8 +1,26 @@
 
-export {LabeledSelectList, LabeledFormField, SelectList, OrderableTable, BpOrderableTable, DragThing, GlyphButton}
+export {LabeledSelectList, LabeledFormField, SelectList, OrderableTable, BpOrderableTable, DragThing, GlyphButton, withTooltip}
 
 let Bp = blueprint;
 let Bpt = bptable;
+
+function withTooltip(WrappedComponent) {
+    return class extends React.Component {
+        render () {
+            if (this.props.tooltip) {
+                let delay = this.props.tooltipDelay ? this.props.tooltipDelay : 1000;
+                return (
+                        <Bp.Tooltip content={this.props.tooltip} hoverOpenDelay={delay}>
+                            <WrappedComponent {...this.props}/>
+                        </Bp.Tooltip>
+                    )
+                }
+            else {
+                return  <WrappedComponent {...this.props}/>
+            }
+        }
+    }
+}
 
 class GlyphButton extends React.Component {
 
@@ -21,7 +39,7 @@ class GlyphButton extends React.Component {
                     <span className="extra-glyph-text">{this.props.extra_glyph_text}</span>
                }
             </Bp.Button>
-        )
+        );
     }
 }
 
@@ -31,15 +49,17 @@ GlyphButton.propTypes = {
     extra_glyph_text: PropTypes.string,
     style: PropTypes.object,
     handleClick: PropTypes.func,
-    intent: PropTypes.string
+    intent: PropTypes.string,
 };
 
 GlyphButton.defaultProps = {
     style: null,
     extra_glyph_text: null,
     minimal: true,
-    intent: "none"
+    intent: "none",
 };
+
+GlyphButton = withTooltip(GlyphButton);
 
 
 class DragThing extends React.Component {
@@ -186,42 +206,6 @@ SelectList.defaultProps = {
     maxWidth: null,
     fontSize: null,
     minimal: false
-};
-
-
-class SelectListNoRbs extends React.Component {
-
-    constructor(props) {
-        super(props);
-        this.handleChange = this.handleChange.bind(this)
-    }
-
-    handleChange(event) {
-        this.props.handleChange(event.target.value)
-    }
-    render() {
-        let sstyle = {"marginBottom": 5, "width": "auto"};
-        let option_items = this.props.option_list.map((opt, index) =>
-                <option key={index}>
-                    {opt}
-                </option>
-        );
-        return (
-            <select style={sstyle}
-                    className="form-control"
-                    onChange={this.handleChange}
-                    value={this.props.value}
-            >
-                {option_items}
-            </select>
-        )
-    }
-}
-
-SelectListNoRbs.propTypes = {
-    option_list: PropTypes.array,
-    handleChange: PropTypes.func,
-    value: PropTypes.string
 };
 
 class TableCell extends React.Component {

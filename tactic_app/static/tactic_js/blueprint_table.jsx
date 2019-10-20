@@ -69,7 +69,7 @@ class BlueprintTable extends React.Component {
                 return "empty cell"
             }
             return self.props.data_row_dict[rowIndex][fcnames[colIndex]]
-        }, {getNumBufferLines: 0});
+        }, {getNumBufferLines: 1});
     }
 
     _rowHeaderCellRenderer(rowIndex) {

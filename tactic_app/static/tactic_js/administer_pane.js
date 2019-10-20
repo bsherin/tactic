@@ -90,9 +90,7 @@ class AdminPane extends React.Component {
         let res_name = res_dict[this.props.id_field];
         let ind = this.get_data_list_index(res_name);
         if (ind == -1) {
-            this._animation_phase(() => {
-                this._add_new_row(res_dict);
-            });
+            this._add_new_row(res_dict);
         } else {
             let new_data_list = [...this.state.data_list];
             let the_row = new_data_list[ind];
@@ -255,12 +253,6 @@ class AdminPane extends React.Component {
         this.setState({ data_list: new_data_list }, this._refresh_for_new_data_list);
     }
 
-    _animation_phase(func_to_animate) {
-        this.setState({ "show_animations": true });
-        func_to_animate();
-        this.setState({ "show_animations": false });
-    }
-
     _refresh_func() {
         this.componentDidMount();
     }
@@ -378,11 +370,10 @@ class AdminPane extends React.Component {
             { onResize: this._handleResize, observeParents: true },
             React.createElement(
                 "div",
-                { ref: this.top_ref, className: "d-flex flex-column mt-4" },
+                { ref: this.top_ref, className: "d-flex flex-column mt-3" },
                 React.createElement(ToolbarClass, _extends({ selected_resource: this.props.selected_resource,
                     list_of_selected: this.props.list_of_selected,
                     setConsoleText: this._setConsoleText,
-                    animation_phase: this._animation_phase,
                     delete_row: this._delete_row,
                     refresh_func: this._refresh_func,
                     startSpinner: this.props.startSpinner,

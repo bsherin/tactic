@@ -111,14 +111,15 @@ class ListViewerApp extends React.Component {
         let bgs;
         if (this.props.is_repository) {
             bgs = [[{"name_text": "Copy", "icon_name": "share",
-                        "click_handler": () => {copyToLibrary("list", this.props.resource_name)}}]
+                        "click_handler": () => {copyToLibrary("list", this.props.resource_name)}, tooltip: "Copy to library"}]
             ]
         }
         else {
-            bgs = [[{"name_text": "Save", "icon_name": "floppy-disk", "click_handler": this._saveMe},
-                    {"name_text": "SaveAs", "icon_name": "floppy-disk", "click_handler": this._saveMeAs},
+            bgs = [[{"name_text": "Save", "icon_name": "saved", "click_handler": this._saveMe, tooltip: "Save"},
+                    {"name_text": "SaveAs", "icon_name": "floppy-disk", "click_handler": this._saveMeAs, tooltip: "Save As"},
                     {"name_text": "Share", "icon_name": "share",
-                          "click_handler": () => {sendToRepository("list", this.props.resource_name)}}]
+                          "click_handler": () => {sendToRepository("list", this.props.resource_name)},
+                        tooltip: "Share to repository"}]
             ]
         }
         for (let bg of bgs) {

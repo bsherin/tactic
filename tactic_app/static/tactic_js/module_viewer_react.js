@@ -101,12 +101,12 @@ class ModuleViewerApp extends React.Component {
             bgs = [[{ "name_text": "Copy", "icon_name": "share",
                 "click_handler": () => {
                     copyToLibrary("modules", this.props.resource_name);
-                } }]];
+                }, tooltip: "Copy to library" }]];
         } else {
-            bgs = [[{ "name_text": "Save", "icon_name": "floppy-disk", "click_handler": this._saveMe }, { "name_text": "Mark", "icon_name": "map-marker", "click_handler": this._saveAndCheckpoint }, { "name_text": "SaveAs", "icon_name": "floppy-disk", "click_handler": this._saveMeAs }, { "name_text": "Load", "icon_name": "upload", "click_handler": this._loadModule }, { "name_text": "Share", "icon_name": "share",
+            bgs = [[{ "name_text": "Save", "icon_name": "saved", "click_handler": this._saveMe, tooltip: "Save" }, { "name_text": "Mark", "icon_name": "map-marker", "click_handler": this._saveAndCheckpoint, tooltip: "Save and checkpoint" }, { "name_text": "SaveAs", "icon_name": "floppy-disk", "click_handler": this._saveMeAs, tooltip: "Save as" }, { "name_text": "Load", "icon_name": "upload", "click_handler": this._loadModule, tooltip: "Load tile" }, { "name_text": "Share", "icon_name": "share",
                 "click_handler": () => {
                     sendToRepository("tile", this.props.resource_name);
-                } }], [{ "name_text": "History", "icon_name": "history", "click_handler": this._showHistoryViewer }, { "name_text": "Compare", "icon_name": "git-branch", "click_handler": this._showTileDiffer }]];
+                }, tooltip: "Share to repository" }], [{ "name_text": "History", "icon_name": "history", "click_handler": this._showHistoryViewer, tooltip: "Show history viewer" }, { "name_text": "Compare", "icon_name": "comparison", "click_handler": this._showTileDiffer, tooltip: "Compare to another tile" }]];
         }
 
         for (let bg of bgs) {

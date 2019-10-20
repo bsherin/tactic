@@ -15,11 +15,25 @@ let Bpt = bptable;
 
 
 class BodyMenu extends React.Component {
+
+    getIntent(item) {
+        return item.intent ? item.intent : null
+    }
+
     render() {
         let disabled = false;
-        let menu_items = this.props.items.map((item)=>(
-            <Bp.MenuItem icon={item.icon} disabled={disabled} onClick={()=>item.onClick(this.props.selected_rows)} text={item.text}/>
-        ));
+        let menu_items = this.props.items.map((item, index)=> {
+                if (item.text == "__divider__") {
+                    return <Bp.Menu.Divider key={index}/>
+                } else {
+                    return (<Bp.MenuItem icon={item.icon} disabled={disabled}
+                                         onClick={() => item.onClick(this.props.selected_rows[0].name)}
+                                         intent={this.getIntent(item)}
+                                         key={item.text}
+                                         text={item.text}/>)
+                }
+            }
+        );
         return (
             <Bp.Menu>
                 {menu_items}
@@ -51,6 +65,7 @@ class LibraryPane extends React.Component {
             tag_list: [],
             auxIsOpen: false,
             showOmnibar: false,
+            contextMenuItems: []
         };
         doBinding(this);
         this.toolbarRef = null;
@@ -58,6 +73,10 @@ class LibraryPane extends React.Component {
             props.tsocket.socket.on(`update-${props.res_type}-selector-row`, this._handleRowUpdate);
             props.tsocket.socket.on(`refresh-${props.res_type}-selector`, this._refresh_func);
         }
+    }
+
+    _sendContextMenuItems(items) {
+        this.setState({contextMenuItems: items})
     }
 
     _renderBodyContextMenu(menu_context, current_data_list) {
@@ -69,14 +88,14 @@ class LibraryPane extends React.Component {
                 let first_row = region["rows"][0];
                 let last_row = region["rows"][1];
                 for (let i=first_row; i<=last_row; ++i) {
-                    if (!selected_row_indices.includes(i)) {
+                    if (!selected_rows.includes(i)) {
                         selected_rows.push(current_data_list[i]);
                     }
                 }
             }
         }
         return (
-            <BodyMenu items={this.props.contextItems} selected_rows={selected_rows}/>
+            <BodyMenu items={this.state.contextMenuItems} selected_rows={selected_rows}/>
         )
     }
 
@@ -130,7 +149,7 @@ class LibraryPane extends React.Component {
         let res_name = res_dict.name;
         let ind = this.get_data_list_index(res_name);
         if (ind == -1) {
-            this._animation_phase(() => {this._add_new_row(res_dict)})
+            this._add_new_row(res_dict)
         }
         else {
             let new_data_list = [...this.state.data_list];
@@ -601,7 +620,7 @@ class LibraryPane extends React.Component {
         })
     }
 
-    _view_func(e, the_view=null) {
+    _view_func(the_view=null) {
         if (the_view == null) {
             the_view = this.view_views[this.props.res_type]
         }
@@ -610,15 +629,22 @@ class LibraryPane extends React.Component {
         }
     }
 
+    _view_resource(resource_name, the_view=null) {
+        if (the_view == null) {
+            the_view = this.view_views[this.props.res_type]
+        }
+        window.open($SCRIPT_ROOT + the_view + resource_name)
+    }
+
     _add_new_row(new_row) {
         let new_data_list = [...this.state.data_list];
         new_data_list.push(new_row);
         this.setState({data_list: new_data_list}, this._refresh_for_new_data_list)
     }
 
-    _duplicate_func (duplicate_view) {
+    _duplicate_func (duplicate_view, resource_name=null) {
         let res_type = this.props.res_type;
-        let res_name = this.props.selected_resource.name;
+        let res_name = resource_name ? resource_name : this.props.selected_resource.name;
         $.getJSON($SCRIPT_ROOT + "get_resource_names/" + res_type, function(data) {
             showModalReact(`Duplicate ${res_type}`, "New Name",
                 DuplicateResource, res_name, data.resource_names)
@@ -632,21 +658,15 @@ class LibraryPane extends React.Component {
             };
             postAjaxPromise(duplicate_view, result_dict)
                 .then((data) => {
-                    self._animation_phase(() => {self._add_new_row(data.new_row)})
-                })
+                    self._add_new_row(data.new_row)}
+                )
                 .catch(doFlash)
         }
     }
 
-    _animation_phase(func_to_animate) {
-        this.setState({"show_animations": true});
-        func_to_animate();
-        this.setState({"show_animations": false})
-    }
-
-    _delete_func (delete_view) {
+    _delete_func (delete_view, resource_name=null) {
         var res_type = this.props.res_type;
-        var res_names = this.props.list_of_selected;
+        let res_names = resource_name ? [resource_name] : this.props.list_of_selected;
         var confirm_text;
         if (res_names.length==1) {
             let res_name = res_names[0];
@@ -668,9 +688,9 @@ class LibraryPane extends React.Component {
         })
     }
 
-    _rename_func () {
+    _rename_func (resource_name=null) {
         let res_type = this.props.res_type;
-        let res_name = this.props.selected_resource.name;
+        let res_name = resource_name ? resource_name : this.props.selected_resource.name;
         let self = this;
         $.getJSON($SCRIPT_ROOT + "get_resource_names/" + res_type, function(data) {
                 const res_names = data["resource_names"];
@@ -801,7 +821,7 @@ class LibraryPane extends React.Component {
         let right_pane;
         let split_tags = this.props.selected_resource.tags == "" ? [] : this.props.selected_resource.tags.split(" ");
         let outer_style = {marginLeft: 20, marginTop: 90, overflow: "scroll",
-            padding: 15, backgroundColor: "#137CBD26"};
+            padding: 15, backgroundColor: "#f5f8fa"};
         let mdata_element = (
                 <CombinedMetadata tags={split_tags}
                                   elevation={2}
@@ -903,7 +923,7 @@ class LibraryPane extends React.Component {
                                         sortColumn={this._set_sort_state}
                                         selectedRegions={this.props.selectedRegions}
                                         onSelection={this._onTableSelection}
-                                         // renderBodyContextMenu={this._renderBodyContextMenu}
+                                         renderBodyContextMenu={this._renderBodyContextMenu}
                                         handleRowDoubleClick={this._handleRowDoubleClick}
                                         handleAddTag={this._handleAddTag}
                                     />
@@ -913,7 +933,7 @@ class LibraryPane extends React.Component {
         );
         return (
             <Bp.ResizeSensor onResize={this._handleResize} observeParents={true}>
-                <div ref={this.top_ref} className="d-flex flex-column mt-4" >
+                <div ref={this.top_ref} className="d-flex flex-column mt-3" >
                     <ToolbarClass selected_resource={this.props.selected_resource}
                                   multi_select={this.props.multi_select}
                                   list_of_selected={this.props.list_of_selected}
@@ -930,6 +950,8 @@ class LibraryPane extends React.Component {
                                   clearStatusMessage={this.props.clearStatusMessage}
                                   left_position={toolbar_left}
                                   sendRef={this._sendToolbarRef}
+                                  sendContextMenuItems={this._sendContextMenuItems}
+                                  view_resource={this._view_resource}
                                   {...this.props.errorDrawerFuncs}
                                   />
                       <div style={{width: this.state.available_width, height: this.state.available_height}}>

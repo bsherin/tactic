@@ -215,7 +215,7 @@ class RepositoryHomeApp extends React.Component {
                         </Bp.Tab>
                         <Bp.Tab id="lists-pane" panel={lists_pane}>
                             <Bp.Tooltip content="Lists" position={Bp.Position.RIGHT}>
-                                <Bp.Icon icon="numbered-list" iconSize={20} tabIndex={-1} color={this.getIconColor("lists-pane")}/>
+                                <Bp.Icon icon="list" iconSize={20} tabIndex={-1} color={this.getIconColor("lists-pane")}/>
                             </Bp.Tooltip>
                         </Bp.Tab>
                         <Bp.Tab id="code-pane" panel={code_pane}>
@@ -244,13 +244,21 @@ class LibraryToolbar extends React.Component {
                         click_handler: button[1],
                         icon_name: button[2],
                         multi_select: button[3]};
+                    if (button.length > 4) {
+                        new_button.intent = button[4]
+                    }
+                    if (button.length > 5) {
+                        new_button.key_bindings = button[5]
+                    }
+                    if (button.length > 6) {
+                        new_button.tooltip = button[6]
+                    }
                     new_group.push(new_button)
                 }
             }
             if (new_group.length != 0) {
                 new_bgs.push(new_group)
             }
-
         }
         return new_bgs
     }
@@ -334,7 +342,7 @@ class RepositoryCollectionToolbar extends React.Component {
 
     get button_groups() {
         return [
-            [["copy", this.props.repository_copy_func, "import", false]]
+            [["copy", this.props.repository_copy_func, "import", false, "regular", [], "Copy to library"]]
         ];
      }
 
@@ -358,7 +366,7 @@ class RepositoryProjectToolbar extends React.Component {
 
     get button_groups() {
         return [
-            [["copy", this.props.repository_copy_func, "import", false]]
+            [["copy", this.props.repository_copy_func, "import", false, "regular", [], "Copy to library"]]
         ];
      }
 
@@ -380,13 +388,13 @@ class RepositoryTileToolbar extends React.Component {
     }
 
     _tile_view(e) {
-        this.props.view_func(e, "/repository_view_module/")
+        this.props.view_func("/repository_view_module/")
     }
 
     get button_groups() {
         return [
-            [["view", this._tile_view, "eye-open", false],
-                ["copy", this.props.repository_copy_func, "import", false]]
+            [["view", this._tile_view, "eye-open", false, "regular", [], "view"],
+                ["copy", this.props.repository_copy_func, "import", false, "regular", [], "Copy to library"]]
             ];
      }
 
@@ -408,13 +416,13 @@ class RepositoryListToolbar extends React.Component {
     }
 
     _list_view(e) {
-        this.props.view_func(e, "/repository_view_list/")
+        this.props.view_func("/repository_view_list/")
     }
 
     get button_groups() {
         return [
-            [["view", this._list_view, "eye-open", false],
-                ["copy", this.props.repository_copy_func, "import", false]]
+            [["view", this._list_view, "eye-open", false, "regular", [], "view"],
+                ["copy", this.props.repository_copy_func, "import", false, "regular", [], "Copy to library"]]
         ];
      }
 
@@ -437,14 +445,14 @@ class RepositoryCodeToolbar extends React.Component {
     }
 
     _code_view(e) {
-        this.props.view_func(e, "/repository_view_code/")
+        this.props.view_func("/repository_view_code/")
     }
 
 
     get button_groups() {
         return [
-            [["view", this._code_view, "eye-open", false],
-                ["copy", this.props.repository_copy_func, "import", false]]
+            [["view", this._code_view, "eye-open", false, "regular", [], "view"],
+                ["copy", this.props.repository_copy_func, "import", false, "regular", [], "Copy to library"]]
         ];
      }
 
