@@ -136,7 +136,7 @@ class TacticNavbar extends React.Component {
         return (
             <Bp.Navbar style={{paddingLeft: 10}}>
                 <div className="bp3-navbar-group bp3-align-left" ref={this.lg_ref}>
-                    <Bp.Navbar.Heading>
+                    <Bp.Navbar.Heading className="d-flex align-items-center">
                         <img className="mr-2" src={window.tactic_img_url} alt="" width="32 " height="32"/>
                          Tactic
                     </Bp.Navbar.Heading>
