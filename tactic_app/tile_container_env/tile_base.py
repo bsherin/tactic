@@ -751,7 +751,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         self._tworker.debug_log(error_string)
         summary = "Exception of type {}".format(type(ex).__name__)
         if print_to_console:
-            self.log_it(error_string, force_open=True, is_error=True, summary=summary)
+            self._tworker.send_error_entry(summary, error_string)
         return error_string
 
     def _refresh_from_save(self):

@@ -1,59 +1,125 @@
 import {get_all_parent_tags, TagButtonList} from "./tag_buttons_react.js";
-import {CombinedMetadata} from "./react_mdata_fields.js";
-import {SearchForm, SelectorTable} from "./library_widgets.js";
-import {HorizontalPanes, VerticalPanes} from "./resizing_layouts.js";
+import {CombinedMetadata} from "./blueprint_mdata_fields.js";
+import {SearchForm, BpSelectorTable, LibraryOmnibar} from "./library_widgets.js";
+import {HorizontalPanes} from "./resizing_layouts.js";
 import {showModalReact, showConfirmDialogReact} from "./modal_react.js";
 import {postAjax, postAjaxPromise} from "./communication_react.js"
+import {getUsableDimensions} from "./sizing_tools.js"
+import {doFlash} from "./toaster.js"
+import {KeyTrap} from "./key_trap.js";
 
 export {LibraryPane}
+
+let Bp = blueprint;
+let Bpt = bptable;
+
+
+class BodyMenu extends React.Component {
+
+    getIntent(item) {
+        return item.intent ? item.intent : null
+    }
+
+    render() {
+        let disabled = false;
+        let menu_items = this.props.items.map((item, index)=> {
+                if (item.text == "__divider__") {
+                    return <Bp.Menu.Divider key={index}/>
+                } else {
+                    return (<Bp.MenuItem icon={item.icon} disabled={disabled}
+                                         onClick={() => item.onClick(this.props.selected_rows[0].name)}
+                                         intent={this.getIntent(item)}
+                                         key={item.text}
+                                         text={item.text}/>)
+                }
+            }
+        );
+        return (
+            <Bp.Menu>
+                {menu_items}
+            </Bp.Menu>
+        )
+    }
+}
+
+BodyMenu.propTypes = {
+    items: PropTypes.array,
+    selected_rows: PropTypes.array
+};
 
 class LibraryPane extends React.Component {
 
     constructor(props) {
         super(props);
         this.top_ref = React.createRef();
+        this.table_ref = React.createRef();
+        let aheight = getUsableDimensions().usable_height_no_bottom;
+        let awidth = getUsableDimensions().usable_width - 170;
         this.state = {
             data_list: [],
             mounted: false,
-            left_width: this.props.usable_width / 2 - 100,
-            top_pane_height: this.props.usable_height / 2 - 50,
+            available_height: aheight,
+            available_width: awidth,
+            top_pane_height: aheight / 2 - 50,
             match_list: [],
             tag_list: [],
-            sorting_column: null,
-            sorting_field: null,
-            sorting_direction: null,
-            selected_resource: {"name": "", "tags": "", "notes": "", "updated": "", "created": ""},
-            multi_select: false,
-            list_of_selected: [],
-            list_of_selected_funcs: [],
-            search_field_value: "",
-            search_inside_checked: false,
-            search_metadata_checked: false,
-            show_animations: false
+            auxIsOpen: false,
+            showOmnibar: false,
+            contextMenuItems: []
         };
         doBinding(this);
-        if (props.tsocket != null) {
+        this.toolbarRef = null;
+        if ((props.tsocket != null) && (!this.props.is_repository)) {
             props.tsocket.socket.on(`update-${props.res_type}-selector-row`, this._handleRowUpdate);
             props.tsocket.socket.on(`refresh-${props.res_type}-selector`, this._refresh_func);
         }
     }
 
-    get_height_minus_top_offset (element_ref) {
-        if (this.state.mounted) {  // This will be true after the initial render
-            return this.props.usable_height - $(element_ref.current).offset().top
-        }
-        else {
-            return this.props.usable_height - 50
-        }
+    _sendContextMenuItems(items) {
+        this.setState({contextMenuItems: items})
     }
 
-    get_width_minus_left_offset (element_ref) {
-        if (this.state.mounted) {  // This will be true after the initial render
-            return this.props.usable_width - $(element_ref.current).offset().left
+    _renderBodyContextMenu(menu_context, current_data_list) {
+        let regions = menu_context.regions;
+        if (regions.length == 0) return;  // Without this get an error when clicking on a body cell
+        let selected_rows = [];
+        for (let region of regions) {
+            if (region.hasOwnProperty("rows")) {
+                let first_row = region["rows"][0];
+                let last_row = region["rows"][1];
+                for (let i=first_row; i<=last_row; ++i) {
+                    if (!selected_rows.includes(i)) {
+                        selected_rows.push(current_data_list[i]);
+                    }
+                }
+            }
         }
-        else {
-            return this.props.usable_width - 50
+        return (
+            <BodyMenu items={this.state.contextMenuItems} selected_rows={selected_rows}/>
+        )
+    }
+
+    _onTableSelection(regions, current_data_list) {
+        if (regions.length == 0) return;  // Without this get an error when clicking on a body cell
+        let selected_rows = [];
+        let selected_row_indices = [];
+        let revised_regions = [];
+        for (let region of regions) {
+            if (region.hasOwnProperty("rows")) {
+                let first_row = region["rows"][0];
+                revised_regions.push(Bpt.Regions.row(first_row));
+                let last_row = region["rows"][1];
+                for (let i=first_row; i<=last_row; ++i) {
+                    if (!selected_row_indices.includes(i)) {
+                        selected_row_indices.push(i);
+                        selected_rows.push(current_data_list[i]);
+                        revised_regions.push(Bpt.Regions.row(i));
+                    }
+                }
+            }
         }
+        this._handleRowSelection(selected_rows);
+        this._updatePaneState({selectedRegions: revised_regions});
     }
 
     componentDidMount() {
@@ -66,11 +132,13 @@ class LibraryPane extends React.Component {
         else {
             path = "resource_list_with_metadata"
         }
+
         postAjax(`${path}/${this.props.res_type}`, {}, function(data) {
             self.setState({"data_list": data.data_list}, () => {
                 self.update_tag_list();
                 self._update_match_lists();
-                self._set_sort_state("updated", "updated_for_sort", "descending", true);
+                // I need the next line to force a resize update
+                self._set_sort_state(self.props.sorting_column, self.props.sorting_field, self.props.sorting_direction);
             });
 
             }
@@ -81,7 +149,7 @@ class LibraryPane extends React.Component {
         let res_name = res_dict.name;
         let ind = this.get_data_list_index(res_name);
         if (ind == -1) {
-            this._animation_phase(() => {this._add_new_row(res_dict)})
+            this._add_new_row(res_dict)
         }
         else {
             let new_data_list = [...this.state.data_list];
@@ -89,8 +157,8 @@ class LibraryPane extends React.Component {
             for (let field in res_dict) {
                 the_row[field] = res_dict[field];
             }
-            if (res_name == this.state.selected_resource.name) {
-                this.setState({"selected_resource": the_row})
+            if (res_name == this.props.selected_resource.name) {
+                this.props.updatePaneState({"selected_resource": the_row})
             }
             this.setState({ "data_list": new_data_list }, () => {
                 this._update_match_lists();
@@ -103,6 +171,10 @@ class LibraryPane extends React.Component {
         let ind = this.get_data_list_index(name);
         let new_data_list = [...this.state.data_list];
         new_data_list.splice(ind, 1);
+        if (this.props.list_of_selected.includes(name)) {
+            this._updatePaneState({list_of_selected: [], multi_select: false,
+                selected_resource: {"name": "", "tags": "", "notes": "", "updated": "", "created": ""}});
+        }
         this.setState({data_list: new_data_list}, this.update_tag_list);
     }
 
@@ -135,11 +207,11 @@ class LibraryPane extends React.Component {
 
     _saveFromSelectedResource() {
         const result_dict = {"res_type": this.props.res_type,
-            "res_name": this.state.list_of_selected[0],
-            "tags": this.state.selected_resource.tags,
-            "notes": this.state.selected_resource.notes};
-        let saved_selected_resource = Object.assign({}, this.state.selected_resource);
-        let saved_list_of_selected = [...this.state.list_of_selected];
+            "res_name": this.props.list_of_selected[0],
+            "tags": this.props.selected_resource.tags,
+            "notes": this.props.selected_resource.notes};
+        let saved_selected_resource = Object.assign({}, this.props.selected_resource);
+        let saved_list_of_selected = [...this.props.list_of_selected];
 
         let self = this;
         postAjaxPromise("save_metadata", result_dict)
@@ -155,10 +227,10 @@ class LibraryPane extends React.Component {
         .catch(doFlash)
     }
 
-    overwriteCommonTags() {
+    _overwriteCommonTags() {
         const result_dict = {"res_type": this.props.res_type,
-                            "res_names": this.state.list_of_selected,
-                             "tags": this.state.selected_resource.tags,};
+                            "res_names": this.props.list_of_selected,
+                             "tags": this.props.selected_resource.tags,};
         const self = this;
         postAjaxPromise("overwrite_common_tags", result_dict)
             .then(function(data) {
@@ -177,24 +249,24 @@ class LibraryPane extends React.Component {
     }
 
     _handleMetadataChange(changed_state_elements) {
-        if (!this.state.multi_select) {
-            let revised_selected_resource = Object.assign({}, this.state.selected_resource);
+        if (!this.props.multi_select) {
+            let revised_selected_resource = Object.assign({}, this.props.selected_resource);
             revised_selected_resource = Object.assign(revised_selected_resource, changed_state_elements);
             if (Object.keys(changed_state_elements).includes("tags")) {
                 revised_selected_resource["tags"] = revised_selected_resource["tags"].join(" ");
-                this.setState({selected_resource: revised_selected_resource},
+                this._updatePaneState({selected_resource: revised_selected_resource},
                     this._saveFromSelectedResource)
             }
             else {
-                this.setState({selected_resource: revised_selected_resource})
+                this._updatePaneState({selected_resource: revised_selected_resource})
             }
         }
         else {
-            let revised_selected_resource = Object.assign({}, this.state.selected_resource);
+            let revised_selected_resource = Object.assign({}, this.props.selected_resource);
             revised_selected_resource = Object.assign(revised_selected_resource, changed_state_elements);
             revised_selected_resource["tags"] = revised_selected_resource["tags"].join(" ");
-            this.setState({selected_resource: revised_selected_resource},
-                    this.overwriteCommonTags);
+            this._updatePaneState({selected_resource: revised_selected_resource},
+                    this._overwriteCommonTags);
         }
     }
 
@@ -216,18 +288,44 @@ class LibraryPane extends React.Component {
             .catch(doFlash)
     }
 
+    _updatePaneState(new_state, callback) {
+        this.props.updatePaneState(this.props.res_type, new_state, callback)
+    }
+
+    _updateTagState(new_state) {
+        let old_tb_state = Object.assign({}, this.props.tag_button_state);
+        let new_tb_state = Object.assign(old_tb_state, new_state);
+        let new_pane_state = {tag_button_state: new_tb_state};
+        let callback;
+        if (new_state.hasOwnProperty("active_tag") && (new_state.active_tag != this.props.tag_button_state.active_tag)) {
+            if (new_state.active_tag == "all") {
+                new_pane_state.search_from_tag = false;
+                new_pane_state.search_from_field = false;
+            }
+            else {
+                new_pane_state.search_from_tag = true;
+                new_pane_state.search_from_field = false;
+            }
+            callback = this._update_match_lists;
+        }
+        else {
+            callback = null
+        }
+        this.props.updatePaneState(this.props.res_type, new_pane_state, callback)
+    }
+
     _handleAddTag(res_name, the_tag) {
-        if (this.state.list_of_selected.includes(res_name) && this.state.multi_select) {
-            for (let the_name of this.state.list_of_selected) {
+        if (this.props.list_of_selected.includes(res_name) && this.props.multi_select) {
+            for (let the_name of this.props.list_of_selected) {
                 this.addOneTag(the_name, the_tag)
             }
-            let selected_tags = this.state.selected_resource.tags;
+            let selected_tags = this.props.selected_resource.tags;
             if (!selected_tags.includes(the_tag)) {
                 selected_tags = selected_tags + " " + the_tag;
                 selected_tags = selected_tags.trim();
-                let new_selected_resource = this.state.selected_resource;
+                let new_selected_resource = this.props.selected_resource;
                 new_selected_resource["tags"] = selected_tags;
-                this.setState({"selected_resource": new_selected_resource})
+                this._updatePaneState({"selected_resource": new_selected_resource})
             }
         }
         else {
@@ -237,7 +335,7 @@ class LibraryPane extends React.Component {
     }
 
     _handleSplitResize(left_width, right_width, width_fraction) {
-        this.setState({"left_width": left_width - 50})
+        this._updatePaneState({left_width_fraction: width_fraction})
     }
 
     _doTagDelete(tag) {
@@ -251,11 +349,23 @@ class LibraryPane extends React.Component {
     }
 
     get view_views() {
-        return {collection: "/main/",
-            project: "/main_project/",
-            tile: "/last_saved_view/",
-            list: "/view_list/",
-            code: "/view_code/"
+        if (this.props.is_repository) {
+            return {
+                collection: null,
+                project: null,
+                tile: "/repository_view_module/",
+                list: "/repository_view_list/",
+                code: "/repository_view_code/"
+            }
+        }
+        else {
+            return {
+                collection: "/main/",
+                project: "/main_project/",
+                tile: "/last_saved_view/",
+                list: "/view_list/",
+                code: "/view_code/"
+            }
         }
     }
 
@@ -271,7 +381,8 @@ class LibraryPane extends React.Component {
 
     _handleRowDoubleClick(row_dict) {
         let view_view = this.view_views[this.props.res_type];
-        this.setState({
+        if (view_view == null) return;
+        this._updatePaneState({
                 selected_resource: row_dict,
                 multi_select: false,
                 list_of_selected: [row_dict.name]
@@ -279,44 +390,42 @@ class LibraryPane extends React.Component {
         window.open($SCRIPT_ROOT + view_view + row_dict.name)
     }
 
-    _handleRowClick(row_dict, shift_key_down=false) {
-        if (!this.state.multi_select &&
-            this.state.selected_resource.name != "" &&
-            (this.state.selected_resource.notes != this.get_data_list_entry(this.state.selected_resource.name).notes)) {
+    _handleRowSelection(selected_rows) {
+        if (!this.props.multi_select &&
+            this.props.selected_resource.name != "" &&
+            (this.props.selected_resource.notes != this.get_data_list_entry(this.props.selected_resource.name).notes)) {
             this._saveFromSelectedResource()
         }
-        if (shift_key_down && (row_dict.name != this.state.selected_resource.name)) {
-            window.getSelection().removeAllRanges();  // Without this intervening text is highlighted.
-            let common_tags = [];
-            let new_tag_list = row_dict.tags.split(" ");
-            let old_tag_list = this.state.selected_resource.tags.split(" ");
-            for (let tag of new_tag_list) {
-                if (old_tag_list.includes(tag)) {
-                    common_tags.push(tag)
+        if (selected_rows.length > 1) {
+            let common_tags = selected_rows[0].tags.split(" ");
+            let other_rows = selected_rows.slice(1, selected_rows.length);
+            for (let row_dict of other_rows) {
+                let new_common_tags = [];
+                let new_tag_list = row_dict.tags.split(" ");
+                for (let tag of new_tag_list) {
+                    if (common_tags.includes(tag)) {
+                        new_common_tags.push(tag)
+                    }
+                     common_tags = new_common_tags
                 }
             }
-            let multi_select_list;
-            if (this.state.multi_select) {
-                multi_select_list = [...this.state.list_of_selected, row_dict.name];
-            }
-            else {
-                multi_select_list = [this.state.selected_resource.name, row_dict.name];
-            }
 
+            let multi_select_list = selected_rows.map((row_dict)=>row_dict.name);
             let new_selected_resource = {name: "__multiple__", tags: common_tags.join(" "), notes: ""};
-            this.setState({multi_select: true,
+            this._updatePaneState({multi_select: true,
                 selected_resource: new_selected_resource,
                 list_of_selected: multi_select_list
             })
         }
-        else {
-            this.setState({
+
+         else {
+            let row_dict = selected_rows[0];
+            this._updatePaneState({
                 selected_resource: row_dict,
                 multi_select: false,
                 list_of_selected: [row_dict.name]
             })
         }
-
     }
 
     _filter_func(resource_dict, search_field_value) {
@@ -333,7 +442,9 @@ class LibraryPane extends React.Component {
     }
 
     _update_search_state(new_state) {
-        this.setState(new_state, this._update_match_lists)
+        new_state.search_from_field = true;
+        new_state.search_from_tags = false;
+        this._updatePaneState(new_state, this._update_match_lists)
     }
 
     update_tag_list() {
@@ -351,19 +462,23 @@ class LibraryPane extends React.Component {
     }
 
     _update_match_lists() {
-        if (this.state.search_field_value == "") {
+        if (this.props.search_from_tag) {
+            this._searchFromTag(this.props.tag_button_state.active_tag);
+            return
+        }
+        if (!this.props.search_from_field || (this.props.search_field_value == "")) {
             this.match_all()
         }
-        else if (this.state.search_inside_checked) {
-            this.doSearchInside(this.state.search_field_value, this.state.search_metadata_checked)
+        else if (this.props.search_inside_checked) {
+            this.doSearchInside(this.props.search_field_value, this.props.search_metadata_checked)
         }
-        else if (this.state.search_metadata_checked){
-            this.doSearchMetadata(this.state.search_field_value)
+        else if (this.props.search_metadata_checked){
+            this.doSearchMetadata(this.props.search_field_value)
         }
         else {
             let new_match_list = [];
             for (let rec of this.state.data_list) {
-                if (this._filter_func(rec, this.state.search_field_value)) {
+                if (this._filter_func(rec, this.props.search_field_value)) {
                     new_match_list.push(rec.name)
                 }
             }
@@ -373,9 +488,9 @@ class LibraryPane extends React.Component {
 
     _sort_data_list() {
         if (this.state.data_list.length == 0) return;
-        if (this.state.sorting_field == null) return this.state.data_list;
-        let sort_field = this.state.sorting_field;
-        let direction = this.state.sorting_direction;
+        if (this.props.sorting_field == null) return this.state.data_list;
+        let sort_field = this.props.sorting_field;
+        let direction = this.props.sorting_direction;
         function compare_func (a, b) {
             let result;
             if (a[sort_field] < b[sort_field]) {
@@ -395,21 +510,20 @@ class LibraryPane extends React.Component {
 
         let new_data_list = [...this.state.data_list];
         new_data_list.sort(compare_func);
-
-        this.setState({
-            selected_resource: new_data_list[0],
-            list_of_selected: [new_data_list[0].name],
-            multi_select: false}
-        );
+        if (this.props.list_of_selected.length == 0) {
+            this._updatePaneState({
+                selected_resource: new_data_list[0],
+                list_of_selected: [new_data_list[0].name],
+                multi_select: false}
+            );
+        }
         this.setState({data_list: new_data_list})
     }
 
-    _set_sort_state(column_name, sort_field, direction,) {
-
-        this.setState({sorting_column: column_name, sorting_field: sort_field, sorting_direction: direction},
+    _set_sort_state(column_name, sort_field, direction) {
+        this._updatePaneState({sorting_column: column_name, sorting_field: sort_field, sorting_direction: direction},
             this._sort_data_list)
     }
-
     _refresh_for_new_data_list() {
         this._update_match_lists();
         this._sort_data_list();
@@ -457,8 +571,8 @@ class LibraryPane extends React.Component {
         return tags_to_match.includes(search_tag)
     }
 
-    _handleSearchFromTag(search_tag) {
-        if (search_tag == "all") {
+    _searchFromTag(search_tag){
+        if (search_tag ==   "all") {
             this.match_all();
         }
         else {
@@ -473,10 +587,15 @@ class LibraryPane extends React.Component {
         }
     }
 
+    get_match_list_index(name) {
+        let filtered_data_list = this.state.data_list.filter(this._filter_on_match_list);
+        return filtered_data_list.findIndex((rec) => (rec.name == name))
+    }
+
     _handleArrowKeyPress(key) {
-        if (this.state.multi_select) return;
+        if (this.props.multi_select) return;
         let anames = this.all_names;
-        let current_index = anames.indexOf(this.state.selected_resource.name);
+        let current_index = anames.indexOf(this.props.selected_resource.name);
         let new_index;
         let new_selected_res;
         if (key == "ArrowDown") {
@@ -493,18 +612,28 @@ class LibraryPane extends React.Component {
                 if (new_index < 0) return
             }
         }
-        this.setState({"selected_resource": this.state.data_list[new_index],
-            "list_of_selected": [anames[new_index]]
+
+        let new_regions = [Bpt.Regions.row(this.get_match_list_index(anames[new_index]))];
+        this._updatePaneState({selected_resource: this.state.data_list[new_index],
+            list_of_selected: [anames[new_index]],
+            selectedRegions: new_regions
         })
     }
 
-    _view_func(e, the_view=null) {
+    _view_func(the_view=null) {
         if (the_view == null) {
             the_view = this.view_views[this.props.res_type]
         }
         if (!this.state.multi_select) {
-            window.open($SCRIPT_ROOT + the_view + this.state.selected_resource.name)
+            window.open($SCRIPT_ROOT + the_view + this.props.selected_resource.name)
         }
+    }
+
+    _view_resource(resource_name, the_view=null) {
+        if (the_view == null) {
+            the_view = this.view_views[this.props.res_type]
+        }
+        window.open($SCRIPT_ROOT + the_view + resource_name)
     }
 
     _add_new_row(new_row) {
@@ -513,9 +642,9 @@ class LibraryPane extends React.Component {
         this.setState({data_list: new_data_list}, this._refresh_for_new_data_list)
     }
 
-    _duplicate_func (duplicate_view) {
+    _duplicate_func (duplicate_view, resource_name=null) {
         let res_type = this.props.res_type;
-        let res_name = this.state.selected_resource.name;
+        let res_name = resource_name ? resource_name : this.props.selected_resource.name;
         $.getJSON($SCRIPT_ROOT + "get_resource_names/" + res_type, function(data) {
             showModalReact(`Duplicate ${res_type}`, "New Name",
                 DuplicateResource, res_name, data.resource_names)
@@ -529,21 +658,15 @@ class LibraryPane extends React.Component {
             };
             postAjaxPromise(duplicate_view, result_dict)
                 .then((data) => {
-                    self._animation_phase(() => {self._add_new_row(data.new_row)})
-                })
+                    self._add_new_row(data.new_row)}
+                )
                 .catch(doFlash)
         }
     }
 
-    _animation_phase(func_to_animate) {
-        this.setState({"show_animations": true});
-        func_to_animate();
-        this.setState({"show_animations": false})
-    }
-
-    _delete_func (delete_view) {
+    _delete_func (delete_view, resource_name=null) {
         var res_type = this.props.res_type;
-        var res_names = this.state.list_of_selected;
+        let res_names = resource_name ? [resource_name] : this.props.list_of_selected;
         var confirm_text;
         if (res_names.length==1) {
             let res_name = res_names[0];
@@ -557,9 +680,7 @@ class LibraryPane extends React.Component {
             postAjaxPromise(delete_view, {"resource_names": res_names})
                 .then(() => {
                     for (let i = 0; i < res_names.length; ++i) {
-                        self._animation_phase(() => {
-                                self.delete_row(res_names[i]);
-                            })
+                        self.delete_row(res_names[i]);
                     }
                     self._refresh_for_new_data_list()
                 })
@@ -567,9 +688,9 @@ class LibraryPane extends React.Component {
         })
     }
 
-    _rename_func () {
+    _rename_func (resource_name=null) {
         let res_type = this.props.res_type;
-        let res_name = this.state.selected_resource.name;
+        let res_name = resource_name ? resource_name : this.props.selected_resource.name;
         let self = this;
         $.getJSON($SCRIPT_ROOT + "get_resource_names/" + res_type, function(data) {
                 const res_names = data["resource_names"];
@@ -600,7 +721,7 @@ class LibraryPane extends React.Component {
 
     _repository_copy_func () {
         let res_type = this.props.res_type;
-        let res_name = this.state.selected_resource.name;
+        let res_name = this.props.selected_resource.name;
         $.getJSON($SCRIPT_ROOT + "get_resource_names/" + res_type, function (data) {
                 showModalReact("Import " + res_type, "New Name", ImportResource, res_name, data["resource_names"])
             }
@@ -619,9 +740,9 @@ class LibraryPane extends React.Component {
         return res_name
     }
 
-    send_repository_func () {
+    _send_repository_func () {
         let res_type = this.props.res_type;
-
+        let res_name = this.props.selected_resource.name;
         $.getJSON($SCRIPT_ROOT + "get_repository_resource_names/" + res_type, function(data) {
             showModalReact(`Share ${res_type}`, `New ${res_type} Name`, ShareResource, res_name, data["resource_names"])
             }
@@ -648,16 +769,49 @@ class LibraryPane extends React.Component {
         })
     }
 
-    render() {
-        let available_width = this.get_width_minus_left_offset(this.top_ref);
-        let available_height = this.get_height_minus_top_offset(this.top_ref);
-        let new_button_groups;
+    _handleResize(entries) {
+        for (let entry of entries) {
+            if (entry.target.className == "pane-holder") {
+                this.setState({available_width: entry.contentRect.width - this.top_ref.current.offsetLeft,
+                    available_height: entry.contentRect.height - this.top_ref.current.offsetTop
+                });
+                return
+            }
+        }
+    }
 
+    _toggleAuxVisibility() {
+        this.setState({auxIsOpen: !this.state.auxIsOpen})
+    }
+
+    _showOmnibar() {
+        this.setState({showOmnibar: true})
+    }
+
+    _omnibarSelect(item) {
+        let the_view = this.view_views[this.props.res_type];
+        window.open($SCRIPT_ROOT + the_view + item.name);
+        this._closeOmnibar()
+    }
+
+    _closeOmnibar() {
+        this.setState({showOmnibar: false})
+    }
+
+    _sendToolbarRef(the_ref) {
+        this.toolbarRef = the_ref;
+    }
+
+    render() {
+        // let available_width = this.get_width_minus_left_offset(this.top_ref);
+        // let available_height = this.get_height_minus_top_offset(this.top_ref);
+        let new_button_groups;
+        let left_width = this.state.available_width * this.props.left_width_fraction;
         const primary_mdata_fields = ["name", "created", "created_for_sort", "updated",  "updated_for_sort", "tags", "notes"];
         let additional_metadata = {};
-        for (let field in this.state.selected_resource) {
+        for (let field in this.props.selected_resource) {
             if (!primary_mdata_fields.includes(field)) {
-                additional_metadata[field] = this.state.selected_resource[field]
+                additional_metadata[field] = this.props.selected_resource[field]
             }
         }
         if (Object.keys(additional_metadata).length == 0) {
@@ -665,17 +819,20 @@ class LibraryPane extends React.Component {
         }
 
         let right_pane;
-        let split_tags = this.state.selected_resource.tags == "" ? [] : this.state.selected_resource.tags.split(" ");
+        let split_tags = this.props.selected_resource.tags == "" ? [] : this.props.selected_resource.tags.split(" ");
+        let outer_style = {marginLeft: 20, marginTop: 90, overflow: "scroll",
+            padding: 15, backgroundColor: "#f5f8fa"};
         let mdata_element = (
                 <CombinedMetadata tags={split_tags}
-                                  name={this.state.selected_resource.name}
-                                  created={this.state.selected_resource.created}
-                                  updated={this.state.selected_resource.updated}
-                                  notes={this.state.selected_resource.notes}
+                                  elevation={2}
+                                  name={this.props.selected_resource.name}
+                                  created={this.props.selected_resource.created}
+                                  updated={this.props.selected_resource.updated}
+                                  notes={this.props.selected_resource.notes}
                                   handleChange={this._handleMetadataChange}
                                   res_type={this.props.res_type}
-                                  outer_style={{"marginLeft": 20, "marginTop": 120}}
-                                  handleNotesBlur={this.state.multi_select ? null : this._saveFromSelectedResource}
+                                  outer_style={outer_style}
+                                  handleNotesBlur={this.props.multi_select ? null : this._saveFromSelectedResource}
                                   additional_metadata={additional_metadata}
                 />
          );
@@ -684,15 +841,22 @@ class LibraryPane extends React.Component {
             right_pane = mdata_element;
         }
         else {
+            let button_base = this.state.auxIsOpen ? "Hide" : "Show";
             right_pane = (
-                <VerticalPanes available_height={available_height}
-                               available_width={available_width - this.state.left_width - 25}
-                               top_pane={mdata_element}
-                               bottom_pane={this.props.aux_pane}
-                               handleSplitUpdate={this._handleTopRightPaneResize}
-                >
-                </VerticalPanes>
-
+                <React.Fragment>
+                    {mdata_element}
+                    <div  className="d-flex flex-row justify-content-around" style={{marginTop: 20}}>
+                        <Bp.Button fill={false}
+                                   small={true}
+                                   minimal={false}
+                                   onClick={this._toggleAuxVisibility}>
+                            {button_base + " " + this.props.aux_pane_title}
+                        </Bp.Button>
+                    </div>
+                    <Bp.Collapse isOpen={this.state.auxIsOpen} keepChildrenMounted={true}>
+                        {this.props.aux_pane}
+                    </Bp.Collapse>
+                </React.Fragment>
             )
         }
         let th_style= {
@@ -700,90 +864,144 @@ class LibraryPane extends React.Component {
             "verticalAlign": "top",
             "maxHeight": "100%",
             "overflowY": "scroll",
+            "overflowX": "scroll",
             "lineHeight": 1,
             "whiteSpace": "nowrap",
-            "width": this.state.left_width - 150,
-            "overflowX": "hidden"
         };
 
         let filtered_data_list = this.state.data_list.filter(this._filter_on_match_list);
         let ToolbarClass = this.props.ToolbarClass;
 
+        let table_width;
+        let toolbar_left;
+        if (this.table_ref && this.table_ref.current) {
+            table_width = left_width - this.table_ref.current.offsetLeft;
+            if (this.toolbarRef && this.toolbarRef.current) {
+                let tbwidth = this.toolbarRef.current.getBoundingClientRect().width;
+                toolbar_left = this.table_ref.current.offsetLeft + .5 * table_width - .5 * tbwidth;
+                if (toolbar_left < 0) toolbar_left = 0
+            }
+            else {
+                toolbar_left = 175
+            }
+        }
+        else {
+            table_width = left_width - 150;
+            toolbar_left = 175
+        }
+
+        let key_bindings = [
+            [["up"], ()=>this._handleArrowKeyPress("ArrowUp")],
+            [["down"], ()=>this._handleArrowKeyPress("ArrowDown")],
+            [["ctrl+space"], this._showOmnibar]
+        ];
         let left_pane = (
             <React.Fragment>
                 <div className="d-flex flex-row" style={{"maxHeight": "100%"}}>
-                    <div className="d-flex justify-content-around" style={{"width": 150}}>
+                    <div className="d-flex justify-content-around" style={{paddingRight: 10}}>
                         <TagButtonList res_type={this.props.res_type}
                                        tag_list={this.state.tag_list}
-                                       handleSearchFromTag={this._handleSearchFromTag}
+                                       {...this.props.tag_button_state}
+                                        updateTagState={this._updateTagState}
                                        handleAddTag={this._handleAddTag}
                                        doTagDelete={this._doTagDelete}
                                        doTagRename={this._doTagRename}
                         />
                     </div>
-                    <div className="d-flex flex-column">
-                        <ToolbarClass selected_resource={this.state.selected_resource}
-                                      multi_select={this.state.multi_select}
-                                      list_of_selected={this.state.list_of_selected}
-                                      view_func={this._view_func}
-                                      repository_copy_func={this._repository_copy_func}
-                                      duplicate_func={this._duplicate_func}
-                                      refresh_func={this._refresh_func}
-                                      delete_func={this._delete_func}
-                                      rename_func={this._rename_func}
-                                      animation_phase={this._animation_phase}
-                                      add_new_row={this._add_new_row}
-                                      />
+                    <div ref={this.table_ref}
+                         className="d-flex flex-column"
+                         style={{width: table_width, padding: 5, backgroundColor: "white"}}>
                         <SearchForm allow_search_inside={this.props.allow_search_inside}
                                     allow_search_metadata={this.props.allow_search_metadata}
                                     update_search_state={this._update_search_state}
-                                    search_field_value={this.state.search_field_value}
-                                    search_inside_checked={this.state.search_inside_checked}
-                                    search_metadata_checked={this.state.search_metadata_checked}
+                                    search_field_value={this.props.search_field_value}
+                                    search_inside_checked={this.props.search_inside_checked}
+                                    search_metadata_checked={this.props.search_metadata_checked}
                         />
-                        <div style={th_style} id={`${this.props.res_type}-table`}>
-                            <SelectorTable data_list={filtered_data_list}
-                                           sorting_column={this.state.sorting_column}
-                                           handleHeaderCellClick={this._set_sort_state}
-                                           selected_resource_names={this.state.list_of_selected}
-                                           handleRowClick={this._handleRowClick}
-                                           handleRowDoubleClick={this._handleRowDoubleClick}
-                                           handleArrowKeyPress={this._handleArrowKeyPress}
-                                           handleAddTag={this._handleAddTag}
-                                           show_animations={this.state.show_animations}
-                            />
+                        {/*<div style={th_style} id={`${this.props.res_type}-table`}>*/}
+                        <BpSelectorTable data_list={filtered_data_list}
+                                        sortColumn={this._set_sort_state}
+                                        selectedRegions={this.props.selectedRegions}
+                                        onSelection={this._onTableSelection}
+                                         renderBodyContextMenu={this._renderBodyContextMenu}
+                                        handleRowDoubleClick={this._handleRowDoubleClick}
+                                        handleAddTag={this._handleAddTag}
+                                    />
                         </div>
                     </div>
-                </div>
             </React.Fragment>
         );
         return (
-            <div ref={this.top_ref} className="d-flex" >
-                <HorizontalPanes
-                    left_pane={left_pane}
-                    right_pane={right_pane}
-                    available_height={available_height}
-                    available_width={available_width}
-                    initial_width_fraction={.65}
-                    handleSplitUpdate={this._handleSplitResize}
-                />
-            </div>
+            <Bp.ResizeSensor onResize={this._handleResize} observeParents={true}>
+                <div ref={this.top_ref} className="d-flex flex-column mt-3" >
+                    <ToolbarClass selected_resource={this.props.selected_resource}
+                                  multi_select={this.props.multi_select}
+                                  list_of_selected={this.props.list_of_selected}
+                                  view_func={this._view_func}
+                                  send_repository_func={this._send_repository_func}
+                                  repository_copy_func={this._repository_copy_func}
+                                  duplicate_func={this._duplicate_func}
+                                  refresh_func={this._refresh_func}
+                                  delete_func={this._delete_func}
+                                  rename_func={this._rename_func}
+                                  add_new_row={this._add_new_row}
+                                  startSpinner={this.props.startSpinner}
+                                  stopSpinner={this.props.stopSpinner}
+                                  clearStatusMessage={this.props.clearStatusMessage}
+                                  left_position={toolbar_left}
+                                  sendRef={this._sendToolbarRef}
+                                  sendContextMenuItems={this._sendContextMenuItems}
+                                  view_resource={this._view_resource}
+                                  {...this.props.errorDrawerFuncs}
+                                  />
+                      <div style={{width: this.state.available_width, height: this.state.available_height}}>
+                          <HorizontalPanes
+                                available_width={this.state.available_width}
+                                available_height={this.state.available_height - 40}
+                                 left_pane={left_pane}
+                                 right_pane={right_pane}
+                                 initial_width_fraction={.75}
+                                 handleSplitUpdate={this._handleSplitResize}
+                            />
+                        </div>
+                    <KeyTrap global={true} bindings={key_bindings} />
+                    <LibraryOmnibar items={this.state.data_list}
+                                    onItemSelect={this._omnibarSelect}
+                                    handleClose={this._closeOmnibar}
+                                    showOmnibar={this.state.showOmnibar}/>
+                </div>
+            </Bp.ResizeSensor>
         )
     }
 }
 
 LibraryPane.propTypes = {
-    usable_height: PropTypes.number,
-    usable_width: PropTypes.number,
     res_type: PropTypes.string,
     allow_search_inside: PropTypes.bool,
     allow_search_metadata: PropTypes.bool,
     search_inside_view: PropTypes.string,
     search_metadata_view: PropTypes.string,
     ToolbarClass: PropTypes.func,
+    updatePaneState: PropTypes.func,
     is_repository: PropTypes.bool,
     tsocket: PropTypes.object,
-    aux_pane: PropTypes.object
+    aux_pane: PropTypes.object,
+    left_width_fraction: PropTypes.number,
+    selected_resource: PropTypes.object,
+    sorting_column: PropTypes.string,
+    sorting_field: PropTypes.string,
+    sorting_direction: PropTypes.string,
+    multi_select: PropTypes.bool,
+    list_of_selected: PropTypes.array,
+    search_field_value: PropTypes.string,
+    search_inside_checked: PropTypes.bool,
+    search_metadata_checked: PropTypes.bool,
+    search_tag: PropTypes.string,
+    search_from_field: PropTypes.bool,
+    search_from_tag: PropTypes.bool,
+    tag_button_state: PropTypes.object,
+    contextItems: PropTypes.array
+
 };
 
 LibraryPane.defaultProps = {
@@ -791,3 +1009,4 @@ LibraryPane.defaultProps = {
     tsocket: null,
     aux_pane: null
 };
+

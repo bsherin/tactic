@@ -1,7 +1,7 @@
 
 const MARGIN_SIZE = 17;
 
-const SizeContext = React.createContext({"width": window.innerWidth, "height": window.innerHeight});
+import {Sizer} from "./sizing_tools.js";
 
 export {HorizontalPanes, VerticalPanes}
 
@@ -10,6 +10,7 @@ class HorizontalPanes extends React.Component {
         super(props);
         this.left_pane_ref = React.createRef();
         this.right_pane_ref = React.createRef();
+        this.top_ref = this.props.top_ref == null ? React.createRef() : this.props.top_ref;
         this.old_left_width = 0;
         this.old_right_width = 0;
         this.state = this.state = {
@@ -21,7 +22,12 @@ class HorizontalPanes extends React.Component {
     componentDidMount() {
         this.turn_on_horizontal_resize();
         window.addEventListener("resize", this.resize_to_window);
-        this.setState({"mounted": true});
+        this.setState({"mounted": true}, ()=>{
+            if (this.props.handleSplitUpdate) {
+                this.props.handleSplitUpdate(this.left_width, this.right_width, this.state.current_width_fraction)
+            }
+
+        });
     }
 
     componentDidUpdate() {
@@ -66,16 +72,21 @@ class HorizontalPanes extends React.Component {
 
     render () {
         let left_div_style = {
-            "width": this.left_width,
-            "height": this.props.available_height
+            width: this.left_width,
+            height: this.props.available_height - this.props.bottom_margin,
+            display: "flex",
+            flexDirection: "column"
         };
         let right_div_style = {
-            "width": this.right_width,
-            "height": this.props.available_height
+            width: this.right_width,
+            height: this.props.available_height - this.props.bottom_margin,
+            display: "flex",
+            flexDirection: "column"
         };
+
         let dstyle = this.props.hide_me ? {display: "none"} : {};
         return (
-            <div className="d-flex flex-row">
+            <div className="d-flex flex-row horizontal-panes" ref={this.props.top_ref}>
                 <div ref={this.left_pane_ref} style={left_div_style} className="res-viewer-resizer">
                     {this.props.left_pane}
                 </div>
@@ -94,12 +105,18 @@ HorizontalPanes.propTypes = {
     right_pane: PropTypes.object,
     handleSplitUpdate: PropTypes.func,
     initial_width_fraction: PropTypes.number,
+    top_ref: PropTypes.object,
+    bottom_margin: PropTypes.number
 };
 
 HorizontalPanes.defaultProps = {
     handleSplitUpdate: null,
     initial_width_fraction: .5,
-    hide_me: false
+    hide_me: false,
+    left_margin: null,
+    right_margin: null,
+    top_ref: null,
+    bottom_margin: 0
 };
 
 
@@ -166,7 +183,7 @@ class VerticalPanes extends React.Component {
         let top_div_style = {
             "width": this.props.available_width,
             "height": this.top_height,
-            borderBottom: "0.5px solid rgb(238, 238, 238)",
+            // borderBottom: "0.5px solid rgb(238, 238, 238)",
             overflowY: "scroll"
         };
         if (this.props.hide_top) {
@@ -180,10 +197,10 @@ class VerticalPanes extends React.Component {
         return (
             <div className="d-flex flex-column">
                 <div ref={this.top_pane_ref} style={top_div_style}>
-                    {this.props.top_pane}
+                        {this.props.top_pane}
                 </div>
                 <div ref={this.bottom_pane_ref} style={bottom_div_style}>
-                    {this.props.bottom_pane}
+                        {this.props.bottom_pane}
                 </div>
             </div>
         )

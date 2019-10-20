@@ -1,25 +1,30 @@
 
-import {Toolbar} from "./react_toolbar.js"
+import {Toolbar} from "./blueprint_toolbar.js"
 import {TacticSocket} from "./tactic_socket.js"
 import {showConfirmDialogReact} from "./modal_react.js";
-
-import {render_navbar} from "./base_module.js";
-
+import {doFlash} from "./toaster.js"
+import {render_navbar} from "./blueprint_navbar.js";
 import {handleCallback}  from "./communication_react.js"
+import {withStatus} from "./toaster.js";
 
-var Rbs = window.ReactBootstrap;
+let Bp = blueprint;
+let Bpt = bptable;
 
 import {AdminPane} from "./administer_pane.js"
+import {SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT, getUsableDimensions} from "./sizing_tools.js";
+import {ViewerContext} from "./resource_viewer_context.js";
+import {withErrorDrawer} from "./error_drawer.js";
 
 const MARGIN_SIZE = 17;
 
 let tsocket;
 
 function _administer_home_main () {
-    render_navbar();
+    render_navbar("library");
     tsocket = new LibraryTacticSocket("library", 5000);
+    let AdministerHomeAppPlus = withErrorDrawer(withStatus(AdministerHomeApp, tsocket), tsocket);
     let domContainer = document.querySelector('#library-home-root');
-    ReactDOM.render(<AdministerHomeApp/>, domContainer)
+    ReactDOM.render(<AdministerHomeAppPlus/>, domContainer)
 }
 
 class LibraryTacticSocket extends TacticSocket {
@@ -29,12 +34,7 @@ class LibraryTacticSocket extends TacticSocket {
         this.socket.emit('join', {"user_id":  window.user_id, "library_id":  window.library_id});
 
         this.socket.on("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
-
         this.socket.on('handle-callback', handleCallback);
-        this.socket.on('stop-spinner', stopSpinner);
-        this.socket.on('start-spinner', startSpinner);
-        this.socket.on('show-status-msg', statusMessage);
-        this.socket.on("clear-status-msg", clearStatusMessage);
         this.socket.on('close-user-windows', (data) => {
             if (!(data["originator"] == window.library_id)) {
                 window.close()
@@ -44,15 +44,55 @@ class LibraryTacticSocket extends TacticSocket {
     }
 }
 
+var res_types = ["container", "user"];
+
+var col_names = {
+    container: ["Id", "Other_name", "Name", "Image", "Owner", "Status", "Created"],
+    user: ["_id", "username", "full_name", "last_login", "email"]
+};
+
+function NamesToDict (acc, item) {
+    acc[item] = "";
+    return acc;
+}
 
 class AdministerHomeApp extends React.Component {
 
     constructor(props) {
         super(props);
+        let aheight = getUsableDimensions().usable_height_no_bottom;
+        let awidth = getUsableDimensions().usable_width - 170;
         this.state = {
-            "usable_width": window.innerWidth - 2 * MARGIN_SIZE - 30,
-            "usable_height": window.innerHeight - 50
+            selected_tab_id: "containers-pane",
+            usable_width: awidth,
+            usable_height: aheight,
+            pane_states: {}
         };
+        for (let res_type of res_types) {
+            this.state.pane_states[res_type] = {
+                left_width_fraction: .65,
+                selected_resource: col_names[res_type].reduce(NamesToDict, {}),
+                tag_button_state: {
+                    expanded_tags: [],
+                    active_tag: "all",
+                    tree: []
+                },
+                console_text: "",
+                search_from_field: false,
+                search_from_tag: false,
+                sorting_column: "updated",
+                sorting_field: "updated_for_sort",
+                sorting_direction: "descending",
+                multi_select: false,
+                list_of_selected: [],
+                search_field_value: "",
+                search_inside_checked: false,
+                search_metadata_checked: false,
+                selectedRegions: [Bpt.Regions.row(0)]
+            }
+        }
+        this.state.pane_states.container.selected_resource =
+        this.top_ref = React.createRef();
         doBinding(this);
     }
 
@@ -60,67 +100,93 @@ class AdministerHomeApp extends React.Component {
         window.addEventListener("resize", this._update_window_dimensions);
         this.setState({"mounted": true});
         this._update_window_dimensions();
-        stopSpinner()
+        this.props.stopSpinner()
+    }
+
+    _updatePaneState (res_type, state_update, callback=null) {
+        let old_state = Object.assign({}, this.state.pane_states[res_type]);
+        let new_pane_states = Object.assign({}, this.state.pane_states);
+        new_pane_states[res_type] = Object.assign(old_state, state_update);
+        this.setState({pane_states: new_pane_states}, callback)
     }
 
     _update_window_dimensions() {
-        this.setState({
-            "usable_width": window.innerWidth - 2 * MARGIN_SIZE - 30,
-            "usable_height": window.innerHeight - 50
-        });
+        let uwidth = window.innerWidth - 2 * SIDE_MARGIN;
+        let uheight = window.innerHeight;
+        if (this.top_ref && this.top_ref.current) {
+            uheight = uheight - this.top_ref.current.offsetTop;
+        }
+        else {
+            uheight = uheight - USUAL_TOOLBAR_HEIGHT
+        }
+        this.setState({usable_height: uheight, usable_width: uwidth})
+    }
+
+    _handleTabChange(newTabId, prevTabId, event) {
+        this.setState({selected_tab_id: newTabId}, this._update_window_dimensions)
+    }
+
+    getIconColor(paneId) {
+        return paneId == this.state.selected_tab_id ? "white" : "#CED9E0"
     }
 
     render () {
-        let nav_items = [["containers"], ["users"]].map((data)=>(
-            <Rbs.Nav.Item key={data[0]}>
-                <Rbs.Nav.Link eventKey={data[0] + "-pane"}>
-                    <span className="um-nav-text">{data[0]}</span>
-                </Rbs.Nav.Link>
-            </Rbs.Nav.Item>
-        ));
+        let container_pane = (
+            <AdminPane {...this.props}
+                       res_type="container"
+                       allow_search_inside={false}
+                       allow_search_metadata={false}
+                       ToolbarClass={ContainerToolbar}
+                       updatePaneState={this._updatePaneState}
+                       {...this.state.pane_states["container"]}
+                       {...this.props.errorDrawerFuncs}
+                       errorDrawerFuncs={this.props.errorDrawerFuncs}
+                       tsocket={tsocket}
+                       colnames={col_names.container}
+                       id_field="Id"
+
+            />
+        );
+        let user_pane = (
+            <AdminPane {...this.props}
+                       res_type="user"
+                       allow_search_inside={false}
+                       allow_search_metadata={false}
+                       ToolbarClass={UserToolbar}
+                       updatePaneState={this._updatePaneState}
+                       {...this.state.pane_states["user"]}
+                       {...this.props.errorDrawerFuncs}
+                       errorDrawerFuncs={this.props.errorDrawerFuncs}
+                       tsocket={tsocket}
+                       colnames={col_names.user}
+                       id_field="_id"
+
+            />
+        );
+        let outer_style = {width: this.state.usable_width,
+            height: this.state.usable_height,
+            paddingLeft: 0
+        };
         return (
-            <React.Fragment>
-                <Rbs.Tab.Container id="the_container" defaultActiveKey="containers-pane">
-                    <div id="repository_container" className="d-flex flex-row">
-                        <div className="d-flex flex-column justify-content-between left-vertical-nav"
-                             style={{"marginTop": 100}}>
-                            <Rbs.Nav variant="pills" className="flex-column">
-                                {nav_items}
-                            </Rbs.Nav>
-                        </div>
-                        <div className="d-flex flex-column ml-5">
-                            <Rbs.Tab.Content>
-                                <Rbs.Tab.Pane eventKey="containers-pane">
-                                    <AdminPane usable_height={this.state.usable_height}
-                                               usable_width={this.state.usable_width}
-                                               res_type="container"
-                                               allow_search_inside={false}
-                                               allow_search_metadata={false}
-                                               is_repository={false}
-                                               ToolbarClass={ContainerToolbar}
-                                               tsocket={tsocket}
-                                               colnames={["Id", "Other_name", "Name", "Image", "Owner", "Status", "Created"]}
-                                               id_field="Id"
-                                />
-                                </Rbs.Tab.Pane>
-                                <Rbs.Tab.Pane eventKey="users-pane">
-                                    <AdminPane usable_height={this.state.usable_height}
-                                                 usable_width={this.state.usable_width}
-                                                 res_type="user"
-                                                 allow_search_inside={false}
-                                                 allow_search_metadata={false}
-                                                 is_repository={false}
-                                                 ToolbarClass={UserToolbar}
-                                                 tsocket={tsocket}
-                                                 colnames={["_id", "username", "full_name", "last_login", "email"]}
-                                                 id_field="_id"
-                                    />
-                                </Rbs.Tab.Pane>
-                            </Rbs.Tab.Content>
-                        </div>
-                    </div>
-                </Rbs.Tab.Container>
-            </React.Fragment>
+            <ViewerContext.Provider value={{readOnly: false}}>
+                <div className="pane-holder" ref={this.top_ref} style={outer_style}>
+                    <Bp.Tabs id="the_container" style={{marginTop: 100}}
+                             selectedTabId={this.state.selected_tab_id}
+                             renderActiveTabPanelOnly={true}
+                             vertical={true} large={true} onChange={this._handleTabChange}>
+                        <Bp.Tab id="containers-pane" panel={container_pane}>
+                            <Bp.Tooltip content="Containers" position={Bp.Position.RIGHT}>
+                                <Bp.Icon icon="box" iconSize={20} tabIndex={-1} color={this.getIconColor("collections-pane")}/>
+                            </Bp.Tooltip>
+                        </Bp.Tab>
+                        <Bp.Tab id="users-pane" panel={user_pane}>
+                            <Bp.Tooltip content="users" position={Bp.Position.RIGHT}>
+                                <Bp.Icon icon="user" iconSize={20} tabIndex={-1} color={this.getIconColor("collections-pane")}/>
+                            </Bp.Tooltip>
+                        </Bp.Tab>
+                    </Bp.Tabs>
+                </div>
+            </ViewerContext.Provider>
         )
     }
 }
@@ -151,8 +217,17 @@ class AdminToolbar extends React.Component {
     }
 
     render() {
+        let outer_style = {
+                display: "flex",
+                flexDirection: "row",
+                position: "relative",
+                left: this.props.left_position,
+                marginBottom: 10
+        };
        return <Toolbar button_groups={this.prepare_button_groups()}
                        file_adders={null}
+                       alternate_outer_style={outer_style}
+                       sendRef={this.props.sendRef}
                        popup_buttons={null}
        />
     }
@@ -160,6 +235,8 @@ class AdminToolbar extends React.Component {
 
 AdminToolbar.propTypes = {
     button_groups: PropTypes.array,
+    left_position: PropTypes.number,
+    sendRef: PropTypes.func
 };
 
 
@@ -168,6 +245,11 @@ class ContainerToolbar extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this);
+    }
+    
+    _doFlashStopSpinner(data) {
+        this.props.stopSpinner();
+        doFlash(data)
     }
 
 
@@ -180,46 +262,47 @@ class ContainerToolbar extends React.Component {
     }
 
     _clear_user_func (event) {
-        startSpinner();
-        $.getJSON($SCRIPT_ROOT + '/clear_user_containers/' + window.library_id, doFlashStopSpinner);
+        this.props.startSpinner();
+        $.getJSON($SCRIPT_ROOT + '/clear_user_containers/' + window.library_id, this._doFlashStopSpinner);
     }
 
-    reset_server_func (event) {
-        startSpinner();
-        $.getJSON($SCRIPT_ROOT + '/reset_server/' + library_id, doFlashStopSpinner);
+    _reset_server_func (event) {
+        this.props.startSpinner();
+        $.getJSON($SCRIPT_ROOT + '/reset_server/' + library_id, this._doFlashStopSpinner);
     }
 
     _destroy_container () {
-        startSpinner();
+        this.props.startSpinner();
         let cont_id = this.props.selected_resource.Id;
         let self = this;
         $.getJSON($SCRIPT_ROOT + '/kill_container/' + cont_id, (data) => {
-                doFlashStopSpinner(data);
+                self._doFlashStopSpinner(data);
                 if (data.success) {
-                    self.props.animation_phase(() => {
-                        self.props.delete_row(cont_id);
-                    })
+                    self.props.delete_row(cont_id);
                 }
             }
         );
-        stopSpinner();
+        this.props.stopSpinner();
 
     }
 
     get button_groups() {
         return [
-            [["reset", this.reset_server_func, "recycle", false],
-                ["killall", this._clear_user_func, "skull", false],
-                ["killone", this._destroy_container, "exclamation-triangle", false]
+            [["reset", this._reset_server_func, "reset", false],
+                ["killall", this._clear_user_func, "clean", false],
+                ["killone", this._destroy_container, "delete", false]
             ],
-            [["log", this._container_logs, "file-alt", false],
-            ["refresh", this.props.refresh_func, "sync-alt", false]]
+            [["log", this._container_logs, "console", false],
+            ["refresh", this.props.refresh_func, "refresh", false]]
 
         ];
      }
 
      render () {
-        return <AdminToolbar button_groups={this.button_groups}/>
+        return <AdminToolbar button_groups={this.button_groups}
+                             left_position={this.props.left_position}
+                             sendRef={this.props.sendRef}
+        />
      }
 }
 
@@ -227,7 +310,6 @@ ContainerToolbar.propTypes = {
     selected_resource: PropTypes.object,
     list_of_selected: PropTypes.array,
     setConsoleText: PropTypes.func,
-    animation_phase: PropTypes.func,
     delete_row: PropTypes.func,
     refresh_func: PropTypes.func
 
@@ -270,7 +352,8 @@ class UserToolbar extends React.Component {
     }
 
     _duplicate_user (event) {
-        window.open($SCRIPT_ROOT + '/user_duplicate');
+        let username = this.props.selected_resource.username;
+        window.open($SCRIPT_ROOT + '/user_duplicate/' + username);
     }
 
     _update_all_collections (event) {
@@ -279,17 +362,20 @@ class UserToolbar extends React.Component {
 
     get button_groups() {
         return [
-            [["create", this._create_user, "user", false],
-                ["duplicate", this._duplicate_user, "copy", false],
-                ["delete", this._delete_user, "skull", false],
-                ["update", this._update_user_starters, "recycle", false],
-                ["refresh", this.props.refresh_func, "sync-alt", false]
+            [["create", this._create_user, "new-object", false],
+                ["duplicate", this._duplicate_user, "duplicate", false],
+                ["delete", this._delete_user, "delete", false],
+                ["update", this._update_user_starters, "automatic-updates", false],
+                ["refresh", this.props.refresh_func, "refresh", false]
             ]
         ];
      }
 
      render () {
-        return <AdminToolbar button_groups={this.button_groups}/>
+        return <AdminToolbar button_groups={this.button_groups}
+                             left_position={this.props.left_position}
+                             sendRef={this.props.sendRef}
+        />
      }
 }
 
@@ -297,7 +383,6 @@ UserToolbar.propTypes = {
     selected_resource: PropTypes.object,
     list_of_selected: PropTypes.array,
     setConsoleText: PropTypes.func,
-    animation_phase: PropTypes.func,
     delete_row: PropTypes.func,
     refresh_func: PropTypes.func
 

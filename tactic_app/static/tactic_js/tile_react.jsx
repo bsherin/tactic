@@ -1,12 +1,13 @@
 
 import {SortableComponent} from "./sortable_container.js";
 import {postWithCallback} from "./communication_react.js"
+import {doFlash} from "./toaster.js"
 
-var Rbs = window.ReactBootstrap;
-var Rtg = window.ReactTransitionGroup;
+let Rtg = window.ReactTransitionGroup;
+let Bp = blueprint;
 
 import {TileForm} from "./tile_form_react.js";
-import {GlyphButton} from "./react_widgets.js";
+import {GlyphButton} from "./blueprint_react_widgets.js";
 
 export {TileContainer}
 
@@ -33,7 +34,6 @@ class TileContainer extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this)
-
     }
 
     _handleTileFinishedLoading(data) {
@@ -46,7 +46,9 @@ class TileContainer extends React.Component {
         this.props.tsocket.socket.off("tile-message");
         this.props.tsocket.socket.on("tile-message", this._handleTileMessage);
         this.props.tsocket.socket.off("tile-finished-loading");
-        this.props.tsocket.socket.on("tile-finished-loading", this._handleTileFinishedLoading);
+        this.props.tsocket.socket.on("tile-finished-loading", (data) => {
+            self._handleTileFinishedLoading(data)
+        });
         this.props.tsocket.socket.off("tile-source-change");
         this.props.tsocket.socket.on('tile-source-change', function (data) {
             self._markSourceChange(data.tile_type)
@@ -164,6 +166,7 @@ class TileContainer extends React.Component {
                                handleClose={this._closeTile}
                                setTileValue={this._setTileValue}
                                setTileState={this._setTileState}
+                               table_is_shrunk={this.props.table_is_shrunk}
                                current_doc_name={this.props.current_doc_name}
                                selected_row={this.props.selected_row}
                                broadcast_event={this.props.broadcast_event}
@@ -176,6 +179,7 @@ class TileContainer extends React.Component {
 
 TileContainer.propTypes = {
     setMainStateValue: PropTypes.func,
+    table_is_shrunk: PropTypes.bool,
     tile_list: PropTypes.array,
     tile_div_ref: PropTypes.object,
     current_doc_name: PropTypes.string,
@@ -254,7 +258,7 @@ class TileComponent extends React.Component {
         this.setState({mounted: true});
         this.broadcastTileSize(this.props.tile_width, this.props.tile_height);
         this.listen_for_clicks();
-        $(this.my_ref.current).resizable({
+        $("#" + this.props.tile_id).resizable({
             handles: "se",
             resize: self._resizeTileArea,
             stop: function () {
@@ -373,13 +377,12 @@ class TileComponent extends React.Component {
                     self.spin_and_refresh()
                 }
             }
-            self._stopSpinner()
         }
     }
 
     listen_for_clicks () {
          let self = this;
-         $(this.my_ref.current).on(click_event, '.element-clickable', function(e) {
+         $(this.body_ref.current).on(click_event, '.element-clickable', function(e) {
              let data_dict = self._standard_click_data();
              const dset = e.target.dataset;
              data_dict.dataset = {};
@@ -390,7 +393,7 @@ class TileComponent extends React.Component {
              postWithCallback(self.props.tile_id, "TileElementClick", data_dict);
              e.stopPropagation()
          });
-         $(this.my_ref.current).on(click_event, '.word-clickable', function(e) {
+         $(this.body_ref.current).on(click_event, '.word-clickable', function(e) {
              let data_dict = self._standard_click_data();
              const s = window.getSelection();
              const range = s.getRangeAt(0);
@@ -408,12 +411,12 @@ class TileComponent extends React.Component {
              data_dict.clicked_text = range.toString().trim();
              postWithCallback(self.props.tile_id, "TileWordClick", data_dict)
          });
-         $(this.my_ref.current).on(click_event, '.cell-clickable', function(e) {
+         $(this.body_ref.current).on(click_event, '.cell-clickable', function(e) {
              let data_dict = self._standard_click_data();
              data_dict.clicked_cell = $(this).text();
              postWithCallback(self.props.tile_id, "TileCellClick", data_dict)
          });
-         $(this.my_ref.current).on(click_event, '.row-clickable', function(e) {
+         $(this.body_ref.current).on(click_event, '.row-clickable', function(e) {
              let data_dict = self._standard_click_data();
              const cells = $(this).children();
              const row_vals = [];
@@ -423,12 +426,12 @@ class TileComponent extends React.Component {
              data_dict["clicked_row"] = row_vals;
              postWithCallback(self.props.tile_id, "TileRowClick", data_dict)
          });
-         $(this.my_ref.current).on(click_event, '.front button', function(e) {
+         $(this.body_ref.current).on(click_event, '.front button', function(e) {
              let data_dict = self._standard_click_data();
              data_dict["button_value"] = e.target.value;
              postWithCallback(self.props.tile_id, "TileButtonClick", data_dict)
          });
-         $(this.my_ref.current).on('submit', '.front form', function(e) {
+         $(this.body_ref.current).on('submit', '.front form', function(e) {
              let data_dict = self._standard_click_data();
              const form_data = {};
              let the_form = e.target;
@@ -439,12 +442,12 @@ class TileComponent extends React.Component {
              postWithCallback(self.props.tile_id, "TileFormSubmit", data_dict);
              return false
          });
-         $(this.my_ref.current).on("change", '.front select', function (e) {
+         $(this.body_ref.current).on("change", '.front select', function (e) {
              let data_dict = self._standard_click_data();
              data_dict.select_value = e.target.value;
              postWithCallback(self.props.tile_id, "SelectChange", data_dict)
          });
-         $(this.my_ref.current).on('change', '.front textarea', function(e) {
+         $(this.body_ref.current).on('change', '.front textarea', function(e) {
              let data_dict = self._standard_click_data();
              data_dict["text_value"] = e.target.value;
              postWithCallback(self.props.tile_id, "TileTextAreaChange", data_dict)
@@ -514,7 +517,6 @@ class TileComponent extends React.Component {
             }
         });
     }
-
     _logMe() {
         this.logText(this.props.front_content)
     }
@@ -532,52 +534,54 @@ class TileComponent extends React.Component {
         let front_dict = {__html: this.props.front_content};
         this.compute_styles();
         let tile_class = this.props.table_is_shrunk ? "tile-panel tile-panel-float" : "tile-panel";
-        if (this.props.source_changed) {
-            tile_class = tile_class + " tile-source-changed"
-        }
-        let butclass = "notclose header-but";
+        let tph_class = this.props.source_changed ? "tile-panel-heading tile-source-changed" : "tile-panel-heading";
         return (
-            <Rbs.Card bg="light" ref={this.my_ref} style={this.main_style} className={tile_class} id={this.props.tile_id}>
-                <Rbs.Card.Header className="tile-panel-heading" >
+            <Bp.Card ref={this.my_ref} elevation={2} style={this.main_style} className={tile_class} id={this.props.tile_id}>
+                <div className={tph_class} >
                     <div className="left-glyphs" ref={this.left_glyphs_ref} style={this.lg_style}>
+                        <Bp.ButtonGroup>
                         {this.props.shrunk &&
-                            <GlyphButton butclass={butclass + " triangle-right"}
-                                         icon_class="far fa-chevron-circle-right"
+                            <GlyphButton
+                                         icon="chevron-right"
                                          handleClick={this._toggleShrunk} />}
 
                         {!this.props.shrunk &&
-                            <GlyphButton butclass={butclass + " triangle-bottom"}
-                                         icon_class="far fa-chevron-circle-down"
+                            <GlyphButton
+                                         icon="chevron-down"
                                          handleClick={this._toggleShrunk} />}
-                        <GlyphButton butclass={butclass}
+                        <GlyphButton intent="primary"
                                      handleClick={this._toggleBack}
-                                     icon_class="far fa-cog"/>
+                                     icon="cog"/>
                         <span className="tile-name-div">{this.props.tile_name}</span>
+                        </Bp.ButtonGroup>
                     </div>
+
                     <div className="right-glyphs" ref={this.right_glyphs_ref}>
-                        {this.props.show_spinner &&
-                            <span className="spin-place">
-                                <span className="loader-small"/>
-                            </span>}
-                        <GlyphButton butclass={butclass}
-                                     handleClick={this._toggleTileLog}
-                                     icon_class="far fa-exclamation-triangle"/>
-                        <GlyphButton butclass={butclass}
-                                     handleClick={this._logMe}
-                                     icon_class="far fa-download"/>
-                        <GlyphButton butclass={butclass}
-                                     handleClick={this._logParams}
-                                     icon_class="far fa-list-ul"/>
-                        <GlyphButton butclass={butclass}
+                        <Bp.ButtonGroup>
+                        {this.props.show_spinner && <Bp.Spinner size={17} />}
+
+                        <GlyphButton handleClick={this._toggleTileLog}
+                                     tooltip="Show tile container log"
+                                     icon="console"/>
+                        <GlyphButton handleClick={this._logMe}
+                                     tooltip="Send current display to log"
+                                     icon="clipboard"/>
+                        <GlyphButton handleClick={this._logParams}
+                                     tooltip="Send current parameters to log"
+                                     icon="th"/>
+                        <GlyphButton intent="warning"
                                      handleClick={this._reloadTile}
-                                     icon_class="far fa-redo-alt"/>
-                        <GlyphButton butclass={butclass}
+                                     tooltip="Reload tile source from library and rerun"
+                                     icon="refresh"/>
+                        <GlyphButton intent="danger"
                                      handleClick={this._closeTile}
-                                     icon_class="far fa-trash-alt"/>
+                                     ttooltip="Remove tile"
+                                     icon="trash"/>
+                        </Bp.ButtonGroup>
                     </div>
-                </Rbs.Card.Header>
+                </div>
                 {!this.props.shrunk &&
-                    <Rbs.Card.Body ref={this.body_ref} style={this.panel_body_style} className="tile-body">
+                    <div ref={this.body_ref} style={this.panel_body_style} className="tile-body">
                         <Rtg.Transition in={this.props.show_form} timeout={ANI_DURATION}>
                             {state => (
                                 <div className="back" style={composeObjs(this.back_style, this.transitionStylesAltUp[state])}>
@@ -604,9 +608,9 @@ class TileComponent extends React.Component {
                             </div>
                             )}
                         </Rtg.Transition>
-                    </Rbs.Card.Body>
+                    </div>
                 }
-            </Rbs.Card>
+            </Bp.Card>
         )
     }
 }

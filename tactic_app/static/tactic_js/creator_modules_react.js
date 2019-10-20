@@ -1,10 +1,10 @@
 
 export { OptionModule, ExportModule };
 
-import { Toolbar } from "./react_toolbar.js";
-import { LabeledSelectList, LabeledFormField, OrderableTable } from "./react_widgets.js";
+import { Toolbar } from "./blueprint_toolbar.js";
+import { LabeledSelectList, LabeledFormField, BpOrderableTable } from "./blueprint_react_widgets.js";
 
-var Rbs = window.ReactBootstrap;
+var Bp = blueprint;
 
 class OptionModuleForm extends React.Component {
 
@@ -34,17 +34,16 @@ class OptionModuleForm extends React.Component {
     handleDefaultChange(event) {
         this.setState({ "default": event.target.value });
     }
-
     handleTagChange(event) {
         this.setState({ "tags": event.target.value });
     }
 
     handleSpecialListChange(event) {
-        this.setState({ "special_list": event.target.value });
+        this.setState({ "special_list": event.currentTarget.value });
     }
 
-    handleTypeChange(new_type) {
-        this.setState({ "type": new_type });
+    handleTypeChange(event) {
+        this.setState({ "type": event.currentTarget.value });
     }
 
     handleSubmit() {
@@ -53,22 +52,18 @@ class OptionModuleForm extends React.Component {
 
     render() {
         return React.createElement(
-            Rbs.Form,
+            "div",
             null,
             React.createElement(
-                Rbs.Form.Row,
-                null,
+                "div",
+                { style: { display: "flex", flexDirection: "row", padding: 25 } },
                 React.createElement(LabeledFormField, { label: "Name", onChange: this.handleNameChange, the_value: this.state.name }),
                 React.createElement(LabeledSelectList, { label: "Type", option_list: this.option_types, onChange: this.handleTypeChange, the_value: this.state.type }),
                 React.createElement(LabeledFormField, { label: "Default", onChange: this.handleDefaultChange, the_value: this.state.default_value }),
-                React.createElement(LabeledFormField, { label: "Special List", onChange: this.handleSpecialListChange, the_value: this.state.special_list, show: this.state.type == "custom_list" }),
-                React.createElement(LabeledFormField, { label: "Tag", onChange: this.handleTagChange, the_value: this.state.tag, show: this.taggable_types.includes(this.state.type) })
+                this.state.type == "custom_list" && React.createElement(LabeledFormField, { label: "Special List", onChange: this.handleSpecialListChange, the_value: this.state.special_list }),
+                this.taggable_types.includes(this.state.type) && React.createElement(LabeledFormField, { label: "Tag", onChange: this.handleTagChange, the_value: this.state.tag })
             ),
-            React.createElement(
-                Rbs.Button,
-                { variant: "outline-secondary", type: "button", onClick: this.handleSubmit },
-                "Create"
-            )
+            React.createElement(Bp.Button, { onClick: this.handleSubmit, text: "Create" })
         );
     }
 }
@@ -113,7 +108,7 @@ class OptionModule extends React.Component {
     }
 
     get button_groups() {
-        let bgs = [[{ "name_text": "delete", "icon_name": "trash", "click_handler": this.delete_option }, { "name_text": "to meta", "icon_name": "list-alt", "click_handler": this.send_doc_text }]];
+        let bgs = [[{ "name_text": "delete", "icon_name": "trash", "click_handler": this.delete_option, tooltip: "Delete option" }, { "name_text": "toMeta", "icon_name": "properties", "click_handler": this.send_doc_text, tooltip: "Append info to notes field" }]];
         for (let bg of bgs) {
             for (let but of bg) {
                 but.click_handler = but.click_handler.bind(this);
@@ -125,22 +120,22 @@ class OptionModule extends React.Component {
     render() {
         var cols = ["name", "type", "default", "special_list", "tags"];
         let options_pane_style = {
-            "marginTop": 25,
-            "marginLeft": 25,
-            "marginRight": 25
+            "marginTop": 10,
+            "marginLeft": 10,
+            "marginRight": 10
         };
         if (this.state.active_row >= this.props.data_list.length) {
             this.state.active_row = this.props.data_list.length - 1;
         }
         return React.createElement(
-            "div",
-            { id: "options-pane", className: "d-flex flex-column", style: options_pane_style },
+            Bp.Card,
+            { elevation: 1, id: "options-pane", className: "d-flex flex-column", style: options_pane_style },
             React.createElement(
                 "div",
                 { className: "d-flex flex-row mb-2" },
                 React.createElement(Toolbar, { button_groups: this.button_groups })
             ),
-            React.createElement(OrderableTable, { columns: cols,
+            this.props.foregrounded && React.createElement(BpOrderableTable, { columns: cols,
                 data_array: this.props.data_list,
                 active_row: this.state.active_row,
                 handleActiveRowChange: this.handleActiveRowChange,
@@ -155,6 +150,7 @@ class OptionModule extends React.Component {
 
 OptionModule.propTypes = {
     data_list: PropTypes.array,
+    foregrounded: PropTypes.bool,
     handleChange: PropTypes.func,
     handleNotesAppend: PropTypes.func
 };
@@ -186,19 +182,15 @@ class ExportModuleForm extends React.Component {
 
     render() {
         return React.createElement(
-            Rbs.Form,
+            "div",
             null,
             React.createElement(
-                Rbs.Form.Row,
-                null,
+                "div",
+                { style: { display: "flex", flexDirection: "row", padding: 25 } },
                 React.createElement(LabeledFormField, { label: "Name", onChange: this.handleNameChange, the_value: this.state.name }),
                 React.createElement(LabeledFormField, { label: "Tag", onChange: this.handleTagChange, the_value: this.state.tag })
             ),
-            React.createElement(
-                Rbs.Button,
-                { variant: "outline-secondary", type: "button", onClick: this.handleSubmit },
-                "Create"
-            )
+            React.createElement(Bp.Button, { onClick: this.handleSubmit, text: "Create" })
         );
     }
 }
@@ -243,7 +235,7 @@ class ExportModule extends React.Component {
     }
 
     get button_groups() {
-        let bgs = [[{ "name_text": "delete", "icon_name": "trash", "click_handler": this.delete_export }, { "name_text": "to meta", "icon_name": "list-alt", "click_handler": this.send_doc_text }]];
+        let bgs = [[{ "name_text": "delete", "icon_name": "trash", "click_handler": this.delete_export, tooltip: "Delete export" }, { "name_text": "toMeta", "icon_name": "properties", "click_handler": this.send_doc_text, tooltip: "Append info to notes field" }]];
         for (let bg of bgs) {
             for (let but of bg) {
                 but.click_handler = but.click_handler.bind(this);
@@ -255,28 +247,27 @@ class ExportModule extends React.Component {
     render() {
         var cols = ["name", "tags"];
         let exports_pane_style = {
-            "marginTop": 25,
-            "marginLeft": 25,
-            "marginRight": 25
+            "marginTop": 10,
+            "marginLeft": 10,
+            "marginRight": 10
         };
         if (this.state.active_row >= this.props.data_list.length) {
             this.state.active_row = this.props.data_list.length - 1;
         }
         return React.createElement(
-            "div",
-            { id: "exports-pane", className: "d-flex flex-column", style: exports_pane_style },
+            Bp.Card,
+            { elevation: 1, id: "exports-pane", className: "d-flex flex-column", style: exports_pane_style },
             React.createElement(
                 "div",
                 { className: "d-flex flex-row mb-2" },
                 React.createElement(Toolbar, { button_groups: this.button_groups })
             ),
-            React.createElement(OrderableTable, { columns: cols,
+            this.props.foregrounded && React.createElement(BpOrderableTable, { columns: cols,
                 data_array: this.props.data_list,
                 active_row: this.state.active_row,
                 handleActiveRowChange: this.handleActiveRowChange,
                 handleChange: this.props.handleChange,
-                content_editable: true
-            }),
+                content_editable: true }),
             React.createElement(ExportModuleForm, { handleCreate: this.handleCreate })
         );
     }
@@ -285,6 +276,7 @@ class ExportModule extends React.Component {
 
 ExportModule.propTypes = {
     data_list: PropTypes.array,
+    foregrounded: PropTypes.bool,
     handleChange: PropTypes.func,
     handleNotesAppend: PropTypes.func
 

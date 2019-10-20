@@ -6,7 +6,13 @@ class ReactCodemirror extends React.Component {
 
     constructor(props) {
         super(props);
-        this.code_container_ref = React.createRef();
+        if (this.props.code_container_ref) {
+            this.code_container_ref = this.props.code_container_ref
+        }
+        else {
+            this.code_container_ref = React.createRef();
+        }
+
         this.handleChange = this.handleChange.bind(this);
         this.mousetrap = new Mousetrap();
         this.create_api();
@@ -137,7 +143,8 @@ class ReactCodemirror extends React.Component {
     render() {
         let ccstyle = {
             "height": this.props.code_container_height,
-            "width": "100%"
+            "width": "100%",
+            lineHeight: "21px"
         };
         return (
             <div id="code-container" style={ccstyle} ref={this.code_container_ref}>
@@ -159,6 +166,7 @@ ReactCodemirror.propTypes = {
     first_line_number: PropTypes.number,
     extraKeys: PropTypes.object,
     setCMObject: PropTypes.func,
+    code_container_ref: PropTypes.object,
     code_container_height: PropTypes.oneOfType([
         PropTypes.string,
         PropTypes.number])
@@ -171,5 +179,6 @@ ReactCodemirror.defaultProps = {
     mode: "python",
     readOnly: false,
     extraKeys: {},
-    setCMObject: null
+    setCMObject: null,
+    code_container_ref: null
 };

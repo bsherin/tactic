@@ -2,12 +2,14 @@
 
 export { Toolbar, ToolbarButton, Namebutton, ResourceviewerToolbar };
 import { showModalReact } from "./modal_react.js";
+import { doFlash } from "./toaster.js";
 
 import { postAjax } from "./communication_react.js";
 
 const default_button_class = "btn-outline-secondary";
 
 var Rbs = window.ReactBootstrap;
+var Bp = blueprint;
 
 function ResourceviewerToolbar(props) {
     let tstyle = { "marginTop": 20 };
@@ -289,13 +291,14 @@ class Namebutton extends React.Component {
 
     render() {
         let name = this.props.handleRename == null ? this.state.current_name : this.props.resource_name;
-        return React.createElement(
-            Rbs.Button,
-            { id: "rename-button",
-                className: "btn btn-outline-secondary res-name-button",
-                onClick: this.rename_me },
-            name
-        );
+        let style = { fontSize: 20 };
+        return React.createElement(Bp.Button, { id: "rename-button",
+            text: name,
+            large: true,
+            minimal: true,
+            style: style,
+            tabIndex: -1,
+            onClick: this.rename_me });
     }
 }
 

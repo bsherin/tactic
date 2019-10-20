@@ -1,25 +1,23 @@
 
-
-import {ResourceviewerToolbar} from "./react_toolbar.js";
-import {CombinedMetadata} from "./react_mdata_fields.js";
+import {ResourceviewerToolbar} from "./blueprint_toolbar.js";
+import {CombinedMetadata} from "./blueprint_mdata_fields.js";
 import {showModalReact} from "./modal_react.js";
 import {TacticSocket} from "./tactic_socket.js"
 import {HorizontalPanes} from "./resizing_layouts.js";
 import {handleCallback, postAjax} from "./communication_react.js"
 
+import {doFlash, doFlashAlways} from "./toaster.js";
+import {getUsableDimensions} from "./sizing_tools.js"
+
 export {ResourceViewerApp, ResourceViewerSocket, copyToLibrary, sendToRepository}
 
-
-const MARGIN_SIZE = 17;
-
+var Bp = blueprint;
 
 class ResourceViewerSocket extends TacticSocket {
     initialize_socket_stuff() {
         this.socket.emit('join', {"room": window.user_id});
         this.socket.emit('join-main', {"room": window.resource_viewer_id});
         this.socket.on('handle-callback', handleCallback);
-        this.socket.on('stop-spinner', stopSpinner);
-        this.socket.on('start-spinner', startSpinner);
         this.socket.on('close-user-windows', (data) => {
             if (!(data["originator"] == window.resource_viewer_id)) {
                 window.close()
@@ -66,73 +64,76 @@ class ResourceViewerApp extends React.Component {
 
     constructor(props) {
         super(props);
+        doBinding(this);
         this.savedContent = props.the_content;
         this.savedTags = props.tags;
         this.savedNotes = props.notes;
-        this.hp_ref = React.createRef();
-
         let self = this;
         this.mousetrap = new Mousetrap();
         this.mousetrap.bind(['command+s', 'ctrl+s'], function (e) {
             self.props.saveMe();
             e.preventDefault()
         });
-        this.update_window_dimensions = this.update_window_dimensions.bind(this);
-        this.state = {"mounted": false,
-                    "usable_width": window.innerWidth - 2 * MARGIN_SIZE - 30,
-                    "usable_height": window.innerHeight - 50}
+        let aheight = getUsableDimensions().usable_height;
+        let awidth = getUsableDimensions().usable_width - 170;
+        this.state = {
+            available_height: aheight,
+            available_width: awidth
+        };
+        this.state.mounted = false;
     }
 
     componentDidMount() {
-        window.addEventListener("resize", this.update_window_dimensions);
+        window.addEventListener("resize", this._update_window_dimensions);
         this.setState({"mounted": true});
-        this.update_window_dimensions();
-        stopSpinner()
+        this._update_window_dimensions();
+        this.props.stopSpinner()
     }
 
-    update_window_dimensions() {
-        this.setState({
-            "usable_width": window.innerWidth - 2 * MARGIN_SIZE - 30,
-            "usable_height": window.innerHeight - 50
-        });
+    _update_window_dimensions() {
+        this.setState(getUsableDimensions());
     }
 
-    get_new_hp_height (element_ref) {
-        if (this.state.mounted) {  // This will be true after the initial render
-            return this.state.usable_height - $(element_ref.current).offset().top
-        }
-        else {
-            return this.state.usable_height - 45
+     _handleResize(entries) {
+        for (let entry of entries) {
+            if (entry.target.className == "resource-viewer-holder") {
+                this.setState({available_width: entry.contentRect.width,
+                    available_height: entry.contentRect.height
+                });
+                return
+            }
         }
     }
 
     render() {
         let left_pane = (
             <React.Fragment>
+                <ResourceviewerToolbar button_groups={this.props.button_groups}
+                                       resource_name={this.props.resource_name}
+                                       res_type={this.props.res_type}/>
                 {this.props.children}
             </React.Fragment>
         );
-        let available_height = this.get_new_hp_height(this.hp_ref);
+        //let available_height = this.get_new_hp_height(this.hp_ref);
         let right_pane = (
-                <CombinedMetadata tags={this.props.tags}
-                                  created={this.props.created}
-                                  notes={this.props.notes}
-                                  handleChange={this.props.handleStateChange}
-                                  res_type={this.props.res_type} />
+            <CombinedMetadata tags={this.props.tags}
+                              outer_style={{marginTop: 100, marginLeft: 20, overflow: "scroll", padding: 15,
+                                  backgroundColor: "#f5f8fa", marginRight: 20}}
+                              created={this.props.created}
+                              notes={this.props.notes}
+                              handleChange={this.props.handleStateChange}
+                              res_type={this.props.res_type} />
         );
 
         return(
-            <React.Fragment>
-                <ResourceviewerToolbar button_groups={this.props.button_groups}
-                                           resource_name={this.props.resource_name}
-                                           res_type={this.props.res_type}/>
-               <div ref={this.hp_ref}/>
-                <HorizontalPanes left_pane={left_pane}
-                                 right_pane={right_pane}
-                                 available_height={available_height}
-                                 available_width={this.state.usable_width}
+            <Bp.ResizeSensor onResize={this._handleResize} observeParents={true}>
+               <HorizontalPanes available_width={this.state.available_width}
+                                available_height={this.state.available_height}
+                                left_pane={left_pane}
+                                right_pane={right_pane}
+                                am_outer={true}
                 />
-            </React.Fragment>
+            </Bp.ResizeSensor>
         )
     }
 }

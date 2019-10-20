@@ -1,15 +1,18 @@
 
 import {TacticSocket} from "./tactic_socket.js";
-import {Toolbar, Namebutton} from "./react_toolbar.js";
+import {Toolbar, Namebutton} from "./blueprint_toolbar.js";
 import {sendToRepository} from "./resource_viewer_react_app.js";
 import {ReactCodemirror} from "./react-codemirror.js";
-import {CombinedMetadata} from "./react_mdata_fields.js";
+import {CombinedMetadata} from "./blueprint_mdata_fields.js";
 import {OptionModule, ExportModule} from "./creator_modules_react.js";
 import {HorizontalPanes, VerticalPanes} from "./resizing_layouts.js";
-import {render_navbar} from "./base_module.js";
+import {render_navbar} from "./blueprint_navbar.js";
 import {handleCallback, postAjax, postAjaxPromise, postWithCallback} from "./communication_react.js"
+import {withStatus, doFlash} from "./toaster.js"
+import {getUsableDimensions, SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT} from "./sizing_tools.js";
+import {withErrorDrawer} from "./error_drawer.js";
 
-var Rbs = window.ReactBootstrap;
+var Bp = blueprint;
 
 const BOTTOM_MARGIN = 50;
 const MARGIN_SIZE = 17;
@@ -19,12 +22,12 @@ var heartbeat_timer = setInterval( function(){
    postAjax("register_heartbeat", {"main_id": window.main_id}, function () {});
 }, HEARTBEAT_INTERVAL );
 
+let tsocket;
+
 class CreatorViewerSocket extends TacticSocket {
     initialize_socket_stuff () {
         this.socket.emit('join', {"room": user_id});
         this.socket.emit('join-main', {"room": module_viewer_id});
-        this.socket.on('stop-spinner', stopSpinner);
-        this.socket.on('start-spinner', startSpinner);
         this.socket.on('handle-callback', handleCallback);
         this.socket.on('close-user-windows', (data) => {
             if (!(data["originator"] == module_viewer_id)) {
@@ -42,9 +45,7 @@ class CreatorViewerSocket extends TacticSocket {
 
 function tile_creator_main() {
     render_navbar();
-    startSpinner();
-    statusMessageText("loading " + window.module_name);
-    var tsocket = new CreatorViewerSocket("main", 5000);
+    tsocket = new CreatorViewerSocket("main", 5000);
     tsocket.socket.on("begin-post-load", function () {
             let the_content = {"module_name": window.module_name,
                                 "module_viewer_id": window.module_viewer_id,
@@ -64,7 +65,7 @@ function got_parsed_data (data_object) {
     postAjaxPromise("grab_metadata", result_dict)
         .then(function (data) {
             let split_tags = data.tags == "" ? [] : data.tags.split(" ");
-            ReactDOM.render(<CreatorApp tile_name={window.module_name}
+            ReactDOM.render(<CreatorAppPlus tile_name={window.module_name}
                                         is_mpl={parsed_data.is_mpl}
                                         is_d3={parsed_data.is_d3}
                                         render_content_code={parsed_data.render_content_code}
@@ -82,13 +83,9 @@ function got_parsed_data (data_object) {
                                         created={data.datestring}
 
             />, domContainer);
-            clearStatusMessage();
-            stopSpinner()
         })
         .catch(function (data) {
             doFlash(data);
-            clearStatusMessage();
-            stopSpinner()
         })
 }
 
@@ -110,17 +107,28 @@ function TileCreatorToolbar(props) {
 class CreatorApp extends React.Component {
     constructor(props) {
         super(props);
-        let initial_usable_height = window.innerHeight - 45 - MARGIN_SIZE;
-        let initial_usable_width = window.innerWidth - 2 * MARGIN_SIZE - 30;
+        doBinding(this);
+        this.top_ref = React.createRef();
+        let aheight = getUsableDimensions().usable_height;
+        let awidth = getUsableDimensions().usable_width;
+        let bheight = getUsableDimensions().body_height;
+        this.options_ref = React.createRef();
         this.left_div_ref = React.createRef();
         this.right_div_ref = React.createRef();
         this.tc_span_ref = React.createRef();
         this.rc_span_ref = React.createRef();
         this.vp_ref = React.createRef();
         this.hp_ref = React.createRef();
+        this.methods_ref = React.createRef();
         this.draw_plot_bounding_ref = React.createRef();
         this.state = {
             tile_name: this.props.tile_name,
+            foregrounded_panes: {
+                "metadata": true,
+                "options": false,
+                "exports": false,
+                "methods": false
+            },
             render_content_code: this.props.render_content_code,
             draw_plot_code: this.props.draw_plot_code,
             jscript_code: this.props.jscript_code,
@@ -133,11 +141,14 @@ class CreatorApp extends React.Component {
             option_list: this.props.option_list,
             export_list: this.props.export_list,
             category: this.props.category,
-            usable_width: initial_usable_width,
-            usable_height: initial_usable_height,
-            top_pane_height: this.props.is_mpl || this.props.is_d3 ? initial_usable_height / 2 - 25 : null,
-            bottom_pane_height: this.props.is_mpl || this.props.is_d3? initial_usable_height / 2 - 25 : null,
-            left_pane_width: initial_usable_width / 2 - 25,
+            total_height: window.innerHeight,
+            usable_width: awidth,
+            old_usable_width: 0,
+            usable_height: aheight,
+            body_height: bheight,
+            top_pane_height: this.props.is_mpl || this.props.is_d3 ? aheight / 2 - 25 : null,
+            bottom_pane_height: this.props.is_mpl || this.props.is_d3 ? aheight / 2 - 25 : null,
+            left_pane_width: awidth / 2 - 25,
             methodsTabRefreshRequired: true
         };
         this.saved_state_vars = ["tile_name", "render_content_code", "draw_plot_code", "jscript_code",
@@ -152,9 +163,8 @@ class CreatorApp extends React.Component {
         this.handleOptionsChange = this.handleOptionsChange.bind(this);
         this.handleExportsChange = this.handleExportsChange.bind(this);
         this.handleMethodsChange = this.handleMethodsChange.bind(this);
-        this.handleTabSelect = this.handleTabSelect.bind(this);
         this.handleLeftPaneResize = this.handleLeftPaneResize.bind(this);
-        this.handleTopPaneResize = this.handleTopPaneResize.bind(this)
+        this.handleTopPaneResize = this.handleTopPaneResize.bind(this);
     }
 
     update_saved_state() {
@@ -164,7 +174,7 @@ class CreatorApp extends React.Component {
     }
 
 
-    dirty() {
+dirty() {
         for (let thevar of this.saved_state_vars) {
             if (this.state[thevar] != this.saved_state[thevar]) {
                 return true
@@ -175,14 +185,15 @@ class CreatorApp extends React.Component {
 
     get button_groups() {
         let bgs = [
-                    [{"name_text": "Save", "icon_name": "save","click_handler": this.saveMe},
-                     {"name_text": "Mark", "icon_name": "map-marker-alt", "click_handler": this.saveAndCheckpoint},
-                     {"name_text": "Save as...", "icon_name": "save", "click_handler": this.saveModuleAs},
-                     {"name_text": "Load", "icon_name": "arrow-from-bottom", "click_handler": this.loadModule},
+                    [{"name_text": "Save", "icon_name": "saved","click_handler": this._saveMe, key_bindings: ['ctrl+s', "command+s"], tooltip: "Save"},
+                     {"name_text": "Mark", "icon_name": "map-marker", "click_handler": this._saveAndCheckpoint, key_bindings: ['ctrl+m'], tooltip: "Save and checkpoint"},
+                     {"name_text": "SaveAs", "icon_name": "floppy-disk", "click_handler": this._saveModuleAs, tooltip: "Save as"},
+                     {"name_text": "Load", "icon_name": "upload", "click_handler": this._loadModule, key_bindings: ['ctrl+l'], tooltip: "Load tile"},
                      {"name_text": "Share", "icon_name": "share",
-                        "click_handler": () => {sendToRepository("tile", this.props.tile_name)}}],
-                    [{"name_text": "History", "icon_name": "history", "click_handler": this.showHistoryViewer},
-                     {"name_text": "Compare", "icon_name": "code-branch", "click_handler": this.showTileDiffer}]
+                        "click_handler": () => {sendToRepository("tile", this.props.tile_name)}, tooltip: "Send to repository"}],
+                    [{"name_text": "History", "icon_name": "history", "click_handler": this._showHistoryViewer, tooltip: "Show history viewer"},
+                     {"name_text": "Compare", "icon_name": "comparison", "click_handler": this._showTileDiffer, tooltip: "Compare to another tile"}],
+                    [{"name_text": "Drawer", "icon_name": "console", "click_handler": this.props.toggleErrorDrawer, tooltip: "Toggle error drawer"}]
             ];
 
         for (let bg of bgs) {
@@ -193,61 +204,74 @@ class CreatorApp extends React.Component {
         return bgs
     }
 
-    showHistoryViewer () {
+    _showHistoryViewer () {
         window.open(`${$SCRIPT_ROOT}/show_history_viewer/${this.props.tile_name}`)
     }
 
-    showTileDiffer () {
+    _showTileDiffer () {
         window.open(`${$SCRIPT_ROOT}/show_tile_differ/${this.props.tile_name}`)
     }
 
+    _doFlashStopSpinner(data) {
+        this.props.clearStatus();
+        doFlash(data)
+    }
 
-    loadModule() {
+    _logErrorStopSpinner(content, title=null, open=true) {
+        this.props.stopSpinner();
+        this.props.addErrorDrawerEntry({title: title, content: content});
+        if (open) {
+            this.props.openErrorDrawer();
+        }
+    }
+
+    _loadModule() {
         let self = this;
-        startSpinner();
+        this.props.startSpinner();
         this.doSavePromise()
             .then(function () {
-                statusMessageText("Loading Module");
+                self.props.statusMessage("Loading Module");
                 postWithCallback("host", "load_tile_module_task", {"tile_module_name": self.state.tile_name, "user_id": user_id}, load_success)
             })
-            .catch(doFlashStopSpinner);
+            .catch((data)=>{self._logErrorStopSpinner(data.message, "Error loading module")});
 
         function load_success(data) {
             if (data.success) {
                 self.update_saved_state();
                 data.timeout = 2000;
             }
-            doFlashStopSpinner(data);
+            self._doFlashStopSpinner(data);
             return false
         }
     }
 
-    saveModuleAs() {
+    _saveModuleAs() {
         doFlash({"message": "not implemented yet"});
         return false
     }
 
-    saveMe() {
-        startSpinner();
-        statusMessageText("Saving Module");
+    _saveMe() {
+        let self = this;
+        this.props.startSpinner();
+        this.props.statusMessage("Saving Module");
         this.doSavePromise()
-            .then(doFlashStopSpinner)
-            .catch(doFlashStopSpinner);
+            .then(self._doFlashStopSpinner)
+            .catch((data)=> {self._logErrorStopSpinner(data.message, "Error saving module")});
         return false
     }
 
 
-    saveAndCheckpoint() {
-        startSpinner();
+    _saveAndCheckpoint() {
+        this.props.startSpinner();
         let self = this;
         this.doSavePromise()
             .then(function (){
-                statusMessage("Checkpointing");
+                self.props.statusMessage("Checkpointing");
                 self.doCheckpointPromise()
-                    .then(doFlashStopSpinner)
-                    .catch(doFlashStopSpinner)
+                    .then(self._doFlashStopSpinner)
+                    .catch((data)=>{self._logErrorStopSpinner(data.message, "Error checkpointing module")})
             })
-            .catch(doFlashStopSpinner);
+            .catch((data)=>{self._logErrorStopSpinner(data.message, "Error saving module")});
         return false
 
     }
@@ -317,25 +341,34 @@ class CreatorApp extends React.Component {
     }
 
     update_window_dimensions() {
-        this.setState({
-            "usable_width": window.innerWidth - 2 * MARGIN_SIZE - 30,
-            "usable_height": window.innerHeight - 50
-        });
+        let uwidth = window.innerWidth - 2 * SIDE_MARGIN;
+        let uheight = window.innerHeight - BOTTOM_MARGIN;
+        if (this.top_ref && this.top_ref.current) {
+            uheight = uheight - this.top_ref.current.offsetTop;
+        }
+        else {
+            uheight = uheight - USUAL_TOOLBAR_HEIGHT
+        }
+        this.setState({usable_height: uheight, usable_width: uwidth})
     }
 
     componentDidMount() {
         this.setState({"mounted": true});
         document.title = this.state.tile_name;
-        this.update_window_dimensions();
+
         window.addEventListener("resize", this.update_window_dimensions);
-        stopSpinner();
+        this.update_window_dimensions();
+        this.props.stopSpinner();
     }
     
-    handleTabSelect() {
-        this.setState({"methodsTabRefreshRequired": false})  // This is needed or the methods tab will be blank
+    _handleTabSelect(newTabId) {
+        if (this.state.foregrounded_panes[newTabId]) return;
+        let new_fg = Object.assign({}, this.state.foregrounded_panes);
+        new_fg[newTabId] = true;
+        this.setState({foregrounded_panes: new_fg}, this.update_window_dimensions)
     }
 
-    handleNotesAppend(new_text) {
+    _handleNotesAppend(new_text) {
         this.setState({"notes": this.state.notes + new_text});
     }
 
@@ -355,12 +388,16 @@ class CreatorApp extends React.Component {
         this.setState({"extra_functions": new_methods})
     }
 
-    get_height_minus_top_offset (element_ref) {
+    get_height_minus_top_offset (element_ref, min_offset = 0, default_offset = 50) {
         if (this.state.mounted) {  // This will be true after the initial render
-            return this.state.usable_height - $(element_ref.current).offset().top
+            let offset = $(element_ref.current).offset().top;
+            if (offset < min_offset) {
+                offset = min_offset
+            }
+            return this.state.body_height - offset
         }
         else {
-            return this.state.usable_height - 50
+            return this.state.body_height - default_offset
         }
     }
 
@@ -410,8 +447,21 @@ class CreatorApp extends React.Component {
         // this.setState({"tile_name": new_name})
     }
 
+    _handleResize(entries) {
+        for (let entry of entries) {
+            if (entry.target.id == "creator-root") {
+                // Must used window.innerWidth here otherwise we get the wrong value during initial mounting
+                this.setState({usable_width: window.innerWidth - 2 * SIDE_MARGIN,
+                    usable_height: entry.contentRect.height - BOTTOM_MARGIN - entry.target.getBoundingClientRect().top,
+                    body_height: entry.contentRect.height - BOTTOM_MARGIN
+                });
+                return
+            }
+        }
+    }
+
     render() {
-        let hp_height = this.get_height_minus_top_offset(this.hp_ref);
+        //let hp_height = this.get_height_minus_top_offset(this.hp_ref);
         let vp_height = this.get_height_minus_top_offset(this.vp_ref);
 
         let code_width = this.state.left_pane_width - 10;
@@ -430,7 +480,7 @@ class CreatorApp extends React.Component {
                     <ReactCodemirror code_content={code_content}
                                      mode={mode}
                                      handleChange={this.handleTopCodeChange}
-                                     saveMe={this.saveAndCheckpoint}
+                                     saveMe={this._saveAndCheckpoint}
                                      readOnly={false}
                                      first_line_number={first_line_number}
                                      code_container_height={tc_height}
@@ -448,10 +498,10 @@ class CreatorApp extends React.Component {
 
         let bc_item = (
             <div key="rccode" id="rccode" style={ch_style} className="d-flex flex-column align-items-baseline code-holder">
-                <span ref={this.rc_span_ref}>render_content</span>
+                <span className="bp3-ui-text" ref={this.rc_span_ref}>render_content</span>
                 <ReactCodemirror code_content={this.state.render_content_code}
                                  handleChange={this.handleRenderContentChange}
-                                 saveMe={this.saveAndCheckpoint}
+                                 saveMe={this._saveAndCheckpoint}
                                  readOnly={false}
                                  first_line_number={this.state.render_content_line_number}
                                  code_container_height={rc_height}
@@ -496,54 +546,70 @@ class CreatorApp extends React.Component {
             );
         }
 
-        let right_pane = (
-                <React.Fragment>
-                    <div id="creator-resources" className="d-block mt-2">
-                        <Rbs.Tabs id="resource_tabs" onSelect={this.handleTabSelect}>
-                            <Rbs.Tab eventKey="metadata" title="metadata">
-                                <CombinedMetadata tags={this.state.tags}
+        let mdata_panel = (<CombinedMetadata tags={this.state.tags}
                                                   notes={this.state.notes}
                                                   created={this.props.created}
                                                   category={this.state.category}
                                                   res_type="tile"
                                                   handleChange={this.handleStateChange}
-                                                />
-                            </Rbs.Tab>
-                            <Rbs.Tab eventKey="options" title="options">
-                                <OptionModule data_list={this.state.option_list}
-                                              handleChange={this.handleOptionsChange}
-                                              handleNotesAppend={this.handleNotesAppend}
+                                                />);
+        let option_panel = (
+            <OptionModule options_ref={this.options_ref}
+                          data_list={this.state.option_list}
+                          foregrounded={this.state.foregrounded_panes["options"]}
+                          handleChange={this.handleOptionsChange}
+                          handleNotesAppend={this._handleNotesAppend}
                                 />
-                            </Rbs.Tab>
-                            <Rbs.Tab eventKey="exports" title="exports">
-                                <ExportModule data_list={this.state.export_list}
-                                              handleChange={this.handleExportsChange}
-                                              handleNotesAppend={this.handleNotesAppend}
+        );
+        let export_panel = (
+            <ExportModule data_list={this.state.export_list}
+                          foregrounded={this.state.foregrounded_panes["exports"]}
+                          handleChange={this.handleExportsChange}
+                          handleNotesAppend={this._handleNotesAppend}
                                 />
-                            </Rbs.Tab>
-                            <Rbs.Tab eventKey="methods" title="methods">
-                                <ReactCodemirror handleChange={this.handleMethodsChange}
-                                                 code_content={this.state.extra_functions}
-                                                 save_me={this.saveAndCheckpoint}
-                                                 readOnly={false}
-                                                 first_line_number={this.state.extra_methods_line_number}
-                                                 refresh_required={this.methodsTabRefreshRequired}
-                                />
-                            </Rbs.Tab>
-                        </Rbs.Tabs>
+        );
+        let methods_height = this.get_height_minus_top_offset(this.methods_ref, 128, 128);
+        let methods_panel = (
+            <ReactCodemirror handleChange={this.handleMethodsChange}
+                             code_content={this.state.extra_functions}
+                             saveMe={this._saveAndCheckpoint}
+                             readOnly={false}
+                             code_container_ref={this.methods_ref}
+                             code_container_height={methods_height}
+                             first_line_number={this.state.extra_methods_line_number}
+                             refresh_required={this.methodsTabRefreshRequired}
+        />
+        );
+        let right_pane = (
+                <React.Fragment>
+                    <div id="creator-resources" className="d-block mt-2 ml-2">
+                        <Bp.Tabs id="resource_tabs"
+                                 large={true} onChange={this._handleTabSelect}>
+                            <Bp.Tab id="metadata" title="metadata" panel={mdata_panel}/>
+                            <Bp.Tab id="options" title="options" panel={option_panel}/>
+                            <Bp.Tab id="exports" title="exports" panel={export_panel}/>
+                            <Bp.Tab id="methods" title="methods" panel={methods_panel}/>
+                        </Bp.Tabs>
                     </div>
                 </React.Fragment>
         );
+        let outer_style = {
+            width: this.state.usable_width,
+            height: this.state.usable_height,
+            paddingLeft: SIDE_MARGIN
+        };
         return (
             <React.Fragment>
-                <div ref={this.hp_ref}/>
-                <HorizontalPanes left_pane={left_pane}
-                                 right_pane={right_pane}
-                                 available_height={hp_height}
-                                 available_width={this.state.usable_width}
-                                 handleSplitUpdate={this.handleLeftPaneResize}
-                />
-
+                <Bp.ResizeSensor onResize={this._handleResize} observeParents={true}>
+                    <div className="resource-viewer-holder" ref={this.top_ref} style={outer_style}>
+                        <HorizontalPanes left_pane={left_pane}
+                                         right_pane={right_pane}
+                                         available_height={this.state.usable_height}
+                                         available_width={this.state.usable_width}
+                                         handleSplitUpdate={this.handleLeftPaneResize}
+                        />
+                    </div>
+                </Bp.ResizeSensor>
             </React.Fragment>
         )
 
@@ -566,5 +632,7 @@ CreatorApp.propTypes = {
     export_list: PropTypes.array,
     created: PropTypes.string
 };
+
+var CreatorAppPlus = withStatus(withErrorDrawer(CreatorApp));
 
 tile_creator_main();
