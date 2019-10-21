@@ -73,13 +73,11 @@ class HorizontalPanes extends React.Component {
         let left_div_style = {
             width: this.left_width,
             height: this.props.available_height - this.props.bottom_margin,
-            display: "flex",
             flexDirection: "column"
         };
         let right_div_style = {
             width: this.right_width,
             height: this.props.available_height - this.props.bottom_margin,
-            display: "flex",
             flexDirection: "column"
         };
 
