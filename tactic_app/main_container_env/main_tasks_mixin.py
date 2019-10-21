@@ -1335,11 +1335,15 @@ class DataSupportTasksMixin:
 
     @task_worthy
     def grab_chunk_by_row_index(self, data):
+        if "set_visible_doc" in data and data["set_visible_doc"]:
+            self.set_visible_doc(data)
         return self.grab_chunk(data["doc_name"], data["row_index"])
 
     @task_worthy
     def grab_freeform_data(self, data):
         print("entering grab_freeformdata with fixed message")
+        if "set_visible_doc" in data and data["set_visible_doc"]:
+            self.set_visible_doc(data)
         doc_name = data["doc_name"]
         return {"doc_name": doc_name,
                 "data_text": self.doc_dict[doc_name].data_text}
