@@ -83,7 +83,7 @@ function _finish_post_load(data) {
         interface_state = data.interface_state
     }
     if (window.is_freeform) {
-        postWithCallback(window.main_id, "grab_freeform_data", {"doc_name":window.doc_names[0]}, function (data) {
+        postWithCallback(window.main_id, "grab_freeform_data", {"doc_name":window.doc_names[0], "set_visible_doc": true}, function (data) {
             let domContainer = document.querySelector('#main-root');
             if (window.is_project) {
                 ReactDOM.render(<MainAppPlus is_project={true}
@@ -103,7 +103,7 @@ function _finish_post_load(data) {
         });
     }
     else {
-        postWithCallback(window.main_id, "grab_chunk_by_row_index", {"doc_name":window.doc_names[0], "row_index": 0},
+        postWithCallback(window.main_id, "grab_chunk_by_row_index", {"doc_name":window.doc_names[0], "row_index": 0, "set_visible_doc": true},
             function (data) {
             let domContainer = document.querySelector('#main-root');
             if (window.is_project) {
@@ -296,7 +296,7 @@ class MainApp extends React.Component {
         let self = this;
         this.setState({show_table_spinner: true});
         if (window.is_freeform) {
-            postWithCallback(window.main_id, "grab_freeform_data", {"doc_name": new_doc_name}, function (data) {
+            postWithCallback(window.main_id, "grab_freeform_data", {"doc_name": new_doc_name, "set_visible_doc": true}, function (data) {
                 self.props.stopSpinner();
                 self.props.clearStatusMessage();
                 let new_table_spec = {"current_doc_name": new_doc_name};
@@ -307,12 +307,11 @@ class MainApp extends React.Component {
               })
         }
         else {
-            const data_dict = {"doc_name": new_doc_name, "row_index": row_index};
+            const data_dict = {"doc_name": new_doc_name, "row_index": row_index, "set_visible_doc": true};
             postWithCallback(main_id, "grab_chunk_by_row_index", data_dict, function (data) {
                 self._setStateFromDataObject(data, new_doc_name, ()=>{
                     self.setState({ show_table_spinner: false});
                 });
-                self.set_visible_doc(new_doc_name);
             });
         }
     }
