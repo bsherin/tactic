@@ -615,7 +615,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                 self._set_row_column_data(doc_name, the_id, column_header, new_content)
                 self._change_list.append(the_id)
             if doc_name == self.visible_doc_name:
-                if the_id in self.doc_dict[doc_name].current_data_rows.keys():
+                if str(the_id) in self.doc_dict[doc_name].current_data_rows.keys():
                     data["row"] = the_id
                     self.mworker.emit_table_message("setCellContent", data)
 
