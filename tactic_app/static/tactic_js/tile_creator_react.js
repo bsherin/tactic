@@ -374,7 +374,7 @@ class CreatorApp extends React.Component {
         this.setState({ "extra_functions": new_methods });
     }
 
-    get_height_minus_top_offset(element_ref, min_offset = 0, default_offset = 50) {
+    get_height_minus_top_offset(element_ref, min_offset = 0, default_offset = 100) {
         if (this.state.mounted) {
             // This will be true after the initial render
             let offset = $(element_ref.current).offset().top;
