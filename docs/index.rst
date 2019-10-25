@@ -7,10 +7,11 @@ Tactic Text
    :caption: Using Tactic
 
    Getting-Started
+   Library-Interface
    Uploading-Data
-   Working-With-Tags
    Main-interface
    Log-And-Notebook
+   Working-With-Tags
    Which-tiles-are-available-when
 
 .. toctree::
@@ -59,8 +60,8 @@ New to Tactic?
 You might want to start with `Getting Started <Getting-Started.html>`__. This will tell you,
 among other things, how to get a user account.
 
-Beyond the Getting Started page, there isn't any documentation yet for the resource library.
-However, you can read about `uploading data <Uploading-Data.html>`__.
+You will be using the `Library Interface <Library-Interface.html>`__ to manage your various resources such
+as data collections and saved projects. This is where you can `upload your own data <Uploading-Data.html>`__.
 
 Most of the work you'll do, analyzing data, is done in the brilliantly-named `Main interface <Main-interface.html>`__.
 There is also a special version of the Main Interface that functions much like a Python Notebook. It's described
