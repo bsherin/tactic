@@ -7,12 +7,12 @@ Version History
 There is now machinery built into Tactic that helps you to look at and
 use code from earlier versions of a tile. This is partly automatic and
 partly manual. First the manual part: In the Module Viewer and Tile
-Creator there is now a button that says \**Checkpoint++. Clicking on of
-this buttons saves the tile as usual. But it also will cause Tactic to
+Creator there is now a button that lets you set a checkpoint. Clicking on of
+this buttons saves the tile as usual. But it also will causes Tactic to
 permanently save a snapshot of the tile code as it appears at the moment
 of the save.
 
-|image0|
+.. figure:: images/bpsave_and_checkpoint.png
 
 Tactic also tries to do some semi-intelligent saving of snapshots
 automatically. Every time that a tile is saved, Tactic will save a
@@ -24,24 +24,31 @@ last version of a tile that was saved on a given day. So you’ll only end
 up with at most one snapshot of a tile per day. This pruning doesn’t
 affect manually created snapshots.
 
-To access the history, you click the **History** button in one of the
-tile viewers This is what it looks like, in all it’s glory.
+Anyway, that is what I tried to make it do. If you ever find out whether it
+follows this protocol, let me know. I'm sort of curious.
 
-|image1|
+.. figure:: images/bpshow_history_viewer.png
+
+To access the history, you click the **History** button in one of the
+tile viewers. When the history viewer appears, this is what it looks like, in all it’s glory.
+
+.. figure:: images/bphistory_viewer.png
 
 The popup list at the top right allows you to browse through old
 versions of the tile. Differences are highlighted and you can copy code
-from old versions to the current tile. (You have to click Save for any
-changes to be saved.)
+from old versions to the current tile. (You have to click Save button for any
+changes to be saved. It's the single toolbar button that appears..)
 
 Compare Tiles
 -------------
 
 You can also compare two tiles. Clicking on the **Compare** button
-brings up a window that is similar to the history viewer. It has a popup
-on the right hand side that you can click to choose any tile from your
-library to compare to the current tile.
+brings up a window that is similar to the history viewer.
 
-.. |image0| image:: imgs/9c27d3dd.png
-.. |image1| image:: imgs/history-viewer.png
+.. figure:: images/bpshow_compare_viewer.png
 
+The compare viewer looks and operates very similary to the history viewer.
+So I won't insult your intelligence by explaining it here. In fact, you probably
+could have figured out the history viewer without any documentation. I guess if your
+time was all that valuable you wouldn't still be reading this paragraph.
+So I don't feel too bad.

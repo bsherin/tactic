@@ -11,7 +11,7 @@ Using tags in resource lists
 The primary way in which you assign tags to to resources is via the tags field that appears on the right when you are
 viewing your resource library.
 
-.. figure:: images/tags_field.png
+.. figure:: images/bptags_field.png
 
 Clicking on the image of a tag on the left causes the viewer to
 only show resources with that tag.
@@ -35,14 +35,11 @@ For example, if you create an option of type list_select, and you specify the ta
 then the user will only see lists with the stop_list tag when selecting a list on the back of the tile.
 The image below shows what this will look like in the Creator.
 
-.. figure:: images/stop_list_tag.png
+.. figure:: images/bpstop_list_tag.png
     :width: 600px
 
 You can also assign tags to tile exports. Then if tags are assigned to a pipe_select option, the user
 will only see exports that match the tag.
-
-.. figure:: images/export_tags.png
-    :width: 400px
 
 The **default** tag
 -------------------
