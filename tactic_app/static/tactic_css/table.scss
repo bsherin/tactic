@@ -33,6 +33,10 @@ $selected-header-background: $column-header-background;
 $selected-row-background: #dddddd;
 $selected-column-background: #e0e0e0;
 
+body {
+    background-color: $light-gray1
+}
+
 // Panel header stuff for main table
 #main-panel {
     padding: 0;
@@ -172,7 +176,7 @@ $selected-column-background: #e0e0e0;
 }
 
 .ui-resizable-e, .ui-resizable-w {
-        width: 25px !important;
+        width: 5px !important;
 }
 
 .ui-resizable-s, .ui-resizable-n{

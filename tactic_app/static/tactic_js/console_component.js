@@ -406,10 +406,12 @@ class LogItem extends React.Component {
 
     componentDidMount() {
         this.executeEmbeddedScripts();
+        this.makeTablesSortable();
     }
 
     componentDidUpdate() {
         this.executeEmbeddedScripts();
+        this.makeTablesSortable();
     }
 
     _toggleShrink() {
@@ -430,6 +432,13 @@ class LogItem extends React.Component {
             try {
                 window.eval(script.text);
             } catch (e) {}
+        }
+    }
+
+    makeTablesSortable() {
+        let tables = $("#" + this.props.unique_id + " table.sortable").toArray();
+        for (let table of tables) {
+            sorttable.makeSortable(table);
         }
     }
 
@@ -515,10 +524,12 @@ class ConsoleCodeItem extends React.Component {
             });
         }
         this.executeEmbeddedScripts();
+        this.makeTablesSortable();
     }
 
     componentDidUpdate() {
         this.executeEmbeddedScripts();
+        this.makeTablesSortable();
         if (this.props.set_focus) {
             if (this.cmobject != null) {
                 this.cmobject.focus();
@@ -534,6 +545,13 @@ class ConsoleCodeItem extends React.Component {
             try {
                 window.eval(script.text);
             } catch (e) {}
+        }
+    }
+
+    makeTablesSortable() {
+        let tables = $("#" + this.props.unique_id + " table.sortable").toArray();
+        for (let table of tables) {
+            sorttable.makeSortable(table);
         }
     }
 
