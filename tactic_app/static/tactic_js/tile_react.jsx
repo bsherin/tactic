@@ -235,6 +235,13 @@ class TileComponent extends React.Component {
         }
     }
 
+    makeTablesSortable() {
+        let tables = $("#" + this.props.tile_id + " table.sortable").toArray();
+        for (let table of tables) {
+            sorttable.makeSortable(table)
+        }
+    }
+
     get tdaWidth() {
         return this.props.tile_width - TILE_DISPLAY_AREA_MARGIN * 2
     }
@@ -266,6 +273,7 @@ class TileComponent extends React.Component {
             }
         });
         this.executeEmbeddedScripts();
+        this.makeTablesSortable();
         if (this.props.javascript_code) {
             this._executeJavascript()
         }
@@ -273,6 +281,7 @@ class TileComponent extends React.Component {
 
     componentDidUpdate() {
         this.executeEmbeddedScripts();
+        this.makeTablesSortable();
         if (this.props.javascript_code) {
             this._executeJavascript()
         }
