@@ -1,11 +1,9 @@
 The Tile Creator
 ================
 
+Welcome to the future of tile creation.
 The Tile Creator is the editor that provides a more scaffolded
-environment for creating and editing tiles. As explained in the
-`introduction to making tiles <Making-Tiles.html>`__, **the tile creator is
-new and can garble existing tiles**. So, use it with care. When editing
-an existing tile you might want to first make a copy of the tile.
+environment for creating and editing tiles.
 
 Creating the new tile
 ---------------------
@@ -14,12 +12,12 @@ With that said, here’s how to create a new tile with the creator:
 
 Go to the :guilabel:`tile` tab of your resource library and click :menuselection:`+creator --> StandardTile`.
 
-.. figure:: images/create_in_creator.png
+.. figure:: images/bpcreate_in_creator.png
 
 When prompted give your tile some sort of useful name. Then you should
 see something that looks like this:
 
-.. figure:: images/starting_creator_view.png
+.. figure:: images/bpstarting_creator_view.png
 
 Writing the tile body
 ---------------------
@@ -51,13 +49,7 @@ Then you’ll instead have a tile that display “hello world” in bold text.
 
 In writing your tile, you have access to a number of tactic-specific
 commands that, for example, give you access to your data. These are
-described in some detail here: `Tile Commands <Tile-Commands.html>`__. There
-is also some help pertaining to these commands built into the Creator
-window. If you click on :guilabel:`Show API` at the top of the Creator view the
-resource area will be replaced by a compressed version of the command
-documentation. Also, at the very top of the big box for typing your code
-are popup lists that contain the tile commands. These paste the relevant
-command directly into your code.
+described in some detail here: `Tile Commands <Tile-Commands.html>`__.
 
 You can use these `Keyboard Shortcuts <Module-Viewer-Keyboard-Shortcuts.html>`__ within the box
 containing your code.
@@ -76,7 +68,7 @@ Specifying tile resources
 The area on the right-hand side of the interface allows you to create
 and edit various resources and metadata for your tile.
 
-|image2|
+.. figure:: images/bpmetadata_pane.png
 
 metadata
 ~~~~~~~~
@@ -93,7 +85,7 @@ Options <Tile-Structure.html#options>`__ that will appear on back of your
 tile. Here I have clicked on the options tab and then used the form at
 the bottom to create an option called ``some_user_text``.
 
-.. figure:: images/creator_options.png
+.. figure:: images/bpcreator_options.png
 
 These option can now be referred to in the tile code as
 ``self.some_user_text``. So if you then change your code to be:
@@ -102,6 +94,13 @@ These option can now be referred to in the tile code as
 
     new_html = "<b>" + self.some_user_text + "</b>"
     return new_html
+
+You can reorder the options in the table that appears in the options pane
+by clicking and dragging the number at the start of the row that you want to move.
+
+The button that looks like a trash can deletes the selected option. The button
+that looks like a bulleted list converts the list of options to some markdown
+that will display nicely, and copies it to the :guilabel:`notes` field in the metadata pane.
 
 There are many different types of options as described here: `Tile
 Options <Tile-Structure.html#options>`__. there’s an extra step required in
@@ -116,9 +115,11 @@ exports
 ~~~~~~~
 
 You can also specifythe name of variables that will be :guilabel:`exports` for
-your tile. (Exported variables are available as pipes to other tiles.
+your tile. (Exported variables are available as pipes within other tiles.
 Note that these must be instance variables assigned values in your code
 in this manner ``self.variable_name =  ...``. )
+
+The interface for this is pretty much the same as for the :guilabel:`options` pane.
 
 methods
 ~~~~~~~
@@ -168,9 +169,4 @@ Also, ``render_content`` must return a dictionary of arguments that will
 be passed to the javascript function in ``arg_dict``.
 
 This is explained a bit `here <D3-Tiles.html>`__.
-
-.. |image0| image:: imgs/99bc09b9.png
-.. |image1| image:: imgs/b8a902e0.png
-.. |image2| image:: imgs/eafbfddc.png
-.. |image3| image:: imgs/4d7d86c4.png
 

@@ -15,31 +15,30 @@ to edit your profile and change your password.
 First steps with collections
 ----------------------------
 
-After you log in, you'll be taken automatically to the resource
-management page. To get started using tactic, you need to load in some
+After you log in, you'll be taken automatically to Library manager. To get started using tactic, you need to load in some
 data. Your libary should already have some collections loaded. To view
 one of these collections, select it in the list and click the
-:guilabel:`open` button. (You can also double_click directly on the item or press the space bar.) A new
+:guilabel:`open` button. (You can also double_click directly on the item or press the space bar or enter key.) A new
 web browser tab should open and you should see a table (or freeform
 document) with your data.
 
-.. figure:: images/load_coll.png
+.. figure:: images/bpload_collection.png
 
 If you want, you can also explore additional sample collections
 available in the repository, which provides resources that can be used
 anyone.
 
-Click “Show Repository”. This will allow you to see resources in the
+Click :guilabel:`Repository` in the toolbar. This will allow you to see resources in the
 repository.
 
-.. figure:: images/show_repo.png
+.. figure:: images/bpshow_repo.png
    :alt: blank_user
 
 Select one of the data collections from the list that appears. Click
-“copy” and the collection will be added to your own personal
+the :guilabel:`copy` button and the collection will be added to your own personal
 library.
 
-.. figure:: images/copy_to_library.png
+.. figure:: images/bpcopy_to_library.png
    :alt: repo_start
 
 Finally, click “Hide Repository” again to go back to your own library.
