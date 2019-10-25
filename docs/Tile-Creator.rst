@@ -47,6 +47,11 @@ displayed as such. So, for example, if you instead write this:
 
 Then you’ll instead have a tile that display “hello world” in bold text.
 
+For its styling, Tactic uses the awesome `blueprint <https://blueprintjs.com/docs/>`__ project.
+That means you can use blueprint's special CSS styles in the html that your tiles produce. For example,
+if there is a button on the front of your tile, giving that button the class "bp3-button" will cause
+the button to be styled in the manner of blueprint.
+
 In writing your tile, you have access to a number of tactic-specific
 commands that, for example, give you access to your data. These are
 described in some detail here: `Tile Commands <Tile-Commands.html>`__.
