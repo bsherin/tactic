@@ -14,7 +14,7 @@ To upload data, go to the collections tab of your user library. Click
     You can select any number of files and these files will be loaded as documents within a single
     collection.
 
-.. figure:: images/choose_files.png
+.. figure:: images/bpchoose_files.png
 
 For table collectons, data must be in the form of xlsx, csv, tsv, or
 plain text (txt) files. The first row of an xlsx, csv, or tsv file must

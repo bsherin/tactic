@@ -5,7 +5,11 @@ Here I explain the Tile API. By that, I mean the special commands and constructs
 are available within the context of a tile. Where they make sense, they can also
 be used in `Logs and Notebooks <Log-And-Notebook.html>`__.
 
-To save typing, many of the commmands have shorter equivalents.
+To save typing, many of the commmands in this API have shorter equivalents.
+
+Note that there is an alternate, `object-oriented API <Object-Oriented-API.html>`__ which
+has functionality that overlaps with this API. Where the object-oriented API applies, it generally
+allows for code that is easier to read and write.
 
 .. note::
 
@@ -597,15 +601,19 @@ The libraries listed below are currently available for import from tiles.
     nltk will be available to all methods.
 
 -  `beautifulsoup4 <https://www.crummy.com/software/BeautifulSoup/>`__ (from bs4 import BeautifulSoup)
+-  `bokeh <https://docs.bokeh.org/en/latest/index.html>`__
 -  `fuzzywuzzy <https://github.com/seatgeek/fuzzywuzzy>`__
 -  `gensim <https://radimrehurek.com/gensim/>`__
 -  `markdown <https://github.com/Python-Markdown/markdown>`__
 -  `networkx <https://networkx.github.io>`__
 -  `nltk <http://www.nltk.org>`__
 -  `numpy <http://www.numpy.org>`__
--  `scipy <httsp://scipy.org>`__
 -  `matplotlib <https://matplotlib.org>`__
 -  `regex <https://pypi.org/project/regex/>`__
+-  `requests <https://requests.kennethreitz.org/en/master/>`__
 -  `pandas <http://pandas.pydata.org>`__
+-  `scipy <httsp://scipy.org>`__
 -  `sklearn <http://scikit-learn.org/stable/index.html>`__
+-  `tweepy <https://www.tweepy.org/>`__
 -  `wordcloud <https://github.com/amueller/word_cloud>`__
+-  `yellowbrick <https://www.scikit-yb.org/en/latest/>`__
