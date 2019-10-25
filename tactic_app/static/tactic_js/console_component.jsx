@@ -414,11 +414,13 @@ class LogItem extends React.Component {
     }
 
     componentDidMount() {
-        this.executeEmbeddedScripts()
+        this.executeEmbeddedScripts();
+        this.makeTablesSortable()
     }
 
     componentDidUpdate() {
-        this.executeEmbeddedScripts()
+        this.executeEmbeddedScripts();
+        this.makeTablesSortable()
     }
 
     _toggleShrink() {
@@ -444,6 +446,15 @@ class LogItem extends React.Component {
             }
         }
     }
+
+    makeTablesSortable() {
+        let tables = $("#" + this.props.unique_id + " table.sortable").toArray();
+        for (let table of tables) {
+            sorttable.makeSortable(table)
+        }
+    }
+
+
 
     render () {
         let converted_dict = {__html: this.props.console_text};
@@ -523,11 +534,13 @@ class ConsoleCodeItem extends React.Component {
             this.cmobject.on("focus", ()=>{self.props.setFocus(this.props.unique_id)});
             this.cmobject.on("blur", ()=>{self.props.setFocus(null)})
         }
-        this.executeEmbeddedScripts()
+        this.executeEmbeddedScripts();
+        this.makeTablesSortable()
     }
 
     componentDidUpdate() {
         this.executeEmbeddedScripts();
+        this.makeTablesSortable();
          if (this.props.set_focus) {
             if (this.cmobject != null) {
                 this.cmobject.focus();
@@ -546,6 +559,13 @@ class ConsoleCodeItem extends React.Component {
             catch (e) {
 
             }
+        }
+    }
+
+    makeTablesSortable() {
+        let tables = $("#" + this.props.unique_id + " table.sortable").toArray();
+        for (let table of tables) {
+            sorttable.makeSortable(table)
         }
     }
 

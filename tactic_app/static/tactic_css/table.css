@@ -1,6 +1,9 @@
 /*
  * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
  */
+body {
+  background-color: #ced9e0; }
+
 #main-panel {
   padding: 0; }
   #main-panel .main-heading {
@@ -84,7 +87,7 @@
     border-right: 1px solid #ddd; }
 
 .ui-resizable-e, .ui-resizable-w {
-  width: 25px !important; }
+  width: 5px !important; }
 
 .ui-resizable-s, .ui-resizable-n {
   height: 20px !important; }
