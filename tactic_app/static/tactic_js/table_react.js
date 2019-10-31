@@ -248,7 +248,7 @@ class MainTableCard extends React.Component {
     render() {
         return React.createElement(
             Bp.Card,
-            { id: "main-panel", elevation: 2, className: "mt-3 ml-3" },
+            { id: "main-panel", elevation: 2 },
             this.props.card_header,
             React.createElement(
                 "div",

@@ -21,7 +21,9 @@ export {MainTacticSocket}
 
 
 const MARGIN_SIZE = 17;
-const BOTTOM_MARGIN = 35;
+const BOTTOM_MARGIN = 35;  // includes space for status messages at bottom
+const MARGIN_ADJUSTMENT = 8; // This is the amount at the top of both the table and the console
+const CONSOLE_HEADER_HEIGHT = 35;
 const EXTRA_TABLE_AREA_SPACE = 500;
 
 const HEARTBEAT_INTERVAL = 10000; //milliseconds
@@ -410,7 +412,8 @@ class MainApp extends React.Component {
         }
         else {
             let top_offset = this.tbody_ref.current.getBoundingClientRect().top - this.table_container_ref.current.getBoundingClientRect().top;
-            return table_available_height - top_offset
+            let madjust = this.state.console_is_shrunk ? 2 * MARGIN_ADJUSTMENT : MARGIN_ADJUSTMENT;
+            return table_available_height - top_offset - madjust
         }
     }
 
@@ -611,7 +614,7 @@ class MainApp extends React.Component {
     get_hp_height () {
         if (this.state.mounted && this.tile_div_ref.current) {
             let top_fraction = this.state.console_is_shrunk ? 1 : this.state.height_fraction;
-            return (this.state.usable_height - this.tile_div_ref.current.getBoundingClientRect().top) * top_fraction - 30;
+            return (this.state.usable_height - this.tile_div_ref.current.getBoundingClientRect().top) * top_fraction;
         }
         else {
             return this.state.usable_height - 100
@@ -643,7 +646,7 @@ class MainApp extends React.Component {
         } else {
             vp_height = this.get_vp_height();
             hp_height = this.get_hp_height();
-            console_available_height = vp_height - hp_height
+            console_available_height = vp_height - hp_height - MARGIN_ADJUSTMENT - 1;
         }
         let disabled_column_items = [];
         if (!this.state.selected_column) {
@@ -682,8 +685,7 @@ class MainApp extends React.Component {
                 {this.create_tile_menus()}
             </React.Fragment>
         );
-        let console_header_height = 35;
-        let table_available_height = this.state.console_is_shrunk ? hp_height - console_header_height : hp_height;
+        let table_available_height = this.state.console_is_shrunk ? hp_height - CONSOLE_HEADER_HEIGHT : hp_height;
         let table_style = {display: "block", tableLayout: "fixed"};
         if (this.state.table_spec.column_widths != null) {
             table_style["width"] = this.compute_table_width();
@@ -738,21 +740,8 @@ class MainApp extends React.Component {
 
         }
 
-        let table_pane =  (
-            <React.Fragment>
-                <div ref={this.table_container_ref}>
-                    <MainTableCard
-                        card_body={card_body}
-                        card_header={card_header}
-                        table_spec={this.state.table_spec}
-                        broadcast_event_to_server={this._broadcast_event_to_server}
-                        updateTableSpec={this._updateTableSpec}
-                    />
-                </div>
-            </React.Fragment>
-        );
         let tile_pane = (
-            <TileContainer height={hp_height}
+            <TileContainer height={table_available_height}
                            tile_div_ref={this.tile_div_ref}
                            tile_list={this.state.tile_list}
                            current_doc_name={this.state.table_spec.current_doc_name}
@@ -797,17 +786,33 @@ class MainApp extends React.Component {
                              handleSplitUpdate={this._handleConsoleFractionChange}
                 />
         );
+        let table_pane =  (
+            <React.Fragment>
+                <div ref={this.table_container_ref}>
+                    <MainTableCard
+                        card_body={card_body}
+                        card_header={card_header}
+                        table_spec={this.state.table_spec}
+                        broadcast_event_to_server={this._broadcast_event_to_server}
+                        updateTableSpec={this._updateTableSpec}
+                    />
+                </div>
+                {this.state.console_is_shrunk &&
+                    bottom_pane
+                }
+            </React.Fragment>
+        );
         let top_pane;
         if (this.state.table_is_shrunk) {
             top_pane = (
                 <React.Fragment>
-                    <Bp.Button type="button"
-                      minimal={false}
-                      small={false}
-                      style={{margin: 4}}
-                      onMouseDown={(e)=>{e.preventDefault()}}
-                      onClick={this._toggleTableShrink}
-                      icon="maximize"/>
+                    {/*<Bp.Button type="button"*/}
+                    {/*  minimal={false}*/}
+                    {/*  small={false}*/}
+                    {/*  style={{margin: 4}}*/}
+                    {/*  onMouseDown={(e)=>{e.preventDefault()}}*/}
+                    {/*  onClick={this._toggleTableShrink}*/}
+                    {/*  icon="maximize"/>*/}
                     {tile_pane}
                     {this.state.console_is_shrunk &&
                         bottom_pane
@@ -817,20 +822,14 @@ class MainApp extends React.Component {
         }
         else {
             top_pane = (
-                <React.Fragment>
-                    <HorizontalPanes left_pane={table_pane}
-                         right_pane={tile_pane}
-                         available_height={hp_height}
-                         available_width={this.state.usable_width}
-                         initial_width_fraction={this.state.horizontal_fraction}
-                         controlled={true}
-                         handleSplitUpdate={this._handleHorizontalFractionChange}
-                    />
-                    {this.state.console_is_shrunk &&
-                        bottom_pane
-                    }
-                </React.Fragment>
-
+                <HorizontalPanes left_pane={table_pane}
+                     right_pane={tile_pane}
+                     available_height={hp_height}
+                     available_width={this.state.usable_width}
+                     initial_width_fraction={this.state.horizontal_fraction}
+                     controlled={true}
+                     handleSplitUpdate={this._handleHorizontalFractionChange}
+                />
             );
         }
         return (
@@ -852,6 +851,7 @@ class MainApp extends React.Component {
                                available_height={vp_height}
                                initial_height_fraction={this.state.height_fraction}
                                handleSplitUpdate={this._handleVerticalSplitUpdate}
+                                   overflow="hidden"
                     />
                 }
 

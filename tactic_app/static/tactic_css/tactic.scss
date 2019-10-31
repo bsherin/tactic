@@ -93,8 +93,14 @@ $regular: #5c7080;
     box-shadow: inset 0 1px 1px rgba(0,0,0,.05);
 }
 
+
+html,body {
+    height:100%;
+}
+
 body {
     font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    overflow: hidden;
 }
 
 .CodeMirror {
@@ -416,7 +422,7 @@ a[role="tab"] {
     box-shadow: inset 0 0 0 1px rgba(16, 22, 26, 0.2);
     background: rgba(255, 255, 255, 0.7);
     color: #5c7080;
-    overflow: scroll;
+    overflow: auto;
 }
 
 .resource-module {
@@ -513,215 +519,222 @@ a[role="tab"] {
     display: inline-block;
 }
 
-.tactic-tag-button-list .bp3-tree-node-selected {
-    .bp3-tree-node-content {
-        background-color: white;
-        color: $blue3;
-        font-weight: 900
+.tactic-tag-button-list {
+    margin-top: 65px;
+    overflow-y: hidden;
+    min-width: 165px;
+    &:hover {
+        overflow-y: auto;
     }
 
-    .bp3-icon {
-        background-color: white;
-        color: $blue3 !important;
-        font-weight: 900
+    .bp3-tree-node-selected {
+        .bp3-tree-node-content {
+            background-color: white;
+            color: $blue3;
+            font-weight: 900
+        }
+
+        .bp3-icon {
+            background-color: white;
+            color: $blue3 !important;
+            font-weight: 900
+        }
     }
 }
 
-    .edit-tags-button {
-        border: none;
-        font-size: 12px;
+.edit-tags-button {
+    border: none;
+    font-size: 12px;
+}
+
+.edit-tags-button:focus {
+    box-shadow: none
+}
+
+.tag-button {
+    padding: 5px 10px !important;
+    color: $gray1;
+    //background: #e0eaf1;
+    white-space: nowrap;
+    overflow: hidden;
+    cursor: pointer;
+    border-radius: 2px 0 0 2px !important;
+    text-align: left;
+    border: 0 !important;
+    font-size: 13px !important;
+
+}
+
+.tag-button.active, .tag-button:focus{
+    font-weight: 900 !important;
+    color: $dark-gray5 !important;
+    background-color: white !important;
+    border-width: 0 !important;
+    box-shadow: none !important;
+}
+
+.tag-button:hover {
+    font-weight: bolder !important;
+    color: gray;
+    background-color: white !important;
+    border-width: 0 !important;
+}
+
+.tag-button.draghover {
+    font-weight: bolder !important;
+    color: red;
+    background-color: white !important;
+    border-width: 0 !important;
+}
+
+.tag-expander {
+    font-size: 20px;
+    margin-right: 6px;
+}
+
+.tag-icon-folder {
+    font-size: 14px;
+    margin-right: 6px;
+}
+
+.tag-icon-tag {
+    font-size: 13px;
+    margin-right: 6px;
+}
+
+.tag-button-delete:before {
+    color: #8ba7ba;
+    font-style: normal;
+    content: "×";
+    font-size: 16px;
+    line-height: 18px;
+    padding-left: 7px;
+    float: right !important;
+    display: none
+}
+
+.tag-button-delete.delete-visible:before {
+    display: block;
+}
+.tag-button-delete.delete-visible:hover:before{
+    color: red;
+}
+
+.notrepo {
+    display: flex;
+}
+
+.notrepo .selector-button.active td, #creator-resources .selector-button.active td{
+    background-color: $gray5 !important;
+    color: black;
+}
+
+.notrepo .selector-button.context-menu-active td {
+    background-color: #ada2be!important;
+    color: white;
+}
+
+#repository_container .selector-button.active td {
+    background-color: $repository-distinctive-color!important;
+    color: #212529;
+}
+
+.res-name-button {
+    border: none;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.res-name-button:hover {
+    color: #5bc0de;
+    background-color: white;
+}
+
+.res-name-button:active {
+    color: #1b6d85;
+}
+
+.res-viewer-resizer {
+    border-right: .5px solid white;
+    //margin-top: 20px;
+    display: inline-block;
+    vertical-align: top
+}
+
+#metadata-holder{
+    vertical-align: top;
+    margin-left: 5px;
+    margin-top: 10px;
+    max-width: 600px;
+}
+
+.tag-button-list, .resource-tag-button-list {
+    vertical-align: top;
+    overflow-y: auto;
+    border-top: none;
+    border-radius: 4px;
+
+    .btn-default:hover {
+        background-color: lightgray;
     }
 
-    .edit-tags-button:focus {
-        box-shadow: none
+    .btn-default:focus {
+        outline: none;
     }
 
-    .tag-button {
-        padding: 5px 10px !important;
-        color: $gray1;
-        //background: #e0eaf1;
-        white-space: nowrap;
-        overflow: hidden;
-        cursor: pointer;
-        border-radius: 2px 0 0 2px !important;
-        text-align: left;
-        border: 0 !important;
-        font-size: 13px !important;
+}
 
+.CodeMirror {
+    border: 1px solid #eee;
+    height: auto;
+    width: auto;
+}
+
+.action-button {
+    //border: $resource-action-button-border-style;
+    //margin-right: $resource-action-button-margin !important;
+    //border-radius: $resource-action-button-border-radius !important
+}
+
+.action-popup {
+    border-bottom-left-radius: $resource-action-button-border-radius !important;
+    border-top-left-radius: $resource-action-button-border-radius !important
+}
+
+.action-caret {
+    margin-right: $resource-action-button-margin;
+    border-bottom-right-radius: $resource-action-button-border-radius !important;
+    border-top-right-radius: $resource-action-button-border-radius !important
+}
+
+
+.indent-row {
+    margin-left: 5px;
+    margin-bottom: 20px;
+}
+
+
+.resource-module {
+    h2 {
+        margin-top: 0;
     }
-
-
-    .tag-button.active, .tag-button:focus{
-        font-weight: 900 !important;
-        color: $dark-gray5 !important;
-        background-color: white !important;
-        border-width: 0 !important;
-        box-shadow: none !important;
+    .btn-toolbar {
+        padding: 5px;
     }
-
-    .tag-button:hover {
-        font-weight: bolder !important;
-        color: gray;
-        background-color: white !important;
-        border-width: 0 !important;
+    form {
+        padding: 5px;
     }
+}
 
-    .tag-button.draghover {
-        font-weight: bolder !important;
-        color: red;
-        background-color: white !important;
-        border-width: 0 !important;
-    }
+/* creator */
 
-    .tag-expander {
-        font-size: 20px;
-        margin-right: 6px;
-    }
+.ui-resizable-e, .ui-resizable-w {
+    width: 25px !important;
+}
 
-    .tag-icon-folder {
-        font-size: 14px;
-        margin-right: 6px;
-    }
-
-    .tag-icon-tag {
-        font-size: 13px;
-        margin-right: 6px;
-    }
-
-    .tag-button-delete:before {
-        color: #8ba7ba;
-        font-style: normal;
-        content: "×";
-        font-size: 16px;
-        line-height: 18px;
-        padding-left: 7px;
-        float: right !important;
-        display: none
-    }
-
-    .tag-button-delete.delete-visible:before {
-        display: block;
-    }
-    .tag-button-delete.delete-visible:hover:before{
-        color: red;
-    }
-
-    .notrepo {
-        display: flex;
-    }
-
-    .notrepo .selector-button.active td, #creator-resources .selector-button.active td{
-        background-color: $gray5 !important;
-        color: black;
-    }
-
-    .notrepo .selector-button.context-menu-active td {
-        background-color: #ada2be!important;
-        color: white;
-    }
-
-    #repository_container .selector-button.active td {
-        background-color: $repository-distinctive-color!important;
-        color: #212529;
-    }
-
-    .res-name-button {
-        border: none;
-        font-weight: bold;
-        font-size: 18px;
-    }
-
-    .res-name-button:hover {
-        color: #5bc0de;
-        background-color: white;
-    }
-
-    .res-name-button:active {
-        color: #1b6d85;
-    }
-
-    .res-viewer-resizer {
-        border-right: .5px solid white;
-        //margin-top: 20px;
-        display: inline-block;
-        vertical-align: top
-    }
-
-    #metadata-holder{
-        vertical-align: top;
-        margin-left: 5px;
-        margin-top: 10px;
-        max-width: 600px;
-    }
-
-    .tag-button-list, .resource-tag-button-list {
-        vertical-align: top;
-        overflow-y: auto;
-        border-top: none;
-        border-radius: 4px;
-
-        .btn-default:hover {
-            background-color: lightgray;
-        }
-
-        .btn-default:focus {
-            outline: none;
-        }
-
-    }
-
-    .CodeMirror {
-        border: 1px solid #eee;
-        height: auto;
-        width: auto;
-    }
-
-    .action-button {
-        //border: $resource-action-button-border-style;
-        //margin-right: $resource-action-button-margin !important;
-        //border-radius: $resource-action-button-border-radius !important
-    }
-
-    .action-popup {
-        border-bottom-left-radius: $resource-action-button-border-radius !important;
-        border-top-left-radius: $resource-action-button-border-radius !important
-    }
-
-    .action-caret {
-        margin-right: $resource-action-button-margin;
-        border-bottom-right-radius: $resource-action-button-border-radius !important;
-        border-top-right-radius: $resource-action-button-border-radius !important
-    }
-
-
-    .indent-row {
-        margin-left: 5px;
-        margin-bottom: 20px;
-    }
-
-
-    .resource-module {
-        h2 {
-            margin-top: 0;
-        }
-        .btn-toolbar {
-            padding: 5px;
-        }
-        form {
-            padding: 5px;
-        }
-    }
-
-    /* creator */
-
-    .ui-resizable-e, .ui-resizable-w {
-        width: 25px !important;
-    }
-
-    .ui-resizable-s, .ui-resizable-n{
-        height: 25px !important;
-    }
-
+.ui-resizable-s, .ui-resizable-n{
+    height: 25px !important;
+}
 
     #creator-root {
         margin-right: 25px;
@@ -815,7 +828,7 @@ a[role="tab"] {
         border-bottom: 1px solid #10161a26;
 
         .tile-name-div {
-            overflow-x: hidden;
+            overflow: hidden;
             line-height: 100%;
             cursor: move;
             align-self: center;
@@ -966,30 +979,31 @@ a[role="tab"] {
         text-align: left;
         font-size: 14px;
         overflow: auto;
+
     }
-
-    #console-panel {
-        margin-left: 5px;
-        margin-right: 0;
-        padding: 0 !important;
-    }
-
-    #console-heading {
-        display: flex;
-        justify-content: space-between;
-        padding: 2px 2px 2px 2px;
-        background-color: $light-gray4 !important;
-        border-bottom: 1px solid #10161a26;
-        height: 32px;
-
-        .bp3-icon {
-            margin-right: 3px
+        #console-panel {
+            margin-left: 0.5rem;
+            margin-top: 0.5rem;
+            margin-right: 0;
+            padding: 0 !important;
         }
 
-        .extra-glyph-text {
-            //margin-left: 3px
+        #console-heading {
+            display: flex;
+            justify-content: space-between;
+            padding: 2px 2px 2px 2px;
+            background-color: $light-gray4 !important;
+            border-bottom: 1px solid #10161a26;
+            height: 32px;
+
+            .bp3-icon {
+                margin-right: 3px
+            }
+
+            .extra-glyph-text {
+                //margin-left: 3px
+            }
         }
-    }
 
     #exports-heading {
         display: flex;
@@ -1228,10 +1242,6 @@ a[role="tab"] {
         }
     }
 
-
-    html,body {
-        height:100%;
-    }
     .log-panel {
         .bp3-editable-text:hover::before {
             outline: none;
@@ -1282,8 +1292,7 @@ a[role="tab"] {
     }
 
     #tile-div {
-        padding: 5px;
-        overflow-y: scroll
+        overflow: auto
     }
 
     #status-div {
@@ -1306,7 +1315,9 @@ a[role="tab"] {
         display: block;
         overflow: hidden;
         height: 265px;
-        margin: 7px;
+        //margin: 7px;
+        margin-left: 0.5rem;
+        margin-top: 0.5rem;
         padding: 0 !important;
         //border: $tile-panel-border-style !important;
         background-color: $tile-panel-background-color !important;
@@ -1331,9 +1342,13 @@ a[role="tab"] {
     }
 
     .tile-display-area {
-        overflow: auto;
+        overflow: hidden;
         padding: 0;
         margin: 15px 15px 15px 15px;
+
+        &:hover {
+            overflow: auto
+        }
     }
 
     .back {
@@ -1398,7 +1413,8 @@ a[role="tab"] {
     }
 
     #exports-panel {
-        margin-left: 5px;
+        margin-left: 0.5rem;
+        margin-top: 0.5rem;
         margin-right: 0;
         padding: 0 !important;
     }
@@ -1415,5 +1431,7 @@ a[role="tab"] {
     .hide-important {
         display: none !important
     }
+
+
 
 

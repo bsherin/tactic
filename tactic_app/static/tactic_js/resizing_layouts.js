@@ -183,7 +183,7 @@ class VerticalPanes extends React.Component {
             "width": this.props.available_width,
             "height": this.top_height,
             // borderBottom: "0.5px solid rgb(238, 238, 238)",
-            overflowY: "scroll"
+            overflowY: this.props.overflow
         };
         if (this.props.hide_top) {
             top_div_style.display = "none";
@@ -191,7 +191,7 @@ class VerticalPanes extends React.Component {
         let bottom_div_style = {
             "width": this.props.available_width,
             "height": this.bottom_height,
-            overflowY: "scroll"
+            overflowY: this.props.overflow
         };
         return React.createElement(
             "div",
@@ -217,11 +217,13 @@ VerticalPanes.propTypes = {
     hide_top: PropTypes.bool,
     bottom_pane: PropTypes.object,
     handleSplitUpdate: PropTypes.func,
-    initial_height_fraction: PropTypes.number
+    initial_height_fraction: PropTypes.number,
+    overflow: PropTypes.string
 };
 
 VerticalPanes.defaultProps = {
     handleSplitUpdate: null,
     initial_height_fraction: .5,
-    hide_top: false
+    hide_top: false,
+    overflow: "scroll"
 };
