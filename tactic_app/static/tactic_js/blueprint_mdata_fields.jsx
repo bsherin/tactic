@@ -369,7 +369,7 @@ CombinedMetadata.propTypes = {
 };
 
 CombinedMetadata.defaultProps = {
-    outer_style: {marginLeft: 20, overflow: "scroll",
+    outer_style: {marginLeft: 20, overflow: "auto",
             padding: 15, backgroundColor: "#f5f8fa"},
     elevation: 0,
     handleNotesBlur: null,

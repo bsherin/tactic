@@ -757,7 +757,7 @@ class LibraryPane extends React.Component {
 
         let right_pane;
         let split_tags = this.props.selected_resource.tags == "" ? [] : this.props.selected_resource.tags.split(" ");
-        let outer_style = { marginLeft: 20, marginTop: 90, overflow: "scroll",
+        let outer_style = { marginLeft: 20, marginTop: 90, overflow: "auto",
             padding: 15, backgroundColor: "#f5f8fa" };
         let mdata_element = React.createElement(CombinedMetadata, { tags: split_tags,
             elevation: 2,

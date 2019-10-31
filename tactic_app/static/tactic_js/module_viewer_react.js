@@ -57,6 +57,7 @@ class ModuleViewerApp extends React.Component {
         super(props);
         doBinding(this);
         this.top_ref = React.createRef();
+        this.cc_ref = React.createRef();
         this.savedContent = props.the_content;
         this.savedTags = props.tags;
         this.savedNotes = props.notes;
@@ -141,12 +142,22 @@ class ModuleViewerApp extends React.Component {
         doFlash(data);
     }
 
+    get_new_cc_height() {
+        if (this.cc_ref && this.cc_ref.current) {
+            // This will be true after the initial render
+            return this.state.usable_height - this.cc_ref.current.offsetTop;
+        } else {
+            return this.state.usable_height - 100;
+        }
+    }
+
     render() {
         let the_context = { "readOnly": this.props.readOnly };
         let outer_style = { width: this.state.usable_width,
             height: this.state.usable_height,
             paddingLeft: SIDE_MARGIN
         };
+        let cc_height = this.get_new_cc_height();
         return React.createElement(
             ViewerContext.Provider,
             { value: the_context },
@@ -171,7 +182,9 @@ class ModuleViewerApp extends React.Component {
                         React.createElement(ReactCodemirror, { code_content: this.state.code_content,
                             handleChange: this._handleCodeChange,
                             saveMe: this._saveMe,
-                            readOnly: this.props.readOnly
+                            readOnly: this.props.readOnly,
+                            code_container_ref: this.cc_ref,
+                            code_container_height: cc_height
                         })
                     )
                 )

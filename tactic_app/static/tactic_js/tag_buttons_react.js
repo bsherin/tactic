@@ -205,7 +205,7 @@ class TagButtonList extends React.Component {
         let tree = this._buildTree(tag_list);
         return React.createElement(
             "div",
-            { style: { marginTop: 65, overflowY: "scroll", minWidth: 165 }, className: "tactic-tag-button-list" },
+            { className: "tactic-tag-button-list" },
             React.createElement(Bp.Tree, { contents: tree,
                 onNodeContextMenu: this._showContextMenu,
                 onNodeClick: this._handleNodeClick,

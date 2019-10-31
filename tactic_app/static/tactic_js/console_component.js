@@ -256,7 +256,7 @@ class ConsoleComponent extends React.Component {
 
     _bodyHeight() {
         if (this.state.mounted) {
-            return this.props.console_available_height - $(this.header_ref.current).outerHeight() - 35;
+            return this.props.console_available_height - $(this.header_ref.current).outerHeight();
         } else {
             return this.props.console_available_height - 75;
         }
@@ -266,7 +266,7 @@ class ConsoleComponent extends React.Component {
         let gbstyle = { marginLeft: 1 };
         return React.createElement(
             Bp.Card,
-            { id: "console-panel", elevation: 2, className: "ml-3", style: this.props.style },
+            { id: "console-panel", elevation: 2, style: this.props.style },
             React.createElement(
                 "div",
                 { className: "d-flex flex-column justify-content-around" },

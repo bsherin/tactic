@@ -266,7 +266,7 @@ let Bp = blueprint;
 
     _bodyHeight() {
         if (this.state.mounted) {
-            return this.props.console_available_height - $(this.header_ref.current).outerHeight() - 35
+            return this.props.console_available_height - $(this.header_ref.current).outerHeight()
         }
         else {
             return this.props.console_available_height - 75
@@ -276,7 +276,7 @@ let Bp = blueprint;
     render() {
         let gbstyle={marginLeft: 1};
         return (
-            <Bp.Card id="console-panel" elevation={2} className="ml-3" style={this.props.style}>
+            <Bp.Card id="console-panel" elevation={2} style={this.props.style}>
                 <div className="d-flex flex-column justify-content-around">
                     <div id="console-heading"
                          ref={this.header_ref}

@@ -52,10 +52,10 @@ function list_viewer_main() {
 class ListEditor extends React.Component {
 
     render() {
-        let tastyle = { resize: "horizontal", height: "100%" };
+        let tastyle = { resize: "horizontal", height: this.props.height };
         return React.createElement(
             "div",
-            { id: "listarea-container" },
+            { id: "listarea-container", ref: this.props.outer_ref },
             React.createElement(Bp.TextArea, {
                 cols: "50",
                 style: tastyle,
@@ -71,7 +71,9 @@ ListEditor.contextType = ViewerContext;
 ListEditor.propTypes = {
     the_content: PropTypes.string,
     handleChange: PropTypes.func,
-    readOnly: PropTypes.bool
+    readOnly: PropTypes.bool,
+    outer_ref: PropTypes.object,
+    height: PropTypes.number
 };
 
 class ListViewerApp extends React.Component {
@@ -80,6 +82,7 @@ class ListViewerApp extends React.Component {
         super(props);
         doBinding(this);
         this.top_ref = React.createRef();
+        this.le_ref = React.createRef();
         this.savedContent = props.the_content;
         this.savedTags = props.tags;
         this.savedNotes = props.notes;
@@ -145,6 +148,15 @@ class ListViewerApp extends React.Component {
         }
     }
 
+    get_new_le_height() {
+        if (this.le_ref && this.le_ref.current) {
+            // This will be true after the initial render
+            return this.state.usable_height - this.le_ref.current.offsetTop;
+        } else {
+            return this.state.usable_height - 100;
+        }
+    }
+
     render() {
 
         let the_context = { "readOnly": this.props.readOnly };
@@ -152,6 +164,7 @@ class ListViewerApp extends React.Component {
             height: this.state.usable_height,
             paddingLeft: SIDE_MARGIN
         };
+
         return React.createElement(
             ViewerContext.Provider,
             { value: the_context },
@@ -175,6 +188,8 @@ class ListViewerApp extends React.Component {
                             tags: this.state.tags,
                             saveMe: this._saveMe }),
                         React.createElement(ListEditor, { the_content: this.state.list_content,
+                            outer_ref: this.le_ref,
+                            height: this.get_new_le_height(),
                             handleChange: this._handleListChange
                         })
                     )

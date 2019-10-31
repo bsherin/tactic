@@ -478,7 +478,7 @@ class TileComponent extends React.Component {
             let lg_rect = this.left_glyphs_ref.current.getBoundingClientRect();
             let rg_rect = this.right_glyphs_ref.current.getBoundingClientRect();
             let lg_width = rg_rect.x - lg_rect.x - 10;
-            this.lg_style = {width: lg_width, overflowX: "hidden"};
+            this.lg_style = {width: lg_width, overflow: "hidden"};
         }
         else {
             this.lg_style = {};

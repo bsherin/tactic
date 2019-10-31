@@ -239,7 +239,7 @@ class MainTableCard extends React.Component {
 
     render () {
         return (
-            <Bp.Card id="main-panel" elevation={2} className="mt-3 ml-3">
+            <Bp.Card id="main-panel" elevation={2}>
                 {this.props.card_header}
                 <div  id="table-wrapper">
                     {this.props.card_body}

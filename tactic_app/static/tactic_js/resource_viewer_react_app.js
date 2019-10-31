@@ -113,7 +113,7 @@ class ResourceViewerApp extends React.Component {
         );
         //let available_height = this.get_new_hp_height(this.hp_ref);
         let right_pane = React.createElement(CombinedMetadata, { tags: this.props.tags,
-            outer_style: { marginTop: 100, marginLeft: 20, overflow: "scroll", padding: 15,
+            outer_style: { marginTop: 100, marginLeft: 20, overflow: "auto", padding: 15,
                 backgroundColor: "#f5f8fa", marginRight: 20 },
             created: this.props.created,
             notes: this.props.notes,
