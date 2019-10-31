@@ -35,8 +35,12 @@
   -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05); }
 
+html, body {
+  height: 100%; }
+
 body {
-  font-family: "Helvetica Neue",Helvetica,Arial,sans-serif; }
+  font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+  overflow: hidden; }
 
 .CodeMirror {
   font-size: 14px; }
@@ -242,7 +246,7 @@ a[role="tab"] {
   box-shadow: inset 0 0 0 1px rgba(16, 22, 26, 0.2);
   background: rgba(255, 255, 255, 0.7);
   color: #5c7080;
-  overflow: scroll; }
+  overflow: auto; }
 
 .resource-module {
   display: flex;
@@ -310,14 +314,20 @@ a[role="tab"] {
   height: 100%;
   display: inline-block; }
 
-.tactic-tag-button-list .bp3-tree-node-selected .bp3-tree-node-content {
-  background-color: white;
-  color: #137cbd;
-  font-weight: 900; }
-.tactic-tag-button-list .bp3-tree-node-selected .bp3-icon {
-  background-color: white;
-  color: #137cbd !important;
-  font-weight: 900; }
+.tactic-tag-button-list {
+  margin-top: 65px;
+  overflow-y: hidden;
+  min-width: 165px; }
+  .tactic-tag-button-list:hover {
+    overflow-y: auto; }
+  .tactic-tag-button-list .bp3-tree-node-selected .bp3-tree-node-content {
+    background-color: white;
+    color: #137cbd;
+    font-weight: 900; }
+  .tactic-tag-button-list .bp3-tree-node-selected .bp3-icon {
+    background-color: white;
+    color: #137cbd !important;
+    font-weight: 900; }
 
 .edit-tags-button {
   border: none;
@@ -525,7 +535,7 @@ a[role="tab"] {
   padding: 5px 3px 4px 3px;
   background-color: #f6f8fa !important; }
   .tile-panel-heading .tile-name-div {
-    overflow-x: hidden;
+    overflow: hidden;
     line-height: 100%;
     cursor: move;
     align-self: center;
@@ -636,7 +646,8 @@ td.cell-clickable:active {
   overflow: auto; }
 
 #console-panel {
-  margin-left: 5px;
+  margin-left: 0.5rem;
+  margin-top: 0.5rem;
   margin-right: 0;
   padding: 0 !important; }
 
@@ -790,9 +801,6 @@ td.cell-clickable:active {
     .log-panel.log-panel-invisible .convert-markdown-button, .log-panel.log-panel-invisible .close-log-button, .log-panel.log-panel-invisible .run-log-button, .log-panel.log-panel-invisible .clear-code-button {
       display: none; }
 
-html, body {
-  height: 100%; }
-
 .log-panel .bp3-editable-text:hover::before {
   outline: none;
   box-shadow: none; }
@@ -830,8 +838,7 @@ html, body {
   margin: 0 5px; }
 
 #tile-div {
-  padding: 5px;
-  overflow-y: scroll; }
+  overflow: auto; }
 
 #status-div {
   position: absolute;
@@ -850,7 +857,8 @@ html, body {
   display: block;
   overflow: hidden;
   height: 265px;
-  margin: 7px;
+  margin-left: 0.5rem;
+  margin-top: 0.5rem;
   padding: 0 !important;
   background-color: white !important; }
   .tile-panel .ui-resizable-handle {
@@ -866,9 +874,11 @@ html, body {
   position: relative; }
 
 .tile-display-area {
-  overflow: auto;
+  overflow: hidden;
   padding: 0;
   margin: 15px 15px 15px 15px; }
+  .tile-display-area:hover {
+    overflow: auto; }
 
 .back {
   padding: 20px;
@@ -921,7 +931,8 @@ button.notclose {
   display: inline-flex; }
 
 #exports-panel {
-  margin-left: 5px;
+  margin-left: 0.5rem;
+  margin-top: 0.5rem;
   margin-right: 0;
   padding: 0 !important; }
 

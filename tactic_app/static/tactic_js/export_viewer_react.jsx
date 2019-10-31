@@ -166,7 +166,7 @@ class ExportsViewer extends React.Component {
 
     _bodyHeight() {
         if (this.header_ref && this.header_ref.current) {
-            return this.props.available_height - $(this.header_ref.current).outerHeight() - 35
+            return this.props.available_height - $(this.header_ref.current).outerHeight()
         }
         else {
             return this.props.available_height - 75
