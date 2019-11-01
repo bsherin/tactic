@@ -150,9 +150,9 @@ def read_excel_file(xlfile):
                     if not c.data_type == c.TYPE_STRING:
                         the_val = str(the_val)
                     row[header_list[col]] = the_val
-                    row["__filename__"] = filename
-                    row["__id__"] = i
-                    sheet_list.append(row)
+                row["__filename__"] = filename
+                row["__id__"] = i
+                sheet_list.append(row)
             sheet_list = sheet_list[:highest_nonblank_line + 1]
             for r in sheet_list:
                 for col in range(highest_nonblank_column + 1, len(header_list)):

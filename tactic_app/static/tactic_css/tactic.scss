@@ -181,6 +181,14 @@ table.sortable thead {
     color: $repository-title-color;
 }
 
+.context-menu-header {
+    font-style: italic;
+    margin-bottom: 9px
+}
+
+.ui-resizable-helper {
+    border: 1px dotted #999;
+}
 
 #library-home-root {
     max-height: 100%;

@@ -207,12 +207,12 @@ class TileComponent extends React.Component {
 
     // Broadcasting the tile size is necessary because some tiles (notably matplotlib tiles)
     // need to know the size of the display area.
-    broadcastTileSize() {
+    _broadcastTileSize() {
         postWithCallback(this.props.tile_id, "TileSizeChange",
             {width: this.tdaWidth, height: this.tdaHeight})
     }
 
-    _resizeTileArea(event, ui) {
+    _resizeTileArea(event, ui, callback=null) {
         let hheight = $(this.body_ref.current).position().top;
         this.setState({
             header_height: hheight
@@ -220,7 +220,7 @@ class TileComponent extends React.Component {
         let new_state = {tile_height: ui.size.height,
             tile_width: ui.size.width};
 
-        this.props.setTileState(this.props.tile_id, new_state)
+        this.props.setTileState(this.props.tile_id, new_state, callback)
     }
 
     executeEmbeddedScripts() {
@@ -263,13 +263,15 @@ class TileComponent extends React.Component {
     componentDidMount() {
         let self = this;
         this.setState({mounted: true});
-        this.broadcastTileSize(this.props.tile_width, this.props.tile_height);
+        this._broadcastTileSize(this.props.tile_width, this.props.tile_height);
         this.listen_for_clicks();
         $("#" + this.props.tile_id).resizable({
             handles: "se",
-            resize: self._resizeTileArea,
-            stop: function () {
-                self.broadcastTileSize();
+            helper: "ui-resizable-helper",
+            // resize: self._resizeTileArea,
+            stop: function (event, ui) {
+                self._resizeTileArea(event, ui, self._broadcastTileSize)
+                // self.broadcastTileSize();
             }
         });
         this.executeEmbeddedScripts();
