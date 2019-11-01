@@ -37,6 +37,7 @@ class BodyMenu extends React.Component {
         return React.createElement(
             Bp.Menu,
             null,
+            React.createElement(Bp.Menu.Divider, { title: this.props.selected_rows[0].name, className: "context-menu-header" }),
             menu_items
         );
     }
