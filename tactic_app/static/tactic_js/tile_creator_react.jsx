@@ -65,6 +65,7 @@ function got_parsed_data (data_object) {
     postAjaxPromise("grab_metadata", result_dict)
         .then(function (data) {
             let split_tags = data.tags == "" ? [] : data.tags.split(" ");
+            let category = parsed_data.categoy ? parsed_data.category : "basic";
             ReactDOM.render(<CreatorAppPlus tile_name={window.module_name}
                                         is_mpl={parsed_data.is_mpl}
                                         is_d3={parsed_data.is_d3}
@@ -72,7 +73,7 @@ function got_parsed_data (data_object) {
                                         render_content_line_number={parsed_data.render_content_line_number}
                                         extra_methods_line_number={parsed_data.extra_methods_line_number}
                                         draw_plot_line_number={parsed_data.draw_plot_line_number}
-                                        category={parsed_data.category}
+                                        category={category}
                                         extra_functions={parsed_data.extra_functions}
                                         draw_plot_code={parsed_data.draw_plot_code}
                                         jscript_code={parsed_data.jscript_code}
