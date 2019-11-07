@@ -11,6 +11,7 @@ import { handleCallback, postWithCallback, postAsyncFalse } from "./communicatio
 
 const MARGIN_SIZE = 17;
 const BOTTOM_MARGIN = 35;
+const USUAL_TOOLBAR_HEIGHT = 50;
 
 let tsocket;
 let ppi;
@@ -143,7 +144,8 @@ class NotebookApp extends React.Component {
             null,
             React.createElement(TacticNavbar, { is_authenticated: window.is_authenticated,
                 user_name: window.username,
-                menus: menus
+                menus: menus,
+                show_api_links: true
             }),
             React.createElement(ConsoleComponent, _extends({}, this.props.statusFuncs, {
                 console_items: this.state.console_items,
@@ -151,9 +153,11 @@ class NotebookApp extends React.Component {
                 console_is_zoomed: true,
                 show_exports_pane: false,
                 setMainStateValue: this._setMainStateValue,
-                console_available_height: this.state.usable_height - 50,
+                console_available_height: this.state.usable_height - USUAL_TOOLBAR_HEIGHT - MARGIN_SIZE,
+                zoomable: false,
+                shrinkable: false,
                 tsocket: tsocket,
-                style: { marginLeft: 25, marginRight: 25, marginTop: 25 }
+                style: { marginLeft: MARGIN_SIZE, marginRight: MARGIN_SIZE, marginTop: MARGIN_SIZE, maxWidth: 900 }
             }))
         );
     }

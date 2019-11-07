@@ -738,6 +738,8 @@ a[role="tab"] {
 
 .ui-resizable-e, .ui-resizable-w {
     width: 25px !important;
+    right: -10px !important;
+
 }
 
 .ui-resizable-s, .ui-resizable-n{
@@ -779,6 +781,12 @@ a[role="tab"] {
     .combined-metadata {
         .notes-field {
             background-color: #f7f7f7;
+        }
+        .bp3-form-content {
+            width: 100%;
+        }
+        .bp3-form-group.bp3-inline {
+            max-width: 450px
         }
     }
 

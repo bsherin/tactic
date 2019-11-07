@@ -163,12 +163,8 @@ D3 figures. If you open an existing D3 figure or create a new one from
 your resource manager, then the Tile Creator opens with a slightly
 different interface. Rather than having one large box for code on the
 left, there are two. The bottom one holds the ``render_content`` method.
-The top one holds a javascript function which must be of the form:
-
-.. code:: javascript
-
-    function (selector, w, h, arg_dict) {
-    }
+The top one must hold the body of a function that will be passed the
+arguments `selector`, `w`, `h`, and `arg_dict`.
 
 Also, ``render_content`` must return a dictionary of arguments that will
 be passed to the javascript function in ``arg_dict``.

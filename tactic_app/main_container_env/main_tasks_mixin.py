@@ -1289,6 +1289,7 @@ class ConsoleTasksMixin:
         the_code = data["the_code"]
         self.dict = self._pipe_dict
         data["pipe_dict"] = self.dict
+        data["am_notebook"] = self.am_notebook_type
         print("posting exec_console_code to the pseudo_tile")
         self.mworker.post_task(self.pseudo_tile_id, "exec_console_code", data, self.got_console_result)
         return {"success": True}
@@ -1305,8 +1306,8 @@ class ConsoleTasksMixin:
                     self.mworker.debug_log("got an exception " + instantiate_result["message"])
                     self.show_main_message("Error resetting notebook", 7)
                     raise Exception(instantiate_result["message"])
-                self.mworker.post_task(self.pseudo_tile_id, "create_pseudo_tile_collection_object",
-                                       {"am_notebook": self.am_notebook_type})
+                # self.mworker.post_task(self.pseudo_tile_id, "create_pseudo_tile_collection_object",
+                #                        {"am_notebook": self.am_notebook_type})
                 self.show_main_message("Notebook reset", 7)
 
             data_dict = {"base_figure_url": self.base_figure_url.replace("tile_id", self.pseudo_tile_id),

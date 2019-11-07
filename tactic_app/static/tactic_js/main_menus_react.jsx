@@ -115,6 +115,7 @@ class ProjectMenu extends React.Component {
                     data_object.alert_type = "alert-success";
                     data_object.timeout = 2000;
                     postWithCallback("host", "refresh_project_selector_list", {'user_id': window.user_id});
+                    self.props.updateLastSave();
                     self.props.stopSpinner();
                     doFlash(data_object)
                 }
@@ -146,7 +147,7 @@ class ProjectMenu extends React.Component {
             if (data.success) {
                 data.alert_type = "alert-success";
                 data.timeout = 2000;
-
+                self.props.updateLastSave();
             }
             else {
                 data.alert_type = "alert-warning";
@@ -264,6 +265,7 @@ class ProjectMenu extends React.Component {
 ProjectMenu.propTypes = {
     console_items: PropTypes.array,
     interface_state: PropTypes.object,
+    updateLastSave: PropTypes.func,
     changeCollection: PropTypes.func,
     disabled_items: PropTypes.array,
     hidden_items: PropTypes.array

@@ -44,7 +44,7 @@ class CreatorViewerSocket extends TacticSocket {
 }
 
 function tile_creator_main() {
-    render_navbar();
+    render_navbar(null, true);
     tsocket = new CreatorViewerSocket("main", 5000);
     tsocket.socket.on("begin-post-load", function () {
         let the_content = { "module_name": window.module_name,
@@ -122,6 +122,7 @@ class CreatorApp extends React.Component {
         this.hp_ref = React.createRef();
         this.methods_ref = React.createRef();
         this.draw_plot_bounding_ref = React.createRef();
+        this.last_save = {};
         this.state = {
             tile_name: this.props.tile_name,
             foregrounded_panes: {
@@ -152,9 +153,6 @@ class CreatorApp extends React.Component {
             left_pane_width: awidth / 2 - 25,
             methodsTabRefreshRequired: true
         };
-        this.saved_state_vars = ["tile_name", "render_content_code", "draw_plot_code", "jscript_code", "extra_functions", "tags", "notes", "option_list", "export_list", "category"];
-        this.saved_state = {};
-        this.update_saved_state();
         this.handleRename = this.handleRename.bind(this);
         this.handleStateChange = this.handleStateChange.bind(this);
         this.handleRenderContentChange = this.handleRenderContentChange.bind(this);
@@ -165,21 +163,13 @@ class CreatorApp extends React.Component {
         this.handleMethodsChange = this.handleMethodsChange.bind(this);
         this.handleLeftPaneResize = this.handleLeftPaneResize.bind(this);
         this.handleTopPaneResize = this.handleTopPaneResize.bind(this);
-    }
-
-    update_saved_state() {
-        for (let thevar of this.saved_state_vars) {
-            this.saved_state[thevar] = this.state[thevar];
-        }
-    }
-
-    dirty() {
-        for (let thevar of this.saved_state_vars) {
-            if (this.state[thevar] != this.saved_state[thevar]) {
-                return true;
+        let self = this;
+        window.addEventListener("beforeunload", function (e) {
+            if (self.dirty()) {
+                e.preventDefault();
+                e.returnValue = '';
             }
-        }
-        return false;
+        });
     }
 
     get button_groups() {
@@ -217,6 +207,16 @@ class CreatorApp extends React.Component {
         }
     }
 
+    dirty() {
+        let current_state = this._getSaveDict();
+        for (let k in current_state) {
+            if (current_state[k] != this.last_save[k]) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     _loadModule() {
         let self = this;
         this.props.startSpinner();
@@ -229,7 +229,6 @@ class CreatorApp extends React.Component {
 
         function load_success(data) {
             if (data.success) {
-                self.update_saved_state();
                 data.timeout = 2000;
             }
             self._doFlashStopSpinner(data);
@@ -275,25 +274,29 @@ class CreatorApp extends React.Component {
         return tags.trim();
     }
 
+    _getSaveDict() {
+        return {
+            "module_name": this.state.tile_name,
+            "category": this.state.category.length == 0 ? "basic" : this.state.category,
+            "tags": this.get_tags_string(),
+            "notes": this.state.notes,
+            "exports": this.state.export_list,
+            "options": this.state.option_list,
+            "extra_methods": this.state.extra_functions,
+            "render_content_body": this.state.render_content_code,
+            "is_mpl": this.props.is_mpl,
+            "is_d3": this.props.is_d3,
+            "draw_plot_body": this.state.draw_plot_code,
+            "jscript_body": this.state.jscript_code,
+            "last_saved": "creator"
+        };
+    }
+
     doSavePromise() {
         let self = this;
         return new Promise(function (resolve, reject) {
+            let result_dict = self._getSaveDict();
 
-            let result_dict = {
-                "module_name": self.state.tile_name,
-                "category": self.state.category.length == 0 ? "basic" : self.state.category,
-                "tags": self.get_tags_string(),
-                "notes": self.state.notes,
-                "exports": self.state.export_list,
-                "options": self.state.option_list,
-                "extra_methods": self.state.extra_functions,
-                "render_content_body": self.state.render_content_code,
-                "is_mpl": self.props.is_mpl,
-                "is_d3": self.props.is_d3,
-                "draw_plot_body": self.state.draw_plot_code,
-                "jscript_body": self.state.jscript_code,
-                "last_saved": "creator"
-            };
             postWithCallback(module_viewer_id, "update_module", result_dict, function (data) {
                 if (data.success) {
                     self.save_success(data);
@@ -325,7 +328,7 @@ class CreatorApp extends React.Component {
             "draw_plot_line_number": data.draw_plot_line_number
 
         });
-        this.update_saved_state();
+        this._update_saved_state();
     }
 
     update_window_dimensions() {
@@ -339,12 +342,17 @@ class CreatorApp extends React.Component {
         this.setState({ usable_height: uheight, usable_width: uwidth });
     }
 
+    _update_saved_state() {
+        this.last_save = this._getSaveDict();
+    }
+
     componentDidMount() {
         this.setState({ "mounted": true });
         document.title = this.state.tile_name;
 
         window.addEventListener("resize", this.update_window_dimensions);
         this.update_window_dimensions();
+        this._update_saved_state();
         this.props.stopSpinner();
     }
 
@@ -513,6 +521,7 @@ class CreatorApp extends React.Component {
                 React.createElement("div", { ref: this.vp_ref }),
                 React.createElement(VerticalPanes, { top_pane: tc_item,
                     bottom_pane: bc_item,
+                    show_handle: true,
                     available_height: vp_height,
                     available_width: this.state.left_pane_width,
                     handleSplitUpdate: this.handleTopPaneResize,
@@ -570,7 +579,7 @@ class CreatorApp extends React.Component {
             null,
             React.createElement(
                 "div",
-                { id: "creator-resources", className: "d-block mt-2 ml-2" },
+                { id: "creator-resources", className: "d-block mt-2" },
                 React.createElement(
                     Bp.Tabs,
                     { id: "resource_tabs",
@@ -598,6 +607,7 @@ class CreatorApp extends React.Component {
                     { className: "resource-viewer-holder", ref: this.top_ref, style: outer_style },
                     React.createElement(HorizontalPanes, { left_pane: left_pane,
                         right_pane: right_pane,
+                        show_handle: true,
                         available_height: this.state.usable_height,
                         available_width: this.state.usable_width,
                         handleSplitUpdate: this.handleLeftPaneResize

@@ -19,7 +19,6 @@ let Bpt = bptable;
 
 export {MainTacticSocket}
 
-
 const MARGIN_SIZE = 17;
 const BOTTOM_MARGIN = 35;  // includes space for status messages at bottom
 const MARGIN_ADJUSTMENT = 8; // This is the amount at the top of both the table and the console
@@ -147,6 +146,7 @@ class MainApp extends React.Component {
         this.tile_div_ref = React.createRef();
         this.tbody_ref = React.createRef();
         this.table_ref = React.createRef();
+        this.last_save = {};
         let base_state = {
                 mounted: false,
                 doc_names: props.initial_doc_names,
@@ -207,6 +207,13 @@ class MainApp extends React.Component {
             }
         }
         this.updateExportsList = null;
+        let self = this;
+        window.addEventListener("beforeunload", function (e) {
+            if (self.dirty()) {
+                e.preventDefault();
+                e.returnValue = ''
+            }
+        });
     }
 
     _update_window_dimensions() {
@@ -214,6 +221,20 @@ class MainApp extends React.Component {
             "usable_width": window.innerWidth - 2 * MARGIN_SIZE,
             "usable_height": window.innerHeight - BOTTOM_MARGIN
         });
+    }
+
+    _updateLastSave() {
+        this.last_save = this.interface_state
+    }
+
+    dirty() {
+        let current_state = this.interface_state;
+        for (let k in current_state) {
+            if (current_state[k] != this.last_save[k]) {
+                return true
+            }
+        }
+        return false
     }
 
     componentDidMount() {
@@ -244,6 +265,7 @@ class MainApp extends React.Component {
         if (!window.is_project) {
             self.props.stopSpinner();
         }
+        this._updateLastSave()
     }
 
     // Every item in tile_list is a list of this form
@@ -660,6 +682,7 @@ class MainApp extends React.Component {
                              console_items={this.state.console_items}
                              interface_state={this.interface_state}
                              changeCollection={this._changeCollection}
+                             updateLastSave={this._updateLastSave}
                              disabled_items={window.is_project ? [] : ["Save"]}
                              hidden_items={["Export as Jupyter Notebook"]}
                 />
@@ -779,6 +802,7 @@ class MainApp extends React.Component {
         let bottom_pane = (
             <HorizontalPanes left_pane={console_pane}
                              right_pane={exports_pane}
+                             show_handle={false}
                              available_height={console_available_height}
                              available_width={this.state.usable_width}
                              initial_width_fraction={this.state.console_width_fraction}
@@ -823,12 +847,13 @@ class MainApp extends React.Component {
         else {
             top_pane = (
                 <HorizontalPanes left_pane={table_pane}
-                     right_pane={tile_pane}
-                     available_height={hp_height}
-                     available_width={this.state.usable_width}
-                     initial_width_fraction={this.state.horizontal_fraction}
-                     controlled={true}
-                     handleSplitUpdate={this._handleHorizontalFractionChange}
+                                 right_pane={tile_pane}
+                                 available_height={hp_height}
+                                 show_handle={false}
+                                 available_width={this.state.usable_width}
+                                 initial_width_fraction={this.state.horizontal_fraction}
+                                 controlled={true}
+                                 handleSplitUpdate={this._handleHorizontalFractionChange}
                 />
             );
         }
@@ -847,6 +872,7 @@ class MainApp extends React.Component {
                 {!this.state.console_is_zoomed && !this.state.console_is_shrunk &&
                     <VerticalPanes top_pane={top_pane}
                                bottom_pane={bottom_pane}
+                                   show_handle={false}
                                available_width={this.state.usable_width}
                                available_height={vp_height}
                                initial_height_fraction={this.state.height_fraction}

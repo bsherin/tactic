@@ -121,9 +121,18 @@ class TacticNavbar extends React.Component {
     render () {
         let nav_class = this.props.menus == null ? "justify-content-end" : "justify-content-between";
         let right_nav_items = [];
-        right_nav_items.push({icon: "manual", text: "docs", intent: null, onClick: ()=>{
+        if (this.props.show_api_links) {
+            right_nav_items = [{icon: "code-block", text: "Api", intent: null, onClick: ()=>{
+                        window.open("https://tactic.readthedocs.io/en/latest/Tile-Commands.html")}},
+                {icon: "code-block", text: "ObjApi", intent: null, onClick: ()=>{
+                        window.open("https://tactic.readthedocs.io/en/latest/Object-Oriented-API.html")}}
+
+            ]
+        }
+        right_nav_items.push({icon: "manual", text: "Docs", intent: null, onClick: ()=>{
                         window.open("http://tactic.readthedocs.io/en/latest/index.html")}}
         );
+
         if (this.props.is_authenticated) {
            right_nav_items = right_nav_items.concat(this._authenticatedItems())
         }
@@ -165,17 +174,20 @@ TacticNavbar.propTypes = {
     img_url: PropTypes.string,
     user_name: PropTypes.string,
     menus: PropTypes.object,
-    selected: PropTypes.string
+    selected: PropTypes.string,
+    show_api_links: PropTypes.bool
 };
 
 TacticNavbar.defaultProps = {
     menus: null,
-    selected: null
+    selected: null,
+    show_api_links: false
 };
 
-function render_navbar (selected=null) {
+function render_navbar (selected=null, show_api_links=false) {
     let domContainer = document.querySelector('#navbar-root');
     ReactDOM.render(<TacticNavbar is_authenticated={window.is_authenticated}
                                   selected={selected}
+                                  show_api_links={show_api_links}
                                   user_name={window.username}/>, domContainer)
 }
