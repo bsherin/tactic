@@ -169,6 +169,8 @@ class PseudoTileClass(TileBase, MplFigure):
     def exec_console_code(self, data):
         old_stdout = sys.stdout
         try:
+            if not Collection:
+                self._tworker.create_pseudo_tile_collection_object(data)
             self._pipe_dict = data["pipe_dict"]
             redirected_output = ConsoleStringIO(self, data)
             sys.stdout = redirected_output

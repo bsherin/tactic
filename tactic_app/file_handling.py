@@ -129,12 +129,17 @@ def read_excel_file(xlfile):
             header_row = allrows[0]
             header_list = []
             for c in header_row:
-                if c.value is None:
-                    header_list.append("None")
-                elif not c.data_type == c.TYPE_STRING:
-                    header_list.append(str(c.value))
-                else:
-                    header_list.append(utf_solver(c.value))
+                try:
+                    if c.value is None:
+                        header_list.append("None")
+                    elif not c.data_type == openpyxl.cell.cell.TYPE_STRING:
+                        header_list.append(str(c.value))
+                    else:
+                        header_list.append(utf_solver(c.value))
+                except Exception as ex:
+                    erstr = "Error getting cell {} of excel sheet {}".format(c.coordinate, sname)
+                    ermsg = generic_exception_handler.extract_short_error_message(ex, erstr)
+                    return None, {"message": ermsg}, None
             header_list = make_fieldnames_unique(header_list)
             header_list = make_keys_mongo_valid(header_list)
             highest_nonblank_line = 0
@@ -142,14 +147,19 @@ def read_excel_file(xlfile):
             for i, line in enumerate(allrows[1:]):
                 row = {}
                 for col, c in enumerate(line):
-                    the_val = c.value
-                    if the_val is not None:
-                        highest_nonblank_line = i
-                        if col > highest_nonblank_column:
-                            highest_nonblank_column = col
-                    if not c.data_type == c.TYPE_STRING:
-                        the_val = str(the_val)
-                    row[header_list[col]] = the_val
+                    try:
+                        the_val = c.value
+                        if the_val is not None:
+                            highest_nonblank_line = i
+                            if col > highest_nonblank_column:
+                                highest_nonblank_column = col
+                        if not c.data_type == openpyxl.cell.cell.TYPE_STRING:
+                            the_val = str(the_val)
+                        row[header_list[col]] = the_val
+                    except Exception as ex:
+                        erstr = "Error getting cell {} of excel sheet {}".format(c.coordinate, sname)
+                        ermsg = generic_exception_handler.extract_short_error_message(ex, erstr)
+                        return None, {"message": ermsg}, None
                 row["__filename__"] = filename
                 row["__id__"] = i
                 sheet_list.append(row)

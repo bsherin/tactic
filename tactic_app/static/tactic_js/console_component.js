@@ -263,7 +263,7 @@ class ConsoleComponent extends React.Component {
     }
 
     render() {
-        let gbstyle = { marginLeft: 1 };
+        let gbstyle = { marginLeft: 1, marginTop: 1 };
         return React.createElement(
             Bp.Card,
             { id: "console-panel", elevation: 2, style: this.props.style },
@@ -278,13 +278,13 @@ class ConsoleComponent extends React.Component {
                     React.createElement(
                         "div",
                         { id: "console-header-left", className: "d-flex flex-row" },
-                        this.props.console_is_shrunk && React.createElement(GlyphButton, { handleClick: this._expandConsole,
+                        this.props.console_is_shrunk && this.props.shrinkable && React.createElement(GlyphButton, { handleClick: this._expandConsole,
                             style: { marginLeft: 2 },
                             icon: "chevron-right" }),
-                        !this.props.console_is_shrunk && React.createElement(GlyphButton, { handleClick: this._shrinkConsole,
+                        !this.props.console_is_shrunk && this.props.shrinkable && React.createElement(GlyphButton, { handleClick: this._shrinkConsole,
                             style: { marginLeft: 2 },
                             icon: "chevron-down" }),
-                        React.createElement(
+                        this.props.shrinkable && React.createElement(
                             "b",
                             { style: { alignSelf: "center", marginRight: 5 } },
                             "Log"
@@ -332,9 +332,9 @@ class ConsoleComponent extends React.Component {
                             minimal: true,
                             small: true,
                             text: "exports" }),
-                        !this.props.console_is_zoomed && React.createElement(GlyphButton, { handleClick: this._zoomConsole,
+                        !this.props.console_is_zoomed && this.props.zoomable && React.createElement(GlyphButton, { handleClick: this._zoomConsole,
                             icon: "maximize" }),
-                        this.props.console_is_zoomed && React.createElement(GlyphButton, { handleClick: this._unzoomConsole,
+                        this.props.console_is_zoomed && this.props.zoomable && React.createElement(GlyphButton, { handleClick: this._unzoomConsole,
                             icon: "minimize" })
                     )
                 )
@@ -376,11 +376,15 @@ ConsoleComponent.propTypes = {
     setMainStateValue: PropTypes.func,
     console_available_height: PropTypes.number,
     tsocket: PropTypes.object,
-    style: PropTypes.object
+    style: PropTypes.object,
+    shrinkable: PropTypes.bool,
+    zoomable: PropTypes.bool
 };
 
 ConsoleComponent.defaultProps = {
-    style: {}
+    style: {},
+    shrinkable: true,
+    zoomable: true
 };
 
 class SuperItem extends React.Component {
@@ -824,16 +828,21 @@ class ConsoleTextItem extends React.Component {
                             tooltip: "Convert to/from markdown",
                             icon: "paragraph" })
                     ),
-                    !really_show_markdown && React.createElement(Bp.TextArea, { value: this.props.console_text,
-                        onChange: this._handleChange,
-                        onKeyDown: this._handleKeyDown,
-                        growVertically: true,
-                        onFocus: () => this.props.setFocus(this.props.unique_id),
-                        onBlur: () => this.props.setFocus(null),
-                        disabled: false,
-                        className: "console-text",
-                        style: {},
-                        inputRef: this._notesRefHandler }),
+                    !really_show_markdown && React.createElement(
+                        React.Fragment,
+                        null,
+                        React.createElement(Bp.TextArea, { value: this.props.console_text,
+                            onChange: this._handleChange,
+                            onKeyDown: this._handleKeyDown,
+                            growVertically: true,
+                            onFocus: () => this.props.setFocus(this.props.unique_id),
+                            onBlur: () => this.props.setFocus(null),
+                            disabled: false,
+                            className: "console-text",
+                            style: {},
+                            inputRef: this._notesRefHandler }),
+                        React.createElement(KeyTrap, { target_ref: this.ce_ref, bindings: key_bindings })
+                    ),
                     really_show_markdown && React.createElement("div", { className: "text-panel-output",
                         onClick: this._hideMarkdown,
                         style: { width: "100%", padding: 9 },
@@ -848,8 +857,7 @@ class ConsoleTextItem extends React.Component {
                             icon: "trash" })
                     )
                 )
-            ),
-            React.createElement(KeyTrap, { target_ref: this.ce_ref, bindings: key_bindings })
+            )
         );
     }
 }

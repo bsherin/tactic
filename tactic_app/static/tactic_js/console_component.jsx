@@ -274,7 +274,7 @@ let Bp = blueprint;
     }
 
     render() {
-        let gbstyle={marginLeft: 1};
+        let gbstyle={marginLeft: 1, marginTop: 1};
         return (
             <Bp.Card id="console-panel" elevation={2} style={this.props.style}>
                 <div className="d-flex flex-column justify-content-around">
@@ -282,17 +282,20 @@ let Bp = blueprint;
                          ref={this.header_ref}
                          className="d-flex flex-row justify-content-between">
                         <div id="console-header-left" className="d-flex flex-row">
-                            {this.props.console_is_shrunk &&
+                            {this.props.console_is_shrunk && this.props.shrinkable &&
                             <GlyphButton handleClick={this._expandConsole}
                                          style={{marginLeft: 2}}
                                          icon="chevron-right"/>
                             }
-                            {!this.props.console_is_shrunk &&
+                            {!this.props.console_is_shrunk && this.props.shrinkable &&
                                 <GlyphButton handleClick={this._shrinkConsole}
                                              style={{marginLeft: 2}}
                                              icon="chevron-down"/>
                                 }
-                            <b style={{alignSelf: "center", marginRight: 5}}>Log</b>
+                            {this.props.shrinkable &&
+                                <b style={{alignSelf: "center", marginRight: 5}}>Log</b>
+                            }
+
                             <GlyphButton extra_glyph_text="text"
                                          style={gbstyle}
                                          intent="primary"
@@ -334,11 +337,11 @@ let Bp = blueprint;
                                        minimal={true}
                                        small={true}
                                        text="exports"/>
-                            {!this.props.console_is_zoomed &&
+                            {!this.props.console_is_zoomed && this.props.zoomable &&
                                 <GlyphButton handleClick={this._zoomConsole}
                                              icon="maximize"/>
                                 }
-                            {this.props.console_is_zoomed &&
+                            {this.props.console_is_zoomed && this.props.zoomable &&
                                 <GlyphButton handleClick={this._unzoomConsole}
                                              icon="minimize"/>
                                 }
@@ -383,11 +386,15 @@ ConsoleComponent.propTypes = {
     setMainStateValue: PropTypes.func,
     console_available_height: PropTypes.number,
     tsocket: PropTypes.object,
-    style: PropTypes.object
+    style: PropTypes.object,
+    shrinkable: PropTypes.bool,
+    zoomable: PropTypes.bool
 };
 
  ConsoleComponent.defaultProps = {
-     style: {}
+     style: {},
+     shrinkable: true,
+     zoomable: true
  };
 
 class SuperItem extends React.Component {
@@ -830,6 +837,7 @@ class ConsoleTextItem extends React.Component {
                                                  icon="paragraph"/>
                                 </div>
                             {!really_show_markdown &&
+                                <React.Fragment>
                                 <Bp.TextArea value={this.props.console_text}
                                              onChange={this._handleChange}
                                              onKeyDown={this._handleKeyDown}
@@ -840,6 +848,8 @@ class ConsoleTextItem extends React.Component {
                                              className="console-text"
                                              style={{}}
                                              inputRef={this._notesRefHandler}/>
+                                     <KeyTrap target_ref={this.ce_ref} bindings={key_bindings} />
+                                 </React.Fragment>
                             }
                             {really_show_markdown &&
                                 <div className="text-panel-output"
@@ -858,7 +868,6 @@ class ConsoleTextItem extends React.Component {
                         </div>
                     </div>
                 }
-                <KeyTrap target_ref={this.ce_ref} bindings={key_bindings} />
             </div>
         )
     }
@@ -875,5 +884,6 @@ ConsoleTextItem.propTypes = {
     handleDelete: PropTypes.func,
     goToNextCell: PropTypes.func,
     tsocket: PropTypes.object,
-    setFocus: PropTypes.func
+    setFocus: PropTypes.func,
 };
+
