@@ -383,6 +383,7 @@ class AdminPane extends React.Component {
                             <HorizontalPanes
                                 left_pane={left_pane}
                                 right_pane={right_pane}
+                                show_handle={true}
                                 available_width={this.state.available_width}
                                 available_height={this.state.available_height}
                                 initial_width_fraction={.65}

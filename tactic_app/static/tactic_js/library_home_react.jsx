@@ -489,7 +489,8 @@ class CollectionToolbar extends React.Component {
             [["download", this._downloadCollection, "cloud-download", false, "regular", [], "Download collection"],
              ["share", this.props.send_repository_func, "share", false, "regular", [], "Share to repository"]],
             [["delete", this._collection_delete, "trash", true, "danger", [], "Delete"]],
-            [["refresh", this.props.refresh_func, "refresh", false, "regular", [], "Refresh list"]]
+            [["refresh", this.props.refresh_func, "refresh", false, "regular", [], "Refresh list"]],
+            [["drawer", this.props.toggleErrorDrawer, "console", false, "regular", [], "Toggle Error Drawer"]]
         ];
      }
 

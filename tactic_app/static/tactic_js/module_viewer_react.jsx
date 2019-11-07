@@ -16,7 +16,7 @@ import {SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT, BOTTOM_MARGIN, getUsableDimensions} f
 let Bp = blueprint;
 
 function module_viewer_main ()  {
-    render_navbar();
+    render_navbar(null, true);
     let get_url = window.is_repository ? "repository_get_module_code" : "get_module_code";
     let get_mdata_url = window.is_repository ? "grab_repository_metadata" : "grab_metadata";
 
@@ -64,11 +64,12 @@ class ModuleViewerApp extends React.Component {
         this.savedTags = props.tags;
         this.savedNotes = props.notes;
         let self = this;
-        window.onbeforeunload = function(e) {
+        window.addEventListener("beforeunload", function (e) {
             if (self.dirty()) {
-                return "Any unsaved changes will be lost."
+                e.preventDefault();
+                e.returnValue = ''
             }
-        };
+        });
 
         let aheight = getUsableDimensions().usable_height;
         let awidth = getUsableDimensions().usable_width;

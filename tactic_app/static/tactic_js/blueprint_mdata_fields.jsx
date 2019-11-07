@@ -306,7 +306,7 @@ class CombinedMetadata extends React.Component {
                 }
                 additional_items.push(
                      <Bp.FormGroup label={field + ": "} key={field} inline={true}>
-                            <Bp.InputGroup disabled={true} style={{color:"#394B59"}} value={md}/>
+                            <Bp.InputGroup disabled={true} style={{color:"#394B59"}} value={md} fill={true}/>
                         </Bp.FormGroup>
                 )
             }

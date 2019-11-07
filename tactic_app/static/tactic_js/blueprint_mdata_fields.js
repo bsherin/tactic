@@ -293,7 +293,7 @@ class CombinedMetadata extends React.Component {
                 additional_items.push(React.createElement(
                     Bp.FormGroup,
                     { label: field + ": ", key: field, inline: true },
-                    React.createElement(Bp.InputGroup, { disabled: true, style: { color: "#394B59" }, value: md })
+                    React.createElement(Bp.InputGroup, { disabled: true, style: { color: "#394B59" }, value: md, fill: true })
                 ));
             }
         }

@@ -87,11 +87,13 @@ class ListViewerApp extends React.Component {
         this.savedTags = props.tags;
         this.savedNotes = props.notes;
         let self = this;
-        window.onbeforeunload = function (e) {
+
+        window.addEventListener("beforeunload", function (e) {
             if (self.dirty()) {
-                return "Any unsaved changes will be lost.";
+                e.preventDefault();
+                e.returnValue = '';
             }
-        };
+        });
         let aheight = getUsableDimensions().usable_height;
         let awidth = getUsableDimensions().usable_width;
         this.state = {
