@@ -1,7 +1,7 @@
 import {get_all_parent_tags, TagButtonList} from "./tag_buttons_react.js";
 import {CombinedMetadata} from "./blueprint_mdata_fields.js";
 import {SearchForm, BpSelectorTable, LibraryOmnibar} from "./library_widgets.js";
-import {HorizontalPanes} from "./resizing_layouts.js";
+import {HorizontalPanes, HANDLE_WIDTH} from "./resizing_layouts.js";
 import {showModalReact, showConfirmDialogReact} from "./modal_react.js";
 import {postAjax, postAjaxPromise} from "./communication_react.js"
 import {getUsableDimensions} from "./sizing_tools.js"
@@ -807,7 +807,7 @@ class LibraryPane extends React.Component {
         // let available_width = this.get_width_minus_left_offset(this.top_ref);
         // let available_height = this.get_height_minus_top_offset(this.top_ref);
         let new_button_groups;
-        let left_width = this.state.available_width * this.props.left_width_fraction;
+        let left_width = (this.state.available_width - HANDLE_WIDTH) * this.props.left_width_fraction;
         const primary_mdata_fields = ["name", "created", "created_for_sort", "updated",  "updated_for_sort", "tags", "notes"];
         let additional_metadata = {};
         for (let field in this.props.selected_resource) {
@@ -821,7 +821,7 @@ class LibraryPane extends React.Component {
 
         let right_pane;
         let split_tags = this.props.selected_resource.tags == "" ? [] : this.props.selected_resource.tags.split(" ");
-        let outer_style = {marginLeft: 20, marginTop: 90, overflow: "auto",
+        let outer_style = {marginLeft: 5, marginRight: 5, marginTop: 90, overflow: "auto",
             padding: 15, backgroundColor: "#f5f8fa"};
         let mdata_element = (
                 <CombinedMetadata tags={split_tags}
@@ -959,8 +959,10 @@ class LibraryPane extends React.Component {
                           <HorizontalPanes
                                 available_width={this.state.available_width}
                                 available_height={this.state.available_height - 40}
+                                show_handle={true}
                                  left_pane={left_pane}
                                  right_pane={right_pane}
+                                right_pane_overflow="auto"
                                  initial_width_fraction={.75}
                                  handleSplitUpdate={this._handleSplitResize}
                             />

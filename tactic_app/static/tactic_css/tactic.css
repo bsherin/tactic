@@ -476,7 +476,8 @@ a[role="tab"] {
 
 /* creator */
 .ui-resizable-e, .ui-resizable-w {
-  width: 25px !important; }
+  width: 25px !important;
+  right: -10px !important; }
 
 .ui-resizable-s, .ui-resizable-n {
   height: 25px !important; }
@@ -500,6 +501,10 @@ a[role="tab"] {
 
 .combined-metadata .notes-field {
   background-color: #f7f7f7; }
+.combined-metadata .bp3-form-content {
+  width: 100%; }
+.combined-metadata .bp3-form-group.bp3-inline {
+  max-width: 450px; }
 
 #creator-resources {
   height: 100%; }

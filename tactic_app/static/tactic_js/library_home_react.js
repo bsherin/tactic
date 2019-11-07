@@ -489,7 +489,7 @@ class CollectionToolbar extends React.Component {
     }
 
     get button_groups() {
-        return [[["open", this.props.view_func, "document-open", false, "primary", ["space", "return", "ctrl+o"], "View"]], [["duplicate", this._collection_duplicate, "duplicate", false, "success", [], "Duplicate"], ["rename", this.props.rename_func, "edit", false, "warning", [], "Rename"], ["combine", this._combineCollections, "merge-columns", true, "success", [], "Combine collections"]], [["download", this._downloadCollection, "cloud-download", false, "regular", [], "Download collection"], ["share", this.props.send_repository_func, "share", false, "regular", [], "Share to repository"]], [["delete", this._collection_delete, "trash", true, "danger", [], "Delete"]], [["refresh", this.props.refresh_func, "refresh", false, "regular", [], "Refresh list"]]];
+        return [[["open", this.props.view_func, "document-open", false, "primary", ["space", "return", "ctrl+o"], "View"]], [["duplicate", this._collection_duplicate, "duplicate", false, "success", [], "Duplicate"], ["rename", this.props.rename_func, "edit", false, "warning", [], "Rename"], ["combine", this._combineCollections, "merge-columns", true, "success", [], "Combine collections"]], [["download", this._downloadCollection, "cloud-download", false, "regular", [], "Download collection"], ["share", this.props.send_repository_func, "share", false, "regular", [], "Share to repository"]], [["delete", this._collection_delete, "trash", true, "danger", [], "Delete"]], [["refresh", this.props.refresh_func, "refresh", false, "regular", [], "Refresh list"]], [["drawer", this.props.toggleErrorDrawer, "console", false, "regular", [], "Toggle Error Drawer"]]];
     }
 
     get context_menu_items() {

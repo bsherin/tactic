@@ -130,6 +130,7 @@ class ResourceViewerApp extends React.Component {
                <HorizontalPanes available_width={this.state.available_width}
                                 available_height={this.state.available_height}
                                 left_pane={left_pane}
+                                show_handle={true}
                                 right_pane={right_pane}
                                 am_outer={true}
                 />
