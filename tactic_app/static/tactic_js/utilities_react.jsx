@@ -11,11 +11,11 @@ function doBinding(obj, seq="_") {
     }
 }
 
-const arrayMoveMutate = (array, from, to) => {
+function arrayMoveMutate(array, from, to) {
 	array.splice(to < 0 ? array.length + to : to, 0, array.splice(from, 1)[0]);
 };
 
-const arrayMove = (array, from, to) => {
+function arrayMove (array, from, to) {
 	array = array.slice();
 	arrayMoveMutate(array, from, to);
 	return array;
@@ -30,7 +30,6 @@ function updateObject(o1, o2) {
 }
 
 function arraysMatch (arr1, arr2) {
-
 	// Check if the arrays are the same length
 	if (arr1.length !== arr2.length) return false;
 

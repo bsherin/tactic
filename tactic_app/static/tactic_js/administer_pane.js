@@ -293,7 +293,7 @@ class AdminPane extends React.Component {
         let right_pane = React.createElement(
             "div",
             { className: "d-flex d-inline",
-                style: { verticalAlign: "top", marginTop: 120, marginLeft: 10, width: "100%", height: 412 } },
+                style: { overflow: "auto", verticalAlign: "top", marginTop: 120, marginLeft: 10, width: "100%", height: 412 } },
             React.createElement(
                 "pre",
                 null,
