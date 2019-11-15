@@ -136,6 +136,7 @@ class MainApp extends React.Component {
         this.tbody_ref = React.createRef();
         this.table_ref = React.createRef();
         this.last_save = {};
+        this.resizing = false;
         let base_state = {
             mounted: false,
             doc_names: props.initial_doc_names,
@@ -404,6 +405,13 @@ class MainApp extends React.Component {
         this.setState({ horizontal_fraction: new_fraction });
     }
 
+    _handleResizeStart() {
+        this.resizing = true;
+    }
+    _handleResizeEnd() {
+        this.resizing = false;
+    }
+
     _handleConsoleFractionChange(left_width, right_width, new_fraction) {
         this.setState({ console_width_fraction: new_fraction });
     }
@@ -613,8 +621,11 @@ class MainApp extends React.Component {
 
     get_hp_height() {
         if (this.state.mounted && this.tile_div_ref.current) {
-            let top_fraction = this.state.console_is_shrunk ? 1 : this.state.height_fraction;
-            return (this.state.usable_height - this.tile_div_ref.current.getBoundingClientRect().top) * top_fraction;
+            if (this.state.console_is_shrunk) {
+                return this.state.usable_height - this.tile_div_ref.current.getBoundingClientRect().top - CONSOLE_HEADER_HEIGHT;
+            } else {
+                return (this.state.usable_height - this.tile_div_ref.current.getBoundingClientRect().top) * this.state.height_fraction;
+            }
         } else {
             return this.state.usable_height - 100;
         }
@@ -644,7 +655,11 @@ class MainApp extends React.Component {
         } else {
             vp_height = this.get_vp_height();
             hp_height = this.get_hp_height();
-            console_available_height = vp_height - hp_height - MARGIN_ADJUSTMENT - 1;
+            if (this.state.console_is_shrunk) {
+                console_available_height = CONSOLE_HEADER_HEIGHT;
+            } else {
+                console_available_height = vp_height - hp_height - MARGIN_ADJUSTMENT - 1;
+            }
         }
         let disabled_column_items = [];
         if (!this.state.selected_column) {
@@ -680,7 +695,7 @@ class MainApp extends React.Component {
             React.createElement(Bp.NavbarDivider, null),
             this.create_tile_menus()
         );
-        let table_available_height = this.state.console_is_shrunk ? hp_height - CONSOLE_HEADER_HEIGHT : hp_height;
+        let table_available_height = hp_height;
         let table_style = { display: "block", tableLayout: "fixed" };
         if (this.state.table_spec.column_widths != null) {
             table_style["width"] = this.compute_table_width();
@@ -730,7 +745,8 @@ class MainApp extends React.Component {
                 data_row_dict: this.state.data_row_dict });
         }
 
-        let tile_pane = React.createElement(TileContainer, { height: table_available_height,
+        let tile_container_height = this.state.console_is_shrunk ? table_available_height - MARGIN_ADJUSTMENT : table_available_height;
+        let tile_pane = React.createElement(TileContainer, { height: tile_container_height,
             tile_div_ref: this.tile_div_ref,
             tile_list: this.state.tile_list,
             current_doc_name: this.state.table_spec.current_doc_name,
@@ -746,6 +762,7 @@ class MainApp extends React.Component {
             exports_pane = React.createElement(ExportsViewer, { setUpdate: ufunc => this.updateExportsList = ufunc,
                 available_height: console_available_height,
                 console_is_shrunk: this.state.console_is_shrunk,
+                console_is_zoomed: this.state.console_is_zoomed,
                 tsocket: tsocket
             });
         } else {
@@ -763,11 +780,12 @@ class MainApp extends React.Component {
 
         let bottom_pane = React.createElement(HorizontalPanes, { left_pane: console_pane,
             right_pane: exports_pane,
-            show_handle: false,
+            show_handle: !this.state.console_is_shrunk,
             available_height: console_available_height,
             available_width: this.state.usable_width,
             initial_width_fraction: this.state.console_width_fraction,
             controlled: true,
+            dragIconSize: 15,
             handleSplitUpdate: this._handleConsoleFractionChange
         });
         let table_pane = React.createElement(
@@ -783,8 +801,7 @@ class MainApp extends React.Component {
                     broadcast_event_to_server: this._broadcast_event_to_server,
                     updateTableSpec: this._updateTableSpec
                 })
-            ),
-            this.state.console_is_shrunk && bottom_pane
+            )
         );
         let top_pane;
         if (this.state.table_is_shrunk) {
@@ -795,15 +812,24 @@ class MainApp extends React.Component {
                 this.state.console_is_shrunk && bottom_pane
             );
         } else {
-            top_pane = React.createElement(HorizontalPanes, { left_pane: table_pane,
-                right_pane: tile_pane,
-                available_height: hp_height,
-                show_handle: false,
-                available_width: this.state.usable_width,
-                initial_width_fraction: this.state.horizontal_fraction,
-                controlled: true,
-                handleSplitUpdate: this._handleHorizontalFractionChange
-            });
+            top_pane = React.createElement(
+                React.Fragment,
+                null,
+                React.createElement(HorizontalPanes, { left_pane: table_pane,
+                    right_pane: tile_pane,
+                    available_height: hp_height,
+                    show_handle: true,
+                    scrollAdjustSelectors: [".bp3-table-quadrant-scroll-container", "#tile-div"],
+                    available_width: this.state.usable_width,
+                    initial_width_fraction: this.state.horizontal_fraction,
+                    controlled: true,
+                    dragIconSize: 15,
+                    handleSplitUpdate: this._handleHorizontalFractionChange,
+                    handleResizeStart: this._handleResizeStart,
+                    handleResizeEnd: this._handleResizeEnd
+                }),
+                this.state.console_is_shrunk && bottom_pane
+            );
         }
         return React.createElement(
             React.Fragment,
@@ -816,11 +842,15 @@ class MainApp extends React.Component {
             !this.state.console_is_zoomed && this.state.console_is_shrunk && top_pane,
             !this.state.console_is_zoomed && !this.state.console_is_shrunk && React.createElement(VerticalPanes, { top_pane: top_pane,
                 bottom_pane: bottom_pane,
-                show_handle: false,
+                show_handle: true,
                 available_width: this.state.usable_width,
                 available_height: vp_height,
                 initial_height_fraction: this.state.height_fraction,
+                dragIconSize: 15,
+                scrollAdjustSelectors: [".bp3-table-quadrant-scroll-container", "#tile-div"],
                 handleSplitUpdate: this._handleVerticalSplitUpdate,
+                handleResizeStart: this._handleResizeStart,
+                handleResizeEnd: this._handleResizeEnd,
                 overflow: "hidden"
             })
         );

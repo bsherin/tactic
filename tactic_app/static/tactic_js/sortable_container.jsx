@@ -1,7 +1,9 @@
 
 export {SortableComponent}
 
-class SortableComponent extends React.Component {
+let Shoc = window.react_sortable_hoc;
+
+class RawSortableComponent extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this);
@@ -15,28 +17,9 @@ class SortableComponent extends React.Component {
 
     componentDidMount() {
         this.setState({mounted: true});
-        this.createSorter()
+        // this.createSorter()
     }
 
-     componentDidUpdate() {
-        if (!this.sorter_exists && this.container_ref.current) {
-            this.createSorter()
-        }
-    }
-
-    createSorter() {
-        let self = this;
-        $(this.container_ref.current).sortable({
-            handle: this.props.handle,
-            tolerance: 'pointer',
-            revert: 'invalid',
-            forceHelperSize: true,
-            stop: function() {
-                const new_sort_list = $(self.container_ref.current).sortable("toArray");
-                self.props.resortFunction(new_sort_list);
-            }
-        });
-    }
 
     render () {
         let WrappedComponent = this.props.ElementComponent;
@@ -45,6 +28,7 @@ class SortableComponent extends React.Component {
                 {this.props.item_list.length > 0 &&
                     this.props.item_list.map((entry, index) => (
                         <WrappedComponent key={entry[this.props.key_field_name]}
+                                          index={index}
                                           {...this.props}
                                           {...entry}/>
 
@@ -55,7 +39,7 @@ class SortableComponent extends React.Component {
     }
 }
 
-SortableComponent.propTypes = {
+RawSortableComponent.propTypes = {
     id: PropTypes.string,
     handle: PropTypes.string,
     key_field_name: PropTypes.string,
@@ -66,6 +50,8 @@ SortableComponent.propTypes = {
     resortFunction: PropTypes.func
 };
 
-SortableComponent.defaultProps = {
+RawSortableComponent.defaultProps = {
     container_ref: null
 };
+
+let SortableComponent = Shoc.sortableContainer(RawSortableComponent);
