@@ -194,8 +194,12 @@ class ExportsViewer extends React.Component {
     render () {
         let exports_body_dict = {__html: this.state.exports_body_value};
         let butclass = "notclose bottom-heading-element bottom-heading-element-button";
+        let exports_class = this.props.console_is_shrunk ? "am-shrunk" : "not-shrunk";
+        if (this.props.console_is_zoomed) {
+            exports_class = "am-zoomed"
+        }
         return (
-             <Bp.Card id="exports-panel" elevation={2} className="mr-3">
+             <Bp.Card id="exports-panel" elevation={2} className={"mr-3 " + exports_class}>
                  <div className="d-flex flex-column justify-content-around">
                      <div id="exports-heading"
                           ref={this.header_ref}
@@ -257,6 +261,7 @@ class ExportsViewer extends React.Component {
 ExportsViewer.propTypes = {
     available_height: PropTypes.number,
     console_is_shrunk: PropTypes.bool,
+    console_is_zoomed: PropTypes.bool,
     setUpdate: PropTypes.func,
     tsocket:PropTypes.object
 };

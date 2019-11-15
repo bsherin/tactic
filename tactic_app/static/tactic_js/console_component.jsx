@@ -9,6 +9,7 @@ import {doFlash} from "./toaster.js"
 export {ConsoleComponent}
 
 let Bp = blueprint;
+let Shoc = window.react_sortable_hoc;
 
  class ConsoleComponent extends React.Component {
     constructor(props) {
@@ -198,14 +199,12 @@ let Bp = blueprint;
         return -1
     }
 
-    _resortConsoleItems(new_sort_list) {
-        let new_console_items = [];
-        for (let uid of new_sort_list) {
-            let new_entry = this.get_console_item_entry(uid);
-            new_console_items.push(new_entry)
-        }
+    _resortConsoleItems({oldIndex, newIndex}) {
+        let old_console_items = [...this.props.console_items];
+        let new_console_items = arrayMove(old_console_items, oldIndex, newIndex);
         this.props.setMainStateValue("console_items", new_console_items)
     }
+
 
     _goToNextCell(unique_id) {
         let next_index = this._consoleItemIndex(unique_id) + 1;
@@ -275,8 +274,12 @@ let Bp = blueprint;
 
     render() {
         let gbstyle={marginLeft: 1, marginTop: 1};
+        let console_class = this.props.console_is_shrunk ? "am-shrunk" : "not-shrunk";
+        if (this.props.console_is_zoomed) {
+            console_class = "am-zoomed"
+        }
         return (
-            <Bp.Card id="console-panel" elevation={2} style={this.props.style}>
+            <Bp.Card id="console-panel" className={console_class} elevation={2} style={this.props.style}>
                 <div className="d-flex flex-column justify-content-around">
                     <div id="console-heading"
                          ref={this.header_ref}
@@ -331,12 +334,15 @@ let Bp = blueprint;
                                          handleClick={this._toggleMainLog}
                                          icon="console"/>
                         </div>
-                        <div id="console-header-right" className="d-flex flex-row">
-                            <Bp.Button onClick={this._toggleExports}
-                                       style={{marginRight: 5}}
-                                       minimal={true}
-                                       small={true}
-                                       text="exports"/>
+
+                            <div id="console-header-right" className="d-flex flex-row">
+                                {this.props.zoomable &&
+                                    <Bp.Button onClick={this._toggleExports}
+                                               style={{marginRight: 5}}
+                                               minimal={true}
+                                               small={true}
+                                               text="exports"/>
+                                   }
                             {!this.props.console_is_zoomed && this.props.zoomable &&
                                 <GlyphButton handleClick={this._zoomConsole}
                                              icon="maximize"/>
@@ -357,11 +363,12 @@ let Bp = blueprint;
                     }
                     {!this.state.show_console_error_log &&
                     <SortableComponent id="console-items-div"
-                                       ElementComponent={SuperItem}
+                                       ElementComponent={SSuperItem}
                                        key_field_name="unique_id"
                                        item_list={this.props.console_items}
                                        handle=".console-sorter"
-                                       resortFunction={this._resortConsoleItems}
+                                       onSortStart={(_, event) => event.preventDefault()} // This prevents Safari weirdness
+                                       onSortEnd={this._resortConsoleItems}
                                        setConsoleItemValue={this._setConsoleItemValue}
                                        execution_count={0}
                                        handleDelete={this._closeConsoleItem}
@@ -369,6 +376,8 @@ let Bp = blueprint;
                                        setFocus={this._setFocusedItem}
                                        addNewTextItem={this._addBlankText}
                                        addNewCodeItem={this._addBlankCode}
+                                       useDragHandle={true}
+                                       axis="y"
                     />
                     }
                 </div>
@@ -381,7 +390,6 @@ let Bp = blueprint;
 ConsoleComponent.propTypes = {
      console_items: PropTypes.array,
     console_is_shrunk: PropTypes.bool,
-    console_is_zoomed: PropTypes.bool,
     show_exports_pane: PropTypes.bool,
     setMainStateValue: PropTypes.func,
     console_available_height: PropTypes.number,
@@ -397,21 +405,34 @@ ConsoleComponent.propTypes = {
      zoomable: true
  };
 
+ class RawSortHandle extends React.Component {
+
+    render () {
+        return (
+            <Bp.Icon icon="drag-handle-vertical"
+                             style={{marginLeft: 0, marginRight: 6}}
+                             iconSize={20}
+                             className="console-sorter"/>
+        )
+    }
+}
+
+const Shandle = Shoc.sortableHandle(RawSortHandle);
+
 class SuperItem extends React.Component {
 
     render() {
         if (this.props.type == "text") {
             return <ConsoleTextItem {...this.props}/>
-        }
-         else if (this.props.type == "code") {
-             return <ConsoleCodeItem {...this.props}/>
-        }
-         else if (this.props.type == "fixed") {
-             return <LogItem {...this.props}/>
+        } else if (this.props.type == "code") {
+            return <ConsoleCodeItem {...this.props}/>
+        } else if (this.props.type == "fixed") {
+            return <LogItem {...this.props}/>
         }
     }
-
 }
+
+const SSuperItem = Shoc.sortableElement(SuperItem);
 
 class LogItem extends React.Component {
     constructor(props) {
@@ -472,10 +493,7 @@ class LogItem extends React.Component {
         return (
             <div className={panel_class + " d-flex flex-row"} id={this.props.unique_id} style={{marginBottom: 10}}>
                 <div className="button-div shrink-expand-div d-flex flex-row">
-                    <Bp.Icon icon="drag-handle-vertical"
-                             style={{marginLeft: 0, marginRight: 6}}
-                             iconSize={20}
-                             className="console-sorter"/>
+                    <Shandle/>
                         {!this.props.am_shrunk &&
                             <GlyphButton icon="chevron-down"
                                          handleClick={this._toggleShrink}/>
@@ -636,10 +654,7 @@ class ConsoleCodeItem extends React.Component {
         return (
              <div className={panel_style + " d-flex flex-row"} id={this.props.unique_id}>
                     <div className="button-div shrink-expand-div d-flex flex-row">
-                        <Bp.Icon icon="drag-handle-vertical"
-                                 style={{marginLeft: 0, marginRight: 6}}
-                                 iconSize={20}
-                                 className="console-sorter"/>
+                        <Shandle/>
                         {!this.props.am_shrunk &&
                             <GlyphButton icon="chevron-down"
                                          handleClick={this._toggleShrink}/>
@@ -809,10 +824,7 @@ class ConsoleTextItem extends React.Component {
         return (
             <div className={panel_class + " d-flex flex-row"} id={this.props.unique_id} style={{marginBottom: 10}}>
                 <div className="button-div shrink-expand-div d-flex flex-row">
-                        <Bp.Icon icon="drag-handle-vertical"
-                                 style={{marginLeft: 0, marginRight: 6}}
-                                 iconSize={20}
-                                 className="console-sorter"/>
+                        <Shandle/>
                         {!this.props.am_shrunk &&
                             <GlyphButton icon="chevron-down"
                                          handleClick={this._toggleShrink}/>

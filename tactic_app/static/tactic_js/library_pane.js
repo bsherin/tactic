@@ -54,6 +54,7 @@ class LibraryPane extends React.Component {
         super(props);
         this.top_ref = React.createRef();
         this.table_ref = React.createRef();
+        this.resizing = false;
         let aheight = getUsableDimensions().usable_height_no_bottom;
         let awidth = getUsableDimensions().usable_width - 170;
         this.state = {
@@ -313,6 +314,17 @@ class LibraryPane extends React.Component {
     }
 
     _handleSplitResize(left_width, right_width, width_fraction) {
+        if (!this.resizing) {
+            this._updatePaneState({ left_width_fraction: width_fraction });
+        }
+    }
+
+    _handleSplitResizeStart() {
+        this.resizing = true;
+    }
+
+    _handleSplitResizeEnd(width_fraction) {
+        this.resizing = false;
         this._updatePaneState({ left_width_fraction: width_fraction });
     }
 
@@ -708,6 +720,7 @@ class LibraryPane extends React.Component {
     }
 
     _handleResize(entries) {
+        if (this.resizing) return;
         for (let entry of entries) {
             if (entry.target.className == "pane-holder") {
                 this.setState({ available_width: entry.contentRect.width - this.top_ref.current.offsetLeft,
@@ -816,7 +829,7 @@ class LibraryPane extends React.Component {
         let table_width;
         let toolbar_left;
         if (this.table_ref && this.table_ref.current) {
-            table_width = left_width - this.table_ref.current.offsetLeft;
+            table_width = left_width - this.table_ref.current.offsetLeft + this.top_ref.current.offsetLeft;
             if (this.toolbarRef && this.toolbarRef.current) {
                 let tbwidth = this.toolbarRef.current.getBoundingClientRect().width;
                 toolbar_left = this.table_ref.current.offsetLeft + .5 * table_width - .5 * tbwidth;
@@ -907,7 +920,10 @@ class LibraryPane extends React.Component {
                         right_pane: right_pane,
                         right_pane_overflow: "auto",
                         initial_width_fraction: .75,
-                        handleSplitUpdate: this._handleSplitResize
+                        scrollAdjustSelectors: [".bp3-table-quadrant-scroll-container"],
+                        handleSplitUpdate: this._handleSplitResize,
+                        handleResizeStart: this._handleSplitResizeStart,
+                        handleResizeEnd: this._handleSplitResizeEnd
                     })
                 ),
                 React.createElement(KeyTrap, { global: true, bindings: key_bindings }),
