@@ -429,7 +429,6 @@ a[role="tab"] {
   color: #1b6d85; }
 
 .res-viewer-resizer {
-  border-right: .5px solid white;
   display: inline-block;
   vertical-align: top; }
 
@@ -659,9 +658,14 @@ td.cell-clickable:active {
 
 #console-panel {
   margin-left: 0.5rem;
-  margin-top: 0.5rem;
   margin-right: 0;
   padding: 0 !important; }
+  #console-panel.am-shrunk {
+    margin-top: 0; }
+  #console-panel.am-zoomed {
+    margin-top: 0.5rem; }
+  #console-panel.not-shrunk {
+    margin-top: 0; }
 
 #console-heading {
   display: flex;
@@ -869,7 +873,7 @@ td.cell-clickable:active {
   display: block;
   overflow: hidden;
   height: 265px;
-  margin-left: 0.5rem;
+  margin-right: 0.5rem;
   margin-top: 0.5rem;
   padding: 0 !important;
   background-color: white !important; }
@@ -943,10 +947,16 @@ button.notclose {
   display: inline-flex; }
 
 #exports-panel {
-  margin-left: 0.5rem;
-  margin-top: 0.5rem;
   margin-right: 0;
   padding: 0 !important; }
+  #exports-panel.am-shrunk {
+    margin-left: 0.5rem; }
+  #exports-panel.am-zoomed {
+    margin-top: 0.5rem;
+    margin-left: 0; }
+  #exports-panel.not-shrunk {
+    margin-top: 0;
+    margin-left: 0; }
 
 button.notclose:hover {
   opacity: 0.3 !important; }

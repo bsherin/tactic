@@ -5,9 +5,12 @@ import {doFlash} from "./toaster.js"
 
 let Rtg = window.ReactTransitionGroup;
 let Bp = blueprint;
+let Shoc = window.react_sortable_hoc;
 
 import {TileForm} from "./tile_form_react.js";
 import {GlyphButton} from "./blueprint_react_widgets.js";
+import {DragHandle} from "./resizing_layouts.js"
+
 
 export {TileContainer}
 
@@ -29,6 +32,8 @@ const ANI_DURATION = 300;
 function composeObjs(base_style, new_style) {
     return Object.assign(Object.assign({}, base_style), new_style)
 }
+
+
 
 class TileContainer extends React.Component {
     constructor(props) {
@@ -55,12 +60,18 @@ class TileContainer extends React.Component {
         });
 
     }
-     _resortTiles(new_sort_list) {
+     _resortTilesOld(new_sort_list) {
         let new_tile_list = [];
         for (let tid of new_sort_list) {
             let new_entry = this.get_tile_entry(tid);
             new_tile_list.push(new_entry)
         }
+        this.props.setMainStateValue("tile_list", new_tile_list)
+    }
+
+    _resortTiles({oldIndex, newIndex}) {
+        let old_tile_list = [...this.props.tile_list];
+        let new_tile_list = arrayMove(old_tile_list, oldIndex, newIndex);
         this.props.setMainStateValue("tile_list", new_tile_list)
     }
 
@@ -154,15 +165,20 @@ class TileContainer extends React.Component {
     }
 
     render() {
+        let outer_style = {height: this.props.height};
+        if (this.props.table_is_shrunk) {
+            outer_style.marginLeft = "0.5rem"
+        }
         return (
             <SortableComponent id="tile-div"
-                               style={{height: this.props.height}}
+                               style={outer_style}
                                container_ref={this.props.tile_div_ref}
-                               ElementComponent={TileComponent}
+                               ElementComponent={STileComponent}
                                key_field_name="tile_name"
                                item_list={this.props.tile_list}
                                handle=".tile-name-div"
-                               resortFunction={this._resortTiles}
+                               onSortStart={(_, event) => event.preventDefault()} // This prevents Safari weirdness
+                               onSortEnd={this._resortTiles}
                                handleClose={this._closeTile}
                                setTileValue={this._setTileValue}
                                setTileState={this._setTileState}
@@ -170,11 +186,12 @@ class TileContainer extends React.Component {
                                current_doc_name={this.props.current_doc_name}
                                selected_row={this.props.selected_row}
                                broadcast_event={this.props.broadcast_event}
+                               useDragHandle={true}
+                               axis="xy"
 
             />
         )
     }
-
 }
 
 TileContainer.propTypes = {
@@ -189,6 +206,17 @@ TileContainer.propTypes = {
     tsocket: PropTypes.object
 };
 
+class RawSortHandle extends React.Component {
+
+    render () {
+        return (
+            <span className="tile-name-div" ><Bp.Icon icon="drag-handle-vertical" iconSize={15}/>{this.props.tile_name}</span>
+        )
+    }
+}
+
+const Shandle = Shoc.sortableHandle(RawSortHandle);
+
 class TileComponent extends React.Component {
     constructor(props) {
         super(props);
@@ -200,7 +228,10 @@ class TileComponent extends React.Component {
         this.state = {
             header_height: 34,
             max_name_width: 1000,
-            mounted: false
+            mounted: false,
+            resizing: false,
+            dwidth: 0,
+            dheight: 0
         };
         doBinding(this);
     }
@@ -212,7 +243,7 @@ class TileComponent extends React.Component {
             {width: this.tdaWidth, height: this.tdaHeight})
     }
 
-    _resizeTileArea(event, ui, callback=null) {
+    _resizeTileAreaOld(event, ui, callback=null) {
         let hheight = $(this.body_ref.current).position().top;
         this.setState({
             header_height: hheight
@@ -221,6 +252,17 @@ class TileComponent extends React.Component {
             tile_width: ui.size.width};
 
         this.props.setTileState(this.props.tile_id, new_state, callback)
+    }
+
+    _resizeTileArea(dx, dy) {
+        let hheight = $(this.body_ref.current).position().top;
+        this.setState({
+            header_height: hheight
+        });
+        let new_state = {tile_height: this.props.tile_height + dy,
+            tile_width: this.props.tile_width + dx};
+
+        this.props.setTileState(this.props.tile_id, new_state, this._broadcastTileSize)
     }
 
     executeEmbeddedScripts() {
@@ -265,15 +307,6 @@ class TileComponent extends React.Component {
         this.setState({mounted: true});
         this._broadcastTileSize(this.props.tile_width, this.props.tile_height);
         this.listen_for_clicks();
-        $("#" + this.props.tile_id).resizable({
-            handles: "se",
-            helper: "ui-resizable-helper",
-            // resize: self._resizeTileArea,
-            stop: function (event, ui) {
-                self._resizeTileArea(event, ui, self._broadcastTileSize)
-                // self.broadcastTileSize();
-            }
-        });
         this.executeEmbeddedScripts();
         this.makeTablesSortable();
         if (this.props.javascript_code) {
@@ -489,8 +522,9 @@ class TileComponent extends React.Component {
         this.back_style = Object.assign({}, this.front_style);
         this.tile_log_style = Object.assign({}, this.front_style);
         this.panel_body_style = {"width": this.props.tile_width};
-        this.main_style = {width: this.props.tile_width,
-                height: tile_height
+        this.main_style = {width: this.props.tile_width + this.state.dwidth,
+                height: tile_height + this.state.dheight,
+                position: "relative"
             };
         if (!this.props.finished_loading) {
             this.main_style.opacity = .5
@@ -540,12 +574,25 @@ class TileComponent extends React.Component {
         postWithCallback(this.props.tile_id, "LogParams", data_dict)
     }
 
+    _startResize(e, ui, startX, startY) {
+        this.setState({resizing: true, dwidth: 0, dheight: 0})
+    }
+
+    _onResize(e, ui, x, y, dx, dy) {
+        this.setState({dwidth: dx, dheight: dy})
+    }
+
+    _stopResize(e, ui, x, y, dx, dy) {
+        this.setState({resizing: false, dwidth: 0, dheight:0}, ()=>{this._resizeTileArea(dx, dy)})
+    }
+
     render () {
         let show_front = (!this.props.show_form) && (!this.props.show_log);
         let front_dict = {__html: this.props.front_content};
         this.compute_styles();
         let tile_class = this.props.table_is_shrunk ? "tile-panel tile-panel-float" : "tile-panel";
         let tph_class = this.props.source_changed ? "tile-panel-heading tile-source-changed" : "tile-panel-heading";
+        let draghandle_position_dict = {position: "absolute", bottom: 2, right: 1};
         return (
             <Bp.Card ref={this.my_ref} elevation={2} style={this.main_style} className={tile_class} id={this.props.tile_id}>
                 <div className={tph_class} >
@@ -563,7 +610,7 @@ class TileComponent extends React.Component {
                         <GlyphButton intent="primary"
                                      handleClick={this._toggleBack}
                                      icon="cog"/>
-                        <span className="tile-name-div">{this.props.tile_name}</span>
+                         <Shandle tile_name={this.props.tile_name}/>
                         </Bp.ButtonGroup>
                     </div>
 
@@ -621,6 +668,12 @@ class TileComponent extends React.Component {
                         </Rtg.Transition>
                     </div>
                 }
+                <DragHandle position_dict={draghandle_position_dict}
+                            dragStart={this._startResize}
+                            onDrag={this._onResize}
+                            dragEnd={this._stopResize}
+                            direction="both"
+                            iconSize={15}/>
             </Bp.Card>
         )
     }
@@ -651,3 +704,5 @@ TileComponent.propTypes = {
 TileComponent.defaultProps = {
     javascript_code: null
 };
+
+let STileComponent = Shoc.sortableElement(TileComponent);
