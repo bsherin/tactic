@@ -24,6 +24,20 @@ function withTooltip(WrappedComponent) {
 
 class GlyphButton extends React.Component {
 
+    constructor(props) {
+        super(props);
+        this.update_props = ["icon", "minimal", "extra_glyph_text", "style"]
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        for (let prop of this.update_props) {
+            if (nextProps[prop] != this.props[prop]) {
+                return true
+            }
+        }
+        return false
+    }
+
     render () {
         let style = this.props.style == null ? {paddingLeft: 2, paddingRight:2} : this.props.style;
         return (
