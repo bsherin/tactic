@@ -13,8 +13,10 @@ class KeyTrap extends React.Component {
     }
 
     componentWillUnmount() {
-        this.mousetrap.reset();
-        this.mousetrap = null
+        if (this.mousetrap) {
+            this.mousetrap.reset();
+            this.mousetrap = null
+        }
     }
 
     initializeMousetrap() {

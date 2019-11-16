@@ -423,6 +423,18 @@ class LogItem extends React.Component {
         super(props);
         this.ce_summary0ref = React.createRef();
         doBinding(this);
+        this.update_props = ["is_error", "am_shrunk", "summary_text", "console_text"];
+        this.update_state_vars = [];
+        this.state = {};
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        for (let prop of this.update_props) {
+            if (nextProps[prop] != this.props[prop]) {
+                return true;
+            }
+        }
+        return false;
     }
 
     componentDidMount() {
@@ -522,6 +534,18 @@ class ConsoleCodeItem extends React.Component {
         super(props);
         doBinding(this);
         this.cmobject = null;
+        this.update_props = ["am_shrunk", "set_focus", "summary_text", "console_text", "show_spinner", "execution_count", "output_text"];
+        this.update_state_vars = [];
+        this.state = {};
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        for (let prop of this.update_props) {
+            if (nextProps[prop] != this.props[prop]) {
+                return true;
+            }
+        }
+        return false;
     }
 
     componentDidMount() {
@@ -729,6 +753,18 @@ class ConsoleTextItem extends React.Component {
         this.ce_ref = null;
         this.ce_summary_ref = React.createRef();
         this.converter = new showdown.Converter();
+        this.update_props = ["am_shrunk", "set_focus", "show_markdown", "summary_text", "console_text"];
+        this.update_state_vars = [];
+        this.state = {};
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        for (let prop of this.update_props) {
+            if (nextProps[prop] != this.props[prop]) {
+                return true;
+            }
+        }
+        return false;
     }
 
     componentDidMount() {
