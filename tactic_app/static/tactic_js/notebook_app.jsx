@@ -85,6 +85,7 @@ class NotebookApp extends React.Component {
     constructor (props) {
         super(props);
         doBinding(this);
+        this.last_save = {};
         this.state = {
             mounted: false,
             console_items: [],
@@ -96,12 +97,20 @@ class NotebookApp extends React.Component {
                 this.state[attr] = this.props.interface_state[attr]
             }
         }
+        let self = this;
+        window.addEventListener("beforeunload", function (e) {
+            if (self.dirty()) {
+                e.preventDefault();
+                e.returnValue = ''
+            }
+        });
     }
 
     componentDidMount() {
         this.setState({"mounted": true});
         window.addEventListener("resize", this._update_window_dimensions);
         document.title = window.is_project ? window._project_name : "New Notebook";
+        this._updateLastSave();
         this.props.stopSpinner();
     }
 
@@ -132,14 +141,33 @@ class NotebookApp extends React.Component {
         return interface_state
     }
 
+    _updateLastSave() {
+        this.last_save = this.interface_state
+    }
+
+    dirty() {
+        let current_state = this.interface_state;
+        for (let k in current_state) {
+            if (current_state[k] != this.last_save[k]) {
+                return true
+            }
+        }
+        return false
+    }
+
     render () {
+        let disabled_items = [];
+        if (!window.is_project || window.is_jupyter) {
+            disabled_items.push("Save")
+        }
         let menus = (
             <React.Fragment>
                 <ProjectMenu {...this.props.statusFuncs}
                             console_items={this.state.console_items}
                              interface_state={this.interface_state}
+                             updateLastSave={this._updateLastSave}
                              changeCollection={null}
-                             disabled_items={window.is_project ? [] : ["Save"]}
+                             disabled_items={disabled_items}
                              hidden_items={["Open Console as Notebook", "Export Table as Collection", "Change collection"]}
                 />
             </React.Fragment>

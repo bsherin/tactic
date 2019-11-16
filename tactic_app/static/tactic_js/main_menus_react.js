@@ -102,9 +102,9 @@ class ProjectMenu extends React.Component {
 
             function save_as_success(data_object) {
                 if (data_object["success"]) {
-                    let is_jupyter = false;
                     window.is_project = true;
                     window._project_name = new_name;
+                    window.is_jupyter = false;
                     document.title = new_name;
                     self.props.clearStatusMessage();
                     data_object.alert_type = "alert-success";
@@ -128,7 +128,8 @@ class ProjectMenu extends React.Component {
         // let console_node = cleanse_bokeh(document.getElementById("console"));
         let self = this;
         const result_dict = {
-            "main_id": window.main_id
+            main_id: window.main_id,
+            project_name: window._project_name
         };
 
         result_dict.interface_state = this.props.interface_state;
@@ -139,15 +140,15 @@ class ProjectMenu extends React.Component {
         function updateSuccess(data) {
             self.props.startSpinner();
             if (data.success) {
-                data.alert_type = "alert-success";
+                data["alert_type"] = "alert-success";
                 data.timeout = 2000;
                 self.props.updateLastSave();
             } else {
-                data.alert_type = "alert-warning";
+                data["alert_type"] = "alert-warning";
             }
             self.props.clearStatusMessage();
             self.props.stopSpinner();
-            doFlash(data_object);
+            doFlash(data);
         }
     }
 
