@@ -22,7 +22,24 @@ class TacticNavbar extends React.Component {
             usable_width: window.innerWidth - padding * 2,
             old_left_width: 0,
         };
-        this.overflow_items = []
+        this.overflow_items = [];
+        this.update_state_vars = ["usable_width", "old_left_width"];
+        this.update_props = ["is_authenticated", "user_name", "menus", "selected", "show_api_links"]
+    }
+
+
+    shouldComponentUpdate(nextProps, nextState) {
+        for (let prop of this.update_props) {
+            if (nextProps[prop] != this.props[prop]) {
+                return true
+            }
+        }
+        for (let state of this.update_state_vars) {
+            if (nextState[state] != this.state[state]) {
+                return true
+            }
+        }
+        return false
     }
 
     componentDidMount() {
@@ -31,6 +48,7 @@ class TacticNavbar extends React.Component {
         this.setState({old_left_width: this._getLeftWidth()});
     }
 
+    // For some reason sizing things are a little flaky without old_left_width stuff
     componentDidUpdate() {
         let new_left_width = this._getLeftWidth();
         if (new_left_width != this.state.old_left_width) {
@@ -171,7 +189,6 @@ class TacticNavbar extends React.Component {
 
 TacticNavbar.propTypes = {
     is_authenticated: PropTypes.bool,
-    img_url: PropTypes.string,
     user_name: PropTypes.string,
     menus: PropTypes.object,
     selected: PropTypes.string,
