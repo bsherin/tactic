@@ -374,32 +374,41 @@ class LoadSaveTasksMixin:
         print("entering update_project")
 
         def got_save_dict(project_dict):
-            print("got save dict in update_project")
-            pname = project_dict["project_name"]
-            self.mdata["updated"] = datetime.datetime.utcnow()
-            self.mdata["save_style"] = "b64save_react"
-            project_dict["interface_state"] = data_dict["interface_state"]
-            if not self.doc_type == "notebook":
-                self.mdata["collection_name"] = self.collection_name
-                self.mdata["loaded_tiles"] = project_dict["used_tile_types"]
-                if self.purgetiles:
-                    project_dict["loaded_modules"] = project_dict["used_modules"]
-            self.show_main_status_message("Pickle, convert, compress")
-            pdict = make_jsonizable_and_compress(project_dict)
-            self.show_main_status_message("Writing the data")
-            new_file_id = self.fs.put(pdict)
-            save_dict = self.db[self.project_collection_name].find_one({"project_name": pname})
-            self.fs.delete(save_dict["file_id"])
-            save_dict["project_name"] = pname
-            save_dict["metadata"] = self.mdata
-            save_dict["file_id"] = new_file_id
-            self.db[self.project_collection_name].update_one({"project_name": pname},
-                                                             {'$set': save_dict})
-            self.clear_main_status_message()
-            return_data = {"project_name": pname,
-                           "success": True,
-                           "message": "Project Successfully Saved"}
-            self.mworker.submit_response(task_packet, return_data)
+            try:
+                print("got save dict in update_project")
+                pname = data_dict["project_name"]
+                self.mdata["updated"] = datetime.datetime.utcnow()
+                self.mdata["save_style"] = "b64save_react"
+                project_dict["interface_state"] = data_dict["interface_state"]
+                project_dict["project_name"] = pname  # sync these up for no reason
+                if not self.doc_type == "notebook":
+                    self.mdata["collection_name"] = self.collection_name
+                    self.mdata["loaded_tiles"] = project_dict["used_tile_types"]
+                    if self.purgetiles:
+                        project_dict["loaded_modules"] = project_dict["used_modules"]
+                self.show_main_status_message("Pickle, convert, compress")
+                pdict = make_jsonizable_and_compress(project_dict)
+                self.show_main_status_message("Writing the data")
+                new_file_id = self.fs.put(pdict)
+                print("using pname {}, project_collection_name {}".format(pname, self.project_collection_name))
+                save_dict = self.db[self.project_collection_name].find_one({"project_name": pname})
+                self.fs.delete(save_dict["file_id"])
+                save_dict["project_name"] = pname
+                save_dict["metadata"] = self.mdata
+                save_dict["file_id"] = new_file_id
+                self.db[self.project_collection_name].update_one({"project_name": pname},
+                                                                 {'$set': save_dict})
+                self.clear_main_status_message()
+                return_data = {"project_name": pname,
+                               "success": True,
+                               "message": "Project Successfully Saved"}
+                self.mworker.submit_response(task_packet, return_data)
+                return
+            except Exception as lex:
+                lerror_string = self.handle_exception(lex, "Error saving project", print_to_console=False)
+                _lreturn_data = {"success": False, "message": lerror_string}
+                self.mworker.submit_response(task_packet, _lreturn_data)
+                return
 
         try:
             self.show_main_status_message("Getting loaded modules")
@@ -410,7 +419,7 @@ class LoadSaveTasksMixin:
         except Exception as ex:
             error_string = self.handle_exception(ex, "Error saving project", print_to_console=False)
             _return_data = {"success": False, "message": error_string}
-            self.mworker.submit_response(task_worker, _return_data)
+            self.mworker.submit_response(task_packet, _return_data)
         return
 
     @task_worthy
