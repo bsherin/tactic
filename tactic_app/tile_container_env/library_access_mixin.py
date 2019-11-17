@@ -91,7 +91,9 @@ class LibraryAccessMixin:
             data["doc_metadata"] = doc_metadata
         else:
             data["doc_metadata"] = {}
+        print("about to post to create_collection")
         result = self._tworker.post_and_wait(self._main_id, "create_collection", data)
+        print("back from post_and_waith of create collection")
         self._restore_stdout()
         if not result["success"]:
             raise Exception(result["message"])
