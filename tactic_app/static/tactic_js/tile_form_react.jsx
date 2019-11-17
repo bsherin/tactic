@@ -44,6 +44,13 @@ class TileForm extends React.Component {
                                               updateValue={this._updateValue}
                 />)
             }
+            else if (option["type"] == "boolean") {
+                option_items.push(<BoolOption att_name={att_name}
+                                              key={att_name}
+                                                  value={option.starting_value}
+                                                  updateValue={this._updateValue}
+                />)
+            }
             else if (option["type"] == "textarea") {
                 option_items.push(<TextAreaOption att_name={att_name}
                                                   key={att_name}
@@ -119,7 +126,7 @@ class BoolOption extends React.Component {
     }
 
     _updateMe(event) {
-        this.props.updateValue(this.props.att_name, event.target.value)
+        this.props.updateValue(this.props.att_name, event.target.checked)
     }
     render() {
         return (
@@ -134,9 +141,7 @@ class BoolOption extends React.Component {
 
 BoolOption.propTypes = {
     att_name: PropTypes.string,
-    value:  PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.number]),
+    value: PropTypes.bool,
     updateValue: PropTypes.func
 };
 

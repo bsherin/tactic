@@ -1013,19 +1013,28 @@ class APISupportTasksMixin:
             return result
         except Exception as ex:
             error_string = self.handle_exception(ex, print_to_console=True)
-            return {"succes": False, "message": error_string}
+            return {"success": False, "message": error_string}
 
     @task_worthy
     def create_collection(self, data):
-        result = self.create_complete_collection(data["name"],
-                                                 data["doc_dict"],
-                                                 data["doc_type"],
-                                                 data["doc_metadata"],
-                                                 data["header_list_dict"],
-                                                 data["collection_metadata"])
-        if result["success"]:
-            self.mworker.ask_host("update_collection_selector_list", {"user_id": self.user_id})
-        return result
+        print("in create_collection")
+        try:
+            result = self.create_complete_collection(data["name"],
+                                                     data["doc_dict"],
+                                                     data["doc_type"],
+                                                     data["doc_metadata"],
+                                                     data["header_list_dict"],
+                                                     data["collection_metadata"])
+            print('got result form create_complete_collection')
+
+            if result["success"]:
+                print("got success")
+                self.mworker.ask_host("update_collection_selector_list", {"user_id": self.user_id})
+            print("done with create_collection")
+            return result
+        except Exception as ex:
+            error_string = self.handle_exception(ex, print_to_console=True)
+            return {"success": False, "message": error_string}
 
     @task_worthy
     def get_tile_ids(self, data):
