@@ -98,6 +98,8 @@ class MongoAccess(object):
 
     def create_complete_collection(self, new_name, doc_dict, doc_type, document_metadata=None,
                                    header_list_dict=None, collection_metadata=None):
+        print("in create_complete_collection")
+        print("collection_mdata is " + str(collection_metadata))
         name_exists = new_name in self.data_collections
         if name_exists:
             raise NameExistsError("Collection name {} already exists".format(new_name))
@@ -105,14 +107,18 @@ class MongoAccess(object):
         mdata = self.create_initial_metadata()
         mdata["name"] = "__metadata__"
         mdata["number_of_docs"] = len(list(doc_dict.keys()))
+        print("after setting number of docs mdata is " + str(mdata))
         if collection_metadata is not None:
             for k, v in collection_metadata.items():
                 mdata[k] = v
         if document_metadata is None:
             document_metadata = {}
+        print("before doc_type == table " + str(mdata))
         if doc_type == "table":
             mdata["type"] = "table"
+            print("before insert " + str(mdata))
             self.db[full_collection_name].insert_one(mdata)
+            print("after insert " + str(mdata))
             for docname, doc_as_list in doc_dict.items():
                 if header_list_dict is not None and docname in header_list_dict:
                     header_list = header_list_dict[docname]
@@ -132,6 +138,10 @@ class MongoAccess(object):
                 else:
                     doc_mdata = None
                 self.append_document_to_collection(new_name, docname, doc, "freeform", None, doc_mdata)
+        print("cone with create_complete_collection, about to return")
+        if "_id" in mdata:
+            del mdata["_id"]  # without this can get an error submitting the result
+        print(str(mdata))
         return {"success": True, "message": "Collection created", "metadata": mdata}
 
     def append_document_to_collection(self, collection_name, given_docname, doc, doc_type,
