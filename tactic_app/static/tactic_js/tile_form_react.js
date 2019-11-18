@@ -119,9 +119,21 @@ class BoolOption extends React.Component {
     _updateMe(event) {
         this.props.updateValue(this.props.att_name, event.target.checked);
     }
+
+    boolify(the_var) {
+        if (typeof the_var == "boolean") {
+            return the_var;
+        }
+        if (the_var == "True" || the_var == "true") {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     render() {
         return React.createElement(Bp.Checkbox, { label: this.props.att_name,
-            value: this.props.value,
+            checked: this.boolify(this.props.value),
             onChange: this._updateMe,
             alignIndicator: "right"
         });
@@ -130,7 +142,7 @@ class BoolOption extends React.Component {
 
 BoolOption.propTypes = {
     att_name: PropTypes.string,
-    value: PropTypes.bool,
+    value: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
     updateValue: PropTypes.func
 };
 
