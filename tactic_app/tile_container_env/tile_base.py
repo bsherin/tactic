@@ -767,6 +767,15 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         for opt in self.options:
             if opt["type"] == "int":
                 setattr(self, opt["name"], int(form_data[opt["name"]]))
+            elif opt["type"] == "boolean":
+                v = form_data[opt["name"]]
+                if isinstance(v, str):
+                    if v.lower() == "true":
+                        setattr(self, opt["name"], True)
+                    else:
+                        setattr(self, opt["name"], False)
+                else:
+                    setattr(self, opt["name"], v)
             else:
                 setattr(self, opt["name"], form_data[opt["name"]])
         self.configured = True
