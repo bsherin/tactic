@@ -182,10 +182,11 @@ class NotebookApp extends React.Component {
                 show_exports_pane: false,
                 setMainStateValue: this._setMainStateValue,
                 console_available_height: this.state.usable_height - USUAL_TOOLBAR_HEIGHT - MARGIN_SIZE,
+                console_available_width: this.state.usable_width,
                 zoomable: false,
                 shrinkable: false,
                 tsocket: tsocket,
-                style: { marginLeft: MARGIN_SIZE, marginRight: MARGIN_SIZE, marginTop: MARGIN_SIZE, maxWidth: 900 }
+                style: { marginLeft: MARGIN_SIZE, marginRight: MARGIN_SIZE, marginTop: MARGIN_SIZE }
             }))
         );
     }

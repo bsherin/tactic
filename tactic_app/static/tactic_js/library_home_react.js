@@ -217,7 +217,7 @@ class LibraryHomeApp extends React.Component {
                         { id: "collections-pane", panel: collection_pane },
                         React.createElement(
                             Bp.Tooltip,
-                            { content: "Collections", position: Bp.Position.RIGHT },
+                            { content: "Collections", position: Bp.Position.RIGHT, intent: "warning" },
                             React.createElement(Bp.Icon, { icon: "database", iconSize: 20, tabIndex: -1, color: this.getIconColor("collections-pane") })
                         )
                     ),
@@ -226,7 +226,7 @@ class LibraryHomeApp extends React.Component {
                         { id: "projects-pane", panel: projects_pane },
                         React.createElement(
                             Bp.Tooltip,
-                            { content: "Projects", position: Bp.Position.RIGHT },
+                            { content: "Projects", position: Bp.Position.RIGHT, intent: "warning" },
                             React.createElement(Bp.Icon, { icon: "projects", iconSize: 20, tabIndex: -1, color: this.getIconColor("projects-pane") })
                         )
                     ),
@@ -235,7 +235,7 @@ class LibraryHomeApp extends React.Component {
                         { id: "tiles-pane", panel: tiles_pane },
                         React.createElement(
                             Bp.Tooltip,
-                            { content: "Tiles", position: Bp.Position.RIGHT },
+                            { content: "Tiles", position: Bp.Position.RIGHT, intent: "warning" },
                             React.createElement(Bp.Icon, { icon: "application", iconSize: 20, tabIndex: -1, color: this.getIconColor("tiles-pane") })
                         )
                     ),
@@ -244,7 +244,7 @@ class LibraryHomeApp extends React.Component {
                         { id: "lists-pane", panel: lists_pane },
                         React.createElement(
                             Bp.Tooltip,
-                            { content: "Lists", position: Bp.Position.RIGHT },
+                            { content: "Lists", position: Bp.Position.RIGHT, intent: "warning" },
                             React.createElement(Bp.Icon, { icon: "list", iconSize: 20, tabIndex: -1, color: this.getIconColor("lists-pane") })
                         )
                     ),
@@ -253,7 +253,7 @@ class LibraryHomeApp extends React.Component {
                         { id: "code-pane", panel: code_pane },
                         React.createElement(
                             Bp.Tooltip,
-                            { content: "Code", position: Bp.Position.RIGHT },
+                            { content: "Code", position: Bp.Position.RIGHT, intent: "warning" },
                             React.createElement(Bp.Icon, { icon: "code", iconSize: 20, tabIndex: -1, color: this.getIconColor("code-pane") })
                         )
                     )

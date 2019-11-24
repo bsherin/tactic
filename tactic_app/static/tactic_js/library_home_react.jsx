@@ -217,27 +217,27 @@ class LibraryHomeApp extends React.Component {
                              renderActiveTabPanelOnly={true}
                              vertical={true} large={true} onChange={this._handleTabChange}>
                         <Bp.Tab id="collections-pane" panel={collection_pane}>
-                            <Bp.Tooltip content="Collections" position={Bp.Position.RIGHT}>
+                            <Bp.Tooltip content="Collections" position={Bp.Position.RIGHT} intent="warning">
                                 <Bp.Icon icon="database" iconSize={20} tabIndex={-1} color={this.getIconColor("collections-pane")}/>
                             </Bp.Tooltip>
                         </Bp.Tab>
                         <Bp.Tab id="projects-pane" panel={projects_pane}>
-                            <Bp.Tooltip content="Projects" position={Bp.Position.RIGHT}>
+                            <Bp.Tooltip content="Projects" position={Bp.Position.RIGHT} intent="warning">
                                 <Bp.Icon icon="projects" iconSize={20} tabIndex={-1} color={this.getIconColor("projects-pane")}/>
                             </Bp.Tooltip>
                         </Bp.Tab>
                         <Bp.Tab id="tiles-pane" panel={tiles_pane}>
-                            <Bp.Tooltip content="Tiles" position={Bp.Position.RIGHT}>
+                            <Bp.Tooltip content="Tiles" position={Bp.Position.RIGHT} intent="warning">
                                 <Bp.Icon icon="application" iconSize={20} tabIndex={-1} color={this.getIconColor("tiles-pane")}/>
                             </Bp.Tooltip>
                         </Bp.Tab>
                         <Bp.Tab id="lists-pane" panel={lists_pane}>
-                            <Bp.Tooltip content="Lists" position={Bp.Position.RIGHT}>
+                            <Bp.Tooltip content="Lists" position={Bp.Position.RIGHT} intent="warning">
                                 <Bp.Icon icon="list" iconSize={20} tabIndex={-1} color={this.getIconColor("lists-pane")}/>
                             </Bp.Tooltip>
                         </Bp.Tab>
                         <Bp.Tab id="code-pane" panel={code_pane}>
-                            <Bp.Tooltip content="Code" position={Bp.Position.RIGHT}>
+                            <Bp.Tooltip content="Code" position={Bp.Position.RIGHT} intent="warning">
                                 <Bp.Icon icon="code" iconSize={20} tabIndex={-1} color={this.getIconColor("code-pane")}/>
                             </Bp.Tooltip>
                         </Bp.Tab>
