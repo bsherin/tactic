@@ -20,7 +20,7 @@ let Bpt = bptable;
 
 export { MainTacticSocket };
 
-const MARGIN_SIZE = 17;
+const MARGIN_SIZE = 0;
 const BOTTOM_MARGIN = 35; // includes space for status messages at bottom
 const MARGIN_ADJUSTMENT = 8; // This is the amount at the top of both the table and the console
 const CONSOLE_HEADER_HEIGHT = 35;
@@ -775,6 +775,7 @@ class MainApp extends React.Component {
             show_exports_pane: this.state.show_exports_pane,
             setMainStateValue: this._setMainStateValue,
             console_available_height: console_available_height,
+            console_available_width: this.state.usable_width * this.state.console_width_fraction - 16,
             tsocket: tsocket
         });
 

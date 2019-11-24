@@ -143,8 +143,9 @@ class ReactCodemirror extends React.Component {
     render() {
         let ccstyle = {
             "height": this.props.code_container_height,
-            "width": "100%",
-            lineHeight: "21px"
+            "width": this.props.code_container_width,
+            lineHeight: "21px",
+            overflow: "auto"
         };
         return (
             <div id="code-container" style={ccstyle} ref={this.code_container_ref}>
@@ -167,6 +168,9 @@ ReactCodemirror.propTypes = {
     extraKeys: PropTypes.object,
     setCMObject: PropTypes.func,
     code_container_ref: PropTypes.object,
+    code_container_width: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number]),
     code_container_height: PropTypes.oneOfType([
         PropTypes.string,
         PropTypes.number])
@@ -180,5 +184,6 @@ ReactCodemirror.defaultProps = {
     readOnly: false,
     extraKeys: {},
     setCMObject: null,
-    code_container_ref: null
+    code_container_ref: null,
+    code_container_width: "100%"
 };
