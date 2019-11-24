@@ -11,6 +11,9 @@ export {ConsoleComponent}
 let Bp = blueprint;
 let Shoc = window.react_sortable_hoc;
 
+const MAX_CONSOLE_WIDTH = 1140;
+const BUTTON_CONSUMED_SPACE = 203;
+
  class ConsoleComponent extends React.Component {
     constructor(props) {
         super(props);
@@ -165,6 +168,9 @@ let Shoc = window.react_sortable_hoc;
 
     _shrinkConsole () {
         this.props.setMainStateValue("console_is_shrunk", true);
+        if (this.props.console_is_zoomed) {
+            this._unzoomConsole();
+        }
     }
 
     _toggleExports() {
@@ -272,14 +278,25 @@ let Shoc = window.react_sortable_hoc;
         }
     }
 
+    _bodyWidth() {
+        if (this.props.console_available_width > MAX_CONSOLE_WIDTH) {
+            return MAX_CONSOLE_WIDTH
+        }
+        else {
+            return this.props.console_available_width
+        }
+    }
+
     render() {
         let gbstyle={marginLeft: 1, marginTop: 1};
         let console_class = this.props.console_is_shrunk ? "am-shrunk" : "not-shrunk";
         if (this.props.console_is_zoomed) {
             console_class = "am-zoomed"
         }
+        let outer_style = Object.assign({}, this.props.style);
+        outer_style.width = this._bodyWidth();
         return (
-            <Bp.Card id="console-panel" className={console_class} elevation={2} style={this.props.style}>
+            <Bp.Card id="console-panel" className={console_class} elevation={2} style={outer_style}>
                 <div className="d-flex flex-column justify-content-around">
                     <div id="console-heading"
                          ref={this.header_ref}
@@ -335,7 +352,8 @@ let Shoc = window.react_sortable_hoc;
                                          icon="console"/>
                         </div>
 
-                            <div id="console-header-right" className="d-flex flex-row">
+                            <div id="console-header-right"
+                                 className="d-flex flex-row">
                                 {this.props.zoomable &&
                                     <Bp.Button onClick={this._toggleExports}
                                                style={{marginRight: 5}}
@@ -370,6 +388,7 @@ let Shoc = window.react_sortable_hoc;
                                        onSortStart={(_, event) => event.preventDefault()} // This prevents Safari weirdness
                                        onSortEnd={this._resortConsoleItems}
                                        setConsoleItemValue={this._setConsoleItemValue}
+                                       console_available_width={this._bodyWidth()}
                                        execution_count={0}
                                        handleDelete={this._closeConsoleItem}
                                        goToNextCell={this._goToNextCell}
@@ -393,6 +412,7 @@ ConsoleComponent.propTypes = {
     show_exports_pane: PropTypes.bool,
     setMainStateValue: PropTypes.func,
     console_available_height: PropTypes.number,
+    console_available_width: PropTypes.number,
     tsocket: PropTypes.object,
     style: PropTypes.object,
     shrinkable: PropTypes.bool,
@@ -439,7 +459,7 @@ class LogItem extends React.Component {
         super(props);
         this.ce_summary0ref = React.createRef();
         doBinding(this);
-        this.update_props = ["is_error", "am_shrunk", "summary_text", "console_text"];
+        this.update_props = ["is_error", "am_shrunk", "summary_text", "console_text", "console_available_width"];
         this.update_state_vars = [];
         this.state = {}
     }
@@ -494,14 +514,13 @@ class LogItem extends React.Component {
         }
     }
 
-
-
     render () {
         let converted_dict = {__html: this.props.console_text};
         let panel_class = this.props.am_shrunk ? "log-panel log-panel-invisible fixed-log-panel" : "log-panel log-panel-visible fixed-log-panel";
         if (this.props.is_error) {
             panel_class += " error-log-panel"
         }
+        let body_width = this.props.console_available_width - BUTTON_CONSUMED_SPACE;
         return (
             <div className={panel_class + " d-flex flex-row"} id={this.props.unique_id} style={{marginBottom: 10}}>
                 <div className="button-div shrink-expand-div d-flex flex-row">
@@ -521,9 +540,9 @@ class LogItem extends React.Component {
                                      className="log-panel-summary"/>
                 }
                 {!this.props.am_shrunk &&
-                    <div className="d-flex flex-column" style={{width: "100%"}}>
+                    <div className="d-flex flex-column">
                         <div className="log-panel-body d-flex flex-row">
-                            <div style={{marginTop: 10, marginLeft: 30, padding: 8, width: "100%", border: "1px solid #c7c7c7"}}
+                            <div style={{marginTop: 10, marginLeft: 30, padding: 8, width: body_width, border: "1px solid #c7c7c7"}}
                                  dangerouslySetInnerHTML={converted_dict}/>
                             <div className="button-div d-flex flex-row">
                                  <GlyphButton handleClick={this._deleteMe}
@@ -548,6 +567,7 @@ LogItem.propTypes = {
     console_text: PropTypes.string,
     setConsoleItemValue: PropTypes.func,
     handleDelete: PropTypes.func,
+    console_available_width: PropTypes.number,
 };
 
 
@@ -556,7 +576,7 @@ class ConsoleCodeItem extends React.Component {
         super(props);
         doBinding(this);
         this.cmobject = null;
-        this.update_props = ["am_shrunk", "set_focus", "summary_text", "console_text", "show_spinner", "execution_count", "output_text"];
+        this.update_props = ["am_shrunk", "set_focus", "summary_text", "console_text", "show_spinner", "execution_count", "output_text", "console_available_width"];
         this.update_state_vars = [];
         this.state = {}
     }
@@ -708,6 +728,7 @@ class ConsoleCodeItem extends React.Component {
                                                          code_content={this.props.console_text}
                                                          setCMObject={this._setCMObject}
                                                          extraKeys={this._extraKeys()}
+                                                         code_container_width={this.props.console_available_width - BUTTON_CONSUMED_SPACE}
                                                          saveMe={null}/>
                                          <div className="button-div d-flex flex-row">
                                              <GlyphButton handleClick={this._deleteMe}
@@ -751,6 +772,7 @@ ConsoleCodeItem.propTypes = {
     console_text: PropTypes.string,
     output_text: PropTypes.string,
     execution_count: PropTypes.number,
+    console_available_width: PropTypes.number,
     setConsoleItemValue: PropTypes.func,
     handleDelete: PropTypes.func,
     addNewTextItem: PropTypes.func,
@@ -766,7 +788,7 @@ class ConsoleTextItem extends React.Component {
         this.ce_ref = null;
         this.ce_summary_ref = React.createRef();
         this.converter = new showdown.Converter();
-        this.update_props = ["am_shrunk", "set_focus", "show_markdown", "summary_text", "console_text"];
+        this.update_props = ["am_shrunk", "set_focus", "show_markdown", "summary_text", "console_text", "console_available_width"];
         this.update_state_vars = [];
         this.state = {}
     }
@@ -858,6 +880,7 @@ class ConsoleTextItem extends React.Component {
         let converted_dict = {__html: converted_markdown};
         let panel_class = this.props.am_shrunk ? "log-panel log-panel-invisible text-log-item" : "log-panel log-panel-visible text-log-item";
         let gbstyle={marginLeft: 1};
+        let body_width = this.props.console_available_width - BUTTON_CONSUMED_SPACE;
         return (
             <div className={panel_class + " d-flex flex-row"} id={this.props.unique_id} style={{marginBottom: 10}}>
                 <div className="button-div shrink-expand-div d-flex flex-row">
@@ -895,7 +918,7 @@ class ConsoleTextItem extends React.Component {
                                              onBlur={()=>this.props.setFocus(null)}
                                              disabled={false}
                                              className="console-text"
-                                             style={{}}
+                                             style={{width: body_width}}
                                              inputRef={this._notesRefHandler}/>
                                      <KeyTrap target_ref={this.ce_ref} bindings={key_bindings} />
                                  </React.Fragment>
@@ -903,7 +926,7 @@ class ConsoleTextItem extends React.Component {
                             {really_show_markdown &&
                                 <div className="text-panel-output"
                                      onClick={this._hideMarkdown}
-                                     style={{width: "100%", padding: 9}}
+                                     style={{width: body_width, padding: 9}}
                                      dangerouslySetInnerHTML={converted_dict}/>
                             }
 
@@ -930,6 +953,7 @@ ConsoleTextItem.propTypes = {
     show_markdown: PropTypes.bool,
     summary_text: PropTypes.string,
     console_text: PropTypes.string,
+    console_available_width: PropTypes.number,
     setConsoleItemValue: PropTypes.func,
     handleDelete: PropTypes.func,
     goToNextCell: PropTypes.func,
