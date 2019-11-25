@@ -785,17 +785,21 @@ class ConsoleTextItem extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this, "_");
-        this.ce_ref = null;
         this.ce_summary_ref = React.createRef();
         this.converter = new showdown.Converter();
         this.update_props = ["am_shrunk", "set_focus", "show_markdown", "summary_text", "console_text", "console_available_width"];
-        this.update_state_vars = [];
-        this.state = {}
+        this.update_state_vars = ["ce_ref"];
+        this.state = {ce_ref: null}
     }
 
     shouldComponentUpdate(nextProps, nextState) {
         for (let prop of this.update_props) {
             if (nextProps[prop] != this.props[prop]) {
+                return true
+            }
+        }
+        for (let state_var of this.update_state_vars) {
+            if (nextState[state_var] != this.state[state_var]) {
                 return true
             }
         }
@@ -807,8 +811,8 @@ class ConsoleTextItem extends React.Component {
             if (this.props.show_markdown) {
                 this._hideMarkdown()
             }
-            else {
-                $(this.ce_ref.current).focus();
+            else if (this.state.ce_ref) {
+                $(this.state.ce_ref).focus();
                 this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false)
             }
         }
@@ -819,10 +823,10 @@ class ConsoleTextItem extends React.Component {
             if (this.props.show_markdown) {
                 this._hideMarkdown()
             }
-            else {
-                $(this.ce_ref.current).focus();
-                this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false)
+            else if (this.state.ce_ref) {
+                $(this.state.ce_ref).focus();
             }
+            this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false)
         }
     }
 
@@ -835,6 +839,7 @@ class ConsoleTextItem extends React.Component {
             this.props.setConsoleItemValue(this.props.unique_id, "show_markdown", true);
         }
     }
+
     _hideMarkdown() {
         this.props.setConsoleItemValue(this.props.unique_id, "show_markdown", false);
     }
@@ -867,7 +872,7 @@ class ConsoleTextItem extends React.Component {
     }
 
     _notesRefHandler(the_ref) {
-        this.ce_ref = the_ref;
+        this.setState({ce_ref: the_ref});
     }
 
     render () {
@@ -920,7 +925,7 @@ class ConsoleTextItem extends React.Component {
                                              className="console-text"
                                              style={{width: body_width}}
                                              inputRef={this._notesRefHandler}/>
-                                     <KeyTrap target_ref={this.ce_ref} bindings={key_bindings} />
+                                     <KeyTrap target_ref={this.state.ce_ref} bindings={key_bindings} />
                                  </React.Fragment>
                             }
                             {really_show_markdown &&

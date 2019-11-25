@@ -179,7 +179,10 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         from bs4 import BeautifulSoup
         import uuid
         soup = BeautifulSoup(project_dict["console_html"], "html.parser")
-        console_cm_code = project_dict["console_cm_code"]
+        if "console_cm_code" in project_dict:  # legacy to deal with saves older than about october 2016
+            console_cm_code = project_dict["console_cm_code"]
+        else:
+            console_cm_code = None
         entries = []
         for item in soup.select(".card.log-panel"):
             try:
@@ -196,7 +199,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                     new_entry["type"] = "fixed"
                     new_entry["is_error"] = False
                     new_entry["unique_id"] = str(uuid.uuid4())
-                else:
+                elif console_cm_code is not None:
                     new_entry["unique_id"] = item.select(".console-code")[0]["id"]
                     new_entry["output_text"] = str(item.select(".log-code-output")[0])
                     new_entry["type"] = "code"
@@ -244,7 +247,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
             interface_state["console_items"] = self.convert_legacy_console(project_dict)
             return interface_state
         except Exception as ex:
-            print("got an error converting a legacy save")
+            self.mworker.debug_log(self.extract_short_error_message(ex, "got an error converting a legacy save"))
             return False
 
     def recreate_from_save(self, project_name, unique_id=None):
