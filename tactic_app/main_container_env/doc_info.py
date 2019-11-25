@@ -107,7 +107,11 @@ class FreeformDocInfo(DocInfoAbstract):
 
     @staticmethod
     def recreate_from_save(save_dict):
-        new_instance = FreeformDocInfo(save_dict["name"], save_dict["metadata"], save_dict["data_text"])
+        if "metadata" in save_dict:  # legacy to handle old project saves
+            mdata = save_dict["metadata"]
+        else:
+            mdata = {}
+        new_instance = FreeformDocInfo(save_dict["name"], mdata, save_dict["data_text"])
         return new_instance
 
 
@@ -177,6 +181,10 @@ class docInfo(DocInfoAbstract):
 
     @staticmethod
     def recreate_from_save(save_dict):
-        new_instance = docInfo(name=save_dict["name"], metadata=save_dict["metadata"],
+        if "metadata" in save_dict:  # legacy to deal with old project saves
+            mdata = save_dict["metadata"]
+        else:
+            mdata = {}
+        new_instance = docInfo(name=save_dict["name"], metadata=mdata,
                                data_rows=save_dict["data_rows"], table_spec=save_dict["table_spec"])
         return new_instance
