@@ -120,6 +120,7 @@ class TileParser(object):
                     mdict[node.name]["last_line"] = self.cnode.body[i + 1].lineno - 2
                 else:
                     mdict[node.name]["last_line"] = None
+        print(str(mdict))
         for i, method_name in enumerate(list(mdict)[:-1]):
             md = mdict[method_name]
             md["method_code"] = "\n".join(self.module_lines[md["start_line"]:md["last_line"] + 1])
@@ -131,6 +132,7 @@ class TileParser(object):
         mdict[last_method]["method_body"] = "\n".join(self.module_lines[mdict[last_method]["body_start"]:])
         mdict[last_method]["method_code_no_decs"] = "\n".join(self.module_lines[mdict[last_method]["start_line"] +
                                                                                 len(mdict[last_method]["node"].decorator_list):])
+        print(str(mdict))
         return mdict
 
     def get_starting_line(self, method_name):
