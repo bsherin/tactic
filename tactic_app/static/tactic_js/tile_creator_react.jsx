@@ -151,7 +151,7 @@ class CreatorApp extends React.Component {
             top_pane_height: this.props.is_mpl || this.props.is_d3 ? aheight / 2 - 25 : null,
             bottom_pane_height: this.props.is_mpl || this.props.is_d3 ? aheight / 2 - 25 : null,
             left_pane_width: awidth / 2 - 25,
-            methodsTabRefreshRequired: true
+            methodsTabRefreshRequired: true // This is toggled back and forth to force refresh
         };
         this.handleRename = this.handleRename.bind(this);
         this.handleStateChange = this.handleStateChange.bind(this);
@@ -369,11 +369,21 @@ class CreatorApp extends React.Component {
         this.props.stopSpinner();
     }
 
+    // This toggles methodsTabRefreshRequired back and forth to force a refresh
+    _refreshMethodsIfNecessary(newTabId){
+        if (newTabId == "methods") {
+            this.setState({methodsTabRefreshRequired: !this.state.methodsTabRefreshRequired})
+        }
+    }
+
     _handleTabSelect(newTabId) {
+        this._refreshMethodsIfNecessary(newTabId);
         if (this.state.foregrounded_panes[newTabId]) return;
         let new_fg = Object.assign({}, this.state.foregrounded_panes);
         new_fg[newTabId] = true;
-        this.setState({foregrounded_panes: new_fg}, this.update_window_dimensions)
+        this.setState({foregrounded_panes: new_fg}, ()=>{
+            this.update_window_dimensions();
+        })
     }
 
     _handleNotesAppend(new_text) {
@@ -480,7 +490,7 @@ class CreatorApp extends React.Component {
             let tc_height = this.get_new_tc_height();
             let mode = this.props.is_mpl ? "python" : "javascript";
             let code_content = this.props.is_mpl ? this.state.draw_plot_code : this.state.jscript_code;
-            let first_line_number =this.props.is_mpl ? this.state.draw_plot_line_number: 1;
+            let first_line_number =this.props.is_mpl ? this.state.draw_plot_line_number + 1: 1;
             let title_label = this.props.is_mpl ? "draw_plot" : "(selector, w, h, arg_dict) =>";
             tc_item = (
                 <div key="dpcode" style={ch_style} className="d-flex flex-column align-items-baseline code-holder">
@@ -511,7 +521,7 @@ class CreatorApp extends React.Component {
                                  handleChange={this.handleRenderContentChange}
                                  saveMe={this._saveAndCheckpoint}
                                  readOnly={false}
-                                 first_line_number={this.state.render_content_line_number}
+                                 first_line_number={this.state.render_content_line_number + 1}
                                  code_container_height={rc_height}
                 />
             </div>
@@ -586,7 +596,7 @@ class CreatorApp extends React.Component {
                              code_container_ref={this.methods_ref}
                              code_container_height={methods_height}
                              first_line_number={this.state.extra_methods_line_number}
-                             refresh_required={this.methodsTabRefreshRequired}
+                             refresh_required={this.state.methodsTabRefreshRequired}
         />
         );
         let right_pane = (
