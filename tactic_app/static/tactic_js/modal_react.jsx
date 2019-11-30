@@ -1,7 +1,9 @@
 
 export {showModalReact, showConfirmDialogReact, showSelectDialog, showInformDialogReact}
+import {BpSelect} from "./blueprint_mdata_fields.js"
 
 var Bp = blueprint;
+var Bps = bpselect;
 
 class ModalDialog extends React.Component {
 
@@ -171,8 +173,8 @@ class SelectDialog extends React.Component {
         this.setState({"show": true, "value": this.props.option_list[0]})
     }
 
-    _handleChange(event) {
-        this.setState({"value": event.target.value})
+    _handleChange(val) {
+        this.setState({"value": val})
     }
 
     _submitHandler(event) {
@@ -194,7 +196,8 @@ class SelectDialog extends React.Component {
                        canEscapeKeyClose={true}>
                 <div className={Bp.Classes.DIALOG_BODY}>
                    <Bp.FormGroup title={this.props.select_label}>
-                       <Bp.HTMLSelect options={this.props.option_list} onChange={this._handleChange} value={this.state.value}/>
+                        <BpSelect options={this.props.option_list} onChange={this._handleChange} value={this.state.value}/>
+                       {/*<Bp.HTMLSelect options={this.props.option_list} onChange={this._handleChange} value={this.state.value}/>*/}
                    </Bp.FormGroup>
                 </div>
                 <div className={Bp.Classes.DIALOG_FOOTER}>
