@@ -1,6 +1,7 @@
 
 
 import {ReactCodemirror} from "./react-codemirror.js";
+import {BpSelect} from "./blueprint_mdata_fields.js"
 
 export {TileForm}
 
@@ -21,8 +22,9 @@ class TileForm extends React.Component {
         this.props.updateValue(att_name, new_value)
     }
 
-    _submitOptions() {
-        this.props.handleSubmit(this.props.tile_id)
+    _submitOptions(e) {
+        this.props.handleSubmit(this.props.tile_id);
+        e.preventDefault()
     }
 
     render() {
@@ -65,8 +67,24 @@ class TileForm extends React.Component {
                                                   updateValue={this._updateValue}
                 />)
             }
-            else if ((option["type"] == "text") || (option["type"] == "int")) {
+            else if (option["type"] == "text") {
                 option_items.push(<TextOption att_name={att_name}
+                                              key={att_name}
+                                              value={option.starting_value}
+                                              updateValue={this._updateValue}
+                />)
+            }
+
+            else if (option["type"] == "int") {
+                option_items.push(<IntOption att_name={att_name}
+                                              key={att_name}
+                                              value={option.starting_value}
+                                              updateValue={this._updateValue}
+                />)
+            }
+
+            else if (option["type"] == "float") {
+                option_items.push(<FloatOption att_name={att_name}
                                               key={att_name}
                                               value={option.starting_value}
                                               updateValue={this._updateValue}
@@ -118,6 +136,70 @@ TextOption.propTypes = {
     updateValue: PropTypes.func
 };
 
+class IntOption extends React.Component {
+    constructor(props) {
+        super(props);
+        doBinding(this)
+    }
+
+    _updateMe(att_name, val) {
+        if ((val.length == 0) || ((!isNaN(Number(val))) && (!isNaN(parseInt(val))))) {
+            this.props.updateValue(this.props.att_name, val)
+        }
+
+    }
+
+    render () {
+        return (
+            <TextOption att_name={this.props.att_name}
+                                  key={this.props.att_name}
+                                  value={this.props.value}
+                                  updateValue={this._updateMe}
+                />
+        )
+    }
+}
+
+IntOption.propTypes = {
+    att_name: PropTypes.string,
+    value:  PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number]),
+    updateValue: PropTypes.func
+};
+
+class FloatOption extends React.Component {
+    constructor(props) {
+        super(props);
+        doBinding(this)
+    }
+
+    _updateMe(att_name, val) {
+        if ((val.length == 0) || (val == ".") || ((!isNaN(Number(val))) && (!isNaN(parseFloat(val))))) {
+            this.props.updateValue(this.props.att_name, val)
+        }
+
+    }
+
+    render () {
+        return (
+            <TextOption att_name={this.props.att_name}
+                                  key={this.props.att_name}
+                                  value={this.props.value}
+                                  updateValue={this._updateMe}
+                />
+        )
+    }
+}
+
+FloatOption.propTypes = {
+    att_name: PropTypes.string,
+    value:  PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number]),
+    updateValue: PropTypes.func
+};
+
 
 class BoolOption extends React.Component {
     constructor(props) {
@@ -143,10 +225,12 @@ class BoolOption extends React.Component {
 
     render() {
         return (
-            <Bp.Checkbox label={this.props.att_name}
-                         checked={this.boolify(this.props.value)}
-                         onChange={this._updateMe}
-                         alignIndicator="right"
+            <Bp.Switch label={this.props.att_name}
+                       checked={this.boolify(this.props.value)}
+                       onChange={this._updateMe}
+                       innerLabel="False"
+                       innerLabelChecked="True"
+                       alignIndicator="center"
             />
         )
     }
@@ -218,14 +302,15 @@ TextAreaOption.propTypes = {
     updateValue: PropTypes.func
 };
 
+
 class SelectOption extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this)
     }
 
-    _updateMe(event) {
-        this.props.updateValue(this.props.att_name, event.target.value)
+    _updateMe(val) {
+        this.props.updateValue(this.props.att_name, val)
     }
 
     render() {
@@ -236,10 +321,9 @@ class SelectOption extends React.Component {
         );
         return (
             <Bp.FormGroup label={this.props.att_name}>
-                <Bp.HTMLSelect  onChange={this._updateMe}
-                              value={this.props.value}>
-                    {option_items}
-                </Bp.HTMLSelect>
+                <BpSelect  onChange={this._updateMe}
+                              value={this.props.value}
+                            options={this.props.choice_list}/>
             </Bp.FormGroup>
         )
     }

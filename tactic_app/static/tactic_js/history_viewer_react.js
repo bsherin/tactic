@@ -51,8 +51,7 @@ class HistoryViewerApp extends React.Component {
         this.savedContent = props.edit_content;
     }
 
-    handleSelectChange(event) {
-        let new_value = event.currentTarget.value;
+    handleSelectChange(new_value) {
         this.state.history_popup_val = new_value;
         let self = this;
         for (let item of this.state.history_list) {

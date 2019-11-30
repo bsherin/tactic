@@ -1,5 +1,5 @@
 
-export { NotesField, CombinedMetadata };
+export { NotesField, CombinedMetadata, BpSelect };
 
 import { ViewerContext } from "./resource_viewer_context.js";
 import { postAjaxPromise } from "./communication_react.js";
@@ -13,6 +13,40 @@ let icon_dict = {
     tile: "application",
     list: "list",
     code: "code"
+};
+
+class BpSelect extends React.Component {
+
+    _filterSuggestion(query, item) {
+        if (query.length == 0) {
+            return true;
+        }
+        let re = new RegExp(query.toLowerCase());
+
+        return re.test(item.toLowerCase());
+    }
+
+    render() {
+        return React.createElement(
+            Bps.Select,
+            {
+                itemRenderer: renderSuggestion,
+                itemPredicate: this._filterSuggestion,
+                items: this.props.options,
+                onItemSelect: this.props.onChange,
+                popoverProps: { minimal: true,
+                    boundary: "window",
+                    modifiers: { flip: false, preventOverflow: true },
+                    position: Bp.PopoverPosition.BOTTOM_LEFT } },
+            React.createElement(Bp.Button, { text: this.props.value, rightIcon: "double-caret-vertical" })
+        );
+    }
+}
+
+BpSelect.propTypes = {
+    options: PropTypes.array,
+    onChange: PropTypes.func,
+    value: PropTypes.string
 };
 
 class SuggestionItem extends React.Component {
@@ -37,7 +71,7 @@ class SuggestionItem extends React.Component {
 }
 SuggestionItem.propTypes = {
     item: PropTypes.string,
-    modifiers: PropTypes.string,
+    modifiers: PropTypes.object,
     handleClick: PropTypes.func
 };
 

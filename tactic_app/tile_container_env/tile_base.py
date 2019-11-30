@@ -395,6 +395,10 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                     if starting_value is None:
                         starting_value = 0
                     form_item["starting_value"] = str(starting_value)
+                elif option["type"] == "float":
+                    if starting_value is None:
+                        starting_value = 0
+                    form_item["starting_value"] = str(starting_value)
                 if form_item["starting_value"] is None:
                     if option["type"] in self._selector_types and len(form_item["option_list"]) > 0:
                         form_item["starting_value"] = form_item["option_list"][0]
@@ -767,6 +771,8 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         for opt in self.options:
             if opt["type"] == "int":
                 setattr(self, opt["name"], int(form_data[opt["name"]]))
+            elif opt["type"] == "float":
+                setattr(self, opt["name"], float(form_data[opt["name"]]))
             elif opt["type"] == "boolean":
                 v = form_data[opt["name"]]
                 if isinstance(v, str):
