@@ -10,7 +10,7 @@ class OptionModuleForm extends React.Component {
 
     constructor(props) {
         super(props);
-        this.option_types = ['text', 'int', 'boolean', 'textarea', 'codearea', 'column_select', 'document_select', 'list_select', 'collection_select', 'palette_select', 'pipe_select', 'custom_list', 'function_select', 'class_select', 'tile_select'];
+        this.option_types = ['text', 'int', 'float', 'boolean', 'textarea', 'codearea', 'column_select', 'document_select', 'list_select', 'collection_select', 'palette_select', 'pipe_select', 'custom_list', 'function_select', 'class_select', 'tile_select'];
         this.taggable_types = ["class_select", "function_select", "pipe_select", "list_select", "collection_select"];
         this.state = {
             "name": "",

@@ -4,6 +4,7 @@ import { Toolbar } from "./blueprint_toolbar.js";
 import { TacticSocket } from "./tactic_socket.js";
 import { doFlash } from "./toaster.js";
 import { handleCallback } from "./communication_react.js";
+import { BpSelect } from "./blueprint_mdata_fields.js";
 
 export { MergeViewerApp, MergeViewerSocket };
 
@@ -48,8 +49,8 @@ class MergeViewerApp extends React.Component {
     componentDidMount() {
         window.addEventListener("resize", this.resize_to_window);
         this.setState({ "mounted": true });
-        let fake_event = { currentTarget: { value: this.props.select_val } };
-        this.props.handleSelectChange(fake_event);
+        // let fake_event = {currentTarget: {value: this.props.select_val}};
+        this.props.handleSelectChange(this.props.select_val);
         this.resize_to_window();
         this.props.stopSpinner();
     }
@@ -106,7 +107,7 @@ class MergeViewerApp extends React.Component {
                         { className: "align-self-end" },
                         "Current"
                     ),
-                    React.createElement(Bp.HTMLSelect, { options: this.props.option_list,
+                    React.createElement(BpSelect, { options: this.props.option_list,
                         onChange: this.props.handleSelectChange,
                         value: this.props.select_val })
                 ),
