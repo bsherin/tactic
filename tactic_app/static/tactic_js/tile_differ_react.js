@@ -40,7 +40,7 @@ class TileDifferApp extends React.Component {
         this.state = {
             "edit_content": props.edit_content,
             "right_content": "",
-            "tile_popup_val": props.second_resource_name == "none" ? props.tile_list[0] : props.second_resource_name,
+            "tile_popup_val": props.second_resource_name == "none" ? props.resource_name : props.second_resource_name,
             "tile_list": props.tile_list
         };
         this.handleEditChange = this.handleEditChange.bind(this);
@@ -49,8 +49,7 @@ class TileDifferApp extends React.Component {
         this.savedContent = props.edit_content;
     }
 
-    handleSelectChange(event) {
-        let new_value = event.currentTarget.value;
+    handleSelectChange(new_value) {
         this.state.tile_popup_val = new_value;
         let self = this;
         postAjaxPromise("get_module_code/" + new_value, {}).then(data => {

@@ -58,6 +58,7 @@ and ``type`` is the type. Obviously. At present the option types are:
 
 -  *text*. A single line text field.
 -  *int*. An integer.
+-  *float*. A float.
 -  *textarea*. A multi-line text field.
 -  *codearea*. This is functionally the same as a textarea option. But
    it displays as syntax-highlighted python code.
