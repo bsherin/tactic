@@ -99,8 +99,9 @@ class MergeViewerApp extends React.Component {
                     <div id="above-main" ref={this.above_main_ref} className="d-flex flex-row justify-content-between mb-2">
                         <span className="align-self-end">Current</span>
                         <BpSelect options={this.props.option_list}
-                                   onChange={this.props.handleSelectChange}
-                                   value={this.props.select_val}/>
+                                  onChange={this.props.handleSelectChange}
+                                  buttonIcon="application"
+                                  value={this.props.select_val}/>
                     </div>
                     <ReactCodemirrorMergeView handleEditChange={this.props.handleEditChange}
                                               editor_content={this.props.edit_content}

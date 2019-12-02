@@ -109,6 +109,7 @@ class MergeViewerApp extends React.Component {
                     ),
                     React.createElement(BpSelect, { options: this.props.option_list,
                         onChange: this.props.handleSelectChange,
+                        buttonIcon: "application",
                         value: this.props.select_val })
                 ),
                 React.createElement(ReactCodemirrorMergeView, { handleEditChange: this.props.handleEditChange,
