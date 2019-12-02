@@ -1,5 +1,5 @@
 
-export {NotesField, CombinedMetadata, BpSelect}
+export {NotesField, CombinedMetadata, BpSelect, BpSelectAdvanced}
 
 import {ViewerContext} from "./resource_viewer_context.js";
 import {postAjaxPromise} from "./communication_react.js"
@@ -15,8 +15,123 @@ let icon_dict = {
     code: "code"
 };
 
+class BpSelectAdvanced extends React.Component {
+    constructor(props) {
+        super(props);
+        doBinding(this);
+        this.state = {
+            activeItem: this.props.value
+        }
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        return !propsAreEqual(nextProps, this.props)
+    }
+
+    _filterSuggestion(query, item) {
+        if ((query.length == 0) || (item["isgroup"])) {
+            return true
+        }
+        let re = new RegExp(query.toLowerCase());
+
+        return re.test(item["text"].toLowerCase())
+    }
+
+    _handleActiveItemChange(newActiveItem) {
+        // this.setState({activeItem: newActiveItem})
+    }
+
+    _getActiveItem(val) {
+        for (let option of this.props.options) {
+            if (_.isEqual(option, val)) {
+                return option
+            }
+        }
+        return null
+    }
+
+    render () {
+        return (
+            <Bps.Select
+                activeItem={this._getActiveItem(this.props.value)}
+                onActiveItemChange={this._handleActiveItemChange}
+                itemRenderer={renderSuggestionAdvanced}
+                itemPredicate={this._filterSuggestion}
+                items={this.props.options}
+                onItemSelect={this.props.onChange}
+                popoverProps={{minimal: true,
+                    boundary: "window",
+                    modifiers: {flip: false, preventOverflow: true},
+                    position: Bp.PopoverPosition.BOTTOM_LEFT}}>
+                <Bp.Button text={this.props.value["text"]} className="button-in-select" icon={this.props.buttonIcon}  />
+            </Bps.Select>
+        )
+    }
+}
+
+BpSelectAdvanced.propTypes = {
+    options: PropTypes.array,
+    onChange: PropTypes.func,
+    value: PropTypes.object,
+    buttonIcon: PropTypes.string
+};
+
+BpSelectAdvanced.defaultProps = {
+    buttonIcon: null
+};
+
+class SuggestionItemAdvanced extends React.Component{
+    constructor(props) {
+        super(props);
+        doBinding(this)
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        return !propsAreEqual(nextProps, this.props)
+    }
+
+    render() {
+        if (this.props.item["isgroup"]) {
+            return (
+                <Bp.MenuDivider className="tile-form-menu-item" title={this.props.item["text"]}/>
+            )
+        }
+        else {
+            return (
+                <Bp.MenuItem
+                    className="tile-form-menu-item"
+                    text={this.props.item["text"]}
+                    key={this.props.item}
+                    onClick={this.props.handleClick}
+                    active={this.props.modifiers.active}
+                    shouldDismissPopover={true}
+                />
+            );
+        }
+    }
+}
+SuggestionItemAdvanced.propTypes = {
+    item: PropTypes.object,
+    modifiers: PropTypes.object,
+    handleClick: PropTypes.func
+};
+
+function renderSuggestionAdvanced (item, {modifiers, handleClick}) {
+    return <SuggestionItemAdvanced item={item} modifiers={modifiers} handleClick={handleClick}/>
+}
 
 class BpSelect extends React.Component {
+    constructor(props) {
+        super(props);
+        doBinding(this);
+        this.state = {
+            activeItem: this.props.value
+        }
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        return !propsAreEqual(nextProps, this.props)
+    }
 
     _filterSuggestion(query, item) {
         if (query.length == 0) {
@@ -27,18 +142,25 @@ class BpSelect extends React.Component {
         return re.test(item.toLowerCase())
     }
 
+    _handleActiveItemChange(newActiveItem) {
+        this.setState({activeItem: newActiveItem})
+    }
+
     render () {
         return (
             <Bps.Select
+                className="tile-form-menu-item"
+                activeItem={this.state.activeItem}
+                onActiveItemChange={this._handleActiveItemChange}
                 itemRenderer={renderSuggestion}
                 itemPredicate={this._filterSuggestion}
-                items={this.props.options}
+                items={_.cloneDeep(this.props.options)}
                 onItemSelect={this.props.onChange}
                 popoverProps={{minimal: true,
                     boundary: "window",
                     modifiers: {flip: false, preventOverflow: true},
                     position: Bp.PopoverPosition.BOTTOM_LEFT}}>
-                <Bp.Button text={this.props.value} rightIcon="double-caret-vertical" />
+                <Bp.Button className="button-in-select" text={this.props.value} icon={this.props.buttonIcon} />
             </Bps.Select>
         )
     }
@@ -47,7 +169,12 @@ class BpSelect extends React.Component {
 BpSelect.propTypes = {
     options: PropTypes.array,
     onChange: PropTypes.func,
-    value: PropTypes.string
+    value: PropTypes.string,
+    buttonIcon: PropTypes.string,
+};
+
+BpSelect.defaultProps = {
+    buttonIcon: null
 };
 
 
@@ -57,17 +184,18 @@ class SuggestionItem extends React.Component{
         doBinding(this)
     }
 
-    _handleClick() {
-        this.props.handleClick(this.props.item)
+    shouldComponentUpdate(nextProps, nextState) {
+        return !propsAreEqual(nextProps, this.props)
     }
 
     render() {
         return (
             <Bp.MenuItem
+                className="tile-form-menu-item"
                 text={this.props.item}
                 key={this.props.item}
                 active={this.props.modifiers.active}
-                onClick={this._handleClick}
+                onClick={this.props.handleClick}
                 shouldDismissPopover={true}
             />
         );

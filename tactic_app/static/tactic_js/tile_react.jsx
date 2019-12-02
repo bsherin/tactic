@@ -41,6 +41,10 @@ class TileContainer extends React.Component {
         doBinding(this)
     }
 
+    shouldComponentUpdate(nextProps, nextState) {
+        return !propsAreEqual(nextProps, this.props)
+    }
+
     _handleTileFinishedLoading(data) {
         this._setTileValue(data.tile_id, "finished_loading", true)
     }
@@ -91,7 +95,7 @@ class TileContainer extends React.Component {
     get_tile_entry(tile_id) {
         let tindex = this.tileIndex(tile_id);
         if (tindex == -1) return null;
-        return Object.assign({}, this.props.tile_list[this.tileIndex(tile_id)])
+        return _.cloneDeep(this.props.tile_list[this.tileIndex(tile_id)])
     }
 
     replace_tile_entry(tile_id, new_entry, callback=null) {
@@ -175,7 +179,7 @@ class TileContainer extends React.Component {
                                container_ref={this.props.tile_div_ref}
                                ElementComponent={STileComponent}
                                key_field_name="tile_name"
-                               item_list={this.props.tile_list}
+                               item_list={_.cloneDeep(this.props.tile_list)}
                                handle=".tile-name-div"
                                onSortStart={(_, event) => event.preventDefault()} // This prevents Safari weirdness
                                onSortEnd={this._resortTiles}
@@ -208,12 +212,21 @@ TileContainer.propTypes = {
 
 class RawSortHandle extends React.Component {
 
+    shouldComponentUpdate(nextProps, nextState, nextContext) {
+        return !propsAreEqual(nextProps, this.props)
+    }
+
     render () {
         return (
             <span className="tile-name-div" ><Bp.Icon icon="drag-handle-vertical" iconSize={15}/>{this.props.tile_name}</span>
         )
     }
 }
+
+RawSortHandle.propTypes = {
+    tile_name: PropTypes.string
+};
+
 
 const Shandle = Shoc.sortableHandle(RawSortHandle);
 
@@ -233,8 +246,14 @@ class TileComponent extends React.Component {
             dwidth: 0,
             dheight: 0
         };
+        this.last_front_content = "";
         doBinding(this);
     }
+
+    shouldComponentUpdate(nextProps, nextState, nextContext) {
+        return !propsAreEqual(nextProps, this.props) || !propsAreEqual(nextState, this.state)
+    }
+
 
     // Broadcasting the tile size is necessary because some tiles (notably matplotlib tiles)
     // need to know the size of the display area.
@@ -266,15 +285,19 @@ class TileComponent extends React.Component {
     }
 
     executeEmbeddedScripts() {
-        let scripts = $("#" + this.props.tile_id + " .tile-display-area script").toArray();
-        for (let script of scripts) {
-            try {
-                window.eval(script.text)
-            }
-            catch (e) {
+        if (this.props.front_content != this.last_front_content) { // to avoid doubles of bokeh images
+            this.last_front_content = this.props.front_content;
+            let scripts = $("#" + this.props.tile_id + " .tile-display-area script").toArray();
+            for (let script of scripts) {
+                try {
+                    window.eval(script.text)
+                }
+                catch (e) {
 
+                }
             }
         }
+
     }
 
     makeTablesSortable() {
@@ -353,7 +376,7 @@ class TileComponent extends React.Component {
     }
 
     _updateOptionValue(option_name, value) {
-        let options = [...this.props.form_data];
+        let options = _.cloneDeep(this.props.form_data);
         for (let opt of options) {
             if (opt.name == option_name) {
                 opt.starting_value = value;
@@ -643,7 +666,7 @@ class TileComponent extends React.Component {
                         <Rtg.Transition in={this.props.show_form} timeout={ANI_DURATION}>
                             {state => (
                                 <div className="back" style={composeObjs(this.back_style, this.transitionStylesAltUp[state])}>
-                                    <TileForm options={this.props.form_data}
+                                    <TileForm options={_.cloneDeep(this.props.form_data)}
                                               tile_id={this.props.tile_id}
                                               updateValue={this._updateOptionValue}
                                               handleSubmit={this._handleSubmitOptions}/>

@@ -784,7 +784,7 @@ class MainApp extends React.Component {
         let tile_pane = (
             <TileContainer height={tile_container_height}
                            tile_div_ref={this.tile_div_ref}
-                           tile_list={this.state.tile_list}
+                           tile_list={_.cloneDeep(this.state.tile_list)}
                            current_doc_name={this.state.table_spec.current_doc_name}
                            table_is_shrunk={this.state.table_is_shrunk}
                            selected_row={this.state.selected_row}

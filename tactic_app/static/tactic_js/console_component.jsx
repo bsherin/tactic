@@ -461,7 +461,8 @@ class LogItem extends React.Component {
         doBinding(this);
         this.update_props = ["is_error", "am_shrunk", "summary_text", "console_text", "console_available_width"];
         this.update_state_vars = [];
-        this.state = {}
+        this.state = {};
+        this.last_output_text = ""
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -496,13 +497,17 @@ class LogItem extends React.Component {
     }
 
      executeEmbeddedScripts() {
-        let scripts = $("#" + this.props.unique_id + " .log-panel-body script").toArray();
-        for (let script of scripts) {
-            try {
-                window.eval(script.text)
-            }
-            catch (e) {
+        if (this.props.output_text != this.last_output_text) {  // to avoid doubles of bokeh images
+            this.last_output_text = this.props.output_text;
+            let scripts = $("#" + this.props.unique_id + " .log-code-output script").toArray();
+            // $("#" + this.props.unique_id + " .bk-root").html(""); // This is a kluge to deal with bokeh double images
+            for (let script of scripts) {
+                try {
+                    window.eval(script.text)
+                }
+                catch (e) {
 
+                }
             }
         }
     }
@@ -578,7 +583,8 @@ class ConsoleCodeItem extends React.Component {
         this.cmobject = null;
         this.update_props = ["am_shrunk", "set_focus", "summary_text", "console_text", "show_spinner", "execution_count", "output_text", "console_available_width"];
         this.update_state_vars = [];
-        this.state = {}
+        this.state = {};
+        this.last_output_text = ""
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -620,13 +626,17 @@ class ConsoleCodeItem extends React.Component {
     }
 
     executeEmbeddedScripts() {
-        let scripts = $("#" + this.props.unique_id + " .log-code-output script").toArray();
-        for (let script of scripts) {
-            try {
-                window.eval(script.text)
-            }
-            catch (e) {
+        if (this.props.output_text != this.last_output_text) {  // to avoid doubles of bokeh images
+            this.last_output_text = this.props.output_text;
+            let scripts = $("#" + this.props.unique_id + " .log-code-output script").toArray();
+            // $("#" + this.props.unique_id + " .bk-root").html(""); // This is a kluge to deal with bokeh double images
+            for (let script of scripts) {
+                try {
+                    window.eval(script.text)
+                }
+                catch (e) {
 
+                }
             }
         }
     }

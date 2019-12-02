@@ -1,21 +1,40 @@
 
 
 import {ReactCodemirror} from "./react-codemirror.js";
-import {BpSelect} from "./blueprint_mdata_fields.js"
+import {BpSelect, BpSelectAdvanced} from "./blueprint_mdata_fields.js"
 
 export {TileForm}
 
 let Bp = blueprint;
+
+let selector_types = ["column_select", "tokenizer_select", "weight_function_select",
+            "cluster_metric", "tile_select", "document_select", "list_select", "collection_select",
+            "function_select", "class_select", "palette_select", "custom_list"];
+
+let selector_type_icons = {
+    column_select: "one-column",
+    tokenizer_select: "function",
+    weight_function_select: "function",
+    cluster_metric: "function",
+    tile_select: "application",
+    document_select: "document",
+    list_select: "properties",
+    collection_select: "database",
+    function_select: "function",
+    class_select: "code",
+    palette_select: "tint",
+    custom_list: "property"
+};
 
 class TileForm extends React.Component {
 
     constructor(props) {
         super(props);
         doBinding(this);
-        this.selector_types = ["column_select", "tokenizer_select", "weight_function_select",
-            "cluster_metric", "tile_select", "document_select", "list_select", "collection_select",
-            "function_select", "class_select", "palette_select", "custom_list"
-        ]
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        return !propsAreEqual(nextProps, this.props)
     }
 
     _updateValue(att_name, new_value) {
@@ -31,18 +50,19 @@ class TileForm extends React.Component {
         var option_items = [];
         for (let option of this.props.options) {
             let att_name = option["name"];
-            if (this.selector_types.includes(option["type"])) {
+            if (selector_types.includes(option["type"])) {
                 option_items.push(<SelectOption att_name={att_name}
                                                 key={att_name}
                                                 choice_list={option["option_list"]}
                                                 value={option.starting_value}
+                                                buttonIcon={selector_type_icons[option["type"]]}
                                                 updateValue={this._updateValue}/>)
             }
             else if (option["type"] == "pipe_select") {
                 option_items.push(<PipeOption att_name={att_name}
                                               key={att_name}
-                                              value={option.starting_value}
-                                              pipe_dict={option["pipe_dict"]}
+                                              value={_.cloneDeep(option.starting_value)}
+                                              pipe_dict={_.cloneDeep(option["pipe_dict"])}
                                               updateValue={this._updateValue}
                 />)
             }
@@ -71,6 +91,7 @@ class TileForm extends React.Component {
                 option_items.push(<TextOption att_name={att_name}
                                               key={att_name}
                                               value={option.starting_value}
+                                              leftIcon="paragraph"
                                               updateValue={this._updateValue}
                 />)
             }
@@ -116,13 +137,18 @@ class TextOption extends React.Component {
         doBinding(this)
     }
 
+    shouldComponentUpdate(nextProps, nextState) {
+        return !propsAreEqual(nextProps, this.props)
+    }
+
     _updateMe(event) {
         this.props.updateValue(this.props.att_name, event.target.value)
     }
     render() {
         return (
             <Bp.FormGroup label={this.props.att_name}>
-                <Bp.InputGroup type="text" small={false} onChange={this._updateMe} value={this.props.value}/>
+                <Bp.InputGroup type="text" small={false} leftIcon={this.props.leftIcon}
+                               onChange={this._updateMe} value={this.props.value}/>
             </Bp.FormGroup>
         )
     }
@@ -133,13 +159,18 @@ TextOption.propTypes = {
     value:  PropTypes.oneOfType([
         PropTypes.string,
         PropTypes.number]),
-    updateValue: PropTypes.func
+    updateValue: PropTypes.func,
+    leftIcon: PropTypes.string
 };
 
 class IntOption extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this)
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        return !propsAreEqual(nextProps, this.props)
     }
 
     _updateMe(att_name, val) {
@@ -151,7 +182,7 @@ class IntOption extends React.Component {
 
     render () {
         return (
-            <TextOption att_name={this.props.att_name}
+            <TextOption att_name={this.props.att_name} leftIcon="numerical"
                                   key={this.props.att_name}
                                   value={this.props.value}
                                   updateValue={this._updateMe}
@@ -174,6 +205,10 @@ class FloatOption extends React.Component {
         doBinding(this)
     }
 
+    shouldComponentUpdate(nextProps, nextState) {
+        return !propsAreEqual(nextProps, this.props)
+    }
+
     _updateMe(att_name, val) {
         if ((val.length == 0) || (val == ".") || ((!isNaN(Number(val))) && (!isNaN(parseFloat(val))))) {
             this.props.updateValue(this.props.att_name, val)
@@ -183,7 +218,7 @@ class FloatOption extends React.Component {
 
     render () {
         return (
-            <TextOption att_name={this.props.att_name}
+            <TextOption att_name={this.props.att_name} leftIcon="numerical"
                                   key={this.props.att_name}
                                   value={this.props.value}
                                   updateValue={this._updateMe}
@@ -207,6 +242,10 @@ class BoolOption extends React.Component {
         doBinding(this)
     }
 
+    shouldComponentUpdate(nextProps, nextState) {
+        return !propsAreEqual(nextProps, this.props)
+    }
+
     _updateMe(event) {
         this.props.updateValue(this.props.att_name, event.target.checked)
     }
@@ -215,12 +254,7 @@ class BoolOption extends React.Component {
         if (typeof the_var == "boolean") {
             return the_var
         }
-        if ((the_var == "True") || (the_var == "true")) {
-            return true
-        }
-        else {
-            return false
-        }
+        return (the_var == "True") || (the_var == "true");
     }
 
     render() {
@@ -248,6 +282,10 @@ class CodeAreaOption extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this)
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        return !propsAreEqual(nextProps, this.props)
     }
 
     _updateMe(newval) {
@@ -281,6 +319,10 @@ class TextAreaOption extends React.Component {
         doBinding(this)
     }
 
+    shouldComponentUpdate(nextProps, nextState) {
+        return !propsAreEqual(nextProps, this.props)
+    }
+
     _updateMe(event) {
         this.props.updateValue(this.props.att_name, event.target.value)
     }
@@ -309,20 +351,20 @@ class SelectOption extends React.Component {
         doBinding(this)
     }
 
+    shouldComponentUpdate(nextProps, nextState) {
+        return !propsAreEqual(nextProps, this.props)
+    }
+
     _updateMe(val) {
         this.props.updateValue(this.props.att_name, val)
     }
 
     render() {
-        let option_items = this.props.choice_list.map((opt, index) =>
-                <option key={index}>
-                    {opt}
-                </option>
-        );
         return (
             <Bp.FormGroup label={this.props.att_name}>
                 <BpSelect  onChange={this._updateMe}
-                              value={this.props.value}
+                          value={this.props.value}
+                           buttonIcon={this.props.buttonIcon}
                             options={this.props.choice_list}/>
             </Bp.FormGroup>
         )
@@ -332,6 +374,7 @@ class SelectOption extends React.Component {
 SelectOption.propTypes = {
     att_name: PropTypes.string,
     choice_list: PropTypes.array,
+    buttonIcon: PropTypes.string,
     value:  PropTypes.oneOfType([
         PropTypes.string,
         PropTypes.number]),
@@ -339,6 +382,64 @@ SelectOption.propTypes = {
 };
 
 class PipeOption extends React.Component {
+    constructor(props) {
+        super(props);
+        doBinding(this)
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        return !propsAreEqual(nextProps, this.props)
+    }
+
+    _updateMe(item) {
+        this.props.updateValue(this.props.att_name, item["value"])
+    }
+
+    create_choice_list() {
+        let choice_list = [];
+        for (let group in this.props.pipe_dict) {
+            choice_list.push({text: group, value: group + "_group", isgroup: true});
+            for (let entry of this.props.pipe_dict[group]) {
+                choice_list.push({text: entry[1], value: entry[0], isgroup: false})
+            }
+        }
+        return choice_list
+    }
+
+    _value_dict() {
+        let value_dict = {};
+        for (let group in this.props.pipe_dict) {
+            for (let entry of this.props.pipe_dict[group]) {
+                value_dict[entry[0]] = entry[1];
+            }
+        }
+        return value_dict
+    }
+
+    render() {
+        let vdict = this._value_dict();
+        let full_value = {text: vdict[this.props.value], value: this.props.value, isgroup: false};
+        return (
+            <Bp.FormGroup label={this.props.att_name}>
+                <BpSelectAdvanced  onChange={this._updateMe}
+                                   value={full_value}
+                                   buttonIcon="flow-end"
+                                   options={this.create_choice_list()}/>
+            </Bp.FormGroup>
+        )
+    }
+}
+
+PipeOption.propTypes = {
+    att_name: PropTypes.string,
+    pipe_dict: PropTypes.object,
+    value: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number]),
+    updateValue: PropTypes.func
+};
+
+class PipeOptionOld extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this)
@@ -374,7 +475,7 @@ class PipeOption extends React.Component {
     }
 }
 
-PipeOption.propTypes = {
+PipeOptionOld.propTypes = {
     att_name: PropTypes.string,
     pipe_dict: PropTypes.object,
     value: PropTypes.oneOfType([
