@@ -11,6 +11,26 @@ function doBinding(obj, seq = "_") {
     }
 }
 
+function propsAreEqual(p1, p2) {
+
+    if (!_.isEqual(Object.keys(p1), Object.keys(p2))) {
+        return false;
+    }
+
+    for (let option in p1) {
+        if (typeof p1[option] == "function") {
+            if (!(typeof p2[option] == "function")) {
+                return false;
+            }
+            continue;
+        }
+        if (!_.isEqual(p1[option], p2[option])) {
+            return false;
+        }
+    }
+    return true;
+}
+
 function arrayMoveMutate(array, from, to) {
     array.splice(to < 0 ? array.length + to : to, 0, array.splice(from, 1)[0]);
 };

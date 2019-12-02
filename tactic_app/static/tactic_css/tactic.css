@@ -564,6 +564,16 @@ a[role="tab"] {
   font-weight: 700;
   font-size: 15px; }
 
+.tile-form-menu-item.bp3-menu-item {
+  font-size: 13px;
+  line-height: 15px; }
+.tile-form-menu-item.bp3-menu-header h6.bp3-heading {
+  font-size: 13px; }
+
+.button-in-select svg {
+  width: 14px;
+  height: 14px; }
+
 .header-but {
   font-size: 18px;
   color: #31708f !important; }
