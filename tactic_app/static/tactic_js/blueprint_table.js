@@ -29,6 +29,7 @@ class BlueprintTable extends React.Component {
         doBinding(this);
         this.mismatched_column_widths = false;
         this.table_ref = React.createRef();
+        this.set_scroll = null;
     }
 
     componentDidMount() {
@@ -38,7 +39,6 @@ class BlueprintTable extends React.Component {
     }
 
     componentDidUpdate() {
-        // this.props.my_ref.current.scrollTop = this.props.scroll_top;
         if (this.props.column_widths == null || this.mismatched_column_widths) {
             this.computeColumnWidths();
         }
@@ -55,11 +55,20 @@ class BlueprintTable extends React.Component {
         return this.props.data_row_dict.hasOwnProperty(rowIndex);
     }
 
-    _scrollToRow(row_index) {
-        if (this.table_ref && this.table_ref.current) {
-            let singleCellRegion = Bpt.Regions.cell(row_index, 0);
-            this.table_ref.current.scrollToRegion(singleCellRegion);
+    _doScroll() {
+        if (this.set_scroll != null && this.table_ref && this.table_ref.current) {
+            try {
+                let singleCellRegion = Bpt.Regions.cell(this.set_scroll, 0);
+                this.table_ref.current.scrollToRegion(singleCellRegion);
+                this.set_scroll = null;
+            } catch (e) {
+                console.log(e.message);
+            }
         }
+    }
+
+    _scrollToRow(row_index) {
+        this.set_scroll = row_index;
     }
 
     _updateRowHeights() {
@@ -236,6 +245,7 @@ class BlueprintTable extends React.Component {
                     enableColumnReordering: true,
                     onColumnsReordered: this._onColumnsReordered,
                     onSelection: this._onSelection,
+                    onCompleteRender: this._doScroll,
                     onColumnWidthChanged: this._onColumnWidthChanged,
                     enableMultipleSelection: false,
                     selectionModes: [Bpt.RegionCardinality.FULL_COLUMNS, Bpt.RegionCardinality.FULL_ROWS],

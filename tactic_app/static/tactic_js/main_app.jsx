@@ -336,6 +336,7 @@ class MainApp extends React.Component {
             postWithCallback(main_id, "grab_chunk_by_row_index", data_dict, function (data) {
                 self._setStateFromDataObject(data, new_doc_name, ()=>{
                     self.setState({ show_table_spinner: false});
+                    self.table_ref.current._scrollToRow(row_index);
                 });
             });
         }
