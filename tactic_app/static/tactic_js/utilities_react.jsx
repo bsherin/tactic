@@ -11,13 +11,14 @@ function doBinding(obj, seq="_") {
     }
 }
 
-function propsAreEqual(p1, p2) {
+function propsAreEqual(p1, p2, skipProps=[]) {
 
     if (!_.isEqual(Object.keys(p1), Object.keys(p2))) {
         return false
     }
 
     for (let option in p1) {
+        if (skipProps.includes(option)) continue;
         if (typeof(p1[option]) == "function") {
             if (!(typeof(p2[option]) == "function")) {
                 return false
