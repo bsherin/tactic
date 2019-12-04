@@ -108,17 +108,21 @@ class MainTableCardHeader extends React.Component {
         this.state = {hide_right_element: false}
     }
 
-    componentDidUpdate() {
+    _getHideRight() {
         let le_rect = this.heading_left_ref.current.getBoundingClientRect();
         let re_rect = this.heading_right_ref.current.getBoundingClientRect();
-        let hide_right = re_rect.x < (le_rect.x + le_rect.width + 10);
+        return re_rect.x < (le_rect.x + le_rect.width + 10);
+    }
+
+    componentDidUpdate() {
+        let hide_right = this._getHideRight();
         if (hide_right != this.state.hide_right_element) {
             this.setState({hide_right_element: hide_right})
         }
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        return !propsAreEqual(nextProps, this.props)
+        return !propsAreEqual(nextProps, this.props) || (this._getHideRight() != this.state.hide_right_element);
     }
 
     _handleSearchFieldChange(event) {
@@ -156,7 +160,7 @@ class MainTableCardHeader extends React.Component {
 
     render () {
         let heading_right_opacity = this.state.hide_right_element ? 0 : 100;
-        let select_style = {height: 30, maxWidth: 300};
+        let select_style = {height: 30, maxWidth: 250};
         let doc_button_text = <Bp.Text ellipsize={true}>{this.props.current_doc_name}</Bp.Text>;
         return (
             <div className="d-flex pl-2 pr-2 justify-content-between align-baseline main-heading" style={{height: 50}}>
