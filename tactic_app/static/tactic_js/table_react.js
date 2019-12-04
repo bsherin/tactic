@@ -1,6 +1,7 @@
 
 import { GlyphButton } from "./blueprint_react_widgets.js";
 import { ReactCodemirror } from "./react-codemirror.js";
+import { BpSelect } from "./blueprint_mdata_fields.js";
 
 export { MainTableCard, MainTableCardHeader, FreeformBody };
 
@@ -109,6 +110,10 @@ class MainTableCardHeader extends React.Component {
         }
     }
 
+    shouldComponentUpdate(nextProps, nextState) {
+        return !propsAreEqual(nextProps, this.props);
+    }
+
     _handleSearchFieldChange(event) {
         this.props.handleSearchFieldChange(event.target.value);
     }
@@ -137,13 +142,18 @@ class MainTableCardHeader extends React.Component {
         e.preventDefault();
     }
 
-    _onChangeDoc(event) {
-        this.props.handleChangeDoc(event.target.value);
+    _onChangeDoc(value) {
+        this.props.handleChangeDoc(value);
     }
 
     render() {
         let heading_right_opacity = this.state.hide_right_element ? 0 : 100;
-        let select_style = { height: 30, maxWidth: 200 };
+        let select_style = { height: 30, maxWidth: 300 };
+        let doc_button_text = React.createElement(
+            Bp.Text,
+            { ellipsize: true },
+            this.props.current_doc_name
+        );
         return React.createElement(
             "div",
             { className: "d-flex pl-2 pr-2 justify-content-between align-baseline main-heading", style: { height: 50 } },
@@ -165,11 +175,11 @@ class MainTableCardHeader extends React.Component {
                                 { label: this.props.short_collection_name,
                                     inline: true,
                                     style: { marginBottom: 0, marginLeft: 5, marginRight: 10 } },
-                                React.createElement(Bp.HTMLSelect, { options: this.props.doc_names,
+                                React.createElement(BpSelect, { options: this.props.doc_names,
                                     onChange: this._onChangeDoc,
-                                    value: this.props.current_doc_name,
-                                    style: select_style
-                                })
+                                    buttonStyle: select_style,
+                                    buttonTextObject: doc_button_text,
+                                    value: this.props.current_doc_name })
                             ),
                             this.props.show_table_spinner && React.createElement(Bp.Spinner, { size: 15 })
                         )

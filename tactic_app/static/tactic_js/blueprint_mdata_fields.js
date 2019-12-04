@@ -125,7 +125,7 @@ class BpSelect extends React.Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        return !propsAreEqual(nextProps, this.props);
+        return !propsAreEqual(nextProps, this.props, ["buttonTextObject"]);
     }
 
     _filterSuggestion(query, item) {
@@ -156,7 +156,10 @@ class BpSelect extends React.Component {
                     boundary: "window",
                     modifiers: { flip: false, preventOverflow: true },
                     position: Bp.PopoverPosition.BOTTOM_LEFT } },
-            React.createElement(Bp.Button, { className: "button-in-select", text: this.props.value, icon: this.props.buttonIcon })
+            React.createElement(Bp.Button, { className: "button-in-select",
+                style: this.props.buttonStyle,
+                text: this.props.buttonTextObject ? this.props.buttonTextObject : this.props.value,
+                icon: this.props.buttonIcon })
         );
     }
 }
@@ -165,11 +168,15 @@ BpSelect.propTypes = {
     options: PropTypes.array,
     onChange: PropTypes.func,
     value: PropTypes.string,
-    buttonIcon: PropTypes.string
+    buttonTextObject: PropTypes.object,
+    buttonIcon: PropTypes.string,
+    buttonStyle: PropTypes.object
 };
 
 BpSelect.defaultProps = {
-    buttonIcon: null
+    buttonIcon: null,
+    buttonStyle: {},
+    buttonTextObject: null
 };
 
 class SuggestionItem extends React.Component {
