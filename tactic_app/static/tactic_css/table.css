@@ -12,6 +12,8 @@ body {
     color: #5c7080;
     background-color: #f6f8fa;
     border-bottom: 1px solid #10161a26; }
+    #main-panel .main-heading .button-in-select .bp3-button-text {
+      max-width: 100%; }
 
 #doc-selector {
   z-index: 500; }
