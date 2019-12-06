@@ -58,7 +58,7 @@ class BlueprintTable extends React.Component {
         if ((this.set_scroll != null) && this.table_ref && this.table_ref.current) {
             try {
                 let singleCellRegion = Bpt.Regions.cell(this.set_scroll, 0);
-                this.table_ref.current.scrollToRegion(singleCellRegion)
+                this.table_ref.current.scrollToRegion(singleCellRegion);
                 this.set_scroll = null
             }
             catch (e) {
@@ -229,7 +229,13 @@ class BlueprintTable extends React.Component {
                                key={column_name}
                                name={column_name}/>
         });
-        let cwidths = this.props.column_widths == null ? null : this.props.column_widths;
+        let cwidths;
+        if ((this.props.column_widths == null) || (this.props.column_widths.length == 0)) {
+            cwidths = null
+        }
+        else {
+            cwidths = this.props.column_widths
+        }
         if ((cwidths != null) && (cwidths.length != this.props.filtered_column_names.length)) {
             cwidths = null;
             this.mismatched_column_widths = true

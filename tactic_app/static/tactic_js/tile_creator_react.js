@@ -7,7 +7,7 @@ import { CombinedMetadata } from "./blueprint_mdata_fields.js";
 import { OptionModule, ExportModule } from "./creator_modules_react.js";
 import { HorizontalPanes, VerticalPanes } from "./resizing_layouts.js";
 import { render_navbar } from "./blueprint_navbar.js";
-import { handleCallback, postAjax, postAjaxPromise, postWithCallback } from "./communication_react.js";
+import { handleCallback, postAjax, postAjaxPromise, postWithCallback, postAsyncFalse } from "./communication_react.js";
 import { withStatus, doFlash } from "./toaster.js";
 import { getUsableDimensions, SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT } from "./sizing_tools.js";
 import { withErrorDrawer } from "./error_drawer.js";
@@ -23,6 +23,10 @@ var heartbeat_timer = setInterval(function () {
 }, HEARTBEAT_INTERVAL);
 
 let tsocket;
+
+window.onunload = function (e) {
+    postAsyncFalse("host", "delete_container", { "container_id": window.main_id, "notify": false });
+};
 
 class CreatorViewerSocket extends TacticSocket {
     initialize_socket_stuff() {
