@@ -448,19 +448,6 @@ class MainApp extends React.Component {
         }
     }
 
-    compute_table_width() {
-        let self = this;
-        function reducer(accumulator, current_value, index) {
-            if (self.state.table_spec.hidden_columns_list.includes(self.state.table_spec.column_names[index])) {
-                return accumulator
-            }
-            else{
-                return accumulator + current_value
-            }
-        }
-        return this.state.table_spec.column_widths.reduce(reducer) + EXTRA_TABLE_AREA_SPACE;
-    }
-
     _setFreeformDoc(doc_name, new_content) {
         if (doc_name == this.state.table_spec.current_doc_name) {
             this.setState({data_text: new_content})
@@ -727,10 +714,6 @@ class MainApp extends React.Component {
             </React.Fragment>
         );
         let table_available_height = hp_height;
-        let table_style = {display: "block", tableLayout: "fixed"};
-        if (this.state.table_spec.column_widths != null) {
-            table_style["width"] = this.compute_table_width();
-        }
         let card_header = (
             <MainTableCardHeader toggleShrink={this._toggleTableShrink}
                                  short_collection_name={this.state.short_collection_name}

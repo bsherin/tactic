@@ -86,14 +86,14 @@ class ErrorDrawer extends React.Component {
                 { key: index, interactive: true, elevation: Bp.Elevation.TWO, style: { marginBottom: 5 } },
                 entry.title && React.createElement(
                     "h6",
-                    null,
+                    { style: { overflow: "auto" } },
                     React.createElement(
                         "a",
                         { href: "#" },
                         entry.title
                     )
                 ),
-                React.createElement("div", { style: { fontSize: 12 }, dangerouslySetInnerHTML: content_dict })
+                React.createElement("div", { style: { fontSize: 13, overflow: "auto" }, dangerouslySetInnerHTML: content_dict })
             );
         });
         return React.createElement(

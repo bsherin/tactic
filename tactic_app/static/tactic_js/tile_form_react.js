@@ -75,7 +75,7 @@ class TileForm extends React.Component {
                     updateValue: this._updateValue
                 }));
             } else if (option["type"] == "codearea") {
-                option_items.push(React.createElement(TextAreaOption, { att_name: att_name,
+                option_items.push(React.createElement(CodeAreaOption, { att_name: att_name,
                     key: att_name,
                     value: option.starting_value,
                     updateValue: this._updateValue

@@ -81,7 +81,7 @@ class TileForm extends React.Component {
                 />)
             }
             else if (option["type"] == "codearea") {
-                option_items.push(<TextAreaOption att_name={att_name}
+                option_items.push(<CodeAreaOption att_name={att_name}
                                                   key={att_name}
                                                   value={option.starting_value}
                                                   updateValue={this._updateValue}
