@@ -83,9 +83,9 @@ class ErrorDrawer extends React.Component {
             return(
                 <Bp.Card key={index} interactive={true} elevation={Bp.Elevation.TWO} style={{marginBottom: 5}}>
                     {entry.title &&
-                        <h6><a href="#">{entry.title}</a></h6>
+                        <h6 style={{overflow: "auto"}}><a href="#">{entry.title}</a></h6>
                     }
-                    <div style={{fontSize: 12}} dangerouslySetInnerHTML={content_dict}/>
+                    <div style={{fontSize: 13, overflow: "auto"}} dangerouslySetInnerHTML={content_dict}/>
                 </Bp.Card>
             )
         });
