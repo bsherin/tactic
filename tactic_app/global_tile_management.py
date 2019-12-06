@@ -154,8 +154,20 @@ class GlobalTileManager(object):
         else:
             return umanager.tile_module_index[tile_type].value
 
+    def unload_one_tile(self, username, tile_name, tile_module_name):
+        umanager = self.tile_manager[username]
+        for cat in umanager.user_tiles.keys():
+            if tile_name in umanager.user_tiles[cat].keys():
+                del umanager.user_tiles[cat][tile_name]
+        if tile_module_name in umanager.loaded_user_modules.keys():
+            del umanager.loaded_user_modules[tile_module_name]
+        if tile_name in umanager.tile_module_index.keys():
+            del umanager.tile_module_index[tile_name]
+        return
+
     def add_user_tile_module(self, username, category, tile_name, tile_module, tile_module_name, is_default=False):
         self.add_user(username)
+        self.unload_one_tile(username, tile_name, tile_module_name)
         umanager = self.tile_manager[username]
         if tile_module_name in umanager.failed_loaded_default_modules.keys():
             umanager.failed_loaded_default_modules.add_key(tile_module_name)

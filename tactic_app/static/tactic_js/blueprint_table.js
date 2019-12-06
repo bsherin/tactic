@@ -225,7 +225,12 @@ class BlueprintTable extends React.Component {
                 key: column_name,
                 name: column_name });
         });
-        let cwidths = this.props.column_widths == null ? null : this.props.column_widths;
+        let cwidths;
+        if (this.props.column_widths == null || this.props.column_widths.length == 0) {
+            cwidths = null;
+        } else {
+            cwidths = this.props.column_widths;
+        }
         if (cwidths != null && cwidths.length != this.props.filtered_column_names.length) {
             cwidths = null;
             this.mismatched_column_widths = true;
