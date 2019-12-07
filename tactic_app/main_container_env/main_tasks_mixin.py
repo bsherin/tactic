@@ -682,7 +682,9 @@ class TileCreationTasksMixin:
                     reload_dict.update(saved_options)
                     reload_dict["old_option_names"] = list(saved_options.keys())
                     self.mworker.post_task(tile_id, "kill_me", {})
-                    self.mworker.post_task("host", "restart_container", {"tile_id": tile_id})
+                    print("restarting container from main")
+                    docker_functions.restart_container(tile_id)
+                    # self.mworker.post_task("host", "restart_container", {"tile_id": tile_id})
 
                     def reinstantiate_done(reinst_result):
                         if reinst_result["success"]:
