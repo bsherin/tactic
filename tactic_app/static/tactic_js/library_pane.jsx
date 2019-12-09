@@ -442,7 +442,12 @@ class LibraryPane extends React.Component {
     }
 
     _filter_func(resource_dict, search_field_value) {
+        try {
             return resource_dict.name.toLowerCase().search(search_field_value) != -1
+        }
+        catch(e) {
+            return false
+        }
     }
 
     get all_names() {
