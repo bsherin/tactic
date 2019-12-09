@@ -256,7 +256,7 @@ class HorizontalPanes extends React.Component {
         let position_dict = { position: "relative", left: 0, top: (this.props.available_height - this.props.bottom_margin) / 2 };
         return React.createElement(
             "div",
-            { id: this.unique_id, className: "d-flex flex-row horizontal-panes", ref: this.top_ref },
+            { id: this.unique_id, className: "d-flex flex-row horizontal-panes", style: { width: "100%" }, ref: this.top_ref },
             React.createElement(
                 "div",
                 { ref: this.left_pane_ref, style: left_div_style, className: "res-viewer-resizer" },
