@@ -369,7 +369,8 @@ class NotesField extends React.Component {
         let really_show_markdown = this.hasOnlyWhitespace ? false : this.state.show_markdown;
         let notes_style = {
             "display": really_show_markdown ? "none" : "block",
-            fontSize: 13
+            fontSize: 13,
+            resize: "both"
             // fontSize: 14
         };
         let md_style = {
@@ -387,8 +388,8 @@ class NotesField extends React.Component {
             React.Fragment,
             null,
             React.createElement(Bp.TextArea, {
-                rows: "10",
-                cols: "50",
+                rows: "20",
+                cols: "75",
                 inputRef: this._notesRefHandler,
                 growVertically: false,
                 onBlur: this._handleMyBlur,
