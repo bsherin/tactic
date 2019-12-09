@@ -129,7 +129,7 @@ class LibraryAccessMixin:
 
     def go_to_document(self, doc_name):
         self._save_stdout()
-        data = {"doc_name": doc_name}
+        data = {"doc_name": doc_name, "row_id": 0}
         self._tworker.ask_host('go_to_row_in_document', data)
         self._restore_stdout()
         return
