@@ -119,10 +119,11 @@ value you have to use one of the tile commands described
 exports
 ~~~~~~~
 
-You can also specifythe name of variables that will be :guilabel:`exports` for
-your tile. (Exported variables are available as pipes within other tiles.
+You can also specifythe name of parameters that will be :guilabel:`exports` for
+your tile. (Exported parameters are available as pipes within other tiles.
 Note that these must be instance variables assigned values in your code
-in this manner ``self.variable_name =  ...``. )
+in this manner ``self.variable_name =  ...``. ) Also, note that the tile creator
+adds exported variables to the list of parameters that are saved when a project is saved.
 
 The interface for this is pretty much the same as for the :guilabel:`options` pane.
 
