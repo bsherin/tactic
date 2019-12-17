@@ -40,6 +40,16 @@ Tactic Text
 .. toctree::
    :hidden:
    :maxdepth: 4
+   :caption: How To
+
+   Use-Existing-Tiles
+   Create-Simple-Tile
+   WordFreqDist-Explained
+   Classifying-With-NLTK
+
+.. toctree::
+   :hidden:
+   :maxdepth: 4
    :caption: Other
 
    Running-your-own-Tactic-server
